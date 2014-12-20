@@ -314,13 +314,12 @@ STATIC void push_result_token(parser_t *parser) {
         bool overflow = false;
         for (; i < len; i++) {
             mp_uint_t dig;
+            int clower = str[i] | 0x20;
             if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
                 dig = str[i] - '0';
-            } else if (base == 16 && 'a' <= str[i] && str[i] <= 'f') {
-                dig = str[i] - 'a' + 10;
-            } else if (base == 16 && 'A' <= str[i] && str[i] <= 'F') {
-                dig = str[i] - 'A' + 10;
-            } else if (str[i] == '.' || str[i] == 'e' || str[i] == 'E' || str[i] == 'j' || str[i] == 'J') {
+            } else if (base == 16 && 'a' <= clower && clower <= 'f') {
+                dig = clower - 'a' + 10;
+            } else if (str[i] == '.' || clower == 'e' || clower == 'j') {
                 dec = true;
                 break;
             } else {
@@ -422,9 +421,6 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
     mp_uint_t rule_src_line; // source line for the first token matched by the current rule
     bool backtrack = false;
     const rule_t *rule = NULL;
-    mp_token_kind_t tok_kind;
-    bool emit_rule;
-    bool had_trailing_sep;
 
     for (;;) {
         next_rule:
@@ -481,7 +477,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 }
                 break;
 
-            case RULE_ACT_AND:
+            case RULE_ACT_AND: {
 
                 // failed, backtrack if we can, else syntax error
                 if (backtrack) {
@@ -504,9 +500,9 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 // progress through the rule
                 for (; i < n; ++i) {
                     switch (rule->arg[i] & RULE_ARG_KIND_MASK) {
-                        case RULE_ARG_TOK:
+                        case RULE_ARG_TOK: {
                             // need to match a token
-                            tok_kind = rule->arg[i] & RULE_ARG_ARG_MASK;
+                            mp_token_kind_t tok_kind = rule->arg[i] & RULE_ARG_ARG_MASK;
                             if (lex->tok_kind == tok_kind) {
                                 // matched token
                                 if (tok_kind == MP_TOKEN_NAME) {
@@ -525,6 +521,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                                 }
                             }
                             break;
+                                           }
                         case RULE_ARG_RULE:
                         case RULE_ARG_OPT_RULE:
                             push_rule(&parser, rule_src_line, rule, i + 1); // save this and-rule
@@ -541,10 +538,10 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
 
                 // count number of arguments for the parse_node
                 i = 0;
-                emit_rule = false;
+                bool emit_rule = false;
                 for (mp_uint_t x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
-                        tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
+                        mp_token_kind_t tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind >= MP_TOKEN_NAME) {
                             emit_rule = true;
                         }
@@ -617,11 +614,13 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
+            }
 
-            case RULE_ACT_LIST:
+            case RULE_ACT_LIST: {
                 // n=2 is: item item*
                 // n=1 is: item (sep item)*
                 // n=3 is: item (sep item)* [sep]
+                bool had_trailing_sep;
                 if (backtrack) {
                     list_backtrack:
                     had_trailing_sep = false;
@@ -704,6 +703,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
+            }
 
             default:
                 assert(0);
