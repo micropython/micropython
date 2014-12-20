@@ -3,7 +3,7 @@ try:
 except ImportError:
     from _collections import namedtuple
 
-T = namedtuple("Tup", "foo bar")
+T = namedtuple("Tup", ["foo", "bar"])
 # CPython prints fully qualified name, what we don't bother to do so far
 #print(T)
 t = T(1, 2)
@@ -27,7 +27,7 @@ except TypeError:
 try:
     t.bar = 200
 except AttributeError:
-    print("AttribiteError")
+    print("AttributeError")
 
 try:
     t = T(1)
@@ -39,13 +39,12 @@ try:
 except TypeError:
     print("TypeError")
 
-# Try comma field separator
-T2 = namedtuple("TupComma", "foo,bar")
-t = T2(1, 2)
-print(t)
-print(t.foo, t.bar)
-
-# Try list of fields
+# Try single string
 # Not implemented so far
-#T3 = namedtuple("TupComma", ["foo", "bar"])
+#T3 = namedtuple("TupComma", "foo bar")
 #t = T3(1, 2)
+
+# Try single string with comma field seperator
+# Not implemented so far
+#T2 = namedtuple("TupComma", "foo,bar")
+#t = T2(1, 2)

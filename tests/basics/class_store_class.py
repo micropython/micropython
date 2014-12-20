@@ -7,7 +7,7 @@ try:
 except ImportError:
     from _collections import namedtuple
 
-_DefragResultBase = namedtuple('DefragResult', 'foo bar')
+_DefragResultBase = namedtuple('DefragResult', [ 'foo', 'bar' ])
 
 class _ResultMixinStr(object):
     def encode(self):
