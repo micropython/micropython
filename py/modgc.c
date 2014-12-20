@@ -54,7 +54,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(gc_collect_obj, py_gc_collect);
 /// \function disable()
 /// Disable the garbage collector.
 STATIC mp_obj_t gc_disable(void) {
-    gc_auto_collect_enabled = 0;
+    mp_state.gc_auto_collect_enabled = 0;
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
@@ -62,13 +62,13 @@ MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
 /// \function enable()
 /// Enable the garbage collector.
 STATIC mp_obj_t gc_enable(void) {
-    gc_auto_collect_enabled = 1;
+    mp_state.gc_auto_collect_enabled = 1;
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, gc_enable);
 
 STATIC mp_obj_t gc_isenabled(void) {
-    return MP_BOOL(gc_auto_collect_enabled);
+    return MP_BOOL(mp_state.gc_auto_collect_enabled);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_isenabled_obj, gc_isenabled);
 

@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef __MICROPY_INLCUDED_OBJTUPLE_H__
+#define __MICROPY_INLCUDED_OBJTUPLE_H__
+
 typedef struct _mp_obj_tuple_t {
     mp_obj_base_t base;
     mp_uint_t len;
@@ -35,3 +38,5 @@ mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in);
 mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
 mp_obj_t mp_obj_tuple_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in);
+
+#endif // __MICROPY_INLCUDED_OBJTUPLE_H__

@@ -131,15 +131,6 @@ nlr_jump:
     je      _nlr_jump_fail          # transfer control to nlr_jump_fail
 #endif
 
-/**************************************/
-// local variable nlr_top
-
-#if !(defined(__APPLE__) && defined(__MACH__))
-    .bss
-    .local  nlr_top
-#endif
-    .comm   nlr_top,8,8
-
 #else // !defined(__CYGWIN__)
 
 /******************************************************************************/
@@ -209,12 +200,6 @@ nlr_jump:
 .fail:
     movq    %rax, %rcx              # put argument back in first-arg register
     je      nlr_jump_fail           # transfer control to nlr_jump_fail
-
-/**************************************/
-// local variable nlr_top
-
-    .bss
-    .comm   nlr_top,8,8
 
 #endif // !defined(__CYGWIN__)
 

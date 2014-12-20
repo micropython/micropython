@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef __MICROPY_INLCUDED_QSTR_H__
+#define __MICROPY_INLCUDED_QSTR_H__
+
 // See qstrdefs.h for a list of qstr's that are available as constants.
 // Reference them as MP_QSTR_xxxx.
 //
@@ -40,6 +43,14 @@ enum {
 };
 
 typedef mp_uint_t qstr;
+
+typedef struct _qstr_pool_t {
+    struct _qstr_pool_t *prev;
+    mp_uint_t total_prev_len;
+    mp_uint_t alloc;
+    mp_uint_t len;
+    const byte *qstrs[];
+} qstr_pool_t;
 
 #define QSTR_FROM_STR_STATIC(s) (qstr_from_strn((s), strlen(s)))
 
@@ -60,3 +71,5 @@ mp_uint_t qstr_len(qstr q);
 const byte* qstr_data(qstr q, mp_uint_t *len);
 
 void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_bytes, mp_uint_t *n_total_bytes);
+
+#endif // __MICROPY_INLCUDED_QSTR_H__

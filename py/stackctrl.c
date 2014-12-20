@@ -32,23 +32,18 @@
 #include "runtime.h"
 #include "stackctrl.h"
 
-// Stack top at the start of program
-char *stack_top;
-
 void mp_stack_ctrl_init(void) {
     volatile int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+    mp_state.stack_top = (char*)&stack_dummy;
 }
 
 mp_uint_t mp_stack_usage(void) {
     // Assumes descending stack
     volatile int stack_dummy;
-    return stack_top - (char*)&stack_dummy;
+    return mp_state.stack_top - (char*)&stack_dummy;
 }
 
 #if MICROPY_STACK_CHECK
-
-static mp_uint_t stack_limit = 10240;
 
 void mp_stack_set_limit(mp_uint_t limit) {
     stack_limit = limit;

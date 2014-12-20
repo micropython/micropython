@@ -50,10 +50,10 @@ void pendsv_init(void) {
 // the given exception object using nlr_jump in the context of the top-level
 // thread.
 void pendsv_nlr_jump(void *o) {
-    if (mp_pending_exception == MP_OBJ_NULL) {
-        mp_pending_exception = o;
+    if (mp_state.mp_pending_exception == MP_OBJ_NULL) {
+        mp_state.mp_pending_exception = o;
     } else {
-        mp_pending_exception = MP_OBJ_NULL;
+        mp_state.mp_pending_exception = MP_OBJ_NULL;
         pendsv_object = o;
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }
