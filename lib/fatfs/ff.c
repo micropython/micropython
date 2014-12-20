@@ -119,6 +119,8 @@
 /                   Fixed null pointer dereference on attempting to delete the root direcotry.
 /---------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of disk I/O functions */
 
@@ -506,7 +508,8 @@ static FATFS *FatFs[_VOLUMES];	/* Pointer to the file system objects (logical dr
 static WORD Fsid;				/* File system mount ID */
 
 #if _FS_RPATH && _VOLUMES >= 2
-static BYTE CurrVol;			/* Current drive */
+// dpgeorge: changed name and made non-static
+BYTE ff_CurrVol;			/* Current drive */
 #endif
 
 #if _FS_LOCK
@@ -559,6 +562,12 @@ static const BYTE ExCvt[] = _EXCVT;	/* Upper conversion table for extended chara
 /* String functions                                                      */
 /*-----------------------------------------------------------------------*/
 
+// dpgeorge:
+// We use stdlib version of memset and memcmp to reduce code size.
+// We use the original custom version of mem_cpy so that gcc doesn't
+// recognise the builtin function and then inline it.  Allowing gcc
+// to use the builtin memcpy increases code size by 72 bytes.
+
 /* Copy memory to memory */
 static
 void mem_cpy (void* dst, const void* src, UINT cnt) {
@@ -577,6 +586,7 @@ void mem_cpy (void* dst, const void* src, UINT cnt) {
 }
 
 /* Fill memory */
+#if 0
 static
 void mem_set (void* dst, int val, UINT cnt) {
 	BYTE *d = (BYTE*)dst;
@@ -584,8 +594,13 @@ void mem_set (void* dst, int val, UINT cnt) {
 	while (cnt--)
 		*d++ = (BYTE)val;
 }
+#else
+// use stdlib
+#define mem_set memset
+#endif
 
 /* Compare memory to memory */
+#if 0
 static
 int mem_cmp (const void* dst, const void* src, UINT cnt) {
 	const BYTE *d = (const BYTE *)dst, *s = (const BYTE *)src;
@@ -594,6 +609,10 @@ int mem_cmp (const void* dst, const void* src, UINT cnt) {
 	while (cnt-- && (r = *d++ - *s++) == 0) ;
 	return r;
 }
+#else
+// use stdlib
+#define mem_cmp memcmp
+#endif
 
 /* Check if chr is contained in the string */
 static
@@ -854,6 +873,8 @@ FRESULT sync_fs (	/* FR_OK: successful, FR_DISK_ERR: failed */
 /*-----------------------------------------------------------------------*/
 /* Hidden API for hacks and disk tools */
 
+// dpgeorge: made static
+static
 DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
 	FATFS* fs,		/* File system object */
 	DWORD clst		/* Cluster# to be converted */
@@ -872,6 +893,8 @@ DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
 /*-----------------------------------------------------------------------*/
 /* Hidden API for hacks and disk tools */
 
+// dpgeorge: made static
+static
 DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x0FFFFFFF:Cluster status */
 	FATFS* fs,	/* File system object */
 	DWORD clst	/* FAT item index (cluster#) to get the value */
@@ -927,6 +950,8 @@ DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x0FFFFFFF:Cluste
 /* Hidden API for hacks and disk tools */
 
 #if !_FS_READONLY
+// dpgeorge: made static
+static
 FRESULT put_fat (
 	FATFS* fs,	/* File system object */
 	DWORD clst,	/* FAT item index (cluster#) to be set */
@@ -2093,6 +2118,8 @@ FRESULT follow_path (	/* FR_OK(0): successful, !=0: error code */
 /* Get logical drive number from path name                               */
 /*-----------------------------------------------------------------------*/
 
+// dpgeorge: replaced with custom ff_get_ldnumber
+#if 0
 static
 int get_ldnumber (		/* Returns logical drive number (-1:invalid drive) */
 	const TCHAR** path	/* Pointer to pointer to the path name */
@@ -2144,6 +2171,7 @@ int get_ldnumber (		/* Returns logical drive number (-1:invalid drive) */
 	}
 	return vol;
 }
+#endif
 
 
 
@@ -2197,7 +2225,7 @@ FRESULT find_volume (	/* FR_OK(0): successful, !=0: any error occurred */
 
 	/* Get logical drive number from the path name */
 	*rfs = 0;
-	vol = get_ldnumber(path);
+	vol = ff_get_ldnumber(path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 
 	/* Check if the file system object is valid or not */
@@ -2397,7 +2425,7 @@ FRESULT f_mount (
 	const TCHAR *rp = path;
 
 
-	vol = get_ldnumber(&rp);
+	vol = ff_get_ldnumber(&rp);
 	if (vol < 0) return FR_INVALID_DRIVE;
 	cfs = FatFs[vol];					/* Pointer to fs object */
 
@@ -2885,10 +2913,10 @@ FRESULT f_chdrive (
 	int vol;
 
 
-	vol = get_ldnumber(&path);
+	vol = ff_get_ldnumber(&path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 
-	CurrVol = (BYTE)vol;
+	ff_CurrVol = (BYTE)vol;
 
 	return FR_OK;
 }
@@ -2984,11 +3012,19 @@ FRESULT f_getcwd (
 		tp = buff;
 		if (res == FR_OK) {
 #if _VOLUMES >= 2
+			// dpgeorge: change to use our volume names
+			#if 0
 			*tp++ = '0' + CurrVol;			/* Put drive number */
 			*tp++ = ':';
+	        	#else
+			ff_get_volname(ff_CurrVol, &tp);
+			#endif
 #endif
 			if (i == len) {					/* Root-directory */
+				// dpgeorge: not needed with volume names
+				#if 0
 				*tp++ = '/';
+				#endif
 			} else {						/* Sub-directroy */
 				do		/* Add stacked path str */
 					*tp++ = buff[i++];
@@ -3671,7 +3707,7 @@ FRESULT f_rename (
 			} else {
 				mem_cpy(buf, djo.dir+DIR_Attr, 21);		/* Save the object information except name */
 				mem_cpy(&djn, &djo, sizeof (DIR));		/* Duplicate the directory object */
-				if (get_ldnumber(&path_new) >= 0)		/* Snip drive number off and ignore it */
+				if (ff_get_ldnumber(&path_new) >= 0)		/* Snip drive number off and ignore it */
 					res = follow_path(&djn, path_new);	/* and make sure if new object name is not conflicting */
 				else
 					res = FR_INVALID_DRIVE;
@@ -3850,6 +3886,7 @@ FRESULT f_setlabel (
 
 	/* Create a volume label in directory form */
 	vn[0] = 0;
+	if (label[0] == '/') label++; // dpgeorge: skip '/' to handle our volume names
 	for (sl = 0; label[sl]; sl++) ;				/* Get name length */
 	for ( ; sl && label[sl-1] == ' '; sl--) ;	/* Remove trailing spaces */
 	if (sl) {	/* Create volume label in directory form */
@@ -4010,7 +4047,7 @@ FRESULT f_mkfs (
 
 	/* Check mounted drive and clear work area */
 	if (sfd > 1) return FR_INVALID_PARAMETER;
-	vol = get_ldnumber(&path);
+	vol = ff_get_ldnumber(&path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 	fs = FatFs[vol];
 	if (!fs) return FR_NOT_ENABLED;

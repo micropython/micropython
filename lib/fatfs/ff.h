@@ -36,7 +36,7 @@ typedef struct {
 	BYTE pd;	/* Physical drive number */
 	BYTE pt;	/* Partition: 0:Auto detect, 1-4:Forced partition) */
 } PARTITION;
-extern PARTITION VolToPart[];	/* Volume - Partition resolution table */
+extern const PARTITION VolToPart[];	/* Volume - Partition resolution table */
 #define LD2PD(vol) (VolToPart[vol].pd)	/* Get physical drive number */
 #define LD2PT(vol) (VolToPart[vol].pt)	/* Get partition index */
 
@@ -273,8 +273,16 @@ void ff_rel_grant (_SYNC_t sobj);				/* Unlock sync object */
 int ff_del_syncobj (_SYNC_t sobj);				/* Delete a sync object */
 #endif
 
+// dpgeorge: added the following 3 declarations to support our volume names
 
+// Current drive
+extern BYTE ff_CurrVol;
 
+// Returns logical drive number (-1:invalid drive)
+int ff_get_ldnumber(const TCHAR** path);
+
+// Store the volume name into dest, and advance the pointer
+void ff_get_volname(BYTE vol, TCHAR **dest);
 
 /*--------------------------------------------------------------*/
 /* Flags and offset address                                     */
