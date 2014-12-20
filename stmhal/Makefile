@@ -21,7 +21,7 @@ CMSIS_DIR=cmsis
 HAL_DIR=hal
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
-FATFS_DIR=fatfs
+FATFS_DIR=lib/fatfs
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 0
@@ -40,7 +40,7 @@ INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc_msc_hid/inc
 #INC += -I$(USBHOST_DIR)
-INC += -I$(FATFS_DIR)/src
+INC += -I../$(FATFS_DIR)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_CORTEX_M4) $(COPT)
@@ -81,6 +81,8 @@ SRC_LIB = $(addprefix lib/,\
 	libm/sf_sin.c \
 	libm/sf_cos.c \
 	libm/sf_tan.c \
+	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
 	)
 
 SRC_C = \
@@ -199,11 +201,6 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	usbd_storage_msd.c \
 	)
 
-SRC_FATFS = $(addprefix $(FATFS_DIR)/src/,\
-	ff.c \
-	option/ccsbcs.c \
-	)
-
 ifeq ($(MICROPY_PY_WIZNET5K),1)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
@@ -247,7 +244,6 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_FATFS:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
@@ -255,7 +251,7 @@ OBJ += $(BUILD)/pins_$(BOARD).o
 # If we compile these using -O0 then it won't fit. So if you really want these
 # to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
 # and comment out the following 2 lines.
-$(BUILD)/$(FATFS_DIR)/src/ff.o: COPT += -Os
+$(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(BUILD)/$(HAL_DIR)/src/stm32f4xx_hal_sd.o: COPT += -Os
 
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex

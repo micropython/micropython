@@ -30,7 +30,7 @@
 #include "ff.h"
 #include "ffconf.h"
 
-extern BYTE CurrVol;
+extern BYTE ff_CurrVol;
 
 // "path" is the path to lookup; will advance this pointer beyond the volume name.
 // Returns logical drive number (-1 means invalid path).
@@ -41,7 +41,7 @@ int ff_get_ldnumber (const TCHAR** path) {
 
     if (**path != '/') {
 #if _FS_RPATH
-        return CurrVol;
+        return ff_CurrVol;
 #else
         return -1;
 #endif
@@ -65,5 +65,15 @@ int ff_get_ldnumber (const TCHAR** path) {
         return 1;
     } else {
         return -1;
+    }
+}
+
+void ff_get_volname(BYTE vol, TCHAR **dest) {
+    if (vol == 0) {
+        memcpy(*dest, "/flash", 6);
+        *dest += 6;
+    } else {
+        memcpy(*dest, "/sd", 3);
+        *dest += 3;
     }
 }
