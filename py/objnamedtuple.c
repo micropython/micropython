@@ -89,9 +89,39 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
         // Counts include implicit "self"
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                                                "__new__() takes %d positional arguments but %d were given",
-                                               num_fields + 1, n_args + 1));
+                                               num_fields + 1, n_args + n_kw + 1));
     }
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(n_args, args);
+
+    mp_obj_t *arg_objects;
+    if (n_args == num_fields) {
+        arg_objects = (mp_obj_t*)args;
+    } else {
+        size_t alloc_size = sizeof(mp_obj_t) * num_fields;
+        arg_objects = alloca(alloc_size);
+        memset(arg_objects, 0, alloc_size);
+
+        for (mp_uint_t i = 0; i < n_args; i++) {
+            arg_objects[i] = args[i];
+        }
+
+        for (mp_uint_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
+            qstr kw = MP_OBJ_QSTR_VALUE(args[i]);
+            int id = namedtuple_find_field(type, kw);
+            if (id == -1) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                            "__new__() got an unexpected keyword argument '%s'",
+                            qstr_str(kw)));
+            }
+            if (arg_objects[id] != NULL) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                            "__new__() got multiple values for argument '%s'",
+                            qstr_str(kw)));
+            }
+            arg_objects[id] = args[i + 1];
+        }
+    }
+
+    mp_obj_tuple_t *tuple = mp_obj_new_tuple(num_fields, arg_objects);
     tuple->base.type = type_in;
     return tuple;
 }
