@@ -41,7 +41,6 @@
 #include "runtime.h"
 #include "repl.h"
 #include "gc.h"
-#include "gccollect.h"
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
 #endif
