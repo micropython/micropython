@@ -1,7 +1,7 @@
 import bench
 from _collections import namedtuple
 
-T = namedtuple("Tup", "foo1 foo2 foo3 foo4 num")
+T = namedtuple("Tup", ["foo1", "foo2", "foo3", "foo4", "num"])
 
 def test(num):
     t = T(0, 0, 0, 0, 20000000)
