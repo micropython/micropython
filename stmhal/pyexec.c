@@ -137,14 +137,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
         }
 
         // GC info
-        {
-            gc_info_t info;
-            gc_info(&info);
-            printf("GC:\n");
-            printf("  " UINT_FMT " total\n", info.total);
-            printf("  " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
-            printf("  1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
-        }
+        gc_dump_info();
     }
 
 finish:
