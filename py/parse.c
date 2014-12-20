@@ -38,13 +38,14 @@
 #include "parse.h"
 #include "smallint.h"
 
-#define RULE_ACT_KIND_MASK      (0xf0)
 #define RULE_ACT_ARG_MASK       (0x0f)
+#define RULE_ACT_KIND_MASK      (0x30)
+#define RULE_ACT_ALLOW_IDENT    (0x40)
+#define RULE_ACT_ADD_BLANK      (0x80)
 #define RULE_ACT_OR             (0x10)
 #define RULE_ACT_AND            (0x20)
 #define RULE_ACT_LIST           (0x30)
 
-#define RULE_ARG_BLANK          (0x0000)
 #define RULE_ARG_KIND_MASK      (0xf000)
 #define RULE_ARG_ARG_MASK       (0x0fff)
 #define RULE_ARG_TOK            (0x1000)
@@ -52,7 +53,7 @@
 #define RULE_ARG_OPT_TOK        (0x3000)
 #define RULE_ARG_OPT_RULE       (0x4000)
 
-#define ADD_BLANK_NODE(rule_id) ((rule_id) == RULE_funcdef || (rule_id) == RULE_classdef || (rule_id) == RULE_comp_for || (rule_id) == RULE_lambdef || (rule_id) == RULE_lambdef_nocond)
+#define ADD_BLANK_NODE(rule) ((rule->act & RULE_ACT_ADD_BLANK) != 0)
 
 // (un)comment to use rule names; for debugging
 //#define USE_RULE_NAME (1)
@@ -75,6 +76,8 @@ enum {
     RULE_string, // special node for non-interned string
 };
 
+#define ident                   (RULE_ACT_ALLOW_IDENT)
+#define blank                   (RULE_ACT_ADD_BLANK)
 #define or(n)                   (RULE_ACT_OR | n)
 #define and(n)                  (RULE_ACT_AND | n)
 #define one_or_more             (RULE_ACT_LIST | 2)
@@ -181,7 +184,7 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         if (rule_id == RULE_string) {
             m_del(char, (char*)pns->nodes[0], (mp_uint_t)pns->nodes[1]);
         } else {
-            bool adjust = ADD_BLANK_NODE(rule_id);
+            bool adjust = ADD_BLANK_NODE(rules[rule_id]);
             if (adjust) {
                 n--;
             }
@@ -573,15 +576,17 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     emit_rule = true;
                 }
 
-                // never emit these rules if they have only 1 argument
-                // NOTE: can't put atom_paren here because we need it to distinguisg, for example, [a,b] from [(a,b)]
-                // TODO possibly put varargslist_name, varargslist_equal here as well
-                if (rule->rule_id == RULE_else_stmt || rule->rule_id == RULE_testlist_comp_3b || rule->rule_id == RULE_import_as_names_paren || rule->rule_id == RULE_typedargslist_name || rule->rule_id == RULE_typedargslist_colon || rule->rule_id == RULE_typedargslist_equal || rule->rule_id == RULE_dictorsetmaker_colon || rule->rule_id == RULE_classdef_2 || rule->rule_id == RULE_with_item_as || rule->rule_id == RULE_assert_stmt_extra || rule->rule_id == RULE_as_name || rule->rule_id == RULE_raise_stmt_from || rule->rule_id == RULE_vfpdef || rule->rule_id == RULE_funcdefrettype) {
+                // if a rule has the RULE_ACT_ALLOW_IDENT bit set then this
+                // rule should not be emitted if it has only 1 argument
+                // NOTE: can't set this flag for atom_paren because we need it
+                // to distinguish, for example, [a,b] from [(a,b)]
+                // TODO possibly set for: varargslist_name, varargslist_equal
+                if (rule->act & RULE_ACT_ALLOW_IDENT) {
                     emit_rule = false;
                 }
 
                 // always emit these rules, and add an extra blank node at the end (to be used by the compiler to store data)
-                if (ADD_BLANK_NODE(rule->rule_id)) {
+                if (ADD_BLANK_NODE(rule)) {
                     emit_rule = true;
                     push_result_node(&parser, MP_PARSE_NODE_NULL);
                     i += 1;

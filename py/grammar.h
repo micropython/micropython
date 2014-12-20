@@ -59,16 +59,16 @@ DEF_RULE(decorator, nc, and(4), tok(DEL_AT), rule(dotted_name), opt_rule(trailer
 DEF_RULE(decorators, nc, one_or_more, rule(decorator))
 DEF_RULE(decorated, c(decorated), and(2), rule(decorators), rule(decorated_body))
 DEF_RULE(decorated_body, nc, or(2), rule(classdef), rule(funcdef))
-DEF_RULE(funcdef, c(funcdef), and(8), tok(KW_DEF), tok(NAME), tok(DEL_PAREN_OPEN), opt_rule(typedargslist), tok(DEL_PAREN_CLOSE), opt_rule(funcdefrettype), tok(DEL_COLON), rule(suite))
-DEF_RULE(funcdefrettype, nc, and(2), tok(DEL_MINUS_MORE), rule(test))
+DEF_RULE(funcdef, c(funcdef), blank | and(8), tok(KW_DEF), tok(NAME), tok(DEL_PAREN_OPEN), opt_rule(typedargslist), tok(DEL_PAREN_CLOSE), opt_rule(funcdefrettype), tok(DEL_COLON), rule(suite))
+DEF_RULE(funcdefrettype, nc, ident | and(2), tok(DEL_MINUS_MORE), rule(test))
 // TODO typedargslist lets through more than is allowed
 DEF_RULE(typedargslist, nc, list_with_end, rule(typedargslist_item), tok(DEL_COMMA))
 DEF_RULE(typedargslist_item, nc, or(3), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))
-DEF_RULE(typedargslist_name, nc, and(3), tok(NAME), opt_rule(typedargslist_colon), opt_rule(typedargslist_equal))
+DEF_RULE(typedargslist_name, nc, ident | and(3), tok(NAME), opt_rule(typedargslist_colon), opt_rule(typedargslist_equal))
 DEF_RULE(typedargslist_star, nc, and(2), tok(OP_STAR), opt_rule(tfpdef))
 DEF_RULE(typedargslist_dbl_star, nc, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(typedargslist_colon))
-DEF_RULE(typedargslist_colon, nc, and(2), tok(DEL_COLON), rule(test))
-DEF_RULE(typedargslist_equal, nc, and(2), tok(DEL_EQUAL), rule(test))
+DEF_RULE(typedargslist_colon, nc, ident | and(2), tok(DEL_COLON), rule(test))
+DEF_RULE(typedargslist_equal, nc, ident | and(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE(tfpdef, nc, and(2), tok(NAME), opt_rule(typedargslist_colon))
 // TODO varargslist lets through more than is allowed
 DEF_RULE(varargslist, nc, list_with_end, rule(varargslist_item), tok(DEL_COMMA))
@@ -77,7 +77,7 @@ DEF_RULE(varargslist_name, nc, and(2), tok(NAME), opt_rule(varargslist_equal))
 DEF_RULE(varargslist_star, nc, and(2), tok(OP_STAR), opt_rule(vfpdef))
 DEF_RULE(varargslist_dbl_star, nc, and(2), tok(OP_DBL_STAR), tok(NAME))
 DEF_RULE(varargslist_equal, nc, and(2), tok(DEL_EQUAL), rule(test))
-DEF_RULE(vfpdef, nc, and(1), tok(NAME))
+DEF_RULE(vfpdef, nc, ident | and(1), tok(NAME))
 
 // stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | simple_stmt
 
@@ -123,7 +123,7 @@ DEF_RULE(return_stmt, c(return_stmt), and(2), tok(KW_RETURN), opt_rule(testlist)
 DEF_RULE(yield_stmt, c(yield_stmt), and(1), rule(yield_expr))
 DEF_RULE(raise_stmt, c(raise_stmt), and(2), tok(KW_RAISE), opt_rule(raise_stmt_arg))
 DEF_RULE(raise_stmt_arg, nc, and(2), rule(test), opt_rule(raise_stmt_from))
-DEF_RULE(raise_stmt_from, nc, and(2), tok(KW_FROM), rule(test))
+DEF_RULE(raise_stmt_from, nc, ident | and(2), tok(KW_FROM), rule(test))
 
 // import_stmt: import_name | import_from
 // import_name: 'import' dotted_as_names
@@ -143,12 +143,12 @@ DEF_RULE(import_from, c(import_from), and(4), tok(KW_FROM), rule(import_from_2),
 DEF_RULE(import_from_2, nc, or(2), rule(dotted_name), rule(import_from_2b))
 DEF_RULE(import_from_2b, nc, and(2), rule(one_or_more_period_or_ellipsis), opt_rule(dotted_name))
 DEF_RULE(import_from_3, nc, or(3), tok(OP_STAR), rule(import_as_names_paren), rule(import_as_names))
-DEF_RULE(import_as_names_paren, nc, and(3), tok(DEL_PAREN_OPEN), rule(import_as_names), tok(DEL_PAREN_CLOSE))
+DEF_RULE(import_as_names_paren, nc, ident | and(3), tok(DEL_PAREN_OPEN), rule(import_as_names), tok(DEL_PAREN_CLOSE))
 DEF_RULE(one_or_more_period_or_ellipsis, nc, one_or_more, rule(period_or_ellipsis))
 DEF_RULE(period_or_ellipsis, nc, or(2), tok(DEL_PERIOD), tok(ELLIPSIS))
 DEF_RULE(import_as_name, nc, and(2), tok(NAME), opt_rule(as_name))
 DEF_RULE(dotted_as_name, nc, and(2), rule(dotted_name), opt_rule(as_name))
-DEF_RULE(as_name, nc, and(2), tok(KW_AS), tok(NAME))
+DEF_RULE(as_name, nc, ident | and(2), tok(KW_AS), tok(NAME))
 DEF_RULE(import_as_names, nc, list_with_end, rule(import_as_name), tok(DEL_COMMA))
 DEF_RULE(dotted_as_names, nc, list, rule(dotted_as_name), tok(DEL_COMMA))
 DEF_RULE(dotted_name, nc, list, tok(NAME), tok(DEL_PERIOD))
@@ -156,7 +156,7 @@ DEF_RULE(global_stmt, c(global_stmt), and(2), tok(KW_GLOBAL), rule(name_list))
 DEF_RULE(nonlocal_stmt, c(nonlocal_stmt), and(2), tok(KW_NONLOCAL), rule(name_list))
 DEF_RULE(name_list, nc, list, tok(NAME), tok(DEL_COMMA))
 DEF_RULE(assert_stmt, c(assert_stmt), and(3), tok(KW_ASSERT), rule(test), opt_rule(assert_stmt_extra))
-DEF_RULE(assert_stmt_extra, nc, and(2), tok(DEL_COMMA), rule(test))
+DEF_RULE(assert_stmt_extra, nc, ident | and(2), tok(DEL_COMMA), rule(test))
 
 // compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated
 // if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
@@ -182,11 +182,11 @@ DEF_RULE(try_stmt_except, nc, and(4), tok(KW_EXCEPT), opt_rule(try_stmt_as_name)
 DEF_RULE(try_stmt_as_name, nc, and(2), rule(test), opt_rule(as_name))
 DEF_RULE(try_stmt_except_list, nc, one_or_more, rule(try_stmt_except))
 DEF_RULE(try_stmt_finally, nc, and(3), tok(KW_FINALLY), tok(DEL_COLON), rule(suite))
-DEF_RULE(else_stmt, nc, and(3), tok(KW_ELSE), tok(DEL_COLON), rule(suite))
+DEF_RULE(else_stmt, nc, ident | and(3), tok(KW_ELSE), tok(DEL_COLON), rule(suite))
 DEF_RULE(with_stmt, c(with_stmt), and(4), tok(KW_WITH), rule(with_stmt_list), tok(DEL_COLON), rule(suite))
 DEF_RULE(with_stmt_list, nc, list, rule(with_item), tok(DEL_COMMA))
 DEF_RULE(with_item, nc, and(2), rule(test), opt_rule(with_item_as))
-DEF_RULE(with_item_as, nc, and(2), tok(KW_AS), rule(expr))
+DEF_RULE(with_item_as, nc, ident | and(2), tok(KW_AS), rule(expr))
 DEF_RULE(suite, nc, or(2), rule(suite_block), rule(simple_stmt))
 DEF_RULE(suite_block, nc, and(4), tok(NEWLINE), tok(INDENT), rule(suite_block_stmts), tok(DEDENT))
 DEF_RULE(suite_block_stmts, c(generic_all_nodes), one_or_more, rule(stmt))
@@ -200,8 +200,8 @@ DEF_RULE(test, nc, or(2), rule(lambdef), rule(test_if_expr))
 DEF_RULE(test_if_expr, c(test_if_expr), and(2), rule(or_test), opt_rule(test_if_else))
 DEF_RULE(test_if_else, nc, and(4), tok(KW_IF), rule(or_test), tok(KW_ELSE), rule(test))
 DEF_RULE(test_nocond, nc, or(2), rule(lambdef_nocond), rule(or_test))
-DEF_RULE(lambdef, c(lambdef), and(4), tok(KW_LAMBDA), opt_rule(varargslist), tok(DEL_COLON), rule(test))
-DEF_RULE(lambdef_nocond, c(lambdef), and(4), tok(KW_LAMBDA), opt_rule(varargslist), tok(DEL_COLON), rule(test_nocond))
+DEF_RULE(lambdef, c(lambdef), blank | and(4), tok(KW_LAMBDA), opt_rule(varargslist), tok(DEL_COLON), rule(test))
+DEF_RULE(lambdef_nocond, c(lambdef), blank | and(4), tok(KW_LAMBDA), opt_rule(varargslist), tok(DEL_COLON), rule(test_nocond))
 
 // or_test: and_test ('or' and_test)*
 // and_test: not_test ('and' not_test)*
@@ -258,7 +258,7 @@ DEF_RULE(atom_brace, c(atom_brace), and(3), tok(DEL_BRACE_OPEN), opt_rule(dictor
 DEF_RULE(testlist_comp, nc, and(2), rule(testlist_comp_2), opt_rule(testlist_comp_3))
 DEF_RULE(testlist_comp_2, nc, or(2), rule(star_expr), rule(test))
 DEF_RULE(testlist_comp_3, nc, or(2), rule(comp_for), rule(testlist_comp_3b))
-DEF_RULE(testlist_comp_3b, nc, and(2), tok(DEL_COMMA), opt_rule(testlist_comp_3c))
+DEF_RULE(testlist_comp_3b, nc, ident | and(2), tok(DEL_COMMA), opt_rule(testlist_comp_3c))
 DEF_RULE(testlist_comp_3c, nc, list_with_end, rule(testlist_comp_2), tok(DEL_COMMA))
 DEF_RULE(trailer, nc, or(3), rule(trailer_paren), rule(trailer_bracket), rule(trailer_period))
 DEF_RULE(trailer_paren, c(trailer_paren), and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL_PAREN_CLOSE))
@@ -288,15 +288,15 @@ DEF_RULE(testlist, c(generic_tuple), list_with_end, rule(test), tok(DEL_COMMA))
 // TODO dictorsetmaker lets through more than is allowed
 DEF_RULE(dictorsetmaker, nc, and(2), rule(dictorsetmaker_item), opt_rule(dictorsetmaker_tail))
 DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and(2), rule(test), opt_rule(dictorsetmaker_colon))
-DEF_RULE(dictorsetmaker_colon, nc, and(2), tok(DEL_COLON), rule(test))
+DEF_RULE(dictorsetmaker_colon, nc, ident | and(2), tok(DEL_COLON), rule(test))
 DEF_RULE(dictorsetmaker_tail, nc, or(2), rule(comp_for), rule(dictorsetmaker_list))
 DEF_RULE(dictorsetmaker_list, nc, and(2), tok(DEL_COMMA), opt_rule(dictorsetmaker_list2))
 DEF_RULE(dictorsetmaker_list2, nc, list_with_end, rule(dictorsetmaker_item), tok(DEL_COMMA))
 
 // classdef: 'class' NAME ['(' [arglist] ')'] ':' suite
 
-DEF_RULE(classdef, c(classdef), and(5), tok(KW_CLASS), tok(NAME), opt_rule(classdef_2), tok(DEL_COLON), rule(suite))
-DEF_RULE(classdef_2, nc, and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL_PAREN_CLOSE))
+DEF_RULE(classdef, c(classdef), blank | and(5), tok(KW_CLASS), tok(NAME), opt_rule(classdef_2), tok(DEL_COLON), rule(suite))
+DEF_RULE(classdef_2, nc, ident | and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL_PAREN_CLOSE))
 
 // arglist: (argument ',')* (argument [','] | '*' test (',' argument)* [',' '**' test] | '**' test)
 
@@ -317,7 +317,7 @@ DEF_RULE(argument, nc, and(2), rule(test), opt_rule(argument_2))
 DEF_RULE(argument_2, nc, or(2), rule(comp_for), rule(argument_3))
 DEF_RULE(argument_3, nc, and(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE(comp_iter, nc, or(2), rule(comp_for), rule(comp_if))
-DEF_RULE(comp_for, nc, and(5), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(or_test), opt_rule(comp_iter))
+DEF_RULE(comp_for, nc, blank | and(5), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(or_test), opt_rule(comp_iter))
 DEF_RULE(comp_if, nc, and(3), tok(KW_IF), rule(test_nocond), opt_rule(comp_iter))
 
 // # not used in grammar, but may appear in "node" passed from Parser to Compiler
