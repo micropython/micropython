@@ -104,8 +104,8 @@ class Pyboard:
             command_bytes = bytes(command, encoding='ascii')
 
         # write command
-        for i in range(0, len(command_bytes), 32):
-            self.serial.write(command_bytes[i:min(i+32, len(command_bytes))])
+        for i in range(0, len(command_bytes), 256):
+            self.serial.write(command_bytes[i:min(i + 256, len(command_bytes))])
             time.sleep(0.01)
         self.serial.write(b'\x04')
 
