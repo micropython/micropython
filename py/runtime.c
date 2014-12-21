@@ -725,8 +725,8 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp
         // dictionary
         mp_map_t *map = mp_obj_dict_get_map(kw_dict);
         assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
-        for (uint i = 0; i < map->alloc; i++) {
-            if (map->table[i].key != MP_OBJ_NULL) {
+        for (mp_uint_t i = 0; i < map->alloc; i++) {
+            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
                 args2[args2_len++] = map->table[i].key;
                 args2[args2_len++] = map->table[i].value;
             }
@@ -1240,7 +1240,7 @@ void mp_import_all(mp_obj_t module) {
 
     // TODO: Support __all__
     mp_map_t *map = mp_obj_dict_get_map(mp_obj_module_get_globals(module));
-    for (uint i = 0; i < map->alloc; i++) {
+    for (mp_uint_t i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
             if (*qstr_str(name) != '_') {
