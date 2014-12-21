@@ -2490,20 +2490,16 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     // this is to handle special super() call
     if (MP_PARSE_NODE_IS_NULL(pn_arglist) && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
         EMIT_ARG(load_id, MP_QSTR___class__);
-        // get first argument to function
-        bool found = false;
+        // look for first argument to function (assumes it's "self")
         for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
             if (comp->scope_cur->id_info[i].flags & ID_FLAG_IS_PARAM) {
+                // first argument found; load it and call super
                 EMIT_ARG(load_fast, MP_QSTR_, comp->scope_cur->id_info[i].flags, comp->scope_cur->id_info[i].local_num);
-                found = true;
-                break;
+                EMIT_ARG(call_function, 2, 0, 0);
+                return;
             }
         }
-        if (!found) {
-            printf("TypeError: super() call cannot find self\n");
-            return;
-        }
-        EMIT_ARG(call_function, 2, 0, 0);
+        compile_syntax_error(comp, MP_PARSE_NODE_NULL, "super() call cannot find self"); // really a TypeError
         return;
     }
 #endif
@@ -2972,8 +2968,8 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         } else {
             compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
             if (f == NULL) {
-                printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
 #if MICROPY_DEBUG_PRINTERS
+                printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
                 mp_parse_node_print(pn, 0);
 #endif
                 compile_syntax_error(comp, pn, "internal compiler error");
@@ -3377,7 +3373,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     comp->next_label = 1;
 
     if (scope->kind != SCOPE_FUNCTION) {
-        printf("Error: inline assembler must be a function\n");
+        compile_syntax_error(comp, MP_PARSE_NODE_NULL, "inline assembler must be a function");
         return;
     }
 
