@@ -40,6 +40,7 @@
 #include "bufhelper.h"
 #include "can.h"
 #include "pybioctl.h"
+#include "pfenv.h"
 #include MICROPY_HAL_H
 
 #if MICROPY_HW_ENABLE_CAN
@@ -684,7 +685,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id){
                 can->rxcallback1 = mp_const_none;
             }
             printf("uncaught exception in can(%u) Rx interrupt handler\n", can->can_id);
-            mp_obj_print_exception((mp_obj_t)nlr.ret_val);
+            mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
         }
         gc_unlock();
     }
