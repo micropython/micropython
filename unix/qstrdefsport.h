@@ -36,6 +36,7 @@ Q(flush)
 
 Q(_os)
 Q(stat)
+Q(system)
 Q(unlink)
 
 Q(ffi)

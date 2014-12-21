@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "mpconfig.h"
 #include "misc.h"
@@ -77,9 +78,21 @@ STATIC mp_obj_t mod_os_unlink(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_unlink_obj, mod_os_unlink);
 
+STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
+    const char *cmd = mp_obj_str_get_str(cmd_in);
+
+    int r = system(cmd);
+
+    RAISE_ERRNO(r, errno);
+
+    return MP_OBJ_NEW_SMALL_INT(r);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
+
 STATIC const mp_map_elem_t mp_module_os_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR__os) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&mod_os_stat_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_system), (mp_obj_t)&mod_os_system_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),(mp_obj_t)&mod_os_unlink_obj},
 };
 
