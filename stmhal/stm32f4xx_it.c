@@ -419,19 +419,20 @@ void USART6_IRQHandler(void) {
     uart_irq_handler(6);
 }
 
+
 void CAN1_RX0_IRQHandler(void){
-    can_rx_irq_handler(1,0);
+    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
 }
 
 void CAN1_RX1_IRQHandler(void){
-    can_rx_irq_handler(1,1);
+    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
 }
 
 void CAN2_RX0_IRQHandler(void){
-    can_rx_irq_handler(2,0);
+    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
 }
 
 void CAN2_RX1_IRQHandler(void){
-    can_rx_irq_handler(2,1);
+    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
 }
 

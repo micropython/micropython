@@ -137,6 +137,12 @@ Methods
    
    - ``bank`` is the filter bank that is to be cleared.
 
+.. method:: can.rxcallback(fifo, fun)
+
+   Register a function to be called when a message is accepted into a empty fifo:
+   
+   - ``fifo`` is the receiving fifo.
+   - ``fun`` is the function to be called when the fifo becomes non empty.
 Constants
 ---------
 
