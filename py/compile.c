@@ -1614,30 +1614,58 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
+STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
+    bool added;
+    id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
+    if (!added) {
+        compile_syntax_error(comp, pn, "identifier already used");
+        return;
+    }
+    id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
+
+    // if the id exists in the global scope, set its kind to EXPLICIT_GLOBAL
+    id_info = scope_find_global(comp->scope_cur, qst);
+    if (id_info != NULL) {
+        id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
+    }
+}
+
 STATIC void compile_global_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass == MP_PASS_SCOPE) {
-        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[0])) {
-            scope_declare_global(comp->scope_cur, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
-        } else {
-            pns = (mp_parse_node_struct_t*)pns->nodes[0];
-            int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            for (int i = 0; i < num_nodes; i++) {
-                scope_declare_global(comp->scope_cur, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-            }
+        mp_parse_node_t *nodes;
+        int n = list_get(&pns->nodes[0], PN_name_list, &nodes);
+        for (int i = 0; i < n; i++) {
+            compile_declare_global(comp, (mp_parse_node_t)pns, MP_PARSE_NODE_LEAF_ARG(nodes[i]));
         }
     }
 }
 
+STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
+    bool added;
+    id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
+    if (!added) {
+        compile_syntax_error(comp, pn, "identifier already used");
+        return;
+    }
+    id_info_t *id_info2 = scope_find_local_in_parent(comp->scope_cur, qst);
+    if (id_info2 == NULL || !(id_info2->kind == ID_INFO_KIND_LOCAL || id_info2->kind == ID_INFO_KIND_CELL || id_info2->kind == ID_INFO_KIND_FREE)) {
+        compile_syntax_error(comp, pn, "no binding for nonlocal found");
+        return;
+    }
+    id_info->kind = ID_INFO_KIND_FREE;
+    scope_close_over_in_parents(comp->scope_cur, qst);
+}
+
 STATIC void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass == MP_PASS_SCOPE) {
-        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[0])) {
-            scope_declare_nonlocal(comp->scope_cur, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]));
-        } else {
-            pns = (mp_parse_node_struct_t*)pns->nodes[0];
-            int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            for (int i = 0; i < num_nodes; i++) {
-                scope_declare_nonlocal(comp->scope_cur, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-            }
+        if (comp->scope_cur->kind == SCOPE_MODULE) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns, "can't declare nonlocal in outer code");
+            return;
+        }
+        mp_parse_node_t *nodes;
+        int n = list_get(&pns->nodes[0], PN_name_list, &nodes);
+        for (int i = 0; i < n; i++) {
+            compile_declare_nonlocal(comp, (mp_parse_node_t)pns, MP_PARSE_NODE_LEAF_ARG(nodes[i]));
         }
     }
 }
