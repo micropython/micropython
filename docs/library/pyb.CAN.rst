@@ -11,7 +11,7 @@ Example usage (works without anything connected)::
 
     from pyb import CAN
     can = CAN(1, CAN.LOOPBACK)
-    can.setfilter(0, CAN.LIST16, 0, (123,124,125,126))  # set a filter to receive messages with id=123,124,125 and 126
+    can.setfilter(0, CAN.LIST16, 0, (123, 124, 125, 126))  # set a filter to receive messages with id=123, 124, 125 and 126
     can.send('message!', 123)   # send a message with id 123
     can.recv(0)                 # receive message on FIFO 0
 
@@ -36,12 +36,12 @@ Class Methods
 -------------
 .. method:: CAN.initfilterbanks(nr)
    
-   Reset and disable all filter banks and assign how many banks that should be available for CAN(1)
+   Reset and disable all filter banks and assign how many banks should be available for CAN(1).
    
-   STM32F405 has 28 filter banks that is shared between the two available CAN bus controllers.
-   This function configures how many filter banks that should be assigned to each. ``nr`` is the number of banks 
-   that will be assigned to CAN(1), the rest of the 28 is assigned to CAN(2). 
-   At boot, 14 banks are assigned to each controller.      
+   STM32F405 has 28 filter banks that are shared between the two available CAN bus controllers.
+   This function configures how many filter banks should be assigned to each. ``nr`` is the number of banks 
+   that will be assigned to CAN(1), the rest of the 28 are assigned to CAN(2). 
+   At boot, 14 banks are assigned to each controller.
  
 Methods
 -------
@@ -82,29 +82,6 @@ Methods
 
    Turn off the CAN bus.
 
-.. method:: can.any(fifo)
-
-   Return ``True`` if any message waiting on the FIFO, else ``False``.
-
-.. method:: can.recv(fifo, \*, timeout=5000)
-
-   Receive data on the bus:
-   
-     - ``fifo`` is an integer, which is the FIFO to receive on
-     - ``timeout`` is the timeout in milliseconds to wait for the receive.
-   
-   Return value: buffer of data bytes.
-
-.. method:: can.send(send, addr, \*, timeout=5000)
-
-   Send a message on the bus:
-   
-     - ``send`` is the data to send (an integer to send, or a buffer object).
-     - ``addr`` is the address to send to
-     - ``timeout`` is the timeout in milliseconds to wait for the send.
-   
-   Return value: ``None``.
-
 .. method:: can.setfilter(bank, mode, fifo, params)
    
    Configure a filter bank:
@@ -130,12 +107,34 @@ Methods
    |CAN.MASK32 |As with CAN.MASK16 but with only one 32 bit id/mask pair.|
    +-----------+---------------------------------------------------------+
    
-   
 .. method:: can.clearfilter(bank)
 
    Clear and disables a filter bank:
    
    - ``bank`` is the filter bank that is to be cleared.
+
+.. method:: can.any(fifo)
+
+   Return ``True`` if any message waiting on the FIFO, else ``False``.
+
+.. method:: can.recv(fifo, \*, timeout=5000)
+
+   Receive data on the bus:
+   
+     - ``fifo`` is an integer, which is the FIFO to receive on
+     - ``timeout`` is the timeout in milliseconds to wait for the receive.
+   
+   Return value: buffer of data bytes.
+
+.. method:: can.send(send, addr, \*, timeout=5000)
+
+   Send a message on the bus:
+   
+     - ``send`` is the data to send (an integer to send, or a buffer object).
+     - ``addr`` is the address to send to
+     - ``timeout`` is the timeout in milliseconds to wait for the send.
+   
+   Return value: ``None``.
 
 .. method:: can.rxcallback(fifo, fun)
 
@@ -143,6 +142,7 @@ Methods
    
    - ``fifo`` is the receiving fifo.
    - ``fun`` is the function to be called when the fifo becomes non empty.
+
 Constants
 ---------
 
