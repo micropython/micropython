@@ -790,13 +790,13 @@ STATIC mp_obj_t str_rstrip(mp_uint_t n_args, const mp_obj_t *args) {
 // *num if at least one digit was parsed.
 static int str_to_int(const char *str, int *num) {
     const char *s = str;
-    if (unichar_isdigit(*s)) {
+    if ('0' <= *s && *s <= '9') {
         *num = 0;
         do {
             *num = *num * 10 + (*s - '0');
             s++;
         }
-        while (unichar_isdigit(*s));
+        while ('0' <= *s && *s <= '9');
     }
     return s - str;
 }
@@ -1331,9 +1331,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
                 width = mp_obj_get_int(args[arg_i++]);
                 str++;
             } else {
-                for (; str < top && '0' <= *str && *str <= '9'; str++) {
-                    width = width * 10 + *str - '0';
-                }
+                str += str_to_int((const char*)str, &width);
             }
         }
         int prec = -1;
@@ -1347,9 +1345,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
                     str++;
                 } else {
                     prec = 0;
-                    for (; str < top && '0' <= *str && *str <= '9'; str++) {
-                        prec = prec * 10 + *str - '0';
-                    }
+                    str += str_to_int((const char*)str, &prec);
                 }
             }
         }
