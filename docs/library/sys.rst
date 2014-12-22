@@ -18,6 +18,7 @@ Functions
    ``sys.stdout`` by default).
 
    .. admonition:: Difference to CPython
+      :class: attention
 
       This function appears in the ``traceback`` module in CPython.
 
