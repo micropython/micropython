@@ -81,18 +81,17 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
-#define PUSH_EXC_BLOCK() do { \
+#define PUSH_EXC_BLOCK(with_or_finally) do { \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
-    exc_sp->opcode = *code_state->ip; \
     exc_sp->handler = ip + ulab; \
-    exc_sp->val_sp = MP_TAGPTR_MAKE(sp, currently_in_except_block); \
+    exc_sp->val_sp = MP_TAGPTR_MAKE(sp, ((with_or_finally) << 1) | currently_in_except_block); \
     exc_sp->prev_exc = MP_OBJ_NULL; \
     currently_in_except_block = 0; /* in a try block now */ \
 } while (0)
 
 #define POP_EXC_BLOCK() \
-    currently_in_except_block = MP_TAGPTR_TAG(exc_sp->val_sp); /* restore previous state */ \
+    currently_in_except_block = MP_TAGPTR_TAG0(exc_sp->val_sp); /* restore previous state */ \
     exc_sp--; /* pop back to previous exception handler */
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
@@ -130,7 +129,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_o
     mp_exc_stack_t *const exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
 
     // variables that are visible to the exception handler (declared volatile)
-    volatile bool currently_in_except_block = MP_TAGPTR_TAG(code_state->exc_sp); // 0 or 1, to detect nested exceptions
+    volatile bool currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
     mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
 
     // outer exception handling loop
@@ -422,7 +421,7 @@ dispatch_loop:
                     SET_TOP(mp_load_attr(obj, MP_QSTR___exit__));
                     mp_load_method(obj, MP_QSTR___enter__, sp + 1);
                     mp_obj_t ret = mp_call_method_n_kw(0, 0, sp + 1);
-                    PUSH_EXC_BLOCK();
+                    PUSH_EXC_BLOCK(1);
                     PUSH(ret);
                     DISPATCH();
                 }
@@ -477,7 +476,6 @@ dispatch_loop:
                             // to just execute finally handler normally (by pushing None
                             // on value stack)
                             assert(exc_sp >= exc_stack);
-                            assert(exc_sp->opcode == MP_BC_SETUP_WITH);
                             POP_EXC_BLOCK();
                             PUSH(mp_const_none);
                         }
@@ -496,7 +494,7 @@ unwind_jump:;
                     while ((unum & 0x7f) > 0) {
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
-                        if (exc_sp->opcode == MP_BC_SETUP_FINALLY || exc_sp->opcode == MP_BC_SETUP_WITH) {
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
                             // We're going to run "finally" code as a coroutine
                             // (not calling it recursively). Set up a sentinel
                             // on a stack so it can return back to us when it is
@@ -519,7 +517,7 @@ unwind_jump:;
                 // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                 ENTRY(MP_BC_SETUP_EXCEPT):
                 ENTRY(MP_BC_SETUP_FINALLY): {
-                    PUSH_EXC_BLOCK();
+                    PUSH_EXC_BLOCK((*code_state->ip == MP_BC_SETUP_FINALLY) ? 1 : 0);
                     DISPATCH();
                 }
 
@@ -759,7 +757,7 @@ unwind_jump:;
                 ENTRY(MP_BC_RETURN_VALUE):
 unwind_return:
                     while (exc_sp >= exc_stack) {
-                        if (exc_sp->opcode == MP_BC_SETUP_FINALLY || exc_sp->opcode == MP_BC_SETUP_WITH) {
+                        if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
                             // We're going to run "finally" code as a coroutine
                             // (not calling it recursively). Set up a sentinel
                             // on a stack so it can return back to us when it is

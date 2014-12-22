@@ -28,12 +28,10 @@
 typedef struct _mp_exc_stack {
     const byte *handler;
     // bit 0 is saved currently_in_except_block value
+    // bit 1 is whether the opcode was SETUP_WITH or SETUP_FINALLY
     mp_obj_t *val_sp;
     // Saved exception, valid if currently_in_except_block bit is 1
     mp_obj_t prev_exc;
-    // We might only have 2 interesting cases here: SETUP_EXCEPT & SETUP_FINALLY,
-    // consider storing it in bit 1 of val_sp. TODO: SETUP_WITH?
-    byte opcode;
 } mp_exc_stack_t;
 
 typedef struct _mp_code_state {
@@ -56,7 +54,8 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
 void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *code, mp_uint_t len);
 void mp_bytecode_print2(const byte *code, mp_uint_t len);
 
-// Helper macros to access pointer with least significant bit holding a flag
-#define MP_TAGPTR_PTR(x) ((void*)((mp_uint_t)(x) & ~((mp_uint_t)1)))
-#define MP_TAGPTR_TAG(x) ((mp_uint_t)(x) & 1)
-#define MP_TAGPTR_MAKE(ptr, tag) ((void*)((mp_uint_t)(ptr) | tag))
+// Helper macros to access pointer with least significant bits holding flags
+#define MP_TAGPTR_PTR(x) ((void*)((mp_uint_t)(x) & ~((mp_uint_t)3)))
+#define MP_TAGPTR_TAG0(x) ((mp_uint_t)(x) & 1)
+#define MP_TAGPTR_TAG1(x) ((mp_uint_t)(x) & 2)
+#define MP_TAGPTR_MAKE(ptr, tag) ((void*)((mp_uint_t)(ptr) | (tag)))
