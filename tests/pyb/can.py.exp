@@ -8,3 +8,9 @@ True
 passed
 CAN(1, CAN.LOOPBACK, extframe=True)
 passed
+cb10
+cb11
+cb20
+cb21
+cb11
+cb21
