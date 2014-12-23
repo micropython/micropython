@@ -472,7 +472,22 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         dest[0] = elem->value;
         return;
     }
-
+#if MICROPY_CPYTHON_COMPAT
+    if (attr == MP_QSTR___dict__) {
+        // Create a new dict with a copy of the instance's map items.
+        // This creates, unlike CPython, a 'read-only' __dict__: modifying
+        // it will not result in modifications to the actual instance members.
+        mp_map_t *map = &self->members;
+        mp_obj_t attr_dict = mp_obj_new_dict(map->used);
+        for (mp_uint_t i = 0; i < map->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+                mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
+            }
+        }
+        dest[0] = attr_dict;
+        return;
+    }
+#endif
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = attr,
