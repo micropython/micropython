@@ -50,6 +50,11 @@ If resetting the filesystem while plugged into your compute doesn't work,
 you can try doing the same procedure while the board is plugged into a USB
 charger, or other USB power supply without data connection.
 
+You may need to reset the filesystem while the board is plugged into
+a USB charger, rather than plugged into the computer (some Macs will
+corrupt the freshly reset filesystem if you perform the reset while
+plugged into the Mac).
+
 Errors: flashing LEDs
 ---------------------
 
