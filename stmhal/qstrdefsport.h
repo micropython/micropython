@@ -73,6 +73,7 @@ Q(elapsed_millis)
 Q(elapsed_micros)
 
 // for module weak links
+Q(binascii)
 Q(re)
 Q(zlib)
 Q(json)
