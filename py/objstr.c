@@ -46,7 +46,6 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
 mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
-STATIC NORETURN void arg_type_mixup(void);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -525,7 +524,7 @@ STATIC mp_obj_t str_split(mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         // sep given
         if (mp_obj_get_type(sep) != self_type) {
-            arg_type_mixup();
+            bad_implicit_conversion(sep);
         }
 
         mp_uint_t sep_len;
@@ -627,7 +626,7 @@ STATIC mp_obj_t str_finder(mp_uint_t n_args, const mp_obj_t *args, mp_int_t dire
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     // check argument type
-    if (!MP_OBJ_IS_STR(args[1])) {
+    if (mp_obj_get_type(args[1]) != self_type) {
         bad_implicit_conversion(args[1]);
     }
 
@@ -720,7 +719,7 @@ STATIC mp_obj_t str_uni_strip(int type, mp_uint_t n_args, const mp_obj_t *args) 
         chars_to_del_len = sizeof(whitespace);
     } else {
         if (mp_obj_get_type(args[1]) != self_type) {
-            arg_type_mixup();
+            bad_implicit_conversion(args[1]);
         }
         GET_STR_DATA_LEN(args[1], s, l);
         chars_to_del = s;
@@ -759,7 +758,11 @@ STATIC mp_obj_t str_uni_strip(int type, mp_uint_t n_args, const mp_obj_t *args) 
 
     if (!first_good_char_pos_set) {
         // string is all whitespace, return ''
-        return MP_OBJ_NEW_QSTR(MP_QSTR_);
+        if (self_type == &mp_type_str) {
+            return MP_OBJ_NEW_QSTR(MP_QSTR_);
+        } else {
+            return mp_const_empty_bytes;
+        }
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
@@ -1470,11 +1473,13 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
 
     // check argument types
 
-    if (!MP_OBJ_IS_STR(args[1])) {
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
+
+    if (mp_obj_get_type(args[1]) != self_type) {
         bad_implicit_conversion(args[1]);
     }
 
-    if (!MP_OBJ_IS_STR(args[2])) {
+    if (mp_obj_get_type(args[2]) != self_type) {
         bad_implicit_conversion(args[2]);
     }
 
@@ -1543,7 +1548,7 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
                 return args[0];
             } else {
                 // substr found, allocate new string
-                replaced_str = mp_obj_str_builder_start(mp_obj_get_type(args[0]), replaced_str_index, &data);
+                replaced_str = mp_obj_str_builder_start(self_type, replaced_str_index, &data);
                 assert(data != NULL);
             }
         } else {
@@ -1561,7 +1566,7 @@ STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     // check argument type
-    if (!MP_OBJ_IS_STR(args[1])) {
+    if (mp_obj_get_type(args[1]) != self_type) {
         bad_implicit_conversion(args[1]);
     }
 
@@ -1597,12 +1602,10 @@ STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, mp_int_t direction) {
-    if (!MP_OBJ_IS_STR_OR_BYTES(self_in)) {
-        assert(0);
-    }
+    assert(MP_OBJ_IS_STR_OR_BYTES(self_in));
     mp_obj_type_t *self_type = mp_obj_get_type(self_in);
     if (self_type != mp_obj_get_type(arg)) {
-        arg_type_mixup();
+        bad_implicit_conversion(arg);
     }
 
     GET_STR_DATA_LEN(self_in, str, str_len);
@@ -1612,7 +1615,16 @@ STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, mp_int_t directi
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "empty separator"));
     }
 
-    mp_obj_t result[] = {MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_), MP_OBJ_NEW_QSTR(MP_QSTR_)};
+    mp_obj_t result[3];
+    if (self_type == &mp_type_str) {
+        result[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+        result[1] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+        result[2] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    } else {
+        result[0] = mp_const_empty_bytes;
+        result[1] = mp_const_empty_bytes;
+        result[2] = mp_const_empty_bytes;
+    }
 
     if (direction > 0) {
         result[0] = self_in;
@@ -1951,10 +1963,6 @@ STATIC void bad_implicit_conversion(mp_obj_t self_in) {
             "can't convert '%s' object to str implicitly",
             mp_obj_get_type_str(self_in)));
     }
-}
-
-STATIC void arg_type_mixup(void) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Can't mix str and bytes arguments"));
 }
 
 mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in) {

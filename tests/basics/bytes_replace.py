@@ -1,0 +1,13 @@
+print(b"".replace(b"a", b"b"))
+print(b"aaa".replace(b"a", b"b", 0))
+print(b"aaa".replace(b"a", b"b", -5))
+print(b"asdfasdf".replace(b"a", b"b"))
+print(b"aabbaabbaabbaa".replace(b"aa", b"cc", 3))
+print(b"a".replace(b"aa", b"bb"))
+print(b"testingtesting".replace(b"ing", b""))
+print(b"testINGtesting".replace(b"ing", b"ING!"))
+
+print(b"".replace(b"", b"1"))
+print(b"A".replace(b"", b"1"))
+print(b"AB".replace(b"", b"1"))
+print(b"AB".replace(b"", b"12"))
