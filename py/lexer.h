@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_LEXER_H__
+#define __MICROPY_INCLUDED_PY_LEXER_H__
 
 /* lexer.h -- simple tokeniser for Micro Python
  *
@@ -186,3 +188,5 @@ mp_import_stat_t mp_import_stat(const char *path);
 mp_lexer_t *mp_lexer_new_from_file(const char *filename);
 
 extern mp_uint_t mp_optimise_value;
+
+#endif // __MICROPY_INCLUDED_PY_LEXER_H__

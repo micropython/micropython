@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_PARSE_H__
+#define __MICROPY_INCLUDED_PY_PARSE_H__
 
 struct _mp_lexer_t;
 
@@ -93,3 +95,5 @@ typedef enum {
 
 // returns MP_PARSE_NODE_NULL on error, and then parse_error_kind_out is valid
 mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_parse_error_kind_t *parse_error_kind_out);
+
+#endif // __MICROPY_INCLUDED_PY_PARSE_H__

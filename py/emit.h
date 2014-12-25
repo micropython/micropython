@@ -33,6 +33,10 @@
  * This is problematic for some emitters (x64) since they need to know the maximum
  * stack size to compile the entry to the function, and this affects code size.
  */
+#ifndef __MICROPY_INCLUDED_PY_EMIT_H__
+#define __MICROPY_INCLUDED_PY_EMIT_H__
+
+#include "py/runtime0.h"
 
 typedef enum {
     MP_PASS_SCOPE = 1,      // work out id's and their kind, and number of labels
@@ -195,3 +199,5 @@ extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;
 
 emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels);
 void emit_inline_thumb_free(emit_inline_asm_t *emit);
+
+#endif // __MICROPY_INCLUDED_PY_EMIT_H__

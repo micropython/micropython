@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_RUNTIME0_H__
+#define __MICROPY_INCLUDED_PY_RUNTIME0_H__
 
 // taken from python source, Include/code.h
 // These must fit in 8 bits; see scope.h
@@ -152,3 +154,5 @@ typedef enum {
 } mp_fun_kind_t;
 
 extern void *const mp_fun_table[MP_F_NUMBER_OF];
+
+#endif // __MICROPY_INCLUDED_PY_RUNTIME0_H__
