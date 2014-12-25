@@ -322,7 +322,9 @@ soft_reset:
     extint_init0();
     timer_init0();
     uart_init0();
+#if MICROPY_HW_ENABLE_CAN
     can_init0();
+#endif
 
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
