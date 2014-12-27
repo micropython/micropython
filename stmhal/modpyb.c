@@ -36,6 +36,7 @@
 #include "obj.h"
 #include "gc.h"
 #include "gccollect.h"
+#include "runtime.h"
 #include "irq.h"
 #include "systick.h"
 #include "pyexec.h"
