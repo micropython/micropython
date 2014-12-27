@@ -269,6 +269,7 @@ DEF_RULE(trailer_period, c(trailer_period), and(2), tok(DEL_PERIOD), tok(NAME))
 // subscript: test | [test] ':' [test] [sliceop]
 // sliceop: ':' [test]
 
+#if MICROPY_PY_BUILTINS_SLICE
 DEF_RULE(subscriptlist, c(generic_tuple), list_with_end, rule(subscript), tok(DEL_COMMA))
 DEF_RULE(subscript, nc, or(2), rule(subscript_3), rule(subscript_2))
 DEF_RULE(subscript_2, c(subscript_2), and(2), rule(test), opt_rule(subscript_3))
@@ -277,6 +278,9 @@ DEF_RULE(subscript_3b, nc, or(2), rule(subscript_3c), rule(subscript_3d))
 DEF_RULE(subscript_3c, nc, and(2), tok(DEL_COLON), opt_rule(test))
 DEF_RULE(subscript_3d, nc, and(2), rule(test), opt_rule(sliceop))
 DEF_RULE(sliceop, nc, and(2), tok(DEL_COLON), opt_rule(test))
+#else
+DEF_RULE(subscriptlist, c(generic_tuple), list_with_end, rule(test), tok(DEL_COMMA))
+#endif
 
 // exprlist: (expr|star_expr) (',' (expr|star_expr))* [',']
 // testlist: test (',' test)* [',']

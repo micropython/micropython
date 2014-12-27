@@ -90,7 +90,9 @@ static void* entry_table[256] = {
     [MP_BC_BUILD_SET] = &&entry_MP_BC_BUILD_SET,
     [MP_BC_SET_ADD] = &&entry_MP_BC_SET_ADD,
     #endif
+    #if MICROPY_PY_BUILTINS_SLICE
     [MP_BC_BUILD_SLICE] = &&entry_MP_BC_BUILD_SLICE,
+    #endif
     [MP_BC_UNPACK_SEQUENCE] = &&entry_MP_BC_UNPACK_SEQUENCE,
     [MP_BC_UNPACK_EX] = &&entry_MP_BC_UNPACK_EX,
     [MP_BC_MAKE_FUNCTION] = &&entry_MP_BC_MAKE_FUNCTION,

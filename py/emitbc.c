@@ -794,10 +794,12 @@ STATIC void emit_bc_set_add(emit_t *emit, mp_uint_t set_stack_index) {
 }
 #endif
 
+#if MICROPY_PY_BUILTINS_SLICE
 STATIC void emit_bc_build_slice(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, 1 - n_args);
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SLICE, n_args);
 }
+#endif
 
 STATIC void emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, -1 + n_args);
@@ -966,7 +968,9 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_build_set,
     emit_bc_set_add,
     #endif
+    #if MICROPY_PY_BUILTINS_SLICE
     emit_bc_build_slice,
+    #endif
     emit_bc_unpack_sequence,
     emit_bc_unpack_ex,
     emit_bc_make_function,

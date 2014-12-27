@@ -2084,6 +2084,7 @@ STATIC void emit_native_set_add(emit_t *emit, mp_uint_t set_index) {
 }
 #endif
 
+#if MICROPY_PY_BUILTINS_SLICE
 STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
     DEBUG_printf("build_slice %d\n", n_args);
     if (n_args == 2) {
@@ -2104,6 +2105,7 @@ STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     }
 }
+#endif
 
 STATIC void emit_native_unpack_sequence(emit_t *emit, mp_uint_t n_args) {
     DEBUG_printf("unpack_sequence %d\n", n_args);
@@ -2336,7 +2338,9 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_build_set,
     emit_native_set_add,
     #endif
+    #if MICROPY_PY_BUILTINS_SLICE
     emit_native_build_slice,
+    #endif
     emit_native_unpack_sequence,
     emit_native_unpack_ex,
     emit_native_make_function,

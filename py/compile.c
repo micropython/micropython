@@ -2842,6 +2842,7 @@ STATIC void compile_trailer_period(compiler_t *comp, mp_parse_node_struct_t *pns
     EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // attribute to get
 }
 
+#if MICROPY_PY_BUILTINS_SLICE
 STATIC void compile_subscript_3_helper(compiler_t *comp, mp_parse_node_struct_t *pns) {
     assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_subscript_3); // should always be
     mp_parse_node_t pn = pns->nodes[0];
@@ -2897,6 +2898,7 @@ STATIC void compile_subscript_3(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
     compile_subscript_3_helper(comp, pns);
 }
+#endif // MICROPY_PY_BUILTINS_SLICE
 
 STATIC void compile_dictorsetmaker_item(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // if this is called then we are compiling a dict key:value pair
