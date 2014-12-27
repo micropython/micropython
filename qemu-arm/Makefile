@@ -10,6 +10,7 @@ include ../py/py.mk
 CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
+INC += -I..
 INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 

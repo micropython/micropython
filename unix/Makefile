@@ -14,6 +14,7 @@ UNAME_S := $(shell uname -s)
 include ../py/py.mk
 
 INC =  -I.
+INC +=  -I..
 INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 
