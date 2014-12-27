@@ -1406,6 +1406,19 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
     }
 }
 
+STATIC void emit_native_imm_to_fast(emit_t *emit, mp_uint_t imm, mp_uint_t local_num) {
+    if (local_num == 0) {
+        ASM_MOV_IMM_TO_REG(emit->as, imm, REG_LOCAL_1);
+    } else if (local_num == 1) {
+        ASM_MOV_IMM_TO_REG(emit->as, imm, REG_LOCAL_2);
+    } else if (local_num == 2) {
+        ASM_MOV_IMM_TO_REG(emit->as, imm, REG_LOCAL_3);
+    } else {
+        ASM_MOV_IMM_TO_REG(emit->as, imm, REG_TEMP0);
+        ASM_MOV_REG_TO_LOCAL(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
+    }
+}
+
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     vtype_kind_t vtype;
 #if N_X64
@@ -1634,8 +1647,13 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
 }
 
 STATIC void emit_native_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // TODO implement me!
-    // could support for Python types, just set to None (so GC can reclaim it)
+    // TODO: This is not compliant implementation. We could use MP_OBJ_SENTINEL
+    // to mark deleted vars, but then every var would need to be checked on
+    // each access. Very inefficient. So, just set value to None to enable GC.
+    vtype_kind_t vtype = emit->local_vtype[local_num];
+    if (vtype == VTYPE_PYOBJ || vtype == VTYPE_UNBOUND) {
+        emit_native_imm_to_fast(emit, (mp_uint_t)mp_const_none, local_num);
+    }
 }
 
 STATIC void emit_native_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
