@@ -253,6 +253,8 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 /******************************************************************************/
 /* set                                                                        */
 
+#if MICROPY_PY_BUILTINS_SET
+
 void mp_set_init(mp_set_t *set, mp_uint_t n) {
     set->alloc = n;
     set->used = 0;
@@ -367,6 +369,8 @@ void mp_set_clear(mp_set_t *set) {
     set->used = 0;
     set->table = NULL;
 }
+
+#endif // MICROPY_PY_BUILTINS_SET
 
 #if defined(DEBUG_PRINT) && DEBUG_PRINT
 void mp_map_dump(mp_map_t *map) {

@@ -86,8 +86,10 @@ static void* entry_table[256] = {
     [MP_BC_BUILD_MAP] = &&entry_MP_BC_BUILD_MAP,
     [MP_BC_STORE_MAP] = &&entry_MP_BC_STORE_MAP,
     [MP_BC_MAP_ADD] = &&entry_MP_BC_MAP_ADD,
+    #if MICROPY_PY_BUILTINS_SET
     [MP_BC_BUILD_SET] = &&entry_MP_BC_BUILD_SET,
     [MP_BC_SET_ADD] = &&entry_MP_BC_SET_ADD,
+    #endif
     [MP_BC_BUILD_SLICE] = &&entry_MP_BC_BUILD_SLICE,
     [MP_BC_UNPACK_SEQUENCE] = &&entry_MP_BC_UNPACK_SEQUENCE,
     [MP_BC_UNPACK_EX] = &&entry_MP_BC_UNPACK_EX,

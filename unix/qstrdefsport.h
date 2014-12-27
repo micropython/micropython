@@ -48,6 +48,8 @@ Q(as_bytearray)
 Q(callback)
 Q(func)
 Q(var)
+Q(get)
+Q(set)
 
 Q(input)
 Q(utime)

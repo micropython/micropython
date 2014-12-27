@@ -583,7 +583,7 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
 #if MICROPY_PY_BUILTINS_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_float), (mp_obj_t)&mp_type_float },
 #endif
-#if MICROPY_PY_BUILTINS_FROZENSET
+#if MICROPY_PY_BUILTINS_SET && MICROPY_PY_BUILTINS_FROZENSET
     { MP_OBJ_NEW_QSTR(MP_QSTR_frozenset), (mp_obj_t)&mp_type_frozenset },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_int), (mp_obj_t)&mp_type_int },

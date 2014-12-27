@@ -128,8 +128,10 @@ typedef struct _emit_method_table_t {
     void (*build_map)(emit_t *emit, mp_uint_t n_args);
     void (*store_map)(emit_t *emit);
     void (*map_add)(emit_t *emit, mp_uint_t map_stack_index);
+    #if MICROPY_PY_BUILTINS_SET
     void (*build_set)(emit_t *emit, mp_uint_t n_args);
     void (*set_add)(emit_t *emit, mp_uint_t set_stack_index);
+    #endif
     void (*build_slice)(emit_t *emit, mp_uint_t n_args);
     void (*unpack_sequence)(emit_t *emit, mp_uint_t n_args);
     void (*unpack_ex)(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);

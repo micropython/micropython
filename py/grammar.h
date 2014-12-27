@@ -287,8 +287,12 @@ DEF_RULE(exprlist_2, nc, or(2), rule(star_expr), rule(expr))
 DEF_RULE(testlist, c(generic_tuple), list_with_end, rule(test), tok(DEL_COMMA))
 // TODO dictorsetmaker lets through more than is allowed
 DEF_RULE(dictorsetmaker, nc, and(2), rule(dictorsetmaker_item), opt_rule(dictorsetmaker_tail))
+#if MICROPY_PY_BUILTINS_SET
 DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and(2), rule(test), opt_rule(dictorsetmaker_colon))
 DEF_RULE(dictorsetmaker_colon, nc, ident | and(2), tok(DEL_COLON), rule(test))
+#else
+DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and(3), rule(test), tok(DEL_COLON), rule(test))
+#endif
 DEF_RULE(dictorsetmaker_tail, nc, or(2), rule(comp_for), rule(dictorsetmaker_list))
 DEF_RULE(dictorsetmaker_list, nc, and(2), tok(DEL_COMMA), opt_rule(dictorsetmaker_list2))
 DEF_RULE(dictorsetmaker_list2, nc, list_with_end, rule(dictorsetmaker_item), tok(DEL_COMMA))

@@ -2761,7 +2761,7 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
                 // first element sets whether it's a dict or set
                 bool is_dict;
-                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
+                if (!MICROPY_PY_BUILTINS_SET || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
                     // a dictionary
                     EMIT_ARG(build_map, 1 + n);
                     compile_node(comp, pns->nodes[0]);
@@ -2792,13 +2792,15 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     }
                 }
 
+                #if MICROPY_PY_BUILTINS_SET
                 // if it's a set, build it
                 if (!is_dict) {
                     EMIT_ARG(build_set, 1 + n);
                 }
+                #endif
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_comp_for) {
                 // dict/set comprehension
-                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
+                if (!MICROPY_PY_BUILTINS_SET || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
                     // a dictionary comprehension
                     compile_comprehension(comp, pns, SCOPE_DICT_COMP);
                 } else {
@@ -2816,8 +2818,12 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
     } else {
         // set with one element
         set_with_one_element:
+        #if MICROPY_PY_BUILTINS_SET
         compile_node(comp, pn);
         EMIT_ARG(build_set, 1);
+        #else
+        assert(0);
+        #endif
     }
 }
 
@@ -3111,8 +3117,10 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, m
             EMIT_ARG(list_append, for_depth + 2);
         } else if (comp->scope_cur->kind == SCOPE_DICT_COMP) {
             EMIT_ARG(map_add, for_depth + 2);
+        #if MICROPY_PY_BUILTINS_SET
         } else if (comp->scope_cur->kind == SCOPE_SET_COMP) {
             EMIT_ARG(set_add, for_depth + 2);
+        #endif
         } else {
             EMIT(yield_value);
             EMIT(pop_top);
@@ -3305,8 +3313,10 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             EMIT_ARG(build_list, 0);
         } else if (scope->kind == SCOPE_DICT_COMP) {
             EMIT_ARG(build_map, 0);
+        #if MICROPY_PY_BUILTINS_SET
         } else if (scope->kind == SCOPE_SET_COMP) {
             EMIT_ARG(build_set, 0);
+        #endif
         }
 
         uint l_end = comp_next_label(comp);

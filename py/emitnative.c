@@ -2064,6 +2064,7 @@ STATIC void emit_native_map_add(emit_t *emit, mp_uint_t map_index) {
     emit_post(emit);
 }
 
+#if MICROPY_PY_BUILTINS_SET
 STATIC void emit_native_build_set(emit_t *emit, mp_uint_t n_args) {
     emit_native_pre(emit);
     emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
@@ -2081,6 +2082,7 @@ STATIC void emit_native_set_add(emit_t *emit, mp_uint_t set_index) {
     emit_call(emit, MP_F_STORE_SET);
     emit_post(emit);
 }
+#endif
 
 STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
     DEBUG_printf("build_slice %d\n", n_args);
@@ -2330,8 +2332,10 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_build_map,
     emit_native_store_map,
     emit_native_map_add,
+    #if MICROPY_PY_BUILTINS_SET
     emit_native_build_set,
     emit_native_set_add,
+    #endif
     emit_native_build_slice,
     emit_native_unpack_sequence,
     emit_native_unpack_ex,
