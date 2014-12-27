@@ -48,3 +48,61 @@ else:
         print('passed')
     else:
         print('failed, wrong data received')
+
+del can
+
+# Testing callbacks
+from pyb import CAN
+
+class callback():
+    def cb10(bus):
+        print('cb10')
+
+    def cb11(bus):
+        print('cb11')
+
+    def cb20(bus):
+        print('cb20')
+
+    def cb21(bus):
+        print('cb21')
+
+
+bus1 = CAN(1, CAN.LOOPBACK)
+bus2 = CAN(2, CAN.LOOPBACK)
+bus1.setfilter(0, CAN.LIST16, 0, (1, 2, 3, 4))
+bus1.setfilter(1, CAN.LIST16, 1, (5, 6, 7, 8))
+bus2.setfilter(0, CAN.LIST16, 0, (1, 2, 3, 4))
+bus2.setfilter(1, CAN.LIST16, 1, (5, 6, 7, 8))
+
+bus1.rxcallback(0, callback.cb10)
+bus1.rxcallback(1, callback.cb11)
+bus2.rxcallback(0, callback.cb20)
+bus2.rxcallback(1, callback.cb21)
+
+bus1.send('one', 1)
+bus1.send('five',5)
+bus2.send('one',1)
+bus2.send('five',5)
+
+bus1.recv(0)
+bus1.recv(1)
+bus2.recv(0)
+bus2.recv(1)
+
+#Disabling fifo0 callbacks')
+bus1.rxcallback(0, None)
+bus2.rxcallback(0, None)
+
+bus1.send('one',1)
+bus1.send('five',5)
+bus2.send('one',1)
+bus2.send('five',5)
+
+bus1.recv(0)
+bus1.recv(1)
+bus2.recv(0)
+bus2.recv(1)
+
+del bus1
+del bus2
