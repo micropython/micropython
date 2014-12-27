@@ -37,8 +37,10 @@
 #include "rng.h"
 #include "storage.h"
 #include "ff.h"
+#include "diskio.h"
 #include "file.h"
 #include "sdcard.h"
+#include "fsusermount.h"
 #include "portmodules.h"
 
 /// \module os - basic "operating system" services
@@ -122,6 +124,9 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
         mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
         if (sd_in_root()) {
             mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
+        }
+        if (fs_user_mount != NULL) {
+            mp_obj_list_append(dir_list, mp_obj_new_str(fs_user_mount->str + 1, fs_user_mount->len - 1, false));
         }
         return dir_list;
     }
@@ -309,6 +314,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
     storage_flush();
+    disk_ioctl(2, CTRL_SYNC, NULL);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);

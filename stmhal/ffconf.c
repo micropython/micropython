@@ -26,43 +26,52 @@
 
 #include <string.h>
 
-#include "mpconfigport.h"
+#include "mpconfig.h"
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
 #include "ff.h"
 #include "ffconf.h"
+#include "fsusermount.h"
 
+#if _FS_RPATH
 extern BYTE ff_CurrVol;
+#endif
+
+STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_t mount_point_len) {
+    if (strncmp(*path, mount_point_str, mount_point_len) == 0) {
+        if ((*path)[mount_point_len] == '/') {
+            *path += mount_point_len;
+            return true;
+        } else if ((*path)[mount_point_len] == '\0') {
+            *path = "/";
+            return true;
+        }
+    }
+    return false;
+}
 
 // "path" is the path to lookup; will advance this pointer beyond the volume name.
 // Returns logical drive number (-1 means invalid path).
-int ff_get_ldnumber (const TCHAR** path) {
+int ff_get_ldnumber (const TCHAR **path) {
     if (!(*path)) {
         return -1;
     }
 
     if (**path != '/') {
-#if _FS_RPATH
+        #if _FS_RPATH
         return ff_CurrVol;
-#else
+        #else
         return -1;
-#endif
-    } else if (strncmp(*path, "/flash", 6) == 0) {
-        if ((*path)[6] == '/') {
-            *path += 6;
-        } else if ((*path)[6] == '\0') {
-            *path = "/";
-        } else {
-            return -1;
-        }
+        #endif
+    }
+
+    if (check_path(path, "/flash", 6)) {
         return 0;
-    } else if (strncmp(*path, "/sd", 3) == 0) {
-        if ((*path)[3] == '/') {
-            *path += 3;
-        } else if ((*path)[3] == '\0') {
-            *path = "/";
-        } else {
-            return -1;
-        }
+    } else if (check_path(path, "/sd", 3)) {
         return 1;
+    } else if (fs_user_mount != NULL && check_path(path, fs_user_mount->str, fs_user_mount->len)) {
+        return 2;
     } else {
         return -1;
     }
@@ -72,8 +81,11 @@ void ff_get_volname(BYTE vol, TCHAR **dest) {
     if (vol == 0) {
         memcpy(*dest, "/flash", 6);
         *dest += 6;
-    } else {
+    } else if (vol == 1) {
         memcpy(*dest, "/sd", 3);
         *dest += 3;
+    } else {
+        memcpy(*dest, fs_user_mount->str, fs_user_mount->len);
+        *dest += fs_user_mount->len;
     }
 }

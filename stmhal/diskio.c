@@ -36,16 +36,19 @@
 #include "misc.h"
 #include "qstr.h"
 #include "obj.h"
+#include "runtime.h"
 #include "systick.h"
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "ff.h"        /* FatFs lower layer API */
 #include "diskio.h"        /* FatFs lower layer API */
+#include "fsusermount.h"
 
 const PARTITION VolToPart[] = {
     {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
     {1, 0},     // Logical drive 1 ==> Physical drive 1 (auto detection)
+    {2, 0},     // Logical drive 2 ==> Physical drive 2 (auto detection)
     /*
     {0, 2},     // Logical drive 2 ==> Physical drive 0, 2nd partition
     {0, 3},     // Logical drive 3 ==> Physical drive 0, 3rd partition
@@ -55,6 +58,7 @@ const PARTITION VolToPart[] = {
 /* Definitions of physical drive number for each media */
 #define PD_FLASH (0)
 #define PD_SDCARD (1)
+#define PD_USER (2)
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
@@ -77,6 +81,15 @@ DSTATUS disk_initialize (
             // TODO return STA_PROTECT if SD card is read only
             return 0;
 #endif
+
+        case PD_USER:
+            if (fs_user_mount == NULL) {
+                return STA_NODISK;
+            }
+            if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+                return STA_PROTECT;
+            }
+            return 0;
     }
 
     return STA_NOINIT;
@@ -100,6 +113,15 @@ DSTATUS disk_status (
             // TODO return STA_PROTECT if SD card is read only
             return 0;
 #endif
+
+        case PD_USER:
+            if (fs_user_mount == NULL) {
+                return STA_NODISK;
+            }
+            if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+                return STA_PROTECT;
+            }
+            return 0;
     }
 
     return STA_NOINIT;
@@ -132,6 +154,12 @@ DRESULT disk_read (
             }
             return RES_OK;
 #endif
+
+        case PD_USER:
+            fs_user_mount->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+            fs_user_mount->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
+            mp_call_method_n_kw(2, 0, fs_user_mount->readblocks);
+            return RES_OK;
     }
 
     return RES_PARERR;
@@ -165,6 +193,16 @@ DRESULT disk_write (
             }
             return RES_OK;
 #endif
+
+        case PD_USER:
+            if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+                // read-only block device
+                return RES_ERROR;
+            }
+            fs_user_mount->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+            fs_user_mount->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
+            mp_call_method_n_kw(2, 0, fs_user_mount->writeblocks);
+            return RES_OK;
     }
 
     return RES_PARERR;
@@ -208,6 +246,26 @@ DRESULT disk_ioctl (
             }
             break;
 #endif
+
+        case PD_USER:
+            switch (cmd) {
+                case CTRL_SYNC:
+                    if (fs_user_mount->sync[0] != MP_OBJ_NULL) {
+                        mp_call_method_n_kw(0, 0, fs_user_mount->sync);
+                    }
+                    return RES_OK;
+
+                case GET_BLOCK_SIZE:
+                    *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) bl
+                    return RES_OK;
+
+                case GET_SECTOR_COUNT: {
+                    mp_obj_t ret = mp_call_method_n_kw(0, 0, fs_user_mount->count);
+                    *((DWORD*)buff) = mp_obj_get_int(ret);
+                    return RES_OK;
+                }
+            }
+            break;
     }
 
     return RES_PARERR;

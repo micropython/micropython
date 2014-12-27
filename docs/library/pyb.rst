@@ -154,6 +154,37 @@ Miscellaneous functions
 
    Print out lots of information about the board.
 
+.. function:: mount(device, mountpoint, \*, readonly=False, mkfs=False)
+
+   Mount a block device and make it available as part of the filesystem.
+   ``device`` must be an object that provides the block protocol:
+
+    - ``readblocks(self, blocknum, buf)``
+    - ``writeblocks(self, blocknum, buf)`` (optional)
+    - ``count(self)``
+    - ``sync(self)`` (optional)
+
+   ``readblocks`` and ``writeblocks`` should copy data between ``buf`` and
+   the block device, starting from block number ``blocknum`` on the device.
+   ``buf`` will be a bytearray with length a multiple of 512.  If
+   ``writeblocks`` is not defined then the device is mounted read-only.
+   The return value of these two functions is ignored.
+
+   ``count`` should return the number of blocks available on the device.
+   ``sync``, if implemented, should sync the data on the device.
+
+   The parameter ``mountpoint`` is the location in the root of the filesystem
+   to mount the device.  It must begin with a forward-slash.
+
+   If ``readonly`` is ``True``, then the device is mounted read-only,
+   otherwise it is mounted read-write.
+
+   If ``mkfs`` is ``True``, then a new filesystem is created if one does not
+   already exist.
+
+   To unmount a device, pass ``None`` as the device and the mount location
+   as ``mountpoint``.
+
 .. function:: repl_uart(uart)
 
    Get or set the UART object that the REPL is repeated on.

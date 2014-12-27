@@ -60,6 +60,8 @@
 #include "usb.h"
 #include "pybstdio.h"
 #include "ff.h"
+#include "diskio.h"
+#include "fsusermount.h"
 #include "portmodules.h"
 
 /// \module pyb - functions related to the pyboard
@@ -344,6 +346,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_freq_obj, 0, 4, pyb_freq);
 /// Sync all file systems.
 STATIC mp_obj_t pyb_sync(void) {
     storage_flush();
+    disk_ioctl(2, CTRL_SYNC, NULL);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
@@ -543,6 +546,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&pyb_mount_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer), (mp_obj_t)&pyb_timer_type },
 

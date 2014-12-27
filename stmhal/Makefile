@@ -133,6 +133,7 @@ SRC_C = \
 	storage.c \
 	file.c \
 	sdcard.c \
+	fsusermount.c \
 	diskio.c \
 	ffconf.c \
 	lcd.c \
