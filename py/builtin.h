@@ -86,7 +86,6 @@ extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
 
 extern const mp_obj_dict_t mp_module_builtins_globals;
-extern mp_obj_dict_t *mp_module_builtins_override_dict;
 
 struct _dummy_t;
 extern struct _dummy_t mp_sys_stdin_obj;

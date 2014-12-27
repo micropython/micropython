@@ -185,4 +185,6 @@ static inline mp_uint_t count_lead_ones(byte val) {
 }
 #endif
 
+#include "mpstate.h"
+
 #endif // _INCLUDED_MINILIB_H

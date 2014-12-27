@@ -43,23 +43,13 @@
 #include "runtime0.h"
 #include "gc.h"
 
-typedef struct _mp_obj_exception_t {
-    mp_obj_base_t base;
-    mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
-    mp_obj_tuple_t *args;
-} mp_obj_exception_t;
-
 // Instance of MemoryError exception - needed by mp_malloc_fail
 const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_OBJ_NULL, mp_const_empty_tuple};
-
-// Local non-heap memory for allocating an exception when we run out of RAM
-STATIC mp_obj_exception_t mp_emergency_exception_obj;
 
 // Optionally allocated buffer for storing the first argument of an exception
 // allocated when the heap is locked.
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 #   if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
-STATIC byte  mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE];
 #define mp_emergency_exception_buf_size MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
 
 void mp_init_emergency_exception_buf(void) {
@@ -69,12 +59,11 @@ void mp_init_emergency_exception_buf(void) {
 }
 
 #else
-STATIC mp_int_t mp_emergency_exception_buf_size = 0;
-STATIC byte *mp_emergency_exception_buf = NULL;
+#define mp_emergency_exception_buf_size mp_state.mp_emergency_exception_buf_size
 
 void mp_init_emergency_exception_buf(void) {
     mp_emergency_exception_buf_size = 0;
-    mp_emergency_exception_buf = NULL;
+    mp_state.mp_emergency_exception_buf = NULL;
 }
 
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
@@ -85,13 +74,13 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
     }
 
     int old_size = mp_emergency_exception_buf_size;
-    void *old_buf = mp_emergency_exception_buf;
+    void *old_buf = mp_state.mp_emergency_exception_buf;
 
     // Update the 2 variables atomically so that an interrupt can't occur
     // between the assignments.
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     mp_emergency_exception_buf_size = size;
-    mp_emergency_exception_buf = buf;
+    mp_state.mp_emergency_exception_buf = buf;
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 
     if (old_buf != NULL) {
@@ -141,7 +130,7 @@ mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
     mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 0);
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
-        o = &mp_emergency_exception_obj;
+        o = &mp_state.mp_emergency_exception_obj;
         // We can't store any args.
         n_args = 0;
         o->args = mp_const_empty_tuple;
@@ -315,7 +304,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
         // Unfortunately, we won't be able to format the string...
-        o = &mp_emergency_exception_obj;
+        o = &mp_state.mp_emergency_exception_obj;
         o->base.type = exc_type;
         o->traceback = MP_OBJ_NULL;
         o->args = mp_const_empty_tuple;
@@ -325,7 +314,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         // of length 1, which has a string object and the string data.
 
         if (mp_emergency_exception_buf_size > (sizeof(mp_obj_tuple_t) + sizeof(mp_obj_str_t) + sizeof(mp_obj_t))) {
-            mp_obj_tuple_t *tuple = (mp_obj_tuple_t *)mp_emergency_exception_buf;
+            mp_obj_tuple_t *tuple = (mp_obj_tuple_t *)mp_state.mp_emergency_exception_buf;
             mp_obj_str_t *str = (mp_obj_str_t *)&tuple->items[1];
 
             tuple->base.type = &mp_type_tuple;
@@ -333,7 +322,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             tuple->items[0] = str;
 
             byte *str_data = (byte *)&str[1];
-            uint max_len = mp_emergency_exception_buf + mp_emergency_exception_buf_size
+            uint max_len = mp_state.mp_emergency_exception_buf + mp_emergency_exception_buf_size
                          - str_data;
 
             va_list ap;
@@ -347,16 +336,16 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 
             o->args = tuple;
 
-            uint offset = &str_data[str->len] - mp_emergency_exception_buf;
+            uint offset = &str_data[str->len] - mp_state.mp_emergency_exception_buf;
             offset += sizeof(void *) - 1;
             offset &= ~(sizeof(void *) - 1);
 
             if ((mp_emergency_exception_buf_size - offset) > (sizeof(mp_obj_list_t) + sizeof(mp_obj_t) * 3)) {
                 // We have room to store some traceback.
-                mp_obj_list_t *list = (mp_obj_list_t *)((byte *)mp_emergency_exception_buf + offset);
+                mp_obj_list_t *list = (mp_obj_list_t *)((byte *)mp_state.mp_emergency_exception_buf + offset);
                 list->base.type = &mp_type_list;
                 list->items = (mp_obj_t)&list[1];
-                list->alloc = (mp_emergency_exception_buf + mp_emergency_exception_buf_size - (byte *)list->items) / sizeof(list->items[0]);
+                list->alloc = (mp_state.mp_emergency_exception_buf + mp_emergency_exception_buf_size - (byte *)list->items) / sizeof(list->items[0]);
                 list->len = 0;
 
                 o->traceback = list;

@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef __MICROPY_INLCUDED_OBJ_H__
+#define __MICROPY_INLCUDED_OBJ_H__
+
 // A Micro Python object is a machine word having the following form:
 //  - xxxx...xxx1 : a small int, bits 1 and above are the value
 //  - xxxx...xx10 : a qstr, bits 2 and above are the value
@@ -620,3 +623,5 @@ mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice
     /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t));*/ \
     memmove(dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t)); \
     memcpy(dest + beg, slice, slice_len * sizeof(item_t));
+
+#endif // __MICROPY_INLCUDED_OBJ_H__

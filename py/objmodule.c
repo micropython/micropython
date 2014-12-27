@@ -36,8 +36,6 @@
 #include "runtime.h"
 #include "builtin.h"
 
-STATIC mp_map_t mp_loaded_modules_map; // TODO: expose as sys.modules
-
 STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_module_t *self = self_in;
     const char *name = qstr_str(self->name);
@@ -69,10 +67,10 @@ STATIC bool module_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     if (dict->map.table_is_fixed_array) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
         if (dict == &mp_module_builtins_globals) {
-            if (mp_module_builtins_override_dict == NULL) {
-                mp_module_builtins_override_dict = mp_obj_new_dict(1);
+            if (mp_state.mp_module_builtins_override_dict == NULL) {
+                mp_state.mp_module_builtins_override_dict = mp_obj_new_dict(1);
             }
-            dict = mp_module_builtins_override_dict;
+            dict = mp_state.mp_module_builtins_override_dict;
         } else
         #endif
         {
@@ -100,7 +98,7 @@ const mp_obj_type_t mp_type_module = {
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
-    mp_map_elem_t *el = mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    mp_map_elem_t *el = mp_map_lookup(&mp_state.mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     // We could error out if module already exists, but let C extensions
     // add new members to existing modules.
     if (el->value != MP_OBJ_NULL) {
@@ -196,17 +194,17 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
 void mp_module_init(void) {
-    mp_map_init(&mp_loaded_modules_map, 3);
+    mp_map_init(&mp_state.mp_loaded_modules_map, 3);
 }
 
 void mp_module_deinit(void) {
-    mp_map_deinit(&mp_loaded_modules_map);
+    mp_map_deinit(&mp_state.mp_loaded_modules_map);
 }
 
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {
     // lookup module
-    mp_map_elem_t *el = mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    mp_map_elem_t *el = mp_map_lookup(&mp_state.mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
     if (el == NULL) {
         // module not found, look for builtin module names
@@ -221,5 +219,5 @@ mp_obj_t mp_module_get(qstr module_name) {
 }
 
 void mp_module_register(qstr qstr, mp_obj_t module) {
-    mp_map_lookup(&mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+    mp_map_lookup(&mp_state.mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }

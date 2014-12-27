@@ -121,13 +121,4 @@ nlr_jump:
     .size   nlr_jump, .-nlr_jump
 #endif
 
-/**************************************/
-// local variable nlr_top
-
-    .bss
-#ifndef _WIN32
-    .local  nlr_top
-#endif
-    .comm   nlr_top,4,4
-
 #endif // defined(__i386__) && !MICROPY_NLR_SETJMP

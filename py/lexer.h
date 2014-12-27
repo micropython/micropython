@@ -184,5 +184,3 @@ typedef enum {
 
 mp_import_stat_t mp_import_stat(const char *path);
 mp_lexer_t *mp_lexer_new_from_file(const char *filename);
-
-extern mp_uint_t mp_optimise_value;

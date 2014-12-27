@@ -937,9 +937,9 @@ yield:
 #endif
 
 pending_exception_check:
-                if (mp_pending_exception != MP_OBJ_NULL) {
-                    mp_obj_t obj = mp_pending_exception;
-                    mp_pending_exception = MP_OBJ_NULL;
+                if (mp_state.mp_pending_exception != MP_OBJ_NULL) {
+                    mp_obj_t obj = mp_state.mp_pending_exception;
+                    mp_state.mp_pending_exception = MP_OBJ_NULL;
                     RAISE(obj);
                 }
 

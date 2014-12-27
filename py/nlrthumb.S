@@ -59,7 +59,7 @@ nlr_push:
     str     r11, [r0, #40]          @ store r11 into nlr_buf
     str     r13, [r0, #44]          @ store r13=sp into nlr_buf
 
-    ldr     r3, .L2                 @ load addr of nlr_top
+    ldr     r3, nlr_top_addr        @ load addr of nlr_top
     ldr     r2, [r3]                @ load nlr_top
     str     r2, [r0]                @ store nlr_top into nlr_buf
     str     r0, [r3]                @ store nlr_buf into nlr_top (to link list)
@@ -67,8 +67,8 @@ nlr_push:
     movs    r0, #0                  @ return 0, normal return
     bx      lr                      @ return
     .align  2
-.L2:
-    .word   .LANCHOR0
+nlr_top_addr:
+    .word   nlr_top
     .size   nlr_push, .-nlr_push
 
 /**************************************/
@@ -81,14 +81,11 @@ nlr_push:
 #endif
     .type   nlr_pop, %function
 nlr_pop:
-    ldr     r3, .L5                 @ load addr of nlr_top
+    ldr     r3, nlr_top_addr        @ load addr of nlr_top
     ldr     r2, [r3]                @ load nlr_top
     ldr     r2, [r2]                @ load prev nlr_buf
     str     r2, [r3]                @ store prev nlr_buf to nlr_top (to unlink list)
     bx      lr                      @ return
-    .align    2
-.L5:
-    .word    .LANCHOR0
     .size   nlr_pop, .-nlr_pop
 
 /**************************************/
@@ -101,7 +98,7 @@ nlr_pop:
 #endif
     .type   nlr_jump, %function
 nlr_jump:
-    ldr     r3, .L2                 @ load addr of nlr_top
+    ldr     r3, nlr_top_addr        @ load addr of nlr_top
     ldr     r2, [r3]                @ load nlr_top
     cmp     r2, #0                  @ test if nlr_top is NULL
     beq     nlr_jump_fail           @ if nlr_top is NULL, transfer control to nlr_jump_fail
@@ -122,20 +119,6 @@ nlr_jump:
 
     movs    r0, #1                  @ return 1, non-local return
     bx      lr                      @ return
-    .align    2
-.L6:
-    .word    .LANCHOR0
     .size   nlr_jump, .-nlr_jump
-
-/**************************************/
-// local variable nlr_top
-
-    .bss
-    .align  2
-    .set    .LANCHOR0,. + 0
-    .type   nlr_top, %object
-    .size   nlr_top, 4
-nlr_top:
-    .space  4
 
 #endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))

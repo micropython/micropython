@@ -74,7 +74,7 @@ STATIC mp_obj_t keyboard_interrupt_obj;
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
         mp_obj_exception_clear_traceback(keyboard_interrupt_obj);
-        mp_pending_exception = keyboard_interrupt_obj;
+        mp_state.mp_pending_exception = keyboard_interrupt_obj;
         // disable our handler so next we really die
         struct sigaction sa;
         sa.sa_handler = SIG_DFL;
@@ -456,10 +456,10 @@ int main(int argc, char **argv) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
                 if (isdigit(argv[a][2])) {
-                    mp_optimise_value = argv[a][2] & 0xf;
+                    mp_state.mp_optimise_value = argv[a][2] & 0xf;
                 } else {
-                    mp_optimise_value = 0;
-                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, mp_optimise_value++);
+                    mp_state.mp_optimise_value = 0;
+                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, mp_state.mp_optimise_value++);
                 }
             } else {
                 return usage(argv);

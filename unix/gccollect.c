@@ -33,8 +33,6 @@
 
 #if MICROPY_ENABLE_GC
 
-extern char *stack_top;
-
 #if MICROPY_GCREGS_SETJMP
 #include <setjmp.h>
 
@@ -146,7 +144,7 @@ void gc_collect(void) {
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
     void **regs_ptr = (void**)(void*)&regs;
-    gc_collect_root(regs_ptr, ((mp_uint_t)stack_top - (mp_uint_t)&regs) / sizeof(mp_uint_t));
+    gc_collect_root(regs_ptr, ((mp_uint_t)mp_state.stack_top - (mp_uint_t)&regs) / sizeof(mp_uint_t));
     gc_collect_end();
 
     //printf("-----\n");
