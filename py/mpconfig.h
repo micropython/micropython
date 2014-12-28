@@ -562,3 +562,13 @@ typedef double mp_float_t;
 #ifndef MP_WEAK
 #define MP_WEAK __attribute__((weak))
 #endif
+
+// Condition is likely to be true, to help branch prediction
+#ifndef MP_LIKELY
+#define MP_LIKELY(x) __builtin_expect((x), 1)
+#endif
+
+// Condition is likely to be false, to help branch prediction
+#ifndef MP_UNLIKELY
+#define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
