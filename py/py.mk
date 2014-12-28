@@ -162,3 +162,11 @@ $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
+# Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
+# may require disabling tail jump optimization. This will make sure that
+# each opcode has its own dispatching jump which will improve branch
+# branch predictor efficiency.
+# http://article.gmane.org/gmane.comp.lang.lua.general/75426
+# http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
+# http://www.emulators.com/docs/nx25_nostradamus.htm
+#-fno-crossjumping
