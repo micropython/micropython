@@ -101,11 +101,19 @@ typedef enum {
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc) {
+#define SELECTIVE_EXC_IP (0)
+#if SELECTIVE_EXC_IP
+#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip - 1; }
+#define MARK_EXC_IP_GLOBAL()
+#else
+#define MARK_EXC_IP_SELECTIVE()
+#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; }
+#endif
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "vmentrytable.h"
     #define DISPATCH() do { \
         TRACE(ip); \
-        code_state->ip = ip; \
+        MARK_EXC_IP_GLOBAL(); \
         goto *entry_table[*ip++]; \
     } while(0)
     #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
@@ -161,7 +169,7 @@ dispatch_loop:
                 DISPATCH();
 #else
                 TRACE(ip);
-                code_state->ip = ip;
+                MARK_EXC_IP_GLOBAL();
                 switch (*ip++) {
 #endif
 
@@ -201,6 +209,7 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_LOAD_CONST_DEC): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     PUSH(mp_load_const_dec(qst));
                     DISPATCH();
@@ -228,6 +237,7 @@ dispatch_loop:
                     load_check:
                     if (obj_shared == MP_OBJ_NULL) {
                         local_name_error: {
+                            MARK_EXC_IP_SELECTIVE();
                             mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
                             RAISE(obj);
                         }
@@ -243,24 +253,28 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_LOAD_NAME): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     PUSH(mp_load_name(qst));
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_LOAD_GLOBAL): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     PUSH(mp_load_global(qst));
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_LOAD_ATTR): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     SET_TOP(mp_load_attr(TOP(), qst));
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_LOAD_METHOD): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_load_method(*sp, qst, sp);
                     sp += 1;
@@ -268,10 +282,12 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_LOAD_BUILD_CLASS):
+                    MARK_EXC_IP_SELECTIVE();
                     PUSH(mp_load_build_class());
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_SUBSCR): {
+                    MARK_EXC_IP_SELECTIVE();
                     mp_obj_t index = POP();
                     SET_TOP(mp_obj_subscr(TOP(), index, MP_OBJ_SENTINEL));
                     DISPATCH();
@@ -290,18 +306,21 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_STORE_NAME): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_store_name(qst, POP());
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_STORE_GLOBAL): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_store_global(qst, POP());
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_STORE_ATTR): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_store_attr(sp[0], qst, sp[-1]);
                     sp -= 2;
@@ -309,11 +328,13 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_STORE_SUBSCR):
+                    MARK_EXC_IP_SELECTIVE();
                     mp_obj_subscr(sp[-1], sp[0], sp[-2]);
                     sp -= 3;
                     DISPATCH();
 
                 ENTRY(MP_BC_DELETE_FAST): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     if (fastn[-unum] == MP_OBJ_NULL) {
                         goto local_name_error;
@@ -323,6 +344,7 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_DELETE_DEREF): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     if (mp_obj_cell_get(fastn[-unum]) == MP_OBJ_NULL) {
                         goto local_name_error;
@@ -332,12 +354,14 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_DELETE_NAME): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_delete_name(qst);
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_DELETE_GLOBAL): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_delete_global(qst);
                     DISPATCH();
@@ -417,6 +441,7 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_SETUP_WITH): {
+                    MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = TOP();
                     SET_TOP(mp_load_attr(obj, MP_QSTR___exit__));
                     mp_load_method(obj, MP_QSTR___enter__, sp + 1);
@@ -427,6 +452,7 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_WITH_CLEANUP): {
+                    MARK_EXC_IP_SELECTIVE();
                     // Arriving here, there's "exception control block" on top of stack,
                     // and __exit__ bound method underneath it. Bytecode calls __exit__,
                     // and "deletes" it off stack, shifting "exception control block"
@@ -486,6 +512,7 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_UNWIND_JUMP): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_SLABEL;
                     PUSH((void*)(ip + slab)); // push destination ip for jump
                     PUSH((void*)(mp_uint_t)(*ip)); // push number of exception handlers to unwind (0x80 bit set if we also need to pop stack)
@@ -517,11 +544,13 @@ unwind_jump:;
                 // matched against: POP_BLOCK or POP_EXCEPT (anything else?)
                 ENTRY(MP_BC_SETUP_EXCEPT):
                 ENTRY(MP_BC_SETUP_FINALLY): {
+                    MARK_EXC_IP_SELECTIVE();
                     PUSH_EXC_BLOCK((*code_state->ip == MP_BC_SETUP_FINALLY) ? 1 : 0);
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_END_FINALLY):
+                    MARK_EXC_IP_SELECTIVE();
                     // not fully implemented
                     // if TOS is an exception, reraises the exception (3 values on TOS)
                     // if TOS is None, just pops it and continues
@@ -549,10 +578,12 @@ unwind_jump:;
                     DISPATCH();
 
                 ENTRY(MP_BC_GET_ITER):
+                    MARK_EXC_IP_SELECTIVE();
                     SET_TOP(mp_getiter(TOP()));
                     DISPATCH();
 
                 ENTRY(MP_BC_FOR_ITER): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     code_state->sp = sp;
                     assert(TOP());
@@ -594,6 +625,7 @@ unwind_jump:;
                     DISPATCH();
 
                 ENTRY(MP_BC_BUILD_TUPLE): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_tuple(unum, sp));
@@ -601,6 +633,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_BUILD_LIST): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_list(unum, sp));
@@ -608,6 +641,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_LIST_APPEND): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // I think it's guaranteed by the compiler that sp[unum] is a list
                     mp_obj_list_append(sp[-unum], sp[0]);
@@ -616,17 +650,20 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_BUILD_MAP): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     PUSH(mp_obj_new_dict(unum));
                     DISPATCH();
                 }
 
                 ENTRY(MP_BC_STORE_MAP):
+                    MARK_EXC_IP_SELECTIVE();
                     sp -= 2;
                     mp_obj_dict_store(sp[0], sp[2], sp[1]);
                     DISPATCH();
 
                 ENTRY(MP_BC_MAP_ADD): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
                     mp_obj_dict_store(sp[-unum - 1], sp[0], sp[-1]);
@@ -636,6 +673,7 @@ unwind_jump:;
 
 #if MICROPY_PY_BUILTINS_SET
                 ENTRY(MP_BC_BUILD_SET): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_set(unum, sp));
@@ -643,6 +681,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_SET_ADD): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // I think it's guaranteed by the compiler that sp[-unum] is a set
                     mp_obj_set_store(sp[-unum], sp[0]);
@@ -653,6 +692,7 @@ unwind_jump:;
 
 #if MICROPY_PY_BUILTINS_SLICE
                 ENTRY(MP_BC_BUILD_SLICE): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     if (unum == 2) {
                         mp_obj_t stop = POP();
@@ -669,6 +709,7 @@ unwind_jump:;
 #endif
 
                 ENTRY(MP_BC_UNPACK_SEQUENCE): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     mp_unpack_sequence(sp[0], unum, sp);
                     sp += unum - 1;
@@ -676,6 +717,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_UNPACK_EX): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     mp_unpack_ex(sp[0], unum, sp);
                     sp += (unum & 0xff) + ((unum >> 8) & 0xff);
@@ -715,6 +757,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
@@ -724,6 +767,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_FUNCTION_VAR_KW): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
@@ -735,6 +779,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_METHOD): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
@@ -744,6 +789,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_CALL_METHOD_VAR_KW): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
@@ -755,6 +801,7 @@ unwind_jump:;
                 }
 
                 ENTRY(MP_BC_RETURN_VALUE):
+                    MARK_EXC_IP_SELECTIVE();
 unwind_return:
                     while (exc_sp >= exc_stack) {
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
@@ -778,6 +825,7 @@ unwind_return:
                     return MP_VM_RETURN_NORMAL;
 
                 ENTRY(MP_BC_RAISE_VARARGS): {
+                    MARK_EXC_IP_SELECTIVE();
                     mp_uint_t unum = *ip++;
                     mp_obj_t obj;
                     assert(unum <= 1);
@@ -810,6 +858,7 @@ yield:
                     return MP_VM_RETURN_YIELD;
 
                 ENTRY(MP_BC_YIELD_FROM): {
+                    MARK_EXC_IP_SELECTIVE();
 //#define EXC_MATCH(exc, type) MP_OBJ_IS_TYPE(exc, type)
 #define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
 #define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, &mp_type_GeneratorExit)) { RAISE(t); }
@@ -862,6 +911,7 @@ yield:
                 }
 
                 ENTRY(MP_BC_IMPORT_NAME): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t obj = POP();
                     SET_TOP(mp_import_name(qst, obj, TOP()));
@@ -869,6 +919,7 @@ yield:
                 }
 
                 ENTRY(MP_BC_IMPORT_FROM): {
+                    MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t obj = mp_import_from(TOP(), qst);
                     PUSH(obj);
@@ -876,6 +927,7 @@ yield:
                 }
 
                 ENTRY(MP_BC_IMPORT_STAR):
+                    MARK_EXC_IP_SELECTIVE();
                     mp_import_all(POP());
                     DISPATCH();
 
@@ -893,10 +945,12 @@ yield:
                     DISPATCH();
 
                 ENTRY(MP_BC_UNARY_OP_MULTI):
+                    MARK_EXC_IP_SELECTIVE();
                     SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
                     DISPATCH();
 
                 ENTRY(MP_BC_BINARY_OP_MULTI): {
+                    MARK_EXC_IP_SELECTIVE();
                     mp_obj_t rhs = POP();
                     mp_obj_t lhs = TOP();
                     SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
@@ -904,6 +958,7 @@ yield:
                 }
 
                 ENTRY_DEFAULT:
+                    MARK_EXC_IP_SELECTIVE();
 #else
                 ENTRY_DEFAULT:
                     if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + 64) {
@@ -938,6 +993,7 @@ yield:
 
 pending_exception_check:
                 if (mp_pending_exception != MP_OBJ_NULL) {
+                    MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = mp_pending_exception;
                     mp_pending_exception = MP_OBJ_NULL;
                     RAISE(obj);
