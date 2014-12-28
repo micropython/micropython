@@ -57,10 +57,10 @@
     ip += sizeof(mp_uint_t); \
 } while (0)
 
-static const byte *ip_start;
+const byte *mp_showbc_code_start;
 
 void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip, mp_uint_t len) {
-    ip_start = ip;
+    mp_showbc_code_start = ip;
 
     // get code info size
     const byte *code_info = ip;
@@ -78,7 +78,7 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
         if (i > 0 && i % 16 == 0) {
             printf("\n");
         }
-        printf(" %02x", ip_start[i]);
+        printf(" %02x", mp_showbc_code_start[i]);
     }
     printf("\n");
 
@@ -106,12 +106,12 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
             uint local_num = *ip++;
             printf("(INIT_CELL %u)\n", local_num);
         }
-        len -= ip - ip_start;
+        len -= ip - mp_showbc_code_start;
     }
 
     // print out line number info
     {
-        mp_int_t bc = (ip_start + code_info_size) - ip; // start counting from the prelude
+        mp_int_t bc = (mp_showbc_code_start + code_info_size) - ip; // start counting from the prelude
         mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         for (const byte* ci = code_info; *ci;) {
@@ -294,32 +294,32 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_JUMP:
             DECODE_SLABEL;
-            printf("JUMP " UINT_FMT, ip + unum - ip_start);
+            printf("JUMP " UINT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_POP_JUMP_IF_TRUE:
             DECODE_SLABEL;
-            printf("POP_JUMP_IF_TRUE " INT_FMT, ip + unum - ip_start);
+            printf("POP_JUMP_IF_TRUE " INT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_POP_JUMP_IF_FALSE:
             DECODE_SLABEL;
-            printf("POP_JUMP_IF_FALSE " INT_FMT, ip + unum - ip_start);
+            printf("POP_JUMP_IF_FALSE " INT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_JUMP_IF_TRUE_OR_POP:
             DECODE_SLABEL;
-            printf("JUMP_IF_TRUE_OR_POP " INT_FMT, ip + unum - ip_start);
+            printf("JUMP_IF_TRUE_OR_POP " INT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_JUMP_IF_FALSE_OR_POP:
             DECODE_SLABEL;
-            printf("JUMP_IF_FALSE_OR_POP " INT_FMT, ip + unum - ip_start);
+            printf("JUMP_IF_FALSE_OR_POP " INT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_SETUP_WITH:
             DECODE_ULABEL; // loop-like labels are always forward
-            printf("SETUP_WITH " UINT_FMT, ip + unum - ip_start);
+            printf("SETUP_WITH " UINT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_WITH_CLEANUP:
@@ -328,18 +328,18 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_UNWIND_JUMP:
             DECODE_SLABEL;
-            printf("UNWIND_JUMP " UINT_FMT " %d", ip + unum - ip_start, *ip);
+            printf("UNWIND_JUMP " UINT_FMT " %d", ip + unum - mp_showbc_code_start, *ip);
             ip += 1;
             break;
 
         case MP_BC_SETUP_EXCEPT:
             DECODE_ULABEL; // except labels are always forward
-            printf("SETUP_EXCEPT " UINT_FMT, ip + unum - ip_start);
+            printf("SETUP_EXCEPT " UINT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_SETUP_FINALLY:
             DECODE_ULABEL; // except labels are always forward
-            printf("SETUP_FINALLY " UINT_FMT, ip + unum - ip_start);
+            printf("SETUP_FINALLY " UINT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_END_FINALLY:
@@ -356,7 +356,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_FOR_ITER:
             DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-            printf("FOR_ITER " UINT_FMT, ip + unum - ip_start);
+            printf("FOR_ITER " UINT_FMT, ip + unum - mp_showbc_code_start);
             break;
 
         case MP_BC_POP_BLOCK:
@@ -522,9 +522,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 }
 
 void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
-    ip_start = ip;
-    while (ip - ip_start < len) {
-        printf("%02u ", (uint)(ip - ip_start));
+    mp_showbc_code_start = ip;
+    while (ip - mp_showbc_code_start < len) {
+        printf("%02u ", (uint)(ip - mp_showbc_code_start));
         ip = mp_bytecode_print_str(ip);
         printf("\n");
     }
