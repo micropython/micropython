@@ -361,6 +361,34 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_send_obj, 1, pyb_can_send);
 
+
+STATIC mp_obj_t pyb_can_rtr(mp_obj_t self_in, mp_obj_t id_in) {
+    pyb_can_obj_t *self = self_in;
+    mp_uint_t id = mp_obj_get_int(id_in);
+
+    CanTxMsgTypeDef tx_msg;
+    if (self->extframe){
+        tx_msg.ExtId = id & 0x1FFFFFFF;
+        tx_msg.IDE = CAN_ID_EXT;
+    } else {
+        tx_msg.StdId = id & 0x7FF;
+        tx_msg.IDE = CAN_ID_STD;
+    }
+    tx_msg.RTR = CAN_RTR_REMOTE;
+    tx_msg.DLC = 0;
+    self->can.pTxMsg = &tx_msg;
+
+    HAL_StatusTypeDef status = HAL_CAN_Transmit(&self->can, 5000);
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_rtr_obj, pyb_can_rtr);
+
+
 /// \method recv(fifo, *, timeout=5000)
 ///
 /// Receive data on the bus:
@@ -397,7 +425,7 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     } else {
         tuple->items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.ExtId);
     }
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(rx_msg.RTR);
+    tuple->items[1] = rx_msg.RTR == CAN_RTR_REMOTE ? mp_const_true : mp_const_false;
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
     byte *data;
     tuple->items[3] = mp_obj_str_builder_start(&mp_type_bytes, rx_msg.DLC, &data);
@@ -444,13 +472,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_clearfilter_obj, pyb_can_clearfilter);
 
 /// Configures a filterbank
 /// Return value: `None`.
-#define EXTENDED_ID_TO_16BIT_FILTER(id) (((id & 0xC00000) >> 13) | ((id & 0x38000) >> 15)) | 8
+#define EXTENDED_ID_TO_16BIT_FILTER(id) ((((id & 0xC00000) >> 13) | ((id & 0x38000) >> 15)) | 8)
 STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bank,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = CAN_FILTER_FIFO0} },
         { MP_QSTR_params,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rtr,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
@@ -459,8 +488,15 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_uint_t len;
+    mp_uint_t rtr_len;
+    mp_uint_t rtr_masks[4] = {0,0,0,0};
+    mp_obj_t *rtr_flags;
     mp_obj_t *params;
     mp_obj_get_array(args[3].u_obj, &len, &params);
+    if (args[4].u_obj != MP_OBJ_NULL){
+        mp_obj_get_array(args[4].u_obj, &rtr_len, &rtr_flags);
+    }
+
 
     CAN_FilterConfTypeDef filter;
     if (args[1].u_int == MASK16 || args[1].u_int == LIST16) {
@@ -469,15 +505,44 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         }
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
         if (self->extframe) {
-            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[0])); // id1
-            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[1])); // mask1
-            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[2])); // id2
-            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[3])); // mask2
+
+            if (args[4].u_obj != MP_OBJ_NULL){
+                if (args[1].u_int == MASK16) {
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                    rtr_masks[1] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+                    rtr_masks[3] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+                } else {  //LIST16
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                    rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[2]) ? 0x02 : 0;
+                    rtr_masks[3] = mp_obj_get_int(rtr_flags[3]) ? 0x02 : 0;
+                }
+            }
+
+            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[0])) | rtr_masks[0]; // id1
+            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[1])) | rtr_masks[1]; // mask1
+            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[2])) | rtr_masks[2]; // id2
+            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[3])) | rtr_masks[3]; // mask2
         } else {
-            filter.FilterIdLow      = mp_obj_get_int(params[0]) << 5; // id1
-            filter.FilterMaskIdLow  = mp_obj_get_int(params[1]) << 5; // mask1
-            filter.FilterIdHigh     = mp_obj_get_int(params[2]) << 5; // id2
-            filter.FilterMaskIdHigh = mp_obj_get_int(params[3]) << 5; // mask2
+            if (args[4].u_obj != MP_OBJ_NULL){
+                if (args[1].u_int == MASK16) {
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x10 : 0;
+                    rtr_masks[1] = mp_obj_get_int(rtr_flags[0]) ? 0x10 : 0;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[1]) ? 0x10 : 0;
+                    rtr_masks[3] = mp_obj_get_int(rtr_flags[1]) ? 0x10 : 0;
+                } else {  //LIST16
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x10 : 0;
+                    rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x10 : 0;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[2]) ? 0x10 : 0;
+                    rtr_masks[3] = mp_obj_get_int(rtr_flags[3]) ? 0x10 : 0;
+                }
+            }
+
+            filter.FilterIdLow      = (mp_obj_get_int(params[0]) << 5) | rtr_masks[0]; // id1
+            filter.FilterMaskIdLow  = (mp_obj_get_int(params[1]) << 5) | rtr_masks[1]; // mask1
+            filter.FilterIdHigh     = (mp_obj_get_int(params[2]) << 5) | rtr_masks[2]; // id2
+            filter.FilterMaskIdHigh = (mp_obj_get_int(params[3]) << 5) | rtr_masks[3]; // mask2
         }
         if (args[1].u_int == MASK16) {
             filter.FilterMode  = CAN_FILTERMODE_IDMASK;
@@ -491,11 +556,19 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             goto error;
         }
         filter.FilterScale      = CAN_FILTERSCALE_32BIT;
-
+        if (args[4].u_obj != MP_OBJ_NULL){
+            if (args[1].u_int == MASK32) {
+                rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                rtr_masks[1] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+            } else {  //LIST32
+                rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+            }
+        }
         filter.FilterIdHigh     = (mp_obj_get_int(params[0]) & 0xFF00)  >> 13;
-        filter.FilterIdLow      = ((mp_obj_get_int(params[0]) & 0x00FF) << 3) | 4;
+        filter.FilterIdLow      = (((mp_obj_get_int(params[0]) & 0x00FF) << 3) | 4) | rtr_masks[0];
         filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0xFF00 ) >> 13;
-        filter.FilterMaskIdLow  = ((mp_obj_get_int(params[1]) & 0x00FF) << 3) | 4;
+        filter.FilterMaskIdLow  = (((mp_obj_get_int(params[1]) & 0x00FF) << 3) | 4) | rtr_masks[1];
         if (args[1].u_int == MASK32) {
             filter.FilterMode  = CAN_FILTERMODE_IDMASK;
         }
@@ -539,6 +612,7 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_initfilterbanks), (mp_obj_t)&pyb_can_initfilterbanks_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setfilter), (mp_obj_t)&pyb_can_setfilter_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_clearfilter), (mp_obj_t)&pyb_can_clearfilter_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rtr), (mp_obj_t)&pyb_can_rtr_obj },
 
     // class constants
     // Note: we use the ST constants >> 4 so they fit in a small-int.  The
