@@ -34,6 +34,7 @@
 #include "runtime.h"
 #include "bc0.h"
 #include "bc.h"
+extern const qstr mp_binary_op_method_name[];
 
 #if MICROPY_DEBUG_PRINTERS
 
@@ -509,7 +510,8 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + 5) {
                 printf("UNARY_OP " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_UNARY_OP_MULTI);
             } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + 35) {
-                printf("BINARY_OP " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_BINARY_OP_MULTI);
+                mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
+                printf("BINARY_OP " UINT_FMT " %s", op, qstr_str(mp_binary_op_method_name[op]));
             } else {
                 printf("code %p, byte code 0x%02x not implemented\n", ip, ip[-1]);
                 assert(0);

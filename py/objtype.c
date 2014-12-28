@@ -362,7 +362,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
-STATIC const qstr binary_op_method_name[] = {
+const qstr mp_binary_op_method_name[] = {
     /*
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
@@ -435,7 +435,7 @@ STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = lhs_in;
-    qstr op_name = binary_op_method_name[op];
+    qstr op_name = mp_binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
         return MP_OBJ_NULL;
