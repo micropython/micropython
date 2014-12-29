@@ -103,11 +103,11 @@ typedef enum {
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc) {
 #define SELECTIVE_EXC_IP (0)
 #if SELECTIVE_EXC_IP
-#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip - 1; }
+#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; } /* stores ip 1 byte past last opcode */
 #define MARK_EXC_IP_GLOBAL()
 #else
 #define MARK_EXC_IP_SELECTIVE()
-#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; }
+#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; } /* stores ip pointing to last opcode */
 #endif
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "vmentrytable.h"
@@ -545,7 +545,11 @@ unwind_jump:;
                 ENTRY(MP_BC_SETUP_EXCEPT):
                 ENTRY(MP_BC_SETUP_FINALLY): {
                     MARK_EXC_IP_SELECTIVE();
-                    PUSH_EXC_BLOCK((*code_state->ip == MP_BC_SETUP_FINALLY) ? 1 : 0);
+                    #if SELECTIVE_EXC_IP
+                    PUSH_EXC_BLOCK((code_state->ip[-1] == MP_BC_SETUP_FINALLY) ? 1 : 0);
+                    #else
+                    PUSH_EXC_BLOCK((code_state->ip[0] == MP_BC_SETUP_FINALLY) ? 1 : 0);
+                    #endif
                     DISPATCH();
                 }
 
@@ -1004,6 +1008,11 @@ pending_exception_check:
         } else {
 exception_handler:
             // exception occurred
+
+            #if SELECTIVE_EXC_IP
+            // with selective ip, we store the ip 1 byte past the opcode, so move ptr back
+            code_state->ip -= 1;
+            #endif
 
             // check if it's a StopIteration within a for block
             if (*code_state->ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
