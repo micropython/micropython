@@ -23,6 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_PARSEHELPER_H__
+#define __MICROPY_INCLUDED_PY_PARSEHELPER_H__
+
+#include "py/lexer.h"
+#include "py/parse.h"
 
 void mp_parse_show_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_kind);
 mp_obj_t mp_parse_make_exception(mp_lexer_t *lex, mp_parse_error_kind_t parse_error_kind);
+
+#endif // __MICROPY_INCLUDED_PY_PARSEHELPER_H__

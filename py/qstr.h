@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_QSTR_H__
+#define __MICROPY_INCLUDED_PY_QSTR_H__
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 // See qstrdefs.h for a list of qstr's that are available as constants.
 // Reference them as MP_QSTR_xxxx.
@@ -60,3 +65,5 @@ mp_uint_t qstr_len(qstr q);
 const byte* qstr_data(qstr q, mp_uint_t *len);
 
 void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_bytes, mp_uint_t *n_total_bytes);
+
+#endif // __MICROPY_INCLUDED_PY_QSTR_H__

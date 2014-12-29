@@ -30,11 +30,6 @@
 
 #include "mpconfig.h"
 #include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "misc.h"
-#include "lexer.h"
-#include "parse.h"
 #include "obj.h"
 #include "parsehelper.h"
 #include "compile.h"

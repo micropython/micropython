@@ -23,11 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_MISC_H__
+#define __MICROPY_INCLUDED_PY_MISC_H__
 
 // a mini library of useful types and functions
-
-#ifndef _INCLUDED_MINILIB_H
-#define _INCLUDED_MINILIB_H
 
 /** types *******************************************************/
 
@@ -185,4 +184,4 @@ static inline mp_uint_t count_lead_ones(byte val) {
 }
 #endif
 
-#endif // _INCLUDED_MINILIB_H
+#endif // __MICROPY_INCLUDED_PY_MISC_H__

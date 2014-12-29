@@ -23,6 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJ_H__
+#define __MICROPY_INCLUDED_PY_OBJ_H__
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
+#include "py/qstr.h"
 
 // A Micro Python object is a machine word having the following form:
 //  - xxxx...xxx1 : a small int, bits 1 and above are the value
@@ -81,7 +87,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
 
 #define MP_OBJ_QSTR_VALUE(o) (((mp_int_t)(o)) >> 2)
-#define MP_OBJ_NEW_QSTR(qstr) ((mp_obj_t)((((mp_uint_t)(qstr)) << 2) | 2))
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 2))
 
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
@@ -620,3 +626,5 @@ mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice
     /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t));*/ \
     memmove(dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t)); \
     memcpy(dest + beg, slice, slice_len * sizeof(item_t));
+
+#endif // __MICROPY_INCLUDED_PY_OBJ_H__

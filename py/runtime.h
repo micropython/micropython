@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_RUNTIME_H__
+#define __MICROPY_INCLUDED_PY_RUNTIME_H__
+
+#include "py/obj.h"
 
 typedef enum {
     MP_VM_RETURN_NORMAL,
@@ -120,3 +124,5 @@ extern struct _mp_obj_list_t mp_sys_path_obj;
 extern struct _mp_obj_list_t mp_sys_argv_obj;
 #define mp_sys_path ((mp_obj_t)&mp_sys_path_obj)
 #define mp_sys_argv ((mp_obj_t)&mp_sys_argv_obj)
+
+#endif // __MICROPY_INCLUDED_PY_RUNTIME_H__
