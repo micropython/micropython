@@ -262,6 +262,14 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     return mp_const_none;
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
+    // TODO raise an exception if the int won't fit
+    mp_int_t i = MICROPY_FLOAT_C_FUN(trunc)(val);
+    return mp_obj_new_int(i);
+}
+#endif
+
 mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
