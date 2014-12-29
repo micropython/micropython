@@ -49,6 +49,11 @@ double __attribute__((pcs("aapcs"))) __aeabi_i2d(int32_t x) {
     return (float)x;
 }
 
+// TODO
+long long __attribute__((pcs("aapcs"))) __aeabi_f2lz(float x) {
+    return (long)x;
+}
+
 double __attribute__((pcs("aapcs"))) __aeabi_f2d(float x) {
     float_s_t fx={0};
     double_s_t dx={0};
