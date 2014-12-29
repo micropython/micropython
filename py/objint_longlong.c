@@ -40,6 +40,10 @@
 #include "runtime0.h"
 #include "runtime.h"
 
+#if MICROPY_PY_BUILTINS_FLOAT
+#include <math.h>
+#endif
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
 // Python3 no longer has "l" suffix for long ints. We allow to use it
@@ -186,6 +190,14 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     o->val = val;
     return o;
 }
+
+#if MICROPY_PY_BUILTINS_FLOAT
+mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
+    // TODO raise an exception if the unsigned long long won't fit
+    long long i = MICROPY_FLOAT_C_FUN(trunc)(val);
+    return mp_obj_new_int_from_ll(i);
+}
+#endif
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated

@@ -65,7 +65,7 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
                 return mp_parse_num_integer(s, l, 0);
 #if MICROPY_PY_BUILTINS_FLOAT
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
-                return MP_OBJ_NEW_SMALL_INT((MICROPY_FLOAT_C_FUN(trunc)(mp_obj_float_get(args[0]))));
+                return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
 #endif
             } else {
                 // try to convert to small int (eg from bool)
