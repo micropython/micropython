@@ -270,7 +270,7 @@ mp_obj_t mp_obj_new_int(mp_int_t value) {
     return mp_const_none;
 }
 
-mp_int_t mp_obj_int_get(mp_const_obj_t self_in) {
+mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 

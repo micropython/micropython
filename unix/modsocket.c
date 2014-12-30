@@ -218,7 +218,7 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     const void *optval;
     socklen_t optlen;
     if (MP_OBJ_IS_INT(args[3])) {
-        int val = mp_obj_int_get(args[3]);
+        int val = mp_obj_int_get_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
     } else {
@@ -453,16 +453,7 @@ STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
 #undef C
 };
 
-STATIC const mp_obj_dict_t mp_module_socket_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(mp_module_socket_globals_table),
-        .alloc = MP_ARRAY_SIZE(mp_module_socket_globals_table),
-        .table = (mp_map_elem_t*)mp_module_socket_globals_table,
-    },
-};
+STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
 
 const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },

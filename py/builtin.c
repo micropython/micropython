@@ -89,15 +89,6 @@ STATIC mp_obj_t mp_builtin___build_class__(mp_uint_t n_args, const mp_obj_t *arg
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
-STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
-    if (o != mp_const_none) {
-        mp_obj_print(o, PRINT_REPR);
-        printf("\n");
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print__);
-
 STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_in);
@@ -272,7 +263,14 @@ STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
         return mp_obj_new_tuple(2, tuple);
     #endif
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "unsupported operand type(s) for divmod(): '%s' and '%s'", mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
+        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                "unsupported operand type(s) for divmod()"));
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                "unsupported operand type(s) for divmod(): '%s' and '%s'",
+                mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
+        }
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_divmod_obj, mp_builtin_divmod);
@@ -357,8 +355,8 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     mp_uint_t len;
     const char *str = mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    mp_uint_t charlen = unichar_charlen(str, len);
-    if (charlen == 1) {
+    len = unichar_charlen(str, len);
+    if (len == 1) {
         if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
             mp_int_t ord = *str++ & 0x7F;
             for (mp_int_t mask = 0x40; ord & mask; mask >>= 1) {
@@ -371,17 +369,21 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
         } else {
             return mp_obj_new_int(((const byte*)str)[0]);
         }
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", charlen));
     }
     #else
     if (len == 1) {
         // don't sign extend when converting to ord
         return mp_obj_new_int(((const byte*)str)[0]);
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "ord() expected a character, but string of length %d found", len));
     }
     #endif
+
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            "ord expects a character"));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            "ord() expected a character, but string of length %d found", len));
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
@@ -440,6 +442,14 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
+
+STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
+    if (o != mp_const_none) {
+        mp_builtin_print(1, &o, (mp_map_t*)&mp_const_empty_map);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print__);
 
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t *vstr = vstr_new();

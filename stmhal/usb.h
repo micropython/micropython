@@ -24,13 +24,6 @@
  * THE SOFTWARE.
  */
 
-#define VCP_CHAR_NONE   (0)
-#define VCP_CHAR_CTRL_A (1)
-#define VCP_CHAR_CTRL_B (2)
-#define VCP_CHAR_CTRL_C (3)
-#define VCP_CHAR_CTRL_D (4)
-#define VCP_CHAR_CTRL_E (5)
-
 typedef enum {
     USB_DEVICE_MODE_CDC_MSC,
     USB_DEVICE_MODE_CDC_HID,
@@ -41,7 +34,7 @@ typedef enum {
     USB_STORAGE_MEDIUM_SDCARD,
 } usb_storage_medium_t;
 
-const mp_obj_type_t pyb_usb_vcp_type;
+extern const mp_obj_type_t pyb_usb_vcp_type;
 
 void pyb_usb_init0(void);
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium);

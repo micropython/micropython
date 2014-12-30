@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-extern pyb_uart_obj_t *pyb_stdio_uart;
+extern struct _pyb_uart_obj_t *pyb_stdio_uart;
 
 void stdout_tx_str(const char *str);
 void stdout_tx_strn(const char *str, mp_uint_t len);

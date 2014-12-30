@@ -30,6 +30,7 @@
 #if MICROPY_HELPER_LEXER_UNIX
 
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>

@@ -114,45 +114,38 @@ mp_obj_t file_obj___exit__(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj___exit__);
 
-mp_obj_t file_obj_seek(mp_uint_t n_args, const mp_obj_t *args) {
-    pyb_file_obj_t *self = args[0];
-    mp_int_t offset = mp_obj_get_int(args[1]);
-    mp_int_t whence = 0;
-    if (n_args == 3) {
-        whence = mp_obj_get_int(args[2]);
+STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    pyb_file_obj_t *self = o_in;
+
+    if (request == MP_STREAM_SEEK) {
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+
+        switch (s->whence) {
+            case 0: // SEEK_SET
+                f_lseek(&self->fp, s->offset);
+                break;
+
+            case 1: // SEEK_CUR
+                if (s->offset != 0) {
+                    *errcode = ENOTSUP;
+                    return MP_STREAM_ERROR;
+                }
+                // no-operation
+                break;
+
+            case 2: // SEEK_END
+                f_lseek(&self->fp, f_size(&self->fp) + s->offset);
+                break;
+        }
+
+        s->offset = f_tell(&self->fp);
+        return 0;
+
+    } else {
+        *errcode = EINVAL;
+        return MP_STREAM_ERROR;
     }
-
-    switch (whence) {
-        case 0: // SEEK_SET
-            f_lseek(&self->fp, offset);
-            break;
-
-        case 1: // SEEK_CUR
-            if (offset != 0) {
-                goto error;
-            }
-            // no-operation
-            break;
-
-        case 2: // SEEK_END
-            if (offset != 0) {
-                goto error;
-            }
-            f_lseek(&self->fp, f_size(&self->fp));
-            break;
-
-        default:
-            goto error;
-    }
-
-    return mp_obj_new_int_from_uint(f_tell(&self->fp));
-
-error:
-    // A bad whence is a ValueError, while offset!=0 is an io.UnsupportedOperation.
-    // But the latter inherits ValueError (as well as IOError), so we just raise ValueError.
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid whence and/or offset"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj_seek_obj, 2, 3, file_obj_seek);
 
 mp_obj_t file_obj_tell(mp_obj_t self_in) {
     pyb_file_obj_t *self = self_in;
@@ -236,7 +229,7 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&file_obj_flush_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&file_obj_close_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_seek), (mp_obj_t)&file_obj_seek_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_seek), (mp_obj_t)&mp_stream_seek_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_tell), (mp_obj_t)&file_obj_tell_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&file_obj_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
@@ -249,6 +242,7 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 STATIC const mp_stream_p_t fileio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
+    .ioctl = file_obj_ioctl,
 };
 
 const mp_obj_type_t mp_type_fileio = {
@@ -266,6 +260,7 @@ const mp_obj_type_t mp_type_fileio = {
 STATIC const mp_stream_p_t textio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
+    .ioctl = file_obj_ioctl,
     .is_text = true,
 };
 

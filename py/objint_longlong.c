@@ -198,7 +198,7 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, 
     return o;
 }
 
-mp_int_t mp_obj_int_get(mp_const_obj_t self_in) {
+mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
@@ -209,7 +209,7 @@ mp_int_t mp_obj_int_get(mp_const_obj_t self_in) {
 
 mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     // TODO: Check overflow
-    return mp_obj_int_get(self_in);
+    return mp_obj_int_get_truncated(self_in);
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT

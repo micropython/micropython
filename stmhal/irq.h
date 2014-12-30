@@ -24,9 +24,13 @@
  * THE SOFTWARE.
  */
 
-// these states correspond to values from enable_irq and disable_irq
+// these states correspond to values from query_irq, enable_irq and disable_irq
 #define IRQ_STATE_DISABLED (0x00000001)
 #define IRQ_STATE_ENABLED  (0x00000000)
+
+static inline mp_uint_t query_irq(void) {
+    return __get_PRIMASK();
+}
 
 // enable_irq and disable_irq are defined inline in mpconfigport.h
 

@@ -138,7 +138,13 @@ overflow:
     }
 
 value_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid syntax for integer with base %d: '%s'", base, str));
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "invalid syntax for integer"));
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+            "invalid syntax for integer with base %d: '%s'", base, str));
+    }
 }
 
 typedef enum {

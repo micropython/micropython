@@ -30,13 +30,7 @@
 
 #include "mpconfig.h"
 #include "misc.h"
-#include "qstr.h"
-#include "misc.h"
-#include "obj.h"
-#include MICROPY_HAL_H
 #include "readline.h"
-#include "usb.h"
-#include "uart.h"
 #include "pybstdio.h"
 
 #if 0 // print debugging info
@@ -80,16 +74,16 @@ int readline(vstr_t *line, const char *prompt) {
         bool redraw_from_cursor = false;
         int redraw_step_forward = 0;
         if (escape_seq == ESEQ_NONE) {
-            if (VCP_CHAR_CTRL_A <= c && c <= VCP_CHAR_CTRL_D && vstr_len(line) == orig_line_len) {
+            if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_D && vstr_len(line) == orig_line_len) {
                 // control character with empty line
                 return c;
-            } else if (c == VCP_CHAR_CTRL_A) {
+            } else if (c == CHAR_CTRL_A) {
                 // CTRL-A with non-empty line is go-to-start-of-line
                 goto home_key;
-            } else if (c == VCP_CHAR_CTRL_C) {
+            } else if (c == CHAR_CTRL_C) {
                 // CTRL-C with non-empty line is cancel
                 return c;
-            } else if (c == VCP_CHAR_CTRL_E) {
+            } else if (c == CHAR_CTRL_E) {
                 // CTRL-E is go-to-end-of-line
                 goto end_key;
             } else if (c == '\r') {
@@ -251,7 +245,5 @@ end_key:
             stdout_tx_strn(line->buf + cursor_pos, redraw_step_forward);
             cursor_pos += redraw_step_forward;
         }
-
-        HAL_Delay(1);
     }
 }

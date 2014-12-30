@@ -10,3 +10,4 @@
 extern const byte mp_hal_status_to_errno_table[4];
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
+void mp_hal_set_interrupt_char(int c); // -1 to disable

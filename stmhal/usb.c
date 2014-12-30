@@ -54,7 +54,7 @@ STATIC mp_obj_t mp_const_vcp_interrupt = MP_OBJ_NULL;
 void pyb_usb_init0(void) {
     // create an exception object for interrupting by VCP
     mp_const_vcp_interrupt = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    USBD_CDC_SetInterrupt(VCP_CHAR_NONE, mp_const_vcp_interrupt);
+    USBD_CDC_SetInterrupt(-1, mp_const_vcp_interrupt);
 }
 
 void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium) {
@@ -105,7 +105,7 @@ bool usb_vcp_is_connected(void) {
 
 void usb_vcp_set_interrupt_char(int c) {
     if (dev_is_enabled) {
-        if (c != VCP_CHAR_NONE) {
+        if (c != -1) {
             mp_obj_exception_clear_traceback(mp_const_vcp_interrupt);
         }
         USBD_CDC_SetInterrupt(c, mp_const_vcp_interrupt);
@@ -173,6 +173,12 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint
     // return the USB VCP object
     return (mp_obj_t)&pyb_usb_vcp_obj;
 }
+
+STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) {
+    usb_vcp_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
 
 /// \method any()
 /// Return `True` if any characters waiting, else `False`.
@@ -252,6 +258,7 @@ mp_obj_t pyb_usb_vcp___exit__(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);
 
 STATIC const mp_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setinterrupt), (mp_obj_t)&pyb_usb_vcp_setinterrupt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_usb_vcp_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_vcp_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_vcp_recv_obj },
@@ -292,12 +299,10 @@ STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     return ret;
 }
 
-STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, int *errcode, ...) {
-    va_list vargs;
-    va_start(vargs, errcode);
+STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
-        mp_uint_t flags = va_arg(vargs, mp_uint_t);
+        mp_uint_t flags = arg;
         ret = 0;
         if ((flags & MP_IOCTL_POLL_RD) && USBD_CDC_RxNum() > 0) {
             ret |= MP_IOCTL_POLL_RD;
@@ -309,7 +314,6 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, int *err
         *errcode = EINVAL;
         ret = MP_STREAM_ERROR;
     }
-    va_end(vargs);
     return ret;
 }
 

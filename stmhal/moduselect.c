@@ -44,7 +44,7 @@
 
 typedef struct _poll_obj_t {
     mp_obj_t obj;
-    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, int *errcode, ...);
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, mp_uint_t arg, int *errcode);
     mp_uint_t flags;
     mp_uint_t flags_ret;
 } poll_obj_t;
@@ -85,7 +85,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
 
         poll_obj_t *poll_obj = (poll_obj_t*)poll_map->table[i].value;
         int errcode;
-        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_IOCTL_POLL, &errcode, poll_obj->flags);
+        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_IOCTL_POLL, poll_obj->flags, &errcode);
         poll_obj->flags_ret = ret;
 
         if (ret == -1) {
@@ -292,16 +292,7 @@ STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
 };
 
-STATIC const mp_obj_dict_t mp_module_select_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(mp_module_select_globals_table),
-        .alloc = MP_ARRAY_SIZE(mp_module_select_globals_table),
-        .table = (mp_map_elem_t*)mp_module_select_globals_table,
-    },
-};
+STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },

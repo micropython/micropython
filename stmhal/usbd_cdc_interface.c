@@ -41,12 +41,6 @@
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "usb.h"
-
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
 #define CDC_GET_ENCAPSULATED_RESPONSE               0x01
@@ -79,7 +73,7 @@ static uint16_t UserTxBufPtrOutShadow = 0; // shadow of above
 static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting for low-level USB driver
 static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
-static int user_interrupt_char = VCP_CHAR_NONE;
+static int user_interrupt_char = -1;
 static void *user_interrupt_data = NULL;
 
 /* USB handler declaration */
@@ -159,7 +153,7 @@ static int8_t CDC_Itf_Init(void)
      * may be called before this init function to set these values.
      * This can happen if the USB enumeration occurs after the call to
      * USBD_CDC_SetInterrupt.
-    user_interrupt_char = VCP_CHAR_NONE;
+    user_interrupt_char = -1;
     user_interrupt_data = NULL;
     */
 
@@ -351,7 +345,7 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
 
     uint32_t delta_len;
 
-    if (user_interrupt_char == VCP_CHAR_NONE) {
+    if (user_interrupt_char == -1) {
         // no special interrupt character
         delta_len = *Len;
 
@@ -488,7 +482,7 @@ int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     for (uint32_t i = 0; i < len; i++) {
         // Wait until we have at least 1 byte to read
         uint32_t start = HAL_GetTick();
-        while (!dev_is_connected || UserRxBufLen == UserRxBufCur) {
+        while (UserRxBufLen == UserRxBufCur) {
             // Wraparound of tick is taken care of by 2's complement arithmetic.
             if (HAL_GetTick() - start >= timeout) {
                 // timeout

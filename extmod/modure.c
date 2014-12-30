@@ -62,7 +62,7 @@ STATIC void match_print(void (*print)(void *env, const char *fmt, ...), void *en
 
 STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     mp_obj_match_t *self = self_in;
-    mp_int_t no = mp_obj_int_get(no_in);
+    mp_int_t no = mp_obj_int_get_truncated(no_in);
     if (no < 0 || no >= self->num_matches / 2) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, no_in));
     }
@@ -130,11 +130,11 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 
     int maxsplit = 0;
     if (n_args > 2) {
-        maxsplit = mp_obj_int_get(args[2]);
+        maxsplit = mp_obj_int_get_truncated(args[2]);
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);
-    const char *caps[caps_num];
+    const char **caps = alloca(caps_num * sizeof(char*));
     while (true) {
         int res = re1_5_recursiveloopprog(&self->re, &subj, caps, caps_num, false);
 
@@ -221,16 +221,7 @@ STATIC const mp_map_elem_t mp_module_re_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEBUG), MP_OBJ_NEW_SMALL_INT(FLAG_DEBUG) },
 };
 
-STATIC const mp_obj_dict_t mp_module_re_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(mp_module_re_globals_table),
-        .alloc = MP_ARRAY_SIZE(mp_module_re_globals_table),
-        .table = (mp_map_elem_t*)mp_module_re_globals_table,
-    },
-};
+STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);
 
 const mp_obj_module_t mp_module_ure = {
     .base = { &mp_type_module },

@@ -211,7 +211,7 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     }
     mp_obj_t res = mp_call_function_n_kw(func, cif->nargs, 0, pyargs);
 
-    *(ffi_arg*)ret = mp_obj_int_get(res);
+    *(ffi_arg*)ret = mp_obj_int_get_truncated(res);
 }
 
 STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t paramtypes_in) {
@@ -313,7 +313,7 @@ mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const 
         if (a == mp_const_none) {
             values[i] = 0;
         } else if (MP_OBJ_IS_INT(a)) {
-            values[i] = mp_obj_int_get(a);
+            values[i] = mp_obj_int_get_truncated(a);
         } else if (MP_OBJ_IS_STR(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i] = (ffi_arg)s;
@@ -422,7 +422,7 @@ mp_obj_t mod_ffi_open(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);
 
 mp_obj_t mod_ffi_as_bytearray(mp_obj_t ptr, mp_obj_t size) {
-    return mp_obj_new_bytearray_by_ref(mp_obj_int_get(size), (void*)mp_obj_int_get(ptr));
+    return mp_obj_new_bytearray_by_ref(mp_obj_int_get_truncated(size), (void*)mp_obj_int_get_truncated(ptr));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mod_ffi_as_bytearray_obj, mod_ffi_as_bytearray);
 
@@ -433,16 +433,7 @@ STATIC const mp_map_elem_t mp_module_ffi_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_as_bytearray), (mp_obj_t)&mod_ffi_as_bytearray_obj },
 };
 
-STATIC const mp_obj_dict_t mp_module_ffi_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(mp_module_ffi_globals_table),
-        .alloc = MP_ARRAY_SIZE(mp_module_ffi_globals_table),
-        .table = (mp_map_elem_t*)mp_module_ffi_globals_table,
-    },
-};
+STATIC MP_DEFINE_CONST_DICT(mp_module_ffi_globals, mp_module_ffi_globals_table);
 
 const mp_obj_module_t mp_module_ffi = {
     .base = { &mp_type_module },

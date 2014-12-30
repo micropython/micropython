@@ -17,6 +17,8 @@ The following video shows how to solder the headers, microphone and speaker onto
 
     <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/fjB1DuZRveo?rel=0" frameborder="0" allowfullscreen></iframe>
 
+For circuit schematics and datasheets for the components on the skin see :ref:`hardware_index`.
+
 Example code
 ------------
 

@@ -402,10 +402,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
 STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
     mp_int_t usec = mp_obj_get_int(usec_in);
     if (usec > 0) {
-        uint32_t count = 0;
-        const uint32_t utime = (168 * usec / 4);
-        while (++count <= utime) {
-        }
+        sys_tick_udelay(usec);
     }
     return mp_const_none;
 }
@@ -574,16 +571,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
 };
 
-STATIC const mp_obj_dict_t pyb_module_globals = {
-    .base = {&mp_type_dict},
-    .map = {
-        .all_keys_are_qstrs = 1,
-        .table_is_fixed_array = 1,
-        .used = MP_ARRAY_SIZE(pyb_module_globals_table),
-        .alloc = MP_ARRAY_SIZE(pyb_module_globals_table),
-        .table = (mp_map_elem_t*)pyb_module_globals_table,
-    },
-};
+STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
 
 const mp_obj_module_t pyb_module = {
     .base = { &mp_type_module },

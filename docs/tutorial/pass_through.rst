@@ -7,6 +7,7 @@ It's as simple as::
     import select
 
     def pass_through(usb, uart):
+        usb.setinterrupt(-1)
         while True:
             select.select([usb, uart], [], [])
             if usb.any():

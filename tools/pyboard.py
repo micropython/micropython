@@ -60,7 +60,7 @@ class Pyboard:
                 timeout_count = 0
             else:
                 timeout_count += 1
-                if timeout_count >= 10 * timeout:
+                if timeout is not None and timeout_count >= 10 * timeout:
                     break
                 time.sleep(0.1)
         return data
@@ -81,15 +81,15 @@ class Pyboard:
     def exit_raw_repl(self):
         self.serial.write(b'\r\x02') # ctrl-B: enter friendly REPL
 
-    def follow(self, data_consumer=False):
+    def follow(self, timeout, data_consumer=None):
         # wait for normal output
-        data = self.read_until(1, b'\x04', data_consumer=data_consumer)
+        data = self.read_until(1, b'\x04', timeout=timeout, data_consumer=data_consumer)
         if not data.endswith(b'\x04'):
             raise PyboardError('timeout waiting for first EOF reception')
         data = data[:-1]
 
         # wait for error output
-        data_err = self.read_until(2, b'\x04>')
+        data_err = self.read_until(2, b'\x04>', timeout=timeout)
         if not data_err.endswith(b'\x04>'):
             raise PyboardError('timeout waiting for second EOF reception')
         data_err = data_err[:-2]
@@ -97,7 +97,7 @@ class Pyboard:
         # return normal and error output
         return data, data_err
 
-    def exec_raw(self, command, data_consumer=False):
+    def exec_raw(self, command, timeout=10, data_consumer=None):
         if isinstance(command, bytes):
             command_bytes = command
         else:
@@ -114,7 +114,7 @@ class Pyboard:
         if data != b'OK':
             raise PyboardError('could not exec command')
 
-        return self.follow(data_consumer)
+        return self.follow(timeout, data_consumer)
 
     def eval(self, expression):
         ret = self.exec('print({})'.format(expression))
@@ -214,7 +214,7 @@ def main():
     if len(args.files) == 0:
         try:
             pyb = Pyboard(args.device)
-            ret, ret_err = pyb.follow(data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
+            ret, ret_err = pyb.follow(timeout=None, data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
             pyb.close()
         except PyboardError as er:
             print(er)
@@ -231,7 +231,7 @@ def main():
             pyb.enter_raw_repl()
             with open(filename) as f:
                 pyfile = f.read()
-            ret, ret_err = pyb.exec_raw(pyfile, data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
+            ret, ret_err = pyb.exec_raw(pyfile, timeout=None, data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
             pyb.exit_raw_repl()
             pyb.close()
         except PyboardError as er:

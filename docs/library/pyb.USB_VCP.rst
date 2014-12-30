@@ -17,6 +17,15 @@ Constructors
 Methods
 -------
 
+.. method:: usb_vcp.setinterrupt(chr)
+
+   Set the character which interrupts running Python code.  This is set
+   to 3 (CTRL-C) by default, and when a CTRL-C character is received over
+   the USB VCP port, a KeyboardInterrupt exception is raised.
+
+   Set to -1 to disable this interrupt feature.  This is useful when you
+   want to send raw bytes over the USB VCP port.
+
 .. method:: usb_vcp.any()
 
    Return ``True`` if any characters waiting, else ``False``.

@@ -18,6 +18,8 @@ At the end of the video, it shows you how to correctly connect the LCD skin to t
 
     <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/PowCzdLYbFM?rel=0" frameborder="0" allowfullscreen></iframe>
 
+For circuit schematics and datasheets for the components on the skin see :ref:`hardware_index`.
+
 Using the LCD
 -------------
 

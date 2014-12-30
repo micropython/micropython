@@ -49,6 +49,8 @@
 //
 
 #include "wizchip_conf.h"
+#include "socket.h"
+
 /**
  * @brief Default function to enable interrupt.
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
@@ -328,6 +330,9 @@ int8_t wizchip_init(uint8_t* txsize, uint8_t* rxsize)
       for(i = 0 ; i < _WIZCHIP_SOCK_NUM_; i++)
          setSn_RXBUF_SIZE(i, rxsize[i]);
    }
+
+   WIZCHIP_EXPORT(socket_reset)();
+
    return 0;
 }
 

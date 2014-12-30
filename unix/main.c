@@ -114,8 +114,8 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
     if (0) {
         // just tokenise
-        while (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
-            mp_token_show(mp_lexer_cur(lex));
+        while (lex->tok_kind != MP_TOKEN_END) {
+            mp_lexer_show_token(lex);
             mp_lexer_to_next(lex);
         }
         mp_lexer_free(lex);
@@ -132,7 +132,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         return 1;
     }
 
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
     #if MICROPY_PY___FILE__
     if (input_kind == MP_PARSE_FILE_INPUT) {
         mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
@@ -267,31 +267,6 @@ int usage(char **argv) {
     return 1;
 }
 
-#if MICROPY_MEM_STATS
-STATIC mp_obj_t mem_info(mp_uint_t n_args, const mp_obj_t *args) {
-    printf("mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
-        m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
-    printf("stack: " UINT_FMT "\n", mp_stack_usage());
-#if MICROPY_ENABLE_GC
-    gc_dump_info();
-    if (n_args == 1) {
-        // arg given means dump gc allocation table
-        gc_dump_alloc_table();
-    }
-#endif
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mem_info_obj, 0, 1, mem_info);
-#endif
-
-STATIC mp_obj_t qstr_info(void) {
-    mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
-    qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-    printf("qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes=" UINT_FMT ", n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(qstr_info_obj, qstr_info);
-
 // Process options which set interpreter init options
 void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
@@ -314,10 +289,23 @@ void pre_process_options(int argc, char **argv) {
                     char *end;
                     heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
                     // Don't bring unneeded libc dependencies like tolower()
+                    // If there's 'w' immediately after number, adjust it for
+                    // target word size. Note that it should be *before* size
+                    // suffix like K or M, to avoid confusion with kilowords,
+                    // etc. the size is still in bytes, just can be adjusted
+                    // for word size (taking 32bit as baseline).
+                    bool word_adjust = false;
+                    if ((*end | 0x20) == 'w') {
+                        word_adjust = true;
+                        end++;
+                    }
                     if ((*end | 0x20) == 'k') {
                         heap_size *= 1024;
                     } else if ((*end | 0x20) == 'm') {
                         heap_size *= 1024 * 1024;
+                    }
+                    if (word_adjust) {
+                        heap_size = heap_size * BYTES_PER_WORD / 4;
                     }
 #endif
                 } else {
@@ -393,11 +381,6 @@ int main(int argc, char **argv) {
     }
 
     mp_obj_list_init(mp_sys_argv, 0);
-
-    #if MICROPY_MEM_STATS
-    mp_store_name(qstr_from_str("mem_info"), (mp_obj_t*)&mem_info_obj);
-    #endif
-    mp_store_name(qstr_from_str("qstr_info"), (mp_obj_t*)&qstr_info_obj);
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
@@ -507,7 +490,8 @@ int main(int argc, char **argv) {
     }
 
     if (mp_verbose_flag) {
-        mem_info(0, NULL);
+        extern mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args);
+        mp_micropython_mem_info(0, NULL);
     }
 
     mp_deinit();

@@ -49,6 +49,9 @@
 //! THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
+
+#include <string.h>
+
 #include "socket.h"
 
 extern void HAL_Delay(uint32_t);
@@ -85,7 +88,19 @@ static uint8_t  sock_pack_info[_WIZCHIP_SOCK_NUM_] = {0,};
       if(len == 0) return SOCKERR_DATALEN;   \
    }while(0);              \
 
+void WIZCHIP_EXPORT(socket_reset)(void) {
+    sock_any_port = SOCK_ANY_PORT_NUM;
+    sock_io_mode = 0;
+    sock_is_sending = 0;
+    /*
+    memset(sock_remained_size, 0, _WIZCHIP_SOCK_NUM_ * sizeof(uint16_t));
+    memset(sock_pack_info, 0, _WIZCHIP_SOCK_NUM_ * sizeof(uint8_t));
+    */
 
+#if _WIZCHIP_ == 5200
+    memset(sock_next_rd, 0, _WIZCHIP_SOCK_NUM_ * sizeof(uint16_t));
+#endif
+}
 
 int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8_t flag)
 {
@@ -336,8 +351,13 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
             if(recvsize != 0) break;
             else if(getSn_TX_FSR(sn) == getSn_TxMAX(sn))
             {
+               // dpgeorge: Getting here seems to be an orderly shutdown of the
+               // socket, and trying to get POSIX behaviour we return 0 because:
+               // "If no messages are available to be received and the peer has per‐
+               //  formed an orderly shutdown, recv() shall return 0".
+               // TODO this return value clashes with SOCK_BUSY in non-blocking mode.
                WIZCHIP_EXPORT(close)(sn);
-               return SOCKERR_SOCKSTATUS;
+               return 0;
             }
          }
          else

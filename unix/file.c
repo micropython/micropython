@@ -88,6 +88,23 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     return r;
 }
 
+STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    mp_obj_fdfile_t *o = o_in;
+    if (request == MP_STREAM_SEEK) {
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+        off_t off = lseek(o->fd, s->offset, s->whence);
+        if (off == (off_t)-1) {
+            *errcode = errno;
+            return MP_STREAM_ERROR;
+        }
+        s->offset = off;
+        return 0;
+    } else {
+        *errcode = EINVAL;
+        return MP_STREAM_ERROR;
+    }
+}
+
 STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = self_in;
     check_fd_is_open(self);
@@ -192,6 +209,7 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_readlines), (mp_obj_t)&mp_stream_unbuffered_readlines_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_seek), (mp_obj_t)&mp_stream_seek_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&fdfile_flush_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
@@ -204,6 +222,7 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 STATIC const mp_stream_p_t fileio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
+    .ioctl = fdfile_ioctl,
 };
 
 const mp_obj_type_t mp_type_fileio = {
@@ -221,6 +240,7 @@ const mp_obj_type_t mp_type_fileio = {
 STATIC const mp_stream_p_t textio_stream_p = {
     .read = fdfile_read,
     .write = fdfile_write,
+    .ioctl = fdfile_ioctl,
     .is_text = true,
 };
 

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#if !MICROPY_NLR_SETJMP && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+#if (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 
 // We only need the functions here if we are on arm/thumb, and we are not
 // using setjmp/longjmp.
@@ -138,4 +138,4 @@ nlr_jump:
 nlr_top:
     .space  4
 
-#endif // !MICROPY_NLR_SETJMP && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+#endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))

@@ -39,6 +39,7 @@ Q(__locals__)
 Q(__main__)
 Q(__module__)
 Q(__name__)
+Q(__hash__)
 Q(__next__)
 Q(__qualname__)
 Q(__path__)
@@ -362,6 +363,8 @@ Q(rect)
 Q(mem_total)
 Q(mem_current)
 Q(mem_peak)
+Q(mem_info)
+Q(qstr_info)
 #endif
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
@@ -454,6 +457,7 @@ Q(readall)
 Q(readinto)
 Q(readline)
 Q(readlines)
+Q(seek)
 Q(FileIO)
 Q(TextIOWrapper)
 Q(StringIO)
@@ -507,4 +511,17 @@ Q(uheapq)
 Q(heappush)
 Q(heappop)
 Q(heapify)
+#endif
+
+#if MICROPY_PY_UHASHLIB
+Q(uhashlib)
+Q(update)
+Q(digest)
+Q(hexdigest)
+Q(sha256)
+#endif
+
+#if MICROPY_PY_UBINASCII
+Q(ubinascii)
+Q(hexlify)
 #endif

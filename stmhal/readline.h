@@ -24,5 +24,11 @@
  * THE SOFTWARE.
  */
 
+#define CHAR_CTRL_A (1)
+#define CHAR_CTRL_B (2)
+#define CHAR_CTRL_C (3)
+#define CHAR_CTRL_D (4)
+#define CHAR_CTRL_E (5)
+
 void readline_init0(void);
 int readline(vstr_t *line, const char *prompt);

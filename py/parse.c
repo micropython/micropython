@@ -155,7 +155,7 @@ STATIC void push_rule_from_arg(parser_t *parser, mp_uint_t arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
     mp_uint_t rule_id = arg & RULE_ARG_ARG_MASK;
     assert(rule_id < RULE_maximum_number_of);
-    push_rule(parser, mp_lexer_cur(parser->lexer)->src_line, rules[rule_id], 0);
+    push_rule(parser, parser->lexer->tok_line, rules[rule_id], 0);
 }
 
 STATIC void pop_rule(parser_t *parser, const rule_t **rule, mp_uint_t *arg_i, mp_uint_t *src_line) {
@@ -298,17 +298,17 @@ STATIC void push_result_string(parser_t *parser, mp_uint_t src_line, const char 
     push_result_node(parser, (mp_parse_node_t)pn);
 }
 
-STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
-    const mp_token_t *tok = mp_lexer_cur(lex);
+STATIC void push_result_token(parser_t *parser) {
     mp_parse_node_t pn;
-    if (tok->kind == MP_TOKEN_NAME) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn(tok->str, tok->len));
-    } else if (tok->kind == MP_TOKEN_NUMBER) {
+    mp_lexer_t *lex = parser->lexer;
+    if (lex->tok_kind == MP_TOKEN_NAME) {
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn(lex->vstr.buf, lex->vstr.len));
+    } else if (lex->tok_kind == MP_TOKEN_NUMBER) {
         bool dec = false;
         bool small_int = true;
         mp_int_t int_val = 0;
-        mp_uint_t len = tok->len;
-        const char *str = tok->str;
+        mp_uint_t len = lex->vstr.len;
+        const char *str = lex->vstr.buf;
         mp_uint_t base = 0;
         mp_uint_t i = mp_parse_num_base(str, len, &base);
         bool overflow = false;
@@ -343,29 +343,29 @@ STATIC void push_result_token(parser_t *parser, const mp_lexer_t *lex) {
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));
         }
-    } else if (tok->kind == MP_TOKEN_STRING) {
+    } else if (lex->tok_kind == MP_TOKEN_STRING) {
         // Don't automatically intern all strings.  doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
         qstr qst = MP_QSTR_NULL;
-        if (tok->len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
+        if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
             // intern short strings
-            qst = qstr_from_strn(tok->str, tok->len);
+            qst = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
         } else {
             // check if this string is already interned
-            qst = qstr_find_strn(tok->str, tok->len);
+            qst = qstr_find_strn(lex->vstr.buf, lex->vstr.len);
         }
         if (qst != MP_QSTR_NULL) {
             // qstr exists, make a leaf node
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qst);
         } else {
             // not interned, make a node holding a pointer to the string data
-            push_result_string(parser, mp_lexer_cur(lex)->src_line, tok->str, tok->len);
+            push_result_string(parser, lex->tok_line, lex->vstr.buf, lex->vstr.len);
             return;
         }
-    } else if (tok->kind == MP_TOKEN_BYTES) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn(tok->str, tok->len));
+    } else if (lex->tok_kind == MP_TOKEN_BYTES) {
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn(lex->vstr.buf, lex->vstr.len));
     } else {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, tok->kind);
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }
     push_result_node(parser, pn);
 }
@@ -414,7 +414,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
         case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
         default: top_level_rule = RULE_file_input;
     }
-    push_rule(&parser, mp_lexer_cur(lex)->src_line, rules[top_level_rule], 0);
+    push_rule(&parser, lex->tok_line, rules[top_level_rule], 0);
 
     // parse!
 
@@ -454,8 +454,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                 for (; i < n - 1; ++i) {
                     switch (rule->arg[i] & RULE_ARG_KIND_MASK) {
                         case RULE_ARG_TOK:
-                            if (mp_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
-                                push_result_token(&parser, lex);
+                            if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
+                                push_result_token(&parser);
                                 mp_lexer_to_next(lex);
                                 goto next_rule;
                             }
@@ -469,8 +469,8 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                     }
                 }
                 if ((rule->arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
-                    if (mp_lexer_is_kind(lex, rule->arg[i] & RULE_ARG_ARG_MASK)) {
-                        push_result_token(&parser, lex);
+                    if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
+                        push_result_token(&parser);
                         mp_lexer_to_next(lex);
                     } else {
                         backtrack = true;
@@ -507,10 +507,10 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                         case RULE_ARG_TOK:
                             // need to match a token
                             tok_kind = rule->arg[i] & RULE_ARG_ARG_MASK;
-                            if (mp_lexer_is_kind(lex, tok_kind)) {
+                            if (lex->tok_kind == tok_kind) {
                                 // matched token
                                 if (tok_kind == MP_TOKEN_NAME) {
-                                    push_result_token(&parser, lex);
+                                    push_result_token(&parser);
                                 }
                                 mp_lexer_to_next(lex);
                             } else {
@@ -657,11 +657,11 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                         mp_uint_t arg = rule->arg[i & 1 & n];
                         switch (arg & RULE_ARG_KIND_MASK) {
                             case RULE_ARG_TOK:
-                                if (mp_lexer_is_kind(lex, arg & RULE_ARG_ARG_MASK)) {
+                                if (lex->tok_kind == (arg & RULE_ARG_ARG_MASK)) {
                                     if (i & 1 & n) {
                                         // separators which are tokens are not pushed to result stack
                                     } else {
-                                        push_result_token(&parser, lex);
+                                        push_result_token(&parser);
                                     }
                                     mp_lexer_to_next(lex);
                                     // got element of list, so continue parsing list
@@ -722,7 +722,7 @@ memory_error:
     }
 
     // check we are at the end of the token stream
-    if (!mp_lexer_is_kind(lex, MP_TOKEN_END)) {
+    if (lex->tok_kind != MP_TOKEN_END) {
         goto syntax_error;
     }
 
@@ -745,9 +745,9 @@ finished:
     return result;
 
 syntax_error:
-    if (mp_lexer_is_kind(lex, MP_TOKEN_INDENT)) {
+    if (lex->tok_kind == MP_TOKEN_INDENT) {
         *parse_error_kind_out = MP_PARSE_ERROR_UNEXPECTED_INDENT;
-    } else if (mp_lexer_is_kind(lex, MP_TOKEN_DEDENT_MISMATCH)) {
+    } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
         *parse_error_kind_out = MP_PARSE_ERROR_UNMATCHED_UNINDENT;
     } else {
         *parse_error_kind_out = MP_PARSE_ERROR_INVALID_SYNTAX;
@@ -755,7 +755,7 @@ syntax_error:
         // debugging: print the rule name that failed and the token
         printf("rule: %s\n", rule->rule_name);
 #if MICROPY_DEBUG_PRINTERS
-        mp_token_show(mp_lexer_cur(lex));
+        mp_token_show(lex);
 #endif
 #endif
     }

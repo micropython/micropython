@@ -29,17 +29,10 @@
 #include <stdarg.h>
 
 #include "mpconfig.h"
-#include "std.h"
 #include "misc.h"
-#include "systick.h"
 #include "qstr.h"
 #include "obj.h"
 #include "pfenv.h"
-#if 0
-#include "lcd.h"
-#endif
-#include "uart.h"
-#include "usb.h"
 #include "pybstdio.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
