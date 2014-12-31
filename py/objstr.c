@@ -827,11 +827,7 @@ static bool arg_looks_numeric(mp_obj_t arg) {
 static mp_obj_t arg_as_int(mp_obj_t arg) {
 #if MICROPY_PY_BUILTINS_FLOAT
     if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
-
-        // TODO: Needs a way to construct an mpz integer from a float
-
-        mp_int_t num = mp_obj_get_float(arg);
-        return MP_OBJ_NEW_SMALL_INT(num);
+        return mp_obj_new_int_from_float(mp_obj_get_float(arg));
     }
 #endif
     return arg;
