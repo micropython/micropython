@@ -871,11 +871,17 @@ void mpz_not_inpl(mpz_t *dest, const mpz_t *z) {
     if (dest != z) {
         mpz_set(dest, z);
     }
-    if (dest->neg) {
+    if (dest->len == 0) {
+        mpz_need_dig(dest, 1);
+        dest->dig[0] = 1;
+        dest->len = 1;
+        dest->neg = 1;
+    } else if (dest->neg) {
         dest->neg = 0;
         mpz_dig_t k = 1;
         dest->len = mpn_sub(dest->dig, dest->dig, dest->len, &k, 1);
     } else {
+        mpz_need_dig(dest, dest->len + 1);
         mpz_dig_t k = 1;
         dest->len = mpn_add(dest->dig, dest->dig, dest->len, &k, 1);
         dest->neg = 1;
@@ -924,7 +930,14 @@ void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
                 round_up = 1;
             }
             if (round_up) {
-                dest->len = mpn_add(dest->dig, dest->dig, dest->len, &round_up, 1);
+                if (dest->len == 0) {
+                    // dest == 0, so need to add 1 by hand (answer will be -1)
+                    dest->dig[0] = 1;
+                    dest->len = 1;
+                } else {
+                    // dest > 0, so can use mpn_add to add 1
+                    dest->len = mpn_add(dest->dig, dest->dig, dest->len, &round_up, 1);
+                }
             }
         }
     }
