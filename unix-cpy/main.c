@@ -29,17 +29,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime.h"
-#include "pfenv.h"
+#include "py/nlr.h"
+#include "py/parsehelper.h"
+#include "py/compile.h"
+#include "py/runtime.h"
+#include "py/pfenv.h"
 
 void do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
