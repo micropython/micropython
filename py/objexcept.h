@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJEXCEPT_H__
+#define __MICROPY_INCLUDED_PY_OBJEXCEPT_H__
 
-#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-#if MICROPY_NLR_SETJMP
+typedef struct _mp_obj_exception_t {
+    mp_obj_base_t base;
+    mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
+    mp_obj_tuple_t *args;
+} mp_obj_exception_t;
 
-void nlr_setjmp_jump(void *val) {
-    nlr_buf_t *buf = MP_STATE_VM(nlr_top);
-    MP_STATE_VM(nlr_top) = buf->prev;
-    buf->ret_val = val;
-    longjmp(buf->jmpbuf, 1);
-}
-
-#endif
+#endif // __MICROPY_INCLUDED_PY_OBJEXCEPT_H__

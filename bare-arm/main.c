@@ -5,8 +5,8 @@
 #include "py/nlr.h"
 #include "py/parsehelper.h"
 #include "py/compile.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/repl.h"
 #include "py/pfenv.h"
 
@@ -48,6 +48,7 @@ void do_str(const char *src) {
 }
 
 int main(int argc, char **argv) {
+    mp_stack_set_limit(10240);
     mp_init();
     do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\n')");
     mp_deinit();

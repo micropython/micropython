@@ -46,6 +46,14 @@ enum {
 
 typedef mp_uint_t qstr;
 
+typedef struct _qstr_pool_t {
+    struct _qstr_pool_t *prev;
+    mp_uint_t total_prev_len;
+    mp_uint_t alloc;
+    mp_uint_t len;
+    const byte *qstrs[];
+} qstr_pool_t;
+
 #define QSTR_FROM_STR_STATIC(s) (qstr_from_strn((s), strlen(s)))
 
 void qstr_init(void);

@@ -32,6 +32,9 @@
 // For reference, arm/thumb callee save regs are:
 //      r4-r11, r13=sp
 
+// the offset of nlr_top within mp_state_ctx_t
+#define NLR_TOP_OFFSET (2 * 4)
+
     .syntax unified
     /*.cpu cortex-m4*/
     /*.thumb*/
@@ -68,7 +71,7 @@ nlr_push:
     bx      lr                      @ return
     .align  2
 nlr_top_addr:
-    .word   nlr_top
+    .word   mp_state_ctx + NLR_TOP_OFFSET
     .size   nlr_push, .-nlr_push
 
 /**************************************/

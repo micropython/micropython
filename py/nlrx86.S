@@ -32,10 +32,13 @@
 // For reference, x86 callee save regs are:
 //      ebx, esi, edi, ebp, esp, eip
 
+// the offset of nlr_top within mp_state_ctx_t
+#define NLR_TOP_OFFSET (2 * 4)
+
 #ifdef _WIN32
-#define NLR_TOP _nlr_top
+#define NLR_TOP (_mp_state_ctx + NLR_TOP_OFFSET)
 #else
-#define NLR_TOP nlr_top
+#define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
 #endif
 
     .file   "nlr.s"

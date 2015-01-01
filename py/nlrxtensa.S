@@ -34,11 +34,16 @@
     a3-a7 = rest of args
 */
 
+// the offset of nlr_top within mp_state_ctx_t
+#define NLR_TOP_OFFSET (2 * 4)
+
+#define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
+
     .file   "nlr.s"
     .text
 
     .literal_position
-    .literal .LC0, nlr_top
+    .literal .LC0, NLR_TOP
     .align  4
     .global nlr_push
     .type   nlr_push, @function
@@ -64,7 +69,7 @@ nlr_push:
     .size   nlr_push, .-nlr_push
 
     .literal_position
-    .literal .LC1, nlr_top
+    .literal .LC1, NLR_TOP
     .align  4
     .global nlr_pop
     .type   nlr_pop, @function
@@ -77,7 +82,7 @@ nlr_pop:
     .size   nlr_pop, .-nlr_pop
 
     .literal_position
-    .literal .LC2, nlr_top
+    .literal .LC2, NLR_TOP
     .align    4
     .global    nlr_jump
     .type    nlr_jump, @function

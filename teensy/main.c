@@ -7,6 +7,7 @@
 #include "py/parse.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "gccollect.h"
 #include "pyexec.h"
@@ -254,6 +255,8 @@ int main(void) {
     // (per EABI)
     #define SCB_CCR_STKALIGN (1 << 9)
     SCB_CCR |= SCB_CCR_STKALIGN;
+
+    mp_stack_set_limit(10240);
 
     pinMode(LED_BUILTIN, OUTPUT);
     led_init();

@@ -32,6 +32,7 @@
 #include "py/compile.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 #include "py/gc.h"
 #include "pyexec.h"
 #include "gccollect.h"
@@ -39,7 +40,7 @@
 
 void user_init(void) {
 soft_reset:
-    //mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
+    mp_stack_set_limit(10240);
     mp_hal_init();
     gc_init(&_heap_start, &_heap_end);
     gc_collect_init();
