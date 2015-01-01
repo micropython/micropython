@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stm32f4xx_hal.h>
 
+#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "pendsv.h"
 
@@ -46,10 +47,10 @@ void pendsv_init(void) {
 // the given exception object using nlr_jump in the context of the top-level
 // thread.
 void pendsv_nlr_jump(void *o) {
-    if (mp_pending_exception == MP_OBJ_NULL) {
-        mp_pending_exception = o;
+    if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
+        MP_STATE_VM(mp_pending_exception) = o;
     } else {
-        mp_pending_exception = MP_OBJ_NULL;
+        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
         pendsv_object = o;
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }

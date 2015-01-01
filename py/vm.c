@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/emitglue.h"
 #include "py/runtime.h"
@@ -991,10 +992,10 @@ yield:
 #endif
 
 pending_exception_check:
-                if (mp_pending_exception != MP_OBJ_NULL) {
+                if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_obj_t obj = mp_pending_exception;
-                    mp_pending_exception = MP_OBJ_NULL;
+                    mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
                     RAISE(obj);
                 }
 

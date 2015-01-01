@@ -24,34 +24,30 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/stackctrl.h"
 
-// Stack top at the start of program
-char *stack_top;
-
 void mp_stack_ctrl_init(void) {
     volatile int stack_dummy;
-    stack_top = (char*)&stack_dummy;
+    MP_STATE_VM(stack_top) = (char*)&stack_dummy;
 }
 
 mp_uint_t mp_stack_usage(void) {
     // Assumes descending stack
     volatile int stack_dummy;
-    return stack_top - (char*)&stack_dummy;
+    return MP_STATE_VM(stack_top) - (char*)&stack_dummy;
 }
 
 #if MICROPY_STACK_CHECK
 
-static mp_uint_t stack_limit = 10240;
-
 void mp_stack_set_limit(mp_uint_t limit) {
-    stack_limit = limit;
+    MP_STATE_VM(stack_limit) = limit;
 }
 
 void mp_stack_check(void) {
-    if (mp_stack_usage() >= stack_limit) {
+    if (mp_stack_usage() >= MP_STATE_VM(stack_limit)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "maximum recursion depth exceeded"));
     }
 }

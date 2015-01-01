@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
+#include "py/mpstate.h"
 
-#if MICROPY_NLR_SETJMP
-
-void nlr_setjmp_jump(void *val) {
-    nlr_buf_t *buf = nlr_top;
-    nlr_top = buf->prev;
-    buf->ret_val = val;
-    longjmp(buf->jmpbuf, 1);
-}
-
-#endif
+nlr_buf_t *nlr_top;
+mp_state_mem_t mp_state_mem;
+mp_state_vm_t mp_state_vm;
+mp_state_ctx_t mp_state_ctx;

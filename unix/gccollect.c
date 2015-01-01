@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "py/mpstate.h"
 #include "py/gc.h"
 
 #if MICROPY_ENABLE_GC
@@ -127,6 +128,7 @@ void gc_collect(void) {
     //gc_dump_info();
 
     gc_collect_start();
+    #if 0
     // this traces the .bss section
 #if defined( __CYGWIN__ )
 #define BSS_START __bss_start__
@@ -139,11 +141,12 @@ void gc_collect(void) {
     extern char BSS_START, _end;
     //printf(".bss: %p-%p\n", &BSS_START, &_end);
     gc_collect_root((void**)&BSS_START, ((mp_uint_t)&_end - (mp_uint_t)&BSS_START) / sizeof(mp_uint_t));
+    #endif
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
     void **regs_ptr = (void**)(void*)&regs;
-    gc_collect_root(regs_ptr, ((mp_uint_t)stack_top - (mp_uint_t)&regs) / sizeof(mp_uint_t));
+    gc_collect_root(regs_ptr, ((mp_uint_t)MP_STATE_VM(stack_top) - (mp_uint_t)&regs) / sizeof(mp_uint_t));
     gc_collect_end();
 
     //printf("-----\n");

@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "py/mpstate.h"
 #include "py/qstr.h"
 #include "py/gc.h"
 
@@ -68,14 +69,6 @@ mp_uint_t qstr_compute_hash(const byte *data, mp_uint_t len) {
     return hash;
 }
 
-typedef struct _qstr_pool_t {
-    struct _qstr_pool_t *prev;
-    mp_uint_t total_prev_len;
-    mp_uint_t alloc;
-    mp_uint_t len;
-    const byte *qstrs[];
-} qstr_pool_t;
-
 STATIC const qstr_pool_t const_pool = {
     NULL,               // no previous pool
     0,                  // no previous pool
@@ -90,15 +83,13 @@ STATIC const qstr_pool_t const_pool = {
     },
 };
 
-STATIC qstr_pool_t *last_pool;
-
 void qstr_init(void) {
-    last_pool = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
+    MP_STATE_VM(last_pool) = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
 }
 
 STATIC const byte *find_qstr(qstr q) {
     // search pool for this qstr
-    for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
+    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
         if (q >= pool->total_prev_len) {
             return pool->qstrs[q - pool->total_prev_len];
         }
@@ -112,21 +103,21 @@ STATIC qstr qstr_add(const byte *q_ptr) {
     DEBUG_printf("QSTR: add hash=%d len=%d data=%.*s\n", Q_GET_HASH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_DATA(q_ptr));
 
     // make sure we have room in the pool for a new qstr
-    if (last_pool->len >= last_pool->alloc) {
-        qstr_pool_t *pool = m_new_obj_var(qstr_pool_t, const char*, last_pool->alloc * 2);
-        pool->prev = last_pool;
-        pool->total_prev_len = last_pool->total_prev_len + last_pool->len;
-        pool->alloc = last_pool->alloc * 2;
+    if (MP_STATE_VM(last_pool)->len >= MP_STATE_VM(last_pool)->alloc) {
+        qstr_pool_t *pool = m_new_obj_var(qstr_pool_t, const char*, MP_STATE_VM(last_pool)->alloc * 2);
+        pool->prev = MP_STATE_VM(last_pool);
+        pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
+        pool->alloc = MP_STATE_VM(last_pool)->alloc * 2;
         pool->len = 0;
-        last_pool = pool;
-        DEBUG_printf("QSTR: allocate new pool of size %d\n", last_pool->alloc);
+        MP_STATE_VM(last_pool) = pool;
+        DEBUG_printf("QSTR: allocate new pool of size %d\n", MP_STATE_VM(last_pool)->alloc);
     }
 
     // add the new qstr
-    last_pool->qstrs[last_pool->len++] = q_ptr;
+    MP_STATE_VM(last_pool)->qstrs[MP_STATE_VM(last_pool)->len++] = q_ptr;
 
     // return id for the newly-added qstr
-    return last_pool->total_prev_len + last_pool->len - 1;
+    return MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len - 1;
 }
 
 qstr qstr_find_strn(const char *str, mp_uint_t str_len) {
@@ -134,7 +125,7 @@ qstr qstr_find_strn(const char *str, mp_uint_t str_len) {
     mp_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
 
     // search pools for the data
-    for (qstr_pool_t *pool = last_pool; pool != NULL; pool = pool->prev) {
+    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
             if (Q_GET_HASH(*q) == str_hash && Q_GET_LENGTH(*q) == str_len && memcmp(Q_GET_DATA(*q), str, str_len) == 0) {
                 return pool->total_prev_len + (q - pool->qstrs);
@@ -215,7 +206,7 @@ void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_
     *n_qstr = 0;
     *n_str_data_bytes = 0;
     *n_total_bytes = 0;
-    for (qstr_pool_t *pool = last_pool; pool != NULL && pool != &const_pool; pool = pool->prev) {
+    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &const_pool; pool = pool->prev) {
         *n_pool += 1;
         *n_qstr += pool->len;
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {

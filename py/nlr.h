@@ -64,8 +64,6 @@ struct _nlr_buf_t {
 #endif
 };
 
-extern nlr_buf_t *nlr_top;
-
 #if MICROPY_NLR_SETJMP
 NORETURN void nlr_setjmp_jump(void *val);
 // nlr_push() must be defined as a macro, because "The stack context will be

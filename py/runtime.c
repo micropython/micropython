@@ -28,6 +28,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/parsehelper.h"
 #include "py/parsenum.h"
@@ -52,32 +53,18 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
-// pending exception object (MP_OBJ_NULL if not pending)
-mp_obj_t mp_pending_exception;
-
-// locals and globals need to be pointers because they can be the same in outer module scope
-STATIC mp_obj_dict_t *dict_locals;
-STATIC mp_obj_dict_t *dict_globals;
-
-// dictionary for the __main__ module
-STATIC mp_obj_dict_t dict_main;
-
 const mp_obj_module_t mp_module___main__ = {
     .base = { &mp_type_module },
     .name = MP_QSTR___main__,
-    .globals = (mp_obj_dict_t*)&dict_main,
+    .globals = (mp_obj_dict_t*)&mp_state_vm.dict_main,
 };
-
-#if MICROPY_CAN_OVERRIDE_BUILTINS
-mp_obj_dict_t *mp_module_builtins_override_dict;
-#endif
 
 void mp_init(void) {
     qstr_init();
     mp_stack_ctrl_init();
 
     // no pending exceptions to start with
-    mp_pending_exception = MP_OBJ_NULL;
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     mp_init_emergency_exception_buf();
@@ -89,21 +76,21 @@ void mp_init(void) {
 #endif
 
     // optimization disabled by default
-    mp_optimise_value = 0;
+    MP_STATE_VM(mp_optimise_value) = 0;
 
     // init global module stuff
     mp_module_init();
 
     // initialise the __main__ module
-    mp_obj_dict_init(&dict_main, 1);
-    mp_obj_dict_store(&dict_main, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+    mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
+    mp_obj_dict_store(&MP_STATE_VM(dict_main), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
-    dict_locals = dict_globals = &dict_main;
+    MP_STATE_CTX(dict_locals) = MP_STATE_CTX(dict_globals) = &MP_STATE_VM(dict_main);
 
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
-    mp_module_builtins_override_dict = NULL;
+    MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
 }
 
@@ -147,8 +134,8 @@ mp_obj_t mp_load_name(qstr qstr) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qstr));
     // If we're at the outer scope (locals == globals), dispatch to load_global right away
-    if (dict_locals != dict_globals) {
-        mp_map_elem_t *elem = mp_map_lookup(&dict_locals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+    if (MP_STATE_CTX(dict_locals) != MP_STATE_CTX(dict_globals)) {
+        mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_CTX(dict_locals)->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             return elem->value;
         }
@@ -159,12 +146,12 @@ mp_obj_t mp_load_name(qstr qstr) {
 mp_obj_t mp_load_global(qstr qstr) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qstr));
-    mp_map_elem_t *elem = mp_map_lookup(&dict_globals->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_CTX(dict_globals)->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
     if (elem == NULL) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
-        if (mp_module_builtins_override_dict != NULL) {
+        if (MP_STATE_VM(mp_module_builtins_override_dict) != NULL) {
             // lookup in additional dynamic table of builtins first
-            elem = mp_map_lookup(&mp_module_builtins_override_dict->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
+            elem = mp_map_lookup(&MP_STATE_VM(mp_module_builtins_override_dict)->map, MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 return elem->value;
             }
@@ -187,9 +174,9 @@ mp_obj_t mp_load_global(qstr qstr) {
 mp_obj_t mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     #if MICROPY_CAN_OVERRIDE_BUILTINS
-    if (mp_module_builtins_override_dict != NULL) {
+    if (MP_STATE_VM(mp_module_builtins_override_dict) != NULL) {
         // lookup in additional dynamic table of builtins first
-        mp_map_elem_t *elem = mp_map_lookup(&mp_module_builtins_override_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
+        mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_VM(mp_module_builtins_override_dict)->map, MP_OBJ_NEW_QSTR(MP_QSTR___build_class__), MP_MAP_LOOKUP);
         if (elem != NULL) {
             return elem->value;
         }
@@ -200,24 +187,24 @@ mp_obj_t mp_load_build_class(void) {
 
 void mp_store_name(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qstr), obj);
-    mp_obj_dict_store(dict_locals, MP_OBJ_NEW_QSTR(qstr), obj);
+    mp_obj_dict_store(MP_STATE_CTX(dict_locals), MP_OBJ_NEW_QSTR(qstr), obj);
 }
 
 void mp_delete_name(qstr qstr) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qstr));
     // TODO convert KeyError to NameError if qstr not found
-    mp_obj_dict_delete(dict_locals, MP_OBJ_NEW_QSTR(qstr));
+    mp_obj_dict_delete(MP_STATE_CTX(dict_locals), MP_OBJ_NEW_QSTR(qstr));
 }
 
 void mp_store_global(qstr qstr, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qstr), obj);
-    mp_obj_dict_store(dict_globals, MP_OBJ_NEW_QSTR(qstr), obj);
+    mp_obj_dict_store(MP_STATE_CTX(dict_globals), MP_OBJ_NEW_QSTR(qstr), obj);
 }
 
 void mp_delete_global(qstr qstr) {
     DEBUG_OP_printf("delete global %s\n", qstr_str(qstr));
     // TODO convert KeyError to NameError if qstr not found
-    mp_obj_dict_delete(dict_globals, MP_OBJ_NEW_QSTR(qstr));
+    mp_obj_dict_delete(MP_STATE_CTX(dict_globals), MP_OBJ_NEW_QSTR(qstr));
 }
 
 mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
@@ -1242,21 +1229,21 @@ void mp_import_all(mp_obj_t module) {
 }
 
 mp_obj_dict_t *mp_locals_get(void) {
-    return dict_locals;
+    return MP_STATE_CTX(dict_locals);
 }
 
 void mp_locals_set(mp_obj_dict_t *d) {
     DEBUG_OP_printf("mp_locals_set(%p)\n", d);
-    dict_locals = d;
+    MP_STATE_CTX(dict_locals) = d;
 }
 
 mp_obj_dict_t *mp_globals_get(void) {
-    return dict_globals;
+    return MP_STATE_CTX(dict_globals);
 }
 
 void mp_globals_set(mp_obj_dict_t *d) {
     DEBUG_OP_printf("mp_globals_set(%p)\n", d);
-    dict_globals = d;
+    MP_STATE_CTX(dict_globals) = d;
 }
 
 // this is implemented in this file so it can optimise access to locals/globals

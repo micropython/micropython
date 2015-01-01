@@ -12,6 +12,7 @@ CSUPEROPT = -O3
 
 # py object files
 PY_O_BASENAME = \
+	mpstate.o \
 	nlrx86.o \
 	nlrx64.o \
 	nlrthumb.o \

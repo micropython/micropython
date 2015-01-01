@@ -488,6 +488,11 @@ typedef double mp_float_t;
 #define MICROPY_PORT_CONSTANTS
 #endif
 
+// Any root pointers for GC scanning - see mpstate.c
+#ifndef MICROPY_PORT_ROOT_POINTERS
+#define MICROPY_PORT_ROOT_POINTERS
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 

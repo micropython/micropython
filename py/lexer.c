@@ -27,14 +27,13 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "py/mpstate.h"
 #include "py/lexer.h"
 
 #define TAB_SIZE (8)
 
 // TODO seems that CPython allows NULL byte in the input stream
 // don't know if that's intentional or not, but we don't allow it
-
-mp_uint_t mp_optimise_value;
 
 // TODO replace with a call to a standard function
 STATIC bool str_strn_equal(const char *str, const char *strn, mp_uint_t len) {
@@ -662,7 +661,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
             if (str_strn_equal(tok_kw[i], lex->vstr.buf, lex->vstr.len)) {
                 if (i == MP_ARRAY_SIZE(tok_kw) - 1) {
                     // tok_kw[MP_ARRAY_SIZE(tok_kw) - 1] == "__debug__"
-                    lex->tok_kind = (mp_optimise_value == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
+                    lex->tok_kind = (MP_STATE_VM(mp_optimise_value) == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
                 } else {
                     lex->tok_kind = MP_TOKEN_KW_FALSE + i;
                 }
