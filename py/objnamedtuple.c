@@ -33,6 +33,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "objtuple.h"
+#include "runtime.h"
 
 #if MICROPY_PY_COLLECTIONS
 
@@ -86,10 +87,14 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
     mp_obj_namedtuple_type_t *type = type_in;
     mp_uint_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
-        // Counts include implicit "self"
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                                               "__new__() takes %d positional arguments but %d were given",
-                                               num_fields + 1, n_args + n_kw + 1));
+        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            mp_arg_error_terse_mismatch();
+        } else {
+            // Counts include implicit "self"
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                "__new__() takes %d positional arguments but %d were given",
+                num_fields + 1, n_args + n_kw + 1));
+        }
     }
 
     mp_obj_t *arg_objects;
@@ -108,14 +113,22 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
             qstr kw = MP_OBJ_QSTR_VALUE(args[i]);
             int id = namedtuple_find_field(type, kw);
             if (id == -1) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "__new__() got an unexpected keyword argument '%s'",
-                            qstr_str(kw)));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    mp_arg_error_terse_mismatch();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                        "__new__() got an unexpected keyword argument '%s'",
+                        qstr_str(kw)));
+                }
             }
             if (arg_objects[id] != NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "__new__() got multiple values for argument '%s'",
-                            qstr_str(kw)));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    mp_arg_error_terse_mismatch();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                        "__new__() got multiple values for argument '%s'",
+                        qstr_str(kw)));
+                }
             }
             arg_objects[id] = args[i + 1];
         }
