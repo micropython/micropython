@@ -51,6 +51,7 @@ PY_O_BASENAME = \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \
+	warning.o \
 	map.o \
 	obj.o \
 	objarray.o \
