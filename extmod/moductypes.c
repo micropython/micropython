@@ -27,14 +27,11 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "objtuple.h"
-#include "binary.h"
+
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/objtuple.h"
+#include "py/binary.h"
 
 #if MICROPY_PY_UCTYPES
 

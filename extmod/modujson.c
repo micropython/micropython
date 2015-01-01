@@ -28,14 +28,10 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objlist.h"
-#include "parsenum.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/parsenum.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_UJSON
 

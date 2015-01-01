@@ -31,12 +31,8 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "nlr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_UZLIB
 
