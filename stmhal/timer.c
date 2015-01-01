@@ -32,17 +32,13 @@
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 
-#include "nlr.h"
-#include "misc.h"
-#include "mpconfig.h"
-#include "qstr.h"
-#include "gc.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/gc.h"
+#include "py/pfenv.h"
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"
-#include "pfenv.h"
 
 /// \moduleref pyb
 /// \class Timer - periodically call a function

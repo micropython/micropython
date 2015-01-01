@@ -34,7 +34,7 @@
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_msc_storage.h"
 
-#include "misc.h"
+#include "py/misc.h"
 #include "storage.h"
 #include "diskio.h"
 #include "sdcard.h"

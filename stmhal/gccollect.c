@@ -27,11 +27,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
+#include "py/obj.h"
+#include "py/gc.h"
 #include "gccollect.h"
 #include MICROPY_HAL_H
 

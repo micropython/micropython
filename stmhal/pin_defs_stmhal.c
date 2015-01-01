@@ -1,11 +1,6 @@
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include MICROPY_HAL_H
+#include "py/obj.h"
 #include "pin.h"
+#include MICROPY_HAL_H
 
 // Returns the pin mode. This value returned by this macro should be one of:
 // GPIO_MODE_INPUT, GPIO_MODE_OUTPUT_PP, GPIO_MODE_OUTPUT_OD,

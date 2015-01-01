@@ -29,12 +29,9 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/gc.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "systick.h"

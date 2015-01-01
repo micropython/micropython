@@ -29,11 +29,8 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/nlr.h"
+#include "py/obj.h"
 #include "portmodules.h"
 
 // To use compile-time constants we are restricted to 31-bit numbers (a small int,

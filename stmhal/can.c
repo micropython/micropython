@@ -29,13 +29,9 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/objtuple.h"
+#include "py/runtime.h"
 #include "bufhelper.h"
 #include "can.h"
 #include "pybioctl.h"

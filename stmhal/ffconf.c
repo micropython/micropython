@@ -26,10 +26,7 @@
 
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/obj.h"
 #include "ff.h"
 #include "ffconf.h"
 #include "fsusermount.h"

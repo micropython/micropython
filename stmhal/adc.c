@@ -28,13 +28,9 @@
 #include <stm32f4xx_hal.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "binary.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/binary.h"
 #include "adc.h"
 #include "pin.h"
 #include "genhdr/pins.h"

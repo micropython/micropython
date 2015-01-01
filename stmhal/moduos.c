@@ -27,12 +27,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/objtuple.h"
 #include "systick.h"
 #include "rng.h"
 #include "storage.h"

@@ -35,16 +35,11 @@
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
 
-#include "stm32f4xx_hal.h"
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objlist.h"
-#include "stream.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/objtuple.h"
+#include "py/objlist.h"
+#include "py/stream.h"
+#include "py/runtime.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"

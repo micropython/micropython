@@ -24,11 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/nlr.h"
+#include "py/obj.h"
 #include "irq.h"
 
 #include MICROPY_HAL_H

@@ -34,13 +34,9 @@
 
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/runtime.h"
 #include "pin.h"
 #include "led.h"
 #include "extint.h"

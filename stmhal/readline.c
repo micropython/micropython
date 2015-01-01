@@ -28,8 +28,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
 #include "readline.h"
 #include "pybstdio.h"
 

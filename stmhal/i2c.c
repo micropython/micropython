@@ -27,12 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "bufhelper.h"

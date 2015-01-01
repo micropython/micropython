@@ -28,16 +28,10 @@
 #include <string.h>
 #include <stm32f4xx_hal.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 
 #if MICROPY_HW_HAS_LCD
-
-#include "qstr.h"
-#include "parse.h"
-#include "obj.h"
-#include "runtime.h"
 
 #include "pin.h"
 #include "genhdr/pins.h"

@@ -29,16 +29,12 @@
 #include <string.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "misc.h"
-#include "obj.h"
-#include "stream.h"
-#include MICROPY_HAL_H
+#include "py/obj.h"
+#include "py/stream.h"
 #include "usb.h"
 #include "uart.h"
 #include "pybstdio.h"
+#include MICROPY_HAL_H
 
 // TODO make stdin, stdout and stderr writable objects so they can
 // be changed by Python code.  This requires some changes, as these

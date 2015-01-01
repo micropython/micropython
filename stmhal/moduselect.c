@@ -24,16 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objlist.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/objlist.h"
 #include "pybioctl.h"
 #include MICROPY_HAL_H
 

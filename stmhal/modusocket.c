@@ -25,18 +25,13 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objlist.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/objtuple.h"
+#include "py/objlist.h"
+#include "py/runtime.h"
 #include "modnetwork.h"
 
 /******************************************************************************/

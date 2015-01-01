@@ -28,15 +28,12 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "pfenv.h"
+#include "py/obj.h"
+#include "py/pfenv.h"
 #include "pybstdio.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#include "formatfloat.h"
+#include "py/formatfloat.h"
 #endif
 
 int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);

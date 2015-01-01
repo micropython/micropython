@@ -29,13 +29,9 @@
 #include <string.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objlist.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/runtime.h"
 #include "modnetwork.h"
 
 /// \module network - network configuration

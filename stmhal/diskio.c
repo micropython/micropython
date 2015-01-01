@@ -32,11 +32,7 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/runtime.h"
 #include "systick.h"
 #include "rtc.h"
 #include "storage.h"

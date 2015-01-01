@@ -24,13 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
+#include "py/lexer.h"
 #include "lexerfatfs.h"
 #include "ff.h"
 

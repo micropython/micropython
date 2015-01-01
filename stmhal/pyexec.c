@@ -28,14 +28,13 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime.h"
-#include "repl.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/parsehelper.h"
+#include "py/compile.h"
+#include "py/runtime.h"
+#include "py/repl.h"
+#include "py/gc.h"
+#include "py/pfenv.h"
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
 #endif
@@ -44,7 +43,6 @@
 #include "pyexec.h"
 #include "pybstdio.h"
 #include "genhdr/py-version.h"
-#include "pfenv.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 STATIC bool repl_display_debugging_info = 0;

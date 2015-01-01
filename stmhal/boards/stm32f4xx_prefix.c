@@ -1,15 +1,10 @@
 // stm32f4xx_prefix.c becomes the initial portion of the generated pins file.
 
 #include <stdio.h>
-#include <stdint.h>
 
-#include "stm32f4xx_hal.h"
-
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/obj.h"
 #include "pin.h"
+#include MICROPY_HAL_H
 
 #define AF(af_idx, af_fn, af_unit, af_type, af_ptr) \
 { \

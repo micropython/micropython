@@ -25,16 +25,11 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include MICROPY_HAL_H
+#include "py/runtime.h"
 #include "pin.h"
+#include MICROPY_HAL_H
 
 STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_named_pins_obj_t *self = self_in;

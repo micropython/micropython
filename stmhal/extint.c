@@ -30,15 +30,10 @@
 
 #include <stm32f4xx_hal.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "gc.h"
-#include "obj.h"
-#include "runtime.h"
-#include "pfenv.h"
-
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/gc.h"
+#include "py/pfenv.h"
 #include "pin.h"
 #include "extint.h"
 

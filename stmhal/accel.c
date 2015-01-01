@@ -29,12 +29,8 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 #include "i2c.h"
 #include "accel.h"
 

@@ -24,13 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/nlr.h"
+#include "py/obj.h"
 #include "readline.h"
 #include "usb.h"
 

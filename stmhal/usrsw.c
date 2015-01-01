@@ -28,11 +28,7 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/runtime.h"
 #include "extint.h"
 #include "pin.h"
 #include "genhdr/pins.h"

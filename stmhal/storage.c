@@ -28,11 +28,8 @@
 #include <string.h>
 #include <stm32f4xx_hal.h>
 
-#include "mpconfig.h"
-#include "misc.h"
+#include "py/obj.h"
 #include "systick.h"
-#include "qstr.h"
-#include "obj.h"
 #include "led.h"
 #include "flash.h"
 #include "storage.h"

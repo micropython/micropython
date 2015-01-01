@@ -27,13 +27,9 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "stream.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 #include "file.h"
 #include "ff.h"
 

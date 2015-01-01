@@ -27,21 +27,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "stm32f4xx_hal.h"
+#include "py/nlr.h"
+#include "py/lexer.h"
+#include "py/parse.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/stackctrl.h"
+#include "py/gc.h"
 
-#include "mpconfig.h"
-#include "misc.h"
 #include "systick.h"
 #include "pendsv.h"
-#include "qstr.h"
-#include "misc.h"
-#include "nlr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "runtime.h"
-#include "stackctrl.h"
-#include "gc.h"
 #include "gccollect.h"
 #include "readline.h"
 #include "pyexec.h"
