@@ -10,7 +10,6 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I..
-INC += -I$(PY_SRC)
 INC += -I$(BUILD)
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
