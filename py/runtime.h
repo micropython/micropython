@@ -125,4 +125,10 @@ extern struct _mp_obj_list_t mp_sys_argv_obj;
 #define mp_sys_path ((mp_obj_t)&mp_sys_path_obj)
 #define mp_sys_argv ((mp_obj_t)&mp_sys_argv_obj)
 
+#if MICROPY_WARNINGS
+void mp_warning(const char *msg, ...);
+#else
+#define mp_warning(msg, ...)
+#endif
+
 #endif // __MICROPY_INCLUDED_PY_RUNTIME_H__

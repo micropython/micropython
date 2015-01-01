@@ -323,7 +323,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
                     vstr_add_str(&path, "__init__.py");
                     if (mp_import_stat(vstr_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
-                        printf("Notice: %s is imported as namespace package\n", vstr_str(&path));
+                        mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {
                         do_load(module_obj, &path);
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
