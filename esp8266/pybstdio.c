@@ -25,16 +25,11 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "misc.h"
-#include "obj.h"
-#include "stream.h"
+#include "py/obj.h"
+#include "py/stream.h"
 #include "pybstdio.h"
 #include MICROPY_HAL_H
 

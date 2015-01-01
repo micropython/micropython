@@ -24,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/gc.h"
 #include "gccollect.h"
 #include "pyexec.h"
 #include "pybstdio.h"

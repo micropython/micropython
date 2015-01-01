@@ -25,13 +25,8 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
+#include "py/gc.h"
 #include "gccollect.h"
 
 STATIC uint32_t stack_end;

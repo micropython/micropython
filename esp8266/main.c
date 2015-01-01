@@ -27,18 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/parsehelper.h"
+#include "py/compile.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/gc.h"
 #include "pyexec.h"
 #include "gccollect.h"
 #include MICROPY_HAL_H

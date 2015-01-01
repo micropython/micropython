@@ -12,7 +12,6 @@ ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 
 INC =  -I.
 INC += -I..
-INC += -I$(PY_SRC)
 INC += -I../stmhal
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
