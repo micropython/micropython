@@ -89,11 +89,14 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
     if (n_args + n_kw != num_fields) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
-        } else {
-            // Counts include implicit "self"
+        } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "__new__() takes %d positional arguments but %d were given",
-                num_fields + 1, n_args + n_kw + 1));
+                "function takes %d positional arguments but %d were given",
+                num_fields, n_args + n_kw));
+        } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                "%s() takes %d positional arguments but %d were given",
+                qstr_str(type->base.name), num_fields, n_args + n_kw));
         }
     }
 
@@ -117,7 +120,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
                     mp_arg_error_terse_mismatch();
                 } else {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "__new__() got an unexpected keyword argument '%s'",
+                        "unexpected keyword argument '%s'",
                         qstr_str(kw)));
                 }
             }
@@ -126,7 +129,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
                     mp_arg_error_terse_mismatch();
                 } else {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "__new__() got multiple values for argument '%s'",
+                        "function got multiple values for argument '%s'",
                         qstr_str(kw)));
                 }
             }
