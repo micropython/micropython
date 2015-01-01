@@ -30,11 +30,7 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/runtime.h"
 
 #ifdef _WIN32
 void msec_sleep_tv(struct timeval *tv) {

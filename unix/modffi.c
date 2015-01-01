@@ -31,13 +31,9 @@
 #include <dlfcn.h>
 #include <ffi.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "binary.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/binary.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"

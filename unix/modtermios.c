@@ -29,13 +29,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "objlist.h"
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/runtime.h"
 
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \

@@ -31,13 +31,9 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "objtuple.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/objtuple.h"
 
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \

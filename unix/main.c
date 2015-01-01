@@ -35,20 +35,17 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "builtin.h"
-#include "repl.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/compile.h"
+#include "py/parsehelper.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
+#include "py/repl.h"
+#include "py/gc.h"
+#include "py/stackctrl.h"
+#include "py/pfenv.h"
 #include "genhdr/py-version.h"
 #include "input.h"
-#include "stackctrl.h"
-#include "pfenv.h"
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;

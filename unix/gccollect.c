@@ -25,11 +25,8 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "gc.h"
+#include "py/gc.h"
 
 #if MICROPY_ENABLE_GC
 

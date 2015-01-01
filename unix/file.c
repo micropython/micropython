@@ -31,13 +31,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "stream.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 
 #ifdef _WIN32
 #define fsync _commit

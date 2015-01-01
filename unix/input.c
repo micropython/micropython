@@ -25,15 +25,11 @@
  */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/nlr.h"
+#include "py/obj.h"
 #include "input.h"
 
 #if MICROPY_USE_READLINE
