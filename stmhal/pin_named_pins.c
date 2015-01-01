@@ -28,8 +28,8 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "pin.h"
 #include MICROPY_HAL_H
+#include "pin.h"
 
 STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_named_pins_obj_t *self = self_in;

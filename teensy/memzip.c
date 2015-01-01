@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mpconfigport.h"
-#include "misc.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
 #include "memzip.h"
 
 extern uint8_t _staticfs[];

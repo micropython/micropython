@@ -1,11 +1,6 @@
 #include <stdio.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-
+#include "py/lexer.h"
 #include "memzip.h"
 
 mp_import_stat_t mp_import_stat(const char *path) {

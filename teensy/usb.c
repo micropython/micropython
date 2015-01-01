@@ -1,13 +1,8 @@
 #include <string.h>
-#include <stdint.h>
+
+#include "py/runtime.h"
 
 #include "Arduino.h"
-
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
 
 #include "usb.h"
 #include "usb_serial.h"

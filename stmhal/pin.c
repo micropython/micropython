@@ -30,8 +30,8 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "pin.h"
 #include MICROPY_HAL_H
+#include "pin.h"
 
 /// \moduleref pyb
 /// \class Pin - control I/O pins

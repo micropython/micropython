@@ -29,18 +29,13 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "pfenv.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/pfenv.h"
+#include "py/gc.h"
 #include MICROPY_HAL_H
-#include "gc.h"
 #include "pin.h"
 #include "reg.h"
-
 #include "timer.h"
 
 typedef enum {

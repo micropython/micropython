@@ -2,12 +2,8 @@
 
 #include "Arduino.h"
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 #include "led.h"
 #include MICROPY_HAL_H
 #include "pin.h"

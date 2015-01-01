@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 
 #include "Arduino.h"
 

@@ -1,10 +1,6 @@
-#include <stdint.h>
 #include <stdlib.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
+#include "py/lexer.h"
 #include "memzip.h"
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename)

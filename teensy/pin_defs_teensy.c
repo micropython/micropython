@@ -1,11 +1,6 @@
 #include <stdint.h>
 #include <mk20dx128.h>
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/runtime.h"
 #include MICROPY_HAL_H
 #include "pin.h"
 

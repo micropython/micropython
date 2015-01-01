@@ -3,19 +3,15 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "nlr.h"
-#include "lexer.h"
-#include "lexermemzip.h"
-#include "parse.h"
-#include "obj.h"
-#include "runtime.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/parse.h"
+#include "py/lexer.h"
+#include "py/runtime.h"
+#include "py/gc.h"
 #include "gccollect.h"
 #include "pyexec.h"
 #include "readline.h"
+#include "lexermemzip.h"
 
 #include "Arduino.h"
 #include MICROPY_HAL_H

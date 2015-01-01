@@ -29,14 +29,11 @@
 #include <mk20dx128.h>
 #include "Arduino.h"
 
-#include "mpconfig.h"
-#include "misc.h"
+#include "py/obj.h"
+#include "py/gc.h"
 
 #include "teensy_hal.h"
 
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "systick.h"

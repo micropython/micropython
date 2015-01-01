@@ -31,7 +31,6 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat
 
 INC =  -I.
 INC += -I..
-INC += -I$(PY_SRC)
 INC += -I../stmhal
 INC += -I$(BUILD)
 INC += -Icore

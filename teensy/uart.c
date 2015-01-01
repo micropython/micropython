@@ -27,12 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 #include MICROPY_HAL_H
 #include "bufhelper.h"
 #include "uart.h"

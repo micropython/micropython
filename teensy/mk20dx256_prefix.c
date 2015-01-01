@@ -1,15 +1,10 @@
 // stm32fxx-prefix.c becomes the initial portion of the generated pins file.
 
 #include <stdio.h>
-#include <stdint.h>
 #include <mk20dx128.h>
 
+#include "py/obj.h"
 #include "teensy_hal.h"
-
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
 #include "pin.h"
 
 #define AF(af_idx, af_fn, af_unit, af_type, af_ptr) \
