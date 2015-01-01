@@ -251,6 +251,11 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ERROR_REPORTING (MICROPY_ERROR_REPORTING_NORMAL)
 #endif
 
+// Whether issue warnings during compiling/execution
+#ifndef MICROPY_WARNINGS
+#define MICROPY_WARNINGS (0)
+#endif
+
 // Float and complex implementation
 #define MICROPY_FLOAT_IMPL_NONE (0)
 #define MICROPY_FLOAT_IMPL_FLOAT (1)
