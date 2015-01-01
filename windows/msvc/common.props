@@ -8,7 +8,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>.\;.\build;.\msvc;..\py</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\;.\build;.\msvc;..\py</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <WarningLevel>Level1</WarningLevel>
