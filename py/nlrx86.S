@@ -32,6 +32,12 @@
 // For reference, x86 callee save regs are:
 //      ebx, esi, edi, ebp, esp, eip
 
+#ifdef _WIN32
+#define NLR_TOP _nlr_top
+#else
+#define NLR_TOP nlr_top
+#endif
+
     .file   "nlr.s"
     .text
 
@@ -55,9 +61,9 @@ nlr_push:
     mov     %ebx, 20(%edx)          # store %bx into nlr_buf+20
     mov     %edi, 24(%edx)          # store %di into nlr_buf
     mov     %esi, 28(%edx)          # store %si into nlr_buf
-    mov     nlr_top, %eax           # load nlr_top
+    mov     NLR_TOP, %eax           # load nlr_top
     mov     %eax, (%edx)            # store it
-    mov     %edx, nlr_top           # stor new nlr_buf (to make linked list)
+    mov     %edx, NLR_TOP           # stor new nlr_buf (to make linked list)
     xor     %eax, %eax              # return 0, normal return
     ret                             # return
 #ifndef _WIN32
@@ -76,9 +82,9 @@ _nlr_pop:
     .type   nlr_pop, @function
 nlr_pop:
 #endif
-    mov     nlr_top, %eax           # load nlr_top
+    mov     NLR_TOP, %eax           # load nlr_top
     mov     (%eax), %eax            # load prev nlr_buf
-    mov     %eax, nlr_top           # store nlr_top (to unlink list)
+    mov     %eax, NLR_TOP           # store nlr_top (to unlink list)
     ret                             # return
 #ifndef _WIN32
     .size   nlr_pop, .-nlr_pop
@@ -96,7 +102,7 @@ _nlr_jump:
     .type   nlr_jump, @function
 nlr_jump:
 #endif
-    mov     nlr_top, %edx           # load nlr_top
+    mov     NLR_TOP, %edx           # load nlr_top
     test    %edx, %edx              # check for nlr_top being NULL
 #ifdef _WIN32
     je      _nlr_jump_fail           # fail if nlr_top is NULL
@@ -106,7 +112,7 @@ nlr_jump:
     mov     4(%esp), %eax           # load return value
     mov     %eax, 4(%edx)           # store return value
     mov     (%edx), %eax            # load prev nlr_top
-    mov     %eax, nlr_top           # store nlr_top (to unlink list)
+    mov     %eax, NLR_TOP           # store nlr_top (to unlink list)
     mov     28(%edx), %esi          # load saved %si
     mov     24(%edx), %edi          # load saved %di
     mov     20(%edx), %ebx          # load saved %bx
