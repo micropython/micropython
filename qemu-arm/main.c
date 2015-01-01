@@ -2,19 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "repl.h"
-#include "pfenv.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/parsehelper.h"
+#include "py/compile.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/repl.h"
+#include "py/pfenv.h"
 
 void do_str(const char *src) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
