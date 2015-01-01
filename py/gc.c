@@ -47,7 +47,6 @@
 
 #define WORDS_PER_BLOCK (4)
 #define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
-#define STACK_SIZE (64) // tunable; minimum is 1
 
 STATIC byte *gc_alloc_table_start;
 STATIC mp_uint_t gc_alloc_table_byte_len;
@@ -62,7 +61,7 @@ STATIC mp_uint_t *gc_pool_start = (void*)4;
 STATIC mp_uint_t *gc_pool_end;
 
 STATIC int gc_stack_overflow;
-STATIC mp_uint_t gc_stack[STACK_SIZE];
+STATIC mp_uint_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
 STATIC mp_uint_t *gc_sp;
 STATIC uint16_t gc_lock_depth;
 uint16_t gc_auto_collect_enabled;
@@ -196,7 +195,7 @@ bool gc_is_locked(void) {
             if (ATB_GET_KIND(_block) == AT_HEAD) { \
                 /* an unmarked head, mark it, and push it on gc stack */ \
                 ATB_HEAD_TO_MARK(_block); \
-                if (gc_sp < &gc_stack[STACK_SIZE]) { \
+                if (gc_sp < &gc_stack[MICROPY_ALLOC_GC_STACK_SIZE]) { \
                     *gc_sp++ = _block; \
                 } else { \
                     gc_stack_overflow = 1; \

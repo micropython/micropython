@@ -51,6 +51,11 @@
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
 
+// Number of words allocated (in BSS) to the GC stack (minimum is 1)
+#ifndef MICROPY_ALLOC_GC_STACK_SIZE
+#define MICROPY_ALLOC_GC_STACK_SIZE (64)
+#endif
+
 // Initial amount for lexer indentation level
 #ifndef MICROPY_ALLOC_LEXER_INDENT_INIT
 #define MICROPY_ALLOC_LEXER_INDENT_INIT (10)
