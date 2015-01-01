@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_ASMX86_H__
+#define __MICROPY_INCLUDED_PY_ASMX86_H__
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 // x86 cdecl calling convention is:
 //  - args passed on the stack in reverse order
@@ -106,3 +111,5 @@ void asm_x86_mov_local_to_r32(asm_x86_t* as, int src_local_num, int dest_r32);
 void asm_x86_mov_r32_to_local(asm_x86_t* as, int src_r32, int dest_local_num);
 void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
 void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
+
+#endif // __MICROPY_INCLUDED_PY_ASMX86_H__

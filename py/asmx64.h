@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_ASMX64_H__
+#define __MICROPY_INCLUDED_PY_ASMX64_H__
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 // AMD64 calling convention is:
 //  - args pass in: RDI, RSI, RDX, RCX, R08, R09
@@ -108,3 +113,5 @@ void asm_x64_mov_local_to_r64(asm_x64_t* as, int src_local_num, int dest_r64);
 void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
 void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
+
+#endif // __MICROPY_INCLUDED_PY_ASMX64_H__

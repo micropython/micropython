@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_ASMTHUMB_H__
+#define __MICROPY_INCLUDED_PY_ASMTHUMB_H__
+
+#include "py/misc.h"
 
 #define ASM_THUMB_PASS_COMPUTE (1)
 #define ASM_THUMB_PASS_EMIT    (2)
@@ -200,3 +204,5 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience ?
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience ?
+
+#endif // __MICROPY_INCLUDED_PY_ASMTHUMB_H__
