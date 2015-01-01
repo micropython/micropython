@@ -24,11 +24,8 @@
 * THE SOFTWARE.
 */
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/nlr.h"
+#include "py/obj.h"
 #include <windows.h>
 
 IMAGE_NT_HEADERS *header_from_memory(const char *module) {
