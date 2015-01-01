@@ -24,12 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
+#include "py/lexer.h"
 
 typedef struct _mp_lexer_str_buf_t {
     mp_uint_t free_len;         // if > 0, src_beg will be freed when done by: m_free(src_beg, free_len)

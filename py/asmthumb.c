@@ -28,12 +28,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "asmthumb.h"
+#include "py/mpconfig.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
+
+#include "py/asmthumb.h"
 
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
 #define UNSIGNED_FIT16(x) (((x) & 0xffff0000) == 0)

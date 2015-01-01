@@ -27,14 +27,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objmodule.h"
-#include "runtime.h"
-#include "builtin.h"
+#include "py/nlr.h"
+#include "py/objmodule.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
 
 STATIC mp_map_t mp_loaded_modules_map; // TODO: expose as sys.modules
 

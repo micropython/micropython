@@ -27,14 +27,10 @@
 
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objstr.h"
-#include "runtime.h"
-#include "stream.h"
+#include "py/nlr.h"
+#include "py/objstr.h"
+#include "py/stream.h"
+
 #if MICROPY_STREAMS_NON_BLOCK
 #include <errno.h>
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)

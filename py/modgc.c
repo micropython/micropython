@@ -24,14 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "gc.h"
+#include "py/obj.h"
+#include "py/gc.h"
 
 #if MICROPY_PY_GC && MICROPY_ENABLE_GC
 

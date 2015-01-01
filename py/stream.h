@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_STREAM_H__
+#define __MICROPY_INCLUDED_PY_STREAM_H__
+
+#include "py/obj.h"
 
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
@@ -36,3 +40,5 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len);
+
+#endif // __MICROPY_INCLUDED_PY_STREAM_H__

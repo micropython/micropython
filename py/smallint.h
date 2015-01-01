@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_SMALLINT_H__
+#define __MICROPY_INCLUDED_PY_SMALLINT_H__
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 // Functions for small integer arithmetic
 
@@ -34,3 +39,5 @@
 bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y);
 mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor);
 mp_int_t mp_small_int_floor_divide(mp_int_t num, mp_int_t denom);
+
+#endif // __MICROPY_INCLUDED_PY_SMALLINT_H__

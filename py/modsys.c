@@ -24,22 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "builtin.h"
-#include "runtime.h"
-#include "objlist.h"
-#include "objtuple.h"
-#include "objstr.h"
-#include "mpz.h"
-#include "objint.h"
-#include "pfenv.h"
-#include "stream.h"
+#include "py/nlr.h"
+#include "py/builtin.h"
+#include "py/objlist.h"
+#include "py/objtuple.h"
+#include "py/objstr.h"
+#include "py/objint.h"
+#include "py/pfenv.h"
+#include "py/stream.h"
 
 #if MICROPY_PY_SYS
 

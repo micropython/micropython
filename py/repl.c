@@ -24,9 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "repl.h"
+#include "py/repl.h"
 
 #if MICROPY_HELPER_REPL
 

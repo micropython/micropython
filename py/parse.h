@@ -26,6 +26,10 @@
 #ifndef __MICROPY_INCLUDED_PY_PARSE_H__
 #define __MICROPY_INCLUDED_PY_PARSE_H__
 
+#include <stdint.h>
+
+#include "py/mpconfig.h"
+
 struct _mp_lexer_t;
 
 // a mp_parse_node_t is:

@@ -26,9 +26,7 @@
 
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "unicode.h"
+#include "py/unicode.h"
 
 // attribute flags
 #define FL_PRINT (0x01)

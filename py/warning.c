@@ -23,17 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdint.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "compile.h"
-#include "scope.h"
-#include "emit.h"
+#include "py/obj.h"
+#include "py/emit.h"
 
 #if MICROPY_WARNINGS
 

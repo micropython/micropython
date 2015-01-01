@@ -25,17 +25,12 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdbool.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 // Helpers for sequence types
 

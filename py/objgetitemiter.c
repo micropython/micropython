@@ -26,12 +26,8 @@
 
 #include <stdlib.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 
 // this is a wrapper object that is turns something that has a __getitem__ method into an iterator
 

@@ -24,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include <math.h>
-
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "builtin.h"
+#include "py/builtin.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
+
+#include <math.h>
 
 /// \module math - mathematical functions
 ///

@@ -24,19 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "builtin.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
 
 STATIC mp_obj_t dict_update(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 

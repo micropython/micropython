@@ -24,18 +24,10 @@
  * THE SOFTWARE.
  */
 
-/* lexer.c -- simple tokeniser for Python implementation
- */
-
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
+#include "py/lexer.h"
 
 #define TAB_SIZE (8)
 

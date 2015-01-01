@@ -27,20 +27,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "mpz.h"
-#include "objint.h"
-#include "pfenv.h"
+#include "py/objint.h"
+#include "py/pfenv.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #include <stdio.h>
 #endif
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#include "formatfloat.h"
+#include "py/formatfloat.h"
 #endif
 
 static const char pad_spaces[] = "                ";
@@ -331,7 +326,7 @@ int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, c
     }
     int len;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    len = format_float(f, buf, sizeof(buf), fmt, prec, sign);
+    len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     char fmt_buf[6];
     char *fmt_s = fmt_buf;

@@ -29,12 +29,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "asmarm.h"
+#include "py/mpconfig.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_ARM
+
+#include "py/asmarm.h"
 
 #define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
 

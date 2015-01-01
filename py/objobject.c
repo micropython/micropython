@@ -26,12 +26,9 @@
 
 #include <stdlib.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/runtime0.h"
 
 mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 

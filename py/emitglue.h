@@ -26,6 +26,8 @@
 #ifndef __MICROPY_INCLUDED_PY_EMITGLUE_H__
 #define __MICROPY_INCLUDED_PY_EMITGLUE_H__
 
+#include "py/obj.h"
+
 // These variables and functions glue the code emitters to the runtime.
 
 typedef enum {

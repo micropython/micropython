@@ -28,14 +28,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "stream.h"
-#include "objstr.h"
+#include "py/nlr.h"
+#include "py/objstr.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 
 #if MICROPY_PY_IO
 

@@ -28,20 +28,13 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <stdio.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objlist.h"
-#include "objstr.h"
-#include "objtuple.h"
-#include "objtype.h"
-#include "runtime.h"
-#include "runtime0.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/objstr.h"
+#include "py/objtuple.h"
+#include "py/objtype.h"
+#include "py/gc.h"
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;

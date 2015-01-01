@@ -26,13 +26,8 @@
 
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "runtime.h"
+#include "py/obj.h"
+#include "py/runtime.h"
 
 typedef struct _mp_obj_closure_t {
     mp_obj_base_t base;

@@ -24,11 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "builtin.h"
+#include "py/builtin.h"
 
 #if MICROPY_PY_IO
 

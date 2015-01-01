@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJSTR_H__
+#define __MICROPY_INCLUDED_PY_OBJSTR_H__
+
+#include "py/obj.h"
 
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
@@ -85,3 +89,5 @@ MP_DECLARE_CONST_FUN_OBJ(str_isalpha_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_isdigit_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_isupper_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_islower_obj);
+
+#endif // __MICROPY_INCLUDED_PY_OBJSTR_H__

@@ -27,10 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -47,7 +46,7 @@ STATIC size_t peak_bytes_allocated = 0;
 #endif
 
 #if MICROPY_ENABLE_GC
-#include "gc.h"
+#include "py/gc.h"
 
 // We redirect standard alloc functions to GC heap - just for the rest of
 // this module. In the rest of micropython source, system malloc can be

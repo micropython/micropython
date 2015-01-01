@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJINT_H__
+#define __MICROPY_INCLUDED_PY_OBJINT_H__
+
+#include "py/mpz.h"
+#include "py/obj.h"
 
 typedef struct _mp_obj_int_t {
     mp_obj_base_t base;
@@ -45,3 +50,5 @@ bool mp_obj_int_is_positive(mp_obj_t self_in);
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in);
 mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+
+#endif // __MICROPY_INCLUDED_PY_OBJINT_H__

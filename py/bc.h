@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_BC_H__
+#define __MICROPY_INCLUDED_PY_BC_H__
+
+#include "py/runtime.h"
+#include "py/obj.h"
 
 // Exception stack entry
 typedef struct _mp_exc_stack {
@@ -61,3 +66,5 @@ const byte *mp_bytecode_print_str(const byte *ip);
 #define MP_TAGPTR_TAG0(x) ((mp_uint_t)(x) & 1)
 #define MP_TAGPTR_TAG1(x) ((mp_uint_t)(x) & 2)
 #define MP_TAGPTR_MAKE(ptr, tag) ((void*)((mp_uint_t)(ptr) | (tag)))
+
+#endif // __MICROPY_INCLUDED_PY_BC_H__

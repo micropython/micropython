@@ -30,26 +30,22 @@
 #include <assert.h>
 #include <math.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "parsenum.h"
-#include "runtime0.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/parsenum.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#include "formatfloat.h"
+#include "py/formatfloat.h"
 #endif
 
 STATIC void float_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_float_t *o = o_in;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
-    format_float(o->value, buf, sizeof(buf), 'g', 7, '\0');
+    mp_format_float(o->value, buf, sizeof(buf), 'g', 7, '\0');
     print(env, "%s", buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL) {
         // Python floats always have decimal point

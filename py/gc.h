@@ -23,6 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_GC_H__
+#define __MICROPY_INCLUDED_PY_GC_H__
+
+#include <stdint.h>
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 void gc_init(void *start, void *end);
 
@@ -60,3 +67,5 @@ typedef struct _gc_info_t {
 void gc_info(gc_info_t *info);
 void gc_dump_info(void);
 void gc_dump_alloc_table(void);
+
+#endif // __MICROPY_INCLUDED_PY_GC_H__

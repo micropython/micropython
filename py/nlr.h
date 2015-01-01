@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_NLR_H__
+#define __MICROPY_INCLUDED_PY_NLR_H__
 
 // non-local return
 // exception handling, basically a stack of setjmp/longjmp buffers
@@ -30,6 +32,8 @@
 #include <limits.h>
 #include <setjmp.h>
 #include <assert.h>
+
+#include "py/mpconfig.h"
 
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
@@ -91,3 +95,5 @@ void nlr_jump_fail(void *val);
         nlr_jump(_val); \
     } while (0)
 #endif
+
+#endif // __MICROPY_INCLUDED_PY_NLR_H__

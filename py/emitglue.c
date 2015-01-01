@@ -30,14 +30,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "emitglue.h"
-#include "bc.h"
+#include "py/emitglue.h"
+#include "py/runtime0.h"
+#include "py/bc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_BC0_H__
+#define __MICROPY_INCLUDED_PY_BC0_H__
 
 // Micro Python byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
@@ -118,3 +120,5 @@
 #define MP_BC_STORE_FAST_MULTI           (0xc0) // + N(16)
 #define MP_BC_UNARY_OP_MULTI             (0xd0) // + op(5)
 #define MP_BC_BINARY_OP_MULTI            (0xd5) // + op(35)
+
+#endif // __MICROPY_INCLUDED_PY_BC0_H__

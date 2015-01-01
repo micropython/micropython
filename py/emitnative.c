@@ -42,24 +42,12 @@
 
 // for x in l[0:8]: can be compiled into a native loop if l has pointer type
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "emitglue.h"
-#include "scope.h"
-#include "runtime0.h"
-#include "emit.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/emit.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -78,7 +66,7 @@
 
 // x64 specific stuff
 
-#include "asmx64.h"
+#include "py/asmx64.h"
 
 #define EXPORT_FUN(name) emit_native_x64_##name
 
@@ -163,7 +151,7 @@
 
 // x86 specific stuff
 
-#include "asmx86.h"
+#include "py/asmx86.h"
 
 STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_CONVERT_OBJ_TO_NATIVE] = 2,
@@ -295,7 +283,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 // thumb specific stuff
 
-#include "asmthumb.h"
+#include "py/asmthumb.h"
 
 #define EXPORT_FUN(name) emit_native_thumb_##name
 
@@ -378,7 +366,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 // ARM specific stuff
 
-#include "asmarm.h"
+#include "py/asmarm.h"
 
 #define EXPORT_FUN(name) emit_native_arm_##name
 

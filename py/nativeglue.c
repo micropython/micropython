@@ -28,14 +28,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "emitglue.h"
+#include "py/nlr.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/emitglue.h"
 
 #if MICROPY_EMIT_NATIVE
 

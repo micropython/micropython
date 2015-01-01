@@ -24,20 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "emitglue.h"
-#include "scope.h"
-#include "runtime0.h"
-#include "emit.h"
+#include "py/emit.h"
 
 struct _emit_t {
     scope_t *scope;

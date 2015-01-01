@@ -23,6 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_MPZ_H__
+#define __MICROPY_INCLUDED_PY_MPZ_H__
+
+#include <stdint.h>
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 // This mpz module implements arbitrary precision integers.
 //
@@ -131,3 +138,5 @@ mp_float_t mpz_as_float(const mpz_t *z);
 #endif
 mp_uint_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma);
 mp_uint_t mpz_as_str_inpl(const mpz_t *z, mp_uint_t base, const char *prefix, char base_char, char comma, char *str);
+
+#endif // __MICROPY_INCLUDED_PY_MPZ_H__

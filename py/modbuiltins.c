@@ -27,18 +27,14 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objstr.h"
-#include "smallint.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "builtin.h"
-#include "stream.h"
-#include "pfenv.h"
+#include "py/nlr.h"
+#include "py/smallint.h"
+#include "py/objstr.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
+#include "py/stream.h"
+#include "py/pfenv.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>

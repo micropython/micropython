@@ -25,21 +25,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "unicode.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "pfenv.h"
-#include "objstr.h"
-#include "objlist.h"
+#include "py/nlr.h"
+#include "py/unicode.h"
+#include "py/objstr.h"
+#include "py/objlist.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/pfenv.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
 

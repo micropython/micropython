@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJFUN_H__
+#define __MICROPY_INCLUDED_PY_OBJFUN_H__
+
+#include "py/obj.h"
 
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
@@ -41,3 +45,5 @@ typedef struct _mp_obj_fun_bc_t {
     //  - a single slot for kw args dict (if it takes them)
     mp_obj_t extra_args[];
 } mp_obj_fun_bc_t;
+
+#endif // __MICROPY_INCLUDED_PY_OBJFUN_H__

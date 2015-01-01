@@ -24,13 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-#include "mpconfig.h"
-#include "misc.h"
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)

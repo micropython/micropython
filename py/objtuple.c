@@ -27,14 +27,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "objtuple.h"
+#include "py/nlr.h"
+#include "py/objtuple.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, mp_uint_t cur);
 

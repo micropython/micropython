@@ -30,14 +30,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "objtype.h"
+#include "py/nlr.h"
+#include "py/objtype.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

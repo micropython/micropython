@@ -25,21 +25,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objfun.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "bc.h"
-#include "stackctrl.h"
+#include "py/nlr.h"
+#include "py/objtuple.h"
+#include "py/objfun.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/bc.h"
+#include "py/stackctrl.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

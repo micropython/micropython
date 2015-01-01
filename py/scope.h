@@ -23,6 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_SCOPE_H__
+#define __MICROPY_INCLUDED_PY_SCOPE_H__
+
+#include "py/parse.h"
+#include "py/emitglue.h"
 
 enum {
     ID_INFO_KIND_GLOBAL_IMPLICIT,
@@ -77,3 +82,5 @@ id_info_t *scope_find_global(scope_t *scope, qstr qstr);
 id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qstr);
 void scope_close_over_in_parents(scope_t *scope, qstr qstr);
 void scope_print_info(scope_t *s);
+
+#endif // __MICROPY_INCLUDED_PY_SCOPE_H__

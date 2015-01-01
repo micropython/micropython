@@ -23,5 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJGENERATOR_H__
+#define __MICROPY_INCLUDED_PY_OBJGENERATOR_H__
+
+#include "py/obj.h"
+#include "py/runtime.h"
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_val, mp_obj_t throw_val, mp_obj_t *ret_val);
+
+#endif // __MICROPY_INCLUDED_PY_OBJGENERATOR_H__

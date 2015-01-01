@@ -29,17 +29,13 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtype.h"
-#include "mpz.h"
-#include "objint.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "stackctrl.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/objtype.h"
+#include "py/objint.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/stackctrl.h"
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {

@@ -27,16 +27,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
-#include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "gc.h"
-
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/gc.h"
+#include "py/obj.h"
+#include "py/runtime.h"
 
 #if MICROPY_ENABLE_GC
 

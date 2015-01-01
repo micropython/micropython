@@ -24,11 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "smallint.h"
+#include "py/smallint.h"
 
 bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y) {
     // Check for multiply overflow; see CERT INT32-C

@@ -24,14 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "runtime0.h"
-#include "builtin.h"
+#include "py/runtime0.h"
+#include "py/builtin.h"
 
 STATIC mp_obj_t op_getitem(mp_obj_t self_in, mp_obj_t key_in) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);

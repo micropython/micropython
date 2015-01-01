@@ -27,14 +27,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "objlist.h"
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_list_t *list, mp_uint_t cur);
 STATIC mp_obj_list_t *list_new(mp_uint_t n);

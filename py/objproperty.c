@@ -27,12 +27,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_PROPERTY
 

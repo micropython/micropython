@@ -29,14 +29,10 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "binary.h"
+#include "py/nlr.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/binary.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 

@@ -29,17 +29,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objfun.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "bc.h"
-#include "stackctrl.h"
+#include "py/nlr.h"
+#include "py/objfun.h"
+#include "py/bc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

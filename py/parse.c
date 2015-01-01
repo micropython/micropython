@@ -30,13 +30,10 @@
 #include <assert.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parsenumbase.h"
-#include "parse.h"
-#include "smallint.h"
+#include "py/lexer.h"
+#include "py/parse.h"
+#include "py/parsenum.h"
+#include "py/smallint.h"
 
 #define RULE_ACT_ARG_MASK       (0x0f)
 #define RULE_ACT_KIND_MASK      (0x30)
@@ -69,7 +66,7 @@ typedef struct _rule_t {
 
 enum {
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
-#include "grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
     RULE_maximum_number_of,
     RULE_string, // special node for non-interned string
@@ -91,7 +88,7 @@ enum {
 #else
 #define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
 #endif
-#include "grammar.h"
+#include "py/grammar.h"
 #undef or
 #undef and
 #undef list
@@ -105,7 +102,7 @@ enum {
 
 STATIC const rule_t *rules[] = {
 #define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
-#include "grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 };
 

@@ -24,22 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "parsenumbase.h"
-#include "obj.h"
-#include "smallint.h"
-#include "mpz.h"
-#include "objint.h"
-#include "runtime0.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/parsenumbase.h"
+#include "py/smallint.h"
+#include "py/objint.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>

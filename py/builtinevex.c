@@ -26,20 +26,11 @@
 
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "lexerunix.h"
-#include "parse.h"
-#include "obj.h"
-#include "objfun.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "builtin.h"
+#include "py/nlr.h"
+#include "py/objfun.h"
+#include "py/compile.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
 
 #if MICROPY_PY_BUILTINS_COMPILE
 

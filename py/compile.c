@@ -31,26 +31,18 @@
 #include <assert.h>
 #include <math.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "runtime0.h"
-#include "obj.h"
-#include "emitglue.h"
-#include "scope.h"
-#include "emit.h"
-#include "compile.h"
-#include "runtime.h"
-#include "builtin.h"
-#include "smallint.h"
+#include "py/scope.h"
+#include "py/emit.h"
+#include "py/compile.h"
+#include "py/smallint.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
 
 // TODO need to mangle __attr names
 
 typedef enum {
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
-#include "grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
     PN_maximum_number_of,
     PN_string, // special node for non-interned string
@@ -2937,7 +2929,7 @@ STATIC compile_function_t compile_function[] = {
 #define nc NULL
 #define c(f) compile_##f
 #define DEF_RULE(rule, comp, kind, ...) comp,
-#include "grammar.h"
+#include "py/grammar.h"
 #undef nc
 #undef c
 #undef DEF_RULE

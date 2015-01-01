@@ -34,7 +34,6 @@
 #include "misc.h"
 #include "qstr.h"
 #include "lexer.h"
-#include "lexerunix.h"
 #include "parse.h"
 #include "obj.h"
 #include "parsehelper.h"

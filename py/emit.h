@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+#ifndef __MICROPY_INCLUDED_PY_EMIT_H__
+#define __MICROPY_INCLUDED_PY_EMIT_H__
+
+#include "py/lexer.h"
+#include "py/scope.h"
+#include "py/runtime0.h"
+
 /* Notes on passes:
  * We don't know exactly the opcodes in pass 1 because they depend on the
  * closing over of variables (LOAD_CLOSURE, BUILD_TUPLE, MAKE_CLOSURE), which
@@ -33,10 +40,6 @@
  * This is problematic for some emitters (x64) since they need to know the maximum
  * stack size to compile the entry to the function, and this affects code size.
  */
-#ifndef __MICROPY_INCLUDED_PY_EMIT_H__
-#define __MICROPY_INCLUDED_PY_EMIT_H__
-
-#include "py/runtime0.h"
 
 typedef enum {
     MP_PASS_SCOPE = 1,      // work out id's and their kind, and number of labels

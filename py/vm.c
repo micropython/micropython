@@ -29,16 +29,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "emitglue.h"
-#include "runtime.h"
-#include "bc0.h"
-#include "bc.h"
-#include "objgenerator.h"
+#include "py/nlr.h"
+#include "py/emitglue.h"
+#include "py/runtime.h"
+#include "py/bc0.h"
+#include "py/bc.h"
 
 #if 0
 #define TRACE(ip) printf("sp=" INT_FMT " ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
@@ -110,7 +105,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_o
 #define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; } /* stores ip pointing to last opcode */
 #endif
 #if MICROPY_OPT_COMPUTED_GOTO
-    #include "vmentrytable.h"
+    #include "py/vmentrytable.h"
     #define DISPATCH() do { \
         TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \

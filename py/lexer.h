@@ -26,6 +26,11 @@
 #ifndef __MICROPY_INCLUDED_PY_LEXER_H__
 #define __MICROPY_INCLUDED_PY_LEXER_H__
 
+#include <stdint.h>
+
+#include "py/mpconfig.h"
+#include "py/qstr.h"
+
 /* lexer.h -- simple tokeniser for Micro Python
  *
  * Uses (byte) length instead of null termination.

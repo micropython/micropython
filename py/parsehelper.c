@@ -26,16 +26,9 @@
 
 // these functions are separate from parse.c to keep parser independent of mp_obj_t
 
-#include <stdint.h>
 #include <stdio.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "parsehelper.h"
+#include "py/parsehelper.h"
 
 #define STR_MEMORY "parser could not allocate enough memory"
 #define STR_UNEXPECTED_INDENT "unexpected indent"

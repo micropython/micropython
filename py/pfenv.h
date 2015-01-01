@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_PFENV_H__
+#define __MICROPY_INCLUDED_PY_PFENV_H__
+
+#include "py/obj.h"
 
 #define PF_FLAG_LEFT_ADJUST       (0x001)
 #define PF_FLAG_SHOW_SIGN         (0x002)
@@ -55,3 +59,5 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...);
 
 // Wrapper for system printf
 void printf_wrapper(void *env, const char *fmt, ...);
+
+#endif // __MICROPY_INCLUDED_PY_PFENV_H__

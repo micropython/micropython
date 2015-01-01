@@ -29,13 +29,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
+#include "py/mpconfig.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_X86
 
-#include "asmx86.h"
+#include "py/asmx86.h"
 
 /* all offsets are measured in multiples of 4 bytes */
 #define WORD_SIZE                (4)

@@ -30,12 +30,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "smallint.h"
-#include "binary.h"
+#include "py/binary.h"
+#include "py/smallint.h"
 
 // Helpers to work with binary-encoded data
 

@@ -23,7 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_REPL_H__
+#define __MICROPY_INCLUDED_PY_REPL_H__
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
 
 #if MICROPY_HELPER_REPL
 bool mp_repl_continue_with_input(const char *input);
 #endif
+
+#endif // __MICROPY_INCLUDED_PY_REPL_H__

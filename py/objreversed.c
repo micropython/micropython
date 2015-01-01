@@ -27,12 +27,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
 
 typedef struct _mp_obj_reversed_t {
     mp_obj_base_t base;

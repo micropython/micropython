@@ -28,11 +28,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime0.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
+#include "py/obj.h"
 
 // Fixed empty map. Useful when need to call kw-receiving functions
 // without any keywords from C, etc.

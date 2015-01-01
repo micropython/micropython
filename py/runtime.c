@@ -24,33 +24,24 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objlist.h"
-#include "objmodule.h"
-#include "parsenum.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "emitglue.h"
-#include "builtin.h"
-#include "bc.h"
-#include "smallint.h"
-#include "objgenerator.h"
-#include "lexer.h"
-#include "parse.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "stackctrl.h"
-#include "gc.h"
+#include "py/nlr.h"
+#include "py/parsehelper.h"
+#include "py/parsenum.h"
+#include "py/compile.h"
+#include "py/objtuple.h"
+#include "py/objlist.h"
+#include "py/objmodule.h"
+#include "py/objgenerator.h"
+#include "py/smallint.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
+#include "py/stackctrl.h"
+#include "py/gc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

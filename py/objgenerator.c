@@ -28,15 +28,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "bc.h"
-#include "objgenerator.h"
-#include "objfun.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/bc.h"
+#include "py/objgenerator.h"
+#include "py/objfun.h"
 
 /******************************************************************************/
 /* generator wrapper                                                          */

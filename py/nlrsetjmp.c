@@ -24,10 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <setjmp.h>
-#include <stdio.h>
-#include "mpconfig.h"
-#include "nlr.h"
+#include "py/nlr.h"
 
 #if MICROPY_NLR_SETJMP
 

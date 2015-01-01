@@ -28,14 +28,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "runtime0.h"
-#include "builtin.h"
+#include "py/nlr.h"
+#include "py/runtime.h"
+#include "py/runtime0.h"
+#include "py/builtin.h"
 
 #if MICROPY_PY_BUILTINS_SET
 

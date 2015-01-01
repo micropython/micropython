@@ -25,25 +25,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "lexerunix.h"
-#include "parse.h"
-#include "obj.h"
-#include "objmodule.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "builtin.h"
+#include "py/nlr.h"
+#include "py/compile.h"
+#include "py/objmodule.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

@@ -42,10 +42,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#include "formatfloat.h"
+
+#include "py/formatfloat.h"
 
 // 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 // exponent values 0 and 255 are reserved, exponent can be 1 to 254.
@@ -63,7 +64,7 @@ static const float g_neg_pow[] = {
     1e-32, 1e-16, 1e-8, 1e-4, 1e-2, 1e-1
 };
 
-int format_float(float f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
+int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
 
     char *s = buf;
     int buf_remaining = buf_size - 1;

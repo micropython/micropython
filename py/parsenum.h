@@ -23,6 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_PARSENUM_H__
+#define __MICROPY_INCLUDED_PY_PARSENUM_H__
 
+#include "py/mpconfig.h"
+#include "py/obj.h"
+
+mp_uint_t mp_parse_num_base(const char *str, mp_uint_t len, mp_uint_t *base);
 mp_obj_t mp_parse_num_integer(const char *restrict str, mp_uint_t len, mp_uint_t base);
 mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, bool force_complex);
+
+#endif // __MICROPY_INCLUDED_PY_PARSENUM_H__

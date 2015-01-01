@@ -27,13 +27,9 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "bc0.h"
-#include "bc.h"
+#include "py/bc0.h"
+#include "py/bc.h"
+
 extern const qstr mp_binary_op_method_name[];
 
 #if MICROPY_DEBUG_PRINTERS

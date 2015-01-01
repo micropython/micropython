@@ -27,15 +27,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "nlr.h"
-#include "obj.h"
-#include "parsenumbase.h"
-#include "parsenum.h"
-#include "smallint.h"
-#include "runtime.h"
+#include "py/nlr.h"
+#include "py/parsenum.h"
+#include "py/smallint.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>

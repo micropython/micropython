@@ -30,23 +30,14 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "emitglue.h"
-#include "scope.h"
-#include "runtime0.h"
-#include "emit.h"
-#include "asmthumb.h"
+#include "py/emit.h"
+#include "py/asmthumb.h"
 
 #if MICROPY_EMIT_INLINE_THUMB
 
 typedef enum {
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
-#include "grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
     PN_maximum_number_of,
 } pn_kind_t;

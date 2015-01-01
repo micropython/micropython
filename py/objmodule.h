@@ -23,8 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_OBJMODULE_H__
+#define __MICROPY_INCLUDED_PY_OBJMODULE_H__
+
+#include "py/obj.h"
 
 void mp_module_init(void);
 void mp_module_deinit(void);
 mp_obj_t mp_module_get(qstr module_name);
 void mp_module_register(qstr qstr, mp_obj_t module);
+
+#endif // __MICROPY_INCLUDED_PY_OBJMODULE_H__

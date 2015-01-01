@@ -24,13 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
-#include "stackctrl.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/stackctrl.h"
 
 // Stack top at the start of program
 char *stack_top;

@@ -27,15 +27,11 @@
 
 #include <assert.h>
 #include <string.h>
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "builtin.h"
-#include "objtuple.h"
-#include "objstr.h"
-#include "binary.h"
-#include "parsenum.h"
+
+#include "py/builtin.h"
+#include "py/objtuple.h"
+#include "py/binary.h"
+#include "py/parsenum.h"
 
 #if MICROPY_PY_STRUCT
 

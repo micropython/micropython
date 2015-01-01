@@ -24,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "builtin.h"
-#include "stackctrl.h"
-#include "gc.h"
+
+#include "py/builtin.h"
+#include "py/stackctrl.h"
+#include "py/gc.h"
 
 // Various builtins specific to MicroPython runtime,
 // living in micropython module

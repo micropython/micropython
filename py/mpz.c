@@ -24,15 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "mpz.h"
+#include "py/mpz.h"
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 

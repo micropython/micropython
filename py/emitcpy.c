@@ -30,16 +30,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "emitglue.h"
-#include "scope.h"
-#include "runtime0.h"
-#include "emit.h"
+#include "py/emit.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_CPYTHON

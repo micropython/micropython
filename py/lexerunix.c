@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "misc.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_HELPER_LEXER_UNIX
 
@@ -36,9 +35,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "qstr.h"
-#include "lexer.h"
-#include "lexerunix.h"
+#include "py/lexer.h"
 
 typedef struct _mp_lexer_file_buf_t {
     int fd;
