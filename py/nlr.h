@@ -64,13 +64,14 @@ struct _nlr_buf_t {
 #endif
 };
 
+extern nlr_buf_t *nlr_top;
+
 #if MICROPY_NLR_SETJMP
-extern nlr_buf_t *nlr_setjmp_top;
 NORETURN void nlr_setjmp_jump(void *val);
 // nlr_push() must be defined as a macro, because "The stack context will be
 // invalidated if the function which called setjmp() returns."
-#define nlr_push(buf) ((buf)->prev = nlr_setjmp_top, nlr_setjmp_top = (buf), setjmp((buf)->jmpbuf))
-#define nlr_pop() { nlr_setjmp_top = nlr_setjmp_top->prev; }
+#define nlr_push(buf) ((buf)->prev = nlr_top, nlr_top = (buf), setjmp((buf)->jmpbuf))
+#define nlr_pop() { nlr_top = nlr_top->prev; }
 #define nlr_jump(val) nlr_setjmp_jump(val)
 #else
 unsigned int nlr_push(nlr_buf_t *);

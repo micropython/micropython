@@ -108,7 +108,4 @@ nlr_jump:
     ret.n
     .size   nlr_jump, .-nlr_jump
 
-    .local  nlr_top
-    .comm   nlr_top,4,4
-
 #endif // defined(__xtensa__)
