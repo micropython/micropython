@@ -711,16 +711,9 @@ typedef uint32_t mp_float_int_t;
         // value == 0 || value < 1
         mpz_init_zero(z);
     } else if (u.p.exp == ((1 << EXP_SZ) - 1)) {
-        // inf or NaN
-#if 0
-        // TODO: this probably isn't the right place to throw an exception
-        if(u.p.frc == 0)
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "cannot convert float infinity to integer"));
-        else
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "cannot convert float NaN to integer"));
-#else
+        // u.p.frc == 0 indicates inf, else NaN
+        // should be handled by caller
         mpz_init_zero(z);
-#endif
     } else {
         const int adj_exp = (int)u.p.exp - ((1 << (EXP_SZ - 1)) - 1);
         if (adj_exp < 0) {

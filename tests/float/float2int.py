@@ -22,3 +22,15 @@ for i in range(0,23):
         print('fail: 10**%u was %u digits long' % (i, digcnt));
         testpass = False
 print("power of 10 test: %s" % (testpass and 'passed' or 'failed'))
+
+# test inf conversion
+try:
+    int(float('inf'))
+except OverflowError:
+    print("OverflowError")
+
+# test nan conversion
+try:
+    int(float('nan'))
+except ValueError:
+    print("ValueError")

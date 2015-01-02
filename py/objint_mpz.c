@@ -298,9 +298,16 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mpz_set_from_float(&o->mpz, val);
-    return o;
+    int cl = fpclassify(val);
+    if (cl == FP_INFINITE) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+    } else if (cl == FP_NAN) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+    } else {
+        mp_obj_int_t *o = mp_obj_int_new_mpz();
+        mpz_set_from_float(&o->mpz, val);
+        return o;
+    }
 }
 #endif
 
