@@ -139,7 +139,7 @@ void mp_arg_parse_all_kw_array(mp_uint_t n_pos, mp_uint_t n_kw, const mp_obj_t *
     mp_arg_parse_all(n_pos, args, &kw_args, n_allowed, allowed, out_vals);
 }
 
-#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE || _MSC_VER
 NORETURN void mp_arg_error_terse_mismatch(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "argument num/types mismatch"));
 }
