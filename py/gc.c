@@ -277,9 +277,11 @@ void gc_collect_start(void) {
     MP_STATE_MEM(gc_stack_overflow) = 0;
     MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
     // trace dict_locals and dict_globals
-    gc_collect_root((void**)&MP_STATE_CTX(dict_locals), 2);
+    void **ptrs = (void**)(void*)&MP_STATE_CTX(dict_locals);
+    gc_collect_root(ptrs, 2);
     // trace other root pointers from state
-    gc_collect_root((void**)&MP_STATE_VM(last_pool), offsetof(mp_state_vm_t, stack_top) / sizeof(mp_uint_t));
+    ptrs = (void**)(void*)&MP_STATE_VM(last_pool);
+    gc_collect_root(ptrs, offsetof(mp_state_vm_t, stack_top) / sizeof(mp_uint_t));
 }
 
 void gc_collect_root(void **ptrs, mp_uint_t len) {
