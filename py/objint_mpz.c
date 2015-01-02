@@ -298,9 +298,9 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    // TODO: This doesn't handle numbers with large exponent
-    long long i = MICROPY_FLOAT_C_FUN(trunc)(val);
-    return mp_obj_new_int_from_ll(i);
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_float(&o->mpz, val);
+    return o;
 }
 #endif
 
