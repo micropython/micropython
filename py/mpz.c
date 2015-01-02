@@ -590,6 +590,14 @@ mpz_t *mpz_from_ll(long long val, bool is_signed) {
     return z;
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+mpz_t *mpz_from_float(mp_float_t val) {
+    mpz_t *z = mpz_zero();
+    mpz_set_from_float(z, val);
+    return z;
+}
+#endif
+
 mpz_t *mpz_from_str(const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
     mpz_t *z = mpz_zero();
     mpz_set_from_str(z, str, len, neg, base);
@@ -681,6 +689,79 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
         uval >>= DIG_SIZE;
     }
 }
+
+#if MICROPY_PY_BUILTINS_FLOAT
+void mpz_set_from_float(mpz_t *z, mp_float_t src) {
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define EXP_SZ      11
+#define FRC_SZ      52
+typedef uint64_t mp_float_int_t;
+#else
+#define EXP_SZ      8
+#define FRC_SZ      23
+typedef uint32_t mp_float_int_t;
+#endif
+    union {
+        mp_float_t f;
+        struct { mp_float_int_t frc:FRC_SZ, exp:EXP_SZ, sgn:1; } p;
+    } u = {src};
+
+    z->neg = u.p.sgn;
+    if(u.p.exp == 0) {
+        // value == 0 || value < 1
+        mpz_init_zero(z);
+    } else if(u.p.exp == ((1 << EXP_SZ) - 1)) {
+        // inf or NaN
+#if 0
+        // TODO: this probably isn't the right place to throw an exception
+        if(u.p.frc == 0)
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "cannot convert float infinity to integer"));
+        else
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "cannot convert float NaN to integer"));
+#else
+        mpz_init_zero(z);
+#endif
+    } else {
+        const int adj_exp = (int)u.p.exp - ((1 << (EXP_SZ - 1)) - 1);
+        if(adj_exp < 0) {
+            // value < 1 , truncates to 0
+            mpz_init_zero(z);
+        } else if(adj_exp == 0) {
+            // 1 <= value < 2 , so truncates to 1
+            mpz_init_from_int(z, 1);
+        } else {
+            // 2 <= value
+            const int dig_cnt = (adj_exp + 1 + (DIG_SIZE - 1)) / DIG_SIZE;
+            const unsigned int rem = adj_exp % DIG_SIZE;
+            int dig_ind, shft;
+            mp_float_int_t frc = u.p.frc | ((mp_float_int_t)1 << FRC_SZ);
+
+            if(adj_exp < FRC_SZ) {
+                shft = 0;
+                dig_ind = 0;
+                frc >>= FRC_SZ - adj_exp;
+            } else {
+                shft = (rem - FRC_SZ) % DIG_SIZE;
+                dig_ind = (adj_exp - FRC_SZ) / DIG_SIZE;
+            }
+            mpz_need_dig(z, dig_cnt);
+            z->len = dig_cnt;
+            if(dig_ind != 0)
+                memset(z->dig, 0, dig_ind * sizeof(mpz_dig_t));
+            if(shft != 0) {
+                z->dig[dig_ind++] = (frc << shft) & DIG_MASK;
+                frc >>= DIG_SIZE - shft;
+            }
+            while(dig_ind != dig_cnt) {
+                z->dig[dig_ind++] = frc & DIG_MASK;
+                frc >>= DIG_SIZE;
+            }
+        }
+    }
+}
+#undef EXP_SZ
+#undef FRC_SZ
+#endif
 
 // returns number of bytes from str that were processed
 mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
