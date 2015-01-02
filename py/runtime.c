@@ -1228,6 +1228,7 @@ void mp_import_all(mp_obj_t module) {
     }
 }
 
+/*
 mp_obj_dict_t *mp_locals_get(void) {
     return MP_STATE_CTX(dict_locals);
 }
@@ -1245,6 +1246,7 @@ void mp_globals_set(mp_obj_dict_t *d) {
     DEBUG_OP_printf("mp_globals_set(%p)\n", d);
     MP_STATE_CTX(dict_globals) = d;
 }
+*/
 
 // this is implemented in this file so it can optimise access to locals/globals
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
