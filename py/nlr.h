@@ -33,8 +33,6 @@
 #include <setjmp.h>
 #include <assert.h>
 
-#include "py/mpconfig.h"
-
 typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
     // the entries here must all be machine word size
@@ -63,6 +61,8 @@ struct _nlr_buf_t {
     jmp_buf jmpbuf;
 #endif
 };
+
+#include "py/mpstate.h"
 
 #if MICROPY_NLR_SETJMP
 NORETURN void nlr_setjmp_jump(void *val);

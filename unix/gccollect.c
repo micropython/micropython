@@ -128,20 +128,6 @@ void gc_collect(void) {
     //gc_dump_info();
 
     gc_collect_start();
-    #if 0
-    // this traces the .bss section
-#if defined( __CYGWIN__ )
-#define BSS_START __bss_start__
-#elif defined( _MSC_VER ) || defined( __MINGW32__ )
-#define BSS_START *bss_start
-#define _end *bss_end
-#else
-#define BSS_START __bss_start
-#endif
-    extern char BSS_START, _end;
-    //printf(".bss: %p-%p\n", &BSS_START, &_end);
-    gc_collect_root((void**)&BSS_START, ((mp_uint_t)&_end - (mp_uint_t)&BSS_START) / sizeof(mp_uint_t));
-    #endif
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)

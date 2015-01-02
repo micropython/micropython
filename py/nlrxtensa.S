@@ -38,7 +38,7 @@
     .text
 
     .literal_position
-    .literal .LC0, nlr_top
+    .literal .LC0, mp_state_ctx
     .align  4
     .global nlr_push
     .type   nlr_push, @function
@@ -64,7 +64,7 @@ nlr_push:
     .size   nlr_push, .-nlr_push
 
     .literal_position
-    .literal .LC1, nlr_top
+    .literal .LC1, mp_state_ctx
     .align  4
     .global nlr_pop
     .type   nlr_pop, @function
@@ -77,7 +77,7 @@ nlr_pop:
     .size   nlr_pop, .-nlr_pop
 
     .literal_position
-    .literal .LC2, nlr_top
+    .literal .LC2, mp_state_ctx
     .align    4
     .global    nlr_jump
     .type    nlr_jump, @function

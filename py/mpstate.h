@@ -34,9 +34,6 @@
 #include "py/obj.h"
 #include "py/objexcept.h"
 
-extern nlr_buf_t *nlr_top;
-
-// should be zerod on init
 typedef struct _mp_state_mem_t {
     #if MICROPY_MEM_STATS
     size_t total_bytes_allocated;
@@ -49,10 +46,6 @@ typedef struct _mp_state_mem_t {
     #if MICROPY_ENABLE_FINALISER
     byte *gc_finaliser_table_start;
     #endif
-    // We initialise gc_pool_start to a dummy value so it stays out of the bss
-    // section.  This makes sure we don't trace this pointer in a collect cycle.
-    // If we did trace it, it would make the first block of the heap always
-    // reachable, and hence we can never free that block.
     mp_uint_t *gc_pool_start;
     mp_uint_t *gc_pool_end;
 
@@ -69,28 +62,32 @@ typedef struct _mp_state_mem_t {
     mp_uint_t gc_last_free_atb_index;
 } mp_state_mem_t;
 
-// zero
 typedef struct _mp_state_vm_t {
-    // root pointer section (need last_pool at start, stack_top after end)
+    ////////////////////////////////////////////////////////////
+    // START ROOT POINTER SECTION
+    // everything that needs GC scanning must go here
+    // this must start at the start of this structure
+    //
 
     qstr_pool_t *last_pool;
 
-    #if MICROPY_CAN_OVERRIDE_BUILTINS
-    mp_obj_dict_t *mp_module_builtins_override_dict;
-    #endif
-
-    // Local non-heap memory for allocating an exception when we run out of RAM
+    // non-heap memory for creating an exception if we can't allocate RAM
     mp_obj_exception_t mp_emergency_exception_obj;
 
+    // memory for exception arguments if we can't allocate RAM
     #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     #if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
+    // statically allocated buf
     byte mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE];
     #else
+    // dynamically allocated buf
     byte *mp_emergency_exception_buf;
     #endif
     #endif
 
-    mp_map_t mp_loaded_modules_map; // TODO: expose as sys.modules
+    // map with loaded modules
+    // TODO: expose as sys.modules
+    mp_map_t mp_loaded_modules_map;
 
     // pending exception object (MP_OBJ_NULL if not pending)
     mp_obj_t mp_pending_exception;
@@ -98,10 +95,20 @@ typedef struct _mp_state_vm_t {
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
 
+    // dictionary for overridden builtins
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    mp_obj_dict_t *mp_module_builtins_override_dict;
+    #endif
+
     // include any root pointers defined by a port
     MICROPY_PORT_ROOT_POINTERS
 
+    //
+    // END ROOT POINTER SECTION
+    ////////////////////////////////////////////////////////////
+
     // Stack top at the start of program
+    // Note: this entry is used to locate the end of the root pointer section.
     char *stack_top;
 
     #if MICROPY_STACK_CHECK
@@ -110,27 +117,27 @@ typedef struct _mp_state_vm_t {
 
     mp_uint_t mp_optimise_value;
 
+    // size of the emergency exception buf, if it's dynamically allocated
     #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0
     mp_int_t mp_emergency_exception_buf_size;
     #endif
-
 } mp_state_vm_t;
 
 typedef struct _mp_state_ctx_t {
-    // locals and globals need to be pointers because they can be the same in outer module scope
+    // nlr_top must go at the start of this structure for nlr asm code to work
+    nlr_buf_t *nlr_top;
+    // these must come next for root pointer scanning in GC to work
     mp_obj_dict_t *dict_locals;
     mp_obj_dict_t *dict_globals;
-    // mp_state_mem_t *mem;
-    // mp_state_vm_t *vm;
+    // this must come next for root pointer scanning in GC to work
+    mp_state_vm_t vm;
+    mp_state_mem_t mem;
 } mp_state_ctx_t;
 
-extern mp_state_mem_t mp_state_mem;
-#define MP_STATE_MEM(x) (mp_state_mem.x)
-
-extern mp_state_vm_t mp_state_vm;
-#define MP_STATE_VM(x) (mp_state_vm.x)
-
 extern mp_state_ctx_t mp_state_ctx;
+
 #define MP_STATE_CTX(x) (mp_state_ctx.x)
+#define MP_STATE_VM(x) (mp_state_ctx.vm.x)
+#define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
 
 #endif // __MICROPY_INCLUDED_PY_MPSTATE_H__

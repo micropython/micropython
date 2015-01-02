@@ -276,12 +276,11 @@ void gc_collect_start(void) {
     gc_lock();
     MP_STATE_MEM(gc_stack_overflow) = 0;
     MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
-    // trace dict_locals and dict_globals
-    void **ptrs = (void**)(void*)&MP_STATE_CTX(dict_locals);
-    gc_collect_root(ptrs, 2);
-    // trace other root pointers from state
-    ptrs = (void**)(void*)&MP_STATE_VM(last_pool);
-    gc_collect_root(ptrs, offsetof(mp_state_vm_t, stack_top) / sizeof(mp_uint_t));
+    // Trace root pointers.  This relies on the root pointers being organised
+    // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
+    // dict_globals, then the root pointer section of mp_state_vm.
+    void **ptrs = (void**)(void*)&mp_state_ctx;
+    gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t));
 }
 
 void gc_collect_root(void **ptrs, mp_uint_t len) {

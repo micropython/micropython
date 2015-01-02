@@ -33,9 +33,9 @@
 //      ebx, esi, edi, ebp, esp, eip
 
 #ifdef _WIN32
-#define NLR_TOP _nlr_top
+#define NLR_TOP _mp_state_ctx
 #else
-#define NLR_TOP nlr_top
+#define NLR_TOP mp_state_ctx
 #endif
 
     .file   "nlr.s"

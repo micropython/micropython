@@ -26,7 +26,4 @@
 
 #include "py/mpstate.h"
 
-nlr_buf_t *nlr_top;
-mp_state_mem_t mp_state_mem;
-mp_state_vm_t mp_state_vm;
 mp_state_ctx_t mp_state_ctx;
