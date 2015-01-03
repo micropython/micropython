@@ -832,7 +832,7 @@ STATIC NORETURN void terse_str_format_value_error(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad format string"));
 }
 
-mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     GET_STR_DATA_LEN(args[0], str, len);
@@ -932,23 +932,36 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args) {
         mp_obj_t arg = mp_const_none;
 
         if (field_name) {
-            if (arg_i > 0) {
-                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                    terse_str_format_value_error();
-                } else {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                        "can't switch from automatic field numbering to manual field specification"));
-                }
-            }
             int index = 0;
-            if (str_to_int(vstr_str(field_name), &index) != vstr_len(field_name) - 1) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "attributes not supported yet"));
+            const char *field = vstr_str(field_name);
+            const char *lookup = NULL;
+            if (MP_LIKELY(unichar_isdigit(*field))) {
+                if (arg_i > 0) {
+                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        terse_str_format_value_error();
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                            "can't switch from automatic field numbering to manual field specification"));
+                    }
+                }
+                lookup = str_to_int(vstr_str(field_name), &index) + field;
+                if (index >= n_args - 1) {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
+                }
+                arg = args[index + 1];
+                arg_i = -1;
+            } else {
+                for (lookup = field; *lookup && *lookup != '.' && *lookup != '['; lookup++);
+                mp_obj_t field_q = mp_obj_new_str(field, lookup - field, true/*?*/);
+                mp_map_elem_t *key_elem = mp_map_lookup(kwargs, field_q, MP_MAP_LOOKUP);
+                if (key_elem == NULL) {
+                    nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, field_q));
+                }
+                arg = key_elem->value;
             }
-            if (index >= n_args - 1) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
+            if (*lookup) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, "attributes not supported yet"));
             }
-            arg = args[index + 1];
-            arg_i = -1;
             vstr_free(field_name);
             field_name = NULL;
         } else {
@@ -1775,7 +1788,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
-MP_DEFINE_CONST_FUN_OBJ_VAR(str_format_obj, 1, mp_obj_str_format);
+MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);

@@ -60,6 +60,10 @@ test("{:@<6d}",  -123)
 test("{:@=6d}",  -123)
 test("{:06d}",  -123)
 
+print("{foo}/foo".format(foo="bar"))
+print("{}".format(123, foo="bar"))
+print("{}-{foo}".format(123, foo="bar"))
+
 def test_fmt(conv, fill, alignment, sign, prefix, width, precision, type, arg):
     fmt = '{'
     if conv:
