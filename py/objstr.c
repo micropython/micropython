@@ -944,7 +944,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                             "can't switch from automatic field numbering to manual field specification"));
                     }
                 }
-                lookup = str_to_int(vstr_str(field_name), &index) + field;
+                lookup = str_to_int(field, &index) + field;
                 if (index >= n_args - 1) {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
                 }
