@@ -143,6 +143,8 @@ void msec_sleep(double msec);
 // CL specific overrides from mpconfig
 
 #define NORETURN                    __declspec(noreturn)
+#define MP_LIKELY(x)                (x)
+#define MP_UNLIKELY(x)              (x)
 #define MICROPY_PORT_CONSTANTS      { "dummy", 0 } //can't have zero-sized array
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
