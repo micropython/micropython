@@ -191,9 +191,9 @@ STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
     if (n_args == 0) {
         // no args: construct an empty bytearray
         return array_new(BYTEARRAY_TYPECODE, 0);
-    } else if (MP_OBJ_IS_SMALL_INT(args[0])) {
+    } else if (MP_OBJ_IS_INT(args[0])) {
         // 1 arg, an integer: construct a blank bytearray of that length
-        mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        mp_uint_t len = mp_obj_get_int(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
         memset(o->items, 0, len);
         return o;
