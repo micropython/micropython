@@ -193,7 +193,14 @@
 // Uses 1 byte extra RAM for each of these opcodes and uses a bit of extra code
 // ROM, but improves lookup speed
 #ifndef MICROPY_BYTECODE_CACHE_LOAD_ATTR
-#define MICROPY_BYTECODE_CACHE_LOAD_ATTR (0)
+#define MICROPY_BYTECODE_CACHE_LOAD_ATTR (1)
+#endif
+
+// Whether to cache lookups of STORE_ATTR in bytecode
+// Uses 1 byte extra RAM for each of these opcodes and uses a bit of extra code
+// ROM, but improves store speed
+#ifndef MICROPY_BYTECODE_CACHE_STORE_ATTR
+#define MICROPY_BYTECODE_CACHE_STORE_ATTR (1)
 #endif
 
 /*****************************************************************************/

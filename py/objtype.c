@@ -510,7 +510,7 @@ void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC bool instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = self_in;
 
 #if MICROPY_PY_BUILTINS_PROPERTY
@@ -818,7 +818,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->unary_op = instance_unary_op;
     o->binary_op = instance_binary_op;
     o->load_attr = mp_obj_instance_load_attr;
-    o->store_attr = instance_store_attr;
+    o->store_attr = mp_obj_instance_store_attr;
     o->subscr = instance_subscr;
     o->call = mp_obj_instance_call;
     o->getiter = instance_getiter;

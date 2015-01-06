@@ -573,6 +573,9 @@ STATIC void emit_bc_store_global(emit_t *emit, qstr qst) {
 STATIC void emit_bc_store_attr(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, -2);
     emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_ATTR, qst);
+    if (MICROPY_BYTECODE_CACHE_STORE_ATTR) {
+        emit_write_bytecode_byte(emit, 0);
+    }
 }
 
 STATIC void emit_bc_store_subscr(emit_t *emit) {
