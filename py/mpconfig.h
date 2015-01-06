@@ -182,6 +182,13 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+// Whether to cache lookups of LOAD_NAME/LOAD_GLOBAL in bytecode
+// Uses 1 byte extra RAM for each of these opcodes and uses a bit of extra code
+// ROM, but greatly improves lookup speed
+#ifndef MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL
+#define MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL (1)
+#endif
+
 /*****************************************************************************/
 /* Python internal features                                                  */
 

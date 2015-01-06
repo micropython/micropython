@@ -247,6 +247,7 @@ dispatch_loop:
                     goto load_check;
                 }
 
+                #if !MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL
                 ENTRY(MP_BC_LOAD_NAME): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
@@ -260,6 +261,55 @@ dispatch_loop:
                     PUSH(mp_load_global(qst));
                     DISPATCH();
                 }
+                #else
+                ENTRY(MP_BC_LOAD_NAME): {
+                    extern mp_obj_dict_t *dict_locals;
+                    extern mp_uint_t dict_cache_hit, dict_cache_miss;
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                    mp_uint_t x = *ip;
+                    if (x < dict_locals->map.alloc && dict_locals->map.table[x].key == key) {
+                        dict_cache_hit++;
+                        PUSH(dict_locals->map.table[x].value);
+                    } else {
+                        dict_cache_miss++;
+                        mp_map_elem_t *elem = mp_map_lookup(&dict_locals->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        if (elem != NULL) {
+                            *(byte*)ip = (elem - &dict_locals->map.table[0]) & 0xff;
+                            PUSH(elem->value);
+                        } else {
+                            PUSH(mp_load_name(MP_OBJ_QSTR_VALUE(key)));
+                        }
+                    }
+                    ip++;
+                    DISPATCH();
+                }
+
+                ENTRY(MP_BC_LOAD_GLOBAL): {
+                    extern mp_obj_dict_t *dict_globals;
+                    extern mp_uint_t dict_cache_hit, dict_cache_miss;
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                    mp_uint_t x = *ip;
+                    if (x < dict_globals->map.alloc && dict_globals->map.table[x].key == key) {
+                        dict_cache_hit++;
+                        PUSH(dict_globals->map.table[x].value);
+                    } else {
+                        dict_cache_miss++;
+                        mp_map_elem_t *elem = mp_map_lookup(&dict_globals->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        if (elem != NULL) {
+                            *(byte*)ip = (elem - &dict_globals->map.table[0]) & 0xff;
+                            PUSH(elem->value);
+                        } else {
+                            PUSH(mp_load_global(MP_OBJ_QSTR_VALUE(key)));
+                        }
+                    }
+                    ip++;
+                    DISPATCH();
+                }
+                #endif
 
                 ENTRY(MP_BC_LOAD_ATTR): {
                     MARK_EXC_IP_SELECTIVE();

@@ -56,11 +56,13 @@
 mp_obj_t mp_pending_exception;
 
 // locals and globals need to be pointers because they can be the same in outer module scope
-STATIC mp_obj_dict_t *dict_locals;
-STATIC mp_obj_dict_t *dict_globals;
+mp_obj_dict_t *dict_locals;
+mp_obj_dict_t *dict_globals;
 
 // dictionary for the __main__ module
 STATIC mp_obj_dict_t dict_main;
+
+mp_uint_t dict_cache_hit, dict_cache_miss;
 
 const mp_obj_module_t mp_module___main__ = {
     .base = { &mp_type_module },
@@ -105,9 +107,13 @@ void mp_init(void) {
     // start with no extensions to builtins
     mp_module_builtins_override_dict = NULL;
     #endif
+
+    dict_cache_hit = dict_cache_miss = 0;
 }
 
 void mp_deinit(void) {
+    //printf("dict cache: hit=" UINT_FMT "; miss=" UINT_FMT "; percent_hit=%llu\n", dict_cache_hit, dict_cache_miss, (unsigned long long)100 * (unsigned long long)dict_cache_hit / (dict_cache_hit + dict_cache_miss));
+
     //mp_obj_dict_free(&dict_main);
     mp_module_deinit();
 
