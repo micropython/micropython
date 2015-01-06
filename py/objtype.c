@@ -456,7 +456,7 @@ STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 }
 
-STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in obj members then class locals (TODO check this against CPython)
     assert(is_instance_type(mp_obj_get_type(self_in)));
     mp_obj_instance_t *self = self_in;
@@ -510,7 +510,7 @@ STATIC void instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC bool instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = self_in;
 
 #if MICROPY_PY_BUILTINS_PROPERTY
@@ -817,8 +817,8 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->make_new = instance_make_new;
     o->unary_op = instance_unary_op;
     o->binary_op = instance_binary_op;
-    o->load_attr = instance_load_attr;
-    o->store_attr = instance_store_attr;
+    o->load_attr = mp_obj_instance_load_attr;
+    o->store_attr = mp_obj_instance_store_attr;
     o->subscr = instance_subscr;
     o->call = mp_obj_instance_call;
     o->getiter = instance_getiter;

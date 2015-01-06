@@ -182,6 +182,13 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+// Whether to cache result of map lookups in LOAD_NAME, LOAD_GLOBAL, LOAD_ATTR,
+// STORE_ATTR bytecodes.  Uses 1 byte extra RAM for each of these opcodes and
+// uses a bit of extra code ROM, but greatly improves lookup speed.
+#ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
+#endif
+
 /*****************************************************************************/
 /* Python internal features                                                  */
 
