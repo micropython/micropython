@@ -189,6 +189,13 @@
 #define MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL (1)
 #endif
 
+// Whether to cache lookups of LOAD_ATTR in bytecode
+// Uses 1 byte extra RAM for each of these opcodes and uses a bit of extra code
+// ROM, but improves lookup speed
+#ifndef MICROPY_BYTECODE_CACHE_LOAD_ATTR
+#define MICROPY_BYTECODE_CACHE_LOAD_ATTR (0)
+#endif
+
 /*****************************************************************************/
 /* Python internal features                                                  */
 

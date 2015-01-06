@@ -525,6 +525,9 @@ STATIC void emit_bc_load_global(emit_t *emit, qstr qst) {
 STATIC void emit_bc_load_attr(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, 0);
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_ATTR, qst);
+    if (MICROPY_BYTECODE_CACHE_LOAD_ATTR) {
+        emit_write_bytecode_byte(emit, 0);
+    }
 }
 
 STATIC void emit_bc_load_method(emit_t *emit, qstr qst) {

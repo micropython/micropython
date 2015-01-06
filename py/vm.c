@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/emitglue.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
@@ -311,12 +312,43 @@ dispatch_loop:
                 }
                 #endif
 
+                #if !MICROPY_BYTECODE_CACHE_LOAD_ATTR
                 ENTRY(MP_BC_LOAD_ATTR): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     SET_TOP(mp_load_attr(TOP(), qst));
                     DISPATCH();
                 }
+                #else
+                ENTRY(MP_BC_LOAD_ATTR): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t top = TOP();
+                    if (mp_obj_get_type(top)->load_attr == instance_load_attr) {
+                        mp_obj_instance_t *self = top;
+                        mp_uint_t x = *ip;
+                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                        mp_map_elem_t *elem;
+                        if (x < self->members.alloc && self->members.table[x].key == key) {
+                            elem = &self->members.table[x];
+                        } else {
+                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
+                            if (elem != NULL) {
+                                *(byte*)ip = elem - &self->members.table[0];
+                            } else {
+                                goto load_attr_cache_fail;
+                            }
+                        }
+                        SET_TOP(elem->value);
+                        ip++;
+                        DISPATCH();
+                    }
+                load_attr_cache_fail:
+                    SET_TOP(mp_load_attr(top, qst));
+                    ip++;
+                    DISPATCH();
+                }
+                #endif
 
                 ENTRY(MP_BC_LOAD_METHOD): {
                     MARK_EXC_IP_SELECTIVE();
