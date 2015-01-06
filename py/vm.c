@@ -405,12 +405,15 @@ dispatch_loop:
                     DISPATCH();
                 }
                 #else
-                // XXX this caching code does not work with MICROPY_PY_BUILTINS_PROPERTY enabled
+                // This caching code works with MICROPY_PY_BUILTINS_PROPERTY enabled because
+                // if the attr exists in self->members then it can't be a property.  A
+                // consequence of this is that we can't use MP_MAP_LOOKUP_ADD_IF_NOT_FOUND
+                // in the fast-path below, because that store could override a property.
                 ENTRY(MP_BC_STORE_ATTR): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
-                    if (mp_obj_get_type(top)->store_attr == mp_obj_instance_store_attr) {
+                    if (mp_obj_get_type(top)->store_attr == mp_obj_instance_store_attr && sp[-1] != MP_OBJ_NULL) {
                         mp_obj_instance_t *self = top;
                         mp_uint_t x = *ip;
                         mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
@@ -418,7 +421,7 @@ dispatch_loop:
                         if (x < self->members.alloc && self->members.table[x].key == key) {
                             elem = &self->members.table[x];
                         } else {
-                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
                             if (elem != NULL) {
                                 *(byte*)ip = elem - &self->members.table[0];
                             } else {
@@ -433,6 +436,7 @@ dispatch_loop:
                 store_attr_cache_fail:
                     mp_store_attr(sp[0], qst, sp[-1]);
                     sp -= 2;
+                    ip++;
                     DISPATCH();
                 }
                 #endif
