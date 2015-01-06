@@ -23,6 +23,9 @@ then select the option to find the driver manually (don't use Windows auto updat
 navigate to the pyboard's USB drive, and select that.  It should then install.
 After installing, go back to the Device Manager to find the installed pyboard,
 and see which COM port it is (eg COM4).
+More comprehensive instructions can be found in the
+`Guide for pyboard on Windows (PDF) <http://micropython.org/resources/Micro-Python-Windows-setup.pdf>`_.
+Please consult this guide if you are having problems installing the driver.
 
 You now need to run your terminal program.  You can use HyperTerminal if you
 have it installed, or download the free program PuTTY:
