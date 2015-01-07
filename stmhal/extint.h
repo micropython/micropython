@@ -37,7 +37,7 @@
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)
 
-#define EXTI_NUM_VECTORS        (23)
+#define EXTI_NUM_VECTORS        (PYB_EXTI_NUM_VECTORS)
 
 #define EXTI_MODE_INTERRUPT     (offsetof(EXTI_TypeDef, IMR))
 #define EXTI_MODE_EVENT         (offsetof(EXTI_TypeDef, EMR))
@@ -48,7 +48,7 @@
 
 void extint_init0(void);
 
-uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj, void *param);
+uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj);
 
 void extint_enable(uint line);
 void extint_disable(uint line);

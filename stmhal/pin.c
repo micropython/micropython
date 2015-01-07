@@ -91,13 +91,11 @@
 /// how a particular object gets mapped to a pin.
 
 // Pin class variables
-STATIC mp_obj_t pin_class_mapper;
-STATIC mp_obj_t pin_class_map_dict;
 STATIC bool pin_class_debug;
 
 void pin_init0(void) {
-    pin_class_mapper = mp_const_none;
-    pin_class_map_dict = mp_const_none;
+    MP_STATE_PORT(pin_class_mapper) = mp_const_none;
+    MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
     pin_class_debug = false;
 }
 
@@ -116,8 +114,8 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    if (pin_class_mapper != mp_const_none) {
-        pin_obj = mp_call_function_1(pin_class_mapper, user_obj);
+    if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
+        pin_obj = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
         if (pin_obj != mp_const_none) {
             if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin.mapper didn't return a Pin object"));
@@ -135,8 +133,8 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         // other lookup methods.
     }
 
-    if (pin_class_map_dict != mp_const_none) {
-        mp_map_t *pin_map_map = mp_obj_dict_get_map(pin_class_map_dict);
+    if (MP_STATE_PORT(pin_class_map_dict) != mp_const_none) {
+        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_STATE_PORT(pin_class_map_dict));
         mp_map_elem_t *elem = mp_map_lookup(pin_map_map, user_obj, MP_MAP_LOOKUP);
         if (elem != NULL && elem->value != NULL) {
             pin_obj = elem->value;
@@ -266,10 +264,10 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
 /// Get or set the pin mapper function.
 STATIC mp_obj_t pin_mapper(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
-        pin_class_mapper = args[1];
+        MP_STATE_PORT(pin_class_mapper) = args[1];
         return mp_const_none;
     }
-    return pin_class_mapper;
+    return MP_STATE_PORT(pin_class_mapper);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mapper_fun_obj, 1, 2, pin_mapper);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, (mp_obj_t)&pin_mapper_fun_obj);
@@ -278,10 +276,10 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, (mp_obj_t)&pin_mapper_fun
 /// Get or set the pin mapper dictionary.
 STATIC mp_obj_t pin_map_dict(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
-        pin_class_map_dict = args[1];
+        MP_STATE_PORT(pin_class_map_dict) = args[1];
         return mp_const_none;
     }
-    return pin_class_map_dict;
+    return MP_STATE_PORT(pin_class_map_dict);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, (mp_obj_t)&pin_map_dict_fun_obj);

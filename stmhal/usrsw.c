@@ -26,8 +26,6 @@
 
 #include <stdio.h>
 
-#include "stm32f4xx_hal.h"
-
 #include "py/runtime.h"
 #include "extint.h"
 #include "pin.h"
@@ -73,10 +71,9 @@ int switch_get(void) {
 
 typedef struct _pyb_switch_obj_t {
     mp_obj_base_t base;
-    mp_obj_t callback;
 } pyb_switch_obj_t;
 
-STATIC pyb_switch_obj_t pyb_switch_obj;
+STATIC const pyb_switch_obj_t pyb_switch_obj = {{&pyb_switch_type}};
 
 void pyb_switch_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     print(env, "Switch()");
@@ -87,9 +84,6 @@ void pyb_switch_print(void (*print)(void *env, const char *fmt, ...), void *env,
 STATIC mp_obj_t pyb_switch_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-
-    // init the switch object
-    pyb_switch_obj.base.type = &pyb_switch_type;
 
     // No need to clear the callback member: if it's already been set and registered
     // with extint then we don't want to reset that behaviour.  If it hasn't been set,
@@ -108,8 +102,8 @@ mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
 }
 
 STATIC mp_obj_t switch_callback(mp_obj_t line) {
-    if (pyb_switch_obj.callback != mp_const_none) {
-        mp_call_function_0(pyb_switch_obj.callback);
+    if (MP_STATE_PORT(pyb_switch_callback) != mp_const_none) {
+        mp_call_function_0(MP_STATE_PORT(pyb_switch_callback));
     }
     return mp_const_none;
 }
@@ -119,8 +113,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 /// Register the given function to be called when the switch is pressed down.
 /// If `fun` is `None`, then it disables the callback.
 mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
-    pyb_switch_obj_t *self = self_in;
-    self->callback = callback;
+    MP_STATE_PORT(pyb_switch_callback) = callback;
     // Init the EXTI each time this function is called, since the EXTI
     // may have been disabled by an exception in the interrupt, or the
     // user disabling the line explicitly.
@@ -128,7 +121,7 @@ mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
                     MICROPY_HW_USRSW_EXTI_MODE,
                     MICROPY_HW_USRSW_PULL,
                     callback == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
-                    true, NULL);
+                    true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);

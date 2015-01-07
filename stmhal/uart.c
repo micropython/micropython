@@ -90,21 +90,18 @@ struct _pyb_uart_obj_t {
     byte *read_buf;                     // byte or uint16_t, depending on char size
 };
 
-// pointers to all UART objects (if they have been created)
-STATIC pyb_uart_obj_t *pyb_uart_obj_all[6];
-
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
 
 void uart_init0(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(pyb_uart_obj_all); i++) {
-        pyb_uart_obj_all[i] = NULL;
+    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
+        MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
     }
 }
 
 // unregister all interrupt sources
 void uart_deinit(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(pyb_uart_obj_all); i++) {
-        pyb_uart_obj_t *uart_obj = pyb_uart_obj_all[i];
+    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
+        pyb_uart_obj_t *uart_obj = MP_STATE_PORT(pyb_uart_obj_all)[i];
         if (uart_obj != NULL) {
             pyb_uart_deinit(uart_obj);
         }
@@ -302,7 +299,7 @@ void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
 // this IRQ handler is set up to handle RXNE interrupts only
 void uart_irq_handler(mp_uint_t uart_id) {
     // get the uart object
-    pyb_uart_obj_t *self = pyb_uart_obj_all[uart_id - 1];
+    pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
 
     if (self == NULL) {
         // UART object has not been set, so we can't do anything, not
@@ -502,21 +499,21 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
         }
     } else {
         uart_id = mp_obj_get_int(args[0]);
-        if (uart_id < 1 || uart_id > MP_ARRAY_SIZE(pyb_uart_obj_all)) {
+        if (uart_id < 1 || uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_id));
         }
     }
 
     pyb_uart_obj_t *self;
-    if (pyb_uart_obj_all[uart_id - 1] == NULL) {
+    if (MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] == NULL) {
         // create new UART object
         self = m_new0(pyb_uart_obj_t, 1);
         self->base.type = &pyb_uart_type;
         self->uart_id = uart_id;
-        pyb_uart_obj_all[uart_id - 1] = self;
+        MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] = self;
     } else {
         // reference existing UART object
-        self = pyb_uart_obj_all[uart_id - 1];
+        self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
     }
 
     if (n_args > 1 || n_kw > 0) {

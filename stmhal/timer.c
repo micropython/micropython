@@ -145,9 +145,7 @@ TIM_HandleTypeDef TIM6_Handle;
 // Used to divide down TIM3 and periodically call the flash storage IRQ
 STATIC uint32_t tim3_counter = 0;
 
-// Used to do callbacks to Python code on interrupt
-STATIC pyb_timer_obj_t *pyb_timer_obj_all[14];
-#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(pyb_timer_obj_all)
+#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
 
 STATIC uint32_t timer_get_source_freq(uint32_t tim_id);
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
@@ -157,14 +155,14 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
 void timer_init0(void) {
     tim3_counter = 0;
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        pyb_timer_obj_all[i] = NULL;
+        MP_STATE_PORT(pyb_timer_obj_all)[i] = NULL;
     }
 }
 
 // unregister all interrupt sources
 void timer_deinit(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        pyb_timer_obj_t *tim = pyb_timer_obj_all[i];
+        pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[i];
         if (tim != NULL) {
             pyb_timer_deinit(tim);
         }
@@ -659,7 +657,7 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
 
     // set the global variable for interrupt callbacks
     if (tim->tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
-        pyb_timer_obj_all[tim->tim_id - 1] = tim;
+        MP_STATE_PORT(pyb_timer_obj_all)[tim->tim_id - 1] = tim;
     }
 
     return (mp_obj_t)tim;
@@ -1253,7 +1251,7 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
 void timer_irq_handler(uint tim_id) {
     if (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
         // get the timer object
-        pyb_timer_obj_t *tim = pyb_timer_obj_all[tim_id - 1];
+        pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
 
         if (tim == NULL) {
             // Timer object has not been set, so we can't do anything.

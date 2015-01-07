@@ -31,7 +31,10 @@
 #include "py/runtime.h"
 #include "pendsv.h"
 
-static void *pendsv_object = NULL;
+// Note: this can contain point to the heap but is not traced by GC.
+// This is okay because we only ever set it to mp_const_vcp_interrupt
+// which is in the root-pointer set.
+STATIC void *pendsv_object;
 
 void pendsv_init(void) {
     // set PendSV interrupt at lowest priority

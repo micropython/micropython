@@ -122,6 +122,34 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
+#define PYB_EXTI_NUM_VECTORS (23)
+
+#define MP_STATE_PORT MP_STATE_VM
+
+#define MICROPY_PORT_ROOT_POINTERS \
+    const char *readline_hist[8]; \
+    \
+    mp_obj_t mp_const_vcp_interrupt; \
+    \
+    mp_obj_t pyb_config_main; \
+    mp_obj_t pyb_config_usb_mode; \
+    \
+    mp_obj_t pyb_switch_callback; \
+    \
+    mp_obj_t pin_class_mapper; \
+    mp_obj_t pin_class_map_dict; \
+    \
+    mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]; \
+    \
+    /* Used to do callbacks to Python code on interrupt */ \
+    struct _pyb_timer_obj_t *pyb_timer_obj_all[14]; \
+    \
+    /* stdio is repeated on this UART object if it's not null */ \
+    struct _pyb_uart_obj_t *pyb_stdio_uart; \
+    \
+    /* pointers to all UART objects (if they have been created) */ \
+    struct _pyb_uart_obj_t *pyb_uart_obj_all[6]; \
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)

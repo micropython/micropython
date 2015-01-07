@@ -28,8 +28,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <stm32f4xx_hal.h>
-
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -101,13 +99,7 @@ typedef struct {
     mp_int_t line;
 } extint_obj_t;
 
-typedef struct {
-    mp_obj_t callback_obj;
-    void *param;
-    uint32_t mode;
-} extint_vector_t;
-
-STATIC extint_vector_t extint_vector[EXTI_NUM_VECTORS];
+STATIC uint32_t pyb_extint_mode[EXTI_NUM_VECTORS];
 
 #if !defined(ETH)
 #define ETH_WKUP_IRQn   62  // The 405 doesn't have ETH, but we want a value to put in our table
@@ -123,10 +115,7 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
 
 // Set override_callback_obj to true if you want to unconditionally set the
 // callback function.
-//
-// NOTE: param is for C callers. Python can use closure to get an object bound
-//       with the function.
-uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj, void *param) {
+uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj) {
     const pin_obj_t *pin = NULL;
     uint v_line;
 
@@ -159,22 +148,21 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid ExtInt Pull: %d", pull));
     }
 
-    extint_vector_t *v = &extint_vector[v_line];
-    if (!override_callback_obj && v->callback_obj != mp_const_none && callback_obj != mp_const_none) {
+    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[v_line];
+    if (!override_callback_obj && *cb != mp_const_none && callback_obj != mp_const_none) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ExtInt vector %d is already in use", v_line));
     }
 
-    // We need to update callback and param atomically, so we disable the line
+    // We need to update callback atomically, so we disable the line
     // before we update anything.
 
     extint_disable(v_line);
 
-    v->callback_obj = callback_obj;
-    v->param = param;
-    v->mode = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
+    *cb = callback_obj;
+    pyb_extint_mode[v_line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
         EXTI_Mode_Interrupt : EXTI_Mode_Event;
 
-    if (v->callback_obj != mp_const_none) {
+    if (*cb != mp_const_none) {
 
         GPIO_InitTypeDef exti;
         exti.Pin = pin->pin_mask;
@@ -199,7 +187,7 @@ void extint_enable(uint line) {
     // Since manipulating IMR/EMR is a read-modify-write, and we want this to
     // be atomic, we use the bit-band area to just affect the bit we're
     // interested in.
-    EXTI_MODE_BB(extint_vector[line].mode, line) = 1;
+    EXTI_MODE_BB(pyb_extint_mode[line], line) = 1;
 }
 
 void extint_disable(uint line) {
@@ -303,7 +291,7 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type_in;
-    self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false, NULL);
+    self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
 
     return self;
 }
@@ -343,11 +331,10 @@ const mp_obj_type_t extint_type = {
 };
 
 void extint_init0(void) {
-    for (extint_vector_t *v = extint_vector; v < &extint_vector[EXTI_NUM_VECTORS]; v++) {
-        v->callback_obj = mp_const_none;
-        v->param = NULL;
-        v->mode = EXTI_Mode_Interrupt;
-    }
+    for (int i = 0; i < PYB_EXTI_NUM_VECTORS; i++) {
+        MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
+        pyb_extint_mode[i] = EXTI_Mode_Interrupt;
+   }
 }
 
 // Interrupt handler
@@ -355,18 +342,18 @@ void Handle_EXTI_Irq(uint32_t line) {
     if (__HAL_GPIO_EXTI_GET_FLAG(1 << line)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
-            extint_vector_t *v = &extint_vector[line];
-            if (v->callback_obj != mp_const_none) {
+            mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+            if (*cb != mp_const_none) {
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(v->callback_obj, MP_OBJ_NEW_SMALL_INT(line));
+                    mp_call_function_1(*cb, MP_OBJ_NEW_SMALL_INT(line));
                     nlr_pop();
                 } else {
                     // Uncaught exception; disable the callback so it doesn't run again.
-                    v->callback_obj = mp_const_none;
+                    *cb = mp_const_none;
                     extint_disable(line);
                     printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
                     mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);

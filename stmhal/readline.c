@@ -28,8 +28,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpconfig.h"
-#include "py/misc.h"
+#include "py/mpstate.h"
 #include "readline.h"
 #include "pybstdio.h"
 
@@ -40,14 +39,12 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#define READLINE_HIST_SIZE (8)
-
-static const char *readline_hist[READLINE_HIST_SIZE] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+#define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
 
 enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O };
 
 void readline_init0(void) {
-    memset(readline_hist, 0, READLINE_HIST_SIZE * sizeof(const char*));
+    memset(MP_STATE_PORT(readline_hist), 0, READLINE_HIST_SIZE * sizeof(const char*));
 }
 
 STATIC char *str_dup_maybe(const char *str) {
@@ -89,15 +86,15 @@ int readline(vstr_t *line, const char *prompt) {
             } else if (c == '\r') {
                 // newline
                 stdout_tx_str("\r\n");
-                if (line->len > orig_line_len && (readline_hist[0] == NULL || strcmp(readline_hist[0], line->buf + orig_line_len) != 0)) {
+                if (line->len > orig_line_len && (MP_STATE_PORT(readline_hist)[0] == NULL || strcmp(MP_STATE_PORT(readline_hist)[0], line->buf + orig_line_len) != 0)) {
                     // a line which is not empty and different from the last one
                     // so update the history
                     char *most_recent_hist = str_dup_maybe(line->buf + orig_line_len);
                     if (most_recent_hist != NULL) {
                         for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
-                            readline_hist[i] = readline_hist[i - 1];
+                            MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
                         }
-                        readline_hist[0] = most_recent_hist;
+                        MP_STATE_PORT(readline_hist)[0] = most_recent_hist;
                     }
                 }
                 return 0;
@@ -139,12 +136,12 @@ int readline(vstr_t *line, const char *prompt) {
                 escape_seq = ESEQ_NONE;
                 if (c == 'A') {
                     // up arrow
-                    if (hist_cur + 1 < READLINE_HIST_SIZE && readline_hist[hist_cur + 1] != NULL) {
+                    if (hist_cur + 1 < READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[hist_cur + 1] != NULL) {
                         // increase hist num
                         hist_cur += 1;
                         // set line to history
                         line->len = orig_line_len;
-                        vstr_add_str(line, readline_hist[hist_cur]);
+                        vstr_add_str(line, MP_STATE_PORT(readline_hist)[hist_cur]);
                         // set redraw parameters
                         redraw_step_back = cursor_pos - orig_line_len;
                         redraw_from_cursor = true;
@@ -158,7 +155,7 @@ int readline(vstr_t *line, const char *prompt) {
                         // set line to history
                         vstr_cut_tail_bytes(line, line->len - orig_line_len);
                         if (hist_cur >= 0) {
-                            vstr_add_str(line, readline_hist[hist_cur]);
+                            vstr_add_str(line, MP_STATE_PORT(readline_hist)[hist_cur]);
                         }
                         // set redraw parameters
                         redraw_step_back = cursor_pos - orig_line_len;

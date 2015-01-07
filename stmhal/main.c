@@ -112,12 +112,9 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
-STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
-
 STATIC mp_obj_t pyb_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
-        pyb_config_main = main;
+        MP_STATE_PORT(pyb_config_main) = main;
     }
     return mp_const_none;
 }
@@ -125,7 +122,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
 
 STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
     if (MP_OBJ_IS_STR(usb_mode)) {
-        pyb_config_usb_mode = usb_mode;
+        MP_STATE_PORT(pyb_config_usb_mode) = usb_mode;
     }
     return mp_const_none;
 }
@@ -303,7 +300,7 @@ soft_reset:
         pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
 #else
-    pyb_stdio_uart = NULL;
+    MP_STATE_PORT(pyb_stdio_uart) = NULL;
 #endif
 
     // Initialise low-level sub-systems.  Here we need to very basic things like
@@ -444,8 +441,8 @@ soft_reset:
 #endif
 
     // reset config variables; they should be set by boot.py
-    pyb_config_main = MP_OBJ_NULL;
-    pyb_config_usb_mode = MP_OBJ_NULL;
+    MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
+    MP_STATE_PORT(pyb_config_usb_mode) = MP_OBJ_NULL;
 
     // run boot.py, if it exists
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
@@ -479,8 +476,8 @@ soft_reset:
     // USB device
     usb_device_mode_t usb_mode = USB_DEVICE_MODE_CDC_MSC;
     // if we are not in reset_mode==1, this config variable will always be NULL
-    if (pyb_config_usb_mode != MP_OBJ_NULL) {
-        if (strcmp(mp_obj_str_get_str(pyb_config_usb_mode), "CDC+HID") == 0) {
+    if (MP_STATE_PORT(pyb_config_usb_mode) != MP_OBJ_NULL) {
+        if (strcmp(mp_obj_str_get_str(MP_STATE_PORT(pyb_config_usb_mode)), "CDC+HID") == 0) {
             usb_mode = USB_DEVICE_MODE_CDC_HID;
         }
     }
@@ -509,10 +506,10 @@ soft_reset:
     // Run the main script from the current directory.
     if (reset_mode == 1 && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         const char *main_py;
-        if (pyb_config_main == MP_OBJ_NULL) {
+        if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
             main_py = "main.py";
         } else {
-            main_py = mp_obj_str_get_str(pyb_config_main);
+            main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
         }
         FRESULT res = f_stat(main_py, NULL);
         if (res == FR_OK) {

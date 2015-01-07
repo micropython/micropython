@@ -29,6 +29,7 @@
 
 #include "stm32f4xx_hal.h"
 
+#include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/gc.h"
@@ -475,16 +476,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (pyb_stdio_uart == NULL) {
+        if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
             return mp_const_none;
         } else {
-            return pyb_stdio_uart;
+            return MP_STATE_PORT(pyb_stdio_uart);
         }
     } else {
         if (args[0] == mp_const_none) {
-            pyb_stdio_uart = NULL;
+            MP_STATE_PORT(pyb_stdio_uart) = NULL;
         } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
-            pyb_stdio_uart = args[0];
+            MP_STATE_PORT(pyb_stdio_uart) = args[0];
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a UART object"));
         }
