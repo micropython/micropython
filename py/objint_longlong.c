@@ -187,9 +187,24 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    // TODO raise an exception if the unsigned long long won't fit
-    long long i = MICROPY_FLOAT_C_FUN(trunc)(val);
-    return mp_obj_new_int_from_ll(i);
+    switch(mp_classify_fp_as_int(val)) {
+        case MP_FP_CLASS_IS_INF:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+            break;
+        case MP_FP_CLASS_IS_NAN:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+            break;
+        case MP_FP_CLASS_FIT_SMALLINT:
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_FLOAT_C_FUN(trunc)(val));
+        case MP_FP_CLASS_FIT_LONGINT: {
+            long long i = MICROPY_FLOAT_C_FUN(trunc)(val);
+            return mp_obj_new_int_from_ll(i);
+        }
+        case MP_FP_CLASS_OVERFLOW:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "result too large"));
+            break;
+    }
+    return mp_const_none;
 }
 #endif
 
