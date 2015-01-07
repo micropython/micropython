@@ -39,6 +39,7 @@ it will fallback to loading the built-in ``ujson`` module.
    :maxdepth: 1
 
    ubinascii.rst
+   uctypes.rst
    uhashlib.rst
    uheapq.rst
    ujson.rst
