@@ -173,7 +173,7 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
     CS_HIGH();
 
     // register EXTI
-    extint_register((mp_obj_t)PIN_IRQ, GPIO_MODE_IT_FALLING, GPIO_PULLUP, (mp_obj_t)&irq_callback_obj, true, NULL);
+    extint_register((mp_obj_t)PIN_IRQ, GPIO_MODE_IT_FALLING, GPIO_PULLUP, (mp_obj_t)&irq_callback_obj, true);
     extint_enable(PIN_IRQ->pin);
 
     DEBUG_printf("SpiOpen finished; IRQ.pin=%d IRQ_LINE=%d\n", PIN_IRQ->pin, PIN_IRQ->pin);
