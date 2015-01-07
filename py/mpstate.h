@@ -1,0 +1,143 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+#ifndef __MICROPY_INCLUDED_PY_MPSTATE_H__
+#define __MICROPY_INCLUDED_PY_MPSTATE_H__
+
+#include <stdint.h>
+
+#include "py/mpconfig.h"
+#include "py/misc.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/objexcept.h"
+
+typedef struct _mp_state_mem_t {
+    #if MICROPY_MEM_STATS
+    size_t total_bytes_allocated;
+    size_t current_bytes_allocated;
+    size_t peak_bytes_allocated;
+    #endif
+
+    byte *gc_alloc_table_start;
+    mp_uint_t gc_alloc_table_byte_len;
+    #if MICROPY_ENABLE_FINALISER
+    byte *gc_finaliser_table_start;
+    #endif
+    mp_uint_t *gc_pool_start;
+    mp_uint_t *gc_pool_end;
+
+    int gc_stack_overflow;
+    mp_uint_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    mp_uint_t *gc_sp;
+    uint16_t gc_lock_depth;
+
+    // This variable controls auto garbage collection.  If set to 0 then the
+    // GC won't automatically run when gc_alloc can't find enough blocks.  But
+    // you can still allocate/free memory and also explicitly call gc_collect.
+    uint16_t gc_auto_collect_enabled;
+
+    mp_uint_t gc_last_free_atb_index;
+} mp_state_mem_t;
+
+typedef struct _mp_state_vm_t {
+    ////////////////////////////////////////////////////////////
+    // START ROOT POINTER SECTION
+    // everything that needs GC scanning must go here
+    // this must start at the start of this structure
+    //
+
+    qstr_pool_t *last_pool;
+
+    // non-heap memory for creating an exception if we can't allocate RAM
+    mp_obj_exception_t mp_emergency_exception_obj;
+
+    // memory for exception arguments if we can't allocate RAM
+    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+    #if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
+    // statically allocated buf
+    byte mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE];
+    #else
+    // dynamically allocated buf
+    byte *mp_emergency_exception_buf;
+    #endif
+    #endif
+
+    // map with loaded modules
+    // TODO: expose as sys.modules
+    mp_map_t mp_loaded_modules_map;
+
+    // pending exception object (MP_OBJ_NULL if not pending)
+    mp_obj_t mp_pending_exception;
+
+    // dictionary for the __main__ module
+    mp_obj_dict_t dict_main;
+
+    // dictionary for overridden builtins
+    #if MICROPY_CAN_OVERRIDE_BUILTINS
+    mp_obj_dict_t *mp_module_builtins_override_dict;
+    #endif
+
+    // include any root pointers defined by a port
+    MICROPY_PORT_ROOT_POINTERS
+
+    //
+    // END ROOT POINTER SECTION
+    ////////////////////////////////////////////////////////////
+
+    // Stack top at the start of program
+    // Note: this entry is used to locate the end of the root pointer section.
+    char *stack_top;
+
+    #if MICROPY_STACK_CHECK
+    mp_uint_t stack_limit;
+    #endif
+
+    mp_uint_t mp_optimise_value;
+
+    // size of the emergency exception buf, if it's dynamically allocated
+    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0
+    mp_int_t mp_emergency_exception_buf_size;
+    #endif
+} mp_state_vm_t;
+
+typedef struct _mp_state_ctx_t {
+    // nlr_top must go at the start of this structure for nlr asm code to work
+    nlr_buf_t *nlr_top;
+    // these must come next for root pointer scanning in GC to work
+    mp_obj_dict_t *dict_locals;
+    mp_obj_dict_t *dict_globals;
+    // this must come next for root pointer scanning in GC to work
+    mp_state_vm_t vm;
+    mp_state_mem_t mem;
+} mp_state_ctx_t;
+
+extern mp_state_ctx_t mp_state_ctx;
+
+#define MP_STATE_CTX(x) (mp_state_ctx.x)
+#define MP_STATE_VM(x) (mp_state_ctx.vm.x)
+#define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
+
+#endif // __MICROPY_INCLUDED_PY_MPSTATE_H__

@@ -68,7 +68,7 @@ nlr_push:
     bx      lr                      @ return
     .align  2
 nlr_top_addr:
-    .word   nlr_top
+    .word   mp_state_ctx
     .size   nlr_push, .-nlr_push
 
 /**************************************/

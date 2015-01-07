@@ -153,6 +153,9 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
+#define MICROPY_PORT_ROOT_POINTERS \
+    mp_obj_t keyboard_interrupt_obj;
+
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__
 #include <stdlib.h>

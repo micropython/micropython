@@ -30,6 +30,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/mpstate.h"
 #include "py/emit.h"
 #include "py/bc0.h"
 
@@ -383,7 +384,7 @@ STATIC void emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
 STATIC void emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
     //printf("source: line %d -> %d  offset %d -> %d\n", emit->last_source_line, source_line, emit->last_source_line_offset, emit->bytecode_offset);
 #if MICROPY_ENABLE_SOURCE_LINE
-    if (mp_optimise_value >= 3) {
+    if (MP_STATE_VM(mp_optimise_value) >= 3) {
         // If we compile with -O3, don't store line numbers.
         return;
     }

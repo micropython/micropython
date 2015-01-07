@@ -35,6 +35,7 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/parsehelper.h"
@@ -61,12 +62,10 @@ long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
 #ifndef _WIN32
 #include <signal.h>
 
-STATIC mp_obj_t keyboard_interrupt_obj;
-
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
-        mp_obj_exception_clear_traceback(keyboard_interrupt_obj);
-        mp_pending_exception = keyboard_interrupt_obj;
+        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
+        MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
         // disable our handler so next we really die
         struct sigaction sa;
         sa.sa_handler = SIG_DFL;
@@ -336,7 +335,7 @@ int main(int argc, char **argv) {
 
     #ifndef _WIN32
     // create keyboard interrupt object
-    keyboard_interrupt_obj = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     #endif
 
     char *home = getenv("HOME");
@@ -448,10 +447,10 @@ int main(int argc, char **argv) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
                 if (isdigit(argv[a][2])) {
-                    mp_optimise_value = argv[a][2] & 0xf;
+                    MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
                 } else {
-                    mp_optimise_value = 0;
-                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, mp_optimise_value++);
+                    MP_STATE_VM(mp_optimise_value) = 0;
+                    for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++);
                 }
             } else {
                 return usage(argv);

@@ -26,6 +26,7 @@
 #ifndef __MICROPY_INCLUDED_PY_RUNTIME_H__
 #define __MICROPY_INCLUDED_PY_RUNTIME_H__
 
+#include "py/mpstate.h"
 #include "py/obj.h"
 
 typedef enum {
@@ -64,10 +65,10 @@ void mp_arg_parse_all_kw_array(mp_uint_t n_pos, mp_uint_t n_kw, const mp_obj_t *
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
-mp_obj_dict_t *mp_locals_get(void);
-void mp_locals_set(mp_obj_dict_t *d);
-mp_obj_dict_t *mp_globals_get(void);
-void mp_globals_set(mp_obj_dict_t *d);
+static inline mp_obj_dict_t *mp_locals_get(void) { return MP_STATE_CTX(dict_locals); }
+static inline void mp_locals_set(mp_obj_dict_t *d) { MP_STATE_CTX(dict_locals) = d; }
+static inline mp_obj_dict_t *mp_globals_get(void) { return MP_STATE_CTX(dict_globals); }
+static inline void mp_globals_set(mp_obj_dict_t *d) { MP_STATE_CTX(dict_globals) = d; }
 
 mp_obj_t mp_load_name(qstr qstr);
 mp_obj_t mp_load_global(qstr qstr);
@@ -120,7 +121,6 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
 mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args_kw, const mp_obj_t *args);
 NORETURN void mp_native_raise(mp_obj_t o);
 
-extern mp_obj_t mp_pending_exception;
 extern struct _mp_obj_list_t mp_sys_path_obj;
 extern struct _mp_obj_list_t mp_sys_argv_obj;
 #define mp_sys_path ((mp_obj_t)&mp_sys_path_obj)
