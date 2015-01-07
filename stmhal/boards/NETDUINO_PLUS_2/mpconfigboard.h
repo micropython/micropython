@@ -36,3 +36,6 @@
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
+
+// USB VBUS detect pin
+#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)

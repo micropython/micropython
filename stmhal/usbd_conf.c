@@ -71,10 +71,13 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
     
 	/* Configure VBUS Pin */
+#if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+    // USB VBUS detect pin is always A9
     GPIO_InitStruct.Pin = GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+#endif
 	
 #if USE_USB_OTG_ID
     GPIO_InitStruct.Pin = GPIO_PIN_10;
@@ -340,8 +343,8 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   hpcd.Init.phy_itface = PCD_PHY_EMBEDDED; 
   hpcd.Init.Sof_enable = 0;
   hpcd.Init.speed = PCD_SPEED_FULL;
-#if defined(HYDRABUSV10)
-  hpcd.Init.vbus_sensing_enable = 0; /* No VBUS Sensing on USB0 for HydraBus (VBUS is not connected on GPIOA9) */
+#if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+  hpcd.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
 #else
   hpcd.Init.vbus_sensing_enable = 1;
 #endif
