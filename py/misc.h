@@ -45,6 +45,18 @@ typedef unsigned int uint;
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #endif
 
+// should only be used with constants
+#define _INT2_LOG2(x)	(((x) & 0x2) ? 1 : 0)
+#define _INT4_LOG2(x)	(((x) & 0xc) ? (_INT2_LOG2((x) >> 2) + 2) : _INT2_LOG2(x))
+#define _INT8_LOG2(x)	(((x) & 0xf0) ? (_INT4_LOG2((x) >> 4) + 4) : _INT4_LOG2(x))
+#define _INT16_LOG2(x)	(((x) & 0xff00) ? (_INT8_LOG2((x) >> 8) + 8) : _INT8_LOG2(x))
+#define _INT32_LOG2(x)	(((x) & 0xffff0000) ? (_INT16_LOG2((x) >> 16) + 16) : _INT16_LOG2(x))
+#define _INT64_LOG2(x)	(((x) & 0xffffffff00000000) ? (_INT32_LOG2((x) >> 16) + 16) : _INT32_LOG2(x))
+#define INT16_LOG2(x)	(_INT16_LOG2(x) + 1)
+#define INT32_LOG2(x)	(_INT32_LOG2(x) + 1)
+#define INT64_LOG2(x)	(_INT64_LOG2(x) + 1)
+
+
 /** memomry allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
