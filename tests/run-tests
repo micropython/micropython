@@ -65,7 +65,7 @@ def run_tests(pyb, tests, args):
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
-        skip_tests.add('float/float2int.py') # requires double precision floating point to work
+        skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':

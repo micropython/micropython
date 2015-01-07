@@ -1,22 +1,21 @@
-# This case occurs with time.time() values
-print(int(1418774543.))
+# check cases converting float to int, relying only on single precision float
 
+print(int(14187745.))
 print(int(2.**100))
-
-print("%d" % 1418774543.)
-
+print("%d" % 14187745.)
 print("%d" % 2.**100)
 
 testpass = True
-for i in range(0,1024):
+for i in range(0,128):
     bitcnt = len(bin(int(2.**i))) - 3;
     if i != bitcnt:
         print('fail: 2**%u was %u bits long' % (i, bitcnt));
         testpass = False
 print("power of  2 test: %s" % (testpass and 'passed' or 'failed'))
 
+# TODO why does 10**12 fail this test for single precision float?
 testpass = True
-for i in range(0,23):
+for i in range(0,12):
     digcnt = len(str(int(10.**i))) - 1;
     if i != digcnt:
         print('fail: 10**%u was %u digits long' % (i, digcnt));
@@ -34,3 +33,7 @@ try:
     int(float('nan'))
 except ValueError:
     print("ValueError")
+
+# test numbers < 1 (this used to fail; see issue #1044)
+import struct
+struct.pack('I', int(1/2))
