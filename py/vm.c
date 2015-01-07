@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/emitglue.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
@@ -247,6 +248,7 @@ dispatch_loop:
                     goto load_check;
                 }
 
+                #if !MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL
                 ENTRY(MP_BC_LOAD_NAME): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
@@ -260,13 +262,93 @@ dispatch_loop:
                     PUSH(mp_load_global(qst));
                     DISPATCH();
                 }
+                #else
+                ENTRY(MP_BC_LOAD_NAME): {
+                    extern mp_obj_dict_t *dict_locals;
+                    extern mp_uint_t dict_cache_hit, dict_cache_miss;
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                    mp_uint_t x = *ip;
+                    if (x < dict_locals->map.alloc && dict_locals->map.table[x].key == key) {
+                        dict_cache_hit++;
+                        PUSH(dict_locals->map.table[x].value);
+                    } else {
+                        dict_cache_miss++;
+                        mp_map_elem_t *elem = mp_map_lookup(&dict_locals->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        if (elem != NULL) {
+                            *(byte*)ip = (elem - &dict_locals->map.table[0]) & 0xff;
+                            PUSH(elem->value);
+                        } else {
+                            PUSH(mp_load_name(MP_OBJ_QSTR_VALUE(key)));
+                        }
+                    }
+                    ip++;
+                    DISPATCH();
+                }
 
+                ENTRY(MP_BC_LOAD_GLOBAL): {
+                    extern mp_obj_dict_t *dict_globals;
+                    extern mp_uint_t dict_cache_hit, dict_cache_miss;
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                    mp_uint_t x = *ip;
+                    if (x < dict_globals->map.alloc && dict_globals->map.table[x].key == key) {
+                        dict_cache_hit++;
+                        PUSH(dict_globals->map.table[x].value);
+                    } else {
+                        dict_cache_miss++;
+                        mp_map_elem_t *elem = mp_map_lookup(&dict_globals->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        if (elem != NULL) {
+                            *(byte*)ip = (elem - &dict_globals->map.table[0]) & 0xff;
+                            PUSH(elem->value);
+                        } else {
+                            PUSH(mp_load_global(MP_OBJ_QSTR_VALUE(key)));
+                        }
+                    }
+                    ip++;
+                    DISPATCH();
+                }
+                #endif
+
+                #if !MICROPY_BYTECODE_CACHE_LOAD_ATTR
                 ENTRY(MP_BC_LOAD_ATTR): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     SET_TOP(mp_load_attr(TOP(), qst));
                     DISPATCH();
                 }
+                #else
+                ENTRY(MP_BC_LOAD_ATTR): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t top = TOP();
+                    if (mp_obj_get_type(top)->load_attr == mp_obj_instance_load_attr) {
+                        mp_obj_instance_t *self = top;
+                        mp_uint_t x = *ip;
+                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                        mp_map_elem_t *elem;
+                        if (x < self->members.alloc && self->members.table[x].key == key) {
+                            elem = &self->members.table[x];
+                        } else {
+                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
+                            if (elem != NULL) {
+                                *(byte*)ip = elem - &self->members.table[0];
+                            } else {
+                                goto load_attr_cache_fail;
+                            }
+                        }
+                        SET_TOP(elem->value);
+                        ip++;
+                        DISPATCH();
+                    }
+                load_attr_cache_fail:
+                    SET_TOP(mp_load_attr(top, qst));
+                    ip++;
+                    DISPATCH();
+                }
+                #endif
 
                 ENTRY(MP_BC_LOAD_METHOD): {
                     MARK_EXC_IP_SELECTIVE();
@@ -314,6 +396,7 @@ dispatch_loop:
                     DISPATCH();
                 }
 
+                #if !MICROPY_BYTECODE_CACHE_STORE_ATTR
                 ENTRY(MP_BC_STORE_ATTR): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
@@ -321,6 +404,42 @@ dispatch_loop:
                     sp -= 2;
                     DISPATCH();
                 }
+                #else
+                // This caching code works with MICROPY_PY_BUILTINS_PROPERTY enabled because
+                // if the attr exists in self->members then it can't be a property.  A
+                // consequence of this is that we can't use MP_MAP_LOOKUP_ADD_IF_NOT_FOUND
+                // in the fast-path below, because that store could override a property.
+                ENTRY(MP_BC_STORE_ATTR): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    mp_obj_t top = TOP();
+                    if (mp_obj_get_type(top)->store_attr == mp_obj_instance_store_attr && sp[-1] != MP_OBJ_NULL) {
+                        mp_obj_instance_t *self = top;
+                        mp_uint_t x = *ip;
+                        mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
+                        mp_map_elem_t *elem;
+                        if (x < self->members.alloc && self->members.table[x].key == key) {
+                            elem = &self->members.table[x];
+                        } else {
+                            elem = mp_map_lookup(&self->members, key, MP_MAP_LOOKUP);
+                            if (elem != NULL) {
+                                *(byte*)ip = elem - &self->members.table[0];
+                            } else {
+                                goto store_attr_cache_fail;
+                            }
+                        }
+                        elem->value = sp[-1];
+                        sp -= 2;
+                        ip++;
+                        DISPATCH();
+                    }
+                store_attr_cache_fail:
+                    mp_store_attr(sp[0], qst, sp[-1]);
+                    sp -= 2;
+                    ip++;
+                    DISPATCH();
+                }
+                #endif
 
                 ENTRY(MP_BC_STORE_SUBSCR):
                     MARK_EXC_IP_SELECTIVE();

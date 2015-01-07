@@ -509,16 +509,25 @@ STATIC void emit_bc_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
 STATIC void emit_bc_load_name(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_NAME, qst);
+    if (MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL) {
+        emit_write_bytecode_byte(emit, 0);
+    }
 }
 
 STATIC void emit_bc_load_global(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_GLOBAL, qst);
+    if (MICROPY_BYTECODE_CACHE_LOAD_NAME_LOAD_GLOBAL) {
+        emit_write_bytecode_byte(emit, 0);
+    }
 }
 
 STATIC void emit_bc_load_attr(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, 0);
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_ATTR, qst);
+    if (MICROPY_BYTECODE_CACHE_LOAD_ATTR) {
+        emit_write_bytecode_byte(emit, 0);
+    }
 }
 
 STATIC void emit_bc_load_method(emit_t *emit, qstr qst) {
@@ -564,6 +573,9 @@ STATIC void emit_bc_store_global(emit_t *emit, qstr qst) {
 STATIC void emit_bc_store_attr(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, -2);
     emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_ATTR, qst);
+    if (MICROPY_BYTECODE_CACHE_STORE_ATTR) {
+        emit_write_bytecode_byte(emit, 0);
+    }
 }
 
 STATIC void emit_bc_store_subscr(emit_t *emit) {
