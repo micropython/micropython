@@ -298,7 +298,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    switch(mp_classify_fp_as_int(val)) {
+    switch (mp_classify_fp_as_int(val)) {
         case MP_FP_CLASS_IS_INF:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
             break;
