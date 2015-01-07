@@ -270,12 +270,6 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_NONE)
 #endif
 
-#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
-#if !defined(__STDC_IEC_559__) && !defined(_MSC_VER)
-#error Only IEC-559 / IEEE-754 floating point supported
-#endif
-#endif
-
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MICROPY_PY_BUILTINS_FLOAT (1)
 #define MICROPY_FLOAT_C_FUN(fun) fun##f
