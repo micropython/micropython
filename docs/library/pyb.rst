@@ -113,6 +113,9 @@ Power related functions
    Supported sysclk frequencies are (in MHz): 8, 16, 24, 30, 32, 36, 40, 42, 48,
    54, 56, 60, 64, 72, 84, 96, 108, 120, 144, 168.
 
+   The maximum frequency of hclk is 168MHz, of pclk1 is 42MHz, and of pclk2 is
+   84MHz.  Be sure not to set frequencies above these values.
+
    The hclk, pclk1 and pclk2 frequencies are derived from the sysclk frequency
    using a prescaler (divider).  Supported prescalers for hclk are: 1, 2, 4, 8,
    16, 64, 128, 256, 512.  Supported prescalers for pclk1 and pclk2 are: 1, 2,
