@@ -106,8 +106,10 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'I': return &ffi_type_uint;
         case 'l': return &ffi_type_slong;
         case 'L': return &ffi_type_ulong;
+        #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': return &ffi_type_float;
         case 'd': return &ffi_type_double;
+        #endif
         case 'C': // (*)()
         case 'P': // const void*
         case 'p': // void*
@@ -141,6 +143,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
         }
         case 'v':
             return mp_const_none;
+        #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': {
             union { ffi_arg ffi; float flt; } val_union = { .ffi = val };
             return mp_obj_new_float(val_union.flt);
@@ -149,6 +152,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
             double *p = (double*)&val;
             return mp_obj_new_float(*p);
         }
+        #endif
         default:
             return mp_obj_new_int(val);
     }
@@ -336,11 +340,14 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
     // pointer to a memory location of the correct size.
     // TODO check if this needs to be done for other types which don't fit into
     // ffi_arg.
+    #if MICROPY_PY_BUILTINS_FLOAT
     if (sizeof(ffi_arg) == 4 && self->rettype == 'd') {
         double retval;
         ffi_call(&self->cif, self->func, &retval, valueptrs);
         return mp_obj_new_float(retval);
-    } else {
+    } else
+    #endif
+    {
         ffi_arg retval;
         ffi_call(&self->cif, self->func, &retval, valueptrs);
         return return_ffi_value(retval, self->rettype);
