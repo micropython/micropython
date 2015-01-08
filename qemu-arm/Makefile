@@ -58,7 +58,10 @@ endif
 all: run
 
 run: $(BUILD)/flash.elf
-	qemu-system-arm -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/flash.elf
+	qemu-system-arm -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel \
+		$(BUILD)/flash.elf > $(BUILD)/console.out
+	cat $(BUILD)/console.out
+	grep -q "hello world\!" $(BUILD)/console.out
 
 .PHONY: $(BUILD)/genhdr/tests.h
 
