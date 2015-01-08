@@ -985,10 +985,13 @@ STATIC mp_obj_t pyb_timer_freq(mp_uint_t n_args, const mp_obj_t *args) {
         uint32_t period = __HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self);
         uint32_t source_freq = timer_get_source_freq(self->tim_id);
         uint32_t divide = ((prescaler + 1) * (period + 1));
-        if (source_freq % divide == 0) {
-            return mp_obj_new_int(source_freq / divide);
-        } else {
+        #if MICROPY_PY_BUILTINS_FLOAT
+        if (source_freq % divide != 0) {
             return mp_obj_new_float((float)source_freq / (float)divide);
+        } else
+        #endif
+        {
+            return mp_obj_new_int(source_freq / divide);
         }
     } else {
         // set
