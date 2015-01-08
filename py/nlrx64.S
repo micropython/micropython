@@ -35,7 +35,11 @@
 // the offset of nlr_top within mp_state_ctx_t
 #define NLR_TOP_OFFSET (2 * 8)
 
+#if defined(__APPLE__) && defined(__MACH__)
+#define NLR_TOP (_mp_state_ctx + NLR_TOP_OFFSET)
+#else
 #define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
+#endif
 
     .file   "nlr.s"
     .text
