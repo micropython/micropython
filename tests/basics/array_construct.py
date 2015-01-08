@@ -13,6 +13,4 @@ print(array('i', bytearray(4)))
 
 # convert from other arrays
 print(array('H', array('b', [1, 2])))
-print(array('f', array('h', [1, 2])))
 print(array('b', array('I', [1, 2])))
-print(array('d', array('f', [1, 2])))
