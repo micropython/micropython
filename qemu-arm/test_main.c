@@ -2,18 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "parsehelper.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "repl.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/parsehelper.h"
+#include "py/compile.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/stackctrl.h"
+#include "py/repl.h"
+#include "py/pfenv.h"
 
 #include "tinytest.h"
 #include "tinytest_macros.h"
@@ -35,7 +32,7 @@ inline void do_str(const char *src) {
     }
 
     // parse okay
-    qstr source_name = mp_lexer_source_name(lex);
+    qstr source_name = lex->source_name;
     mp_lexer_free(lex);
     mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
 
@@ -60,6 +57,7 @@ end:
 
 int main() {
     const char a[] = {"sim"};
+    mp_stack_set_limit(10240);
     mp_init();
     int r = tinytest_main(1, (const char **) a, groups);
     mp_deinit();
