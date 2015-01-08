@@ -695,11 +695,9 @@ void gc_dump_alloc_table(void) {
             case AT_FREE: c = '.'; break;
             /* this prints out if the object is reachable from BSS or STACK (for unix only)
             case AT_HEAD: {
-                extern char __bss_start, _end;
-                extern char *stack_top;
                 c = 'h';
-                void **ptrs = (void**)&__bss_start;
-                mp_uint_t len = ((mp_uint_t)&_end - (mp_uint_t)&__bss_start) / sizeof(mp_uint_t);
+                void **ptrs = (void**)(void*)&mp_state_ctx;
+                mp_uint_t len = offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t);
                 for (mp_uint_t i = 0; i < len; i++) {
                     mp_uint_t ptr = (mp_uint_t)ptrs[i];
                     if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
@@ -709,7 +707,7 @@ void gc_dump_alloc_table(void) {
                 }
                 if (c == 'h') {
                     ptrs = (void**)&c;
-                    len = ((mp_uint_t)stack_top - (mp_uint_t)&c) / sizeof(mp_uint_t);
+                    len = ((mp_uint_t)MP_STATE_VM(stack_top) - (mp_uint_t)&c) / sizeof(mp_uint_t);
                     for (mp_uint_t i = 0; i < len; i++) {
                         mp_uint_t ptr = (mp_uint_t)ptrs[i];
                         if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {

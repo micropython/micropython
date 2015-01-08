@@ -28,12 +28,9 @@
 #include <stdio.h>
 #include <windows.h>
 
-extern void getbss();
-
 HANDLE hSleepEvent = NULL;
 
 void init() {
-    getbss();
     hSleepEvent = CreateEvent(NULL, TRUE, FALSE, FALSE);
 #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");

@@ -166,7 +166,8 @@ void msec_sleep(double msec);
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 
 
-// Put static/global variables in sections with a known name we can lookup for the GC
+// Put static/global variables in sections with a known name
+// This used to be required for GC, not the case anymore but keep it as it makes the map file easier to inspect
 // For this to work this header must be included by all sources, which is the case normally
 #define MICROPY_PORT_DATASECTION "upydata"
 #define MICROPY_PORT_BSSSECTION "upybss"
@@ -182,9 +183,4 @@ void msec_sleep(double msec);
 // Functions implemented in platform code
 
 int snprintf(char *dest, size_t count, const char *format, ...);
-#endif
-
-// MingW specifics
-#ifdef __MINGW32__
-#define MICROPY_PORT_BSSSECTION ".bss"
 #endif

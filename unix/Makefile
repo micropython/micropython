@@ -35,8 +35,8 @@ endif
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
 CC = clang
-# Use clang syntax for map file and set osx specific flags
-LDFLAGS_ARCH = -Wl,-order_file,$(BUILD)/order.def -Wl,-map,$@.map
+# Use clang syntax for map file
+LDFLAGS_ARCH = -Wl,-map,$@.map
 else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
@@ -92,17 +92,6 @@ SRC_C = \
 	alloc.c \
 	$(SRC_MOD)
 
-ifeq ($(UNAME_S),Darwin)
-# Must be the last file in list of sources
-SRC_C += seg_helpers.c
-
-# making seg_helpers.c rely on order.def will force order.def to be created
-seg_helpers.c: $(BUILD)/order.def
-
-# create order.def in build directory
-$(BUILD)/order.def:
-	$(Q)echo "seg_helpers.o: ___bss_start" > $@
-endif
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
