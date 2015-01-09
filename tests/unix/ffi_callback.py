@@ -5,7 +5,18 @@ except ImportError:
     print("SKIP")
     sys.exit()
 
-libc = ffi.open("libc.so.6")
+
+def ffi_open(names):
+    err = None
+    for n in names:
+        try:
+            mod = ffi.open(n)
+            return mod
+        except OSError as e:
+            err = e
+    raise err
+
+libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
 
 qsort = libc.func("v", "qsort", "piip")
 
