@@ -281,10 +281,18 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_PY_BUILTINS_FLOAT (1)
 #define MICROPY_FLOAT_C_FUN(fun) fun##f
 typedef float mp_float_t;
+#define MP_FLOAT_MANT_BITS (FLT_MANT_DIG - 1)
+#define MP_FLOAT_EXP_BITS (INT32_LOG2(FLT_MAX_EXP))
+#define MP_FLOAT_EXP_BIAS (IEEE754_FLOAT_BIAS)
+typedef unsigned int mp_float_int_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MICROPY_PY_BUILTINS_FLOAT (1)
 #define MICROPY_FLOAT_C_FUN(fun) fun
 typedef double mp_float_t;
+#define MP_FLOAT_MANT_BITS (DBL_MANT_DIG - 1)
+#define MP_FLOAT_EXP_BITS (INT32_LOG2(DBL_MAX_EXP))
+#define MP_FLOAT_EXP_BIAS (IEEE754_DOUBLE_BIAS)
+typedef unsigned long long mp_float_int_t;
 #else
 #define MICROPY_PY_BUILTINS_FLOAT (0)
 #endif

@@ -26,8 +26,12 @@
 
 #include <string.h>
 #include <assert.h>
-
 #include "py/mpz.h"
+#if MICROPY_PY_BUILTINS_FLOAT
+#include <float.h>
+#include <ieee754.h>
+#include "py/misc.h"
+#endif
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 
@@ -692,30 +696,22 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 void mpz_set_from_float(mpz_t *z, mp_float_t src) {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define EXP_SZ      11
-#define FRC_SZ      52
-typedef uint64_t mp_float_int_t;
-#else
-#define EXP_SZ      8
-#define FRC_SZ      23
-typedef uint32_t mp_float_int_t;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    union ieee754_float u = {src};
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    union ieee754_double u = {src};
 #endif
-    union {
-        mp_float_t f;
-        struct { mp_float_int_t frc:FRC_SZ, exp:EXP_SZ, sgn:1; } p;
-    } u = {src};
 
-    z->neg = u.p.sgn;
-    if (u.p.exp == 0) {
+    z->neg = u.ieee.negative;
+    if (u.ieee.exponent == 0) {
         // value == 0 || value < 1
         mpz_init_zero(z);
-    } else if (u.p.exp == ((1 << EXP_SZ) - 1)) {
-        // u.p.frc == 0 indicates inf, else NaN
+    } else if (u.ieee.exponent == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
+        // u.ieee.mantissa == 0 indicates inf, else NaN
         // should be handled by caller
         mpz_init_zero(z);
     } else {
-        const int adj_exp = (int)u.p.exp - ((1 << (EXP_SZ - 1)) - 1);
+        const int adj_exp = (int)u.ieee.exponent - MP_FLOAT_EXP_BIAS;
         if (adj_exp < 0) {
             // value < 1 , truncates to 0
             mpz_init_zero(z);
@@ -727,15 +723,21 @@ typedef uint32_t mp_float_int_t;
             const int dig_cnt = (adj_exp + 1 + (DIG_SIZE - 1)) / DIG_SIZE;
             const unsigned int rem = adj_exp % DIG_SIZE;
             int dig_ind, shft;
-            mp_float_int_t frc = u.p.frc | ((mp_float_int_t)1 << FRC_SZ);
+            mp_float_int_t frc;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+            frc = u.ieee.mantissa;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+            frc = (mp_float_int_t)u.ieee.mantissa1 | ((mp_float_int_t)u.ieee.mantissa0 << 32);
+#endif
+            frc |= ((mp_float_int_t)1 << MP_FLOAT_MANT_BITS);
 
-            if (adj_exp < FRC_SZ) {
+            if (adj_exp < MP_FLOAT_MANT_BITS) {
                 shft = 0;
                 dig_ind = 0;
-                frc >>= FRC_SZ - adj_exp;
+                frc >>= MP_FLOAT_MANT_BITS - adj_exp;
             } else {
-                shft = (rem - FRC_SZ) % DIG_SIZE;
-                dig_ind = (adj_exp - FRC_SZ) / DIG_SIZE;
+                shft = (rem - MP_FLOAT_MANT_BITS) % DIG_SIZE;
+                dig_ind = (adj_exp - MP_FLOAT_MANT_BITS) / DIG_SIZE;
             }
             mpz_need_dig(z, dig_cnt);
             z->len = dig_cnt;
@@ -746,15 +748,19 @@ typedef uint32_t mp_float_int_t;
                 z->dig[dig_ind++] = (frc << shft) & DIG_MASK;
                 frc >>= DIG_SIZE - shft;
             }
+#if DIG_SIZE < (MP_FLOAT_MANT_BITS + 1)
             while (dig_ind != dig_cnt) {
                 z->dig[dig_ind++] = frc & DIG_MASK;
                 frc >>= DIG_SIZE;
             }
+#else
+            if (dig_ind != dig_cnt) {
+                z->dig[dig_ind] = frc;
+            }
+#endif
         }
     }
 }
-#undef EXP_SZ
-#undef FRC_SZ
 #endif
 
 // returns number of bytes from str that were processed

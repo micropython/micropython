@@ -38,6 +38,9 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
+#include <float.h>
+#include <ieee754.h>
+#include "py/misc.h"
 #endif
 
 // This dispatcher function is expected to be independent of the implementation of long int
@@ -76,6 +79,49 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
         }
     }
 }
+
+#if MICROPY_PY_BUILTINS_FLOAT
+mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    union ieee754_float u = {val};
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    union ieee754_double u = {val};
+#endif
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    const int zero_mant = u.ieee.mantissa == 0;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    const int zero_mant = u.ieee.mantissa0 == 0 && u.ieee.mantissa1 == 0;
+#endif
+
+    if (u.ieee.exponent == 0) {
+        // value == 0 || abs(value) < 1
+        return MP_FP_CLASS_FIT_SMALLINT;
+    } else if (u.ieee.exponent == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
+        if (zero_mant) {
+            return MP_FP_CLASS_IS_INF;
+        }
+        return MP_FP_CLASS_IS_NAN;
+    } else {
+        int adj_exp = (int)u.ieee.exponent - MP_FLOAT_EXP_BIAS + 1;
+        if (u.ieee.negative) {
+            adj_exp += !zero_mant + 1;
+        }
+        if (adj_exp <= (BITS_PER_WORD - 2)) {
+            return MP_FP_CLASS_FIT_SMALLINT;
+        }
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+        if (adj_exp <= ((sizeof(long long) * 8) - 1)) {
+            return MP_FP_CLASS_FIT_LONGINT;
+        }
+#endif
+    }
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+    return MP_FP_CLASS_FIT_LONGINT;
+#else
+    return MP_FP_CLASS_OVERFLOW;
+#endif
+}
+#endif
 
 void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     // The size of this buffer is rather arbitrary. If it's not large
@@ -258,9 +304,21 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    // TODO raise an exception if the int won't fit
-    mp_int_t i = MICROPY_FLOAT_C_FUN(trunc)(val);
-    return mp_obj_new_int(i);
+    switch (mp_classify_fp_as_int(val)) {
+        case MP_FP_CLASS_IS_INF:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+            break;
+        case MP_FP_CLASS_IS_NAN:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+            break;
+        case MP_FP_CLASS_FIT_LONGINT:  // should never occur
+        case MP_FP_CLASS_FIT_SMALLINT:
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_FLOAT_C_FUN(trunc)(val));
+        case MP_FP_CLASS_OVERFLOW:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "result too large"));
+            break;
+    }
+    return mp_const_none;
 }
 #endif
 
