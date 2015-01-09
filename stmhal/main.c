@@ -161,6 +161,95 @@ static const char fresh_readme_txt[] =
 "Please visit http://micropython.org/help/ for further help.\r\n"
 ;
 
+// we don't make this function static because it needs a lot of stack and we
+// want it to be executed without using stack within main() function
+void init_flash_fs(uint reset_mode) {
+    // try to mount the flash
+    FRESULT res = f_mount(&fatfs0, "/flash", 1);
+
+    if (reset_mode == 3 || res == FR_NO_FILESYSTEM) {
+        // no filesystem, or asked to reset it, so create a fresh one
+
+        // LED on to indicate creation of LFS
+        led_state(PYB_LED_R2, 1);
+        uint32_t start_tick = HAL_GetTick();
+
+        res = f_mkfs("/flash", 0, 0);
+        if (res == FR_OK) {
+            // success creating fresh LFS
+        } else {
+            __fatal_error("could not create LFS");
+        }
+
+        // set label
+        f_setlabel("/flash/pybflash");
+
+        // create empty main.py
+        FIL fp;
+        f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+        UINT n;
+        f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
+        // TODO check we could write n bytes
+        f_close(&fp);
+
+        // create .inf driver file
+        f_open(&fp, "/flash/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+
+        // create readme file
+        f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+
+        // keep LED on for at least 200ms
+        sys_tick_wait_at_least(start_tick, 200);
+        led_state(PYB_LED_R2, 0);
+    } else if (res == FR_OK) {
+        // mount sucessful
+    } else {
+        __fatal_error("could not access LFS");
+    }
+
+    // The current directory is used as the boot up directory.
+    // It is set to the internal flash filesystem by default.
+    f_chdrive("/flash");
+
+    // Make sure we have a /flash/boot.py.  Create it if needed.
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+    res = f_stat("/flash/boot.py", &fno);
+    if (res == FR_OK) {
+        if (fno.fattrib & AM_DIR) {
+            // exists as a directory
+            // TODO handle this case
+            // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
+        } else {
+            // exists as a file, good!
+        }
+    } else {
+        // doesn't exist, create fresh file
+
+        // LED on to indicate creation of boot.py
+        led_state(PYB_LED_R2, 1);
+        uint32_t start_tick = HAL_GetTick();
+
+        FIL fp;
+        f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+        UINT n;
+        f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
+        // TODO check we could write n bytes
+        f_close(&fp);
+
+        // keep LED on for at least 200ms
+        sys_tick_wait_at_least(start_tick, 200);
+        led_state(PYB_LED_R2, 0);
+    }
+}
+
 int main(void) {
     // TODO disable JTAG
 
@@ -323,94 +412,8 @@ soft_reset:
     pyb_usb_init0();
 
     // Initialise the local flash filesystem.
-    // Create it if needed, and mount in on /flash.
-    {
-        // try to mount the flash
-        FRESULT res = f_mount(&fatfs0, "/flash", 1);
-        if (reset_mode == 3 || res == FR_NO_FILESYSTEM) {
-            // no filesystem, or asked to reset it, so create a fresh one
-
-            // LED on to indicate creation of LFS
-            led_state(PYB_LED_R2, 1);
-            uint32_t start_tick = HAL_GetTick();
-
-            res = f_mkfs("/flash", 0, 0);
-            if (res == FR_OK) {
-                // success creating fresh LFS
-            } else {
-                __fatal_error("could not create LFS");
-            }
-
-            // set label
-            f_setlabel("/flash/pybflash");
-
-            // create empty main.py
-            FIL fp;
-            f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
-            UINT n;
-            f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
-            // TODO check we could write n bytes
-            f_close(&fp);
-
-            // create .inf driver file
-            f_open(&fp, "/flash/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
-            f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
-            f_close(&fp);
-
-            // create readme file
-            f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
-            f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
-            f_close(&fp);
-
-            // keep LED on for at least 200ms
-            sys_tick_wait_at_least(start_tick, 200);
-            led_state(PYB_LED_R2, 0);
-        } else if (res == FR_OK) {
-            // mount sucessful
-        } else {
-            __fatal_error("could not access LFS");
-        }
-    }
-
-    // The current directory is used as the boot up directory.
-    // It is set to the internal flash filesystem by default.
-    f_chdrive("/flash");
-
-    // Make sure we have a /flash/boot.py.  Create it if needed.
-    {
-        FILINFO fno;
-#if _USE_LFN
-        fno.lfname = NULL;
-        fno.lfsize = 0;
-#endif
-        FRESULT res = f_stat("/flash/boot.py", &fno);
-        if (res == FR_OK) {
-            if (fno.fattrib & AM_DIR) {
-                // exists as a directory
-                // TODO handle this case
-                // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
-            } else {
-                // exists as a file, good!
-            }
-        } else {
-            // doesn't exist, create fresh file
-
-            // LED on to indicate creation of boot.py
-            led_state(PYB_LED_R2, 1);
-            uint32_t start_tick = HAL_GetTick();
-
-            FIL fp;
-            f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
-            UINT n;
-            f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
-            // TODO check we could write n bytes
-            f_close(&fp);
-
-            // keep LED on for at least 200ms
-            sys_tick_wait_at_least(start_tick, 200);
-            led_state(PYB_LED_R2, 0);
-        }
-    }
+    // Create it if needed, mount in on /flash, and set it as current dir.
+    init_flash_fs(reset_mode);
 
 #if defined(USE_DEVICE_MODE)
     usb_storage_medium_t usb_medium = USB_STORAGE_MEDIUM_FLASH;
