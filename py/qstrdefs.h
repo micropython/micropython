@@ -363,10 +363,12 @@ Q(polar)
 Q(rect)
 #endif
 
+#if MICROPY_PY_MICROPYTHON_MEM_INFO
 #if MICROPY_MEM_STATS
 Q(mem_total)
 Q(mem_current)
 Q(mem_peak)
+#endif
 Q(mem_info)
 Q(qstr_info)
 #endif
