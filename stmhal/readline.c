@@ -57,15 +57,7 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
-int readline(vstr_t *line, const char *prompt) {
-    stdout_tx_str(prompt);
-    int orig_line_len = line->len;
-    int escape_seq = ESEQ_NONE;
-    char escape_seq_buf[1] = {0};
-    int hist_cur = -1;
-    int cursor_pos = orig_line_len;
-    for (;;) {
-        int c = stdin_rx_chr();
+int readline_process_char(int c) {
         int last_line_len = line->len;
         int redraw_step_back = 0;
         bool redraw_from_cursor = false;
@@ -242,5 +234,17 @@ end_key:
             stdout_tx_strn(line->buf + cursor_pos, redraw_step_forward);
             cursor_pos += redraw_step_forward;
         }
+}
+
+int readline(vstr_t *line, const char *prompt) {
+    stdout_tx_str(prompt);
+    int orig_line_len = line->len;
+    int escape_seq = ESEQ_NONE;
+    char escape_seq_buf[1] = {0};
+    int hist_cur = -1;
+    int cursor_pos = orig_line_len;
+    for (;;) {
+        int c = stdin_rx_chr();
+        readline_process_char(c);
     }
 }
