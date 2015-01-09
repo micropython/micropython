@@ -653,6 +653,11 @@ void mpz_set(mpz_t *dest, const mpz_t *src) {
 }
 
 void mpz_set_from_int(mpz_t *z, mp_int_t val) {
+    if (val == 0) {
+        z->len = 0;
+        return;
+    }
+
     mpz_need_dig(z, MPZ_NUM_DIG_FOR_INT);
 
     mp_uint_t uval;
@@ -709,19 +714,19 @@ typedef uint32_t mp_float_int_t;
     z->neg = u.p.sgn;
     if (u.p.exp == 0) {
         // value == 0 || value < 1
-        mpz_init_zero(z);
+        mpz_set_from_int(z, 0);
     } else if (u.p.exp == ((1 << EXP_SZ) - 1)) {
         // u.p.frc == 0 indicates inf, else NaN
         // should be handled by caller
-        mpz_init_zero(z);
+        mpz_set_from_int(z, 0);
     } else {
         const int adj_exp = (int)u.p.exp - ((1 << (EXP_SZ - 1)) - 1);
         if (adj_exp < 0) {
             // value < 1 , truncates to 0
-            mpz_init_zero(z);
+            mpz_set_from_int(z, 0);
         } else if (adj_exp == 0) {
             // 1 <= value < 2 , so truncates to 1
-            mpz_init_from_int(z, 1);
+            mpz_set_from_int(z, 1);
         } else {
             // 2 <= value
             const int dig_cnt = (adj_exp + 1 + (DIG_SIZE - 1)) / DIG_SIZE;
@@ -1353,7 +1358,7 @@ mp_int_t mpz_hash(const mpz_t *z) {
     mp_int_t val = 0;
     mpz_dig_t *d = z->dig + z->len;
 
-    while (--d >= z->dig) {
+    while (d-- > z->dig) {
         val = (val << DIG_SIZE) | *d;
     }
 
@@ -1368,7 +1373,7 @@ bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     mp_int_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (--d >= i->dig) {
+    while (d-- > i->dig) {
         if (val > (~(WORD_MSBIT_HIGH) >> DIG_SIZE)) {
             // will overflow
             return false;
@@ -1393,7 +1398,7 @@ bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
     mp_uint_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (--d >= i->dig) {
+    while (d-- > i->dig) {
         if (val > (~(WORD_MSBIT_HIGH) >> (DIG_SIZE - 1))) {
             // will overflow
             return false;
@@ -1410,7 +1415,7 @@ mp_float_t mpz_as_float(const mpz_t *i) {
     mp_float_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
-    while (--d >= i->dig) {
+    while (d-- > i->dig) {
         val = val * DIG_BASE + *d;
     }
 
