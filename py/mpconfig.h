@@ -205,7 +205,7 @@
 // Whether to check C stack usage. C stack used for calling Python functions,
 // etc. Not checking means segfault on overflow.
 #ifndef MICROPY_STACK_CHECK
-#define MICROPY_STACK_CHECK (1)
+#define MICROPY_STACK_CHECK (0)
 #endif
 
 // Whether to have an emergency exception buffer
