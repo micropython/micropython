@@ -12,6 +12,7 @@ CROSS_COMPILE = arm-none-eabi-
 INC =  -I.
 INC += -I..
 INC += -I$(BUILD)
+INC += -I../tools/tinytest/
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
@@ -33,15 +34,11 @@ endif
 ## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/qemu/Makefile
 LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
 
-ifeq ($(RUN_TESTS), 1)
-SRC_C = \
-	test_main.c \
-
-else
 SRC_C = \
 	main.c \
 
-endif
+SRC_TEST_C = \
+	test_main.c \
 
 SRC_S = \
 
@@ -50,15 +47,21 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
-ifeq ($(RUN_TESTS), 1)
-INC += -I../tools/tinytest/
-OBJ += $(BUILD)/tinytest.o
-endif
+OBJ_TEST =
+OBJ_TEST += $(PY_O)
+OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
+OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ_TEST += $(BUILD)/tinytest.o
 
 all: run
 
-run: $(BUILD)/flash.elf
-	qemu-system-arm -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/flash.elf
+run: $(BUILD)/firmware.elf
+	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware.elf
+
+test: $(BUILD)/firmware-test.elf
+	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware-test.elf > $(BUILD)/console.out
+	$(Q)tail -n2 $(BUILD)/console.out
+	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"
 
 .PHONY: $(BUILD)/genhdr/tests.h
 
@@ -70,8 +73,12 @@ $(BUILD)/tinytest.o:
 	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c ../tools/tinytest/tinytest.c
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
-$(BUILD)/flash.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware-test.elf: $(OBJ_TEST)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_TEST) $(LIBS)
 	$(Q)$(SIZE) $@
 
 include ../py/mkrules.mk

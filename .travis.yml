@@ -15,7 +15,7 @@ script:
   - make -C unix CC=gcc-4.7
   - make -C unix-cpy CC=gcc-4.7
   - make -C bare-arm
-  - make -C qemu-arm
+  - make -C qemu-arm test
   - make -C stmhal
   - make -C stmhal -B MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
   - make -C stmhal BOARD=STM32F4DISC
