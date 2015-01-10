@@ -152,6 +152,11 @@
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
+// Whether to enable lookup of constants in modules; eg module.CONST
+#ifndef MICROPY_COMP_MODULE_CONST
+#define MICROPY_COMP_MODULE_CONST (0)
+#endif
+
 // Whether to enable constant optimisation; id = const(value)
 #ifndef MICROPY_COMP_CONST
 #define MICROPY_COMP_CONST (1)

@@ -39,6 +39,7 @@
 #if !defined(MICROPY_EMIT_ARM) && defined(__arm__)
     #define MICROPY_EMIT_ARM        (1)
 #endif
+#define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)

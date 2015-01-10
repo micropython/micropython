@@ -98,6 +98,7 @@ STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const cha
     comp->compile_error = exc;
 }
 
+#if MICROPY_COMP_MODULE_CONST
 STATIC const mp_map_elem_t mp_constants_table[] = {
     #if MICROPY_PY_UCTYPES
     { MP_OBJ_NEW_QSTR(MP_QSTR_uctypes), (mp_obj_t)&mp_module_uctypes },
@@ -105,14 +106,8 @@ STATIC const mp_map_elem_t mp_constants_table[] = {
     // Extra constants as defined by a port
     MICROPY_PORT_CONSTANTS
 };
-
-STATIC const mp_map_t mp_constants_map = {
-    .all_keys_are_qstrs = 1,
-    .table_is_fixed_array = 1,
-    .used = MP_ARRAY_SIZE(mp_constants_table),
-    .alloc = MP_ARRAY_SIZE(mp_constants_table),
-    .table = (mp_map_elem_t*)mp_constants_table,
-};
+STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
+#endif
 
 // this function is essentially a simple preprocessor
 STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_map_t *consts) {
@@ -327,6 +322,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         }
                     }
 #endif
+#if MICROPY_COMP_MODULE_CONST
                 } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_trailer_period) && MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
                     // id.id
                     // look it up in constant table, see if it can be replaced with an integer
@@ -340,11 +336,10 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         mp_load_method_maybe(elem->value, q_attr, dest);
                         if (MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == NULL) {
                             mp_int_t val = MP_OBJ_SMALL_INT_VALUE(dest[0]);
-                            if (MP_SMALL_INT_FITS(val)) {
-                                pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, val);
-                            }
+                            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, val);
                         }
                     }
+#endif
                 }
                 break;
         }
