@@ -57,13 +57,24 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
+typedef struct _readline_t {
+    vstr_t *line;
+    int orig_line_len;
+    int escape_seq;
+    int hist_cur;
+    int cursor_pos;
+    char escape_seq_buf[1];
+} readline_t;
+
+readline_t rl;
+
 int readline_process_char(int c) {
-        int last_line_len = line->len;
+        int last_line_len = rl.line->len;
         int redraw_step_back = 0;
         bool redraw_from_cursor = false;
         int redraw_step_forward = 0;
-        if (escape_seq == ESEQ_NONE) {
-            if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_D && vstr_len(line) == orig_line_len) {
+        if (rl.escape_seq == ESEQ_NONE) {
+            if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_D && vstr_len(rl.line) == rl.orig_line_len) {
                 // control character with empty line
                 return c;
             } else if (c == CHAR_CTRL_A) {
@@ -78,10 +89,10 @@ int readline_process_char(int c) {
             } else if (c == '\r') {
                 // newline
                 stdout_tx_str("\r\n");
-                if (line->len > orig_line_len && (MP_STATE_PORT(readline_hist)[0] == NULL || strcmp(MP_STATE_PORT(readline_hist)[0], line->buf + orig_line_len) != 0)) {
+                if (rl.line->len > rl.orig_line_len && (MP_STATE_PORT(readline_hist)[0] == NULL || strcmp(MP_STATE_PORT(readline_hist)[0], rl.line->buf + rl.orig_line_len) != 0)) {
                     // a line which is not empty and different from the last one
                     // so update the history
-                    char *most_recent_hist = str_dup_maybe(line->buf + orig_line_len);
+                    char *most_recent_hist = str_dup_maybe(rl.line->buf + rl.orig_line_len);
                     if (most_recent_hist != NULL) {
                         for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
                             MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
@@ -92,76 +103,76 @@ int readline_process_char(int c) {
                 return 0;
             } else if (c == 27) {
                 // escape sequence
-                escape_seq = ESEQ_ESC;
+                rl.escape_seq = ESEQ_ESC;
             } else if (c == 8 || c == 127) {
                 // backspace/delete
-                if (cursor_pos > orig_line_len) {
-                    vstr_cut_out_bytes(line, cursor_pos - 1, 1);
+                if (rl.cursor_pos > rl.orig_line_len) {
+                    vstr_cut_out_bytes(rl.line, rl.cursor_pos - 1, 1);
                     // set redraw parameters
                     redraw_step_back = 1;
                     redraw_from_cursor = true;
                 }
             } else if (32 <= c && c <= 126) {
                 // printable character
-                vstr_ins_char(line, cursor_pos, c);
+                vstr_ins_char(rl.line, rl.cursor_pos, c);
                 // set redraw parameters
                 redraw_from_cursor = true;
                 redraw_step_forward = 1;
             }
-        } else if (escape_seq == ESEQ_ESC) {
+        } else if (rl.escape_seq == ESEQ_ESC) {
             switch (c) {
                 case '[':
-                    escape_seq = ESEQ_ESC_BRACKET;
+                    rl.escape_seq = ESEQ_ESC_BRACKET;
                     break;
                 case 'O':
-                    escape_seq = ESEQ_ESC_O;
+                    rl.escape_seq = ESEQ_ESC_O;
                     break;
                 default:
                     DEBUG_printf("(ESC %d)", c);
-                    escape_seq = ESEQ_NONE;
+                    rl.escape_seq = ESEQ_NONE;
             }
-        } else if (escape_seq == ESEQ_ESC_BRACKET) {
+        } else if (rl.escape_seq == ESEQ_ESC_BRACKET) {
             if ('0' <= c && c <= '9') {
-                escape_seq = ESEQ_ESC_BRACKET_DIGIT;
-                escape_seq_buf[0] = c;
+                rl.escape_seq = ESEQ_ESC_BRACKET_DIGIT;
+                rl.escape_seq_buf[0] = c;
             } else {
-                escape_seq = ESEQ_NONE;
+                rl.escape_seq = ESEQ_NONE;
                 if (c == 'A') {
                     // up arrow
-                    if (hist_cur + 1 < READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[hist_cur + 1] != NULL) {
+                    if (rl.hist_cur + 1 < READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
                         // increase hist num
-                        hist_cur += 1;
+                        rl.hist_cur += 1;
                         // set line to history
-                        line->len = orig_line_len;
-                        vstr_add_str(line, MP_STATE_PORT(readline_hist)[hist_cur]);
+                        rl.line->len = rl.orig_line_len;
+                        vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
                         // set redraw parameters
-                        redraw_step_back = cursor_pos - orig_line_len;
+                        redraw_step_back = rl.cursor_pos - rl.orig_line_len;
                         redraw_from_cursor = true;
-                        redraw_step_forward = line->len - orig_line_len;
+                        redraw_step_forward = rl.line->len - rl.orig_line_len;
                     }
                 } else if (c == 'B') {
                     // down arrow
-                    if (hist_cur >= 0) {
+                    if (rl.hist_cur >= 0) {
                         // decrease hist num
-                        hist_cur -= 1;
+                        rl.hist_cur -= 1;
                         // set line to history
-                        vstr_cut_tail_bytes(line, line->len - orig_line_len);
-                        if (hist_cur >= 0) {
-                            vstr_add_str(line, MP_STATE_PORT(readline_hist)[hist_cur]);
+                        vstr_cut_tail_bytes(rl.line, rl.line->len - rl.orig_line_len);
+                        if (rl.hist_cur >= 0) {
+                            vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
                         }
                         // set redraw parameters
-                        redraw_step_back = cursor_pos - orig_line_len;
+                        redraw_step_back = rl.cursor_pos - rl.orig_line_len;
                         redraw_from_cursor = true;
-                        redraw_step_forward = line->len - orig_line_len;
+                        redraw_step_forward = rl.line->len - rl.orig_line_len;
                     }
                 } else if (c == 'C') {
                     // right arrow
-                    if (cursor_pos < line->len) {
+                    if (rl.cursor_pos < rl.line->len) {
                         redraw_step_forward = 1;
                     }
                 } else if (c == 'D') {
                     // left arrow
-                    if (cursor_pos > orig_line_len) {
+                    if (rl.cursor_pos > rl.orig_line_len) {
                         redraw_step_back = 1;
                     }
                 } else if (c == 'H') {
@@ -174,22 +185,22 @@ int readline_process_char(int c) {
                     DEBUG_printf("(ESC [ %d)", c);
                 }
             }
-        } else if (escape_seq == ESEQ_ESC_BRACKET_DIGIT) {
+        } else if (rl.escape_seq == ESEQ_ESC_BRACKET_DIGIT) {
             if (c == '~') {
-                if (escape_seq_buf[0] == '1' || escape_seq_buf[0] == '7') {
+                if (rl.escape_seq_buf[0] == '1' || rl.escape_seq_buf[0] == '7') {
 home_key:
-                    redraw_step_back = cursor_pos - orig_line_len;
-                } else if (escape_seq_buf[0] == '4' || escape_seq_buf[0] == '8') {
+                    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+                } else if (rl.escape_seq_buf[0] == '4' || rl.escape_seq_buf[0] == '8') {
 end_key:
-                    redraw_step_forward = line->len - cursor_pos;
+                    redraw_step_forward = rl.line->len - rl.cursor_pos;
                 } else {
-                    DEBUG_printf("(ESC [ %c %d)", escape_seq_buf[0], c);
+                    DEBUG_printf("(ESC [ %c %d)", rl.escape_seq_buf[0], c);
                 }
             } else {
-                DEBUG_printf("(ESC [ %c %d)", escape_seq_buf[0], c);
+                DEBUG_printf("(ESC [ %c %d)", rl.escape_seq_buf[0], c);
             }
-            escape_seq = ESEQ_NONE;
-        } else if (escape_seq == ESEQ_ESC_O) {
+            rl.escape_seq = ESEQ_NONE;
+        } else if (rl.escape_seq == ESEQ_ESC_O) {
             switch (c) {
                 case 'H':
                     goto home_key;
@@ -197,10 +208,10 @@ end_key:
                     goto end_key;
                 default:
                     DEBUG_printf("(ESC O %d)", c);
-                    escape_seq = ESEQ_NONE;
+                    rl.escape_seq = ESEQ_NONE;
             }
         } else {
-            escape_seq = ESEQ_NONE;
+            rl.escape_seq = ESEQ_NONE;
         }
 
         // redraw command prompt, efficiently
@@ -209,42 +220,48 @@ end_key:
             for (int i = 0; i < redraw_step_back; i++) {
                 stdout_tx_str("\b");
             }
-            cursor_pos -= redraw_step_back;
+            rl.cursor_pos -= redraw_step_back;
         }
         if (redraw_from_cursor) {
-            if (line->len < last_line_len) {
+            if (rl.line->len < last_line_len) {
                 // erase old chars
-                for (int i = cursor_pos; i < last_line_len; i++) {
+                for (int i = rl.cursor_pos; i < last_line_len; i++) {
                     stdout_tx_str(" ");
                 }
                 // step back
-                for (int i = cursor_pos; i < last_line_len; i++) {
+                for (int i = rl.cursor_pos; i < last_line_len; i++) {
                     stdout_tx_str("\b");
                 }
             }
             // draw new chars
-            stdout_tx_strn(line->buf + cursor_pos, line->len - cursor_pos);
+            stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
             // move cursor forward if needed (already moved forward by length of line, so move it back)
-            for (int i = cursor_pos + redraw_step_forward; i < line->len; i++) {
+            for (int i = rl.cursor_pos + redraw_step_forward; i < rl.line->len; i++) {
                 stdout_tx_str("\b");
             }
-            cursor_pos += redraw_step_forward;
+            rl.cursor_pos += redraw_step_forward;
         } else if (redraw_step_forward > 0) {
             // draw over old chars to move cursor forwards
-            stdout_tx_strn(line->buf + cursor_pos, redraw_step_forward);
-            cursor_pos += redraw_step_forward;
+            stdout_tx_strn(rl.line->buf + rl.cursor_pos, redraw_step_forward);
+            rl.cursor_pos += redraw_step_forward;
         }
+
+        return -1;
 }
 
 int readline(vstr_t *line, const char *prompt) {
     stdout_tx_str(prompt);
-    int orig_line_len = line->len;
-    int escape_seq = ESEQ_NONE;
-    char escape_seq_buf[1] = {0};
-    int hist_cur = -1;
-    int cursor_pos = orig_line_len;
+    rl.line = line;
+    rl.orig_line_len = line->len;
+    rl.escape_seq = ESEQ_NONE;
+    rl.escape_seq_buf[0] = 0;
+    rl.hist_cur = -1;
+    rl.cursor_pos = rl.orig_line_len;
     for (;;) {
         int c = stdin_rx_chr();
-        readline_process_char(c);
+        int r = readline_process_char(c);
+        if (r >= 0) {
+            return r;
+        }
     }
 }
