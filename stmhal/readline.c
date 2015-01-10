@@ -249,14 +249,18 @@ end_key:
         return -1;
 }
 
-int readline(vstr_t *line, const char *prompt) {
-    stdout_tx_str(prompt);
+void readline_init(vstr_t *line) {
     rl.line = line;
     rl.orig_line_len = line->len;
     rl.escape_seq = ESEQ_NONE;
     rl.escape_seq_buf[0] = 0;
     rl.hist_cur = -1;
     rl.cursor_pos = rl.orig_line_len;
+}
+
+int readline(vstr_t *line, const char *prompt) {
+    stdout_tx_str(prompt);
+    readline_init(line);
     for (;;) {
         int c = stdin_rx_chr();
         int r = readline_process_char(c);
