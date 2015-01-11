@@ -730,7 +730,26 @@ void gc_dump_alloc_table(void) {
                 #endif
                 else if (*ptr == (mp_uint_t)&mp_type_fun_bc) { c = 'B'; }
                 else if (*ptr == (mp_uint_t)&mp_type_module) { c = 'M'; }
-                else { c = 'h'; }
+                else {
+                    c = 'h';
+                    #if 0
+                    // This code prints "Q" for qstr-pool data, and "q" for qstr-str
+                    // data.  It can be useful to see how qstrs are being allocated,
+                    // but is disabled by default because it is very slow.
+                    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
+                        if ((qstr_pool_t*)ptr == pool) {
+                            c = 'Q';
+                            break;
+                        }
+                        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+                            if ((const byte*)ptr == *q) {
+                                c = 'q';
+                                break;
+                            }
+                        }
+                    }
+                    #endif
+                }
                 break;
             }
             case AT_TAIL: c = 't'; break;
