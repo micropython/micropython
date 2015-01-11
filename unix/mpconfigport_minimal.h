@@ -27,58 +27,58 @@
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
-#if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
-    #define MICROPY_EMIT_X64        (1)
-#endif
-#if !defined(MICROPY_EMIT_X86) && defined(__i386__)
-    #define MICROPY_EMIT_X86        (1)
-#endif
-#if !defined(MICROPY_EMIT_THUMB) && defined(__thumb2__)
-    #define MICROPY_EMIT_THUMB      (1)
-#endif
-#if !defined(MICROPY_EMIT_ARM) && defined(__arm__)
-    #define MICROPY_EMIT_ARM        (1)
-#endif
-#define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_STACK_CHECK         (1)
-#define MICROPY_MEM_STATS           (1)
-#define MICROPY_DEBUG_PRINTERS      (1)
+#define MICROPY_ENABLE_FINALISER    (0)
+#define MICROPY_STACK_CHECK         (0)
+#define MICROPY_MEM_STATS           (0)
+#define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
-#define MICROPY_ENABLE_SOURCE_LINE  (1)
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_STREAMS_NON_BLOCK   (1)
-#define MICROPY_OPT_COMPUTED_GOTO   (1)
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
-#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
-#define MICROPY_PY_BUILTINS_FROZENSET (1)
-#define MICROPY_PY_BUILTINS_COMPILE (1)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_ENABLE_SOURCE_LINE  (0)
+#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
+#define MICROPY_STREAMS_NON_BLOCK   (0)
+#define MICROPY_OPT_COMPUTED_GOTO   (0)
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (0)
+#define MICROPY_CPYTHON_COMPAT      (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
+#define MICROPY_PY_BUILTINS_COMPILE (0)
+#define MICROPY_PY_BUILTINS_FROZENSET (0)
+#define MICROPY_PY_BUILTINS_SET     (0)
+#define MICROPY_PY_BUILTINS_SLICE   (0)
+#define MICROPY_PY_BUILTINS_STR_UNICODE (0)
+#define MICROPY_PY_BUILTINS_PROPERTY (0)
+#define MICROPY_PY___FILE__         (0)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
+#define MICROPY_PY_GC               (0)
+#define MICROPY_PY_ARRAY            (0)
+#define MICROPY_PY_COLLECTIONS      (0)
+#define MICROPY_PY_MATH             (0)
+#define MICROPY_PY_CMATH            (0)
+#define MICROPY_PY_IO               (0)
+#define MICROPY_PY_STRUCT           (0)
+#define MICROPY_PY_SYS              (1)
+#define MICROPY_PY_SYS_EXIT         (0)
 #define MICROPY_PY_SYS_PLATFORM     "linux"
-#define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (1)
-#define MICROPY_PY_CMATH            (1)
-#define MICROPY_PY_IO_FILEIO        (1)
-#define MICROPY_PY_GC_COLLECT_RETVAL (1)
+#define MICROPY_PY_SYS_MAXSIZE      (0)
+#define MICROPY_PY_SYS_STDFILES     (0)
+#define MICROPY_PY_CMATH            (0)
+#define MICROPY_PY_IO_FILEIO        (0)
+#define MICROPY_PY_GC_COLLECT_RETVAL (0)
 
-#define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_UZLIB            (1)
-#define MICROPY_PY_UJSON            (1)
-#define MICROPY_PY_URE              (1)
-#define MICROPY_PY_UHEAPQ           (1)
-#define MICROPY_PY_UHASHLIB         (1)
-#define MICROPY_PY_UBINASCII        (1)
+#define MICROPY_PY_UCTYPES          (0)
+#define MICROPY_PY_UZLIB            (0)
+#define MICROPY_PY_UJSON            (0)
+#define MICROPY_PY_URE              (0)
+#define MICROPY_PY_UHEAPQ           (0)
+#define MICROPY_PY_UHASHLIB         (0)
+#define MICROPY_PY_UBINASCII        (0)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
-#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
-#define MICROPY_WARNINGS            (1)
+#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
+#define MICROPY_WARNINGS            (0)
 
 // Define to 1 to use undertested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
@@ -90,42 +90,12 @@
     #endif
 #endif
 
-#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
-#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (0)
 
 extern const struct _mp_obj_module_t mp_module_os;
-extern const struct _mp_obj_module_t mp_module_time;
-extern const struct _mp_obj_module_t mp_module_termios;
-extern const struct _mp_obj_module_t mp_module_socket;
-extern const struct _mp_obj_module_t mp_module_ffi;
-
-#if MICROPY_PY_FFI
-#define MICROPY_PY_FFI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi },
-#else
-#define MICROPY_PY_FFI_DEF
-#endif
-#if MICROPY_PY_TIME
-#define MICROPY_PY_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_time },
-#else
-#define MICROPY_PY_TIME_DEF
-#endif
-#if MICROPY_PY_TERMIOS
-#define MICROPY_PY_TERMIOS_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_termios), (mp_obj_t)&mp_module_termios },
-#else
-#define MICROPY_PY_TERMIOS_DEF
-#endif
-#if MICROPY_PY_SOCKET
-#define MICROPY_PY_SOCKET_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_socket },
-#else
-#define MICROPY_PY_SOCKET_DEF
-#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    MICROPY_PY_FFI_DEF \
-    MICROPY_PY_TIME_DEF \
-    MICROPY_PY_SOCKET_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
-    MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
 
@@ -155,12 +125,6 @@ void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
 void mp_unix_free_exec(void *ptr, mp_uint_t size);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
-
-extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
-extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
-#define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 #define MICROPY_PORT_ROOT_POINTERS \
     mp_obj_t keyboard_interrupt_obj;

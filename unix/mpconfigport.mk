@@ -12,5 +12,8 @@ MICROPY_PY_TIME = 1
 # Subset of CPython termios module
 MICROPY_PY_TERMIOS = 1
 
+# Subset of CPython socket module
+MICROPY_PY_SOCKET = 1
+
 # ffi module requires libffi (libffi-dev Debian package)
 MICROPY_PY_FFI = 1
