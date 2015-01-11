@@ -13,14 +13,22 @@ elif platform.python_version_tuple()[0] == '3':
 codepoint2name[ord('-')] = 'hyphen';
 
 # add some custom names to map characters that aren't in HTML
+codepoint2name[ord(' ')] = 'space'
+codepoint2name[ord('\'')] = 'squot'
+codepoint2name[ord(',')] = 'comma'
 codepoint2name[ord('.')] = 'dot'
 codepoint2name[ord(':')] = 'colon'
 codepoint2name[ord('/')] = 'slash'
 codepoint2name[ord('%')] = 'percent'
 codepoint2name[ord('#')] = 'hash'
+codepoint2name[ord('(')] = 'paren_open'
+codepoint2name[ord(')')] = 'paren_close'
+codepoint2name[ord('[')] = 'bracket_open'
+codepoint2name[ord(']')] = 'bracket_close'
 codepoint2name[ord('{')] = 'brace_open'
 codepoint2name[ord('}')] = 'brace_close'
 codepoint2name[ord('*')] = 'star'
+codepoint2name[ord('!')] = 'bang'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
@@ -58,7 +66,8 @@ def do_work(infiles):
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         qhash = compute_hash(qstr)
         qlen = len(qstr)
-        print('Q(%s, (const byte*)"\\x%02x\\x%02x\\x%02x\\x%02x" "%s")' % (ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qstr))
+        qdata = qstr.replace('"', '\\"')
+        print('Q(%s, (const byte*)"\\x%02x\\x%02x\\x%02x\\x%02x" "%s")' % (ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen & 0xff, (qlen >> 8) & 0xff, qdata))
 
     return True
 
