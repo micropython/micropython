@@ -35,12 +35,11 @@
 // Note: it would be possible to define MP_QSTR_xxx as qstr_from_str_static("xxx")
 // for qstrs that are referenced this way, but you don't want to have them in ROM.
 
+// first entry in enum will be MP_QSTR_NULL=0, which indicates invalid/no qstr
 enum {
-    MP_QSTR_NULL = 0, // indicates invalid/no qstr
-    MP_QSTR_ = 1, // the empty qstr
-#define Q(id, str) MP_QSTR_##id,
+#define QDEF(id, str) id,
 #include "genhdr/qstrdefs.generated.h"
-#undef Q
+#undef QDEF
     MP_QSTR_number_of,
 };
 

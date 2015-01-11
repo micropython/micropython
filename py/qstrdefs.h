@@ -29,6 +29,10 @@
 // All the qstr definitions in this file are available as constants.
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
 
+// qstr configuration passed to makeqstrdata.py of the form QCFG(key, value)
+//QCFG(somekey, somevalue)
+
+Q()
 Q(*)
 Q(__build_class__)
 Q(__class__)
