@@ -50,9 +50,17 @@
 //  - \0 terminated (for now, so they can be printed using printf)
 
 #define Q_GET_HASH(q)   ((q)[0] | ((q)[1] << 8))
-#define Q_GET_ALLOC(q)  (4 + Q_GET_LENGTH(q) + 1)
-#define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
-#define Q_GET_DATA(q)   ((q) + 4)
+#define Q_GET_ALLOC(q)  (2 + MICROPY_QSTR_BYTES_IN_LEN + Q_GET_LENGTH(q) + 1)
+#define Q_GET_DATA(q)   ((q) + 2 + MICROPY_QSTR_BYTES_IN_LEN)
+#if MICROPY_QSTR_BYTES_IN_LEN == 1
+    #define Q_GET_LENGTH(q) ((q)[2])
+    #define Q_SET_LENGTH(q, len) do { (q)[2] = (len); } while (0)
+#elif MICROPY_QSTR_BYTES_IN_LEN == 2
+    #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
+    #define Q_SET_LENGTH(q, len) do { (q)[2] = (len); (q)[3] = (len) >> 8; } while (0)
+#else
+    #error unimplemented qstr length decoding
+#endif
 
 // this must match the equivalent function in makeqstrdata.py
 mp_uint_t qstr_compute_hash(const byte *data, mp_uint_t len) {
@@ -143,23 +151,21 @@ qstr qstr_from_strn(const char *str, mp_uint_t len) {
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         mp_uint_t hash = qstr_compute_hash((const byte*)str, len);
-        byte *q_ptr = m_new(byte, 4 + len + 1);
+        byte *q_ptr = m_new(byte, 2 + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
-        q_ptr[2] = len;
-        q_ptr[3] = len >> 8;
-        memcpy(q_ptr + 4, str, len);
-        q_ptr[4 + len] = '\0';
+        Q_SET_LENGTH(q_ptr, len);
+        memcpy(q_ptr + 2 + MICROPY_QSTR_BYTES_IN_LEN, str, len);
+        q_ptr[2 + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
         q = qstr_add(q_ptr);
     }
     return q;
 }
 
 byte *qstr_build_start(mp_uint_t len, byte **q_ptr) {
-    assert(len <= 65535);
-    *q_ptr = m_new(byte, 4 + len + 1);
-    (*q_ptr)[2] = len;
-    (*q_ptr)[3] = len >> 8;
+    assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
+    *q_ptr = m_new(byte, 2 + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
+    Q_SET_LENGTH(*q_ptr, len);
     return Q_GET_DATA(*q_ptr);
 }
 
@@ -170,7 +176,7 @@ qstr qstr_build_end(byte *q_ptr) {
         mp_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
-        q_ptr[4 + len] = '\0';
+        q_ptr[2 + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
         q = qstr_add(q_ptr);
     } else {
         m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));

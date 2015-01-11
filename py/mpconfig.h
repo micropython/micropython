@@ -112,6 +112,13 @@
 #define MICROPY_MODULE_DICT_SIZE (1)
 #endif
 
+// Number of bytes used to store qstr length
+// Dictates hard limit on maximum Python identifier length, but 1 byte
+// (limit of 255 bytes in an identifier) should be enough for everyone
+#ifndef MICROPY_QSTR_BYTES_IN_LEN
+#define MICROPY_QSTR_BYTES_IN_LEN (1)
+#endif
+
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 

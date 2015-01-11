@@ -30,7 +30,7 @@
 // That is, they are in ROM and you can reference them simply as MP_QSTR_xxxx.
 
 // qstr configuration passed to makeqstrdata.py of the form QCFG(key, value)
-//QCFG(somekey, somevalue)
+QCFG(BYTES_IN_LEN, MICROPY_QSTR_BYTES_IN_LEN)
 
 Q()
 Q(*)
