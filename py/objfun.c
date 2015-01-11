@@ -43,17 +43,9 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// This binary_op method is used for all function types, and is also
-// used to determine if an object is of generic function type.
-mp_obj_t mp_obj_fun_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    switch (op) {
-        case MP_BINARY_OP_EQUAL:
-            // These objects can be equal only if it's the same underlying structure,
-            // we don't even need to check for 2nd arg type.
-            return MP_BOOL(lhs_in == rhs_in);
-    }
-    return MP_OBJ_NULL; // op not supported
-}
+// Note: the "name" entry in mp_obj_type_t for a function type must be
+// MP_QSTR_function because it is used to determine if an object is of generic
+// function type.
 
 /******************************************************************************/
 /* builtin functions                                                          */
@@ -109,7 +101,6 @@ const mp_obj_type_t mp_type_fun_builtin = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_builtin_call,
-    .binary_op = mp_obj_fun_binary_op,
 };
 
 /******************************************************************************/
@@ -264,7 +255,6 @@ const mp_obj_type_t mp_type_fun_bc = {
     .print = fun_bc_print,
 #endif
     .call = fun_bc_call,
-    .binary_op = mp_obj_fun_binary_op,
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
@@ -345,7 +335,6 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_native_call,
-    .binary_op = mp_obj_fun_binary_op,
 };
 
 mp_obj_t mp_obj_new_fun_native(mp_uint_t n_args, void *fun_data) {
@@ -404,7 +393,6 @@ STATIC const mp_obj_type_t mp_type_fun_viper = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_viper_call,
-    .binary_op = mp_obj_fun_binary_op,
 };
 
 mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig) {
@@ -515,7 +503,6 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
     .name = MP_QSTR_function,
     .call = fun_asm_call,
-    .binary_op = mp_obj_fun_binary_op,
 };
 
 mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data) {

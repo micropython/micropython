@@ -81,7 +81,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
 #define MP_OBJ_IS_STR_OR_BYTES(o) (MP_OBJ_IS_QSTR(o) || (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)(o))->type->binary_op == mp_obj_str_binary_op))
-#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type->binary_op == mp_obj_fun_binary_op))
+#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type->name == MP_QSTR_function))
 
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
@@ -568,7 +568,6 @@ typedef struct _mp_obj_fun_builtin_t { // use this to make const objects that go
     void *fun; // must be a pointer to a callable function in ROM
 } mp_obj_fun_builtin_t;
 
-mp_obj_t mp_obj_fun_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 const char *mp_obj_fun_get_name(mp_const_obj_t fun);
 const char *mp_obj_code_get_name(const byte *code_info);
 

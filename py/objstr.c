@@ -348,16 +348,12 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else if (lhs_type == &mp_type_bytes) {
         mp_buffer_info_t bufinfo;
         if (!mp_get_buffer(rhs_in, &bufinfo, MP_BUFFER_READ)) {
-            goto incompatible;
+            return MP_OBJ_NULL; // op not supported
         }
         rhs_data = bufinfo.buf;
         rhs_len = bufinfo.len;
     } else {
         // incompatible types
-    incompatible:
-        if (op == MP_BINARY_OP_EQUAL) {
-            return mp_const_false; // can check for equality against every type
-        }
         return MP_OBJ_NULL; // op not supported
     }
 
