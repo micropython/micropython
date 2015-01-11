@@ -33,6 +33,8 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 
+#if MICROPY_EMIT_NATIVE
+
 #if defined(__OpenBSD__) || defined(__MACH__)
 #define MAP_ANONYMOUS MAP_ANON
 #endif
@@ -82,3 +84,5 @@ void mp_unix_mark_exec(void) {
         gc_collect_root(rg->ptr, rg->len / sizeof(mp_uint_t));
     }
 }
+
+#endif // MICROPY_EMIT_NATIVE
