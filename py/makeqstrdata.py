@@ -92,7 +92,7 @@ def do_work(infiles):
         if qlen >= cfg_max_len:
             print('qstr is too long:', qstr)
             assert False
-        qlen_str = ('\\x%02x' * cfg_bytes_len) % tuple(qlen.to_bytes(cfg_bytes_len, 'little'))
+        qlen_str = ('\\x%02x' * cfg_bytes_len) % tuple(((qlen >> (8 * i)) & 0xff) for i in range(cfg_bytes_len))
         print('QDEF(MP_QSTR_%s, (const byte*)"\\x%02x\\x%02x%s" "%s")' % (ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen_str, qdata))
 
     return True
