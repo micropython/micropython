@@ -190,12 +190,19 @@ mp_int_t mp_obj_hash(mp_obj_t o_in) {
     }
 }
 
-// this function implements the '==' operator (and so the inverse of '!=')
-// from the python language reference:
+// This function implements the '==' operator (and so the inverse of '!=').
+//
+// From the Python language reference:
+// (https://docs.python.org/3/reference/expressions.html#not-in)
 // "The objects need not have the same type. If both are numbers, they are converted
 // to a common type. Otherwise, the == and != operators always consider objects of
 // different types to be unequal."
-// note also that False==0 and True==1 are true expressions
+//
+// This means that False==0 and True==1 are true expressions.
+//
+// Furthermore, from the v3.4.2 code for object.c: "Practical amendments: If rich
+// comparison returns NotImplemented, == and != are decided by comparing the object
+// pointer."
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
     if (o1 == o2) {
         return true;
@@ -239,14 +246,9 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
         }
     }
 
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-            "equality for given types not yet implemented"));
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NotImplementedError,
-            "equality for '%s' and '%s' types not yet implemented",
-            mp_obj_get_type_str(o1), mp_obj_get_type_str(o2)));
-    }
+    // equality not implemented, and objects are not the same object, so
+    // they are defined as not equal
+    return false;
 }
 
 mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
