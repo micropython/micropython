@@ -76,7 +76,7 @@ STATIC const qstr_pool_t const_pool = {
     MP_QSTR_number_of,  // corresponds to number of strings in array just below
     {
         (const byte*) "\0\0\0\0", // invalid/no qstr has empty data
-        (const byte*) "\0\0\0\0", // empty qstr
+        (const byte*) "\x05\x15\0\0", // empty qstr with hash=5381=0x1505
 #define Q(id, str) str,
 #include "genhdr/qstrdefs.generated.h"
 #undef Q
