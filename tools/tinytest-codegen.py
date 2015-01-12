@@ -47,7 +47,7 @@ testgroup_member = (
 ## XXX: may be we could have `--without <groups>` argument...
 # currently these tests are selected because they pass on qemu-arm
 test_dirs = ('basics', 'micropython', 'inlineasm') # 'float', 'import', 'io', 'misc')
-exclude_tests = ('basics/builtin_override.py', 'basics/class_super_object.py', 'micropython/heapalloc.py')
+exclude_tests = ('basics/builtin_override.py', 'basics/class_super_object.py', 'basics/memoryerror.py', 'micropython/heapalloc.py')
 
 output = []
 
