@@ -33,10 +33,6 @@
 #include "stm32f4xx_hal.h"
 #include "usbd_core.h"
 
-#if !defined(USE_USB_OTG_ID)
-#define USE_USB_OTG_ID 1
-#endif
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -79,7 +75,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 #endif
 	
-#if USE_USB_OTG_ID
+#if defined(MICROPY_HW_USB_OTG_ID_PIN)
+    // USB ID pin is always A10
     GPIO_InitStruct.Pin = GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;

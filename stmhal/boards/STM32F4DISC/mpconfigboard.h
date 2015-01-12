@@ -33,5 +33,6 @@
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
 
-// USB VBUS detect pin
+// USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
+#define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
