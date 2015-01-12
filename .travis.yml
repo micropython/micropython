@@ -27,3 +27,4 @@ script:
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
+  - (grep "FAIL" qemu-arm/build/console.out)
