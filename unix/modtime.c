@@ -52,7 +52,7 @@ void msec_sleep_tv(struct timeval *tv) {
 #endif
 
 #if defined(MP_CLOCKS_PER_SEC)
-#define CLOCK_DIV (MP_CLOCKS_PER_SEC / 1000.0)
+#define CLOCK_DIV (MP_CLOCKS_PER_SEC / 1000.0F)
 #else
 #error Unsupported clock() implementation
 #endif

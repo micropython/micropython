@@ -1206,7 +1206,13 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
 
                 case '%':
                     flags |= PF_FLAG_ADD_PERCENT;
-                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg) * 100.0F, 'f', flags, fill, width, precision);
+                    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+                    #define F100 100.0F
+                    #else
+                    #define F100 100.0
+                    #endif
+                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg) * F100, 'f', flags, fill, width, precision);
+                    #undef F100
                     break;
 #endif
 
