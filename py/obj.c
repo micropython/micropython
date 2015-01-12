@@ -36,6 +36,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/pfenv.h"
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
@@ -50,13 +51,6 @@ mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type(o_in)->name);
-}
-
-void printf_wrapper(void *env, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
 }
 
 void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {

@@ -36,8 +36,6 @@
 #include "py/formatfloat.h"
 #endif
 
-int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
-
 STATIC void stdout_print_strn(void *dummy_env, const char *str, mp_uint_t len) {
     stdout_tx_strn_cooked(str, len);
 }

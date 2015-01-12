@@ -482,7 +482,6 @@ int main(int argc, char **argv) {
     }
 
     if (mp_verbose_flag) {
-        extern mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args);
         mp_micropython_mem_info(0, NULL);
     }
 

@@ -27,8 +27,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "py/obj.h"
 #include "py/emit.h"
+#include "py/runtime.h"
 
 #if MICROPY_WARNINGS
 

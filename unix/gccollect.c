@@ -51,7 +51,7 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 #ifdef __x86_64__
 typedef mp_uint_t regs_t[6];
 
-void gc_helper_get_regs(regs_t arr) {
+STATIC void gc_helper_get_regs(regs_t arr) {
     register long rbx asm ("rbx");
     register long rbp asm ("rbp");
     register long r12 asm ("r12");

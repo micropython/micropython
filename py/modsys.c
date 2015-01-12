@@ -37,6 +37,11 @@
 
 /// \module sys - system specific functions
 
+// defined per port; type of these is irrelevant, just need pointer
+extern mp_uint_t mp_sys_stdin_obj;
+extern mp_uint_t mp_sys_stdout_obj;
+extern mp_uint_t mp_sys_stderr_obj;
+
 // These two lists must be initialised per port (after the call to mp_init).
 // TODO document these properly, they aren't constants or functions...
 /// \constant path - a mutable list of directories to search for imported modules
