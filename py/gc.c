@@ -649,7 +649,7 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
 }
 #endif // Alternative gc_realloc impl
 
-void gc_dump_info() {
+void gc_dump_info(void) {
     gc_info_t info;
     gc_info(&info);
     printf("GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n", info.total, info.used, info.free);

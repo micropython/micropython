@@ -249,7 +249,7 @@ end_key:
     return -1;
 }
 
-void readline_note_newline() {
+void readline_note_newline(void) {
     rl.orig_line_len = rl.line->len;
     rl.cursor_pos = rl.orig_line_len;
 }

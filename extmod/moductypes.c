@@ -117,7 +117,7 @@ typedef struct _mp_obj_uctypes_struct_t {
     uint32_t flags;
 } mp_obj_uctypes_struct_t;
 
-STATIC NORETURN void syntax_error() {
+STATIC NORETURN void syntax_error(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "syntax error in uctypes descriptor"));
 }
 

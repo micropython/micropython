@@ -57,7 +57,7 @@ void msec_sleep_tv(struct timeval *tv) {
 #error Unsupported clock() implementation
 #endif
 
-STATIC mp_obj_t mod_time_time() {
+STATIC mp_obj_t mod_time_time(void) {
 #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -70,7 +70,7 @@ STATIC mp_obj_t mod_time_time() {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
-STATIC mp_obj_t mod_time_clock() {
+STATIC mp_obj_t mod_time_clock(void) {
 #if MICROPY_PY_BUILTINS_FLOAT
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
