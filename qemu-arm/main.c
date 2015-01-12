@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -9,6 +10,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/gc.h"
 #include "py/repl.h"
 #include "py/pfenv.h"
 
@@ -51,6 +53,8 @@ void do_str(const char *src) {
 
 int main(int argc, char **argv) {
     mp_stack_set_limit(10240);
+    void *heap = malloc(16 * 1024);
+    gc_init(heap, (char*)heap + 16 * 1024);
     mp_init();
     do_str("print('hello world!')");
     mp_deinit();
