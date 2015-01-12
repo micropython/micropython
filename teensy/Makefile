@@ -32,6 +32,7 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat
 INC =  -I.
 INC += -I..
 INC += -I../stmhal
+INC += -I../lib/mp-readline
 INC += -I$(BUILD)
 INC += -Icore
 
@@ -100,12 +101,15 @@ STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	pyexec.c \
 	pybstdio.c \
-	readline.c \
 	string0.c \
 	)
 
 STM_SRC_S = $(addprefix stmhal/,\
 	gchelper.s \
+	)
+
+LIB_SRC_C = $(addprefix lib/,\
+	mp-readline/readline.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\
@@ -120,6 +124,7 @@ SRC_TEENSY = $(addprefix core/,\
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
 all: hex
