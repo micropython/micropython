@@ -13,6 +13,7 @@ ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 INC =  -I.
 INC += -I..
 INC += -I../stmhal
+INC += -I../lib/mp-readline
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
@@ -52,7 +53,10 @@ STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	string0.c \
 	pyexec.c \
-	readline.c \
+	)
+
+LIB_SRC_C = $(addprefix lib/,\
+	mp-readline/readline.c \
 	)
 
 SRC_S = \
@@ -63,6 +67,7 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: $(BUILD)/firmware-combined.bin
