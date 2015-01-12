@@ -300,7 +300,7 @@ typedef struct _mp_obj_fun_native_t {
     // TODO add mp_map_t *globals
 } mp_obj_fun_native_t;
 
-typedef mp_obj_t (*native_fun_0_t)();
+typedef mp_obj_t (*native_fun_0_t)(void);
 typedef mp_obj_t (*native_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*native_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*native_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
@@ -360,7 +360,7 @@ typedef struct _mp_obj_fun_viper_t {
     mp_uint_t type_sig;
 } mp_obj_fun_viper_t;
 
-typedef mp_uint_t (*viper_fun_0_t)();
+typedef mp_uint_t (*viper_fun_0_t)(void);
 typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
 typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
@@ -417,7 +417,7 @@ typedef struct _mp_obj_fun_asm_t {
     void *fun_data; // GC must be able to trace this pointer
 } mp_obj_fun_asm_t;
 
-typedef mp_uint_t (*inline_asm_fun_0_t)();
+typedef mp_uint_t (*inline_asm_fun_0_t)(void);
 typedef mp_uint_t (*inline_asm_fun_1_t)(mp_uint_t);
 typedef mp_uint_t (*inline_asm_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*inline_asm_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
