@@ -1987,6 +1987,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
             // this is a catch all exception handler
             if (i + 1 != n_except) {
                 compile_syntax_error(comp, pn_excepts[i], "default 'except:' must be last");
+                compile_decrease_except_level(comp);
                 return;
             }
         } else {
