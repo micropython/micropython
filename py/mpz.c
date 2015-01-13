@@ -698,29 +698,25 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
 #if MICROPY_PY_BUILTINS_FLOAT
 void mpz_set_from_float(mpz_t *z, mp_float_t src) {
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define EXP_SZ      11
-#define FRC_SZ      52
 typedef uint64_t mp_float_int_t;
-#else
-#define EXP_SZ      8
-#define FRC_SZ      23
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 typedef uint32_t mp_float_int_t;
 #endif
     union {
         mp_float_t f;
-        struct { mp_float_int_t frc:FRC_SZ, exp:EXP_SZ, sgn:1; } p;
+        struct { mp_float_int_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
     } u = {src};
 
     z->neg = u.p.sgn;
     if (u.p.exp == 0) {
         // value == 0 || value < 1
         mpz_set_from_int(z, 0);
-    } else if (u.p.exp == ((1 << EXP_SZ) - 1)) {
+    } else if (u.p.exp == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
         // u.p.frc == 0 indicates inf, else NaN
         // should be handled by caller
         mpz_set_from_int(z, 0);
     } else {
-        const int adj_exp = (int)u.p.exp - ((1 << (EXP_SZ - 1)) - 1);
+        const int adj_exp = (int)u.p.exp - MP_FLOAT_EXP_BIAS;
         if (adj_exp < 0) {
             // value < 1 , truncates to 0
             mpz_set_from_int(z, 0);
@@ -732,15 +728,15 @@ typedef uint32_t mp_float_int_t;
             const int dig_cnt = (adj_exp + 1 + (DIG_SIZE - 1)) / DIG_SIZE;
             const unsigned int rem = adj_exp % DIG_SIZE;
             int dig_ind, shft;
-            mp_float_int_t frc = u.p.frc | ((mp_float_int_t)1 << FRC_SZ);
+            mp_float_int_t frc = u.p.frc | ((mp_float_int_t)1 << MP_FLOAT_FRAC_BITS);
 
-            if (adj_exp < FRC_SZ) {
+            if (adj_exp < MP_FLOAT_FRAC_BITS) {
                 shft = 0;
                 dig_ind = 0;
-                frc >>= FRC_SZ - adj_exp;
+                frc >>= MP_FLOAT_FRAC_BITS - adj_exp;
             } else {
-                shft = (rem - FRC_SZ) % DIG_SIZE;
-                dig_ind = (adj_exp - FRC_SZ) / DIG_SIZE;
+                shft = (rem - MP_FLOAT_FRAC_BITS) % DIG_SIZE;
+                dig_ind = (adj_exp - MP_FLOAT_FRAC_BITS) / DIG_SIZE;
             }
             mpz_need_dig(z, dig_cnt);
             z->len = dig_cnt;
@@ -758,8 +754,6 @@ typedef uint32_t mp_float_int_t;
         }
     }
 }
-#undef EXP_SZ
-#undef FRC_SZ
 #endif
 
 // returns number of bytes from str that were processed
