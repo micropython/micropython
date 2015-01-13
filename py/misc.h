@@ -184,4 +184,17 @@ static inline mp_uint_t count_lead_ones(byte val) {
 }
 #endif
 
+/** float internals *************/
+
+#if MICROPY_PY_BUILTINS_FLOAT
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define MP_FLOAT_EXP_BITS (11)
+#define MP_FLOAT_FRAC_BITS (52)
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define MP_FLOAT_EXP_BITS (8)
+#define MP_FLOAT_FRAC_BITS (23)
+#endif
+#define MP_FLOAT_EXP_BIAS ((1 << (MP_FLOAT_EXP_BITS - 1)) - 1)
+#endif // MICROPY_PY_BUILTINS_FLOAT
+
 #endif // __MICROPY_INCLUDED_PY_MISC_H__
