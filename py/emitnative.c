@@ -1172,6 +1172,12 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     }
 }
 
+STATIC void emit_native_load_const_obj(emit_t *emit, void *obj) {
+    emit_native_pre(emit);
+    ASM_MOV_ALIGNED_IMM_TO_REG(emit->as, (mp_uint_t)obj, REG_RET);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+}
+
 STATIC void emit_native_load_null(emit_t *emit) {
     emit_native_pre(emit);
     emit_post_push_imm(emit, VTYPE_PYOBJ, 0);
@@ -2274,6 +2280,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_int,
     emit_native_load_const_dec,
     emit_native_load_const_str,
+    emit_native_load_const_obj,
     emit_native_load_null,
     emit_native_load_fast,
     emit_native_load_deref,

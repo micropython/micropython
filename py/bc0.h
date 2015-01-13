@@ -38,6 +38,7 @@
 #define MP_BC_LOAD_CONST_DEC     (0x16) // qstr
 #define MP_BC_LOAD_CONST_BYTES   (0x17) // qstr
 #define MP_BC_LOAD_CONST_STRING  (0x18) // qstr
+#define MP_BC_LOAD_CONST_OBJ     (0x09) // ptr; TODO renumber to be in order
 #define MP_BC_LOAD_NULL          (0x19)
 
 #define MP_BC_LOAD_FAST_N        (0x1a) // uint

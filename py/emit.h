@@ -80,6 +80,7 @@ typedef struct _emit_method_table_t {
     void (*load_const_int)(emit_t *emit, qstr qst);
     void (*load_const_dec)(emit_t *emit, qstr qst);
     void (*load_const_str)(emit_t *emit, qstr qst, bool bytes);
+    void (*load_const_obj)(emit_t *emit, void *obj);
     void (*load_null)(emit_t *emit);
     void (*load_fast)(emit_t *emit, qstr qst, mp_uint_t id_flags, mp_uint_t local_num);
     void (*load_deref)(emit_t *emit, qstr qst, mp_uint_t local_num);

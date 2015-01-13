@@ -231,6 +231,15 @@ STATIC void emit_cpy_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     }
 }
 
+STATIC void emit_cpy_load_const_obj(emit_t *emit, void *obj) {
+    emit_pre(emit, 1, 3);
+    if (emit->pass == MP_PASS_EMIT) {
+        printf("LOAD_CONST ");
+        mp_obj_print(obj, PRINT_REPR);
+        printf("\n");
+    }
+}
+
 STATIC void emit_cpy_load_null(emit_t *emit) {
     // unused for cpy
     assert(0);
@@ -833,6 +842,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_const_int,
     emit_cpy_load_const_dec,
     emit_cpy_load_const_str,
+    emit_cpy_load_const_obj,
     emit_cpy_load_null,
     emit_cpy_load_fast,
     emit_cpy_load_deref,
