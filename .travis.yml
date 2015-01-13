@@ -12,6 +12,7 @@ before_script:
   - sudo apt-get install realpath
 
 script:
+  - make -C minimal test
   - make -C unix CC=gcc-4.7
   - make -C unix-cpy CC=gcc-4.7
   - make -C bare-arm
