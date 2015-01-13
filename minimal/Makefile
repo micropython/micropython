@@ -15,7 +15,7 @@ endif
 INC =  -I.
 INC += -I..
 INC += -I../lib/mp-readline
-INC += -I$(PY_SRC) -I../stmhal
+INC += -I../stmhal
 INC += -I$(BUILD)
 
 ifeq ($(CROSS), 1)
