@@ -183,6 +183,12 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("LOAD_CONST_STRING '%s'", qstr_str(qstr));
             break;
 
+        case MP_BC_LOAD_CONST_OBJ:
+            DECODE_PTR;
+            printf("LOAD_CONST_OBJ %p=", (void*)unum);
+            mp_obj_print((mp_obj_t)unum, PRINT_REPR);
+            break;
+
         case MP_BC_LOAD_NULL:
             printf("LOAD_NULL");
             break;
@@ -200,16 +206,25 @@ const byte *mp_bytecode_print_str(const byte *ip) {
         case MP_BC_LOAD_NAME:
             DECODE_QSTR;
             printf("LOAD_NAME %s", qstr_str(qstr));
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                printf(" (cache=%u)", *ip++);
+            }
             break;
 
         case MP_BC_LOAD_GLOBAL:
             DECODE_QSTR;
             printf("LOAD_GLOBAL %s", qstr_str(qstr));
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                printf(" (cache=%u)", *ip++);
+            }
             break;
 
         case MP_BC_LOAD_ATTR:
             DECODE_QSTR;
             printf("LOAD_ATTR %s", qstr_str(qstr));
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                printf(" (cache=%u)", *ip++);
+            }
             break;
 
         case MP_BC_LOAD_METHOD:
@@ -248,6 +263,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
         case MP_BC_STORE_ATTR:
             DECODE_QSTR;
             printf("STORE_ATTR %s", qstr_str(qstr));
+            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+                printf(" (cache=%u)", *ip++);
+            }
             break;
 
         case MP_BC_STORE_SUBSCR:
