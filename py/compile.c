@@ -46,6 +46,7 @@ typedef enum {
 #undef DEF_RULE
     PN_maximum_number_of,
     PN_string, // special node for non-interned string
+    PN_bytes, // special node for non-interned bytes
 } pn_kind_t;
 
 #define EMIT(fun) (comp->emit_method_table->fun(comp->emit))
@@ -172,6 +173,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                 break;
 #endif
             case PN_string:
+            case PN_bytes:
                 return pn;
         }
 
@@ -427,6 +429,9 @@ STATIC bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string)) {
         return true;
     }
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes)) {
+        return true;
+    }
     if (!MP_PARSE_NODE_IS_LEAF(pn)) {
         return false;
     }
@@ -475,9 +480,9 @@ STATIC void cpython_c_print_quoted_str(vstr_t *vstr, const char *str, uint len, 
 }
 
 STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vstr_t *vstr) {
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string)) {
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string) || MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        cpython_c_print_quoted_str(vstr, (const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], false);
+        cpython_c_print_quoted_str(vstr, (const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes));
         return;
     }
 
@@ -2151,7 +2156,8 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
             // for non-REPL, evaluate then discard the expression
             if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !MP_PARSE_NODE_IS_ID(pns->nodes[0]))
-                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)) {
+                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)
+                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_bytes)) {
                 // do nothing with a lonely constant
             } else {
                 compile_node(comp, pns->nodes[0]); // just an expression
@@ -2595,8 +2601,12 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
             assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[i]));
             mp_parse_node_struct_t *pns_string = (mp_parse_node_struct_t*)pns->nodes[i];
-            assert(MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_string);
-            pn_kind = MP_PARSE_NODE_STRING;
+            if (MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_string) {
+                pn_kind = MP_PARSE_NODE_STRING;
+            } else {
+                assert(MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_bytes);
+                pn_kind = MP_PARSE_NODE_BYTES;
+            }
             n_bytes += (mp_uint_t)pns_string->nodes[1];
         }
         if (i == 0) {
@@ -2608,8 +2618,8 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 
     // concatenate string/bytes
-    byte *q_ptr;
-    byte *s_dest = qstr_build_start(n_bytes, &q_ptr);
+    byte *s_dest;
+    mp_obj_t obj = mp_obj_str_builder_start(string_kind == MP_PARSE_NODE_STRING ? &mp_type_str : &mp_type_bytes, n_bytes, &s_dest);
     for (int i = 0; i < n; i++) {
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
             mp_uint_t s_len;
@@ -2622,9 +2632,7 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
             s_dest += (mp_uint_t)pns_string->nodes[1];
         }
     }
-    qstr q = qstr_build_end(q_ptr);
-
-    EMIT_ARG(load_const_str, q, string_kind == MP_PARSE_NODE_BYTES);
+    EMIT_ARG(load_const_obj, mp_obj_str_builder_end(obj));
 }
 
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node
@@ -2959,7 +2967,9 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         EMIT_ARG(set_line_number, pns->source_line);
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_string) {
-            EMIT_ARG(load_const_str, qstr_from_strn((const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1]), false);
+            EMIT_ARG(load_const_obj, mp_obj_new_str((const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], false));
+        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_bytes) {
+            EMIT_ARG(load_const_obj, mp_obj_new_bytes((const byte*)pns->nodes[0], (mp_uint_t)pns->nodes[1]));
         } else {
             compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
             if (f == NULL) {
