@@ -2,7 +2,7 @@
 
 // options to control how Micro Python is built
 
-#define MICROPY_ALLOC_PATH_MAX      (512)
+#define MICROPY_ALLOC_PATH_MAX      (256)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -10,8 +10,8 @@
 #define MICROPY_COMP_CONST          (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
-#define MICROPY_ENABLE_GC           (0)
-#define MICROPY_HELPER_REPL         (0)
+#define MICROPY_ENABLE_GC           (1)
+#define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_ENABLE_DOC_STRING   (0)
@@ -41,11 +41,15 @@
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 
-#define UINT_FMT "%lu"
-#define INT_FMT "%ld"
+// This port is intended to be 32-bit, but unfortunately, int32_t for
+// different targets may be defined in different ways - either as int
+// or as long. This requires different printf formatting specifiers
+// to print such value. So, we avoid int32_t and use int directly.
+#define UINT_FMT "%u"
+#define INT_FMT "%d"
+typedef int mp_int_t; // must be pointer size
+typedef unsigned mp_uint_t; // must be pointer size
 
-typedef int32_t mp_int_t; // must be pointer size
-typedef uint32_t mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
@@ -57,3 +61,19 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+#define HAL_GetTick() 0
+
+static inline void mp_hal_set_interrupt_char(char c) {}
+
+#define MICROPY_HW_BOARD_NAME "minimal"
+#define MICROPY_HW_MCU_NAME "unknown-cpu"
+
+#ifdef __linux__
+#define MICROPY_MIN_USE_STDOUT (1)
+#endif
+
+#define MP_STATE_PORT MP_STATE_VM
+
+#define MICROPY_PORT_ROOT_POINTERS \
+    const char *readline_hist[8];

@@ -8,6 +8,9 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/pfenv.h"
+#include "py/gc.h"
+#include "pyexec.h"
+#include "pybstdio.h"
 
 void do_str(const char *src) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -46,14 +49,31 @@ void do_str(const char *src) {
     }
 }
 
+static char *stack_top;
+static char heap[2048];
+
 int main(int argc, char **argv) {
+    int stack_dummy;
+    stack_top = (char*)&stack_dummy;
+
+#if MICROPY_ENABLE_GC
+    gc_init(heap, heap + sizeof(heap));
+#endif
     mp_init();
-    do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\n')");
+    pyexec_friendly_repl();
+    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')");
     mp_deinit();
     return 0;
 }
 
 void gc_collect(void) {
+    // WARNING: This gc_collect implementation doesn't try to get root
+    // pointers from CPU registers, and thus may function incorrectly.
+    void *dummy;
+    gc_collect_start();
+    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_collect_end();
+    gc_dump_info();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
@@ -83,39 +103,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-/*
-int _lseek() {return 0;}
-int _read() {return 0;}
-int _write() {return 0;}
-int _close() {return 0;}
-void _exit(int x) {for(;;){}}
-int _sbrk() {return 0;}
-int _kill() {return 0;}
-int _getpid() {return 0;}
-int _fstat() {return 0;}
-int _isatty() {return 0;}
-*/
-
-void *malloc(size_t n) {return NULL;}
-void *calloc(size_t nmemb, size_t size) {return NULL;}
-void *realloc(void *ptr, size_t size) {return NULL;}
-void free(void *p) {}
-int printf(const char *m, ...) {return 0;}
-void *memcpy(void *dest, const void *src, size_t n) {return NULL;}
-int memcmp(const void *s1, const void *s2, size_t n) {return 0;}
-void *memmove(void *dest, const void *src, size_t n) {return NULL;}
-void *memset(void *s, int c, size_t n) {return NULL;}
-int strcmp(const char *s1, const char* s2) {return 0;}
-int strncmp(const char *s1, const char* s2, size_t n) {return 0;}
-size_t strlen(const char *s) {return 0;}
-char *strcat(char *dest, const char *src) {return NULL;}
-char *strchr(const char *dest, int c) {return NULL;}
-#include <stdarg.h>
-int vprintf(const char *format, va_list ap) {return 0;}
-int vsnprintf(char *str,  size_t  size,  const  char  *format, va_list ap) {return 0;}
-
-#undef putchar
-int putchar(int c) {return 0;}
-int puts(const char *s) {return 0;}
-
+#if !MICROPY_MIN_USE_STDOUT
 void _start(void) {main(0, NULL);}
+#endif
