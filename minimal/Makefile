@@ -62,4 +62,13 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
+# Run emulation build on a POSIX system with suitable terminal settings
+run:
+	stty raw opost -echo
+	build/firmware.elf
+	@echo Resetting terminal...
+# This sleep is useful to spot segfaults
+	sleep 1
+	reset
+
 include ../py/mkrules.mk
