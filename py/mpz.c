@@ -747,10 +747,16 @@ typedef uint32_t mp_float_int_t;
                 z->dig[dig_ind++] = (frc << shft) & DIG_MASK;
                 frc >>= DIG_SIZE - shft;
             }
+#if DIG_SIZE < (MP_FLOAT_FRAC_BITS + 1)
             while (dig_ind != dig_cnt) {
                 z->dig[dig_ind++] = frc & DIG_MASK;
                 frc >>= DIG_SIZE;
             }
+#else
+            if (dig_ind != dig_cnt) {
+                z->dig[dig_ind] = frc;
+            }
+#endif
         }
     }
 }
