@@ -26,6 +26,8 @@
 #ifndef __MICROPY_INCLUDED_PY_PFENV_H__
 #define __MICROPY_INCLUDED_PY_PFENV_H__
 
+#include <stdarg.h>
+
 #include "py/obj.h"
 
 #define PF_FLAG_LEFT_ADJUST       (0x001)
@@ -54,7 +56,7 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
 int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
 #endif
 
-//int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
+int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
 int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...);
 
 // Wrapper for system printf

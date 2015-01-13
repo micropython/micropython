@@ -487,6 +487,11 @@ STATIC void emit_bc_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     }
 }
 
+STATIC void emit_bc_load_const_obj(emit_t *emit, void *obj) {
+    emit_bc_pre(emit, 1);
+    emit_write_bytecode_byte_ptr(emit, MP_BC_LOAD_CONST_OBJ, obj);
+}
+
 STATIC void emit_bc_load_null(emit_t *emit) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte(emit, MP_BC_LOAD_NULL);
@@ -917,6 +922,7 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_int,
     emit_bc_load_const_dec,
     emit_bc_load_const_str,
+    emit_bc_load_const_obj,
     emit_bc_load_null,
     emit_bc_load_fast,
     emit_bc_load_deref,

@@ -30,6 +30,7 @@
 
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args);
 mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___build_class___obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___import___obj);
@@ -90,11 +91,6 @@ extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
 
 extern const mp_obj_dict_t mp_module_builtins_globals;
-
-struct _dummy_t;
-extern struct _dummy_t mp_sys_stdin_obj;
-extern struct _dummy_t mp_sys_stdout_obj;
-extern struct _dummy_t mp_sys_stderr_obj;
 
 // extmod modules
 extern const mp_obj_module_t mp_module_uctypes;

@@ -34,6 +34,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/builtin.h"
 
 #ifdef _WIN32
 #define fsync _commit

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -9,6 +10,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/gc.h"
 #include "py/repl.h"
 #include "py/pfenv.h"
 
@@ -58,6 +60,8 @@ end:
 int main() {
     const char a[] = {"sim"};
     mp_stack_set_limit(10240);
+    void *heap = malloc(256 * 1024);
+    gc_init(heap, (char*)heap + 256 * 1024);
     mp_init();
     int r = tinytest_main(1, (const char **) a, groups);
     mp_deinit();
@@ -66,6 +70,18 @@ int main() {
 }
 
 void gc_collect(void) {
+    gc_collect_start();
+
+    // get the registers and the sp
+    jmp_buf env;
+    setjmp(env);
+    volatile mp_uint_t dummy;
+    void *sp = (void*)&dummy;
+
+    // trace the stack, including the registers (since they live on the stack in this function)
+    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_VM(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
+
+    gc_collect_end();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {

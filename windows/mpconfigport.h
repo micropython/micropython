@@ -38,6 +38,7 @@
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
+#define MICROPY_STACK_CHECK         (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_HELPER_REPL         (1)

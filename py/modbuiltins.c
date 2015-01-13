@@ -406,6 +406,7 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
         end_data = mp_obj_str_get_data(end_elem->value, &end_len);
     }
     #if MICROPY_PY_IO
+    extern mp_uint_t mp_sys_stdout_obj; // type is irrelevant, just need pointer
     mp_obj_t stream_obj = &mp_sys_stdout_obj;
     mp_map_elem_t *file_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_file), MP_MAP_LOOKUP);
     if (file_elem != NULL && file_elem->value != mp_const_none) {

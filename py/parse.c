@@ -70,6 +70,7 @@ enum {
 #undef DEF_RULE
     RULE_maximum_number_of,
     RULE_string, // special node for non-interned string
+    RULE_bytes, // special node for non-interned bytes
 };
 
 #define ident                   (RULE_ACT_ALLOW_IDENT)
@@ -176,7 +177,7 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         mp_uint_t rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
-        if (rule_id == RULE_string) {
+        if (rule_id == RULE_string || rule_id == RULE_bytes) {
             m_del(char, (char*)pns->nodes[0], (mp_uint_t)pns->nodes[1]);
         } else {
             bool adjust = ADD_BLANK_NODE(rules[rule_id]);
@@ -225,6 +226,8 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_string) {
             printf("literal str(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
+        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_bytes) {
+            printf("literal bytes(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
         } else {
             mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
@@ -281,14 +284,14 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
-STATIC void push_result_string(parser_t *parser, mp_uint_t src_line, const char *str, mp_uint_t len) {
+STATIC void push_result_string_bytes(parser_t *parser, mp_uint_t src_line, mp_uint_t rule_kind, const char *str, mp_uint_t len) {
     mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, 2);
     if (pn == NULL) {
         memory_error(parser);
         return;
     }
     pn->source_line = src_line;
-    pn->kind_num_nodes = RULE_string | (2 << 8);
+    pn->kind_num_nodes = rule_kind | (2 << 8);
     char *p = m_new(char, len);
     memcpy(p, str, len);
     pn->nodes[0] = (mp_int_t)p;
@@ -340,8 +343,8 @@ STATIC void push_result_token(parser_t *parser) {
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));
         }
-    } else if (lex->tok_kind == MP_TOKEN_STRING) {
-        // Don't automatically intern all strings.  doc strings (which are usually large)
+    } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
+        // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
         qstr qst = MP_QSTR_NULL;
         if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
@@ -353,14 +356,12 @@ STATIC void push_result_token(parser_t *parser) {
         }
         if (qst != MP_QSTR_NULL) {
             // qstr exists, make a leaf node
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qst);
+            pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
-            // not interned, make a node holding a pointer to the string data
-            push_result_string(parser, lex->tok_line, lex->vstr.buf, lex->vstr.len);
+            // not interned, make a node holding a pointer to the string/bytes data
+            push_result_string_bytes(parser, lex->tok_line, lex->tok_kind == MP_TOKEN_STRING ? RULE_string : RULE_bytes, lex->vstr.buf, lex->vstr.len);
             return;
         }
-    } else if (lex->tok_kind == MP_TOKEN_BYTES) {
-        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_BYTES, qstr_from_strn(lex->vstr.buf, lex->vstr.len));
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }

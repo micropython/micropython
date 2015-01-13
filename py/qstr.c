@@ -148,6 +148,7 @@ qstr qstr_from_str(const char *str) {
 }
 
 qstr qstr_from_strn(const char *str, mp_uint_t len) {
+    assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         mp_uint_t hash = qstr_compute_hash((const byte*)str, len);

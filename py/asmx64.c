@@ -281,11 +281,13 @@ void asm_x64_push_i32(asm_x64_t *as, int src_i32) {
 }
 */
 
+/*
 void asm_x64_push_disp(asm_x64_t *as, int src_r64, int src_offset) {
     assert(src_r64 < 8);
     asm_x64_write_byte_1(as, OPCODE_PUSH_M64);
     asm_x64_write_r64_disp(as, 6, src_r64, src_offset);
 }
+*/
 
 void asm_x64_pop_r64(asm_x64_t *as, int dest_r64) {
     if (dest_r64 < 8) {
@@ -357,7 +359,7 @@ void asm_x64_mov_mem64_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest
     asm_x64_write_r64_disp(as, dest_r64, src_r64, src_disp);
 }
 
-void asm_x64_lea_disp_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest_r64) {
+STATIC void asm_x64_lea_disp_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest_r64) {
     // use REX prefix for 64 bit operation
     assert(src_r64 < 8);
     assert(dest_r64 < 8);
@@ -365,10 +367,12 @@ void asm_x64_lea_disp_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest_
     asm_x64_write_r64_disp(as, dest_r64, src_r64, src_disp);
 }
 
+/*
 void asm_x64_mov_i8_to_r8(asm_x64_t *as, int src_i8, int dest_r64) {
     assert(dest_r64 < 8);
     asm_x64_write_byte_2(as, OPCODE_MOV_I8_TO_R8 | dest_r64, src_i8);
 }
+*/
 
 STATIC void asm_x64_mov_i32_to_r64(asm_x64_t *as, int src_i32, int dest_r64) {
     // cpu defaults to i32 to r64, with zero extension

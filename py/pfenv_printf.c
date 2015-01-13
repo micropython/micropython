@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "py/pfenv.h"
 
@@ -192,4 +193,11 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...) {
     int ret = pfenv_vprintf(pfenv, fmt, ap);
     va_end(ap);
     return ret;
+}
+
+void printf_wrapper(void *env, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
 }

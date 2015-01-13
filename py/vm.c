@@ -224,6 +224,12 @@ dispatch_loop:
                     DISPATCH();
                 }
 
+                ENTRY(MP_BC_LOAD_CONST_OBJ): {
+                    DECODE_PTR;
+                    PUSH(ptr);
+                    DISPATCH();
+                }
+
                 ENTRY(MP_BC_LOAD_NULL):
                     PUSH(MP_OBJ_NULL);
                     DISPATCH();
