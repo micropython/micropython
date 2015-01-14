@@ -3729,10 +3729,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif
                     comp->emit = emit_native;
                     EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ENABLE, s->emit_options == MP_EMIT_OPT_VIPER, 0);
-
-                    // native emitters need an extra pass to compute stack size
-                    compile_scope(comp, s, MP_PASS_STACK_SIZE);
-
                     break;
 #endif // MICROPY_EMIT_NATIVE
 
@@ -3745,6 +3741,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
                     break;
             }
 #endif // !MICROPY_EMIT_CPYTHON
+
+            // need a pass to compute stack size
+            compile_scope(comp, s, MP_PASS_STACK_SIZE);
 
             // second last pass: compute code size
             if (comp->compile_error == MP_OBJ_NULL) {
