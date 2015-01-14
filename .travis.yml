@@ -7,7 +7,7 @@ before_script:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
   - sudo apt-get update -qq
-  - sudo apt-get install -y python3.3 python3 gcc-4.7 gcc-arm-none-eabi qemu-system mingw32
+  - sudo apt-get install -y python3.3 python3 gcc-4.7 gcc-multilib gcc-arm-none-eabi qemu-system mingw32
   # For teensy build
   - sudo apt-get install realpath
 
