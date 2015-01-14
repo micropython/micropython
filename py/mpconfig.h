@@ -569,6 +569,9 @@ typedef double mp_float_t;
 #define MICROPY_MAKE_POINTER_CALLABLE(p) (p)
 #endif
 
+// If these MP_PLAT_* macros are overridden then the memory allocated by them
+// must be somehow reachable for marking by the GC, since the native code
+// generators store pointers to GC managed memory in the code.
 #ifndef MP_PLAT_ALLOC_EXEC
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) do { *ptr = m_new(byte, min_size); *size = min_size; } while(0)
 #endif
