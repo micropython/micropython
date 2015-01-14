@@ -2618,6 +2618,12 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
         }
     }
 
+    // if we are not in the last pass, just load a dummy object
+    if (comp->pass != MP_PASS_EMIT) {
+        EMIT_ARG(load_const_obj, mp_const_none);
+        return;
+    }
+
     // concatenate string/bytes
     byte *s_dest;
     mp_obj_t obj = mp_obj_str_builder_start(string_kind == MP_PARSE_NODE_STRING ? &mp_type_str : &mp_type_bytes, n_bytes, &s_dest);
@@ -2633,6 +2639,8 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
             s_dest += (mp_uint_t)pns_string->nodes[1];
         }
     }
+
+    // load the object
     EMIT_ARG(load_const_obj, mp_obj_str_builder_end(obj));
 }
 
@@ -2928,6 +2936,24 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
+STATIC void compile_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    // only create and load the actual str object on the last pass
+    if (comp->pass != MP_PASS_EMIT) {
+        EMIT_ARG(load_const_obj, mp_const_none);
+    } else {
+        EMIT_ARG(load_const_obj, mp_obj_new_str((const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], false));
+    }
+}
+
+STATIC void compile_bytes(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    // only create and load the actual bytes object on the last pass
+    if (comp->pass != MP_PASS_EMIT) {
+        EMIT_ARG(load_const_obj, mp_const_none);
+    } else {
+        EMIT_ARG(load_const_obj, mp_obj_new_bytes((const byte*)pns->nodes[0], (mp_uint_t)pns->nodes[1]));
+    }
+}
+
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
 STATIC compile_function_t compile_function[] = {
 #define nc NULL
@@ -2937,6 +2963,9 @@ STATIC compile_function_t compile_function[] = {
 #undef nc
 #undef c
 #undef DEF_RULE
+    NULL,
+    compile_string,
+    compile_bytes,
 };
 
 STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
@@ -2967,21 +2996,15 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         EMIT_ARG(set_line_number, pns->source_line);
-        if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_string) {
-            EMIT_ARG(load_const_obj, mp_obj_new_str((const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], false));
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_bytes) {
-            EMIT_ARG(load_const_obj, mp_obj_new_bytes((const byte*)pns->nodes[0], (mp_uint_t)pns->nodes[1]));
-        } else {
-            compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
-            if (f == NULL) {
+        compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
+        if (f == NULL) {
 #if MICROPY_DEBUG_PRINTERS
-                printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
-                mp_parse_node_print(pn, 0);
+            printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
+            mp_parse_node_print(pn, 0);
 #endif
-                compile_syntax_error(comp, pn, "internal compiler error");
-            } else {
-                f(comp, pns);
-            }
+            compile_syntax_error(comp, pn, "internal compiler error");
+        } else {
+            f(comp, pns);
         }
     }
 }
