@@ -38,11 +38,13 @@
 #include "gccollect.h"
 #include MICROPY_HAL_H
 
+STATIC char heap[16384];
+
 void user_init(void) {
 soft_reset:
     mp_stack_set_limit(10240);
     mp_hal_init();
-    gc_init(&_heap_start, &_heap_end);
+    gc_init(heap, heap + sizeof(heap));
     gc_collect_init();
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
