@@ -131,7 +131,9 @@ void gc_collect(void) {
     // GC stack (and regs because we captured them)
     void **regs_ptr = (void**)(void*)&regs;
     gc_collect_root(regs_ptr, ((mp_uint_t)MP_STATE_VM(stack_top) - (mp_uint_t)&regs) / sizeof(mp_uint_t));
+    #ifndef _WIN32
     mp_unix_mark_exec();
+    #endif
     gc_collect_end();
 
     //printf("-----\n");
