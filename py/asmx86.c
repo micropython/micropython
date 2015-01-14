@@ -131,21 +131,20 @@ void asm_x86_free(asm_x86_t *as, bool free_code) {
 }
 
 void asm_x86_start_pass(asm_x86_t *as, mp_uint_t pass) {
-    as->pass = pass;
-    as->code_offset = 0;
     if (pass == ASM_X86_PASS_COMPUTE) {
         // reset all labels
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
-    }
-}
-
-void asm_x86_end_pass(asm_x86_t *as) {
-    if (as->pass == ASM_X86_PASS_COMPUTE) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**) &as->code_base, &as->code_size);
-        if(as->code_base == NULL) {
+    } else if (pass == ASM_X86_PASS_EMIT) {
+        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
+        if (as->code_base == NULL) {
             assert(0);
         }
     }
+    as->pass = pass;
+    as->code_offset = 0;
+}
+
+void asm_x86_end_pass(asm_x86_t *as) {
 }
 
 // all functions must go through this one to emit bytes

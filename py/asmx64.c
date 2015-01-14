@@ -143,33 +143,22 @@ void asm_x64_free(asm_x64_t *as, bool free_code) {
 }
 
 void asm_x64_start_pass(asm_x64_t *as, uint pass) {
-    as->pass = pass;
-    as->code_offset = 0;
     if (pass == ASM_X64_PASS_COMPUTE) {
         // reset all labels
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
-    }
-}
-
-void asm_x64_end_pass(asm_x64_t *as) {
-    if (as->pass == ASM_X64_PASS_COMPUTE) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**) &as->code_base, &as->code_size);
-        if(as->code_base == NULL) {
+    } if (pass == ASM_X64_PASS_EMIT) {
+        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
+        if (as->code_base == NULL) {
             assert(0);
         }
         //printf("code_size: %u\n", as->code_size);
     }
+    as->pass = pass;
+    as->code_offset = 0;
+}
 
-    /*
-    // check labels are resolved
-    if (as->label != NULL)
-    {
-        int i;
-        for (i = 0; i < as->label->len; ++i)
-            if (g_array_index(as->label, Label, i).unresolved != NULL)
-                return false;
-    }
-    */
+void asm_x64_end_pass(asm_x64_t *as) {
+    // could check labels are resolved...
 }
 
 // all functions must go through this one to emit bytes

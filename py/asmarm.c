@@ -70,20 +70,20 @@ void asm_arm_free(asm_arm_t *as, bool free_code) {
 }
 
 void asm_arm_start_pass(asm_arm_t *as, uint pass) {
-    as->pass = pass;
-    as->code_offset = 0;
     if (pass == ASM_ARM_PASS_COMPUTE) {
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
+    } else if (pass == ASM_ARM_PASS_EMIT) {
+        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
+        if (as->code_base == NULL) {
+            assert(0);
+        }
     }
+    as->pass = pass;
+    as->code_offset = 0;
 }
 
 void asm_arm_end_pass(asm_arm_t *as) {
-    if (as->pass == ASM_ARM_PASS_COMPUTE) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**) &as->code_base, &as->code_size);
-        if(as->code_base == NULL) {
-            assert(0);
-        }
-    } else if(as->pass == ASM_ARM_PASS_EMIT) {
+    if (as->pass == ASM_ARM_PASS_EMIT) {
 #ifdef __arm__
         // flush I- and D-cache
         asm volatile(
