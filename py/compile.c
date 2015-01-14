@@ -860,6 +860,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                     EMIT_ARG(store_id, arg);
                     break;
                 case ASSIGN_AUG_LOAD:
+                default:
                     EMIT_ARG(load_id, arg);
                     break;
             }
@@ -2185,8 +2186,7 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 case MP_TOKEN_DEL_DBL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_FLOOR_DIVIDE; break;
                 case MP_TOKEN_DEL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_TRUE_DIVIDE; break;
                 case MP_TOKEN_DEL_PERCENT_EQUAL: op = MP_BINARY_OP_INPLACE_MODULO; break;
-                case MP_TOKEN_DEL_DBL_STAR_EQUAL: op = MP_BINARY_OP_INPLACE_POWER; break;
-                default: assert(0); op = MP_BINARY_OP_INPLACE_OR; // shouldn't happen
+                case MP_TOKEN_DEL_DBL_STAR_EQUAL: default: op = MP_BINARY_OP_INPLACE_POWER; break;
             }
             EMIT_ARG(binary_op, op);
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_STORE); // lhs store for aug assign
@@ -2350,8 +2350,7 @@ STATIC void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 case MP_TOKEN_OP_LESS_EQUAL: op = MP_BINARY_OP_LESS_EQUAL; break;
                 case MP_TOKEN_OP_MORE_EQUAL: op = MP_BINARY_OP_MORE_EQUAL; break;
                 case MP_TOKEN_OP_NOT_EQUAL: op = MP_BINARY_OP_NOT_EQUAL; break;
-                case MP_TOKEN_KW_IN: op = MP_BINARY_OP_IN; break;
-                default: assert(0); op = MP_BINARY_OP_LESS; // shouldn't happen
+                case MP_TOKEN_KW_IN: default: op = MP_BINARY_OP_IN; break;
             }
             EMIT_ARG(binary_op, op);
         } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[i])) {
@@ -2982,7 +2981,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
             case MP_PARSE_NODE_DECIMAL: EMIT_ARG(load_const_dec, arg); break;
             case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg, false); break;
             case MP_PARSE_NODE_BYTES: EMIT_ARG(load_const_str, arg, true); break;
-            case MP_PARSE_NODE_TOKEN:
+            case MP_PARSE_NODE_TOKEN: default:
                 if (arg == MP_TOKEN_NEWLINE) {
                     // this can occur when file_input lets through a NEWLINE (eg if file starts with a newline)
                     // or when single_input lets through a NEWLINE (user enters a blank line)
@@ -2991,7 +2990,6 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
                   EMIT_ARG(load_const_tok, arg);
                 }
                 break;
-            default: assert(0);
         }
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;

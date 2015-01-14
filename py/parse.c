@@ -456,11 +456,13 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                             }
                             break;
                         case RULE_ARG_RULE:
+                        rule_or_no_other_choice:
                             push_rule(&parser, rule_src_line, rule, i + 1); // save this or-rule
                             push_rule_from_arg(&parser, rule->arg[i]); // push child of or-rule
                             goto next_rule;
                         default:
                             assert(0);
+                            goto rule_or_no_other_choice; // to help flow control analysis
                     }
                 }
                 if ((rule->arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
@@ -520,14 +522,16 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                                 }
                             }
                             break;
-                                           }
+                        }
                         case RULE_ARG_RULE:
                         case RULE_ARG_OPT_RULE:
+                        rule_and_no_other_choice:
                             push_rule(&parser, rule_src_line, rule, i + 1); // save this and-rule
                             push_rule_from_arg(&parser, rule->arg[i]); // push child of and-rule
                             goto next_rule;
                         default:
                             assert(0);
+                            goto rule_and_no_other_choice; // to help flow control analysis
                     }
                 }
 
@@ -674,11 +678,13 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
                                 }
                                 break;
                             case RULE_ARG_RULE:
+                            rule_list_no_other_choice:
                                 push_rule(&parser, rule_src_line, rule, i + 1); // save this list-rule
                                 push_rule_from_arg(&parser, arg); // push child of list-rule
                                 goto next_rule;
                             default:
                                 assert(0);
+                                goto rule_list_no_other_choice; // to help flow control analysis
                         }
                     }
                 }

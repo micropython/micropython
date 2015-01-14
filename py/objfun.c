@@ -83,11 +83,8 @@ STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n
                 return ((mp_fun_2_t)self->fun)(args[0], args[1]);
 
             case 3:
-                return ((mp_fun_3_t)self->fun)(args[0], args[1], args[2]);
-
             default:
-                assert(0);
-                return mp_const_none;
+                return ((mp_fun_3_t)self->fun)(args[0], args[1], args[2]);
         }
 
     } else {

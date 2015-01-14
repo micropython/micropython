@@ -415,7 +415,7 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     } else {
         switch (self->kind) {
             case MP_DICT_VIEW_ITEMS:
-            {
+            default: {
                 mp_obj_t items[] = {next->key, next->value};
                 return mp_obj_new_tuple(2, items);
             }
@@ -423,9 +423,6 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
                 return next->key;
             case MP_DICT_VIEW_VALUES:
                 return next->value;
-            default:
-                assert(0);          /* can't happen */
-                return mp_const_none;
         }
     }
 }

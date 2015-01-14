@@ -110,6 +110,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     mp_obj_t fun;
     switch (rc->kind) {
         case MP_CODE_BYTECODE:
+        no_other_choice:
             fun = mp_obj_new_fun_bc(rc->scope_flags, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->u_byte.code);
             break;
         #if MICROPY_EMIT_NATIVE
@@ -128,7 +129,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
         default:
             // raw code was never set (this should not happen)
             assert(0);
-            return mp_const_none;
+            goto no_other_choice; // to help flow control analysis
     }
 
     // check for generator functions and if so wrap in generator object
