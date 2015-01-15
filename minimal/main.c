@@ -56,9 +56,9 @@ int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
-#if MICROPY_ENABLE_GC
+    #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
-#endif
+    #endif
     mp_init();
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_friendly_repl_init();
