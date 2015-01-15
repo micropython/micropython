@@ -148,6 +148,8 @@ typedef enum {
     MP_F_UNPACK_EX,
     MP_F_DELETE_NAME,
     MP_F_DELETE_GLOBAL,
+    MP_F_NEW_CELL,
+    MP_F_MAKE_CLOSURE_FROM_RAW_CODE,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 

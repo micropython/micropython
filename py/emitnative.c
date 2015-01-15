@@ -140,10 +140,12 @@
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x64_sub_r64_r64((as), (reg_dest), (reg_src))
 
 #define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem64_to_r64((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x64_mov_mem64_to_r64((as), (reg_base), 8 * (word_offset), (reg_dest))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem8_to_r64zx((as), (reg_base), 0, (reg_dest))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem16_to_r64zx((as), (reg_base), 0, (reg_dest))
 
 #define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 0)
+#define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 8 * (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x64_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x64_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
 
@@ -353,10 +355,12 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_thumb_sub_rlo_rlo_rlo((as), (reg_dest), (reg_dest), (reg_src))
 
 #define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_thumb_ldr_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_thumb_ldr_rlo_rlo_i5((as), (reg_dest), (reg_base), (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_thumb_ldrb_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_thumb_ldrh_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
 
 #define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
+#define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_thumb_strb_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_thumb_strh_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 
@@ -547,6 +551,8 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
     }
 }
 
+STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
+STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
 
@@ -669,6 +675,16 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 #else
     #error not implemented
 #endif
+
+    // initialise closed over variables
+    for (int i = 0; i < scope->id_info_len; i++) {
+        id_info_t *id = &scope->id_info[i];
+        if (id->kind == ID_INFO_KIND_CELL) {
+            ASM_CALL_IND(emit->as, mp_fun_table[MP_F_NEW_CELL], MP_F_NEW_CELL);
+            emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+            emit_native_store_fast(emit, id->qst, id->local_num);
+        }
+    }
 }
 
 STATIC void emit_native_end_pass(emit_t *emit) {
@@ -1224,12 +1240,15 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
 }
 
 STATIC void emit_native_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // not implemented
-    // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
-    (void)emit;
-    (void)qst;
-    (void)local_num;
-    assert(0);
+    DEBUG_printf("load_deref(%s, " UINT_FMT ")\n", qstr_str(qst), local_num);
+    need_reg_single(emit, REG_RET, 0);
+    emit_native_load_fast(emit, qst, local_num);
+    vtype_kind_t vtype;
+    int reg_base = REG_RET;
+    emit_pre_pop_reg_flexible(emit, &vtype, &reg_base, -1, -1);
+    ASM_LOAD_REG_REG_OFFSET(emit->as, REG_RET, reg_base, 1);
+    // closed over vars are always Python objects
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_load_name(emit_t *emit, qstr qst) {
@@ -1446,11 +1465,17 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
 }
 
 STATIC void emit_native_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // not implemented
-    (void)emit;
-    (void)qst;
-    (void)local_num;
-    assert(0);
+    DEBUG_printf("store_deref(%s, " UINT_FMT ")\n", qstr_str(qst), local_num);
+    need_reg_single(emit, REG_TEMP0, 0);
+    need_reg_single(emit, REG_TEMP1, 0);
+    emit_native_load_fast(emit, qst, local_num);
+    vtype_kind_t vtype;
+    int reg_base = REG_TEMP0;
+    emit_pre_pop_reg_flexible(emit, &vtype, &reg_base, -1, -1);
+    int reg_src = REG_TEMP1;
+    emit_pre_pop_reg_flexible(emit, &vtype, &reg_src, reg_base, reg_base);
+    ASM_STORE_REG_REG_OFFSET(emit->as, reg_src, reg_base, 1);
+    emit_post(emit);
 }
 
 STATIC void emit_native_store_name(emit_t *emit, qstr qst) {
@@ -2133,12 +2158,17 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_
 }
 
 STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_over, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults) {
-    (void)emit;
-    (void)scope;
-    (void)n_closed_over;
-    (void)n_pos_defaults;
-    (void)n_kw_defaults;
-    assert(0);
+    emit_native_pre(emit);
+    if (n_pos_defaults == 0 && n_kw_defaults == 0) {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_closed_over);
+        ASM_MOV_IMM_TO_REG(emit->as, n_closed_over, REG_ARG_2);
+    } else {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_closed_over + 2);
+        ASM_MOV_IMM_TO_REG(emit->as, 0x100 | n_closed_over, REG_ARG_2);
+    }
+    ASM_MOV_ALIGNED_IMM_TO_REG(emit->as, (mp_uint_t)scope->raw_code, REG_ARG_1);
+    ASM_CALL_IND(emit->as, mp_fun_table[MP_F_MAKE_CLOSURE_FROM_RAW_CODE], MP_F_MAKE_CLOSURE_FROM_RAW_CODE);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {

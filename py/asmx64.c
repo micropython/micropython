@@ -235,8 +235,14 @@ STATIC void asm_x64_write_word32_to(asm_x64_t *as, int offset, int w32) {
 */
 
 STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int disp_offset) {
-    assert(disp_r64 < 8);
     assert(disp_r64 != ASM_X64_REG_RSP);
+
+    if (disp_r64 == ASM_X64_REG_R12) {
+        // special case for r12; not fully implemented
+        assert(SIGNED_FIT8(disp_offset));
+        asm_x64_write_byte_3(as, MODRM_R64(r64) | MODRM_RM_DISP8 | MODRM_RM_R64(disp_r64), 0x24, IMM32_L0(disp_offset));
+        return;
+    }
 
     if (disp_offset == 0 && disp_r64 != ASM_X64_REG_RBP) {
         asm_x64_write_byte_1(as, MODRM_R64(r64) | MODRM_RM_DISP0 | MODRM_RM_R64(disp_r64));
@@ -317,8 +323,7 @@ void asm_x64_mov_r16_to_mem16(asm_x64_t *as, int src_r64, int dest_r64, int dest
 
 void asm_x64_mov_r64_to_mem64(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp) {
     // use REX prefix for 64 bit operation
-    assert(dest_r64 < 8);
-    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | (src_r64 < 8 ? 0 : REX_R), OPCODE_MOV_R64_TO_RM64);
+    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | (src_r64 < 8 ? 0 : REX_R) | (dest_r64 < 8 ? 0 : REX_B), OPCODE_MOV_R64_TO_RM64);
     asm_x64_write_r64_disp(as, src_r64, dest_r64, dest_disp);
 }
 
@@ -344,8 +349,7 @@ void asm_x64_mov_mem16_to_r64zx(asm_x64_t *as, int src_r64, int src_disp, int de
 
 void asm_x64_mov_mem64_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest_r64) {
     // use REX prefix for 64 bit operation
-    assert(src_r64 < 8);
-    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_R), OPCODE_MOV_RM64_TO_R64);
+    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_R) | (src_r64 < 8 ? 0 : REX_B), OPCODE_MOV_RM64_TO_R64);
     asm_x64_write_r64_disp(as, dest_r64, src_r64, src_disp);
 }
 
