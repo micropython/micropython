@@ -40,4 +40,7 @@ void HAL_Delay(uint32_t Delay);
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
 
+#define UART_TASK_ID 0
+void uart_task_init();
+
 #endif // _INCLUDED_MPHAL_H_

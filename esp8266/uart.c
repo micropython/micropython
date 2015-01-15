@@ -16,6 +16,8 @@
 #include "uart_register.h"
 #include "etshal.h"
 #include "c_types.h"
+#include "user_interface.h"
+#include "esp_mphal.h"
 
 #define RX_BUF_SIZE (256)
 
@@ -26,6 +28,8 @@ extern UartDevice UartDev;
 static uint16_t rx_buf_in;
 static uint16_t rx_buf_out;
 static uint8_t rx_buf[RX_BUF_SIZE];
+
+static os_event_t uart_evt_queue[16];
 
 static void uart0_rx_intr_handler(void *para);
 
@@ -148,11 +152,15 @@ static void uart0_rx_intr_handler(void *para) {
         read_chars:
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
+#if 1 //MICROPY_REPL_EVENT_DRIVEN is not available here
+            system_os_post(UART_TASK_ID, 0, RcvChar);
+#else
             uint16_t rx_buf_in_next = (rx_buf_in + 1) % RX_BUF_SIZE;
             if (rx_buf_in_next != rx_buf_out) {
                 rx_buf[rx_buf_in] = RcvChar;
                 rx_buf_in = rx_buf_in_next;
             }
+#endif
         }
     }
 }
@@ -188,4 +196,16 @@ void ICACHE_FLASH_ATTR uart_init(UartBautRate uart0_br, UartBautRate uart1_br) {
 
 void ICACHE_FLASH_ATTR uart_reattach() {
     uart_init(UART_BIT_RATE_74880, UART_BIT_RATE_74880);
+}
+
+// Task-based UART interface
+
+int pyexec_friendly_repl_process_char(int c);
+
+void uart_task_handler(os_event_t *evt) {
+    pyexec_friendly_repl_process_char(evt->par);
+}
+
+void uart_task_init() {
+    system_os_task(uart_task_handler, UART_TASK_ID, uart_evt_queue, sizeof(uart_evt_queue) / sizeof(*uart_evt_queue));
 }

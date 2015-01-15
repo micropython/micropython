@@ -52,6 +52,12 @@ soft_reset:
 
     printf("\n");
 
+#if MICROPY_REPL_EVENT_DRIVEN
+    pyexec_friendly_repl_init();
+    uart_task_init();
+    return;
+    goto soft_reset;
+#else
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
@@ -65,6 +71,7 @@ soft_reset:
     }
 
     goto soft_reset;
+#endif
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
