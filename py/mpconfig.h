@@ -240,6 +240,11 @@
 #define MICROPY_HELPER_LEXER_UNIX (0)
 #endif
 
+// Whether port requires event-driven REPL functions
+#ifndef MICROPY_EVENT_DRIVEN_REPL
+#define MICROPY_EVENT_DRIVEN_REPL (0)
+#endif
+
 // Long int implementation
 #define MICROPY_LONGINT_IMPL_NONE (0)
 #define MICROPY_LONGINT_IMPL_LONGLONG (1)
