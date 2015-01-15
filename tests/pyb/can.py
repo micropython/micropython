@@ -48,3 +48,28 @@ else:
         print('passed')
     else:
         print('failed, wrong data received')
+        
+del can
+
+# Test RxCallbacks
+can = CAN(1, CAN.LOOPBACK)
+can.setfilter(0, CAN.LIST16, 0, (1, 2, 3, 4))
+can.setfilter(1, CAN.LIST16, 1, (5, 6, 7, 8))
+def cb0(bus):
+    print('cb0')
+
+def cb1(bus):
+    print('cb1')
+
+can.rxcallback(0, cb0)
+can.rxcallback(1, cb1)
+
+can.send('11111111',1)
+can.send('55555555',5)
+can.send('22222222',2)
+can.send('66666666',6)
+
+print(can.recv(0))
+print(can.recv(0))
+print(can.recv(1))
+print(can.recv(1))
