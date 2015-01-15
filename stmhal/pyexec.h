@@ -32,9 +32,12 @@ typedef enum {
 extern pyexec_mode_kind_t pyexec_mode_kind;
 
 #define PYEXEC_FORCED_EXIT (0x100)
+#define PYEXEC_SWITCH_MODE (0x200)
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);
+void pyexec_friendly_repl_init(void);
+int pyexec_friendly_repl_process_char(int c);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);

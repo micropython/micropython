@@ -235,6 +235,11 @@
 #define MICROPY_HELPER_REPL (0)
 #endif
 
+// Whether port requires event-driven REPL functions
+#ifndef MICROPY_REPL_EVENT_DRIVEN
+#define MICROPY_REPL_EVENT_DRIVEN (0)
+#endif
+
 // Whether to include lexer helper function for unix
 #ifndef MICROPY_HELPER_LEXER_UNIX
 #define MICROPY_HELPER_LEXER_UNIX (0)

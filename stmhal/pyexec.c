@@ -195,6 +195,114 @@ raw_repl_reset:
     }
 }
 
+#if MICROPY_REPL_EVENT_DRIVEN
+
+typedef struct _friendly_repl_t {
+    vstr_t line;
+    bool cont_line;
+} friendly_repl_t;
+
+friendly_repl_t repl;
+
+void pyexec_friendly_repl_init(void) {
+    vstr_init(&repl.line, 32);
+    repl.cont_line = false;
+    readline_init(&repl.line);
+    stdout_tx_str(">>> ");
+}
+
+void pyexec_friendly_repl_reset() {
+    repl.cont_line = false;
+    vstr_reset(&repl.line);
+    readline_init(&repl.line);
+}
+
+int pyexec_friendly_repl_process_char(int c) {
+    int ret = readline_process_char(c);
+
+    if (!repl.cont_line) {
+
+        if (ret == CHAR_CTRL_A) {
+            // change to raw REPL
+            pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
+            stdout_tx_str("\r\n");
+            vstr_clear(&repl.line);
+            return PYEXEC_SWITCH_MODE;
+        } else if (ret == CHAR_CTRL_B) {
+            // reset friendly REPL
+            stdout_tx_str("\r\n");
+            goto friendly_repl_reset;
+        } else if (ret == CHAR_CTRL_C) {
+            // break
+            stdout_tx_str("\r\n");
+            goto input_restart;
+        } else if (ret == CHAR_CTRL_D) {
+            // exit for a soft reset
+            stdout_tx_str("\r\n");
+            vstr_clear(&repl.line);
+            return PYEXEC_FORCED_EXIT;
+        } else if (vstr_len(&repl.line) == 0) {
+            //goto input_restart;
+        }
+
+        if (ret < 0) {
+            return 0;
+        }
+
+        if (!mp_repl_continue_with_input(vstr_str(&repl.line))) {
+            goto exec;
+        }
+
+        vstr_add_char(&repl.line, '\n');
+        repl.cont_line = true;
+        stdout_tx_str("... ");
+        readline_note_newline();
+        return 0;
+
+    } else {
+
+        if (ret == CHAR_CTRL_C) {
+                // cancel everything
+                stdout_tx_str("\r\n");
+                repl.cont_line = false;
+                goto input_restart;
+        } else if (ret == CHAR_CTRL_D) {
+                // stop entering compound statement
+                goto exec;
+        }
+
+        if (ret < 0) {
+            return 0;
+        }
+
+        if (mp_repl_continue_with_input(vstr_str(&repl.line))) {
+            vstr_add_char(&repl.line, '\n');
+            stdout_tx_str("... ");
+            readline_note_newline();
+            return 0;
+        }
+
+exec: ;
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&repl.line), vstr_len(&repl.line), 0);
+        if (lex == NULL) {
+            printf("MemoryError\n");
+        } else {
+            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                return ret;
+            }
+        }
+
+friendly_repl_reset: // TODO
+input_restart:
+        pyexec_friendly_repl_reset();
+        stdout_tx_str(">>> ");
+        return 0;
+    }
+}
+
+#else //MICROPY_REPL_EVENT_DRIVEN
+
 int pyexec_friendly_repl(void) {
     vstr_t line;
     vstr_init(&line, 32);
@@ -279,6 +387,8 @@ friendly_repl_reset:
         }
     }
 }
+
+#endif //MICROPY_REPL_EVENT_DRIVEN
 
 int pyexec_file(const char *filename) {
     mp_lexer_t *lex = mp_lexer_new_from_file(filename);
