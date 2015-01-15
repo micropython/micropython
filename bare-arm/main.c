@@ -8,6 +8,8 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/pfenv.h"
+#include "py/gc.h"
+#include "pyexec.h"
 
 void do_str(const char *src) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -46,14 +48,29 @@ void do_str(const char *src) {
     }
 }
 
+static char *stack_top;
+static char heap[1024 + 512];
+
 int main(int argc, char **argv) {
+    int stack_dummy;
+    stack_top = (char*)&stack_dummy;
+
+#if MICROPY_ENABLE_GC
+    gc_init(heap, heap + sizeof(heap));
+#endif
     mp_init();
-    do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\n')");
+    pyexec_friendly_repl();
+    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')");
     mp_deinit();
     return 0;
 }
 
 void gc_collect(void) {
+    void *dummy;
+    gc_collect_start();
+    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_collect_end();
+    gc_dump_info();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
@@ -96,6 +113,7 @@ int _fstat() {return 0;}
 int _isatty() {return 0;}
 */
 
+#if 0
 void *malloc(size_t n) {return NULL;}
 void *calloc(size_t nmemb, size_t size) {return NULL;}
 void *realloc(void *ptr, size_t size) {return NULL;}
@@ -117,5 +135,38 @@ int vsnprintf(char *str,  size_t  size,  const  char  *format, va_list ap) {retu
 #undef putchar
 int putchar(int c) {return 0;}
 int puts(const char *s) {return 0;}
+#endif
 
+#include <unistd.h>
+int stdin_rx_chr(void) {
+    unsigned char c = 0;
+#if MICROPY_MIN_USE_STDOUT
+    int r = read(0, &c, 1);
+    (void)r;
+#endif
+    return c;
+}
+
+void stdout_tx_strn(const char *str, mp_uint_t len) {
+#if MICROPY_MIN_USE_STDOUT
+    int r = write(1, str, len);
+    (void)r;
+#endif
+}
+
+void stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+    while (len--) {
+        if (*str == '\n') {
+            stdout_tx_strn("\r", 1);
+        }
+        stdout_tx_strn(str++, 1);
+    }
+}
+
+void stdout_tx_str(const char *str) {
+    stdout_tx_strn(str, strlen(str));
+}
+
+#if !MICROPY_MIN_USE_STDOUT
 void _start(void) {main(0, NULL);}
+#endif
