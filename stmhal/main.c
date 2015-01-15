@@ -57,6 +57,7 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
+#include "can.h"
 #include "modnetwork.h"
 #include MICROPY_HAL_H
 
@@ -399,6 +400,9 @@ soft_reset:
     extint_init0();
     timer_init0();
     uart_init0();
+#if MICROPY_HW_ENABLE_CAN
+    can_init0();
+#endif
 
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
@@ -540,6 +544,9 @@ soft_reset_exit:
     printf("PYB: soft reboot\n");
     timer_deinit();
     uart_deinit();
+#if MICROPY_HW_ENABLE_CAN
+    can_deinit();
+#endif
 
     first_soft_reset = false;
     goto soft_reset;
