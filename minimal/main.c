@@ -60,7 +60,17 @@ int main(int argc, char **argv) {
     gc_init(heap, heap + sizeof(heap));
 #endif
     mp_init();
+    #if MICROPY_REPL_EVENT_DRIVEN
+    pyexec_friendly_repl_init();
+    for (;;) {
+        int c = stdin_rx_chr();
+        if (pyexec_friendly_repl_process_char(c)) {
+            break;
+        }
+    }
+    #else
     pyexec_friendly_repl();
+    #endif
     //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')");
     mp_deinit();
     return 0;
