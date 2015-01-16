@@ -42,13 +42,25 @@ typedef struct _mp_obj_stringio_t {
     mp_uint_t pos;
 } mp_obj_stringio_t;
 
+#ifdef MICROPY_CPYTHON_COMPAT
+STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
+    if (o->vstr == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
+    }
+}
+#else
+#define check_stringio_is_open(o)
+#endif
+
 STATIC void stringio_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_stringio_t *self = self_in;
+    check_stringio_is_open(self);
     print(env, self->base.type == &mp_type_stringio ? "<io.StringIO 0x%x>" : "<io.BytesIO 0x%x>", self->vstr);
 }
 
 STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_stringio_t *o = o_in;
+    check_stringio_is_open(o);
     mp_uint_t remaining = o->vstr->len - o->pos;
     if (size > remaining) {
         size = remaining;
@@ -60,6 +72,7 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_stringio_t *o = o_in;
+    check_stringio_is_open(o);
     mp_uint_t remaining = o->vstr->alloc - o->pos;
     if (size > remaining) {
         // Take all what's already allocated...
@@ -79,14 +92,19 @@ STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, 
 
 STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
     mp_obj_stringio_t *self = self_in;
+    check_stringio_is_open(self);
     return mp_obj_new_str_of_type(STREAM_TO_CONTENT_TYPE(self), (byte*)self->vstr->buf, self->vstr->len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
 
 STATIC mp_obj_t stringio_close(mp_obj_t self_in) {
     mp_obj_stringio_t *self = self_in;
+#ifdef MICROPY_CPYTHON_COMPAT
     vstr_free(self->vstr);
     self->vstr = NULL;
+#else
+    vstr_set_size(self->vstr, 0);
+#endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_close_obj, stringio_close);
