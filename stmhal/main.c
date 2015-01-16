@@ -68,6 +68,7 @@ static FATFS fatfs1;
 #endif
 
 void flash_error(int n) {
+#if MICROPY_HW_HAS_LED
     for (int i = 0; i < n; i++) {
         led_state(PYB_LED_R1, 1);
         led_state(PYB_LED_R2, 0);
@@ -77,19 +78,24 @@ void flash_error(int n) {
         HAL_Delay(250);
     }
     led_state(PYB_LED_R2, 0);
+#endif
 }
 
 void NORETURN __fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
+#if MICROPY_HW_HAS_LED
     led_state(1, 1);
     led_state(2, 1);
     led_state(3, 1);
     led_state(4, 1);
+#endif
     stdout_tx_strn("\nFATAL ERROR:\n", 14);
     stdout_tx_strn(msg, strlen(msg));
     for (uint i = 0;;) {
+#if MICROPY_HW_HAS_LED
         led_toggle(((i++) & 3) + 1);
+#endif
         for (volatile uint delay = 0; delay < 10000000; delay++) {
         }
         if (i >= 16) {
@@ -304,7 +310,9 @@ int main(void) {
     // basic sub-system init
     pendsv_init();
     timer_tim3_init();
+#if MICROPY_HW_HAS_LED
     led_init();
+#endif
 #if MICROPY_HW_HAS_SWITCH
     switch_init0();
 #endif
