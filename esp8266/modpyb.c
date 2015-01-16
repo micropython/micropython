@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -33,6 +34,9 @@
 #include "pyexec.h"
 #include "pybstdio.h"
 #include MICROPY_HAL_H
+#include "queue.h"
+#include "user_interface.h"
+
 
 STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
     // print info about memory
@@ -136,6 +140,25 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
+STATIC void pyb_scan_cb(scaninfo *si, STATUS status) {
+    //printf("in pyb_scan_cb: %d, si=%p, si->pbss=%p\n", status, si, si->pbss);
+    struct bss_info *bs;
+    if (si->pbss) {
+        STAILQ_FOREACH(bs, si->pbss, next) {
+            //printf("%p\n", bs);
+            printf("%s\n", /*bs->bssid[0],*/ bs->ssid);
+        }
+    }
+}
+
+STATIC mp_obj_t pyb_scan(void) {
+    printf("in pyb_scan\n");
+    printf("%d\n", wifi_set_opmode(STATION_MODE));
+    wifi_station_scan(NULL, (scan_done_cb_t)pyb_scan_cb);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_scan_obj, pyb_scan);
+
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
@@ -149,6 +172,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&pyb_scan_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
