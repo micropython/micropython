@@ -498,7 +498,7 @@ STATIC void emit_bc_load_null(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_LOAD_NULL);
 };
 
-STATIC void emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp_uint_t local_num) {
+STATIC void emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
     if (local_num <= 15) {

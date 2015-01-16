@@ -981,7 +981,7 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
                         EMIT_ARG(load_closure, id->qst, id->local_num);
 #else
                         // in Micro Python we load closures using LOAD_FAST
-                        EMIT_ARG(load_fast, id->qst, id->flags, id->local_num);
+                        EMIT_ARG(load_fast, id->qst, id->local_num);
 #endif
                         nfree += 1;
                     }
@@ -2487,7 +2487,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
             if (comp->scope_cur->id_info[i].flags & ID_FLAG_IS_PARAM) {
                 // first argument found; load it and call super
-                EMIT_ARG(load_fast, MP_QSTR_, comp->scope_cur->id_info[i].flags, comp->scope_cur->id_info[i].local_num);
+                EMIT_ARG(load_fast, MP_QSTR_, comp->scope_cur->id_info[i].local_num);
                 EMIT_ARG(call_function, 2, 0, 0);
                 return;
             }
@@ -3384,7 +3384,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 #if MICROPY_EMIT_CPYTHON
             EMIT_ARG(load_closure, MP_QSTR___class__, 0); // XXX check this is the correct local num
 #else
-            EMIT_ARG(load_fast, MP_QSTR___class__, id->flags, id->local_num);
+            EMIT_ARG(load_fast, MP_QSTR___class__, id->local_num);
 #endif
         }
         EMIT(return_value);

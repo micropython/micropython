@@ -1184,8 +1184,8 @@ STATIC void emit_native_load_null(emit_t *emit) {
     emit_post_push_imm(emit, VTYPE_PYOBJ, 0);
 }
 
-STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t id_flags, mp_uint_t local_num) {
-    DEBUG_printf("load_fast(%s, " UINT_FMT ", " UINT_FMT ")\n", qstr_str(qst), id_flags, local_num);
+STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    DEBUG_printf("load_fast(%s, " UINT_FMT ")\n", qstr_str(qst), local_num);
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qst));

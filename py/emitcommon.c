@@ -44,7 +44,7 @@ void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_ta
     } else if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
         EMIT(load_global, qst);
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
-        EMIT(load_fast, qst, id->flags, id->local_num);
+        EMIT(load_fast, qst, id->local_num);
     } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
         EMIT(load_deref, qst, id->local_num);
     } else {
