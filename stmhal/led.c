@@ -34,6 +34,8 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 
+#if defined(MICROPY_HW_LED1)
+
 /// \moduleref pyb
 /// \class LED - LED object
 ///
@@ -292,3 +294,14 @@ const mp_obj_type_t pyb_led_type = {
     .make_new = led_obj_make_new,
     .locals_dict = (mp_obj_t)&led_locals_dict,
 };
+
+#else
+// For boards with no LEDs, we leave an empty function here so that we don't
+// have to put conditionals everywhere.
+void led_init(void) {
+}
+void led_state(pyb_led_t led, int state) {
+}
+void led_toggle(pyb_led_t led) {
+}
+#endif  // defined(MICROPY_HW_LED1)

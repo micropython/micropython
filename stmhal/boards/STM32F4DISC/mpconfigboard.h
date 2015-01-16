@@ -15,6 +15,7 @@
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_I2C1      (1)
 #define MICROPY_HW_ENABLE_SPI1      (1)
+#define MICROPY_HW_ENABLE_SPI2      (1)
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
 
