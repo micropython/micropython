@@ -341,12 +341,15 @@ int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, c
     *fmt_s = '\0';
 
     len = snprintf(buf, sizeof(buf), fmt_buf, prec, f);
+    if (len < 0) {
+        len = 0;
+    }
 #else
 #error Unknown MICROPY FLOAT IMPL
 #endif
     char *s = buf;
 
-    if ((flags & PF_FLAG_ADD_PERCENT) && (len + 1) < sizeof(buf)) {
+    if ((flags & PF_FLAG_ADD_PERCENT) && (size_t)(len + 1) < sizeof(buf)) {
         buf[len++] = '%';
         buf[len] = '\0';
     }

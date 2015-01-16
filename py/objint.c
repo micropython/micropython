@@ -334,7 +334,7 @@ STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False)
 
     mp_int_t val = mp_obj_int_get_checked(args[0]);
-    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);
 
     byte *data;
     mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);

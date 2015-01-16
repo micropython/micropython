@@ -941,7 +941,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                     }
                 }
                 lookup = str_to_int(field, &index) + field;
-                if (index >= n_args - 1) {
+                if ((uint)index >= n_args - 1) {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
                 }
                 arg = args[index + 1];
@@ -969,7 +969,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                         "can't switch from manual field specification to automatic field numbering"));
                 }
             }
-            if (arg_i >= n_args - 1) {
+            if ((uint)arg_i >= n_args - 1) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
             }
             arg = args[arg_i + 1];
@@ -1248,7 +1248,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                     if (precision < 0) {
                         precision = len;
                     }
-                    if (len > precision) {
+                    if (len > (mp_uint_t)precision) {
                         len = precision;
                     }
                     pfenv_print_strn(&pfenv_vstr, s, len, flags, fill, width);
@@ -1334,7 +1334,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
         int width = 0;
         if (str < top) {
             if (*str == '*') {
-                if (arg_i >= n_args) {
+                if ((uint)arg_i >= n_args) {
                     goto not_enough_args;
                 }
                 width = mp_obj_get_int(args[arg_i++]);
@@ -1347,7 +1347,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
         if (str < top && *str == '.') {
             if (++str < top) {
                 if (*str == '*') {
-                    if (arg_i >= n_args) {
+                    if ((uint)arg_i >= n_args) {
                         goto not_enough_args;
                     }
                     prec = mp_obj_get_int(args[arg_i++]);
@@ -1370,7 +1370,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
 
         // Tuple value lookup
         if (arg == MP_OBJ_NULL) {
-            if (arg_i >= n_args) {
+            if ((uint)arg_i >= n_args) {
 not_enough_args:
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not enough arguments for format string"));
             }
@@ -1429,7 +1429,7 @@ not_enough_args:
                 if (prec < 0) {
                     prec = len;
                 }
-                if (len > prec) {
+                if (len > (uint)prec) {
                     len = prec;
                 }
                 pfenv_print_strn(&pfenv_vstr, vstr_str(arg_vstr), len, flags, ' ', width);
@@ -1453,7 +1453,7 @@ not_enough_args:
         }
     }
 
-    if (arg_i != n_args) {
+    if ((uint)arg_i != n_args) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not all arguments converted during string formatting"));
     }
 
@@ -1522,7 +1522,7 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
             replaced_str_index += new_len;
             num_replacements_done++;
         }
-        while (num_replacements_done != max_rep && str_len_remain > 0 && (old_occurrence = find_subbytes(offset_ptr, str_len_remain, old, old_len, 1)) != NULL) {
+        while (num_replacements_done != (mp_uint_t)max_rep && str_len_remain > 0 && (old_occurrence = find_subbytes(offset_ptr, str_len_remain, old, old_len, 1)) != NULL) {
             if (old_len == 0) {
                 old_occurrence += 1;
             }

@@ -424,7 +424,7 @@ STATIC void emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
     assert(l < emit->max_num_labels);
     if (emit->pass < MP_PASS_EMIT) {
         // assign label offset
-        assert(emit->label_offsets[l] == -1);
+        assert(emit->label_offsets[l] == (mp_uint_t)-1);
         emit->label_offsets[l] = emit->bytecode_offset;
     } else {
         // ensure label offset has not changed from MP_PASS_CODE_SIZE to MP_PASS_EMIT

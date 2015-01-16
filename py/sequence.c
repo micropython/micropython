@@ -70,12 +70,12 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
         if (start < 0) {
             start = 0;
         }
-    } else if (start > len) {
+    } else if ((mp_uint_t)start > len) {
         start = len;
     }
     if (stop < 0) {
         stop = len + stop;
-    } else if (stop > len) {
+    } else if ((mp_uint_t)stop > len) {
         stop = len;
     }
 

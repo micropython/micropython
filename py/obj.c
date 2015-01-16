@@ -393,11 +393,11 @@ mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index,
     if (is_slice) {
         if (i < 0) {
             i = 0;
-        } else if (i > len) {
+        } else if ((mp_uint_t)i > len) {
             i = len;
         }
     } else {
-        if (i < 0 || i >= len) {
+        if (i < 0 || (mp_uint_t)i >= len) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "index out of range"));
             } else {

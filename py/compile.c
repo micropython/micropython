@@ -216,12 +216,12 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                     mp_int_t arg1 = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[2]);
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_LESS)) {
                         // int << int
-                        if (!(arg1 >= BITS_PER_WORD || arg0 > (MP_SMALL_INT_MAX >> arg1) || arg0 < (MP_SMALL_INT_MIN >> arg1))) {
+                        if (!(arg1 >= (mp_int_t)BITS_PER_WORD || arg0 > (MP_SMALL_INT_MAX >> arg1) || arg0 < (MP_SMALL_INT_MIN >> arg1))) {
                             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 << arg1);
                         }
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_MORE)) {
                         // int >> int
-                        if (arg1 >= BITS_PER_WORD) {
+                        if (arg1 >= (mp_int_t)BITS_PER_WORD) {
                             // Shifting to big amounts is underfined behavior
                             // in C and is CPU-dependent; propagate sign bit.
                             arg1 = BITS_PER_WORD - 1;
@@ -386,8 +386,8 @@ STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse
     return scope;
 }
 
-STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn_list_kind, void (*f)(compiler_t*, mp_parse_node_t)) {
-    if (MP_PARSE_NODE_IS_STRUCT(pn) && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn) == pn_list_kind) {
+STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_list_kind, void (*f)(compiler_t*, mp_parse_node_t)) {
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, pn_list_kind)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         for (int i = 0; i < num_nodes; i++) {
@@ -398,7 +398,7 @@ STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, int pn
     }
 }
 
-STATIC int list_get(mp_parse_node_t *pn, int pn_kind, mp_parse_node_t **nodes) {
+STATIC int list_get(mp_parse_node_t *pn, pn_kind_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
         *nodes = NULL;
         return 0;
@@ -811,14 +811,14 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
     uint num_head = (node_head == MP_PARSE_NODE_NULL) ? 0 : 1;
 
     // look for star expression
-    int have_star_index = -1;
+    uint have_star_index = -1;
     if (num_head != 0 && MP_PARSE_NODE_IS_STRUCT_KIND(node_head, PN_star_expr)) {
         EMIT_ARG(unpack_ex, 0, num_tail);
         have_star_index = 0;
     }
-    for (int i = 0; i < num_tail; i++) {
+    for (uint i = 0; i < num_tail; i++) {
         if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes_tail[i], PN_star_expr)) {
-            if (have_star_index < 0) {
+            if (have_star_index == (uint)-1) {
                 EMIT_ARG(unpack_ex, num_head + i, num_tail - i - 1);
                 have_star_index = num_head + i;
             } else {
@@ -827,7 +827,7 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
             }
         }
     }
-    if (have_star_index < 0) {
+    if (have_star_index == (uint)-1) {
         EMIT_ARG(unpack_sequence, num_head + num_tail);
     }
     if (num_head != 0) {
@@ -837,7 +837,7 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
             c_assign(comp, node_head, ASSIGN_STORE);
         }
     }
-    for (int i = 0; i < num_tail; i++) {
+    for (uint i = 0; i < num_tail; i++) {
         if (num_head + i == have_star_index) {
             c_assign(comp, ((mp_parse_node_struct_t*)nodes_tail[i])->nodes[0], ASSIGN_STORE);
         } else {

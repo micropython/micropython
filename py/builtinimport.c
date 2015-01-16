@@ -203,7 +203,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "Invalid relative import"));
         }
 
-        uint new_mod_l = (mod_len == 0 ? p - this_name : p - this_name + 1 + mod_len);
+        uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
         char *new_mod = alloca(new_mod_l);
         memcpy(new_mod, this_name, p - this_name);
         if (mod_len != 0) {

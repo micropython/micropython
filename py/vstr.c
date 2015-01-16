@@ -350,7 +350,7 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
         va_end(ap2);
 
         // if that worked, return
-        if (n > -1 && n < size) {
+        if (n > -1 && (size_t)n < size) {
             vstr->len += n;
             return;
         }

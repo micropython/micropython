@@ -47,7 +47,7 @@ const mp_map_t mp_const_empty_map = {
 STATIC uint32_t doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
 
 STATIC mp_uint_t get_doubling_prime_greater_or_equal_to(mp_uint_t x) {
-    for (int i = 0; i < MP_ARRAY_SIZE(doubling_primes); i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(doubling_primes); i++) {
         if (doubling_primes[i] >= x) {
             return doubling_primes[i];
         }

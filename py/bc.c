@@ -116,7 +116,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
         // Apply processing and check below only if we don't have kwargs,
         // otherwise, kw handling code below has own extensive checks.
         if (n_kw == 0 && !self->has_def_kw_args) {
-            if (n_args >= self->n_pos_args - self->n_def_args) {
+            if (n_args >= (mp_uint_t)(self->n_pos_args - self->n_def_args)) {
                 // given enough arguments, but may need to use some default arguments
                 for (mp_uint_t i = n_args; i < self->n_pos_args; i++) {
                     code_state->state[n_state - 1 - i] = self->extra_args[i - (self->n_pos_args - self->n_def_args)];

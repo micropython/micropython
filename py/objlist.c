@@ -364,7 +364,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     if (index < 0) {
          index = 0;
     }
-    if (index > self->len) {
+    if ((mp_uint_t)index > self->len) {
          index = self->len;
     }
 

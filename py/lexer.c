@@ -657,7 +657,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
         // need to check for this special token in many places in the compiler.
         // TODO improve speed of these string comparisons
         //for (mp_int_t i = 0; tok_kw[i] != NULL; i++) {
-        for (mp_int_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
+        for (size_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
             if (str_strn_equal(tok_kw[i], lex->vstr.buf, lex->vstr.len)) {
                 if (i == MP_ARRAY_SIZE(tok_kw) - 1) {
                     // tok_kw[MP_ARRAY_SIZE(tok_kw) - 1] == "__debug__"

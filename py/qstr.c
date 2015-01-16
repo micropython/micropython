@@ -49,7 +49,7 @@
 //  - data follows
 //  - \0 terminated (for now, so they can be printed using printf)
 
-#define Q_GET_HASH(q)   ((q)[0] | ((q)[1] << 8))
+#define Q_GET_HASH(q)   ((mp_uint_t)(q)[0] | ((mp_uint_t)(q)[1] << 8))
 #define Q_GET_ALLOC(q)  (2 + MICROPY_QSTR_BYTES_IN_LEN + Q_GET_LENGTH(q) + 1)
 #define Q_GET_DATA(q)   ((q) + 2 + MICROPY_QSTR_BYTES_IN_LEN)
 #if MICROPY_QSTR_BYTES_IN_LEN == 1

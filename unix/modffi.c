@@ -206,7 +206,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ffimod_func_obj, 4, 4, ffimod_func);
 
 STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     mp_obj_t pyargs[cif->nargs];
-    for (int i = 0; i < cif->nargs; i++) {
+    for (uint i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(mp_int_t*)args[i]);
     }
     mp_obj_t res = mp_call_function_n_kw(func, cif->nargs, 0, pyargs);
@@ -309,8 +309,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
 
     ffi_arg values[n_args];
     void *valueptrs[n_args];
-    int i;
-    for (i = 0; i < n_args; i++) {
+    for (uint i = 0; i < n_args; i++) {
         mp_obj_t a = args[i];
         if (a == mp_const_none) {
             values[i] = 0;

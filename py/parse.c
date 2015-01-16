@@ -316,7 +316,7 @@ STATIC void push_result_token(parser_t *parser) {
         for (; i < len; i++) {
             mp_uint_t dig;
             int clower = str[i] | 0x20;
-            if (unichar_isdigit(str[i]) && str[i] - '0' < base) {
+            if (unichar_isdigit(str[i]) && (mp_uint_t)(str[i] - '0') < base) {
                 dig = str[i] - '0';
             } else if (base == 16 && 'a' <= clower && clower <= 'f') {
                 dig = clower - 'a' + 10;

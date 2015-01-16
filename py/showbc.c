@@ -81,7 +81,7 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
 
     // bytecode prelude: arg names (as qstr objects)
     printf("arg names:");
-    for (int i = 0; i < n_total_args; i++) {
+    for (mp_uint_t i = 0; i < n_total_args; i++) {
         printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(*(mp_obj_t*)ip)));
         ip += sizeof(mp_obj_t);
     }
@@ -539,7 +539,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
 void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
     mp_showbc_code_start = ip;
-    while (ip - mp_showbc_code_start < len) {
+    while (ip < len + mp_showbc_code_start) {
         printf("%02u ", (uint)(ip - mp_showbc_code_start));
         ip = mp_bytecode_print_str(ip);
         printf("\n");

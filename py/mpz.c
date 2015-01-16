@@ -1370,7 +1370,7 @@ mp_int_t mpz_hash(const mpz_t *z) {
 }
 
 bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
-    mp_int_t val = 0;
+    mp_uint_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
     while (d-- > i->dig) {

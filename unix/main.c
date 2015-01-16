@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     char *p = path;
-    for (int i = 1; i < path_num; i++) {
+    for (mp_uint_t i = 1; i < path_num; i++) {
         char *p1 = strchr(p, PATHLIST_SEP_CHAR);
         if (p1 == NULL) {
             p1 = p + strlen(p);
@@ -364,7 +364,7 @@ int main(int argc, char **argv) {
             // Expand standalone ~ to $HOME
             CHECKBUF(buf, PATH_MAX);
             CHECKBUF_APPEND(buf, home, strlen(home));
-            CHECKBUF_APPEND(buf, p + 1, p1 - p - 1);
+            CHECKBUF_APPEND(buf, p + 1, (size_t)(p1 - p - 1));
             path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
         } else {
             path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
