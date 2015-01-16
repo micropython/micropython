@@ -417,19 +417,19 @@ void USART6_IRQHandler(void) {
 }
 
 #if MICROPY_HW_ENABLE_CAN
-void CAN1_RX0_IRQHandler(void){
+void CAN1_RX0_IRQHandler(void) {
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
 }
 
-void CAN1_RX1_IRQHandler(void){
+void CAN1_RX1_IRQHandler(void) {
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
 }
 
-void CAN2_RX0_IRQHandler(void){
+void CAN2_RX0_IRQHandler(void) {
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
 }
 
-void CAN2_RX1_IRQHandler(void){
+void CAN2_RX1_IRQHandler(void) {
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
 }
 #endif // MICROPY_HW_ENABLE_CAN

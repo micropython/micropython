@@ -349,7 +349,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // send the data
     CanTxMsgTypeDef tx_msg;
-    if (self->extframe){
+    if (self->extframe) {
         tx_msg.ExtId = args[1].u_int & 0x1FFFFFFF;
         tx_msg.IDE = CAN_ID_EXT;
     } else {
@@ -561,16 +561,16 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
     mp_int_t fifo = mp_obj_get_int(fifo_in);
 
 
-    if (callback_in == mp_const_none){
-        if (fifo == 0){
+    if (callback_in == mp_const_none) {
+        if (fifo == 0) {
             __HAL_CAN_DISABLE_IT(&self->can, CAN_IT_FMP0);
             self->rxcallback0 = mp_const_none;
-        } else if (fifo == 1){
+        } else if (fifo == 1) {
             __HAL_CAN_DISABLE_IT(&self->can, CAN_IT_FMP1);
             self->rxcallback1 = mp_const_none;
         }
     } else if (mp_obj_is_callable(callback_in)) {
-        if (self->can_id == PYB_CAN_1){
+        if (self->can_id == PYB_CAN_1) {
             if (fifo == 0) {
                 self->rxcallback0 = callback_in;
                 HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 7, 0);
@@ -614,7 +614,6 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_clearfilter), (mp_obj_t)&pyb_can_clearfilter_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rxcallback), (mp_obj_t)&pyb_can_rxcallback_obj },
 
-
     // class constants
     // Note: we use the ST constants >> 4 so they fit in a small-int.  The
     // right-shift is undone when the constants are used in the init function.
@@ -653,13 +652,13 @@ mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *err
 }
 
 
-void can_rx_irq_handler(uint can_id, uint fifo_id){
+void can_rx_irq_handler(uint can_id, uint fifo_id) {
     mp_obj_t       callback;
     pyb_can_obj_t *can;
     mp_int_t       fmp_flag;
 
     can = pyb_can_obj_all[can_id-1];
-    if (fifo_id == CAN_FIFO0){
+    if (fifo_id == CAN_FIFO0) {
         callback = can->rxcallback0;
     } else {
         callback = can->rxcallback1;
@@ -680,7 +679,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id){
         } else {
             // Uncaught exception; disable the callback so it doesn't run again.
             __HAL_CAN_DISABLE_IT(&can->can, fmp_flag);
-            if (fifo_id == CAN_FIFO0){
+            if (fifo_id == CAN_FIFO0) {
                 can->rxcallback0 = mp_const_none;
             } else {
                 can->rxcallback1 = mp_const_none;
