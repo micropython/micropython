@@ -39,3 +39,5 @@ Q(elapsed_micros)
 Q(delay)
 Q(udelay)
 Q(sync)
+
+Q(scan)

@@ -9,6 +9,7 @@
  * Modification history:
  *     2014/3/12, v1.0 create this file.
 *******************************************************************************/
+#include <stdbool.h>
 #include "ets_sys.h"
 #include "osapi.h"
 #include "uart.h"
