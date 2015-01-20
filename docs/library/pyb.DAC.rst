@@ -53,7 +53,7 @@ Methods
 
    Generate a triangle wave.  The value on the DAC output changes at
    the given frequency, and the frequence of the repeating triangle wave
-   itself is 256 (or 1024, need to check) times smaller.
+   itself is 2048 times smaller.
 
 .. method:: dac.write(value)
 
