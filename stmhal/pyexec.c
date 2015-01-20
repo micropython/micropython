@@ -365,7 +365,7 @@ friendly_repl_reset:
 
         while (mp_repl_continue_with_input(vstr_str(&line))) {
             vstr_add_char(&line, '\n');
-            int ret = readline(&line, "... ");
+            ret = readline(&line, "... ");
             if (ret == CHAR_CTRL_C) {
                 // cancel everything
                 stdout_tx_str("\r\n");
@@ -380,7 +380,7 @@ friendly_repl_reset:
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
+            ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }

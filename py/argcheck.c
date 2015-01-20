@@ -84,7 +84,7 @@ void mp_arg_parse_all(mp_uint_t n_pos, const mp_obj_t *pos, mp_map_t *kws, mp_ui
             pos_found++;
             given_arg = pos[i];
         } else {
-            mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qstr), MP_MAP_LOOKUP);
+            mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qst), MP_MAP_LOOKUP);
             if (kw == NULL) {
                 if (allowed[i].flags & MP_ARG_REQUIRED) {
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -92,7 +92,7 @@ void mp_arg_parse_all(mp_uint_t n_pos, const mp_obj_t *pos, mp_map_t *kws, mp_ui
                     } else {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                             "'%s' argument required",
-                            qstr_str(allowed[i].qstr)));
+                            qstr_str(allowed[i].qst)));
                     }
                 }
                 out_vals[i] = allowed[i].defval;

@@ -215,6 +215,6 @@ mp_obj_t mp_module_get(qstr module_name) {
     return el->value;
 }
 
-void mp_module_register(qstr qstr, mp_obj_t module) {
-    mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_map), MP_OBJ_NEW_QSTR(qstr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+void mp_module_register(qstr qst, mp_obj_t module) {
+    mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_map), MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }

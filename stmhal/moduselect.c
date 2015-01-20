@@ -240,7 +240,7 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
         if (n_ready > 0 || (timeout != -1 && HAL_GetTick() - start_tick >= timeout)) {
             // one or more objects are ready, or we had a timeout
             mp_obj_list_t *ret_list = mp_obj_new_list(n_ready, NULL);
-            mp_uint_t n_ready = 0;
+            n_ready = 0;
             for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
                 if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
                     continue;

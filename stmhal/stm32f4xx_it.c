@@ -77,7 +77,7 @@
 #include "storage.h"
 
 extern void __fatal_error(const char*);
-extern PCD_HandleTypeDef hpcd;
+extern PCD_HandleTypeDef pcd_handle;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -205,7 +205,7 @@ void SysTick_Handler(void) {
 
 #if defined(OTG_XX_IRQHandler)
 void OTG_XX_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&hpcd);
+    HAL_PCD_IRQHandler(&pcd_handle);
 }
 #endif
 
@@ -217,7 +217,7 @@ void OTG_XX_IRQHandler(void) {
 #if defined(OTG_XX_WKUP_IRQHandler)
 void OTG_XX_WKUP_IRQHandler(void) {
 
-  if ((&hpcd)->Init.low_power_enable) {
+  if ((&pcd_handle)->Init.low_power_enable) {
     /* Reset SLEEPDEEP bit of Cortex System Control Register */
     SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
 
@@ -244,7 +244,7 @@ void OTG_XX_WKUP_IRQHandler(void) {
     {}
 
     /* ungate PHY clock */
-     __HAL_PCD_UNGATE_PHYCLOCK((&hpcd));
+     __HAL_PCD_UNGATE_PHYCLOCK((&pcd_handle));
   }
 #ifdef USE_USB_FS
   /* Clear EXTI pending Bit*/

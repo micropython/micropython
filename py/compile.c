@@ -1229,9 +1229,9 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
             // compile the decorator function
             compile_node(comp, name_nodes[0]);
-            for (int i = 1; i < name_len; i++) {
-                assert(MP_PARSE_NODE_IS_ID(name_nodes[i])); // should be
-                EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[i]));
+            for (int j = 1; j < name_len; j++) {
+                assert(MP_PARSE_NODE_IS_ID(name_nodes[j])); // should be
+                EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[j]));
             }
 
             // nodes[1] contains arguments to the decorator function, if any
@@ -2778,9 +2778,9 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
                 // process rest of elements
                 for (int i = 0; i < n; i++) {
-                    mp_parse_node_t pn = nodes[i];
-                    bool is_key_value = MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_dictorsetmaker_item);
-                    compile_node(comp, pn);
+                    mp_parse_node_t pn_i = nodes[i];
+                    bool is_key_value = MP_PARSE_NODE_IS_STRUCT_KIND(pn_i, PN_dictorsetmaker_item);
+                    compile_node(comp, pn_i);
                     if (is_dict) {
                         if (!is_key_value) {
                             compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting key:value for dictionary");
@@ -3489,12 +3489,12 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
-                for (uint i = 1; i < n_args; i++) {
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[i])) {
+                for (uint j = 1; j < n_args; j++) {
+                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
                         compile_syntax_error(comp, nodes[i], "inline assembler 'data' requires integer arguments");
                         return;
                     }
-                    EMIT_INLINE_ASM_ARG(data, bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[i]));
+                    EMIT_INLINE_ASM_ARG(data, bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
                 }
             }
         } else {

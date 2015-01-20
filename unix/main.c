@@ -354,6 +354,7 @@ int main(int argc, char **argv) {
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    {
     char *p = path;
     for (mp_uint_t i = 1; i < path_num; i++) {
         char *p1 = strchr(p, PATHLIST_SEP_CHAR);
@@ -370,6 +371,7 @@ int main(int argc, char **argv) {
             path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
         }
         p = p1 + 1;
+    }
     }
 
     mp_obj_list_init(mp_sys_argv, 0);

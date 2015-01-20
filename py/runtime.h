@@ -51,7 +51,7 @@ typedef union _mp_arg_val_t {
 } mp_arg_val_t;
 
 typedef struct _mp_arg_t {
-    qstr qstr;
+    qstr qst;
     mp_uint_t flags;
     mp_arg_val_t defval;
 } mp_arg_t;
@@ -70,21 +70,21 @@ static inline void mp_locals_set(mp_obj_dict_t *d) { MP_STATE_CTX(dict_locals) =
 static inline mp_obj_dict_t *mp_globals_get(void) { return MP_STATE_CTX(dict_globals); }
 static inline void mp_globals_set(mp_obj_dict_t *d) { MP_STATE_CTX(dict_globals) = d; }
 
-mp_obj_t mp_load_name(qstr qstr);
-mp_obj_t mp_load_global(qstr qstr);
+mp_obj_t mp_load_name(qstr qst);
+mp_obj_t mp_load_global(qstr qst);
 mp_obj_t mp_load_build_class(void);
-void mp_store_name(qstr qstr, mp_obj_t obj);
-void mp_store_global(qstr qstr, mp_obj_t obj);
-void mp_delete_name(qstr qstr);
-void mp_delete_global(qstr qstr);
+void mp_store_name(qstr qst, mp_obj_t obj);
+void mp_store_global(qstr qst, mp_obj_t obj);
+void mp_delete_name(qstr qst);
+void mp_delete_global(qstr qst);
 
 mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg);
 mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
 
-mp_obj_t mp_load_const_int(qstr qstr);
-mp_obj_t mp_load_const_dec(qstr qstr);
-mp_obj_t mp_load_const_str(qstr qstr);
-mp_obj_t mp_load_const_bytes(qstr qstr);
+mp_obj_t mp_load_const_int(qstr qst);
+mp_obj_t mp_load_const_dec(qstr qst);
+mp_obj_t mp_load_const_str(qstr qst);
+mp_obj_t mp_load_const_bytes(qstr qst);
 
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);

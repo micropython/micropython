@@ -1243,15 +1243,15 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                     break;
 
                 case 's': {
-                    mp_uint_t len;
-                    const char *s = mp_obj_str_get_data(arg, &len);
+                    mp_uint_t slen;
+                    const char *s = mp_obj_str_get_data(arg, &slen);
                     if (precision < 0) {
-                        precision = len;
+                        precision = slen;
                     }
-                    if (len > (mp_uint_t)precision) {
-                        len = precision;
+                    if (slen > (mp_uint_t)precision) {
+                        slen = precision;
                     }
-                    pfenv_print_strn(&pfenv_vstr, s, len, flags, fill, width);
+                    pfenv_print_strn(&pfenv_vstr, s, slen, flags, fill, width);
                     break;
                 }
 
@@ -1379,9 +1379,9 @@ not_enough_args:
         switch (*str) {
             case 'c':
                 if (MP_OBJ_IS_STR(arg)) {
-                    mp_uint_t len;
-                    const char *s = mp_obj_str_get_data(arg, &len);
-                    if (len != 1) {
+                    mp_uint_t slen;
+                    const char *s = mp_obj_str_get_data(arg, &slen);
+                    if (slen != 1) {
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                             "%%c requires int or char"));
                     }
@@ -1425,14 +1425,14 @@ not_enough_args:
                 vstr_t *arg_vstr = vstr_new();
                 mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf,
                                     arg_vstr, arg, *str == 'r' ? PRINT_REPR : PRINT_STR);
-                uint len = vstr_len(arg_vstr);
+                uint vlen = vstr_len(arg_vstr);
                 if (prec < 0) {
-                    prec = len;
+                    prec = vlen;
                 }
-                if (len > (uint)prec) {
-                    len = prec;
+                if (vlen > (uint)prec) {
+                    vlen = prec;
                 }
-                pfenv_print_strn(&pfenv_vstr, vstr_str(arg_vstr), len, flags, ' ', width);
+                pfenv_print_strn(&pfenv_vstr, vstr_str(arg_vstr), vlen, flags, ' ', width);
                 vstr_free(arg_vstr);
                 break;
             }

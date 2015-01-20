@@ -43,9 +43,9 @@ extern const qstr mp_binary_op_method_name[];
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
 #define DECODE_QSTR { \
-    qstr = 0; \
+    qst = 0; \
     do { \
-        qstr = (qstr << 7) + (*ip & 0x7f); \
+        qst = (qst << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0); \
 }
 #define DECODE_PTR do { \
@@ -131,7 +131,7 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
 
 const byte *mp_bytecode_print_str(const byte *ip) {
     mp_uint_t unum;
-    qstr qstr;
+    qstr qst;
 
     switch (*ip++) {
         case MP_BC_LOAD_CONST_FALSE:
@@ -165,22 +165,22 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_LOAD_CONST_INT:
             DECODE_QSTR;
-            printf("LOAD_CONST_INT %s", qstr_str(qstr));
+            printf("LOAD_CONST_INT %s", qstr_str(qst));
             break;
 
         case MP_BC_LOAD_CONST_DEC:
             DECODE_QSTR;
-            printf("LOAD_CONST_DEC %s", qstr_str(qstr));
+            printf("LOAD_CONST_DEC %s", qstr_str(qst));
             break;
 
         case MP_BC_LOAD_CONST_BYTES:
             DECODE_QSTR;
-            printf("LOAD_CONST_BYTES %s", qstr_str(qstr));
+            printf("LOAD_CONST_BYTES %s", qstr_str(qst));
             break;
 
         case MP_BC_LOAD_CONST_STRING:
             DECODE_QSTR;
-            printf("LOAD_CONST_STRING '%s'", qstr_str(qstr));
+            printf("LOAD_CONST_STRING '%s'", qstr_str(qst));
             break;
 
         case MP_BC_LOAD_CONST_OBJ:
@@ -205,7 +205,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_LOAD_NAME:
             DECODE_QSTR;
-            printf("LOAD_NAME %s", qstr_str(qstr));
+            printf("LOAD_NAME %s", qstr_str(qst));
             if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
                 printf(" (cache=%u)", *ip++);
             }
@@ -213,7 +213,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_LOAD_GLOBAL:
             DECODE_QSTR;
-            printf("LOAD_GLOBAL %s", qstr_str(qstr));
+            printf("LOAD_GLOBAL %s", qstr_str(qst));
             if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
                 printf(" (cache=%u)", *ip++);
             }
@@ -221,7 +221,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_LOAD_ATTR:
             DECODE_QSTR;
-            printf("LOAD_ATTR %s", qstr_str(qstr));
+            printf("LOAD_ATTR %s", qstr_str(qst));
             if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
                 printf(" (cache=%u)", *ip++);
             }
@@ -229,7 +229,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_LOAD_METHOD:
             DECODE_QSTR;
-            printf("LOAD_METHOD %s", qstr_str(qstr));
+            printf("LOAD_METHOD %s", qstr_str(qst));
             break;
 
         case MP_BC_LOAD_BUILD_CLASS:
@@ -252,17 +252,17 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_STORE_NAME:
             DECODE_QSTR;
-            printf("STORE_NAME %s", qstr_str(qstr));
+            printf("STORE_NAME %s", qstr_str(qst));
             break;
 
         case MP_BC_STORE_GLOBAL:
             DECODE_QSTR;
-            printf("STORE_GLOBAL %s", qstr_str(qstr));
+            printf("STORE_GLOBAL %s", qstr_str(qst));
             break;
 
         case MP_BC_STORE_ATTR:
             DECODE_QSTR;
-            printf("STORE_ATTR %s", qstr_str(qstr));
+            printf("STORE_ATTR %s", qstr_str(qst));
             if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
                 printf(" (cache=%u)", *ip++);
             }
@@ -284,7 +284,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_DELETE_NAME:
             DECODE_QSTR;
-            printf("DELETE_NAME %s", qstr_str(qstr));
+            printf("DELETE_NAME %s", qstr_str(qst));
             break;
 
         case MP_BC_DUP_TOP:
@@ -502,12 +502,12 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_IMPORT_NAME:
             DECODE_QSTR;
-            printf("IMPORT_NAME '%s'", qstr_str(qstr));
+            printf("IMPORT_NAME '%s'", qstr_str(qst));
             break;
 
         case MP_BC_IMPORT_FROM:
             DECODE_QSTR;
-            printf("IMPORT_FROM '%s'", qstr_str(qstr));
+            printf("IMPORT_FROM '%s'", qstr_str(qst));
             break;
 
         case MP_BC_IMPORT_STAR:

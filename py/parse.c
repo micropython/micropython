@@ -273,12 +273,12 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
         return;
     }
     if (parser->result_stack_top >= parser->result_stack_alloc) {
-        mp_parse_node_t *pn = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc + MICROPY_ALLOC_PARSE_RESULT_INC);
-        if (pn == NULL) {
+        mp_parse_node_t *stack = m_renew_maybe(mp_parse_node_t, parser->result_stack, parser->result_stack_alloc, parser->result_stack_alloc + MICROPY_ALLOC_PARSE_RESULT_INC);
+        if (stack == NULL) {
             memory_error(parser);
             return;
         }
-        parser->result_stack = pn;
+        parser->result_stack = stack;
         parser->result_stack_alloc += MICROPY_ALLOC_PARSE_RESULT_INC;
     }
     parser->result_stack[parser->result_stack_top++] = pn;
