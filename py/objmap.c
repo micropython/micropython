@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 
 typedef struct _mp_obj_map_t {
@@ -38,10 +37,7 @@ typedef struct _mp_obj_map_t {
 } mp_obj_map_t;
 
 STATIC mp_obj_t map_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    if (n_args < 2 || n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "map must have at least 2 arguments and no keyword arguments"));
-    }
-    assert(n_args >= 2);
+    mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, false);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
     o->base.type = type_in;
     o->n_iters = n_args - 1;

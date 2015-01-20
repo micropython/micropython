@@ -855,11 +855,9 @@ STATIC void super_print(void (*print)(void *env, const char *fmt, ...), void *en
 
 STATIC mp_obj_t super_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     (void)type_in;
-    if (n_args != 2 || n_kw != 0) {
-        // 0 arguments are turned into 2 in the compiler
-        // 1 argument is not yet implemented
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "super() requires 2 arguments"));
-    }
+    // 0 arguments are turned into 2 in the compiler
+    // 1 argument is not yet implemented
+    mp_arg_check_num(n_args, n_kw, 2, 2, false);
     return mp_obj_new_super(args[0], args[1]);
 }
 

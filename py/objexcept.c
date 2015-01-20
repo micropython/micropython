@@ -30,11 +30,11 @@
 #include <stdio.h>
 
 #include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objtype.h"
+#include "py/runtime.h"
 #include "py/gc.h"
 
 // Instance of MemoryError exception - needed by mp_malloc_fail
@@ -115,23 +115,17 @@ STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...
 }
 
 mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_obj_type_t *type = type_in;
-
-    if (n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "%s does not take keyword arguments", mp_obj_get_type_str(type_in)));
-    }
-
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
     mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 0);
     if (o == NULL) {
         // Couldn't allocate heap memory; use local data instead.
         o = &MP_STATE_VM(mp_emergency_exception_obj);
         // We can't store any args.
-        n_args = 0;
         o->args = mp_const_empty_tuple;
     } else {
         o->args = mp_obj_new_tuple(n_args, args);
     }
-    o->base.type = type;
+    o->base.type = type_in;
     o->traceback = MP_OBJ_NULL;
     return o;
 }

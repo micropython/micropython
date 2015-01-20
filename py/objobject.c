@@ -26,9 +26,7 @@
 
 #include <stdlib.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
-#include "py/runtime0.h"
+#include "py/runtime.h"
 
 mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 
@@ -38,10 +36,7 @@ typedef struct _mp_obj_object_t {
 
 STATIC mp_obj_t object_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     (void)args;
-    if (n_args != 0 || n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object takes no arguments"));
-    }
-
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
     mp_obj_object_t *o = m_new_obj(mp_obj_object_t);
     o->base.type = type_in;
     return o;
