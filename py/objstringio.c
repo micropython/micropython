@@ -43,11 +43,13 @@ typedef struct _mp_obj_stringio_t {
 } mp_obj_stringio_t;
 
 STATIC void stringio_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_stringio_t *self = self_in;
     print(env, self->base.type == &mp_type_stringio ? "<io.StringIO 0x%x>" : "<io.BytesIO 0x%x>", self->vstr);
 }
 
 STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+    (void)errcode;
     mp_obj_stringio_t *o = o_in;
     mp_uint_t remaining = o->vstr->len - o->pos;
     if (size > remaining) {
@@ -59,6 +61,7 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 }
 
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+    (void)errcode;
     mp_obj_stringio_t *o = o_in;
     mp_uint_t remaining = o->vstr->alloc - o->pos;
     if (size > remaining) {
@@ -92,6 +95,7 @@ STATIC mp_obj_t stringio_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_close_obj, stringio_close);
 
 STATIC mp_obj_t stringio___exit__(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     return stringio_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
@@ -105,6 +109,7 @@ STATIC mp_obj_stringio_t *stringio_new(mp_obj_t type_in) {
 }
 
 STATIC mp_obj_t stringio_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)n_kw; // TODO check n_kw==0
     mp_obj_stringio_t *o = stringio_new(type_in);
 
     if (n_args > 0) {

@@ -61,6 +61,7 @@ extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
 
 STATIC void fdfile_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_fdfile_t *self = self_in;
     print(env, "<io.%s %d>", mp_obj_get_type_str(self), self->fd);
 }
@@ -123,6 +124,7 @@ STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
 
 STATIC mp_obj_t fdfile___exit__(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     return fdfile_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);

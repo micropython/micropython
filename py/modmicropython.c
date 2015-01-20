@@ -54,6 +54,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_peak_obj, mp_micropython_mem
 #endif
 
 mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)args;
 #if MICROPY_MEM_STATS
     printf("mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
         m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
@@ -69,6 +70,8 @@ mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args) {
         // arg given means dump gc allocation table
         gc_dump_alloc_table();
     }
+#else
+    (void)n_args;
 #endif
     return mp_const_none;
 }

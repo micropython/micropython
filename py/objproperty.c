@@ -41,7 +41,7 @@ STATIC mp_obj_t property_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
-    o->base.type = &mp_type_property;
+    o->base.type = type_in;
     if (n_args >= 4) {
         // doc ignored
     }

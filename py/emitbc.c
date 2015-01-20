@@ -268,6 +268,10 @@ STATIC void emit_write_bytecode_byte_signed_label(emit_t* emit, byte b1, mp_uint
 }
 
 STATIC void emit_bc_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
+    (void)emit;
+    (void)op;
+    (void)arg1;
+    (void)arg2;
 }
 
 STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
@@ -499,6 +503,7 @@ STATIC void emit_bc_load_null(emit_t *emit) {
 };
 
 STATIC void emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    (void)qst;
     assert(local_num >= 0);
     emit_bc_pre(emit, 1);
     if (local_num <= 15) {
@@ -509,11 +514,13 @@ STATIC void emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
 }
 
 STATIC void emit_bc_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    (void)qst;
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_DEREF, local_num);
 }
 
 STATIC void emit_bc_load_name(emit_t *emit, qstr qst) {
+    (void)qst;
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_NAME, qst);
     if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
@@ -522,6 +529,7 @@ STATIC void emit_bc_load_name(emit_t *emit, qstr qst) {
 }
 
 STATIC void emit_bc_load_global(emit_t *emit, qstr qst) {
+    (void)qst;
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_GLOBAL, qst);
     if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
@@ -553,6 +561,7 @@ STATIC void emit_bc_load_subscr(emit_t *emit) {
 }
 
 STATIC void emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    (void)qst;
     assert(local_num >= 0);
     emit_bc_pre(emit, -1);
     if (local_num <= 15) {
@@ -563,6 +572,7 @@ STATIC void emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
 }
 
 STATIC void emit_bc_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    (void)qst;
     emit_bc_pre(emit, -1);
     emit_write_bytecode_byte_uint(emit, MP_BC_STORE_DEREF, local_num);
 }
@@ -591,10 +601,12 @@ STATIC void emit_bc_store_subscr(emit_t *emit) {
 }
 
 STATIC void emit_bc_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    (void)qst;
     emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_FAST, local_num);
 }
 
 STATIC void emit_bc_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
+    (void)qst;
     emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_DEREF, local_num);
 }
 

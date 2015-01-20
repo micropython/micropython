@@ -35,6 +35,7 @@
 #if MICROPY_PY_UBINASCII
 
 STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 

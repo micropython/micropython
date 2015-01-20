@@ -37,17 +37,19 @@ typedef struct _mp_obj_object_t {
 } mp_obj_object_t;
 
 STATIC mp_obj_t object_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)args;
     if (n_args != 0 || n_kw != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object takes no arguments"));
     }
 
     mp_obj_object_t *o = m_new_obj(mp_obj_object_t);
-    o->base.type = &mp_type_object;
+    o->base.type = type_in;
     return o;
 }
 
 #if MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t object___init__(mp_obj_t self) {
+    (void)self;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);

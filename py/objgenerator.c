@@ -95,6 +95,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 /* generator instance                                                         */
 
 STATIC void gen_instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_gen_instance_t *self = self_in;
     print(env, "<generator object '%s' at %p>", mp_obj_code_get_name(self->code_state.code_info), self_in);
 }

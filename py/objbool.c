@@ -53,6 +53,7 @@ STATIC void bool_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 
 STATIC mp_obj_t bool_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {

@@ -75,6 +75,8 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_t globals, mp_obj_t loc
 }
 
 STATIC mp_obj_t mp_builtin_compile(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
     // get the source
     mp_uint_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);

@@ -161,6 +161,7 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
 // FFI module
 
 STATIC void ffimod_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_ffimod_t *self = self_in;
     print(env, "<ffimod %p>", self->handle);
 }
@@ -173,6 +174,7 @@ STATIC mp_obj_t ffimod_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ffimod_close_obj, ffimod_close);
 
 STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args; // always 4
     mp_obj_ffimod_t *self = args[0];
     const char *rettype = mp_obj_str_get_str(args[1]);
     const char *symname = mp_obj_str_get_str(args[2]);
@@ -267,6 +269,9 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 MP_DEFINE_CONST_FUN_OBJ_3(ffimod_var_obj, ffimod_var);
 
 STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)n_args;
+    (void)n_kw;
+
     const char *fname = mp_obj_str_get_str(args[0]);
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
@@ -298,6 +303,7 @@ STATIC const mp_obj_type_t ffimod_type = {
 // FFI function
 
 STATIC void ffifunc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_ffifunc_t *self = self_in;
     print(env, "<ffifunc %p>", self->func);
 }
@@ -366,6 +372,7 @@ STATIC const mp_obj_type_t ffifunc_type = {
 // FFI callback for Python function
 
 STATIC void fficallback_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_fficallback_t *self = self_in;
     print(env, "<fficallback %p>", self->func);
 }
@@ -379,6 +386,7 @@ STATIC const mp_obj_type_t fficallback_type = {
 // FFI variable
 
 STATIC void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_ffivar_t *self = self_in;
     // Variable value printed as cast to int
     print(env, "<ffivar @%p: 0x%x>", self->var, *(int*)self->var);

@@ -51,12 +51,12 @@ STATIC mp_obj_t enumerate_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
 
     // create enumerate object
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = &mp_type_enumerate;
+    o->base.type = type_in;
     o->iter = mp_getiter(vals[0].u_obj);
     o->cur = vals[1].u_int;
 #else
     mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = &mp_type_enumerate;
+    o->base.type = type_in;
     o->iter = mp_getiter(args[0]);
     o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
 #endif

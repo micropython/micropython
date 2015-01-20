@@ -39,7 +39,7 @@ STATIC mp_obj_t filter_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     }
     assert(n_args == 2);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
-    o->base.type = &mp_type_filter;
+    o->base.type = type_in;
     o->fun = args[0];
     o->iter = mp_getiter(args[1]);
     return o;

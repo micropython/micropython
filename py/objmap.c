@@ -43,7 +43,7 @@ STATIC mp_obj_t map_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
     assert(n_args >= 2);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
-    o->base.type = &mp_type_map;
+    o->base.type = type_in;
     o->n_iters = n_args - 1;
     o->fun = args[0];
     for (mp_uint_t i = 0; i < n_args - 1; i++) {

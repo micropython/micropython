@@ -3210,6 +3210,9 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
                 EMIT_ARG(store_id, MP_QSTR___doc__);
         }
     }
+#else
+    (void)comp;
+    (void)pn;
 #endif
 }
 
@@ -3514,7 +3517,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 }
 #endif
 
-STATIC void compile_scope_compute_things(compiler_t *comp, scope_t *scope) {
+STATIC void scope_compute_things(scope_t *scope) {
 #if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the *x parameter after all other parameters (except **y)
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
@@ -3678,7 +3681,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 
     // compute some things related to scope and identifiers
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        compile_scope_compute_things(comp, s);
+        scope_compute_things(s);
     }
 
     // finish with pass 1

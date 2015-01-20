@@ -71,6 +71,7 @@ STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 
 STATIC mp_obj_t hash_hexdigest(mp_obj_t self_in) {
+    (void)self_in;
     mp_not_implemented("");
 #if 0
     mp_obj_hash_t *self = self_in;

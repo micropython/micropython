@@ -198,10 +198,10 @@ STATIC mp_uint_t mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen,
 
 /* computes i = j & k
    returns number of digits in i
-   assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
+   assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen (jlen argument not needed)
    can have i, j, k pointing to same memory
 */
-STATIC mp_uint_t mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
+STATIC mp_uint_t mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, const mpz_dig_t *kdig, mp_uint_t klen) {
     mpz_dig_t *oidig = idig;
 
     for (; klen > 0; --klen, ++idig, ++jdig, ++kdig) {
@@ -1081,7 +1081,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
             }
             // do the and'ing
             mpz_need_dig(dest, rhs->len);
-            dest->len = mpn_and(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+            dest->len = mpn_and(dest->dig, lhs->dig, rhs->dig, rhs->len);
             dest->neg = 0;
         } else {
             // TODO both args are negative

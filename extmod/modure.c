@@ -52,6 +52,7 @@ typedef struct _mp_obj_match_t {
 
 
 STATIC void match_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_match_t *self = self_in;
     print(env, "<match num=%d @%p>", self->num_matches);
 }
@@ -82,11 +83,13 @@ STATIC const mp_obj_type_t match_type = {
 };
 
 STATIC void re_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_re_t *self = self_in;
     print(env, "<re %p>", self);
 }
 
 STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_re_t *self = args[0];
     Subject subj;
     mp_uint_t len;
@@ -192,6 +195,7 @@ STATIC mp_obj_t mod_re_compile(uint n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_compile_obj, 1, 2, mod_re_compile);
 
 STATIC mp_obj_t mod_re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_re_t *self = mod_re_compile(1, args);
 
     const mp_obj_t args2[] = {self, args[1]};

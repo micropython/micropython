@@ -122,6 +122,7 @@ STATIC NORETURN void syntax_error(void) {
 }
 
 STATIC mp_obj_t uctypes_struct_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)n_kw;
     if (n_args < 2 || n_args > 3) {
         syntax_error();
     }
@@ -137,6 +138,7 @@ STATIC mp_obj_t uctypes_struct_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_u
 }
 
 STATIC void uctypes_struct_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_uctypes_struct_t *self = self_in;
     const char *typen = "unk";
     if (MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)) {

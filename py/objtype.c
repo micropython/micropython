@@ -671,11 +671,14 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
 //  - creating a new class (a new type) creates a new mp_obj_type_t
 
 STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_type_t *self = self_in;
     print(env, "<class '%s'>", qstr_str(self->name));
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
+
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     switch (n_args) {
@@ -841,6 +844,7 @@ typedef struct _mp_obj_super_t {
 } mp_obj_super_t;
 
 STATIC void super_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_super_t *self = self_in;
     print(env, "<super: ");
     mp_obj_print_helper(print, env, self->type, PRINT_STR);
@@ -850,6 +854,7 @@ STATIC void super_print(void (*print)(void *env, const char *fmt, ...), void *en
 }
 
 STATIC mp_obj_t super_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
     if (n_args != 2 || n_kw != 0) {
         // 0 arguments are turned into 2 in the compiler
         // 1 argument is not yet implemented

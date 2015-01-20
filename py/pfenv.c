@@ -179,6 +179,8 @@ int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int ba
 }
 
 int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width, int prec) {
+    (void)sgn; // TODO why is sgn unused?
+
     if (!MP_OBJ_IS_INT(x)) {
         // This will convert booleans to int, or raise an error for
         // non-integer types.

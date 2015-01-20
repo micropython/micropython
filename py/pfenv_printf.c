@@ -196,6 +196,7 @@ int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...) {
 }
 
 void printf_wrapper(void *env, const char *fmt, ...) {
+    (void)env;
     va_list args;
     va_start(args, fmt);
     vprintf(fmt, args);

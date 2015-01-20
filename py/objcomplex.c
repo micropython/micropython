@@ -49,6 +49,7 @@ typedef struct _mp_obj_complex_t {
 } mp_obj_complex_t;
 
 STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_complex_t *o = o_in;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
@@ -76,6 +77,7 @@ STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *
 }
 
 STATIC mp_obj_t complex_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
 
     switch (n_args) {

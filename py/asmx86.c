@@ -145,6 +145,7 @@ void asm_x86_start_pass(asm_x86_t *as, mp_uint_t pass) {
 }
 
 void asm_x86_end_pass(asm_x86_t *as) {
+    (void)as;
 }
 
 // all functions must go through this one to emit bytes

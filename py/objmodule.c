@@ -34,6 +34,7 @@
 #include "py/builtin.h"
 
 STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_module_t *self = self_in;
     const char *name = qstr_str(self->name);
 

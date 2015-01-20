@@ -92,6 +92,8 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     fwrite(fun_data, fun_len, 1, fp_write_code);
     fclose(fp_write_code);
 #endif
+#else
+    (void)fun_len;
 #endif
 }
 #endif

@@ -74,6 +74,7 @@ STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 
 STATIC mp_obj_t dict_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
     mp_obj_t dict = mp_obj_new_dict(0);
     if (n_args > 0 || n_kw > 0) {
         mp_obj_t args2[2] = {dict, args[0]}; // args[0] is always valid, even if it's not a positional arg
@@ -446,6 +447,7 @@ STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
 }
 
 STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     assert(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
     mp_obj_dict_view_t *self = self_in;
     bool first = true;

@@ -80,6 +80,7 @@ typedef struct _mp_obj_range_t {
 } mp_obj_range_t;
 
 STATIC void range_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_range_t *self = self_in;
     print(env, "range(%d, %d", self->start, self->stop);
     if (self->step == 1) {
@@ -93,7 +94,7 @@ STATIC mp_obj_t range_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
-    o->base.type = &mp_type_range;
+    o->base.type = type_in;
     o->start = 0;
     o->step = 1;
 

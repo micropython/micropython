@@ -62,6 +62,8 @@ void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *en
 }
 
 STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
+
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {

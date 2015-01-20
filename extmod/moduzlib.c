@@ -55,6 +55,7 @@ STATIC int mod_uzlib_grow_buf(TINF_DATA *d, unsigned alloc_req) {
 }
 
 STATIC mp_obj_t mod_uzlib_decompress(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_t data = args[0];
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);

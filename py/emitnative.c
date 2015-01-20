@@ -740,6 +740,8 @@ STATIC void emit_native_adjust_stack_size(emit_t *emit, mp_int_t delta) {
 }
 
 STATIC void emit_native_set_source_line(emit_t *emit, mp_uint_t source_line) {
+    (void)emit;
+    (void)source_line;
 }
 
 /*
@@ -905,6 +907,7 @@ STATIC void emit_pre_pop_reg_reg_reg(emit_t *emit, vtype_kind_t *vtypea, int reg
 }
 
 STATIC void emit_post(emit_t *emit) {
+    (void)emit;
 }
 
 STATIC void emit_post_top_set_vtype(emit_t *emit, vtype_kind_t new_vtype) {
@@ -1247,6 +1250,9 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
 STATIC void emit_native_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
     // not implemented
     // in principle could support this quite easily (ldr r0, [r0, #0]) and then get closed over variables!
+    (void)emit;
+    (void)qst;
+    (void)local_num;
     assert(0);
 }
 
@@ -1465,6 +1471,9 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
 
 STATIC void emit_native_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
     // not implemented
+    (void)emit;
+    (void)qst;
+    (void)local_num;
     assert(0);
 }
 
@@ -1634,10 +1643,16 @@ STATIC void emit_native_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num)
     // local is automatically deleted for exception block "as" var, and the message
     // breaks tests.
     //mp_emitter_warning(emit->pass, "Native codegeneration doesn't support deleting local");
+    (void)emit;
+    (void)qst;
+    (void)local_num;
 }
 
 STATIC void emit_native_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
     // TODO implement me!
+    (void)emit;
+    (void)qst;
+    (void)local_num;
 }
 
 STATIC void emit_native_delete_name(emit_t *emit, qstr qst) {
@@ -1711,7 +1726,7 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
     emit_post(emit);
 }
 
-STATIC void emit_native_jump_helper(emit_t *emit, mp_uint_t label, bool pop) {
+STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
     vtype_kind_t vtype = peek_vtype(emit, 0);
     switch (vtype) {
         case VTYPE_PYOBJ:
@@ -1744,21 +1759,21 @@ STATIC void emit_native_jump_helper(emit_t *emit, mp_uint_t label, bool pop) {
 
 STATIC void emit_native_pop_jump_if_true(emit_t *emit, mp_uint_t label) {
     DEBUG_printf("pop_jump_if_true(label=" UINT_FMT ")\n", label);
-    emit_native_jump_helper(emit, label, true);
+    emit_native_jump_helper(emit, true);
     ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
     emit_post(emit);
 }
 
 STATIC void emit_native_pop_jump_if_false(emit_t *emit, mp_uint_t label) {
     DEBUG_printf("pop_jump_if_false(label=" UINT_FMT ")\n", label);
-    emit_native_jump_helper(emit, label, true);
+    emit_native_jump_helper(emit, true);
     ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
     emit_post(emit);
 }
 
 STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
     DEBUG_printf("jump_if_true_or_pop(label=" UINT_FMT ")\n", label);
-    emit_native_jump_helper(emit, label, false);
+    emit_native_jump_helper(emit, false);
     ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
     adjust_stack(emit, -1);
     emit_post(emit);
@@ -1766,26 +1781,31 @@ STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
 
 STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, mp_uint_t label) {
     DEBUG_printf("jump_if_false_or_pop(label=" UINT_FMT ")\n", label);
-    emit_native_jump_helper(emit, label, false);
+    emit_native_jump_helper(emit, false);
     ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
     adjust_stack(emit, -1);
     emit_post(emit);
 }
 
 STATIC void emit_native_break_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
+    (void)except_depth;
     emit_native_jump(emit, label & ~MP_EMIT_BREAK_FROM_FOR); // TODO properly
 }
 
 STATIC void emit_native_continue_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
+    (void)except_depth;
     emit_native_jump(emit, label); // TODO properly
 }
 
 STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     // not supported, or could be with runtime call
+    (void)emit;
+    (void)label;
     assert(0);
 }
 
 STATIC void emit_native_with_cleanup(emit_t *emit) {
+    (void)emit;
     assert(0);
 }
 
@@ -1845,6 +1865,7 @@ STATIC void emit_native_pop_block(emit_t *emit) {
 }
 
 STATIC void emit_native_pop_except(emit_t *emit) {
+    (void)emit;
     /*
     emit_native_pre(emit);
     emit_call(emit, MP_F_NLR_POP);
@@ -2139,6 +2160,11 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_
 }
 
 STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_over, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults) {
+    (void)emit;
+    (void)scope;
+    (void)n_closed_over;
+    (void)n_pos_defaults;
+    (void)n_kw_defaults;
     assert(0);
 }
 
@@ -2238,10 +2264,12 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 
 STATIC void emit_native_yield_value(emit_t *emit) {
     // not supported (for now)
+    (void)emit;
     assert(0);
 }
 STATIC void emit_native_yield_from(emit_t *emit) {
     // not supported (for now)
+    (void)emit;
     assert(0);
 }
 

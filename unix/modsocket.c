@@ -83,6 +83,7 @@ STATIC mp_obj_socket_t *socket_new(int fd) {
 
 
 STATIC void socket_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_socket_t *self = self_in;
     print(env, "<_socket %d>", self->fd);
 }
@@ -206,6 +207,7 @@ STATIC mp_obj_t socket_send(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
 
 STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args; // always 4
     mp_obj_socket_t *self = args[0];
     int level = MP_OBJ_SMALL_INT_VALUE(args[1]);
     int option = mp_obj_get_int(args[2]);
@@ -259,6 +261,9 @@ STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
 STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
+    (void)n_kw;
+
     int family = AF_INET;
     int type = SOCK_STREAM;
     int proto = 0;

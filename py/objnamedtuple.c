@@ -53,6 +53,7 @@ STATIC mp_uint_t namedtuple_find_field(mp_obj_namedtuple_type_t *type, qstr name
 }
 
 STATIC void namedtuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_obj_namedtuple_t *o = o_in;
     print(env, "%s(", qstr_str(o->tuple.base.type->name));
     const mp_obj_t *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
@@ -76,6 +77,9 @@ STATIC void namedtuple_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC bool namedtuple_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+    (void)self_in;
+    (void)attr;
+    (void)value;
     nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
 }
 
