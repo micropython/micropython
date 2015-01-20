@@ -272,7 +272,10 @@ STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     (void)n_args;
     (void)n_kw;
 
-    const char *fname = mp_obj_str_get_str(args[0]);
+    const char *fname = NULL;
+    if (args[0] != mp_const_none) {
+        fname = mp_obj_str_get_str(args[0]);
+    }
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
     if (mod == NULL) {
