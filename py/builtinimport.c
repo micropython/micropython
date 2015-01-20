@@ -34,6 +34,7 @@
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
+#include "py/frozenmod.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -109,9 +110,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 #endif
 }
 
-STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    // create the lexer
-    mp_lexer_t *lex = mp_lexer_new_from_file(vstr_str(file));
+STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char *fname) {
 
     if (lex == NULL) {
         // we verified the file exists using stat, but lexer could still fail
@@ -119,7 +118,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "module not found"));
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                "no module named '%s'", vstr_str(file)));
+                "no module named '%s'", fname));
         }
     }
 
@@ -131,6 +130,12 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // parse, compile and execute the module in its context
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
+}
+
+STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
+    // create the lexer
+    mp_lexer_t *lex = mp_lexer_new_from_file(vstr_str(file));
+    do_load_from_lexer(module_obj, lex, vstr_str(file));
 }
 
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
@@ -236,6 +241,15 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_module_get(pkg_name);
     }
     DEBUG_printf("Module not yet loaded\n");
+
+    #if MICROPY_MODULE_FROZEN
+    mp_lexer_t *lex = mp_find_frozen_module(mod_str, mod_len);
+    if (lex != NULL) {
+        module_obj = mp_obj_new_module(MP_OBJ_QSTR_VALUE(module_name));
+        do_load_from_lexer(module_obj, lex, mod_str);
+        return module_obj;
+    }
+    #endif
 
     uint last = 0;
     VSTR_FIXED(path, MICROPY_ALLOC_PATH_MAX)

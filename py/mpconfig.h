@@ -328,6 +328,11 @@ typedef double mp_float_t;
 #define MICROPY_MODULE_WEAK_LINKS (0)
 #endif
 
+// Whether frozen modules are supported
+#ifndef MICROPY_MODULE_FROZEN
+#define MICROPY_MODULE_FROZEN (0)
+#endif
+
 // Whether you can override builtins in the builtins module
 #ifndef MICROPY_CAN_OVERRIDE_BUILTINS
 #define MICROPY_CAN_OVERRIDE_BUILTINS (0)
