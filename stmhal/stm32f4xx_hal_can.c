@@ -641,7 +641,8 @@ HAL_StatusTypeDef HAL_CAN_Transmit(CAN_HandleTypeDef* hcan, uint32_t Timeout)
   {
     /* Change CAN state */
     hcan->State = HAL_CAN_STATE_ERROR; 
-    
+
+   __HAL_UNLOCK(hcan);
     /* Return function status */
     return HAL_ERROR;
   }
