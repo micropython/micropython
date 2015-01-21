@@ -224,7 +224,8 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
     }
 
     // check if module already exists
-    mp_obj_t module_obj = mp_module_get(mp_obj_str_get_qstr(module_name));
+    qstr module_name_qstr = mp_obj_str_get_qstr(module_name);
+    mp_obj_t module_obj = mp_module_get(module_name_qstr);
     if (module_obj != MP_OBJ_NULL) {
         DEBUG_printf("Module already loaded\n");
         // If it's not a package, return module right away
@@ -245,7 +246,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
     #if MICROPY_MODULE_FROZEN
     mp_lexer_t *lex = mp_find_frozen_module(mod_str, mod_len);
     if (lex != NULL) {
-        module_obj = mp_obj_new_module(MP_OBJ_QSTR_VALUE(module_name));
+        module_obj = mp_obj_new_module(module_name_qstr);
         do_load_from_lexer(module_obj, lex, mod_str);
         return module_obj;
     }
