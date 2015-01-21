@@ -3,6 +3,7 @@
 #define MICROPY_HW_BOARD_NAME       "F4DISC"
 #define MICROPY_HW_MCU_NAME         "STM32F407"
 
+#define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_SDCARD       (0)
 #define MICROPY_HW_HAS_MMA7660      (0)
@@ -15,6 +16,7 @@
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_I2C1      (1)
 #define MICROPY_HW_ENABLE_SPI1      (1)
+#define MICROPY_HW_ENABLE_SPI2      (1)
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
 

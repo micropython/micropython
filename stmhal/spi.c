@@ -63,7 +63,9 @@
 #if MICROPY_HW_ENABLE_SPI1
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
+#if MICROPY_HW_ENABLE_SPI2
 SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
+#endif
 #if MICROPY_HW_ENABLE_SPI3
 SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 #endif
@@ -110,10 +112,12 @@ void SPI1_RX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi1_rx_dma_handle); }
 void SPI1_TX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi1_tx_dma_handle); }
 #endif
 
+#if MICROPY_HW_ENABLE_SPI2
 STATIC DMA_HandleTypeDef spi2_rx_dma_handle;
 STATIC DMA_HandleTypeDef spi2_tx_dma_handle;
 void SPI2_RX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi2_rx_dma_handle); }
 void SPI2_TX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi2_tx_dma_handle); }
+#endif
 
 #if MICROPY_HW_ENABLE_SPI3
 STATIC DMA_HandleTypeDef spi3_rx_dma_handle;
@@ -128,8 +132,10 @@ void spi_init0(void) {
     memset(&SPIHandle1, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle1.Instance = SPI1;
 #endif
+#if MICROPY_HW_ENABLE_SPI2
     memset(&SPIHandle2, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle2.Instance = SPI2;
+#endif
 #if MICROPY_HW_ENABLE_SPI3
     memset(&SPIHandle3, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle3.Instance = SPI3;
@@ -169,6 +175,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         rx_dma_irqn = SPI1_RX_DMA_IRQN;
         tx_dma_irqn = SPI1_TX_DMA_IRQN;
 #endif
+#if MICROPY_HW_ENABLE_SPI2
     } else if (spi->Instance == SPI2) {
         // Y-skin: Y5=PB12=SPI2_NSS, Y6=PB13=SPI2_SCK, Y7=PB14=SPI2_MISO, Y8=PB15=SPI2_MOSI
         pins[0] = &pin_B12;
@@ -187,6 +194,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         tx_dma = &spi2_tx_dma_handle;
         rx_dma_irqn = SPI2_RX_DMA_IRQN;
         tx_dma_irqn = SPI2_TX_DMA_IRQN;
+#endif
 #if MICROPY_HW_ENABLE_SPI3
     } else if (spi->Instance == SPI3) {
         pins[0] = &pin_A4;
@@ -266,10 +274,12 @@ void spi_deinit(SPI_HandleTypeDef *spi) {
         __SPI1_RELEASE_RESET();
         __SPI1_CLK_DISABLE();
 #endif
+#if MICROPY_HW_ENABLE_SPI2
     } else if (spi->Instance == SPI2) {
         __SPI2_FORCE_RESET();
         __SPI2_RELEASE_RESET();
         __SPI2_CLK_DISABLE();
+#endif
 #if MICROPY_HW_ENABLE_SPI3
     } else if (spi->Instance == SPI3) {
         __SPI3_FORCE_RESET();
@@ -304,7 +314,11 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
 #else
     {{&pyb_spi_type}, NULL},
 #endif
+#if MICROPY_HW_ENABLE_SPI2
     {{&pyb_spi_type}, &SPIHandle2},
+#else
+    {{&pyb_spi_type}, NULL},
+#endif
 #if MICROPY_HW_ENABLE_SPI3
     {{&pyb_spi_type}, &SPIHandle3},
 #else
