@@ -80,8 +80,11 @@ mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args_kw, cons
 }
 
 // wrapper that makes raise obj and raises it
-NORETURN void mp_native_raise(mp_obj_t o) {
-    nlr_raise(mp_make_raise_obj(o));
+// END_FINALLY opcode requires that we don't raise if o==None
+void mp_native_raise(mp_obj_t o) {
+    if (o != mp_const_none) {
+        nlr_raise(mp_make_raise_obj(o));
+    }
 }
 
 // these must correspond to the respective enum in runtime0.h

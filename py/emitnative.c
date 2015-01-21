@@ -1824,7 +1824,14 @@ STATIC void emit_native_setup_finally(emit_t *emit, mp_uint_t label) {
 }
 
 STATIC void emit_native_end_finally(emit_t *emit) {
-    emit_pre_pop_discard(emit);
+    // logic:
+    //   exc = pop_stack
+    //   if exc == None: pass
+    //   else: raise exc
+    // the check if exc is None is done in the MP_F_NATIVE_RAISE stub
+    vtype_kind_t vtype;
+    emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+    emit_call(emit, MP_F_NATIVE_RAISE);
     emit_post(emit);
 }
 
