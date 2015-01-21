@@ -36,7 +36,7 @@
 typedef struct _mp_obj_namedtuple_type_t {
     mp_obj_type_t base;
     mp_uint_t n_fields;
-    mp_obj_t fields[];
+    qstr fields[];
 } mp_obj_namedtuple_type_t;
 
 typedef struct _mp_obj_namedtuple_t {
@@ -45,7 +45,7 @@ typedef struct _mp_obj_namedtuple_t {
 
 STATIC mp_uint_t namedtuple_find_field(mp_obj_namedtuple_type_t *type, qstr name) {
     for (mp_uint_t i = 0; i < type->n_fields; i++) {
-        if (MP_OBJ_QSTR_VALUE(type->fields[i]) == name) {
+        if (type->fields[i] == name) {
             return i;
         }
     }
@@ -56,12 +56,12 @@ STATIC void namedtuple_print(void (*print)(void *env, const char *fmt, ...), voi
     (void)kind;
     mp_obj_namedtuple_t *o = o_in;
     print(env, "%s(", qstr_str(o->tuple.base.type->name));
-    const mp_obj_t *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
+    const qstr *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
     for (mp_uint_t i = 0; i < o->tuple.len; i++) {
         if (i > 0) {
             print(env, ", ");
         }
-        print(env, "%s=", qstr_str(MP_OBJ_QSTR_VALUE(fields[i])));
+        print(env, "%s=", qstr_str(fields[i]));
         mp_obj_print_helper(print, env, o->tuple.items[i], PRINT_REPR);
     }
     print(env, ")");
@@ -113,7 +113,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
         }
 
         for (mp_uint_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
-            qstr kw = MP_OBJ_QSTR_VALUE(args[i]);
+            qstr kw = mp_obj_str_get_qstr(args[i]);
             int id = namedtuple_find_field(type, kw);
             if (id == -1) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -145,7 +145,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
 STATIC const mp_obj_tuple_t namedtuple_base_tuple = {{&mp_type_tuple}, 1, {(mp_obj_t)&mp_type_tuple}};
 
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj_t *fields) {
-    mp_obj_namedtuple_type_t *o = m_new_obj_var(mp_obj_namedtuple_type_t, mp_obj_t, n_fields);
+    mp_obj_namedtuple_type_t *o = m_new_obj_var(mp_obj_namedtuple_type_t, qstr, n_fields);
     memset(&o->base, 0, sizeof(o->base));
     o->base.base.type = &mp_type_type;
     o->base.name = name;
@@ -159,12 +159,14 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj
     o->base.getiter = mp_obj_tuple_getiter;
     o->base.bases_tuple = (mp_obj_t)&namedtuple_base_tuple;
     o->n_fields = n_fields;
-    memcpy(o->fields, fields, sizeof(mp_obj_t) * n_fields);
+    for (mp_uint_t i = 0; i < n_fields; i++) {
+        o->fields[i] = mp_obj_str_get_qstr(fields[i]);
+    }
     return o;
 }
 
 STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
-    qstr name = MP_OBJ_QSTR_VALUE(name_in);
+    qstr name = mp_obj_str_get_qstr(name_in);
     mp_uint_t n_fields;
     mp_obj_t *fields;
     mp_obj_list_get(fields_in, &n_fields, &fields);
