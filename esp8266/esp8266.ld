@@ -80,6 +80,7 @@ SECTIONS
         *readline.o(.literal*, .text*)
         *pybstdio.o(.literal*, .text*)
         *modpyb.o(.literal*, .text*)
+        *modgpio.o(.literal*, .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
 
