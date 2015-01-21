@@ -110,6 +110,7 @@ STATIC ffi_type *char2ffi_type(char c)
         case 'f': return &ffi_type_float;
         case 'd': return &ffi_type_double;
         #endif
+        case 'O': // mp_obj_t
         case 'C': // (*)()
         case 'P': // const void*
         case 'p': // void*
@@ -153,6 +154,8 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
             return mp_obj_new_float(*p);
         }
         #endif
+        case 'O':
+            return (mp_obj_t)val;
         default:
             return mp_obj_new_int(val);
     }
