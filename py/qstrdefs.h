@@ -74,6 +74,7 @@ Q(__gt__)
 Q(__eq__)
 Q(__le__)
 Q(__ge__)
+Q(__reversed__)
 
 Q(micropython)
 Q(bytecode)

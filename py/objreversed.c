@@ -39,6 +39,13 @@ typedef struct _mp_obj_reversed_t {
 STATIC mp_obj_t reversed_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
+    // check if __reversed__ exists, and if so delegate to it
+    mp_obj_t dest[2];
+    mp_load_method_maybe(args[0], MP_QSTR___reversed__, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        return mp_call_method_n_kw(0, 0, dest);
+    }
+
     mp_obj_reversed_t *o = m_new_obj(mp_obj_reversed_t);
     o->base.type = type_in;
     o->seq = args[0];
