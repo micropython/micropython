@@ -8,3 +8,9 @@ True
 passed
 CAN(1, CAN.LOOPBACK, extframe=True)
 passed
+False
+(1, 0, 0, b'abcde')
+passed
+(2, 0, 0, b'abcde')
+(3, 0, 0, b'abcde')
+(4, 0, 0, b'abcde')
