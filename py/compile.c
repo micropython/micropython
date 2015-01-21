@@ -2624,8 +2624,9 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 
     // concatenate string/bytes
-    byte *s_dest;
-    mp_obj_t obj = mp_obj_str_builder_start(string_kind == MP_PARSE_NODE_STRING ? &mp_type_str : &mp_type_bytes, n_bytes, &s_dest);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n_bytes);
+    byte *s_dest = (byte*)vstr.buf;
     for (int i = 0; i < n; i++) {
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
             mp_uint_t s_len;
@@ -2640,7 +2641,7 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 
     // load the object
-    EMIT_ARG(load_const_obj, mp_obj_str_builder_end(obj));
+    EMIT_ARG(load_const_obj, mp_obj_new_str_from_vstr(string_kind == MP_PARSE_NODE_STRING ? &mp_type_str : &mp_type_bytes, &vstr));
 }
 
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node

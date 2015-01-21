@@ -38,15 +38,17 @@ void pyb_buf_get_for_send(mp_obj_t o, mp_buffer_info_t *bufinfo, byte *tmp_data)
     }
 }
 
-mp_obj_t pyb_buf_get_for_recv(mp_obj_t o, mp_buffer_info_t *bufinfo) {
+mp_obj_t pyb_buf_get_for_recv(mp_obj_t o, vstr_t *vstr) {
     if (MP_OBJ_IS_INT(o)) {
         // allocate a new bytearray of given length
-        bufinfo->len = mp_obj_get_int(o);
-        bufinfo->typecode = 'B';
-        return mp_obj_str_builder_start(&mp_type_bytes, bufinfo->len, (byte**)&bufinfo->buf);
+        vstr_init_len(vstr, mp_obj_get_int(o));
+        return MP_OBJ_NULL;
     } else {
         // get the existing buffer
-        mp_get_buffer_raise(o, bufinfo, MP_BUFFER_WRITE);
-        return MP_OBJ_NULL;
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(o, &bufinfo, MP_BUFFER_WRITE);
+        vstr->buf = bufinfo.buf;
+        vstr->len = bufinfo.len;
+        return o;
     }
 }

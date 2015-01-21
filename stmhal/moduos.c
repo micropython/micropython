@@ -322,12 +322,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 /// random number generator.
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
-    byte *data;
-    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, n, &data);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
     for (int i = 0; i < n; i++) {
-        data[i] = rng_get();
+        vstr.buf[i] = rng_get();
     }
-    return mp_obj_str_builder_end(o);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif

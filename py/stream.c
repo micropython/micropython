@@ -160,11 +160,12 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
     }
     #endif
 
-    byte *buf;
-    mp_obj_t ret_obj = mp_obj_str_builder_start(STREAM_CONTENT_TYPE(o->type->stream_p), sz, &buf);
+    vstr_t vstr;
+    vstr_init_len(&vstr, sz);
     int error;
-    mp_uint_t out_sz = o->type->stream_p->read(o, buf, sz, &error);
+    mp_uint_t out_sz = o->type->stream_p->read(o, vstr.buf, sz, &error);
     if (out_sz == MP_STREAM_ERROR) {
+        vstr_clear(&vstr);
         if (is_nonblocking_error(error)) {
             // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
             // "If the object is in non-blocking mode and no bytes are available,
@@ -175,7 +176,9 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
         }
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     } else {
-        return mp_obj_str_builder_end_with_len(ret_obj, out_sz);
+        vstr.len = out_sz;
+        vstr.buf[vstr.len] = '\0';
+        return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
     }
 }
 
@@ -252,7 +255,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init(&vstr, DEFAULT_BUFFER_SIZE);
     char *p = vstr.buf;
-    mp_uint_t current_read = DEFAULT_BUFFER_SIZE;
+    mp_uint_t current_read = DEFAULT_BUFFER_SIZE - 1; // save 1 byte for null termination
     while (true) {
         int error;
         mp_uint_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
@@ -276,8 +279,8 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             current_read -= out_sz;
             p += out_sz;
         } else {
-            current_read = DEFAULT_BUFFER_SIZE;
-            p = vstr_extend(&vstr, current_read);
+            p = vstr_extend(&vstr, DEFAULT_BUFFER_SIZE);
+            current_read = DEFAULT_BUFFER_SIZE - 1; // save 1 byte for null termination
             if (p == NULL) {
                 // TODO
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
@@ -286,7 +289,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     vstr.len = total_size;
-    vstr.buf[vstr.len] = '\0'; // XXX is there enough space?
+    vstr.buf[vstr.len] = '\0';
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
 }
 

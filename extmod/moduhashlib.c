@@ -63,10 +63,10 @@ MP_DEFINE_CONST_FUN_OBJ_2(hash_update_obj, hash_update);
 
 STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = self_in;
-    byte *hash;
-    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, SHA256_BLOCK_SIZE, &hash);
-    sha256_final((SHA256_CTX*)self->state, hash);
-    return mp_obj_str_builder_end(o);
+    vstr_t vstr;
+    vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
+    sha256_final((SHA256_CTX*)self->state, (byte*)vstr.buf);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 

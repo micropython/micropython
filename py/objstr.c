@@ -200,11 +200,10 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
 
     if (MP_OBJ_IS_SMALL_INT(args[0])) {
         uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
-        byte *data;
-
-        mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
-        memset(data, 0, len);
-        return mp_obj_str_builder_end(o);
+        vstr_t vstr;
+        vstr_init_len(&vstr, len);
+        memset(vstr.buf, 0, len);
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
     }
 
     // check if argument has the buffer protocol
@@ -302,10 +301,10 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return mp_const_empty_bytes;
             }
         }
-        byte *data;
-        mp_obj_t s = mp_obj_str_builder_start(lhs_type, lhs_len * n, &data);
-        mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, data);
-        return mp_obj_str_builder_end(s);
+        vstr_t vstr;
+        vstr_init_len(&vstr, lhs_len * n);
+        mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, vstr.buf);
+        return mp_obj_new_str_from_vstr(lhs_type, &vstr);
     }
 
     // From now on all operations allow:
@@ -344,12 +343,11 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: {
-            mp_uint_t alloc_len = lhs_len + rhs_len;
-            byte *data;
-            mp_obj_t s = mp_obj_str_builder_start(lhs_type, alloc_len, &data);
-            memcpy(data, lhs_data, lhs_len);
-            memcpy(data + lhs_len, rhs_data, rhs_len);
-            return mp_obj_str_builder_end(s);
+            vstr_t vstr;
+            vstr_init_len(&vstr, lhs_len + rhs_len);
+            memcpy(vstr.buf, lhs_data, lhs_len);
+            memcpy(vstr.buf + lhs_len, rhs_data, rhs_len);
+            return mp_obj_new_str_from_vstr(lhs_type, &vstr);
         }
 
         case MP_BINARY_OP_IN:
@@ -441,8 +439,9 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     // make joined string
-    byte *data;
-    mp_obj_t joined_str = mp_obj_str_builder_start(self_type, required_len, &data);
+    vstr_t vstr;
+    vstr_init_len(&vstr, required_len);
+    byte *data = (byte*)vstr.buf;
     for (mp_uint_t i = 0; i < seq_len; i++) {
         if (i > 0) {
             memcpy(data, sep_str, sep_len);
@@ -454,7 +453,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     }
 
     // return joined string
-    return mp_obj_str_builder_end(joined_str);
+    return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
 
 #define is_ws(c) ((c) == ' ' || (c) == '\t')
@@ -1485,7 +1484,7 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
 
     // data for the replaced string
     byte *data = NULL;
-    mp_obj_t replaced_str = MP_OBJ_NULL;
+    vstr_t vstr;
 
     // do 2 passes over the string:
     //   first pass computes the required length of the replaced string
@@ -1537,7 +1536,8 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
                 return args[0];
             } else {
                 // substr found, allocate new string
-                replaced_str = mp_obj_str_builder_start(self_type, replaced_str_index, &data);
+                vstr_init_len(&vstr, replaced_str_index);
+                data = (byte*)vstr.buf;
                 assert(data != NULL);
             }
         } else {
@@ -1546,7 +1546,7 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
         }
     }
 
-    return mp_obj_str_builder_end(replaced_str);
+    return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
 
 STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
@@ -1643,13 +1643,13 @@ STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
 // Supposedly not too critical operations, so optimize for code size
 STATIC mp_obj_t str_caseconv(unichar (*op)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
-    byte *data;
-    mp_obj_t s = mp_obj_str_builder_start(mp_obj_get_type(self_in), self_len, &data);
+    vstr_t vstr;
+    vstr_init_len(&vstr, self_len);
+    byte *data = (byte*)vstr.buf;
     for (mp_uint_t i = 0; i < self_len; i++) {
         *data++ = op(*self_data++);
     }
-    *data = 0;
-    return mp_obj_str_builder_end(s);
+    return mp_obj_new_str_from_vstr(mp_obj_get_type(self_in), &vstr);
 }
 
 STATIC mp_obj_t str_lower(mp_obj_t self_in) {
@@ -1855,35 +1855,6 @@ const mp_obj_type_t mp_type_bytes = {
 
 // the zero-length bytes
 const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
-
-mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, mp_uint_t len, byte **data) {
-    mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
-    o->base.type = type;
-    o->len = len;
-    o->hash = 0;
-    byte *p = m_new(byte, len + 1);
-    o->data = p;
-    *data = p;
-    return o;
-}
-
-mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in) {
-    mp_obj_str_t *o = o_in;
-    o->hash = qstr_compute_hash(o->data, o->len);
-    byte *p = (byte*)o->data;
-    p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
-    return o;
-}
-
-mp_obj_t mp_obj_str_builder_end_with_len(mp_obj_t o_in, mp_uint_t len) {
-    mp_obj_str_t *o = o_in;
-    o->data = m_renew(byte, (byte*)o->data, o->len + 1, len + 1);
-    o->len = len;
-    o->hash = qstr_compute_hash(o->data, o->len);
-    byte *p = (byte*)o->data;
-    p[o->len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
-    return o;
-}
 
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_uint_t len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);

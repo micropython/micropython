@@ -161,8 +161,9 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(args[0]);
     char fmt_type = get_fmt_type(&fmt);
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
-    byte *p;
-    mp_obj_t res = mp_obj_str_builder_start(&mp_type_bytes, size, &p);
+    vstr_t vstr;
+    vstr_init_len(&vstr, size);
+    byte *p = (byte*)vstr.buf;
     memset(p, 0, size);
 
     for (mp_uint_t i = 1; i < n_args; i++) {
@@ -190,7 +191,8 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
             mp_binary_set_val(fmt_type, *fmt++, args[i], &p);
         }
     }
-    return res;
+
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 

@@ -232,17 +232,17 @@ STATIC mp_obj_t pyb_usb_vcp_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_USB_VCP_SEND_NUM_ARGS, pyb_usb_vcp_send_args, vals);
 
     // get the buffer to receive into
-    mp_buffer_info_t bufinfo;
-    mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &bufinfo);
+    vstr_t vstr;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
 
     // receive the data
-    int ret = USBD_CDC_Rx(bufinfo.buf, bufinfo.len, vals[1].u_int);
+    int ret = USBD_CDC_Rx((uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
 
     // return the received data
-    if (o_ret == MP_OBJ_NULL) {
+    if (o_ret != MP_OBJ_NULL) {
         return mp_obj_new_int(ret); // number of bytes read into given buffer
     } else {
-        return mp_obj_str_builder_end_with_len(o_ret, ret); // create a new buffer
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr); // create a new buffer
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_recv_obj, 1, pyb_usb_vcp_recv);

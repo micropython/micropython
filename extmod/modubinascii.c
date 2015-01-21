@@ -39,8 +39,9 @@ STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
-    byte *in = bufinfo.buf, *out;
-    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, bufinfo.len * 2, &out);
+    vstr_t vstr;
+    vstr_init_len(&vstr, bufinfo.len * 2);
+    byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
     for (mp_uint_t i = bufinfo.len; i--;) {
         byte d = (*in >> 4);
         if (d > 9) {
@@ -53,7 +54,7 @@ STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
         }
         *out++ = d + '0';
     }
-    return mp_obj_str_builder_end(o);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_hexlify_obj, 1, 2, mod_binascii_hexlify);
 

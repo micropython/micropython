@@ -201,17 +201,19 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOTCONN)));
     }
     mp_int_t len = mp_obj_get_int(len_in);
-    byte *buf;
-    mp_obj_t ret_obj = mp_obj_str_builder_start(&mp_type_bytes, len, &buf);
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
     int _errno;
-    mp_uint_t ret = self->nic_type->recv(self, buf, len, &_errno);
+    mp_uint_t ret = self->nic_type->recv(self, (byte*)vstr.buf, len, &_errno);
     if (ret == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
     if (ret == 0) {
         return mp_const_empty_bytes;
     }
-    return mp_obj_str_builder_end_with_len(ret_obj, ret);
+    vstr.len = ret;
+    vstr.buf[vstr.len] = '\0';
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
@@ -248,25 +250,24 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         // not connected
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOTCONN)));
     }
-    mp_int_t len = mp_obj_get_int(len_in);
-    byte *buf;
-    mp_obj_t ret_obj = mp_obj_str_builder_start(&mp_type_bytes, len, &buf);
+    vstr_t vstr;
+    vstr_init_len(&vstr, mp_obj_get_int(len_in));
     byte ip[4];
     mp_uint_t port;
     int _errno;
-    mp_int_t ret = self->nic_type->recvfrom(self, buf, len, ip, &port, &_errno);
+    mp_int_t ret = self->nic_type->recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
+    mp_obj_t tuple[2];
     if (ret == 0) {
-        ret_obj = mp_const_empty_bytes;
+        tuple[0] = mp_const_empty_bytes;
     } else {
-        ret_obj = mp_obj_str_builder_end_with_len(ret_obj, ret);
+        vstr.len = ret;
+        vstr.buf[vstr.len] = '\0';
+        tuple[0] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
     }
-    mp_obj_t tuple[2] = {
-        ret_obj,
-        mod_network_format_inet_addr(ip, port),
-    };
+    tuple[1] = mod_network_format_inet_addr(ip, port);
     return mp_obj_new_tuple(2, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);

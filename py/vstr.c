@@ -52,6 +52,11 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
     vstr->fixed_buf = false;
 }
 
+void vstr_init_len(vstr_t *vstr, size_t len) {
+    vstr_init(vstr, len + 1);
+    vstr_add_len(vstr, len);
+}
+
 void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf) {
     assert(alloc > 0); // need at least room for the null byte
     vstr->alloc = alloc;

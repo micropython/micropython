@@ -500,9 +500,6 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
 
 // str
-mp_obj_t mp_obj_str_builder_start(const mp_obj_type_t *type, mp_uint_t len, byte **data);
-mp_obj_t mp_obj_str_builder_end(mp_obj_t o_in);
-mp_obj_t mp_obj_str_builder_end_with_len(mp_obj_t o_in, mp_uint_t len);
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
 mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in);
 mp_uint_t mp_obj_str_get_len(mp_obj_t self_in);

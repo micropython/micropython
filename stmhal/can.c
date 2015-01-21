@@ -395,12 +395,12 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     }
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(rx_msg.RTR);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
-    byte *data;
-    tuple->items[3] = mp_obj_str_builder_start(&mp_type_bytes, rx_msg.DLC, &data);
+    vstr_t vstr;
+    vstr_init_len(&vstr, rx_msg.DLC);
     for (mp_uint_t i = 0; i < rx_msg.DLC; i++) {
-        data[i] = rx_msg.Data[i]; // Data is uint32_t but holds only 1 byte
+        vstr.buf[i] = rx_msg.Data[i]; // Data is uint32_t but holds only 1 byte
     }
-    tuple->items[3] = mp_obj_str_builder_end(tuple->items[3]);
+    tuple->items[3] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
     return tuple;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);

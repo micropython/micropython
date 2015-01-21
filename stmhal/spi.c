@@ -565,15 +565,15 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get the buffer to receive into
-    mp_buffer_info_t bufinfo;
-    mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &bufinfo);
+    vstr_t vstr;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
 
     // receive the data
     HAL_StatusTypeDef status;
     if (query_irq() == IRQ_STATE_DISABLED) {
-        status = HAL_SPI_Receive(self->spi, bufinfo.buf, bufinfo.len, args[1].u_int);
+        status = HAL_SPI_Receive(self->spi, (uint8_t*)vstr.buf, vstr.len, args[1].u_int);
     } else {
-        status = HAL_SPI_Receive_DMA(self->spi, bufinfo.buf, bufinfo.len);
+        status = HAL_SPI_Receive_DMA(self->spi, (uint8_t*)vstr.buf, vstr.len);
         if (status == HAL_OK) {
             status = spi_wait_dma_finished(self->spi, args[1].u_int);
         }
@@ -584,10 +584,10 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     }
 
     // return the received data
-    if (o_ret == MP_OBJ_NULL) {
-        return args[0].u_obj;
+    if (o_ret != MP_OBJ_NULL) {
+        return o_ret;
     } else {
-        return mp_obj_str_builder_end(o_ret);
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_recv_obj, 1, pyb_spi_recv);
@@ -621,13 +621,14 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_buffer_info_t bufinfo_send;
     uint8_t data_send[1];
     mp_buffer_info_t bufinfo_recv;
+    vstr_t vstr_recv;
     mp_obj_t o_ret;
 
     if (args[0].u_obj == args[1].u_obj) {
         // same object for send and receive, it must be a r/w buffer
         mp_get_buffer_raise(args[0].u_obj, &bufinfo_send, MP_BUFFER_RW);
         bufinfo_recv = bufinfo_send;
-        o_ret = MP_OBJ_NULL;
+        o_ret = args[0].u_obj;
     } else {
         // get the buffer to send from
         pyb_buf_get_for_send(args[0].u_obj, &bufinfo_send, data_send);
@@ -635,16 +636,17 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         // get the buffer to receive into
         if (args[1].u_obj == MP_OBJ_NULL) {
             // only send argument given, so create a fresh buffer of the send length
-            bufinfo_recv.len = bufinfo_send.len;
-            bufinfo_recv.typecode = 'B';
-            o_ret = mp_obj_str_builder_start(&mp_type_bytes, bufinfo_recv.len, (byte**)&bufinfo_recv.buf);
+            vstr_init_len(&vstr_recv, bufinfo_send.len);
+            bufinfo_recv.len = vstr_recv.len;
+            bufinfo_recv.buf = vstr_recv.buf;
+            o_ret = MP_OBJ_NULL;
         } else {
             // recv argument given
             mp_get_buffer_raise(args[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
             if (bufinfo_recv.len != bufinfo_send.len) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "recv must be same length as send"));
             }
-            o_ret = MP_OBJ_NULL;
+            o_ret = args[1].u_obj;
         }
     }
 
@@ -664,10 +666,10 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     }
 
     // return the received data
-    if (o_ret == MP_OBJ_NULL) {
-        return args[1].u_obj;
+    if (o_ret != MP_OBJ_NULL) {
+        return o_ret;
     } else {
-        return mp_obj_str_builder_end(o_ret);
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr_recv);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_recv_obj, 1, pyb_spi_send_recv);

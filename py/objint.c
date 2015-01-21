@@ -340,8 +340,9 @@ STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t val = mp_obj_int_get_checked(args[0]);
     mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);
 
-    byte *data;
-    mp_obj_t o = mp_obj_str_builder_start(&mp_type_bytes, len, &data);
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
+    byte *data = (byte*)vstr.buf;
     memset(data, 0, len);
 
     if (MP_ENDIANNESS_LITTLE) {
@@ -353,7 +354,7 @@ STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
         }
     }
 
-    return mp_obj_str_builder_end(o);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 2, 4, int_to_bytes);
 
