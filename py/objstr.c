@@ -1856,6 +1856,8 @@ const mp_obj_type_t mp_type_bytes = {
 // the zero-length bytes
 const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
 
+// Create a str/bytes object using the given data.  New memory is allocated and
+// the data is copied across.
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_uint_t len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
@@ -1870,6 +1872,9 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_
     return o;
 }
 
+// Create a str/bytes object from the given vstr.  The vstr buffer is resized to
+// the exact length required and then reused for the str/bytes object.  The vstr
+// is cleared and can safely be passed to vstr_free if it was heap allocated.
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     // if not a bytes object, look if a qstr with this data already exists
     if (type == &mp_type_str) {

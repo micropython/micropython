@@ -35,6 +35,8 @@
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
 
+// Init the vstr so it allocs exactly given number of bytes.
+// Length is set to zero, and null byte written in first position.
 void vstr_init(vstr_t *vstr, size_t alloc) {
     if (alloc < 2) {
         // need at least 1 byte for the null byte at the end
@@ -52,6 +54,8 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
     vstr->fixed_buf = false;
 }
 
+// Init the vstr so it allocs exactly enough ram to hold given length (plus the
+// null terminating byte), set the length, and write the null byte at the end.
 void vstr_init_len(vstr_t *vstr, size_t len) {
     vstr_init(vstr, len + 1);
     vstr_add_len(vstr, len);
