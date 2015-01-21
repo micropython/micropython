@@ -136,26 +136,6 @@ char *vstr_extend(vstr_t *vstr, size_t size) {
     return p;
 }
 
-// Shrink vstr to be given size
-bool vstr_set_size(vstr_t *vstr, size_t size) {
-    if (vstr->fixed_buf) {
-        return false;
-    }
-    char *new_buf = m_renew(char, vstr->buf, vstr->alloc, size);
-    if (new_buf == NULL) {
-        vstr->had_error = true;
-        return false;
-    }
-    vstr->buf = new_buf;
-    vstr->alloc = vstr->len = size;
-    return true;
-}
-
-// Shrink vstr allocation to its actual length
-bool vstr_shrink(vstr_t *vstr) {
-    return vstr_set_size(vstr, vstr->len);
-}
-
 STATIC bool vstr_ensure_extra(vstr_t *vstr, size_t size) {
     if (vstr->len + size + 1 > vstr->alloc) {
         if (vstr->fixed_buf) {

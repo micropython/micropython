@@ -156,9 +156,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
             }
         }
 
-        mp_obj_t ret = mp_obj_new_str_of_type(&mp_type_str, (byte*)vstr.buf, vstr.len);
-        vstr_clear(&vstr);
-        return ret;
+        return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
     }
     #endif
 
@@ -251,8 +249,9 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     mp_uint_t total_size = 0;
-    vstr_t *vstr = vstr_new_size(DEFAULT_BUFFER_SIZE);
-    char *p = vstr_str(vstr);
+    vstr_t vstr;
+    vstr_init(&vstr, DEFAULT_BUFFER_SIZE);
+    char *p = vstr.buf;
     mp_uint_t current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
         int error;
@@ -278,7 +277,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             p += out_sz;
         } else {
             current_read = DEFAULT_BUFFER_SIZE;
-            p = vstr_extend(vstr, current_read);
+            p = vstr_extend(&vstr, current_read);
             if (p == NULL) {
                 // TODO
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
@@ -286,9 +285,9 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
         }
     }
 
-    mp_obj_t s = mp_obj_new_str_of_type(STREAM_CONTENT_TYPE(o->type->stream_p), (byte*)vstr->buf, total_size);
-    vstr_free(vstr);
-    return s;
+    vstr.len = total_size;
+    vstr.buf[vstr.len] = '\0'; // XXX is there enough space?
+    return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
@@ -348,8 +347,7 @@ done:
             break;
         }
     }
-    // TODO need a string creation API that doesn't copy the given data
-    mp_obj_t ret = mp_obj_new_str_of_type(STREAM_CONTENT_TYPE(o->type->stream_p), (byte*)vstr->buf, vstr->len);
+    mp_obj_t ret = mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), vstr);
     vstr_free(vstr);
     return ret;
 }

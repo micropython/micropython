@@ -114,8 +114,6 @@ STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    (void)type_in;
-
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();
@@ -126,13 +124,11 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
         case 0:
             return MP_OBJ_NEW_QSTR(MP_QSTR_);
 
-        case 1:
-        {
-            vstr_t *vstr = vstr_new();
-            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, vstr, args[0], PRINT_STR);
-            mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
-            vstr_free(vstr);
-            return s;
+        case 1: {
+            vstr_t vstr;
+            vstr_init(&vstr, 16);
+            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, &vstr, args[0], PRINT_STR);
+            return mp_obj_new_str_from_vstr(type_in, &vstr);
         }
 
         case 2:
@@ -142,7 +138,7 @@ STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
                 GET_STR_HASH(args[0], str_hash);
-                mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_str, NULL, str_len);
+                mp_obj_str_t *o = mp_obj_new_str_of_type(type_in, NULL, str_len);
                 o->data = str_data;
                 o->hash = str_hash;
                 return o;

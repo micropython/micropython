@@ -449,11 +449,10 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print__);
 
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
-    vstr_t *vstr = vstr_new();
-    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, vstr, o_in, PRINT_REPR);
-    mp_obj_t s = mp_obj_new_str(vstr->buf, vstr->len, false);
-    vstr_free(vstr);
-    return s;
+    vstr_t vstr;
+    vstr_init(&vstr, 16);
+    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, &vstr, o_in, PRINT_REPR);
+    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
