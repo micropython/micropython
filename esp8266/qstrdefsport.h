@@ -28,6 +28,12 @@
 
 Q(help)
 
+// gpio module
+Q(gpio)
+Q(output)
+Q(input)
+Q(get)
+
 // pyb module
 Q(pyb)
 Q(info)
