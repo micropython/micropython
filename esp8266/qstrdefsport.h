@@ -40,3 +40,6 @@ Q(delay)
 Q(udelay)
 Q(sync)
 Q(hard_reset)
+
+Q(esp)
+Q(scan)

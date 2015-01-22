@@ -48,6 +48,7 @@ SRC_C = \
 	pybstdio.c \
 	uart.c \
 	modpyb.c \
+	modesp.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
