@@ -362,7 +362,7 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
          /* copy match */
          for (i = 0; i < length; ++i)
          {
-            d->dest[i] = d->dest[i - offs];
+            d->dest[i] = d->dest[(int)(i - offs)];
          }
 
          d->dest += length;
