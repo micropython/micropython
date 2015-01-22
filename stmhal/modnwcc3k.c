@@ -421,6 +421,8 @@ typedef struct _cc3k_obj_t {
     mp_obj_base_t base;
 } cc3k_obj_t;
 
+STATIC const cc3k_obj_t cc3k_obj = {{(mp_obj_type_t*)&mod_network_nic_type_cc3k}};
+
 // \classmethod \constructor(spi, pin_cs, pin_en, pin_irq)
 // Initialise the CC3000 using the given SPI bus and pins and return a CC3K object.
 //
@@ -458,13 +460,10 @@ STATIC mp_obj_t cc3k_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
                         HCI_EVNT_WLAN_ASYNC_PING_REPORT|
                         HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE);
 
-    cc3k_obj_t *cc3k = m_new_obj(cc3k_obj_t);
-    cc3k->base.type = (mp_obj_type_t*)&mod_network_nic_type_cc3k;
-
     // register with network module
-    mod_network_register_nic(cc3k);
+    mod_network_register_nic((mp_obj_t)&cc3k_obj);
 
-    return cc3k;
+    return (mp_obj_t)&cc3k_obj;
 }
 
 // method connect(ssid, key=None, *, security=WPA2, bssid=None)
