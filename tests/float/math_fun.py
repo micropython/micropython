@@ -33,7 +33,6 @@ functions = [('sqrt', sqrt, p_test_values),
              ('ceil', ceil, test_values),
              ('fabs', fabs, test_values),
              ('floor', floor, test_values),
-             #('frexp', frexp, test_values),
              ('trunc', trunc, test_values)
             ]
 
@@ -41,6 +40,16 @@ for function_name, function, test_vals in functions:
     print(function_name)
     for value in test_vals:
         print("{:.5g}".format(function(value)))
+
+tuple_functions = [('frexp', frexp, test_values),
+                   ('modf', modf, test_values),
+                  ]
+
+for function_name, function, test_vals in tuple_functions:
+    print(function_name)
+    for value in test_vals:
+        x, y = function(value)
+        print("{:.5g} {:.5g}".format(x, y))
 
 binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.),
                                 (-23., -42.), (1., 0.0), (1., -0.0)])

@@ -122,8 +122,6 @@ float tgammaf(float x) { return 0.0; }
 float lgammaf(float x) { return 0.0; }
 float erff(float x) { return 0.0; }
 float erfcf(float x) { return 0.0; }
-float modff(float x, float *y) { return 0.0; }
-float frexpf(float x, int *exp) { return 0.0; }
 float ldexpf(float x, int exp) { return 0.0; }
 
 /*****************************************************************************/
