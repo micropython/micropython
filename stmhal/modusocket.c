@@ -385,8 +385,8 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     mp_int_t port = mp_obj_get_int(port_in);
 
     // find a NIC that can do a name lookup
-    for (mp_uint_t i = 0; i < mod_network_nic_list.len; i++) {
-        mp_obj_t nic = mod_network_nic_list.items[i];
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
         mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
         if (nic_type->gethostbyname != NULL) {
             uint8_t out_ip[MOD_NETWORK_IPADDR_BUF_SIZE];

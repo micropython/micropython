@@ -32,6 +32,7 @@
 #include "py/misc.h"
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/objlist.h" // in case port needs mp_obj_list_t in root pointers
 #include "py/objexcept.h"
 
 // This file contains structures defining the state of the Micro Python

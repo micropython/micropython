@@ -71,7 +71,6 @@ typedef struct _mod_network_socket_obj_t {
     };
 } mod_network_socket_obj_t;
 
-extern struct _mp_obj_list_t mod_network_nic_list;
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 

@@ -38,27 +38,25 @@
 ///
 /// This module provides network drivers and routing configuration.
 
-mp_obj_list_t mod_network_nic_list;
-
 void mod_network_init(void) {
-    mp_obj_list_init(&mod_network_nic_list, 0);
+    mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
 void mod_network_register_nic(mp_obj_t nic) {
-    for (mp_uint_t i = 0; i < mod_network_nic_list.len; i++) {
-        if (mod_network_nic_list.items[i] == nic) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
             // nic already registered
             return;
         }
     }
     // nic not registered so add to list
-    mp_obj_list_append(&mod_network_nic_list, nic);
+    mp_obj_list_append(&MP_STATE_PORT(mod_network_nic_list), nic);
 }
 
 mp_obj_t mod_network_find_nic(const uint8_t *ip) {
     // find a NIC that is suited to given IP address
-    for (mp_uint_t i = 0; i < mod_network_nic_list.len; i++) {
-        mp_obj_t nic = mod_network_nic_list.items[i];
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
         // TODO check IP suitability here
         //mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
         return nic;
@@ -68,7 +66,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
 }
 
 STATIC mp_obj_t network_route(void) {
-    return &mod_network_nic_list;
+    return &MP_STATE_PORT(mod_network_nic_list);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 

@@ -152,6 +152,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     \
     /* pointers to all UART objects (if they have been created) */ \
     struct _pyb_uart_obj_t *pyb_uart_obj_all[6]; \
+    \
+    /* list of registered NICs */ \
+    mp_obj_list_t mod_network_nic_list; \
 
 // type definitions for the specific machine
 
