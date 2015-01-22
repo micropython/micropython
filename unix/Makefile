@@ -19,6 +19,7 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Wpointer-arith -Werror
+CWARN += -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wredundant-decls -Wshadow -Wsign-compare -Wstrict-prototypes -Wuninitialized -Wunused-parameter
 CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
