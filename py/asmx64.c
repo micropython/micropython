@@ -159,6 +159,7 @@ void asm_x64_start_pass(asm_x64_t *as, uint pass) {
 
 void asm_x64_end_pass(asm_x64_t *as) {
     // could check labels are resolved...
+    (void)as;
 }
 
 // all functions must go through this one to emit bytes
@@ -501,11 +502,11 @@ void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8) {
     asm_x64_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r8));
 }
 
-void asm_x64_label_assign(asm_x64_t *as, int label) {
+void asm_x64_label_assign(asm_x64_t *as, mp_uint_t label) {
     assert(label < as->max_num_labels);
     if (as->pass < ASM_X64_PASS_EMIT) {
         // assign label offset
-        assert(as->label_offsets[label] == -1);
+        assert(as->label_offsets[label] == (mp_uint_t)-1);
         as->label_offsets[label] = as->code_offset;
     } else {
         // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
@@ -514,15 +515,15 @@ void asm_x64_label_assign(asm_x64_t *as, int label) {
     }
 }
 
-STATIC mp_uint_t get_label_dest(asm_x64_t *as, int label) {
+STATIC mp_uint_t get_label_dest(asm_x64_t *as, mp_uint_t label) {
     assert(label < as->max_num_labels);
     return as->label_offsets[label];
 }
 
-void asm_x64_jmp_label(asm_x64_t *as, int label) {
+void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
-    if (dest != -1 && rel < 0) {
+    if (dest != (mp_uint_t)-1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
         rel -= 2;
@@ -541,10 +542,10 @@ void asm_x64_jmp_label(asm_x64_t *as, int label) {
     }
 }
 
-void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, int label) {
+void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
-    if (dest != -1 && rel < 0) {
+    if (dest != (mp_uint_t)-1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
         rel -= 2;
