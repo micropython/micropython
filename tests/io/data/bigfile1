@@ -1,0 +1,148 @@
+{
+    "info": {
+        "maintainer": null, 
+        "docs_url": "", 
+        "requires_python": null, 
+        "maintainer_email": null, 
+        "cheesecake_code_kwalitee_id": null, 
+        "keywords": null, 
+        "package_url": "http://pypi.python.org/pypi/micropython-uasyncio", 
+        "author": "MicroPython Developers", 
+        "author_email": "micro-python@googlegroups.com", 
+        "download_url": "UNKNOWN", 
+        "platform": "UNKNOWN", 
+        "version": "0.8.1", 
+        "cheesecake_documentation_id": null, 
+        "_pypi_hidden": false, 
+        "description": "Lightweight asyncio-like library built around native Python coroutines, not around un-Python devices like callback mess.", 
+        "release_url": "http://pypi.python.org/pypi/micropython-uasyncio/0.8.1", 
+        "downloads": {
+            "last_month": 942, 
+            "last_week": 173, 
+            "last_day": 29
+        }, 
+        "_pypi_ordering": 6, 
+        "classifiers": [], 
+        "name": "micropython-uasyncio", 
+        "bugtrack_url": null, 
+        "license": "MIT", 
+        "summary": "uasyncio module for MicroPython", 
+        "home_page": "https://github.com/micropython/micropython/issues/405", 
+        "stable_version": null, 
+        "cheesecake_installability_id": null
+    }, 
+    "releases": {
+        "0.8": [
+            {
+                "has_sig": false, 
+                "upload_time": "2015-01-01T23:52:41", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.8.tar.gz", 
+                "md5_digest": "5df4d0d6b5fdb7c05fc418e5785e1336", 
+                "downloads": 352, 
+                "filename": "micropython-uasyncio-0.8.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2476
+            }
+        ], 
+        "0.6.2": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-10-18T11:26:52", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.6.2.tar.gz", 
+                "md5_digest": "c85fa7c11ef437f4e73c1fcd639db066", 
+                "downloads": 475, 
+                "filename": "micropython-uasyncio-0.6.2.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 3262
+            }
+        ], 
+        "0.6.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-10-11T02:21:17", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.6.1.tar.gz", 
+                "md5_digest": "48cb0db7d8249d5f4a86db9c4b302d03", 
+                "downloads": 507, 
+                "filename": "micropython-uasyncio-0.6.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 3237
+            }
+        ], 
+        "0.8.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2015-01-04T20:02:03", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.8.1.tar.gz", 
+                "md5_digest": "940d2647b8355289d54de543ff710b05", 
+                "downloads": 249, 
+                "filename": "micropython-uasyncio-0.8.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2484
+            }
+        ], 
+        "0.7": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-10-23T22:02:11", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.7.tar.gz", 
+                "md5_digest": "81250a0ee6649b5117878d5788ba96d3", 
+                "downloads": 457, 
+                "filename": "micropython-uasyncio-0.7.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2277
+            }
+        ], 
+        "0.7.1": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-11-04T00:56:16", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.7.1.tar.gz", 
+                "md5_digest": "21eda0501142830730cd82e1b0fa1a33", 
+                "downloads": 412, 
+                "filename": "micropython-uasyncio-0.7.1.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 2474
+            }
+        ], 
+        "0.6": [
+            {
+                "has_sig": false, 
+                "upload_time": "2014-08-27T00:17:45", 
+                "comment_text": "", 
+                "python_version": "source", 
+                "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.6.tar.gz", 
+                "md5_digest": "9d0b15108c5ade3a6902c9370c9dacf1", 
+                "downloads": 668, 
+                "filename": "micropython-uasyncio-0.6.tar.gz", 
+                "packagetype": "sdist", 
+                "size": 3246
+            }
+        ]
+    }, 
+    "urls": [
+        {
+            "has_sig": false, 
+            "upload_time": "2015-01-04T20:02:03", 
+            "comment_text": "", 
+            "python_version": "source", 
+            "url": "https://pypi.python.org/packages/source/m/micropython-uasyncio/micropython-uasyncio-0.8.1.tar.gz", 
+            "md5_digest": "940d2647b8355289d54de543ff710b05", 
+            "downloads": 249, 
+            "filename": "micropython-uasyncio-0.8.1.tar.gz", 
+            "packagetype": "sdist", 
+            "size": 2484
+        }
+    ]
+}
