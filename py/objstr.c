@@ -130,8 +130,8 @@ STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
 }
 
-#if !MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_CPYTHON_COMPAT
-STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+#if !MICROPY_PY_BUILTINS_STR_UNICODE
+mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();
@@ -1725,7 +1725,7 @@ STATIC mp_obj_t bytes_decode(mp_uint_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return str_make_new((mp_obj_t)&mp_type_str, n_args, 0, args);
+    return mp_obj_str_make_new((mp_obj_t)&mp_type_str, n_args, 0, args);
 }
 
 // TODO: should accept kwargs too
@@ -1831,7 +1831,7 @@ const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
     .print = str_print,
-    .make_new = str_make_new,
+    .make_new = mp_obj_str_make_new,
     .binary_op = mp_obj_str_binary_op,
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,

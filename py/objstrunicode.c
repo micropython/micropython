@@ -113,7 +113,7 @@ STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();
@@ -312,7 +312,7 @@ const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
     .print = uni_print,
-    .make_new = str_make_new,
+    .make_new = mp_obj_str_make_new,
     .unary_op = uni_unary_op,
     .binary_op = mp_obj_str_binary_op,
     .subscr = str_subscr,
