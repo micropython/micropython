@@ -30,3 +30,6 @@ my_print(json.loads('{}'))
 my_print(json.loads('{"a":true}'))
 my_print(json.loads('{"a":null, "b":false, "c":true}'))
 my_print(json.loads('{"a":[], "b":[1], "c":{"3":4}}'))
+
+# whitespace handling
+my_print(json.loads('{\n\t"a":[]\r\n, "b":[1], "c":{"3":4}     \n\r\t\r\r\r\n}'))

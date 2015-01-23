@@ -81,6 +81,9 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
             case ',':
             case ':':
             case ' ':
+            case '\t':
+            case '\n':
+            case '\r':
                 s += 1;
                 goto cont;
             case 'n':
