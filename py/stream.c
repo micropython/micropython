@@ -255,7 +255,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init(&vstr, DEFAULT_BUFFER_SIZE);
     char *p = vstr.buf;
-    mp_uint_t current_read = DEFAULT_BUFFER_SIZE - 1; // save 1 byte for null termination
+    mp_uint_t current_read = DEFAULT_BUFFER_SIZE;
     while (true) {
         int error;
         mp_uint_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
@@ -280,7 +280,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             p += out_sz;
         } else {
             p = vstr_extend(&vstr, DEFAULT_BUFFER_SIZE);
-            current_read = DEFAULT_BUFFER_SIZE - 1; // save 1 byte for null termination
+            current_read = DEFAULT_BUFFER_SIZE;
             if (p == NULL) {
                 // TODO
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
@@ -289,7 +289,6 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     vstr.len = total_size;
-    vstr.buf[vstr.len] = '\0';
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
 }
 
