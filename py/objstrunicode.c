@@ -276,7 +276,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC const mp_map_elem_t str_locals_dict_table[] = {
+STATIC const mp_map_elem_t struni_locals_dict_table[] = {
 #if MICROPY_CPYTHON_COMPAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_encode), (mp_obj_t)&str_encode_obj },
 #endif
@@ -306,7 +306,7 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_islower), (mp_obj_t)&str_islower_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(struni_locals_dict, struni_locals_dict_table);
 
 const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
@@ -318,7 +318,7 @@ const mp_obj_type_t mp_type_str = {
     .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_t)&str_locals_dict,
+    .locals_dict = (mp_obj_t)&struni_locals_dict,
 };
 
 /******************************************************************************/

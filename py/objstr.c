@@ -1786,7 +1786,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(str_isdigit_obj, str_isdigit);
 MP_DEFINE_CONST_FUN_OBJ_1(str_isupper_obj, str_isupper);
 MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 
-STATIC const mp_map_elem_t str_locals_dict_table[] = {
+STATIC const mp_map_elem_t str8_locals_dict_table[] = {
 #if MICROPY_CPYTHON_COMPAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_decode), (mp_obj_t)&bytes_decode_obj },
     #if !MICROPY_PY_BUILTINS_STR_UNICODE
@@ -1824,7 +1824,7 @@ STATIC const mp_map_elem_t str_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_islower), (mp_obj_t)&str_islower_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(str_locals_dict, str_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 const mp_obj_type_t mp_type_str = {
@@ -1836,7 +1836,7 @@ const mp_obj_type_t mp_type_str = {
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_t)&str_locals_dict,
+    .locals_dict = (mp_obj_t)&str8_locals_dict,
 };
 #endif
 
@@ -1850,7 +1850,7 @@ const mp_obj_type_t mp_type_bytes = {
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_bytes_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_t)&str_locals_dict,
+    .locals_dict = (mp_obj_t)&str8_locals_dict,
 };
 
 // the zero-length bytes
