@@ -78,6 +78,52 @@ STATIC mp_obj_t mp_obj_int_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
     }
 }
 
+#if MICROPY_PY_BUILTINS_FLOAT
+mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
+    union {
+        mp_float_t f;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        uint32_t i;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        uint32_t i[2];
+#endif
+    } u = {val};
+
+    uint32_t e;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+    e = u.i;
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    e = u.i[MP_ENDIANNESS_LITTLE];
+#endif
+#define MP_FLOAT_SIGN_SHIFT_I32 ((MP_FLOAT_FRAC_BITS + MP_FLOAT_EXP_BITS) % 32)
+#define MP_FLOAT_EXP_SHIFT_I32 (MP_FLOAT_FRAC_BITS % 32)
+
+    if (e & (1 << MP_FLOAT_SIGN_SHIFT_I32)) {
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        e |= u.i[MP_ENDIANNESS_BIG] != 0;
+#endif
+        e += ((1 << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
+    } else {
+        e &= ~((1 << MP_FLOAT_EXP_SHIFT_I32) - 1);
+    }
+    if (e <= ((BITS_PER_WORD + MP_FLOAT_EXP_BIAS - 3) << MP_FLOAT_EXP_SHIFT_I32)) {
+        return MP_FP_CLASS_FIT_SMALLINT;
+    }
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+    if (e <= (((sizeof(long long) * BITS_PER_BYTE) + MP_FLOAT_EXP_BIAS - 2) << MP_FLOAT_EXP_SHIFT_I32)) {
+        return MP_FP_CLASS_FIT_LONGINT;
+    }
+#endif
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+    return MP_FP_CLASS_FIT_LONGINT;
+#else
+    return MP_FP_CLASS_OVERFLOW;
+#endif
+}
+#undef MP_FLOAT_SIGN_SHIFT_I32
+#undef MP_FLOAT_EXP_SHIFT_I32
+#endif
+
 void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     // The size of this buffer is rather arbitrary. If it's not large
@@ -260,9 +306,19 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    // TODO raise an exception if the int won't fit
-    mp_int_t i = MICROPY_FLOAT_C_FUN(trunc)(val);
-    return mp_obj_new_int(i);
+    int cl = fpclassify(val);
+    if (cl == FP_INFINITE) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+    } else if (cl == FP_NAN) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+    } else {
+        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
+        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
+            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "float too big"));
+        }
+    }
 }
 #endif
 
