@@ -108,9 +108,9 @@ STATIC const rule_t *rules[] = {
 };
 
 typedef struct _rule_stack_t {
-    mp_uint_t src_line : 24;
-    mp_uint_t rule_id : 8;
-    mp_uint_t arg_i : 32; // what should the bit-size be?
+    mp_uint_t src_line : BITS_PER_WORD - 8; // maximum bits storing source line number
+    mp_uint_t rule_id : 8; // this must be large enough to fit largest rule number
+    mp_uint_t arg_i; // this dictates the maximum nodes in a "list" of things
 } rule_stack_t;
 
 typedef struct _parser_t {

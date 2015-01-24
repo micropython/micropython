@@ -69,7 +69,7 @@ typedef int32_t mpz_dbl_dig_signed_t;
 typedef struct _mpz_t {
     mp_uint_t neg : 1;
     mp_uint_t fixed_dig : 1;
-    mp_uint_t alloc : 30;
+    mp_uint_t alloc : BITS_PER_WORD - 2;
     mp_uint_t len;
     mpz_dig_t *dig;
 } mpz_t;
