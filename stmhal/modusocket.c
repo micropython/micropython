@@ -132,10 +132,11 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = self_in;
 
     // create new socket object
+    // starts with empty NIC so that finaliser doesn't run close() method if accept() fails
     mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     socket2->base.type = (mp_obj_t)&socket_type;
-    socket2->nic = self->nic;
-    socket2->nic_type = self->nic_type;
+    socket2->nic = MP_OBJ_NULL;
+    socket2->nic_type = NULL;
 
     // accept incoming connection
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
@@ -144,6 +145,10 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     if (self->nic_type->accept(self, socket2, ip, &port, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
+
+    // new socket has valid state, so set the NIC to the same as parent
+    socket2->nic = self->nic;
+    socket2->nic_type = self->nic_type;
 
     // make the return value
     mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
@@ -281,8 +286,9 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
     const void *optval;
     mp_uint_t optlen;
+    mp_int_t val;
     if (mp_obj_is_integer(args[3])) {
-        mp_int_t val = mp_obj_int_get_truncated(args[3]);
+        val = mp_obj_int_get_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
     } else {
