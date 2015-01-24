@@ -109,24 +109,26 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
     mp_int_t val = 0;
     switch (typecode) {
         case 'b':
-            val = ((int8_t*)p)[index];
+            val = ((signed char*)p)[index];
             break;
         case BYTEARRAY_TYPECODE:
         case 'B':
-            val = ((uint8_t*)p)[index];
+            val = ((unsigned char*)p)[index];
             break;
         case 'h':
-            val = ((int16_t*)p)[index];
+            val = ((short*)p)[index];
             break;
         case 'H':
-            val = ((uint16_t*)p)[index];
+            val = ((unsigned short*)p)[index];
             break;
         case 'i':
-        case 'l':
-            return mp_obj_new_int(((int32_t*)p)[index]);
+            return mp_obj_new_int(((int*)p)[index]);
         case 'I':
+            return mp_obj_new_int_from_uint(((unsigned int*)p)[index]);
+        case 'l':
+            return mp_obj_new_int(((long*)p)[index]);
         case 'L':
-            return mp_obj_new_int_from_uint(((uint32_t*)p)[index]);
+            return mp_obj_new_int_from_uint(((unsigned long*)p)[index]);
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         case 'q':
         case 'Q':
@@ -277,25 +279,29 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
 void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, mp_int_t val) {
     switch (typecode) {
         case 'b':
-            ((int8_t*)p)[index] = val;
+            ((signed char*)p)[index] = val;
             break;
         case BYTEARRAY_TYPECODE:
         case 'B':
-            val = ((uint8_t*)p)[index] = val;
+            ((unsigned char*)p)[index] = val;
             break;
         case 'h':
-            val = ((int16_t*)p)[index] = val;
+            ((short*)p)[index] = val;
             break;
         case 'H':
-            val = ((uint16_t*)p)[index] = val;
+            ((unsigned short*)p)[index] = val;
             break;
         case 'i':
-        case 'l':
-            ((int32_t*)p)[index] = val;
+            ((int*)p)[index] = val;
             break;
         case 'I':
+            ((unsigned int*)p)[index] = val;
+            break;
+        case 'l':
+            ((long*)p)[index] = val;
+            break;
         case 'L':
-            ((uint32_t*)p)[index] = val;
+            ((unsigned long*)p)[index] = val;
             break;
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         case 'q':
