@@ -44,6 +44,23 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
+struct _mp_raw_code_t {
+    mp_raw_code_kind_t kind : 3;
+    mp_uint_t scope_flags : 7;
+    mp_uint_t n_pos_args : 11;
+    mp_uint_t n_kwonly_args : 11;
+    union {
+        struct {
+            byte *code;
+            mp_uint_t len;
+        } u_byte;
+        struct {
+            void *fun_data;
+            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
+        } u_native;
+    } data;
+};
+
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
@@ -55,8 +72,8 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, 
     rc->scope_flags = scope_flags;
     rc->n_pos_args = n_pos_args;
     rc->n_kwonly_args = n_kwonly_args;
-    rc->u_byte.code = code;
-    rc->u_byte.len = len;
+    rc->data.u_byte.code = code;
+    rc->data.u_byte.len = len;
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " n_kwonly_args=" UINT_FMT " flags=%x\n", code, len, n_pos_args, n_kwonly_args, (uint)scope_flags);
@@ -74,8 +91,8 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->kind = kind;
     rc->scope_flags = 0;
     rc->n_pos_args = n_args;
-    rc->u_native.fun_data = fun_data;
-    rc->u_native.type_sig = type_sig;
+    rc->data.u_native.fun_data = fun_data;
+    rc->data.u_native.type_sig = type_sig;
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_args=" UINT_FMT "\n", kind, fun_data, fun_len, n_args);
@@ -113,19 +130,19 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     switch (rc->kind) {
         case MP_CODE_BYTECODE:
         no_other_choice:
-            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->u_byte.code);
+            fun = mp_obj_new_fun_bc(rc->scope_flags, rc->n_pos_args, rc->n_kwonly_args, def_args, def_kw_args, rc->data.u_byte.code);
             break;
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-            fun = mp_obj_new_fun_native(rc->n_pos_args, rc->u_native.fun_data);
+            fun = mp_obj_new_fun_native(rc->n_pos_args, rc->data.u_native.fun_data);
             break;
         case MP_CODE_NATIVE_VIPER:
-            fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->u_native.fun_data, rc->u_native.type_sig);
+            fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
             break;
         #endif
         #if MICROPY_EMIT_INLINE_THUMB
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->u_native.fun_data);
+            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data);
             break;
         #endif
         default:

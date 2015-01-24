@@ -39,22 +39,7 @@ typedef enum {
     MP_CODE_NATIVE_ASM,
 } mp_raw_code_kind_t;
 
-typedef struct _mp_raw_code_t {
-    mp_raw_code_kind_t kind : 3;
-    mp_uint_t scope_flags : 7;
-    mp_uint_t n_pos_args : 11;
-    mp_uint_t n_kwonly_args : 11;
-    union {
-        struct {
-            byte *code;
-            mp_uint_t len;
-        } u_byte;
-        struct {
-            void *fun_data;
-            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
-        } u_native;
-    };
-} mp_raw_code_t;
+typedef struct _mp_raw_code_t mp_raw_code_t;
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
