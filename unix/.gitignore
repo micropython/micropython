@@ -4,4 +4,5 @@ build-minimal
 micropython
 micropython_fast
 micropython_minimal
+micropython-[36][nlm][fd]
 *.py
