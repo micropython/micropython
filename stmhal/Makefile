@@ -46,7 +46,14 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -m
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_CORTEX_M4) $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$(@:.elf=.map) --cref
+# USE CCM ?
+ifeq ($(MICROPY_USE_CCM), 1)
+LINK_SCRIPT = stm32f405-ccm.ld
+else
+LINK_SCRIPT = stm32f405.ld
+endif
+
+LDFLAGS = -nostdlib -T $(LINK_SCRIPT) -Map=$(@:.elf=.map) --cref
 LIBS =
 
 # Debugging/Optimization

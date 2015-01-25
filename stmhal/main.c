@@ -255,7 +255,7 @@ int main(void) {
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
+    mp_stack_set_limit((char*)&_estack - (char*)&_stack_limit - 1024);
 
     /* STM32F4xx HAL library initialization:
          - Configure the Flash prefetch, instruction and Data caches
@@ -273,9 +273,6 @@ int main(void) {
     __GPIOB_CLK_ENABLE();
     __GPIOC_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
-
-    // enable the CCM RAM
-    __CCMDATARAMEN_CLK_ENABLE();
 
 #if 0
 #if defined(NETDUINO_PLUS_2)

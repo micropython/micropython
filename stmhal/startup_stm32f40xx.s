@@ -76,7 +76,14 @@ defined in linker script */
     .section  .text.Reset_Handler
   .weak  Reset_Handler
   .type  Reset_Handler, %function
-Reset_Handler:  
+Reset_Handler: 
+
+  /* enable the CCM RAM : RCC->AHB1ENR |= (RCC_AHB1ENR_CCMDATARAMEN) */
+  ldr   r1, = #0x40023800     /* RCC */
+  ldr   r0, [r1, #0x30]       /* AHB1ENR */
+  orr.w r0, r0, #0x00100000   /* RCC_AHB1ENR_CCMDATARAMEN */
+  str   r0, [r1, #0x30]
+
   ldr   sp, =_estack     /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */  
@@ -141,7 +148,7 @@ Infinite_Loop:
     
     
 g_pfnVectors:
-  .word  _estack
+  .word  _ram_end
   .word  Reset_Handler
   .word  NMI_Handler
   .word  HardFault_Handler

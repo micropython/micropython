@@ -48,7 +48,7 @@ void gc_collect(void) {
     mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));
 
     // end the GC
     gc_collect_end();
