@@ -32,11 +32,24 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/pfenv.h"
 #include MICROPY_HAL_H
 #include "queue.h"
 #include "user_interface.h"
 
+// Singleton instance of scan callback, meaning that there can be only
+// one concurrent AP scan.
 STATIC mp_obj_t scan_cb_obj;
+
+mp_obj_t call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        return mp_call_function_1(fun, arg);
+    } else {
+        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+        return (mp_obj_t)nlr.ret_val;
+    }
+}
 
 STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
     //printf("in pyb_scan_cb: %d, si=%p, si->pbss=%p\n", status, si, si->pbss);
@@ -50,7 +63,7 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
             t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
             t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
             t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
-            mp_call_function_1(scan_cb_obj, t);
+            call_function_1_protected(scan_cb_obj, t);
         }
     }
 }
