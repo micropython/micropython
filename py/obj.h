@@ -61,7 +61,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // For debugging purposes they are all different.  For non-debug mode, we alias
 // as many as we can to MP_OBJ_NULL because it's cheaper to load/compare 0.
 
-#if NDEBUG
+#ifdef NDEBUG
 #define MP_OBJ_NULL             ((mp_obj_t)0)
 #define MP_OBJ_STOP_ITERATION   ((mp_obj_t)0)
 #define MP_OBJ_SENTINEL         ((mp_obj_t)4)
