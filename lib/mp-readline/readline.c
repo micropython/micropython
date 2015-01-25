@@ -57,6 +57,25 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
+STATIC void move_cursor_back(uint pos) {
+    if (pos <= 4) {
+        // fast path for most common case of 1 step back
+        stdout_tx_strn("\b\b\b\b", pos);
+    } else {
+        char vt100_command[6];
+        // snprintf needs space for the terminating null character
+        int n = snprintf(&vt100_command[0], sizeof(vt100_command), "\x1b[%u", pos);
+        if (n > 0) {
+            vt100_command[n] = 'D'; // replace null char
+            stdout_tx_strn(vt100_command, n + 1);
+        }
+    }
+}
+
+STATIC void erase_line_from_cursor(void) {
+    stdout_tx_strn("\x1b[K", 3);
+}
+
 typedef struct _readline_t {
     vstr_t *line;
     int orig_line_len;
@@ -66,7 +85,7 @@ typedef struct _readline_t {
     char escape_seq_buf[1];
 } readline_t;
 
-readline_t rl;
+STATIC readline_t rl;
 
 int readline_process_char(int c) {
     int last_line_len = rl.line->len;
@@ -215,30 +234,20 @@ end_key:
     }
 
     // redraw command prompt, efficiently
-    // TODO we can probably use some more sophisticated VT100 commands here
     if (redraw_step_back > 0) {
-        for (int i = 0; i < redraw_step_back; i++) {
-            stdout_tx_str("\b");
-        }
+        move_cursor_back(redraw_step_back);
         rl.cursor_pos -= redraw_step_back;
     }
     if (redraw_from_cursor) {
         if (rl.line->len < last_line_len) {
             // erase old chars
-            for (int i = rl.cursor_pos; i < last_line_len; i++) {
-                stdout_tx_str(" ");
-            }
-            // step back
-            for (int i = rl.cursor_pos; i < last_line_len; i++) {
-                stdout_tx_str("\b");
-            }
+            // (number of chars to erase: last_line_len - rl.cursor_pos)
+            erase_line_from_cursor();
         }
         // draw new chars
         stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
-        for (int i = rl.cursor_pos + redraw_step_forward; i < rl.line->len; i++) {
-            stdout_tx_str("\b");
-        }
+        move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
         rl.cursor_pos += redraw_step_forward;
     } else if (redraw_step_forward > 0) {
         // draw over old chars to move cursor forwards
