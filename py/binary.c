@@ -194,6 +194,14 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     } else if (val_type == 'S') {
         const char *s_val = (const char*)(mp_uint_t)val;
         return mp_obj_new_str(s_val, strlen(s_val), false);
+#if MICROPY_PY_BUILTINS_FLOAT
+    } else if (val_type == 'f') {
+        union { uint32_t i; float f; } fpu = {val};
+        return mp_obj_new_float(fpu.f);
+    } else if (val_type == 'd') {
+        union { uint64_t i; double f; } fpu = {val};
+        return mp_obj_new_float(fpu.f);
+#endif
     } else if (is_signed(val_type)) {
         if ((long long)MP_SMALL_INT_MIN <= val && val <= (long long)MP_SMALL_INT_MAX) {
             return mp_obj_new_int((mp_int_t)val);
@@ -249,6 +257,27 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
         case 'O':
             val = (mp_uint_t)val_in;
             break;
+#if MICROPY_PY_BUILTINS_FLOAT
+        case 'f': {
+            union { uint32_t i; float f; } fp_sp;
+            fp_sp.f = mp_obj_get_float(val_in);
+            val = fp_sp.i;
+            break;
+        }
+        case 'd': {
+            union { uint64_t i64; uint32_t i32[2]; double f; } fp_dp;
+            fp_dp.f = mp_obj_get_float(val_in);
+            if (BYTES_PER_WORD == 8) {
+                val = fp_dp.i64;
+            } else {
+                int be = struct_type == '>';
+                mp_binary_set_int(sizeof(uint32_t), be, p, fp_dp.i32[MP_ENDIANNESS_BIG ^ be]);
+                p += sizeof(uint32_t);
+                val = fp_dp.i32[MP_ENDIANNESS_LITTLE ^ be];
+            }
+            break;
+        }
+#endif
         default:
             // we handle large ints here by calling the truncated accessor
             if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
