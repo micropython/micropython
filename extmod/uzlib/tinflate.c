@@ -337,6 +337,7 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
          }
 
          *d->dest++ = sym;
+         d->destRemaining--;
 
       } else {
 
@@ -366,6 +367,7 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
          }
 
          d->dest += length;
+         d->destRemaining -= length;
       }
    }
 }
@@ -397,6 +399,7 @@ static int tinf_inflate_uncompressed_block(TINF_DATA *d)
 
    /* copy block */
    for (i = length; i; --i) *d->dest++ = *d->source++;
+   d->destRemaining -= length;
 
    /* make sure we start next block on a byte boundary */
    d->bitcount = 0;
