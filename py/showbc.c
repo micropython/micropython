@@ -30,8 +30,6 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 
-extern const qstr mp_binary_op_method_name[];
-
 #if MICROPY_DEBUG_PRINTERS
 
 #define DECODE_UINT { \

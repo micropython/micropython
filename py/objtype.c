@@ -323,7 +323,7 @@ mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, c
     return o;
 }
 
-STATIC const qstr unary_op_method_name[] = {
+const qstr mp_unary_op_method_name[] = {
     [MP_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [MP_UNARY_OP_LEN] = MP_QSTR___len__,
     //[MP_UNARY_OP_POSITIVE,
@@ -334,7 +334,7 @@ STATIC const qstr unary_op_method_name[] = {
 
 STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_instance_t *self = self_in;
-    qstr op_name = unary_op_method_name[op];
+    qstr op_name = mp_unary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
         return MP_OBJ_NULL;

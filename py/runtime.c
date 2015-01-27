@@ -242,10 +242,9 @@ mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                 "unsupported type for operator"));
         } else {
-            // TODO specify in error message what the operator is
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "bad operand type for unary operator: '%s'",
-                mp_obj_get_type_str(arg)));
+                "unsupported type for %s: '%s'",
+                qstr_str(mp_unary_op_method_name[op]), mp_obj_get_type_str(arg)));
         }
     }
 }
@@ -537,10 +536,9 @@ unsupported_op:
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
             "unsupported type for operator"));
     } else {
-        // TODO specify in error message what the operator is
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "unsupported operand types for binary operator: '%s', '%s'",
-            mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
+            "unsupported types for %s: '%s', '%s'",
+            qstr_str(mp_binary_op_method_name[op]), mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
     }
 
 zero_division:
