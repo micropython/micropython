@@ -820,6 +820,10 @@ bool mpz_is_even(const mpz_t *z) {
 }
 
 int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
+    // to catch comparison of -0 with +0
+    if (z1->len == 0 && z2->len == 0) {
+        return 0;
+    }
     int cmp = (int)z2->neg - (int)z1->neg;
     if (cmp != 0) {
         return cmp;
