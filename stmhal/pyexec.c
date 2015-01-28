@@ -38,7 +38,6 @@
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
 #endif
-#include "systick.h"
 #include "readline.h"
 #include "pyexec.h"
 #include "pybstdio.h"
