@@ -63,8 +63,9 @@ STATIC mp_obj_t mod_uzlib_decompress(mp_uint_t n_args, const mp_obj_t *args) {
     TINF_DATA *decomp = m_new_obj(TINF_DATA);
     DEBUG_printf("sizeof(TINF_DATA)=" UINT_FMT "\n", sizeof(*decomp));
 
-    decomp->destStart = m_new(byte, bufinfo.len);
-    decomp->destSize = bufinfo.len;
+    decomp->destSize = (bufinfo.len + 15) & ~15;
+    decomp->destStart = m_new(byte, decomp->destSize);
+    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
     decomp->destGrow = mod_uzlib_grow_buf;
     decomp->source = bufinfo.buf;
 
@@ -78,7 +79,10 @@ STATIC mp_obj_t mod_uzlib_decompress(mp_uint_t n_args, const mp_obj_t *args) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
     }
 
-    mp_obj_t res = mp_obj_new_bytearray_by_ref(decomp->dest - decomp->destStart, decomp->destStart);
+    mp_uint_t final_sz = decomp->dest - decomp->destStart;
+    DEBUG_printf("uzlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", decomp->destSize, final_sz);
+    decomp->destStart = (byte*)m_renew(byte, decomp->destStart, decomp->destSize, final_sz);
+    mp_obj_t res = mp_obj_new_bytearray_by_ref(final_sz, decomp->destStart);
     m_del_obj(TINF_DATA, decomp);
     return res;
 }
