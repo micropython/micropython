@@ -14,3 +14,11 @@ PATTERNS = [
 for unpacked, packed in PATTERNS:
     assert zlib.decompress(packed) == unpacked
     print(unpacked)
+
+
+# Raw DEFLATE bitstream
+v = b'\xcbH\xcd\xc9\xc9\x07\x00\x86\xa6\x106\x05\x00\x00\x00'
+exp = b"hello"
+out = zlib.decompress(v, -15)
+assert(out == exp)
+print(exp)

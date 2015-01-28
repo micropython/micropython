@@ -68,7 +68,12 @@ STATIC mp_obj_t mod_uzlib_decompress(mp_uint_t n_args, const mp_obj_t *args) {
     decomp->destGrow = mod_uzlib_grow_buf;
     decomp->source = bufinfo.buf;
 
-    int st = tinf_zlib_uncompress_dyn(decomp, bufinfo.len);
+    int st;
+    if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {
+        st = tinf_uncompress_dyn(decomp);
+    } else {
+        st = tinf_zlib_uncompress_dyn(decomp, bufinfo.len);
+    }
     if (st != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
     }
