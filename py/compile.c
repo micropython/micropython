@@ -555,7 +555,7 @@ STATIC void cpython_c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_
         } else {
             vstr_printf(vstr, ")");
         }
-        EMIT_ARG(load_const_verbatim_str, vstr_str(vstr));
+        EMIT_ARG(load_const_verbatim_strn, vstr_str(vstr), vstr_len(vstr));
         vstr_free(vstr);
     } else {
         if (!MP_PARSE_NODE_IS_NULL(pn)) {
@@ -1538,7 +1538,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
         // build the "fromlist" tuple
 #if MICROPY_EMIT_CPYTHON
-        EMIT_ARG(load_const_verbatim_str, "('*',)");
+        EMIT_ARG(load_const_verbatim_strn, "('*',)", 6);
 #else
         EMIT_ARG(load_const_str, MP_QSTR__star_, false);
         EMIT_ARG(build_tuple, 1);
@@ -1576,7 +1576,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 vstr_printf(vstr, ",");
             }
             vstr_printf(vstr, ")");
-            EMIT_ARG(load_const_verbatim_str, vstr_str(vstr));
+            EMIT_ARG(load_const_verbatim_strn, vstr_str(vstr), vstr_len(vstr));
             vstr_free(vstr);
         }
 #else

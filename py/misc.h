@@ -145,6 +145,7 @@ size_t vstr_len(vstr_t *vstr);
 void vstr_hint_size(vstr_t *vstr, size_t size);
 char *vstr_extend(vstr_t *vstr, size_t size);
 char *vstr_add_len(vstr_t *vstr, size_t len);
+void vstr_null_terminate(vstr_t *vstr);
 void vstr_add_byte(vstr_t *vstr, byte v);
 void vstr_add_char(vstr_t *vstr, unichar chr);
 void vstr_add_str(vstr_t *vstr, const char *str);

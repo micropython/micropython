@@ -217,7 +217,7 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         vstr_init(&vstr, 16);
     } else {
         mp_int_t len = MP_OBJ_SMALL_INT_VALUE(len_in);
-        vstr_init(&vstr, len + 1);
+        vstr_init(&vstr, len);
     }
 
     mp_obj_t iterable = mp_getiter(args[0]);
@@ -856,7 +856,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             while (str < top && *str != '}' && *str != '!' && *str != ':') {
                 vstr_add_char(field_name, *str++);
             }
-            vstr_add_char(field_name, '\0');
+            vstr_null_terminate(field_name);
         }
 
         // conversion ::=  "r" | "s"
@@ -887,7 +887,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 while (str < top && *str != '}') {
                     vstr_add_char(format_spec, *str++);
                 }
-                vstr_add_char(format_spec, '\0');
+                vstr_null_terminate(format_spec);
             }
         }
         if (str >= top) {
@@ -1890,6 +1890,7 @@ mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     o->len = vstr->len;
     o->hash = qstr_compute_hash((byte*)vstr->buf, vstr->len);
     o->data = (byte*)m_renew(char, vstr->buf, vstr->alloc, vstr->len + 1);
+    ((byte*)o->data)[o->len] = '\0'; // add null byte
     vstr->buf = NULL;
     vstr->alloc = 0;
     return o;

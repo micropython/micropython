@@ -157,7 +157,7 @@ typedef struct _emit_method_table_t {
 
 #if MICROPY_EMIT_CPYTHON
     // these methods are only needed for emitcpy
-    void (*load_const_verbatim_str)(emit_t *emit, const char *str);
+    void (*load_const_verbatim_strn)(emit_t *emit, const char *str, mp_uint_t len);
     void (*load_closure)(emit_t *emit, qstr qst, mp_uint_t local_num);
     void (*setup_loop)(emit_t *emit, mp_uint_t label);
 #endif

@@ -177,7 +177,6 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     } else {
         vstr.len = out_sz;
-        vstr.buf[vstr.len] = '\0';
         return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
     }
 }
@@ -289,7 +288,6 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     }
 
     vstr.len = total_size;
-    vstr.buf[total_size] = '\0';
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
 }
 
@@ -306,15 +304,15 @@ STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *arg
         max_size = MP_OBJ_SMALL_INT_VALUE(args[1]);
     }
 
-    vstr_t *vstr;
+    vstr_t vstr;
     if (max_size != -1) {
-        vstr = vstr_new_size(max_size);
+        vstr_init(&vstr, max_size);
     } else {
-        vstr = vstr_new();
+        vstr_init(&vstr, 16);
     }
 
     while (max_size == -1 || max_size-- != 0) {
-        char *p = vstr_add_len(vstr, 1);
+        char *p = vstr_add_len(&vstr, 1);
         if (p == NULL) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
         }
@@ -323,14 +321,14 @@ STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *arg
         mp_uint_t out_sz = o->type->stream_p->read(o, p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
             if (is_nonblocking_error(error)) {
-                if (vstr->len == 1) {
+                if (vstr.len == 1) {
                     // We just incremented it, but otherwise we read nothing
                     // and immediately got EAGAIN. This is case is not well
                     // specified in
                     // https://docs.python.org/3/library/io.html#io.IOBase.readline
                     // unlike similar case for read(). But we follow the latter's
                     // behavior - return None.
-                    vstr_free(vstr);
+                    vstr_clear(&vstr);
                     return mp_const_none;
                 } else {
                     goto done;
@@ -343,16 +341,15 @@ done:
             // Back out previously added byte
             // Consider, what's better - read a char and get OutOfMemory (so read
             // char is lost), or allocate first as we do.
-            vstr_cut_tail_bytes(vstr, 1);
+            vstr_cut_tail_bytes(&vstr, 1);
             break;
         }
         if (*p == '\n') {
             break;
         }
     }
-    mp_obj_t ret = mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), vstr);
-    vstr_free(vstr);
-    return ret;
+
+    return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(o->type->stream_p), &vstr);
 }
 
 // TODO take an optional extra argument (what does it do exactly?)

@@ -39,9 +39,7 @@ STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     if (line.len == 0 && ret == CHAR_CTRL_D) {
         nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
     }
-    mp_obj_t o = mp_obj_new_str(line.buf, line.len, false);
-    vstr_clear(&line);
-    return o;
+    return mp_obj_new_str_from_vstr(&mp_type_str, &line);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 1, mp_builtin_input);

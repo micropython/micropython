@@ -800,10 +800,10 @@ STATIC void emit_cpy_end_except_handler(emit_t *emit) {
     emit_cpy_adjust_stack_size(emit, -5); // stack adjust
 }
 
-STATIC void emit_cpy_load_const_verbatim_str(emit_t *emit, const char *str) {
+STATIC void emit_cpy_load_const_verbatim_strn(emit_t *emit, const char *str, mp_uint_t len) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CONST %s\n", str);
+        printf("LOAD_CONST %.*s\n", (int)len, str);
     }
 }
 
@@ -912,7 +912,7 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_end_except_handler,
 
     // emitcpy specific functions
-    emit_cpy_load_const_verbatim_str,
+    emit_cpy_load_const_verbatim_strn,
     emit_cpy_load_closure,
     emit_cpy_setup_loop,
 };
