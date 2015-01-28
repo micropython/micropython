@@ -113,47 +113,6 @@ STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-#if MICROPY_CPYTHON_COMPAT
-    if (n_kw != 0) {
-        mp_arg_error_unimpl_kw();
-    }
-#endif
-
-    switch (n_args) {
-        case 0:
-            return MP_OBJ_NEW_QSTR(MP_QSTR_);
-
-        case 1: {
-            vstr_t vstr;
-            vstr_init(&vstr, 16);
-            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, &vstr, args[0], PRINT_STR);
-            return mp_obj_new_str_from_vstr(type_in, &vstr);
-        }
-
-        case 2:
-        case 3:
-        {
-            // TODO: validate 2nd/3rd args
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
-                GET_STR_DATA_LEN(args[0], str_data, str_len);
-                GET_STR_HASH(args[0], str_hash);
-                mp_obj_str_t *o = mp_obj_new_str_of_type(type_in, NULL, str_len);
-                o->data = str_data;
-                o->hash = str_hash;
-                return o;
-            } else {
-                mp_buffer_info_t bufinfo;
-                mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-                return mp_obj_new_str(bufinfo.buf, bufinfo.len, false);
-            }
-        }
-
-        default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "str takes at most 3 arguments"));
-    }
-}
-
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, mp_uint_t self_len,
