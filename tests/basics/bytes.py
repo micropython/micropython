@@ -37,3 +37,9 @@ print(bytes(range(5)))
 x = b"\xff\x8e\xfe}\xfd\x7f"
 print(len(x))
 print(x[0], x[1], x[2], x[3])
+
+# Make sure init values are not mistreated as unicode chars
+# For sequence of known len
+print(bytes([128, 255]))
+# For sequence of unknown len
+print(bytes(iter([128, 255])))
