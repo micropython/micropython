@@ -442,7 +442,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 
 STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
     if (o != mp_const_none) {
-        mp_builtin_print(1, &o, (mp_map_t*)&mp_const_empty_map);
+        #if MICROPY_PY_IO
+        extern mp_uint_t mp_sys_stdout_obj; // type is irrelevant, just need pointer
+        pfenv_t pfenv;
+        pfenv.data = &mp_sys_stdout_obj;
+        pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
+        mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))pfenv_printf, &pfenv, o, PRINT_REPR);
+        mp_stream_write(&mp_sys_stdout_obj, "\n", 1);
+        #else
+        mp_obj_print(o, PRINT_REPR);
+        printf("\n");
+        #endif
     }
     return mp_const_none;
 }
