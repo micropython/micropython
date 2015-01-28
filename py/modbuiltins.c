@@ -182,11 +182,11 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     return mp_obj_new_str(str, len, true);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
-    if (0 <= ord && ord <= 0x10ffff) {
+    if (0 <= ord && ord <= 0xff) {
         char str[1] = {ord};
         return mp_obj_new_str(str, 1, true);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(256)"));
     }
     #endif
 }

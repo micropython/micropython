@@ -92,7 +92,15 @@ size_t m_get_peak_bytes_allocated(void);
 
 /** unichar / UTF-8 *********************************************/
 
-typedef int unichar; // TODO
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+#include <stdint.h> // only include if we need it
+// with unicode enabled we need a type which can fit chars up to 0x10ffff
+typedef uint32_t unichar;
+#else
+// without unicode enabled we can only need to fit chars up to 0xff
+// (on 16-bit archs uint is 16-bits and more efficient than uint32_t)
+typedef uint unichar;
+#endif
 
 unichar utf8_get_char(const byte *s);
 const byte *utf8_next_char(const byte *s);
