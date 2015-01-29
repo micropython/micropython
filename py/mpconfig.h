@@ -376,6 +376,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #endif
 
+// Whether to support complete set of special methods
+// for user classes, otherwise only the most used
+#ifndef MICROPY_PY_ALL_SPECIAL_METHODS
+#define MICROPY_PY_ALL_SPECIAL_METHODS (0)
+#endif
+
 // Whether to support compile function
 #ifndef MICROPY_PY_BUILTINS_COMPILE
 #define MICROPY_PY_BUILTINS_COMPILE (0)
