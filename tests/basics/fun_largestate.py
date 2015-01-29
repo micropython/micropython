@@ -1,5 +1,6 @@
 # test large function (stack) state
 
+# this function creates 127 locals
 def f():
     x0 = 1
     x1 = 1
@@ -128,10 +129,31 @@ def f():
     x124 = 1
     x125 = 1
     x126 = 1
-
 f()
 
+# this function pushes 128 elements onto the function stack
 def g():
     x = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
-
 g()
+
+# this function exercises load_fast_n and store_fast_n opcodes
+def h():
+    x0 = 1
+    x1 = x0
+    x2 = x1
+    x3 = x2
+    x4 = x3
+    x5 = x4
+    x6 = x5
+    x7 = x6
+    x8 = x7
+    x9 = x8
+    x10 = x9
+    x11 = x10
+    x12 = x11
+    x13 = x12
+    x14 = x13
+    x15 = x14
+    x16 = x15
+    x17 = x16
+h()

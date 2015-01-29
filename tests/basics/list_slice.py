@@ -16,3 +16,7 @@ print(x[a::])
 print(x[a:b])
 print(x[a:b:])
 #print(x[a:b:c])
+
+# these should not raise IndexError
+print([][1:])
+print([][-1:])
