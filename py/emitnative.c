@@ -1114,7 +1114,9 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
             case MP_TOKEN_KW_NONE: vtype = VTYPE_PTR_NONE; val = 0; break;
             case MP_TOKEN_KW_FALSE: vtype = VTYPE_BOOL; val = 0; break;
             case MP_TOKEN_KW_TRUE: vtype = VTYPE_BOOL; val = 1; break;
-            default: assert(0); vtype = 0; val = 0; // shouldn't happen
+            no_other_choice1:
+            case MP_TOKEN_ELLIPSIS: vtype = VTYPE_PYOBJ; val = (mp_uint_t)&mp_const_ellipsis_obj; break;
+            default: assert(0); goto no_other_choice1; // to help flow control analysis
         }
     } else {
         vtype = VTYPE_PYOBJ;
@@ -1122,7 +1124,9 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
             case MP_TOKEN_KW_NONE: val = (mp_uint_t)mp_const_none; break;
             case MP_TOKEN_KW_FALSE: val = (mp_uint_t)mp_const_false; break;
             case MP_TOKEN_KW_TRUE: val = (mp_uint_t)mp_const_true; break;
-            default: assert(0); vtype = 0; val = 0; // shouldn't happen
+            no_other_choice2:
+            case MP_TOKEN_ELLIPSIS: val = (mp_uint_t)&mp_const_ellipsis_obj; break;
+            default: assert(0); goto no_other_choice2; // to help flow control analysis
         }
     }
     emit_post_push_imm(emit, vtype, val);
