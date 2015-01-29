@@ -1,18 +1,18 @@
-# del name
+# del global
+
+def do_del():
+    global x
+    del x
 
 x = 1
 print(x)
-del x
+do_del()
 try:
     print(x)
 except NameError:
     print("NameError")
 try:
-    del x
+    do_del()
 except: # NameError:
     # FIXME uPy returns KeyError for this
     print("NameError")
-
-class C:
-    def f():
-        pass

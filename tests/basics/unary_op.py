@@ -1,3 +1,8 @@
+x = 1
+print(+x)
+print(-x)
+print(~x)
+
 print(not None)
 print(not False)
 print(not True)
