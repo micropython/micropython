@@ -75,6 +75,9 @@ Q(__eq__)
 Q(__le__)
 Q(__ge__)
 Q(__reversed__)
+#if MICROPY_PY_ALL_SPECIAL_METHODS
+Q(__iadd__)
+#endif
 
 Q(micropython)
 Q(bytecode)
