@@ -111,8 +111,7 @@ int readline_process_char(int c) {
             if (rl.line->len > rl.orig_line_len && (MP_STATE_PORT(readline_hist)[0] == NULL || strcmp(MP_STATE_PORT(readline_hist)[0], rl.line->buf + rl.orig_line_len) != 0)) {
                 // a line which is not empty and different from the last one
                 // so update the history
-                vstr_null_terminate(rl.line);
-                char *most_recent_hist = str_dup_maybe(rl.line->buf + rl.orig_line_len);
+                char *most_recent_hist = str_dup_maybe(vstr_null_terminated_str(rl.line) + rl.orig_line_len);
                 if (most_recent_hist != NULL) {
                     for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
                         MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];

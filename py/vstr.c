@@ -172,11 +172,12 @@ char *vstr_add_len(vstr_t *vstr, size_t len) {
 }
 
 // Doesn't increase len, just makes sure there is a null byte at the end
-void vstr_null_terminate(vstr_t *vstr) {
+char *vstr_null_terminated_str(vstr_t *vstr) {
     if (vstr->had_error || !vstr_ensure_extra(vstr, 1)) {
-        return;
+        return NULL;
     }
     vstr->buf[vstr->len] = '\0';
+    return vstr->buf;
 }
 
 void vstr_add_byte(vstr_t *vstr, byte b) {

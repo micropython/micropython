@@ -856,7 +856,6 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             while (str < top && *str != '}' && *str != '!' && *str != ':') {
                 vstr_add_char(field_name, *str++);
             }
-            vstr_null_terminate(field_name);
         }
 
         // conversion ::=  "r" | "s"
@@ -887,7 +886,6 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 while (str < top && *str != '}') {
                     vstr_add_char(format_spec, *str++);
                 }
-                vstr_null_terminate(format_spec);
             }
         }
         if (str >= top) {
@@ -911,7 +909,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
 
         if (field_name) {
             int index = 0;
-            const char *field = vstr_str(field_name);
+            const char *field = vstr_null_terminated_str(field_name);
             const char *lookup = NULL;
             if (MP_LIKELY(unichar_isdigit(*field))) {
                 if (arg_i > 0) {
@@ -999,7 +997,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             // precision   ::=  integer
             // type        ::=  "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "s" | "x" | "X" | "%"
 
-            const char *s = vstr_str(format_spec);
+            const char *s = vstr_null_terminated_str(format_spec);
             if (isalignment(*s)) {
                 align = *s++;
             } else if (*s && isalignment(s[1])) {

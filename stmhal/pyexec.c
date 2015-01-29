@@ -248,8 +248,7 @@ int pyexec_friendly_repl_process_char(int c) {
             return 0;
         }
 
-        vstr_null_terminate(&repl.line);
-        if (!mp_repl_continue_with_input(vstr_str(&repl.line))) {
+        if (!mp_repl_continue_with_input(vstr_null_terminated_str(&repl.line))) {
             goto exec;
         }
 
@@ -275,8 +274,7 @@ int pyexec_friendly_repl_process_char(int c) {
             return 0;
         }
 
-        vstr_null_terminate(&repl.line);
-        if (mp_repl_continue_with_input(vstr_str(&repl.line))) {
+        if (mp_repl_continue_with_input(vstr_null_terminated_str(&repl.line))) {
             vstr_add_byte(&repl.line, '\n');
             stdout_tx_str("... ");
             readline_note_newline();
@@ -364,11 +362,7 @@ friendly_repl_reset:
             continue;
         }
 
-        for (;;) {
-            vstr_null_terminate(&line);
-            if (!mp_repl_continue_with_input(vstr_str(&line))) {
-                break;
-            }
+        while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
             vstr_add_byte(&line, '\n');
             ret = readline(&line, "... ");
             if (ret == CHAR_CTRL_C) {

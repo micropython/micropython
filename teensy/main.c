@@ -319,8 +319,7 @@ soft_reset:
         } else {
             vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_main));
         }
-        vstr_null_terminate(vstr);
-        if (!pyexec_file(vstr_str(vstr))) {
+        if (!pyexec_file(vstr_null_terminated_str(vstr))) {
             flash_error(3);
         }
         vstr_free(vstr);
