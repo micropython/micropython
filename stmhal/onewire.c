@@ -129,15 +129,15 @@ sample code bearing this copyright.
 
 #include "onewire.h"
 #include <stdbool.h>
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
+#include "py/qstr.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/nlr.h"
 #include "pin.h"
 #include "mphal.h"
 #include "std.h"
-#include "runtime.h"
-#include "nlr.h"
 
 #define FALSE 0
 #define TRUE  1
