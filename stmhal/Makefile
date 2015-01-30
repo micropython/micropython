@@ -103,6 +103,7 @@ SRC_C = \
 	systick.c  \
 	timer.c \
 	led.c \
+	onewire.c \
 	pin.c \
 	pin_defs_stmhal.c \
 	pin_named_pins.c \
