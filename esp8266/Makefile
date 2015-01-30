@@ -80,6 +80,9 @@ deploy: $(BUILD)/firmware-combined.bin
 	#$(Q)esptool.py --port $(PORT) write_flash 0 $<
 	$(Q)esptool.py --port $(PORT) write_flash 0 $(BUILD)/firmware.elf-0x00000.bin 0x10000 $(BUILD)/firmware.elf-0x10000.bin
 
+reset:
+	echo -e "\r\nimport pyb; pyb.hard_reset()\r\n" >$(PORT)
+
 $(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)esptool.py elf2image $^
