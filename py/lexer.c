@@ -55,7 +55,7 @@ STATIC bool is_end(mp_lexer_t *lex) {
 }
 
 STATIC bool is_physical_newline(mp_lexer_t *lex) {
-    return lex->chr0 == '\n' || lex->chr0 == '\r';
+    return lex->chr0 == '\n';
 }
 
 STATIC bool is_char(mp_lexer_t *lex, char c) {
@@ -123,20 +123,10 @@ STATIC void next_char(mp_lexer_t *lex) {
         return;
     }
 
-    mp_uint_t advance = 1;
-
     if (lex->chr0 == '\n') {
-        // LF is a new line
+        // a new line
         ++lex->line;
         lex->column = 1;
-    } else if (lex->chr0 == '\r') {
-        // CR is a new line
-        ++lex->line;
-        lex->column = 1;
-        if (lex->chr1 == '\n') {
-            // CR LF is a single new line
-            advance = 2;
-        }
     } else if (lex->chr0 == '\t') {
         // a tab
         lex->column = (((lex->column - 1 + TAB_SIZE) / TAB_SIZE) * TAB_SIZE) + 1;
@@ -145,15 +135,26 @@ STATIC void next_char(mp_lexer_t *lex) {
         ++lex->column;
     }
 
-    for (; advance > 0; advance--) {
-        lex->chr0 = lex->chr1;
-        lex->chr1 = lex->chr2;
-        lex->chr2 = lex->stream_next_byte(lex->stream_data);
-        if (lex->chr2 == MP_LEXER_EOF) {
-            // EOF
-            if (lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n' && lex->chr1 != '\r') {
-                lex->chr2 = '\n'; // insert newline at end of file
-            }
+    lex->chr0 = lex->chr1;
+    lex->chr1 = lex->chr2;
+    lex->chr2 = lex->stream_next_byte(lex->stream_data);
+
+    if (lex->chr0 == '\r') {
+        // CR is a new line, converted to LF
+        lex->chr0 = '\n';
+        if (lex->chr1 == '\n') {
+            // CR LF is a single new line
+            lex->chr1 = lex->chr2;
+            lex->chr2 = lex->stream_next_byte(lex->stream_data);
+        }
+    }
+
+    if (lex->chr2 == MP_LEXER_EOF) {
+        // EOF, check if we need to insert a newline at end of file
+        if (lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
+            // if lex->chr1 == '\r' then this makes a CR LF which will be converted to LF above
+            // otherwise it just inserts a LF
+            lex->chr2 = '\n';
         }
     }
 }
@@ -721,11 +722,15 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     if (lex->chr0 == MP_LEXER_EOF) {
         lex->chr0 = '\n';
     } else if (lex->chr1 == MP_LEXER_EOF) {
-        if (lex->chr0 != '\n' && lex->chr0 != '\r') {
+        if (lex->chr0 == '\r') {
+            lex->chr0 = '\n';
+        } else if (lex->chr0 != '\n') {
             lex->chr1 = '\n';
         }
     } else if (lex->chr2 == MP_LEXER_EOF) {
-        if (lex->chr1 != '\n' && lex->chr1 != '\r') {
+        if (lex->chr1 == '\r') {
+            lex->chr1 = '\n';
+        } else if (lex->chr1 != '\n') {
             lex->chr2 = '\n';
         }
     }
