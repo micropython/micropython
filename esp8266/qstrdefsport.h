@@ -42,4 +42,5 @@ Q(sync)
 Q(hard_reset)
 
 Q(esp)
+Q(connect)
 Q(scan)

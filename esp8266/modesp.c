@@ -41,6 +41,12 @@
 // one concurrent AP scan.
 STATIC mp_obj_t scan_cb_obj;
 
+static void error_check(bool status, const char *msg) {
+    if (!status) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, msg));
+    }
+}
+
 mp_obj_t call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -76,9 +82,27 @@ STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
+STATIC mp_obj_t esp_connect(mp_obj_t ssid_in, mp_obj_t passwd_in) {
+    struct station_config config = {{0}};
+    mp_uint_t len;
+    const char *p;
+
+    p = mp_obj_str_get_data(ssid_in, &len);
+    memcpy(config.ssid, p, len);
+    p = mp_obj_str_get_data(passwd_in, &len);
+    memcpy(config.password, p, len);
+
+    error_check(wifi_station_set_config(&config), "Cannot set STA config");
+    error_check(wifi_station_connect(), "Cannot connect to AP");
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_connect_obj, esp_connect);
+
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
 };
 
