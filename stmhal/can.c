@@ -374,7 +374,8 @@ STATIC mp_obj_t pyb_can_rtr(mp_obj_t self_in, mp_obj_t id_in) {
     tx_msg.DLC = 0;
     self->can.pTxMsg = &tx_msg;
 
-    HAL_StatusTypeDef status = HAL_CAN_Transmit(&self->can, 0);
+    HAL_StatusTypeDef status = HAL_CAN_Transmit(&self->can, 5000);
+
 
     if (status != HAL_OK) {
         mp_hal_raise(status);
