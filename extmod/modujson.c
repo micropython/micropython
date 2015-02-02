@@ -239,7 +239,8 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
         // unexpected chars
         goto fail;
     }
-    if (stack.len != 0) {
+    if (stack_top == MP_OBJ_NULL || stack.len != 0) {
+        // not exactly 1 object
         goto fail;
     }
     vstr_clear(&vstr);
