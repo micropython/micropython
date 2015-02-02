@@ -97,7 +97,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log_obj, mp_cmath_log);
 STATIC mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
-    return mp_obj_new_complex(0.5 * MICROPY_FLOAT_C_FUN(log10)(real*real + imag*imag), MICROPY_FLOAT_C_FUN(atan2)(imag, real));
+    return mp_obj_new_complex(0.5 * MICROPY_FLOAT_C_FUN(log10)(real*real + imag*imag), 0.4342944819032518 * MICROPY_FLOAT_C_FUN(atan2)(imag, real));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log10_obj, mp_cmath_log10);
 

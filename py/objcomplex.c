@@ -58,7 +58,10 @@ STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *
         print(env, "%sj", buf);
     } else {
         mp_format_float(o->real, buf, sizeof(buf), 'g', 7, '\0');
-        print(env, "(%s+", buf);
+        print(env, "(%s", buf);
+        if (o->imag >= 0) {
+            print(env, "+");
+        }
         mp_format_float(o->imag, buf, sizeof(buf), 'g', 7, '\0');
         print(env, "%sj)", buf);
     }
@@ -69,7 +72,10 @@ STATIC void complex_print(void (*print)(void *env, const char *fmt, ...), void *
         print(env, "%sj", buf);
     } else {
         sprintf(buf, "%.16g", (double)o->real);
-        print(env, "(%s+", buf);
+        print(env, "(%s", buf);
+        if (o->imag >= 0) {
+            print(env, "+");
+        }
         sprintf(buf, "%.16g", (double)o->imag);
         print(env, "%sj)", buf);
     }
