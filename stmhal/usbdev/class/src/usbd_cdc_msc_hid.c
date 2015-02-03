@@ -31,7 +31,7 @@
 #define CDC_TEMPLATE_CONFIG_DESC_SIZE (67)
 #define CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE (98)
 #define CDC_HID_TEMPLATE_CONFIG_DESC_SIZE (100)
-#define CDC_HID_TEMPLATE_HID_DESC_OFFSET (CDC_HID_TEMPLATE_CONFIG_DESC_SIZE - 25)
+#define CDC_HID_TEMPLATE_HID_DESC_OFFSET (9)
 #define HID_DESC_OFFSET_SUBCLASS (6)
 #define HID_DESC_OFFSET_PROTOCOL (7)
 #define HID_DESC_OFFSET_SUBDESC (9)
@@ -129,6 +129,39 @@ static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_S
     0xfa,   // bMaxPower: in units of 2mA
 
     //==========================================================================
+    // MSC only has 1 interface so doesn't need an IAD
+
+    //--------------------------------------------------------------------------
+    // Interface Descriptor
+    0x09,   // bLength: Interface Descriptor size
+    USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
+    MSC_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
+    0x00,   // bAlternateSetting: Alternate setting
+    0x02,   // bNumEndpoints
+    0x08,   // bInterfaceClass: MSC Class
+    0x06,   // bInterfaceSubClass : SCSI transparent
+    0x50,   // nInterfaceProtocol
+    0x00,   // iInterface:
+
+    // Endpoint IN descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
+    MSC_IN_EP,                      // bEndpointAddress: IN, address 3
+    0x02,                           // bmAttributes: Bulk endpoint type
+    LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
+    HIBYTE(MSC_MAX_PACKET),
+    0x00,                           // bInterval: ignore for Bulk transfer
+
+    // Endpoint OUT descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
+    MSC_OUT_EP,                     // bEndpointAddress: OUT, address 3
+    0x02,                           // bmAttributes: Bulk endpoint type
+    LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
+    HIBYTE(MSC_MAX_PACKET),
+    0x00,                           // bInterval: ignore for Bulk transfer
+
+    //==========================================================================
     // Interface Association for CDC VCP
     0x08,   // bLength: 8 bytes
     USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
@@ -216,39 +249,6 @@ static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_S
     LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
     HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
     0x00,                               // bInterval: ignore for Bulk transfer
-
-    //==========================================================================
-    // MSC only has 1 interface so doesn't need an IAD
-
-    //--------------------------------------------------------------------------
-    // Interface Descriptor
-    0x09,   // bLength: Interface Descriptor size
-    USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
-    MSC_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
-    0x00,   // bAlternateSetting: Alternate setting
-    0x02,   // bNumEndpoints
-    0x08,   // bInterfaceClass: MSC Class
-    0x06,   // bInterfaceSubClass : SCSI transparent
-    0x50,   // nInterfaceProtocol
-    0x00,   // iInterface:
-
-    // Endpoint IN descriptor
-    0x07,                           // bLength: Endpoint descriptor length
-    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
-    MSC_IN_EP,                      // bEndpointAddress: IN, address 3
-    0x02,                           // bmAttributes: Bulk endpoint type
-    LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
-    HIBYTE(MSC_MAX_PACKET),
-    0x00,                           // bInterval: ignore for Bulk transfer
-
-    // Endpoint OUT descriptor
-    0x07,                           // bLength: Endpoint descriptor length
-    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
-    MSC_OUT_EP,                     // bEndpointAddress: OUT, address 3
-    0x02,                           // bmAttributes: Bulk endpoint type
-    LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
-    HIBYTE(MSC_MAX_PACKET),
-    0x00,                           // bInterval: ignore for Bulk transfer
 };
 
 // USB CDC HID device Configuration Descriptor
@@ -264,6 +264,41 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
     0x80,   // bmAttributes: bus powered; 0xc0 for self powered
     0xfa,   // bMaxPower: in units of 2mA
+
+    //==========================================================================
+    // HID only has 1 interface so doesn't need an IAD
+
+    //--------------------------------------------------------------------------
+    // Interface Descriptor
+    0x09,   // bLength: Interface Descriptor size
+    USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
+    HID_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
+    0x00,   // bAlternateSetting: Alternate setting
+    0x01,   // bNumEndpoints
+    0x03,   // bInterfaceClass: HID Class
+    0x01,   // bInterfaceSubClass: 0=no sub class, 1=boot
+    0x02,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
+    0x00,   // iInterface:
+
+    // HID descriptor
+    0x09,                   // bLength: HID Descriptor size
+    HID_DESCRIPTOR_TYPE,    // bDescriptorType: HID
+    0x11,                   // bcdHID: HID Class Spec release number
+    0x01,
+    0x00,                   // bCountryCode: Hardware target country
+    0x01,                   // bNumDescriptors: Number of HID class descriptors to follow
+    0x22,                   // bDescriptorType
+    USBD_HID_MOUSE_REPORT_DESC_SIZE, // wItemLength: Total length of Report descriptor
+    0x00,
+
+    // Endpoint IN descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
+    HID_IN_EP_WITH_CDC,             // bEndpointAddress: IN
+    0x03,                           // bmAttributes: Interrupt endpoint type
+    LOBYTE(USBD_HID_MOUSE_MAX_PACKET), // wMaxPacketSize
+    HIBYTE(USBD_HID_MOUSE_MAX_PACKET),
+    0x08,                           // bInterval: Polling interval
 
     //==========================================================================
     // Interface Association for CDC VCP
@@ -353,41 +388,6 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
     HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
     0x00,                               // bInterval: ignore for Bulk transfer
-
-    //==========================================================================
-    // HID only has 1 interface so doesn't need an IAD
-
-    //--------------------------------------------------------------------------
-    // Interface Descriptor
-    0x09,   // bLength: Interface Descriptor size
-    USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
-    HID_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
-    0x00,   // bAlternateSetting: Alternate setting
-    0x01,   // bNumEndpoints
-    0x03,   // bInterfaceClass: HID Class
-    0x01,   // bInterfaceSubClass: 0=no sub class, 1=boot
-    0x02,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
-    0x00,   // iInterface:
-
-    // HID descriptor
-    0x09,                   // bLength: HID Descriptor size
-    HID_DESCRIPTOR_TYPE,    // bDescriptorType: HID
-    0x11,                   // bcdHID: HID Class Spec release number
-    0x01,
-    0x00,                   // bCountryCode: Hardware target country
-    0x01,                   // bNumDescriptors: Number of HID class descriptors to follow
-    0x22,                   // bDescriptorType
-    USBD_HID_MOUSE_REPORT_DESC_SIZE, // wItemLength: Total length of Report descriptor
-    0x00,
-
-    // Endpoint IN descriptor
-    0x07,                           // bLength: Endpoint descriptor length
-    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
-    HID_IN_EP_WITH_CDC,             // bEndpointAddress: IN
-    0x03,                           // bmAttributes: Interrupt endpoint type
-    LOBYTE(USBD_HID_MOUSE_MAX_PACKET), // wMaxPacketSize
-    HIBYTE(USBD_HID_MOUSE_MAX_PACKET),
-    0x08,                           // bInterval: Polling interval
 };
 
 static const uint8_t cdc_template_config_desc[CDC_TEMPLATE_CONFIG_DESC_SIZE] = {
