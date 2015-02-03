@@ -43,4 +43,5 @@ Q(hard_reset)
 
 Q(esp)
 Q(connect)
+Q(disconnect)
 Q(scan)

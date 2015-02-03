@@ -99,10 +99,17 @@ STATIC mp_obj_t esp_connect(mp_obj_t ssid_in, mp_obj_t passwd_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_connect_obj, esp_connect);
 
+STATIC mp_obj_t esp_disconnect() {
+    error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_disconnect_obj, esp_disconnect);
+
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
 };
 
