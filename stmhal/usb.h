@@ -30,6 +30,7 @@
 #define PYB_USB_FLAG_USB_MODE_CALLED    (0x0002)
 
 // Windows needs a different PID to distinguish different device configurations
+#define USBD_VID         (0xf055)
 #define USBD_PID_CDC_MSC (0x9800)
 #define USBD_PID_CDC_HID (0x9801)
 #define USBD_PID_CDC     (0x9802)
@@ -52,7 +53,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_have_cdc_obj); // deprecated
 MP_DECLARE_CONST_FUN_OBJ(pyb_hid_send_report_obj); // deprecated
 
 void pyb_usb_init0(void);
-void pyb_usb_dev_init(uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
 void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 void usb_vcp_set_interrupt_char(int c);

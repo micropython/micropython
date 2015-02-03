@@ -26,4 +26,4 @@
 
 extern const USBD_DescriptorsTypeDef USBD_Descriptors;
 
-void USBD_SetPID(uint16_t pid);
+void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num);

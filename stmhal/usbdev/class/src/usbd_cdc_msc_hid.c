@@ -559,7 +559,7 @@ __ALIGN_BEGIN const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPOR
     0xC0            // End Collection
 };
 
-void USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
+int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
     // save mode
     usbd_mode = mode;
 
@@ -593,10 +593,14 @@ void USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
             hid_iface_num = HID_IFACE_NUM_WITH_MSC;
             break;
             */
+
+        default:
+            // mode not supported
+            return -1;
     }
 
+    // configure the HID descriptor, if needed
     if (usbd_mode & USBD_MODE_HID) {
-        // configure the HID descriptor
         hid_desc[HID_DESC_OFFSET_SUBCLASS] = hid_info->subclass;
         hid_desc[HID_DESC_OFFSET_PROTOCOL] = hid_info->protocol;
         hid_desc[HID_DESC_OFFSET_REPORT_DESC_LEN] = hid_info->report_desc_len;
@@ -605,6 +609,7 @@ void USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
         hid_report_desc = hid_info->report_desc;
     }
 
+    return 0;
 }
 
 static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {

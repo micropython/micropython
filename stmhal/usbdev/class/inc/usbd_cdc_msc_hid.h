@@ -92,7 +92,8 @@ extern const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPORT_DESC_
 
 extern USBD_ClassTypeDef USBD_CDC_MSC_HID;
 
-void USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+// returns 0 on success, -1 on failure
+int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
 
 uint8_t USBD_CDC_RegisterInterface  (USBD_HandleTypeDef   *pdev, USBD_CDC_ItfTypeDef *fops);
 uint8_t USBD_CDC_SetTxBuffer  (USBD_HandleTypeDef   *pdev, uint8_t  *pbuff, uint16_t length);
