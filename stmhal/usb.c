@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014, 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ const mp_obj_tuple_t pyb_usb_hid_mouse_obj = {
     {&mp_type_tuple},
     5,
     {
-        MP_OBJ_NEW_SMALL_INT(USBD_PID_SECONDARY),
+        MP_OBJ_NEW_SMALL_INT(USBD_PID_CDC_HID),
         MP_OBJ_NEW_SMALL_INT(1), // subclass: boot
         MP_OBJ_NEW_SMALL_INT(2), // protocol: mouse
         MP_OBJ_NEW_SMALL_INT(USBD_HID_MOUSE_MAX_PACKET),
@@ -79,7 +79,7 @@ const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
     {&mp_type_tuple},
     5,
     {
-        MP_OBJ_NEW_SMALL_INT(USBD_PID_SECONDARY),
+        MP_OBJ_NEW_SMALL_INT(USBD_PID_CDC_HID),
         MP_OBJ_NEW_SMALL_INT(1), // subclass: boot
         MP_OBJ_NEW_SMALL_INT(1), // protocol: keyboard
         MP_OBJ_NEW_SMALL_INT(USBD_HID_KEYBOARD_MAX_PACKET),
@@ -100,7 +100,7 @@ void pyb_usb_dev_init(uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTyp
         // only init USB once in the device's power-lifetime
         USBD_SetPID(pid);
         USBD_SelectMode(mode, hid_info);
-        USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&VCP_Desc, 0);
+        USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&USBD_Descriptors, 0);
         USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
         USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
         switch (pyb_usb_storage_medium) {
@@ -213,7 +213,7 @@ STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *args) {
 #elif defined(USE_DEVICE_MODE)
     // USB device
     if (strcmp(mode_str, "CDC+MSC") == 0) {
-        pyb_usb_dev_init(USBD_PID_DEFAULT, USBD_MODE_CDC_MSC, NULL);
+        pyb_usb_dev_init(USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL);
     } else if (strcmp(mode_str, "CDC+HID") == 0) {
         mp_obj_t hid_info_obj = (mp_obj_t)&pyb_usb_hid_mouse_obj; // default is mouse mode
         if (n_args == 2) {
@@ -232,6 +232,8 @@ STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *args) {
         hid_info.report_desc = bufinfo.buf;
         hid_info.report_desc_len = bufinfo.len;
         pyb_usb_dev_init(pid, USBD_MODE_CDC_HID, &hid_info);
+    } else if (strcmp(mode_str, "CDC") == 0) {
+        pyb_usb_dev_init(USBD_PID_CDC, USBD_MODE_CDC, NULL);
     } else {
         goto bad_mode;
     }

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014, 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,9 @@
 #define PYB_USB_FLAG_USB_MODE_CALLED    (0x0002)
 
 // Windows needs a different PID to distinguish different device configurations
-#define USBD_PID_DEFAULT (0x9800)
-#define USBD_PID_SECONDARY (0x9801)
+#define USBD_PID_CDC_MSC (0x9800)
+#define USBD_PID_CDC_HID (0x9801)
+#define USBD_PID_CDC     (0x9802)
 
 typedef enum {
     PYB_USB_STORAGE_MEDIUM_NONE = 0,

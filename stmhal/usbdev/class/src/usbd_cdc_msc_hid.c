@@ -1,19 +1,49 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "usbd_ioreq.h"
 #include "usbd_cdc_msc_hid.h"
 
-#define CDC_MSC_CONFIG_DESC_SIZE (98)
-#define CDC_HID_CONFIG_DESC_SIZE (100)
-#define CDC_HID_HID_DESC_OFFSET (CDC_HID_CONFIG_DESC_SIZE - 25)
-#define CDC_HID_HID_DESC_OFFSET_SUBCLASS (CDC_HID_HID_DESC_OFFSET + 6)
-#define CDC_HID_HID_DESC_OFFSET_PROTOCOL (CDC_HID_HID_DESC_OFFSET + 7)
-#define CDC_HID_HID_DESC_OFFSET_SUBDESC (CDC_HID_HID_DESC_OFFSET + 9)
-#define CDC_HID_HID_DESC_OFFSET_REPORT_DESC_LEN (CDC_HID_HID_DESC_OFFSET + 16)
-#define CDC_HID_HID_DESC_OFFSET_MAX_PACKET_LO (CDC_HID_HID_DESC_OFFSET + 22)
-#define CDC_HID_HID_DESC_OFFSET_MAX_PACKET_HI (CDC_HID_HID_DESC_OFFSET + 23)
-#define CDC_HID_HID_SUBDESC_LEN (9)
+#define MAX_TEMPLATE_CONFIG_DESC_SIZE (100) // should be maximum of all template config desc's
+#define CDC_TEMPLATE_CONFIG_DESC_SIZE (67)
+#define CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE (98)
+#define CDC_HID_TEMPLATE_CONFIG_DESC_SIZE (100)
+#define CDC_HID_TEMPLATE_HID_DESC_OFFSET (CDC_HID_TEMPLATE_CONFIG_DESC_SIZE - 25)
+#define HID_DESC_OFFSET_SUBCLASS (6)
+#define HID_DESC_OFFSET_PROTOCOL (7)
+#define HID_DESC_OFFSET_SUBDESC (9)
+#define HID_DESC_OFFSET_REPORT_DESC_LEN (16)
+#define HID_DESC_OFFSET_MAX_PACKET_LO (22)
+#define HID_DESC_OFFSET_MAX_PACKET_HI (23)
+#define HID_SUBDESC_LEN (9)
 
-#define CDC_IFACE_NUM (1)
-#define MSC_IFACE_NUM (0)
+#define CDC_IFACE_NUM_ALONE (0)
+#define CDC_IFACE_NUM_WITH_MSC (1)
+#define CDC_IFACE_NUM_WITH_HID (1)
+#define MSC_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_MSC (1)
 #define HID_IN_EP_WITH_CDC (0x81)
@@ -50,8 +80,11 @@ typedef struct {
 } USBD_HID_HandleTypeDef;
 
 static uint8_t usbd_mode;
+static uint8_t cdc_iface_num;
 static uint8_t hid_in_ep;
 static uint8_t hid_iface_num;
+static uint8_t usbd_config_desc_size;
+static uint8_t *hid_desc;
 static const uint8_t *hid_report_desc;
 
 static USBD_CDC_ItfTypeDef *CDC_fops;
@@ -61,9 +94,11 @@ static USBD_CDC_HandleTypeDef CDC_ClassData;
 static USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
 static USBD_HID_HandleTypeDef HID_ClassData;
 
-// I don't think we can make these descriptors constant because they are
-// modified (perhaps unnecessarily) by the USB driver.
+// RAM to hold the current configuration descriptor, which we configure on the fly
+__ALIGN_BEGIN static uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
+/*
+// this is used only in high-speed mode, which we don't support
 // USB Standard Device Descriptor
 __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END = {
     USB_LEN_DEV_QUALIFIER_DESC,
@@ -77,15 +112,16 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QU
     0x01,
     0x00,
 };
+*/
 
 // USB CDC MSC device Configuration Descriptor
-__ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __ALIGN_END = {
+static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE] = {
     //--------------------------------------------------------------------------
     // Configuration Descriptor
     0x09,   // bLength: Configuration Descriptor size
     USB_DESC_TYPE_CONFIGURATION, // bDescriptorType: Configuration
-    LOBYTE(CDC_MSC_CONFIG_DESC_SIZE), // wTotalLength: no of returned bytes
-    HIBYTE(CDC_MSC_CONFIG_DESC_SIZE),
+    LOBYTE(CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE), // wTotalLength: no of returned bytes
+    HIBYTE(CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE),
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
@@ -96,7 +132,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
     // Interface Association for CDC VCP
     0x08,   // bLength: 8 bytes
     USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
-    CDC_IFACE_NUM, // bFirstInterface: first interface for this association
+    CDC_IFACE_NUM_WITH_MSC, // bFirstInterface: first interface for this association
     0x02,   // bInterfaceCount: nummber of interfaces for this association
     0x02,   // bFunctionClass: Communication Interface Class
     0x02,   // bFunctionSubClass: Abstract Control Model
@@ -107,7 +143,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
     // Interface Descriptor
     0x09,   // bLength: Interface Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: Interface
-    CDC_IFACE_NUM, // bInterfaceNumber: Number of Interface
+    CDC_IFACE_NUM_WITH_MSC, // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
     0x01,   // bNumEndpoints: One endpoints used
     0x02,   // bInterfaceClass: Communication Interface Class
@@ -127,7 +163,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
     0x24,   // bDescriptorType: CS_INTERFACE
     0x01,   // bDescriptorSubtype: Call Management Func Desc
     0x00,   // bmCapabilities: D0+D1
-    CDC_IFACE_NUM + 1,   // bDataInterface: 1
+    CDC_IFACE_NUM_WITH_MSC + 1,   // bDataInterface: 1
 
     // ACM Functional Descriptor
     0x04,   // bFunctionLength
@@ -139,8 +175,8 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
     0x05,   // bFunctionLength
     0x24,   // bDescriptorType: CS_INTERFACE
     0x06,   // bDescriptorSubtype: Union func desc
-    CDC_IFACE_NUM + 0,   // bMasterInterface: Communication class interface
-    CDC_IFACE_NUM + 1,   // bSlaveInterface0: Data Class Interface
+    CDC_IFACE_NUM_WITH_MSC + 0,   // bMasterInterface: Communication class interface
+    CDC_IFACE_NUM_WITH_MSC + 1,   // bSlaveInterface0: Data Class Interface
 
     // Endpoint 2 Descriptor
     0x07,                           // bLength: Endpoint Descriptor size
@@ -155,7 +191,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
     // Data class interface descriptor
     0x09,   // bLength: Endpoint Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface
-    CDC_IFACE_NUM + 1,   // bInterfaceNumber: Number of Interface
+    CDC_IFACE_NUM_WITH_MSC + 1,   // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
     0x02,   // bNumEndpoints: Two endpoints used
     0x0A,   // bInterfaceClass: CDC
@@ -188,7 +224,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
     // Interface Descriptor
     0x09,   // bLength: Interface Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
-    MSC_IFACE_NUM, // bInterfaceNumber: Number of Interface
+    MSC_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
     0x02,   // bNumEndpoints
     0x08,   // bInterfaceClass: MSC Class
@@ -216,13 +252,13 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_CfgDesc[CDC_MSC_CONFIG_DESC_SIZE] __AL
 };
 
 // USB CDC HID device Configuration Descriptor
-__ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __ALIGN_END = {
+static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_SIZE] = {
     //--------------------------------------------------------------------------
     // Configuration Descriptor
     0x09,   // bLength: Configuration Descriptor size
     USB_DESC_TYPE_CONFIGURATION, // bDescriptorType: Configuration
-    LOBYTE(CDC_HID_CONFIG_DESC_SIZE), // wTotalLength: no of returned bytes
-    HIBYTE(CDC_HID_CONFIG_DESC_SIZE),
+    LOBYTE(CDC_HID_TEMPLATE_CONFIG_DESC_SIZE), // wTotalLength: no of returned bytes
+    HIBYTE(CDC_HID_TEMPLATE_CONFIG_DESC_SIZE),
     0x03,   // bNumInterfaces: 3 interfaces
     0x01,   // bConfigurationValue: Configuration value
     0x00,   // iConfiguration: Index of string descriptor describing the configuration
@@ -233,7 +269,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __AL
     // Interface Association for CDC VCP
     0x08,   // bLength: 8 bytes
     USB_DESC_TYPE_ASSOCIATION, // bDescriptorType: IAD
-    CDC_IFACE_NUM, // bFirstInterface: first interface for this association
+    CDC_IFACE_NUM_WITH_HID, // bFirstInterface: first interface for this association
     0x02,   // bInterfaceCount: nummber of interfaces for this association
     0x02,   // bFunctionClass: Communication Interface Class
     0x02,   // bFunctionSubClass: Abstract Control Model
@@ -244,7 +280,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __AL
     // Interface Descriptor
     0x09,   // bLength: Interface Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: Interface
-    CDC_IFACE_NUM, // bInterfaceNumber: Number of Interface
+    CDC_IFACE_NUM_WITH_HID, // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
     0x01,   // bNumEndpoints: One endpoints used
     0x02,   // bInterfaceClass: Communication Interface Class
@@ -264,7 +300,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __AL
     0x24,   // bDescriptorType: CS_INTERFACE
     0x01,   // bDescriptorSubtype: Call Management Func Desc
     0x00,   // bmCapabilities: D0+D1
-    CDC_IFACE_NUM + 1,   // bDataInterface: 1
+    CDC_IFACE_NUM_WITH_HID + 1,   // bDataInterface: 1
 
     // ACM Functional Descriptor
     0x04,   // bFunctionLength
@@ -276,8 +312,8 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __AL
     0x05,   // bFunctionLength
     0x24,   // bDescriptorType: CS_INTERFACE
     0x06,   // bDescriptorSubtype: Union func desc
-    CDC_IFACE_NUM + 0,   // bMasterInterface: Communication class interface
-    CDC_IFACE_NUM + 1,   // bSlaveInterface0: Data Class Interface
+    CDC_IFACE_NUM_WITH_HID + 0,   // bMasterInterface: Communication class interface
+    CDC_IFACE_NUM_WITH_HID + 1,   // bSlaveInterface0: Data Class Interface
 
     // Endpoint 2 Descriptor
     0x07,                           // bLength: Endpoint Descriptor size
@@ -292,7 +328,7 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __AL
     // Data class interface descriptor
     0x09,   // bLength: Endpoint Descriptor size
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface
-    CDC_IFACE_NUM + 1,   // bInterfaceNumber: Number of Interface
+    CDC_IFACE_NUM_WITH_HID + 1,   // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
     0x02,   // bNumEndpoints: Two endpoints used
     0x0A,   // bInterfaceClass: CDC
@@ -352,6 +388,98 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_HID_CfgDesc[CDC_HID_CONFIG_DESC_SIZE] __AL
     LOBYTE(USBD_HID_MOUSE_MAX_PACKET), // wMaxPacketSize
     HIBYTE(USBD_HID_MOUSE_MAX_PACKET),
     0x08,                           // bInterval: Polling interval
+};
+
+static const uint8_t cdc_template_config_desc[CDC_TEMPLATE_CONFIG_DESC_SIZE] = {
+    //--------------------------------------------------------------------------
+    // Configuration Descriptor
+    0x09,   // bLength: Configuration Descriptor size
+    USB_DESC_TYPE_CONFIGURATION, // bDescriptorType: Configuration
+    LOBYTE(CDC_TEMPLATE_CONFIG_DESC_SIZE), // wTotalLength:no of returned bytes
+    HIBYTE(CDC_TEMPLATE_CONFIG_DESC_SIZE),
+    0x02,   // bNumInterfaces: 2 interface
+    0x01,   // bConfigurationValue: Configuration value
+    0x00,   // iConfiguration: Index of string descriptor describing the configuration
+    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
+    0xfa,   // bMaxPower: in units of 2mA
+
+    //--------------------------------------------------------------------------
+    // Interface Descriptor
+    0x09,   // bLength: Interface Descriptor size
+    USB_DESC_TYPE_INTERFACE,  // bDescriptorType: Interface
+    CDC_IFACE_NUM_ALONE,   // bInterfaceNumber: Number of Interface
+    0x00,   // bAlternateSetting: Alternate setting
+    0x01,   // bNumEndpoints: One endpoints used
+    0x02,   // bInterfaceClass: Communication Interface Class
+    0x02,   // bInterfaceSubClass: Abstract Control Model
+    0x01,   // bInterfaceProtocol: Common AT commands
+    0x00,   // iInterface:
+
+    // Header Functional Descriptor
+    0x05,   // bLength: Endpoint Descriptor size
+    0x24,   // bDescriptorType: CS_INTERFACE
+    0x00,   // bDescriptorSubtype: Header Func Desc
+    0x10,   // bcdCDC: spec release number
+    0x01,   // ?
+
+    // Call Management Functional Descriptor
+    0x05,   // bFunctionLength
+    0x24,   // bDescriptorType: CS_INTERFACE
+    0x01,   // bDescriptorSubtype: Call Management Func Desc
+    0x00,   // bmCapabilities: D0+D1
+    CDC_IFACE_NUM_ALONE + 1,   // bDataInterface: 1
+
+    // ACM Functional Descriptor
+    0x04,   // bFunctionLength
+    0x24,   // bDescriptorType: CS_INTERFACE
+    0x02,   // bDescriptorSubtype: Abstract Control Management desc
+    0x02,   // bmCapabilities
+
+    // Union Functional Descriptor
+    0x05,   // bFunctionLength
+    0x24,   // bDescriptorType: CS_INTERFACE
+    0x06,   // bDescriptorSubtype: Union func desc
+    CDC_IFACE_NUM_ALONE + 0,   // bMasterInterface: Communication class interface
+    CDC_IFACE_NUM_ALONE + 1,   // bSlaveInterface0: Data Class Interface
+
+    // Endpoint 2 Descriptor
+    0x07,                           // bLength: Endpoint Descriptor size
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint
+    CDC_CMD_EP,                     // bEndpointAddress
+    0x03,                           // bmAttributes: Interrupt
+    LOBYTE(CDC_CMD_PACKET_SIZE),    // wMaxPacketSize:
+    HIBYTE(CDC_CMD_PACKET_SIZE),
+    0x20,                           // bInterval: polling interval in frames of 1ms
+
+    //--------------------------------------------------------------------------
+    // Data class interface descriptor
+    0x09,   // bLength: Endpoint Descriptor size
+    USB_DESC_TYPE_INTERFACE,  // bDescriptorType:
+    CDC_IFACE_NUM_ALONE + 1,   // bInterfaceNumber: Number of Interface
+    0x00,   // bAlternateSetting: Alternate setting
+    0x02,   // bNumEndpoints: Two endpoints used
+    0x0a,   // bInterfaceClass: CDC
+    0x00,   // bInterfaceSubClass: ?
+    0x00,   // bInterfaceProtocol: ?
+    0x00,   // iInterface:
+
+    // Endpoint OUT Descriptor
+    0x07,                               // bLength: Endpoint Descriptor size
+    USB_DESC_TYPE_ENDPOINT,             // bDescriptorType: Endpoint
+    CDC_OUT_EP,                         // bEndpointAddress
+    0x02,                               // bmAttributes: Bulk
+    LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
+    HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
+    0x00,                               // bInterval: ignore for Bulk transfer
+
+    // Endpoint IN Descriptor
+    0x07,                               // bLength: Endpoint Descriptor size
+    USB_DESC_TYPE_ENDPOINT,             // bDescriptorType: Endpoint
+    CDC_IN_EP,                          // bEndpointAddress
+    0x02,                               // bmAttributes: Bulk
+    LOBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),// wMaxPacketSize:
+    HIBYTE(CDC_DATA_FS_MAX_PACKET_SIZE),
+    0x00                                // bInterval: ignore for Bulk transfer
 };
 
 __ALIGN_BEGIN const uint8_t USBD_HID_MOUSE_ReportDesc[USBD_HID_MOUSE_REPORT_DESC_SIZE] __ALIGN_END = {
@@ -435,24 +563,48 @@ void USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
     // save mode
     usbd_mode = mode;
 
-    // set up HID parameters if HID is selected
-    if (mode & USBD_MODE_HID) {
-        if (mode & USBD_MODE_CDC) {
+    // construct config desc
+    switch (usbd_mode) {
+        case USBD_MODE_CDC_MSC:
+            usbd_config_desc_size = sizeof(cdc_msc_template_config_desc);
+            memcpy(usbd_config_desc, cdc_msc_template_config_desc, sizeof(cdc_msc_template_config_desc));
+            cdc_iface_num = CDC_IFACE_NUM_WITH_MSC;
+            break;
+
+        case USBD_MODE_CDC_HID:
+            usbd_config_desc_size = sizeof(cdc_hid_template_config_desc);
+            memcpy(usbd_config_desc, cdc_hid_template_config_desc, sizeof(cdc_hid_template_config_desc));
+            cdc_iface_num = CDC_IFACE_NUM_WITH_HID;
             hid_in_ep = HID_IN_EP_WITH_CDC;
             hid_iface_num = HID_IFACE_NUM_WITH_CDC;
-        } else if (mode & USBD_MODE_MSC) {
+            hid_desc = usbd_config_desc + CDC_HID_TEMPLATE_HID_DESC_OFFSET;
+            break;
+
+        case USBD_MODE_CDC:
+            usbd_config_desc_size = sizeof(cdc_template_config_desc);
+            memcpy(usbd_config_desc, cdc_template_config_desc, sizeof(cdc_template_config_desc));
+            cdc_iface_num = CDC_IFACE_NUM_ALONE;
+            break;
+
+            /*
+            // not implemented
+        case USBD_MODE_MSC_HID:
             hid_in_ep = HID_IN_EP_WITH_MSC;
             hid_iface_num = HID_IFACE_NUM_WITH_MSC;
-        }
+            break;
+            */
+    }
 
-        // configure the descriptor
-        USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_SUBCLASS] = hid_info->subclass;
-        USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_PROTOCOL] = hid_info->protocol;
-        USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_REPORT_DESC_LEN] = hid_info->report_desc_len;
-        USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_MAX_PACKET_LO] = hid_info->max_packet_len;
-        USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_MAX_PACKET_HI] = 0;
+    if (usbd_mode & USBD_MODE_HID) {
+        // configure the HID descriptor
+        hid_desc[HID_DESC_OFFSET_SUBCLASS] = hid_info->subclass;
+        hid_desc[HID_DESC_OFFSET_PROTOCOL] = hid_info->protocol;
+        hid_desc[HID_DESC_OFFSET_REPORT_DESC_LEN] = hid_info->report_desc_len;
+        hid_desc[HID_DESC_OFFSET_MAX_PACKET_LO] = hid_info->max_packet_len;
+        hid_desc[HID_DESC_OFFSET_MAX_PACKET_HI] = 0;
         hid_report_desc = hid_info->report_desc;
     }
+
 }
 
 static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
@@ -520,8 +672,8 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 
         // get max packet length from descriptor
         uint16_t mps =
-            USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_MAX_PACKET_LO]
-            | (USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_MAX_PACKET_HI] << 8);
+            hid_desc[HID_DESC_OFFSET_MAX_PACKET_LO]
+            | (hid_desc[HID_DESC_OFFSET_MAX_PACKET_HI] << 8);
 
         // Open EP IN
         USBD_LL_OpenEP(pdev,
@@ -595,7 +747,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
         // Class request
         case USB_REQ_TYPE_CLASS:
             // req->wIndex is the recipient interface number
-            if ((usbd_mode & USBD_MODE_CDC) && req->wIndex == CDC_IFACE_NUM) {
+            if ((usbd_mode & USBD_MODE_CDC) && req->wIndex == cdc_iface_num) {
                 // CDC component
                 if (req->wLength) {
                     if (req->bmRequest & 0x80) {
@@ -613,7 +765,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                     // Transfer the command to the interface layer
                     return CDC_fops->Control(req->bRequest, NULL, req->wValue);
                 }
-            } else if ((usbd_mode & USBD_MODE_MSC) && req->wIndex == MSC_IFACE_NUM) {
+            } else if ((usbd_mode & USBD_MODE_MSC) && req->wIndex == MSC_IFACE_NUM_WITH_CDC) {
                 // MSC component
                 switch (req->bRequest) {
                     case BOT_GET_MAX_LUN:
@@ -666,7 +818,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
 
         // Interface & Endpoint request
         case USB_REQ_TYPE_STANDARD:
-            if ((usbd_mode & USBD_MODE_MSC) && req->wIndex == MSC_IFACE_NUM) {
+            if ((usbd_mode & USBD_MODE_MSC) && req->wIndex == MSC_IFACE_NUM_WITH_CDC) {
                 switch (req->bRequest) {
                     case USB_REQ_GET_INTERFACE :
                         USBD_CtlSendData(pdev, (uint8_t *)&MSC_BOT_ClassData.interface, 1);
@@ -699,12 +851,12 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                       uint16_t len = 0;
                       const uint8_t *pbuf = NULL;
                       if (req->wValue >> 8 == HID_REPORT_DESC) {
-                        len = USBD_CDC_HID_CfgDesc[CDC_HID_HID_DESC_OFFSET_REPORT_DESC_LEN];
+                        len = hid_desc[HID_DESC_OFFSET_REPORT_DESC_LEN];
                         len = MIN(len, req->wLength);
                         pbuf = hid_report_desc;
                       } else if (req->wValue >> 8 == HID_DESCRIPTOR_TYPE) {
-                        len = MIN(CDC_HID_HID_SUBDESC_LEN, req->wLength);
-                        pbuf = USBD_CDC_HID_CfgDesc + CDC_HID_HID_DESC_OFFSET_SUBDESC;
+                        len = MIN(HID_SUBDESC_LEN, req->wLength);
+                        pbuf = hid_desc + HID_DESC_OFFSET_SUBDESC;
                       }
                       USBD_CtlSendData(pdev, (uint8_t*)pbuf, len);
                       break;
@@ -773,21 +925,18 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
 }
 
 static uint8_t *USBD_CDC_MSC_HID_GetCfgDesc(uint16_t *length) {
-    switch (usbd_mode) {
-        case USBD_MODE_CDC_MSC:
-            *length = sizeof(USBD_CDC_MSC_CfgDesc);
-            return USBD_CDC_MSC_CfgDesc;
-
-        case USBD_MODE_CDC_HID:
-        default:
-            *length = sizeof(USBD_CDC_HID_CfgDesc);
-            return USBD_CDC_HID_CfgDesc;
-    }
+    *length = usbd_config_desc_size;
+    return usbd_config_desc;
 }
 
+// this is used only in high-speed mode, which we don't support
 uint8_t *USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor (uint16_t *length) {
+    /*
     *length = sizeof(USBD_CDC_MSC_HID_DeviceQualifierDesc);
     return USBD_CDC_MSC_HID_DeviceQualifierDesc;
+    */
+    *length = 0;
+    return NULL;
 }
 
 uint8_t USBD_CDC_RegisterInterface(USBD_HandleTypeDef *pdev, USBD_CDC_ItfTypeDef *fops) {
@@ -902,7 +1051,7 @@ uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t 
     return USBD_OK;
 }
 
-// CDC + MSC interface class callbacks structure
+// CDC/MSC/HID interface class callback structure
 USBD_ClassTypeDef USBD_CDC_MSC_HID = {
     USBD_CDC_MSC_HID_Init,
     USBD_CDC_MSC_HID_DeInit,
