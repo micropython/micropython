@@ -274,6 +274,18 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 }
 MP_DEFINE_CONST_FUN_OBJ_3(ffimod_var_obj, ffimod_var);
 
+STATIC mp_obj_t ffimod_addr(mp_obj_t self_in, mp_obj_t symname_in) {
+    mp_obj_ffimod_t *self = self_in;
+    const char *symname = mp_obj_str_get_str(symname_in);
+
+    void *sym = dlsym(self->handle, symname);
+    if (sym == NULL) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+    }
+    return mp_obj_new_int((mp_int_t)sym);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(ffimod_addr_obj, ffimod_addr);
+
 STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     (void)n_args;
     (void)n_kw;
@@ -296,6 +308,7 @@ STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
 STATIC const mp_map_elem_t ffimod_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_func), (mp_obj_t) &ffimod_func_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_var), (mp_obj_t) &ffimod_var_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_addr), (mp_obj_t) &ffimod_addr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t) &ffimod_close_obj },
 };
 
