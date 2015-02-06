@@ -21,6 +21,8 @@ script:
   - make -C stmhal -B MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
   - make -C stmhal BOARD=STM32F4DISC
   - make -C teensy
+  - make -C cc3200 BTARGET=application BTYPE=release
+  - make -C cc3200 BTARGET=bootloader  BTYPE=release
   - make -C windows CROSS_COMPILE=i586-mingw32msvc-
 
   - (cd tests && MICROPY_CPYTHON3=python3.3 ./run-tests)
