@@ -363,7 +363,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
 
-    return raw_value * VBAT_DIV / 4096.0f * 3.3f;
+    return raw_value / 4096.0f * 3.3f;
 }
 #endif
 
