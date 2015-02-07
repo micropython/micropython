@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/builtin.h"
 #include "py/objlist.h"
@@ -41,13 +42,6 @@
 extern mp_uint_t mp_sys_stdin_obj;
 extern mp_uint_t mp_sys_stdout_obj;
 extern mp_uint_t mp_sys_stderr_obj;
-
-// These two lists must be initialised per port (after the call to mp_init).
-// TODO document these properly, they aren't constants or functions...
-/// \constant path - a mutable list of directories to search for imported modules
-mp_obj_list_t mp_sys_path_obj;
-/// \constant argv - a mutable list of arguments this program started with
-mp_obj_list_t mp_sys_argv_obj;
 
 /// \constant version - Python language version that this implementation conforms to, as a string
 STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
@@ -99,8 +93,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_pri
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_path), (mp_obj_t)&mp_sys_path_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&mp_sys_argv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_path), (mp_obj_t)&MP_STATE_VM(mp_sys_path_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&MP_STATE_VM(mp_sys_argv_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version_info), (mp_obj_t)&mp_sys_version_info_obj },
 #ifdef MICROPY_PY_SYS_PLATFORM

@@ -39,7 +39,7 @@ extern uint gc_collected;
 STATIC mp_obj_t py_gc_collect(void) {
     gc_collect();
 #if MICROPY_PY_GC_COLLECT_RETVAL
-    return MP_OBJ_NEW_SMALL_INT(gc_collected);
+    return MP_OBJ_NEW_SMALL_INT(MP_STATE_MEM(gc_collected));
 #else
     return mp_const_none;
 #endif

@@ -222,13 +222,9 @@ STATIC void gc_deal_with_stack_overflow(void) {
     }
 }
 
-#if MICROPY_PY_GC_COLLECT_RETVAL
-uint gc_collected;
-#endif
-
 STATIC void gc_sweep(void) {
     #if MICROPY_PY_GC_COLLECT_RETVAL
-    gc_collected = 0;
+    MP_STATE_MEM(gc_collected) = 0;
     #endif
     // free unmarked heads and their tails
     int free_tail = 0;
@@ -253,7 +249,7 @@ STATIC void gc_sweep(void) {
 #endif
                 free_tail = 1;
                 #if MICROPY_PY_GC_COLLECT_RETVAL
-                gc_collected++;
+                MP_STATE_MEM(gc_collected)++;
                 #endif
                 // fall through to free the head
 

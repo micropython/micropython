@@ -32,7 +32,7 @@
 #include "py/misc.h"
 #include "py/nlr.h"
 #include "py/obj.h"
-#include "py/objlist.h" // in case port needs mp_obj_list_t in root pointers
+#include "py/objlist.h"
 #include "py/objexcept.h"
 
 // This file contains structures defining the state of the Micro Python
@@ -66,6 +66,10 @@ typedef struct _mp_state_mem_t {
     uint16_t gc_auto_collect_enabled;
 
     mp_uint_t gc_last_free_atb_index;
+
+    #if MICROPY_PY_GC_COLLECT_RETVAL
+    mp_uint_t gc_collected;
+    #endif
 } mp_state_mem_t;
 
 // This structure hold runtime and VM information.  It includes a section
@@ -105,6 +109,10 @@ typedef struct _mp_state_vm_t {
 
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
+
+    // these two lists must be initialised per port, after the call to mp_init
+    mp_obj_list_t mp_sys_path_obj;
+    mp_obj_list_t mp_sys_argv_obj;
 
     // dictionary for overridden builtins
     #if MICROPY_CAN_OVERRIDE_BUILTINS
