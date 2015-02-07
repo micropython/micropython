@@ -29,7 +29,6 @@
 #include <stdint.h>
 
 #include "py/nlr.h"
-#include "py/parsehelper.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
@@ -57,39 +56,18 @@ STATIC bool repl_display_debugging_info = 0;
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
 STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, int exec_flags) {
     int ret = 0;
+    uint32_t start = 0;
 
-    mp_parse_error_kind_t parse_error_kind;
-    mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_error_kind);
-    qstr source_name = lex->source_name;
-
-    // check for parse error
-    if (pn == MP_PARSE_NODE_NULL) {
-        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
-            stdout_tx_strn("\x04", 1);
-        }
-        mp_parse_show_exception(lex, parse_error_kind);
-        mp_lexer_free(lex);
-        goto finish;
-    }
-
-    mp_lexer_free(lex);
-
-    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
-
-    // check for compile error
-    if (mp_obj_is_exception_instance(module_fun)) {
-        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
-            stdout_tx_strn("\x04", 1);
-        }
-        mp_obj_print_exception(printf_wrapper, NULL, module_fun);
-        goto finish;
-    }
-
-    // execute code
     nlr_buf_t nlr;
-    uint32_t start = HAL_GetTick();
     if (nlr_push(&nlr) == 0) {
+        // parse and compile the script
+        qstr source_name = lex->source_name;
+        mp_parse_node_t pn = mp_parse(lex, input_kind);
+        mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
+
+        // execute code
         mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+        start = HAL_GetTick();
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
         nlr_pop();
@@ -131,7 +109,6 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
         gc_dump_info();
     }
 
-finish:
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
         stdout_tx_strn("\x04", 1);
     }

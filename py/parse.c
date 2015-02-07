@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "py/nlr.h"
 #include "py/lexer.h"
 #include "py/parse.h"
 #include "py/parsenum.h"
@@ -382,7 +383,7 @@ STATIC void push_result_rule(parser_t *parser, mp_uint_t src_line, const rule_t 
     push_result_node(parser, (mp_parse_node_t)pn);
 }
 
-mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_parse_error_kind_t *parse_error_kind_out) {
+mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     // initialise parser and allocate memory for its stacks
 
@@ -717,15 +718,15 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_p
         }
     }
 
-    mp_parse_node_t result;
+    mp_obj_t exc = MP_OBJ_NULL;
+    mp_parse_node_t result = MP_PARSE_NODE_NULL;
 
     // check if we had a memory error
     if (parser.had_memory_error) {
 memory_error:
-        *parse_error_kind_out = MP_PARSE_ERROR_MEMORY;
-        result = MP_PARSE_NODE_NULL;
+        exc = mp_obj_new_exception_msg(&mp_type_MemoryError,
+            "parser could not allocate enough memory");
         goto finished;
-
     }
 
     // check we are at the end of the token stream
@@ -747,17 +748,30 @@ finished:
     // free the memory that we don't need anymore
     m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
+    // we also free the lexer on behalf of the caller (see below)
 
-    // return the result
-    return result;
+    if (exc != MP_OBJ_NULL) {
+        // had an error so raise the exception
+        // add traceback to give info about file name and location
+        // we don't have a 'block' name, so just pass the NULL qstr to indicate this
+        mp_obj_exception_add_traceback(exc, lex->source_name, lex->tok_line, MP_QSTR_NULL);
+        mp_lexer_free(lex);
+        nlr_raise(exc);
+    } else {
+        mp_lexer_free(lex);
+        return result;
+    }
 
 syntax_error:
     if (lex->tok_kind == MP_TOKEN_INDENT) {
-        *parse_error_kind_out = MP_PARSE_ERROR_UNEXPECTED_INDENT;
+        exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+            "unexpected indent");
     } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
-        *parse_error_kind_out = MP_PARSE_ERROR_UNMATCHED_UNINDENT;
+        exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+            "unindent does not match any outer indentation level");
     } else {
-        *parse_error_kind_out = MP_PARSE_ERROR_INVALID_SYNTAX;
+        exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+            "invalid syntax");
 #ifdef USE_RULE_NAME
         // debugging: print the rule name that failed and the token
         printf("rule: %s\n", rule->rule_name);
@@ -766,6 +780,5 @@ syntax_error:
 #endif
 #endif
     }
-    result = MP_PARSE_NODE_NULL;
     goto finished;
 }

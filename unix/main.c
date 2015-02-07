@@ -38,7 +38,6 @@
 #include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/compile.h"
-#include "py/parsehelper.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/repl.h"
@@ -101,53 +100,8 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
 // value of the exit is in the lower 8 bits of the return value
 STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
     if (lex == NULL) {
+        printf("MemoryError: lexer could not allocate memory\n");
         return 1;
-    }
-
-    if (0) {
-        // just tokenise
-        while (lex->tok_kind != MP_TOKEN_END) {
-            mp_lexer_show_token(lex);
-            mp_lexer_to_next(lex);
-        }
-        mp_lexer_free(lex);
-        return 0;
-    }
-
-    mp_parse_error_kind_t parse_error_kind;
-    mp_parse_node_t pn = mp_parse(lex, input_kind, &parse_error_kind);
-
-    if (pn == MP_PARSE_NODE_NULL) {
-        // parse error
-        mp_parse_show_exception(lex, parse_error_kind);
-        mp_lexer_free(lex);
-        return 1;
-    }
-
-    qstr source_name = lex->source_name;
-    #if MICROPY_PY___FILE__
-    if (input_kind == MP_PARSE_FILE_INPUT) {
-        mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-    }
-    #endif
-    mp_lexer_free(lex);
-
-    /*
-    printf("----------------\n");
-    mp_parse_node_print(pn, 0);
-    printf("----------------\n");
-    */
-
-    mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
-
-    if (mp_obj_is_exception_instance(module_fun)) {
-        // compile error
-        mp_obj_print_exception(printf_wrapper, NULL, module_fun);
-        return 1;
-    }
-
-    if (compile_only) {
-        return 0;
     }
 
     #ifndef _WIN32
@@ -159,18 +113,43 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
     sa.sa_handler = SIG_DFL;
     #endif
 
-    // execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_call_function_0(module_fun);
+        qstr source_name = lex->source_name;
+
+        #if MICROPY_PY___FILE__
+        if (input_kind == MP_PARSE_FILE_INPUT) {
+            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+        }
+        #endif
+
+        mp_parse_node_t pn = mp_parse(lex, input_kind);
+
+        /*
+        printf("----------------\n");
+        mp_parse_node_print(pn, 0);
+        printf("----------------\n");
+        */
+
+        mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
+
+        if (!compile_only) {
+            // execute it
+            mp_call_function_0(module_fun);
+        }
+
         #ifndef _WIN32
+        // disable signal handler
         sigaction(SIGINT, &sa, NULL);
         #endif
+
         nlr_pop();
         return 0;
+
     } else {
         // uncaught exception
         #ifndef _WIN32
+        // disable signal handler
         sigaction(SIGINT, &sa, NULL);
         #endif
         return handle_uncaught_exception((mp_obj_t)nlr.ret_val);

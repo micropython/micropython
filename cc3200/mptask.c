@@ -36,7 +36,6 @@
 #include "lexer.h"
 #include "parse.h"
 #include "obj.h"
-#include "parsehelper.h"
 #include "compile.h"
 #include "runtime0.h"
 #include "runtime.h"

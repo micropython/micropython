@@ -3823,7 +3823,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     m_del_obj(compiler_t, comp);
 
     if (compile_error != MP_OBJ_NULL) {
-        return compile_error;
+        nlr_raise(compile_error);
     } else {
 #if MICROPY_EMIT_CPYTHON
         // can't create code, so just return true

@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "py/nlr.h"
-#include "py/parsehelper.h"
 #include "py/compile.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"

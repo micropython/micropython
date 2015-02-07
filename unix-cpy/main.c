@@ -30,7 +30,6 @@
 #include <string.h>
 
 #include "py/nlr.h"
-#include "py/parsehelper.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/pfenv.h"
@@ -51,17 +50,7 @@ void do_file(const char *file) {
 
     } else {
         // parse
-        mp_parse_error_kind_t parse_error_kind;
-        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT, &parse_error_kind);
-
-        if (pn == MP_PARSE_NODE_NULL) {
-            // parse error
-            mp_parse_show_exception(lex, parse_error_kind);
-            mp_lexer_free(lex);
-            return;
-        }
-
-        mp_lexer_free(lex);
+        mp_parse_node_t pn = mp_parse(lex, MP_PARSE_FILE_INPUT);
 
         if (pn != MP_PARSE_NODE_NULL) {
             //printf("----------------\n");
@@ -72,10 +61,6 @@ void do_file(const char *file) {
             mp_obj_t module_fun = mp_compile(pn, 0, MP_EMIT_OPT_NONE, false);
 
             //printf("----------------\n");
-
-            if (mp_obj_is_exception_instance(module_fun)) {
-                mp_obj_print_exception(printf_wrapper, NULL, module_fun);
-            }
         }
     }
 }

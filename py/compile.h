@@ -39,6 +39,7 @@ enum {
     MP_EMIT_OPT_ASM_THUMB,
 };
 
+// the compiler will raise an exception if an error occurred
 // the compiler will free the parse tree (pn) before it returns
 mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl);
 

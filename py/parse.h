@@ -90,14 +90,8 @@ typedef enum {
     MP_PARSE_EVAL_INPUT,
 } mp_parse_input_kind_t;
 
-typedef enum {
-    MP_PARSE_ERROR_MEMORY,
-    MP_PARSE_ERROR_UNEXPECTED_INDENT,
-    MP_PARSE_ERROR_UNMATCHED_UNINDENT,
-    MP_PARSE_ERROR_INVALID_SYNTAX,
-} mp_parse_error_kind_t;
-
-// returns MP_PARSE_NODE_NULL on error, and then parse_error_kind_out is valid
-mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind, mp_parse_error_kind_t *parse_error_kind_out);
+// the parser will raise an exception if an error occurred
+// the parser will free the lexer before it returns
+mp_parse_node_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind);
 
 #endif // __MICROPY_INCLUDED_PY_PARSE_H__

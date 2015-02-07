@@ -30,7 +30,6 @@
 
 #include "py/mpstate.h"
 #include "py/nlr.h"
-#include "py/parsehelper.h"
 #include "py/parsenum.h"
 #include "py/compile.h"
 #include "py/objtuple.h"
@@ -1228,47 +1227,30 @@ void mp_import_all(mp_obj_t module) {
 
 // this is implemented in this file so it can optimise access to locals/globals
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
-    // parse the string
-    mp_parse_error_kind_t parse_error_kind;
-    mp_parse_node_t pn = mp_parse(lex, parse_input_kind, &parse_error_kind);
+    // save context
+    mp_obj_dict_t *volatile old_globals = mp_globals_get();
+    mp_obj_dict_t *volatile old_locals = mp_locals_get();
 
-    if (pn == MP_PARSE_NODE_NULL) {
-        // parse error; raise exception
-        mp_obj_t exc = mp_parse_make_exception(lex, parse_error_kind);
-        mp_lexer_free(lex);
-        nlr_raise(exc);
-    }
-
-    qstr source_name = lex->source_name;
-    mp_lexer_free(lex);
-
-    // save context and set new context
-    mp_obj_dict_t *old_globals = mp_globals_get();
-    mp_obj_dict_t *old_locals = mp_locals_get();
+    // set new context
     mp_globals_set(globals);
     mp_locals_set(locals);
 
-    // compile the string
-    mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
-
-    // check if there was a compile error
-    if (mp_obj_is_exception_instance(module_fun)) {
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_raise(module_fun);
-    }
-
-    // for compile only
-    if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        return module_fun;
-    }
-
-    // complied successfully, execute it
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t ret = mp_call_function_0(module_fun);
+        qstr source_name = lex->source_name;
+        mp_parse_node_t pn = mp_parse(lex, parse_input_kind);
+        mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
+
+        mp_obj_t ret;
+        if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {
+            // for compile only, return value is the module function
+            ret = module_fun;
+        } else {
+            // execute module function and get return value
+            ret = mp_call_function_0(module_fun);
+        }
+
+        // finish nlr block, restore context and return value
         nlr_pop();
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
