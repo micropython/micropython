@@ -127,7 +127,7 @@ raw_repl_reset:
         vstr_reset(&line);
         stdout_tx_str(">");
         for (;;) {
-            char c = stdin_rx_chr();
+            int c = stdin_rx_chr();
             if (c == CHAR_CTRL_A) {
                 // reset raw REPL
                 goto raw_repl_reset;
