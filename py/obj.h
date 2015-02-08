@@ -46,7 +46,7 @@ typedef machine_const_ptr_t mp_const_obj_t;
 
 struct _mp_obj_type_t;
 struct _mp_obj_base_t {
-    const struct _mp_obj_type_t *type;
+    const struct _mp_obj_type_t *type MICROPY_OBJ_BASE_ALIGNMENT;
 };
 typedef struct _mp_obj_base_t mp_obj_base_t;
 

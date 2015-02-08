@@ -536,6 +536,14 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 
+// All uPy objects in ROM must be aligned on at least a 4 byte boundary
+// so that the small-int/qstr/pointer distinction can be made.  For machines
+// that don't do this (eg 16-bit CPU), define the following macro to something
+// like __attribute__((aligned(4))).
+#ifndef MICROPY_OBJ_BASE_ALIGNMENT
+#define MICROPY_OBJ_BASE_ALIGNMENT
+#endif
+
 // On embedded platforms, these will typically enable/disable irqs.
 #ifndef MICROPY_BEGIN_ATOMIC_SECTION
 #define MICROPY_BEGIN_ATOMIC_SECTION() (0)
