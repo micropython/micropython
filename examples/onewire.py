@@ -60,29 +60,29 @@ class OneWire:
         return presence
 
 
-    def write_bit(self, value, pin, pin_init, pin_out, pin_low, pin_high, counter, delay_until=None):
+    def write_bit(self, value, pin, pin_init, pin_OUT_PP, pin_low, pin_high, counter):
         """
         Write a bit.
         """
-        #print ('write bit: %d' % value)
+        delays = self.write_delays
         if value > 0:
             # write 1
             i = disable_irq()
             pin_low()
-            pin_init(pin_out)
-            udelay(5)
+            pin_init(pin_OUT_PP)
+            udelay(delays[0])
             pin_high()
             enable_irq(i)
-            udelay(55)
+            udelay(delays[1])
         else:
             # write 0
             i = disable_irq()
             pin_low()
-            pin_init(pin_out)
-            udelay(60)
+            pin_init(pin_OUT_PP)
+            udelay(delays[2])
             pin_high()
             enable_irq(i)
-            #udelay(5)
+            udelay(delays[3])
 
     def write_byte(self, value):
         """
@@ -93,7 +93,7 @@ class OneWire:
         delays = self.write_delays
         pin = self.data
         pin_init = self.data.init
-        pin_out = Pin.OUT_PP
+        pin_OUT_PP = Pin.OUT_PP
         pin_low = self.data.low
         pin_high = self.data.high
         counter = self.micros.counter
@@ -101,24 +101,7 @@ class OneWire:
         t1 = counter()
         write_bit = self.write_bit
         while bitmask < 0x100:
-            if value & bitmask > 0:
-                # write 1
-                i = disable_irq()
-                pin_low()
-                pin_init(pin_out)
-                udelay(delays[0])
-                pin_high()
-                enable_irq(i)
-                udelay(delays[1])
-            else:
-                # write 0
-                i = disable_irq()
-                pin_low()
-                pin_init(pin_out)
-                udelay(delays[2])
-                pin_high()
-                enable_irq(i)
-                udelay(delays[3])
+            self.write_bit(value & bitmask, pin, pin_init, pin_OUT_PP, pin_low, pin_high, counter)
             bitmask <<= 1
         t2 = counter()
         pin_init(Pin.IN, Pin.PULL_UP)
@@ -135,16 +118,16 @@ class OneWire:
         #self.data.init(Pin.IN, Pin.PULL_NONE)
         #pyb.enable_irq(i)
 
-    def read_byte(self, pin_in, pin_value, pin_init, pin_low, pull_up, pin_out):
+    def read_byte(self, pin_in, pin_value, pin_init, pin_low, pin_PULL_UP, pin_OUT_PP):
         one, two, three = self.read_delays
         byte = 0x00
         bitmask = 0x01
         while bitmask < 0x100:
             i = disable_irq()
             pin_low()
-            pin_init(pin_out)
+            pin_init(pin_OUT_PP)
             udelay(one)
-            pin_init(pin_in, pull_up)
+            pin_init(pin_in, pin_PULL_UP)
             udelay(two)
             value = pin_value()
             enable_irq(i)
@@ -160,17 +143,17 @@ class OneWire:
 
         pin = self.data
         pin_in = Pin.IN
-        pull_up = Pin.PULL_UP
+        pin_PULL_UP = Pin.PULL_UP
         counter = self.micros.counter
         pin_value = pin.value
         pin_init = pin.init
         pin_low = pin.low
-        pin_out = Pin.OUT_PP
+        pin_OUT_PP = Pin.OUT_PP
         counter = self.micros.counter
         t1 = counter()
         read_byte = self.read_byte
         while i < count:
-            s.append(read_byte(pin_in, pin_value, pin_init, pin_low, pull_up, pin_out))
+            s.append(read_byte(pin_in, pin_value, pin_init, pin_low, pin_PULL_UP, pin_OUT_PP))
             i += 1
         print (counter() - t1)
         return s
