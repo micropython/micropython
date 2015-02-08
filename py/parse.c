@@ -72,6 +72,7 @@ enum {
     RULE_maximum_number_of,
     RULE_string, // special node for non-interned string
     RULE_bytes, // special node for non-interned bytes
+    RULE_const_object, // special node for a constant, generic Python object
 };
 
 #define ident                   (RULE_ACT_ALLOW_IDENT)
@@ -170,7 +171,7 @@ mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg) {
     if (kind == MP_PARSE_NODE_SMALL_INT) {
         return (mp_parse_node_t)(kind | (arg << 1));
     }
-    return (mp_parse_node_t)(kind | (arg << 5));
+    return (mp_parse_node_t)(kind | (arg << 4));
 }
 
 void mp_parse_node_free(mp_parse_node_t pn) {
@@ -180,6 +181,8 @@ void mp_parse_node_free(mp_parse_node_t pn) {
         mp_uint_t rule_id = MP_PARSE_NODE_STRUCT_KIND(pns);
         if (rule_id == RULE_string || rule_id == RULE_bytes) {
             m_del(char, (char*)pns->nodes[0], (mp_uint_t)pns->nodes[1]);
+        } else if (rule_id == RULE_const_object) {
+            // don't free the const object since it's probably used by the compiled code
         } else {
             bool adjust = ADD_BLANK_NODE(rules[rule_id]);
             if (adjust) {
@@ -215,8 +218,6 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
         mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: printf("id(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_INTEGER: printf("int(%s)\n", qstr_str(arg)); break;
-            case MP_PARSE_NODE_DECIMAL: printf("dec(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_STRING: printf("str(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_BYTES: printf("bytes(%s)\n", qstr_str(arg)); break;
             case MP_PARSE_NODE_TOKEN: printf("tok(" INT_FMT ")\n", arg); break;
@@ -229,6 +230,8 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
             printf("literal str(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_bytes) {
             printf("literal bytes(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
+        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
+            printf("literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
         } else {
             mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
@@ -285,11 +288,11 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
     parser->result_stack[parser->result_stack_top++] = pn;
 }
 
-STATIC void push_result_string_bytes(parser_t *parser, mp_uint_t src_line, mp_uint_t rule_kind, const char *str, mp_uint_t len) {
+STATIC mp_parse_node_t make_node_string_bytes(parser_t *parser, mp_uint_t src_line, mp_uint_t rule_kind, const char *str, mp_uint_t len) {
     mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, 2);
     if (pn == NULL) {
         memory_error(parser);
-        return;
+        return MP_PARSE_NODE_NULL;
     }
     pn->source_line = src_line;
     pn->kind_num_nodes = rule_kind | (2 << 8);
@@ -297,7 +300,19 @@ STATIC void push_result_string_bytes(parser_t *parser, mp_uint_t src_line, mp_ui
     memcpy(p, str, len);
     pn->nodes[0] = (mp_int_t)p;
     pn->nodes[1] = len;
-    push_result_node(parser, (mp_parse_node_t)pn);
+    return (mp_parse_node_t)pn;
+}
+
+STATIC mp_parse_node_t make_node_const_object(parser_t *parser, mp_uint_t src_line, mp_obj_t obj) {
+    mp_parse_node_struct_t *pn = m_new_obj_var_maybe(mp_parse_node_struct_t, mp_parse_node_t, 1);
+    if (pn == NULL) {
+        memory_error(parser);
+        return MP_PARSE_NODE_NULL;
+    }
+    pn->source_line = src_line;
+    pn->kind_num_nodes = RULE_const_object | (1 << 8);
+    pn->nodes[0] = (mp_uint_t)obj;
+    return (mp_parse_node_t)pn;
 }
 
 STATIC void push_result_token(parser_t *parser) {
@@ -305,45 +320,16 @@ STATIC void push_result_token(parser_t *parser) {
     mp_lexer_t *lex = parser->lexer;
     if (lex->tok_kind == MP_TOKEN_NAME) {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, qstr_from_strn(lex->vstr.buf, lex->vstr.len));
-    } else if (lex->tok_kind == MP_TOKEN_NUMBER) {
-        bool dec = false;
-        bool small_int = true;
-        mp_int_t int_val = 0;
-        mp_uint_t len = lex->vstr.len;
-        const char *str = lex->vstr.buf;
-        mp_uint_t base = 0;
-        mp_uint_t i = mp_parse_num_base(str, len, &base);
-        bool overflow = false;
-        for (; i < len; i++) {
-            mp_uint_t dig;
-            int clower = str[i] | 0x20;
-            if (unichar_isdigit(str[i]) && (mp_uint_t)(str[i] - '0') < base) {
-                dig = str[i] - '0';
-            } else if (base == 16 && 'a' <= clower && clower <= 'f') {
-                dig = clower - 'a' + 10;
-            } else if (str[i] == '.' || clower == 'e' || clower == 'j') {
-                dec = true;
-                break;
-            } else {
-                small_int = false;
-                break;
-            }
-            // add next digi and check for overflow
-            if (mp_small_int_mul_overflow(int_val, base)) {
-                overflow = true;
-            }
-            int_val = int_val * base + dig;
-            if (!MP_SMALL_INT_FITS(int_val)) {
-                overflow = true;
-            }
-        }
-        if (dec) {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_DECIMAL, qstr_from_strn(str, len));
-        } else if (small_int && !overflow && MP_SMALL_INT_FITS(int_val)) {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, int_val);
+    } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
+        mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
+        if (MP_OBJ_IS_SMALL_INT(o)) {
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, MP_OBJ_SMALL_INT_VALUE(o));
         } else {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_INTEGER, qstr_from_strn(str, len));
+            pn = make_node_const_object(parser, lex->tok_line, o);
         }
+    } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
+        mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
+        pn = make_node_const_object(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
         // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
@@ -360,8 +346,7 @@ STATIC void push_result_token(parser_t *parser) {
             pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
             // not interned, make a node holding a pointer to the string/bytes data
-            push_result_string_bytes(parser, lex->tok_line, lex->tok_kind == MP_TOKEN_STRING ? RULE_string : RULE_bytes, lex->vstr.buf, lex->vstr.len);
-            return;
+            pn = make_node_string_bytes(parser, lex->tok_line, lex->tok_kind == MP_TOKEN_STRING ? RULE_string : RULE_bytes, lex->vstr.buf, lex->vstr.len);
         }
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);

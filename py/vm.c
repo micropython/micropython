@@ -199,19 +199,6 @@ dispatch_loop:
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_LOAD_CONST_INT): {
-                    DECODE_QSTR;
-                    PUSH(mp_load_const_int(qst));
-                    DISPATCH();
-                }
-
-                ENTRY(MP_BC_LOAD_CONST_DEC): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_QSTR;
-                    PUSH(mp_load_const_dec(qst));
-                    DISPATCH();
-                }
-
                 ENTRY(MP_BC_LOAD_CONST_BYTES): {
                     DECODE_QSTR;
                     PUSH(mp_load_const_bytes(qst));

@@ -473,16 +473,6 @@ STATIC void emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-STATIC void emit_bc_load_const_int(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_INT, qst);
-}
-
-STATIC void emit_bc_load_const_dec(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_DEC, qst);
-}
-
 STATIC void emit_bc_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     emit_bc_pre(emit, 1);
     if (bytes) {
@@ -932,8 +922,6 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_import_star,
     emit_bc_load_const_tok,
     emit_bc_load_const_small_int,
-    emit_bc_load_const_int,
-    emit_bc_load_const_dec,
     emit_bc_load_const_str,
     emit_bc_load_const_obj,
     emit_bc_load_null,

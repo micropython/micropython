@@ -161,16 +161,6 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             break;
         }
 
-        case MP_BC_LOAD_CONST_INT:
-            DECODE_QSTR;
-            printf("LOAD_CONST_INT %s", qstr_str(qst));
-            break;
-
-        case MP_BC_LOAD_CONST_DEC:
-            DECODE_QSTR;
-            printf("LOAD_CONST_DEC %s", qstr_str(qst));
-            break;
-
         case MP_BC_LOAD_CONST_BYTES:
             DECODE_QSTR;
             printf("LOAD_CONST_BYTES %s", qstr_str(qst));

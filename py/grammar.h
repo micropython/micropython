@@ -248,7 +248,7 @@ DEF_RULE(power_dbl_star, c(power_dbl_star), and(2), tok(OP_DBL_STAR), rule(facto
 // testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* [','] )
 // trailer: '(' [arglist] ')' | '[' subscriptlist ']' | '.' NAME
 
-DEF_RULE(atom, nc, or(10), tok(NAME), tok(NUMBER), rule(atom_string), tok(ELLIPSIS), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), rule(atom_paren), rule(atom_bracket), rule(atom_brace))
+DEF_RULE(atom, nc, or(11), tok(NAME), tok(INTEGER), tok(FLOAT_OR_IMAG), rule(atom_string), tok(ELLIPSIS), tok(KW_NONE), tok(KW_TRUE), tok(KW_FALSE), rule(atom_paren), rule(atom_bracket), rule(atom_brace))
 DEF_RULE(atom_string, c(atom_string), one_or_more, rule(string_or_bytes))
 DEF_RULE(string_or_bytes, nc, or(2), tok(STRING), tok(BYTES))
 DEF_RULE(atom_paren, c(atom_paren), and(3), tok(DEL_PAREN_OPEN), opt_rule(atom_2b), tok(DEL_PAREN_CLOSE))

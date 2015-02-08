@@ -1142,21 +1142,6 @@ STATIC void emit_native_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-STATIC void emit_native_load_const_int(emit_t *emit, qstr qst) {
-    DEBUG_printf("load_const_int %s\n", qstr_str(qst));
-    // for viper: load integer, check fits in 32 bits
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_INT, qst, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-}
-
-STATIC void emit_native_load_const_dec(emit_t *emit, qstr qst) {
-    // for viper, a float/complex is just a Python object
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_DEC, qst, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-}
-
 STATIC void emit_native_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     emit_native_pre(emit);
     // TODO: Eventually we want to be able to work with raw pointers in viper to
@@ -2317,8 +2302,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_import_star,
     emit_native_load_const_tok,
     emit_native_load_const_small_int,
-    emit_native_load_const_int,
-    emit_native_load_const_dec,
     emit_native_load_const_str,
     emit_native_load_const_obj,
     emit_native_load_null,

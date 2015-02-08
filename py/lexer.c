@@ -104,6 +104,10 @@ STATIC bool is_following_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr1);
 }
 
+STATIC bool is_following_letter(mp_lexer_t *lex) {
+    return unichar_isalpha(lex->chr1);
+}
+
 STATIC bool is_following_odigit(mp_lexer_t *lex) {
     return lex->chr1 >= '0' && lex->chr1 <= '7';
 }
@@ -540,7 +544,15 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
         }
 
     } else if (is_digit(lex) || (is_char(lex, '.') && is_following_digit(lex))) {
-        lex->tok_kind = MP_TOKEN_NUMBER;
+        bool forced_integer = false;
+        if (is_char(lex, '.')) {
+            lex->tok_kind = MP_TOKEN_FLOAT_OR_IMAG;
+        } else {
+            lex->tok_kind = MP_TOKEN_INTEGER;
+            if (is_char(lex, '0') && is_following_letter(lex)) {
+                forced_integer = true;
+            }
+        }
 
         // get first char
         vstr_add_char(&lex->vstr, CUR_CHAR(lex));
@@ -548,14 +560,18 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
 
         // get tail chars
         while (!is_end(lex)) {
-            if (is_char_or(lex, 'e', 'E')) {
+            if (!forced_integer && is_char_or(lex, 'e', 'E')) {
+                lex->tok_kind = MP_TOKEN_FLOAT_OR_IMAG;
                 vstr_add_char(&lex->vstr, 'e');
                 next_char(lex);
                 if (is_char(lex, '+') || is_char(lex, '-')) {
                     vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                     next_char(lex);
                 }
-            } else if (is_letter(lex) || is_digit(lex) || is_char_or(lex, '_', '.')) {
+            } else if (is_letter(lex) || is_digit(lex) || is_char(lex, '.')) {
+                if (is_char_or3(lex, '.', 'j', 'J')) {
+                    lex->tok_kind = MP_TOKEN_FLOAT_OR_IMAG;
+                }
                 vstr_add_char(&lex->vstr, CUR_CHAR(lex));
                 next_char(lex);
             } else {

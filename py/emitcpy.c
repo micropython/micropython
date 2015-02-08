@@ -171,20 +171,6 @@ STATIC void emit_cpy_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-STATIC void emit_cpy_load_const_int(emit_t *emit, qstr qst) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CONST %s\n", qstr_str(qst));
-    }
-}
-
-STATIC void emit_cpy_load_const_dec(emit_t *emit, qstr qst) {
-    emit_pre(emit, 1, 3);
-    if (emit->pass == MP_PASS_EMIT) {
-        printf("LOAD_CONST %s\n", qstr_str(qst));
-    }
-}
-
 STATIC void print_quoted_str(qstr qst, bool bytes) {
     const char *str = qstr_str(qst);
     int len = strlen(str);
@@ -839,8 +825,6 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_import_star,
     emit_cpy_load_const_tok,
     emit_cpy_load_const_small_int,
-    emit_cpy_load_const_int,
-    emit_cpy_load_const_dec,
     emit_cpy_load_const_str,
     emit_cpy_load_const_obj,
     emit_cpy_load_null,

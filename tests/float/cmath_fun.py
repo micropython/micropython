@@ -12,7 +12,7 @@ print("%.5g" % e)
 print("%.5g" % pi)
 
 test_values_non_zero = []
-base_values = (0.0, 0.5, 1.23456, 10.)
+base_values = (0.0, 0.5, 1.2345, 10.)
 for r in base_values:
     for i in base_values:
         if r != 0. or i != 0.:

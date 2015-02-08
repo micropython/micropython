@@ -27,10 +27,13 @@
 #define __MICROPY_INCLUDED_PY_PARSENUM_H__
 
 #include "py/mpconfig.h"
+#include "py/lexer.h"
 #include "py/obj.h"
 
 mp_uint_t mp_parse_num_base(const char *str, mp_uint_t len, mp_uint_t *base);
-mp_obj_t mp_parse_num_integer(const char *restrict str, mp_uint_t len, mp_uint_t base);
-mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, bool force_complex);
+
+// these functions raise a SyntaxError if lex!=NULL, else a ValueError
+mp_obj_t mp_parse_num_integer(const char *restrict str, mp_uint_t len, mp_uint_t base, mp_lexer_t *lex);
+mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex);
 
 #endif // __MICROPY_INCLUDED_PY_PARSENUM_H__

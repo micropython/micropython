@@ -161,9 +161,9 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                     vstr_add_byte(&vstr, *s);
                 }
                 if (flt) {
-                    next = mp_parse_num_decimal(vstr.buf, vstr.len, false, false);
+                    next = mp_parse_num_decimal(vstr.buf, vstr.len, false, false, NULL);
                 } else {
-                    next = mp_parse_num_integer(vstr.buf, vstr.len, 10);
+                    next = mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
                 }
                 break;
             }

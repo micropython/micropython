@@ -47,6 +47,7 @@ typedef enum {
     PN_maximum_number_of,
     PN_string, // special node for non-interned string
     PN_bytes, // special node for non-interned bytes
+    PN_const_object, // special node for a constant, generic Python object
 } pn_kind_t;
 
 #define EMIT(fun) (comp->emit_method_table->fun(comp->emit))
@@ -174,6 +175,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
 #endif
             case PN_string:
             case PN_bytes:
+            case PN_const_object:
                 return pn;
         }
 
@@ -432,6 +434,9 @@ STATIC bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes)) {
         return true;
     }
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_const_object)) {
+        return true;
+    }
     if (!MP_PARSE_NODE_IS_LEAF(pn)) {
         return false;
     }
@@ -486,6 +491,12 @@ STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vst
         return;
     }
 
+    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_const_object)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+        mp_obj_print((mp_obj_t)pns->nodes[0], PRINT_REPR);
+        return;
+    }
+
     assert(MP_PARSE_NODE_IS_LEAF(pn));
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         vstr_printf(vstr, INT_FMT, MP_PARSE_NODE_LEAF_SMALL_INT(pn));
@@ -495,8 +506,6 @@ STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vst
     mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
     switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
         case MP_PARSE_NODE_ID: assert(0);
-        case MP_PARSE_NODE_INTEGER: vstr_printf(vstr, "%s", qstr_str(arg)); break;
-        case MP_PARSE_NODE_DECIMAL: vstr_printf(vstr, "%s", qstr_str(arg)); break;
         case MP_PARSE_NODE_STRING:
         case MP_PARSE_NODE_BYTES: {
             mp_uint_t len;
@@ -2159,7 +2168,8 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             // for non-REPL, evaluate then discard the expression
             if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !MP_PARSE_NODE_IS_ID(pns->nodes[0]))
                 || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)
-                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_bytes)) {
+                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_bytes)
+                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_const_object)) {
                 // do nothing with a lonely constant
             } else {
                 compile_node(comp, pns->nodes[0]); // just an expression
@@ -2954,6 +2964,10 @@ STATIC void compile_bytes(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
+STATIC void compile_const_object(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    EMIT_ARG(load_const_obj, (mp_obj_t)pns->nodes[0]);
+}
+
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
 STATIC compile_function_t compile_function[] = {
 #define nc NULL
@@ -2966,6 +2980,7 @@ STATIC compile_function_t compile_function[] = {
     NULL,
     compile_string,
     compile_bytes,
+    compile_const_object,
 };
 
 STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
@@ -2978,8 +2993,6 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: EMIT_ARG(load_id, arg); break;
-            case MP_PARSE_NODE_INTEGER: EMIT_ARG(load_const_int, arg); break;
-            case MP_PARSE_NODE_DECIMAL: EMIT_ARG(load_const_dec, arg); break;
             case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg, false); break;
             case MP_PARSE_NODE_BYTES: EMIT_ARG(load_const_str, arg, true); break;
             case MP_PARSE_NODE_TOKEN: default:
