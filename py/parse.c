@@ -703,14 +703,15 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         }
     }
 
-    mp_obj_t exc = MP_OBJ_NULL;
-    mp_parse_node_t result = MP_PARSE_NODE_NULL;
+    mp_obj_t exc;
+    mp_parse_node_t result;
 
     // check if we had a memory error
     if (parser.had_memory_error) {
 memory_error:
         exc = mp_obj_new_exception_msg(&mp_type_MemoryError,
             "parser could not allocate enough memory");
+        result = MP_PARSE_NODE_NULL;
         goto finished;
     }
 
@@ -727,6 +728,7 @@ memory_error:
 
     // get the root parse node that we created
     assert(parser.result_stack_top == 1);
+    exc = MP_OBJ_NULL;
     result = parser.result_stack[0];
 
 finished:
@@ -765,5 +767,6 @@ syntax_error:
 #endif
 #endif
     }
+    result = MP_PARSE_NODE_NULL;
     goto finished;
 }
