@@ -2,6 +2,8 @@ import pyb
 from pyb import Pin
 from pyb import Timer
 from pyb import udelay
+from pyb import disable_irq
+from pyb import enable_irq
 
 # Thanks to inspiration/examples from:
 #   https://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -25,9 +27,7 @@ class OneWire:
         """
         retries = 25
 
-        #i = pyb.disable_irq()
         self.data.init(Pin.IN, Pin.PULL_UP)
-        #pyb.enable_irq(i)
 
         # We will wait up to 250uS for
         # the bus to come high, if it doesn't then it is broken or shorted
@@ -43,19 +43,19 @@ class OneWire:
                 return 0
             udelay(10)
 
-        #  pull the bus low for at least 480µs
-        #i = pyb.disable_irq()
-        self.data.init(Pin.OUT_PP)
+        #  pull the bus low for at least 480�s
+        i = disable_irq()
         self.data.low()
-        #pyb.enable_irq(i)
+        self.data.init(Pin.OUT_PP)
+        enable_irq(i)
         udelay(480)
 
         # If there is a slave present, it should pull the bus low within 60µs
-        #i = pyb.disable_irq()
+        i = disable_irq()
         self.data.init(Pin.IN, Pin.PULL_UP)
         udelay(70)
         presence = not self.data.value()
-        #pyb.enable_irq(i)
+        enable_irq(i)
         udelay(410)
         return presence
 
@@ -67,21 +67,21 @@ class OneWire:
         #print ('write bit: %d' % value)
         if value > 0:
             # write 1
-            #i = pyb.disable_irq()
+            i = disable_irq()
             pin_low()
             pin_init(pin_out)
             udelay(5)
             pin_high()
-            #pyb.enable_irq(i)
+            enable_irq(i)
             udelay(55)
         else:
             # write 0
-            #i = pyb.disable_irq()
+            i = disable_irq()
             pin_low()
             pin_init(pin_out)
             udelay(60)
             pin_high()
-            #pyb.enable_irq(i)
+            enable_irq(i)
             #udelay(5)
 
     def write_byte(self, value):
@@ -103,17 +103,21 @@ class OneWire:
         while bitmask < 0x100:
             if value & bitmask > 0:
                 # write 1
+                i = disable_irq()
                 pin_low()
                 pin_init(pin_out)
                 udelay(delays[0])
                 pin_high()
+                enable_irq(i)
                 udelay(delays[1])
             else:
                 # write 0
+                i = disable_irq()
                 pin_low()
                 pin_init(pin_out)
                 udelay(delays[2])
                 pin_high()
+                enable_irq(i)
                 udelay(delays[3])
             bitmask <<= 1
         t2 = counter()
@@ -136,13 +140,14 @@ class OneWire:
         byte = 0x00
         bitmask = 0x01
         while bitmask < 0x100:
+            i = disable_irq()
             pin_low()
             pin_init(pin_out)
             udelay(one)
             pin_init(pin_in, pull_up)
             udelay(two)
             value = pin_value()
-            #pyb.enable_irq(i)
+            enable_irq(i)
             udelay(three)
             if value:
                 byte |= bitmask
