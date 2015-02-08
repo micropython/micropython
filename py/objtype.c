@@ -133,7 +133,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     // not type where we found a class method.
                     const mp_obj_type_t *org_type = (const mp_obj_type_t*)lookup->obj;
                     instance_convert_return_attr(NULL, org_type, elem->value, lookup->dest);
-                } else if (lookup->obj != MP_OBJ_NULL && !lookup->is_type && is_native_type(type)) {
+                } else if (lookup->obj != MP_OBJ_NULL && !lookup->is_type && is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
                     instance_convert_return_attr(lookup->obj->subobj[0], type, elem->value, lookup->dest);
                 } else {
                     instance_convert_return_attr(lookup->obj, type, elem->value, lookup->dest);
@@ -149,7 +149,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
 
         // Try this for completeness, but all native methods should be statically defined
         // in locals_dict, and would be handled by above.
-        if (lookup->obj != MP_OBJ_NULL && !lookup->is_type && is_native_type(type)) {
+        if (lookup->obj != MP_OBJ_NULL && !lookup->is_type && is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
             mp_load_method_maybe(lookup->obj->subobj[0], lookup->attr, lookup->dest);
             if (lookup->dest[0] != MP_OBJ_NULL) {
                 return;
