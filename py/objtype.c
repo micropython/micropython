@@ -662,8 +662,7 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
         mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
         return type->getiter(self->subobj[0]);
     }
-    mp_obj_t meth = mp_obj_new_bound_meth(member[0], self);
-    return mp_call_function_n_kw(meth, 0, 0, NULL);
+    return mp_call_method_n_kw(0, 0, member);
 }
 
 STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
