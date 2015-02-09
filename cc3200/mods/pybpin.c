@@ -45,12 +45,12 @@
 #include "pin.h"
 #include "prcm.h"
 #include "gpio.h"
-#include "pybgpio.h"
+#include "pybpin.h"
 #include "mpexception.h"
 
 
 /// \moduleref pyb
-/// \class GPIO - control I/O pins
+/// \class Pin - control I/O pins
 ///
 /// A pin is the basic object to control I/O pins.  It has methods to set
 /// the mode of the pin (input or output) and methods to get and set the
@@ -58,95 +58,49 @@
 ///
 /// Usage Model:
 ///
-/// All CPU Pins are predefined as pyb.GPIO.cpu.Name
+/// All CPU Pins are predefined as pyb.Pin.cpu.Name
 ///
-///     GPIO9_pin = pyb.GPIO.cpu.GPIO9
+///     GPIO9_pin = pyb.Pin.cpu.GPIO9
 ///
-///     g = pyb.GPIO(pyb.GPIO.cpu.GPIO9, 0, pyb.GPIO.IN)
+///     g = pyb.Pin(pyb.Pin.cpu.GPIO9, 0, pyb.Pin.IN)
 ///
 /// CPU pins which correspond to the board pins are available
 /// as `pyb.cpu.Name`.
 ///
 /// You can also use strings:
 ///
-///     g = pyb.GPIO('GPIO9', 0)
-///
-/// Users can add their own names:
-///
-///     MyMapperDict = { 'LeftMotorDir' : pyb.GPIO.cpu.GPIO11 }
-///     pyb.GPIO.dict(MyMapperDict)
-///     g = pyb.GPIO("LeftMotorDir", 0)
-///
-/// and can query mappings
-///
-///     g = pyb.GPIO("LeftMotorDir")
-///
-/// Users can also add their own mapping function:
-///
-///     def MyMapper(gpio_name):
-///        if gpio_name == "LeftMotorDir":
-///            return pyb.GPIO.cpu.GPIO11
-///
-///     pyb.GPIO.mapper(MyMapper)
-///
-/// So, if you were to call: `pyb.GPIO("LeftMotorDir", pyb.GPIO.OUT)`
-/// then `"LeftMotorDir"` is passed directly to the mapper function.
+///     g = pyb.Pin('GPIO9', 0)
 ///
 /// To summarise, the following order determines how things get mapped into
 /// an ordinal pin number:
 ///
-/// 1. Directly specify a GPIO object
-/// 2. User supplied mapping function
-/// 3. User supplied mapping (object must be usable as a dictionary key)
-/// 4. Supply a string which matches a CPU port/pin
+/// 1. Directly specify a Pin object
+/// 2. Supply a string which matches a CPU port/pin
 
-void gpio_init0(void) {
-    MP_STATE_PORT(gpio_class_mapper) = mp_const_none;
-    MP_STATE_PORT(gpio_class_map_dict) = mp_const_none;
+void pin_init0(void) {
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
-const gpio_obj_t *gpio_find(mp_obj_t user_obj) {
-    const gpio_obj_t *gpio_obj;
+const pin_obj_t *pin_find(mp_obj_t user_obj) {
+    const pin_obj_t *pin_obj;
 
     // If a pin was provided, then use it
-    if (MP_OBJ_IS_TYPE(user_obj, &gpio_type)) {
-        gpio_obj = user_obj;
-        return gpio_obj;
-    }
-
-    if (MP_STATE_PORT(gpio_class_mapper) != mp_const_none) {
-        gpio_obj = mp_call_function_1(MP_STATE_PORT(gpio_class_mapper), user_obj);
-        if (gpio_obj != mp_const_none) {
-            if (!MP_OBJ_IS_TYPE(gpio_obj, &gpio_type)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
-            }
-            return gpio_obj;
-        }
-        // The pin mapping function returned mp_const_none, fall through to
-        // other lookup methods.
-    }
-
-    if (MP_STATE_PORT(gpio_class_map_dict) != mp_const_none) {
-        mp_map_t *gpio_map_map = mp_obj_dict_get_map(MP_STATE_PORT(gpio_class_map_dict));
-        mp_map_elem_t *elem = mp_map_lookup(gpio_map_map, user_obj, MP_MAP_LOOKUP);
-        if (elem != NULL && elem->value != NULL) {
-            gpio_obj = elem->value;
-            return gpio_obj;
-        }
+    if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
+        pin_obj = user_obj;
+        return pin_obj;
     }
 
     // See if the pin name matches a cpu pin
-    gpio_obj = gpio_find_named_pin(&gpio_cpu_pins_locals_dict, user_obj);
-    if (gpio_obj) {
-        return gpio_obj;
+    pin_obj = pin_find_named_pin(&pin_cpu_pins_locals_dict, user_obj);
+    if (pin_obj) {
+        return pin_obj;
     }
 
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
-void gpio_config(const gpio_obj_t *self, uint af, uint mode, uint type, uint strength) {
-    // PIN_MODE_0 means it stays as a GPIO, else, another peripheral will take control of it
+void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
+    // PIN_MODE_0 means it stays as a Pin, else, another peripheral will take control of it
     if (af == PIN_MODE_0) {
         // enable the peripheral clock for the GPIO port of this pin
         switch (self->port) {
@@ -176,25 +130,25 @@ void gpio_config(const gpio_obj_t *self, uint af, uint mode, uint type, uint str
 
 /// \method print()
 /// Return a string describing the pin object.
-STATIC void gpio_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    gpio_obj_t *self = self_in;
+STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    pin_obj_t *self = self_in;
     uint32_t af = MAP_PinModeGet(self->pin_num);
-    uint32_t type = gpio_get_type(self);
-    uint32_t strength = gpio_get_strenght(self);
+    uint32_t type = pin_get_type(self);
+    uint32_t strength = pin_get_strenght(self);
 
     // pin name
-    print(env, "GPIO(GPIO.cpu.%s, af=%u", qstr_str(self->name), af);
+    print(env, "Pin(Pin.cpu.%s, af=%u", qstr_str(self->name), af);
 
     if (af == PIN_MODE_0) {
         // IO mode
         qstr mode_qst;
-        uint32_t mode = gpio_get_mode(self);
+        uint32_t mode = pin_get_mode(self);
         if (mode == GPIO_DIR_MODE_IN) {
             mode_qst = MP_QSTR_IN;
         } else {
             mode_qst = MP_QSTR_OUT;
         }
-        print(env, ", mode=GPIO.%s", qstr_str(mode_qst)); // safe because mode_qst has no formatting chars
+        print(env, ", mode=Pin.%s", qstr_str(mode_qst)); // safe because mode_qst has no formatting chars
     }
 
     // pin type
@@ -212,7 +166,7 @@ STATIC void gpio_print(void (*print)(void *env, const char *fmt, ...), void *env
     } else {
         type_qst = MP_QSTR_OD_PD;
     }
-    print(env, ", pull=GPIO.%s", qstr_str(type_qst));
+    print(env, ", pull=Pin.%s", qstr_str(type_qst));
 
     // Strength
     qstr str_qst;
@@ -223,53 +177,29 @@ STATIC void gpio_print(void (*print)(void *env, const char *fmt, ...), void *env
     } else {
         str_qst = MP_QSTR_S6MA;
     }
-    print(env, ", strength=GPIO.%s)", qstr_str(str_qst));
+    print(env, ", strength=Pin.%s)", qstr_str(str_qst));
 }
 
-STATIC mp_obj_t gpio_obj_init_helper(const gpio_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 /// \classmethod \constructor(id, ...)
-/// Create a new GPIO object associated with the id.  If additional arguments are given,
+/// Create a new Pin object associated with the id.  If additional arguments are given,
 /// they are used to initialise the pin.  See `init`.
-STATIC mp_obj_t gpio_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
-    const gpio_obj_t *pin = gpio_find(args[0]);
+    const pin_obj_t *pin = pin_find(args[0]);
 
     if (n_args > 1) {
         // pin af given, so configure it
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        gpio_obj_init_helper(pin, n_args - 1, args + 1, &kw_args);
+        pin_obj_init_helper(pin, n_args - 1, args + 1, &kw_args);
     }
 
     return (mp_obj_t)pin;
 }
-
-/// \classmethod mapper([fun])
-/// Get or set the pin mapper function.
-STATIC mp_obj_t gpio_mapper(mp_uint_t n_args, const mp_obj_t *args) {
-    if (n_args > 1) {
-        MP_STATE_PORT(gpio_class_mapper) = args[1];
-        return mp_const_none;
-    }
-    return MP_STATE_PORT(gpio_class_mapper);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gpio_mapper_fun_obj, 1, 2, gpio_mapper);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(gpio_mapper_obj, (mp_obj_t)&gpio_mapper_fun_obj);
-
-/// \classmethod dict([dict])
-/// Get or set the pin mapper dictionary.
-STATIC mp_obj_t gpio_map_dict(mp_uint_t n_args, const mp_obj_t *args) {
-    if (n_args > 1) {
-        MP_STATE_PORT(gpio_class_map_dict) = args[1];
-        return mp_const_none;
-    }
-    return MP_STATE_PORT(gpio_class_map_dict);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gpio_map_dict_fun_obj, 1, 2, gpio_map_dict);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(gpio_map_dict_obj, (mp_obj_t)&gpio_map_dict_fun_obj);
 
 /// \method init(mode, pull=Pin.PULL_NONE, af=-1)
 /// Initialise the pin:
@@ -293,18 +223,18 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(gpio_map_dict_obj, (mp_obj_t)&gpio_map_di
 ///     - `Pin.6MA`    - 6ma drive strength;
 ///
 /// Returns: `None`.
-STATIC const mp_arg_t gpio_init_args[] = {
+STATIC const mp_arg_t pin_init_args[] = {
     { MP_QSTR_af,   MP_ARG_REQUIRED | MP_ARG_INT  },
     { MP_QSTR_mode,                   MP_ARG_INT, {.u_int = GPIO_DIR_MODE_OUT} },
     { MP_QSTR_type,                   MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
     { MP_QSTR_str,                    MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
 };
-#define gpio_INIT_NUM_ARGS MP_ARRAY_SIZE(gpio_init_args)
+#define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
-STATIC mp_obj_t gpio_obj_init_helper(const gpio_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args
-    mp_arg_val_t vals[gpio_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kw_args, gpio_INIT_NUM_ARGS, gpio_init_args, vals);
+    mp_arg_val_t vals[pin_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, vals);
 
     // get the af
     uint af = vals[0].u_int;
@@ -329,15 +259,15 @@ STATIC mp_obj_t gpio_obj_init_helper(const gpio_obj_t *self, mp_uint_t n_args, c
     }
 
     // configure the pin as requested
-    gpio_config (self, af, mode, type, strength);
+    pin_config (self, af, mode, type, strength);
 
     return mp_const_none;
 }
 
-STATIC mp_obj_t gpio_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return gpio_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
+STATIC mp_obj_t pin_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    return pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(gpio_init_obj, 1, gpio_obj_init);
+MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 
 /// \method value([value])
 /// Get or set the digital logic level of the pin:
@@ -346,8 +276,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(gpio_init_obj, 1, gpio_obj_init);
 ///   - With `value` given, set the logic level of the pin.  `value` can be
 ///   anything that converts to a boolean.  If it converts to `True`, the pin
 ///   is set high, otherwise it is set low.
-STATIC mp_obj_t gpio_value(mp_uint_t n_args, const mp_obj_t *args) {
-    gpio_obj_t *self = args[0];
+STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
+    pin_obj_t *self = args[0];
     if (n_args == 1) {
         // get the pin value
         return MP_OBJ_NEW_SMALL_INT(MAP_GPIOPinRead(self->port, self->bit) ? 1 : 0);
@@ -361,136 +291,112 @@ STATIC mp_obj_t gpio_value(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gpio_value_obj, 1, 2, gpio_value);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
 /// \method low()
 /// Set the pin to a low logic level.
-STATIC mp_obj_t gpio_low(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_low(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     MAP_GPIOPinWrite(self->port, self->bit, 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_low_obj, gpio_low);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
 
 /// \method high()
 /// Set the pin to a high logic level.
-STATIC mp_obj_t gpio_high(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_high(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     MAP_GPIOPinWrite(self->port, self->bit, self->bit);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_high_obj, gpio_high);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);
 
 /// \method toggle()
 /// Toggles the value of the pin
-STATIC mp_obj_t gpio_toggle(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_toggle(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     MAP_GPIOPinWrite(self->port, self->bit, ~MAP_GPIOPinRead(self->port, self->bit));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_toggle_obj, gpio_toggle);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_toggle_obj, pin_toggle);
 
 /// \method name()
 /// Get the pin name.
-STATIC mp_obj_t gpio_name(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_name(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     return MP_OBJ_NEW_QSTR(self->name);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_name_obj, gpio_name);
-
-/// \method name()
-/// Returns the cpu name for this pin.
-STATIC mp_obj_t gpio_cpu_name(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
-    mp_obj_t result = mp_obj_new_list(0, NULL);
-    mp_obj_list_append(result, MP_OBJ_NEW_QSTR(self->name));
-
-    mp_map_t *map = mp_obj_dict_get_map((mp_obj_t)&gpio_cpu_pins_locals_dict);
-    mp_map_elem_t *elem = map->table;
-
-    for (mp_uint_t i = 0; i < map->used; i++, elem++) {
-        if (elem->value == self) {
-            mp_obj_list_append(result, elem->key);
-        }
-    }
-    return result;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_cpu_name_obj, gpio_cpu_name);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_name_obj, pin_name);
 
 /// \method port()
 /// Get the pin port.
-STATIC mp_obj_t gpio_port(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_port(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     return mp_obj_new_int(self->port);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_port_obj, gpio_port);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_port_obj, pin_port);
 
 /// \method pin()
 /// Get the pin number.
-STATIC mp_obj_t gpio_pin(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_pin(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(self->pin_num);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_pin_obj, gpio_pin);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_pin_obj, pin_pin);
 
 /// \method mode()
 /// Returns the currently configured mode of the gpio pin. The integer returned
 /// will match one of the allowed constants for the mode argument to the init
 /// function.
-STATIC mp_obj_t gpio_mode(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(gpio_get_mode(self_in));
+STATIC mp_obj_t pin_mode(mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pin_get_mode(self_in));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_mode_obj, gpio_mode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_mode_obj, pin_mode);
 
 /// \method type()
 /// Returns the currently configured type of the pin. The integer returned
 /// will match one of the allowed constants for the type argument to the init
 /// function.
-STATIC mp_obj_t gpio_type_get(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(gpio_get_type(self_in));
+STATIC mp_obj_t pin_type_get(mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pin_get_type(self_in));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_type_obj, gpio_type_get);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_type_obj, pin_type_get);
 
 /// \method strength()
 /// Returns the currently configured drive strength of the pin. The integer returned
 /// will match one of the allowed constants for the strength argument to the init
 /// function.
-STATIC mp_obj_t gpio_strength(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(gpio_get_strenght(self_in));
+STATIC mp_obj_t pin_strength(mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pin_get_strenght(self_in));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_strenght_obj, gpio_strength);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_strenght_obj, pin_strength);
 
 /// \method af()
 /// Returns the currently configured alternate function of the gpio pin. The integer returned
 /// will match one of the allowed constants for the af argument to the init function.
-STATIC mp_obj_t gpio_af(mp_obj_t self_in) {
-    gpio_obj_t *self = self_in;
+STATIC mp_obj_t pin_af(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
     return MP_OBJ_NEW_SMALL_INT(MAP_PinModeGet(self->pin_num));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gpio_af_obj, gpio_af);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
-STATIC const mp_map_elem_t gpio_locals_dict_table[] = {
+STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&gpio_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value),       (mp_obj_t)&gpio_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_low),         (mp_obj_t)&gpio_low_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_high),        (mp_obj_t)&gpio_high_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),      (mp_obj_t)&gpio_toggle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_name),        (mp_obj_t)&gpio_name_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_names),       (mp_obj_t)&gpio_cpu_name_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_port),        (mp_obj_t)&gpio_port_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pin),         (mp_obj_t)&gpio_pin_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),        (mp_obj_t)&gpio_mode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_type),        (mp_obj_t)&gpio_type_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_strength),    (mp_obj_t)&gpio_strenght_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_af),          (mp_obj_t)&gpio_af_obj },
-
-    // class methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mapper),      (mp_obj_t)&gpio_mapper_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_dict),        (mp_obj_t)&gpio_map_dict_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pin_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_value),       (mp_obj_t)&pin_value_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_low),         (mp_obj_t)&pin_low_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_high),        (mp_obj_t)&pin_high_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),      (mp_obj_t)&pin_toggle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_name),        (mp_obj_t)&pin_name_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_port),        (mp_obj_t)&pin_port_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pin),         (mp_obj_t)&pin_pin_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),        (mp_obj_t)&pin_mode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_type),        (mp_obj_t)&pin_type_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_strength),    (mp_obj_t)&pin_strenght_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_af),          (mp_obj_t)&pin_af_obj },
 
     // class attributes
-    { MP_OBJ_NEW_QSTR(MP_QSTR_cpu),         (mp_obj_t)&gpio_cpu_pins_obj_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cpu),         (mp_obj_t)&pin_cpu_pins_obj_type },
 
     // class constants
     /// \constant IN        - set the pin to input mode
@@ -518,12 +424,12 @@ STATIC const mp_map_elem_t gpio_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_S6MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(gpio_locals_dict, gpio_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
-const mp_obj_type_t gpio_type = {
+const mp_obj_type_t pin_type = {
     { &mp_type_type },
-    .name = MP_QSTR_GPIO,
-    .print = gpio_print,
-    .make_new = gpio_make_new,
-    .locals_dict = (mp_obj_t)&gpio_locals_dict,
+    .name = MP_QSTR_Pin,
+    .print = pin_print,
+    .make_new = pin_make_new,
+    .locals_dict = (mp_obj_t)&pin_locals_dict,
 };

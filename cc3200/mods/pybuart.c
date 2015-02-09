@@ -52,7 +52,6 @@
 #include "uart.h"
 #include "pin.h"
 #include "pybuart.h"
-#include "pybgpio.h"
 #include "pybioctl.h"
 #include "pybstdio.h"
 #include "mpexception.h"

@@ -37,18 +37,18 @@
 #include "rom_map.h"
 #include "gpio.h"
 #include "pin.h"
-#include "pybgpio.h"
+#include "pybpin.h"
 #include "runtime.h"
 #include MICROPY_HAL_H
 
 
 // Returns the pin mode. This value returned by this macro should be one of:
 // GPIO_DIR_MODE_IN or GPIO_DIR_MODE_OUT
-uint32_t gpio_get_mode(const gpio_obj_t *self) {
+uint32_t pin_get_mode(const pin_obj_t *self) {
     return MAP_GPIODirModeGet(self->port, self->bit);
 }
 
-uint32_t gpio_get_type(const gpio_obj_t *self) {
+uint32_t pin_get_type(const pin_obj_t *self) {
 
     uint32_t strenght;
     uint32_t type;
@@ -58,7 +58,7 @@ uint32_t gpio_get_type(const gpio_obj_t *self) {
     return type;
 }
 
-uint32_t gpio_get_strenght (const gpio_obj_t *self) {
+uint32_t pin_get_strenght (const pin_obj_t *self) {
 
     uint32_t strenght;
     uint32_t type;

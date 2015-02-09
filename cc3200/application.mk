@@ -74,7 +74,7 @@ APP_HAL_SRC_C = $(addprefix hal/,\
 
 APP_MISC_SRC_C = $(addprefix misc/,\
 	FreeRTOSHooks.c \
-	gpio_named_pins.c \
+	pin_named_pins.c \
 	help.c \
 	mperror.c \
 	mpexception.c \
@@ -89,7 +89,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	modutime.c \
 	modwlan.c \
 	pybextint.c \
-	pybgpio.c \
+	pybpin.c \
 	pybrtc.c \
 	pybstdio.c \
 	pybsystick.c \

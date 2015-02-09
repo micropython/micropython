@@ -45,7 +45,7 @@
 #include "rom_map.h"
 #include "pin.h"
 #include "gpio.h"
-#include "pybgpio.h"
+#include "pybpin.h"
 #include "pybextint.h"
 #include "mpexception.h"
 #include "interrupt.h"
@@ -55,7 +55,7 @@
 /// \moduleref pyb
 /// \class ExtInt - configure I/O pins to interrupt on external events
 ///
-/// There are a maximum of 25 GPIO interrupt lines.
+/// There are a maximum of 25 gpio interrupt lines.
 ///
 /// Example callback:
 ///
@@ -72,10 +72,10 @@
 /// See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
 /// explanation, along with various techniques for debouncing.
 ///
-/// All gpio objects go through the gpio mapper to come up with one of the
+/// All pin objects go through the pin mapper to come up with one of the
 /// gpio pins.
 ///
-///     extint = pyb.ExtInt(gpio, mode, pull, callback)
+///     extint = pyb.ExtInt(pin, mode, pull, callback)
 ///
 /// There is also a C API, so that drivers which require EXTI interrupt lines
 /// can also use this code. See pybextint.h for the available functions.
@@ -149,7 +149,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// \classmethod \constructor(pin, mode, pull, callback)
 /// Create an ExtInt object:
 ///
-///   - `gpio` is the gpio on which to enable the interrupt (can be a gpio object or any valid gpio name).
+///   - `pin` is the pin on which to enable the interrupt (can be a pin object or any valid pin name).
 ///   - `mode` can be one of:
 ///     - `ExtInt.IRQ_RISING` - trigger on a rising edge;
 ///     - `ExtInt.IRQ_FALLING` - trigger on a falling edge;
@@ -162,7 +162,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 ///   callback function must accept exactly 1 argument, which is the line that
 ///   triggered the interrupt.
 STATIC const mp_arg_t pyb_extint_make_new_args[] = {
-    { MP_QSTR_gpio,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_pull,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -271,12 +271,12 @@ void extint_init0(void) {
 }
 
 extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull, mp_obj_t callback) {
-    const gpio_obj_t *gpio = NULL;
+    const pin_obj_t *pin = NULL;
     extint_obj_t* self;
     void *handler;
     uint32_t intnum;
 
-    gpio = gpio_find(pin_obj);
+    pin = pin_find(pin_obj);
 
     if (intmode != GPIO_FALLING_EDGE &&
         intmode != GPIO_RISING_EDGE &&
@@ -294,8 +294,8 @@ extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull,
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_value_invalid_arguments));
     }
 
-    if (NULL == (self = extint_find(gpio->port, gpio->bit))) {
-        self = extint_add(gpio->pin_num, gpio->port, gpio->bit);
+    if (NULL == (self = extint_find(pin->port, pin->bit))) {
+        self = extint_add(pin->pin_num, pin->port, pin->bit);
     }
     else {
         // we need to update the callback atomically, so we disable the line
@@ -307,10 +307,10 @@ extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull,
     self->callback = NULL;
 
     // before enabling the interrupt, configure the gpio pin
-    gpio_config(gpio, PIN_MODE_0, GPIO_DIR_MODE_IN, pull, PIN_STRENGTH_4MA);
+    pin_config(pin, PIN_MODE_0, GPIO_DIR_MODE_IN, pull, PIN_STRENGTH_4MA);
 
-    MAP_GPIOIntTypeSet(gpio->port, gpio->bit, intmode);
-    switch (gpio->port) {
+    MAP_GPIOIntTypeSet(pin->port, pin->bit, intmode);
+    switch (pin->port) {
     case GPIOA0_BASE:
         handler = GPIOA0IntHandler;
         intnum = INT_GPIOA0;
@@ -330,7 +330,7 @@ extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull,
         break;
     }
 
-    MAP_GPIOIntRegister(gpio->port, handler);
+    MAP_GPIOIntRegister(pin->port, handler);
     // set the interrupt to the lowest priority, to make sure that no ther
     // isr will be preemted by this one
     MAP_IntPrioritySet(intnum, INT_PRIORITY_LVL_7);

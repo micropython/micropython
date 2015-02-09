@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Creates the pin file for the CC3200."""
+"""Generates the pins files for the CC3200."""
 
 from __future__ import print_function
 
@@ -40,11 +40,11 @@ class Pin(object):
         self.board_pin = True
         
     def print(self):
-        print('const gpio_obj_t pin_{:6s} = GPIO({:6s}, {:1d}, {:3d}, {:2d});'.format(
+        print('const pin_obj_t pin_{:6s} = PIN({:6s}, {:1d}, {:3d}, {:2d});'.format(
                self.name, self.name, self.port, self.gpio_bit, self.pin_num))
 
     def print_header(self, hdr_file):
-        hdr_file.write('extern const gpio_obj_t pin_{:s};\n'.
+        hdr_file.write('extern const pin_obj_t pin_{:s};\n'.
                        format(self.name))
 
 
@@ -89,12 +89,12 @@ class Pins(object):
 
     def print_named(self, label, pins):
         print('')
-        print('STATIC const mp_map_elem_t gpio_{:s}_pins_locals_dict_table[] = {{'.format(label))
+        print('STATIC const mp_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
         for pin in pins:
             if pin.is_board_pin():
                 print('  {{ MP_OBJ_NEW_QSTR(MP_QSTR_{:6s}), (mp_obj_t)&pin_{:6s} }},'.format(pin.cpu_pin_name(),  pin.cpu_pin_name()))
         print('};')
-        print('MP_DEFINE_CONST_DICT(gpio_{:s}_pins_locals_dict, gpio_{:s}_pins_locals_dict_table);'.format(label, label));
+        print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
 
     def print(self):
         for pin in self.cpu_pins:

@@ -25,44 +25,38 @@
  * THE SOFTWARE.
  */
 
-// This file requires pin_defs_xxx.h (which has port specific enums and
-// defines, so we include it here. It should never be included directly
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
-#include MICROPY_PIN_DEFS_PORT_H
+#include "mpconfig.h"
+#include "misc.h"
+#include "qstr.h"
+#include "obj.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "pybpin.h"
+#include "runtime.h"
+#include MICROPY_HAL_H
 
-typedef struct {
-  mp_obj_base_t base;
-  qstr name;
-  uint32_t port;
-  uint32_t bit           : 8;
-  uint32_t pin_num       : 7;
-} gpio_obj_t;
+STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+    pin_named_pins_obj_t *self = self_in;
+    print(env, "<Pin.%s>", qstr_str(self->name));
+}
 
-extern const mp_obj_type_t gpio_type;
+const mp_obj_type_t pin_cpu_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_cpu,
+    .print = pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&pin_cpu_pins_locals_dict,
+};
 
-typedef struct {
-  const char *name;
-  const gpio_obj_t *gpio;
-} gpio_named_pin_t;
-
-extern const gpio_named_pin_t gpio_cpu_pins[];
-
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    const gpio_named_pin_t *named_pins;
-} gpio_named_pins_obj_t;
-
-extern const mp_obj_type_t gpio_cpu_pins_obj_type;
-extern const mp_obj_dict_t gpio_cpu_pins_locals_dict;
-
-MP_DECLARE_CONST_FUN_OBJ(gpio_init_obj);
-
-void gpio_init0(void);
-void gpio_config(const gpio_obj_t *self, uint af, uint mode, uint type, uint strength);
-const gpio_obj_t *gpio_find(mp_obj_t user_obj);
-const gpio_obj_t *gpio_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
-uint32_t gpio_get_mode(const gpio_obj_t *self);
-uint32_t gpio_get_type(const gpio_obj_t *self);
-uint32_t gpio_get_strenght(const gpio_obj_t *self);
-
+const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
+    mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != NULL) {
+        return named_elem->value;
+    }
+    return NULL;
+}

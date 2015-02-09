@@ -47,7 +47,7 @@
 #include "prcm.h"
 #include "pyexec.h"
 #include "pybuart.h"
-#include "pybgpio.h"
+#include "pybpin.h"
 #include "pybstdio.h"
 #include "pybrtc.h"
 #include "pybsystick.h"
@@ -303,7 +303,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
 #endif
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO),                (mp_obj_t)&gpio_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ExtInt),              (mp_obj_t)&extint_type },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },

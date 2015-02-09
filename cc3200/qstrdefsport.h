@@ -69,19 +69,15 @@ Q(urandom)
 Q(seek)
 Q(tell)
 
-// for GPIO class
-Q(GPIO)
+// for Pin class
+Q(Pin)
 Q(init)
 Q(value)
 Q(low)
 Q(high)
 Q(name)
-Q(names)
 Q(port)
 Q(pin)
-Q(gpio)
-Q(mapper)
-Q(dict)
 Q(cpu)
 Q(mode)
 Q(pull)
@@ -114,7 +110,6 @@ Q(IRQ_FALLING)
 Q(IRQ_RISING_FALLING)
 Q(IRQ_LOW_LEVEL)
 Q(IRQ_HIGH_LEVEL)
-
 
 // for UART class
 Q(UART)

@@ -120,8 +120,6 @@ extern const struct _mp_obj_module_t mp_module_network;
     const char *readline_hist[8];                                         \
     mp_obj_t mp_const_user_interrupt;                                     \
     mp_obj_t pyb_config_main;                                             \
-    mp_obj_t gpio_class_mapper;                                           \
-    mp_obj_t gpio_class_map_dict;                                         \
     mp_obj_list_t pyb_extint_list;                                        \
     struct _pyb_uart_obj_t *pyb_stdio_uart;                               \
     struct _pyb_uart_obj_t *pyb_uart_obj_all[2];                          \
