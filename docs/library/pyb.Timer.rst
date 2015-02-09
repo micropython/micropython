@@ -18,6 +18,13 @@ Example usage to toggle an LED at a fixed frequency::
     tim.init(freq=2)                # trigger at 2Hz
     tim.callback(lambda t:pyb.LED(1).toggle())
 
+Example using named function for the callback::
+
+    def tick(timer):                # we will receive the timer object when being called
+        print(timer.counter())      # show current timer's counter value
+    tim = pyb.Timer(4, freq=1)      # create a timer object using timer 4 - trigger at 1Hz
+    tim.callback(tick)              # set the callback to our tick function
+
 Further examples::
 
     tim = pyb.Timer(4, freq=100)    # freq in Hz
@@ -32,6 +39,10 @@ Further examples::
 the servo driver, and Timer 6 is used for timed ADC/DAC reading/writing.
 It is recommended to use the other timers in your programs.
 
+*Note:* Memory can't be allocated during a callback (an interrupt) and so
+exceptions raised within a callback don't give much information.  See
+:func:`micropython.alloc_emergency_exception_buf` for how to get around this
+limitation.
 
 Constructors
 ------------

@@ -29,7 +29,8 @@ Functions
 
    Allocate ``size`` bytes of RAM for the emergency exception buffer (a good
    size is around 100 bytes).  The buffer is used to create exceptions in cases
-   when normal RAM allocation would fail (eg within an interrupt handler).
+   when normal RAM allocation would fail (eg within an interrupt handler) and
+   therefore give useful traceback information in these situations.
 
    A good way to use this function is to put it at the start of your main script
    (eg boot.py or main.py) and then the emergency exception buffer will be active
