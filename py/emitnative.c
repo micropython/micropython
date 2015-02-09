@@ -156,8 +156,6 @@
 STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_CONVERT_OBJ_TO_NATIVE] = 2,
     [MP_F_CONVERT_NATIVE_TO_OBJ] = 2,
-    [MP_F_LOAD_CONST_INT] = 1,
-    [MP_F_LOAD_CONST_DEC] = 1,
     [MP_F_LOAD_CONST_STR] = 1,
     [MP_F_LOAD_CONST_BYTES] = 1,
     [MP_F_LOAD_NAME] = 1,
