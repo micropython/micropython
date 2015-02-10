@@ -169,10 +169,8 @@ _I2CIntNumberGet(uint32_t ui32Base)
 //
 //*****************************************************************************
 void
-I2CMasterInitExpClk(uint32_t ui32Base, uint32_t ui32I2CClk,
-                    bool bFast)
+I2CMasterInitExpClk(uint32_t ui32Base, uint32_t ui32SCLFreq)
 {
-    uint32_t ui32SCLFreq;
     uint32_t ui32TPR;
 
     //
@@ -186,24 +184,12 @@ I2CMasterInitExpClk(uint32_t ui32Base, uint32_t ui32I2CClk,
     I2CMasterEnable(ui32Base);
 
     //
-    // Get the desired SCL speed.
-    //
-    if(bFast == true)
-    {
-        ui32SCLFreq = 400000;
-    }
-    else
-    {
-        ui32SCLFreq = 100000;
-    }
-
-    //
     // Compute the clock divider that achieves the fastest speed less than or
     // equal to the desired speed.  The numerator is biased to favor a larger
     // clock divider so that the resulting clock is always less than or equal
     // to the desired clock, never greater.
     //
-    ui32TPR = ((ui32I2CClk + (2 * 10 * ui32SCLFreq) - 1) /
+    ui32TPR = ((80000000 + (2 * 10 * ui32SCLFreq) - 1) /
                (2 * 10 * ui32SCLFreq)) - 1;
     HWREG(ui32Base + I2C_O_MTPR) = ui32TPR;
 
@@ -213,7 +199,7 @@ I2CMasterInitExpClk(uint32_t ui32Base, uint32_t ui32I2CClk,
     //
     if(HWREG(ui32Base + I2C_O_PP) & I2C_PP_HS)
     {
-        ui32TPR = ((ui32I2CClk + (2 * 3 * 3400000) - 1) /
+        ui32TPR = ((80000000 + (2 * 3 * 3400000) - 1) /
                    (2 * 3 * 3400000)) - 1;
         HWREG(ui32Base + I2C_O_MTPR) = I2C_MTPR_HS | ui32TPR;
     }

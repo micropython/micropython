@@ -84,4 +84,5 @@
 #undef ROM_SPIConfigSetExpClk
 #undef ROM_GPIODirModeGet
 #undef ROM_GPIOIntTypeGet
+#undef ROM_I2CMasterInitExpClk
 

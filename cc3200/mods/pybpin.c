@@ -71,11 +71,16 @@
 ///
 ///     g = pyb.Pin('GPIO9', 0)
 ///
+/// And finally, you can also pass a pin number directly:
+///
+///     g = pyb.Pin(64, 0)
+///
 /// To summarise, the following order determines how things get mapped into
 /// an ordinal pin number:
 ///
 /// 1. Directly specify a Pin object
-/// 2. Supply a string which matches a CPU port/pin
+/// 2. Supply a string which matches a CPU pin name
+/// 3. Provide a pin number
 
 void pin_init0(void) {
 }
@@ -94,6 +99,16 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     pin_obj = pin_find_named_pin(&pin_cpu_pins_locals_dict, user_obj);
     if (pin_obj) {
         return pin_obj;
+    }
+
+    // See if the pin number matches a cpu pin
+    mp_int_t pin_num;
+    if (mp_obj_get_int_maybe(user_obj, &pin_num)) {
+        // The Pins dictionary has pin indexes, so we must substract one from the value passed
+        pin_obj = pin_find_pin(&pin_cpu_pins_locals_dict, (pin_num - 1));
+        if (pin_obj) {
+            return pin_obj;
+        }
     }
 
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
@@ -218,9 +233,9 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
 ///     - `Pin.OD_PD`  - open drain with pull-down resistor.
 ///     - `Pin.ANALOG` - configured in analog (adc) mode
 ///   - `strength` can be one of:
-///     - `Pin.2MA`    - 2ma drive strength;
-///     - `Pin.4MA`    - 4ma drive strength;
-///     - `Pin.6MA`    - 6ma drive strength;
+///     - `Pin.S2MA`    - 2ma drive strength;
+///     - `Pin.S4MA`    - 4ma drive strength;
+///     - `Pin.S6MA`    - 6ma drive strength;
 ///
 /// Returns: `None`.
 STATIC const mp_arg_t pin_init_args[] = {

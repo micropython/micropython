@@ -112,7 +112,7 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if (sector + count > SFLASH_SECTOR_COUNT || count == 0) {
+    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
         return RES_PARERR;
     }
 
@@ -145,7 +145,8 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if (sector + count > SFLASH_SECTOR_COUNT || count == 0) {
+    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+        sflash_disk_flush();
         return RES_PARERR;
     }
 

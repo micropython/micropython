@@ -123,6 +123,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     mp_obj_list_t pyb_extint_list;                                        \
     struct _pyb_uart_obj_t *pyb_stdio_uart;                               \
     struct _pyb_uart_obj_t *pyb_uart_obj_all[2];                          \
+    struct _pyb_i2c_obj_t  *pyb_i2c_obj;                                  \
     mp_obj_list_t mod_network_nic_list;                                   \
 
 

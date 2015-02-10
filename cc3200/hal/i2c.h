@@ -309,8 +309,7 @@ extern void I2CMasterDataPut(uint32_t ui32Base, uint8_t ui8Data);
 extern void I2CMasterDisable(uint32_t ui32Base);
 extern void I2CMasterEnable(uint32_t ui32Base);
 extern uint32_t I2CMasterErr(uint32_t ui32Base);
-extern void I2CMasterInitExpClk(uint32_t ui32Base, uint32_t ui32I2CClk,
-                                bool bFast);
+extern void I2CMasterInitExpClk(uint32_t ui32Base, uint32_t ui32SCLFreq);
 extern void I2CMasterIntClear(uint32_t ui32Base);
 extern void I2CMasterIntDisable(uint32_t ui32Base);
 extern void I2CMasterIntEnable(uint32_t ui32Base);
