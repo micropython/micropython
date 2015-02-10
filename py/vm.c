@@ -587,25 +587,32 @@ dispatch_loop:
                                 assert(0);
                         }
                     } else if (mp_obj_is_exception_type(TOP())) {
-                        mp_obj_t args[3] = {sp[0], sp[-1], sp[-2]};
-                        mp_obj_t ret_value = mp_call_function_n_kw(sp[-3], 3, 0, args);
-                        // Pop __exit__ boundmethod at sp[-3]
-                        // TODO: Once semantics is proven, optimize for case when ret_value == True
-                        sp[-3] = sp[-2];
-                        sp[-2] = sp[-1];
-                        sp[-1] = sp[0];
-                        sp--;
+                        // Need to pass (sp[0], sp[-1], sp[-2]) as arguments so must reverse the
+                        // order of these on the value stack (don't want to create a temporary
+                        // array because it increases stack footprint of the VM).
+                        mp_obj_t obj = sp[-2];
+                        sp[-2] = sp[0];
+                        sp[0] = obj;
+                        mp_obj_t ret_value = mp_call_function_n_kw(sp[-3], 3, 0, &sp[-2]);
                         if (mp_obj_is_true(ret_value)) {
                             // This is what CPython does
                             //PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_SILENCED));
                             // But what we need to do is - pop exception from value stack...
-                            sp -= 3;
+                            sp -= 4;
                             // ... pop "with" exception handler, and signal END_FINALLY
                             // to just execute finally handler normally (by pushing None
                             // on value stack)
                             assert(exc_sp >= exc_stack);
                             POP_EXC_BLOCK();
                             PUSH(mp_const_none);
+                        } else {
+                            // Pop __exit__ boundmethod at sp[-3], remembering that top 3 values
+                            // are reversed.
+                            sp[-3] = sp[0];
+                            obj = sp[-2];
+                            sp[-2] = sp[-1];
+                            sp[-1] = obj;
+                            sp--;
                         }
                     } else {
                         assert(0);
