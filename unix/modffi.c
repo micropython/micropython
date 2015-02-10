@@ -179,24 +179,17 @@ STATIC mp_obj_t ffimod_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ffimod_close_obj, ffimod_close);
 
-STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
-    (void)n_args; // always 4
-    mp_obj_ffimod_t *self = args[0];
-    const char *rettype = mp_obj_str_get_str(args[1]);
-    const char *symname = mp_obj_str_get_str(args[2]);
+STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in) {
+    const char *rettype = mp_obj_str_get_str(rettype_in);
 
-    void *sym = dlsym(self->handle, symname);
-    if (sym == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
-    }
-    mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(args[3]));
+    mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(argtypes_in));
     mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type*, nparams);
     o->base.type = &ffifunc_type;
 
-    o->func = sym;
+    o->func = func;
     o->rettype = *rettype;
 
-    mp_obj_t iterable = mp_getiter(args[3]);
+    mp_obj_t iterable = mp_getiter(argtypes_in);
     mp_obj_t item;
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -210,7 +203,25 @@ STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
 
     return o;
 }
+
+STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
+    (void)n_args; // always 4
+    mp_obj_ffimod_t *self = args[0];
+    const char *symname = mp_obj_str_get_str(args[2]);
+
+    void *sym = dlsym(self->handle, symname);
+    if (sym == NULL) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+    }
+    return make_func(args[1], sym, args[3]);
+}
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ffimod_func_obj, 4, 4, ffimod_func);
+
+STATIC mp_obj_t mod_ffi_func(mp_obj_t rettype, mp_obj_t addr_in, mp_obj_t argtypes) {
+    void *addr = (void*)mp_obj_int_get_truncated(addr_in);
+    return make_func(rettype, addr, argtypes);
+}
+MP_DEFINE_CONST_FUN_OBJ_3(mod_ffi_func_obj, mod_ffi_func);
 
 STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, mp_obj_t func) {
     mp_obj_t pyargs[cif->nargs];
@@ -465,6 +476,7 @@ STATIC const mp_map_elem_t mp_module_ffi_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ffi) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mod_ffi_open_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_ffi_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_func), (mp_obj_t)&mod_ffi_func_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_as_bytearray), (mp_obj_t)&mod_ffi_as_bytearray_obj },
 };
 
