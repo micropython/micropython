@@ -26,6 +26,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "py/mpstate.h"
 #include "py/qstr.h"
@@ -229,3 +230,13 @@ void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_
     }
     *n_total_bytes += *n_str_data_bytes;
 }
+
+#if MICROPY_PY_MICROPYTHON_MEM_INFO
+void qstr_dump_data(void) {
+    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &const_pool; pool = pool->prev) {
+        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+            printf("Q(%s)\n", Q_GET_DATA(*q));
+        }
+    }
+}
+#endif

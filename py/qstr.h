@@ -72,5 +72,6 @@ mp_uint_t qstr_len(qstr q);
 const byte* qstr_data(qstr q, mp_uint_t *len);
 
 void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_bytes, mp_uint_t *n_total_bytes);
+void qstr_dump_data(void);
 
 #endif // __MICROPY_INCLUDED_PY_QSTR_H__
