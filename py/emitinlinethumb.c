@@ -397,6 +397,14 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (strcmp(op_str, "strh") == 0) {
                 op_code = ASM_THUMB_FORMAT_10_STRH;
                 goto op_format_9_10;
+            } else if (strcmp(op_str, "ldrex") == 0) {
+                mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                mp_parse_node_t pn_base, pn_offset;
+                if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
+                    mp_uint_t r_base = get_arg_reg(emit, op_str, pn_base, 15);
+                    mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
+                    asm_thumb_op32(emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
+                }
             } else {
                 goto unknown_op;
             }
@@ -422,6 +430,15 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         } else if (strcmp(op_str, "sub") == 0) {
             op_code = ASM_THUMB_FORMAT_2_SUB;
             goto op_format_2;
+        } else if (strcmp(op_str, "strex") == 0) {
+            mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+            mp_uint_t r_src = get_arg_reg(emit, op_str, pn_args[1], 15);
+            mp_parse_node_t pn_base, pn_offset;
+            if (get_arg_addr(emit, op_str, pn_args[2], &pn_base, &pn_offset)) {
+                mp_uint_t r_base = get_arg_reg(emit, op_str, pn_base, 15);
+                mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
+                asm_thumb_op32(emit->as, 0xe840 | r_base, (r_src << 12) | (r_dest << 8) | i8);
+            }
         } else {
             goto unknown_op;
         }
