@@ -8,3 +8,27 @@ True
 passed
 CAN(1, CAN.LOOPBACK, extframe=True)
 passed
+cb0
+pending
+cb0
+full
+cb0a
+overflow
+cb1
+pending
+cb1
+full
+cb1a
+overflow
+(1, 0, 0, b'11111111')
+(2, 0, 1, b'22222222')
+(4, 0, 3, b'44444444')
+(5, 0, 0, b'55555555')
+(6, 0, 1, b'66666666')
+(8, 0, 3, b'88888888')
+cb0a
+pending
+cb1a
+pending
+(1, 0, 0, b'11111111')
+(5, 0, 0, b'55555555')
