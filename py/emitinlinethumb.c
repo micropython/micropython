@@ -363,7 +363,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     } else if (n_args == 2) {
         if (MP_PARSE_NODE_IS_ID(pn_args[1])) {
             // second arg is a register (or should be)
-            mp_uint_t op_code;
+            mp_uint_t op_code, op_code_hi;
             if (strcmp(op_str, "mov") == 0) {
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_uint_t reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
@@ -391,6 +391,18 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (strcmp(op_str, "mul") == 0) { op_code = ASM_THUMB_FORMAT_4_MUL; goto op_format_4;
             } else if (strcmp(op_str, "bic") == 0) { op_code = ASM_THUMB_FORMAT_4_BIC; goto op_format_4;
             } else if (strcmp(op_str, "mvn") == 0) { op_code = ASM_THUMB_FORMAT_4_MVN; goto op_format_4;
+            } else if (strcmp(op_str, "clz") == 0) {
+                op_code_hi = 0xfab0;
+                op_code = 0xf080;
+                mp_uint_t rd, rm;
+                op_clz_rbit:
+                rd = get_arg_reg(emit, op_str, pn_args[0], 15);
+                rm = get_arg_reg(emit, op_str, pn_args[1], 15);
+                asm_thumb_op32(emit->as, op_code_hi | rm, op_code | (rd << 8) | rm);
+            } else if (strcmp(op_str, "rbit") == 0) {
+                op_code_hi = 0xfa90;
+                op_code = 0xf0a0;
+                goto op_clz_rbit;
             } else {
                 goto unknown_op;
             }
