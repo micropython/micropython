@@ -490,6 +490,17 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 src_b = get_arg_i(emit, op_str, pn_args[2], 0x7);
             }
             asm_thumb_format_2(emit->as, op_code, rlo_dest, rlo_src, src_b);
+        } else if (strcmp(op_str, "sdiv") == 0) {
+            op_code = 0xfb90; // sdiv high part
+            mp_uint_t rd, rn, rm;
+            op_sdiv_udiv:
+            rd = get_arg_reg(emit, op_str, pn_args[0], 15);
+            rn = get_arg_reg(emit, op_str, pn_args[1], 15);
+            rm = get_arg_reg(emit, op_str, pn_args[2], 15);
+            asm_thumb_op32(emit->as, op_code | rn, 0xf0f0 | (rd << 8) | rm);
+        } else if (strcmp(op_str, "udiv") == 0) {
+            op_code = 0xfbb0; // udiv high part
+            goto op_sdiv_udiv;
         } else if (strcmp(op_str, "sub") == 0) {
             op_code = ASM_THUMB_FORMAT_2_SUB;
             goto op_format_2;
