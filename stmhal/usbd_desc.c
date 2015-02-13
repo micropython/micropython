@@ -82,8 +82,8 @@ __ALIGN_BEGIN static uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
 
 // set the VID, PID and device release number
 void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num) {
-    hUSBDDeviceDesc[8] = LOBYTE(pid);
-    hUSBDDeviceDesc[9] = HIBYTE(pid);
+    hUSBDDeviceDesc[8] = LOBYTE(vid);
+    hUSBDDeviceDesc[9] = HIBYTE(vid);
     hUSBDDeviceDesc[10] = LOBYTE(pid);
     hUSBDDeviceDesc[11] = HIBYTE(pid);
     hUSBDDeviceDesc[12] = LOBYTE(device_release_num);
