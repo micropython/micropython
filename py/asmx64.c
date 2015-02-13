@@ -591,7 +591,7 @@ void asm_x64_exit(asm_x64_t *as) {
 //  - numbered 0 through as->num_locals-1
 //  - RBP points above the last local
 //
-//                          | RPB
+//                          | RBP
 //                          v
 //  l0  l1  l2  ...  l(n-1)
 //  ^                ^
