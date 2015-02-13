@@ -30,7 +30,9 @@
 
 #include "py/obj.h"
 #include "py/pfenv.h"
+#ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
+#endif
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include "py/formatfloat.h"
