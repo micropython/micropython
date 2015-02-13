@@ -57,8 +57,8 @@
 #include "accel.h"
 #include "servo.h"
 #include "dac.h"
-#include "pybstdio.h"
 #include "modnetwork.h"
+#include MICROPY_HAL_H
 
 void SystemClock_Config(void);
 
@@ -86,8 +86,8 @@ void NORETURN __fatal_error(const char *msg) {
     led_state(2, 1);
     led_state(3, 1);
     led_state(4, 1);
-    stdout_tx_strn("\nFATAL ERROR:\n", 14);
-    stdout_tx_strn(msg, strlen(msg));
+    mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    mp_hal_stdout_tx_strn(msg, strlen(msg));
     for (uint i = 0;;) {
         led_toggle(((i++) & 3) + 1);
         for (volatile uint delay = 0; delay < 10000000; delay++) {
@@ -383,7 +383,7 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(PYB_UART_6),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
 #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;

@@ -37,7 +37,6 @@
 #include "obj.h"
 #include "inc/hw_memmap.h"
 #include "pybuart.h"
-#include "pybstdio.h"
 #include "utils.h"
 
 
@@ -45,9 +44,9 @@ void NORETURN __fatal_error(const char *msg) {
     if (msg != NULL) {
         // wait for 20ms
         UtilsDelay(UTILS_DELAY_US_TO_COUNT(20000));
-        stdout_tx_str("\r\nFATAL ERROR:");
-        stdout_tx_str(msg);
-        stdout_tx_str("\r\n");
+        mp_hal_stdout_tx_str("\r\nFATAL ERROR:");
+        mp_hal_stdout_tx_str(msg);
+        mp_hal_stdout_tx_str("\r\n");
     }
     for ( ;; ) {__WFI();}
 }

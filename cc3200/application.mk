@@ -91,7 +91,6 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybextint.c \
 	pybpin.c \
 	pybrtc.c \
-	pybstdio.c \
 	pybsystick.c \
 	pybuart.c \
 	)
@@ -144,6 +143,7 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	moduselect.c \
 	printf.c \
 	pyexec.c \
+	pybstdio.c \
 	string0.c \
 	)
 

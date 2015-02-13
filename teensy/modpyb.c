@@ -56,7 +56,6 @@
 #include "dac.h"
 #include "usb.h"
 #include "portmodules.h"
-#include "pybstdio.h"
 
 /// \module pyb - functions related to the pyboard
 ///

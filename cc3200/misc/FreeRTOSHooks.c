@@ -35,7 +35,6 @@
 #include "obj.h"
 #include "inc/hw_memmap.h"
 #include "pybuart.h"
-#include "pybstdio.h"
 #include "osi.h"
 
 

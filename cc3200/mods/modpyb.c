@@ -48,7 +48,6 @@
 #include "pyexec.h"
 #include "pybuart.h"
 #include "pybpin.h"
-#include "pybstdio.h"
 #include "pybrtc.h"
 #include "pybsystick.h"
 #include "simplelink.h"

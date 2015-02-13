@@ -45,7 +45,6 @@ SRC_C = \
 	main.c \
 	esp_mphal.c \
 	gccollect.c \
-	pybstdio.c \
 	uart.c \
 	modpyb.c \
 	modesp.c \
@@ -54,6 +53,7 @@ STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	string0.c \
 	pyexec.c \
+	pybstdio.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\

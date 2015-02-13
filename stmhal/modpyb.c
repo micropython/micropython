@@ -56,7 +56,6 @@
 #include "dac.h"
 #include "lcd.h"
 #include "usb.h"
-#include "pybstdio.h"
 #include "ff.h"
 #include "diskio.h"
 #include "fsusermount.h"

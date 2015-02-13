@@ -44,7 +44,6 @@
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
-#include "pybstdio.h"
 #include "pyexec.h"
 #include "gccollect.h"
 #include "gchelper.h"

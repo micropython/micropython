@@ -39,7 +39,6 @@
 #endif
 #include "readline.h"
 #include "pyexec.h"
-#include "pybstdio.h"
 #include "genhdr/py-version.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
@@ -73,7 +72,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
         nlr_pop();
         ret = 1;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
-            stdout_tx_strn("\x04", 1);
+            mp_hal_stdout_tx_strn("\x04", 1);
         }
     } else {
         // uncaught exception
@@ -81,7 +80,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
         mp_hal_set_interrupt_char(-1); // disable interrupt
         // print EOF after normal output
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
-            stdout_tx_strn("\x04", 1);
+            mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
@@ -110,7 +109,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
     }
 
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
-        stdout_tx_strn("\x04", 1);
+        mp_hal_stdout_tx_strn("\x04", 1);
     }
 
     return ret;
@@ -121,19 +120,19 @@ int pyexec_raw_repl(void) {
     vstr_init(&line, 32);
 
 raw_repl_reset:
-    stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
+    mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
 
     for (;;) {
         vstr_reset(&line);
-        stdout_tx_str(">");
+        mp_hal_stdout_tx_str(">");
         for (;;) {
-            int c = stdin_rx_chr();
+            int c = mp_hal_stdin_rx_chr();
             if (c == CHAR_CTRL_A) {
                 // reset raw REPL
                 goto raw_repl_reset;
             } else if (c == CHAR_CTRL_B) {
                 // change to friendly REPL
-                stdout_tx_str("\r\n");
+                mp_hal_stdout_tx_str("\r\n");
                 vstr_clear(&line);
                 pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
                 return 0;
@@ -150,11 +149,11 @@ raw_repl_reset:
         }
 
         // indicate reception of command
-        stdout_tx_str("OK");
+        mp_hal_stdout_tx_str("OK");
 
         if (line.len == 0) {
             // exit for a soft reset
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
             return PYEXEC_FORCED_EXIT;
         }
@@ -184,7 +183,7 @@ void pyexec_friendly_repl_init(void) {
     vstr_init(&repl.line, 32);
     repl.cont_line = false;
     readline_init(&repl.line);
-    stdout_tx_str(">>> ");
+    mp_hal_stdout_tx_str(">>> ");
 }
 
 void pyexec_friendly_repl_reset() {
@@ -201,20 +200,20 @@ int pyexec_friendly_repl_process_char(int c) {
         if (ret == CHAR_CTRL_A) {
             // change to raw REPL
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&repl.line);
             return PYEXEC_SWITCH_MODE;
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             goto friendly_repl_reset;
         } else if (ret == CHAR_CTRL_C) {
             // break
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             goto input_restart;
         } else if (ret == CHAR_CTRL_D) {
             // exit for a soft reset
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&repl.line);
             return PYEXEC_FORCED_EXIT;
         } else if (vstr_len(&repl.line) == 0) {
@@ -231,7 +230,7 @@ int pyexec_friendly_repl_process_char(int c) {
 
         vstr_add_byte(&repl.line, '\n');
         repl.cont_line = true;
-        stdout_tx_str("... ");
+        mp_hal_stdout_tx_str("... ");
         readline_note_newline();
         return 0;
 
@@ -239,7 +238,7 @@ int pyexec_friendly_repl_process_char(int c) {
 
         if (ret == CHAR_CTRL_C) {
                 // cancel everything
-                stdout_tx_str("\r\n");
+                mp_hal_stdout_tx_str("\r\n");
                 repl.cont_line = false;
                 goto input_restart;
         } else if (ret == CHAR_CTRL_D) {
@@ -253,7 +252,7 @@ int pyexec_friendly_repl_process_char(int c) {
 
         if (mp_repl_continue_with_input(vstr_null_terminated_str(&repl.line))) {
             vstr_add_byte(&repl.line, '\n');
-            stdout_tx_str("... ");
+            mp_hal_stdout_tx_str("... ");
             readline_note_newline();
             return 0;
         }
@@ -272,7 +271,7 @@ exec: ;
 friendly_repl_reset: // TODO
 input_restart:
         pyexec_friendly_repl_reset();
-        stdout_tx_str(">>> ");
+        mp_hal_stdout_tx_str(">>> ");
         return 0;
     }
 }
@@ -290,8 +289,8 @@ int pyexec_friendly_repl(void) {
 #endif
 
 friendly_repl_reset:
-    stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
-    stdout_tx_str("Type \"help()\" for more information.\r\n");
+    mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     // to test ctrl-C
     /*
@@ -318,21 +317,21 @@ friendly_repl_reset:
 
         if (ret == CHAR_CTRL_A) {
             // change to raw REPL
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
             return 0;
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             goto friendly_repl_reset;
         } else if (ret == CHAR_CTRL_C) {
             // break
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             continue;
         } else if (ret == CHAR_CTRL_D) {
             // exit for a soft reset
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
             return PYEXEC_FORCED_EXIT;
         } else if (vstr_len(&line) == 0) {
@@ -344,7 +343,7 @@ friendly_repl_reset:
             ret = readline(&line, "... ");
             if (ret == CHAR_CTRL_C) {
                 // cancel everything
-                stdout_tx_str("\r\n");
+                mp_hal_stdout_tx_str("\r\n");
                 goto input_restart;
             } else if (ret == CHAR_CTRL_D) {
                 // stop entering compound statement

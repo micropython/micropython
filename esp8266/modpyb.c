@@ -31,7 +31,6 @@
 #include "py/gc.h"
 #include "gccollect.h"
 #include "pyexec.h"
-#include "pybstdio.h"
 #include MICROPY_HAL_H
 #include "user_interface.h"
 
