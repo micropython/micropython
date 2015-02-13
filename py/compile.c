@@ -92,10 +92,10 @@ STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const cha
     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
     // we don't have a 'block' name, so just pass the NULL qstr to indicate this
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        mp_obj_exception_add_traceback(exc, comp->source_file, (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line, MP_QSTR_NULL);
+        mp_obj_exception_add_traceback(exc, comp->source_file, (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line, comp->scope_cur->simple_name);
     } else {
         // we don't have a line number, so just pass 0
-        mp_obj_exception_add_traceback(exc, comp->source_file, 0, MP_QSTR_NULL);
+        mp_obj_exception_add_traceback(exc, comp->source_file, 0, comp->scope_cur->simple_name);
     }
     comp->compile_error = exc;
 }
@@ -3426,7 +3426,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        EMIT_INLINE_ASM_ARG(start_pass, comp->pass, comp->scope_cur);
+        EMIT_INLINE_ASM_ARG(start_pass, comp->pass, comp->scope_cur, &comp->compile_error);
     }
 
     // get the function definition parse node
@@ -3441,6 +3441,9 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         mp_parse_node_t *pn_params;
         int n_params = list_get(&pns->nodes[1], PN_typedargslist, &pn_params);
         scope->num_pos_args = EMIT_INLINE_ASM_ARG(count_params, n_params, pn_params);
+        if (comp->compile_error != MP_OBJ_NULL) {
+            goto inline_asm_error;
+        }
     }
 
     assert(MP_PARSE_NODE_IS_NULL(pns->nodes[2])); // type
@@ -3519,14 +3522,21 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                 EMIT_INLINE_ASM_ARG(op, op, n_args, pn_arg);
             }
         }
+
+        if (comp->compile_error != MP_OBJ_NULL) {
+            pns = pns2; // this is the parse node that had the error
+            goto inline_asm_error;
+        }
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        bool success = EMIT_INLINE_ASM(end_pass);
-        if (!success) {
-            // TODO get proper exception from inline assembler
-            compile_syntax_error(comp, MP_PARSE_NODE_NULL, "inline assembler error");
-        }
+        EMIT_INLINE_ASM(end_pass);
+    }
+
+    if (comp->compile_error != MP_OBJ_NULL) {
+        // inline assembler had an error; add traceback to its exception
+    inline_asm_error:
+        mp_obj_exception_add_traceback(comp->compile_error, comp->source_file, (mp_uint_t)pns->source_line, comp->scope_cur->simple_name);
     }
 }
 #endif

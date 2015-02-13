@@ -44,20 +44,19 @@ typedef enum {
 
 struct _emit_inline_asm_t {
     uint16_t pass;
-    uint16_t success;
     scope_t *scope;
+    mp_obj_t *error_slot;
     mp_uint_t max_num_labels;
     qstr *label_lookup;
     asm_thumb_t *as;
 };
 
-STATIC void emit_inline_thumb_error(emit_inline_asm_t *emit, const char *fmt, ...) {
-    printf("SyntaxError: ");
-    emit->success = false;
-    va_list ap;
-    va_start(ap, fmt);
-    vprintf(fmt, ap);
-    va_end(ap);
+STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, const char *msg) {
+    *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
+}
+
+STATIC void emit_inline_thumb_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
+    *emit->error_slot = exc;
 }
 
 emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels) {
@@ -75,15 +74,15 @@ void emit_inline_thumb_free(emit_inline_asm_t *emit) {
     m_del_obj(emit_inline_asm_t, emit);
 }
 
-STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope) {
+STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope, mp_obj_t *error_slot) {
     emit->pass = pass;
-    emit->success = true;
     emit->scope = scope;
+    emit->error_slot = error_slot;
     asm_thumb_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_THUMB_PASS_EMIT : ASM_THUMB_PASS_COMPUTE);
     asm_thumb_entry(emit->as, 0);
 }
 
-STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
+STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
     asm_thumb_exit(emit->as);
     asm_thumb_end_pass(emit->as);
 
@@ -91,23 +90,21 @@ STATIC bool emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
         void *f = asm_thumb_get_code(emit->as);
         mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f, asm_thumb_get_code_size(emit->as), emit->scope->num_pos_args, 0);
     }
-
-    return emit->success;
 }
 
 STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
-        emit_inline_thumb_error(emit, "can only have up to 4 parameters to inline thumb assembly\n");
+        emit_inline_thumb_error_msg(emit, "can only have up to 4 parameters to Thumb assembly");
         return 0;
     }
     for (mp_uint_t i = 0; i < n_params; i++) {
         if (!MP_PARSE_NODE_IS_ID(pn_params[i])) {
-            emit_inline_thumb_error(emit, "parameter to inline assembler must be an identifier\n");
+            emit_inline_thumb_error_msg(emit, "parameters must be registers in sequence r0 to r3");
             return 0;
         }
         const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
         if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
-            emit_inline_thumb_error(emit, "parameter %d to inline assembler must be r%d\n", i + 1, i);
+            emit_inline_thumb_error_msg(emit, "parameters must be registers in sequence r0 to r3");
             return 0;
         }
     }
@@ -161,7 +158,7 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
             const reg_name_t *r = &reg_name_table[i];
             if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
                 if (r->reg > max_reg) {
-                    emit_inline_thumb_error(emit, "'%s' expects at most r%d\n", op, max_reg);
+                    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects at most r%d", op, max_reg));
                     return 0;
                 } else {
                     return r->reg;
@@ -169,18 +166,18 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
             }
         }
     }
-    emit_inline_thumb_error(emit, "'%s' expects a register\n", op);
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects a register", op));
     return 0;
 }
 
 STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int fit_mask) {
     if (!MP_PARSE_NODE_IS_SMALL_INT(pn)) {
-        emit_inline_thumb_error(emit, "'%s' expects an integer\n", op);
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects an integer", op));
         return 0;
     }
     int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
     if ((i & (~fit_mask)) != 0) {
-        emit_inline_thumb_error(emit, "'%s' integer 0x%x does not fit in mask 0x%x\n", op, i, fit_mask);
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer 0x%x does not fit in mask 0x%x", op, i, fit_mask));
         return 0;
     }
     return i;
@@ -204,13 +201,13 @@ STATIC bool get_arg_addr(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return true;
 
 bad_arg:
-    emit_inline_thumb_error(emit, "'%s' expects an address of the form [a, b]\n", op);
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects an address of the form [a, b]", op));
     return false;
 }
 
 STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_ID(pn)) {
-        emit_inline_thumb_error(emit, "'%s' expects a label\n", op);
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects a label", op));
         return 0;
     }
     qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
@@ -221,7 +218,7 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     }
     // only need to have the labels on the last pass
     if (emit->pass == MP_PASS_EMIT) {
-        emit_inline_thumb_error(emit, "label '%s' not defined\n", qstr_str(label_qstr));
+        emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "label '%s' not defined", qstr_str(label_qstr)));
     }
     return 0;
 }
@@ -450,7 +447,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     return;
 
 unknown_op:
-    emit_inline_thumb_error(emit, "unsupported Thumb instruction '%s' with %d arguments\n", op_str, n_args);
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Thumb instruction '%s' with %d arguments", op_str, n_args));
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {
