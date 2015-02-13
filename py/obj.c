@@ -346,6 +346,10 @@ void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
         mp_obj_tuple_get(o, len, items);
     } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
         mp_obj_list_get(o, len, items);
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+    } else if (MP_OBJ_IS_TYPE(o, &mp_type_bytearray)) {
+        mp_obj_bytearray_get(o, len, items);
+#endif
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
