@@ -668,12 +668,7 @@ STATIC mp_obj_t pyb_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 
-/// \method deinit()
-/// Deinitialises the timer.
-///
-/// Disables the callback (and the associated irq).
-/// Disables any channel callbacks (and the associated irq).
-/// Stops the timer, and disables the timer peripheral.
+// timer.deinit()
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
     pyb_timer_obj_t *self = self_in;
 
@@ -691,7 +686,9 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
         prev_chan->next = NULL;
     }
 
-    HAL_TIM_Base_DeInit(&self->tim);
+    self->tim.Instance->CCER = 0x0000; // disable all capture/compare outputs
+    self->tim.Instance->CR1 = 0x0000; // disable the timer and reset its state
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
