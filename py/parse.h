@@ -77,7 +77,7 @@ typedef struct _mp_parse_node_struct_t {
 
 mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg);
 void mp_parse_node_free(mp_parse_node_t pn);
-
+int mp_parse_node_extract_list(mp_parse_node_t *pn, mp_uint_t pn_kind, mp_parse_node_t **nodes);
 void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent);
 
 typedef enum {

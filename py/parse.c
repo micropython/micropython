@@ -199,6 +199,25 @@ void mp_parse_node_free(mp_parse_node_t pn) {
     }
 }
 
+int mp_parse_node_extract_list(mp_parse_node_t *pn, mp_uint_t pn_kind, mp_parse_node_t **nodes) {
+    if (MP_PARSE_NODE_IS_NULL(*pn)) {
+        *nodes = NULL;
+        return 0;
+    } else if (MP_PARSE_NODE_IS_LEAF(*pn)) {
+        *nodes = pn;
+        return 1;
+    } else {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)(*pn);
+        if (MP_PARSE_NODE_STRUCT_KIND(pns) != pn_kind) {
+            *nodes = pn;
+            return 1;
+        } else {
+            *nodes = pns->nodes;
+            return MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        }
+    }
+}
+
 #if MICROPY_DEBUG_PRINTERS
 void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
