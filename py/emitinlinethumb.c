@@ -170,6 +170,58 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     return 0;
 }
 
+STATIC mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+    // a register list looks like {r0, r1, r2} and is parsed as a Python set
+
+    if (!MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_atom_brace)) {
+        goto bad_arg;
+    }
+
+    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+    assert(MP_PARSE_NODE_STRUCT_NUM_NODES(pns) == 1); // should always be
+    pn = pns->nodes[0];
+
+    mp_uint_t reglist = 0;
+
+    if (MP_PARSE_NODE_IS_ID(pn)) {
+        // set with one element
+        reglist |= 1 << get_arg_reg(emit, op, pn, 15);
+    } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+        pns = (mp_parse_node_struct_t*)pn;
+        if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker) {
+            assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])); // should succeed
+            mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
+            if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_dictorsetmaker_list) {
+                // set with multiple elements
+
+                // get first element of set (we rely on get_arg_reg to catch syntax errors)
+                reglist |= 1 << get_arg_reg(emit, op, pns->nodes[0], 15);
+
+                // get tail elements (2nd, 3rd, ...)
+                mp_parse_node_t *nodes;
+                int n = mp_parse_node_extract_list(&pns1->nodes[0], PN_dictorsetmaker_list2, &nodes);
+
+                // process rest of elements
+                for (int i = 0; i < n; i++) {
+                    reglist |= 1 << get_arg_reg(emit, op, nodes[i], 15);
+                }
+            } else {
+                goto bad_arg;
+            }
+        } else {
+            goto bad_arg;
+        }
+    } else {
+        goto bad_arg;
+    }
+
+    return reglist;
+
+bad_arg:
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects {r0, r1, ...}", op));
+    return 0;
+}
+
 STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int fit_mask) {
     if (!MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects an integer", op));
@@ -284,12 +336,26 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_bcc_n(emit->as, cc, label_num);
-        } else if (strcmp(op_str, "cpsid")) {
+        } else if (strcmp(op_str, "cpsid") == 0) {
             // TODO check pn_args[0] == i
             asm_thumb_op16(emit->as, ASM_THUMB_OP_CPSID_I);
-        } else if (strcmp(op_str, "cpsie")) {
+        } else if (strcmp(op_str, "cpsie") == 0) {
             // TODO check pn_args[0] == i
             asm_thumb_op16(emit->as, ASM_THUMB_OP_CPSIE_I);
+        } else if (strcmp(op_str, "push") == 0) {
+            mp_uint_t reglist = get_arg_reglist(emit, op_str, pn_args[0]);
+            if ((reglist & 0xff00) == 0) {
+                asm_thumb_op16(emit->as, 0xb400 | reglist);
+            } else {
+                asm_thumb_op32(emit->as, 0xe92d, reglist);
+            }
+        } else if (strcmp(op_str, "pop") == 0) {
+            mp_uint_t reglist = get_arg_reglist(emit, op_str, pn_args[0]);
+            if ((reglist & 0xff00) == 0) {
+                asm_thumb_op16(emit->as, 0xbc00 | reglist);
+            } else {
+                asm_thumb_op32(emit->as, 0xe8bd, reglist);
+            }
         } else {
             goto unknown_op;
         }
