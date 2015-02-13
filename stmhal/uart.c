@@ -614,6 +614,14 @@ STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
+// uart.sendbreak()
+STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    self->uart.Instance->CR1 |= USART_CR1_SBK;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
+
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
 
@@ -634,6 +642,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_writechar), (mp_obj_t)&pyb_uart_writechar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sendbreak), (mp_obj_t)&pyb_uart_sendbreak_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTS), MP_OBJ_NEW_SMALL_INT(UART_HWCONTROL_RTS) },

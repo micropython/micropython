@@ -186,6 +186,7 @@ Q(any)
 Q(writechar)
 Q(readchar)
 Q(readinto)
+Q(sendbreak)
 Q(RTS)
 Q(CTS)
 

@@ -134,3 +134,9 @@ Methods
 
    Write a single character on the bus.  ``char`` is an integer to write.
    Return value: ``None``.
+
+.. method:: uart.sendbreak()
+
+   Send a break condition on the bus.  This drives the bus low for a duration
+   of 13 bits.
+   Return value: ``None``.
