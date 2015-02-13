@@ -47,6 +47,7 @@ SRC_C = \
 	gccollect.c \
 	uart.c \
 	modpyb.c \
+	modpybpin.c \
 	modesp.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
