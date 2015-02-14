@@ -185,6 +185,7 @@ Q(float)
 #endif
 Q(from_bytes)
 Q(getattr)
+Q(setattr)
 Q(globals)
 Q(hasattr)
 Q(hash)

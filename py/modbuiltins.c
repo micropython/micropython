@@ -533,13 +533,17 @@ STATIC inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t d
     }
 }
 
-STATIC mp_obj_t mp_builtin_getattr(mp_uint_t n_args, const mp_obj_t *args) {
-    mp_obj_t attr = args[1];
+STATIC inline mp_obj_t mp_arg_get_str(mp_obj_t attr) {
     if (MP_OBJ_IS_TYPE(attr, &mp_type_str)) {
         attr = mp_obj_str_intern(attr);
     } else if (!MP_OBJ_IS_QSTR(attr)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "string required"));
     }
+    return attr;
+}
+
+STATIC mp_obj_t mp_builtin_getattr(mp_uint_t n_args, const mp_obj_t *args) {
+    mp_obj_t attr = mp_arg_get_str(args[1]);
     mp_obj_t defval = MP_OBJ_NULL;
     if (n_args > 2) {
         defval = args[2];
@@ -547,6 +551,13 @@ STATIC mp_obj_t mp_builtin_getattr(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_load_attr_default(args[0], MP_OBJ_QSTR_VALUE(attr), defval);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_getattr_obj, 2, 3, mp_builtin_getattr);
+
+STATIC mp_obj_t mp_builtin_setattr(mp_obj_t base, mp_obj_t attr, mp_obj_t value) {
+    attr = mp_arg_get_str(attr);
+    mp_store_attr(base, MP_OBJ_QSTR_VALUE(attr), value);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_3(mp_builtin_setattr_obj, mp_builtin_setattr);
 
 STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
     assert(MP_OBJ_IS_QSTR(attr_in));
@@ -637,6 +648,7 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_execfile), (mp_obj_t)&mp_builtin_execfile_obj },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_getattr), (mp_obj_t)&mp_builtin_getattr_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setattr), (mp_obj_t)&mp_builtin_setattr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_globals), (mp_obj_t)&mp_builtin_globals_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hasattr), (mp_obj_t)&mp_builtin_hasattr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hash), (mp_obj_t)&mp_builtin_hash_obj },
