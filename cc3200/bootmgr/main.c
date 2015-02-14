@@ -53,7 +53,7 @@
 //*****************************************************************************
 // Local Constants
 //*****************************************************************************
-#define SL_STOP_TIMEOUT                     500
+#define SL_STOP_TIMEOUT                     250
 #define BOOTMGR_HASH_ALGO                   SHAMD5_ALGO_MD5
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512

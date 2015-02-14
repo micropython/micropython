@@ -130,7 +130,7 @@ typedef struct _wlan_obj_t {
 #define ASSERT_ON_ERROR( x )            ASSERT((x) >= 0 )
 
 #define IPV4_ADDR_STR_LEN_MAX           (16)
-#define SL_STOP_TIMEOUT                 500
+#define SL_STOP_TIMEOUT                 250
 
 #define WLAN_MAX_RX_SIZE                16000
 
@@ -501,7 +501,7 @@ void wlan_sl_disable (void) {
         xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
     #endif
         wlan_obj.mode = -1;
-        ASSERT_ON_ERROR (sl_Stop(SL_STOP_TIMEOUT));
+        sl_Stop(SL_STOP_TIMEOUT);
     }
 }
 
@@ -551,7 +551,7 @@ STATIC void wlan_reenable (SlWlanMode_t mode) {
 #ifdef USE_FREERTOS
     xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
 #endif
-    ASSERT_ON_ERROR(sl_Stop(SL_STOP_TIMEOUT));
+    sl_Stop(SL_STOP_TIMEOUT);
     wlan_obj.mode = sl_Start(0, 0, 0);
 #ifdef USE_FREERTOS
     xSemaphoreGive (xWlanSemaphore);
