@@ -595,21 +595,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
 }
 
-bool mp_obj_instance_is_callable(mp_obj_t self_in) {
-    mp_obj_instance_t *self = self_in;
-    mp_obj_t member[2] = {MP_OBJ_NULL};
-    struct class_lookup_data lookup = {
-        .obj = self,
-        .attr = MP_QSTR___call__,
-        .meth_offset = offsetof(mp_obj_type_t, call),
-        .dest = member,
-        .is_type = false,
-    };
-    mp_obj_class_lookup(&lookup, self->base.type);
-    return member[0] != MP_OBJ_NULL;
-}
-
-mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in) {
     mp_obj_instance_t *self = self_in;
     mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
     struct class_lookup_data lookup = {
@@ -620,7 +606,16 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
-    if (member[0] == MP_OBJ_NULL) {
+    return member[0];
+}
+
+bool mp_obj_instance_is_callable(mp_obj_t self_in) {
+    return mp_obj_instance_get_call(self_in) != MP_OBJ_NULL;
+}
+
+mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_obj_t call = mp_obj_instance_get_call(self_in);
+    if (call == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                 "object not callable"));
@@ -629,10 +624,11 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
                 "'%s' object is not callable", mp_obj_get_type_str(self_in)));
         }
     }
-    if (member[0] == MP_OBJ_SENTINEL) {
+    mp_obj_instance_t *self = self_in;
+    if (call == MP_OBJ_SENTINEL) {
         return mp_call_function_n_kw(self->subobj[0], n_args, n_kw, args);
     }
-    mp_obj_t meth = mp_obj_new_bound_meth(member[0], self);
+    mp_obj_t meth = mp_obj_new_bound_meth(call, self);
     return mp_call_function_n_kw(meth, n_args, n_kw, args);
 }
 
