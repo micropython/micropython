@@ -574,8 +574,8 @@ typedef struct _mp_obj_fun_builtin_t { // use this to make const objects that go
     void *fun; // must be a pointer to a callable function in ROM
 } mp_obj_fun_builtin_t;
 
-const char *mp_obj_fun_get_name(mp_const_obj_t fun);
-const char *mp_obj_code_get_name(const byte *code_info);
+qstr mp_obj_fun_get_name(mp_const_obj_t fun);
+qstr mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);

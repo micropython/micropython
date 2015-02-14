@@ -103,12 +103,12 @@ const mp_obj_type_t mp_type_fun_builtin = {
 /******************************************************************************/
 /* byte code functions                                                        */
 
-const char *mp_obj_code_get_name(const byte *code_info) {
+qstr mp_obj_code_get_name(const byte *code_info) {
     mp_decode_uint(&code_info); // skip code_info_size entry
-    return qstr_str(mp_decode_uint(&code_info));
+    return mp_decode_uint(&code_info);
 }
 
-const char *mp_obj_fun_get_name(mp_const_obj_t fun_in) {
+qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = fun_in;
     const byte *code_info = fun->bytecode;
     return mp_obj_code_get_name(code_info);
@@ -118,7 +118,7 @@ const char *mp_obj_fun_get_name(mp_const_obj_t fun_in) {
 STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fun_bc_t *o = o_in;
-    print(env, "<function %s at 0x%x>", mp_obj_fun_get_name(o), o);
+    print(env, "<function %s at 0x%x>", qstr_str(mp_obj_fun_get_name(o)), o);
 }
 #endif
 
@@ -246,6 +246,14 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
     }
 }
 
+#if MICROPY_PY_FUNCTION_ATTRS
+STATIC void fun_bc_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if(attr == MP_QSTR___name__) {
+        dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(self_in));
+    }
+}
+#endif
+
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
     .name = MP_QSTR_function,
@@ -253,6 +261,9 @@ const mp_obj_type_t mp_type_fun_bc = {
     .print = fun_bc_print,
 #endif
     .call = fun_bc_call,
+#if MICROPY_PY_FUNCTION_ATTRS
+    .load_attr = fun_bc_load_attr,
+#endif
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {

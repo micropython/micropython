@@ -62,7 +62,7 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expecte
 #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "%s() takes %d positional arguments but %d were given",
-        mp_obj_fun_get_name(f), expected, given));
+        qstr_str(mp_obj_fun_get_name(f)), expected, given));
 #endif
 }
 
