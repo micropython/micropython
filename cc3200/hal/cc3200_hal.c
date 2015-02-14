@@ -88,7 +88,7 @@ void HAL_SystemInit (void) {
 
     // in the case of a release image, these steps are already performed by
     // the bootloader so we can skip it and gain some code space
-#ifndef NDEBUG
+#ifdef DEBUG
     MAP_IntMasterEnable();
     PRCMCC3200MCUInit();
 #endif

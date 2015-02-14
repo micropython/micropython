@@ -62,8 +62,8 @@
  * THE SOFTWARE.
  */
 
-__stack_size__    = 1024;       /* interrupts are handled using this stack */
-__min_heap_size__ = 4K;
+__stack_size__    = 1K;       /* interrupts are handled using this stack */
+__min_heap_size__ = 6K;
 __rtos_heap_size  = 16K;
 
 MEMORY

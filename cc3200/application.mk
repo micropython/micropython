@@ -186,6 +186,9 @@ $(BUILD)/stmhal/%.o: CFLAGS += -Os
 $(BUILD)/telnet/%.o: CFLAGS += -Os
 $(BUILD)/util/%.o: CFLAGS += -Os
 $(BUILD)/pins.o: CFLAGS += -Os
+$(BUILD)/main.o: CFLAGS += -Os
+$(BUILD)/mptask.o: CFLAGS += -Os
+$(BUILD)/servertask.o: CFLAGS += -Os
 else
 $(error Invalid BTYPE specified)
 endif
@@ -216,7 +219,7 @@ PREFIX_FILE = boards/cc3200_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-    
+
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the

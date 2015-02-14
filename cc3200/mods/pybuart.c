@@ -145,13 +145,13 @@ bool uart_init2(pyb_uart_obj_t *self) {
         self->reg = UARTA0_BASE;
         uartPerh = PRCM_UARTA0;
         MAP_UARTIntRegister(UARTA0_BASE, UART0IntHandler);
-        MAP_IntPrioritySet(INT_UARTA0, INT_PRIORITY_LVL_7);
+        MAP_IntPrioritySet(INT_UARTA0, INT_PRIORITY_LVL_3);
         break;
     case PYB_UART_2:
         self->reg = UARTA1_BASE;
         uartPerh = PRCM_UARTA1;
         MAP_UARTIntRegister(UARTA1_BASE, UART1IntHandler);
-        MAP_IntPrioritySet(INT_UARTA1, INT_PRIORITY_LVL_7);
+        MAP_IntPrioritySet(INT_UARTA1, INT_PRIORITY_LVL_3);
         break;
     default:
         return false;
