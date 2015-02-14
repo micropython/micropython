@@ -66,6 +66,10 @@ Q(__add__)
 Q(__sub__)
 Q(__repr__)
 Q(__str__)
+#if MICROPY_PY_DESCRIPTORS
+Q(__get__)
+Q(__set__)
+#endif
 Q(__getattr__)
 Q(__del__)
 Q(__call__)

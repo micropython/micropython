@@ -364,6 +364,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_FUNCTION_ATTRS (0)
 #endif
 
+// Whether to support descriptors (__get__ and __set__)
+// This costs some code size and makes all load attrs and store attrs slow
+#ifndef MICROPY_PY_DESCRIPTORS
+#define MICROPY_PY_DESCRIPTORS (0)
+#endif
+
 // Whether str object is proper unicode
 #ifndef MICROPY_PY_BUILTINS_STR_UNICODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)

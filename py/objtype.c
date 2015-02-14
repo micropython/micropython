@@ -461,20 +461,38 @@ void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_class_lookup(&lookup, self->base.type);
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
-#if MICROPY_PY_BUILTINS_PROPERTY
+        #if MICROPY_PY_BUILTINS_PROPERTY
         if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
-            // object member is a property
-            // delegate the store to the property
-            // TODO should this be part of mp_convert_member_lookup?
+            // object member is a property; delegate the load to the property
+            // Note: This is an optimisation for code size and execution time.
+            // The proper way to do it is have the functionality just below
+            // in a __get__ method of the property object, and then it would
+            // be called by the descriptor code down below.  But that way
+            // requires overhead for the nested mp_call's and overhead for
+            // the code.
             const mp_obj_t *proxy = mp_obj_property_get(member);
             if (proxy[0] == mp_const_none) {
-                // TODO
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "unreadable attribute"));
             } else {
                 dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
-                // TODO should we convert the returned value using mp_convert_member_lookup?
             }
+            return;
         }
-#endif
+        #endif
+
+        #if MICROPY_PY_DESCRIPTORS
+        // found a class attribute; if it has a __get__ method then call it with the
+        // class instance and class as arguments and return the result
+        // Note that this is functionally correct but very slow: each load_attr
+        // requires an extra mp_load_method_maybe to check for the __get__.
+        mp_obj_t attr_get_method[4];
+        mp_load_method_maybe(member, MP_QSTR___get__, attr_get_method);
+        if (attr_get_method[0] != MP_OBJ_NULL) {
+            attr_get_method[2] = self_in;
+            attr_get_method[3] = mp_obj_get_type(self_in);
+            dest[0] = mp_call_method_n_kw(2, 0, attr_get_method);
+        }
+        #endif
         return;
     }
 
@@ -495,9 +513,11 @@ void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = self_in;
 
-#if MICROPY_PY_BUILTINS_PROPERTY
-    // for property, we need to do a lookup first in the class dict
-    // this makes all stores slow... how to fix?
+    #if MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_DESCRIPTORS
+    // With property and/or descriptors enabled we need to do a lookup
+    // first in the class dict for the attribute to see if the store should
+    // be delegated.
+    // Note: this makes all stores slow... how to fix?
     mp_obj_t member[2] = {MP_OBJ_NULL};
     struct class_lookup_data lookup = {
         .obj = self,
@@ -507,20 +527,43 @@ bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
-    if (member[0] != MP_OBJ_NULL && MP_OBJ_IS_TYPE(member[0], &mp_type_property)) {
-        // attribute already exists and is a property
-        // delegate the store to the property
-        const mp_obj_t *proxy = mp_obj_property_get(member[0]);
-        if (proxy[1] == mp_const_none) {
-            // TODO better error message
-            return false;
-        } else {
-            mp_obj_t dest[2] = {self_in, value};
-            mp_call_function_n_kw(proxy[1], 2, 0, dest);
+
+    if (member[0] != MP_OBJ_NULL) {
+        #if MICROPY_PY_BUILTINS_PROPERTY
+        if (MP_OBJ_IS_TYPE(member[0], &mp_type_property)) {
+            // attribute exists and is a property; delegate the store
+            // Note: This is an optimisation for code size and execution time.
+            // The proper way to do it is have the functionality just below
+            // in a __set__ method of the property object, and then it would
+            // be called by the descriptor code down below.  But that way
+            // requires overhead for the nested mp_call's and overhead for
+            // the code.
+            const mp_obj_t *proxy = mp_obj_property_get(member[0]);
+            if (proxy[1] == mp_const_none) {
+                // TODO better error message?
+                return false;
+            } else {
+                mp_obj_t dest[2] = {self_in, value};
+                mp_call_function_n_kw(proxy[1], 2, 0, dest);
+                return true;
+            }
+        }
+        #endif
+
+        #if MICROPY_PY_DESCRIPTORS
+        // found a class attribute; if it has a __set__ method then call it with the
+        // class instance and value as arguments
+        mp_obj_t attr_set_method[4];
+        mp_load_method_maybe(member[0], MP_QSTR___set__, attr_set_method);
+        if (attr_set_method[0] != MP_OBJ_NULL) {
+            attr_set_method[2] = self_in;
+            attr_set_method[3] = value;
+            mp_call_method_n_kw(2, 0, attr_set_method);
             return true;
         }
+        #endif
     }
-#endif
+    #endif
 
     if (value == MP_OBJ_NULL) {
         // delete attribute

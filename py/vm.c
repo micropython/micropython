@@ -393,8 +393,9 @@ dispatch_loop:
                     DISPATCH();
                 }
                 #else
-                // This caching code works with MICROPY_PY_BUILTINS_PROPERTY enabled because
-                // if the attr exists in self->members then it can't be a property.  A
+                // This caching code works with MICROPY_PY_BUILTINS_PROPERTY and/or
+                // MICROPY_PY_DESCRIPTORS enabled because if the attr exists in
+                // self->members then it can't be a property or have descriptors.  A
                 // consequence of this is that we can't use MP_MAP_LOOKUP_ADD_IF_NOT_FOUND
                 // in the fast-path below, because that store could override a property.
                 ENTRY(MP_BC_STORE_ATTR): {
