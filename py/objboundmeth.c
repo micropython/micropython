@@ -47,6 +47,15 @@ STATIC void bound_meth_print(void (*print)(void *env, const char *fmt, ...), voi
 }
 #endif
 
+#if MICROPY_BUILTIN_FUNCTION_ATTRS
+STATIC void bound_meth_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if(attr == MP_QSTR___name__) {
+        mp_obj_bound_meth_t *o = self_in;
+        dest[0] = MP_OBJ_NEW_QSTR(qstr_from_str(mp_obj_fun_get_name(o->meth)));
+    }
+}
+#endif
+
 STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_bound_meth_t *self = self_in;
 
@@ -75,6 +84,9 @@ const mp_obj_type_t bound_meth_type = {
     .name = MP_QSTR_bound_method,
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     .print = bound_meth_print,
+#endif
+#if MICROPY_BUILTIN_FUNCTION_ATTRS
+    .load_attr = bound_meth_load_attr,
 #endif
     .call = bound_meth_call,
 };

@@ -122,6 +122,14 @@ STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *e
 }
 #endif
 
+#if MICROPY_BUILTIN_FUNCTION_ATTRS
+STATIC void fun_bc_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if(attr == MP_QSTR___name__) {
+        dest[0] = MP_OBJ_NEW_QSTR(qstr_from_str(mp_obj_fun_get_name(self_in)));
+    }
+}
+#endif
+
 #if DEBUG_PRINT
 STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
     DEBUG_printf("%p: ", a);
@@ -251,6 +259,9 @@ const mp_obj_type_t mp_type_fun_bc = {
     .name = MP_QSTR_function,
 #if MICROPY_CPYTHON_COMPAT
     .print = fun_bc_print,
+#endif
+#if MICROPY_BUILTIN_FUNCTION_ATTRS
+    .load_attr = fun_bc_load_attr,
 #endif
     .call = fun_bc_call,
 };
