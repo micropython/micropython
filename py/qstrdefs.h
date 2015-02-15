@@ -385,6 +385,7 @@ Q(qstr_info)
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
 Q(alloc_emergency_exception_buf)
 #endif
+Q(maximum recursion depth exceeded)
 
 Q(<module>)
 Q(<lambda>)
