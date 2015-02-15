@@ -349,15 +349,19 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             // no message
             assert(0);
         } else {
-            // render exception message and store as .args[0]
-            // TODO: optimize bufferbloat
-            vstr_t vstr;
-            vstr_init(&vstr, 16);
-            va_list ap;
-            va_start(ap, fmt);
-            vstr_vprintf(&vstr, fmt, ap);
-            va_end(ap);
-            o->args->items[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            if (strchr(fmt, '%') == NULL) {
+                // no formatting substitutions, avoid allocating vstr.
+                o->args->items[0] = mp_obj_new_str(fmt, strlen(fmt), false);
+            } else {
+                // render exception message and store as .args[0]
+                va_list ap;
+                vstr_t vstr;
+                vstr_init(&vstr, 16);
+                va_start(ap, fmt);
+                vstr_vprintf(&vstr, fmt, ap);
+                va_end(ap);
+                o->args->items[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            }
         }
     }
 
