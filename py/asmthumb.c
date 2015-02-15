@@ -375,8 +375,8 @@ void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
     if ((as->code_offset & 3) == 0) {
         asm_thumb_op16(as, ASM_THUMB_OP_NOP);
     }
-    // jump over the i32 value (instruction prefect adds 4 to PC)
-    asm_thumb_op16(as, OP_B_N(0));
+    // jump over the i32 value (instruction prefetch adds 2 to PC)
+    asm_thumb_op16(as, OP_B_N(2));
     // store i32 on machine-word aligned boundary
     asm_thumb_data(as, 4, i32);
     // do the actual load of the i32 value
