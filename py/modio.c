@@ -38,9 +38,9 @@ STATIC const mp_map_elem_t mp_module_io_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
     #if MICROPY_PY_IO_FILEIO
     { MP_OBJ_NEW_QSTR(MP_QSTR_FileIO), (mp_obj_t)&mp_type_fileio },
-    #endif
     #if MICROPY_CPYTHON_COMPAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_TextIOWrapper), (mp_obj_t)&mp_type_textio },
+    #endif
     #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_StringIO), (mp_obj_t)&mp_type_stringio },
     #if MICROPY_PY_IO_BYTESIO

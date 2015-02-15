@@ -57,7 +57,7 @@ mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args) {
     (void)args;
 #if MICROPY_MEM_STATS
     printf("mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
-        m_get_total_bytes_allocated(), m_get_current_bytes_allocated(), m_get_peak_bytes_allocated());
+        (mp_uint_t)m_get_total_bytes_allocated(), (mp_uint_t)m_get_current_bytes_allocated(), (mp_uint_t)m_get_peak_bytes_allocated());
 #endif
 #if MICROPY_STACK_CHECK
     printf("stack: " UINT_FMT " out of " INT_FMT "\n", mp_stack_usage(), MP_STATE_VM(stack_limit));
