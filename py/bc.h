@@ -45,6 +45,7 @@ typedef struct _mp_code_state {
     mp_obj_t *sp;
     // bit 0 is saved currently_in_except_block value
     mp_exc_stack_t *exc_sp;
+    mp_obj_dict_t *old_globals;
     mp_uint_t n_state;
     // Variable-length
     mp_obj_t state[0];

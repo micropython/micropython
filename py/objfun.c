@@ -137,7 +137,7 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 // With this macro you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
 // than this will use the heap.
-#define VM_MAX_STATE_ON_STACK (10 * sizeof(mp_uint_t))
+#define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
 
 // Set this to enable a simple stack overflow check.
 #define VM_DETECT_STACK_OVERFLOW (0)
@@ -183,10 +183,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
     mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
-    mp_obj_dict_t *old_globals = mp_globals_get();
+    code_state->old_globals = mp_globals_get();
     mp_globals_set(self->globals);
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
-    mp_globals_set(old_globals);
+    mp_globals_set(code_state->old_globals);
 
 #if VM_DETECT_STACK_OVERFLOW
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
