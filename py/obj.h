@@ -285,7 +285,7 @@ struct _mp_obj_type_t {
                                     // value=MP_OBJ_NULL means delete, value=MP_OBJ_SENTINEL means load, else store
                                     // can return MP_OBJ_NULL if op not supported
 
-    mp_fun_1_t getiter;
+    mp_fun_1_t getiter;             // corresponds to __iter__ special method
     mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
 
     mp_buffer_p_t buffer_p;

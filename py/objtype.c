@@ -644,21 +644,13 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_NULL) {
-        // This kinda duplicates code in mp_getiter()
-        lookup.attr = MP_QSTR___getitem__;
-        lookup.meth_offset = 0; // TODO
-        mp_obj_class_lookup(&lookup, self->base.type);
-        if (member[0] != MP_OBJ_NULL) {
-            // __getitem__ exists, create an iterator
-            return mp_obj_new_getitem_iter(member);
-        }
         return MP_OBJ_NULL;
-    }
-    if (member[0] == MP_OBJ_SENTINEL) {
+    } else if (member[0] == MP_OBJ_SENTINEL) {
         mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
         return type->getiter(self->subobj[0]);
+    } else {
+        return mp_call_method_n_kw(0, 0, member);
     }
-    return mp_call_method_n_kw(0, 0, member);
 }
 
 STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {

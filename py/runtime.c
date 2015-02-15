@@ -957,37 +957,31 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 
 mp_obj_t mp_getiter(mp_obj_t o_in) {
     assert(o_in);
+
+    // check for native getiter (corresponds to __iter__)
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
         mp_obj_t iter = type->getiter(o_in);
-        if (iter == MP_OBJ_NULL) {
-            goto not_iterable;
+        if (iter != MP_OBJ_NULL) {
+            return iter;
         }
-        return iter;
+    }
+
+    // check for __getitem__
+    mp_obj_t dest[2];
+    mp_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        // __getitem__ exists, create and return an iterator
+        return mp_obj_new_getitem_iter(dest);
+    }
+
+    // object not iterable
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+            "object not iterable"));
     } else {
-        // check for __iter__ method
-        mp_obj_t dest[2];
-        mp_load_method_maybe(o_in, MP_QSTR___iter__, dest);
-        if (dest[0] != MP_OBJ_NULL) {
-            // __iter__ exists, call it and return its result
-            return mp_call_method_n_kw(0, 0, dest);
-        } else {
-            mp_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
-            if (dest[0] != MP_OBJ_NULL) {
-                // __getitem__ exists, create an iterator
-                return mp_obj_new_getitem_iter(dest);
-            } else {
-                // object not iterable
-not_iterable:
-                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                        "object not iterable"));
-                } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
-                }
-            }
-        }
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+            "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
     }
 }
 
