@@ -82,7 +82,7 @@ Methods
 
    Turn off the CAN bus.
 
-.. method:: can.setfilter(bank, mode, fifo, params)
+.. method:: can.setfilter(bank, mode, fifo, params, \*, rtr)
    
    Configure a filter bank:
    
@@ -90,6 +90,7 @@ Methods
    - ``mode`` is the mode the filter should operate in.
    - ``fifo`` is which fifo (0 or 1) a message should be stored in, if it is accepted by this filter.   
    - ``params`` is an array of values the defines the filter. The contents of the array depends on the ``mode`` argument.
+
     
    +-----------+---------------------------------------------------------+
    |``mode``   |contents of parameter array                              |
@@ -106,7 +107,20 @@ Methods
    +-----------+---------------------------------------------------------+
    |CAN.MASK32 |As with CAN.MASK16 but with only one 32 bit id/mask pair.|
    +-----------+---------------------------------------------------------+
+   - ``rtr`` is an array of booleans that states if a filter should accept a rtr message. The length of the array depends on the ``mode`` argument.
    
+   +-----------+----------------------+
+   |``mode``   |length of rtr array   |
+   +===========+======================+
+   |CAN.LIST16 |4                     |
+   +-----------+----------------------+
+   |CAN.LIST32 |2                     |
+   +-----------+----------------------+
+   |CAN.MASK16 |2                     |
+   +-----------+----------------------+
+   |CAN.MASK32 |1                     |
+   +-----------+----------------------+
+
 .. method:: can.clearfilter(bank)
 
    Clear and disables a filter bank:
@@ -126,15 +140,25 @@ Methods
    
    Return value: buffer of data bytes.
 
-.. method:: can.send(send, addr, \*, timeout=5000)
+.. method:: can.send(send, id, \*, timeout=5000)
 
    Send a message on the bus:
    
      - ``send`` is the data to send (an integer to send, or a buffer object).
-     - ``addr`` is the address to send to
+     - ``id`` is the id of the message to be sent.
      - ``timeout`` is the timeout in milliseconds to wait for the send.
    
    Return value: ``None``.
+
+.. method:: can.rtr(id, \*, timeout=5000)
+
+   Send a remote transmission request message on the bus:
+
+     - ``id`` is the id that is requested.
+     - ``timeout`` is the timeout in milliseconds to wait for the message to be sent.
+
+   Return value: ``None``.
+
 
 Constants
 ---------

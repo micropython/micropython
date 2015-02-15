@@ -2,9 +2,19 @@ CAN(1)
 CAN(1, CAN.LOOPBACK, extframe=False)
 False
 True
-(123, 0, 0, b'abcd')
-(2047, 0, 0, b'abcd')
-(0, 0, 0, b'abcd')
+(123, False, 0, b'abcd')
+(2047, False, 0, b'abcd')
+(0, False, 0, b'abcd')
 passed
 CAN(1, CAN.LOOPBACK, extframe=True)
 passed
+False
+(5, True, 4, b'')
+(6, True, 5, b'')
+(7, True, 6, b'')
+False
+(32, True, 9, b'')
+(1, True, 0, b'')
+(2, True, 1, b'')
+(3, True, 2, b'')
+False
