@@ -3446,20 +3446,32 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_pass_stmt) {
             // no instructions
             continue;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_expr_stmt) {
-            // an instruction; fall through
-        } else {
+        } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) != PN_expr_stmt) {
             // not an instruction; error
+        not_an_instruction:
             compile_syntax_error(comp, nodes[i], "inline assembler expecting an instruction");
             return;
         }
+
+        // check structure of parse node
         assert(MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0]));
-        assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[1]));
+        if (!MP_PARSE_NODE_IS_NULL(pns2->nodes[1])) {
+            goto not_an_instruction;
+        }
         pns2 = (mp_parse_node_struct_t*)pns2->nodes[0];
-        assert(MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_power);
-        assert(MP_PARSE_NODE_IS_ID(pns2->nodes[0]));
-        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns2->nodes[1], PN_trailer_paren));
+        if (MP_PARSE_NODE_STRUCT_KIND(pns2) != PN_power) {
+            goto not_an_instruction;
+        }
+        if (!MP_PARSE_NODE_IS_ID(pns2->nodes[0])) {
+            goto not_an_instruction;
+        }
+        if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns2->nodes[1], PN_trailer_paren)) {
+            goto not_an_instruction;
+        }
         assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[2]));
+
+        // parse node looks like an instruction
+        // get instruction name and args
         qstr op = MP_PARSE_NODE_LEAF_ARG(pns2->nodes[0]);
         pns2 = (mp_parse_node_struct_t*)pns2->nodes[1]; // PN_trailer_paren
         mp_parse_node_t *pn_arg;
