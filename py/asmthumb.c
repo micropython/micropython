@@ -40,6 +40,7 @@
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 #define SIGNED_FIT9(x) (((x) & 0xffffff00) == 0) || (((x) & 0xffffff00) == 0xffffff00)
 #define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
+#define SIGNED_FIT23(x) (((x) & 0xffc00000) == 0) || (((x) & 0xffc00000) == 0xffc00000)
 
 struct _asm_thumb_t {
     mp_uint_t pass;
@@ -452,6 +453,20 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
         // is a forwards jump, so need to assume it's large
         large_jump:
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
+    }
+}
+
+#define OP_BL_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
+#define OP_BL_LO(byte_offset) (0xf800 | (((byte_offset) >> 1) & 0x07ff))
+
+void asm_thumb_bl(asm_thumb_t *as, uint label) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    if (SIGNED_FIT23(rel)) {
+        asm_thumb_op32(as, OP_BL_HI(rel), OP_BL_LO(rel));
+    } else {
+        printf("asm_thumb_bl: branch does not fit in 23 bits\n");
     }
 }
 

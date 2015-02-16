@@ -336,6 +336,13 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_b_n(emit->as, label_num);
+        } else if (strcmp(op_str, "bl") == 0) {
+            int label_num = get_arg_label(emit, op_str, pn_args[0]);
+            // TODO check that this succeeded, ie branch was within range
+            asm_thumb_bl(emit->as, label_num);
+        } else if (strcmp(op_str, "bx") == 0) {
+            mp_uint_t r = get_arg_reg(emit, op_str, pn_args[0], 15);
+            asm_thumb_op16(emit->as, 0x4700 | (r << 3));
         } else if (op_str[0] == 'b' && op_len == 3) {
             mp_uint_t cc = -1;
             for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
