@@ -61,8 +61,8 @@ bool mp_obj_is_package(mp_obj_t module) {
 }
 
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
-    //printf("stat %s\n", vstr_str(path));
     mp_import_stat_t stat = mp_import_stat(vstr_null_terminated_str(path));
+    DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
@@ -204,6 +204,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
             // package's __init__.py does something like "import .submod". So,
             // maybe we should check for package here? But quote above doesn't
             // talk about packages, it talks about dot-less module names.
+            DEBUG_printf("Warning: no dots in current module name and level>0\n");
             p = this_name + this_name_l;
         } else if (level != 0) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "Invalid relative import"));
@@ -264,7 +265,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
             // create a qstr for the module name up to this depth
             qstr mod_name = qstr_from_strn(mod_str, i);
             DEBUG_printf("Processing module: %s\n", qstr_str(mod_name));
-            DEBUG_printf("Previous path: %.*s\n", vstr_len(&path), vstr_str(&path));
+            DEBUG_printf("Previous path: =%.*s=\n", vstr_len(&path), vstr_str(&path));
 
             // find the file corresponding to the module name
             mp_import_stat_t stat;
