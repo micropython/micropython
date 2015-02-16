@@ -150,23 +150,38 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
-STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
+// return empty string in case of error, so we can attempt to parse the string
+// without a special check if it was in fact a string
+STATIC const char *get_arg_str(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_ID(pn)) {
-        qstr reg_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
-        const char *reg_str = qstr_str(reg_qstr);
-        for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
-            const reg_name_t *r = &reg_name_table[i];
-            if (reg_str[0] == r->name[0] && reg_str[1] == r->name[1] && reg_str[2] == r->name[2] && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
-                if (r->reg > max_reg) {
-                    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects at most r%d", op, max_reg));
-                    return 0;
-                } else {
-                    return r->reg;
-                }
+        qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
+        return qstr_str(qst);
+    } else {
+        return "";
+    }
+}
+
+STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
+    const char *reg_str = get_arg_str(pn);
+    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
+        const reg_name_t *r = &reg_name_table[i];
+        if (reg_str[0] == r->name[0]
+            && reg_str[1] == r->name[1]
+            && reg_str[2] == r->name[2]
+            && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
+            if (r->reg > max_reg) {
+                emit_inline_thumb_error_exc(emit,
+                    mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                        "'%s' expects at most r%d", op, max_reg));
+                return 0;
+            } else {
+                return r->reg;
             }
         }
     }
-    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects a register", op));
+    emit_inline_thumb_error_exc(emit,
+        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+            "'%s' expects a register", op));
     return 0;
 }
 
@@ -312,8 +327,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op16(emit->as, ASM_THUMB_OP_NOP);
         } else if (strcmp(op_str, "wfi") == 0) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
-        } else if (strcmp(op_str, "ite.ge") == 0) { // TODO correct name for this op?
-            asm_thumb_op16(emit->as, ASM_THUMB_OP_ITE_GE);
         } else {
             goto unknown_op;
         }
@@ -336,6 +349,39 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
             // TODO check that this succeeded, ie branch was within range
             asm_thumb_bcc_n(emit->as, cc, label_num);
+        } else if (op_str[0] == 'i' && op_str[1] == 't') {
+            const char *arg_str = get_arg_str(pn_args[0]);
+            mp_uint_t cc = -1;
+            for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
+                if (arg_str[0] == cc_name_table[i].name[0]
+                    && arg_str[1] == cc_name_table[i].name[1]
+                    && arg_str[2] == '\0') {
+                    cc = cc_name_table[i].cc;
+                    break;
+                }
+            }
+            if (cc == -1) {
+                goto unknown_op;
+            }
+            const char *os = op_str + 2;
+            while (*os != '\0') {
+                os++;
+            }
+            if (os > op_str + 5) {
+                goto unknown_op;
+            }
+            mp_uint_t it_mask = 8;
+            while (--os >= op_str + 2) {
+                it_mask >>= 1;
+                if (*os == 't') {
+                    it_mask |= (cc & 1) << 3;
+                } else if (*os == 'e') {
+                    it_mask |= ((~cc) & 1) << 3;
+                } else {
+                    goto unknown_op;
+                }
+            }
+            asm_thumb_it_cc(emit->as, cc, it_mask);
         } else if (strcmp(op_str, "cpsid") == 0) {
             // TODO check pn_args[0] == i
             asm_thumb_op16(emit->as, ASM_THUMB_OP_CPSID_I);
