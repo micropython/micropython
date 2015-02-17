@@ -736,7 +736,7 @@ STATIC mp_obj_t pyb_spi_listen(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     if (query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_Receive(self->spi, (uint8_t*)vstr.buf, vstr.len, args[2].u_int);
     } else {
-        //self->spi->hdmarx->Instance->CR |= DMA_SxCR_CIRC;
+        self->spi->hdmarx->Instance->CR |= DMA_SxCR_CIRC;
         if(self->spi->Instance == SPI1){
             callbackArray[0] = args[1].u_obj;
         }
