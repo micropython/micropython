@@ -27,7 +27,7 @@
 // Periodically, the state of the buffer "UserTxBuffer" is checked.
 // The period depends on USBD_CDC_POLLING_INTERVAL
 // The value is in ms. The max is 65 and the min is 1.
-#define USBD_CDC_POLLING_INTERVAL (10)
+#define USBD_CDC_POLLING_INTERVAL (1)
 
 extern TIM_HandleTypeDef TIM3_Handle;
 extern TIM_HandleTypeDef TIM5_Handle;
