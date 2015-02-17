@@ -760,6 +760,30 @@ STATIC mp_obj_t pyb_spi_listen(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     return o_ret;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_listen_obj, 1, pyb_spi_listen);
+STATIC mp_obj_t pyb_spi_stoplisten(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // TODO assumes transmission size is 8-bits wide
+
+    // parse args
+    pyb_spi_obj_t *self = pos_args[0];
+
+
+    self->spi->hdmarx->Instance->CR &= (~DMA_SxCR_CIRC);
+    if(self->spi->Instance == SPI1){
+        callbackArray[0] = NULL;
+    }
+    if(self->spi->Instance == SPI2){
+        callbackArray[1] = NULL;
+    }
+    if(self->spi->Instance == SPI3){
+        callbackArray[2] = NULL;
+    }
+
+
+    // return the received data
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_stop_obj, 1, pyb_spi_stoplisten);
+
 
 STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
@@ -769,6 +793,7 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_spi_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_spi_send_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&pyb_spi_listen_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_spi_stop_obj},
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode
