@@ -133,9 +133,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     const char *readline_hist[8]; \
     \
     mp_obj_t mp_const_vcp_interrupt; \
+    mp_obj_t pyb_hid_report_desc; \
     \
     mp_obj_t pyb_config_main; \
-    mp_obj_t pyb_config_usb_mode; \
     \
     mp_obj_t pyb_switch_callback; \
     \
@@ -152,6 +152,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     \
     /* pointers to all UART objects (if they have been created) */ \
     struct _pyb_uart_obj_t *pyb_uart_obj_all[6]; \
+    \
+    /* pointers to all CAN objects (if they have been created) */ \
+    struct _pyb_can_obj_t *pyb_can_obj_all[2]; \
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \

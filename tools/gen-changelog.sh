@@ -2,7 +2,7 @@
 
 echo "Micro Python change log"
 
-for t in $(git tag | grep -v v1.0-rc1 | sort -r); do
+for t in $(git tag | grep -v v1.0-rc1 | sort -rV); do
     echo ''
     echo '========'
     echo ''

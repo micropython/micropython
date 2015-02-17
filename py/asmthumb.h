@@ -84,6 +84,7 @@ void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val);
 // argument order follows ARM, in general dest is first
 // note there is a difference between movw and mov.w, and many others!
 
+#define ASM_THUMB_OP_IT (0xbf00)
 #define ASM_THUMB_OP_ITE_EQ (0xbf0c)
 #define ASM_THUMB_OP_ITE_CS (0xbf2c)
 #define ASM_THUMB_OP_ITE_MI (0xbf4c)
@@ -99,6 +100,9 @@ void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val);
 
 void asm_thumb_op16(asm_thumb_t *as, uint op);
 void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2);
+
+static inline void asm_thumb_it_cc(asm_thumb_t *as, uint cc, uint mask)
+    { asm_thumb_op16(as, ASM_THUMB_OP_IT | (cc << 4) | mask); }
 
 // FORMAT 2: add/subtract
 
@@ -203,6 +207,7 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience ?
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
+void asm_thumb_bl(asm_thumb_t *as, uint label);
 void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience ?
 
 #endif // __MICROPY_INCLUDED_PY_ASMTHUMB_H__

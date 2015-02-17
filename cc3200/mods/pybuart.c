@@ -41,22 +41,17 @@
 #include "runtime.h"
 #include "stream.h"
 #include "inc/hw_types.h"
-#include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_uart.h"
 #include "rom_map.h"
 #include "interrupt.h"
 #include "prcm.h"
-#include "gpio.h"
 #include "uart.h"
-#include "pin.h"
 #include "pybuart.h"
 #include "pybioctl.h"
-#include "pybstdio.h"
 #include "mpexception.h"
 #include "osi.h"
-
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -90,8 +85,6 @@
 /// To check if there is anything to be read, use:
 ///
 ///     uart.any()          # returns True if any characters waiting
-
-
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -151,16 +144,12 @@ bool uart_init2(pyb_uart_obj_t *self) {
     case PYB_UART_1:
         self->reg = UARTA0_BASE;
         uartPerh = PRCM_UARTA0;
-        MAP_PinTypeUART(PIN_55, PIN_MODE_3);
-        MAP_PinTypeUART(PIN_57, PIN_MODE_3);
         MAP_UARTIntRegister(UARTA0_BASE, UART0IntHandler);
         MAP_IntPrioritySet(INT_UARTA0, INT_PRIORITY_LVL_7);
         break;
     case PYB_UART_2:
         self->reg = UARTA1_BASE;
         uartPerh = PRCM_UARTA1;
-        MAP_PinTypeUART(PIN_58, PIN_MODE_6);
-        MAP_PinTypeUART(PIN_59, PIN_MODE_6);
         MAP_UARTIntRegister(UARTA1_BASE, UART1IntHandler);
         MAP_IntPrioritySet(INT_UARTA1, INT_PRIORITY_LVL_7);
         break;
@@ -470,9 +459,10 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     pyb_uart_obj_t *self;
     if (MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] == NULL) {
         // create new UART object
-        self = m_new0(pyb_uart_obj_t, 1);
+        self = m_new_obj(pyb_uart_obj_t);
         self->base.type = &pyb_uart_type;
         self->uart_id = uart_id;
+        self->read_buf = NULL;
         self->enabled = false;
         MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] = self;
     } else {

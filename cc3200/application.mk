@@ -18,6 +18,7 @@ APP_INC += -Iutil
 APP_INC += -Ibootmgr
 APP_INC += -I$(PY_SRC)
 APP_INC += -I$(BUILD)
+APP_INC += -I$(BUILD)/genhdr
 APP_INC += -I../lib/fatfs
 APP_INC += -I../lib/mp-readline
 APP_INC += -I../stmhal
@@ -89,9 +90,9 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	modutime.c \
 	modwlan.c \
 	pybextint.c \
+	pybi2c.c \
 	pybpin.c \
 	pybrtc.c \
-	pybstdio.c \
 	pybsystick.c \
 	pybuart.c \
 	)
@@ -144,6 +145,7 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	moduselect.c \
 	printf.c \
 	pyexec.c \
+	pybstdio.c \
 	string0.c \
 	)
 

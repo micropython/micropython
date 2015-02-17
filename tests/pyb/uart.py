@@ -12,3 +12,6 @@ print(uart.any())
 print(uart.write('123'))
 print(uart.write(b'abcd'))
 print(uart.writechar(1))
+
+# make sure this method exists
+uart.sendbreak()

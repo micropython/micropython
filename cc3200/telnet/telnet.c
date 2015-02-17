@@ -39,7 +39,6 @@
 #include "debug.h"
 #include "mpexception.h"
 #include "serverstask.h"
-#include "pybstdio.h"
 #include "genhdr/py-version.h"
 
 

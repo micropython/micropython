@@ -48,6 +48,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_eval_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_exec_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_execfile_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_getattr_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_setattr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_globals_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_hasattr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_hash_obj);

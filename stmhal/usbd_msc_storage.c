@@ -31,6 +31,8 @@
   ******************************************************************************
   */
 
+#include <stdint.h>
+
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_msc_storage.h"
 

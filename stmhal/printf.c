@@ -30,14 +30,16 @@
 
 #include "py/obj.h"
 #include "py/pfenv.h"
-#include "pybstdio.h"
+#ifdef MICROPY_HAL_H
+#include MICROPY_HAL_H
+#endif
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include "py/formatfloat.h"
 #endif
 
 STATIC void stdout_print_strn(void *dummy_env, const char *str, mp_uint_t len) {
-    stdout_tx_strn_cooked(str, len);
+    mp_hal_stdout_tx_strn_cooked(str, len);
 }
 
 STATIC const pfenv_t pfenv_stdout = {0, stdout_print_strn};

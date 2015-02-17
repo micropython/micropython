@@ -349,15 +349,19 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             // no message
             assert(0);
         } else {
-            // render exception message and store as .args[0]
-            // TODO: optimize bufferbloat
-            vstr_t vstr;
-            vstr_init(&vstr, 16);
-            va_list ap;
-            va_start(ap, fmt);
-            vstr_vprintf(&vstr, fmt, ap);
-            va_end(ap);
-            o->args->items[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            if (strchr(fmt, '%') == NULL) {
+                // no formatting substitutions, avoid allocating vstr.
+                o->args->items[0] = mp_obj_new_str(fmt, strlen(fmt), false);
+            } else {
+                // render exception message and store as .args[0]
+                va_list ap;
+                vstr_t vstr;
+                vstr_init(&vstr, 16);
+                va_start(ap, fmt);
+                vstr_vprintf(&vstr, fmt, ap);
+                va_end(ap);
+                o->args->items[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            }
         }
     }
 
@@ -432,11 +436,15 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line,
 
     // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
     if (self->traceback == MP_OBJ_NULL) {
-        self->traceback = mp_obj_new_list(0, NULL);
+        self->traceback = mp_obj_new_list_maybe(3);
+        if (self->traceback == MP_OBJ_NULL) {
+            return;
+        }
     }
-    mp_obj_list_append(self->traceback, (mp_obj_t)(mp_uint_t)file);
-    mp_obj_list_append(self->traceback, (mp_obj_t)(mp_uint_t)line);
-    mp_obj_list_append(self->traceback, (mp_obj_t)(mp_uint_t)block);
+    mp_obj_list_t *list = self->traceback;
+    list->items[0] = (mp_obj_t)(mp_uint_t)file;
+    list->items[1] = (mp_obj_t)(mp_uint_t)line;
+    list->items[2] = (mp_obj_t)(mp_uint_t)block;
 }
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values) {

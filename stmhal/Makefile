@@ -37,7 +37,7 @@ INC += -I$(BUILD)
 INC += -I$(CMSIS_DIR)/inc
 INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
-INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/cdc_msc_hid/inc
+INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I../$(FATFS_DIR)
 INC += -I../lib/mp-readline
@@ -94,7 +94,7 @@ SRC_C = \
 	system_stm32f4xx.c \
 	stm32f4xx_it.c \
 	usbd_conf.c \
-	usbd_desc_cdc_msc.c \
+	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_msc_storage.c \
 	mphal.c \
@@ -182,26 +182,10 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
 	core/src/usbd_ctlreq.c \
 	core/src/usbd_ioreq.c \
-	class/cdc_msc_hid/src/usbd_cdc_msc_hid.c \
-	class/cdc_msc_hid/src/usbd_msc_bot.c \
-	class/cdc_msc_hid/src/usbd_msc_scsi.c \
-	class/cdc_msc_hid/src/usbd_msc_data.c \
-	)
-
-#	class/cdc/src/usbd_cdc.c \
-	class/msc/src/usbd_msc.c \
-#	usbd_core.c \
-	usbd_ioreq.c \
-	usbd_req.c \
-	usbd_usr.c \
-	usbd_desc.c \
-	usbd_pyb_core.c \
-	usbd_pyb_core2.c \
-	usbd_cdc_vcp.c \
-	usbd_msc_bot.c  \
-	usbd_msc_data.c \
-	usbd_msc_scsi.c \
-	usbd_storage_msd.c \
+	class/src/usbd_cdc_msc_hid.c \
+	class/src/usbd_msc_bot.c \
+	class/src/usbd_msc_scsi.c \
+	class/src/usbd_msc_data.c \
 	)
 
 ifeq ($(MICROPY_PY_WIZNET5K),1)
@@ -297,7 +281,7 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 INSERT_USB_IDS = ../tools/insert-usb-ids.py
 FILE2H = ../tools/file2h.py
 
-USB_IDS_FILE = usbd_desc_cdc_msc.c
+USB_IDS_FILE = usbd_desc.c
 CDCINF_TEMPLATE = pybcdc.inf_template
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h

@@ -283,7 +283,7 @@ extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull,
         intmode != GPIO_BOTH_EDGES &&
         intmode != GPIO_LOW_LEVEL &&
         intmode != GPIO_HIGH_LEVEL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_value_invalid_arguments));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
     if (pull != PIN_TYPE_STD &&
         pull != PIN_TYPE_STD_PU &&
@@ -291,7 +291,7 @@ extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull,
         pull != PIN_TYPE_OD &&
         pull != PIN_TYPE_OD_PU &&
         pull != PIN_TYPE_OD_PD) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_value_invalid_arguments));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
     if (NULL == (self = extint_find(pin->port, pin->bit))) {

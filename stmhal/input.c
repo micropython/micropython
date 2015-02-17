@@ -27,7 +27,6 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "readline.h"
-#include "usb.h"
 
 STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {

@@ -60,6 +60,7 @@ void pin_init0(void);
 void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength);
 const pin_obj_t *pin_find(mp_obj_t user_obj);
 const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+const pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num);
 uint32_t pin_get_mode(const pin_obj_t *self);
 uint32_t pin_get_type(const pin_obj_t *self);
 uint32_t pin_get_strenght(const pin_obj_t *self);

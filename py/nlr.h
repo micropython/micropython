@@ -88,13 +88,26 @@ void nlr_jump_fail(void *val);
 #ifndef DEBUG
 #define nlr_raise(val) nlr_jump(val)
 #else
+#include "mpstate.h"
 #define nlr_raise(val) \
     do { \
+        /*printf("nlr_raise: nlr_top=%p\n", MP_STATE_VM(nlr_top)); \
+        fflush(stdout);*/ \
         void *_val = val; \
         assert(_val != NULL); \
         assert(mp_obj_is_exception_instance(_val)); \
         nlr_jump(_val); \
     } while (0)
+
+#define nlr_push(val) \
+    assert(MP_STATE_VM(nlr_top) != val),nlr_push(val)
+
+/*
+#define nlr_push(val) \
+    printf("nlr_push: before: nlr_top=%p, val=%p\n", MP_STATE_VM(nlr_top), val),assert(MP_STATE_VM(nlr_top) != val),nlr_push(val)
+#endif
+*/
+
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_NLR_H__

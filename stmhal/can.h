@@ -34,3 +34,7 @@
 #endif
 
 extern const mp_obj_type_t pyb_can_type;
+
+void can_init0(void);
+void can_deinit(void);
+void can_rx_irq_handler(uint can_id, uint fifo_id);

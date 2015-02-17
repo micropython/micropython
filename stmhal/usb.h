@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014, 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,42 @@
  * THE SOFTWARE.
  */
 
-typedef enum {
-    USB_DEVICE_MODE_CDC_MSC,
-    USB_DEVICE_MODE_CDC_HID,
-} usb_device_mode_t;
+#include "usbd_cdc_msc_hid0.h"
+
+#define PYB_USB_FLAG_DEV_ENABLED        (0x0001)
+#define PYB_USB_FLAG_USB_MODE_CALLED    (0x0002)
+
+// Windows needs a different PID to distinguish different device configurations
+#define USBD_VID         (0xf055)
+#define USBD_PID_CDC_MSC (0x9800)
+#define USBD_PID_CDC_HID (0x9801)
+#define USBD_PID_CDC     (0x9802)
 
 typedef enum {
-    USB_STORAGE_MEDIUM_FLASH,
-    USB_STORAGE_MEDIUM_SDCARD,
-} usb_storage_medium_t;
+    PYB_USB_STORAGE_MEDIUM_NONE = 0,
+    PYB_USB_STORAGE_MEDIUM_FLASH,
+    PYB_USB_STORAGE_MEDIUM_SDCARD,
+} pyb_usb_storage_medium_t;
 
+extern mp_uint_t pyb_usb_flags;
+extern struct _USBD_HandleTypeDef hUSBDDevice;
+extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
+extern const struct _mp_obj_tuple_t pyb_usb_hid_mouse_obj;
+extern const struct _mp_obj_tuple_t pyb_usb_hid_keyboard_obj;
 extern const mp_obj_type_t pyb_usb_vcp_type;
+extern const mp_obj_type_t pyb_usb_hid_type;
+MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj);
+MP_DECLARE_CONST_FUN_OBJ(pyb_have_cdc_obj); // deprecated
+MP_DECLARE_CONST_FUN_OBJ(pyb_hid_send_report_obj); // deprecated
 
 void pyb_usb_init0(void);
-void pyb_usb_dev_init(usb_device_mode_t mode, usb_storage_medium_t medium);
-void pyb_usb_dev_stop(void);
+bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
-bool usb_vcp_is_connected(void);
 void usb_vcp_set_interrupt_char(int c);
 int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0
 void usb_vcp_send_strn(const char* str, int len);
 void usb_vcp_send_strn_cooked(const char *str, int len);
-void usb_hid_send_report(uint8_t *buf); // 4 bytes for mouse: ?, x, y, ?
 
 void pyb_usb_host_init(void);
 void pyb_usb_host_process(void);

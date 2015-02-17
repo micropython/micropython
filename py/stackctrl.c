@@ -48,7 +48,8 @@ void mp_stack_set_limit(mp_uint_t limit) {
 
 void mp_stack_check(void) {
     if (mp_stack_usage() >= MP_STATE_VM(stack_limit)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "maximum recursion depth exceeded"));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
+            MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
     }
 }
 

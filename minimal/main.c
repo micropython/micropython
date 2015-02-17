@@ -9,7 +9,6 @@
 #include "py/pfenv.h"
 #include "py/gc.h"
 #include "pyexec.h"
-#include "pybstdio.h"
 
 void do_str(const char *src) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);

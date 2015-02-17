@@ -56,7 +56,6 @@
 #include "dac.h"
 #include "lcd.h"
 #include "usb.h"
-#include "pybstdio.h"
 #include "ff.h"
 #include "diskio.h"
 #include "fsusermount.h"
@@ -69,7 +68,7 @@
 /// \function bootloader()
 /// Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t pyb_bootloader(void) {
-    pyb_usb_dev_stop();
+    pyb_usb_dev_deinit();
     storage_flush();
 
     HAL_RCC_DeInit();
@@ -465,13 +464,6 @@ STATIC mp_obj_t pyb_standby(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 
-/// \function have_cdc()
-/// Return True if USB is connected as a serial device, False otherwise.
-STATIC mp_obj_t pyb_have_cdc(void ) {
-    return MP_BOOL(usb_vcp_is_connected());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
-
 /// \function repl_uart(uart)
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(mp_uint_t n_args, const mp_obj_t *args) {
@@ -494,24 +486,7 @@ STATIC mp_obj_t pyb_repl_uart(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uart);
 
-/// \function hid((buttons, x, y, z))
-/// Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
-/// signal a HID mouse-motion event.
-STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
-    mp_obj_t *items;
-    mp_obj_get_array_fixed_n(arg, 4, &items);
-    uint8_t data[4];
-    data[0] = mp_obj_get_int(items[0]);
-    data[1] = mp_obj_get_int(items[1]);
-    data[2] = mp_obj_get_int(items[2]);
-    data[3] = mp_obj_get_int(items[3]);
-    usb_hid_send_report(data);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
-MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
@@ -530,12 +505,16 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main), (mp_obj_t)&pyb_main_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_have_cdc), (mp_obj_t)&pyb_have_cdc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart), (mp_obj_t)&pyb_repl_uart_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hid_mouse), (mp_obj_t)&pyb_usb_hid_mouse_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hid_keyboard), (mp_obj_t)&pyb_usb_hid_keyboard_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_USB_VCP), (mp_obj_t)&pyb_usb_vcp_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_USB_HID), (mp_obj_t)&pyb_usb_hid_type },
+    // these 2 are deprecated; use USB_VCP.isconnected and USB_HID.send instead
+    { MP_OBJ_NEW_QSTR(MP_QSTR_have_cdc), (mp_obj_t)&pyb_have_cdc_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },

@@ -10,7 +10,7 @@ import string
 
 def parse_usb_ids(filename):
     rv = dict()
-    if filename == 'usbd_desc_cdc_msc.c':
+    if filename == 'usbd_desc.c':
         for line in open(filename).readlines():
             line = line.rstrip('\r\n')
             match = re.match('^#define\s+(\w+)\s+0x([0-9A-Fa-f]+)$', line)

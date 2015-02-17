@@ -499,7 +499,7 @@ void asm_x86_mov_r32_to_arg(asm_x86_t *as, int src_r32, int dest_arg_num) {
 //  - numbered 0 through as->num_locals-1
 //  - EBP points above the last local
 //
-//                          | EPB
+//                          | EBP
 //                          v
 //  l0  l1  l2  ...  l(n-1)
 //  ^                ^

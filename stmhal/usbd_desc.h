@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014, 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,6 @@
  * THE SOFTWARE.
  */
 
-extern const USBD_DescriptorsTypeDef VCP_Desc;
+extern const USBD_DescriptorsTypeDef USBD_Descriptors;
 
-void USBD_SetPID(uint16_t pid);
+void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num);

@@ -30,11 +30,12 @@
  ******************************************************************************/
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_nvic.h"
 #include "hw_memmap.h"
-#include "mpconfig.h"
+#include "py/mpstate.h"
 #include MICROPY_HAL_H
 #include "rom_map.h"
 #include "interrupt.h"
@@ -43,6 +44,8 @@
 #include "sdhost.h"
 #include "pin.h"
 #include "mpexception.h"
+#include "telnet.h"
+#include "pybuart.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"
@@ -124,6 +127,43 @@ void HAL_Delay(uint32_t delay) {
 
 void mp_hal_set_interrupt_char (int c) {
     mpexception_set_interrupt_char (c);
+}
+
+void mp_hal_stdout_tx_str(const char *str) {
+    mp_hal_stdout_tx_strn(str, strlen(str));
+}
+
+void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    }
+    // and also to telnet
+    if (telnet_is_active()) {
+        telnet_tx_strn(str, len);
+    }
+}
+
+void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
+    // send stdout to UART
+    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    }
+    // and also to telnet
+    if (telnet_is_active()) {
+        telnet_tx_strn_cooked(str, len);
+    }
+}
+
+int mp_hal_stdin_rx_chr(void) {
+    for ( ;; ) {
+        if (telnet_rx_any()) {
+            return telnet_rx_char();
+        }
+        else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
+            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        }
+        HAL_Delay(1);
+    }
 }
 
 /******************************************************************************

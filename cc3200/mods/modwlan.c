@@ -42,7 +42,6 @@
 #include "modwlan.h"
 #include "pybioctl.h"
 #include "pybuart.h"
-#include "pybstdio.h"
 #include "osi.h"
 #include "debug.h"
 #include "serverstask.h"

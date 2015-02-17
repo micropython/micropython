@@ -61,8 +61,8 @@ bool mp_obj_is_package(mp_obj_t module) {
 }
 
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
-    //printf("stat %s\n", vstr_str(path));
     mp_import_stat_t stat = mp_import_stat(vstr_null_terminated_str(path));
+    DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
@@ -139,6 +139,17 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     do_load_from_lexer(module_obj, lex, file_str);
 }
 
+STATIC void chop_component(const char *start, const char **end) {
+    const char *p = *end;
+    while (p > start) {
+        if (*--p == '.') {
+            *end = p;
+            return;
+        }
+    }
+    *end = p;
+}
+
 mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
 #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
@@ -170,30 +181,38 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
         // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
         // "Relative imports use a module's __name__ attribute to determine that
         // module's position in the package hierarchy."
+        level--;
         mp_obj_t this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
         assert(this_name_q != MP_OBJ_NULL);
+        mp_map_t *globals_map = mp_obj_dict_get_map(mp_globals_get());
+        mp_map_elem_t *elem = mp_map_lookup(globals_map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP);
+        bool is_pkg = (elem != NULL);
+
 #if DEBUG_PRINT
-        DEBUG_printf("Current module: ");
+        DEBUG_printf("Current module/package: ");
         mp_obj_print(this_name_q, PRINT_REPR);
+        DEBUG_printf(", is_package: %d", is_pkg);
         DEBUG_printf("\n");
 #endif
 
         mp_uint_t this_name_l;
         const char *this_name = mp_obj_str_get_data(this_name_q, &this_name_l);
 
-        uint dots_seen = 0;
-        const char *p = this_name + this_name_l - 1;
-        while (p > this_name) {
-            if (*p == '.') {
-                dots_seen++;
-                if (--level == 0) {
-                    break;
-                }
-            }
-            p--;
+        const char *p = this_name + this_name_l;
+        if (!is_pkg) {
+            // We have module, but relative imports are anchored at package, so
+            // go there.
+            chop_component(this_name, &p);
         }
 
-        if (dots_seen == 0 && level == 1) {
+
+        uint dots_seen = 0;
+        while (level--) {
+            chop_component(this_name, &p);
+            dots_seen++;
+        }
+
+        if (dots_seen == 0 && level >= 1) {
             // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
             // "If the module's name does not contain any package information
             // (e.g. it is set to '__main__') then relative imports are
@@ -204,8 +223,9 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
             // package's __init__.py does something like "import .submod". So,
             // maybe we should check for package here? But quote above doesn't
             // talk about packages, it talks about dot-less module names.
+            DEBUG_printf("Warning: no dots in current module name and level>0\n");
             p = this_name + this_name_l;
-        } else if (level != 0) {
+        } else if (level != -1) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "Invalid relative import"));
         }
 
@@ -264,7 +284,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
             // create a qstr for the module name up to this depth
             qstr mod_name = qstr_from_strn(mod_str, i);
             DEBUG_printf("Processing module: %s\n", qstr_str(mod_name));
-            DEBUG_printf("Previous path: %.*s\n", vstr_len(&path), vstr_str(&path));
+            DEBUG_printf("Previous path: =%.*s=\n", vstr_len(&path), vstr_str(&path));
 
             // find the file corresponding to the module name
             mp_import_stat_t stat;

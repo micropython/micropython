@@ -30,7 +30,9 @@
 
 #include "py/mpstate.h"
 #include "readline.h"
-#include "pybstdio.h"
+#ifdef MICROPY_HAL_H
+#include MICROPY_HAL_H
+#endif
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -60,20 +62,20 @@ STATIC char *str_dup_maybe(const char *str) {
 STATIC void move_cursor_back(uint pos) {
     if (pos <= 4) {
         // fast path for most common case of 1 step back
-        stdout_tx_strn("\b\b\b\b", pos);
+        mp_hal_stdout_tx_strn("\b\b\b\b", pos);
     } else {
         char vt100_command[6];
         // snprintf needs space for the terminating null character
         int n = snprintf(&vt100_command[0], sizeof(vt100_command), "\x1b[%u", pos);
         if (n > 0) {
             vt100_command[n] = 'D'; // replace null char
-            stdout_tx_strn(vt100_command, n + 1);
+            mp_hal_stdout_tx_strn(vt100_command, n + 1);
         }
     }
 }
 
 STATIC void erase_line_from_cursor(void) {
-    stdout_tx_strn("\x1b[K", 3);
+    mp_hal_stdout_tx_strn("\x1b[K", 3);
 }
 
 typedef struct _readline_t {
@@ -107,7 +109,7 @@ int readline_process_char(int c) {
             goto end_key;
         } else if (c == '\r') {
             // newline
-            stdout_tx_str("\r\n");
+            mp_hal_stdout_tx_str("\r\n");
             if (rl.line->len > rl.orig_line_len && (MP_STATE_PORT(readline_hist)[0] == NULL || strcmp(MP_STATE_PORT(readline_hist)[0], rl.line->buf + rl.orig_line_len) != 0)) {
                 // a line which is not empty and different from the last one
                 // so update the history
@@ -245,13 +247,13 @@ end_key:
             erase_line_from_cursor();
         }
         // draw new chars
-        stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
+        mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
         move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
         rl.cursor_pos += redraw_step_forward;
     } else if (redraw_step_forward > 0) {
         // draw over old chars to move cursor forwards
-        stdout_tx_strn(rl.line->buf + rl.cursor_pos, redraw_step_forward);
+        mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, redraw_step_forward);
         rl.cursor_pos += redraw_step_forward;
     }
 
@@ -273,10 +275,10 @@ void readline_init(vstr_t *line) {
 }
 
 int readline(vstr_t *line, const char *prompt) {
-    stdout_tx_str(prompt);
+    mp_hal_stdout_tx_str(prompt);
     readline_init(line);
     for (;;) {
-        int c = stdin_rx_chr();
+        int c = mp_hal_stdin_rx_chr();
         int r = readline_process_char(c);
         if (r >= 0) {
             return r;

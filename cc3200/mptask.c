@@ -41,10 +41,11 @@
 #include "runtime.h"
 #include "repl.h"
 #include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+#include "pin.h"
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
-#include "pybstdio.h"
 #include "pyexec.h"
 #include "gccollect.h"
 #include "gchelper.h"
@@ -65,6 +66,8 @@
 #include "mpexception.h"
 #include "random.h"
 #include "pybextint.h"
+#include "pybi2c.h"
+#include "pins.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -143,7 +146,13 @@ soft_reset:
 
     mpexception_init0();
     uart_init0();
+    pin_init0();
+    i2c_init0();
 
+    // configure stdio uart pins with the correct af
+    // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
+    pin_config(&pin_GPIO1, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
+    pin_config(&pin_GPIO2, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
     // Instantiate the stdio uart
     mp_obj_t args[2] = {
             mp_obj_new_int(MICROPY_STDIO_UART),
@@ -152,7 +161,6 @@ soft_reset:
     MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
 
     readline_init0();
-    pin_init0();
     extint_init0();
     mod_network_init();
     wlan_init0();

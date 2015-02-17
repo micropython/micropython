@@ -60,3 +60,13 @@ const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t na
     }
     return NULL;
 }
+
+const pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
+    for (uint i = 0; i < named_map->used; i++) {
+        if (((pin_obj_t *)named_map->table[i].value)->pin_num == pin_num) {
+            return named_map->table[i].value;
+        }
+    }
+    return NULL;
+}
