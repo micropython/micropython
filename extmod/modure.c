@@ -54,13 +54,13 @@ typedef struct _mp_obj_match_t {
 STATIC void match_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_match_t *self = self_in;
-    print(env, "<match num=%d @%p>", self->num_matches);
+    print(env, "<match num=%d>", self->num_matches);
 }
 
 STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     mp_obj_match_t *self = self_in;
     mp_int_t no = mp_obj_int_get_truncated(no_in);
-    if (no < 0 || no >= self->num_matches / 2) {
+    if (no < 0 || no >= self->num_matches) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, no_in));
     }
 
@@ -104,7 +104,7 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     }
 
     match->base.type = &match_type;
-    match->num_matches = caps_num;
+    match->num_matches = caps_num / 2; // caps_num counts start and end pointers
     match->str = args[1];
     return match;
 }
