@@ -29,7 +29,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpstate.h"
 #include "mpconfig.h"
 #include MICROPY_HAL_H
 #include "nlr.h"
@@ -115,31 +114,33 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
 }
 
 void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
-    // PIN_MODE_0 means it stays as a Pin, else, another peripheral will take control of it
-    if (af == PIN_MODE_0) {
-        // enable the peripheral clock for the GPIO port of this pin
-        switch (self->port) {
-        case PORT_A0:
-            MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-            break;
-        case PORT_A1:
-            MAP_PRCMPeripheralClkEnable(PRCM_GPIOA1, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-            break;
-        case PORT_A2:
-            MAP_PRCMPeripheralClkEnable(PRCM_GPIOA2, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-            break;
-        case PORT_A3:
-            MAP_PRCMPeripheralClkEnable(PRCM_GPIOA3, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-            break;
-        default:
-            break;
+    // Skip all this if the pin is to be used in analog mode
+    if (type != PIN_TYPE_ANALOG) {
+        // PIN_MODE_0 means it stays as a Pin, else, another peripheral will take control of it
+        if (af == PIN_MODE_0) {
+            // enable the peripheral clock for the GPIO port of this pin
+            switch (self->port) {
+            case PORT_A0:
+                MAP_PRCMPeripheralClkEnable(PRCM_GPIOA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+                break;
+            case PORT_A1:
+                MAP_PRCMPeripheralClkEnable(PRCM_GPIOA1, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+                break;
+            case PORT_A2:
+                MAP_PRCMPeripheralClkEnable(PRCM_GPIOA2, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+                break;
+            case PORT_A3:
+                MAP_PRCMPeripheralClkEnable(PRCM_GPIOA3, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+                break;
+            default:
+                break;
+            }
+            // configure the direction
+            MAP_GPIODirModeSet(self->port, self->bit, mode);
         }
-        // configure the direction
-        MAP_GPIODirModeSet(self->port, self->bit, mode);
+        // now set the alternate function, strenght and type
+        MAP_PinModeSet (self->pin_num, af);
     }
-
-    // now set the alternate function, strenght and type
-    MAP_PinModeSet (self->pin_num, af);
     MAP_PinConfigSet(self->pin_num, strength, type);
 }
 
@@ -433,7 +434,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_OD),          MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_OD_PU),       MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD_PU) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_OD_PD),       MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD_PD) },
-    
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_S2MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_S4MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_4MA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_S6MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },

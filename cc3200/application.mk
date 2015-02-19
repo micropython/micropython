@@ -89,6 +89,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	modusocket.c \
 	modutime.c \
 	modwlan.c \
+	pybadc.c \
 	pybextint.c \
 	pybi2c.c \
 	pybpin.c \

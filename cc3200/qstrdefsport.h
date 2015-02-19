@@ -156,6 +156,12 @@ Q(mem_write)
 Q(MASTER)
 Q(SLAVE)
 
+// for ADC class
+Q(ADC)
+Q(read)
+Q(enable)
+Q(disable)
+
 // for RTC class
 Q(RTC)
 Q(datetime)
