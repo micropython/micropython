@@ -336,7 +336,7 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
     }
 }
 
-/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, read_buf_len=64)
+/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, read_buf_len=128)
 ///
 /// Initialise the UART bus with the given parameters:
 ///
@@ -357,7 +357,7 @@ STATIC const mp_arg_t pyb_uart_init_args[] = {
     { MP_QSTR_flow,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_int = UART_FLOWCONTROL_NONE} },
     { MP_QSTR_timeout,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1000} },
     { MP_QSTR_timeout_char, MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1} },
-    { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 64} },
+    { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 128} },
 };
 
 STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -458,7 +458,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     // create object
     pyb_uart_obj_t *self;
     if (MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] == NULL) {
-        // create new UART object
+        // create a new UART object
         self = m_new_obj(pyb_uart_obj_t);
         self->base.type = &pyb_uart_type;
         self->uart_id = uart_id;
@@ -466,7 +466,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
         self->enabled = false;
         MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] = self;
     } else {
-        // reference existing UART object
+        // reference an existing UART object
         self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
     }
 
@@ -475,8 +475,6 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
         pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
-    } else if (!self->enabled) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
     }
 
     return self;
