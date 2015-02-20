@@ -114,8 +114,6 @@ Q(IRQ_HIGH_LEVEL)
 
 // for UART class
 Q(UART)
-Q(UART1)
-Q(UART2)
 Q(baudrate)
 Q(bits)
 Q(stop)

@@ -27,6 +27,5 @@
 
 extern const mp_obj_type_t pyb_i2c_type;
 
-void i2c_init0(void);
 void i2c_init (uint mode, uint slvaddr, uint baudrate);
 void i2c_deinit(void);

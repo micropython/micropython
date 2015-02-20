@@ -121,9 +121,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     mp_obj_t mp_const_user_interrupt;                                     \
     mp_obj_t pyb_config_main;                                             \
     mp_obj_list_t pyb_extint_list;                                        \
-    struct _pyb_uart_obj_t *pyb_stdio_uart;                               \
-    struct _pyb_uart_obj_t *pyb_uart_obj_all[2];                          \
-    struct _pyb_i2c_obj_t  *pyb_i2c_obj;                                  \
+    mp_obj_list_t pyb_uart_list;                                          \
     mp_obj_list_t mod_network_nic_list;                                   \
 
 
@@ -134,10 +132,10 @@ extern const struct _mp_obj_module_t mp_module_network;
 #define UINT_FMT                                    "%u"
 #define INT_FMT                                     "%d"
 
-typedef int32_t         mp_int_t;               // must be pointer size
-typedef unsigned int    mp_uint_t;              // must be pointer size
-typedef void            *machine_ptr_t;         // must be of pointer size
-typedef const void      *machine_const_ptr_t;   // must be of pointer size
+typedef int32_t         mp_int_t;                   // must be pointer size
+typedef unsigned int    mp_uint_t;                  // must be pointer size
+typedef void            *machine_ptr_t;             // must be of pointer size
+typedef const void      *machine_const_ptr_t;       // must be of pointer size
 typedef long            mp_off_t;
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
@@ -158,7 +156,7 @@ typedef long            mp_off_t;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-// Include board specific configurations
+// Include board specific configuration
 #include "mpconfigboard.h"
 
 #define MICROPY_HAL_H                               "cc3200_hal.h"

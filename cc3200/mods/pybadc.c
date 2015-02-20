@@ -56,6 +56,8 @@
 /// Usage:
 ///
 ///     adc = pyb.ADC(channel)                # create an adc object on the given channel (0 to 3)
+///                                             this automatically configures the pin associated to
+///                                             that analog channel.
 ///     adc.read()                            # read channel value
 ///
 ///     The sample rate is fixed to 62.5KHz and the resolution to 12 bits.

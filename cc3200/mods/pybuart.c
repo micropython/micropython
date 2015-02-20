@@ -25,13 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
-#include "py/mpstate.h"
 #include "mpconfig.h"
 #include MICROPY_HAL_H
 #include "nlr.h"
@@ -39,6 +37,7 @@
 #include "qstr.h"
 #include "obj.h"
 #include "runtime.h"
+#include "py/objlist.h"
 #include "stream.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -51,6 +50,7 @@
 #include "pybuart.h"
 #include "pybioctl.h"
 #include "mpexception.h"
+#include "py/mpstate.h"
 #include "osi.h"
 
 /// \moduleref pyb
@@ -63,7 +63,7 @@
 ///
 ///     from pyb import UART
 ///
-///     uart = UART(1, 9600)                         # init with given baudrate
+///     uart = UART(0, 9600)                         # init with given baudrate
 ///     uart.init(9600, bits=8, stop=1, parity=None) # init with given parameters
 ///
 /// Bits can be 5, 6, 7, 8, parity can be None, 0 (even), 1 (odd). Stop can be 1 or 2.
@@ -87,8 +87,16 @@
 ///     uart.any()          # returns True if any characters waiting
 
 /******************************************************************************
+ DEFINE CONSTANTS
+ ******************************************************************************/
+#define PYBUART_TX_WAIT_MS              1
+#define PYBUART_TX_MAX_TIMEOUT_MS       5
+
+/******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
+STATIC pyb_uart_obj_t* pyb_uart_add (pyb_uart_id_t uart_id);
+STATIC pyb_uart_obj_t* pyb_uart_find (pyb_uart_id_t uart_id);
 STATIC void UARTGenericIntHandler(uint32_t uart_id);
 STATIC void UART0IntHandler(void);
 STATIC void UART1IntHandler(void);
@@ -100,7 +108,7 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
 
 struct _pyb_uart_obj_t {
     mp_obj_base_t base;
-    pyb_uart_t uart_id;
+    pyb_uart_id_t uart_id;
     uint reg;
     uint baudrate;
     uint config;
@@ -114,40 +122,35 @@ struct _pyb_uart_obj_t {
     bool enabled;
 };
 
-#define PYBUART_TX_WAIT_MS              1
-#define PYBUART_TX_MAX_TIMEOUT_MS       5
-
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void uart_init0 (void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-        MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
-    }
+    mp_obj_list_init(&MP_STATE_PORT(pyb_uart_list), 0);
 }
 
 // unregister all interrupt sources
 void uart_deinit(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-        pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[i];
-        if (self != NULL) {
+    for (int i = PYB_UART_0; i < PYB_NUM_UARTS; i++) {
+        pyb_uart_obj_t *self;
+        if ((self = pyb_uart_find (i))) {
             pyb_uart_deinit(self);
         }
     }
 }
 
-// assumes Init parameters have been set up correctly
+// assumes init parameters have been set up correctly
 bool uart_init2(pyb_uart_obj_t *self) {
     uint uartPerh;
 
     switch (self->uart_id) {
-    case PYB_UART_1:
+    case PYB_UART_0:
         self->reg = UARTA0_BASE;
         uartPerh = PRCM_UARTA0;
         MAP_UARTIntRegister(UARTA0_BASE, UART0IntHandler);
         MAP_IntPrioritySet(INT_UARTA0, INT_PRIORITY_LVL_3);
         break;
-    case PYB_UART_2:
+    case PYB_UART_1:
         self->reg = UARTA1_BASE;
         uartPerh = PRCM_UARTA1;
         MAP_UARTIntRegister(UARTA1_BASE, UART1IntHandler);
@@ -258,34 +261,50 @@ void uart_tx_strn_cooked(pyb_uart_obj_t *self, const char *str, uint len) {
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
+STATIC pyb_uart_obj_t* pyb_uart_add (pyb_uart_id_t uart_id) {
+    // create a new uart object
+    pyb_uart_obj_t *self = m_new_obj(pyb_uart_obj_t);
+    self->base.type = &pyb_uart_type;
+    self->uart_id = uart_id;
+    self->read_buf = NULL;
+    self->enabled = false;
+    // add it to the list
+    mp_obj_list_append(&MP_STATE_PORT(pyb_uart_list), self);
+    return self;
+}
+
+STATIC pyb_uart_obj_t* pyb_uart_find (pyb_uart_id_t uart_id) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_uart_list).len; i++) {
+        pyb_uart_obj_t *self = (pyb_uart_obj_t *)MP_STATE_PORT(pyb_uart_list).items[i];
+        if (self->uart_id == uart_id) {
+            return self;
+        }
+    }
+    return NULL;
+}
 
 STATIC void UARTGenericIntHandler(uint32_t uart_id) {
-    pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id];
+    pyb_uart_obj_t *self;
     uint32_t status;
 
-    if (self == NULL) {
-        // UART object has not been set, so we can't do anything, not
-        // even disable the IRQ.  This should never happen.
-        return;
-    }
-
-    status = MAP_UARTIntStatus(self->reg, true);
-
-    // Receive interrupt
-    if (status & (UART_INT_RX | UART_INT_RT)) {
-        MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
-        while (UARTCharsAvail(self->reg)) {
-            int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (MICROPY_STDIO_UART == self->uart_id && data == user_interrupt_char) {
-                // raise exception when interrupts are finished
-                mpexception_keyboard_nlr_jump();
-            }
-            else if (self->read_buf_len != 0) {
-                uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
-                if (next_head != self->read_buf_tail) {
-                    // only store data if room in buf
-                    self->read_buf[self->read_buf_head] = data;
-                    self->read_buf_head = next_head;
+    if ((self = pyb_uart_find(uart_id))) {
+        status = MAP_UARTIntStatus(self->reg, true);
+        // receive interrupt
+        if (status & (UART_INT_RX | UART_INT_RT)) {
+            MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
+            while (UARTCharsAvail(self->reg)) {
+                int data = MAP_UARTCharGetNonBlocking(self->reg);
+                if (MICROPY_STDIO_UART == self->uart_id && data == user_interrupt_char) {
+                    // raise exception when interrupts are finished
+                    mpexception_keyboard_nlr_jump();
+                }
+                else if (self->read_buf_len != 0) {
+                    uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
+                    if (next_head != self->read_buf_tail) {
+                        // only store data if room in buf
+                        self->read_buf[self->read_buf_head] = data;
+                        self->read_buf_head = next_head;
+                    }
                 }
             }
         }
@@ -433,7 +452,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct a UART object on the given bus.  `bus` can be 1-2
+/// Construct a UART object on the given bus id.  `bus id` can be 0-1
 /// With no additional parameters, the UART object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).
@@ -448,26 +467,17 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_ARRAY_SIZE(pyb_uart_init_args), true);
 
-    // work out port
-    pyb_uart_t uart_id = mp_obj_get_int(args[0]);
+    // work out the uart id
+    pyb_uart_id_t uart_id = mp_obj_get_int(args[0]);
 
-    if (uart_id < PYB_UART_1 || uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
+    if (uart_id < PYB_UART_0 || uart_id > PYB_UART_1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
 
-    // create object
+    // search for an object in the list
     pyb_uart_obj_t *self;
-    if (MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] == NULL) {
-        // create a new UART object
-        self = m_new_obj(pyb_uart_obj_t);
-        self->base.type = &pyb_uart_type;
-        self->uart_id = uart_id;
-        self->read_buf = NULL;
-        self->enabled = false;
-        MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] = self;
-    } else {
-        // reference an existing UART object
-        self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
+    if (!(self = pyb_uart_find(uart_id))) {
+        self = pyb_uart_add(uart_id);
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -493,11 +503,11 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
 
     switch (self->uart_id) {
 
-    case PYB_UART_1:
+    case PYB_UART_0:
         uartPerh = PRCM_UARTA0;
         break;
 
-    case PYB_UART_2:
+    case PYB_UART_1:
         uartPerh = PRCM_UARTA1;
         break;
 
@@ -562,7 +572,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pyb_uart_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),      (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any),         (mp_obj_t)&pyb_uart_any_obj },
@@ -582,9 +591,6 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar),    (mp_obj_t)&pyb_uart_readchar_obj },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UART1),       MP_OBJ_NEW_SMALL_INT(PYB_UART_1) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UART2),       MP_OBJ_NEW_SMALL_INT(PYB_UART_2) },
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_NONE),   MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_NONE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_TX),     MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_TX) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_RX),     MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_RX) },

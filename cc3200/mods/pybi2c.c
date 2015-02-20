@@ -97,6 +97,15 @@
 ///     i2c.mem_write('abc', 0x42, 2, timeout=10)
 
 
+typedef struct _pyb_i2c_obj_t {
+    mp_obj_base_t base;
+    int mode;
+    union {
+        uint baudrate;
+        byte slvaddr;
+    };
+} pyb_i2c_obj_t;
+
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
@@ -117,10 +126,6 @@
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
-void i2c_init0(void) {
-    MP_STATE_PORT(pyb_i2c_obj) = NULL;
-}
-
 // only master mode is available for the moment
 void i2c_init (uint mode, uint slvaddr, uint baudrate) {
     // Enable the I2C Peripheral
@@ -139,14 +144,6 @@ void i2c_deinit(void) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 /******************************************************************************/
-typedef struct _pyb_i2c_obj_t {
-    mp_obj_base_t base;
-    int mode;
-    union {
-        uint baudrate;
-        byte slvaddr;
-    };
-} pyb_i2c_obj_t;
 
 STATIC bool pybI2C_transaction(uint cmd, uint timeout) {
     // Clear all interrupts
@@ -260,11 +257,15 @@ STATIC bool pybI2C_ScanDevice(byte devAddr, uint timeout) {
 STATIC void pyb_i2c_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
 
-    print(env, "I2C0");
+    print(env, "<I2C0");
     if (self->mode == PYBI2C_MODE_MASTER) {
-        print(env, ", I2C.MASTER, baudrate=%u)", self->baudrate);
-    } else if (self->mode == PYBI2C_MODE_SLAVE) {
-        print(env, ", I2C.SLAVE, addr=0x%02x)", self->slvaddr);
+        print(env, ", I2C.MASTER, baudrate=%u>)", self->baudrate);
+    }
+    else if (self->mode == PYBI2C_MODE_SLAVE) {
+        print(env, ", I2C.SLAVE, addr=0x%02x>)", self->slvaddr);
+    }
+    else {
+        print(env, ">");
     }
 }
 
@@ -310,7 +311,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self_in, mp_uint_t n_args, co
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct an I2C object on the given bus.  `bus` can be 1.
+/// Construct an I2C object on the given bus.  `bus` can only be 0.
 /// With no additional parameters, the I2C object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).  If extra arguments are given, the bus is initialised.
@@ -320,25 +321,17 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get i2c number
-    mp_int_t i2c_id = mp_obj_get_int(args[0]) - 1;
+    mp_int_t i2c_id = mp_obj_get_int(args[0]);
 
-    // check i2c number
+    // check the i2c number
     if (i2c_id != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
-    // setup the object
-    pyb_i2c_obj_t *self;
-    if (MP_STATE_PORT(pyb_i2c_obj) == NULL) {
-        // create a new I2C object
-        self = m_new_obj(pyb_i2c_obj_t);
-        self->base.type = &pyb_i2c_type;
-        self->mode = PYBI2C_MODE_DISABLED;
-        MP_STATE_PORT(pyb_i2c_obj) = self;
-    } else {
-        // reference the existing I2C object
-        self = MP_STATE_PORT(pyb_i2c_obj);
-    }
+    // create and setup the object
+    pyb_i2c_obj_t *self = m_new_obj(pyb_i2c_obj_t);
+    self->base.type = &pyb_i2c_type;
+    self->mode = PYBI2C_MODE_DISABLED;
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
@@ -610,6 +603,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_write_obj, 1, pyb_i2c_mem_write);
 
 STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__),         (mp_obj_t)&pyb_i2c_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),            (mp_obj_t)&pyb_i2c_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),          (mp_obj_t)&pyb_i2c_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready),        (mp_obj_t)&pyb_i2c_is_ready_obj },

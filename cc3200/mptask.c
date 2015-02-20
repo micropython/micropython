@@ -147,7 +147,6 @@ soft_reset:
     mpexception_init0();
     uart_init0();
     pin_init0();
-    i2c_init0();
 
     // configure stdio uart pins with the correct af
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
@@ -158,7 +157,7 @@ soft_reset:
             mp_obj_new_int(MICROPY_STDIO_UART),
             mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
     };
-    MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+    pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
 
     readline_init0();
     extint_init0();

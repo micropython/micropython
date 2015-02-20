@@ -243,16 +243,16 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
+        if (pyb_stdio_uart == NULL) {
             return mp_const_none;
         } else {
-            return MP_STATE_PORT(pyb_stdio_uart);
+            return pyb_stdio_uart;
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(pyb_stdio_uart) = NULL;
+            pyb_stdio_uart = NULL;
         } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
-            MP_STATE_PORT(pyb_stdio_uart) = args[0];
+            pyb_stdio_uart = args[0];
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_num_type_invalid_arguments));
         }

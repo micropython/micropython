@@ -70,9 +70,14 @@ static void hal_EnableSdCard (void);
 #endif
 
 /******************************************************************************
- DECLARE LOCAL VARIABLES
+ DECLARE LOCAL DATA
  ******************************************************************************/
 static volatile uint32_t HAL_tickCount;
+
+/******************************************************************************
+ DECLARE PUBLIC DATA
+ ******************************************************************************/
+struct _pyb_uart_obj_t *pyb_stdio_uart;
 
 /******************************************************************************
  DECLARE IMPORTED DATA
@@ -134,8 +139,9 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    // send stdout to UART
+    if (pyb_stdio_uart != NULL) {
+        uart_tx_strn(pyb_stdio_uart, str, len);
     }
     // and also to telnet
     if (telnet_is_active()) {
@@ -145,8 +151,8 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
     // send stdout to UART
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    if (pyb_stdio_uart != NULL) {
+        uart_tx_strn_cooked(pyb_stdio_uart, str, len);
     }
     // and also to telnet
     if (telnet_is_active()) {
@@ -159,8 +165,8 @@ int mp_hal_stdin_rx_chr(void) {
         if (telnet_rx_any()) {
             return telnet_rx_char();
         }
-        else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        else if (pyb_stdio_uart != NULL && uart_rx_any(pyb_stdio_uart)) {
+            return uart_rx_char(pyb_stdio_uart);
         }
         HAL_Delay(1);
     }
