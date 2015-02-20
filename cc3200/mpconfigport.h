@@ -34,7 +34,7 @@
 
 #define MICROPY_ALLOC_PATH_MAX                      (128)
 #define MICROPY_EMIT_THUMB                          (0)
-#define MICROPY_EMIT_INLINE_THUMB                   (1)
+#define MICROPY_EMIT_INLINE_THUMB                   (0)
 #define MICROPY_COMP_MODULE_CONST                   (1)
 #define MICROPY_ENABLE_GC                           (1)
 #define MICROPY_ENABLE_FINALISER                    (1)
@@ -64,7 +64,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
-#define MICROPY_PY_SYS_EXIT                         (1)
+#define MICROPY_PY_SYS_EXIT                         (0)
 #define MICROPY_PY_SYS_STDFILES                     (1)
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
