@@ -113,6 +113,12 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
+void pin_verify_af (uint af) {
+    if (af > PIN_MODE_15) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+}
+
 void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
     // Skip all this if the pin is to be used in analog mode
     if (type != PIN_TYPE_ANALOG) {
@@ -138,6 +144,8 @@ void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint stren
             // configure the direction
             MAP_GPIODirModeSet(self->port, self->bit, mode);
         }
+        // verify the alternate function
+        pin_verify_af (af);
         // now set the alternate function, strenght and type
         MAP_PinModeSet (self->pin_num, af);
     }

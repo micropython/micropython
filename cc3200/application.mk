@@ -94,6 +94,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybi2c.c \
 	pybpin.c \
 	pybrtc.c \
+	pybsd.c \
 	pybsystick.c \
 	pybuart.c \
 	)

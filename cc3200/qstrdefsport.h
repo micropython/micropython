@@ -160,6 +160,12 @@ Q(read)
 Q(enable)
 Q(disable)
 
+// for SD class
+Q(SD)
+Q(config)
+Q(enable)
+Q(disable)
+
 // for RTC class
 Q(RTC)
 Q(datetime)

@@ -232,7 +232,7 @@
 
 
 #define _FS_REENTRANT	1
-#define _FS_TIMEOUT		2000
+#define _FS_TIMEOUT		2500    // milliseconds
 #define	_SYNC_t			SemaphoreHandle_t
 /* The _FS_REENTRANT option switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different

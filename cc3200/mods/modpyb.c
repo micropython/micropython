@@ -64,6 +64,7 @@
 #include "pybextint.h"
 #include "pybadc.h"
 #include "pybi2c.h"
+#include "pybsd.h"
 #include "utils.h"
 
 
@@ -317,6 +318,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
+
+#if MICROPY_HW_HAS_SDCARD
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sdcard_obj },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);

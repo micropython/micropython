@@ -30,9 +30,10 @@
 #define MICROPY_HW_BOARD_NAME                       "LaunchPad"
 #define MICROPY_HW_MCU_NAME                         "CC3200"
 
-#define MICROPY_HW_HAS_SDCARD                       (1)
+#define MICROPY_HW_HAS_SDCARD                       (0)
 #define MICROPY_HW_ENABLE_RNG                       (1)
 #define MICROPY_HW_ENABLE_RTC                       (1)
 
 #define MICROPY_STDIO_UART                          PYB_UART_0
 #define MICROPY_STDIO_UART_BAUD                     115200
+

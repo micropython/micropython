@@ -41,7 +41,6 @@
 #include "interrupt.h"
 #include "systick.h"
 #include "prcm.h"
-#include "sdhost.h"
 #include "pin.h"
 #include "mpexception.h"
 #include "telnet.h"
@@ -55,18 +54,10 @@
 
 
 /******************************************************************************
- DECLARE CONSTANTS
- ******************************************************************************/
-#define HAL_SDCARD_FREQUENCY_HZ             15000000        // 15MHz
-
-/******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
 #ifndef USE_FREERTOS
 static void hal_TickInit (void);
-#endif
-#if MICROPY_HW_HAS_SDCARD
-static void hal_EnableSdCard (void);
 #endif
 
 /******************************************************************************
@@ -100,9 +91,6 @@ void HAL_SystemInit (void) {
 
 #ifndef USE_FREERTOS
     hal_TickInit();
-#endif
-#if MICROPY_HW_HAS_SDCARD
-    hal_EnableSdCard();
 #endif
 }
 
@@ -189,23 +177,3 @@ static void hal_TickInit (void) {
 }
 #endif
 
-#if MICROPY_HW_HAS_SDCARD
-static void hal_EnableSdCard (void) {
-    // Configure PIN_06 for SDHOST0 SDHost_D0
-    MAP_PinTypeSDHost(PIN_06, PIN_MODE_8);
-    // Configure PIN_07 for SDHOST0 SDHost_CLK
-    MAP_PinTypeSDHost(PIN_07, PIN_MODE_8);
-    // Configure PIN_08 for SDHOST0 SDHost_CMD
-    MAP_PinTypeSDHost(PIN_08, PIN_MODE_8);
-    // Set the SD card clock as an output pin
-    MAP_PinDirModeSet(PIN_07, PIN_DIR_MODE_OUT);
-    // Enable SD peripheral clock
-    MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-    // Reset MMCHS
-    MAP_PRCMPeripheralReset(PRCM_SDHOST);
-    // Configure MMCHS
-    MAP_SDHostInit(SDHOST_BASE);
-    // Configure the card clock
-    MAP_SDHostSetExpClk(SDHOST_BASE, MAP_PRCMPeripheralClockGet(PRCM_SDHOST), HAL_SDCARD_FREQUENCY_HZ);
-}
-#endif
