@@ -31,5 +31,4 @@ print(s)
 
 r = re.compile("[a-f]+")
 s = r.split("0a3b9")
-# TODO - char classes are not yet supported by re1.5
-#print(s)
+print(s)
