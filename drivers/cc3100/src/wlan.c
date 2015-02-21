@@ -39,7 +39,6 @@
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
-#include <string.h>
 #include "simplelink.h"
 #include "protocol.h"
 #include "driver.h"
@@ -76,9 +75,7 @@ _i16 sl_WlanConnect(_i8*  pName, _i16 NameLen, _u8 *pMacAddr, SlSecParams_t* pSe
     _SlWlanConnectMsg_u    Msg;
     _SlCmdCtrl_t           CmdCtrl;
 
-    // Clear the above structures
-    memset (&Msg, 0, sizeof(Msg));
-    memset (&CmdCtrl, 0, sizeof(CmdCtrl));
+    sl_Memset (&Msg, 0, sizeof(Msg));
 
     CmdCtrl.TxDescLen = 0;/* init */
     CmdCtrl.RxDescLen = sizeof(_BasicResponse_t);
