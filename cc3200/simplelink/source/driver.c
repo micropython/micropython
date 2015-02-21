@@ -62,8 +62,8 @@ support backward sync pattern */
 #define MATCH_WITH_SEQ_NUM(pBuf, TxSeqNum)       ( BUF_SYNC_SPIM(pBuf) == (N2H_SYNC_SPIM_WITH_SEQ(TxSeqNum)) )
 #define N2H_SYNC_PATTERN_MATCH(pBuf, TxSeqNum) \
     ( \
-    (  (*((_u32 *)pBuf) & N2H_SYNC_PATTERN_SEQ_NUM_EXISTS) && ( MATCH_WITH_SEQ_NUM(pBuf, TxSeqNum) ) )	|| \
-    ( !(*((_u32 *)pBuf) & N2H_SYNC_PATTERN_SEQ_NUM_EXISTS) && ( MATCH_WOUT_SEQ_NUM(pBuf          ) ) )	   \
+    (  (*((_u32 *)pBuf) & N2H_SYNC_PATTERN_SEQ_NUM_EXISTS) && ( MATCH_WITH_SEQ_NUM(pBuf, TxSeqNum) ) )  || \
+    ( !(*((_u32 *)pBuf) & N2H_SYNC_PATTERN_SEQ_NUM_EXISTS) && ( MATCH_WOUT_SEQ_NUM(pBuf          ) ) )     \
     )
 
 #define OPCODE(_ptr)          (((_SlResponseHeader_t *)(_ptr))->GenHeader.Opcode)         
@@ -116,12 +116,12 @@ _SlReturnVal_t   _SlDrvRxHdrRead(_u8 *pBuf, _u8 *pAlignSize);
 void             _SlDrvShiftDWord(_u8 *pBuf);
 void             _SlDrvDriverCBInit(void);
 void             _SlAsyncEventGenericHandler(void);
-_i16			 _SlDrvWaitForPoolObj(_u32 ActionID, _u8 SocketID);
-void			 _SlDrvReleasePoolObj(_u8 pObj);
-void			 _SlDrvObjInit(void);
-void			 _SlDrvObjDeInit(void);
-void			 _SlRemoveFromList(_u8* ListIndex, _u8 ItemIndex);
-_SlReturnVal_t	 _SlFindAndSetActiveObj(_SlOpcode_t  Opcode, _u8 Sd);
+_i16             _SlDrvWaitForPoolObj(_u32 ActionID, _u8 SocketID);
+void             _SlDrvReleasePoolObj(_u8 pObj);
+void             _SlDrvObjInit(void);
+void             _SlDrvObjDeInit(void);
+void             _SlRemoveFromList(_u8* ListIndex, _u8 ItemIndex);
+_SlReturnVal_t   _SlFindAndSetActiveObj(_SlOpcode_t  Opcode, _u8 Sd);
 
 
 /*****************************************************************************/
@@ -352,8 +352,8 @@ _SlReturnVal_t _SlDrvDataReadOp(
     OSI_RET_OK_CHECK( sl_LockObjUnlock(&g_pCB->FlowContCB.TxLockObj) );
 
     /* send the message */
-    g_pCB->TempProtocolHeader.Opcode 	= pCmdCtrl->Opcode;
-    g_pCB->TempProtocolHeader.Len	= _SL_PROTOCOL_CALC_LEN(pCmdCtrl,pCmdExt);
+    g_pCB->TempProtocolHeader.Opcode    = pCmdCtrl->Opcode;
+    g_pCB->TempProtocolHeader.Len   = _SL_PROTOCOL_CALC_LEN(pCmdCtrl,pCmdExt);
     g_pCB->FunctionParams.pCmdCtrl      = pCmdCtrl;
     g_pCB->FunctionParams.pTxRxDescBuff = (_u8 *)pTxRxDescBuff;
     g_pCB->FunctionParams.pCmdExt       = pCmdExt;
@@ -427,8 +427,8 @@ _SlReturnVal_t _SlDrvDataWriteOp(
     OSI_RET_OK_CHECK( sl_LockObjUnlock(&g_pCB->FlowContCB.TxLockObj) );
 
     /*  send the message */
-    g_pCB->TempProtocolHeader.Opcode 	= pCmdCtrl->Opcode;
-    g_pCB->TempProtocolHeader.Len	= _SL_PROTOCOL_CALC_LEN(pCmdCtrl,pCmdExt);
+    g_pCB->TempProtocolHeader.Opcode    = pCmdCtrl->Opcode;
+    g_pCB->TempProtocolHeader.Len   = _SL_PROTOCOL_CALC_LEN(pCmdCtrl,pCmdExt);
 
     g_pCB->FunctionParams.pCmdCtrl = pCmdCtrl;
     g_pCB->FunctionParams.pTxRxDescBuff = pTxRxDescBuff;
@@ -447,8 +447,8 @@ _SlReturnVal_t _SlDrvMsgWrite(void)
 {
     VERIFY_PROTOCOL(NULL != g_pCB->FunctionParams.pCmdCtrl);
 
-    g_pCB->TempProtocolHeader.Opcode 	= g_pCB->FunctionParams.pCmdCtrl->Opcode;
-    g_pCB->TempProtocolHeader.Len	= _SL_PROTOCOL_CALC_LEN(g_pCB->FunctionParams.pCmdCtrl,
+    g_pCB->TempProtocolHeader.Opcode    = g_pCB->FunctionParams.pCmdCtrl->Opcode;
+    g_pCB->TempProtocolHeader.Len   = _SL_PROTOCOL_CALC_LEN(g_pCB->FunctionParams.pCmdCtrl,
         g_pCB->FunctionParams.pCmdExt);
     /*  */
     if (g_pCB->RelayFlagsViaRxPayload == TRUE)
@@ -628,7 +628,7 @@ _SlReturnVal_t _SlDrvMsgRead(void)
             VERIFY_RET_OK(_SlFindAndSetActiveObj(OPCODE(uBuf.TempBuf),SD(&uBuf.TempBuf[4]) & BSD_SOCKET_ID_MASK));
 
             /*  Verify data is waited on this socket. The pArgs should have been set by _SlDrvDataReadOp(). */
-            VERIFY_SOCKET_CB(NULL !=  ((_SlArgsData_t *)(g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pData))->pArgs);	
+            VERIFY_SOCKET_CB(NULL !=  ((_SlArgsData_t *)(g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pData))->pArgs);    
 
             sl_Memcpy( ((_SlArgsData_t *)(g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pRespArgs))->pArgs, &uBuf.TempBuf[4], RECV_ARGS_SIZE);
 
@@ -800,7 +800,7 @@ void _SlAsyncEventGenericHandler(void)
             }
         case SL_OPCODE_WLAN_CONNECTION_FAILED:
             {
-                slWlanConnFailureAsyncResponse_t	* pResp = (slWlanConnFailureAsyncResponse_t*)_SL_RESP_ARGS_START(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);
+                slWlanConnFailureAsyncResponse_t    * pResp = (slWlanConnFailureAsyncResponse_t*)_SL_RESP_ARGS_START(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);
 
                 wlanEvent.Event = SL_WLAN_CONNECTION_FAILED_EVENT;
                 wlanEvent.EventData.P2PModewlanConnectionFailure.status = pResp->status;
@@ -817,7 +817,7 @@ void _SlAsyncEventGenericHandler(void)
                 wlanEvent.EventData.STAandP2PModeWlanConnected.connection_type = pWlanResp->connection_type;
                 sl_Memcpy(wlanEvent.EventData.STAandP2PModeWlanConnected.bssid, pWlanResp->bssid, 6);
                 sl_Memcpy(wlanEvent.EventData.STAandP2PModeWlanConnected.go_peer_device_name,pWlanResp->go_peer_device_name,pWlanResp->go_peer_device_name_len);
-                sl_Memcpy(wlanEvent.EventData.STAandP2PModeWlanConnected.ssid_name,		  pWlanResp->ssid_name,			 pWlanResp->ssid_len);
+                sl_Memcpy(wlanEvent.EventData.STAandP2PModeWlanConnected.ssid_name,       pWlanResp->ssid_name,          pWlanResp->ssid_len);
                 wlanEvent.EventData.STAandP2PModeWlanConnected.ssid_len = pWlanResp->ssid_len;
                 wlanEvent.EventData.STAandP2PModeWlanConnected.go_peer_device_name_len = pWlanResp->go_peer_device_name_len;
 
@@ -832,7 +832,7 @@ void _SlAsyncEventGenericHandler(void)
                 wlanEvent.EventData.STAandP2PModeDisconnected.connection_type = pWlanResp->connection_type;
                 sl_Memcpy(wlanEvent.EventData.STAandP2PModeDisconnected.bssid, pWlanResp->bssid, 6);
                 sl_Memcpy(wlanEvent.EventData.STAandP2PModeDisconnected.go_peer_device_name,pWlanResp->go_peer_device_name,pWlanResp->go_peer_device_name_len);
-                sl_Memcpy(wlanEvent.EventData.STAandP2PModeDisconnected.ssid_name,		  pWlanResp->ssid_name,			 pWlanResp->ssid_len);
+                sl_Memcpy(wlanEvent.EventData.STAandP2PModeDisconnected.ssid_name,        pWlanResp->ssid_name,          pWlanResp->ssid_len);
                 wlanEvent.EventData.STAandP2PModeDisconnected.ssid_len = pWlanResp->ssid_len;
                 wlanEvent.EventData.STAandP2PModeDisconnected.reason_code = pWlanResp->reason_code;
                 wlanEvent.EventData.STAandP2PModeDisconnected.go_peer_device_name_len = pWlanResp->go_peer_device_name_len;
@@ -884,7 +884,7 @@ void _SlAsyncEventGenericHandler(void)
 
         case SL_OPCODE_SOCKET_TXFAILEDASYNCRESPONSE:
             {
-                SlSockEventData_t *txfailparams = (SlSockEventData_t*)_SL_RESP_ARGS_START(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);			
+                SlSockEventData_t *txfailparams = (SlSockEventData_t*)_SL_RESP_ARGS_START(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);            
                 sockAppEvent.Event =  SL_SOCKET_TX_FAILED_EVENT;
                 sl_Memcpy((void *)&sockAppEvent.EventData,(void *)txfailparams,sizeof(SlSockEventData_t)); 
                 g_pCB->FunctionParams.AsyncExt.AsyncEvtHandler(&sockAppEvent);
@@ -893,7 +893,7 @@ void _SlAsyncEventGenericHandler(void)
 
         case SL_OPCODE_SOCKET_SOCKETASYNCEVENT:
             {
-                SlSockEventData_t *socketAsyncEvent = (SlSockEventData_t*)_SL_RESP_ARGS_START(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);			
+                SlSockEventData_t *socketAsyncEvent = (SlSockEventData_t*)_SL_RESP_ARGS_START(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);            
                 sockAppEvent.Event =  SL_SOCKET_ASYNC_EVENT;
                 sockAppEvent.EventData.socketAsyncEvent.sd = socketAsyncEvent->socketAsyncEvent.sd;
                 sockAppEvent.EventData.socketAsyncEvent.type = socketAsyncEvent->socketAsyncEvent.type; /* one of the possible types of socket */
@@ -1176,12 +1176,12 @@ void _SlDrvClassifyRxMsg(
                 }
 #endif
             }
-            /* 			else if (SL_OPCODE_SILO_NVMEM == (Opcode & SL_OPCODE_SILO_MASK))   */
-            /* 			{ */
-            /* 			} */
-            /* 			else if (SL_OPCODE_SILO_NETCFG == (Opcode & SL_OPCODE_SILO_MASK))   */
-            /* 			{ */
-            /* 			} */
+            /*          else if (SL_OPCODE_SILO_NVMEM == (Opcode & SL_OPCODE_SILO_MASK))   */
+            /*          { */
+            /*          } */
+            /*          else if (SL_OPCODE_SILO_NETCFG == (Opcode & SL_OPCODE_SILO_MASK))   */
+            /*          { */
+            /*          } */
             else
             {
                 SL_ERROR_TRACE1(MSG_311, "ASSERT: _SlDrvClassifyRxMsg : invalid opcode = 0x%x", Opcode);
@@ -1191,8 +1191,8 @@ void _SlDrvClassifyRxMsg(
     else
     {
         /* These may be Command responses only */
-        g_pCB->FunctionParams.AsyncExt.RxMsgClass = CMD_RESP_CLASS;	
-    }	 
+        g_pCB->FunctionParams.AsyncExt.RxMsgClass = CMD_RESP_CLASS; 
+    }    
 
 }
 
@@ -1280,7 +1280,7 @@ _SlReturnVal_t   _SlDrvRxHdrRead(_u8 *pBuf, _u8 *pAlignSize)
 /* ***************************************************************************** */
 typedef union
 {
-    _BasicResponse_t	Rsp;
+    _BasicResponse_t    Rsp;
 }_SlBasicCmdMsg_u;
 
 _i16 _SlDrvBasicCmd(_SlOpcode_t Opcode)
@@ -1357,7 +1357,7 @@ _i16 _SlDrvWaitForPoolObj(_u32 ActionID, _u8 SocketID)
     }
     /* move to active list  */
     g_pCB->ObjPool[CurrObjIndex].NextIndex = g_pCB->ActivePoolIdx;
-    g_pCB->ActivePoolIdx = CurrObjIndex;	
+    g_pCB->ActivePoolIdx = CurrObjIndex;    
     /* unlock */
     OSI_RET_OK_CHECK(sl_LockObjUnlock(&g_pCB->ProtectionLockObj));
     return CurrObjIndex;
@@ -1398,7 +1398,7 @@ void _SlDrvReleasePoolObj(_u8 ObjIdx)
     {
         /* unset actionID  */
         g_pCB->ActiveActionsBitmap &= ~(1<<g_pCB->ObjPool[ObjIdx].ActionID);
-    }	
+    }   
 
     /* delete old data */
     g_pCB->ObjPool[ObjIdx].pRespArgs = NULL;
@@ -1475,7 +1475,7 @@ void _SlRemoveFromList(_u8 *ListIndex, _u8 ItemIndex)
                 g_pCB->ObjPool[Idx].NextIndex = g_pCB->ObjPool[ItemIndex].NextIndex;
                 break;
             }
-            Idx = g_pCB->ObjPool[Idx].NextIndex;		
+            Idx = g_pCB->ObjPool[Idx].NextIndex;        
         }
     }
 }

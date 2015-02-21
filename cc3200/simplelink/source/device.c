@@ -269,8 +269,8 @@ sl_EventMaskSet
 *****************************************************************************/
 typedef union
 {
-    _DevMaskEventSetCommand_t	    Cmd;
-    _BasicResponse_t	            Rsp;
+    _DevMaskEventSetCommand_t       Cmd;
+    _BasicResponse_t                Rsp;
 }_SlEventMaskSetMsg_u;
 
 const _SlCmdCtrl_t _SlEventMaskSetCmdCtrl =
@@ -299,7 +299,7 @@ sl_EventMaskGet
 ******************************************************************************/
 typedef union
 {
-    _DevMaskEventGetCommand_t	    Cmd;
+    _DevMaskEventGetCommand_t       Cmd;
     _DevMaskEventGetResponse_t      Rsp;
 }_SlEventMaskGetMsg_u;
 
@@ -332,8 +332,8 @@ sl_DevGet
 
 typedef union
 {
-    _DeviceSetGet_t	    Cmd;
-    _DeviceSetGet_t	    Rsp;
+    _DeviceSetGet_t     Cmd;
+    _DeviceSetGet_t     Rsp;
 }_SlDeviceMsgGet_u;
 
 const _SlCmdCtrl_t _SlDeviceGetCmdCtrl =
@@ -471,7 +471,7 @@ sl_UartSetMode
 #ifdef SL_IF_TYPE_UART
 typedef union
 {
-    _DevUartSetModeCommand_t	  Cmd;
+    _DevUartSetModeCommand_t      Cmd;
     _DevUartSetModeResponse_t     Rsp;
 }_SlUartSetModeMsg_u;
 

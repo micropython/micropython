@@ -97,8 +97,8 @@ _u32 _sl_GetCreateFsMode(_u32 maxSizeInBytes,_u32 accessFlags)
 /*****************************************************************************/
 typedef union
 {
-	_FsOpenCommand_t	    Cmd;
-	_FsOpenResponse_t	    Rsp;
+    _FsOpenCommand_t        Cmd;
+    _FsOpenResponse_t       Rsp;
 }_SlFsOpenMsg_u;
 
 const _SlCmdCtrl_t _SlFsOpenCmdCtrl =
@@ -122,27 +122,27 @@ _i32 sl_FsOpen(_u8 *pFileName,_u32 AccessModeAndMaxSize, _u32 *pToken,_i32 *pFil
 
     Msg.Cmd.Mode          =  AccessModeAndMaxSize; 
 
-	if(pToken != NULL)
-	{
+    if(pToken != NULL)
+    {
        Msg.Cmd.Token         = *pToken;
-	}
+    }
     else
-	{
+    {
        Msg.Cmd.Token         = 0;
-	}
+    }
 
     RetVal = _SlDrvCmdOp((_SlCmdCtrl_t *)&_SlFsOpenCmdCtrl, &Msg, &CmdExt);
     *pFileHandle = Msg.Rsp.FileHandle;
-	if (pToken != NULL)
-	{
+    if (pToken != NULL)
+    {
         *pToken =      Msg.Rsp.Token;
-	}
+    }
        
-	/* in case of an error, return the erros file handler as an error code */
-	if( *pFileHandle < 0 )
-	{
-	   return *pFileHandle;
-	}
+    /* in case of an error, return the erros file handler as an error code */
+    if( *pFileHandle < 0 )
+    {
+       return *pFileHandle;
+    }
     return (_i32)RetVal;
 }
 #endif
@@ -152,8 +152,8 @@ _i32 sl_FsOpen(_u8 *pFileName,_u32 AccessModeAndMaxSize, _u32 *pToken,_i32 *pFil
 /*****************************************************************************/
 typedef union
 {
-	_FsCloseCommand_t	    Cmd;
-	_BasicResponse_t	    Rsp;
+    _FsCloseCommand_t       Cmd;
+    _BasicResponse_t        Rsp;
 }_SlFsCloseMsg_u;
 
 const _SlCmdCtrl_t _SlFsCloseCmdCtrl =
@@ -198,8 +198,8 @@ _i16 sl_FsClose(_i32 FileHdl, _u8*  pCeritificateFileName,_u8*  pSignature ,_u32
 /*****************************************************************************/
 typedef union
 {
-	_FsReadCommand_t	    Cmd;
-	_FsReadResponse_t	    Rsp;
+    _FsReadCommand_t        Cmd;
+    _FsReadResponse_t       Rsp;
 }_SlFsReadMsg_u;
 
 const _SlCmdCtrl_t _SlFsReadCmdCtrl =
@@ -269,8 +269,8 @@ _i32 sl_FsRead(_i32 FileHdl, _u32 Offset, _u8*  pData, _u32 Len)
 /*****************************************************************************/
 typedef union
 {
-	_FsWriteCommand_t	    Cmd;
-	_FsWriteResponse_t	    Rsp;
+    _FsWriteCommand_t       Cmd;
+    _FsWriteResponse_t      Rsp;
 }_SlFsWriteMsg_u;
 
 const _SlCmdCtrl_t _SlFsWriteCmdCtrl =
@@ -343,8 +343,8 @@ _i32 sl_FsWrite(_i32 FileHdl, _u32 Offset, _u8*  pData, _u32 Len)
 /*****************************************************************************/
 typedef union
 {
-	_FsGetInfoCommand_t	    Cmd;
-	_FsGetInfoResponse_t    Rsp;
+    _FsGetInfoCommand_t     Cmd;
+    _FsGetInfoResponse_t    Rsp;
 }_SlFsGetInfoMsg_u;
 
 const _SlCmdCtrl_t _SlFsGetInfoCmdCtrl =
@@ -384,8 +384,8 @@ _i16 sl_FsGetInfo(_u8 *pFileName,_u32 Token,SlFsFileInfo_t* pFsFileInfo)
 /*****************************************************************************/
 typedef union
 {
-	_FsDeleteCommand_t   	    Cmd;
-	_FsDeleteResponse_t	        Rsp;
+    _FsDeleteCommand_t          Cmd;
+    _FsDeleteResponse_t         Rsp;
 }_SlFsDeleteMsg_u;
 
 const _SlCmdCtrl_t _SlFsDeleteCmdCtrl =

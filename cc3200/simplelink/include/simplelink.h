@@ -294,11 +294,7 @@ extern "C"
 #define SL_INC_NET_APP_PKG
 #define SL_INC_NET_CFG_PKG
 #define SL_INC_FS_PKG
-#if defined(DEBUG) && !defined(BOOTLOADER)
 #define SL_INC_ARG_CHECK
-#else
-#undef SL_INC_ARG_CHECK
-#endif
 #define SL_INC_WLAN_PKG
 #define SL_INC_SOCKET_PKG
 #define SL_INC_SOCK_CLIENT_SIDE_API
@@ -352,7 +348,7 @@ typedef void (*_SlSpawnEntryFunc_t)(void* pValue);
       #define _u32 unsigned long
       #define _i32 signed long
       #define _volatile volatile
-	  #define _const    const
+      #define _const    const
 #endif
 
 typedef _u16  _SlOpcode_t;
