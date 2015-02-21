@@ -64,8 +64,8 @@ typedef struct _mod_network_socket_obj_t {
             int8_t fileno;
         } u_param;
         int16_t sd;
-        bool    closed;
     };
+    bool  closed;
 } mod_network_socket_obj_t;
 
 extern const mod_network_nic_type_t mod_network_nic_type_wlan;

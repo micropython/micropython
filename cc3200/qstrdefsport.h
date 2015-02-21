@@ -114,8 +114,6 @@ Q(IRQ_HIGH_LEVEL)
 
 // for UART class
 Q(UART)
-Q(UART1)
-Q(UART2)
 Q(baudrate)
 Q(bits)
 Q(stop)
@@ -155,6 +153,18 @@ Q(mem_read)
 Q(mem_write)
 Q(MASTER)
 Q(SLAVE)
+
+// for ADC class
+Q(ADC)
+Q(read)
+Q(enable)
+Q(disable)
+
+// for SD class
+Q(SD)
+Q(config)
+Q(enable)
+Q(disable)
 
 // for RTC class
 Q(RTC)

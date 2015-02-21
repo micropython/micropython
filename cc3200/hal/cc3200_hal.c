@@ -41,7 +41,6 @@
 #include "interrupt.h"
 #include "systick.h"
 #include "prcm.h"
-#include "sdhost.h"
 #include "pin.h"
 #include "mpexception.h"
 #include "telnet.h"
@@ -55,24 +54,21 @@
 
 
 /******************************************************************************
- DECLARE CONSTANTS
- ******************************************************************************/
-#define HAL_SDCARD_FREQUENCY_HZ             15000000        // 15MHz
-
-/******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
 #ifndef USE_FREERTOS
 static void hal_TickInit (void);
 #endif
-#if MICROPY_HW_HAS_SDCARD
-static void hal_EnableSdCard (void);
-#endif
 
 /******************************************************************************
- DECLARE LOCAL VARIABLES
+ DECLARE LOCAL DATA
  ******************************************************************************/
 static volatile uint32_t HAL_tickCount;
+
+/******************************************************************************
+ DECLARE PUBLIC DATA
+ ******************************************************************************/
+struct _pyb_uart_obj_t *pyb_stdio_uart;
 
 /******************************************************************************
  DECLARE IMPORTED DATA
@@ -88,16 +84,13 @@ void HAL_SystemInit (void) {
 
     // in the case of a release image, these steps are already performed by
     // the bootloader so we can skip it and gain some code space
-#ifndef NDEBUG
+#ifdef DEBUG
     MAP_IntMasterEnable();
     PRCMCC3200MCUInit();
 #endif
 
 #ifndef USE_FREERTOS
     hal_TickInit();
-#endif
-#if MICROPY_HW_HAS_SDCARD
-    hal_EnableSdCard();
 #endif
 }
 
@@ -134,8 +127,9 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    // send stdout to UART
+    if (pyb_stdio_uart != NULL) {
+        uart_tx_strn(pyb_stdio_uart, str, len);
     }
     // and also to telnet
     if (telnet_is_active()) {
@@ -145,8 +139,8 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
     // send stdout to UART
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    if (pyb_stdio_uart != NULL) {
+        uart_tx_strn_cooked(pyb_stdio_uart, str, len);
     }
     // and also to telnet
     if (telnet_is_active()) {
@@ -159,8 +153,8 @@ int mp_hal_stdin_rx_chr(void) {
         if (telnet_rx_any()) {
             return telnet_rx_char();
         }
-        else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        else if (pyb_stdio_uart != NULL && uart_rx_any(pyb_stdio_uart)) {
+            return uart_rx_char(pyb_stdio_uart);
         }
         HAL_Delay(1);
     }
@@ -183,23 +177,3 @@ static void hal_TickInit (void) {
 }
 #endif
 
-#if MICROPY_HW_HAS_SDCARD
-static void hal_EnableSdCard (void) {
-    // Configure PIN_06 for SDHOST0 SDHost_D0
-    MAP_PinTypeSDHost(PIN_06, PIN_MODE_8);
-    // Configure PIN_07 for SDHOST0 SDHost_CLK
-    MAP_PinTypeSDHost(PIN_07, PIN_MODE_8);
-    // Configure PIN_08 for SDHOST0 SDHost_CMD
-    MAP_PinTypeSDHost(PIN_08, PIN_MODE_8);
-    // Set the SD card clock as an output pin
-    MAP_PinDirModeSet(PIN_07, PIN_DIR_MODE_OUT);
-    // Enable SD peripheral clock
-    MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-    // Reset MMCHS
-    MAP_PRCMPeripheralReset(PRCM_SDHOST);
-    // Configure MMCHS
-    MAP_SDHostInit(SDHOST_BASE);
-    // Configure the card clock
-    MAP_SDHostSetExpClk(SDHOST_BASE, MAP_PRCMPeripheralClockGet(PRCM_SDHOST), HAL_SDCARD_FREQUENCY_HZ);
-}
-#endif

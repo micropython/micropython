@@ -30,6 +30,12 @@ recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int n
 			pc += *(unsigned char*)pc * 2 + 1;
 			sp++;
 			continue;
+                case NamedClass:
+			if (!_re1_5_namedclassmatch(pc, sp))
+				return 0;
+			pc++;
+			sp++;
+			continue;
 		case Match:
 			return 1;
 		case Jmp:

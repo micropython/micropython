@@ -53,7 +53,7 @@
 //*****************************************************************************
 // Local Constants
 //*****************************************************************************
-#define SL_STOP_TIMEOUT                     500
+#define SL_STOP_TIMEOUT                     250
 #define BOOTMGR_HASH_ALGO                   SHAMD5_ALGO_MD5
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512
@@ -67,9 +67,9 @@
 #define BOOTMGR_PINS_PRCM                   PRCM_GPIOA3
 #define BOOTMGR_PINS_PORT                   GPIOA3_BASE
 #define BOOTMGR_LED_PIN_NUM                 PIN_21
-#define BOOTMGR_SFE_PIN_NUM                 PIN_45
+#define BOOTMGR_SFE_PIN_NUM                 PIN_18
 #define BOOTMGR_LED_PORT_PIN                GPIO_PIN_1      // GPIO25
-#define BOOTMGR_SFE_PORT_PIN                GPIO_PIN_7      // GPIO31
+#define BOOTMGR_SFE_PORT_PIN                GPIO_PIN_4      // GPIO28
 
 
 //*****************************************************************************
@@ -165,7 +165,7 @@ static void bootmgr_board_init(void) {
 
     // Configure the safe mode pin
     MAP_PinTypeGPIO(BOOTMGR_SFE_PIN_NUM, PIN_MODE_0, false);
-    MAP_PinConfigSet(BOOTMGR_SFE_PIN_NUM, PIN_STRENGTH_6MA, PIN_TYPE_STD_PU);
+    MAP_PinConfigSet(BOOTMGR_SFE_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
     MAP_GPIODirModeSet(BOOTMGR_PINS_PORT, BOOTMGR_SFE_PORT_PIN, GPIO_DIR_MODE_IN);
 }
 

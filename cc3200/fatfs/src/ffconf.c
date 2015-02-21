@@ -61,11 +61,11 @@ int ff_get_ldnumber (const TCHAR **path) {
     }
 
     if (**path != '/') {
-        #if _FS_RPATH
+    #if _FS_RPATH
         return ff_CurrVol;
-        #else
+    #else
         return -1;
-        #endif
+    #endif
     }
 
     if (check_path(path, "/SFLASH", 7)) {

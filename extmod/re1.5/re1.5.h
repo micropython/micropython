@@ -82,6 +82,7 @@ enum	/* Inst.opcode */
 	Any,
 	Class,
 	ClassNot,
+	NamedClass,
 
 	ASSERTS = 0x50,
 	Bol = ASSERTS,
@@ -145,5 +146,6 @@ int re1_5_compilecode(ByteProg *prog, const char *re);
 void re1_5_dumpcode(ByteProg *prog);
 void cleanmarks(ByteProg *prog);
 int _re1_5_classmatch(const char *pc, const char *sp);
+int _re1_5_namedclassmatch(const char *pc, const char *sp);
 
 #endif /*_RE1_5_REGEXP__H*/

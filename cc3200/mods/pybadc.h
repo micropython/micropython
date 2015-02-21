@@ -25,7 +25,9 @@
  * THE SOFTWARE.
  */
 
-extern const mp_obj_type_t pyb_i2c_type;
+#ifndef PYBADC_H_
+#define PYBADC_H_
 
-void i2c_init (uint mode, uint slvaddr, uint baudrate);
-void i2c_deinit(void);
+extern const mp_obj_type_t pyb_adc_type;
+
+#endif /* PYBADC_H_ */

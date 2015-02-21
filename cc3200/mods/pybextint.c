@@ -271,7 +271,7 @@ void extint_init0(void) {
 }
 
 extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull, mp_obj_t callback) {
-    const pin_obj_t *pin = NULL;
+    const pin_obj_t *pin;
     extint_obj_t* self;
     void *handler;
     uint32_t intnum;

@@ -11,7 +11,7 @@ BOOTMGR=bootmgr/build/$1
 if [ ! -f $RELOCATOR/relocator.bin ]; then
 
 	echo "Error : Relocator Not found!"
-	exit
+	exit 1
 else
 	echo "Relocator found..."
 fi
@@ -20,7 +20,7 @@ fi
 if [ ! -f $BOOTMGR/bootmgr.bin ]; then
 
 	echo "Error : Boot Manager Not found!"
-	exit
+	exit 1
 else
 	echo "Boot Manager found..."
 fi
@@ -31,10 +31,10 @@ echo "Generating bootloader..."
 # Generate an all 0 bin file
 dd if=/dev/zero of=__tmp.bin ibs=1 count=256 conv=notrunc >/dev/null 2>&1
 
-# Generate 0 a padded version of relocator 
+# Generate a 0 padded version of the relocator 
 dd if=$RELOCATOR/relocator.bin of=__tmp.bin ibs=1 conv=notrunc >/dev/null 2>&1
 
-# Concatenate re-locator and boot-manager
+# Concatenate the re-locator and the boot-manager
 cat __tmp.bin $BOOTMGR/bootmgr.bin > $BOOTMGR/bootloader.bin
 
 # Remove the tmp files

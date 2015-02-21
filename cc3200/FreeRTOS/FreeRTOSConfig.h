@@ -85,7 +85,7 @@
 #define configTICK_RATE_HZ				        ( ( TickType_t ) 1000 )
 #define configMINIMAL_STACK_SIZE		        ( ( unsigned short ) 64 )
 #define configTOTAL_HEAP_SIZE			        ( ( size_t ) ( 16384 ) )
-#define configMAX_TASK_NAME_LEN			        ( 12 )
+#define configMAX_TASK_NAME_LEN			        ( 8 )
 #define configUSE_TRACE_FACILITY		        0
 #define configUSE_16_BIT_TICKS			        0
 #define configIDLE_SHOULD_YIELD			        1
@@ -150,10 +150,5 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 /* Use the Cortex-M3 optimised task selection rather than the generic C code
 version. */
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
-
-#ifdef DEBUG
-#include "debug.h"
-#define configASSERT( x )                       ASSERT( x )
-#endif
 
 #endif /* FREERTOS_CONFIG_H */

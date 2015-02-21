@@ -57,6 +57,7 @@ extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
 MP_DECLARE_CONST_FUN_OBJ(pin_init_obj);
 
 void pin_init0(void);
+void pin_verify_af (uint af);
 void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength);
 const pin_obj_t *pin_find(mp_obj_t user_obj);
 const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);

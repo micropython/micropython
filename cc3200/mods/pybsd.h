@@ -4,7 +4,6 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef PYBSD_H_
+#define PYBSD_H_
 
-extern const mp_obj_type_t pyb_i2c_type;
+#if MICROPY_HW_HAS_SDCARD
+void pybsd_init0 (void);
+bool pybsd_is_present(void);
 
-void i2c_init (uint mode, uint slvaddr, uint baudrate);
-void i2c_deinit(void);
+extern const struct _mp_obj_base_t pyb_sdcard_obj;
+#endif
+
+#endif // PYBSD_H_

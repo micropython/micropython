@@ -26,10 +26,11 @@
  */
 
 typedef enum {
-    PYB_UART_NONE = 0,
-    PYB_UART_1 = 1,
-    PYB_UART_2 = 2
-} pyb_uart_t;
+    PYB_UART_NONE   = -1,
+    PYB_UART_0      =  0,
+    PYB_UART_1      =  1,
+    PYB_NUM_UARTS
+} pyb_uart_id_t;
 
 typedef struct _pyb_uart_obj_t pyb_uart_obj_t;
 extern const mp_obj_type_t pyb_uart_type;

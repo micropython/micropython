@@ -67,6 +67,7 @@
 #include "random.h"
 #include "pybextint.h"
 #include "pybi2c.h"
+#include "pybsd.h"
 #include "pins.h"
 
 /******************************************************************************
@@ -91,9 +92,6 @@ OsiTaskHandle   svTaskHandle;
  DECLARE PRIVATE DATA
  ******************************************************************************/
 static FATFS *sflash_fatfs;
-#if MICROPY_HW_HAS_SDCARD
-static FATFS *sd_fatfs;
-#endif
 
 static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
 static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
@@ -119,8 +117,7 @@ void TASK_Micropython (void *pvParameters) {
     // Allocate memory for the flash file system
     ASSERT ((sflash_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
 #if MICROPY_HW_HAS_SDCARD
-    // Allocate memory for the sd file system
-    ASSERT ((sd_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
+    pybsd_init0();
 #endif
 
 #ifdef DEBUG
@@ -147,7 +144,6 @@ soft_reset:
     mpexception_init0();
     uart_init0();
     pin_init0();
-    i2c_init0();
 
     // configure stdio uart pins with the correct af
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
@@ -158,7 +154,7 @@ soft_reset:
             mp_obj_new_int(MICROPY_STDIO_UART),
             mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
     };
-    MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+    pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
 
     readline_init0();
     extint_init0();
@@ -175,17 +171,6 @@ soft_reset:
 
     // initialize the serial flash file system
     main_init_sflash_filesystem();
-
-#if MICROPY_HW_HAS_SDCARD
-    // try to mount the sd card on /SD
-    res = f_mount(sd_fatfs, "/SD", 1);
-    if (res == FR_OK) {
-        // use the SD card as the current directory
-        f_chdrive("/SD");
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
-    }
-#endif
 
     // append the SFLASH paths to the system path
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH));
@@ -253,13 +238,13 @@ soft_reset_exit:
 
     sflash_disk_flush();
 
-    printf("PYB: soft rebooting...\n");
+    printf("PYB: soft reboot\n");
 
-    // Disable wlan services
+    // disable wlan services
     wlan_servers_stop();
     wlan_sl_disable();
 
-    // Wait for all bus transfers to complete
+    // wait for all bus transfers to complete
     HAL_Delay(50);
 
     uart_deinit();
