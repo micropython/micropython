@@ -78,6 +78,13 @@ const char *_compilecode(const char *re, ByteProg *prog)
         switch (*re) {
         case '\\':
             re++;
+            if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
+                term = pc;
+                EMIT(pc++, NamedClass);
+                EMIT(pc++, *re);
+                prog->len++;
+                break;
+            }
         default:
             term = pc;
             EMIT(pc++, Char);
@@ -112,11 +119,12 @@ const char *_compilecode(const char *re, ByteProg *prog)
             EMIT(term + 1, cnt);
             break;
         }
-        case '(':
+        case '(': {
             term = pc;
+            int sub = ++prog->sub;
 
             EMIT(pc++, Save);
-            EMIT(pc++, 2 * ++prog->sub);
+            EMIT(pc++, 2 * sub);
             prog->len++;
 
             prog->bytelen = pc;
@@ -124,10 +132,11 @@ const char *_compilecode(const char *re, ByteProg *prog)
             pc = prog->bytelen;
 
             EMIT(pc++, Save);
-            EMIT(pc++, 2 * prog->sub + 1);
+            EMIT(pc++, 2 * sub + 1);
             prog->len++;
 
             break;
+        }
         case '?':
             insert_code(code, term, 2, &pc);
             EMIT(term, Split);
