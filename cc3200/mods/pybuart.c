@@ -523,6 +523,20 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_deinit_obj, pyb_uart_deinit);
 
+/// \method delete()
+/// Deinits the UART and removes its references so that it can be cleaned by the gc
+STATIC mp_obj_t pyb_uart_delete(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+
+    // deinit the peripheral
+    pyb_uart_deinit(self);
+    // remove it from the list
+    mp_obj_list_remove(&MP_STATE_PORT(pyb_uart_list), self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_delete_obj, pyb_uart_delete);
+
 /// \method any()
 /// Return `True` if any characters waiting, else `False`.
 STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
@@ -569,6 +583,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__),     (mp_obj_t)&pyb_uart_delete_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pyb_uart_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),      (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any),         (mp_obj_t)&pyb_uart_any_obj },
