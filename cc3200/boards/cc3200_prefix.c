@@ -30,10 +30,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/mpconfig.h"
+#include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_memmap.h"
 #include "pybpin.h"

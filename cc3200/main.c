@@ -28,11 +28,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
 #include "mptask.h"
 #include "simplelink.h"
 #include "osi.h"

@@ -30,14 +30,7 @@
 #include <stdint.h>
 
 #include "py/mpstate.h"
-#include "mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
-#include "gccollect.h"
 #include "irq.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"

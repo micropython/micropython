@@ -27,11 +27,8 @@
 
 #include <stdio.h>
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/mpconfig.h"
+#include "py/obj.h"
 
 STATIC const char help_text[] = "Welcome to Micro Python!\n"
                                 "For online help please visit http://micropython.org/help/.\n"

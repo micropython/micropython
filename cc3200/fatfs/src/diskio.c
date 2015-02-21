@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include "diskio.h"		        /* FatFs lower layer API */
 #include "sflash_diskio.h"      /* Serial flash disk IO API */
 #if MICROPY_HW_HAS_SDCARD

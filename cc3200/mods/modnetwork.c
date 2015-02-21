@@ -29,17 +29,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
+#include "py/mpstate.h"
 #include MICROPY_HAL_H
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objlist.h"
-#include "runtime.h"
 #include "modnetwork.h"
 #include "mpexception.h"
-#include "mpstate.h"
 
 /// \module network - network configuration
 ///

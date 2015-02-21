@@ -29,12 +29,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/obj.h"
 #include "inc/hw_memmap.h"
 #include "pybuart.h"
 #include "utils.h"

@@ -29,12 +29,10 @@
 #include <string.h>
 #include "std.h"
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
+#include "py/mpconfig.h"
+#include "py/nlr.h"
+#include "py/obj.h"
+#include "py/objtuple.h"
 #include "ff.h"
 #include "diskio.h"
 #include "sflash_diskio.h"

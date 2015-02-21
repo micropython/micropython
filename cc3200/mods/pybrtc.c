@@ -27,12 +27,10 @@
 
 #include <stdio.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/obj.h"
+#include "py/runtime.h"
 #include "modutime.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"

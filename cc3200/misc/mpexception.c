@@ -30,11 +30,6 @@
 #include <std.h>
 
 #include "py/mpstate.h"
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
 #include "mpexception.h"
 
 

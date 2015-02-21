@@ -28,11 +28,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "gc.h"
+#include "py/mpconfig.h"
+#include "py/gc.h"
 #include "gccollect.h"
 #include "gchelper.h"
 #include MICROPY_HAL_H

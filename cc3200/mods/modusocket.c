@@ -30,18 +30,11 @@
 #include <string.h>
 
 #include "simplelink.h"
-#include "mpconfig.h"
+#include "py/mpstate.h"
 #include MICROPY_HAL_H
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objlist.h"
-#include "runtime.h"
+#include "py/runtime.h"
 #include "modnetwork.h"
 #include "mpexception.h"
-#include "mpstate.h"
 
 /******************************************************************************/
 // socket class

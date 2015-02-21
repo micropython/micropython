@@ -25,11 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/mpconfig.h"
+#include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
@@ -38,7 +35,6 @@
 #include "gpio.h"
 #include "pin.h"
 #include "pybpin.h"
-#include "runtime.h"
 #include MICROPY_HAL_H
 
 

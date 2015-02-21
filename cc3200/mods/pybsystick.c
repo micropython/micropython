@@ -25,12 +25,9 @@
  * THE SOFTWARE.
  */
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/obj.h"
 #include "irq.h"
 #include "pybsystick.h"
 #include "systick.h"

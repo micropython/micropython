@@ -3,12 +3,8 @@
 /* (C)ChaN, 2014                                                          */
 /*------------------------------------------------------------------------*/
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
 #include "ff.h"
 
 

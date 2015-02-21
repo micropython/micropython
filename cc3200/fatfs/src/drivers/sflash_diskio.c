@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "std.h"
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "simplelink.h"
 #include "diskio.h"

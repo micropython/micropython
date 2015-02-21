@@ -37,15 +37,8 @@
 //*****************************************************************************
 #include <stdbool.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
-#include "objtuple.h"
-#include "objlist.h"
-#include "runtime.h"
 #include "hw_types.h"
 #include "hw_memmap.h"
 #include "hw_ints.h"

@@ -29,14 +29,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "mpconfig.h"
+#include "py/mpstate.h"
 #include MICROPY_HAL_H
-#include "py/nlr.h"
-#include "misc.h"
-#include "qstr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/pfenv.h"
 #include "py/objlist.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
@@ -49,7 +45,6 @@
 #include "pybextint.h"
 #include "mpexception.h"
 #include "interrupt.h"
-#include "mpstate.h"
 #include "cc3200_asm.h"
 
 /// \moduleref pyb

@@ -28,18 +28,11 @@
 #include <stdint.h>
 #include <std.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "lexer.h"
-#include "parse.h"
-#include "obj.h"
-#include "compile.h"
-#include "runtime0.h"
-#include "runtime.h"
-#include "repl.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/gc.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "pin.h"
@@ -50,7 +43,6 @@
 #include "gccollect.h"
 #include "gchelper.h"
 #include "readline.h"
-#include "gc.h"
 #include "osi.h"
 #include "mptask.h"
 #include "mperror.h"

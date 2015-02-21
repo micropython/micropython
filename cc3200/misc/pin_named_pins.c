@@ -29,15 +29,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/mpconfig.h"
+#include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "pybpin.h"
-#include "runtime.h"
 #include MICROPY_HAL_H
 
 STATIC void pin_named_pins_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {

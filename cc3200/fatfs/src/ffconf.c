@@ -27,10 +27,8 @@
 #include <string.h>
 #include <std.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
 #include "ff.h"
 #include "ffconf.h"
 #include "diskio.h"

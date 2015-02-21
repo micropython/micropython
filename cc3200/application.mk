@@ -16,7 +16,6 @@ APP_INC += -Isimplelink/oslib
 APP_INC += -Itelnet
 APP_INC += -Iutil
 APP_INC += -Ibootmgr
-APP_INC += -I$(PY_SRC)
 APP_INC += -I$(BUILD)
 APP_INC += -I$(BUILD)/genhdr
 APP_INC += -I../lib/fatfs

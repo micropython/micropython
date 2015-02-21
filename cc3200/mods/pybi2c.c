@@ -29,13 +29,8 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include "mpconfig.h"
 #include MICROPY_HAL_H
-#include "nlr.h"
-#include "misc.h"
-#include "qstr.h"
-#include "obj.h"
-#include "runtime.h"
+#include "py/runtime.h"
 #include "bufhelper.h"
 #include "inc/hw_types.h"
 #include "inc/hw_i2c.h"

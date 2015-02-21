@@ -10,7 +10,6 @@ BOOT_INC += -Isimplelink/oslib
 BOOT_INC += -Iutil
 BOOT_INC += -I..
 BOOT_INC += -I.
-BOOT_INC += -I$(PY_SRC)
 BOOT_INC += -I$(BUILD)
 
 BOOT_CPPDEFINES = -Dgcc -DBOOTLOADER -DTARGET_IS_CC3200 -DSL_TINY
@@ -120,4 +119,3 @@ $(HEADER_BUILD)/qstrdefs.generated.h: | $(HEADER_BUILD)
 # Create an empty "py-version.h" needed by py/mkrules.mk
 $(HEADER_BUILD)/py-version.h: | $(HEADER_BUILD)
 	touch $@
-	

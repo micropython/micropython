@@ -27,12 +27,9 @@
 #include <stdint.h>
 #include <std.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include MICROPY_HAL_H
-#include "misc.h"
-#include "nlr.h"
-#include "qstr.h"
-#include "obj.h"
+#include "py/misc.h"
 #include "osi.h"
 #include "simplelink.h"
 #include "serverstask.h"

@@ -3,7 +3,7 @@
 /---------------------------------------------------------------------------*/
 
 #include <stdint.h>
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
