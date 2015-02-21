@@ -4,8 +4,8 @@ BOOT_INC  = -Ibootmgr
 BOOT_INC += -Ibootmgr/sl
 BOOT_INC += -Ihal
 BOOT_INC += -Ihal/inc
+BOOT_INC += -I../drivers/cc3100/inc
 BOOT_INC += -Isimplelink
-BOOT_INC += -Isimplelink/include
 BOOT_INC += -Isimplelink/oslib
 BOOT_INC += -Iutil
 BOOT_INC += -I..
@@ -25,17 +25,20 @@ BOOT_HAL_SRC_C = $(addprefix hal/,\
 	utils.c \
 	)
 
+BOOT_CC3100_SRC_C = $(addprefix drivers/cc3100/,\
+	src/device.c \
+	src/driver.c \
+	src/flowcont.c \
+	src/fs.c \
+	src/netapp.c \
+	src/netcfg.c \
+	src/nonos.c \
+	src/socket.c \
+	src/spawn.c \
+	src/wlan.c \
+	)
+
 BOOT_SL_SRC_C = $(addprefix simplelink/,\
-	source/device.c \
-	source/driver.c \
-	source/flowcont.c \
-	source/fs.c \
-	source/netapp.c \
-	source/netcfg.c \
-	source/nonos.c \
-	source/socket.c \
-	source/spawn.c \
-	source/wlan.c \
 	cc_pal.c \
 	)
 
@@ -59,7 +62,7 @@ BOOT_STM_SRC_C = $(addprefix stmhal/,\
 	string0.c \
 	)
 	
-OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o)  $(BOOT_SL_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o) $(BOOT_MAIN_SRC_C:.c=.o))
+OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o)  $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o) $(BOOT_MAIN_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o) $(BOOT_STM_SRC_C:.c=.o))
 
 # Add the linker script
@@ -73,7 +76,7 @@ CFLAGS += $(BOOT_CPPDEFINES) $(BOOT_INC)
 
 
 # Disable strict aliasing for the simplelink driver
-$(BUILD)/simplelink/source/driver.o: CFLAGS += -fno-strict-aliasing
+$(BUILD)/drivers/cc3100/src/driver.o: CFLAGS += -fno-strict-aliasing
 
 # Check if we would like to debug the port code
 ifeq ($(BTYPE), release)

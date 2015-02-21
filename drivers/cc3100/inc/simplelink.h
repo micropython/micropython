@@ -367,9 +367,9 @@ typedef _i16   _SlReturnVal_t;
 /*****************************************************************************/
 
 #ifdef SL_PLATFORM_MULTI_THREADED
-    #include "../source/spawn.h"
+    #include "spawn.h"
 #else
-    #include "../source/nonos.h"
+    #include "nonos.h"
 #endif
 
 
@@ -378,7 +378,7 @@ typedef _i16   _SlReturnVal_t;
    objInclusion.h must be the last arrangement just before including the API header files 
    since it based on the other configurations to decide which object should be included 
 */
-#include "../source/objInclusion.h"
+#include "objInclusion.h"
 #include "trace.h"
 #include "fs.h"
 #include "socket.h"

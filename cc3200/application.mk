@@ -10,8 +10,8 @@ APP_INC += -Ihal
 APP_INC += -Ihal/inc
 APP_INC += -Imisc
 APP_INC += -Imods
+APP_INC += -I../drivers/cc3100/inc
 APP_INC += -Isimplelink
-APP_INC += -Isimplelink/include
 APP_INC += -Isimplelink/oslib
 APP_INC += -Itelnet
 APP_INC += -Iutil
@@ -98,15 +98,18 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybuart.c \
 	)
 
+APP_CC3100_SRC_C = $(addprefix drivers/cc3100/src/,\
+	device.c \
+	driver.c \
+	flowcont.c \
+	fs.c \
+	netapp.c \
+	netcfg.c \
+	socket.c \
+	wlan.c \
+	)
+
 APP_SL_SRC_C = $(addprefix simplelink/,\
-	source/device.c \
-	source/driver.c \
-	source/flowcont.c \
-	source/fs.c \
-	source/netapp.c \
-	source/netcfg.c \
-	source/socket.c \
-	source/wlan.c \
 	oslib/osi_freertos.c \
 	cc_pal.c \
 	) 
@@ -151,7 +154,7 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(APP_MODS_SRC_C:.c=.o) $(APP_SL_SRC_C:.c=.o) $(APP_TELNET_SRC_C:.c=.o) $(APP_UTIL_SRC_C:.c=.o) $(APP_UTIL_SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(APP_MODS_SRC_C:.c=.o) $(APP_CC3100_SRC_C:.c=.o) $(APP_SL_SRC_C:.c=.o) $(APP_TELNET_SRC_C:.c=.o) $(APP_UTIL_SRC_C:.c=.o) $(APP_UTIL_SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(APP_MAIN_SRC_C:.c=.o) $(APP_LIB_SRC_C:.c=.o) $(APP_STM_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins.o
 
@@ -163,7 +166,7 @@ LDFLAGS += -T $(LINKER_SCRIPT)
 CFLAGS += $(APP_CPPDEFINES) $(APP_INC)
 
 # Disable strict aliasing for the simplelink driver
-$(BUILD)/simplelink/source/driver.o: CFLAGS += -fno-strict-aliasing
+$(BUILD)/drivers/cc3100/src/driver.o: CFLAGS += -fno-strict-aliasing
 
 # Check if we would like to debug the port code
 ifeq ($(BTYPE), release)
