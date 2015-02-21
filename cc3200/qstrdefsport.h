@@ -162,7 +162,7 @@ Q(disable)
 
 // for SD class
 Q(SD)
-Q(config)
+Q(config_pins)
 Q(enable)
 Q(disable)
 
