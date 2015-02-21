@@ -96,26 +96,26 @@ bool pybsd_is_present(void) {
 STATIC mp_obj_t pybsd_config (mp_uint_t n_args, const mp_obj_t *args) {
     const pin_obj_t *pin = NULL;
 
-    pin = pin_find(args[0]);
+    pin = pin_find(args[1]);
     pybsd_pin_d0 = pin->pin_num;
-    pybsd_af_d0 = mp_obj_get_int(args[1]);
+    pybsd_af_d0 = mp_obj_get_int(args[2]);
     pin_verify_af (pybsd_af_d0);
-    pin = pin_find(args[2]);
+    pin = pin_find(args[3]);
     pybsd_pin_clk = pin->pin_num;
-    pybsd_af_clk = mp_obj_get_int(args[3]);
+    pybsd_af_clk = mp_obj_get_int(args[4]);
     pin_verify_af (pybsd_af_clk);
-    pin = pin_find(args[4]);
+    pin = pin_find(args[5]);
     pybsd_pin_cmd = pin->pin_num;
-    pybsd_af_cmd = mp_obj_get_int(args[5]);
+    pybsd_af_cmd = mp_obj_get_int(args[6]);
     pin_verify_af (pybsd_af_cmd);
-    if (n_args == 7) {
-        pybsd_pin_sd_detect = pin_find(args[6]);
+    if (n_args == 8) {
+        pybsd_pin_sd_detect = pin_find(args[7]);
     }
     pybsd_pin_config_set = true;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pybsd_config_obj, 6, 7, pybsd_config);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pybsd_config_obj, 7, 8, pybsd_config);
 
 STATIC mp_obj_t pybsd_enable(mp_obj_t self) {
     if (pybsd_pin_config_set) {
