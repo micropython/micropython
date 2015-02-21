@@ -45,7 +45,7 @@
 #define MICROPY_ERROR_REPORTING                     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_LONGINT_IMPL                        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
-#define MICROPY_OPT_COMPUTED_GOTO                   (1)
+#define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
 
 /* Enable FatFS LFNs
@@ -64,7 +64,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
-#define MICROPY_PY_SYS_EXIT                         (0)
+#define MICROPY_PY_SYS_EXIT                         (1)
 #define MICROPY_PY_SYS_STDFILES                     (1)
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
