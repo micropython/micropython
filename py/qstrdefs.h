@@ -76,7 +76,11 @@ Q(__le__)
 Q(__ge__)
 Q(__reversed__)
 #if MICROPY_PY_ALL_SPECIAL_METHODS
+Q(__mul__)
+Q(__truediv__)
+Q(__floordiv__)
 Q(__iadd__)
+Q(__isub__)
 #endif
 
 Q(micropython)
