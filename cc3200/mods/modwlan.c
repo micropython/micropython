@@ -735,30 +735,47 @@ STATIC mp_obj_t wlan_setpm(mp_obj_t self_in, mp_obj_t pm_mode) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(wlan_setpm_obj, wlan_setpm);
 
-/// \method connect(ssid, key=None, *, security=OPEN, bssid=None)
+/// \method connect(ssid, security=OPEN, key=None, bssid=None)
+//          if security is WPA/WPA2, the key must be a string
+///         if security is WEP, the key must be binary
 STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_key,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_security, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = SL_SEC_TYPE_OPEN} },
+        { MP_QSTR_key,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
+
+    // check for correct wlan mode
+    if (wlan_obj.mode != ROLE_STA && wlan_obj.mode != ROLE_P2P) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+    }
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // get ssid
+    // get the ssid
     mp_uint_t ssid_len;
     const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
 
-    // get key and sec
+    // get the security type
+    mp_uint_t sec = args[1].u_int;
+
+    // get key and its len
     mp_uint_t key_len = 0;
     const char *key = NULL;
-    mp_uint_t sec = SL_SEC_TYPE_OPEN;
-    if (args[1].u_obj != mp_const_none) {
-        key = mp_obj_str_get_data(args[1].u_obj, &key_len);
-        sec = args[2].u_int;
+    mp_buffer_info_t wepkey;
+    if (args[2].u_obj != mp_const_none) {
+        // wep key must be given as raw bytes
+        if (sec == SL_SEC_TYPE_WEP) {
+            mp_get_buffer_raise(args[2].u_obj, &wepkey, MP_BUFFER_READ);
+            key = wepkey.buf;
+            key_len = wepkey.len;
+        }
+        else {
+            key = mp_obj_str_get_data(args[2].u_obj, &key_len);
+        }
     }
 
     // get bssid
@@ -767,23 +784,22 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         bssid = mp_obj_str_get_str(args[3].u_obj);
     }
 
-    if (wlan_obj.mode != ROLE_STA) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
-    }
-    else {
-        if (GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION)) {
-            if (0 == sl_WlanDisconnect()) {
-                while (IS_CONNECTED(wlan_obj.status)) {
-                    HAL_Delay (5);
-                }
+    if (GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION)) {
+        if (0 == sl_WlanDisconnect()) {
+            while (IS_CONNECTED(wlan_obj.status)) {
+                HAL_Delay (5);
             }
         }
-        // connect to the requested access point
-        modwlan_Status_t status;
-        status = wlan_do_connect (ssid, ssid_len, bssid, sec, key, key_len);
-        if (status != MODWLAN_OK) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
-        }
+    }
+
+    // connect to the requested access point
+    modwlan_Status_t status;
+    status = wlan_do_connect (ssid, ssid_len, bssid, sec, key, key_len);
+    if (status == MODWLAN_ERROR_TIMEOUT) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+    }
+    else if (status == MODWLAN_ERROR_INVALID_PARAMS) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
     return mp_const_none;
@@ -812,12 +828,17 @@ STATIC mp_obj_t wlan_isconnected(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_isconnected_obj, wlan_isconnected);
 
 /// \method getip()
-/// Get the IP
-///
-///   - Returns the acquired IP address
+/// return the ip address or None if not connected
 ///
 STATIC mp_obj_t wlan_getip(mp_obj_t self_in) {
-    return mod_network_format_ipv4_addr ((uint8_t *)&wlan_obj.ip);
+    uint32_t ip;
+    wlan_get_ip (&ip);
+    if (ip) {
+        return mod_network_format_ipv4_addr ((uint8_t *)&ip);
+    }
+    else {
+        return mp_const_none;
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_getip_obj, wlan_getip);
 
