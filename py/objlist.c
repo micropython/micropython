@@ -390,7 +390,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t list_remove(mp_obj_t self_in, mp_obj_t value) {
+mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
     mp_obj_t args[] = {self_in, value};
     args[1] = list_index(2, args);
@@ -421,7 +421,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, list_remove);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, mp_obj_list_remove);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 1, mp_obj_list_sort);
 

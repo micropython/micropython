@@ -533,6 +533,7 @@ mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 struct _mp_obj_list_t;
 void mp_obj_list_init(struct _mp_obj_list_t *o, mp_uint_t n);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
+mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
 void mp_obj_list_set_len(mp_obj_t self_in, mp_uint_t len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
