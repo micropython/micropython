@@ -9,9 +9,12 @@ echo -n md5sum --binary $BUILD/application.bin | awk '{ print $1 }' > __md5hash.
 
 # Concatenate it with the application binary
 cat $BUILD/application.bin __md5hash.bin > $BUILD/MCUIMG.BIN
+RET=$?
 
 # Remove the tmp files
 rm -f __md5hash.bin
 
 # Remove hte unsigned binary
 rm -f $BUILD/application.bin
+
+exit $RET
