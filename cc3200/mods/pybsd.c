@@ -54,6 +54,7 @@ static byte pybsd_af_d0,  pybsd_af_clk,  pybsd_af_cmd;
 static const pin_obj_t   *pybsd_pin_sd_detect;
 static bool               pybsd_pin_config_set;
 static bool               pybsd_is_enabled;
+static bool               pybsd_in_path;
 static FATFS             *sd_fatfs;
 
 
@@ -141,14 +142,16 @@ STATIC mp_obj_t pybsd_enable(mp_obj_t self) {
     else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
+    pybsd_is_enabled = true;
 
     // try to mount the sd card on /SD
-    if (FR_OK == f_mount(sd_fatfs, "/SD", 1)) {
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
+    if (FR_OK != f_mount(sd_fatfs, "/SD", 1)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 
-    pybsd_is_enabled = true;
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
+    pybsd_in_path = true;
 
     return mp_const_none;
 }
@@ -159,10 +162,15 @@ STATIC mp_obj_t pybsd_disable(mp_obj_t self) {
         pybsd_is_enabled = false;
         // unmount the sd card
         f_mount (NULL, "/SD", 1);
+        // remove sd paths from mp_sys_path
+        if (pybsd_in_path) {
+            mp_obj_list_remove(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
+            mp_obj_list_remove(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
+            pybsd_in_path = false;
+        }
         // disable the peripheral
         MAP_PRCMPeripheralClkDisable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     }
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pybsd_disable_obj, pybsd_disable);
@@ -172,7 +180,6 @@ STATIC const mp_map_elem_t pybsd_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable),          (mp_obj_t)&pybsd_enable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable),         (mp_obj_t)&pybsd_disable_obj },
 };
-
 STATIC MP_DEFINE_CONST_DICT(pybsd_locals_dict, pybsd_locals_dict_table);
 
 static const mp_obj_type_t sdcard_type = {
