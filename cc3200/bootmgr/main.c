@@ -48,6 +48,7 @@
 #include "hash.h"
 #include "utils.h"
 #include "cc3200_hal.h"
+#include "debug.h"
 
 
 //*****************************************************************************

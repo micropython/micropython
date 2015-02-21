@@ -36,6 +36,7 @@
 #include "modwlan.h"
 #include "py/obj.h"
 #include "random.h"
+#include "debug.h"
 
 
 /******************************************************************************

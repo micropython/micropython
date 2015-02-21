@@ -37,7 +37,6 @@
 
 
 #include "simplelink.h"
-#include "debug.h"
 
 #ifndef __SIMPLELINK_TRACE_H__
 #define __SIMPLELINK_TRACE_H__
