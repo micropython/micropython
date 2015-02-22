@@ -371,6 +371,9 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
                 // if the device is in AP mode, we need to wait for this event
                 // before doing anything
                 while (!IS_IP_ACQUIRED(wlan_obj.status)) {
+                #ifndef SL_PLATFORM_MULTI_THREADED
+                    _SlTaskEntry();
+                #endif
                     HAL_Delay (5);
                 }
             }
@@ -386,6 +389,9 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
         // other return-codes
         if (0 == sl_WlanDisconnect()) {
             while (IS_CONNECTED (wlan_obj.status)) {
+            #ifndef SL_PLATFORM_MULTI_THREADED
+                _SlTaskEntry();
+            #endif
                 HAL_Delay (5);
             }
         }
@@ -516,7 +522,7 @@ void wlan_set_pm_policy (uint8_t policy) {
 void wlan_servers_stop (void) {
     servers_disable();
     do {
-        HAL_Delay (2);
+        HAL_Delay (5);
     } while (servers_are_enabled());
 }
 
@@ -553,9 +559,12 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
 
     if (0 == sl_WlanConnect((_i8*)ssid, ssid_len, (_u8*)bssid, &secParams, NULL)) {
 
-        // Wait for WLAN Event
+        // Wait for the WLAN Event
         uint32_t waitForConnectionMs = 0;
         while (!IS_CONNECTED(wlan_obj.status)) {
+        #ifndef SL_PLATFORM_MULTI_THREADED
+            _SlTaskEntry();
+        #endif
             HAL_Delay (5);
             if (++waitForConnectionMs >= MODWLAN_TIMEOUT_MS) {
                 return MODWLAN_ERROR_TIMEOUT;
@@ -777,6 +786,9 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     if (GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION)) {
         if (0 == sl_WlanDisconnect()) {
             while (IS_CONNECTED(wlan_obj.status)) {
+            #ifndef SL_PLATFORM_MULTI_THREADED
+                _SlTaskEntry();
+            #endif
                 HAL_Delay (5);
             }
         }
