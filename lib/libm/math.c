@@ -117,13 +117,6 @@ float log10f(float x) { return logf(x) / (float)_M_LN10; }
 
 float tanhf(float x) { return sinhf(x) / coshf(x); }
 
-// TODO we need import these functions from some library (eg musl or newlib)
-float tgammaf(float x) { return 0.0; }
-float lgammaf(float x) { return 0.0; }
-float erff(float x) { return 0.0; }
-float erfcf(float x) { return 0.0; }
-float ldexpf(float x, int exp) { return 0.0; }
-
 /*****************************************************************************/
 /*****************************************************************************/
 // __fpclassifyf from musl-0.9.15

@@ -78,11 +78,16 @@ SRC_LIB = $(addprefix lib/,\
 	libm/kf_cos.c \
 	libm/kf_tan.c \
 	libm/ef_rem_pio2.c \
+	libm/erf_lgamma.c \
 	libm/sf_sin.c \
 	libm/sf_cos.c \
 	libm/sf_tan.c \
 	libm/sf_frexp.c \
 	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/sf_erf.c \
+	libm/wf_lgamma.c \
+	libm/wf_tgamma.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
 	mp-readline/readline.c \
