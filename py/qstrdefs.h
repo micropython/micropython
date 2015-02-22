@@ -363,10 +363,12 @@ Q(frexp)
 Q(ldexp)
 Q(degrees)
 Q(radians)
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 Q(erf)
 Q(erfc)
 Q(gamma)
 Q(lgamma)
+#endif
 #endif
 
 #if MICROPY_PY_CMATH

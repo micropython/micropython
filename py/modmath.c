@@ -120,6 +120,7 @@ MATH_FUN_1_TO_BOOL(isnan, isnan)
 MATH_FUN_1_TO_INT(trunc, trunc)
 /// \function ldexp(x, exp)
 MATH_FUN_2(ldexp, ldexp)
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 /// \function erf(x)
 /// Return the error function of `x`.
 MATH_FUN_1(erf, erf)
@@ -132,6 +133,7 @@ MATH_FUN_1(gamma, tgamma)
 /// \function lgamma(x)
 /// return the natural logarithm of the gamma function of `x`.
 MATH_FUN_1(lgamma, lgamma)
+#endif
 //TODO: factorial, fsum
 
 // Functions that return a tuple
@@ -211,10 +213,12 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_trunc), (mp_obj_t)&mp_math_trunc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&mp_math_radians_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&mp_math_degrees_obj },
+    #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&mp_math_erf_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&mp_math_erfc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gamma), (mp_obj_t)&mp_math_gamma_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_lgamma), (mp_obj_t)&mp_math_lgamma_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_math_globals, mp_module_math_globals_table);
