@@ -120,6 +120,8 @@ typedef struct _wlan_obj_t {
 #define SL_STOP_TIMEOUT                 250
 
 #define WLAN_MAX_RX_SIZE                16000
+#define WLAN_MAX_TX_SIZE                1476
+
 
 #define MAKE_SOCKADDR(addr, ip, port)       sockaddr addr; \
                                             addr.sa_family = AF_INET; \
@@ -426,6 +428,7 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_AP_TX_POWER, sizeof(ucPower),
                                        (unsigned char *)&ucPower));
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SSID, ssid_len, (unsigned char *)ssid));
+            memcpy(wlan_obj.ssid_name, (unsigned char *)ssid, ssid_len);
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SECURITY_TYPE, sizeof(uint8_t), &sec));
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_PASSWORD, key_len, (unsigned char *)key));
             _u8*  country = (_u8*)"EU";
@@ -474,6 +477,12 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
         return MODWLAN_OK;
     }
     return MODWLAN_ERROR_INVALID_PARAMS;
+}
+
+void wlan_update(void) {
+#ifndef SL_PLATFORM_MULTI_THREADED
+    _SlTaskEntry();
+#endif
 }
 
 void wlan_sl_disable (void) {
@@ -823,6 +832,36 @@ STATIC mp_obj_t wlan_getip(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_getip_obj, wlan_getip);
 
+STATIC mp_obj_t wlan_urn (uint n_args, const mp_obj_t *args) {
+    char urn[MAX_DEVICE_URN_LEN];
+    uint8_t len = MAX_DEVICE_URN_LEN;
+
+    // an URN is given, so set it
+    if (n_args == 2) {
+        const char *p = mp_obj_str_get_str(args[1]);
+        uint8_t len = strlen(p);
+
+        // the call to sl_NetAppSet corrupts the input string URN=args[1], so we copy into a local buffer
+        if (len > MAX_DEVICE_URN_LEN) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+        strcpy(urn, p);
+
+        if (sl_NetAppSet(SL_NET_APP_DEVICE_CONFIG_ID, NETAPP_SET_GET_DEV_CONF_OPT_DEVICE_URN, len, (unsigned char *)urn) < 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        }
+    }
+    else {
+        // get the URN
+        if (sl_NetAppGet(SL_NET_APP_DEVICE_CONFIG_ID, NETAPP_SET_GET_DEV_CONF_OPT_DEVICE_URN, &len, (uint8_t *)urn) < 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        }
+        return mp_obj_new_str(urn, (len - 1), false);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
 
 /// \method wlan_netlist()
 /// Returns a list of tuples with all the acces points within range
@@ -886,16 +925,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(wlan_serversuserpass_obj, wlan_serversuserpass)
 
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getmode),             (mp_obj_t)&wlan_getmode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setpm),               (mp_obj_t)&wlan_setpm_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_mode),            (mp_obj_t)&wlan_getmode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_pm),              (mp_obj_t)&wlan_setpm_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),          (mp_obj_t)&wlan_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),         (mp_obj_t)&wlan_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getip),               (mp_obj_t)&wlan_getip_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_serversstart),        (mp_obj_t)&wlan_serversstart_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_serversstop),         (mp_obj_t)&wlan_serversstop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_areserversenabled),   (mp_obj_t)&wlan_areserversenabled_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_serversuserpass),     (mp_obj_t)&wlan_serversuserpass_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_is_connected),        (mp_obj_t)&wlan_isconnected_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_ip),              (mp_obj_t)&wlan_getip_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_start_servers),       (mp_obj_t)&wlan_serversstart_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop_servers),        (mp_obj_t)&wlan_serversstop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_are_servers_enabled), (mp_obj_t)&wlan_areserversenabled_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_servers_userpass),    (mp_obj_t)&wlan_serversuserpass_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_OPEN) },
