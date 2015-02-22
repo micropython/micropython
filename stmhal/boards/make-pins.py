@@ -282,6 +282,9 @@ class Pins(object):
             hdr_file.write('extern const pin_obj_t * const pin_adc1[];\n')
             hdr_file.write('extern const pin_obj_t * const pin_adc2[];\n')
             hdr_file.write('extern const pin_obj_t * const pin_adc3[];\n')
+            # provide #define's mapping board to cpu name
+            for named_pin in self.board_pins:
+                hdr_file.write("#define pyb_pin_{:s} pin_{:s}\n".format(named_pin.name(), named_pin.pin().cpu_pin_name()))
 
     def print_qstr(self, qstr_filename):
         with open(qstr_filename, 'wt') as qstr_file:
