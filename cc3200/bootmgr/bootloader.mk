@@ -89,6 +89,7 @@ CFLAGS += -DDEBUG=DEBUG
 # Optimize the stable sources only
 $(BUILD)/hal/%.o: CFLAGS += -Os
 $(BUILD)/simplelink/%.o: CFLAGS += -Os
+$(BUILD)/drivers/cc3100/%.o: CFLAGS += -Os
 $(BUILD)/py/%.o: CFLAGS += -Os
 $(BUILD)/stmhal/%.o: CFLAGS += -Os
 else
