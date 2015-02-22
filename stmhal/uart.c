@@ -457,6 +457,28 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         HAL_NVIC_EnableIRQ(self->irqn);
     }
 
+    // compute actual baudrate that was configured
+    // (this formula assumes UART_OVERSAMPLING_16)
+    uint32_t actual_baudrate;
+    if (self->uart.Instance == USART1 || self->uart.Instance == USART6) {
+        actual_baudrate = HAL_RCC_GetPCLK2Freq();
+    } else {
+        actual_baudrate = HAL_RCC_GetPCLK1Freq();
+    }
+    actual_baudrate /= self->uart.Instance->BRR;
+
+    // check we could set the baudrate within 5%
+    uint32_t baudrate_diff;
+    if (actual_baudrate > init->BaudRate) {
+        baudrate_diff = actual_baudrate - init->BaudRate;
+    } else {
+        baudrate_diff = init->BaudRate - actual_baudrate;
+    }
+    init->BaudRate = actual_baudrate; // remember actual baudrate for printing
+    if (20 * baudrate_diff > init->BaudRate) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate));
+    }
+
     return mp_const_none;
 }
 
