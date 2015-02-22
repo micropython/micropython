@@ -32,7 +32,6 @@
 #include MICROPY_HAL_H
 #include "mptask.h"
 #include "simplelink.h"
-#include "osi.h"
 #include "debug.h"
 
 /******************************************************************************

@@ -36,8 +36,6 @@
 #include "osi.h"
 
 
-#ifdef USE_FREERTOS
-
 //*****************************************************************************
 //
 //! \brief Application defined idle task hook
@@ -115,5 +113,3 @@ void vApplicationTickHook( void )
 {
     HAL_IncrementTick();
 }
-
-#endif //USE_FREERTOS

@@ -447,10 +447,8 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len) {
     int32_t retries = 0;
 
-#ifdef USE_FREERTOS
     // abort sending if we happen to be within interrupt context
-    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0) {
-#endif
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0) {
         do {
             _i16 result = sl_Send(sd, pBuf, len, 0);
             if (result > 0) {
@@ -461,11 +459,10 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
             }
             HAL_Delay (TELNET_WAIT_TIME_MS);
         } while (++retries <= TELNET_TX_RETRIES_MAX);
-#ifdef USE_FREERTOS
-    } else {
+    }
+    else {
         // TODO: blink the BLD
     }
-#endif
 
     return false;
 }

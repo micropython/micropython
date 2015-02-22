@@ -40,7 +40,7 @@
 #include "pybpin.h"
 #include "pybsd.h"
 #include "ff.h"
-#include "osi.h"
+#include "simplelink.h"
 #include "debug.h"
 #include "mpexception.h"
 

@@ -1,3 +1,29 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Daniel Campora
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include "std.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -11,34 +37,21 @@
 #include "prcm.h"
 #include "shamd5.h"
 #include "hash.h"
-
-#ifdef USE_FREERTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#endif
+#include "simplelink.h"
 
 
-#ifdef USE_FREERTOS
-static SemaphoreHandle_t xShamd5Semaphore = NULL;
-#endif
+static _SlLockObj_t hash_LockObj;
+
 
 void HASH_Init (void) {
     // Enable the Data Hashing and Transform Engine
     MAP_PRCMPeripheralClkEnable(PRCM_DTHE, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-#ifdef USE_FREERTOS
-    vSemaphoreCreateBinary(xShamd5Semaphore);
-#endif
+    sl_LockObjCreate(&hash_LockObj, "HashLock");
 }
 
-
-
 void HASH_SHAMD5Start (uint32_t algo, uint32_t blocklen) {
-
-#ifdef USE_FREERTOS
-    xSemaphoreTake (xShamd5Semaphore, portMAX_DELAY);
-#endif
-
+    sl_LockObjLock (&hash_LockObj, SL_OS_WAIT_FOREVER);
+    // reset the perihperal before starting any new operation
     MAP_PRCMPeripheralReset(PRCM_DTHE);
 
     // wait until the context is ready
@@ -62,11 +75,9 @@ void HASH_SHAMD5Update (uint8_t *data, uint32_t datalen) {
 }
 
 void HASH_SHAMD5Read (uint8_t *hash) {
-    // wait for the output to be ready.
+    // wait for the output to be ready
     while((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_OUTPUT_READY) == 0);
-    // read the result.
+    // read the result
     MAP_SHAMD5ResultRead(SHAMD5_BASE, hash);
-#ifdef USE_FREERTOS
-    xSemaphoreGive (xShamd5Semaphore);
-#endif
+    sl_LockObjUnlock (&hash_LockObj);
 }

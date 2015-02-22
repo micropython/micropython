@@ -59,12 +59,13 @@
 #include "pybi2c.h"
 #include "pybsd.h"
 #include "utils.h"
+#include "gccollect.h"
 
 
 #ifdef DEBUG
 extern OsiTaskHandle    mpTaskHandle;
 extern OsiTaskHandle    svTaskHandle;
-extern TaskHandle_t     xSimpleLinkSpawnTaskHndl;
+extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 #endif
 
 /// \module pyb - functions related to the pyboard

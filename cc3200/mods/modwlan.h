@@ -48,12 +48,7 @@ typedef enum
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
-#ifdef USE_FREERTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-extern SemaphoreHandle_t xWlanSemaphore;
-#endif
+extern _SlLockObj_t wlan_LockObj;
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS

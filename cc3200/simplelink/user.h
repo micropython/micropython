@@ -66,6 +66,7 @@ extern "C" {
   
 #include <string.h>  
 #include "cc_pal.h"
+#include "debug.h"
 
 /*!
 	\def		MAX_CONCURRENT_ACTIONS

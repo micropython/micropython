@@ -57,11 +57,6 @@
 #include <interrupt.h>
 #include <utils.h>
 
-//OSLib includes
-#if defined(SL_PLATFORM_MULTI_THREADED)
-#include <osi.h>
-#endif
-
 
 #define REG_INT_MASK_SET                0x400F7088
 #define REG_INT_MASK_CLR                0x400F708C

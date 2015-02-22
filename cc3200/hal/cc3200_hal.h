@@ -39,6 +39,9 @@
 #define HAL_SYSTICK_PERIOD_US               1000U
 #define UTILS_DELAY_US_TO_COUNT(us)         (((us) * HAL_FCPU_MHZ) / 3)
 
+#define HAL_NVIC_INT_CTRL_REG               (*((volatile uint32_t *) 0xE000ED04 ) )
+#define HAL_VECTACTIVE_MASK                 (0x1FUL)
+
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/

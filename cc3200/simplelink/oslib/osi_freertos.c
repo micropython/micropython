@@ -176,12 +176,7 @@ OsiReturnVal_e osi_SyncObjSignal(OsiSyncObj_t* pSyncObj)
 		return OSI_INVALID_PARAMS;
 	}
 
-    if(pdTRUE != xSemaphoreGive( *pSyncObj ))
-	{
-        //In case of Semaphore, you are expected to get this if multiple sem
-        // give is called before sem take
-        return OSI_OK;
-	}
+    xSemaphoreGive( *pSyncObj );
 	
     return OSI_OK;
 }

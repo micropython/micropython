@@ -43,7 +43,6 @@
 #include "gccollect.h"
 #include "gchelper.h"
 #include "readline.h"
-#include "osi.h"
 #include "mptask.h"
 #include "mperror.h"
 #include "simplelink.h"

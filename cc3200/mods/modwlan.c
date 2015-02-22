@@ -37,16 +37,9 @@
 #include "modwlan.h"
 #include "pybioctl.h"
 #include "pybuart.h"
-#include "osi.h"
 #include "debug.h"
 #include "serverstask.h"
 #include "mpexception.h"
-
-#ifdef USE_FREERTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#endif
 
 
 /******************************************************************************
@@ -88,7 +81,6 @@ typedef struct _wlan_obj_t {
     uint8_t         macAddr[SL_MAC_ADDR_LEN];
     uint8_t         ssid_name[33];
     uint8_t         bssid[6];
-    bool            servers_enabled;
 
     // IPVv4 data
     uint32_t        ip;
@@ -152,7 +144,7 @@ STATIC wlan_obj_t wlan_obj;
 /******************************************************************************
  DECLARE EXPORTED DATA
  ******************************************************************************/
-SemaphoreHandle_t xWlanSemaphore = NULL;
+OsiLockObj_t wlan_LockObj;
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -355,11 +347,7 @@ void wlan_init0 (void) {
     wlan_obj.mode = -1;
     wlan_obj.base.type = NULL;
     memset (wlan_obj.macAddr, 0, SL_MAC_ADDR_LEN);
-#ifdef USE_FREERTOS
-    if (NULL == xWlanSemaphore) {
-        xWlanSemaphore = xSemaphoreCreateBinary();
-    }
-#endif
+    ASSERT(OSI_OK == sl_LockObjCreate(&wlan_LockObj, "WlanLock"));
     wlan_initialize_data ();
 }
 
@@ -369,9 +357,7 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
     if (mode == ROLE_STA || mode == ROLE_AP || mode == ROLE_P2P) {
         if (wlan_obj.mode < 0) {
             wlan_obj.mode = sl_Start(0, 0, 0);
-            #ifdef USE_FREERTOS
-                xSemaphoreGive (xWlanSemaphore);
-            #endif
+            sl_LockObjUnlock (&wlan_LockObj);
         }
 
         // get the mac address
@@ -492,9 +478,7 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
 
 void wlan_sl_disable (void) {
     if (wlan_obj.mode >= 0) {
-    #ifdef USE_FREERTOS
-        xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
-    #endif
+        sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
         wlan_obj.mode = -1;
         sl_Stop(SL_STOP_TIMEOUT);
     }
@@ -543,14 +527,10 @@ STATIC void wlan_initialize_data (void) {
 STATIC void wlan_reenable (SlWlanMode_t mode) {
     // Stop and start again
     wlan_obj.mode = -1;
-#ifdef USE_FREERTOS
-    xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
-#endif
+    sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
     sl_Stop(SL_STOP_TIMEOUT);
     wlan_obj.mode = sl_Start(0, 0, 0);
-#ifdef USE_FREERTOS
-    xSemaphoreGive (xWlanSemaphore);
-#endif
+    sl_LockObjUnlock (&wlan_LockObj);
     ASSERT (wlan_obj.mode == mode);
 }
 
@@ -647,7 +627,8 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         SlWlanMode_t mode = mp_obj_get_int(args[0]);
 
         // Stop all other processes using the wlan engine
-        if ( (wlan_obj.servers_enabled = servers_are_enabled()) ) {
+        bool servers_enabled;
+        if ( (servers_enabled = servers_are_enabled()) ) {
             wlan_servers_stop();
         }
         if (mode == ROLE_AP) {
@@ -667,7 +648,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         }
 
         // Start the servers again
-        if (wlan_obj.servers_enabled) {
+        if (servers_enabled) {
             servers_enable ();
         }
     } else if (wlan_obj.mode < 0) {

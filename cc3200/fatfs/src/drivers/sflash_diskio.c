@@ -10,12 +10,6 @@
 #include "debug.h"
 #include "modwlan.h"
 
-#ifdef USE_FREERTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#endif
-
 #define SFLASH_TIMEOUT_MAX_MS               5500
 #define SFLASH_WAIT_TIME_MS                 5
 
@@ -38,18 +32,15 @@ static bool sflash_access (_u32 mode, _i32 (* sl_FsFunction)(_i32 FileHdl, _u32 
     bool retval = false;
 
     // wlan must be enabled in order to access the serial flash
-#ifdef USE_FREERTOS
-    xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
-#endif
+    sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
+
     if (0 == sl_FsOpen(sflash_block_name, mode, NULL, &fileHandle)) {
         if (SFLASH_BLOCK_SIZE == sl_FsFunction (fileHandle, 0, sflash_block_cache, SFLASH_BLOCK_SIZE)) {
             retval = true;
         }
         sl_FsClose (fileHandle, NULL, NULL, 0);
     }
-#ifdef USE_FREERTOS
-    xSemaphoreGive (xWlanSemaphore);
-#endif
+    sl_LockObjUnlock (&wlan_LockObj);
     return retval;
 }
 
@@ -64,16 +55,12 @@ DRESULT sflash_disk_init (void) {
         // Proceed to format the memory if not done yet
         for (int i = 0; i < SFLASH_BLOCK_COUNT; i++) {
             print_block_name (i);
-        #ifdef USE_FREERTOS
-            xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
-        #endif
+            sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
             // Create the block file if it doesn't exist
             if (sl_FsGetInfo(sflash_block_name, 0, &FsFileInfo) < 0) {
                 if (!sl_FsOpen(sflash_block_name, FS_MODE_OPEN_CREATE(SFLASH_BLOCK_SIZE, 0), NULL, &fileHandle)) {
                     sl_FsClose(fileHandle, NULL, NULL, 0);
-                #ifdef USE_FREERTOS
-                    xSemaphoreGive (xWlanSemaphore);
-                #endif
+                    sl_LockObjUnlock (&wlan_LockObj);
                     memset(sflash_block_cache, 0xFF, SFLASH_BLOCK_SIZE);
                     if (!sflash_access(FS_MODE_OPEN_WRITE, sl_FsWrite)) {
                         return RES_ERROR;
@@ -81,15 +68,11 @@ DRESULT sflash_disk_init (void) {
                 }
                 else {
                     // Unexpected failure while creating the file
-                #ifdef USE_FREERTOS
-                    xSemaphoreGive (xWlanSemaphore);
-                #endif
+                    sl_LockObjUnlock (&wlan_LockObj);
                     return RES_ERROR;
                 }
             }
-        #ifdef USE_FREERTOS
-            xSemaphoreGive (xWlanSemaphore);
-        #endif
+            sl_LockObjUnlock (&wlan_LockObj);
         }
         sflash_init_done = true;
         sflash_prblock = UINT32_MAX;

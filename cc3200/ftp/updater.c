@@ -60,9 +60,7 @@ bool updater_check_path (void *path) {
 bool updater_start (void) {
     _u32 AccessModeAndMaxSize = FS_MODE_OPEN_WRITE;
     SlFsFileInfo_t FsFileInfo;
-#ifdef USE_FREERTOS
-    xSemaphoreTake (xWlanSemaphore, portMAX_DELAY);
-#endif
+    sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
     if (0 != sl_FsGetInfo((_u8 *)updater_data.path, 0, &FsFileInfo)) {
         // file doesn't exist, create it
         AccessModeAndMaxSize = FS_MODE_OPEN_CREATE(updater_data.fsize, 0);
@@ -71,9 +69,7 @@ bool updater_start (void) {
         updater_data.foffset = 0;
         return true;
     }
-#ifdef USE_FREERTOS
-    xSemaphoreGive (xWlanSemaphore);
-#endif
+    sl_LockObjUnlock (&wlan_LockObj);
     return false;
 }
 
@@ -115,7 +111,5 @@ void updater_finnish (void) {
         }
     }
     updater_data.fhandle = -1;
-#ifdef USE_FREERTOS
-    xSemaphoreGive (xWlanSemaphore);
-#endif
+    sl_LockObjUnlock (&wlan_LockObj);
 }

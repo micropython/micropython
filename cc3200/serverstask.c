@@ -30,7 +30,6 @@
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/misc.h"
-#include "osi.h"
 #include "simplelink.h"
 #include "serverstask.h"
 #include "modwlan.h"
