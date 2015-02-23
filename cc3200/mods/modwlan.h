@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SIMPLELINKTASK_H_
-#define SIMPLELINKTASK_H_
+#ifndef MODWLAN_H_
+#define MODWLAN_H_
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -63,4 +63,4 @@ extern void wlan_get_ip (uint32_t *ip);
 extern void wlan_set_pm_policy (uint8_t policy);
 extern void wlan_stop_servers (void);
 
-#endif /* SIMPLELINKTASK_H_ */
+#endif /* MODWLAN_H_ */

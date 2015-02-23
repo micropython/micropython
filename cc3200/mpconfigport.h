@@ -161,5 +161,7 @@ typedef long            mp_off_t;
 
 #define MICROPY_HAL_H                               "cc3200_hal.h"
 #define MICROPY_PIN_DEFS_PORT_H                     "pin_defs_cc3200.h"
+#define MICROPY_PORT_HAS_TELNET                     (1)
+#define MICROPY_PORT_HAS_FTP                        (1)
 
 #endif // __INCLUDED_MPCONFIGPORT_H

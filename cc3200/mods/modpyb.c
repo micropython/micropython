@@ -76,8 +76,10 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 /// Resets the pyboard in a manner similar to pushing the external RESET
 /// button.
 STATIC mp_obj_t pyb_hard_reset(void) {
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     // disable wlan services
     wlan_stop_servers();
+#endif
     wlan_stop();
     // perform a SoC reset
     PRCMSOCReset();

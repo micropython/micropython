@@ -36,9 +36,10 @@
 #include "modnetwork.h"
 #include "modwlan.h"
 #include "pybioctl.h"
-#include "pybuart.h"
 #include "debug.h"
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 #include "serverstask.h"
+#endif
 #include "mpexception.h"
 
 
@@ -78,15 +79,18 @@ typedef struct _wlan_obj_t {
     mp_obj_base_t   base;
     SlWlanMode_t    mode;
     uint32_t        status;
+
+    uint32_t        ip;
+    uint32_t        gateway;
+    uint32_t        dns;
+
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+    bool            servers_enabled;
+#endif
     uint8_t         security;
     uint8_t         mac[SL_MAC_ADDR_LEN];
     uint8_t         ssid[33];
     uint8_t         bssid[6];
-
-    // IPVv4 data
-    uint32_t        ip;
-    uint32_t        gateway;
-    uint32_t        dns;
 
 } wlan_obj_t;
 
@@ -140,12 +144,12 @@ typedef struct _wlan_obj_t {
                                             ip[3] = addr.sa_data[5];
 
 /******************************************************************************
- DECLARE PUBLIC DATA
+ DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC wlan_obj_t wlan_obj;
 
 /******************************************************************************
- DECLARE EXPORTED DATA
+ DECLARE PUBLIC DATA
  ******************************************************************************/
 OsiLockObj_t wlan_LockObj;
 
@@ -203,10 +207,10 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
             // If the user has initiated the 'Disconnect' request,
             //'reason_code' is SL_USER_INITIATED_DISCONNECTION
             if (SL_USER_INITIATED_DISCONNECTION == pEventData->reason_code) {
-
+                // TODO ...
             }
             else {
-
+                // TODO: Maybe trow an exception?
             }
             memset(wlan_obj.ssid, 0, sizeof(wlan_obj.ssid));
             memset(wlan_obj.bssid, 0, sizeof(wlan_obj.bssid));
@@ -496,6 +500,12 @@ void wlan_update(void) {
 // call this function to disable the complete WLAN subsystem in order to save power
 void wlan_stop (void) {
     if (wlan_obj.mode >= 0) {
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+        // Stop all other processes using the wlan engine
+        if ((wlan_obj.servers_enabled = servers_are_enabled())) {
+            wlan_stop_servers();
+        }
+#endif
         sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
         wlan_obj.mode = -1;
         sl_Stop(SL_STOP_TIMEOUT);
@@ -508,6 +518,12 @@ void wlan_start (void) {
     if (wlan_obj.mode < 0) {
         wlan_obj.mode = sl_Start(0, 0, 0);
         sl_LockObjUnlock (&wlan_LockObj);
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+        // Start the servers again
+        if (wlan_obj.servers_enabled) {
+            servers_enable();
+        }
+#endif
     }
 }
 
@@ -532,10 +548,12 @@ void wlan_set_pm_policy (uint8_t policy) {
 }
 
 void wlan_stop_servers (void) {
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     servers_disable();
     do {
         HAL_Delay (5);
     } while (servers_are_enabled());
+#endif
 }
 
 //*****************************************************************************
@@ -657,11 +675,12 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         // Get the mode
         SlWlanMode_t mode = mp_obj_get_int(args[0]);
 
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Stop all other processes using the wlan engine
-        bool servers_enabled;
-        if ( (servers_enabled = servers_are_enabled()) ) {
+        if ((wlan_obj.servers_enabled = servers_are_enabled())) {
             wlan_stop_servers();
         }
+#endif
         if (mode == ROLE_AP) {
             // start the peripheral
             mp_map_t kw_args;
@@ -677,11 +696,12 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
         }
-
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Start the servers again
-        if (servers_enabled) {
-            servers_enable ();
+        if (wlan_obj.servers_enabled) {
+            servers_enable();
         }
+#endif
     } else if (wlan_obj.mode < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
     }
@@ -928,6 +948,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 STATIC mp_obj_t wlan_serversstart(mp_obj_t self_in) {
     servers_enable();
     return mp_const_none;
@@ -952,6 +973,7 @@ STATIC mp_obj_t wlan_serversuserpass(mp_obj_t self_in, mp_obj_t user, mp_obj_t p
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(wlan_serversuserpass_obj, wlan_serversuserpass);
+#endif
 
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
@@ -962,10 +984,12 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),         (mp_obj_t)&wlan_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),            (mp_obj_t)&wlan_ifconfig_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     { MP_OBJ_NEW_QSTR(MP_QSTR_start_servers),       (mp_obj_t)&wlan_serversstart_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop_servers),        (mp_obj_t)&wlan_serversstop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_servers_enabled),     (mp_obj_t)&wlan_serversenabled_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_servers_userpass),    (mp_obj_t)&wlan_serversuserpass_obj },
+#endif
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_OPEN) },
