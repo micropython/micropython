@@ -322,9 +322,9 @@ STATIC void UART1IntHandler(void) {
 STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
     if (!self->enabled) {
-        print(env, "UART(%u)", self->uart_id);
+        print(env, "<UART%u>", self->uart_id);
     } else {
-        print(env, "UART(%u, baudrate=%u, bits=", self->uart_id, self->baudrate);
+        print(env, "<UART%u baudrate=%u, bits=", self->uart_id, self->baudrate);
         switch (self->config & UART_CONFIG_WLEN_MASK) {
         case UART_CONFIG_WLEN_5:
             print(env, "5");
@@ -346,7 +346,7 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
         } else {
             print(env, ", parity=%u", (self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_EVEN ? 0 : 1);
         }
-        print(env, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u)",
+        print(env, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u>",
               (self->config & UART_CONFIG_STOP_MASK) == UART_CONFIG_STOP_ONE ? 1 : 2,
                self->timeout, self->timeout_char, self->read_buf_len);
     }
