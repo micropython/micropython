@@ -782,7 +782,7 @@ syntax_error:
         // debugging: print the rule name that failed and the token
         printf("rule: %s\n", rule->rule_name);
 #if MICROPY_DEBUG_PRINTERS
-        mp_token_show(lex);
+        mp_lexer_show_token(lex);
 #endif
 #endif
     }
