@@ -686,6 +686,7 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
         prev_chan->next = NULL;
     }
 
+    self->tim.State = HAL_TIM_STATE_RESET;
     self->tim.Instance->CCER = 0x0000; // disable all capture/compare outputs
     self->tim.Instance->CR1 = 0x0000; // disable the timer and reset its state
 
