@@ -249,7 +249,11 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
   //MP_DEFINE_EXCEPTION(SystemError, Exception)
   MP_DEFINE_EXCEPTION(TypeError, Exception)
   MP_DEFINE_EXCEPTION(ValueError, Exception)
-    //TODO: Implement UnicodeErrors which take arguments
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+    MP_DEFINE_EXCEPTION_BASE(ValueError)
+    MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
+    //TODO: Implement more UnicodeError subclasses which take arguments
+#endif
   /*
   MP_DEFINE_EXCEPTION(Warning, Exception)
     MP_DEFINE_EXCEPTION_BASE(Warning)

@@ -137,6 +137,9 @@ Q(TypeError)
 Q(UnboundLocalError)
 Q(ValueError)
 Q(ZeroDivisionError)
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+Q(UnicodeError)
+#endif
 
 Q(None)
 Q(False)
