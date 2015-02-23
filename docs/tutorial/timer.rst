@@ -26,12 +26,14 @@ it's not yet initialised.  So let's initialise it to trigger at 10 Hz
 Now that it's initialised, we can see some information about the timer::
 
     >>> tim
-    Timer(4, prescaler=255, period=32811, mode=0, div=0)
+    Timer(4, prescaler=624, period=13439, mode=UP, div=1)
 
 The information means that this timer is set to run at the peripheral
-clock speed divided by 255, and it will count up to 32811, at which point
-it triggers an interrupt, and then starts counting again from 0.  These
-numbers are set to make the timer trigger at 10 Hz.
+clock speed divided by 624+1, and it will count from 0 up to 13439, at which
+point it triggers an interrupt, and then starts counting again from 0.  These
+numbers are set to make the timer trigger at 10 Hz: the source frequency
+of the timer is 84MHz (found by running ``tim.source_freq()``) so we
+get 84MHz / 625 / 13440 = 10Hz.
 
 Timer counter
 -------------
