@@ -77,8 +77,8 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 /// button.
 STATIC mp_obj_t pyb_hard_reset(void) {
     // disable wlan services
-    wlan_servers_stop();
-    wlan_sl_disable();
+    wlan_stop_servers();
+    wlan_stop();
     // perform a SoC reset
     PRCMSOCReset();
     return mp_const_none;

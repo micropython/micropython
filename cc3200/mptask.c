@@ -232,8 +232,8 @@ soft_reset_exit:
     printf("PYB: soft reboot\n");
 
     // disable wlan services
-    wlan_servers_stop();
-    wlan_sl_disable();
+    wlan_stop_servers();
+    wlan_stop();
 
     // wait for all bus transfers to complete
     HAL_Delay(50);
