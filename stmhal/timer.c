@@ -648,16 +648,16 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
         default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d does not exist", tim->tim_id));
     }
 
+    // set the global variable for interrupt callbacks
+    if (tim->tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
+        MP_STATE_PORT(pyb_timer_obj_all)[tim->tim_id - 1] = tim;
+    }
+
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
         pyb_timer_init_helper(tim, n_args - 1, args + 1, &kw_args);
-    }
-
-    // set the global variable for interrupt callbacks
-    if (tim->tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
-        MP_STATE_PORT(pyb_timer_obj_all)[tim->tim_id - 1] = tim;
     }
 
     return (mp_obj_t)tim;
@@ -1043,9 +1043,9 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         self->callback = mp_const_none;
     } else if (mp_obj_is_callable(callback)) {
         self->callback = callback;
-        HAL_NVIC_EnableIRQ(self->irqn);
         // start timer, so that it interrupts on overflow
         HAL_TIM_Base_Start_IT(&self->tim);
+        HAL_NVIC_EnableIRQ(self->irqn);
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
     }
