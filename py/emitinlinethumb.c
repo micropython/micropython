@@ -308,6 +308,39 @@ STATIC const cc_name_t cc_name_table[] = {
     { ASM_THUMB_CC_LE, "le" },
 };
 
+typedef struct _format_4_op_t { byte op; char name[3]; } format_4_op_t;
+#define X(x) (((x) >> 4) & 0xff) // only need 1 byte to distinguish these ops
+STATIC const format_4_op_t format_4_op_table[] = {
+    { X(ASM_THUMB_FORMAT_4_EOR), "eor" },
+    { X(ASM_THUMB_FORMAT_4_LSL), "lsl" },
+    { X(ASM_THUMB_FORMAT_4_LSR), "lsr" },
+    { X(ASM_THUMB_FORMAT_4_ASR), "asr" },
+    { X(ASM_THUMB_FORMAT_4_ADC), "adc" },
+    { X(ASM_THUMB_FORMAT_4_SBC), "sbc" },
+    { X(ASM_THUMB_FORMAT_4_ROR), "ror" },
+    { X(ASM_THUMB_FORMAT_4_TST), "tst" },
+    { X(ASM_THUMB_FORMAT_4_NEG), "neg" },
+    { X(ASM_THUMB_FORMAT_4_CMP), "cmp" },
+    { X(ASM_THUMB_FORMAT_4_CMN), "cmn" },
+    { X(ASM_THUMB_FORMAT_4_ORR), "orr" },
+    { X(ASM_THUMB_FORMAT_4_MUL), "mul" },
+    { X(ASM_THUMB_FORMAT_4_BIC), "bic" },
+    { X(ASM_THUMB_FORMAT_4_MVN), "mvn" },
+};
+#undef X
+
+typedef struct _format_9_10_op_t { uint16_t op; char name[5]; } format_9_10_op_t;
+#define X(x) (x)
+STATIC const format_9_10_op_t format_9_10_op_table[] = {
+    { X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), "ldr" },
+    { X(ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), "ldrb" },
+    { X(ASM_THUMB_FORMAT_10_LDRH), "ldrh" },
+    { X(ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_WORD_TRANSFER), "str" },
+    { X(ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER), "strb" },
+    { X(ASM_THUMB_FORMAT_10_STRH), "strh" },
+};
+#undef X
+
 STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
@@ -421,29 +454,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_uint_t reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
                 asm_thumb_mov_reg_reg(emit->as, reg_dest, reg_src);
-            } else if (strcmp(op_str, "and_") == 0) {
-                op_code = ASM_THUMB_FORMAT_4_AND;
-                mp_uint_t reg_dest, reg_src;
-                op_format_4:
-                reg_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
-                reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
-                asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
-            // TODO probably uses less ROM if these ops are in a lookup table
-            } else if (strcmp(op_str, "eor") == 0) { op_code = ASM_THUMB_FORMAT_4_EOR; goto op_format_4;
-            } else if (strcmp(op_str, "lsl") == 0) { op_code = ASM_THUMB_FORMAT_4_LSL; goto op_format_4;
-            } else if (strcmp(op_str, "lsr") == 0) { op_code = ASM_THUMB_FORMAT_4_LSR; goto op_format_4;
-            } else if (strcmp(op_str, "asr") == 0) { op_code = ASM_THUMB_FORMAT_4_ASR; goto op_format_4;
-            } else if (strcmp(op_str, "adc") == 0) { op_code = ASM_THUMB_FORMAT_4_ADC; goto op_format_4;
-            } else if (strcmp(op_str, "sbc") == 0) { op_code = ASM_THUMB_FORMAT_4_SBC; goto op_format_4;
-            } else if (strcmp(op_str, "ror") == 0) { op_code = ASM_THUMB_FORMAT_4_ROR; goto op_format_4;
-            } else if (strcmp(op_str, "tst") == 0) { op_code = ASM_THUMB_FORMAT_4_TST; goto op_format_4;
-            } else if (strcmp(op_str, "neg") == 0) { op_code = ASM_THUMB_FORMAT_4_NEG; goto op_format_4;
-            } else if (strcmp(op_str, "cmp") == 0) { op_code = ASM_THUMB_FORMAT_4_CMP; goto op_format_4;
-            } else if (strcmp(op_str, "cmn") == 0) { op_code = ASM_THUMB_FORMAT_4_CMN; goto op_format_4;
-            } else if (strcmp(op_str, "orr") == 0) { op_code = ASM_THUMB_FORMAT_4_ORR; goto op_format_4;
-            } else if (strcmp(op_str, "mul") == 0) { op_code = ASM_THUMB_FORMAT_4_MUL; goto op_format_4;
-            } else if (strcmp(op_str, "bic") == 0) { op_code = ASM_THUMB_FORMAT_4_BIC; goto op_format_4;
-            } else if (strcmp(op_str, "mvn") == 0) { op_code = ASM_THUMB_FORMAT_4_MVN; goto op_format_4;
             } else if (strcmp(op_str, "clz") == 0) {
                 op_code_hi = 0xfab0;
                 op_code = 0xf080;
@@ -457,6 +467,21 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code = 0xf0a0;
                 goto op_clz_rbit;
             } else {
+                if (strcmp(op_str, "and_") == 0) {
+                    op_code = ASM_THUMB_FORMAT_4_AND;
+                    mp_uint_t reg_dest, reg_src;
+                    op_format_4:
+                    reg_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+                    reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
+                    asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
+                }
+                // search table
+                for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_4_op_table); i++) {
+                    if (strncmp(op_str, format_4_op_table[i].name, 3) == 0 && op_str[3] == '\0') {
+                        op_code = 0x4000 | (format_4_op_table[i].op << 4);
+                        goto op_format_4;
+                    }
+                }
                 goto unknown_op;
             }
         } else {
@@ -493,38 +518,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_movw_reg_i16(emit->as, reg_dest, i_src & 0xffff);
                 asm_thumb_movt_reg_i16(emit->as, reg_dest, (i_src >> 16) & 0x7fff);
-            } else if (strcmp(op_str, "ldr") == 0) {
-                op_code = ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_WORD_TRANSFER;
-                mp_uint_t rlo_dest, rlo_base, i5;
-                mp_parse_node_t pn_base, pn_offset;
-                op_format_9_10:
-                rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
-                if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
-                    rlo_base = get_arg_reg(emit, op_str, pn_base, 7);
-                    if (op_code & ASM_THUMB_FORMAT_9_BYTE_TRANSFER) {
-                        i5 = get_arg_i(emit, op_str, pn_offset, 0x1f);
-                    } else if (op_code & ASM_THUMB_FORMAT_10_STRH) { // also catches LDRH
-                        i5 = get_arg_i(emit, op_str, pn_offset, 0x3e) >> 1;
-                    } else {
-                        i5 = get_arg_i(emit, op_str, pn_offset, 0x7c) >> 2;
-                    }
-                    asm_thumb_format_9_10(emit->as, op_code, rlo_dest, rlo_base, i5);
-                }
-            } else if (strcmp(op_str, "ldrb") == 0) {
-                op_code = ASM_THUMB_FORMAT_9_LDR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER;
-                goto op_format_9_10;
-            } else if (strcmp(op_str, "ldrh") == 0) {
-                op_code = ASM_THUMB_FORMAT_10_LDRH;
-                goto op_format_9_10;
-            } else if (strcmp(op_str, "str") == 0) {
-                op_code = ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_WORD_TRANSFER;
-                goto op_format_9_10;
-            } else if (strcmp(op_str, "strb") == 0) {
-                op_code = ASM_THUMB_FORMAT_9_STR | ASM_THUMB_FORMAT_9_BYTE_TRANSFER;
-                goto op_format_9_10;
-            } else if (strcmp(op_str, "strh") == 0) {
-                op_code = ASM_THUMB_FORMAT_10_STRH;
-                goto op_format_9_10;
             } else if (strcmp(op_str, "ldrex") == 0) {
                 mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_parse_node_t pn_base, pn_offset;
@@ -534,6 +527,28 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     asm_thumb_op32(emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
                 }
             } else {
+                // search table for ldr/str instructions
+                for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_9_10_op_table); i++) {
+                    if (strcmp(op_str, format_9_10_op_table[i].name) == 0) {
+                        op_code = format_9_10_op_table[i].op;
+                        mp_parse_node_t pn_base, pn_offset;
+                        mp_uint_t rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+                        if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
+                            mp_uint_t rlo_base = get_arg_reg(emit, op_str, pn_base, 7);
+                            mp_uint_t i5;
+                            if (op_code & ASM_THUMB_FORMAT_9_BYTE_TRANSFER) {
+                                i5 = get_arg_i(emit, op_str, pn_offset, 0x1f);
+                            } else if (op_code & ASM_THUMB_FORMAT_10_STRH) { // also catches LDRH
+                                i5 = get_arg_i(emit, op_str, pn_offset, 0x3e) >> 1;
+                            } else {
+                                i5 = get_arg_i(emit, op_str, pn_offset, 0x7c) >> 2;
+                            }
+                            asm_thumb_format_9_10(emit->as, op_code, rlo_dest, rlo_base, i5);
+                            return;
+                        }
+                        break;
+                    }
+                }
                 goto unknown_op;
             }
         }
