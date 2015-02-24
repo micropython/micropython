@@ -474,6 +474,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     reg_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
                     reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
                     asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
+                    return;
                 }
                 // search table for ALU ops
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_4_op_table); i++) {
