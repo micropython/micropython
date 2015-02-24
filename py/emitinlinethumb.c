@@ -475,7 +475,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
                     asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
                 }
-                // search table
+                // search table for ALU ops
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_4_op_table); i++) {
                     if (strncmp(op_str, format_4_op_table[i].name, 3) == 0 && op_str[3] == '\0') {
                         op_code = 0x4000 | (format_4_op_table[i].op << 4);
@@ -504,13 +504,15 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code = ASM_THUMB_FORMAT_3_SUB;
                 goto op_format_3;
             } else if (strcmp(op_str, "movw") == 0) {
-                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                op_code = ASM_THUMB_OP_MOVW;
+                mp_uint_t reg_dest;
+                op_movw_movt:
+                reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
-                asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVW, reg_dest, i_src);
+                asm_thumb_mov_reg_i16(emit->as, op_code, reg_dest, i_src);
             } else if (strcmp(op_str, "movt") == 0) {
-                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
-                int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
-                asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVT, reg_dest, i_src);
+                op_code = ASM_THUMB_OP_MOVT;
+                goto op_movw_movt;
             } else if (strcmp(op_str, "movwt") == 0) {
                 // this is a convenience instruction
                 // we clear the MSB since it might be set from extracting the small int value
