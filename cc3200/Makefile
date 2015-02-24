@@ -5,15 +5,15 @@ ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
 
+BTYPE ?= release
+
 # If the build directory is not given, make it reflect the board name.
-BUILD ?= build/$(BOARD)
+BUILD ?= build/$(BOARD)/$(BTYPE)
 
 include ../py/mkenv.mk
 -include ../../localconfig.mk
 
 CROSS_COMPILE ?= arm-none-eabi-
-
-BTYPE ?= release
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -march=armv7e-m -mabi=aapcs -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
