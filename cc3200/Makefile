@@ -7,7 +7,7 @@ endif
 
 BTYPE ?= release
 
-# If the build directory is not given, make it reflect the board name.
+# If the build directory is not given, make it reflect BOARD/BTYPE
 BUILD ?= build/$(BOARD)/$(BTYPE)
 
 include ../py/mkenv.mk
