@@ -16,9 +16,9 @@ code-base, including project-wide name changes and API changes.
 
 Micro Python implements the entire Python 3.4 syntax (including exceptions,
 "with", "yield from", etc.).  The following core datatypes are provided:
-str (no Unicode support yet), bytes, bytearray, tuple, list, dict, set,
-array.array, collections.namedtuple, classes and instances.  Builtin
-modules include sys, time, and struct.  Note that only subset of
+str (including basic Unicode support), bytes, bytearray, tuple, list, dict,
+set, frozenset, array.array, collections.namedtuple, classes and instances.
+Builtin modules include sys, time, and struct.  Note that only subset of
 Python 3.4 functionality implemented for the data types and modules.
 
 See the repository www.github.com/micropython/pyboard for the Micro
