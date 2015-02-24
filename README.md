@@ -9,11 +9,10 @@ The Micro Python project
 </p>
 
 This is the Micro Python project, which aims to put an implementation
-of Python 3.x on a microcontroller.
+of Python 3.x on microcontrollers and small embedded systems.
 
-WARNING: this project is in early beta stage and is subject to large
-changes of the code-base, including project-wide name changes and API
-changes.
+WARNING: this project is in beta stage and is subject to changes of the
+code-base, including project-wide name changes and API changes.
 
 Micro Python implements the entire Python 3.4 syntax (including exceptions,
 "with", "yield from", etc.).  The following core datatypes are provided:
