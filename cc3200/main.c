@@ -32,6 +32,7 @@
 #include MICROPY_HAL_H
 #include "mptask.h"
 #include "simplelink.h"
+#include "pybwdt.h"
 #include "debug.h"
 
 /******************************************************************************
@@ -61,6 +62,9 @@ int main (void) {
 
     // Initialize the clocks and the interrupt system
     HAL_SystemInit();
+
+    // Start the watchdog
+    pybwdt_init0();
 
 #ifdef DEBUG
     ASSERT (OSI_OK == osi_TaskCreate(TASK_Micropython,

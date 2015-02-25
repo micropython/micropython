@@ -50,6 +50,7 @@
 #include "rom_map.h"
 #include "inc/hw_types.h"
 #include "interrupt.h"
+#include "pybwdt.h"
 
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 //Local function definition
@@ -59,7 +60,7 @@ QueueHandle_t xSimpleLinkSpawnQueue = NULL;
 TaskHandle_t xSimpleLinkSpawnTaskHndl = NULL;
 // Queue size 
 #define slQUEUE_SIZE				( 3 )
-
+#define SL_SPAWN_MAX_WAIT_MS        ( 200 )
 
 /*!
 	\brief 	This function registers an interrupt in NVIC table
@@ -494,11 +495,13 @@ void vSimpleLinkSpawnTask(void *pvParameters)
 
 	for(;;)
 	{
-		ret = xQueueReceive( xSimpleLinkSpawnQueue, &Msg, portMAX_DELAY );
+		ret = xQueueReceive( xSimpleLinkSpawnQueue, &Msg, SL_SPAWN_MAX_WAIT_MS);
 		if(ret == pdPASS)
 		{
 				Msg.pEntry(Msg.pValue);
 		}
+        // set the alive flag for the wdt
+        pybwdt_sl_alive();
 	}
 }
 

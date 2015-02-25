@@ -34,6 +34,7 @@
 #include "inc/hw_memmap.h"
 #include "pybuart.h"
 #include "osi.h"
+#include "pybwdt.h"
 
 
 //*****************************************************************************
@@ -45,10 +46,11 @@
 //! \return none
 //!
 //*****************************************************************************
-void
-vApplicationIdleHook( void)
+void vApplicationIdleHook (void)
 {
-    //Handle Idle Hook for Profiling, Power Management etc
+    // kick the watchdog
+    pybwdt_kick();
+    // gate the processor clock to save power
     __WFI();
 }
 
@@ -61,7 +63,7 @@ vApplicationIdleHook( void)
 //! \return none
 //!
 //*****************************************************************************
-void vApplicationMallocFailedHook()
+void vApplicationMallocFailedHook (void)
 {
 #ifdef DEBUG
     // Break into the debugger
@@ -70,9 +72,9 @@ void vApplicationMallocFailedHook()
     printf("\nFATAL ERROR: FreeRTOS malloc failed!\n");
 #endif
 
-    //Handle Memory Allocation Errors
-    while(1)
+    for ( ; ; )
     {
+        // TODO: Blink the BLD
     }
 }
 
@@ -85,7 +87,7 @@ void vApplicationMallocFailedHook()
 //! \return none
 //!
 //*****************************************************************************
-void vApplicationStackOverflowHook( OsiTaskHandle *pxTask, signed char *pcTaskName)
+void vApplicationStackOverflowHook (OsiTaskHandle *pxTask, signed char *pcTaskName)
 {
 #ifdef DEBUG
     // Break into the debugger
@@ -94,9 +96,9 @@ void vApplicationStackOverflowHook( OsiTaskHandle *pxTask, signed char *pcTaskNa
     printf("\nFATAL ERROR: Application: %s stack overflow!\n", pcTaskName);
 #endif
 
-    //Handle FreeRTOS Stack Overflow
-    while(1)
+    for ( ; ; )
     {
+        // TODO: Blink the BLD
     }
 }
 
@@ -109,7 +111,7 @@ void vApplicationStackOverflowHook( OsiTaskHandle *pxTask, signed char *pcTaskNa
 //! \return none
 //!
 //*****************************************************************************
-void vApplicationTickHook( void )
+void vApplicationTickHook (void)
 {
     HAL_IncrementTick();
 }

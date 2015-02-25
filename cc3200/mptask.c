@@ -229,14 +229,18 @@ soft_reset_exit:
 
     sflash_disk_flush();
 
+#if MICROPY_HW_HAS_SDCARD
+    pybsd_deinit();
+#endif
+
     printf("PYB: soft reboot\n");
+
+    // wait for all bus transfers to complete
+    HAL_Delay(50);
 
     // disable wlan services
     wlan_stop_servers();
     wlan_stop();
-
-    // wait for all bus transfers to complete
-    HAL_Delay(50);
 
     uart_deinit();
 
