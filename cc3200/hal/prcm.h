@@ -59,8 +59,8 @@ extern "C"
 typedef struct _PRCM_PeripheralRegs_
 {
 
-unsigned long ulClkReg;
-unsigned long ulRstReg;
+unsigned char ulClkReg;
+unsigned char ulRstReg;
 
 }PRCM_PeriphRegs_t;
 
