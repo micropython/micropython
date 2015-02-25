@@ -293,27 +293,44 @@ void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_
 
 #define OP_B_N(byte_offset) (0xe000 | (((byte_offset) >> 1) & 0x07ff))
 
-void asm_thumb_b_n(asm_thumb_t *as, uint label) {
+bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (SIGNED_FIT12(rel)) {
         asm_thumb_op16(as, OP_B_N(rel));
+        return true;
     } else {
-        printf("asm_thumb_b_n: branch does not fit in 12 bits\n");
+        return false;
     }
 }
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
-void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label) {
+bool asm_thumb_bcc_n_label(asm_thumb_t *as, int cond, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (SIGNED_FIT9(rel)) {
         asm_thumb_op16(as, OP_BCC_N(cond, rel));
+        return true;
     } else {
-        printf("asm_thumb_bcc_n: branch does not fit in 9 bits\n");
+        return false;
+    }
+}
+
+#define OP_BL_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
+#define OP_BL_LO(byte_offset) (0xf800 | (((byte_offset) >> 1) & 0x07ff))
+
+bool asm_thumb_bl_label(asm_thumb_t *as, uint label) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    if (SIGNED_FIT23(rel)) {
+        asm_thumb_op32(as, OP_BL_HI(rel), OP_BL_LO(rel));
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -419,20 +436,6 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
         // is a forwards jump, so need to assume it's large
         large_jump:
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
-    }
-}
-
-#define OP_BL_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
-#define OP_BL_LO(byte_offset) (0xf800 | (((byte_offset) >> 1) & 0x07ff))
-
-void asm_thumb_bl(asm_thumb_t *as, uint label) {
-    mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
-    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (SIGNED_FIT23(rel)) {
-        asm_thumb_op32(as, OP_BL_HI(rel), OP_BL_LO(rel));
-    } else {
-        printf("asm_thumb_bl: branch does not fit in 23 bits\n");
     }
 }
 
