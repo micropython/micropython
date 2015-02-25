@@ -49,6 +49,7 @@
 #include "utils.h"
 #include "cc3200_hal.h"
 #include "debug.h"
+#include "pybwdt.h"
 
 
 //*****************************************************************************
@@ -152,6 +153,8 @@ static void bootmgr_board_init(void) {
 
     // Mandatory MCU Initialization
     PRCMCC3200MCUInit();
+
+    pybwdt_check_reset_cause();
 
     // Enable the Data Hashing Engine
     HASH_Init();

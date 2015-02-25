@@ -214,8 +214,10 @@ static inline void asm_thumb_ldrh_rlo_rlo_i5(asm_thumb_t *as, uint rlo_dest, uin
 void asm_thumb_mov_reg_reg(asm_thumb_t *as, uint reg_dest, uint reg_src);
 void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_src);
 
-void asm_thumb_b_n(asm_thumb_t *as, uint label);
-void asm_thumb_bcc_n(asm_thumb_t *as, int cond, uint label);
+// these return true if the destination is in range, false otherwise
+bool asm_thumb_b_n_label(asm_thumb_t *as, uint label);
+bool asm_thumb_bcc_n_label(asm_thumb_t *as, int cond, uint label);
+bool asm_thumb_bl_label(asm_thumb_t *as, uint label);
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32_src); // convenience
 void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32_src); // convenience
@@ -224,9 +226,8 @@ void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num_dest, uint rlo_src);
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num); // convenience
 
-void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience ?
+void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
-void asm_thumb_bl(asm_thumb_t *as, uint label);
-void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience ?
+void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience
 
 #endif // __MICROPY_INCLUDED_PY_ASMTHUMB_H__

@@ -5,6 +5,7 @@ BOOT_INC += -Ibootmgr/sl
 BOOT_INC += -Ihal
 BOOT_INC += -Ihal/inc
 BOOT_INC += -I../drivers/cc3100/inc
+BOOT_INC += -Imods
 BOOT_INC += -Isimplelink
 BOOT_INC += -Isimplelink/oslib
 BOOT_INC += -Iutil
@@ -38,6 +39,10 @@ BOOT_CC3100_SRC_C = $(addprefix drivers/cc3100/,\
 	src/wlan.c \
 	)
 
+BOOT_MODS_SRC_C = $(addprefix mods/,\
+	pybwdt.c \
+	)
+
 BOOT_SL_SRC_C = $(addprefix simplelink/,\
 	cc_pal.c \
 	)
@@ -62,8 +67,8 @@ BOOT_STM_SRC_C = $(addprefix stmhal/,\
 	string0.c \
 	)
 	
-OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o)  $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o) $(BOOT_MAIN_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o) $(BOOT_STM_SRC_C:.c=.o))
+OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o) $(BOOT_MODS_SRC_C:.c=.o) $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_C:.c=.o) $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o) $(BOOT_STM_SRC_C:.c=.o))
 
 # Add the linker script
 LINKER_SCRIPT = bootmgr/bootmgr.lds
@@ -71,9 +76,6 @@ LDFLAGS += -T $(LINKER_SCRIPT)
 
 # Add the bootloader specific CFLAGS
 CFLAGS += $(BOOT_CPPDEFINES) $(BOOT_INC)
-
-# Optimize for size all sources except for main
-
 
 # Disable strict aliasing for the simplelink driver
 $(BUILD)/drivers/cc3100/src/driver.o: CFLAGS += -fno-strict-aliasing

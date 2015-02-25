@@ -25,11 +25,13 @@ make BTARGET=bootloader BTYPE=release
 ```
 
 ## Flashing the CC3200
+- Make sure that you have built both the *bootloader* and the *application* in **release** mode.
 - Make sure the SOP2 jumper is in position.
 - Open CCS_Uniflash and connect to the board (by default on port 22). 
 - Format the serial flash (select 1MB size in case of the CC3200-LAUNCHXL, leave the rest unchecked).
 - Mark the following files for erasing: `/cert/ca.pem`, `/cert/client.pm`, `/cert/private.key` and `/tmp/pac.bin`.
-- Add a new file with the name of /sys/factimg.bin, and select the correct URL to point to cc3200\build\<BOARD_NAME>\MCUIMG.BIN.
+- Add a new file with the name of /sys/mcuimg.bin, and select the URL to point to cc3200\bootmgr\build\<BOARD_NAME>\bootloader.bin.
+- Add another file with the name of /sys/factimg.bin, and select the URL to point to cc3200\build\<BOARD_NAME>\MCUIMG.BIN.
 - Click "Program" to apply all changes.
 - Flash the latest service pack (servicepack_1.0.0.1.2.bin) using the "Service Pack Update" button.
 - Close CCS_Uniflash, remove the SOP2 jumper and reset the board.
@@ -79,4 +81,3 @@ sure that encryption is set to: "Only use plain FTP (insecure)". In the Transfer
 to one, otherwise FileZilla will try to open a second command connection when retrieving and saving files, and for simplicity and 
 to reduce code size, only one command and one data connections are possible.
 
-  

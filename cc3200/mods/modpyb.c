@@ -58,6 +58,7 @@
 #include "pybadc.h"
 #include "pybi2c.h"
 #include "pybsd.h"
+#include "pybwdt.h"
 #include "utils.h"
 #include "gccollect.h"
 
@@ -251,7 +252,7 @@ STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
         } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
             pyb_stdio_uart = args[0];
         } else {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_num_type_invalid_arguments));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
         }
         return mp_const_none;
     }
@@ -268,6 +269,30 @@ STATIC mp_obj_t pyb_mkdisk(mp_obj_t path_o) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_mkdisk_obj, pyb_mkdisk);
+
+/// \function wdt_enable('msec')
+/// Enabled the watchdog timer with msec timeout value
+STATIC mp_obj_t pyb_enable_wdt(mp_obj_t msec_in) {
+    mp_int_t msec = mp_obj_get_int(msec_in);
+    pybwdt_ret_code_t ret;
+    ret = pybwdt_enable (msec);
+    if (ret == E_PYBWDT_IS_RUNNING) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+    }
+    else if (ret == E_PYBWDT_INVALID_TIMEOUT) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_enable_wdt_obj, pyb_enable_wdt);
+
+/// \function wdt_kick()
+/// Kicks the watchdog timer
+STATIC mp_obj_t pyb_kick_wdt(void) {
+    pybwdt_kick ();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_kick_wdt_obj, pyb_kick_wdt);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 
@@ -300,6 +325,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay),              (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync),                (mp_obj_t)&pyb_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdisk),              (mp_obj_t)&pyb_mkdisk_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_wdt),          (mp_obj_t)&pyb_enable_wdt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_kick_wdt),            (mp_obj_t)&pyb_kick_wdt_obj },
 
 #if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&pyb_rng_get_obj },
@@ -316,7 +343,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
 
 #if MICROPY_HW_HAS_SDCARD
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sdcard_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },
 #endif
 };
 

@@ -367,12 +367,14 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     } else if (n_args == 1) {
         if (strcmp(op_str, "b") == 0) {
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            // TODO check that this succeeded, ie branch was within range
-            asm_thumb_b_n(emit->as, label_num);
+            if (!asm_thumb_b_n_label(emit->as, label_num)) {
+                goto branch_not_in_range;
+            }
         } else if (strcmp(op_str, "bl") == 0) {
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            // TODO check that this succeeded, ie branch was within range
-            asm_thumb_bl(emit->as, label_num);
+            if (!asm_thumb_bl_label(emit->as, label_num)) {
+                goto branch_not_in_range;
+            }
         } else if (strcmp(op_str, "bx") == 0) {
             mp_uint_t r = get_arg_reg(emit, op_str, pn_args[0], 15);
             asm_thumb_op16(emit->as, 0x4700 | (r << 3));
@@ -387,8 +389,9 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto unknown_op;
             }
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            // TODO check that this succeeded, ie branch was within range
-            asm_thumb_bcc_n(emit->as, cc, label_num);
+            if (!asm_thumb_bcc_n_label(emit->as, cc, label_num)) {
+                goto branch_not_in_range;
+            }
         } else if (op_str[0] == 'i' && op_str[1] == 't') {
             const char *arg_str = get_arg_str(pn_args[0]);
             mp_uint_t cc = -1;
@@ -474,6 +477,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     reg_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
                     reg_src = get_arg_reg(emit, op_str, pn_args[1], 7);
                     asm_thumb_format_4(emit->as, op_code, reg_dest, reg_src);
+                    return;
                 }
                 // search table for ALU ops
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_4_op_table); i++) {
@@ -607,6 +611,11 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
 
 unknown_op:
     emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Thumb instruction '%s' with %d arguments", op_str, n_args));
+    return;
+
+branch_not_in_range:
+    emit_inline_thumb_error_msg(emit, "branch not in range");
+    return;
 }
 
 const emit_inline_asm_method_table_t emit_inline_thumb_method_table = {

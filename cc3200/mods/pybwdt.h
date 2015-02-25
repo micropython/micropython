@@ -23,15 +23,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef PYBSD_H_
-#define PYBSD_H_
 
-#if MICROPY_HW_HAS_SDCARD
-void pybsd_init0 (void);
-bool pybsd_is_present(void);
-void pybsd_deinit (void);
+#ifndef PYBWDT_H_
+#define PYBWDT_H_
 
-extern const mp_obj_type_t pyb_sd_type;
-#endif
+typedef enum {
+    E_PYBWDT_OK = 0,
+    E_PYBWDT_IS_RUNNING = -1,
+    E_PYBWDT_INVALID_TIMEOUT = -2
+}pybwdt_ret_code_t;
 
-#endif // PYBSD_H_
+void pybwdt_init0 (void);
+void pybwdt_check_reset_cause (void);
+pybwdt_ret_code_t pybwdt_enable (uint32_t timeout);
+void pybwdt_kick (void);
+void pybwdt_srv_alive (void);
+void pybwdt_sl_alive (void);
+
+#endif /* PYBWDT_H_ */

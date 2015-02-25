@@ -37,6 +37,7 @@
 #include "mpexception.h"
 #include "telnet.h"
 #include "ftp.h"
+#include "pybwdt.h"
 
 
 /******************************************************************************
@@ -119,6 +120,8 @@ void TASK_Servers (void *pvParameters) {
 
         cycle = cycle ? false : true;
         HAL_Delay(SERVERS_CYCLE_TIME_MS);
+        // set the alive flag for the wdt
+        pybwdt_srv_alive();
     }
 }
 
