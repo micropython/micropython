@@ -76,6 +76,7 @@ typedef struct _mp_obj_ffifunc_t {
     mp_obj_base_t base;
     void *func;
     char rettype;
+    const char *argtypes;
     ffi_cif cif;
     ffi_type *params[];
 } mp_obj_ffifunc_t;
@@ -181,6 +182,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ffimod_close_obj, ffimod_close);
 
 STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in) {
     const char *rettype = mp_obj_str_get_str(rettype_in);
+    const char *argtypes = mp_obj_str_get_str(argtypes_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(argtypes_in));
     mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type*, nparams);
@@ -188,6 +190,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
 
     o->func = func;
     o->rettype = *rettype;
+    o->argtypes = argtypes;
 
     mp_obj_t iterable = mp_getiter(argtypes_in);
     mp_obj_t item;
@@ -348,9 +351,12 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
 
     ffi_arg values[n_args];
     void *valueptrs[n_args];
-    for (uint i = 0; i < n_args; i++) {
+    const char *argtype = self->argtypes;
+    for (uint i = 0; i < n_args; i++, argtype++) {
         mp_obj_t a = args[i];
-        if (a == mp_const_none) {
+        if (*argtype == 'O') {
+            values[i] = (ffi_arg)a;
+        } else if (a == mp_const_none) {
             values[i] = 0;
         } else if (MP_OBJ_IS_INT(a)) {
             values[i] = mp_obj_int_get_truncated(a);
