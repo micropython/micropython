@@ -1,8 +1,16 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "Illegal number of parameters"
+    exit 1
+fi
+
+BOARD=$1
+BTYPE=$2
+
 # Build location
 # First parameter passed is the board type
-BUILD=build/$1
+BUILD=build/${BOARD}/${BTYPE}
 
 # Generate the MD5 hash
 echo -n md5sum --binary $BUILD/application.bin | awk '{ print $1 }' > __md5hash.bin

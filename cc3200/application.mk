@@ -216,7 +216,7 @@ $(BUILD)/application.bin: $(BUILD)/application.axf
 
 $(BUILD)/MCUIMG.BIN: $(BUILD)/application.bin
 	$(ECHO) "Create $@"
-	$(Q)$(SHELL) $(APP_SIGN) $(BOARD)
+	$(Q)$(SHELL) $(APP_SIGN) $(BOARD) $(BTYPE)
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv
