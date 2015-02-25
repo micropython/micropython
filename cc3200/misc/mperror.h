@@ -25,8 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG
+#ifndef MPERROR_H_
+#define MPERROR_H_
+
 extern void NORETURN __fatal_error(const char *msg);
-#else
-#define __fatal_error(...)     for ( ;; ) {__WFI();}
-#endif
+
+void mperror_init0 (void);
+void mperror_deinit_sfe_pin (void);
+void mperror_signal_error (void);
+void mperror_request_safe_boot (void);
+void mperror_clear_safe_boot (void);
+bool mperror_safe_boot_requested (void);
+
+#endif // MPERROR_H_

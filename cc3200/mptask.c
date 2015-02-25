@@ -96,10 +96,18 @@ void TASK_Micropython (void *pvParameters) {
     // Initialize the garbage collector with the top of our stack
     uint32_t sp = gc_helper_get_sp();
     gc_collect_init (sp);
+    bool safeboot;
     FRESULT res;
 
 #if MICROPY_HW_ENABLE_RTC
     pybrtc_init();
+#endif
+
+#ifdef DEBUG
+    mperror_init0();
+    safeboot = false;
+#else
+    safeboot = mperror_safe_boot_requested();
 #endif
 
     // Create the simple link spawn task
@@ -170,16 +178,19 @@ soft_reset:
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
-    // run boot.py, if it exists
-    const char *boot_py = "BOOT.PY";
-    res = f_stat(boot_py, NULL);
-    if (res == FR_OK) {
-        int ret = pyexec_file(boot_py);
-        if (ret & PYEXEC_FORCED_EXIT) {
-            goto soft_reset_exit;
-        }
-        if (!ret) {
-            // TODO: Flash some LEDs
+    if (!safeboot) {
+        // run boot.py, if it exists
+        const char *boot_py = "BOOT.PY";
+        res = f_stat(boot_py, NULL);
+        if (res == FR_OK) {
+            int ret = pyexec_file(boot_py);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+            if (!ret) {
+                // flash the system led
+                mperror_signal_error();
+            }
         }
     }
 
@@ -189,22 +200,25 @@ soft_reset:
 
     // At this point everything is fully configured and initialised.
 
-    // Run the main script from the current directory.
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        const char *main_py;
-        if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
-            main_py = "MAIN.PY";
-        } else {
-            main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
-        }
-        res = f_stat(main_py, NULL);
-        if (res == FR_OK) {
-            int ret = pyexec_file(main_py);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                goto soft_reset_exit;
+    if (!safeboot) {
+        // Run the main script from the current directory.
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+            const char *main_py;
+            if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
+                main_py = "MAIN.PY";
+            } else {
+                main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
             }
-            if (!ret) {
-                // TODO: Flash some LEDs
+            res = f_stat(main_py, NULL);
+            if (res == FR_OK) {
+                int ret = pyexec_file(main_py);
+                if (ret & PYEXEC_FORCED_EXIT) {
+                    goto soft_reset_exit;
+                }
+                if (!ret) {
+                    // flash the system led
+                    mperror_signal_error();
+                }
             }
         }
     }

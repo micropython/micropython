@@ -46,6 +46,7 @@
 #include "mpexception.h"
 #include "interrupt.h"
 #include "cc3200_asm.h"
+#include "mperror.h"
 
 /// \moduleref pyb
 /// \class ExtInt - configure I/O pins to interrupt on external events
@@ -218,8 +219,8 @@ STATIC void ExecuteIntCallback (extint_obj_t *self) {
             extint_disable(self);
             // printing an exception here will cause a stack overflow that ends up in a
             // hard fault so, is better to signal the uncaught (probably non-recoverable)
-            // exception by blinkg the BLD
-            // TODO: Blink the BLD
+            // exception by blinkg the system led
+            mperror_signal_error();
         }
         gc_unlock();
         enable_irq(primsk);

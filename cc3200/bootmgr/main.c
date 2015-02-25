@@ -26,8 +26,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
 #include <std.h>
+
+#include "py/mpconfig.h"
+#include MICROPY_HAL_H
 #include "hw_ints.h"
 #include "hw_types.h"
 #include "hw_gpio.h"
@@ -50,6 +52,7 @@
 #include "cc3200_hal.h"
 #include "debug.h"
 #include "pybwdt.h"
+#include "mperror.h"
 
 
 //*****************************************************************************
@@ -60,19 +63,11 @@
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512
 
-#define BOOTMGR_WAIT_SAFE_MODE_MS           2000
-#define BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS    250
+#define BOOTMGR_WAIT_SAFE_MODE_MS           1600
+#define BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS    200
 
-#define BOOTMGR_SAFE_MODE_ENTER_MS          1000
-#define BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS   100
-
-#define BOOTMGR_PINS_PRCM                   PRCM_GPIOA3
-#define BOOTMGR_PINS_PORT                   GPIOA3_BASE
-#define BOOTMGR_LED_PIN_NUM                 PIN_21
-#define BOOTMGR_SFE_PIN_NUM                 PIN_18
-#define BOOTMGR_LED_PORT_PIN                GPIO_PIN_1      // GPIO25
-#define BOOTMGR_SFE_PORT_PIN                GPIO_PIN_4      // GPIO28
-
+#define BOOTMGR_SAFE_MODE_ENTER_MS          700
+#define BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS   70
 
 //*****************************************************************************
 // Exported functions declarations
@@ -159,18 +154,12 @@ static void bootmgr_board_init(void) {
     // Enable the Data Hashing Engine
     HASH_Init();
 
-    // Enable GPIOA3 Peripheral Clock
-    MAP_PRCMPeripheralClkEnable(BOOTMGR_PINS_PRCM, PRCM_RUN_MODE_CLK);
+    // Init the system led and the system switch
+    mperror_init0();
 
-    // Configure the bld
-    MAP_PinTypeGPIO(BOOTMGR_LED_PIN_NUM, PIN_MODE_0, false);
-    MAP_PinConfigSet(BOOTMGR_LED_PIN_NUM, PIN_STRENGTH_6MA, PIN_TYPE_STD);
-    MAP_GPIODirModeSet(BOOTMGR_PINS_PORT, BOOTMGR_LED_PORT_PIN, GPIO_DIR_MODE_OUT);
-
-    // Configure the safe mode pin
-    MAP_PinTypeGPIO(BOOTMGR_SFE_PIN_NUM, PIN_MODE_0, false);
-    MAP_PinConfigSet(BOOTMGR_SFE_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
-    MAP_GPIODirModeSet(BOOTMGR_PINS_PORT, BOOTMGR_SFE_PORT_PIN, GPIO_DIR_MODE_IN);
+    // clear the safe boot request, since we should not trust
+    // the register's state after reset
+    mperror_clear_safe_boot();
 }
 
 //*****************************************************************************
@@ -252,13 +241,14 @@ static void bootmgr_load_and_execute (_u8 *image) {
 //*****************************************************************************
 static bool safe_mode_boot (void) {
     _u32 count = 0;
-    while (!MAP_GPIOPinRead(BOOTMGR_PINS_PORT, BOOTMGR_SFE_PORT_PIN) &&
-            ((BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS * count++) < BOOTMGR_WAIT_SAFE_MODE_MS)) {
+    while (MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) &&
+           ((BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS * count++) < BOOTMGR_WAIT_SAFE_MODE_MS)) {
         // toogle the led
-        MAP_GPIOPinWrite(BOOTMGR_PINS_PORT, BOOTMGR_LED_PORT_PIN, ~MAP_GPIOPinRead(GPIOA3_BASE, BOOTMGR_LED_PORT_PIN));
+        MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
         UtilsDelay(UTILS_DELAY_US_TO_COUNT(BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS * 1000));
     }
-    return MAP_GPIOPinRead(BOOTMGR_PINS_PORT, BOOTMGR_SFE_PORT_PIN) ? false : true;
+    mperror_deinit_sfe_pin();
+    return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? true : false;
 }
 
 //*****************************************************************************
@@ -268,14 +258,16 @@ static void bootmgr_image_loader(sBootInfo_t *psBootInfo) {
     _i32 fhandle;
     if (safe_mode_boot()) {
          _u32 count = 0;
-         while ((BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS * count++) > BOOTMGR_SAFE_MODE_ENTER_MS) {
+         while ((BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS * count++) < BOOTMGR_SAFE_MODE_ENTER_MS) {
              // toogle the led
-             MAP_GPIOPinWrite(BOOTMGR_PINS_PORT, BOOTMGR_LED_PORT_PIN, ~MAP_GPIOPinRead(GPIOA3_BASE, BOOTMGR_LED_PORT_PIN));
+             MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
              UtilsDelay(UTILS_DELAY_US_TO_COUNT(BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS * 1000));
          }
          psBootInfo->ActiveImg = IMG_ACT_FACTORY;
          // turn the led off
-         MAP_GPIOPinWrite(BOOTMGR_PINS_PORT, BOOTMGR_LED_PORT_PIN, 0);
+         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
+         // request a safe boot to the application
+         mperror_request_safe_boot();
     }
     // do we have a new update image that needs to be verified?
     else if ((psBootInfo->ActiveImg == IMG_ACT_UPDATE) && (psBootInfo->Status == IMG_STATUS_CHECK)) {
@@ -350,7 +342,7 @@ int main (void) {
     // could not be loaded, so, loop forever and signal the crash to the user
     while (true) {
         // keep the bld on
-        MAP_GPIOPinWrite(BOOTMGR_PINS_PORT, BOOTMGR_LED_PORT_PIN, BOOTMGR_LED_PORT_PIN);
+        MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
         __asm volatile("    dsb      \n"
                        "    isb      \n"
                        "    wfi      \n");

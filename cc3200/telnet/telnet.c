@@ -36,6 +36,7 @@
 #include "debug.h"
 #include "mpexception.h"
 #include "serverstask.h"
+#include "mperror.h"
 #include "genhdr/py-version.h"
 
 
@@ -461,7 +462,8 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
     else {
-        // TODO: blink the BLD
+        // blink the system led
+        mperror_signal_error();
     }
 
     return false;

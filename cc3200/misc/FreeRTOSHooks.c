@@ -35,6 +35,7 @@
 #include "pybuart.h"
 #include "osi.h"
 #include "pybwdt.h"
+#include "mperror.h"
 
 
 //*****************************************************************************
@@ -66,15 +67,13 @@ void vApplicationIdleHook (void)
 void vApplicationMallocFailedHook (void)
 {
 #ifdef DEBUG
-    // Break into the debugger
+    // break into the debugger
     __asm volatile ("bkpt #0  \n");
-
-    printf("\nFATAL ERROR: FreeRTOS malloc failed!\n");
 #endif
 
     for ( ; ; )
     {
-        // TODO: Blink the BLD
+        __fatal_error("FreeRTOS malloc failed!");
     }
 }
 
@@ -92,13 +91,11 @@ void vApplicationStackOverflowHook (OsiTaskHandle *pxTask, signed char *pcTaskNa
 #ifdef DEBUG
     // Break into the debugger
     __asm volatile ("bkpt #0  \n");
-
-    printf("\nFATAL ERROR: Application: %s stack overflow!\n", pcTaskName);
 #endif
 
     for ( ; ; )
     {
-        // TODO: Blink the BLD
+        __fatal_error("Stack overflow!");
     }
 }
 

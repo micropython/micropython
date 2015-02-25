@@ -63,7 +63,7 @@ int main (void) {
     // Initialize the clocks and the interrupt system
     HAL_SystemInit();
 
-    // Start the watchdog
+    // Init the watchdog
     pybwdt_init0();
 
 #ifdef DEBUG

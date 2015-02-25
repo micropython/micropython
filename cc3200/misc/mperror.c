@@ -32,12 +32,78 @@
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/obj.h"
-#include "inc/hw_memmap.h"
+#include "hw_ints.h"
+#include "hw_types.h"
+#include "hw_gpio.h"
+#include "hw_memmap.h"
+#include "hw_gprcm.h"
+#include "hw_common_reg.h"
+#include "pin.h"
+#include "gpio.h"
+#include "rom.h"
+#include "rom_map.h"
+#include "prcm.h"
 #include "pybuart.h"
 #include "utils.h"
 
 
+#define MPERROR_TOOGLE_MS                           (200)
+#define MPERROR_SIGNAL_ERROR_MS                     (2000)
+
+#define MPERROR_SAFE_BOOT_REG_IDX                   (0)
+
+
+void mperror_init0 (void) {
+    // Enable SYS GPIOs peripheral clocks
+    MAP_PRCMPeripheralClkEnable(MICROPY_SYS_LED_PRCM, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+#ifdef BOOTLOADER
+    MAP_PRCMPeripheralClkEnable(MICROPY_SAFE_BOOT_PRCM, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+#endif
+
+    // Configure the bld
+    MAP_PinTypeGPIO(MICROPY_SYS_LED_PIN_NUM, PIN_MODE_0, false);
+    MAP_PinConfigSet(MICROPY_SYS_LED_PIN_NUM, PIN_STRENGTH_6MA, PIN_TYPE_STD);
+    MAP_GPIODirModeSet(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, GPIO_DIR_MODE_OUT);
+
+#ifdef BOOTLOADER
+    // Configure the safe boot pin
+    MAP_PinTypeGPIO(MICROPY_SAFE_BOOT_PIN_NUM, PIN_MODE_0, false);
+    MAP_PinConfigSet(MICROPY_SAFE_BOOT_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD_PD);
+    MAP_GPIODirModeSet(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN, GPIO_DIR_MODE_IN);
+#endif
+}
+
+void mperror_deinit_sfe_pin (void) {
+    // disable the pull-down
+    MAP_PinConfigSet(MICROPY_SAFE_BOOT_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD);
+}
+
+void mperror_signal_error (void) {
+    uint32_t count = 0;
+    while ((MPERROR_TOOGLE_MS * count++) > MPERROR_SIGNAL_ERROR_MS) {
+        // toogle the led
+        MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(MPERROR_TOOGLE_MS * 1000));
+    }
+}
+
+void mperror_request_safe_boot (void) {
+    MAP_PRCMOCRRegisterWrite(MPERROR_SAFE_BOOT_REG_IDX, 1);
+}
+
+void mperror_clear_safe_boot (void) {
+    MAP_PRCMOCRRegisterWrite(MPERROR_SAFE_BOOT_REG_IDX, 0);
+}
+
+// returns the last state of the safe boot request and clears the register
+bool mperror_safe_boot_requested (void) {
+    bool ret = MAP_PRCMOCRRegisterRead(MPERROR_SAFE_BOOT_REG_IDX);
+    mperror_clear_safe_boot();
+    return ret;
+}
+
 void NORETURN __fatal_error(const char *msg) {
+#ifdef DEBUG
     if (msg != NULL) {
         // wait for 20ms
         UtilsDelay(UTILS_DELAY_US_TO_COUNT(20000));
@@ -45,6 +111,9 @@ void NORETURN __fatal_error(const char *msg) {
         mp_hal_stdout_tx_str(msg);
         mp_hal_stdout_tx_str("\r\n");
     }
+#endif
+    // signal the crash with the system led
+    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
     for ( ;; ) {__WFI();}
 }
 
@@ -63,4 +132,3 @@ void nlr_jump_fail(void *val) {
     __fatal_error(NULL);
 #endif
 }
-

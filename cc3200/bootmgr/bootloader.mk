@@ -5,6 +5,7 @@ BOOT_INC += -Ibootmgr/sl
 BOOT_INC += -Ihal
 BOOT_INC += -Ihal/inc
 BOOT_INC += -I../drivers/cc3100/inc
+BOOT_INC += -Imisc
 BOOT_INC += -Imods
 BOOT_INC += -Isimplelink
 BOOT_INC += -Isimplelink/oslib
@@ -39,6 +40,10 @@ BOOT_CC3100_SRC_C = $(addprefix drivers/cc3100/,\
 	src/wlan.c \
 	)
 
+BOOT_MISC_SRC_C = $(addprefix misc/,\
+	mperror.c \
+	)
+
 BOOT_MODS_SRC_C = $(addprefix mods/,\
 	pybwdt.c \
 	)
@@ -68,7 +73,7 @@ BOOT_STM_SRC_C = $(addprefix stmhal/,\
 	)
 	
 OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o) $(BOOT_MODS_SRC_C:.c=.o) $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_C:.c=.o) $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o) $(BOOT_STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(BOOT_MISC_SRC_C:.c=.o) $(BOOT_MAIN_SRC_C:.c=.o) $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o) $(BOOT_STM_SRC_C:.c=.o))
 
 # Add the linker script
 LINKER_SCRIPT = bootmgr/bootmgr.lds
@@ -90,6 +95,7 @@ ifeq ($(BTYPE), debug)
 CFLAGS += -DDEBUG=DEBUG
 # Optimize the stable sources only
 $(BUILD)/hal/%.o: CFLAGS += -Os
+$(BUILD)/misc/%.o: CFLAGS += -Os
 $(BUILD)/simplelink/%.o: CFLAGS += -Os
 $(BUILD)/drivers/cc3100/%.o: CFLAGS += -Os
 $(BUILD)/py/%.o: CFLAGS += -Os
