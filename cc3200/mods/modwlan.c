@@ -362,6 +362,12 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
                                  const char *key, uint8_t key_len, uint8_t channel) {
 
     if (mode == ROLE_STA || mode == ROLE_AP || mode == ROLE_P2P) {
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+        // Stop all other processes using the wlan engine
+        if ((wlan_obj.servers_enabled = servers_are_enabled())) {
+            wlan_stop_servers();
+        }
+#endif
         if (wlan_obj.mode < 0) {
             wlan_obj.mode = sl_Start(0, 0, 0);
             sl_LockObjUnlock (&wlan_LockObj);
@@ -486,6 +492,12 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
                 wlan_reenable(mode);
             }
         }
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+        // Start the servers again
+        if (wlan_obj.servers_enabled) {
+            servers_enable();
+        }
+#endif
         return MODWLAN_OK;
     }
     return MODWLAN_ERROR_INVALID_PARAMS;
@@ -674,13 +686,6 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     if (n_args > 0) {
         // Get the mode
         SlWlanMode_t mode = mp_obj_get_int(args[0]);
-
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-        // Stop all other processes using the wlan engine
-        if ((wlan_obj.servers_enabled = servers_are_enabled())) {
-            wlan_stop_servers();
-        }
-#endif
         if (mode == ROLE_AP) {
             // start the peripheral
             mp_map_t kw_args;
@@ -696,12 +701,6 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
         }
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-        // Start the servers again
-        if (wlan_obj.servers_enabled) {
-            servers_enable();
-        }
-#endif
     } else if (wlan_obj.mode < 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
     }

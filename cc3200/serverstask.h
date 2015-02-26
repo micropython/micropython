@@ -40,6 +40,7 @@
 #define SERVERS_PASS_LEN_MAX                    16
 
 #define SERVERS_DEF_AP_SSID                     "micropy-wlan"
+#define SERVERS_DEF_AP_SECURITY                 SL_SEC_TYPE_WPA_WPA2
 #define SERVERS_DEF_AP_KEY                      "micropython"
 #define SERVERS_DEF_AP_CHANNEL                  6
 

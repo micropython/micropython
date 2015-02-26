@@ -319,7 +319,7 @@ STATIC void main_init_sflash_filesystem (void) {
 
 STATIC void main_enter_ap_mode (void) {
     // Enable simplelink in low power mode
-    wlan_sl_enable (ROLE_AP, SERVERS_DEF_AP_SSID, strlen(SERVERS_DEF_AP_SSID), SL_SEC_TYPE_WPA_WPA2,
+    wlan_sl_enable (ROLE_AP, SERVERS_DEF_AP_SSID, strlen(SERVERS_DEF_AP_SSID), SERVERS_DEF_AP_SECURITY,
                     SERVERS_DEF_AP_KEY, strlen(SERVERS_DEF_AP_KEY), SERVERS_DEF_AP_CHANNEL);
     wlan_set_pm_policy (SL_NORMAL_POLICY);
 }
