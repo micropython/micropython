@@ -261,7 +261,7 @@ OsiReturnVal_e osi_LockObjCreate(OsiLockObj_t* pLockObj);
 	\note
 	\warning
 */
-OsiReturnVal_e osi_LockObjDelete(OsiLockObj_t* pLockObj);
+#define osi_LockObjDelete            osi_SyncObjDelete
 
 /*!
 	\brief 	This function locks a locking object.
@@ -282,7 +282,7 @@ OsiReturnVal_e osi_LockObjDelete(OsiLockObj_t* pLockObj);
 	\note
 	\warning
 */
-OsiReturnVal_e osi_LockObjLock(OsiLockObj_t* pLockObj , OsiTime_t Timeout);
+#define osi_LockObjLock             osi_SyncObjWait
 
 /*!
 	\brief 	This function unlock a locking object.
@@ -294,7 +294,7 @@ OsiReturnVal_e osi_LockObjLock(OsiLockObj_t* pLockObj , OsiTime_t Timeout);
 	\note
 	\warning
 */
-OsiReturnVal_e osi_LockObjUnlock(OsiLockObj_t* pLockObj);
+#define osi_LockObjUnlock           osi_SyncObjSignal
 
 
 /*!

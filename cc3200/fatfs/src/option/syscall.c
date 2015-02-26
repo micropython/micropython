@@ -34,7 +34,7 @@ int ff_cre_syncobj (	/* !=0:Function succeeded, ==0:Could not create due to any 
 //	*sobj = OSMutexCreate(0, &err);		/* uC/OS-II */
 //	ret = (int)(err == OS_NO_ERR);
 
-	*sobj = xSemaphoreCreateMutex();	/* FreeRTOS */
+	vSemaphoreCreateBinary( (*sobj) );	/* FreeRTOS */
 	ret = (int)(*sobj != NULL);
 
 	return ret;
