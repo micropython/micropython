@@ -38,6 +38,8 @@ Q(FileIO)
 Q(mkdisk)
 Q(enable_wdt)
 Q(kick_wdt)
+Q(enable_heartbeat)
+Q(disable_heartbeat)
 // Entries for sys.path
 Q(/SFLASH)
 Q(/SFLASH/LIB)

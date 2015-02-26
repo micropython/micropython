@@ -34,6 +34,7 @@
 #include "simplelink.h"
 #include "pybwdt.h"
 #include "debug.h"
+#include "mperror.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS

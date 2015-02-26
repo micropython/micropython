@@ -45,14 +45,27 @@
 #include "prcm.h"
 #include "pybuart.h"
 #include "utils.h"
+#include "mperror.h"
 
 
+/******************************************************************************
+ DEFINE CONSTANTS
+ ******************************************************************************/
 #define MPERROR_TOOGLE_MS                           (200)
 #define MPERROR_SIGNAL_ERROR_MS                     (2000)
+#define MPERROR_HEARTBEAT_ON_MS                     (80)
+#define MPERROR_HEARTBEAT_OFF_MS                    (2920)
 
 #define MPERROR_SAFE_BOOT_REG_IDX                   (0)
 
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+static bool mperror_heartbeat_enabled;
 
+/******************************************************************************
+ DEFINE PUBLIC FUNCTIONS
+ ******************************************************************************/
 void mperror_init0 (void) {
     // Enable SYS GPIOs peripheral clocks
     MAP_PRCMPeripheralClkEnable(MICROPY_SYS_LED_PRCM, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
@@ -100,6 +113,40 @@ bool mperror_safe_boot_requested (void) {
     bool ret = MAP_PRCMOCRRegisterRead(MPERROR_SAFE_BOOT_REG_IDX);
     mperror_clear_safe_boot();
     return ret;
+}
+
+void mperror_enable_heartbeat (void) {
+    mperror_heartbeat_enabled = true;
+}
+
+void mperror_disable_heartbeat (void) {
+    mperror_heartbeat_enabled = false;
+    mperror_heartbeat_off();
+}
+
+void mperror_heartbeat_signal (void) {
+    static uint off_start = 0;
+    static uint on_start = 0;
+    static bool beat = false;
+
+    if (mperror_heartbeat_enabled) {
+        if (!beat) {
+            if ((on_start = HAL_GetTick()) - off_start > MPERROR_HEARTBEAT_OFF_MS) {
+                MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
+                beat = true;
+            }
+        }
+        else {
+            if ((off_start = HAL_GetTick()) - on_start > MPERROR_HEARTBEAT_ON_MS) {
+                mperror_heartbeat_off();
+                beat = false;
+            }
+        }
+    }
+}
+
+void mperror_heartbeat_off (void) {
+    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
 }
 
 void NORETURN __fatal_error(const char *msg) {

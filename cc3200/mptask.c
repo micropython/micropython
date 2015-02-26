@@ -104,7 +104,6 @@ void TASK_Micropython (void *pvParameters) {
 #endif
 
 #ifdef DEBUG
-    mperror_init0();
     safeboot = false;
 #else
     safeboot = mperror_safe_boot_requested();
@@ -140,6 +139,7 @@ soft_reset:
     mp_obj_list_init(mp_sys_argv, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
 
+    mperror_init0();
     mpexception_init0();
     uart_init0();
     pin_init0();
@@ -162,6 +162,8 @@ soft_reset:
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
 #endif
+
+    mperror_enable_heartbeat();
 
     main_enter_ap_mode();
 

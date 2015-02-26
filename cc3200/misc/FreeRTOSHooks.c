@@ -51,7 +51,9 @@ void vApplicationIdleHook (void)
 {
     // kick the watchdog
     pybwdt_kick();
-    // gate the processor clock to save power
+    // signal that we are alive and kicking
+    mperror_heartbeat_signal();
+    // gate the processor's clock to save power
     __WFI();
 }
 

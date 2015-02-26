@@ -36,5 +36,9 @@ void mperror_signal_error (void);
 void mperror_request_safe_boot (void);
 void mperror_clear_safe_boot (void);
 bool mperror_safe_boot_requested (void);
+void mperror_enable_heartbeat (void);
+void mperror_disable_heartbeat (void);
+void mperror_heartbeat_signal (void);
+void mperror_heartbeat_off (void);
 
 #endif // MPERROR_H_
