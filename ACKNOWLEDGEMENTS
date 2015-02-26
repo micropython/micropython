@@ -1,0 +1,907 @@
+The Micro Python project was proudly and successfully crowdfunded
+via a Kickstarter campaign which ended on 13th December 2013.  The
+project was supported by 1923 very generous backers, who pledged
+for a total of 2320 pyboards.
+
+Damien George, the project creator, is grateful to the people
+listed below (and others who asked not to be named), whose support
+of the project help make the code in this repository what it is
+today.  The names appear in order of pledging.
+
+    3 Cliff Senkbeil
+    4 MacDefender (http://www.macdefender.org)
+   11 Shaun Walker - http://theshaun.com
+   12 Robert Joscelyne
+   17 Peter Simon, Germany
+   18 theNetImp
+   21 Eamonn Maguire
+   22 Rob Knegjens
+   27 Greg, https://www.logre.eu
+   28 Rick S
+   30 Norman Jaffe (OpenDragon)
+   34 UltraBob was here.
+   35 Geoffrey R. Thompson
+   36 MrAtoni
+   40 Proud to be a backer of Micro Python, Phil C. United Kingdom.
+   42 www.babybadger.co.uk
+   45 Mert
+   46 Miles Cederman-Haysom
+   47 unixarmy.com
+   52 Proud to be here! Tonton Pommes
+   54 Espen Sae-Tang Ottersen
+   56 howang.hk
+   58 Innovatology
+   59 Marzsman
+   63 Tristan A. Hearn
+   64 Patrick Clarke
+   65 Bryan Lyon
+   70 Craig Burkhead
+   72 Dr Igor Vizir
+   73 Steve Iltis, @steven_iltis
+   79 www.giacomo.inches.ch
+   80 Alexander Gordeyev
+   81 Steve Conklin www.ai4qr.com
+   83 n1c0la5
+   84 Matthew R. Johnson
+   86 Jeppe Rishede
+   87 Kirill Zakharenko - Russian Federation
+   88 beltwaybureau.com
+   93 felix svoboda
+   95 Smart
+   96 Stephen Goudge
+   97 Dr Richard Whitaker, www.drrich.co.uk, UK
+   99 Tim Robertson
+  101 Rudy De Volder, www.devolder.be,  Belgium
+  104 August H., Wien
+  107 Jason Hsu
+  109 dstensnes
+  110 Joe Reynolds (professorlamp)
+  112 Michael Davies (AU) - @butterparty @spaceduststudio
+  113 Jim Kirk, Westborough, MA, USA
+  114 yfnt
+  117 Even when it looks like someone is reaching for blue sky. Some days you just have to blindly support that dreamer.
+  118 G. Todd Vaules - todd.vaules.net
+  122 Gunnar Wehrhahn
+  124 Eric Masser
+  126 Vaibhav Sagar
+  128 Eric Wallstedt
+  129 Richard G Wiater
+  130 Toby Nance
+  132 Michael Fogleman
+  133 Snepo Research www.snepo.com Gary says Hi!
+  137 nic gihl
+  138 Felix Yuan
+  139 mmhanif
+  141 James Snyder
+  144 roddyr2
+  146 Richard Jones <http://mechanicalcat.net/richard>
+  147 Jon-Eric Simmons
+  148 Craig "The Coder" Dunn
+  150 Jesse S (USA)
+  151 Matt I. - github.com/pengii23
+  153 Seth Borders - sethborders.com
+  155 David Zemon (http://david.zemon.name)
+  156 Garry DuBose
+  157 Apeiron Systems
+  158 BAR
+  160 Jakob Hedman
+  163 Bryan Moffatt
+  165 Moises Lorenzo, Tenerife Isl.
+  166 Erik H.
+  170 Peter George
+  171 Nikolas Akerblom
+  174 Chris (@chassing)
+  176 Wei-Ning Huang
+  178 Edd Barrett, UK
+  179 Alec Langford
+  180 Shunya Sato
+  181 Serge GUILLAUME
+  183 Dr. Ross A Lumley
+  184 Dorian Pula
+  189 Tendayi Mawushe
+  190 SDanziger
+  191 Sean O'Donnell
+  192 Kevin McLaughlin
+  193 Tommy Allen
+  194 Beedlebub
+  195 Brad Howes
+  196 Mike B
+  200 Aleš Bublík
+  202 David Dever
+  206 Danilo Bargen, https://dbrgn.ch/
+  209 Brendan Curran-Johnson
+  210 Piotr Maliński http://www.rkblog.rk.edu.pl
+  211 SEE Co. - Science, Engineering and Education Co. - www.seeco.us
+  215 Richard Lancaster
+  218 Bilbo Baggins from Middle Zealand
+  219 Ollie Guy
+  221 Shlomo Zippel
+  222 Andy Kenny
+  223 Double-O-ren
+  226 For the pleasure of @tinproject
+  229 mfr
+  230 Eric Floehr
+  232 Matt from Adp.EU.Com
+  234 Joanna Tustanowska & Wojciech Bederski
+  235 Eric LeBlanc
+  236 Siggy , Belgium
+  238 Mauro De Giorgi
+  239 Belug http://belug.ca/
+  241 Arik Baratz - @arikb
+  242 Zvika Palkovich
+  243 Yves Dorfsman - yves at zioup dot com
+  244 Asad Ansari, Canada
+  245 Brandon Bennett
+  246 Christoph Bluoss
+  248 Konstantin Renner
+  249 Abtin Afshar
+  250 A. Soltani
+  251 Jon Mills
+  256 NoisyGecko
+  258 Lothilius
+  262 Jay Deiman
+  263 flo at twigs dot de
+  265 _Mark_ eichin at thok dot org
+  267 Adrian Astley
+  268 aknerats[::-1]
+  271 @robberwick
+  272 Daniele Lacamera
+  273 Thanks to M. Derome
+  275 Paul Paradigm, Australia
+  276 lyuden
+  277 www.SamuelJohn.de
+  279 John Pinner, funthyme at gmail dot com
+  280 Michael and Vicky Twomey-Lee
+  281 Kenneth Ljungqvist
+  292 Karin Beitins, Australia
+  295 Nick Johnson
+  297 Chris Cole  U.K.
+  298 The planet Andete is famous for its killer edible poets.
+  302 Patrick B (aged 11)
+  304 Chris Mason, Australia
+  306 Steven Foster
+  308 Pat Fleury, Andrew Hodgson
+  311 @moneywithwings
+  313 Neil Stephen
+  314 Cory A. Johannsen
+  315 Massimo Di Stefano - geofemengineering.it - Italy
+  317 James Luscher, Madison, Wisconsin, USA
+  319 Lindsay Watt
+  320 Nils Fischbeck
+  324 Peter J. Farrell - Maestro Publishing, LLC - Minneapolis, MN, USA
+  325 Alex Willmer (@moreati)
+  328 T.R. Renicker
+  329 William B. Phelps
+  330 David Goodger
+  331 Viktoriya Skoryk
+  334 JR Rickerson
+  336 Keven Webb
+  338 www.hcfengineering.com
+  341 Larry Lab Rat, Shalford.
+  342 Rob Hetland
+  343 Brush Technology (NZ)
+  346 Jason Fehr
+  347 Olivier Vigneresse
+  348 Nano Gennari, me at nngn dot net, Brasilia, Brazil
+  352 Petr Viktorin (http://encukou.cz)
+  355 Karijn Wessing (IN2TECH)
+  356 Arsham Hatambeiki
+  358 Alvaro Rivera-Rei
+  360 Nolan & Theo Baldwin
+  362 Tyler Baker, USA
+  363 Russell Warren (Canada)
+  365 Aaron Peterson
+  366 Al Billings
+  367 Jeremy Herbert
+  372 Dimitrios Bogiatzoules, www.bogiatzoules.de, Germany
+  375 Paul Nicholls
+  376 Robert F. Brost
+  378 Aideen (Cambridge, UK) - Very happy backer and follower of this great project
+  379 Caelan Borowiec
+  380 Caroline, Canada - carolinesimpson.ca
+  382 Rikard Anglerud
+  383 Scott Will
+  384 Jussi Ylanen
+  385 @joshbapiste
+  387 spongefile
+  389 Keith Baston
+  392 Holger Steinlechner
+  394 sent by State mail service
+  398 N.Pearce, Wells UK - @t #ashtag UK
+  399 Paid up & stood back;;
+  401 Mike M. Tempe, AZ, USA
+  406 Brandon Jasper
+  407 Dan Mahoney
+  411 George Bushnell, for use in CPSS
+  412 Per Konradsson
+  413 Supported by afinzel
+  417 Tom Igoe
+  418 Jonathan Saggau
+  419 Chris Allick http://chrisallick.com
+  420 joshuaalbers.com
+  423 B. Adryan
+  432 Tim Fuchs
+  433 steven antalics
+  434 BezouwenR
+  435 Andrew Addison
+  436 Hubert de L'arrêtdubus - France
+  437 Salim Fadhley
+  438 Ben Hockley
+  439 Geoffrey Webb
+  441 Vladimir Mikulik
+  442 7 Elements & Troy Benjegerdes - hozer at hozed dot org
+  443 Pashakun
+  444 Craig Barnes, UK
+  445 Andres Ayala
+  446 Stonly Baptiste (urban.us)
+  448 Brian Conner
+  452 Jeremy Blum (jeremyblum.com)
+  454 Pebble Technology
+  455 Andrew
+  456 Jeffrey Allen Randorf, PE PhD
+  457 J.A.Zaratiegui a.k.a. Zara
+  459 simon.vc and hack.rs
+  462 La vida es para vivirla y ser feliz, de esa forma damos gracias por tan gran regalo!
+  463 Alistair Walsh
+  469 fun, Ireland
+  474 martijnthe.nl
+  479 Andreas Kobara
+  486 Armanda
+  487 Richard Myhill
+  488 Ash Gibbons
+  489 Glenn Franxman HackerMojo.com
+  492 Russell Durrett
+  494 Pieter Ennes
+  495 Tom Gross, Washington D.C.
+  496 Mark Schafer
+  497 Sandro Dutra, Brazil
+  500 Can Bulbul
+  501 Chih-Chun Chen, http://abmcet.net/Chih-Chun_Chen/home.html
+  502 Lost Property Bureau Ltd
+  503 skakz
+  504 Chad Cooper
+  505 Makhan Virdi, mlvirdi.com, InfinityXLabs.com, USA
+  507 Alasdair Allan
+  509 dlbrandon
+  511 Dr J Garcia, Sweden
+  513 Tiago Vieira
+  518 Team ME
+  519 OBD Solutions (http://www.obdsol.com)
+  520 @pors
+  521 Joo Chew Ang
+  523 garbas
+  526 http://epoz.org/
+  527 J. Sabater
+  530 José-María Súnico
+  537 Erfundnix
+  538 Tontonisback Belgium
+  539 Greg Benson, Professor, University of San Francisco
+  542 Thomas Sarlandie aka @sarfata
+  545 JanTheMan kickstarter at embedded-systems dot craftx dot biz
+  546 Chuhan Frank Qin
+  549 Peb R Aryan, Indonesia
+  553 Johan Deimert, http://www.ldchome.org
+  555 Conny Sjöblom / Finland
+  558 AndyboyH, UK
+  559 Anthony Lupinetti
+  561 Travis Travelstead
+  566 Siegfried Boyd Isidro-Cloudas
+  567 G. Schroeer
+  568 mmths, http://randomaccessmemory.at/
+  570 Andy Miller - NZ..
+  571 Rodolfo Lara from México
+  572 Gary Patton Wolfe
+  574 Vend-lab Russia
+  578 Super Job! FXF
+  579 Oliver Heggelbacher, www.kickdrive.de
+  581 James Husum
+  585 David Lodge
+  587 Tess
+  592 PR Taylor
+  593 6306665119
+  598 Jorg Bliesener, Brazil - www.bliesener.com
+  602 Rodrigo, Germany
+  605 Tanja Kaiser, www.mrsminirobot.de, Germany
+  606 Franco Ponticelli - www.weblob.net
+  608 Piet Hoffman
+  609 Paul Cunnane
+  610 Balazs Kinszler
+  611 Nathan Ramella (synthesizerpatel)
+  612 Tyler Jones (squirly)
+  613 James Saffery
+  614 Christoffer Sjowall
+  615 Iman Shames
+  616 Thomas Dejanovic, Australia.
+  618 Tom Alker
+  619 Matt Davis, UK
+  621 Design for the real world! @UXnightingale
+  622 Budd Van Lines
+  624 __Gio__
+  628 Chew Kok Hoor
+  630 Santiago Alarcon, Thanks Damien for Micro Python
+  632 hardtoneselector
+  633 supported by Chris Bunker
+  634 Sebus - France
+  635 Mechanical Men Sweden
+  638 A Fellow Electronics Enthusiast
+  639 Stan Seibert
+  642 Dave Curtis
+  652 Sebastian Ross - www.ross.sx
+  653 Julien Goodwin
+  654 Reinoud de Lange, the Netherlands
+  655 carl beck
+  659 John Gaidimas
+  660 Tyler Eckwright
+  661 Keith Rome (Wintellect - http://www.wintellect.com/blogs/krome)
+  662 Kashev Dalmia - kashevdalmia.com
+  666 Alberto Martín de la Torre
+  667 Niels Kjøller Hansen
+  668 pmst - Italy
+  671 Sergio Conde Gómez (skgsergio)
+  672 Micromint, www.micromint.com
+  675 Thank you
+  677 Kacem Ben Dhiab
+  679 CornishSteve
+  680 Daniel Wood, Warrington, UK.
+  682 Greg "GothAck" Miell
+  688 Matt Williams & Sam Carter
+  691 Frédéric Lasnier
+  694 Tim K
+  697 Joshua Clarke, Guernsey!
+  700 daynewaterlow.com
+  703 Scott Winder
+  704 @DepletionMode
+  707 Maria Yablonina
+  710 Roger Hausermann
+  713 Crazy_Owl
+  714 mike hardin usa
+  717 C. Towne Springer
+  719 ursm gruesst euch
+  720 madnis
+  727 http://itay.bazoo.org
+  729 @0atman
+  730 Jerry Gagnon
+  732 Emmanuel Boyer
+  738 suspenders
+  739 Roland Frédéric - http://www.creativeconvergence.be/
+  742 @herchu
+  745 Riley Lundquist
+  746 Go LOBOS
+  749 João Alves, http://jpralves.net, Portugal
+  751 Nick Porcino
+  753 Jack E. Wilkinson, Texas, USA
+  754 @rcarmo on Twitter/Github
+  758 Matt Manuel, www.mattmanuel.com
+  759 Padraic D. Hallinan
+  760 Rob Fairbairn
+  763 Zac Luzader
+  773 terje nagel, dk
+  775 Luc LEGER
+  782 Luis M. Morales S.
+  785 Charles Edward Pax
+  786 Daryl Cumbo
+  787 Zephyris13
+  788 Wonderful project.
+  792 Sylvain Maziere
+  794 Milen
+  795 Robert Mai, Germany, hsapps.com
+  797 Angelo Compagnucci angelo.compagnucci at gmail dot com
+  801 Long Live Micro Python, airtripper.com
+  804 António M P Mendes
+  805 Marc Z.
+  809 Anoyomouse
+  810 in memory of Dan J. Schlacks III
+  817 Peter Froehlich - http://werk-schau.blogspot.com
+  818 Ahmad Albaqsami
+  821 Peter Lavelle (http://solderintheveins.co.uk)
+  822 Manuel Sagra de Diego http://manuelsagra.com/
+  823 Sam Wilson
+  824 Khalis
+  825 c't Hacks
+  828 Georg Bremer
+  830 Ward en Sanne (WenS)
+  832 javacasm http://www.elcacharreo.com Spain
+  833 mctouch
+  835 Bruce Schreiner @ www.stevenscollege.edu/electronics
+  836 Jonas
+  839 Nick Ludlam
+  840 Patrick_Law, UK
+  843 Alex Crouzen, UK
+  848 Ben Banfield-Zanin
+  850 Wouter Slegers, Your Creative Solutions <http://www.yourcreativesolutions.nl/>
+  851 Fred Zyda
+  853 Gianfranco Risaliti
+  854 Ron Hochsprung
+  858 Vianney Tran
+  862 Aaron Mahler - http://halfpress.com
+  868 Stephan Schulte, Germany
+  869 Kenneth Henderick
+  872 DaveP (www.davepeake.com)
+  876 Kyle Gordon, http://lodge.glasgownet.com
+  877 Joseph Gerard Campbell
+  881 Thanks for the board. Good luck to you. --Jason Doege
+  883 Garet McKinley
+  884 www.magtouchelectronics.co.za
+  889 Ben Johnson
+  896 Ruairi Newman
+  897 Gemma Hentsch
+  902 Alexander Steppke
+  906 Stephen Paulger
+  907 Martin Buhr, http://lonelycode.com, UK
+  912 Dale Drummond
+  913 Go Utah State
+  918 Jarturomartinez, Mexico
+  921 Barry Bourne Micro Python Supporter
+  923 Andreas Bolka
+  927 Thanks Susan, Tom, Paul, and Mark!
+  935 http://wall-y.fr
+  937 Eero af Heurlin, Finland, https://github.com/rambo/
+  938 Guillaume DAVY
+  941 Alexander Steffen
+  942 Janne "Lietu" Enberg
+  945 Luca 'loop' de Marinis - https://github.com/loop23
+  946 Andras Veres-Szentkiralyi http://techblog.vsza.hu/
+  948 Florian flowolf Klien (http://blog.flo.cx)
+  949 nickyb
+  951 Mark Walland, England
+  952 Ian Barfield
+  953 Andrew Murray, UK - eat my code - http://links.bloater.org/micropython
+  955 Kyle Howells
+  956 Chris Cadonic
+  957 LCS, USA: scripting___/||\===/||\___embedded
+  958 Sven Wegener
+  963 Kean Electronics http://www.kean.com.au/
+  964 Beandob
+  965 Don't feed the troll.
+  966 Alexis Polti (http://rose.eu.org)
+  969 Scottyler
+  971 The Dead's Own Jones
+  974 Evseev Alexey
+  976 Arnaud
+  978 Jannis Rosenbaum
+  980 paul at fontenworks dot com
+  981 John Griessen ecosensory.com USA
+  982 Tobias Ammann
+  983 Simon V.
+  984 JaWi
+  987 Ergun Kucukkose
+  989 Jonathan Piat France
+  990 Steve Pemberton
+  993 Aaron Robson
+  994 Antoine Authier
+  995 Thomas Winkler, Austria
+  997 Jannes mit dem dicken Pannes
+ 1001 Joe Baker
+ 1002 Jon Hylands, Canada (blog.huv.com)
+ 1004 Mike Asker (aka mpymike)
+ 1007 Charles V Bock - Charles at CharlesBock dot com
+ 1010 Remember June 4th, 1989
+ 1012 Stuart Marsden
+ 1014 Arthur P, USA
+ 1015 John Hall & Jeremy Armijo
+ 1017 Luciano Ramalho, Python.pro.br
+ 1018 Quentin Stafford-Fraser
+ 1019 Marcin Walendzik Ratingpedia.eu
+ 1020 Wincent Balin
+ 1022 rbp
+ 1024 Frank Carver ( www.frankcarver.me )
+ 1026 Peter Farmer, http://geekytronics.com/
+ 1029 Rubens Altimari
+ 1033 Sebastian
+ 1035 Gerli, Estonia
+ 1036 Maurin, Switzerland
+ 1037 Kevin Houlihan (http://crimsoncookie.com)
+ 1039 Jon Green of Adeptium Consulting (www.adeptium.com)
+ 1040 Eirik S. Mikkelsen
+ 1042 Jogy Sam
+ 1043 GGG
+ 1045 Sean E Palmer, epimetheon.com
+ 1049 Greg O'Drobinak, USA
+ 1050 RaptorBird Robotics Inc
+ 1051 Desmond Larsen-Rosner
+ 1056 Crusty
+ 1057 ArthurGuy.co.uk
+ 1059 Melissa-Ivan, 14/04/2013
+ 1064 Enrico Spinielli, https://github.com/espinielli
+ 1066 Dave Snowdon
+ 1067 Martin P. Hellwig
+ 1070 Carl Clement
+ 1074 Paul Taylor
+ 1076 Pandemon
+ 1082 Thrilled to support Damien's effort to put this together: there will no doubt be many applications for this effort and many enhancements and ports..
+ 1083 Oddvar Lovaas
+ 1090 BenScarb
+ 1093 Www.qualnetics.com
+ 1094 Manny Muro - Now Python can RULE from below as it does from above! PYTHON RULES!!! :)
+ 1095 Michael Grazebrook
+ 1098 Mark Shuttleworth, UK
+ 1106 wyzzar
+ 1110 Luca Zanetti
+ 1112 Carl A Fagg
+ 1115 Adam Klotblixt
+ 1118 Breawn
+ 1122 pippyisatruck
+ 1124 Andrew "ClothBot" Plumb
+ 1126 Realise the projects your heart beats for! Sven Wiebus (http://wiebus.tumblr.com)
+ 1128 Citius Systems
+ 1130 Benjamin & Reuben Fuller
+ 1131 aglimme
+ 1133 John Becker
+ 1135 Mark Drummond
+ 1138 JHProuty
+ 1141 Lars Olsson Sweden
+ 1144 daisuke, http://dkpyn.com
+ 1145 Chris Pawley - http://www.pawley.co.uk/honey/
+ 1147 Daniel from EzSBC.com
+ 1149 New York Mortgage Exchange NYME.COM
+ 1150 Herb Winters,USA,www.ecs87.com
+ 1151 renttu
+ 1159 Joe Rickerby
+ 1160 john guthrie
+ 1161 PUBLIC
+ 1163 dobra-dobra
+ 1164 Neil Reynolds, Staffordshire
+ 1165 GEHoward
+ 1166 Frank Delporte
+ 1167 Bauer Brauner Enterprise
+ 1168 Francisco Mardones
+ 1169 Ryan Kirkpatrick, @rkirkpatnet, http://rkirkpat.net/
+ 1170 Krister Svanlund
+ 1174 Derek Patton Pearcy
+ 1177 Roger Olsson, Sweden
+ 1179 Jan-Niklas Braak
+ 1180 Pete boy
+ 1181 MilenX
+ 1182 Ubbe Larsson
+ 1183 Simon Freethy
+ 1184 Daniel Andersson
+ 1187 Daniele Procida
+ 1190 Adrian Duke
+ 1191 Pauline Middelink
+ 1193 Ted Gueniche
+ 1197 Craig Knott, University of Queensland, Australia
+ 1198 Jamie Mackenzie - Australia
+ 1199 ravenoak
+ 1200 LucaP Luni Italy
+ 1203 jacanterbury
+ 1205 Bleachin, www.rhyspowell.com
+ 1207 Supported by Andrew Maier via Kickstarter
+ 1208 Rob, http://robjstanley.me.uk
+ 1210 George Gingell
+ 1213 Chris Elleman
+ 1215 Jack Barham - @jackbarham - http://jackbarham.com
+ 1221 Kyle Dausin
+ 1222 Ben Lucker
+ 1225 Gareth cheesewhisk Evans
+ 1226 Jacob Forsyth
+ 1227 Olof S - Germany
+ 1231 Brasil
+ 1233 glaslos
+ 1234 Will Cooke - http://www.whizzy.org
+ 1236 Andrew Wright - Canada
+ 1239 Resourceful Robin
+ 1240 Jay O'Neill @jayoneilluk
+ 1241 Dennis G Daniels
+ 1244 J. Peterson (www.saccade.com)
+ 1245 Chipaca
+ 1246 Nicko van Someren
+ 1247 C. Cumbaa, Canada
+ 1248 Gyro Gearloose was here
+ 1249 Magnus Ericmats, Sweden
+ 1253 Steve Wilson
+ 1256 Adrian Bullock
+ 1258 Sarevian & Longwall
+ 1261 Skipp Savage
+ 1265 Eric Nahon
+ 1267 Stuart Dallas / 3ft9 Ltd
+ 1270 USA
+ 1271 Oliver
+ 1277 jeffmcneill.com
+ 1278 alnjxn
+ 1283 Marc Liyanage
+ 1285 Christian Lange
+ 1286 Bryant Paul Umali from the Philippines
+ 1290 W.B.Hill, Norwich, UK
+ 1292 Michael Karliner
+ 1293 Oli Larkin
+ 1303 A. Pockberger
+ 1304 dc - bagel
+ 1305 Thadeus Arnel
+ 1308 technoweenie
+ 1309 Liam Welsh
+ 1313 Per Thorell, Sweden
+ 1314 peterlee
+ 1316 Dustin Mierau
+ 1317 tech-zen.tv
+ 1320 Cheers from IDF :)
+ 1322 www.a-d-k.de
+ 1323 rixx
+ 1324 @jlev
+ 1325 e2e4
+ 1328 Thomas J. Quinlan, London UK
+ 1329 Don Bone
+ 1331 Narayanamurthi
+ 1333 PGS_Astra-ProjeX_Wilts
+ 1337 Mark Schulz & Phillip Long, CEIT, The University of Queensland
+ 1340 Tiegeng (Tim) Ren
+ 1344 EMR_1344, DE
+ 1348 Matt Ward, Nottingham
+ 1351 Rupert
+ 1352 Cory Li - http://cory.li
+ 1354 Jim Davies, Brighton, UK
+ 1355 Jon Watkins, UK
+ 1356 Thomas, www.bitmix.de
+ 1359 Markus Gritsch
+ 1362 Carl H. Blomqvist
+ 1371 Brian Green
+ 1374 Ben Merryman
+ 1375 O'Dea
+ 1376 Josh Trujillo
+ 1378 Daniel Halloran
+ 1379 another_martin
+ 1383 Thanks for innovating!
+ 1385 CoderDojo Malahide
+ 1397 Jacob Z
+ 1398 Staffan Hillberg
+ 1399 http://kim.ht
+ 1402 Can't wait to plug it in!
+ 1403 Márton Szinovszki
+ 1405 sellorm says 'Hi!'
+ 1406 Thomas Provoost
+ 1411 Clive Freeman
+ 1412 Norman Thomas
+ 1415 Javier Llopis
+ 1417 Ho Man Fai
+ 1418 Anders Helland
+ 1421 Richard lavanture
+ 1425 Alan Churley, UK
+ 1426 Robert'); DROP TABLE Students;--unicode is fun!
+ 1427 Go Illini!
+ 1430 MicroPy FTW
+ 1431 Bryan Morrissey, www.browninnovations.com
+ 1436 Krzysztof Chomski, Poland
+ 1437 WellAware (USA)
+ 1441 Tomas Hau
+ 1443 Paul Way
+ 1444 Benjamin Anderson
+ 1445 Andrew Bates
+ 1446 Davide Di Blasi
+ 1451 Mathias Fischer
+ 1453 Drexore, NL
+ 1454 Marek Mroz
+ 1455 Mark Easley Jr. - USA
+ 1457 Joshua Warren
+ 1459 Rohan Menon
+ 1460 Paul Sokolovsky
+ 1461 Chris Foresman, @foresmac
+ 1475 USI
+ 1478 Chris Emerson
+ 1479 Ph. Truillet, France, http://www.irit.fr/~Philippe.Truillet
+ 1480 WAB3
+ 1481 Lucidologia.pl
+ 1482 Ed Hardebeck | www.hardebeck.us
+ 1484 Ludovic Léau-Mercier, www.coriolys.org, France
+ 1487 BLUEBOBO
+ 1488 Berno Kneer, Germany
+ 1491 Julian Eccli
+ 1494 Batman
+ 1495 Manuel Núñez Sánchez
+ 1496 Millie and Sadie Smith
+ 1499 Ronald Eddy
+ 1500 SynShop Las Vegas
+ 1503 This is really cool.  - Jack Conway
+ 1507 Renesas Electronics America
+ 1509 Team
+ 1513 A. Lamborn KD0ZFY
+ 1514 olifink
+ 1520 mike at sustainable-opportunities dot com
+ 1521 luis almeida, Teresina - Brazil
+ 1523 Muhammad Jamaludin
+ 1524 Sdlion
+ 1525 Charles Rogers
+ 1526 Diego M. Aires, Brazil
+ 1529 muwatt.com
+ 1532 Proud supporter of microPython
+ 1535 Jesus J. de Felipe
+ 1536 slminneman.com -- Wow, an acknowledgement?  ...really?
+ 1538 Mike (Meski) Smith
+ 1541 Piero Steinger
+ 1545 Alex Rembish (https://rembish.org)
+ 1551 Sergey [BuG2BuG] Sobko, Russia
+ 1553 Serge Krier
+ 1556 Luuk Derksen
+ 1561 Jimmy Caille (CH)
+ 1562 Jesús Leganés Combarro "piranna"
+ 1564 Viacheslav Olegovich Savitskiy
+ 1565 Jamie Whitehorn
+ 1567 Bagge Carlson
+ 1568 Milan Cermak
+ 1569 Matthias Lemp
+ 1570 BOFG
+ 1571 Johan Elmerfjord, Sweden
+ 1573 Matt Finch • fnch.io
+ 1574 Jean-Francois Paris
+ 1575 Florian Franzen, Germany
+ 1576 doganowscy.com
+ 1579 Stan Yamane
+ 1580 William Cirillo
+ 1583 David Dibben
+ 1584 Nicolás, Amelia, Luli y alecu
+ 1586 Alex W
+ 1591 Livia Maria Dias Tavares
+ 1593 d freymann chicago il & his australian shepherd jaldi
+ 1594 Barnstorm Studio, LLC
+ 1595 Sashi Penta
+ 1597 tflhyl
+ 1598 clacktronics
+ 1599 j3hyde
+ 1600 Rik Williams
+ 1602 Valeriy Van, Ukraine, w7software.com
+ 1603 Louis Taylor - https://github.com/kragniz
+ 1606 What's the derivative of (6.022 x 10^23)x? That's A(n)mol
+ 1611 Bailey & Brayden Yoong Policarpio
+ 1613 William Bettridge-Radford
+ 1617 Urbane Jackson
+ 1618 Henius
+ 1622 Alister Galpin, New Zealand
+ 1623 Marco Bertoldi
+ 1627 Julian Pistorius
+ 1628 www.neotral.com
+ 1632 ChrisB
+ 1633 Norbini
+ 1634 Eric Rand at Brownhatsecurity.com
+ 1636 Benjamin Eberle
+ 1637 MG Projects bvba, Geert Maertens, Belgium
+ 1640 Robson dos Santos França (Brasil)
+ 1642 Udine
+ 1643 Simon Critchley
+ 1644 Sven Haiges, Germany
+ 1645 Yi Qing Sim
+ 1646 "silicium" ("silicium_one", if "silicium" is busy)
+ 1648 Andy O'Malia, @andyomalia
+ 1650 RedCamelApps.com
+ 1652 Christoph Heer
+ 1653 AlisonW
+ 1654 Yannick Allard (Belgium) supported this project.
+ 1655 Andy Pointon, UK
+ 1660 Diego Cantalapiedra
+ 1664 Pepillou
+ 1670 Sonny Cannon
+ 1671 Rick W
+ 1672 David Chan, USA
+ 1674 Philip Rowlands
+ 1675 dieresys
+ 1676 T.R. Fullhart
+ 1683 Oleg Sidorkin
+ 1686 Tatsuro Yasukawa
+ 1687 Brad Smith, Somerville MA, USA
+ 1688 kristoffervikhansen.com
+ 1690 Nice Project de W6AKB Alan Biocca
+ 1691 Hiss Hisss Hissss Hiss Hiss Hissssssss
+ 1692 Alan Kennedy
+ 1698 ElChessu
+ 1701 Flower Craswell
+ 1702 David Fontenot
+ 1707 To innovation & creativity. Tony J Winter
+ 1708 Joakim Hentula
+ 1711 Michael Schaefer
+ 1713 Brody Radford ~ www.brodyradford.com
+ 1714 Charles Durrant
+ 1715 Rodrigo S.
+ 1718 Dima Shylo
+ 1719 Jiahao James Jian
+ 1722 Helen Wilson, Christ's Hospital
+ 1726 Martin Aule, http://hackest.org/
+ 1727 İsmail Etem Tezcan, Rasteda
+ 1728 Charlie "Blackfrog" Sizer
+ 1729 Matloob Qureshi
+ 1730 Travis Saul http://travissaul.com
+ 1731 Michael Cavins
+ 1733 Peter Köllensperger, Norway
+ 1734 Anne Harrison
+ 1736 Peter Bradeen
+ 1739 Fredrik Luthander
+ 1740 Nick LaRosa
+ 1744 Aladuino
+ 1745 dgrebb
+ 1746 Truls Unstad
+ 1748 Jesus Saves
+ 1750 Andy Stannard (@rockmonkey)
+ 1751 Daniel Atkinson
+ 1755 John Potter
+ 1758 Ian V
+ 1760 David Leinbach
+ 1761 nemec-automation.com
+ 1765 Supported by JoW with Hardwired TCP/IP from www.WIZnet.eu
+ 1767 misskniss, Boise Idaho. It is our responsibility to code the freedom we want to see in the world.
+ 1768 Jeff Vahue - Knowlogic Software Corp.
+ 1769 Pat Molloy
+ 1770 Greg Maxwell  gregmaxwell-at-mac-dot-com
+ 1771 Rich Robinson
+ 1773 Ken Corey @ flippinbits.com
+ 1782 Acknowledged
+ 1785 Optimized Tomfoolery
+ 1791 Nontakan Nuntachit, Thailand
+ 1794 Rasit Eskicioglu - Canada
+ 1795 Simon Elliston Ball
+ 1796 pfh
+ 1798 John W. C. McNabb
+ 1799 Frank Sanborn
+ 1803 Morgan Hough
+ 1804 Sorcha Bowler
+ 1805 http://www.WayneKeenan.info
+ 1806 HBEE, hbee.eu
+ 1807 Deadlight
+ 1809 www.danenet.org
+ 1811 Sergey Nebolsin
+ 1813 Threv
+ 1817 dynsne
+ 1818 David Wright
+ 1819 John Warren
+ 1821 I wanted Erlang! (╯°□°)╯︵ ┻━┻
+ 1825 Howard R Hansen
+ 1828 Kevin Schumacher
+ 1833 Matthias Erll, Sweden
+ 1836 Matt Graham
+ 1837 thedawn
+ 1838 Ruby Feinstein
+ 1839 Gustavo Muñoz (timbergus)
+ 1840 Ian Paczek
+ 1841 Köteles Károly, Hungary
+ 1843 Tobias Sette Ferreira
+ 1846 x4FF3 <3 microPython
+ 1847 Enrico Faulhaber (Germany)
+ 1850 jolan00
+ 1854 Red Harbinger Inc
+ 1855 Noman
+ 1858 @DerLinkshaender
+ 1863 Jon Woodcock
+ 1864 Elmo, hakkerikartano.fi
+ 1865 Imaginals
+ 1866 Sam Hathaway and Rachel Stevens
+ 1874 Remo Sanges, SZN, Italy
+ 1875 Devraj Mukherjee
+ 1876 an Embedded fan
+ 1877 Peter Huisers
+ 1878 Kin-Wai Lee (Malaysia)
+ 1879 Samuel Hawksby-Robinson
+ 1881 R. Stock
+ 1886 Randy of Capistrano street backed Damien's MicroPython!
+ 1887 Rogério Bulha Siqueira - www.esd-talk.com - Brazil
+ 1889 NickE is happy to support such a worthy project!
+ 1892 John Boudreaux
+ 1894 Riverfreeloader
+ 1895 Jose Marcelino http://metavurt.net
+ 1896 T Britto-Borges
+ 1899 DannyWhitsonUSA
+ 1904 José Iván Ferrer Ruiz.
+ 1905 Tom Loredo
+ 1906 Gregory Perry USA
+ 1908 josephoberholtzer.com
+ 1910 Michael Klos, USA
+ 1912 Adam Mildenberger
+ 1913 R Anderson
+ 1914 Nikesh, USA
+ 1915 Bogdan Chivoiu, Romania
+ 1916 Scott C. Lemon, USA
+ 1918 Konstantin Ufimtsev (@KestL)
+ 1919 Benny Khoo
+ 1922 Nicci Tofts
+ 1925 Joshua Coxwell
+ 1926 Franklin Hamilton
+ 1929 Leroy Douglas
+ 1930 A ナルと fan from Nigeria who likes smileys, here's one for good measure  :)
+ 1931 Kimmo Lahtinen, Finland
+ 1932 http://staybles.co.uk
+ 1937 The Olivetti's: Emanuele Laura Nausicaa Sibilla Ettore
+ 1940 Pascal Hirsch
+ 1942 cbernander, Sweden
+ 1944 Enrico M.
+ 1947 Dinis Cruz
+ 1949 Jonathan Greig, http://embroidermodder.github.io
+ 1950 Andy Bower
+ 1952 Gerard Hickey
+ 1953 Fabrice BARRAL was here ...
+ 1955 Pieter Röhling
+ 1957 uomorando, Italy
+ 1959 Acacio Cruz
