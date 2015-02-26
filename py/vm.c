@@ -566,26 +566,24 @@ dispatch_loop:
                         SET_TOP(mp_const_none);
                         mp_call_function_n_kw(obj, 3, 0, no_exc);
                     } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
-                        mp_obj_t cause = POP();
+                        mp_obj_t cause = TOP();
                         switch (MP_OBJ_SMALL_INT_VALUE(cause)) {
-                            case UNWIND_RETURN: {
-                                mp_obj_t retval = POP();
-                                mp_call_function_n_kw(TOP(), 3, 0, no_exc);
-                                SET_TOP(retval);
-                                PUSH(cause);
-                                break;
-                            }
-                            case UNWIND_JUMP: {
+                            case UNWIND_RETURN:
                                 mp_call_function_n_kw(sp[-2], 3, 0, no_exc);
-                                // Pop __exit__ boundmethod at sp[-2]
-                                sp[-2] = sp[-1];
-                                sp[-1] = sp[0];
-                                SET_TOP(cause);
                                 break;
-                            }
+                            case UNWIND_JUMP:
+                            with_cleanup_no_other_choice:
+                                mp_call_function_n_kw(sp[-3], 3, 0, no_exc);
+                                // Pop __exit__ boundmethod at sp[-3]
+                                sp[-3] = sp[-2];
+                                break;
                             default:
                                 assert(0);
+                                goto with_cleanup_no_other_choice; // to help flow control analysis
                         }
+                        sp[-2] = sp[-1]; // copy retval down
+                        sp[-1] = sp[0]; // copy cause down
+                        sp--; // discard top value (was cause)
                     } else if (mp_obj_is_exception_type(TOP())) {
                         // Need to pass (sp[0], sp[-1], sp[-2]) as arguments so must reverse the
                         // order of these on the value stack (don't want to create a temporary
