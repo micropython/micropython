@@ -271,46 +271,6 @@ STATIC mp_obj_t pyb_mkdisk(mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_mkdisk_obj, pyb_mkdisk);
 
-/// \function wdt_enable('msec')
-/// Enabled the watchdog timer with msec timeout value
-STATIC mp_obj_t pyb_enable_wdt(mp_obj_t msec_in) {
-    mp_int_t msec = mp_obj_get_int(msec_in);
-    pybwdt_ret_code_t ret;
-    ret = pybwdt_enable (msec);
-    if (ret == E_PYBWDT_IS_RUNNING) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
-    }
-    else if (ret == E_PYBWDT_INVALID_TIMEOUT) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_enable_wdt_obj, pyb_enable_wdt);
-
-/// \function wdt_kick()
-/// Kicks the watchdog timer
-STATIC mp_obj_t pyb_kick_wdt(void) {
-    pybwdt_kick ();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_kick_wdt_obj, pyb_kick_wdt);
-
-/// \function enable_heartbeat()
-/// Enables the heartbeat signal
-STATIC mp_obj_t pyb_enable_heartbeat(void) {
-    mperror_enable_heartbeat ();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_enable_heartbeat_obj, pyb_enable_heartbeat);
-
-/// \function disable_heartbeat()
-/// Disables the heartbeat signal
-STATIC mp_obj_t pyb_disable_heartbeat(void) {
-    mperror_disable_heartbeat ();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_heartbeat_obj, pyb_disable_heartbeat);
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
@@ -342,10 +302,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay),              (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync),                (mp_obj_t)&pyb_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdisk),              (mp_obj_t)&pyb_mkdisk_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_wdt),          (mp_obj_t)&pyb_enable_wdt_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_kick_wdt),            (mp_obj_t)&pyb_kick_wdt_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_heartbeat),    (mp_obj_t)&pyb_enable_heartbeat_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_heartbeat),   (mp_obj_t)&pyb_disable_heartbeat_obj },
 
 #if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&pyb_rng_get_obj },
@@ -360,6 +316,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_obj },
 
 #if MICROPY_HW_HAS_SDCARD
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },

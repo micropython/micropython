@@ -86,6 +86,26 @@ void mperror_init0 (void) {
 #endif
 }
 
+void mperror_check_reset_cause (void) {
+    // if we are recovering from a WDT reset, trigger
+    // a hibernate cycle for a clean boot
+    if (MAP_PRCMSysResetCauseGet() == PRCM_WDT_RESET) {
+        HWREG(0x400F70B8) = 1;
+        UtilsDelay(800000/5);
+        HWREG(0x400F70B0) = 1;
+        UtilsDelay(800000/5);
+
+        HWREG(0x4402E16C) |= 0x2;
+        UtilsDelay(800);
+        HWREG(0x4402F024) &= 0xF7FFFFFF;
+
+        MAP_PRCMHibernateWakeupSourceEnable(PRCM_HIB_SLOW_CLK_CTR);
+        // set the sleep interval to 10ms
+        MAP_PRCMHibernateIntervalSet(330);
+        MAP_PRCMHibernateEnter();
+    }
+}
+
 void mperror_deinit_sfe_pin (void) {
     // disable the pull-down
     MAP_PinConfigSet(MICROPY_SAFE_BOOT_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD);
@@ -179,3 +199,38 @@ void nlr_jump_fail(void *val) {
     __fatal_error(NULL);
 #endif
 }
+
+#ifndef BOOTLOADER
+/******************************************************************************/
+// Micro Python bindings
+
+/// \function enable()
+/// Enables the heartbeat signal
+STATIC mp_obj_t pyb_enable_heartbeat(mp_obj_t self) {
+    mperror_enable_heartbeat ();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_enable_heartbeat_obj, pyb_enable_heartbeat);
+
+/// \function disable()
+/// Disables the heartbeat signal
+STATIC mp_obj_t pyb_disable_heartbeat(mp_obj_t self) {
+    mperror_disable_heartbeat ();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_disable_heartbeat_obj, pyb_disable_heartbeat);
+
+STATIC const mp_map_elem_t pyb_heartbeat_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),    (mp_obj_t)&pyb_enable_heartbeat_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable),   (mp_obj_t)&pyb_disable_heartbeat_obj },
+};
+STATIC MP_DEFINE_CONST_DICT(pyb_heartbeat_locals_dict, pyb_heartbeat_locals_dict_table);
+
+static const mp_obj_type_t pyb_heartbeat_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_HeartBeat,
+    .locals_dict = (mp_obj_t)&pyb_heartbeat_locals_dict,
+};
+
+const mp_obj_base_t pyb_heartbeat_obj = {&pyb_heartbeat_type};
+#endif

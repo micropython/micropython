@@ -27,15 +27,11 @@
 #ifndef PYBWDT_H_
 #define PYBWDT_H_
 
-typedef enum {
-    E_PYBWDT_OK = 0,
-    E_PYBWDT_IS_RUNNING = -1,
-    E_PYBWDT_INVALID_TIMEOUT = -2
-}pybwdt_ret_code_t;
+#include "py/obj.h"
+
+extern const mp_obj_base_t pyb_wdt_obj;
 
 void pybwdt_init0 (void);
-void pybwdt_check_reset_cause (void);
-pybwdt_ret_code_t pybwdt_enable (uint32_t timeout);
 void pybwdt_kick (void);
 void pybwdt_srv_alive (void);
 void pybwdt_sl_alive (void);

@@ -36,10 +36,8 @@ Q(udelay)
 Q(flush)
 Q(FileIO)
 Q(mkdisk)
-Q(enable_wdt)
-Q(kick_wdt)
-Q(enable_heartbeat)
-Q(disable_heartbeat)
+Q(enable)
+Q(disable)
 // Entries for sys.path
 Q(/SFLASH)
 Q(/SFLASH/LIB)
@@ -105,8 +103,6 @@ Q(pin)
 Q(mode)
 Q(pull)
 Q(callback)
-Q(enable)
-Q(disable)
 Q(swint)
 Q(IRQ_RISING)
 Q(IRQ_FALLING)
@@ -159,13 +155,9 @@ Q(SLAVE)
 // for ADC class
 Q(ADC)
 Q(read)
-Q(enable)
-Q(disable)
 
 // for SD class
 Q(SD)
-Q(enable)
-Q(disable)
 
 // for RTC class
 Q(RTC)
@@ -250,3 +242,11 @@ Q(LOW_LATENCY_PM)
 Q(LOW_POWER_PM)
 Q(ALWAYS_ON_PM)
 Q(LONG_SLEEP_PM)
+
+// for WDT class
+Q(WDT)
+Q(kick)
+
+// for HeartBeat class
+Q(HeartBeat)
+
