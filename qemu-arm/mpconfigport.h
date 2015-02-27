@@ -18,6 +18,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_IO               (0)
+#define MICROPY_PY_SYS_EXIT         (1)
 
 // type definitions for the specific machine
 

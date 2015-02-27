@@ -31,7 +31,15 @@ inline void do_str(const char *src) {
         mp_call_function_0(module_fun);
         nlr_pop();
     } else {
-        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+        mp_obj_t exc = (mp_obj_t)nlr.ret_val;
+        if (mp_obj_is_subclass_fast(mp_obj_get_type(exc), &mp_type_SystemExit)) {
+            // Assume that sys.exit() is called to skip the test.
+            // TODO: That can be always true, we should set up convention to
+            // use specific exit code as skip indicator.
+            tinytest_set_test_skipped_();
+            return;
+        }
+        mp_obj_print_exception(printf_wrapper, NULL, exc);
         tt_abort_msg("Uncaught exception");
     }
 end:
