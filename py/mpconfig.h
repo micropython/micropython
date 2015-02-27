@@ -112,6 +112,12 @@
 #define MICROPY_MODULE_DICT_SIZE (1)
 #endif
 
+// Whether realloc/free should be passed allocated memory region size
+// You must enable this if MICROPY_MEM_STATS is enabled
+#ifndef MICROPY_MALLOC_USES_ALLOCATED_SIZE
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (0)
+#endif
+
 // Number of bytes used to store qstr length
 // Dictates hard limit on maximum Python identifier length, but 1 byte
 // (limit of 255 bytes in an identifier) should be enough for everyone
