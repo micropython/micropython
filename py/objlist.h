@@ -35,6 +35,4 @@ typedef struct _mp_obj_list_t {
     mp_obj_t *items;
 } mp_obj_list_t;
 
-mp_obj_t mp_obj_new_list_maybe(mp_uint_t n);
-
 #endif // __MICROPY_INCLUDED_PY_OBJLIST_H__

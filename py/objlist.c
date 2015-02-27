@@ -477,25 +477,6 @@ mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items) {
     return o;
 }
 
-// Special method for usage with exceptions
-// Doesn't initialize items, assumes they will be initialized by client.
-mp_obj_t mp_obj_new_list_maybe(mp_uint_t n) {
-    mp_obj_list_t *o = m_new_obj_maybe(mp_obj_list_t);
-    if (!o) {
-        return o;
-    }
-    o->items = m_new_maybe(mp_obj_t, n);
-    if (!o->items) {
-        m_del_obj(mp_obj_list_t, o);
-        return MP_OBJ_NULL;
-    }
-
-    o->base.type = &mp_type_list;
-    o->len = o->alloc = n;
-
-    return o;
-}
-
 void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items) {
     mp_obj_list_t *self = self_in;
     *len = self->len;

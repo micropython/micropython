@@ -31,7 +31,9 @@
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
-    mp_obj_t traceback; // a list object, holding (file,line,block) as numbers (not Python objects); a hack for now
+    mp_uint_t traceback_alloc : (BITS_PER_WORD / 2);
+    mp_uint_t traceback_len : (BITS_PER_WORD / 2);
+    mp_uint_t *traceback_data;
     mp_obj_tuple_t *args;
 } mp_obj_exception_t;
 

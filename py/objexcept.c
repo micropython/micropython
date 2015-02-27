@@ -38,7 +38,7 @@
 #include "py/gc.h"
 
 // Instance of MemoryError exception - needed by mp_malloc_fail
-const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, MP_OBJ_NULL, mp_const_empty_tuple};
+const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, MP_OBJ_NULL, mp_const_empty_tuple};
 
 // Optionally allocated buffer for storing the first argument of an exception
 // allocated when the heap is locked.
@@ -88,7 +88,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 // Instance of GeneratorExit exception - needed by generator.close()
 // This would belong to objgenerator.c, but to keep mp_obj_exception_t
 // definition module-private so far, have it here.
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, MP_OBJ_NULL, mp_const_empty_tuple};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, MP_OBJ_NULL, mp_const_empty_tuple};
 
 STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
@@ -126,7 +126,7 @@ mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
         o->args = mp_obj_new_tuple(n_args, args);
     }
     o->base.type = type_in;
-    o->traceback = MP_OBJ_NULL;
+    o->traceback_data = NULL;
     return o;
 }
 
@@ -298,7 +298,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         // Unfortunately, we won't be able to format the string...
         o = &MP_STATE_VM(mp_emergency_exception_obj);
         o->base.type = exc_type;
-        o->traceback = MP_OBJ_NULL;
+        o->traceback_data = NULL;
         o->args = mp_const_empty_tuple;
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
@@ -332,21 +332,17 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             offset += sizeof(void *) - 1;
             offset &= ~(sizeof(void *) - 1);
 
-            if ((mp_emergency_exception_buf_size - offset) > (sizeof(mp_obj_list_t) + sizeof(mp_obj_t) * 3)) {
+            if ((mp_emergency_exception_buf_size - offset) > (sizeof(mp_uint_t) * 3)) {
                 // We have room to store some traceback.
-                mp_obj_list_t *list = (mp_obj_list_t *)((byte *)MP_STATE_VM(mp_emergency_exception_buf) + offset);
-                list->base.type = &mp_type_list;
-                list->items = (mp_obj_t)&list[1];
-                list->alloc = (MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - (byte *)list->items) / sizeof(list->items[0]);
-                list->len = 0;
-
-                o->traceback = list;
+                o->traceback_data = (mp_uint_t*)((byte *)MP_STATE_VM(mp_emergency_exception_buf) + offset);
+                o->traceback_alloc = (MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - (byte *)o->traceback_data) / sizeof(o->traceback_data[0]);
+                o->traceback_len = 0;
             }
         }
 #endif // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     } else {
         o->base.type = exc_type;
-        o->traceback = MP_OBJ_NULL;
+        o->traceback_data = NULL;
         o->args = mp_obj_new_tuple(1, NULL);
 
         if (fmt == NULL) {
@@ -416,50 +412,47 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     GET_NATIVE_EXCEPTION(self, self_in);
     // just set the traceback to the null object
     // we don't want to call any memory management functions here
-    self->traceback = MP_OBJ_NULL;
+    self->traceback_data = NULL;
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
-    #if MICROPY_ENABLE_GC
-    if (gc_is_locked()) {
-        if (self->traceback == MP_OBJ_NULL) {
-            // We can't allocate any memory, and no memory has been
-            // pre-allocated, so there is nothing else we can do.
-            return;
-        }
-        mp_obj_list_t *list = self->traceback;
-        if (list->alloc <= (list->len + 3)) {
-            // There is some preallocated memory, but not enough to store an
-            // entire record.
-            return;
-        }
-    }
-    #endif
+    // append this traceback info to traceback data
+    // if memory allocation fails (eg because gc is locked), just return
 
-    // for traceback, we are just using the list object for convenience, it's not really a list of Python objects
-    if (self->traceback == MP_OBJ_NULL) {
-        self->traceback = mp_obj_new_list_maybe(3);
-        if (self->traceback == MP_OBJ_NULL) {
+    if (self->traceback_data == NULL) {
+        self->traceback_data = m_new_maybe(mp_uint_t, 3);
+        if (self->traceback_data == NULL) {
             return;
         }
+        self->traceback_alloc = 3;
+        self->traceback_len = 0;
+    } else if (self->traceback_len + 3 > self->traceback_alloc) {
+        // be conservative with growing traceback data
+        mp_uint_t *tb_data = m_renew_maybe(mp_uint_t, self->traceback_data, self->traceback_alloc, self->traceback_alloc + 3);
+        if (tb_data == NULL) {
+            return;
+        }
+        self->traceback_data = tb_data;
+        self->traceback_alloc += 3;
     }
-    mp_obj_list_t *list = self->traceback;
-    list->items[0] = (mp_obj_t)(mp_uint_t)file;
-    list->items[1] = (mp_obj_t)(mp_uint_t)line;
-    list->items[2] = (mp_obj_t)(mp_uint_t)block;
+
+    mp_uint_t *tb_data = &self->traceback_data[self->traceback_len];
+    self->traceback_len += 3;
+    tb_data[0] = (mp_uint_t)file;
+    tb_data[1] = (mp_uint_t)line;
+    tb_data[2] = (mp_uint_t)block;
 }
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
-    if (self->traceback == MP_OBJ_NULL) {
+    if (self->traceback_data == NULL) {
         *n = 0;
         *values = NULL;
     } else {
-        mp_uint_t n2;
-        mp_obj_list_get(self->traceback, &n2, (mp_obj_t**)values);
-        *n = n2;
+        *n = self->traceback_len;
+        *values = self->traceback_data;
     }
 }
