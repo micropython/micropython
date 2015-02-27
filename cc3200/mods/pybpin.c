@@ -42,6 +42,7 @@
 #include "prcm.h"
 #include "gpio.h"
 #include "pybpin.h"
+#include "pybsleep.h"
 #include "mpexception.h"
 
 
@@ -78,7 +79,13 @@
 /// 2. Supply a string which matches a CPU pin name
 /// 3. Provide a pin number
 
+
+STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+STATIC void pin_obj_configure (const pin_obj_t *self);
+
+
 void pin_init0(void) {
+
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
@@ -116,11 +123,26 @@ void pin_verify_af (uint af) {
     }
 }
 
-void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
+void pin_config (pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
+    // configure the pin in analog mode
+    ((pin_obj_t *)self)->af = af;
+    ((pin_obj_t *)self)->mode = mode;
+    ((pin_obj_t *)self)->type = type;
+    ((pin_obj_t *)self)->strength = strength;
+    pin_obj_configure ((const pin_obj_t *)self);
+    // mark the pin as used
+    ((pin_obj_t *)self)->used = true;
+    // register it with the sleep module
+    pybsleep_add (self, (WakeUpCB_t)pin_obj_configure);
+}
+
+STATIC void pin_obj_configure (const pin_obj_t *self) {
     // Skip all this if the pin is to be used in analog mode
-    if (type != PIN_TYPE_ANALOG) {
-        // PIN_MODE_0 means it stays as a Pin, else, another peripheral will take control of it
-        if (af == PIN_MODE_0) {
+    if (self->type != PYBPIN_ANALOG_TYPE) {
+        // verify the alternate function
+        pin_verify_af (self->af);
+        // PIN_MODE_0 means it stays as a pin, else, another peripheral will take control of it
+        if (self->af == PIN_MODE_0) {
             // enable the peripheral clock for the GPIO port of this pin
             switch (self->port) {
             case PORT_A0:
@@ -139,14 +161,12 @@ void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint stren
                 break;
             }
             // configure the direction
-            MAP_GPIODirModeSet(self->port, self->bit, mode);
+            MAP_GPIODirModeSet(self->port, self->bit, self->mode);
         }
-        // verify the alternate function
-        pin_verify_af (af);
         // now set the alternate function, strenght and type
-        MAP_PinModeSet (self->pin_num, af);
+        MAP_PinModeSet (self->pin_num, self->af);
     }
-    MAP_PinConfigSet(self->pin_num, strength, type);
+    MAP_PinConfigSet(self->pin_num, self->strength, self->type);
 }
 
 /// \method print()
@@ -200,8 +220,6 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     }
     print(env, ", strength=Pin.%s)", qstr_str(str_qst));
 }
-
-STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 /// \classmethod \constructor(id, ...)
 /// Create a new Pin object associated with the id.  If additional arguments are given,
@@ -280,7 +298,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
     }
 
     // configure the pin as requested
-    pin_config (self, af, mode, type, strength);
+    pin_config ((pin_obj_t *)self, af, mode, type, strength);
 
     return mp_const_none;
 }

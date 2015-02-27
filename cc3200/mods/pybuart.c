@@ -46,6 +46,7 @@
 #include "uart.h"
 #include "pybuart.h"
 #include "pybioctl.h"
+#include "pybsleep.h"
 #include "mpexception.h"
 #include "py/mpstate.h"
 #include "osi.h"
@@ -181,6 +182,8 @@ bool uart_init2(pyb_uart_obj_t *self) {
 
     self->enabled = true;
 
+    // register it with the sleep module
+    pybsleep_add (self, (WakeUpCB_t)uart_init2);
     return true;
 }
 
@@ -512,6 +515,8 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         return mp_const_none;
     }
 
+    // unregister it with the sleep module
+    pybsleep_remove (self);
     self->enabled = false;
     MAP_UARTIntDisable(self->reg, UART_INT_RX | UART_INT_RT);
     MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);

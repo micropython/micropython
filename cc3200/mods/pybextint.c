@@ -303,7 +303,7 @@ extint_obj_t* extint_register(mp_obj_t pin_obj, uint32_t intmode, uint32_t pull,
     self->callback = NULL;
 
     // before enabling the interrupt, configure the gpio pin
-    pin_config(pin, PIN_MODE_0, GPIO_DIR_MODE_IN, pull, PIN_STRENGTH_4MA);
+    pin_config ((pin_obj_t *)pin, PIN_MODE_0, GPIO_DIR_MODE_IN, pull, PIN_STRENGTH_4MA);
 
     MAP_GPIOIntTypeSet(pin->port, pin->bit, intmode);
     switch (pin->port) {

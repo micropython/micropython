@@ -42,6 +42,7 @@
 #include "rom_map.h"
 #include "interrupt.h"
 #include "pin.h"
+#include "gpio.h"
 #include "prcm.h"
 #include "adc.h"
 #include "pybadc.h"
@@ -117,7 +118,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     self->num = num;
 
     // configure the pin in analog mode
-    pin_config (pin, 0, 0, PIN_TYPE_ANALOG, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PYBPIN_ANALOG_TYPE, PIN_STRENGTH_2MA);
 
     // enable the ADC channel
     MAP_ADCChannelEnable(ADC_BASE, channel);

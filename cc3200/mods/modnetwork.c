@@ -38,7 +38,7 @@
 ///
 /// This module provides network drivers and routing configuration.
 
-void mod_network_init(void) {
+void mod_network_init0(void) {
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 

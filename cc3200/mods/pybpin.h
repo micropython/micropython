@@ -30,12 +30,19 @@
 
 #include MICROPY_PIN_DEFS_PORT_H
 
+#define PYBPIN_ANALOG_TYPE          0xFF
+
 typedef struct {
   mp_obj_base_t base;
   qstr name;
   uint32_t port;
-  uint32_t bit           : 8;
-  uint32_t pin_num       : 7;
+  uint16_t type;
+  uint8_t  bit;
+  uint8_t  pin_num;
+  uint8_t  af;
+  uint8_t  strength;
+  uint8_t  mode;
+  bool     used;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
@@ -58,7 +65,7 @@ MP_DECLARE_CONST_FUN_OBJ(pin_init_obj);
 
 void pin_init0(void);
 void pin_verify_af (uint af);
-void pin_config(const pin_obj_t *self, uint af, uint mode, uint type, uint strength);
+void pin_config(pin_obj_t *self, uint af, uint mode, uint type, uint strength);
 const pin_obj_t *pin_find(mp_obj_t user_obj);
 const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
 const pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num);

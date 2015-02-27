@@ -138,7 +138,7 @@ STATIC mp_obj_t pybsd_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
         // card detect pin was provided
         if (n_args == 7) {
             pybsd_obj.pin_sd_detect = (pin_obj_t *)pin_find(args[6]);
-            pin_config(pybsd_obj.pin_sd_detect, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
+            pin_config (pybsd_obj.pin_sd_detect, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
         }
         pybsd_obj.pinsset = true;
     }

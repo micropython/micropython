@@ -70,7 +70,7 @@ typedef struct _mod_network_socket_obj_t {
 
 extern const mod_network_nic_type_t mod_network_nic_type_wlan;
 
-void mod_network_init(void);
+void mod_network_init0(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
 
