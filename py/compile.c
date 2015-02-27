@@ -221,7 +221,8 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         if (!(arg1 >= (mp_int_t)BITS_PER_WORD || arg0 > (MP_SMALL_INT_MAX >> arg1) || arg0 < (MP_SMALL_INT_MIN >> arg1))) {
                             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 << arg1);
                         }
-                    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_MORE)) {
+                    } else {
+                        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_MORE)); // should be
                         // int >> int
                         if (arg1 >= (mp_int_t)BITS_PER_WORD) {
                             // Shifting to big amounts is underfined behavior
@@ -229,9 +230,6 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                             arg1 = BITS_PER_WORD - 1;
                         }
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0 >> arg1);
-                    } else {
-                        // shouldn't happen
-                        assert(0);
                     }
                 }
                 break;
@@ -244,12 +242,10 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PLUS)) {
                         // int + int
                         arg0 += arg1;
-                    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_MINUS)) {
+                    } else {
+                        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_MINUS)); // should be
                         // int - int
                         arg0 -= arg1;
-                    } else {
-                        // shouldn't happen
-                        assert(0);
                     }
                     if (MP_SMALL_INT_FITS(arg0)) {
                         //printf("%ld + %ld\n", arg0, arg1);
@@ -276,14 +272,12 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_PERCENT)) {
                         // int%int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, mp_small_int_modulo(arg0, arg1));
-                    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)) {
+                    } else {
+                        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_DBL_SLASH)); // should be
                         if (arg1 != 0) {
                             // int // int
                             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, mp_small_int_floor_divide(arg0, arg1));
                         }
-                    } else {
-                        // shouldn't happen
-                        assert(0);
                     }
                 }
                 break;
@@ -297,12 +291,10 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
                         // -int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, -arg);
-                    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)) {
+                    } else {
+                        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)); // should be
                         // ~int
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, ~arg);
-                    } else {
-                        // shouldn't happen
-                        assert(0);
                     }
                 }
                 break;
@@ -1015,18 +1007,15 @@ STATIC void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             pn_colon = MP_PARSE_NODE_NULL;
             pn_equal = MP_PARSE_NODE_NULL;
 
-        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)) {
+        } else {
             // this parameter has a colon and/or equal specifier
+
+            assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)); // should be
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
             pn_id = pns->nodes[0];
             pn_colon = pns->nodes[1];
             pn_equal = pns->nodes[2];
-
-        } else {
-            // XXX what to do here?
-            assert(0);
-            return;
         }
 
         if (MP_PARSE_NODE_IS_NULL(pn_equal)) {
@@ -1238,11 +1227,9 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
     qstr body_name = 0;
     if (MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_funcdef) {
         body_name = compile_funcdef_helper(comp, pns_body, emit_options);
-    } else if (MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef) {
-        body_name = compile_classdef_helper(comp, pns_body, emit_options);
     } else {
-        // shouldn't happen
-        assert(0);
+        assert(MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef); // should be
+        body_name = compile_classdef_helper(comp, pns_body, emit_options);
     }
 
     // call each decorator
@@ -1434,9 +1421,10 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             *q_base = q_full;
         }
         EMIT_ARG(import_name, q_full);
-    } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+    } else {
+        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_dotted_name)); // should be
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dotted_name) {
+        {
             // a name of the form a.b.c
             if (!is_as) {
                 *q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
@@ -1464,13 +1452,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
                     EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
                 }
             }
-        } else {
-            // shouldn't happen
-            assert(0);
         }
-    } else {
-        // shouldn't happen
-        assert(0);
     }
 }
 
@@ -2067,7 +2049,8 @@ STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n
 }
 
 STATIC void compile_try_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
+    assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])); // should be
+    {
         mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[1];
         if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_try_stmt_finally) {
             // just try-finally
@@ -2089,9 +2072,6 @@ STATIC void compile_try_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             int n_except = mp_parse_node_extract_list(&pns->nodes[1], PN_try_stmt_except_list, &pn_excepts);
             compile_try_except(comp, pns->nodes[0], n_except, pn_excepts, MP_PARSE_NODE_NULL);
         }
-    } else {
-        // shouldn't happen
-        assert(0);
     }
 }
 
@@ -2195,7 +2175,8 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 }
                 c_assign(comp, ((mp_parse_node_struct_t*)pns1->nodes[i])->nodes[0], ASSIGN_STORE); // middle store
             }
-        } else if (kind == PN_expr_stmt_assign) {
+        } else {
+            assert(kind == PN_expr_stmt_assign); // should be
             if (MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 2
@@ -2239,9 +2220,6 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 compile_node(comp, pns1->nodes[0]); // rhs
                 c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
             }
-        } else {
-            // shouldn't happen
-            assert(0);
         }
     }
 }
@@ -2344,24 +2322,20 @@ STATIC void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 case MP_TOKEN_KW_IN: default: op = MP_BINARY_OP_IN; break;
             }
             EMIT_ARG(binary_op, op);
-        } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[i])) {
+        } else {
+            assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[i])); // should be
             mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[i];
             int kind = MP_PARSE_NODE_STRUCT_KIND(pns2);
             if (kind == PN_comp_op_not_in) {
                 EMIT_ARG(binary_op, MP_BINARY_OP_NOT_IN);
-            } else if (kind == PN_comp_op_is) {
+            } else {
+                assert(kind == PN_comp_op_is); // should be
                 if (MP_PARSE_NODE_IS_NULL(pns2->nodes[0])) {
                     EMIT_ARG(binary_op, MP_BINARY_OP_IS);
                 } else {
                     EMIT_ARG(binary_op, MP_BINARY_OP_IS_NOT);
                 }
-            } else {
-                // shouldn't happen
-                assert(0);
             }
-        } else {
-            // shouldn't happen
-            assert(0);
         }
         if (i + 2 < num_nodes) {
             EMIT_ARG(jump_if_false_or_pop, l_fail);
@@ -2401,11 +2375,9 @@ STATIC void compile_shift_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_LESS)) {
             EMIT_ARG(binary_op, MP_BINARY_OP_LSHIFT);
-        } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_MORE)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_RSHIFT);
         } else {
-            // shouldn't happen
-            assert(0);
+            assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_MORE)); // should be
+            EMIT_ARG(binary_op, MP_BINARY_OP_RSHIFT);
         }
     }
 }
@@ -2417,11 +2389,9 @@ STATIC void compile_arith_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         compile_node(comp, pns->nodes[i + 1]);
         if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PLUS)) {
             EMIT_ARG(binary_op, MP_BINARY_OP_ADD);
-        } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_MINUS)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_SUBTRACT);
         } else {
-            // shouldn't happen
-            assert(0);
+            assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_MINUS)); // should be
+            EMIT_ARG(binary_op, MP_BINARY_OP_SUBTRACT);
         }
     }
 }
@@ -2437,11 +2407,9 @@ STATIC void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
             EMIT_ARG(binary_op, MP_BINARY_OP_FLOOR_DIVIDE);
         } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_SLASH)) {
             EMIT_ARG(binary_op, MP_BINARY_OP_TRUE_DIVIDE);
-        } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PERCENT)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_MODULO);
         } else {
-            // shouldn't happen
-            assert(0);
+            assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PERCENT)); // should be
+            EMIT_ARG(binary_op, MP_BINARY_OP_MODULO);
         }
     }
 }
@@ -2452,11 +2420,9 @@ STATIC void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(unary_op, MP_UNARY_OP_POSITIVE);
     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
         EMIT_ARG(unary_op, MP_UNARY_OP_NEGATIVE);
-    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)) {
-        EMIT_ARG(unary_op, MP_UNARY_OP_INVERT);
     } else {
-        // shouldn't happen
-        assert(0);
+        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)); // should be
+        EMIT_ARG(unary_op, MP_UNARY_OP_INVERT);
     }
 }
 
@@ -2793,7 +2759,8 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     EMIT_ARG(build_set, 1 + n);
                 }
                 #endif
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_comp_for) {
+            } else {
+                assert(MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_comp_for); // should be
                 // dict/set comprehension
                 if (!MICROPY_PY_BUILTINS_SET || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
                     // a dictionary comprehension
@@ -2802,9 +2769,6 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     // a set comprehension
                     compile_comprehension(comp, pns, SCOPE_SET_COMP);
                 }
-            } else {
-                // shouldn't happen
-                assert(0);
             }
         } else {
             // set with one element
@@ -3038,22 +3002,18 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
                 // named star
                 comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARARGS;
                 param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-            } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_tfpdef)) {
+            } else {
+                assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_tfpdef)); // should be
                 // named star with possible annotation
                 comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARARGS;
                 pns = (mp_parse_node_struct_t*)pns->nodes[0];
                 param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-            } else {
-                // shouldn't happen
-                assert(0);
             }
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_dbl_star) {
+        } else {
+            assert(MP_PARSE_NODE_STRUCT_KIND(pns) == pn_dbl_star); // should be
             param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
             param_flag = ID_FLAG_IS_PARAM | ID_FLAG_IS_DBL_STAR_PARAM;
             comp->scope_cur->scope_flags |= MP_SCOPE_FLAG_VARKEYWORDS;
-        } else {
-            // TODO anything to implement?
-            assert(0);
         }
     }
 
@@ -3147,7 +3107,8 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, m
         c_if_cond(comp, pns_comp_if->nodes[0], false, l_top);
         pn_iter = pns_comp_if->nodes[1];
         goto tail_recursion;
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_for)) {
+    } else {
+        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_for)); // should be
         // for loop
         mp_parse_node_struct_t *pns_comp_for2 = (mp_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);
@@ -3161,9 +3122,6 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, m
         EMIT_ARG(jump, l_top2);
         EMIT_ARG(label_assign, l_end2);
         EMIT(for_iter_end);
-    } else {
-        // shouldn't happen
-        assert(0);
     }
 }
 
