@@ -165,7 +165,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_int_t len_adj = slice.start - slice.stop;
             //printf("Len adj: %d\n", len_adj);
             assert(len_adj <= 0);
-            mp_seq_replace_slice_no_grow(self->items, self->len, slice.start, slice.stop, self->items/*NULL*/, 0, mp_obj_t);
+            mp_seq_replace_slice_no_grow(self->items, self->len, slice.start, slice.stop, self->items/*NULL*/, 0, sizeof(*self->items));
             // Clear "freed" elements at the end of list
             mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
             self->len += len_adj;
@@ -211,10 +211,10 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                     self->alloc = self->len + len_adj;
                 }
                 mp_seq_replace_slice_grow_inplace(self->items, self->len,
-                    slice_out.start, slice_out.stop, slice->items, slice->len, len_adj, mp_obj_t);
+                    slice_out.start, slice_out.stop, slice->items, slice->len, len_adj, sizeof(*self->items));
             } else {
                 mp_seq_replace_slice_no_grow(self->items, self->len,
-                    slice_out.start, slice_out.stop, slice->items, slice->len, mp_obj_t);
+                    slice_out.start, slice_out.stop, slice->items, slice->len, sizeof(*self->items));
                 // Clear "freed" elements at the end of list
                 mp_seq_clear(self->items, self->len + len_adj, self->len, sizeof(*self->items));
                 // TODO: apply allocation policy re: alloc_size

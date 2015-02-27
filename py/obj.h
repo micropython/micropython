@@ -616,15 +616,15 @@ mp_obj_t mp_seq_count_obj(const mp_obj_t *items, mp_uint_t len, mp_obj_t value);
 mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes);
 // Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
 #define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
-#define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_t) \
-    /*printf("memcpy(%p, %p, %d)\n", dest + beg, slice, slice_len * sizeof(item_t));*/ \
-    memcpy(dest + beg, slice, slice_len * sizeof(item_t)); \
-    /*printf("memmove(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));*/ \
-    memmove(dest + (beg + slice_len), dest + end, (dest_len - end) * sizeof(item_t));
+#define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_sz) \
+    /*printf("memcpy(%p, %p, %d)\n", dest + beg, slice, slice_len * (item_sz));*/ \
+    memcpy(((char*)dest) + (beg) * (item_sz), slice, slice_len * (item_sz)); \
+    /*printf("memmove(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * (item_sz));*/ \
+    memmove(((char*)dest) + (beg + slice_len) * (item_sz), ((char*)dest) + (end) * (item_sz), (dest_len - end) * (item_sz));
 
-#define mp_seq_replace_slice_grow_inplace(dest, dest_len, beg, end, slice, slice_len, len_adj, item_t) \
-    /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t));*/ \
-    memmove(dest + beg + len_adj, dest + beg, (dest_len - beg) * sizeof(item_t)); \
-    memcpy(dest + beg, slice, slice_len * sizeof(item_t));
+#define mp_seq_replace_slice_grow_inplace(dest, dest_len, beg, end, slice, slice_len, len_adj, item_sz) \
+    /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * (item_sz));*/ \
+    memmove(((char*)dest) + (beg + len_adj) * (item_sz), ((char*)dest) + (beg) * (item_sz), (dest_len - beg) * (item_sz)); \
+    memcpy(((char*)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
 
 #endif // __MICROPY_INCLUDED_PY_OBJ_H__

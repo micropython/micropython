@@ -409,6 +409,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_ARRAY (1)
 #endif
 
+// Whether to support slice assignments for array (and bytearray).
+// This is rarely used, but adds ~0.5K of code.
+#ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
+#endif
+
 // Whether to provide "collections" module
 #ifndef MICROPY_PY_COLLECTIONS
 #define MICROPY_PY_COLLECTIONS (1)
