@@ -5,7 +5,7 @@ uart = UART(1, 9600)
 uart = UART(1, 9600, bits=8, parity=None, stop=1)
 print(uart)
 
-uart.init(1200)
+uart.init(2400)
 print(uart)
 
 print(uart.any())
