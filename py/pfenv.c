@@ -308,7 +308,7 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int 
     }
 
     if (buf != stack_buf) {
-        m_free(buf, buf_size);
+        m_del(char, buf, buf_size);
     }
     return len;
 }

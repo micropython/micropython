@@ -137,7 +137,7 @@ void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env,
     print(env, "%s", str);
 
     if (buf != stack_buf) {
-        m_free(buf, buf_size);
+        m_del(char, buf, buf_size);
     }
 }
 

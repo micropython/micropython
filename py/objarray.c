@@ -116,7 +116,7 @@ STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
     o->typecode = typecode;
     o->free = 0;
     o->len = n;
-    o->items = m_malloc(typecode_size * o->len);
+    o->items = m_new(byte, typecode_size * o->len);
     return o;
 }
 #endif
@@ -298,7 +298,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
         int item_sz = mp_binary_get_size('@', self->typecode, NULL);
         // TODO: alloc policy
         self->free = 8;
-        self->items = m_realloc(self->items,  item_sz * self->len, item_sz * (self->len + self->free));
+        self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + self->free));
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
     mp_binary_set_val_array(self->typecode, self->items, self->len++, arg);
@@ -324,7 +324,7 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // make sure we have enough room to extend
     // TODO: alloc policy; at the moment we go conservative
     if (self->free < len) {
-        self->items = m_realloc(self->items, (self->len + self->free) * sz, (self->len + len) * sz);
+        self->items = m_renew(byte, self->items, (self->len + self->free) * sz, (self->len + len) * sz);
         self->free = 0;
     } else {
         self->free -= len;

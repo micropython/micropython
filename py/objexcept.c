@@ -64,7 +64,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
     void *buf = NULL;
     if (size > 0) {
-        buf = m_malloc(size);
+        buf = m_new(byte, size);
     }
 
     int old_size = mp_emergency_exception_buf_size;
@@ -78,7 +78,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 
     if (old_buf != NULL) {
-        m_free(old_buf, old_size);
+        m_del(byte, old_buf, old_size);
     }
     return mp_const_none;
 }

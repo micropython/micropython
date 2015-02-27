@@ -95,7 +95,7 @@ STATIC mp_obj_t mp_obj_tuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uin
             }
 
             mp_obj_t tuple = mp_obj_new_tuple(len, items);
-            m_free(items, alloc);
+            m_del(mp_obj_t, items, alloc);
 
             return tuple;
         }
