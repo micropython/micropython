@@ -373,7 +373,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 if (len_adj > 0) {
                     if (len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
-                        o->items = m_realloc(o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
+                        o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
                         o->free = 0;
                     }
                     mp_seq_replace_slice_grow_inplace(o->items, o->len,
