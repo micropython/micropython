@@ -666,32 +666,26 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
         int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
             if (jump_if == false) {
+            and_or_logic1:;
                 uint label2 = comp_next_label(comp);
                 for (int i = 0; i < n - 1; i++) {
-                    c_if_cond(comp, pns->nodes[i], true, label2);
+                    c_if_cond(comp, pns->nodes[i], !jump_if, label2);
                 }
-                c_if_cond(comp, pns->nodes[n - 1], false, label);
+                c_if_cond(comp, pns->nodes[n - 1], jump_if, label);
                 EMIT_ARG(label_assign, label2);
             } else {
+            and_or_logic2:
                 for (int i = 0; i < n; i++) {
-                    c_if_cond(comp, pns->nodes[i], true, label);
+                    c_if_cond(comp, pns->nodes[i], jump_if, label);
                 }
             }
             return;
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_and_test) {
             if (jump_if == false) {
-                for (int i = 0; i < n; i++) {
-                    c_if_cond(comp, pns->nodes[i], false, label);
-                }
+                goto and_or_logic2;
             } else {
-                uint label2 = comp_next_label(comp);
-                for (int i = 0; i < n - 1; i++) {
-                    c_if_cond(comp, pns->nodes[i], false, label2);
-                }
-                c_if_cond(comp, pns->nodes[n - 1], true, label);
-                EMIT_ARG(label_assign, label2);
+                goto and_or_logic1;
             }
-            return;
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
             c_if_cond(comp, pns->nodes[0], !jump_if, label);
             return;
