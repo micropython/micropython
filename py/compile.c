@@ -2253,28 +2253,24 @@ STATIC void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     close_over_variables_etc(comp, this_scope, 0, 0);
 }
 
-STATIC void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
+STATIC void compile_or_and_test(compiler_t *comp, mp_parse_node_struct_t *pns, bool cond) {
     uint l_end = comp_next_label(comp);
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
         if (i + 1 < n) {
-            EMIT_ARG(jump_if_or_pop, true, l_end);
+            EMIT_ARG(jump_if_or_pop, cond, l_end);
         }
     }
     EMIT_ARG(label_assign, l_end);
 }
 
+STATIC void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    compile_or_and_test(comp, pns, true);
+}
+
 STATIC void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    uint l_end = comp_next_label(comp);
-    int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < n; i += 1) {
-        compile_node(comp, pns->nodes[i]);
-        if (i + 1 < n) {
-            EMIT_ARG(jump_if_or_pop, false, l_end);
-        }
-    }
-    EMIT_ARG(label_assign, l_end);
+    compile_or_and_test(comp, pns, false);
 }
 
 STATIC void compile_not_test_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
