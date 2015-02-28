@@ -639,11 +639,7 @@ STATIC void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if
 
     // nothing special, fall back to default compiling for node and jump
     compile_node(comp, pn);
-    if (jump_if == false) {
-        EMIT_ARG(pop_jump_if_false, label);
-    } else {
-        EMIT_ARG(pop_jump_if_true, label);
-    }
+    EMIT_ARG(pop_jump_if, jump_if, label);
 }
 #endif
 
@@ -711,11 +707,7 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
 
     // nothing special, fall back to default compiling for node and jump
     compile_node(comp, pn);
-    if (jump_if == false) {
-        EMIT_ARG(pop_jump_if_false, label);
-    } else {
-        EMIT_ARG(pop_jump_if_true, label);
-    }
+    EMIT_ARG(pop_jump_if, jump_if, label);
 #endif
 }
 
@@ -1825,7 +1817,7 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
     } else {
         EMIT_ARG(binary_op, MP_BINARY_OP_MORE);
     }
-    EMIT_ARG(pop_jump_if_true, top_label);
+    EMIT_ARG(pop_jump_if, true, top_label);
 
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
@@ -1971,7 +1963,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
             EMIT(dup_top);
             compile_node(comp, pns_exception_expr);
             EMIT_ARG(binary_op, MP_BINARY_OP_EXCEPTION_MATCH);
-            EMIT_ARG(pop_jump_if_false, end_finally_label);
+            EMIT_ARG(pop_jump_if, false, end_finally_label);
         }
 
         EMIT(pop_top);
@@ -2267,7 +2259,7 @@ STATIC void compile_or_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
         if (i + 1 < n) {
-            EMIT_ARG(jump_if_true_or_pop, l_end);
+            EMIT_ARG(jump_if_or_pop, true, l_end);
         }
     }
     EMIT_ARG(label_assign, l_end);
@@ -2279,7 +2271,7 @@ STATIC void compile_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
     for (int i = 0; i < n; i += 1) {
         compile_node(comp, pns->nodes[i]);
         if (i + 1 < n) {
-            EMIT_ARG(jump_if_false_or_pop, l_end);
+            EMIT_ARG(jump_if_or_pop, false, l_end);
         }
     }
     EMIT_ARG(label_assign, l_end);
@@ -2332,7 +2324,7 @@ STATIC void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
             }
         }
         if (i + 2 < num_nodes) {
-            EMIT_ARG(jump_if_false_or_pop, l_fail);
+            EMIT_ARG(jump_if_or_pop, false, l_fail);
         }
     }
     if (multi) {

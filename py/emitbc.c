@@ -652,24 +652,22 @@ STATIC void emit_bc_jump(emit_t *emit, mp_uint_t label) {
     emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP, label);
 }
 
-STATIC void emit_bc_pop_jump_if_true(emit_t *emit, mp_uint_t label) {
+STATIC void emit_bc_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label) {
     emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_signed_label(emit, MP_BC_POP_JUMP_IF_TRUE, label);
+    if (cond) {
+        emit_write_bytecode_byte_signed_label(emit, MP_BC_POP_JUMP_IF_TRUE, label);
+    } else {
+        emit_write_bytecode_byte_signed_label(emit, MP_BC_POP_JUMP_IF_FALSE, label);
+    }
 }
 
-STATIC void emit_bc_pop_jump_if_false(emit_t *emit, mp_uint_t label) {
+STATIC void emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label) {
     emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_signed_label(emit, MP_BC_POP_JUMP_IF_FALSE, label);
-}
-
-STATIC void emit_bc_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP_IF_TRUE_OR_POP, label);
-}
-
-STATIC void emit_bc_jump_if_false_or_pop(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP_IF_FALSE_OR_POP, label);
+    if (cond) {
+        emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP_IF_TRUE_OR_POP, label);
+    } else {
+        emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP_IF_FALSE_OR_POP, label);
+    }
 }
 
 STATIC void emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
@@ -951,10 +949,8 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_rot_two,
     emit_bc_rot_three,
     emit_bc_jump,
-    emit_bc_pop_jump_if_true,
-    emit_bc_pop_jump_if_false,
-    emit_bc_jump_if_true_or_pop,
-    emit_bc_jump_if_false_or_pop,
+    emit_bc_pop_jump_if,
+    emit_bc_jump_if_or_pop,
     emit_bc_unwind_jump,
     emit_bc_unwind_jump,
     emit_bc_setup_with,

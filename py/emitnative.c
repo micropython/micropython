@@ -1744,32 +1744,25 @@ STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
     need_stack_settled(emit);
 }
 
-STATIC void emit_native_pop_jump_if_true(emit_t *emit, mp_uint_t label) {
-    DEBUG_printf("pop_jump_if_true(label=" UINT_FMT ")\n", label);
+STATIC void emit_native_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label) {
+    DEBUG_printf("pop_jump_if(cond=%u, label=" UINT_FMT ")\n", cond, label);
     emit_native_jump_helper(emit, true);
-    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+    if (cond) {
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+    } else {
+        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+    }
     emit_post(emit);
 }
 
-STATIC void emit_native_pop_jump_if_false(emit_t *emit, mp_uint_t label) {
-    DEBUG_printf("pop_jump_if_false(label=" UINT_FMT ")\n", label);
-    emit_native_jump_helper(emit, true);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
-    emit_post(emit);
-}
-
-STATIC void emit_native_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
-    DEBUG_printf("jump_if_true_or_pop(label=" UINT_FMT ")\n", label);
+STATIC void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label) {
+    DEBUG_printf("jump_if_or_pop(cond=%u, label=" UINT_FMT ")\n", cond, label);
     emit_native_jump_helper(emit, false);
-    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    adjust_stack(emit, -1);
-    emit_post(emit);
-}
-
-STATIC void emit_native_jump_if_false_or_pop(emit_t *emit, mp_uint_t label) {
-    DEBUG_printf("jump_if_false_or_pop(label=" UINT_FMT ")\n", label);
-    emit_native_jump_helper(emit, false);
-    ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+    if (cond) {
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+    } else {
+        ASM_JUMP_IF_REG_ZERO(emit->as, REG_RET, label);
+    }
     adjust_stack(emit, -1);
     emit_post(emit);
 }
@@ -2329,10 +2322,8 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_rot_two,
     emit_native_rot_three,
     emit_native_jump,
-    emit_native_pop_jump_if_true,
-    emit_native_pop_jump_if_false,
-    emit_native_jump_if_true_or_pop,
-    emit_native_jump_if_false_or_pop,
+    emit_native_pop_jump_if,
+    emit_native_jump_if_or_pop,
     emit_native_break_loop,
     emit_native_continue_loop,
     emit_native_setup_with,

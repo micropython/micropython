@@ -106,10 +106,8 @@ typedef struct _emit_method_table_t {
     void (*rot_two)(emit_t *emit);
     void (*rot_three)(emit_t *emit);
     void (*jump)(emit_t *emit, mp_uint_t label);
-    void (*pop_jump_if_true)(emit_t *emit, mp_uint_t label);
-    void (*pop_jump_if_false)(emit_t *emit, mp_uint_t label);
-    void (*jump_if_true_or_pop)(emit_t *emit, mp_uint_t label);
-    void (*jump_if_false_or_pop)(emit_t *emit, mp_uint_t label);
+    void (*pop_jump_if)(emit_t *emit, bool cond, mp_uint_t label);
+    void (*jump_if_or_pop)(emit_t *emit, bool cond, mp_uint_t label);
     void (*break_loop)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
     void (*continue_loop)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
     void (*setup_with)(emit_t *emit, mp_uint_t label);

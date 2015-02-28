@@ -415,31 +415,25 @@ STATIC void emit_cpy_jump(emit_t *emit, mp_uint_t label) {
     }
 }
 
-STATIC void emit_cpy_pop_jump_if_true(emit_t *emit, mp_uint_t label) {
+STATIC void emit_cpy_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("POP_JUMP_IF_TRUE " UINT_FMT "\n", emit->label_offsets[label]);
+        if (cond) {
+            printf("POP_JUMP_IF_TRUE " UINT_FMT "\n", emit->label_offsets[label]);
+        } else {
+            printf("POP_JUMP_IF_FALSE " UINT_FMT "\n", emit->label_offsets[label]);
+        }
     }
 }
 
-STATIC void emit_cpy_pop_jump_if_false(emit_t *emit, mp_uint_t label) {
+STATIC void emit_cpy_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label) {
     emit_pre(emit, -1, 3);
     if (emit->pass == MP_PASS_EMIT) {
-        printf("POP_JUMP_IF_FALSE " UINT_FMT "\n", emit->label_offsets[label]);
-    }
-}
-
-STATIC void emit_cpy_jump_if_true_or_pop(emit_t *emit, mp_uint_t label) {
-    emit_pre(emit, -1, 3);
-    if (emit->pass == MP_PASS_EMIT) {
-        printf("JUMP_IF_TRUE_OR_POP " UINT_FMT "\n", emit->label_offsets[label]);
-    }
-}
-
-STATIC void emit_cpy_jump_if_false_or_pop(emit_t *emit, mp_uint_t label) {
-    emit_pre(emit, -1, 3);
-    if (emit->pass == MP_PASS_EMIT) {
-        printf("JUMP_IF_FALSE_OR_POP " UINT_FMT "\n", emit->label_offsets[label]);
+        if (cond) {
+            printf("JUMP_IF_TRUE_OR_POP " UINT_FMT "\n", emit->label_offsets[label]);
+        } else {
+            printf("JUMP_IF_FALSE_OR_POP " UINT_FMT "\n", emit->label_offsets[label]);
+        }
     }
 }
 
@@ -854,10 +848,8 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_rot_two,
     emit_cpy_rot_three,
     emit_cpy_jump,
-    emit_cpy_pop_jump_if_true,
-    emit_cpy_pop_jump_if_false,
-    emit_cpy_jump_if_true_or_pop,
-    emit_cpy_jump_if_false_or_pop,
+    emit_cpy_pop_jump_if,
+    emit_cpy_jump_if_or_pop,
     emit_cpy_break_loop,
     emit_cpy_continue_loop,
     emit_cpy_setup_with,
