@@ -1,11 +1,19 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "Usage: bootgen.sh *board type* *build type*"
+    exit 1
+fi
+
+BOARD=$1
+BTYPE=$2
+
 # Re-locator Path
 RELOCATOR=bootmgr/relocator
 
 # Boot Manager Path
 # First parameter passed is the board type
-BOOTMGR=bootmgr/build/$1
+BOOTMGR=bootmgr/build/${BOARD}/${BTYPE}
 
 # Check for re-locator binary
 if [ ! -f $RELOCATOR/relocator.bin ]; then
