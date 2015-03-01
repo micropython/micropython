@@ -3605,14 +3605,15 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->is_repl = is_repl;
     comp->compile_error = MP_OBJ_NULL;
 
-    // optimise constants
+    // create the module scope
+    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);
+
+    // optimise constants (scope must be set for error messages to work)
+    comp->scope_cur = module_scope;
     mp_map_t consts;
     mp_map_init(&consts, 0);
-    pn = fold_constants(comp, pn, &consts);
+    module_scope->pn = fold_constants(comp, module_scope->pn, &consts);
     mp_map_deinit(&consts);
-
-    // set the outer scope
-    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);
 
     // compile pass 1
     comp->emit = emit_pass1_new();
@@ -3764,7 +3765,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif // !MICROPY_EMIT_CPYTHON
 
     // free the parse tree
-    mp_parse_node_free(pn);
+    mp_parse_node_free(module_scope->pn);
 
     // free the scopes
     mp_raw_code_t *outer_raw_code = module_scope->raw_code;
