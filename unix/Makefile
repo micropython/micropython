@@ -136,6 +136,8 @@ minimal:
 coverage:
 	@echo Make sure to run make -B
 	$(MAKE) COPT="-O0" CFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
+
+coverage_test: coverage
 	$(eval DIRNAME=$(notdir $(CURDIR)))
 	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
 	gcov -o build-coverage/py ../py/*.c

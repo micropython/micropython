@@ -10,6 +10,8 @@ before_script:
   - sudo apt-get install -y python3.4 python3 gcc-4.7 gcc-multilib gcc-arm-none-eabi qemu-system mingw32
   # For teensy build
   - sudo apt-get install realpath
+  # For coverage testing
+  - sudo pip install cpp-coveralls
 
 script:
   - make -C minimal test
@@ -25,8 +27,17 @@ script:
   - make -C cc3200 BTARGET=bootloader  BTYPE=release
   - make -C windows CROSS_COMPILE=i586-mingw32msvc-
 
-  - (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
+  # run tests without coverage info
+  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
+  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
+
+  # run tests with coverage info
+  - make -C unix CC=gcc-4.7 coverage
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
+
+after_success:
+  - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov-4.7) --gcov-options '\-o build-coverage/' --include py --include extmod)
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
