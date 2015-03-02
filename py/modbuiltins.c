@@ -492,7 +492,7 @@ STATIC mp_obj_t mp_builtin_sum(mp_uint_t n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     mp_obj_t value;
     switch (n_args) {
-        case 1: value = mp_obj_new_int(0); break;
+        case 1: value = MP_OBJ_NEW_SMALL_INT(0); break;
         default: value = args[1]; break;
     }
     mp_obj_t iterable = mp_getiter(args[0]);
