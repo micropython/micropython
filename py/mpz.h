@@ -102,19 +102,7 @@ void mpz_set_from_float(mpz_t *z, mp_float_t src);
 mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base);
 
 bool mpz_is_zero(const mpz_t *z);
-bool mpz_is_pos(const mpz_t *z);
-bool mpz_is_neg(const mpz_t *z);
-bool mpz_is_odd(const mpz_t *z);
-bool mpz_is_even(const mpz_t *z);
-
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
-
-mpz_t *mpz_abs(const mpz_t *z);
-mpz_t *mpz_neg(const mpz_t *z);
-mpz_t *mpz_add(const mpz_t *lhs, const mpz_t *rhs);
-mpz_t *mpz_sub(const mpz_t *lhs, const mpz_t *rhs);
-mpz_t *mpz_mul(const mpz_t *lhs, const mpz_t *rhs);
-mpz_t *mpz_pow(const mpz_t *lhs, const mpz_t *rhs);
 
 void mpz_abs_inpl(mpz_t *dest, const mpz_t *z);
 void mpz_neg_inpl(mpz_t *dest, const mpz_t *z);
@@ -128,13 +116,7 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
-
-mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2);
-mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2);
-void mpz_divmod(const mpz_t *lhs, const mpz_t *rhs, mpz_t **quo, mpz_t **rem);
 void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs);
-mpz_t *mpz_div(const mpz_t *lhs, const mpz_t *rhs);
-mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs);
 
 mp_int_t mpz_hash(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);

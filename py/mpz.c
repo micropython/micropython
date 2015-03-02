@@ -803,6 +803,9 @@ bool mpz_is_zero(const mpz_t *z) {
     return z->len == 0;
 }
 
+#if 0
+these functions are unused
+
 bool mpz_is_pos(const mpz_t *z) {
     return z->len > 0 && z->neg == 0;
 }
@@ -818,6 +821,7 @@ bool mpz_is_odd(const mpz_t *z) {
 bool mpz_is_even(const mpz_t *z) {
     return z->len == 0 || (z->dig[0] & 1) == 0;
 }
+#endif
 
 int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
     // to catch comparison of -0 with +0
@@ -920,6 +924,17 @@ mpz_t *mpz_pow(const mpz_t *lhs, const mpz_t *rhs) {
     mpz_t *z = mpz_zero();
     mpz_pow_inpl(z, lhs, rhs);
     return z;
+}
+
+/* computes new integers in quo and rem such that:
+       quo * rhs + rem = lhs
+       0 <= rem < rhs
+   can have lhs, rhs the same
+*/
+void mpz_divmod(const mpz_t *lhs, const mpz_t *rhs, mpz_t **quo, mpz_t **rem) {
+    *quo = mpz_zero();
+    *rem = mpz_zero();
+    mpz_divmod_inpl(*quo, *rem, lhs, rhs);
 }
 #endif
 
@@ -1205,7 +1220,7 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     mpz_set_from_int(dest, 1);
 
     while (n->len > 0) {
-        if (mpz_is_odd(n)) {
+        if ((n->dig[0] & 1) != 0) {
             mpz_mul_inpl(dest, dest, x);
         }
         n->len = mpn_shr(n->dig, n->dig, n->len, 1);
@@ -1218,6 +1233,9 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     mpz_free(x);
     mpz_free(n);
 }
+
+#if 0
+these functions are unused
 
 /* computes gcd(z1, z2)
    based on Knuth's modified gcd algorithm (I think?)
@@ -1294,17 +1312,7 @@ mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2) {
     rem->neg = 0;
     return rem;
 }
-
-/* computes new integers in quo and rem such that:
-       quo * rhs + rem = lhs
-       0 <= rem < rhs
-   can have lhs, rhs the same
-*/
-void mpz_divmod(const mpz_t *lhs, const mpz_t *rhs, mpz_t **quo, mpz_t **rem) {
-    *quo = mpz_zero();
-    *rem = mpz_zero();
-    mpz_divmod_inpl(*quo, *rem, lhs, rhs);
-}
+#endif
 
 /* computes new integers in quo and rem such that:
        quo * rhs + rem = lhs
