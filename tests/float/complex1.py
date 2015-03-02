@@ -26,3 +26,7 @@ print(1j / 2)
 #print(1j / 2j) uPy doesn't print correctly
 #print(1j ** 2) uPy doesn't print correctly
 #print(1j ** 2j) uPy doesn't print correctly
+
+# builtin abs
+print(abs(1j))
+print(abs(1j + 2))
