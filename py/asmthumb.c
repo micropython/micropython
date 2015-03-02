@@ -307,15 +307,24 @@ bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
 
-bool asm_thumb_bcc_n_label(asm_thumb_t *as, int cond, uint label) {
+// all these bit arithmetics need coverage testing!
+#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
+#define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
+
+bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (SIGNED_FIT9(rel)) {
-        asm_thumb_op16(as, OP_BCC_N(cond, rel));
-        return true;
+    if (!wide) {
+        if (SIGNED_FIT9(rel)) {
+            asm_thumb_op16(as, OP_BCC_N(cond, rel));
+            return true;
+        } else {
+            return false;
+        }
     } else {
-        return false;
+        asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
+        return true;
     }
 }
 
@@ -415,10 +424,6 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
         asm_thumb_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
     }
 }
-
-// all these bit arithmetics need coverage testing!
-#define OP_BCC_W_HI(cond, byte_offset) (0xf000 | ((cond) << 6) | (((byte_offset) >> 10) & 0x0400) | (((byte_offset) >> 14) & 0x003f))
-#define OP_BCC_W_LO(byte_offset) (0x8000 | ((byte_offset) & 0x2000) | (((byte_offset) >> 1) & 0x0fff))
 
 void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     mp_uint_t dest = get_label_dest(as, label);

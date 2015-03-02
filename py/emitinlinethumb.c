@@ -378,7 +378,9 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         } else if (strcmp(op_str, "bx") == 0) {
             mp_uint_t r = get_arg_reg(emit, op_str, pn_args[0], 15);
             asm_thumb_op16(emit->as, 0x4700 | (r << 3));
-        } else if (op_str[0] == 'b' && op_len == 3) {
+        } else if (op_str[0] == 'b' && (op_len == 3
+                    || (op_len == 5 && op_str[3] == '_'
+                        && (op_str[4] == 'n' || op_str[4] == 'w')))) {
             mp_uint_t cc = -1;
             for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
                 if (op_str[1] == cc_name_table[i].name[0] && op_str[2] == cc_name_table[i].name[1]) {
@@ -389,7 +391,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto unknown_op;
             }
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            if (!asm_thumb_bcc_n_label(emit->as, cc, label_num)) {
+            if (!asm_thumb_bcc_nw_label(emit->as, cc, label_num, op_len == 5 && op_str[4] == 'w')) {
                 goto branch_not_in_range;
             }
         } else if (op_str[0] == 'i' && op_str[1] == 't') {

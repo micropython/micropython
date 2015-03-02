@@ -216,7 +216,7 @@ void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_
 
 // these return true if the destination is in range, false otherwise
 bool asm_thumb_b_n_label(asm_thumb_t *as, uint label);
-bool asm_thumb_bcc_n_label(asm_thumb_t *as, int cond, uint label);
+bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide);
 bool asm_thumb_bl_label(asm_thumb_t *as, uint label);
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32_src); // convenience
