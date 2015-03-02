@@ -297,12 +297,8 @@ bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (SIGNED_FIT12(rel)) {
-        asm_thumb_op16(as, OP_B_N(rel));
-        return true;
-    } else {
-        return false;
-    }
+    asm_thumb_op16(as, OP_B_N(rel));
+    return as->pass != ASM_THUMB_PASS_EMIT || SIGNED_FIT12(rel);
 }
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
@@ -316,12 +312,8 @@ bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (!wide) {
-        if (SIGNED_FIT9(rel)) {
-            asm_thumb_op16(as, OP_BCC_N(cond, rel));
-            return true;
-        } else {
-            return false;
-        }
+        asm_thumb_op16(as, OP_BCC_N(cond, rel));
+        return as->pass != ASM_THUMB_PASS_EMIT || SIGNED_FIT9(rel);
     } else {
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
         return true;
@@ -335,12 +327,8 @@ bool asm_thumb_bl_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (SIGNED_FIT23(rel)) {
-        asm_thumb_op32(as, OP_BL_HI(rel), OP_BL_LO(rel));
-        return true;
-    } else {
-        return false;
-    }
+    asm_thumb_op32(as, OP_BL_HI(rel), OP_BL_LO(rel));
+    return as->pass != ASM_THUMB_PASS_EMIT || SIGNED_FIT23(rel);
 }
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32) {
