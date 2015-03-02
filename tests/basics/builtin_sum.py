@@ -6,7 +6,7 @@ tests = (
     [0],
     [1],
     [0, 1, 2],
-    (i for i in range(10)),
+    range(10),
 )
 
 for test in tests:
