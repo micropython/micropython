@@ -69,9 +69,10 @@
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void main_init_sflash_filesystem (void);
-STATIC void main_enter_ap_mode (void);
-STATIC void main_create_main_py (void);
+STATIC void mptask_pre_init (void);
+STATIC void mptask_init_sflash_filesystem (void);
+STATIC void mptask_enter_ap_mode (void);
+STATIC void mptask_create_main_py (void);
 
 /******************************************************************************
  DECLARE PUBLIC DATA
@@ -100,39 +101,18 @@ void TASK_Micropython (void *pvParameters) {
     bool safeboot;
     FRESULT res;
 
-#if MICROPY_HW_ENABLE_RTC
-    pybrtc_init();
-#endif
-
 #ifdef DEBUG
     safeboot = false;
 #else
     safeboot = mperror_safe_boot_requested();
 #endif
 
-    // Create the simple link spawn task
-    ASSERT (OSI_OK == VStartSimpleLinkSpawnTask(SIMPLELINK_SPAWN_TASK_PRIORITY));
-
-    // Allocate memory for the flash file system
-    ASSERT ((sflash_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
-#if MICROPY_HW_HAS_SDCARD
-    pybsd_init0();
-#endif
-
-#ifdef DEBUG
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, &svTaskHandle));
-#else
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, NULL));
-#endif
+    mptask_pre_init ();
 
 soft_reset:
 
     // GC init
-    gc_init(&_heap, &_eheap);
+    gc_init(&_boot, &_eheap);
 
     // Micro Python init
     mp_init();
@@ -167,13 +147,13 @@ soft_reset:
 
     mperror_enable_heartbeat();
 
-    main_enter_ap_mode();
+    mptask_enter_ap_mode();
 
     // enable telnet and ftp servers
     servers_enable();
 
     // initialize the serial flash file system
-    main_init_sflash_filesystem();
+    mptask_init_sflash_filesystem();
 
     // append the SFLASH paths to the system path
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH));
@@ -268,8 +248,34 @@ soft_reset_exit:
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
+__attribute__ ((section (".boot")))
+STATIC void mptask_pre_init (void) {
+#if MICROPY_HW_ENABLE_RTC
+    pybrtc_init();
+#endif
 
-STATIC void main_init_sflash_filesystem (void) {
+    // Create the simple link spawn task
+    ASSERT (OSI_OK == VStartSimpleLinkSpawnTask(SIMPLELINK_SPAWN_TASK_PRIORITY));
+
+    // Allocate memory for the flash file system
+    ASSERT ((sflash_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
+
+#if MICROPY_HW_HAS_SDCARD
+    pybsd_init0();
+#endif
+
+#ifdef DEBUG
+    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
+                                     (const signed char *)"Servers",
+                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, &svTaskHandle));
+#else
+    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
+                                     (const signed char *)"Servers",
+                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, NULL));
+#endif
+}
+
+STATIC void mptask_init_sflash_filesystem (void) {
     // Initialise the local flash filesystem.
     // Create it if needed, and mount in on /sflash.
     // try to mount the flash
@@ -283,13 +289,13 @@ STATIC void main_init_sflash_filesystem (void) {
             __fatal_error("could not create /SFLASH file system");
         }
         // create empty main.py
-        main_create_main_py();
+        mptask_create_main_py();
     } else if (res == FR_OK) {
         // mount sucessful
         FILINFO fno;
         if (FR_OK != f_stat("/SFLASH/MAIN.PY", &fno)) {
             // create empty main.py
-            main_create_main_py();
+            mptask_create_main_py();
         }
     } else {
         __fatal_error("could not create /SFLASH file system");
@@ -321,14 +327,14 @@ STATIC void main_init_sflash_filesystem (void) {
     }
 }
 
-STATIC void main_enter_ap_mode (void) {
+STATIC void mptask_enter_ap_mode (void) {
     // Enable simplelink in low power mode
     wlan_sl_enable (ROLE_AP, SERVERS_DEF_AP_SSID, strlen(SERVERS_DEF_AP_SSID), SERVERS_DEF_AP_SECURITY,
                     SERVERS_DEF_AP_KEY, strlen(SERVERS_DEF_AP_KEY), SERVERS_DEF_AP_CHANNEL);
     wlan_set_pm_policy (SL_NORMAL_POLICY);
 }
 
-STATIC void main_create_main_py (void) {
+STATIC void mptask_create_main_py (void) {
     // create empty main.py
     FIL fp;
     f_open(&fp, "/SFLASH/MAIN.PY", FA_WRITE | FA_CREATE_ALWAYS);

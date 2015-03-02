@@ -79,6 +79,7 @@ STATIC mp_obj_t pybsd_enable (mp_obj_t self_in);
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
+__attribute__ ((section (".boot")))
 void pybsd_init0 (void) {
     // allocate memory for the sd file system
     ASSERT ((pybsd_obj.fatfs = mem_Malloc(sizeof(FATFS))) != NULL);

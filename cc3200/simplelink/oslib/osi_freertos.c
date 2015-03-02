@@ -275,6 +275,7 @@ OsiReturnVal_e osi_LockObjCreate(OsiLockObj_t* pLockObj)
 	\note
 	\warning
 */
+__attribute__ ((section (".boot")))
 OsiReturnVal_e osi_TaskCreate(P_OSI_TASK_ENTRY pEntry,const signed char * const pcName,
                               unsigned short usStackDepth, void *pvParameters,
                               unsigned long uxPriority,OsiTaskHandle* pTaskHandle)
@@ -449,6 +450,7 @@ void vSimpleLinkSpawnTask(void *pvParameters)
 	\note
 	\warning
 */
+__attribute__ ((section (".boot")))
 OsiReturnVal_e VStartSimpleLinkSpawnTask(unsigned portBASE_TYPE uxPriority)
 {
     xSimpleLinkSpawnQueue = xQueueCreate( slQUEUE_SIZE, sizeof( tSimpleLinkSpawnMsg ) );
@@ -666,6 +668,7 @@ void osi_ExitCritical(void)
 	\note
 	\warning
 */
+__attribute__ ((section (".boot")))
 void osi_start()
 {
     vTaskStartScheduler();

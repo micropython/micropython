@@ -89,6 +89,17 @@ SECTIONS
         . = ALIGN(8);
         _ebss = .;
     } > SRAM
+
+    /* place here functions that are only called during boot up, */
+    /* that way, we can re-use this area for the micropython heap */
+    .boot :
+    {
+        . = ALIGN(8);
+        _boot = .;
+        *(.boot*)
+        . = ALIGN(8);
+        _eboot = .;
+    } > SRAM
      
     /* allocate the micropython heap */
     .heap :

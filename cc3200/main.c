@@ -59,6 +59,7 @@ OsiTaskHandle   mpTaskHandle;
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 
+__attribute__ ((section (".boot")))
 int main (void) {
 
     // Initialize the clocks and the interrupt system
@@ -81,7 +82,6 @@ int main (void) {
 
     for ( ; ; );
 }
-
 
 void stoupper (char *str) {
     while (str && *str != '\0') {

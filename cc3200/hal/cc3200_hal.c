@@ -78,7 +78,8 @@ extern void (* const g_pfnVectors[256])(void);
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
- 
+
+__attribute__ ((section (".boot")))
 void HAL_SystemInit (void) {
     MAP_IntVTableBaseSet((unsigned long)&g_pfnVectors[0]);
 

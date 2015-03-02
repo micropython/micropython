@@ -515,6 +515,7 @@ static void prvResetNextTaskUnblockTime( void );
 
 /*-----------------------------------------------------------*/
 
+__attribute__ ((section (".boot")))
 BaseType_t xTaskGenericCreate( TaskFunction_t pxTaskCode, const char * const pcName, const uint16_t usStackDepth, void * const pvParameters, UBaseType_t uxPriority, TaskHandle_t * const pxCreatedTask, StackType_t * const puxStackBuffer, const MemoryRegion_t * const xRegions ) /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
 {
 BaseType_t xReturn;
@@ -1454,6 +1455,7 @@ TCB_t * pxNewTCB;
 #endif /* ( ( INCLUDE_xTaskResumeFromISR == 1 ) && ( INCLUDE_vTaskSuspend == 1 ) ) */
 /*-----------------------------------------------------------*/
 
+__attribute__ ((section (".boot")))
 void vTaskStartScheduler( void )
 {
 BaseType_t xReturn;
@@ -2700,7 +2702,7 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
 	}
 #endif /* configUSE_TICKLESS_IDLE */
 /*-----------------------------------------------------------*/
-
+__attribute__ ((section (".boot")))
 static void prvInitialiseTCBVariables( TCB_t * const pxTCB, const char * const pcName, UBaseType_t uxPriority, const MemoryRegion_t * const xRegions, const uint16_t usStackDepth ) /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
 {
 UBaseType_t x;
@@ -2809,7 +2811,7 @@ UBaseType_t x;
 
 #endif /* portUSING_MPU_WRAPPERS */
 /*-----------------------------------------------------------*/
-
+__attribute__ ((section (".boot")))
 static void prvInitialiseTaskLists( void )
 {
 UBaseType_t uxPriority;
@@ -2912,7 +2914,7 @@ static void prvAddCurrentTaskToDelayedList( const TickType_t xTimeToWake )
 	}
 }
 /*-----------------------------------------------------------*/
-
+__attribute__ ((section (".boot")))
 static TCB_t *prvAllocateTCBAndStack( const uint16_t usStackDepth, StackType_t * const puxStackBuffer )
 {
 TCB_t *pxNewTCB;

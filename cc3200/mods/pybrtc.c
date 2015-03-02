@@ -51,6 +51,7 @@
 ///     rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
 ///     print(rtc.datetime())
 
+__attribute__ ((section (".boot")))
 void pybrtc_init(void) {
     // if RTC was previously set leave it alone
     if (MAP_PRCMSysResetCauseGet() == PRCM_POWER_ON) {

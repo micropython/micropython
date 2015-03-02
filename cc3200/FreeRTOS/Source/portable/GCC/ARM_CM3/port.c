@@ -202,6 +202,7 @@ static void prvTaskExitError( void );
 /*
  * See header file for description.
  */
+__attribute__ ((section (".boot")))
 StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
 	/* Simulate the stack frame as it would be created by a context switch
@@ -220,6 +221,7 @@ StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t px
 }
 /*-----------------------------------------------------------*/
 
+__attribute__ ((section (".boot")))
 static void prvTaskExitError( void )
 {
 	/* A function that implements a task must not exit or attempt to return to
@@ -254,6 +256,7 @@ void vPortSVCHandler( void )
 }
 /*-----------------------------------------------------------*/
 
+__attribute__ ((section (".boot")))
 static void prvPortStartFirstTask( void )
 {
 	__asm volatile(
@@ -274,6 +277,7 @@ static void prvPortStartFirstTask( void )
 /*
  * See header file for description.
  */
+__attribute__ ((section (".boot")))
 BaseType_t xPortStartScheduler( void )
 {
 	/* configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to 0.
@@ -643,6 +647,7 @@ void xPortSysTickHandler( void )
  * Setup the systick timer to generate the tick interrupts at the required
  * frequency.
  */
+__attribute__ ((section (".boot")))
 __attribute__(( weak )) void vPortSetupTimerInterrupt( void )
 {
 	/* Calculate the constants required to configure the tick interrupt. */

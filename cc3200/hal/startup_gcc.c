@@ -60,6 +60,7 @@ extern uint32_t __init_data;
 // Forward declaration of the default fault handlers.
 //
 //*****************************************************************************
+__attribute__ ((section (".boot")))
 void ResetISR(void);
 #ifdef DEBUG
 static void NmiSR(void) __attribute__( ( naked ) );
