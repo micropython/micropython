@@ -585,8 +585,8 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp
     }
     uint n_args = n_args_n_kw & 0xff;
     uint n_kw = (n_args_n_kw >> 8) & 0xff;
-    mp_obj_t pos_seq = args[n_args + 2 * n_kw]; // map be MP_OBJ_NULL
-    mp_obj_t kw_dict = args[n_args + 2 * n_kw + 1]; // map be MP_OBJ_NULL
+    mp_obj_t pos_seq = args[n_args + 2 * n_kw]; // may be MP_OBJ_NULL
+    mp_obj_t kw_dict = args[n_args + 2 * n_kw + 1]; // may be MP_OBJ_NULL
 
     DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, seq=%p, dict=%p)\n", fun, self, n_args, n_kw, args, pos_seq, kw_dict);
 
