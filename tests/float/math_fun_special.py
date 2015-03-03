@@ -2,7 +2,8 @@
 
 try:
     from math import *
-except ImportError:
+    erf
+except (ImportError, NameError):
     print("SKIP")
     import sys
     sys.exit()
