@@ -1,8 +1,12 @@
-[![Build Status][travis-img]][travis-repo] [![Coverage Status][coveralls-img]][coveralls-repo]
+[![Build Status][travis-img]][travis-repo] [![Coverage Status][coveralls-img]][coveralls-repo] [![Issue Stats][istats-pr-img]][istats-pr-repo] [![Issue Stats][istats-issue-img]][istats-issue-repo]
 [travis-img]:  https://travis-ci.org/micropython/micropython.png?branch=master
 [travis-repo]: https://travis-ci.org/micropython/micropython
 [coveralls-img]:  https://coveralls.io/repos/micropython/micropython/badge.png?branch=master
 [coveralls-repo]: https://coveralls.io/r/micropython/micropython?branch=master
+[istats-pr-img]: http://issuestats.com/github/micropython/micropython/badge/pr
+[istats-pr-repo]: http://issuestats.com/github/micropython/micropython
+[istats-issue-img]: http://issuestats.com/github/micropython/micropython/badge/issue
+[istats-issue-repo]: http://issuestats.com/github/micropython/micropython
 
 The Micro Python project
 ========================
