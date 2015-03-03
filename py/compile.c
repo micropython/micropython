@@ -3389,7 +3389,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) != PN_expr_stmt) {
             // not an instruction; error
         not_an_instruction:
-            compile_syntax_error(comp, nodes[i], "inline assembler expecting an instruction");
+            compile_syntax_error(comp, nodes[i], "expecting an assembler instruction");
             return;
         }
 
@@ -3420,7 +3420,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         // emit instructions
         if (op == MP_QSTR_label) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_ID(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "inline assembler 'label' requires 1 argument");
+                compile_syntax_error(comp, nodes[i], "'label' requires 1 argument");
                 return;
             }
             uint lab = comp_next_label(comp);
@@ -3432,7 +3432,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
         } else if (op == MP_QSTR_align) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "inline assembler 'align' requires 1 argument");
+                compile_syntax_error(comp, nodes[i], "'align' requires 1 argument");
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
@@ -3440,14 +3440,14 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
         } else if (op == MP_QSTR_data) {
             if (!(n_args >= 2 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "inline assembler 'data' requires at least 2 arguments");
+                compile_syntax_error(comp, nodes[i], "'data' requires at least 2 arguments");
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
                 for (uint j = 1; j < n_args; j++) {
                     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
-                        compile_syntax_error(comp, nodes[i], "inline assembler 'data' requires integer arguments");
+                        compile_syntax_error(comp, nodes[i], "'data' requires integer arguments");
                         return;
                     }
                     EMIT_INLINE_ASM_ARG(data, bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
