@@ -152,4 +152,3 @@ pyb.delay(500)
 while can.any(0):
     print(can.recv(0))
 
-
