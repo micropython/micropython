@@ -3425,7 +3425,10 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
             uint lab = comp_next_label(comp);
             if (pass > MP_PASS_SCOPE) {
-                EMIT_INLINE_ASM_ARG(label, lab, MP_PARSE_NODE_LEAF_ARG(pn_arg[0]));
+                if (!EMIT_INLINE_ASM_ARG(label, lab, MP_PARSE_NODE_LEAF_ARG(pn_arg[0]))) {
+                    compile_syntax_error(comp, nodes[i], "label redefined");
+                    return;
+                }
             }
         } else if (op == MP_QSTR_align) {
             if (!(n_args == 1 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {

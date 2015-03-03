@@ -111,10 +111,19 @@ STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint
     return n_params;
 }
 
-STATIC void emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
+STATIC bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
+    if (emit->pass == MP_PASS_CODE_SIZE) {
+        // check for duplicate label on first pass
+        for (int i = 0; i < emit->max_num_labels; i++) {
+            if (emit->label_lookup[i] == label_id) {
+                return false;
+            }
+        }
+    }
     emit->label_lookup[label_num] = label_id;
     asm_thumb_label_assign(emit->as, label_num);
+    return true;
 }
 
 STATIC void emit_inline_thumb_align(emit_inline_asm_t *emit, mp_uint_t align) {
