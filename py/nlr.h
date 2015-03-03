@@ -99,6 +99,7 @@ void nlr_jump_fail(void *val);
         nlr_jump(_val); \
     } while (0)
 
+#if !MICROPY_NLR_SETJMP
 #define nlr_push(val) \
     assert(MP_STATE_VM(nlr_top) != val),nlr_push(val)
 
@@ -107,6 +108,7 @@ void nlr_jump_fail(void *val);
     printf("nlr_push: before: nlr_top=%p, val=%p\n", MP_STATE_VM(nlr_top), val),assert(MP_STATE_VM(nlr_top) != val),nlr_push(val)
 #endif
 */
+#endif
 
 #endif
 
