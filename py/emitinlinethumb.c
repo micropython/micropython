@@ -63,7 +63,6 @@ emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels) {
     emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
     emit->max_num_labels = max_num_labels;
     emit->label_lookup = m_new(qstr, max_num_labels);
-    memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
     emit->as = asm_thumb_new(max_num_labels);
     return emit;
 }
@@ -78,6 +77,9 @@ STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pa
     emit->pass = pass;
     emit->scope = scope;
     emit->error_slot = error_slot;
+    if (emit->pass == MP_PASS_CODE_SIZE) {
+        memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
+    }
     asm_thumb_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_THUMB_PASS_EMIT : ASM_THUMB_PASS_COMPUTE);
     asm_thumb_entry(emit->as, 0);
 }
