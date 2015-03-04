@@ -30,8 +30,8 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "lib/fatfs/ff.h"
 #include "file.h"
-#include "ff.h"
 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;

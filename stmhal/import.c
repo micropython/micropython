@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 #include "py/lexer.h"
-#include "ff.h"
+#include "lib/fatfs/ff.h"
 
 mp_import_stat_t mp_import_stat(const char *path) {
     FILINFO fno;

@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "py/obj.h"
-#include "ff.h"
+#include "lib/fatfs/ff.h"
 #include "ffconf.h"
 #include "fsusermount.h"
 

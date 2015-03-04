@@ -33,6 +33,8 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/gc.h"
+#include "lib/fatfs/ff.h"
+#include "lib/fatfs/diskio.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "systick.h"
@@ -56,8 +58,6 @@
 #include "dac.h"
 #include "lcd.h"
 #include "usb.h"
-#include "ff.h"
-#include "diskio.h"
 #include "fsusermount.h"
 #include "portmodules.h"
 
