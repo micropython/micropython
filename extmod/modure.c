@@ -65,6 +65,10 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     }
 
     const char *start = self->caps[no * 2];
+    if (start == NULL) {
+        // no match for this group
+        return mp_const_none;
+    }
     return mp_obj_new_str(start, self->caps[no * 2 + 1] - start, false);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
@@ -97,6 +101,7 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
     mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char*, caps_num);
+    memset(match->caps, 0, caps_num * sizeof(char*));
     int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, is_anchored);
     if (res == 0) {
         m_del_var(mp_obj_match_t, char*, caps_num, match);
@@ -135,6 +140,7 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
     mp_obj_t retval = mp_obj_new_list(0, NULL);
     const char **caps = alloca(caps_num * sizeof(char*));
     while (true) {
+        memset(caps, 0, caps_num * sizeof(char*));
         int res = re1_5_recursiveloopprog(&self->re, &subj, caps, caps_num, false);
 
         // if we didn't have a match, or had an empty match, it's time to stop
