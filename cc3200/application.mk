@@ -76,6 +76,7 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	FreeRTOSHooks.c \
 	pin_named_pins.c \
 	help.c \
+	mpcallback.c \
 	mperror.c \
 	mpexception.c \
 	pin_defs_cc3200.c \
@@ -89,8 +90,8 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	modutime.c \
 	modwlan.c \
 	pybadc.c \
-	pybi2c.c \
 	pybpin.c \
+	pybi2c.c \
 	pybrtc.c \
 	pybsd.c \
 	pybsleep.c \
@@ -128,6 +129,7 @@ APP_UTIL_SRC_C = $(addprefix util/,\
 	
 APP_UTIL_SRC_S = $(addprefix util/,\
 	gchelper.s \
+	sleeprestore.s \
 	)
 	
 APP_MAIN_SRC_C = \

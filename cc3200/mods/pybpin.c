@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mpstate.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
@@ -45,6 +46,7 @@
 #include "interrupt.h"
 #include "pybpin.h"
 #include "pybsleep.h"
+#include "mpcallback.h"
 #include "mpexception.h"
 #include "mperror.h"
 
@@ -87,10 +89,15 @@
 ///
 /// Example callback:
 ///
-/// def pincb(pin):
-/// print(pin.pin())
+///     def pincb(pin):
+///         print(pin.pin())
 ///
-/// extint = pyb.Pin('GPIO10', 0, pyb.Pin.INT_FALLING, pyb.GPIO.STD_PU, pyb.S2MA, callback=pincb)
+///     extint = pyb.Pin('GPIO10', 0, pyb.Pin.INT_RISING, pyb.GPIO.STD_PD, pyb.S2MA)
+///     extint.callback (intmode=pyb.Pin.INT_RISING, handler=pincb)
+///     # the callback can be triggered manually
+///     extint.callback()()
+///     # to disable the callback
+///     extint.callback().disable()
 ///
 /// Now every time a falling edge is seen on the gpio pin, the callback will be
 /// called. Caution: mechanical pushbuttons have "bounce" and pushing or
@@ -101,33 +108,34 @@
 /// All pin objects go through the pin mapper to come up with one of the
 /// gpio pins.
 ///
-/// extint = pyb.Pin(pin, af, mode, pull, strength, callback)
-///
 /// There is also a C API, so that drivers which require Pin interrupts
 /// can also use this code. See pybextint.h for the available functions.
 /******************************************************************************
 DECLARE PRIVATE FUNCTIONS
 ******************************************************************************/
-STATIC void ExecuteIntCallback (pin_obj_t *self);
 STATIC void GPIOA0IntHandler (void);
 STATIC void GPIOA1IntHandler (void);
 STATIC void GPIOA2IntHandler (void);
 STATIC void GPIOA3IntHandler (void);
 STATIC void EXTI_Handler(uint port);
-STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void pin_obj_configure (const pin_obj_t *self);
+STATIC void pin_extint_enable (mp_obj_t self_in);
+STATIC void pin_extint_disable (mp_obj_t self_in);
 
+/******************************************************************************
+DECLARE PRIVATE DATA
+******************************************************************************/
+STATIC const mp_cb_methods_t pin_cb_methods;
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void pin_init0(void) {
-
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
-const pin_obj_t *pin_find(mp_obj_t user_obj) {
-    const pin_obj_t *pin_obj;
+pin_obj_t *pin_find(mp_obj_t user_obj) {
+    pin_obj_t *pin_obj;
 
     // If a pin was provided, then use it
     if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
@@ -162,24 +170,20 @@ void pin_verify_af (uint af) {
 
 void pin_config (pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
     // configure the pin in analog mode
-    ((pin_obj_t *)self)->af = af;
-    ((pin_obj_t *)self)->mode = mode;
-    ((pin_obj_t *)self)->type = type;
-    ((pin_obj_t *)self)->strength = strength;
+    self->af = af;
+    self->mode = mode;
+    self->type = type;
+    self->strength = strength;
     pin_obj_configure ((const pin_obj_t *)self);
     // mark the pin as used
-    ((pin_obj_t *)self)->used = true;
+    self->used = true;
     // register it with the sleep module
-    pybsleep_add (self, (WakeUpCB_t)pin_obj_configure);
+    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pin_obj_configure);
 }
 
-void pin_extint_register(pin_obj_t *self, uint32_t intmode, mp_obj_t callback) {
+void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority) {
     void *handler;
     uint32_t intnum;
-
-    // we need to update the callback atomically, so we disable the line
-    // before we update anything.
-    pin_extint_disable(self);
 
     // configure the interrupt type
     MAP_GPIOIntTypeSet(self->port, self->bit, intmode);
@@ -205,24 +209,7 @@ void pin_extint_register(pin_obj_t *self, uint32_t intmode, mp_obj_t callback) {
     MAP_GPIOIntRegister(self->port, handler);
     // set the interrupt to the lowest priority, to make sure that
     // no other ISRs will be preemted by this one
-    MAP_IntPrioritySet(intnum, INT_PRIORITY_LVL_7);
-    // set the callback
-    self->callback = callback;
-    // enable the interrupt just before leaving
-    pin_extint_enable(self);
-}
-
-void pin_extint_enable(pin_obj_t *self) {
-    MAP_GPIOIntClear(self->port, self->bit);
-    MAP_GPIOIntEnable(self->port, self->bit);
-}
-
-void pin_extint_disable(pin_obj_t *self) {
-    MAP_GPIOIntDisable(self->port, self->bit);
-}
-
-void pin_extint_swint(pin_obj_t *self) {
-    ExecuteIntCallback(self);
+    MAP_IntPrioritySet(intnum, priority);
 }
 
 /******************************************************************************
@@ -261,6 +248,86 @@ STATIC void pin_obj_configure (const pin_obj_t *self) {
     MAP_PinConfigSet(self->pin_num, self->strength, self->type);
 }
 
+STATIC void pin_extint_enable (mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    MAP_GPIOIntClear(self->port, self->bit);
+    MAP_GPIOIntEnable(self->port, self->bit);
+}
+
+STATIC void pin_extint_disable (mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    MAP_GPIOIntDisable(self->port, self->bit);
+}
+
+/******************************************************************************/
+// Micro Python bindings
+
+/// \method init(mode, pull=Pin.PULL_NONE, af=-1)
+/// Initialise the pin:
+///
+///   - `af` can be in range 0-15, please check the CC3200 datasheet
+///     for the details on the AFs availables on each pin (af=0, keeps it as a gpio pin).
+///   - `mode` can be one of:
+///     - `Pin.IN`     - configure the pin for input;
+///     - `Pin.OUT`    - configure the pin for output;
+///   - `type` can be one of:
+///     - `Pin.STD`    - standard without pull-up or pull-down;
+///     - `Pin.STD_PU` - standard with pull-up resistor;
+///     - `Pin.STD_PD` - standard with pull-down resistor.
+///     - `Pin.OD`     - standard without pull up or pull down;
+///     - `Pin.OD_PU`  - open drain with pull-up resistor;
+///     - `Pin.OD_PD`  - open drain with pull-down resistor.
+///     - `Pin.ANALOG` - configured in analog (adc) mode
+///   - `strength` can be one of:
+///     - `Pin.S2MA`    - 2ma drive strength;
+///     - `Pin.S4MA`    - 4ma drive strength;
+///     - `Pin.S6MA`    - 6ma drive strength;
+///
+/// Returns: `None`.
+STATIC const mp_arg_t pin_init_args[] = {
+    { MP_QSTR_af,       MP_ARG_REQUIRED | MP_ARG_INT  },
+    { MP_QSTR_mode,                       MP_ARG_INT, {.u_int = GPIO_DIR_MODE_OUT} },
+    { MP_QSTR_type,                       MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
+    { MP_QSTR_str,                        MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
+};
+#define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
+
+STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // parse args
+    mp_arg_val_t args[pin_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, pos_args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, args);
+
+    // get the af
+    uint af = args[0].u_int;
+    if (af < PIN_MODE_0 || af > PIN_MODE_15) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    // get the io mode
+    uint mode = args[1].u_int;
+    // checking the mode only makes sense if af == GPIO
+    if (af == PIN_MODE_0) {
+        if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+    }
+    // get the type
+    uint type = args[2].u_int;
+    if (type != PIN_TYPE_STD && type != PIN_TYPE_STD_PU && type != PIN_TYPE_STD_PD &&
+            type != PIN_TYPE_OD && type != PIN_TYPE_OD_PU && type != PIN_TYPE_OD_PD) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    // get the strenght
+    uint strength = args[3].u_int;
+    if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+
+    // configure the pin as requested
+    pin_config (self, af, mode, type, strength);
+
+    return mp_const_none;
+}
+
 /// \method print()
 /// Return a string describing the pin object.
 STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -270,7 +337,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     uint32_t strength = pin_get_strenght(self);
 
     // pin name
-    print(env, "Pin(Pin.cpu.%s, af=%u", qstr_str(self->name), af);
+    print(env, "<Pin.cpu.%s, af=%u", qstr_str(self->name), af);
 
     if (af == PIN_MODE_0) {
         // IO mode
@@ -310,7 +377,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     } else {
         str_qst = MP_QSTR_S6MA;
     }
-    print(env, ", strength=Pin.%s)", qstr_str(str_qst));
+    print(env, ", strength=Pin.%s>", qstr_str(str_qst));
 }
 
 /// \classmethod \constructor(id, ...)
@@ -322,7 +389,7 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
     // Run an argument through the mapper and return the result.
     pin_obj_t *pin = (pin_obj_t *)pin_find(args[0]);
 
-    if (n_args > 1) {
+    if (n_args > 1 || n_kw > 0) {
         // pin af given, so configure it
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -330,85 +397,6 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
 
     return (mp_obj_t)pin;
-}
-
-/// \method init(mode, pull=Pin.PULL_NONE, af=-1)
-/// Initialise the pin:
-///
-///   - `af` can be in range 0-15, please check the CC3200 datasheet
-///     for the details on the AFs availables on each pin (af=0, keeps it as a gpio pin).
-///   - `mode` can be one of:
-///     - `Pin.IN`     - configure the pin for input;
-///     - `Pin.OUT`    - configure the pin for output;
-///   - `type` can be one of:
-///     - `Pin.STD`    - standard without pull-up or pull-down;
-///     - `Pin.STD_PU` - standard with pull-up resistor;
-///     - `Pin.STD_PD` - standard with pull-down resistor.
-///     - `Pin.OD`     - standard without pull up or pull down;
-///     - `Pin.OD_PU`  - open drain with pull-up resistor;
-///     - `Pin.OD_PD`  - open drain with pull-down resistor.
-///     - `Pin.ANALOG` - configured in analog (adc) mode
-///   - `strength` can be one of:
-///     - `Pin.S2MA`    - 2ma drive strength;
-///     - `Pin.S4MA`    - 4ma drive strength;
-///     - `Pin.S6MA`    - 6ma drive strength;
-///
-/// Returns: `None`.
-STATIC const mp_arg_t pin_init_args[] = {
-    { MP_QSTR_af,       MP_ARG_REQUIRED | MP_ARG_INT  },
-    { MP_QSTR_mode,                       MP_ARG_INT, {.u_int = GPIO_DIR_MODE_OUT} },
-    { MP_QSTR_type,                       MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
-    { MP_QSTR_str,                        MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
-    { MP_QSTR_callback, MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-};
-#define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
-
-STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // parse args
-    mp_arg_val_t args[pin_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, pos_args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, args);
-
-    // get the af
-    uint af = args[0].u_int;
-    if (af < PIN_MODE_0 || af > PIN_MODE_15) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-    // get the io mode
-    uint mode = args[1].u_int;
-    uint intmode = 0xFF;
-    // checking the mode only makes sense if af == GPIO
-    if (af == PIN_MODE_0) {
-        if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT) {
-            if (mode != GPIO_FALLING_EDGE && mode != GPIO_RISING_EDGE && mode != GPIO_BOTH_EDGES &&
-                    mode != GPIO_LOW_LEVEL && mode != GPIO_HIGH_LEVEL) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-            }
-            // select input mode for interrupt triggering
-            intmode = mode;
-            mode = GPIO_DIR_MODE_IN;
-        }
-    }
-    // get the type
-    uint type = args[2].u_int;
-    if (type != PIN_TYPE_STD && type != PIN_TYPE_STD_PU && type != PIN_TYPE_STD_PD &&
-            type != PIN_TYPE_OD && type != PIN_TYPE_OD_PU && type != PIN_TYPE_OD_PD) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-    // get the strenght
-    uint strength = args[3].u_int;
-    if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-
-    // configure the pin as requested
-    pin_config (self, af, mode, type, strength);
-
-    // register the interrupt if the mode says so
-    if (intmode != 0xFF) {
-        pin_extint_register(self, intmode, args[4].u_obj);
-    }
-
-    return mp_const_none;
 }
 
 STATIC mp_obj_t pin_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -419,7 +407,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 /// \method value([value])
 /// Get or set the digital logic level of the pin:
 ///
-///   - With no argument, return 0 or 1 depending on the logic level of the pin.
+///   - With no arguments, return 0 or 1 depending on the logic level of the pin.
 ///   - With `value` given, set the logic level of the pin.  `value` can be
 ///   anything that converts to a boolean.  If it converts to `True`, the pin
 ///   is set high, otherwise it is set low.
@@ -527,51 +515,142 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
-/// \method int_enable()
-/// Enable a disabled interrupt.
-STATIC mp_obj_t pin_int_enable(mp_obj_t self_in) {
-    pin_obj_t *self = self_in;
-    pin_extint_enable(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_int_enable_obj, pin_int_enable);
+/// \method callback(method, intmode, value, priority, pwrmode)
+/// Creates a callback object associated to a pin
+/// min num of arguments is 1 (intmode)
+STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
 
-/// \method int_disable()
-/// Disable the interrupt associated with the Pin object.
-/// This could be useful for debouncing.
-STATIC mp_obj_t pin_int_disable(mp_obj_t self_in) {
-    pin_obj_t *self = self_in;
-    pin_extint_disable(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_int_disable_obj, pin_int_disable);
+    pin_obj_t *self = pos_args[0];
+    // check if any parameters were passed
+    if (kw_args->used > 0 || self->callback == mp_const_none) {
+        // convert the priority to the correct value
+        uint priority = mpcallback_translate_priority (args[2].u_int);
+        // verify the interrupt mode
+        uint intmode = args[0].u_int;
+        if (intmode != GPIO_FALLING_EDGE && intmode != GPIO_RISING_EDGE && intmode != GPIO_BOTH_EDGES &&
+            intmode != GPIO_LOW_LEVEL && intmode != GPIO_HIGH_LEVEL) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
 
-/// \method intmode([mode])
-/// Get or set the interrupt mode of the pin:
-///
-/// - With no argument, returns the configured interrupt mode
-/// - With `mode` given, sets the interrupt mode of the pin
-STATIC mp_obj_t pin_intmode(mp_uint_t n_args, const mp_obj_t *args) {
-    pin_obj_t *self = args[0];
-    if (n_args == 1) {
-        // get the interrupt mode
-        return MP_OBJ_NEW_SMALL_INT(MAP_GPIOIntTypeGet(self->port, self->bit));
-    } else {
-        // set the interrupt mode
-        MAP_GPIOIntTypeSet(self->port, self->bit, mp_obj_get_int(args[1]));
-        return mp_const_none;
+        if (args[4].u_int & PYB_PWR_MODE_LPDS) {
+            uint wake_pin;
+            uint wake_mode;
+            // pin_num is actually : (package_pin - 1)
+            switch (self->pin_num) {
+            case 56:    // GPIO2
+                wake_pin = PRCM_LPDS_GPIO2;
+                break;
+            case 58:    // GPIO4
+                wake_pin = PRCM_LPDS_GPIO4;
+                break;
+            case 3:     // GPIO13
+                wake_pin = PRCM_LPDS_GPIO13;
+                break;
+            case 7:     // GPIO17
+                wake_pin = PRCM_LPDS_GPIO17;
+                break;
+            case 1:     // GPIO11
+                wake_pin = PRCM_LPDS_GPIO11;
+                break;
+            case 16:    // GPIO24
+                wake_pin = PRCM_LPDS_GPIO24;
+                break;
+            default:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                break;
+            }
+
+            // intmodes are different in LDPS
+            switch (intmode) {
+            case GPIO_FALLING_EDGE:
+                wake_mode = PRCM_LPDS_FALL_EDGE;
+                break;
+            case GPIO_RISING_EDGE:
+                wake_mode = PRCM_LPDS_RISE_EDGE;
+                break;
+            case GPIO_LOW_LEVEL:
+                wake_mode = PRCM_LPDS_LOW_LEVEL;
+                break;
+            case GPIO_HIGH_LEVEL:
+                wake_mode = PRCM_LPDS_HIGH_LEVEL;
+                break;
+            default:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                break;
+            }
+
+            // enable GPIO as a wake source during LPDS
+            MAP_PRCMLPDSWakeUpGPIOSelect(wake_pin, wake_mode);
+            MAP_PRCMLPDSWakeupSourceEnable(PRCM_LPDS_GPIO);
+        }
+
+        if (args[4].u_int & PYB_PWR_MODE_HIBERNATE) {
+            uint wake_pin;
+            uint wake_mode;
+            // pin_num is actually : (package_pin - 1)
+            switch (self->pin_num) {
+            case 56:    // GPIO2
+                wake_pin = PRCM_HIB_GPIO2;
+                break;
+            case 58:    // GPIO4
+                wake_pin = PRCM_HIB_GPIO4;
+                break;
+            case 3:     // GPIO13
+                wake_pin = PRCM_HIB_GPIO13;
+                break;
+            case 7:     // GPIO17
+                wake_pin = PRCM_HIB_GPIO17;
+                break;
+            case 1:     // GPIO11
+                wake_pin = PRCM_HIB_GPIO11;
+                break;
+            case 16:    // GPIO24
+                wake_pin = PRCM_HIB_GPIO24;
+                break;
+            default:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                break;
+            }
+
+            // intmodes are bit different in hibernate
+            switch (intmode) {
+            case GPIO_FALLING_EDGE:
+                wake_mode = PRCM_HIB_FALL_EDGE;
+                break;
+            case GPIO_RISING_EDGE:
+                wake_mode = PRCM_HIB_RISE_EDGE;
+                break;
+            case GPIO_LOW_LEVEL:
+                wake_mode = PRCM_HIB_LOW_LEVEL;
+                break;
+            case GPIO_HIGH_LEVEL:
+                wake_mode = PRCM_HIB_HIGH_LEVEL;
+                break;
+            default:
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                break;
+            }
+
+            // enable GPIO as a wake source during hibernate
+            MAP_PRCMHibernateWakeUpGPIOSelect(wake_pin, wake_mode);
+            MAP_PRCMHibernateWakeupSourceEnable(wake_pin);
+        }
+
+        // we need to update the callback atomically, so we disable the
+        // interrupt before we update anything.
+        pin_extint_disable(self);
+        // register the interrupt
+        pin_extint_register((pin_obj_t *)self, intmode, priority);
+        // create the callback
+        self->callback = mpcallback_new (self, args[1].u_obj, &pin_cb_methods);
+        // enable the interrupt just before leaving
+        pin_extint_enable(self);
     }
+    return self->callback;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_intmode_obj, 1, 2, pin_intmode);
-
-/// \method swint()
-/// Trigger the interrupt callback from software.
-STATIC mp_obj_t pin_swint(mp_obj_t self_in) {
-    pin_obj_t *self = self_in;
-    pin_extint_swint(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_swint_obj, pin_swint);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_callback_obj, 1, pin_callback);
 
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
@@ -587,10 +666,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_type),                    (mp_obj_t)&pin_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_strength),                (mp_obj_t)&pin_strenght_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_af),                      (mp_obj_t)&pin_af_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_intenable),               (mp_obj_t)&pin_int_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_intdisable),              (mp_obj_t)&pin_int_disable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_intmode),                 (mp_obj_t)&pin_intmode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_swint),                   (mp_obj_t)&pin_swint_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),                (mp_obj_t)&pin_callback_obj },
 
     // class attributes
     { MP_OBJ_NEW_QSTR(MP_QSTR_cpu),                     (mp_obj_t)&pin_cpu_pins_obj_type },
@@ -641,30 +717,11 @@ const mp_obj_type_t pin_type = {
     .locals_dict = (mp_obj_t)&pin_locals_dict,
 };
 
-STATIC void ExecuteIntCallback (pin_obj_t *self) {
-    if (self->callback != mp_const_none) {
-        // disable interrupts to avoid nesting
-        uint primsk = disable_irq();
-        // when executing code within a handler we must lock the GC to prevent
-        // any memory allocations. We must also catch any exceptions.
-        gc_lock();
-        nlr_buf_t nlr;
-        if (nlr_push(&nlr) == 0) {
-            mp_call_function_1(self->callback, self);
-            nlr_pop();
-        } else {
-            // uncaught exception; disable the callback so that it doesn't run again
-            self->callback = mp_const_none;
-            pin_extint_disable(self);
-            // printing an exception here will cause a stack overflow that ends up in a
-            // hard fault so, is better to signal the uncaught (probably non-recoverable)
-            // exception by blinkg the system led
-            mperror_signal_error();
-        }
-        gc_unlock();
-        enable_irq(primsk);
-    }
-}
+STATIC const mp_cb_methods_t pin_cb_methods = {
+    .init = pin_callback,
+    .enable = pin_extint_enable,
+    .disable = pin_extint_disable,
+};
 
 STATIC void GPIOA0IntHandler (void) {
     EXTI_Handler(GPIOA0_BASE);
@@ -689,6 +746,7 @@ STATIC void EXTI_Handler(uint port) {
 
     MAP_GPIOIntClear(port, bit);
     if (NULL != (self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit))) {
-        ExecuteIntCallback(self);
+        mpcallback_handler(self->callback);
     }
 }
+

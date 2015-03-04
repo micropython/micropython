@@ -53,16 +53,16 @@
 
 __attribute__ ((section (".boot")))
 void pybrtc_init(void) {
-    // if RTC was previously set leave it alone
+    // if the RTC was previously set, leave it alone
     if (MAP_PRCMSysResetCauseGet() == PRCM_POWER_ON) {
-        // fresh reset; configure RTC Calendar
+        // fresh reset; configure the RTC Calendar
         // set the date to 1st Jan 2015
         // set the time to 00:00:00
         uint32_t seconds = mod_time_seconds_since_2000(2015, 1, 1, 0, 0, 0);
 
         MAP_PRCMRTCSet(seconds, 0);
 
-        // Mark that the RTC is in use
+        // Mark the RTC in use
         MAP_PRCMRTCInUseSet();
     }
 }
@@ -90,7 +90,7 @@ STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 /// Get or set the date and time of the RTC.
 ///
 /// With no arguments, this method returns an 8-tuple with the current
-/// date and time.  With 1 argument (being an 8-tuple) it sets the date
+/// date and time. With 1 argument (being an 8-tuple) it sets the date
 /// and time.
 ///
 /// The 8-tuple has the following format:

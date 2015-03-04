@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include MICROPY_HAL_H
 #include "irq.h"
 #include "inc/hw_types.h"
@@ -45,6 +46,7 @@
 #include "pybsystick.h"
 #include "simplelink.h"
 #include "modwlan.h"
+#include "moduos.h"
 #include "telnet.h"
 #include "ff.h"
 #include "diskio.h"
@@ -53,11 +55,13 @@
 #include "portable.h"
 #include "task.h"
 #include "mpexception.h"
+#include "mpcallback.h"
 #include "random.h"
 #include "pybadc.h"
 #include "pybi2c.h"
 #include "pybsd.h"
 #include "pybwdt.h"
+#include "pybsleep.h"
 #include "utils.h"
 #include "gccollect.h"
 #include "mperror.h"
@@ -68,6 +72,7 @@ extern OsiTaskHandle    mpTaskHandle;
 extern OsiTaskHandle    svTaskHandle;
 extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 #endif
+
 
 /// \module pyb - functions related to the pyboard
 ///
@@ -117,29 +122,12 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 #endif
 
-/// \function unique_id()
-/// Returns a string of 6 bytes (48 bits), which is the unique MAC address of the SoC
-STATIC mp_obj_t pyb_mac(void) {
-    uint8_t mac[6];
-    wlan_get_mac (mac);
-    return mp_obj_new_bytes(mac, 6);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_mac_obj, pyb_mac);
-
 /// \function freq()
 /// Returns the CPU frequency: (F_CPU).
 STATIC mp_obj_t pyb_freq(void) {
     return mp_obj_new_int(HAL_FCPU_HZ);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
-
-/// \function sync()
-/// Sync all file systems.
-STATIC mp_obj_t pyb_sync(void) {
-    sflash_disk_flush();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
@@ -225,18 +213,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
-STATIC mp_obj_t pyb_stop(void) {
-    return mp_const_none;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
-
-STATIC mp_obj_t pyb_standby(void) {
-    return mp_const_none;
-}
-
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
-
 /// \function repl_uart(uart)
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
@@ -275,23 +251,18 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hard_reset),          (mp_obj_t)&pyb_hard_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&pyb_hard_reset_obj },
 #ifdef DEBUG
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&pyb_info_obj },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mac),                 (mp_obj_t)&pyb_mac_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&pyb_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info),           (mp_obj_t)&pyb_set_repl_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart),           (mp_obj_t)&pyb_repl_uart_obj },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wfi),                 (mp_obj_t)&pyb_wfi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stop),                (mp_obj_t)&pyb_stop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_standby),             (mp_obj_t)&pyb_standby_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main),                (mp_obj_t)&pyb_main_obj },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart),           (mp_obj_t)&pyb_repl_uart_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis),              (mp_obj_t)&pyb_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis),      (mp_obj_t)&pyb_elapsed_millis_obj },
@@ -299,7 +270,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros),      (mp_obj_t)&pyb_elapsed_micros_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay),               (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay),              (mp_obj_t)&pyb_udelay_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sync),                (mp_obj_t)&pyb_sync_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sync),                (mp_obj_t)&os_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdisk),              (mp_obj_t)&pyb_mkdisk_obj },
 
 #if MICROPY_HW_ENABLE_RNG
@@ -315,6 +286,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Sleep),               (mp_obj_t)&pyb_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_obj },
 
 #if MICROPY_HW_HAS_SDCARD

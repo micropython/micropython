@@ -26,6 +26,7 @@
  */
 
 #include "py/mpconfig.h"
+#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
@@ -35,32 +36,20 @@
 #include "gpio.h"
 #include "pin.h"
 #include "pybpin.h"
-#include MICROPY_HAL_H
+
 
 
 // Returns the pin mode. This value returned by this macro should be one of:
 // GPIO_DIR_MODE_IN or GPIO_DIR_MODE_OUT
-uint32_t pin_get_mode(const pin_obj_t *self) {
-    return MAP_GPIODirModeGet(self->port, self->bit);
+uint32_t pin_get_mode (const pin_obj_t *self) {
+    return self->mode;
 }
 
-uint32_t pin_get_type(const pin_obj_t *self) {
-
-    uint32_t strenght;
-    uint32_t type;
-
-    MAP_PinConfigGet(self->pin_num, &strenght, &type);
-
-    return type;
+uint32_t pin_get_type (const pin_obj_t *self) {
+    return self->type;
 }
 
 uint32_t pin_get_strenght (const pin_obj_t *self) {
-
-    uint32_t strenght;
-    uint32_t type;
-
-    MAP_PinConfigGet(self->pin_num, &strenght, &type);
-
-    return strenght;
+    return self->strength;
 }
 

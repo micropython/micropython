@@ -59,6 +59,7 @@
 #include "pybsd.h"
 #include "pins.h"
 #include "pybsleep.h"
+#include "mpcallback.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -118,11 +119,19 @@ soft_reset:
     mp_obj_list_init(mp_sys_argv, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
 
+    // execute all basic initializations
     mperror_init0();
     mpexception_init0();
+    mpcallback_init0();
     pyblsleep_init0();
     uart_init0();
     pin_init0();
+    readline_init0();
+    mod_network_init0();
+    wlan_init0();
+#if MICROPY_HW_ENABLE_RNG
+    rng_init0();
+#endif
 
     // configure stdio uart pins with the correct af
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
@@ -134,13 +143,6 @@ soft_reset:
             mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
     };
     pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
-
-    readline_init0();
-    mod_network_init0();
-    wlan_init0();
-#if MICROPY_HW_ENABLE_RNG
-    rng_init0();
-#endif
 
     mperror_enable_heartbeat();
 
@@ -328,7 +330,6 @@ STATIC void mptask_enter_ap_mode (void) {
     // Enable simplelink in low power mode
     wlan_sl_enable (ROLE_AP, SERVERS_DEF_AP_SSID, strlen(SERVERS_DEF_AP_SSID), SERVERS_DEF_AP_SECURITY,
                     SERVERS_DEF_AP_KEY, strlen(SERVERS_DEF_AP_KEY), SERVERS_DEF_AP_CHANNEL);
-    wlan_set_pm_policy (SL_NORMAL_POLICY);
 }
 
 STATIC void mptask_create_main_py (void) {

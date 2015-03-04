@@ -36,7 +36,6 @@ typedef struct _pyb_uart_obj_t pyb_uart_obj_t;
 extern const mp_obj_type_t pyb_uart_type;
 
 void uart_init0(void);
-bool uart_init(pyb_uart_obj_t *uart_obj, uint baudrate);
 void uart_deinit (void);
 bool uart_rx_any(pyb_uart_obj_t *uart_obj);
 int uart_rx_char(pyb_uart_obj_t *uart_obj);

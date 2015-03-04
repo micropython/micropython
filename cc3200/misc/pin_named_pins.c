@@ -49,7 +49,7 @@ const mp_obj_type_t pin_cpu_pins_obj_type = {
     .locals_dict = (mp_obj_t)&pin_cpu_pins_locals_dict,
 };
 
-const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
     mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL && named_elem->value != NULL) {
@@ -58,7 +58,7 @@ const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t na
     return NULL;
 }
 
-const pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num) {
+pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
     for (uint i = 0; i < named_map->used; i++) {
         if (((pin_obj_t *)named_map->table[i].value)->pin_num == pin_num) {
@@ -68,7 +68,7 @@ const pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num) {
     return NULL;
 }
 
-const pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit) {
+pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
     for (uint i = 0; i < named_map->used; i++) {
         if ((((pin_obj_t *)named_map->table[i].value)->port == port) &&

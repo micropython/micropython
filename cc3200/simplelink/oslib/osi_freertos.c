@@ -693,11 +693,9 @@ void osi_Sleep(unsigned int MilliSecs)
 	\note
 	\warning
 */
-unsigned long osi_TaskDisable(void)
+void osi_TaskDisable(void)
 {
    vTaskSuspendAll();
-
-   return OSI_OK;
 }
 
 
@@ -708,7 +706,7 @@ unsigned long osi_TaskDisable(void)
 	\note
 	\warning
 */
-void osi_TaskEnable(unsigned long key)
+void osi_TaskEnable(void)
 {
    xTaskResumeAll();
 }

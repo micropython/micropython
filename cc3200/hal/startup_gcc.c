@@ -65,7 +65,7 @@ void ResetISR(void);
 #ifdef DEBUG
 static void NmiSR(void) __attribute__( ( naked ) );
 static void FaultISR( void ) __attribute__( ( naked ) );
-void HardFault_HandlerC(unsigned long *hardfault_args);
+void HardFault_HandlerC(uint32_t *pulFaultStackAddress);
 static void BusFaultHandler(void) __attribute__( ( naked ) );
 #endif
 static void IntDefaultHandler(void) __attribute__( ( naked ) );

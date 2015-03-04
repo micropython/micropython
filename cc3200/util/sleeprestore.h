@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,31 +24,10 @@
  * THE SOFTWARE.
  */
 
-// cc3200_prefix.c becomes the initial portion of the generated pins file.
+#ifndef SLEEPRESTORE_H_
+#define SLEEPRESTORE_H_
 
-#include <stdio.h>
-#include <stdint.h>
+extern void sleep_store(void);
+extern void sleep_restore(void);
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
-#include "inc/hw_types.h"
-#include "inc/hw_memmap.h"
-#include "pin.h"
-#include "gpio.h"
-#include "pybpin.h"
-
-
-#define PIN(p_pin_name, p_port, p_bit, p_pin_num) \
-{ \
-    { &pin_type }, \
-    .name     = MP_QSTR_ ## p_pin_name, \
-    .callback = mp_const_none, \
-    .port     = PORT_A ## p_port, \
-    .type     = PIN_TYPE_STD, \
-    .bit      = (p_bit), \
-    .pin_num  = (p_pin_num), \
-    .af       = PIN_MODE_0, \
-    .strength = PIN_STRENGTH_4MA, \
-    .mode     = GPIO_DIR_MODE_IN, \
-    .used     = false \
-}
+#endif /* SLEEPRESTORE_H_ */

@@ -538,26 +538,26 @@ void osi_Sleep(unsigned int MilliSecs);
 /*!
 	\brief 	This function used to disable the tasks
 	\param	- void
-	\return - Key with the suspended tasks
-	\note
-	\warning
-*/
-unsigned long osi_TaskDisable(void);
-
-/*!
-	\brief 	This function used to enable all tasks
-	\param	unsigned long
 	\return - void
 	\note
 	\warning
 */
-void osi_TaskEnable(unsigned long);
+void osi_TaskDisable(void);
+
+/*!
+	\brief 	This function used to enable all tasks
+	\param	- void
+	\return - void
+	\note
+	\warning
+*/
+void osi_TaskEnable(void);
+
 /*!
 	\brief structure definition for simple link spawn message
 
 	\note	On each porting or platform the type could be whatever is needed - integer, pointer to structure etc.
 */
-  
 typedef struct
 {
     P_OSI_SPAWN_ENTRY pEntry;

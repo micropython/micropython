@@ -57,7 +57,7 @@
 //*****************************************************************************
 // Local Constants
 //*****************************************************************************
-#define SL_STOP_TIMEOUT                     250
+#define SL_STOP_TIMEOUT                     35
 #define BOOTMGR_HASH_ALGO                   SHAMD5_ALGO_MD5
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512
@@ -65,8 +65,8 @@
 #define BOOTMGR_WAIT_SAFE_MODE_MS           1600
 #define BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS    200
 
-#define BOOTMGR_SAFE_MODE_ENTER_MS          700
-#define BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS   70
+#define BOOTMGR_SAFE_MODE_ENTER_MS          800
+#define BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS   80
 
 //*****************************************************************************
 // Exported functions declarations
@@ -307,7 +307,7 @@ int main (void) {
     bootmgr_board_init();
 
     // start simplelink since we need it to access the sflash
-    sl_Start(NULL, NULL, NULL);
+    sl_Start(0, 0, 0);
 
     // if a boot info file is found, load it, else, create a new one with the default boot info
     if (!sl_FsOpen((unsigned char *)IMG_BOOT_INFO, FS_MODE_OPEN_READ, NULL, &fhandle)) {

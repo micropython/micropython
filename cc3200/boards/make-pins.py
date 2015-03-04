@@ -40,12 +40,11 @@ class Pin(object):
         self.board_pin = True
         
     def print(self):
-        print('const pin_obj_t pin_{:6s} = PIN({:6s}, {:1d}, {:3d}, {:2d});'.format(
+        print('pin_obj_t pin_{:6s} = PIN({:6s}, {:1d}, {:3d}, {:2d});'.format(
                self.name, self.name, self.port, self.gpio_bit, self.pin_num))
 
     def print_header(self, hdr_file):
-        hdr_file.write('extern const pin_obj_t pin_{:s};\n'.
-                       format(self.name))
+        hdr_file.write('extern pin_obj_t pin_{:s};\n'.format(self.name))
 
 
 class Pins(object):

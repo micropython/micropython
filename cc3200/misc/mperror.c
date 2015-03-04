@@ -51,8 +51,8 @@
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define MPERROR_TOOGLE_MS                           (200)
-#define MPERROR_SIGNAL_ERROR_MS                     (2000)
+#define MPERROR_TOOGLE_MS                           (40)
+#define MPERROR_SIGNAL_ERROR_MS                     (1000)
 #define MPERROR_HEARTBEAT_ON_MS                     (80)
 #define MPERROR_HEARTBEAT_OFF_MS                    (2920)
 
@@ -113,7 +113,7 @@ void mperror_deinit_sfe_pin (void) {
 
 void mperror_signal_error (void) {
     uint32_t count = 0;
-    while ((MPERROR_TOOGLE_MS * count++) > MPERROR_SIGNAL_ERROR_MS) {
+    while ((MPERROR_TOOGLE_MS * count++) < MPERROR_SIGNAL_ERROR_MS) {
         // toogle the led
         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
         UtilsDelay(UTILS_DELAY_US_TO_COUNT(MPERROR_TOOGLE_MS * 1000));

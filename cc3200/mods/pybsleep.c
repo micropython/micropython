@@ -30,13 +30,41 @@
 
 #include "py/mpstate.h"
 #include MICROPY_HAL_H
-#include "hw_types.h"
+#include "py/runtime.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_nvic.h"
+#include "inc/hw_common_reg.h"
+#include "inc/hw_memmap.h"
+#include "cc3200_asm.h"
+#include "rom_map.h"
+#include "interrupt.h"
+#include "systick.h"
+#include "prcm.h"
+#include "spi.h"
+#include "pin.h"
 #include "pybsleep.h"
+#include "pybpin.h"
+#include "simplelink.h"
+#include "modwlan.h"
+#include "osi.h"
+#include "debug.h"
+#include "mpexception.h"
+#include "mpcallback.h"
+#include "mperror.h"
+#include "sleeprestore.h"
 
-/* Storage memory for Cortex M4 registers. To make implementation independent of
-   CPU, register specific constructs must be made part of platform services.
-*/
+/******************************************************************************
+ DECLARE PRIVATE CONSTANTS
+ ******************************************************************************/
+#define SPIFLASH_INSTR_READ_STATUS              (0x05)
+#define SPIFLASH_INSTR_DEEP_POWER_DOWN          (0xB9)
+#define SPIFLASH_STATUS_BUSY                    (0x01)
 
+/******************************************************************************
+ DECLARE PRIVATE TYPES
+ ******************************************************************************/
+// storage memory for Cortex M4 registers
 typedef struct {
     uint32_t     msp;
     uint32_t     psp;
@@ -45,189 +73,132 @@ typedef struct {
     uint32_t     faultmask;
     uint32_t     basepri;
     uint32_t     control;
-}arm_cm4_core_regs;
+} arm_cm4_core_regs_t;
 
-//static arm_cm4_core_regs vault_arm_registers;
+// storage memory for the NVIC registers
+typedef struct {
+    uint32_t vector_table;      // Vector Table Offset
+    uint32_t aux_ctrl;          // Auxiliary control register
+    uint32_t int_ctrl_state;    // Interrupt Control and State
+    uint32_t app_int;           // Application Interrupt Reset control
+    uint32_t sys_ctrl;          // System control
+    uint32_t config_ctrl;       // Configuration control
+    uint32_t sys_pri_1;         // System Handler Priority 1
+    uint32_t sys_pri_2;         // System Handler Priority 2
+    uint32_t sys_pri_3;         // System Handler Priority 3
+    uint32_t sys_hcrs;          // System Handler control and state register
+    uint32_t systick_ctrl;      // SysTick Control Status
+    uint32_t systick_reload;    // SysTick Reload
+    uint32_t systick_calib;     // SysTick Calibration
+    uint32_t int_en[6];         // Interrupt set enable
+    uint32_t int_priority[49];  // Interrupt priority
+} nvic_reg_store_t;
 
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t      obj;
+    WakeUpCB_t    wakeup;
+} pybsleep_obj_t;
 
-#define BACK_UP_ARM_REGISTERS() {                                  \
-        __asm(" push {r0-r12, LR}                           \n"    \
-          " ldr  r1, pxVaultRegistersSave                   \n"    \
-          " mrs  r0, msp                                    \n"    \
-          " str  r0, [r1]                                   \n"    \
-          " mrs  r0, psp                                    \n"    \
-          " str  r0, [r1, #4]                               \n"    \
-          " mrs  r0, primask                                \n"    \
-          " str  r0, [r1, #12]                              \n"    \
-          " mrs  r0, faultmask                              \n"    \
-          " str  r0, [r1, #16]                              \n"    \
-          " mrs  r0, basepri                                \n"    \
-          " str  r0, [r1, #20]                              \n"    \
-          " mrs  r0, control                                \n"    \
-          " str  r0, [r1, #24]                              \n"    \
-          "pxVaultRegistersSave: .word vault_arm_registers  \n");  \
+typedef struct {
+    mp_obj_t    wlan_wake_cb;
+    mp_obj_t    timer_wake_cb;
+    mp_obj_t    gpio_wake_cb;
+} pybsleep_wake_cb_t;
+
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC const mp_obj_type_t pybsleep_type;
+STATIC nvic_reg_store_t    *nvic_reg_store;
+STATIC pybsleep_wake_cb_t   pybsleep_wake_cb;
+volatile arm_cm4_core_regs_t vault_arm_registers;
+
+/******************************************************************************
+ DECLARE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC pybsleep_obj_t *pybsleep_find (mp_obj_t obj);
+STATIC void pybsleep_flash_powerdown (void);
+STATIC NORETURN void pybsleep_suspend_enter (void);
+void pybsleep_suspend_exit (void);
+STATIC void pybsleep_obj_wakeup (void);
+STATIC void PRCMInterruptHandler (void);
+STATIC void pybsleep_iopark (void);
+
+/******************************************************************************
+ DEFINE PUBLIC FUNCTIONS
+ ******************************************************************************/
+void pyblsleep_init0 (void) {
+    // initialize the sleep objects list
+    mp_obj_list_init(&MP_STATE_PORT(pybsleep_obj_list), 0);
+
+    // allocate memory for nvic registers vault
+    ASSERT ((nvic_reg_store = mem_Malloc(sizeof(nvic_reg_store_t))) != NULL);
+
+    // enable and register the PRCM interrupt
+    osi_InterruptRegister(INT_PRCM, (P_OSI_INTR_ENTRY)PRCMInterruptHandler, INT_PRIORITY_LVL_1);
+    MAP_IntPendClear(INT_PRCM);
+    MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
 }
 
-#define RESTORE_ARM_REGISTERS() {                                  \
-    __asm(" ldr  r1, pxVaultRegistersLoad                   \n"    \
-          " ldr  r0, [r1, #24]                              \n"    \
-          " msr  control, r0                                \n"    \
-          " ldr  r0, [r1]                                   \n"    \
-          " msr  msp, r0                                    \n"    \
-          " ldr  r0, [r1,#4]                                \n"    \
-          " msr  psp, r0                                    \n"    \
-          " ldr  r0, [r1, #12]                              \n"    \
-          " msr  primask, r0                                \n"    \
-          " ldr  r0, [r1, #16]                              \n"    \
-          " msr  faultmask, r0                              \n"    \
-          " ldr  r0, [r1, #20]                              \n"    \
-          " msr  basepri, r0                                \n"    \
-          " pop  {r0-r12, LR}                               \n"    \
-          "pxVaultRegistersLoad: .word vault_arm_registers  \n");  \
+void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
+    pybsleep_obj_t * sleep_obj = m_new_obj(pybsleep_obj_t);
+    sleep_obj->base.type = &pybsleep_type;
+    sleep_obj->obj = obj;
+    sleep_obj->wakeup = wakeup;
+    // only add objects once
+    if (!pybsleep_find(sleep_obj)) {
+        mp_obj_list_append(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
+    }
 }
 
-#if 0
-/* Called directly by boot ROM after waking from S3 state */
-void resume_from_S3(void)
-{
-        /* Jump from ROM context hence introduce the sync barriers */
-        INTRODUCE_SYNC_BARRIER(); /* Data and instruction sync barriers */
-
-        RESTORE_ARM_REGISTERS(); /* Core registers and code is in assembly */
-
-        INTRODUCE_SYNC_BARRIER(); /* Data and instruction sync barriers */
-
-        pform->pm_ops->restore_soc_data();
-        make_modules_to_M0_no_irq(pform->used_list_len); /* Wake up all  */
-        pform->pm_ops->handle_S3_wakeup();   /* Should be last statement */
-        return;
+void pybsleep_remove (const mp_obj_t obj) {
+    pybsleep_obj_t *sleep_obj;
+    if ((sleep_obj = pybsleep_find(obj))) {
+        mp_obj_list_remove(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
+    }
 }
 
-static void enter_into_S3(void)
-{
-    pform->pm_ops->back_up_soc_data();
-
-    INTRODUCE_SYNC_BARRIER(); /* Data and instruction sync barriers */
-
-    BACK_UP_ARM_REGISTERS(); /* Core registers and code is in assembly */
-
-    cc_enter_S3(resume_from_S3, vault_arm_registers.psp/*save_restore[1]*/);
-
-    /* Introducing delays to facilitate CPU to fade away ........ */
-    asm(" NOP"); asm(" NOP"); asm(" NOP"); asm(" NOP"); asm(" NOP");
-    asm(" NOP"); asm(" NOP"); asm(" NOP"); asm(" NOP"); asm(" NOP");
-    asm(" NOP"); asm(" NOP"); asm(" NOP"); asm(" NOP"); asm(" NOP");
+void pybsleep_set_wlan_wake_callback (mp_obj_t cb_obj) {
+    if (cb_obj) {
+        MAP_PRCMLPDSWakeupSourceEnable (PRCM_LPDS_HOST_IRQ);
+    }
+    else {
+        MAP_PRCMLPDSWakeupSourceDisable (PRCM_LPDS_HOST_IRQ);
+    }
+    pybsleep_wake_cb.wlan_wake_cb = cb_obj;
 }
 
-static void apply_io_park(u8 pin_num,
-                          enum io_park_state park_value)
-{
-        u32 pin_strength, pin_type;
+void pybsleep_set_gpio_wake_callback (mp_obj_t cb_obj) {
+    pybsleep_wake_cb.gpio_wake_cb = cb_obj;
+}
 
-        if(DONT_CARE != park_value) {
-                /* Change the pin mode to GPIO to be safe */
-                //MAP_PinModeSet(pin_num, PIN_MODE_0);
+void pybsleep_set_timer_wake_callback (mp_obj_t cb_obj) {
+    pybsleep_wake_cb.timer_wake_cb = cb_obj;
+}
 
-                /* First apply PullUp/PullDn (or no pull) according
-                to the default levels specified in the user supplied
-                parking table */
-                MAP_PinConfigGet(pin_num, &pin_strength, &pin_type);
-
-                if(NO_PULL_HIZ != park_value) {
-                        MAP_PinConfigSet(pin_num, pin_strength, park_value);
-                } else {
-                        MAP_PinConfigSet(pin_num, pin_strength, PIN_TYPE_STD);
-                }
-
-                /* One by one HiZ all the IOs,
-                  by writing the register that drives IOEN_N control
-                  pin of the IOs. This register and the signal path is
-                  always-on and hence not get lost during True-LPDS */
-                MAP_PinDirModeSet(pin_num, PIN_DIR_MODE_IN);
-
-                /* Once all the digital IOs has been made HiZ,
-                  the desired default PAD levels would be held by
-                  the weak-pulls. Input buffers would be alive
-                  (such as auto-SPI or wake-GPIOs) and would not
-                  have Iddq issue since pulls are present. */
+/******************************************************************************
+ DEFINE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC pybsleep_obj_t *pybsleep_find (mp_obj_t obj) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(pybsleep_obj_list).len; i++) {
+        // search for the object and then remove it
+        pybsleep_obj_t *sleep_obj = ((pybsleep_obj_t *)(MP_STATE_PORT(pybsleep_obj_list).items[i]));
+        if (sleep_obj->obj == obj) {
+            return sleep_obj;
         }
-        return;
+    }
+    return NULL;
 }
 
-i32 cc_io_park_safe(struct soc_io_park *io_park_choice,
-                     u8 num_pins)
-{
-        i32 loopcnt;
-
-        if(NULL == io_park_choice) {
-                return -1;
-        }
-
-        /* Park the IOs safely as specified by the application */
-        for(loopcnt = 0; loopcnt < num_pins; loopcnt++) {
-                switch(io_park_choice[loopcnt].pin_num) {
-                        /* Shared SPI pins for SFLASH */
-                        case PIN_11:
-                        case PIN_12:
-                        case PIN_13:
-                        case PIN_14:
-#ifdef DEBUG_MODE
-                        /* JTAG pins */
-                        case PIN_16:
-                        case PIN_17:
-                        case PIN_19:
-                        case PIN_20:
-#endif
-                                /* Do not park these pins as they may
-                                   have external dependencies */
-                                break;
-                        default:
-                                /* Apply the specified IO parking scheme */
-                                apply_io_park(io_park_choice[loopcnt].pin_num,
-                                        io_park_choice[loopcnt].park_val);
-
-                }
-
-        }
-
-        /* parking the SFLASH IOs */
-        HWREG(0x4402E0E8) &= ~(0x3 << 8);
-        HWREG(0x4402E0E8) |= (0x2 << 8);
-        HWREG(0x4402E0EC) &= ~(0x3 << 8);
-        HWREG(0x4402E0EC) |= (0x2 << 8);
-        HWREG(0x4402E0F0) &= ~(0x3 << 8);
-        HWREG(0x4402E0F0) |= (0x2 << 8);
-        HWREG(0x4402E0F4) &= ~(0x3 << 8);
-        HWREG(0x4402E0F4) |= (0x1 << 8);
-
-        return 0;
-}
-
-
-
-#define INSTR_READ_STATUS       0x05
-#define INSTR_DEEP_POWER_DOWN   0xB9
-#define STATUS_BUSY             0x01
-//****************************************************************************
-//
-//! Put SPI flash into Deep Power Down mode
-//!
-//! Note:SPI flash is a shared resource between MCU and Network processing
-//!      units. This routine should only be exercised after all the network
-//!      processing has been stopped. To stop network processing use sl_stop API
-//! \param None
-//!
-//! \return Status, 0:Pass, -1:Fail
-//
-//****************************************************************************
-void SpiFlashDeepPowerDown(void) {
+STATIC void pybsleep_flash_powerdown (void) {
     uint32_t status;
 
     // Enable clock for SSPI module
-    MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     // Reset SSPI at PRCM level and wait for reset to complete
     MAP_PRCMPeripheralReset(PRCM_SSPI);
-    while(!MAP_PRCMPeripheralStatusGet(PRCM_SSPI);
+    while(!MAP_PRCMPeripheralStatusGet(PRCM_SSPI));
 
     // Reset SSPI at module level
     MAP_SPIReset(SSPI_BASE);
@@ -247,599 +218,272 @@ void SpiFlashDeepPowerDown(void) {
     // Wait for the spi flash
     do {
         // Send the status register read instruction and read back a dummy byte.
-        MAP_SPIDataPut(SSPI_BASE, INSTR_READ_STATUS);
+        MAP_SPIDataPut(SSPI_BASE, SPIFLASH_INSTR_READ_STATUS);
         MAP_SPIDataGet(SSPI_BASE, &status);
 
         // Write a dummy byte then read back the actual status.
         MAP_SPIDataPut(SSPI_BASE, 0xFF);
         MAP_SPIDataGet(SSPI_BASE, &status);
-    } while ((status & 0xFF) == STATUS_BUSY);
+    } while ((status & 0xFF) == SPIFLASH_STATUS_BUSY);
 
     // Disable chip select for the spi flash.
     MAP_SPICSDisable(SSPI_BASE);
     // Start another CS enable sequence for Power down command.
     MAP_SPICSEnable(SSPI_BASE);
     // Send Deep Power Down command to spi flash
-    MAP_SPIDataPut(SSPI_BASE, INSTR_DEEP_POWER_DOWN);
+    MAP_SPIDataPut(SSPI_BASE, SPIFLASH_INSTR_DEEP_POWER_DOWN);
     // Disable chip select for the spi flash.
     MAP_SPICSDisable(SSPI_BASE);
 }
 
+STATIC NORETURN void pybsleep_suspend_enter (void) {
+    // enable full RAM retention
+    MAP_PRCMSRAMRetentionEnable(PRCM_SRAM_COL_1 | PRCM_SRAM_COL_2 | PRCM_SRAM_COL_3 | PRCM_SRAM_COL_4, PRCM_SRAM_LPDS_RET);
 
-#define DBG_PRINT               Report
-#define NUM_NVIC_PEND_REG       6
-#define ERR_TIMER_TO_WAKE       (-2)
-#define MAX_GPIO_WAKESOURCE     6
+    // save the NVIC control registers
+    nvic_reg_store->vector_table = HWREG(NVIC_VTABLE);
+    nvic_reg_store->aux_ctrl = HWREG(NVIC_ACTLR);
+    nvic_reg_store->int_ctrl_state = HWREG(NVIC_INT_CTRL);
+    nvic_reg_store->app_int = HWREG(NVIC_APINT);
+    nvic_reg_store->sys_ctrl = HWREG(NVIC_SYS_CTRL);
+    nvic_reg_store->config_ctrl = HWREG(NVIC_CFG_CTRL);
+    nvic_reg_store->sys_pri_1 = HWREG(NVIC_SYS_PRI1);
+    nvic_reg_store->sys_pri_2 = HWREG(NVIC_SYS_PRI2);
+    nvic_reg_store->sys_pri_3 = HWREG(NVIC_SYS_PRI3);
+    nvic_reg_store->sys_hcrs = HWREG(NVIC_SYS_HND_CTRL);
 
-struct {
-        u32 vector_table;   // Vector Table Offset
-        u32 aux_ctrl;       // Auxiliary control register
-        u32 int_ctrl_state; // Interrupt Control and State
-        u32 app_int;        // Application Interrupt Reset control
-        u32 sys_ctrl;       // System control
-        u32 config_ctrl;    // Configuration control
-        u32 sys_pri_1;      // System Handler Priority 1
-        u32 sys_pri_2;      // System Handler Priority 2
-        u32 sys_pri_3;      // System Handler Priority 3
-        u32 sys_hcrs;       // System Handler control and state register
-        u32 systick_ctrl;   // SysTick Control Status
-        u32 systick_reload; // SysTick Reload
-        u32 systick_calib;  // SysTick Calibration
-        u32 int_en[6];      // Interrupt set enable
-        u32 int_priority[49]; // Interrupt priority
-} nvic_reg_store;
+    // save the systick registers
+    nvic_reg_store->systick_ctrl = HWREG(NVIC_ST_CTRL);
+    nvic_reg_store->systick_reload = HWREG(NVIC_ST_RELOAD);
+    nvic_reg_store->systick_calib = HWREG(NVIC_ST_CAL);
 
-u8 gpio_wake_src[] = {2, 4, 13, 17, 11, 24};
-u8 gpio_lpds_inttype[] = {1, 1, 2, 0xFF, 3, 0xFF, 0};
-u8 gpio_hib_inttype[] = {2, 2, 0, 0xFF, 3, 0xFF, 1};
+    // save the interrupt enable registers
+    uint32_t *base_reg_addr = (uint32_t *)NVIC_EN0;
+    for(int32_t i = 0; i < (sizeof(nvic_reg_store->int_en) / 4); i++) {
+        nvic_reg_store->int_en[i] = base_reg_addr[i];
+    }
 
-u32 nvic_int_mask[] = {NVIC_PEND0_MASK, NVIC_PEND1_MASK, NVIC_PEND2_MASK,
-                                NVIC_PEND3_MASK, NVIC_PEND4_MASK, NVIC_PEND5_MASK};
+    // save the interrupt priority registers
+    base_reg_addr = (uint32_t *)NVIC_PRI0;
+    for(int32_t i = 0; i < (sizeof(nvic_reg_store->int_priority) / 4); i++) {
+        nvic_reg_store->int_priority[i] = base_reg_addr[i];
+    }
 
-volatile i32 debug = 0;
+    // park the io pins
+    pybsleep_iopark();
 
+    sleep_store();
 
-/* Network (Host IRQ) based wakeup from S3(LPDS) */
-static i32 setup_S3_wakeup_from_nw()
-{
-#define IS_NWPIC_INTR_SET() (HWREG(NVIC_EN5) & (1 << ((INT_NWPIC - 16) & 31)))
+    // save the restore info and enter LPDS
+    MAP_PRCMLPDSRestoreInfoSet(vault_arm_registers.psp, (uint32_t)sleep_restore);
+    MAP_PRCMLPDSEnter();
 
-        /* Check if the NWP->APPs interrupt is enabled */
-        if(IS_NWPIC_INTR_SET()) {
-                /* Set LPDS Wakeup source as NWP request */
-                MAP_PRCMLPDSWakeupSourceEnable(PRCM_LPDS_HOST_IRQ);
-                return 0;
-        } else {
-                return -1;
-        }
+    // let the cpu fade away...
+    for ( ; ; );
 }
 
+void pybsleep_suspend_exit (void) {
+    // take the I2C semaphore
+    uint32_t reg = HWREG(COMMON_REG_BASE + COMMON_REG_O_I2C_Properties_Register);
+    reg = (reg & ~0x3) | 0x1;
+    HWREG(COMMON_REG_BASE + COMMON_REG_O_I2C_Properties_Register) = reg;
 
+    // take the GPIO semaphore
+    reg = HWREG(COMMON_REG_BASE + COMMON_REG_O_GPIO_properties_register);
+    reg = (reg & ~0x3FF) | 0x155;
+    HWREG(COMMON_REG_BASE + COMMON_REG_O_GPIO_properties_register) = reg;
 
-/* GPIO based wakeup from S3(LPDS) */
-static i32 check_n_setup_S3_wakeup_from_gpio()
-{
-        i32 retval, indx;
-        u8 gpio_num[MAX_GPIO_WAKESOURCE];
-        u8 int_type[MAX_GPIO_WAKESOURCE];
+    // restore de NVIC control registers
+    HWREG(NVIC_VTABLE) = nvic_reg_store->vector_table;
+    HWREG(NVIC_ACTLR) = nvic_reg_store->aux_ctrl;
+    HWREG(NVIC_INT_CTRL) = nvic_reg_store->int_ctrl_state;
+    HWREG(NVIC_APINT) = nvic_reg_store->app_int;
+    HWREG(NVIC_SYS_CTRL) = nvic_reg_store->sys_ctrl;
+    HWREG(NVIC_CFG_CTRL) = nvic_reg_store->config_ctrl;
+    HWREG(NVIC_SYS_PRI1) = nvic_reg_store->sys_pri_1;
+    HWREG(NVIC_SYS_PRI2) = nvic_reg_store->sys_pri_2;
+    HWREG(NVIC_SYS_PRI3) = nvic_reg_store->sys_pri_3;
+    HWREG(NVIC_SYS_HND_CTRL) = nvic_reg_store->sys_hcrs;
 
-        /* Check for any special purpose GPIO usage */
-        retval = cc_gpio_get_spl_purpose(&gpio_num[0],
-                                &int_type[0],
-                                MAX_GPIO_WAKESOURCE);
+    // restore the systick register
+    HWREG(NVIC_ST_CTRL) = nvic_reg_store->systick_ctrl;
+    HWREG(NVIC_ST_RELOAD) = nvic_reg_store->systick_reload;
+    HWREG(NVIC_ST_CAL) = nvic_reg_store->systick_calib;
 
-        if(retval > 0) {
-                for(indx = 0; indx < sizeof(gpio_wake_src); indx++) {
-                        if(gpio_wake_src[indx] == gpio_num[0]) {
-                                /* Setup the GPIO to be the wake source */
-                                MAP_PRCMLPDSWakeUpGPIOSelect(
-                                      indx, gpio_lpds_inttype[int_type[0]]);
-                                MAP_PRCMLPDSWakeupSourceEnable(PRCM_LPDS_GPIO);
-                                /* Save the GPIO number wake from LPDS */
-                                cc_pm_ctrl.spl_gpio_wakefrom_lpds = gpio_num[0];
-                                break;
-                        }
-                }
-        } else {
-                return -1;
-        }
+    // restore the interrupt priority registers
+    uint32_t *base_reg_addr = (uint32_t *)NVIC_PRI0;
+    for (uint32_t i = 0; i < (sizeof(nvic_reg_store->int_priority) / 4); i++) {
+        base_reg_addr[i] = nvic_reg_store->int_priority[i];
+    }
 
-        return 0;
+    // restore the interrupt enable registers
+    base_reg_addr = (uint32_t *)NVIC_EN0;
+    for(uint32_t i = 0; i < (sizeof(nvic_reg_store->int_en) / 4); i++) {
+        base_reg_addr[i] = nvic_reg_store->int_en[i];
+    }
+
+    HAL_INTRODUCE_SYNC_BARRIER();
+
+    // ungate the clock to the shared spi bus
+    MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+    MAP_PRCMIntEnable (PRCM_INT_SLOW_CLK_CTR);
+
+    // reinitialize simplelink's bus
+    sl_IfOpen (NULL, 0);
+
+    // initialize the system led
+    mperror_init0();
+
+    // restore the configuration of all active peripherals
+    pybsleep_obj_wakeup();
+
+    // trigger a sw interrupt
+    MAP_IntPendSet(INT_PRCM);
+
+    // force an exception to go back to the point where suspend mode was entered
+    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
 }
 
-/* Timer based wakeup from S3 (LPDS) */
-static i32 check_n_setup_S3_wakeup_from_timer()
-{
-        u64 scc_match, scc_curr, scc_remaining;
-
-        /* Check if there is an alarm set */
-        if(cc_rtc_has_alarm()) {
-                /* Get the time remaining for the RTC timer to expire */
-                scc_match = MAP_PRCMSlowClkCtrMatchGet();
-                scc_curr = MAP_PRCMSlowClkCtrGet();
-
-                if(scc_match > scc_curr) {
-                        /* Get the time remaining in terms of slow clocks */
-                        scc_remaining = (scc_match - scc_curr);
-                        if(scc_remaining > WAKEUP_TIME_LPDS) {
-                                /* Subtract the time it takes for wakeup
-                                   from S3 (LPDS) */
-                                scc_remaining -= WAKEUP_TIME_LPDS;
-                                scc_remaining = (scc_remaining > 0xFFFFFFFF)?
-                                        0xFFFFFFFF: scc_remaining;
-                                /* Setup the LPDS wake time */
-                                MAP_PRCMLPDSIntervalSet(
-                                        (u32)scc_remaining);
-                                /* Enable the wake source to be timer */
-                                MAP_PRCMLPDSWakeupSourceEnable(
-                                        PRCM_LPDS_TIMER);
-                        } else {
-                                /* Cannot enter LPDS */
-                                return ERR_TIMER_TO_WAKE;
-                        }
-                } else {
-                       return ERR_TIMER_TO_WAKE;
-                }
-        } else {
-                /* Disable timer as the wake source  */
-                MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
-                return -1;
+STATIC void PRCMInterruptHandler (void) {
+    // reading the interrupt status automatically clears the interrupt
+    if (PRCM_INT_SLOW_CLK_CTR == MAP_PRCMIntStatus()) {
+        if (pybsleep_wake_cb.timer_wake_cb) {
+            mpcallback_handler(pybsleep_wake_cb.timer_wake_cb);
         }
-
-        return 0;
-}
-
-/* Setup the HIBernate wakr source as apecified GPIO */
-static void setup_hib_gpio_wake(u32 gpio_num,
-                           u32 gpio_wake_type)
-{
-        MAP_PRCMHibernateWakeUpGPIOSelect(gpio_num, gpio_wake_type);
-        MAP_PRCMHibernateWakeupSourceEnable(gpio_num);
-
-        return;
-}
-
-/* GPIO based wakeup from S4 (HIB) */
-static i32 check_n_setup_S4_wakeup_from_gpio()
-{
-        i32 retval, indx;
-        u8 gpio_num[MAX_GPIO_WAKESOURCE];
-        u8 int_type[MAX_GPIO_WAKESOURCE];
-
-        /* Check for any special purpose GPIO usage */
-        retval = cc_gpio_get_spl_purpose(&gpio_num[0],
-                                        &int_type[0],
-                                        MAX_GPIO_WAKESOURCE);
-
-        if(retval > 0) {
-                for(indx = 0; indx < retval; indx++) {
-                        switch(gpio_num[indx]) {
-                                case 2:
-                                        setup_hib_gpio_wake(PRCM_HIB_GPIO2,
-                                                gpio_hib_inttype[int_type[indx]]);
-                                        break;
-                                case 4:
-                                        setup_hib_gpio_wake(PRCM_HIB_GPIO4,
-                                                gpio_hib_inttype[int_type[indx]]);
-                                        break;
-                                case 13:
-                                        setup_hib_gpio_wake(PRCM_HIB_GPIO13,
-                                                gpio_hib_inttype[int_type[indx]]);
-                                        break;
-                                case 17:
-                                        setup_hib_gpio_wake(PRCM_HIB_GPIO17,
-                                                gpio_hib_inttype[int_type[indx]]);
-
-                                        break;
-                                case 11:
-                                        setup_hib_gpio_wake(PRCM_HIB_GPIO11,
-                                                gpio_hib_inttype[int_type[indx]]);
-                                        break;
-                                case 24:
-                                        setup_hib_gpio_wake(PRCM_HIB_GPIO24,
-                                                gpio_hib_inttype[int_type[indx]]);
-                                        break;
-                                default:
-                                        break;
-                        }
-                }
-        } else {
-            return -1;
-        }
-
-        return 0;
-}
-
-/* Timer based wakeup from S4 (HIB) */
-static i32 check_n_setup_S4_wakeup_from_timer()
-{
-        u64 scc_match, scc_curr, scc_remaining;
-
-        /* Check if there is an alarm set */
-        if(cc_rtc_has_alarm()) {
-                /* Get the time remaining for the RTC timer to expire */
-                scc_match = MAP_PRCMSlowClkCtrMatchGet();
-                scc_curr = MAP_PRCMSlowClkCtrGet();
-
-                if(scc_match > scc_curr) {
-                        /* Get the time remaining in terms of slow clocks */
-                        scc_remaining = (scc_match - scc_curr);
-                        if(scc_remaining > WAKEUP_TIME_HIB) {
-                                /* Subtract the time it takes for wakeup
-                                   from S4 (HIB) */
-                                scc_remaining -= WAKEUP_TIME_HIB;
-                                /* Setup the HIB wake time */
-                                MAP_PRCMHibernateIntervalSet(scc_remaining);
-                                /* Enable the wake source to be RTC */
-                                MAP_PRCMHibernateWakeupSourceEnable(
-                                        PRCM_HIB_SLOW_CLK_CTR);
-                        } else {
-                                /* Cannot enter HIB */
-                                return ERR_TIMER_TO_WAKE;
-                        }
-                } else {
-                        return -1;
-                }
-        } else {
-                /* Disable Timer as wake source */
-                MAP_PRCMHibernateWakeupSourceDisable(PRCM_HIB_SLOW_CLK_CTR);
-                return -1;
-        }
-
-        return 0;
-}
-
-/* Sets up wake-up sources for indicated power mode */
-i32 cc_set_up_wkup_srcs(enum soc_pm target)
-{
-        i32 nw_ret = -1, gpio_ret = -1, timer_ret = -1;
-        switch(target) {
-                case e_pm_S0:
-                case e_pm_S1:
-                case e_pm_S2:
-                        /* These handle the cases of run, sleep, deepsleep.
-                           Wake source is configured outside this scope in
-                           individual peripherals */
-                        break;
-                case e_pm_S3:
-                        /* Low power deep sleep condition */
-                        /* Network (Host IRQ) based wakeup is always enabled */
-                        nw_ret = setup_S3_wakeup_from_nw();
-                        /* Check and enable GPIO based wakeup */
-                        gpio_ret = check_n_setup_S3_wakeup_from_gpio();
-                        /* Check and enable LRT based wakeup */
-                        timer_ret = check_n_setup_S3_wakeup_from_timer();
-                        break;
-                case e_pm_S4:
-                        /* Hibernate condition */
-                        /* Check and enable GPIO based wakeup */
-                        gpio_ret = check_n_setup_S4_wakeup_from_gpio();
-                        /* Check and enable LRT based wakeup */
-                        timer_ret = check_n_setup_S4_wakeup_from_timer();
-                        break;
-                default:
-                        break;
-        }
-
-        if(ERR_TIMER_TO_WAKE == timer_ret) {
-                return -1;
-        }
-        if((nw_ret < 0) && (gpio_ret < 0) && (timer_ret < 0)) {
-                return -1;
-        }
-        else if((gpio_ret < 0) && (timer_ret < 0)) {
-                /* Setup the LPDS wake time */
-                MAP_PRCMLPDSIntervalSet(LPDS_WDOG_TIME);
-                /* Enable the wake source to be timer */
-                MAP_PRCMLPDSWakeupSourceEnable(
-                        PRCM_LPDS_TIMER);
-        }
-        return 0;
-}
-
-/* LPDS wake SW interrupt handler */
-void wake_interrupt_handler()
-{
-        i32 wake_source;
-
-        /* Identify the wakeup source */
-        wake_source = MAP_PRCMLPDSWakeupCauseGet();
-
-        switch(wake_source) {
+    }
+    else {
+        switch (MAP_PRCMLPDSWakeupCauseGet()) {
         case PRCM_LPDS_HOST_IRQ:
-                        break;
+            if (pybsleep_wake_cb.wlan_wake_cb) {
+                mpcallback_handler(pybsleep_wake_cb.wlan_wake_cb);
+            }
+            break;
         case PRCM_LPDS_GPIO:
-                /* Invoke the callback with the last GPIO num
-                   used to enter LPDS (S3) */
-                gpio_wake_interrupt_handler(
-                        &cc_pm_ctrl.spl_gpio_wakefrom_lpds);
-                        break;
+            if (pybsleep_wake_cb.gpio_wake_cb) {
+                mpcallback_handler(pybsleep_wake_cb.gpio_wake_cb);
+            }
+            break;
         case PRCM_LPDS_TIMER:
-                        break;
-        }
-
-        return;
-}
-
-/* Process events that have woken up system from S3 (LPDS) */
-i32 cc_handle_S3_wakeup()
-{
-        /* Trigger the SW interrupt */
-        MAP_IntPendSet(INT_PRCM);
-        return 0;
-}
-
-/* Are there interrupts pending in system?   TRUE -> yes else no */
-bool cc_are_irqs_pending(void)
-{
-        i32 indx = 0;
-        u32 *base_reg_addr;
-
-        /* Check if there are any interrupts pending */
-        base_reg_addr = (u32 *)NVIC_PEND0;
-        for(indx = 0; indx < NUM_NVIC_PEND_REG; indx++) {
-                if(base_reg_addr[indx] & nvic_int_mask[indx]) {
-                        return true;
-                }
-        }
-
-        return false;
-}
-
-/* Must push system to low power state of S4 (Hibernate) */
-i32 cc_enter_S4(void)
-{
-        /* Invoke the driverlib API to enter HIBernate */
-        MAP_PRCMHibernateEnter();
-
-        return 0;
-}
-
-/* Must push system to low power state of S3 (LPDS) */
-i32 cc_enter_S3(void(*resume_fn)(void), u32 stack_ptr)
-{
-        MAP_PRCMLPDSRestoreInfoSet(stack_ptr, (u32)resume_fn);
-
-        /* Enter LPDS */
-        MAP_PRCMLPDSEnter();
-        return 0;
-}
-
-/* Must push system to low power state of S2 (Deepsleep) */
-i32 cc_enter_S2(void)
-{
-        /* Enter deepsleep */
-        //MAP_PRCMDeepSleepEnter();
-
-        return 0;
-}
-volatile i32 sleep_count = 0;
-/* Must push system to low power state of S1 */
-i32  cc_enter_S1(void)
-{
-        //MAP_PRCMSleepEnter();
-        return 0;
-}
-
-/* Save the NVIC registers */
-void back_up_nvic_regs()
-{
-        i32 indx = 0;
-        u32 *base_reg_addr;
-        /* Save the NVIC control registers */
-        nvic_reg_store.vector_table = HWREG(NVIC_VTABLE);
-        nvic_reg_store.aux_ctrl = HWREG(NVIC_ACTLR);
-        nvic_reg_store.int_ctrl_state = HWREG(NVIC_INT_CTRL);
-        nvic_reg_store.app_int = HWREG(NVIC_APINT);
-        nvic_reg_store.sys_ctrl = HWREG(NVIC_SYS_CTRL);
-        nvic_reg_store.config_ctrl = HWREG(NVIC_CFG_CTRL);
-        nvic_reg_store.sys_pri_1 = HWREG(NVIC_SYS_PRI1);
-        nvic_reg_store.sys_pri_2 = HWREG(NVIC_SYS_PRI2);
-        nvic_reg_store.sys_pri_3 = HWREG(NVIC_SYS_PRI3);
-        nvic_reg_store.sys_hcrs = HWREG(NVIC_SYS_HND_CTRL);
-
-        /* Systick registers */
-        nvic_reg_store.systick_ctrl = HWREG(NVIC_ST_CTRL);
-        nvic_reg_store.systick_reload = HWREG(NVIC_ST_RELOAD);
-        nvic_reg_store.systick_calib = HWREG(NVIC_ST_CAL);
-
-        /* Save the interrupt enable registers */
-        base_reg_addr = (u32 *)NVIC_EN0;
-        for(indx = 0; indx < (sizeof(nvic_reg_store.int_en) / 4); indx++) {
-                nvic_reg_store.int_en[indx] = base_reg_addr[indx];
-        }
-
-        /* Save the interrupt priority registers */
-        base_reg_addr = (u32 *)NVIC_PRI0;
-        for(indx = 0; indx < (sizeof(nvic_reg_store.int_priority) / 4); indx++) {
-                nvic_reg_store.int_priority[indx] = base_reg_addr[indx];
-        }
-
-        return;
-}
-
-/* Reestore the NVIC registers */
-void restore_nvic_regs()
-{
-        i32 indx = 0;
-        u32 *base_reg_addr;
-
-        /* Restore the NVIC control registers */
-        HWREG(NVIC_VTABLE) = nvic_reg_store.vector_table;
-        HWREG(NVIC_ACTLR) = nvic_reg_store.aux_ctrl;
-        HWREG(NVIC_APINT) = nvic_reg_store.app_int;
-        HWREG(NVIC_SYS_CTRL) = nvic_reg_store.sys_ctrl;
-        HWREG(NVIC_CFG_CTRL) = nvic_reg_store.config_ctrl;
-        HWREG(NVIC_SYS_PRI1) = nvic_reg_store.sys_pri_1;
-        HWREG(NVIC_SYS_PRI2) = nvic_reg_store.sys_pri_2;
-        HWREG(NVIC_SYS_PRI3) = nvic_reg_store.sys_pri_3;
-        HWREG(NVIC_SYS_HND_CTRL) = nvic_reg_store.sys_hcrs;
-
-        /* Systick registers */
-        HWREG(NVIC_ST_CTRL) = nvic_reg_store.systick_ctrl;
-        HWREG(NVIC_ST_RELOAD) = nvic_reg_store.systick_reload;
-        HWREG(NVIC_ST_CAL) = nvic_reg_store.systick_calib;
-
-        /* Restore the interrupt priority registers */
-        base_reg_addr = (u32 *)NVIC_PRI0;
-        for(indx = 0; indx < (sizeof(nvic_reg_store.int_priority) / 4); indx++) {
-                base_reg_addr[indx] = nvic_reg_store.int_priority[indx];
-        }
-
-        /* Restore the interrupt enable registers */
-        base_reg_addr = (u32 *)NVIC_EN0;
-        for(indx = 0; indx < (sizeof(nvic_reg_store.int_en) / 4); indx++) {
-                base_reg_addr[indx] = nvic_reg_store.int_en[indx];
-        }
-
-        INTRODUCE_SYNC_BARRIER(); /* Data and instruction sync barriers */
-
-        return;
-}
-
-/* S3 (LPDS): Back-up system regs & data */
-void cc_back_up_soc_data(void) {
-        /* Enable the RAM retention */
-        MAP_PRCMSRAMRetentionEnable(PRCM_SRAM_COL_1 | PRCM_SRAM_COL_2 | PRCM_SRAM_COL_3 | PRCM_SRAM_COL_4, PRCM_SRAM_LPDS_RET);
-        /* Store the NVIC registers */
-        back_up_nvic_regs();
-
-        // Park all IO pins
-
-        // Park antenna selection pins
-        HWREG(0x4402E108) = 0x00000E61;
-        HWREG(0x4402E10C) = 0x00000E61;
-
-        INTRODUCE_SYNC_BARRIER(); /* Data and instruction sync barriers */
-
-        BACK_UP_ARM_REGISTERS(); /* Core registers and code is in assembly */
-
-        return;
-}
-
-/* S3 (LPDS): Restore system regs & data */
-void cc_restore_soc_data(void)
-{
-        uint32_t reg;
-        /* Check if any of the registers/data need to be restored */
-        /* Take I2C semaphore */
-        reg = HWREG(COMMON_REG_BASE + COMMON_REG_O_I2C_Properties_Register);
-        reg = (reg & ~0x3) | 0x1;
-        HWREG(COMMON_REG_BASE + COMMON_REG_O_I2C_Properties_Register) = reg;
-
-        /* Take GPIO semaphore */
-        reg = HWREG(COMMON_REG_BASE + COMMON_REG_O_GPIO_properties_register);
-        reg = (reg & ~0x3FF) | 0x155;
-        HWREG(COMMON_REG_BASE + COMMON_REG_O_GPIO_properties_register) = reg;
-
-        /* Restore the NVIC registers */
-        restore_nvic_regs();
-
-        /* ungates the clk for the shared SPI*/
-        MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-        MAP_PRCMIntEnable (PRCM_INT_SLOW_CLK_CTR);
-
-        return;
-}
-
-
-void prcm_interrupt_handler(void *intr_param)
-{
-        int status;
-
-        /* Read the interrupt status, also clears the status */
-        status = MAP_PRCMIntStatus();
-
-        if((PRCM_INT_SLOW_CLK_CTR == status) || (sw_simulate_rtc)) {
-                sw_simulate_rtc = 0;
-                /* Invoke the RTC interrupt handler */
-                cc_rtc_isr();
-        } else if(0 == status) {
-                /* Invoke the wake from LPDS interrupt handler */
-                wake_interrupt_handler();
-        } else {
-        }
-}
-
-/* LPDS wake SW interrupt handler */
-void wake_interrupt_handler()
-{
-        i32 wake_source;
-
-        /* Identify the wakeup source */
-        wake_source = MAP_PRCMLPDSWakeupCauseGet();
-
-        switch(wake_source) {
-        case PRCM_LPDS_HOST_IRQ:
-                        break;
-        case PRCM_LPDS_GPIO:
-                /* Invoke the callback with the last GPIO num
-                   used to enter LPDS (S3) */
-                gpio_wake_interrupt_handler(
-                        &cc_pm_ctrl.spl_gpio_wakefrom_lpds);
-                        break;
-        case PRCM_LPDS_TIMER:
-                        break;
-        }
-
-        return;
-}
-
-/* Invoked in interrupt context */
-void cc_rtc_isr(void) {
-        struct u64_time alarm, value;
-        u32 status;
-
-        /* Read the interrupt status, also clears the status */
-        status = MAP_PRCMIntStatus();
-
-        // call the python RTC callback interrupt handler
-}
-#endif
-
-
-typedef struct {
-    mp_obj_t     obj;
-    WakeUpCB_t   wakeup;
-}pybsleep_obj_t;
-
-
-STATIC pybsleep_obj_t * pybsleep_find (mp_obj_t obj) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(pybsleep_obj_list).len; i++) {
-        // search for the object and then remove it
-        pybsleep_obj_t *sleep_obj = ((pybsleep_obj_t *)MP_STATE_PORT(pybsleep_obj_list).items[i]);
-        if (sleep_obj->obj == obj) {
-            return sleep_obj;
+            if (pybsleep_wake_cb.timer_wake_cb) {
+                mpcallback_handler(pybsleep_wake_cb.timer_wake_cb);
+            }
+            break;
+        default:
+            break;
         }
     }
-    return NULL;
 }
 
-void pyblsleep_init0 (void) {
-    mp_obj_list_init(&MP_STATE_PORT(pybsleep_obj_list), 0);
-}
-
-void pybsleep_add (mp_obj_t obj, WakeUpCB_t wakeup) {
-    pybsleep_obj_t * sleep_obj = m_new_obj(pybsleep_obj_t);
-    sleep_obj->obj = obj;
-    sleep_obj->wakeup = wakeup;
-    // only add objects once
-    if (!pybsleep_find(sleep_obj)) {
-        mp_obj_list_append(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
-    }
-}
-
-void pybsleep_remove (mp_obj_t obj) {
-    pybsleep_obj_t *sleep_obj;
-    if ((sleep_obj = pybsleep_find(obj))) {
-        mp_obj_list_remove(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
-    }
-}
-
-void pybsleep_wakeup (void) {
+STATIC void pybsleep_obj_wakeup (void) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(pybsleep_obj_list).len; i++) {
         pybsleep_obj_t *sleep_obj = ((pybsleep_obj_t *)MP_STATE_PORT(pybsleep_obj_list).items[i]);
         sleep_obj->wakeup(sleep_obj->obj);
     }
 }
 
+STATIC void pybsleep_iopark (void) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_cpu_pins_locals_dict);
+    for (uint i = 0; i < named_map->used; i++) {
+        pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
+        // skip the sflash pins since these are shared with the network processor
+        switch (pin->pin_num) {
+        case PIN_11:
+        case PIN_12:
+        case PIN_13:
+        case PIN_14:
+#ifdef DEBUG
+        // also skip the JTAG pins
+        case PIN_16:
+        case PIN_17:
+        case PIN_19:
+        case PIN_20:
+#endif
+            break;
+        default:
+            if (!pin->used) {
+                // enable the pull-down in unused pins
+                MAP_PinConfigSet(pin->pin_num, pin->strength, PIN_TYPE_STD_PD);
+            }
+            // make the pin an input
+            MAP_PinDirModeSet(pin->pin_num, PIN_DIR_MODE_IN);
+            break;
+        }
+    }
+
+    // park the sflash pins
+    HWREG(0x4402E0E8) &= ~(0x3 << 8);
+    HWREG(0x4402E0E8) |= (0x2 << 8);
+    HWREG(0x4402E0EC) &= ~(0x3 << 8);
+    HWREG(0x4402E0EC) |= (0x2 << 8);
+    HWREG(0x4402E0F0) &= ~(0x3 << 8);
+    HWREG(0x4402E0F0) |= (0x2 << 8);
+    HWREG(0x4402E0F4) &= ~(0x3 << 8);
+    HWREG(0x4402E0F4) |= (0x1 << 8);
+
+    // park the antenna selection pins
+    HWREG(0x4402E108) = 0x00000E61;
+    HWREG(0x4402E10C) = 0x00000E61;
+}
+
+/******************************************************************************/
+// Micro Python bindings; Sleep class
+
+/// \function idle()
+/// Gates the processor clock until an interrupt is triggered
+STATIC mp_obj_t pyb_sleep_idle (mp_obj_t self_in) {
+    __WFI();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_idle_obj, pyb_sleep_idle);
+
+/// \function suspend()
+/// Enters suspended mode. Wake up sources should have been enable prior to
+//  calling this method.
+STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
+    nlr_buf_t nlr;
+
+    // entering and exiting suspend mode must be an atomic operation
+    // therefore interrupts must be disabled
+    uint primsk = disable_irq();
+    if (nlr_push(&nlr) == 0) {
+        pybsleep_suspend_enter();
+        nlr_pop();
+    }
+    // an exception is always raised when exiting suspend mode
+    enable_irq(primsk);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_suspend_obj, pyb_sleep_suspend);
+
+/// \function hibernate()
+/// Enters hibernate mode. Wake up sources should have been enable prior to
+//  calling this method.
+STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
+    wlan_stop();
+    pybsleep_flash_powerdown();
+    MAP_PRCMHibernateEnter();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_hibernate_obj, pyb_sleep_hibernate);
+
+STATIC const mp_map_elem_t pybsleep_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_idle),                    (mp_obj_t)&pyb_sleep_idle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_suspend),                 (mp_obj_t)&pyb_sleep_suspend_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hibernate),               (mp_obj_t)&pyb_sleep_hibernate_obj },
+
+    // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SUSPENDED),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HIBERNATING),             MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pybsleep_locals_dict, pybsleep_locals_dict_table);
+
+STATIC const mp_obj_type_t pybsleep_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_sleep,
+    .locals_dict = (mp_obj_t)&pybsleep_locals_dict,
+};
+
+const mp_obj_base_t pyb_sleep_obj = {&pybsleep_type};

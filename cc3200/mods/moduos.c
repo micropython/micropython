@@ -282,11 +282,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
 /// \function sync()
 /// Sync all filesystems.
-STATIC mp_obj_t os_sync(void) {
+mp_obj_t os_sync(void) {
     sflash_disk_flush();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
+MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
 #if MICROPY_HW_ENABLE_RNG
 /// \function urandom(n)

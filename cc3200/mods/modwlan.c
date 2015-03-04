@@ -41,6 +41,8 @@
 #include "serverstask.h"
 #endif
 #include "mpexception.h"
+#include "mpcallback.h"
+#include "pybsleep.h"
 
 
 /******************************************************************************
@@ -77,6 +79,7 @@ typedef enum{
 
 typedef struct _wlan_obj_t {
     mp_obj_base_t   base;
+    mp_obj_t        callback;
     SlWlanMode_t    mode;
     uint32_t        status;
 
@@ -122,7 +125,6 @@ typedef struct _wlan_obj_t {
 #define ASSERT_ON_ERROR( x )            ASSERT((x) >= 0 )
 
 #define IPV4_ADDR_STR_LEN_MAX           (16)
-#define SL_STOP_TIMEOUT                 250
 
 #define WLAN_MAX_RX_SIZE                16000
 #define WLAN_MAX_TX_SIZE                1476
@@ -147,6 +149,7 @@ typedef struct _wlan_obj_t {
  DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC wlan_obj_t wlan_obj;
+STATIC const mp_cb_methods_t wlan_cb_methods;
 
 /******************************************************************************
  DECLARE PUBLIC DATA
@@ -161,7 +164,8 @@ STATIC void wlan_reenable (SlWlanMode_t mode);
 STATIC void wlan_get_sl_mac (void);
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len);
-
+STATIC void wlan_callback_enable (mp_obj_t self_in);
+STATIC void wlan_callback_disable (mp_obj_t self_in);
 
 //*****************************************************************************
 //
@@ -555,10 +559,6 @@ void wlan_get_ip (uint32_t *ip) {
     }
 }
 
-void wlan_set_pm_policy (uint8_t policy) {
-    ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_PM, policy, NULL, 0));
-}
-
 void wlan_stop_servers (void) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     servers_disable();
@@ -657,7 +657,7 @@ STATIC mp_obj_t wlan_init_helper(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     const char *key = mp_obj_str_get_data(args[3].u_obj, &key_len);
 
     if (key_len < 8) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_value_invalid_arguments));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
     // Force the channel to be between 1-11
@@ -670,6 +670,13 @@ STATIC mp_obj_t wlan_init_helper(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     return mp_const_none;
 }
 
+STATIC void wlan_callback_enable (mp_obj_t self_in) {
+    pybsleep_set_wlan_wake_callback (wlan_obj.callback);
+}
+
+STATIC void wlan_callback_disable (mp_obj_t self_in) {
+    pybsleep_set_wlan_wake_callback (NULL);
+}
 
 /******************************************************************************/
 // Micro Python bindings; WLAN class
@@ -714,7 +721,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
 
 STATIC void wlan_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     wlan_obj_t *self = self_in;
-    print(env, "<WLAN mode=%u", self->mode);
+    print(env, "<WLAN, mode=%u", self->mode);
 
     // only print the bssid if in station mode
     if (self->mode != ROLE_AP && GET_STATUS_BIT(self->status, STATUS_BIT_CONNECTION)) {
@@ -738,16 +745,6 @@ STATIC mp_obj_t wlan_getmode(mp_obj_t self_in) {
     return mp_obj_new_int(self->mode);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_getmode_obj, wlan_getmode);
-
-STATIC mp_obj_t wlan_setpm(mp_obj_t self_in, mp_obj_t pm_mode) {
-    mp_int_t mode = mp_obj_get_int(pm_mode);
-    if (mode < SL_NORMAL_POLICY || mode > SL_LONG_SLEEP_INTERVAL_POLICY) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-    wlan_set_pm_policy((uint8_t)mode);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(wlan_setpm_obj, wlan_setpm);
 
 /// \method connect(ssid, security=OPEN, key=None, bssid=None)
 //          if security is WPA/WPA2, the key must be a string
@@ -947,6 +944,32 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
+/// \method callback(method, intmode, value, priority, pwrmode)
+/// Creates a callback object associated with WLAN
+/// min num of arguments is 1 (intmode)
+STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
+
+   wlan_obj_t *self = pos_args[0];
+    // check if any parameters were passed
+    if (kw_args->used > 0 || self->callback == mp_const_none) {
+        // check the power mode
+        if (args[4].u_int != PYB_PWR_MODE_LPDS) {
+            // throw an exception since WLAN only supports LPDS mode
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+
+        // create the callback
+        self->callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods);
+
+        // enable network wakeup
+        pybsleep_set_wlan_wake_callback (self->callback);
+    }
+    return self->callback;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_callback_obj, 1, wlan_callback);
+
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 STATIC mp_obj_t wlan_serversstart(mp_obj_t self_in) {
     servers_enable();
@@ -977,12 +1000,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(wlan_serversuserpass_obj, wlan_serversuserpass)
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getmode),             (mp_obj_t)&wlan_getmode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setpm),               (mp_obj_t)&wlan_setpm_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),          (mp_obj_t)&wlan_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),         (mp_obj_t)&wlan_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),            (mp_obj_t)&wlan_ifconfig_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),            (mp_obj_t)&wlan_callback_obj },
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     { MP_OBJ_NEW_QSTR(MP_QSTR_start_servers),       (mp_obj_t)&wlan_serversstart_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop_servers),        (mp_obj_t)&wlan_serversstop_obj },
@@ -1000,14 +1023,14 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_STA),                 MP_OBJ_NEW_SMALL_INT(ROLE_STA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_AP),                  MP_OBJ_NEW_SMALL_INT(ROLE_AP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_P2P),                 MP_OBJ_NEW_SMALL_INT(ROLE_P2P) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NORMAL_PM),           MP_OBJ_NEW_SMALL_INT(SL_NORMAL_POLICY) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LOW_LATENCY_PM),      MP_OBJ_NEW_SMALL_INT(SL_LOW_LATENCY_POLICY) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LOW_POWER_PM),        MP_OBJ_NEW_SMALL_INT(SL_LOW_POWER_POLICY) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALWAYS_ON_PM),        MP_OBJ_NEW_SMALL_INT(SL_ALWAYS_ON_POLICY) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LONG_SLEEP_PM),       MP_OBJ_NEW_SMALL_INT(SL_LONG_SLEEP_INTERVAL_POLICY) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
+STATIC const mp_cb_methods_t wlan_cb_methods = {
+    .init = wlan_callback,
+    .enable = wlan_callback_enable,
+    .disable = wlan_callback_disable,
+};
 
 /******************************************************************************/
 // Micro Python bindings; WLAN socket

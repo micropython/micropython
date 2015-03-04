@@ -24,34 +24,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef PYBSLEEP_H_
-#define PYBSLEEP_H_
+#ifndef MPCALLBACK_H_
+#define MPCALLBACK_H_
 
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define PYB_PWR_MODE_ACTIVE_IDLE                (0x00)
-#define PYB_PWR_MODE_LPDS                       (0x01)
-#define PYB_PWR_MODE_HIBERNATE                  (0x02)
+#define mpcallback_INIT_NUM_ARGS                  5
 
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/
-typedef void (*WakeUpCB_t)(const mp_obj_t self);
+typedef void (*mp_cb_method_t) (mp_obj_t self);
+typedef mp_obj_t (*mp_cb_init_t) (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+
+typedef struct {
+    mp_cb_init_t init;
+    mp_cb_method_t enable;
+    mp_cb_method_t disable;
+} mp_cb_methods_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t parent;
+    mp_obj_t handler;
+    mp_cb_methods_t *methods;
+} mpcallback_obj_t;
 
 /******************************************************************************
- DECLARE EXPORTED VARIABLES
+ DECLARE EXPORTED DATA
  ******************************************************************************/
-extern const mp_obj_base_t pyb_sleep_obj;
+extern const mp_arg_t mpcallback_init_args[];
+extern const mp_obj_type_t pyb_callback_type;
 
 /******************************************************************************
- DECLARE FUNCTIONS
+ DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-void pyblsleep_init0 (void);
-void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup);
-void pybsleep_remove (const mp_obj_t obj);
-void pybsleep_set_wlan_wake_callback (mp_obj_t cb_obj);
-void pybsleep_set_gpio_wake_callback (mp_obj_t cb_obj);
-void pybsleep_set_timer_wake_callback (mp_obj_t cb_obj);
+void mpcallback_init0 (void);
+mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods);
+void mpcallback_remove (const mp_obj_t parent);
+void mpcallback_handler (mp_obj_t self_in);
+uint mpcallback_translate_priority (uint priority);
+mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods);
 
-#endif /* PYBSLEEP_H_ */
+#endif /* MPCALLBACK_H_ */

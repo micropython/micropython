@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef MODUOS_H_
+#define MODUOS_H_
+
 typedef struct {
     uint16_t    tm_year;    // i.e. 2014
     uint8_t     tm_mon;     // 1..12
@@ -41,3 +44,5 @@ extern mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp
                                              mp_uint_t hour, mp_uint_t minute, mp_uint_t second);
 
 extern void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm);
+
+#endif // MODUOS_H_

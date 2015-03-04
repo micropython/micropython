@@ -47,7 +47,7 @@
  DECLARE CONSTANTS
  ******************************************************************************/
 #define PYBWDT_MILLISECONDS_TO_TICKS(ms)            ((80000000 / 1000) * (ms))
-#define PYBWDT_MIN_TIMEOUT_MS                       (500)
+#define PYBWDT_MIN_TIMEOUT_MS                       (1000)
 
 /******************************************************************************
  DECLARE TYPES
