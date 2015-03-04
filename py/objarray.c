@@ -54,7 +54,7 @@
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 #define TYPECODE_MASK (0x7f)
 #else
-#define TYPECODE_MASK (~(mp_uint_t)1)
+#define TYPECODE_MASK (~(mp_uint_t)0)
 #endif
 
 typedef struct _mp_obj_array_t {
