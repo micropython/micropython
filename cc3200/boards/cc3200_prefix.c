@@ -43,6 +43,7 @@
 { \
     { &pin_type }, \
     .name     = MP_QSTR_ ## p_pin_name, \
+    .callback = NULL, \
     .port     = PORT_A ## p_port, \
     .type     = PIN_TYPE_STD, \
     .bit      = (p_bit), \

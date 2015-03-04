@@ -43,7 +43,6 @@
 #include "gccollect.h"
 #include "gchelper.h"
 #include "readline.h"
-#include "mptask.h"
 #include "mperror.h"
 #include "simplelink.h"
 #include "modnetwork.h"
@@ -56,7 +55,6 @@
 #include "sflash_diskio.h"
 #include "mpexception.h"
 #include "random.h"
-#include "pybextint.h"
 #include "pybi2c.h"
 #include "pybsd.h"
 #include "pins.h"
@@ -138,7 +136,6 @@ soft_reset:
     pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
 
     readline_init0();
-    extint_init0();
     mod_network_init0();
     wlan_init0();
 #if MICROPY_HW_ENABLE_RNG
@@ -286,7 +283,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
         if (res == FR_OK) {
             // success creating fresh LFS
         } else {
-            __fatal_error("could not create /SFLASH file system");
+            __fatal_error("failed to create /SFLASH");
         }
         // create empty main.py
         mptask_create_main_py();
@@ -298,7 +295,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
             mptask_create_main_py();
         }
     } else {
-        __fatal_error("could not create /SFLASH file system");
+        __fatal_error("failed to create /SFLASH");
     }
 
     // The current directory is used as the boot up directory.

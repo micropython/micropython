@@ -67,3 +67,14 @@ const pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num) {
     }
     return NULL;
 }
+
+const pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
+    for (uint i = 0; i < named_map->used; i++) {
+        if ((((pin_obj_t *)named_map->table[i].value)->port == port) &&
+                (((pin_obj_t *)named_map->table[i].value)->bit == bit)) {
+            return named_map->table[i].value;
+        }
+    }
+    return NULL;
+}

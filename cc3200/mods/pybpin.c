@@ -33,6 +33,7 @@
 #include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
@@ -41,9 +42,11 @@
 #include "pin.h"
 #include "prcm.h"
 #include "gpio.h"
+#include "interrupt.h"
 #include "pybpin.h"
 #include "pybsleep.h"
 #include "mpexception.h"
+#include "mperror.h"
 
 
 /// \moduleref pyb
@@ -78,12 +81,46 @@
 /// 1. Directly specify a Pin object
 /// 2. Supply a string which matches a CPU pin name
 /// 3. Provide a pin number
-
-
-STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+///
+/// \Interrupts:
+//// You can also configure the Pin to generate interrupts
+///
+/// Example callback:
+///
+/// def pincb(pin):
+/// print(pin.pin())
+///
+/// extint = pyb.Pin('GPIO10', 0, pyb.Pin.INT_FALLING, pyb.GPIO.STD_PU, pyb.S2MA, callback=pincb)
+///
+/// Now every time a falling edge is seen on the gpio pin, the callback will be
+/// called. Caution: mechanical pushbuttons have "bounce" and pushing or
+/// releasing a switch will often generate multiple edges.
+/// See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
+/// explanation, along with various techniques for debouncing.
+///
+/// All pin objects go through the pin mapper to come up with one of the
+/// gpio pins.
+///
+/// extint = pyb.Pin(pin, af, mode, pull, strength, callback)
+///
+/// There is also a C API, so that drivers which require Pin interrupts
+/// can also use this code. See pybextint.h for the available functions.
+/******************************************************************************
+DECLARE PRIVATE FUNCTIONS
+******************************************************************************/
+STATIC void ExecuteIntCallback (pin_obj_t *self);
+STATIC void GPIOA0IntHandler (void);
+STATIC void GPIOA1IntHandler (void);
+STATIC void GPIOA2IntHandler (void);
+STATIC void GPIOA3IntHandler (void);
+STATIC void EXTI_Handler(uint port);
+STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void pin_obj_configure (const pin_obj_t *self);
 
 
+/******************************************************************************
+ DEFINE PUBLIC FUNCTIONS
+ ******************************************************************************/
 void pin_init0(void) {
 
 }
@@ -136,6 +173,61 @@ void pin_config (pin_obj_t *self, uint af, uint mode, uint type, uint strength) 
     pybsleep_add (self, (WakeUpCB_t)pin_obj_configure);
 }
 
+void pin_extint_register(pin_obj_t *self, uint32_t intmode, mp_obj_t callback) {
+    void *handler;
+    uint32_t intnum;
+
+    // we need to update the callback atomically, so we disable the line
+    // before we update anything.
+    pin_extint_disable(self);
+
+    // configure the interrupt type
+    MAP_GPIOIntTypeSet(self->port, self->bit, intmode);
+    switch (self->port) {
+    case GPIOA0_BASE:
+        handler = GPIOA0IntHandler;
+        intnum = INT_GPIOA0;
+        break;
+    case GPIOA1_BASE:
+        handler = GPIOA1IntHandler;
+        intnum = INT_GPIOA1;
+        break;
+    case GPIOA2_BASE:
+        handler = GPIOA2IntHandler;
+        intnum = INT_GPIOA2;
+        break;
+    case GPIOA3_BASE:
+    default:
+        handler = GPIOA3IntHandler;
+        intnum = INT_GPIOA3;
+        break;
+    }
+    MAP_GPIOIntRegister(self->port, handler);
+    // set the interrupt to the lowest priority, to make sure that
+    // no other ISRs will be preemted by this one
+    MAP_IntPrioritySet(intnum, INT_PRIORITY_LVL_7);
+    // set the callback
+    self->callback = callback;
+    // enable the interrupt just before leaving
+    pin_extint_enable(self);
+}
+
+void pin_extint_enable(pin_obj_t *self) {
+    MAP_GPIOIntClear(self->port, self->bit);
+    MAP_GPIOIntEnable(self->port, self->bit);
+}
+
+void pin_extint_disable(pin_obj_t *self) {
+    MAP_GPIOIntDisable(self->port, self->bit);
+}
+
+void pin_extint_swint(pin_obj_t *self) {
+    ExecuteIntCallback(self);
+}
+
+/******************************************************************************
+DEFINE PRIVATE FUNCTIONS
+ ******************************************************************************/
 STATIC void pin_obj_configure (const pin_obj_t *self) {
     // Skip all this if the pin is to be used in analog mode
     if (self->type != PYBPIN_ANALOG_TYPE) {
@@ -228,7 +320,7 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
-    const pin_obj_t *pin = pin_find(args[0]);
+    pin_obj_t *pin = (pin_obj_t *)pin_find(args[0]);
 
     if (n_args > 1) {
         // pin af given, so configure it
@@ -263,42 +355,58 @@ STATIC mp_obj_t pin_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
 ///
 /// Returns: `None`.
 STATIC const mp_arg_t pin_init_args[] = {
-    { MP_QSTR_af,   MP_ARG_REQUIRED | MP_ARG_INT  },
-    { MP_QSTR_mode,                   MP_ARG_INT, {.u_int = GPIO_DIR_MODE_OUT} },
-    { MP_QSTR_type,                   MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
-    { MP_QSTR_str,                    MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
+    { MP_QSTR_af,       MP_ARG_REQUIRED | MP_ARG_INT  },
+    { MP_QSTR_mode,                       MP_ARG_INT, {.u_int = GPIO_DIR_MODE_OUT} },
+    { MP_QSTR_type,                       MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
+    { MP_QSTR_str,                        MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
+    { MP_QSTR_callback, MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 };
 #define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
-STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
-    mp_arg_val_t vals[pin_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, vals);
+    mp_arg_val_t args[pin_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, pos_args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, args);
 
     // get the af
-    uint af = vals[0].u_int;
+    uint af = args[0].u_int;
     if (af < PIN_MODE_0 || af > PIN_MODE_15) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
     // get the io mode
-    uint mode = vals[1].u_int;
-    if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    uint mode = args[1].u_int;
+    uint intmode = 0xFF;
+    // checking the mode only makes sense if af == GPIO
+    if (af == PIN_MODE_0) {
+        if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT) {
+            if (mode != GPIO_FALLING_EDGE && mode != GPIO_RISING_EDGE && mode != GPIO_BOTH_EDGES &&
+                    mode != GPIO_LOW_LEVEL && mode != GPIO_HIGH_LEVEL) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            }
+            // select input mode for interrupt triggering
+            intmode = mode;
+            mode = GPIO_DIR_MODE_IN;
+        }
     }
     // get the type
-    uint type = vals[2].u_int;
+    uint type = args[2].u_int;
     if (type != PIN_TYPE_STD && type != PIN_TYPE_STD_PU && type != PIN_TYPE_STD_PD &&
-        type != PIN_TYPE_OD  && type != PIN_TYPE_OD_PU  && type != PIN_TYPE_OD_PD) {
+            type != PIN_TYPE_OD && type != PIN_TYPE_OD_PU && type != PIN_TYPE_OD_PD) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
     // get the strenght
-    uint strength = vals[3].u_int;
+    uint strength = args[3].u_int;
     if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
     // configure the pin as requested
-    pin_config ((pin_obj_t *)self, af, mode, type, strength);
+    pin_config (self, af, mode, type, strength);
+
+    // register the interrupt if the mode says so
+    if (intmode != 0xFF) {
+        pin_extint_register(self, intmode, args[4].u_obj);
+    }
 
     return mp_const_none;
 }
@@ -419,48 +527,108 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
+/// \method int_enable()
+/// Enable a disabled interrupt.
+STATIC mp_obj_t pin_int_enable(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    pin_extint_enable(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_int_enable_obj, pin_int_enable);
+
+/// \method int_disable()
+/// Disable the interrupt associated with the Pin object.
+/// This could be useful for debouncing.
+STATIC mp_obj_t pin_int_disable(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    pin_extint_disable(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_int_disable_obj, pin_int_disable);
+
+/// \method intmode([mode])
+/// Get or set the interrupt mode of the pin:
+///
+/// - With no argument, returns the configured interrupt mode
+/// - With `mode` given, sets the interrupt mode of the pin
+STATIC mp_obj_t pin_intmode(mp_uint_t n_args, const mp_obj_t *args) {
+    pin_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get the interrupt mode
+        return MP_OBJ_NEW_SMALL_INT(MAP_GPIOIntTypeGet(self->port, self->bit));
+    } else {
+        // set the interrupt mode
+        MAP_GPIOIntTypeSet(self->port, self->bit, mp_obj_get_int(args[1]));
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_intmode_obj, 1, 2, pin_intmode);
+
+/// \method swint()
+/// Trigger the interrupt callback from software.
+STATIC mp_obj_t pin_swint(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    pin_extint_swint(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_swint_obj, pin_swint);
+
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pin_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value),       (mp_obj_t)&pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_low),         (mp_obj_t)&pin_low_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_high),        (mp_obj_t)&pin_high_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),      (mp_obj_t)&pin_toggle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_name),        (mp_obj_t)&pin_name_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_port),        (mp_obj_t)&pin_port_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pin),         (mp_obj_t)&pin_pin_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),        (mp_obj_t)&pin_mode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_type),        (mp_obj_t)&pin_type_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_strength),    (mp_obj_t)&pin_strenght_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_af),          (mp_obj_t)&pin_af_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                    (mp_obj_t)&pin_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_value),                   (mp_obj_t)&pin_value_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_low),                     (mp_obj_t)&pin_low_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_high),                    (mp_obj_t)&pin_high_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),                  (mp_obj_t)&pin_toggle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_name),                    (mp_obj_t)&pin_name_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_port),                    (mp_obj_t)&pin_port_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pin),                     (mp_obj_t)&pin_pin_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),                    (mp_obj_t)&pin_mode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_type),                    (mp_obj_t)&pin_type_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_strength),                (mp_obj_t)&pin_strenght_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_af),                      (mp_obj_t)&pin_af_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_intenable),               (mp_obj_t)&pin_int_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_intdisable),              (mp_obj_t)&pin_int_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_intmode),                 (mp_obj_t)&pin_intmode_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_swint),                   (mp_obj_t)&pin_swint_obj },
 
     // class attributes
-    { MP_OBJ_NEW_QSTR(MP_QSTR_cpu),         (mp_obj_t)&pin_cpu_pins_obj_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cpu),                     (mp_obj_t)&pin_cpu_pins_obj_type },
 
     // class constants
-    /// \constant IN        - set the pin to input mode
-    /// \constant OUT       - set the pin to output mode
-    /// \constant STD       - set the pin to standard mode without pull-up or pull-down
-    /// \constant STD_PU    - set the pin to standard mode with pull-up
-    /// \constant STD_PD    - set the pin to standard mode with pull-down
-    /// \constant OD        - set the pin to open drain mode without pull-up or pull-down
-    /// \constant OD_PU     - set the pin to open drain mode with pull-up
-    /// \constant OD_PD     - set the pin to open drain mode with pull-down
-    /// \constant 2MA       - set the drive strength to 2ma
-    /// \constant 4MA       - set the drive strength to 4ma
-    /// \constant 6MA       - set the drive strength to 6ma
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IN),          MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_IN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OUT),         MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_OUT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STD),         MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STD_PU),      MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PU) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STD_PD),      MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OD),          MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OD_PU),       MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD_PU) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OD_PD),       MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD_PD) },
+    /// \constant IN                                    - set the pin to input mode
+    /// \constant OUT                                   - set the pin to output mode
+    /// \constant STD                                   - set the pin to standard mode without pull-up or pull-down
+    /// \constant STD_PU                                - set the pin to standard mode with pull-up
+    /// \constant STD_PD                                - set the pin to standard mode with pull-down
+    /// \constant OD                                    - set the pin to open drain mode without pull-up or pull-down
+    /// \constant OD_PU                                 - set the pin to open drain mode with pull-up
+    /// \constant OD_PD                                 - set the pin to open drain mode with pull-down
+    /// \constant IRQ_RISING                            - interrupt on a rising edge
+    /// \constant IRQ_FALLING                           - interrupt on a falling edge
+    /// \constant IRQ_RISING_FALLING                    - interrupt on a rising or falling edge
+    /// \constant IRQ_LOW_LEVEL                         - interrupt on a low level
+    /// \constant IRQ_HIGH_LEVEL                        - interrupt on a high level
+    /// \constant 2MA                                   - set the drive strength to 2ma
+    /// \constant 4MA                                   - set the drive strength to 4ma
+    /// \constant 6MA                                   - set the drive strength to 6ma
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IN),                      MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_IN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_OUT),                     MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_OUT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STD),                     MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STD_PU),                  MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PU) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STD_PD),                  MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_OD),                      MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_OD_PU),                   MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD_PU) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_OD_PD),                   MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD_PD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_FALLING),             MP_OBJ_NEW_SMALL_INT(GPIO_FALLING_EDGE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_RISING),              MP_OBJ_NEW_SMALL_INT(GPIO_RISING_EDGE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_RISING_FALLING),      MP_OBJ_NEW_SMALL_INT(GPIO_BOTH_EDGES) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_LOW_LEVEL),           MP_OBJ_NEW_SMALL_INT(GPIO_LOW_LEVEL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_HIGH_LEVEL),          MP_OBJ_NEW_SMALL_INT(GPIO_HIGH_LEVEL) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_S2MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_S4MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_4MA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_S6MA),        MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_S2MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_S4MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_4MA) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_S6MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
@@ -472,3 +640,55 @@ const mp_obj_type_t pin_type = {
     .make_new = pin_make_new,
     .locals_dict = (mp_obj_t)&pin_locals_dict,
 };
+
+STATIC void ExecuteIntCallback (pin_obj_t *self) {
+    if (self->callback != mp_const_none) {
+        // disable interrupts to avoid nesting
+        uint primsk = disable_irq();
+        // when executing code within a handler we must lock the GC to prevent
+        // any memory allocations. We must also catch any exceptions.
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_1(self->callback, self);
+            nlr_pop();
+        } else {
+            // uncaught exception; disable the callback so that it doesn't run again
+            self->callback = mp_const_none;
+            pin_extint_disable(self);
+            // printing an exception here will cause a stack overflow that ends up in a
+            // hard fault so, is better to signal the uncaught (probably non-recoverable)
+            // exception by blinkg the system led
+            mperror_signal_error();
+        }
+        gc_unlock();
+        enable_irq(primsk);
+    }
+}
+
+STATIC void GPIOA0IntHandler (void) {
+    EXTI_Handler(GPIOA0_BASE);
+}
+
+STATIC void GPIOA1IntHandler (void) {
+    EXTI_Handler(GPIOA1_BASE);
+}
+
+STATIC void GPIOA2IntHandler (void) {
+    EXTI_Handler(GPIOA2_BASE);
+}
+
+STATIC void GPIOA3IntHandler (void) {
+    EXTI_Handler(GPIOA3_BASE);
+}
+
+// common interrupt handler
+STATIC void EXTI_Handler(uint port) {
+    pin_obj_t *self;
+    uint32_t bit = MAP_GPIOIntStatus(port, true);
+
+    MAP_GPIOIntClear(port, bit);
+    if (NULL != (self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit))) {
+        ExecuteIntCallback(self);
+    }
+}

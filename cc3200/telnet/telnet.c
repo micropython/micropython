@@ -36,7 +36,6 @@
 #include "debug.h"
 #include "mpexception.h"
 #include "serverstask.h"
-#include "mperror.h"
 #include "genhdr/py-version.h"
 
 
@@ -429,7 +428,7 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
     for (uint8_t *_str = b_str; _str < b_str + b_len; ) {
         if (*_str <= 127) {
             if (telnet_data.state == E_TELNET_STE_LOGGED_IN && *_str == user_interrupt_char) {
-                // raise keyboard exception
+                // raise a keyboard exception
                 mpexception_keyboard_nlr_jump();
                 (*len)--;
                 _str++;
@@ -460,10 +459,6 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
             }
             HAL_Delay (TELNET_WAIT_TIME_MS);
         } while (++retries <= TELNET_TX_RETRIES_MAX);
-    }
-    else {
-        // blink the system led
-        mperror_signal_error();
     }
 
     return false;
