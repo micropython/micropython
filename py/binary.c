@@ -141,6 +141,9 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
         case 'd':
             return mp_obj_new_float(((double*)p)[index]);
 #endif
+        // Extension to CPython: array of objects
+        case 'O':
+            return ((mp_obj_t*)p)[index];
     }
     return MP_OBJ_NEW_SMALL_INT(val);
 }
@@ -300,6 +303,10 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
             ((double*)p)[index] = mp_obj_get_float(val_in);
             break;
 #endif
+        // Extension to CPython: array of objects
+        case 'O':
+            ((mp_obj_t*)p)[index] = val_in;
+            break;
         default:
             mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
     }
