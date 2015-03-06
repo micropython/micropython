@@ -245,6 +245,9 @@ Q(single)
 Q(sep)
 Q(end)
 
+Q(step)
+Q(stop)
+
 Q(clear)
 Q(copy)
 Q(fromkeys)
