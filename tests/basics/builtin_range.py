@@ -24,3 +24,8 @@ print(range(4)[1:2])
 print(range(4)[1:3])
 print(range(4)[1::2])
 print(range(4)[1:-2:2])
+
+# attrs
+print(range(1, 2, 3).start)
+print(range(1, 2, 3).stop)
+print(range(1, 2, 3).step)
