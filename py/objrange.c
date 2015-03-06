@@ -167,6 +167,7 @@ STATIC mp_obj_t range_getiter(mp_obj_t o_in) {
 }
 
 
+#if MICROPY_PY_RANGE_ATTRS
 STATIC void range_load_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
     mp_obj_range_t *o = o_in;
     if (attr == MP_QSTR_start) {
@@ -177,6 +178,7 @@ STATIC void range_load_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
         dest[0] = mp_obj_new_int(o->step);
     }
 }
+#endif
 
 const mp_obj_type_t mp_type_range = {
     { &mp_type_type },
@@ -186,5 +188,7 @@ const mp_obj_type_t mp_type_range = {
     .unary_op = range_unary_op,
     .subscr = range_subscr,
     .getiter = range_getiter,
+#if MICROPY_PY_RANGE_ATTRS
     .load_attr = range_load_attr,
+#endif
 };

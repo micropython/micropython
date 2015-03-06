@@ -245,8 +245,10 @@ Q(single)
 Q(sep)
 Q(end)
 
+#if MICROPY_PY_RANGE_ATTRS
 Q(step)
 Q(stop)
+#endif
 
 Q(clear)
 Q(copy)

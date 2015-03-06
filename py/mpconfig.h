@@ -415,6 +415,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_ARRAY (1)
 #endif
 
+// Whether to implement the start/stop/step attributes (readback) on
+// the "range" builtin type. Rarely used, and costs ~60 bytes (x86).
+#ifndef MICROPY_PY_RANGE_ATTRS
+#define MICROPY_PY_RANGE_ATTRS (1)
+#endif
+
 // Whether to support slice assignments for array (and bytearray).
 // This is rarely used, but adds ~0.5K of code.
 #ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
