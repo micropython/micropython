@@ -166,6 +166,18 @@ STATIC mp_obj_t range_getiter(mp_obj_t o_in) {
     return mp_obj_new_range_iterator(o->start, o->stop, o->step);
 }
 
+
+STATIC void range_load_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_range_t *o = o_in;
+    if (attr == MP_QSTR_start) {
+        dest[0] = mp_obj_new_int(o->start);
+    } else if (attr == MP_QSTR_stop) {
+        dest[0] = mp_obj_new_int(o->stop);
+    } else if (attr == MP_QSTR_step) {
+        dest[0] = mp_obj_new_int(o->step);
+    }
+}
+
 const mp_obj_type_t mp_type_range = {
     { &mp_type_type },
     .name = MP_QSTR_range,
@@ -174,4 +186,5 @@ const mp_obj_type_t mp_type_range = {
     .unary_op = range_unary_op,
     .subscr = range_subscr,
     .getiter = range_getiter,
+    .load_attr = range_load_attr,
 };
