@@ -208,6 +208,17 @@ STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
+
+mp_obj_t mp_obj_new_memoryview(byte typecode, mp_uint_t nitems, void *items) {
+    mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
+    self->base.type = &mp_type_memoryview;
+    self->typecode = typecode;
+    self->free = 0;
+    self->len = nitems;
+    self->items = items;
+    return self;
+}
+
 STATIC mp_obj_t memoryview_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // TODO possibly allow memoryview constructor to take start/stop so that one
     // can do memoryview(b, 4, 8) instead of memoryview(b)[4:8] (uses less RAM)
@@ -217,12 +228,9 @@ STATIC mp_obj_t memoryview_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
-    mp_obj_array_t *self = m_new_obj(mp_obj_array_t);
-    self->base.type = type_in;
-    self->typecode = bufinfo.typecode;
-    self->free = 0;
-    self->len = bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL); // element len
-    self->items = bufinfo.buf;
+    mp_obj_array_t *self = mp_obj_new_memoryview(bufinfo.typecode,
+        bufinfo.len / mp_binary_get_size('@', bufinfo.typecode, NULL),
+        bufinfo.buf);
 
     // test if the object can be written to
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_RW)) {

@@ -430,6 +430,7 @@ mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args);
 mp_obj_t mp_obj_new_module(qstr module_name);
+mp_obj_t mp_obj_new_memoryview(byte typecode, mp_uint_t nitems, void *items);
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
