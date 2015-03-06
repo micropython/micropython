@@ -61,19 +61,32 @@ typedef unsigned int uint;
 #else
 #define m_new_obj_with_finaliser(type) m_new_obj(type)
 #endif
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #define m_renew(type, ptr, old_num, new_num) ((type*)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
 #define m_renew_maybe(type, ptr, old_num, new_num) ((type*)(m_realloc_maybe((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
 #define m_del(type, ptr, num) m_free(ptr, sizeof(type) * (num))
-#define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 #define m_del_var(obj_type, var_type, var_num, ptr) (m_free(ptr, sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#else
+#define m_renew(type, ptr, old_num, new_num) ((type*)(m_realloc((ptr), sizeof(type) * (new_num))))
+#define m_renew_maybe(type, ptr, old_num, new_num) ((type*)(m_realloc_maybe((ptr), sizeof(type) * (new_num))))
+#define m_del(type, ptr, num) ((void)(num), m_free(ptr))
+#define m_del_var(obj_type, var_type, var_num, ptr) ((void)(var_num), m_free(ptr))
+#endif
+#define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
 void *m_malloc(size_t num_bytes);
 void *m_malloc_maybe(size_t num_bytes);
 void *m_malloc_with_finaliser(size_t num_bytes);
 void *m_malloc0(size_t num_bytes);
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
 void m_free(void *ptr, size_t num_bytes);
+#else
+void *m_realloc(void *ptr, size_t new_num_bytes);
+void *m_realloc_maybe(void *ptr, size_t new_num_bytes);
+void m_free(void *ptr);
+#endif
 void *m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_MEM_STATS

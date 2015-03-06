@@ -35,6 +35,8 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 
+#include "lib/fatfs/ff.h"
+
 #include "systick.h"
 #include "pendsv.h"
 #include "gccollect.h"
@@ -52,7 +54,6 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
-#include "ff.h"
 #include "rng.h"
 #include "accel.h"
 #include "servo.h"

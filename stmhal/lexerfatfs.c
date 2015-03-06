@@ -27,8 +27,8 @@
 #include <stdio.h>
 
 #include "py/lexer.h"
+#include "lib/fatfs/ff.h"
 #include "lexerfatfs.h"
-#include "ff.h"
 
 typedef struct _mp_lexer_file_buf_t {
     FIL fp;

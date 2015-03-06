@@ -30,11 +30,9 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
-#include "systick.h"
+#include "lib/fatfs/ff.h"
+#include "lib/fatfs/diskio.h"
 #include "rng.h"
-#include "storage.h"
-#include "ff.h"
-#include "diskio.h"
 #include "file.h"
 #include "sdcard.h"
 #include "fsusermount.h"
@@ -310,11 +308,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
-    storage_flush();
+    disk_ioctl(0, CTRL_SYNC, NULL);
+    disk_ioctl(1, CTRL_SYNC, NULL);
     disk_ioctl(2, CTRL_SYNC, NULL);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
+MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
 
 #if MICROPY_HW_ENABLE_RNG
 /// \function urandom(n)
@@ -344,7 +343,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&os_stat_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), (mp_obj_t)&os_remove_obj }, // unlink aliases to remove
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&os_sync_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&mod_os_sync_obj },
 
     /// \constant sep - separation character used in paths
     { MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },

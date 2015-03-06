@@ -26,7 +26,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "ff.h"
+#include "lib/fatfs/ff.h"
 #include "fsusermount.h"
 
 // for user-mountable block device

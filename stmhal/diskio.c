@@ -33,12 +33,11 @@
 #include "stm32f4xx_hal.h"
 
 #include "py/runtime.h"
-#include "systick.h"
+#include "lib/fatfs/ff.h"        /* FatFs lower layer API */
+#include "lib/fatfs/diskio.h"        /* FatFs lower layer API */
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
-#include "ff.h"        /* FatFs lower layer API */
-#include "diskio.h"        /* FatFs lower layer API */
 #include "fsusermount.h"
 
 const PARTITION VolToPart[] = {
