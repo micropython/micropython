@@ -96,6 +96,9 @@ typedef enum {
     CHANNEL_MODE_OC_FORCED_ACTIVE,
     CHANNEL_MODE_OC_FORCED_INACTIVE,
     CHANNEL_MODE_IC,
+    CHANNEL_MODE_ENC_A,
+    CHANNEL_MODE_ENC_B,
+    CHANNEL_MODE_ENC_AB,
 } pyb_channel_mode;
 
 STATIC const struct {
@@ -111,6 +114,9 @@ STATIC const struct {
     { MP_QSTR_OC_FORCED_ACTIVE,   TIM_OCMODE_FORCED_ACTIVE },
     { MP_QSTR_OC_FORCED_INACTIVE, TIM_OCMODE_FORCED_INACTIVE },
     { MP_QSTR_IC,                 0 },
+    { MP_QSTR_ENC_A,              TIM_ENCODERMODE_TI1 },
+    { MP_QSTR_ENC_B,              TIM_ENCODERMODE_TI2 },
+    { MP_QSTR_ENC_AB,             TIM_ENCODERMODE_TI12 },
 };
 
 typedef struct _pyb_timer_channel_obj_t {
@@ -719,6 +725,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///     - `Timer.OC_FORCED_ACTIVE` - the pin is forced active (compare match is ignored).
 ///     - `Timer.OC_FORCED_INACTIVE` - the pin is forced inactive (compare match is ignored).
 ///     - `Timer.IC` - configure the timer in Input Capture mode.
+///     - `Timer.ENC_A` --- configure the timer in Encoder mode. The counter only changes when CH1 changes.
+///     - `Timer.ENC_B` --- configure the timer in Encoder mode. The counter only changes when CH2 changes.
+///     - `Timer.ENC_AB` --- configure the timer in Encoder mode. The counter changes when CH1 or CH2 changes.
 ///
 ///   - `callback` - as per TimerChannel.callback()
 ///
@@ -749,6 +758,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///
 ///   Note that capture only works on the primary channel, and not on the
 ///   complimentary channels.
+///
+/// Notes for Timer.ENC modes:
+///
+///   - Requires 2 pins, so one or both pins will need to be configured to use
+///     the appropriate timer AF using the Pin API.
+///   - Read the encoder value using the timer.counter() method.
+///   - Only works on CH1 and CH2 (and not on CH1N or CH2N)
+///   - The channel number is ignored when setting the encoder mode.
 ///
 /// PWM Example:
 ///
@@ -941,6 +958,41 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             break;
         }
 
+        case CHANNEL_MODE_ENC_A:
+        case CHANNEL_MODE_ENC_B:
+        case CHANNEL_MODE_ENC_AB: {
+            TIM_Encoder_InitTypeDef enc_config;
+
+            enc_config.EncoderMode = channel_mode_info[chan->mode].oc_mode;
+            enc_config.IC1Polarity  = args[6].u_int;
+            if (enc_config.IC1Polarity == 0xffffffff) {
+                enc_config.IC1Polarity = TIM_ICPOLARITY_RISING;
+            }
+            enc_config.IC2Polarity  = enc_config.IC1Polarity;
+            enc_config.IC1Selection = TIM_ICSELECTION_DIRECTTI;
+            enc_config.IC2Selection = TIM_ICSELECTION_DIRECTTI;
+            enc_config.IC1Prescaler = TIM_ICPSC_DIV1;
+            enc_config.IC2Prescaler = TIM_ICPSC_DIV1;
+            enc_config.IC1Filter    = 0;
+            enc_config.IC2Filter    = 0;
+
+            if (!IS_TIM_IC_POLARITY(enc_config.IC1Polarity)) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid polarity (%d)", enc_config.IC1Polarity));
+            }
+            // Only Timers 1, 2, 3, 4, 5, and 8 support encoder mode
+            if (self->tim.Instance != TIM1
+            &&  self->tim.Instance != TIM2
+            &&  self->tim.Instance != TIM3
+            &&  self->tim.Instance != TIM4
+            &&  self->tim.Instance != TIM5
+            &&  self->tim.Instance != TIM8 ) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "encoder not supported on timer %d", self->tim_id));
+            }
+            HAL_TIM_Encoder_Init(&self->tim, &enc_config);
+            __HAL_TIM_SetCounter(&self->tim, 0);
+            break;
+        }
+
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid mode (%d)", chan->mode));
     }
@@ -1077,6 +1129,9 @@ STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_OC_FORCED_ACTIVE),    MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_OC_FORCED_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_OC_FORCED_INACTIVE),  MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_OC_FORCED_INACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IC),                  MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_IC) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ENC_A),               MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_ENC_A) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ENC_B),               MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_ENC_B) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ENC_AB),              MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_ENC_AB) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HIGH),                MP_OBJ_NEW_SMALL_INT(TIM_OCPOLARITY_HIGH) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LOW),                 MP_OBJ_NEW_SMALL_INT(TIM_OCPOLARITY_LOW) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RISING),              MP_OBJ_NEW_SMALL_INT(TIM_ICPOLARITY_RISING) },
