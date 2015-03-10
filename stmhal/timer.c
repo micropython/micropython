@@ -988,8 +988,17 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             &&  self->tim.Instance != TIM8 ) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "encoder not supported on timer %d", self->tim_id));
             }
+
+            // Disable & clear the timer interrupt so that we don't trigger
+            // an interrupt by initializing the timer.
+            __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
             HAL_TIM_Encoder_Init(&self->tim, &enc_config);
             __HAL_TIM_SetCounter(&self->tim, 0);
+            if (self->callback != mp_const_none) {
+                __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
+                __HAL_TIM_ENABLE_IT(&self->tim, TIM_IT_UPDATE);
+            }
+            HAL_TIM_Encoder_Start(&self->tim, TIM_CHANNEL_ALL);
             break;
         }
 
@@ -1095,9 +1104,12 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
         self->callback = mp_const_none;
     } else if (mp_obj_is_callable(callback)) {
+        __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
         self->callback = callback;
-        // start timer, so that it interrupts on overflow
-        HAL_TIM_Base_Start_IT(&self->tim);
+        // start timer, so that it interrupts on overflow, but clear any
+        // pending interrupts which may have been set by initializing it.
+        __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
+        HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
         HAL_NVIC_EnableIRQ(self->irqn);
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
@@ -1330,7 +1342,7 @@ void timer_irq_handler(uint tim_id) {
 
         // Finally, clear any remaining interrupt sources. Otherwise we'll
         // just get called continuously.
-        uint32_t unhandled = __HAL_TIM_GET_ITSTATUS(&tim->tim, 0xff & ~handled);
+        uint32_t unhandled = tim->tim.Instance->DIER & 0xff & ~handled;
         if (unhandled != 0) {
             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
             printf("Unhandled interrupt SR=0x%02lx (now disabled)\n", unhandled);
