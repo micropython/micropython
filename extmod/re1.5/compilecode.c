@@ -129,6 +129,7 @@ const char *_compilecode(const char *re, ByteProg *prog)
 
             prog->bytelen = pc;
             re = _compilecode(re + 1, prog);
+            if (re == NULL || *re != ')') return NULL; // error, or no matching paren
             pc = prog->bytelen;
 
             EMIT(pc++, Save);
@@ -138,12 +139,14 @@ const char *_compilecode(const char *re, ByteProg *prog)
             break;
         }
         case '?':
+            if (pc == term) return NULL; // nothing to repeat
             insert_code(code, term, 2, &pc);
             EMIT(term, Split);
             EMIT(term + 1, REL(term, pc));
             prog->len++;
             break;
         case '*':
+            if (pc == term) return NULL; // nothing to repeat
             insert_code(code, term, 2, &pc);
             EMIT(pc, Jmp);
             EMIT(pc + 1, REL(pc, term));
@@ -158,6 +161,7 @@ const char *_compilecode(const char *re, ByteProg *prog)
             prog->len += 2;
             break;
         case '+':
+            if (pc == term) return NULL; // nothing to repeat
             if (re[1] == '?') {
                 EMIT(pc, Split);
                 re++;
@@ -217,7 +221,8 @@ int re1_5_compilecode(ByteProg *prog, const char *re)
     prog->insts[prog->bytelen++] = 0;
     prog->len++;
 
-    _compilecode(re, prog);
+    re = _compilecode(re, prog);
+    if (re == NULL || *re) return 1;
 
     prog->insts[prog->bytelen++] = Save;
     prog->insts[prog->bytelen++] = 1;
