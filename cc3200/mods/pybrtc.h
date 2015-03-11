@@ -25,9 +25,14 @@
  * THE SOFTWARE.
  */
 
+#ifndef PYBRTC_H_
+#define PYBRTC_H_
+
 #define RTC_U16MS_CYCLES(msec)      ((msec * 1024) / 1000)
 #define RTC_CYCLES_U16MS(cycles)    ((cycles * 1000) / 1024)
 
 extern const mp_obj_type_t pyb_rtc_type;
 
 void pybrtc_init(void);
+
+#endif  // PYBRTC_H_

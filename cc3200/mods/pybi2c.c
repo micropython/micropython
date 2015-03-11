@@ -42,6 +42,7 @@
 #include "i2c.h"
 #include "pybi2c.h"
 #include "mpexception.h"
+#include "pybsleep.h"
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
@@ -119,19 +120,19 @@ typedef struct _pyb_i2c_obj_t {
                                                 }
 
 /******************************************************************************
- DEFINE PUBLIC FUNCTIONS
+ DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 // only master mode is available for the moment
-void i2c_init (uint mode, uint slvaddr, uint baudrate) {
+STATIC void i2c_init (pyb_i2c_obj_t *self) {
     // Enable the I2C Peripheral
     MAP_PRCMPeripheralClkEnable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     MAP_PRCMPeripheralReset(PRCM_I2CA0);
 
     // Configure I2C module with the specified baudrate
-    MAP_I2CMasterInitExpClk(I2CA0_BASE, baudrate);
+    MAP_I2CMasterInitExpClk(I2CA0_BASE, self->baudrate);
 }
 
-void i2c_deinit(void) {
+STATIC void i2c_deinit(void) {
     MAP_I2CMasterDisable(I2CA0_BASE);
     MAP_PRCMPeripheralClkDisable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
 }
@@ -299,7 +300,10 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self_in, mp_uint_t n_args, co
     }
 
     // init the I2C bus
-    i2c_init(self->mode, self->slvaddr, self->baudrate);
+    i2c_init(self);
+
+    // register it with the sleep module
+    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)i2c_init);
 
     return mp_const_none;
 }

@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef PYBUART_H_
+#define PYBUART_H_
+
 typedef enum {
     PYB_UART_NONE   = -1,
     PYB_UART_0      =  0,
@@ -43,3 +46,4 @@ bool uart_tx_char(pyb_uart_obj_t *self, int c);
 bool uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
+#endif  // PYBUART_H_

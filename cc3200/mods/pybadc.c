@@ -47,6 +47,7 @@
 #include "adc.h"
 #include "pybadc.h"
 #include "pybpin.h"
+#include "pybsleep.h"
 #include "pins.h"
 #include "mpexception.h"
 
@@ -69,6 +70,16 @@ typedef struct _pyb_obj_adc_t {
     byte num;
 } pyb_obj_adc_t;
 
+
+STATIC void pybadc_init (pyb_obj_adc_t *self) {
+    // enable the ADC channel
+    MAP_ADCChannelEnable(ADC_BASE, self->channel);
+    // enable and configure the timer
+    MAP_ADCTimerConfig(ADC_BASE, (1 << 17) - 1);
+    MAP_ADCTimerEnable(ADC_BASE);
+    // enable the ADC peripheral
+    MAP_ADCEnable(ADC_BASE);
+}
 
 /******************************************************************************/
 /* Micro Python bindings : adc object                                         */
@@ -120,13 +131,11 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     // configure the pin in analog mode
     pin_config ((pin_obj_t *)pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PYBPIN_ANALOG_TYPE, PIN_STRENGTH_2MA);
 
-    // enable the ADC channel
-    MAP_ADCChannelEnable(ADC_BASE, channel);
-    // enable and configure the timer
-    MAP_ADCTimerConfig(ADC_BASE, (1 << 17) - 1);
-    MAP_ADCTimerEnable(ADC_BASE);
-    // enable the ADC peripheral
-    MAP_ADCEnable(ADC_BASE);
+    // initialize it
+    pybadc_init (self);
+
+    // register it with the sleep module
+    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pybadc_init);
 
     return self;
 }
