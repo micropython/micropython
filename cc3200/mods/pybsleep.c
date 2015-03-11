@@ -53,6 +53,7 @@
 #include "mpcallback.h"
 #include "mperror.h"
 #include "sleeprestore.h"
+#include "serverstask.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -160,12 +161,6 @@ void pybsleep_remove (const mp_obj_t obj) {
 }
 
 void pybsleep_set_wlan_wake_callback (mp_obj_t cb_obj) {
-    if (cb_obj) {
-        MAP_PRCMLPDSWakeupSourceEnable (PRCM_LPDS_HOST_IRQ);
-    }
-    else {
-        MAP_PRCMLPDSWakeupSourceDisable (PRCM_LPDS_HOST_IRQ);
-    }
     pybsleep_wake_cb.wlan_wake_cb = cb_obj;
 }
 
@@ -269,9 +264,10 @@ STATIC NORETURN void pybsleep_suspend_enter (void) {
         nvic_reg_store->int_priority[i] = base_reg_addr[i];
     }
 
-    // park the io pins
+    // park the gpio pins
     pybsleep_iopark();
 
+    // store the cpu registers
     sleep_store();
 
     // save the restore info and enter LPDS
@@ -326,10 +322,12 @@ void pybsleep_suspend_exit (void) {
 
     // ungate the clock to the shared spi bus
     MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-    MAP_PRCMIntEnable (PRCM_INT_SLOW_CLK_CTR);
 
-    // reinitialize simplelink's bus
-    sl_IfOpen (NULL, 0);
+    // if wakeups are enabled, simplelink is as well, so we only need to
+    // reinitialize the interface bus
+    if (pybsleep_wake_cb.wlan_wake_cb) {
+        sl_IfOpen (NULL, 0);
+    }
 
     // initialize the system led
     mperror_init0();
@@ -441,9 +439,22 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_idle_obj, pyb_sleep_idle);
 //  calling this method.
 STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     nlr_buf_t nlr;
+    bool servers_enabled = servers_are_enabled();
+
+    // check if we need to enable network wake-up
+    if (pybsleep_wake_cb.wlan_wake_cb) {
+        MAP_PRCMLPDSWakeupSourceEnable (PRCM_LPDS_HOST_IRQ);
+    }
+    else {
+        MAP_PRCMLPDSWakeupSourceDisable (PRCM_LPDS_HOST_IRQ);
+        if (servers_enabled) {
+            wlan_stop_servers();
+        }
+        sl_Stop (SL_STOP_TIMEOUT);
+    }
 
     // entering and exiting suspend mode must be an atomic operation
-    // therefore interrupts must be disabled
+    // therefore interrupts have to be disabled
     uint primsk = disable_irq();
     if (nlr_push(&nlr) == 0) {
         pybsleep_suspend_enter();
@@ -451,6 +462,15 @@ STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     }
     // an exception is always raised when exiting suspend mode
     enable_irq(primsk);
+
+    // enable simplelink if previously disabled
+    if (!pybsleep_wake_cb.wlan_wake_cb) {
+        // start simplelink, then enable the servers
+        sl_Start (0, 0, 0);
+        if (servers_enabled) {
+            servers_enable();
+        }
+    }
 
     return mp_const_none;
 }
