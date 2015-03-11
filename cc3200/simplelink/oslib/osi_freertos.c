@@ -457,7 +457,7 @@ OsiReturnVal_e VStartSimpleLinkSpawnTask(unsigned portBASE_TYPE uxPriority)
     ASSERT (xSimpleLinkSpawnQueue != NULL);
 
     ASSERT (pdPASS == xTaskCreate( vSimpleLinkSpawnTask, ( portCHAR * ) "SLSPAWN",\
-    					           768 / sizeof(portSTACK_TYPE), NULL, uxPriority, &xSimpleLinkSpawnTaskHndl ));
+    					           736 / sizeof(portSTACK_TYPE), NULL, uxPriority, &xSimpleLinkSpawnTaskHndl ));
 
     return OSI_OK;
 }
