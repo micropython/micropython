@@ -732,18 +732,6 @@ STATIC void wlan_print(void (*print)(void *env, const char *fmt, ...), void *env
     print(env, ", security=%u>", self->security);
 }
 
-/// \method mode()
-/// Get the wlan mode:
-///
-///   - Returns the current wlan mode. Possible values are:
-///     ROLE_STA, ROLE_AP and ROLE_P2P
-///
-STATIC mp_obj_t wlan_getmode(mp_obj_t self_in) {
-    wlan_obj_t* self = self_in;
-    return mp_obj_new_int(self->mode);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_getmode_obj, wlan_getmode);
-
 /// \method connect(ssid, security=OPEN, key=None, bssid=None)
 //          if security is WPA/WPA2, the key must be a string
 ///         if security is WEP, the key must be binary
@@ -1004,7 +992,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(wlan_serversuserpass_obj, wlan_serversuserpass)
 
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getmode),             (mp_obj_t)&wlan_getmode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),          (mp_obj_t)&wlan_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),         (mp_obj_t)&wlan_isconnected_obj },
