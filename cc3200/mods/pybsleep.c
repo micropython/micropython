@@ -53,7 +53,6 @@
 #include "mpcallback.h"
 #include "mperror.h"
 #include "sleeprestore.h"
-#include "serverstask.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -323,11 +322,8 @@ void pybsleep_suspend_exit (void) {
     // ungate the clock to the shared spi bus
     MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
 
-    // if wakeups are enabled, simplelink is as well, so we only need to
-    // reinitialize the interface bus
-    if (pybsleep_wake_cb.wlan_wake_cb) {
-        sl_IfOpen (NULL, 0);
-    }
+    // reinitialize simplelink's bus
+    sl_IfOpen (NULL, 0);
 
     // initialize the system led
     mperror_init0();
@@ -434,12 +430,11 @@ STATIC mp_obj_t pyb_sleep_idle (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_idle_obj, pyb_sleep_idle);
 
-/// \function suspend()
+/// \function suspend(wlan)
 /// Enters suspended mode. Wake up sources should have been enable prior to
-//  calling this method.
+/// calling this method.
 STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     nlr_buf_t nlr;
-    bool servers_enabled = servers_are_enabled();
 
     // check if we need to enable network wake-up
     if (pybsleep_wake_cb.wlan_wake_cb) {
@@ -447,14 +442,10 @@ STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     }
     else {
         MAP_PRCMLPDSWakeupSourceDisable (PRCM_LPDS_HOST_IRQ);
-        if (servers_enabled) {
-            wlan_stop_servers();
-        }
-        sl_Stop (SL_STOP_TIMEOUT);
     }
 
     // entering and exiting suspend mode must be an atomic operation
-    // therefore interrupts have to be disabled
+    // therefore interrupts need to be disabled
     uint primsk = disable_irq();
     if (nlr_push(&nlr) == 0) {
         pybsleep_suspend_enter();
@@ -462,15 +453,6 @@ STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     }
     // an exception is always raised when exiting suspend mode
     enable_irq(primsk);
-
-    // enable simplelink if previously disabled
-    if (!pybsleep_wake_cb.wlan_wake_cb) {
-        // start simplelink, then enable the servers
-        sl_Start (0, 0, 0);
-        if (servers_enabled) {
-            servers_enable();
-        }
-    }
 
     return mp_const_none;
 }
