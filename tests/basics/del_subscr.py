@@ -11,3 +11,8 @@ del d[3]
 print(d)
 del d[5]
 print(d)
+
+# delete nested subscr
+d = {0:{0:0}}
+del d[0][0]
+print(d)

@@ -16,3 +16,21 @@ while 2:
 while -1:
     print(4)
     break
+
+while False:
+    print('a')
+else:
+    print('b')
+
+while True:
+    print('a')
+    break
+
+while not False:
+    print('a')
+    break
+
+while not True:
+    print('a')
+else:
+    print('b')

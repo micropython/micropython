@@ -2,6 +2,11 @@
 x = 1 / 2
 print(x)
 
+# /= operator
+a = 1
+a /= 2
+print(a)
+
 print(1.0 // 2)
 print(2.0 // 2)
 

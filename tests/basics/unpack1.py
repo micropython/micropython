@@ -2,8 +2,23 @@
 
 a, = 1,     ; print(a)
 a, b = 2, 3 ; print(a, b)
+a, b, c = 1, 2, 3; print(a, b, c)
 
+a, = range(1); print(a)
 a, b = range(2); print(a, b)
+a, b, c = range(3); print(a, b, c)
+
+(a) = range(1); print(a)
+(a,) = range(1); print(a)
+(a, b) = range(2); print(a, b)
+(a, b, c) = range(3); print(a, b, c)
+
+# lists
+
+[] = []
+[a] = range(1); print(a)
+[a, b] = range(2); print(a, b)
+[a, b, c] = range(3); print(a, b, c)
 
 # with star
 
@@ -26,6 +41,9 @@ a, *b, c = 24, 25, 26, 27   ; print(a, b)
 a = [28, 29]
 *b, = a
 print(a, b, a == b)
+
+[*a] = [1, 2, 3]
+print(a)
 
 try:
     a, *b, c = (30,)

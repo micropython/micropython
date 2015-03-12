@@ -14,6 +14,13 @@ print(a, b)
 [a, b] = 100, 200
 print(a, b)
 
+# optimised 3-way swap
+a = 1
+b = 2
+c = 3
+a, b, c = b, c, a
+print(a, b, c)
+
 try:
     a, b, c = (1, 2)
 except ValueError:

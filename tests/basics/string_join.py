@@ -22,3 +22,6 @@ try:
     print(','.join([b'abc', b'123']))
 except TypeError:
     print("TypeError")
+
+# joined by the compiler
+print("a" "b")

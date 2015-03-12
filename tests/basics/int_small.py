@@ -24,6 +24,17 @@ print(-1073741823)
 
 # Operations tests
 
+# compile-time constexprs
+print(1 + 3)
+print(3 - 2)
+print(2 * 3)
+print(1 & 3)
+print(1 | 2)
+print(1 ^ 3)
+print(+3)
+print(-3)
+print(~3)
+
 a = 0x3fffff
 print(a)
 a *= 0x10

@@ -33,6 +33,30 @@ elif 0:
 else:
     print(17)
 
+if not False:
+    print('a')
+
+if not True:
+    print('a')
+else:
+    print('b')
+
+if False:
+    print('a')
+else:
+    print('b')
+
+if True:
+    print('a')
+
+if (1,):
+    print('a')
+
+if not (1,):
+    print('a')
+else:
+    print('b')
+
 f2 = 0
 
 def f(t1, t2, f1):
