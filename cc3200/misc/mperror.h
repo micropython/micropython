@@ -44,6 +44,5 @@ bool mperror_safe_boot_requested (void);
 void mperror_enable_heartbeat (void);
 void mperror_disable_heartbeat (void);
 void mperror_heartbeat_signal (void);
-void mperror_heartbeat_off (void);
 
 #endif // MPERROR_H_

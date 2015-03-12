@@ -54,14 +54,26 @@
 #define MPERROR_TOOGLE_MS                           (40)
 #define MPERROR_SIGNAL_ERROR_MS                     (1000)
 #define MPERROR_HEARTBEAT_ON_MS                     (80)
-#define MPERROR_HEARTBEAT_OFF_MS                    (2920)
+#define MPERROR_HEARTBEAT_OFF_MS                    (4920)
 
 #define MPERROR_SAFE_BOOT_REG_IDX                   (0)
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static bool mperror_heartbeat_enabled;
+struct mperror_heart_beat {
+    uint32_t off_time;
+    uint32_t on_time;
+    bool beating;
+    bool enabled;
+} mperror_heart_beat;
+
+/******************************************************************************
+ DEFINE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC void mperror_heartbeat_switch_off (void) {
+    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
+}
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -84,6 +96,10 @@ void mperror_init0 (void) {
     MAP_PinConfigSet(MICROPY_SAFE_BOOT_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD_PD);
     MAP_GPIODirModeSet(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN, GPIO_DIR_MODE_IN);
 #endif
+
+    mperror_heart_beat.on_time = 0;
+    mperror_heart_beat.off_time = 0;
+    mperror_heart_beat.beating = false;
 }
 
 void mperror_check_reset_cause (void) {
@@ -136,37 +152,29 @@ bool mperror_safe_boot_requested (void) {
 }
 
 void mperror_enable_heartbeat (void) {
-    mperror_heartbeat_enabled = true;
+    mperror_heart_beat.enabled = true;
 }
 
 void mperror_disable_heartbeat (void) {
-    mperror_heartbeat_enabled = false;
-    mperror_heartbeat_off();
+    mperror_heart_beat.enabled = false;
+    mperror_heartbeat_switch_off();
 }
 
 void mperror_heartbeat_signal (void) {
-    static uint off_start = 0;
-    static uint on_start = 0;
-    static bool beat = false;
-
-    if (mperror_heartbeat_enabled) {
-        if (!beat) {
-            if ((on_start = HAL_GetTick()) - off_start > MPERROR_HEARTBEAT_OFF_MS) {
+    if (mperror_heart_beat.enabled) {
+        if (!mperror_heart_beat.beating) {
+            if ((mperror_heart_beat.on_time = HAL_GetTick()) - mperror_heart_beat.off_time > MPERROR_HEARTBEAT_OFF_MS) {
                 MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
-                beat = true;
+                mperror_heart_beat.beating = true;
             }
         }
         else {
-            if ((off_start = HAL_GetTick()) - on_start > MPERROR_HEARTBEAT_ON_MS) {
-                mperror_heartbeat_off();
-                beat = false;
+            if ((mperror_heart_beat.off_time = HAL_GetTick()) - mperror_heart_beat.on_time > MPERROR_HEARTBEAT_ON_MS) {
+                mperror_heartbeat_switch_off();
+                mperror_heart_beat.beating = false;
             }
         }
     }
-}
-
-void mperror_heartbeat_off (void) {
-    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
 }
 
 void NORETURN __fatal_error(const char *msg) {
