@@ -122,7 +122,7 @@ typedef struct _wlan_obj_t {
 #define MODWLAN_TIMEOUT_MS              5000
 #define MODWLAN_MAX_NETWORKS            20
 #define MODWLAN_SCAN_PERIOD_S           300     // 5 minutes
-#define MODWLAN_WAIT_FOR_SCAN_MS        950
+#define MODWLAN_WAIT_FOR_SCAN_MS        1050
 
 #define ASSERT_ON_ERROR( x )            ASSERT((x) >= 0 )
 
@@ -150,7 +150,22 @@ typedef struct _wlan_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC wlan_obj_t wlan_obj;
+STATIC wlan_obj_t wlan_obj = {
+        .callback = mp_const_none,
+        .mode = -1,
+        .status = 0,
+        .ip = 0,
+        .gateway = 0,
+        .dns = 0,
+    #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+        .servers_enabled = false,
+    #endif
+        .security = SL_SEC_TYPE_OPEN,
+        .ssid = {0},
+        .bssid = {0},
+        .mac = {0},
+};
+
 STATIC const mp_cb_methods_t wlan_cb_methods;
 
 /******************************************************************************
@@ -356,12 +371,21 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
 //*****************************************************************************
 
 void wlan_init0 (void) {
-    // Set the mode to an invalid one
-    wlan_obj.mode = -1;
-    wlan_obj.base.type = NULL;
-    memset (wlan_obj.mac, 0, SL_MAC_ADDR_LEN);
+    // create the wlan lock
     ASSERT(OSI_OK == sl_LockObjCreate(&wlan_LockObj, "WlanLock"));
-    wlan_initialize_data ();
+}
+
+void wlan_first_start (void) {
+    // clear wlan data after checking any of the status flags
+    wlan_initialize_data();
+
+    if (wlan_obj.mode < 0) {
+        wlan_obj.mode = sl_Start(0, 0, 0);
+        sl_LockObjUnlock (&wlan_LockObj);
+    }
+
+    // get the mac address
+    wlan_get_sl_mac();
 }
 
 modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ssid_len, uint8_t sec,
@@ -374,31 +398,9 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
             wlan_stop_servers();
         }
 #endif
-        if (wlan_obj.mode < 0) {
-            wlan_obj.mode = sl_Start(0, 0, 0);
-            sl_LockObjUnlock (&wlan_LockObj);
-        }
 
-        // get the mac address
-        wlan_get_sl_mac();
-
-        // stop the device if it's not in station mode
-        if (wlan_obj.mode != ROLE_STA) {
-            if (ROLE_AP == wlan_obj.mode) {
-                // if the device is in AP mode, we need to wait for this event
-                // before doing anything
-                while (!IS_IP_ACQUIRED(wlan_obj.status)) {
-                #ifndef SL_PLATFORM_MULTI_THREADED
-                    _SlTaskEntry();
-                #endif
-                    HAL_Delay (5);
-                }
-            }
-            // switch to STA mode
-            ASSERT_ON_ERROR(sl_WlanSetMode(ROLE_STA));
-            // stop and start again
-            wlan_reenable(ROLE_STA);
-        }
+        // do a basic start fisrt
+        wlan_first_start();
 
         // Device in station-mode. Disconnect previous connection if any
         // The function returns 0 if 'Disconnected done', negative number if already
@@ -412,13 +414,6 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
                 HAL_Delay (5);
             }
         }
-
-        // clear wlan data after checking any of the status flags
-        wlan_initialize_data ();
-        wlan_obj.security = sec;
-
-        // Set connection policy to Auto + SmartConfig (Device's default connection policy)
-        ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_CONNECTION, SL_CONNECTION_POLICY(1, 0, 0, 0, 1), NULL, 0));
 
         // Remove all profiles
         ASSERT_ON_ERROR(sl_WlanProfileDel(0xFF));
@@ -443,9 +438,6 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
         // Number between 0-15, as dB offset from max power - 0 will set max power
         uint8_t ucPower = 0;
         if (mode == ROLE_AP) {
-            // Disable the scanning
-            ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_SCAN, MODWLAN_SL_SCAN_DISABLE, NULL, 0));
-
             // Switch to AP mode
             ASSERT_ON_ERROR(sl_WlanSetMode(mode));
             ASSERT (ssid != NULL && key != NULL);
@@ -482,17 +474,18 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
 
             // Stop and start again
             wlan_reenable(mode);
+            // save the security type
+            wlan_obj.security = sec;
         }
         // STA and P2P modes
         else {
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_STA_TX_POWER,
                                        sizeof(ucPower), (unsigned char *)&ucPower));
-            if (mode == ROLE_P2P) {
-                // Switch to P2P mode
-                ASSERT_ON_ERROR(sl_WlanSetMode(mode));
-                // Stop and start again
-                wlan_reenable(mode);
-            }
+            ASSERT_ON_ERROR(sl_WlanSetMode(mode));
+            // stop and start again
+            wlan_reenable(mode);
+            // set connection policy to Auto + SmartConfig (Device's default connection policy)
+            ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_CONNECTION, SL_CONNECTION_POLICY(1, 0, 0, 0, 1), NULL, 0));
         }
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Start the servers again
@@ -511,7 +504,7 @@ void wlan_update(void) {
 #endif
 }
 
-// call this function to disable the complete WLAN subsystem in order to save power
+// call this function to disable the complete WLAN subsystem before a system reset
 void wlan_stop (void) {
     if (wlan_obj.mode >= 0) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
@@ -524,25 +517,6 @@ void wlan_stop (void) {
         wlan_obj.mode = -1;
         sl_Stop(SL_STOP_TIMEOUT);
     }
-}
-
-// cal this function to reenable the WLAN susbsystem after a previous call to wlan_sl_disable()
-// WLAN will remain configured as it was before being disabled
-void wlan_start (void) {
-    if (wlan_obj.mode < 0) {
-        wlan_obj.mode = sl_Start(0, 0, 0);
-        sl_LockObjUnlock (&wlan_LockObj);
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-        // Start the servers again
-        if (wlan_obj.servers_enabled) {
-            servers_enable();
-        }
-#endif
-    }
-}
-
-SlWlanMode_t wlan_get_mode (void) {
-    return wlan_obj.mode;
 }
 
 void wlan_get_mac (uint8_t *macAddress) {
@@ -939,14 +913,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
 /// \method callback(method, intmode, value, priority, pwrmode)
 /// Creates a callback object associated with WLAN
-/// min num of arguments is 1 (intmode)
+/// min num of arguments is 1 (pwrmode)
 STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
 
    wlan_obj_t *self = pos_args[0];
     // check if any parameters were passed
-    if (kw_args->used > 0 || self->callback == mp_const_none) {
+    if (kw_args->used > 0) {
         // check the power mode
         if (args[4].u_int != PYB_PWR_MODE_LPDS) {
             // throw an exception since WLAN only supports LPDS mode

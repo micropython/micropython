@@ -35,7 +35,11 @@
 #include "py/gc.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "rom_map.h"
 #include "pin.h"
+#include "prcm.h"
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
@@ -97,16 +101,10 @@ void TASK_Micropython (void *pvParameters) {
     // Initialize the garbage collector with the top of our stack
     uint32_t sp = gc_helper_get_sp();
     gc_collect_init (sp);
-    bool safeboot;
+    bool safeboot = false;
     FRESULT res;
 
-#ifdef DEBUG
-    safeboot = false;
-#else
-    safeboot = mperror_safe_boot_requested();
-#endif
-
-    mptask_pre_init ();
+    mptask_pre_init();
 
 soft_reset:
 
@@ -146,13 +144,25 @@ soft_reset:
 
     mperror_enable_heartbeat();
 
-    mptask_enter_ap_mode();
-
-    // enable telnet and ftp servers
-    servers_enable();
+    if (MAP_PRCMSysResetCauseGet() != PRCM_HIB_EXIT) {
+        // only if not comming out of hibernate
+        mptask_enter_ap_mode();
+        // don't check for safeboot when comming out of hibernate
+    #ifndef DEBUG
+        safeboot = mperror_safe_boot_requested();
+    #endif
+    }
+    else {
+        // when waking up from hibernate we just want
+        // to enable simplelink and leave it as is
+        wlan_first_start();
+    }
 
     // initialize the serial flash file system
     mptask_init_sflash_filesystem();
+
+    // enable telnet and ftp servers
+    servers_enable();
 
     // append the SFLASH paths to the system path
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH));
