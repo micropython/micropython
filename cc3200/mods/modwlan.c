@@ -166,8 +166,8 @@ STATIC void wlan_reenable (SlWlanMode_t mode);
 STATIC void wlan_get_sl_mac (void);
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len);
-STATIC void wlan_callback_enable (mp_obj_t self_in);
-STATIC void wlan_callback_disable (mp_obj_t self_in);
+STATIC void wlan_lpds_callback_enable (mp_obj_t self_in);
+STATIC void wlan_lpds_callback_disable (mp_obj_t self_in);
 
 //*****************************************************************************
 //
@@ -668,12 +668,12 @@ STATIC mp_obj_t wlan_init_helper(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     return mp_const_none;
 }
 
-STATIC void wlan_callback_enable (mp_obj_t self_in) {
-    pybsleep_set_wlan_wake_callback (wlan_obj.callback);
+STATIC void wlan_lpds_callback_enable (mp_obj_t self_in) {
+    pybsleep_set_wlan_lpds_callback (wlan_obj.callback);
 }
 
-STATIC void wlan_callback_disable (mp_obj_t self_in) {
-    pybsleep_set_wlan_wake_callback (NULL);
+STATIC void wlan_lpds_callback_disable (mp_obj_t self_in) {
+    pybsleep_set_wlan_lpds_callback (NULL);
 }
 
 /******************************************************************************/
@@ -957,7 +957,7 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         self->callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods);
 
         // enable network wakeup
-        pybsleep_set_wlan_wake_callback (self->callback);
+        pybsleep_set_wlan_lpds_callback (self->callback);
     }
     return self->callback;
 }
@@ -1020,8 +1020,8 @@ STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
 STATIC const mp_cb_methods_t wlan_cb_methods = {
     .init = wlan_callback,
-    .enable = wlan_callback_enable,
-    .disable = wlan_callback_disable,
+    .enable = wlan_lpds_callback_enable,
+    .disable = wlan_lpds_callback_disable,
 };
 
 /******************************************************************************/

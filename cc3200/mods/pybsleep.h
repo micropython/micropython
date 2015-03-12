@@ -30,9 +30,9 @@
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define PYB_PWR_MODE_ACTIVE_IDLE                (0x00)
-#define PYB_PWR_MODE_LPDS                       (0x01)
-#define PYB_PWR_MODE_HIBERNATE                  (0x02)
+#define PYB_PWR_MODE_ACTIVE                     (0x01)
+#define PYB_PWR_MODE_LPDS                       (0x02)
+#define PYB_PWR_MODE_HIBERNATE                  (0x04)
 
 /******************************************************************************
  DEFINE TYPES
@@ -50,8 +50,8 @@ extern const mp_obj_base_t pyb_sleep_obj;
 void pyblsleep_init0 (void);
 void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup);
 void pybsleep_remove (const mp_obj_t obj);
-void pybsleep_set_wlan_wake_callback (mp_obj_t cb_obj);
-void pybsleep_set_gpio_wake_callback (mp_obj_t cb_obj);
-void pybsleep_set_timer_wake_callback (mp_obj_t cb_obj);
+void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj);
+void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj);
+void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj);
 
 #endif /* PYBSLEEP_H_ */

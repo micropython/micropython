@@ -159,15 +159,15 @@ void pybsleep_remove (const mp_obj_t obj) {
     }
 }
 
-void pybsleep_set_wlan_wake_callback (mp_obj_t cb_obj) {
+void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj) {
     pybsleep_wake_cb.wlan_wake_cb = cb_obj;
 }
 
-void pybsleep_set_gpio_wake_callback (mp_obj_t cb_obj) {
+void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj) {
     pybsleep_wake_cb.gpio_wake_cb = cb_obj;
 }
 
-void pybsleep_set_timer_wake_callback (mp_obj_t cb_obj) {
+void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj) {
     pybsleep_wake_cb.timer_wake_cb = cb_obj;
 }
 
@@ -356,6 +356,12 @@ STATIC void PRCMInterruptHandler (void) {
             if (pybsleep_wake_cb.gpio_wake_cb) {
                 mpcallback_handler(pybsleep_wake_cb.gpio_wake_cb);
             }
+            // clear all pending GPIO interrupts in order to
+            // avoid duplicated calls to the handler
+            MAP_IntPendClear(INT_GPIOA0);
+            MAP_IntPendClear(INT_GPIOA1);
+            MAP_IntPendClear(INT_GPIOA2);
+            MAP_IntPendClear(INT_GPIOA3);
             break;
         case PRCM_LPDS_TIMER:
             if (pybsleep_wake_cb.timer_wake_cb) {
@@ -476,6 +482,7 @@ STATIC const mp_map_elem_t pybsleep_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_hibernate),               (mp_obj_t)&pyb_sleep_hibernate_obj },
 
     // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ACTIVE),                  MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SUSPENDED),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HIBERNATING),             MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
 };
