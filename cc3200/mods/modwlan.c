@@ -121,6 +121,8 @@ typedef struct _wlan_obj_t {
 
 #define MODWLAN_TIMEOUT_MS              5000
 #define MODWLAN_MAX_NETWORKS            20
+#define MODWLAN_SCAN_PERIOD_S           300     // 5 minutes
+#define MODWLAN_WAIT_FOR_SCAN_MS        950
 
 #define ASSERT_ON_ERROR( x )            ASSERT((x) >= 0 )
 
@@ -485,10 +487,6 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
         else {
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_STA_TX_POWER,
                                        sizeof(ucPower), (unsigned char *)&ucPower));
-            // Enable scanning every 60 seconds
-            uint32_t scanSeconds = 60;
-            ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_SCAN , MODWLAN_SL_SCAN_ENABLE, (_u8 *)&scanSeconds, sizeof(scanSeconds)));
-
             if (mode == ROLE_P2P) {
                 // Switch to P2P mode
                 ASSERT_ON_ERROR(sl_WlanSetMode(mode));
@@ -915,6 +913,13 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
     Sl_WlanNetworkEntry_t wlanEntry;
     uint8_t _index = 0;
     mp_obj_t nets = NULL;
+
+    // trigger a new newtork scanning
+    uint32_t scanSeconds = MODWLAN_SCAN_PERIOD_S;
+    ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_SCAN , MODWLAN_SL_SCAN_ENABLE, (_u8 *)&scanSeconds, sizeof(scanSeconds)));
+
+    // wait for the scan to be completed
+    HAL_Delay (MODWLAN_WAIT_FOR_SCAN_MS);
 
     do {
         if (sl_WlanGetNetworkList(_index++, 1, &wlanEntry) <= 0) {
