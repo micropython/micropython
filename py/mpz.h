@@ -82,17 +82,6 @@ void mpz_init_from_int(mpz_t *z, mp_int_t val);
 void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, mp_uint_t dig_alloc, mp_int_t val);
 void mpz_deinit(mpz_t *z);
 
-mpz_t *mpz_zero(void);
-mpz_t *mpz_from_int(mp_int_t i);
-mpz_t *mpz_from_ll(long long i, bool is_signed);
-#if MICROPY_PY_BUILTINS_FLOAT
-mpz_t *mpz_from_float(mp_float_t i);
-#endif
-mpz_t *mpz_from_str(const char *str, mp_uint_t len, bool neg, mp_uint_t base);
-void mpz_free(mpz_t *z);
-
-mpz_t *mpz_clone(const mpz_t *src);
-
 void mpz_set(mpz_t *dest, const mpz_t *src);
 void mpz_set_from_int(mpz_t *z, mp_int_t src);
 void mpz_set_from_ll(mpz_t *z, long long i, bool is_signed);

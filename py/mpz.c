@@ -572,6 +572,9 @@ void mpz_deinit(mpz_t *z) {
     }
 }
 
+#if 0
+these functions are unused
+
 mpz_t *mpz_zero(void) {
     mpz_t *z = m_new_obj(mpz_t);
     mpz_init_zero(z);
@@ -603,8 +606,9 @@ mpz_t *mpz_from_str(const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
     mpz_set_from_str(z, str, len, neg, base);
     return z;
 }
+#endif
 
-void mpz_free(mpz_t *z) {
+STATIC void mpz_free(mpz_t *z) {
     if (z != NULL) {
         m_del(mpz_dig_t, z->dig, z->alloc);
         m_del_obj(mpz_t, z);
@@ -627,7 +631,7 @@ STATIC void mpz_need_dig(mpz_t *z, mp_uint_t need) {
     }
 }
 
-mpz_t *mpz_clone(const mpz_t *src) {
+STATIC mpz_t *mpz_clone(const mpz_t *src) {
     mpz_t *z = m_new_obj(mpz_t);
     z->neg = src->neg;
     z->fixed_dig = 0;
