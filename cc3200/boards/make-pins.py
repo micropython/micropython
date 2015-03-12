@@ -38,7 +38,7 @@ class Pin(object):
 
     def set_is_board_pin(self):
         self.board_pin = True
-        
+
     def print(self):
         print('pin_obj_t pin_{:6s} = PIN({:6s}, {:1d}, {:3d}, {:2d});'.format(
                self.name, self.name, self.port, self.gpio_bit, self.pin_num))
@@ -56,10 +56,15 @@ class Pins(object):
         for pin in self.cpu_pins:
             if pin.port == port and pin.gpio_bit == gpio_bit:
                 return pin
-                
+
     def find_pin_by_num(self, pin_num):
         for pin in self.cpu_pins:
             if pin.pin_num == pin_num:
+                return pin
+
+    def find_pin_by_name(self, name):
+        for pin in self.cpu_pins:
+            if pin.name == name:
                 return pin
 
     def parse_af_file(self, filename, pin_col, pinname_col):
@@ -76,13 +81,16 @@ class Pins(object):
                 pin_num = int(row[pin_col]) - 1;        
                 pin = Pin(row[pinname_col], port_num, gpio_bit, pin_num)
                 self.cpu_pins.append(pin)
-                
-    def parse_board_file(self, filename, cpu_pin_num_col):
+
+    def parse_board_file(self, filename, cpu_pin_col):
         with open(filename, 'r') as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
                 # Pin numbers must start from 0 when used with the TI API
-                pin = self.find_pin_by_num(int(row[cpu_pin_num_col]) - 1)
+                if row[cpu_pin_col].isdigit():
+                    pin = self.find_pin_by_num(int(row[cpu_pin_col]) - 1)
+                else:
+                    pin = self.find_pin_by_name(row[cpu_pin_col])
                 if pin:
                     pin.set_is_board_pin()
 
