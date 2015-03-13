@@ -28,10 +28,46 @@ def rm_f(fname):
 def run_micropython(pyb, args, test_file):
     if pyb is None:
         # run on PC
-        try:
-            output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=' + args.emit, test_file])
-        except subprocess.CalledProcessError:
-            output_mupy = b'CRASH'
+        if test_file.startswith('cmdline/'):
+            # special handling for tests of the unix cmdline program
+
+            # check for any cmdline options needed for this test
+            args = [MICROPYTHON]
+            with open(test_file, 'rb') as f:
+                line = f.readline()
+                if line.startswith(b'# cmdline:'):
+                    args += line[10:].strip().split()
+
+            # run the test, possibly with redirected input
+            try:
+                if test_file.startswith('cmdline/repl_'):
+                    f = open(test_file, 'rb')
+                    output_mupy = subprocess.check_output(args, stdin=f)
+                    f.close()
+                else:
+                    output_mupy = subprocess.check_output(args + [test_file])
+            except subprocess.CalledProcessError:
+                output_mupy = b'CRASH'
+
+            # erase parts of the output that are not stable across runs
+            with open(test_file + '.exp', 'rb') as f:
+                lines_exp = f.readlines()
+            lines_mupy = [line + b'\n' for line in output_mupy.split(b'\n')]
+            if output_mupy.endswith(b'\n'):
+                lines_mupy = lines_mupy[:-1] # remove erroneous last empty line
+            if len(lines_mupy) == len(lines_exp):
+                for i in range(len(lines_mupy)):
+                    pos = lines_exp[i].find(b'######')
+                    if pos != -1 and len(lines_mupy[i]) >= pos:
+                        lines_mupy[i] = lines_mupy[i][:pos] + b'######\n'
+                output_mupy = b''.join(lines_mupy)
+
+        else:
+            # a standard test
+            try:
+                output_mupy = subprocess.check_output([MICROPYTHON, '-X', 'emit=' + args.emit, test_file])
+            except subprocess.CalledProcessError:
+                output_mupy = b'CRASH'
     else:
         # run on pyboard
         import pyboard
@@ -186,7 +222,7 @@ def main():
         if args.test_dirs is None:
             if pyb is None:
                 # run PC tests
-                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode', 'extmod', 'unix')
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode', 'extmod', 'unix', 'cmdline')
             else:
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')

@@ -1,0 +1,21 @@
+1
+File cmdline/cmd_verbose.py, code block '<module>' (descriptor: ######
+Raw bytecode (code_info_size=8, bytecode_size=13):
+ 08 82 23 83 45 43 00 00 02 00 00 1c 81 13 00 81
+ 64 01 32 11 5b
+arg names:
+(N_STATE 2)
+(N_EXC_STACK 0)
+(NUM_LOCAL 0)
+  bc=-3 line=1
+  bc=0 line=3
+00 LOAD_NAME print (cache=0)
+04 LOAD_CONST_SMALL_INT 1
+05 CALL_FUNCTION n=1 nkw=0
+07 POP_TOP
+08 LOAD_CONST_NONE
+09 RETURN_VALUE
+mem: total=######
+stack: ######
+GC: total: ######
+ No. of 1-blocks: ######
