@@ -301,6 +301,8 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #endif
 
 int main(int argc, char **argv) {
+    prompt_read_history();
+
     mp_stack_set_limit(32768);
 
     pre_process_options(argc, argv);
@@ -477,6 +479,7 @@ int main(int argc, char **argv) {
 #endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
+    prompt_write_history();
     return ret & 0xff;
 }
 
