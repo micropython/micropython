@@ -228,7 +228,8 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     // This uses the timer in polling mode to do the sampling
     // We could use DMA, but then we can't convert the values correctly for the buffer
     adc_config_channel(self);
-    for (uint index = 0; index < bufinfo.len; index++) {
+    uint nelems = bufinfo.len / typesize;
+    for (uint index = 0; index < nelems; index++) {
         // Wait for the timer to trigger
         while (__HAL_TIM_GET_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE) == RESET) {
         }
