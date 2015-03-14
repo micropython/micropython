@@ -27,7 +27,6 @@
 
 // variables defining memory layout
 extern uint32_t _etext;
-extern uint32_t _sidata;
 extern uint32_t _data;
 extern uint32_t _edata;
 extern uint32_t _boot;

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-__stack_size__ = 1024;
+__stack_size__  = 1024;
 
 MEMORY
 {
@@ -53,9 +53,7 @@ SECTIONS
         _etext = .;
     } > SRAM
 
-    __init_data = .;
-
-    .data : AT(__init_data)
+    .data :
     {
         _data = .;
         *(.data*)

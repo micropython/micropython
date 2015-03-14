@@ -53,14 +53,15 @@ extern uint32_t _edata;
 extern uint32_t _bss;
 extern uint32_t _ebss;
 extern uint32_t _estack;
-extern uint32_t __init_data;
 
 //*****************************************************************************
 //
 // Forward declaration of the default fault handlers.
 //
 //*****************************************************************************
+#ifndef BOOTLOADER
 __attribute__ ((section (".boot")))
+#endif
 void ResetISR(void);
 #ifdef DEBUG
 static void NmiSR(void) __attribute__( ( naked ) );
@@ -213,45 +214,38 @@ void (* const g_pfnVectors[256])(void) =
 void ResetISR(void)
 {
 #if defined(DEBUG) && !defined(BOOTLOADER)
-    //
-    // Fill the main stack with a known value so that
-    // we can measure the main stack high water mark
-    //
-    __asm volatile
-    (
-            "ldr     r0, =_stack        \n"
-            "ldr     r1, =_estack       \n"
-            "mov     r2, #0x55555555    \n"
-    ".thumb_func                        \n"
-    "fill_loop:                         \n"
-            "cmp     r0, r1             \n"
-            "it      lt                 \n"
-            "strlt   r2, [r0], #4       \n"
-            "blt     fill_loop          \n"
-    );
+    {
+        //
+        // Fill the main stack with a known value so that
+        // we can measure the main stack high water mark
+        //
+        __asm volatile
+        (
+                "ldr     r0, =_stack        \n"
+                "ldr     r1, =_estack       \n"
+                "mov     r2, #0x55555555    \n"
+        ".thumb_func                        \n"
+        "fill_loop:                         \n"
+                "cmp     r0, r1             \n"
+                "it      lt                 \n"
+                "strlt   r2, [r0], #4       \n"
+                "blt     fill_loop          \n"
+        );
+    }
 #endif
 
-    // Get the initial stack pointer location from the vector table
-    // and write this value to the msp register
-    __asm volatile
-    (
-            "ldr r0, =_text             \n"
-            "ldr r0, [r0]               \n"
-            "msr msp, r0                \n"
-    );
+    {
+        // Get the initial stack pointer location from the vector table
+        // and write this value to the msp register
+        __asm volatile
+        (
+                "ldr r0, =_text             \n"
+                "ldr r0, [r0]               \n"
+                "msr msp, r0                \n"
+        );
+    }
 
     {
-        uint32_t *pui32Src, *pui32Dest;
-
-        //
-        // Copy the data segment initializers
-        //
-        pui32Src = &__init_data;
-        for(pui32Dest = &_data; pui32Dest < &_edata; )
-        {
-            *pui32Dest++ = *pui32Src++;
-        }
-
         //
         // Zero fill the bss segment.
         //
@@ -269,10 +263,12 @@ void ResetISR(void)
         );
     }
 
-    //
-    // Call the application's entry point.
-    //
-    main();
+    {
+        //
+        // Call the application's entry point.
+        //
+        main();
+    }
 }
 
 #ifdef DEBUG
