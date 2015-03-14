@@ -51,6 +51,7 @@ DRESULT sflash_disk_init (void) {
     if (!sflash_init_done) {
         // Allocate space for the block cache
         ASSERT ((sflash_block_cache = mem_Malloc(SFLASH_BLOCK_SIZE)) != NULL);
+        sflash_init_done = true;
 
         // Proceed to format the memory if not done yet
         for (int i = 0; i < SFLASH_BLOCK_COUNT; i++) {
@@ -74,7 +75,6 @@ DRESULT sflash_disk_init (void) {
             }
             sl_LockObjUnlock (&wlan_LockObj);
         }
-        sflash_init_done = true;
         sflash_prblock = UINT32_MAX;
         sflash_cache_is_dirty = false;
     }
