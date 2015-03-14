@@ -71,6 +71,30 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
     return self->val >= 0;
 }
 
+// This must handle int and bool types, and must raise a
+// TypeError if the argument is not integral
+mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
+    if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
+        mp_obj_int_t *self = self_in;
+        self = mp_obj_new_int_from_ll(self->val);
+        if (self->val < 0) {
+            // TODO could overflow long long
+            self->val = -self->val;
+        }
+        return self;
+    } else {
+        mp_int_t val = mp_obj_get_int(self_in);
+        if (val == MP_SMALL_INT_MIN) {
+            return mp_obj_new_int_from_ll(-val);
+        } else {
+            if (val < 0) {
+                val = -val;
+            }
+            return MP_OBJ_NEW_SMALL_INT(val);
+        }
+    }
+}
+
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {

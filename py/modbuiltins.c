@@ -29,6 +29,7 @@
 
 #include "py/nlr.h"
 #include "py/smallint.h"
+#include "py/objint.h"
 #include "py/objstr.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
@@ -86,12 +87,8 @@ STATIC mp_obj_t mp_builtin___build_class__(mp_uint_t n_args, const mp_obj_t *arg
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
-    if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_in);
-        if (val < 0) {
-            val = -val;
-        }
-        return MP_OBJ_NEW_SMALL_INT(val);
+    if (0) {
+        // dummy
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_float)) {
         mp_float_t value = mp_obj_float_get(o_in);
@@ -109,8 +106,8 @@ STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
 #endif
 #endif
     } else {
-        assert(0);
-        return mp_const_none;
+        // this will raise a TypeError if the argument is not integral
+        return mp_obj_int_abs(o_in);
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
