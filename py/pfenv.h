@@ -51,7 +51,7 @@ void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len);
 
 int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int flags, char fill, int width);
 int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width);
-int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int sgn, int base, int base_char, int flags, char fill, int width, int prec);
+int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 #if MICROPY_PY_BUILTINS_FLOAT
 int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
 #endif

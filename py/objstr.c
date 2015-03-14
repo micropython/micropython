@@ -1083,7 +1083,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
         if (arg_looks_integer(arg)) {
             switch (type) {
                 case 'b':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 2, 'a', flags, fill, width, 0);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 2, 'a', flags, fill, width, 0);
                     continue;
 
                 case 'c':
@@ -1096,7 +1096,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 case '\0':  // No explicit format type implies 'd'
                 case 'n':   // I don't think we support locales in uPy so use 'd'
                 case 'd':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 10, 'a', flags, fill, width, 0);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 10, 'a', flags, fill, width, 0);
                     continue;
 
                 case 'o':
@@ -1104,12 +1104,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                         flags |= PF_FLAG_SHOW_OCTAL_LETTER;
                     }
 
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width, 0);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 8, 'a', flags, fill, width, 0);
                     continue;
 
                 case 'X':
                 case 'x':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, type - ('X' - 'A'), flags, fill, width, 0);
+                    pfenv_print_mp_int(&pfenv_vstr, arg, 16, type - ('X' - 'A'), flags, fill, width, 0);
                     continue;
 
                 case 'e':
@@ -1377,7 +1377,7 @@ not_enough_args:
             case 'd':
             case 'i':
             case 'u':
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 1, 10, 'a', flags, fill, width, prec);
+                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 10, 'a', flags, fill, width, prec);
                 break;
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -1395,7 +1395,7 @@ not_enough_args:
                 if (alt) {
                     flags |= (PF_FLAG_SHOW_PREFIX | PF_FLAG_SHOW_OCTAL_LETTER);
                 }
-                pfenv_print_mp_int(&pfenv_vstr, arg, 1, 8, 'a', flags, fill, width, prec);
+                pfenv_print_mp_int(&pfenv_vstr, arg, 8, 'a', flags, fill, width, prec);
                 break;
 
             case 'r':
@@ -1419,7 +1419,7 @@ not_enough_args:
 
             case 'X':
             case 'x':
-                pfenv_print_mp_int(&pfenv_vstr, arg, 1, 16, *str - ('X' - 'A'), flags | alt, fill, width, prec);
+                pfenv_print_mp_int(&pfenv_vstr, arg, 16, *str - ('X' - 'A'), flags | alt, fill, width, prec);
                 break;
 
             default:
