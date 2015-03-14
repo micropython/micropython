@@ -197,6 +197,12 @@ unsigned char ulRstReg;
 // API Function prototypes
 //
 //*****************************************************************************
+extern void PRCMRequestSafeBoot(void);
+extern void PRCMClearSafeBootRequest(void);
+extern tBoolean PRCMIsSafeBootRequested(void);
+extern void PRCMSignalWDTReset(void);
+extern void PRCMClearWDTResetSignal(void);
+extern tBoolean PRCMWasResetBecauseOfWDT(void);
 extern void PRCMSOCReset(void);
 extern void PRCMMCUReset(tBoolean bIncludeSubsystem);
 extern unsigned long PRCMSysResetCauseGet(void);
@@ -250,6 +256,7 @@ extern void PRCMIntEnable(unsigned long ulIntFlags);
 extern void PRCMIntDisable(unsigned long ulIntFlags);
 extern unsigned long PRCMIntStatus(void);
 extern void PRCMRTCInUseSet(void);
+extern void PRCMRTCInUseClear(void);
 extern tBoolean PRCMRTCInUseGet(void);
 extern void PRCMRTCSet(unsigned long ulSecs, unsigned short usMsec);
 extern void PRCMRTCGet(unsigned long *ulSecs, unsigned short *usMsec);

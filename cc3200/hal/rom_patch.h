@@ -46,7 +46,6 @@
 #undef ROM_IntEnable
 #undef ROM_IntDisable
 #undef ROM_IntPendSet
-#undef ROM_PRCMHibernateWakeUpGPIOSelect
 #undef ROM_SDHostCardErrorMaskSet
 #undef ROM_SDHostCardErrorMaskGet
 #undef ROM_TimerConfigure

@@ -38,6 +38,8 @@
 #include "rom_map.h"
 #include "prcm.h"
 #include "pybrtc.h"
+#include "pybsleep.h"
+#include "mpcallback.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -51,6 +53,25 @@
 ///     rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
 ///     print(rtc.datetime())
 
+/******************************************************************************
+ DECLARE TYPES
+ ******************************************************************************/
+typedef struct {
+    mp_obj_t callback;
+    uint32_t alarm_sec;
+    uint16_t alarm_msec;
+    uint8_t  pwrmode;
+} pybrtc_data_t;
+
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC pybrtc_data_t   pybrtc_data = {.callback = mp_const_none};
+STATIC const mp_cb_methods_t pybrtc_cb_methods;
+
+/******************************************************************************
+ DECLARE PUBLIC FUNCTIONS
+ ******************************************************************************/
 __attribute__ ((section (".boot")))
 void pybrtc_init(void) {
     // if the RTC was previously set, leave it alone
@@ -60,31 +81,27 @@ void pybrtc_init(void) {
         // set the time to 00:00:00
         uint32_t seconds = mod_time_seconds_since_2000(2015, 1, 1, 0, 0, 0);
 
-        MAP_PRCMRTCSet(seconds, 0);
-
-        // Mark the RTC in use
+        // Mark the RTC in use first
         MAP_PRCMRTCInUseSet();
+
+        // Now set the RTC calendar seconds
+        MAP_PRCMRTCSet(seconds, 0);
     }
+}
+
+/******************************************************************************
+ DECLARE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
+
+}
+
+STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
+
 }
 
 /******************************************************************************/
 // Micro Python bindings
-
-typedef struct _pyb_rtc_obj_t {
-    mp_obj_base_t base;
-} pyb_rtc_obj_t;
-
-STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
-
-/// \classmethod \constructor()
-/// Create an RTC object.
-STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
-
-    // return constant object
-    return (mp_obj_t)&pyb_rtc_obj;
-}
 
 /// \method datetime([datetimetuple])
 /// Get or set the date and time of the RTC.
@@ -144,14 +161,64 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
+/// \method callback(handler, intmode, value, priority, pwrmode)
+/// Creates a callback object associated with the real time clock
+/// min num of arguments is 1 (value). The value is the alarm time
+/// in the future, in msec
+STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
+
+    // check if any parameters were passed
+    if (kw_args->used > 0 || pybrtc_data.callback == mp_const_none) {
+        uint32_t seconds;
+        uint16_t mseconds;
+        // get the seconds and the milliseconds from the RTC
+        MAP_PRCMRTCGet(&seconds, &mseconds);
+        mseconds = RTC_CYCLES_U16MS(mseconds);
+
+        // configure the rtc alarm accordingly
+        seconds += args[3].u_int / 1000;
+        mseconds += args[3].u_int - ((args[3].u_int / 1000) * 1000);
+        if (mseconds > 1000) {
+            seconds++;
+            mseconds -= 1000;
+        }
+
+        // check the wake from param
+        if (args[4].u_int & PYB_PWR_MODE_ACTIVE) {
+            MAP_PRCMRTCMatchSet(seconds, mseconds);
+        }
+
+        // save the alarm config for later
+        pybrtc_data.alarm_sec = seconds;
+        pybrtc_data.alarm_msec = mseconds;
+        pybrtc_data.pwrmode = args[4].u_int;
+
+        // create the callback
+        pybrtc_data.callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods);
+    }
+
+    return pybrtc_data.callback;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_callback_obj, 1, pyb_rtc_callback);
+
 STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_rtc_callback_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
-const mp_obj_type_t pyb_rtc_type = {
+STATIC const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
-    .make_new = pyb_rtc_make_new,
     .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
 };
+
+STATIC const mp_cb_methods_t pybrtc_cb_methods = {
+    .init = pyb_rtc_callback,
+    .enable = pyb_rtc_callback_enable,
+    .disable = pyb_rtc_callback_disable,
+};
+
+const mp_obj_base_t pyb_rtc_obj = {&pyb_rtc_type};

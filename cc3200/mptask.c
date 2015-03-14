@@ -121,7 +121,7 @@ soft_reset:
     mperror_init0();
     mpexception_init0();
     mpcallback_init0();
-    pyblsleep_init0();
+    pybsleep_init0();
     uart_init0();
     pin_init0();
     readline_init0();
@@ -149,7 +149,7 @@ soft_reset:
         mptask_enter_ap_mode();
         // don't check for safeboot when comming out of hibernate
     #ifndef DEBUG
-        safeboot = mperror_safe_boot_requested();
+        safeboot = PRCMIsSafeBootRequested();
     #endif
     }
     else {
@@ -233,6 +233,7 @@ soft_reset:
 soft_reset_exit:
 
     // soft reset
+    pybsleep_signal_soft_reset();
 
     sflash_disk_flush();
 
@@ -268,6 +269,9 @@ STATIC void mptask_pre_init (void) {
 
     // Allocate memory for the flash file system
     ASSERT ((sflash_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
+
+    // this one allocates memory for the nvic vault
+    pybsleep_pre_init();
 
 #if MICROPY_HW_HAS_SDCARD
     pybsd_init0();

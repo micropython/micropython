@@ -31,7 +31,7 @@
 #define RTC_U16MS_CYCLES(msec)      ((msec * 1024) / 1000)
 #define RTC_CYCLES_U16MS(cycles)    ((cycles * 1000) / 1024)
 
-extern const mp_obj_type_t pyb_rtc_type;
+extern const mp_obj_base_t pyb_rtc_obj;
 
 void pybrtc_init(void);
 

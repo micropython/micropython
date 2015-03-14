@@ -911,7 +911,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
-/// \method callback(method, intmode, value, priority, pwrmode)
+/// \method callback(handler, intmode, value, priority, pwrmode)
 /// Creates a callback object associated with WLAN
 /// min num of arguments is 1 (pwrmode)
 STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

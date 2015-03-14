@@ -148,7 +148,7 @@ static void bootmgr_board_init(void) {
     // Mandatory MCU Initialization
     PRCMCC3200MCUInit();
 
-    mperror_check_reset_cause();
+    mperror_bootloader_check_reset_cause();
 
     // Enable the Data Hashing Engine
     HASH_Init();
@@ -156,9 +156,8 @@ static void bootmgr_board_init(void) {
     // Init the system led and the system switch
     mperror_init0();
 
-    // clear the safe boot request, since we should not trust
-    // the register's state after reset
-    mperror_clear_safe_boot();
+    // clear the safe boot flag, since we can't trust its content after reset
+    PRCMClearSafeBootRequest();
 }
 
 //*****************************************************************************
@@ -266,7 +265,7 @@ static void bootmgr_image_loader(sBootInfo_t *psBootInfo) {
          // turn the led off
          MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
          // request a safe boot to the application
-         mperror_request_safe_boot();
+         PRCMRequestSafeBoot();
     }
     // do we have a new update image that needs to be verified?
     else if ((psBootInfo->ActiveImg == IMG_ACT_UPDATE) && (psBootInfo->Status == IMG_STATUS_CHECK)) {

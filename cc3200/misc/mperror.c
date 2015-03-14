@@ -56,8 +56,6 @@
 #define MPERROR_HEARTBEAT_ON_MS                     (80)
 #define MPERROR_HEARTBEAT_OFF_MS                    (4920)
 
-#define MPERROR_SAFE_BOOT_REG_IDX                   (0)
-
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
@@ -102,7 +100,7 @@ void mperror_init0 (void) {
     mperror_heart_beat.beating = false;
 }
 
-void mperror_check_reset_cause (void) {
+void mperror_bootloader_check_reset_cause (void) {
     // if we are recovering from a WDT reset, trigger
     // a hibernate cycle for a clean boot
     if (MAP_PRCMSysResetCauseGet() == PRCM_WDT_RESET) {
@@ -114,6 +112,10 @@ void mperror_check_reset_cause (void) {
         HWREG(0x4402E16C) |= 0x2;
         UtilsDelay(800);
         HWREG(0x4402F024) &= 0xF7FFFFFF;
+
+        // since the reset cause will be changed, we must store the right reason
+        // so that the application knows we booting the next time
+        PRCMSignalWDTReset();
 
         MAP_PRCMHibernateWakeupSourceEnable(PRCM_HIB_SLOW_CLK_CTR);
         // set the sleep interval to 10ms
@@ -134,21 +136,6 @@ void mperror_signal_error (void) {
         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
         UtilsDelay(UTILS_DELAY_US_TO_COUNT(MPERROR_TOOGLE_MS * 1000));
     }
-}
-
-void mperror_request_safe_boot (void) {
-    MAP_PRCMOCRRegisterWrite(MPERROR_SAFE_BOOT_REG_IDX, 1);
-}
-
-void mperror_clear_safe_boot (void) {
-    MAP_PRCMOCRRegisterWrite(MPERROR_SAFE_BOOT_REG_IDX, 0);
-}
-
-// returns the last state of the safe boot request and clears the register
-bool mperror_safe_boot_requested (void) {
-    bool ret = MAP_PRCMOCRRegisterRead(MPERROR_SAFE_BOOT_REG_IDX);
-    mperror_clear_safe_boot();
-    return ret;
 }
 
 void mperror_enable_heartbeat (void) {

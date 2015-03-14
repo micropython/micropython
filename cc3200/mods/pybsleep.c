@@ -61,6 +61,12 @@
 #define SPIFLASH_INSTR_DEEP_POWER_DOWN          (0xB9)
 #define SPIFLASH_STATUS_BUSY                    (0x01)
 
+#define LPDS_UP_TIME                            (425)         // 13 msec
+#define LPDS_DOWN_TIME                          (98)          // 3 msec
+#define USER_OFFSET                             (131)         // 4 smec
+#define WAKEUP_TIME_LPDS                        (LPDS_UP_TIME + LPDS_DOWN_TIME + USER_OFFSET)   // 20 msec
+#define WAKEUP_TIME_HIB                         (32768)       // 1 s
+
 /******************************************************************************
  DECLARE PRIVATE TYPES
  ******************************************************************************/
@@ -101,9 +107,9 @@ typedef struct {
 } pybsleep_obj_t;
 
 typedef struct {
-    mp_obj_t    wlan_wake_cb;
-    mp_obj_t    timer_wake_cb;
-    mp_obj_t    gpio_wake_cb;
+    mp_obj_t    wlan_lpds_wake_cb;
+    mp_obj_t    timer_lpds_wake_cb;
+    mp_obj_t    gpio_lpds_wake_cb;
 } pybsleep_wake_cb_t;
 
 /******************************************************************************
@@ -113,6 +119,7 @@ STATIC const mp_obj_type_t pybsleep_type;
 STATIC nvic_reg_store_t    *nvic_reg_store;
 STATIC pybsleep_wake_cb_t   pybsleep_wake_cb;
 volatile arm_cm4_core_regs_t vault_arm_registers;
+STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -128,17 +135,49 @@ STATIC void pybsleep_iopark (void);
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
-void pyblsleep_init0 (void) {
+__attribute__ ((section (".boot")))
+void pybsleep_pre_init (void) {
+    // allocate memory for nvic registers vault
+    ASSERT ((nvic_reg_store = mem_Malloc(sizeof(nvic_reg_store_t))) != NULL);
+}
+
+void pybsleep_init0 (void) {
     // initialize the sleep objects list
     mp_obj_list_init(&MP_STATE_PORT(pybsleep_obj_list), 0);
 
-    // allocate memory for nvic registers vault
-    ASSERT ((nvic_reg_store = mem_Malloc(sizeof(nvic_reg_store_t))) != NULL);
-
-    // enable and register the PRCM interrupt
+    // register and enable the PRCM interrupt
     osi_InterruptRegister(INT_PRCM, (P_OSI_INTR_ENTRY)PRCMInterruptHandler, INT_PRIORITY_LVL_1);
-    MAP_IntPendClear(INT_PRCM);
-    MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
+
+    // store the reset casue (if it's soft reset, leave it as it is)
+    if (pybsleep_reset_cause != PYB_SLP_SOFT_RESET) {
+        switch (MAP_PRCMSysResetCauseGet()) {
+        case PRCM_POWER_ON:
+            pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
+            break;
+        case PRCM_CORE_RESET:
+        case PRCM_MCU_RESET:
+        case PRCM_SOC_RESET:
+            pybsleep_reset_cause = PYB_SLP_HARD_RESET;
+            break;
+        case PRCM_WDT_RESET:
+            pybsleep_reset_cause = PYB_SLP_WDT_RESET;
+            break;
+        case PRCM_HIB_EXIT:
+            if (PRCMWasResetBecauseOfWDT()) {
+                pybsleep_reset_cause = PYB_SLP_WDT_RESET;
+            }
+            else {
+                pybsleep_reset_cause = PYB_SLP_HIB_RESET;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void pybsleep_signal_soft_reset (void) {
+    pybsleep_reset_cause = PYB_SLP_SOFT_RESET;
 }
 
 void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
@@ -160,15 +199,15 @@ void pybsleep_remove (const mp_obj_t obj) {
 }
 
 void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj) {
-    pybsleep_wake_cb.wlan_wake_cb = cb_obj;
+    pybsleep_wake_cb.wlan_lpds_wake_cb = cb_obj;
 }
 
 void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj) {
-    pybsleep_wake_cb.gpio_wake_cb = cb_obj;
+    pybsleep_wake_cb.gpio_lpds_wake_cb = cb_obj;
 }
 
 void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj) {
-    pybsleep_wake_cb.timer_wake_cb = cb_obj;
+    pybsleep_wake_cb.timer_lpds_wake_cb = cb_obj;
 }
 
 /******************************************************************************
@@ -341,31 +380,27 @@ void pybsleep_suspend_exit (void) {
 STATIC void PRCMInterruptHandler (void) {
     // reading the interrupt status automatically clears the interrupt
     if (PRCM_INT_SLOW_CLK_CTR == MAP_PRCMIntStatus()) {
-        if (pybsleep_wake_cb.timer_wake_cb) {
-            mpcallback_handler(pybsleep_wake_cb.timer_wake_cb);
+        // this interrupt is triggered during active mode
+        if (pybsleep_wake_cb.timer_lpds_wake_cb) {
+            mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
         }
     }
     else {
+        // interrupt has been triggered while waking up from LPDS
         switch (MAP_PRCMLPDSWakeupCauseGet()) {
         case PRCM_LPDS_HOST_IRQ:
-            if (pybsleep_wake_cb.wlan_wake_cb) {
-                mpcallback_handler(pybsleep_wake_cb.wlan_wake_cb);
+            if (pybsleep_wake_cb.wlan_lpds_wake_cb) {
+                mpcallback_handler(pybsleep_wake_cb.wlan_lpds_wake_cb);
             }
             break;
         case PRCM_LPDS_GPIO:
-            if (pybsleep_wake_cb.gpio_wake_cb) {
-                mpcallback_handler(pybsleep_wake_cb.gpio_wake_cb);
+            if (pybsleep_wake_cb.gpio_lpds_wake_cb) {
+                mpcallback_handler(pybsleep_wake_cb.gpio_lpds_wake_cb);
             }
-            // clear all pending GPIO interrupts in order to
-            // avoid duplicated calls to the handler
-            MAP_IntPendClear(INT_GPIOA0);
-            MAP_IntPendClear(INT_GPIOA1);
-            MAP_IntPendClear(INT_GPIOA2);
-            MAP_IntPendClear(INT_GPIOA3);
             break;
         case PRCM_LPDS_TIMER:
-            if (pybsleep_wake_cb.timer_wake_cb) {
-                mpcallback_handler(pybsleep_wake_cb.timer_wake_cb);
+            if (pybsleep_wake_cb.timer_lpds_wake_cb) {
+                mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
             }
             break;
         default:
@@ -443,7 +478,7 @@ STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     nlr_buf_t nlr;
 
     // check if we need to enable network wake-up
-    if (pybsleep_wake_cb.wlan_wake_cb) {
+    if (pybsleep_wake_cb.wlan_lpds_wake_cb) {
         MAP_PRCMLPDSWakeupSourceEnable (PRCM_LPDS_HOST_IRQ);
     }
     else {
@@ -466,7 +501,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_suspend_obj, pyb_sleep_suspend);
 
 /// \function hibernate()
 /// Enters hibernate mode. Wake up sources should have been enable prior to
-//  calling this method.
+/// calling this method.
 STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
     wlan_stop();
     pybsleep_flash_powerdown();
@@ -475,16 +510,40 @@ STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_hibernate_obj, pyb_sleep_hibernate);
 
+/// \function reset_cause()
+/// Returns the last reset casue
+STATIC mp_obj_t pyb_sleep_reset_cause (mp_obj_t self_in) {
+    return MP_OBJ_NEW_SMALL_INT(pybsleep_reset_cause);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_reset_cause_obj, pyb_sleep_reset_cause);
+
+/// \function wake_reason()
+/// Returns the wake up reson from ldps or hibernate
+STATIC mp_obj_t pyb_sleep_wake_reason (mp_obj_t self_in) {
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_wake_reason_obj, pyb_sleep_wake_reason);
+
 STATIC const mp_map_elem_t pybsleep_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_idle),                    (mp_obj_t)&pyb_sleep_idle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_suspend),                 (mp_obj_t)&pyb_sleep_suspend_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hibernate),               (mp_obj_t)&pyb_sleep_hibernate_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset_cause),             (mp_obj_t)&pyb_sleep_reset_cause_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_reason),             (mp_obj_t)&pyb_sleep_wake_reason_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACTIVE),                  MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SUSPENDED),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HIBERNATING),             MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PWR_ON_RESET),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),              MP_OBJ_NEW_SMALL_INT(PYB_SLP_HARD_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),               MP_OBJ_NEW_SMALL_INT(PYB_SLP_WDT_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HIB_RESET),               MP_OBJ_NEW_SMALL_INT(PYB_SLP_HIB_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),              MP_OBJ_NEW_SMALL_INT(PYB_SLP_SOFT_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN_WAKE),               MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_WLAN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PIN_WAKE),                MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_PIN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC_WAKE),                MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_RTC) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pybsleep_locals_dict, pybsleep_locals_dict_table);

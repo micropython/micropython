@@ -37,6 +37,22 @@
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/
+typedef enum {
+    PYB_SLP_PWRON_RESET = 0,
+    PYB_SLP_HARD_RESET,
+    PYB_SLP_WDT_RESET,
+    PYB_SLP_HIB_RESET,
+    PYB_SLP_SOFT_RESET,
+
+} pybsleep_reset_cause_t;
+
+typedef enum {
+    PYB_SLP_WAKED_BY_WLAN,
+    PYB_SLP_WAKED_BY_PIN,
+    PYB_SLP_WAKED_BY_RTC
+
+} pybsleep_wake_reason_t;
+
 typedef void (*WakeUpCB_t)(const mp_obj_t self);
 
 /******************************************************************************
@@ -47,7 +63,9 @@ extern const mp_obj_base_t pyb_sleep_obj;
 /******************************************************************************
  DECLARE FUNCTIONS
  ******************************************************************************/
-void pyblsleep_init0 (void);
+void pybsleep_pre_init (void);
+void pybsleep_init0 (void);
+void pybsleep_signal_soft_reset (void);
 void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup);
 void pybsleep_remove (const mp_obj_t obj);
 void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj);
