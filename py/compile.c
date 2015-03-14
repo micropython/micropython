@@ -84,8 +84,10 @@ typedef struct _compiler_t {
     emit_t *emit;                                   // current emitter
     const emit_method_table_t *emit_method_table;   // current emit method table
 
+    #if MICROPY_EMIT_INLINE_THUMB
     emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
+    #endif
 } compiler_t;
 
 STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
@@ -3621,8 +3623,10 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     // compile pass 1
     comp->emit = emit_pass1_new();
     comp->emit_method_table = &emit_pass1_method_table;
+    #if MICROPY_EMIT_INLINE_THUMB
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;
+    #endif
     uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
         if (false) {
