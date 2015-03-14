@@ -148,7 +148,7 @@ int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args) {
                 break;
             case 'p':
             case 'P': // don't bother to handle upcase for 'P'
-                chrs += pfenv_print_int(pfenv, va_arg(args, mp_uint_t), 0, 16, 'a', flags, fill, width);
+                chrs += pfenv_print_int(pfenv, va_arg(args, unsigned int), 0, 16, 'a', flags, fill, width);
                 break;
 #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
