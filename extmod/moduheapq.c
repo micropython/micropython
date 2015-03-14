@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <unistd.h>
-
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime0.h"

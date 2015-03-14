@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <math.h>
 
 #include "py/scope.h"
 #include "py/emit.h"

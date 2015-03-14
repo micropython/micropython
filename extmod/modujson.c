@@ -25,8 +25,6 @@
  */
 
 #include <stdio.h>
-#include <unistd.h>
-#include <string.h>
 
 #include "py/nlr.h"
 #include "py/objlist.h"

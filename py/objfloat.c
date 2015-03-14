@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <math.h>
 
 #include "py/nlr.h"
 #include "py/parsenum.h"
@@ -36,6 +35,8 @@
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
+
+#include <math.h>
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #include "py/formatfloat.h"
