@@ -576,7 +576,7 @@ arg names: b a
 01 LOAD_DEREF 0
 03 BINARY_OP 5 __add__
 04 RETURN_VALUE
-mem: total=11585, current=2341, peak=9293
-stack: 16 out of 32768
-GC: total: 259072, used: 3168, free: 255904
- No. of 1-blocks: 42, 2-blocks: 8, max blk sz: 17
+mem: total=######
+stack: ######
+GC: total: ######
+ No. of 1-blocks: ######
