@@ -1,3 +1,5 @@
+print(bytes())
+
 a = b"123"
 print(a)
 print(str(a))

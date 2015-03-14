@@ -13,6 +13,8 @@ print(a & -1)
 print(a & -2)
 print(a & -2345678901234567890123456789)
 print(a & (-a))
+print(a & (-a - 1))
+print(a & (-a + 1))
 
 # test negative on lhs
 a = 123456789012345678901234567890

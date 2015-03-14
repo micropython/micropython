@@ -1,5 +1,7 @@
 # basic strings
 
+print(str())
+
 x = 'abc'
 print(x)
 

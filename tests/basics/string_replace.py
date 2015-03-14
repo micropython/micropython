@@ -1,4 +1,5 @@
 print("".replace("a", "b"))
+print("aaa".replace("b", "c"))
 print("aaa".replace("a", "b", 0))
 print("aaa".replace("a", "b", -5))
 print("asdfasdf".replace("a", "b"))

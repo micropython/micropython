@@ -1,3 +1,4 @@
+print("%%" % ())
 print("=%s=" % 1)
 print("=%s=%s=" % (1, 2))
 print("=%s=" % (1,))
@@ -23,6 +24,7 @@ except TypeError:
 
 print("%s" % True)
 print("%s" % 1)
+print("%.1s" % "ab")
 
 print("%r" % True)
 print("%r" % 1)
