@@ -13,7 +13,7 @@ print(complex(1j, 2j))
 # unary ops
 print(bool(1j))
 print(+(1j))
-#print(-(1j)) uPy doesn't print correctly
+print(-(1 + 2j))
 
 # binary ops
 print(1j + 2)
@@ -23,10 +23,10 @@ print(1j - 2j)
 print(1j * 2)
 print(1j * 2j)
 print(1j / 2)
-#print(1j / 2j) uPy doesn't print correctly
-#print(1j ** 2) uPy doesn't print correctly
-#print(1j ** 2j) uPy doesn't print correctly
+print(1j / (1 + 2j))
+ans = 1j ** 2.5; print("%.5g %.5g" % (ans.real, ans.imag))
+ans = 1j ** 2.5j; print("%.5g %.5g" % (ans.real, ans.imag))
 
 # builtin abs
 print(abs(1j))
-print(abs(1j + 2))
+print("%.5g" % abs(1j + 2))

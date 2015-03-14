@@ -56,3 +56,9 @@ print(m.group(0))
 
 m = re.search("w.r", "hello world")
 print(m.group(0))
+
+m = re.match('a+?', 'ab');  print(m.group(0))
+m = re.match('a*?', 'ab');  print(m.group(0))
+m = re.match('^ab$', 'ab'); print(m.group(0))
+m = re.match('a|b', 'b');   print(m.group(0))
+m = re.match('a|b|c', 'c'); print(m.group(0))
