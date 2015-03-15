@@ -93,8 +93,7 @@ void _SlInternalSpawnTaskEntry()
     }
     g_SlInternalSpawnCB.SpawnEntries[i].pNext = NULL;
 
-    sl_LockObjUnlock(&g_SlInternalSpawnCB.LockObj);
-
+    _SlDrvObjUnLock(&g_SlInternalSpawnCB.LockObj);
 
     /* here we ready to execute entries */
 
@@ -106,12 +105,12 @@ void _SlInternalSpawnTaskEntry()
         do
         {
             /* get entry to execute */
-            sl_LockObjLock(&g_SlInternalSpawnCB.LockObj,SL_OS_WAIT_FOREVER);
+            _SlDrvObjLockWaitForever(&g_SlInternalSpawnCB.LockObj);
 
             pEntry = g_SlInternalSpawnCB.pWaitForExe;
             if ( NULL == pEntry )
             {
-               sl_LockObjUnlock(&g_SlInternalSpawnCB.LockObj);
+               _SlDrvObjUnLock(&g_SlInternalSpawnCB.LockObj);
                break;
             }
             g_SlInternalSpawnCB.pWaitForExe = pEntry->pNext;
@@ -121,8 +120,7 @@ void _SlInternalSpawnTaskEntry()
                 LastEntry = TRUE;
             }
 
-            sl_LockObjUnlock(&g_SlInternalSpawnCB.LockObj);
-
+            _SlDrvObjUnLock(&g_SlInternalSpawnCB.LockObj);
 
             /* pEntry could be null in case that the sync was already set by some
                of the entries during execution of earlier entry */
@@ -130,8 +128,9 @@ void _SlInternalSpawnTaskEntry()
             {
                 pEntry->pEntry(pEntry->pValue);
                 /* free the entry */
-                sl_LockObjLock(&g_SlInternalSpawnCB.LockObj,SL_OS_WAIT_FOREVER);
 
+                _SlDrvObjLockWaitForever(&g_SlInternalSpawnCB.LockObj);
+                
                 pEntry->pNext = g_SlInternalSpawnCB.pFree;
                 g_SlInternalSpawnCB.pFree = pEntry;
 
@@ -142,7 +141,7 @@ void _SlInternalSpawnTaskEntry()
                     LastEntry = FALSE;
                 }
 
-                sl_LockObjUnlock(&g_SlInternalSpawnCB.LockObj);
+                _SlDrvObjUnLock(&g_SlInternalSpawnCB.LockObj);
 
             }
 
@@ -162,7 +161,7 @@ _i16 _SlInternalSpawn(_SlSpawnEntryFunc_t pEntry , void* pValue , _u32 flags)
     }
     else
     {
-        sl_LockObjLock(&g_SlInternalSpawnCB.LockObj,SL_OS_WAIT_FOREVER);
+        _SlDrvObjLockWaitForever(&g_SlInternalSpawnCB.LockObj);
 
         pSpawnEntry = g_SlInternalSpawnCB.pFree;
         g_SlInternalSpawnCB.pFree = pSpawnEntry->pNext;
@@ -182,9 +181,10 @@ _i16 _SlInternalSpawn(_SlSpawnEntryFunc_t pEntry , void* pValue , _u32 flags)
             g_SlInternalSpawnCB.pLastInWaitList = pSpawnEntry;
         }
 
-        sl_LockObjUnlock(&g_SlInternalSpawnCB.LockObj);
+        _SlDrvObjUnLock(&g_SlInternalSpawnCB.LockObj);
+        
         /* this sync is called after releasing the lock object to avoid unnecessary context switches */
-        sl_SyncObjSignal(&g_SlInternalSpawnCB.SyncObj);
+        _SlDrvSyncObjSignal(&g_SlInternalSpawnCB.SyncObj);
     }
 
     return Res;

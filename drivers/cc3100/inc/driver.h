@@ -61,8 +61,8 @@ typedef struct
 typedef struct
 {
     _u16  TxPayloadLen;
-    _u16  RxPayloadLen;
-	_u16  ActualRxPayloadLen;
+    _i16  RxPayloadLen;
+	_i16  ActualRxPayloadLen;
     _u8   *pTxPayload;
     _u8   *pRxPayload;
 }_SlCmdExt_t;
@@ -97,12 +97,20 @@ typedef enum
 	SOCKET_6,
 	SOCKET_7,
 	MAX_SOCKET_ENUM_IDX,
+#ifndef SL_TINY_EXT    
     ACCEPT_ID = MAX_SOCKET_ENUM_IDX,
     CONNECT_ID,
+#else
+    CONNECT_ID = MAX_SOCKET_ENUM_IDX,
+#endif
+#ifndef SL_TINY_EXT    
 	SELECT_ID,
+#endif
 	GETHOSYBYNAME_ID,
+#ifndef SL_TINY_EXT    
 	GETHOSYBYSERVICE_ID,
 	PING_ID,
+#endif	
     START_STOP_ID,
 	RECV_ID
 }_SlActionID_e;
@@ -166,21 +174,18 @@ typedef struct
 
     _SlSyncObj_t                     CmdSyncObj;  
     _u8                     IsCmdRespWaited;
-
-    _SlFlowContCB_t                  FlowContCB;
-
+    _SlFlowContCB_t          FlowContCB;
     _u8                     TxSeqNum;
-    _volatile _u8           RxIrqCnt;
     _u8                     RxDoneCnt;
     _u8                     SocketNonBlocking;
 	_u8                     SocketTXFailure;
-    _u8                     RelayFlagsViaRxPayload;
     /* for stack reduction the parameters are globals */
     _SlFunctionParams_t              FunctionParams;
 
+    _u8 ActionIndex;
 }_SlDriverCb_t;
 
-
+extern _volatile _u8           RxIrqCnt;
 
 extern _SlDriverCb_t* g_pCB;
 extern P_SL_DEV_PING_CALLBACK  pPingCallBackFunc;
@@ -195,25 +200,47 @@ extern _SlReturnVal_t  _SlDrvCmdOp(_SlCmdCtrl_t *pCmdCtrl , void* pTxRxDescBuff 
 extern _SlReturnVal_t  _SlDrvCmdSend(_SlCmdCtrl_t *pCmdCtrl , void* pTxRxDescBuff , _SlCmdExt_t* pCmdExt);
 extern _SlReturnVal_t  _SlDrvDataReadOp(_SlSd_t Sd, _SlCmdCtrl_t *pCmdCtrl , void* pTxRxDescBuff , _SlCmdExt_t* pCmdExt);
 extern _SlReturnVal_t  _SlDrvDataWriteOp(_SlSd_t Sd, _SlCmdCtrl_t *pCmdCtrl , void* pTxRxDescBuff , _SlCmdExt_t* pCmdExt);
-extern _i16  _SlDrvBasicCmd(_SlOpcode_t Opcode);
-
 extern void _sl_HandleAsync_InitComplete(void *pVoidBuf);
 extern void _sl_HandleAsync_Connect(void *pVoidBuf);
+
+
+#ifndef SL_TINY_EXT
+extern _i16  _SlDrvBasicCmd(_SlOpcode_t Opcode);
 extern void _sl_HandleAsync_Accept(void *pVoidBuf);
-extern void _sl_HandleAsync_Select(void *pVoidBuf);
-extern void _sl_HandleAsync_DnsGetHostByName(void *pVoidBuf);
 extern void _sl_HandleAsync_DnsGetHostByService(void *pVoidBuf);
+extern void _sl_HandleAsync_Select(void *pVoidBuf);
+#endif
+
+
+extern void _sl_HandleAsync_DnsGetHostByName(void *pVoidBuf);
 extern void _sl_HandleAsync_DnsGetHostByAddr(void *pVoidBuf);
 extern void _sl_HandleAsync_PingResponse(void *pVoidBuf);
-extern void _SlDrvNetAppEventHandler(void *pArgs);
-extern void _SlDrvDeviceEventHandler(void *pArgs);
+extern void _SlDrvNetAppEventHandler(void* pArgs);
+extern void _SlDrvDeviceEventHandler(void* pArgs);
 extern void _sl_HandleAsync_Stop(void *pVoidBuf);
-extern _i16 _SlDrvWaitForPoolObj(_u32 ActionID, _u8 SocketID);
+extern _u8  _SlDrvWaitForPoolObj(_u8 ActionID, _u8 SocketID);
 extern void _SlDrvReleasePoolObj(_u8 pObj);
-extern void _SlDrvObjInit(void);  
+extern _u16 _SlDrvAlignSize(_u16 msgLen); 
+extern _u8  _SlDrvProtectAsyncRespSetting(_u8 *pAsyncRsp, _u8 ActionID, _u8 SocketID);
+
+
+extern void  _SlDrvSyncObjWaitForever(_SlSyncObj_t *pSyncObj);
+extern void  _SlDrvSyncObjSignal(_SlSyncObj_t *pSyncObj);
+extern void  _SlDrvObjLock(_SlLockObj_t *pLockObj, _SlTime_t Timeout);
+extern void  _SlDrvObjLockWaitForever(_SlLockObj_t *pLockObj);
+extern void  _SlDrvProtectionObjLockWaitForever();
+extern void  _SlDrvObjUnLock(_SlLockObj_t *pLockObj);
+extern void  _SlDrvProtectionObjUnLock();
+
+extern void  _SlDrvMemZero(void* Addr, _u16 size);
+extern void  _SlDrvResetCmdExt(_SlCmdExt_t* pCmdExt);
+
+
 
 #define _SL_PROTOCOL_ALIGN_SIZE(msgLen)             (((msgLen)+3) & (~3))
 #define _SL_IS_PROTOCOL_ALIGNED_SIZE(msgLen)        (!((msgLen) & 3))
+
+
 #define _SL_PROTOCOL_CALC_LEN(pCmdCtrl,pCmdExt)     ((pCmdExt) ? \
                                                      (_SL_PROTOCOL_ALIGN_SIZE(pCmdCtrl->TxDescLen) + _SL_PROTOCOL_ALIGN_SIZE(pCmdExt->TxPayloadLen)) : \
                                                      (_SL_PROTOCOL_ALIGN_SIZE(pCmdCtrl->TxDescLen)))

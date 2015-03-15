@@ -34,13 +34,15 @@
  *
 */
 
-#ifndef __DEVICE_H__
-#define __DEVICE_H__
-
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
 #include "simplelink.h"
+
+#ifndef __DEVICE_H__
+#define __DEVICE_H__
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,6 +80,10 @@ extern "C" {
 
 /* User supplied invalid parameter */
 #define SL_INVALPARAM    (-2003)
+
+
+/* Failed to open interface  */
+#define SL_BAD_INTERFACE    (-2004)
 
 /* End of SL internal Error codes */
 
@@ -171,6 +177,8 @@ typedef enum
 #define SL_WLAN_CONNECTION_FAILED_EVENT           (9)
 /* SL_EVENT_CLASS_DEVICE user events */
 #define SL_DEVICE_FATAL_ERROR_EVENT               (1)
+#define SL_DEVICE_ABORT_ERROR_EVENT               (2)
+
 /* SL_EVENT_CLASS_BSD user events */               
 #define    SL_SOCKET_TX_FAILED_EVENT              (1) 
 #define SL_SOCKET_ASYNC_EVENT                     (2)
@@ -228,6 +236,8 @@ typedef enum
 /* Structure/Enum declarations                                               */
 /*****************************************************************************/
 
+#define ROLE_UNKNOWN_ERR                      (-1)
+
 #ifdef SL_IF_TYPE_UART
 typedef struct  
 {
@@ -252,6 +262,14 @@ typedef struct
     _u16               Padding;
 }SlVersionFull;
 
+
+typedef struct
+{
+    _u32 				AbortType;
+    _u32				AbortData;
+}sl_DeviceReportAbort;
+
+
 typedef struct
 {
     _i8                status;
@@ -261,6 +279,7 @@ typedef struct
 typedef union
 {
   sl_DeviceReport           deviceEvent; 
+  sl_DeviceReportAbort		deviceReport;  
 } _SlDeviceEventData_u;
 
 typedef struct
@@ -376,7 +395,7 @@ _i16 sl_Start(const void* pIfHdl, _i8*  pDevName, const P_INIT_CALLBACK pInitCal
     \warning     
 */
 #if _SL_INCLUDE_FUNC(sl_Stop)
-_i16 sl_Stop(_u16 timeout);
+_i16 sl_Stop(const _u16 timeout);
 #endif
 
 
@@ -399,7 +418,7 @@ _i16 sl_Stop(_u16 timeout);
          Setting device time and date example:
 
          SlDateTime_t dateTime= {0};
-         dateTime.sl_tm_day =   (_u32)23;          // Day of month (DD format) range 1-13
+         dateTime.sl_tm_day =   (_u32)23;          // Day of month (DD format) range 1-31
          dateTime.sl_tm_mon =   (_u32)6;           // Month (MM format) in the range of 1-12 
          dateTime.sl_tm_year =  (_u32)2014;        // Year (YYYY format) 
          dateTime.sl_tm_hour =  (_u32)17;          // Hours in the range of 0-23
@@ -413,7 +432,7 @@ _i16 sl_Stop(_u16 timeout);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_DevSet)
-_i32 sl_DevSet(_u8 DeviceSetId ,_u8 Option,_u8 ConfigLen, _u8 *pValues);
+_i32 sl_DevSet(const _u8 DeviceSetId ,const _u8 Option,const _u8 ConfigLen,const _u8 *pValues);
 #endif
 
 /*!
@@ -446,9 +465,11 @@ _i32 sl_DevSet(_u8 DeviceSetId ,_u8 Option,_u8 ConfigLen, _u8 *pValues);
      _u8 pConfigOpt;
      _u8 pConfigLen;
      pConfigOpt = SL_EVENT_CLASS_WLAN;
+     pConfigLen = sizeof(_u32);
      sl_DevGet(SL_DEVICE_STATUS,&pConfigOpt,&pConfigLen,(_u8 *)(&statusWlan));
      Example for getting version:
      SlVersionFull ver;
+     pConfigLen = sizeof(ver);
      pConfigOpt = SL_DEVICE_GENERAL_VERSION;
      sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION,&pConfigOpt,&pConfigLen,(_u8 *)(&ver));
      printf("CHIP %d\nMAC 31.%d.%d.%d.%d\nPHY %d.%d.%d.%d\nNWP %d.%d.%d.%d\nROM %d\nHOST %d.%d.%d.%d\n",
@@ -475,7 +496,7 @@ _i32 sl_DevSet(_u8 DeviceSetId ,_u8 Option,_u8 ConfigLen, _u8 *pValues);
      \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_DevGet)
-_i32 sl_DevGet(_u8 DeviceGetId, _u8 *pOption,_u8 *pConfigLen, _u8 *pValues);
+_i32 sl_DevGet(const _u8 DeviceGetId,_u8 *pOption,_u8 *pConfigLen, _u8 *pValues);
 #endif
 
 
@@ -527,7 +548,7 @@ _i32 sl_DevGet(_u8 DeviceGetId, _u8 *pOption,_u8 *pConfigLen, _u8 *pValues);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_EventMaskSet)
-_i16 sl_EventMaskSet(_u8 EventClass , _u32 Mask);
+_i16 sl_EventMaskSet(const _u8 EventClass ,const _u32 Mask);
 #endif
 
 /*!
@@ -567,7 +588,7 @@ _i16 sl_EventMaskSet(_u8 EventClass , _u32 Mask);
    \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_EventMaskGet)
-_i16 sl_EventMaskGet(_u8 EventClass, _u32 *pMask);
+_i16 sl_EventMaskGet(const _u8 EventClass,_u32 *pMask);
 #endif
 
 

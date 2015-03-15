@@ -53,7 +53,6 @@
 /* Internal functions                                                        */
 /*****************************************************************************/
 
-
 /*****************************************************************************/
 /* _sl_Strlen                                                                */
 /*****************************************************************************/
@@ -87,7 +86,6 @@ _u32 _sl_GetCreateFsMode(_u32 maxSizeInBytes,_u32 accessFlags)
    return _FS_MODE(_FS_MODE_OPEN_WRITE_CREATE_IF_NOT_EXIST,  granIdx, granNum, accessFlags);
 }
 
-
 /*****************************************************************************/
 /* API functions                                                        */
 /*****************************************************************************/
@@ -97,9 +95,12 @@ _u32 _sl_GetCreateFsMode(_u32 maxSizeInBytes,_u32 accessFlags)
 /*****************************************************************************/
 typedef union
 {
-    _FsOpenCommand_t        Cmd;
-    _FsOpenResponse_t       Rsp;
+	_FsOpenCommand_t	    Cmd;
+	_FsOpenResponse_t	    Rsp;
 }_SlFsOpenMsg_u;
+
+
+#if _SL_INCLUDE_FUNC(sl_FsOpen)
 
 const _SlCmdCtrl_t _SlFsOpenCmdCtrl =
 {
@@ -108,41 +109,40 @@ const _SlCmdCtrl_t _SlFsOpenCmdCtrl =
     sizeof(_FsOpenResponse_t)
 };
 
-#if _SL_INCLUDE_FUNC(sl_FsOpen)
-_i32 sl_FsOpen(_u8 *pFileName,_u32 AccessModeAndMaxSize, _u32 *pToken,_i32 *pFileHandle)
+_i32 sl_FsOpen(const _u8 *pFileName,const _u32 AccessModeAndMaxSize, _u32 *pToken,_i32 *pFileHandle)
 {
     _SlReturnVal_t        RetVal;
     _SlFsOpenMsg_u        Msg;
     _SlCmdExt_t           CmdExt;
 
-    CmdExt.TxPayloadLen = (_sl_Strlen(pFileName)+4) & (~3); // add 4: 1 for NULL and the 3 for align 
+    CmdExt.TxPayloadLen = (_sl_Strlen(pFileName)+4) & (~3); /* add 4: 1 for NULL and the 3 for align */
     CmdExt.RxPayloadLen = 0;
-    CmdExt.pTxPayload = pFileName;
+    CmdExt.pTxPayload = (_u8*)pFileName;
     CmdExt.pRxPayload = NULL;
 
     Msg.Cmd.Mode          =  AccessModeAndMaxSize; 
 
-    if(pToken != NULL)
-    {
+	if(pToken != NULL)
+	{
        Msg.Cmd.Token         = *pToken;
-    }
+	}
     else
-    {
+	{
        Msg.Cmd.Token         = 0;
-    }
+	}
 
     RetVal = _SlDrvCmdOp((_SlCmdCtrl_t *)&_SlFsOpenCmdCtrl, &Msg, &CmdExt);
     *pFileHandle = Msg.Rsp.FileHandle;
-    if (pToken != NULL)
-    {
+	if (pToken != NULL)
+	{
         *pToken =      Msg.Rsp.Token;
-    }
+	}
        
-    /* in case of an error, return the erros file handler as an error code */
-    if( *pFileHandle < 0 )
-    {
-       return *pFileHandle;
-    }
+	/* in case of an error, return the erros file handler as an error code */
+	if( *pFileHandle < 0 )
+	{
+	   return *pFileHandle;
+	}
     return (_i32)RetVal;
 }
 #endif
@@ -152,9 +152,12 @@ _i32 sl_FsOpen(_u8 *pFileName,_u32 AccessModeAndMaxSize, _u32 *pToken,_i32 *pFil
 /*****************************************************************************/
 typedef union
 {
-    _FsCloseCommand_t       Cmd;
-    _BasicResponse_t        Rsp;
+	_FsCloseCommand_t	    Cmd;
+	_BasicResponse_t	    Rsp;
 }_SlFsCloseMsg_u;
+
+
+#if _SL_INCLUDE_FUNC(sl_FsClose)
 
 const _SlCmdCtrl_t _SlFsCloseCmdCtrl =
 {
@@ -163,10 +166,9 @@ const _SlCmdCtrl_t _SlFsCloseCmdCtrl =
     sizeof(_FsCloseResponse_t)
 };
 
-#if _SL_INCLUDE_FUNC(sl_FsClose)
-_i16 sl_FsClose(_i32 FileHdl, _u8*  pCeritificateFileName,_u8*  pSignature ,_u32 SignatureLen)
+_i16 sl_FsClose(const _i32 FileHdl, const _u8*  pCeritificateFileName,const _u8*  pSignature ,const _u32 SignatureLen)
 {
-    _SlFsCloseMsg_u Msg = {.Cmd = {0, 0, 0}, .Rsp = {0, 0}};
+    _SlFsCloseMsg_u Msg = {{0, 0}};
     _SlCmdExt_t         ExtCtrl;
     
     Msg.Cmd.FileHandle             = FileHdl;
@@ -177,13 +179,13 @@ _i16 sl_FsClose(_i32 FileHdl, _u8*  pCeritificateFileName,_u8*  pSignature ,_u32
     Msg.Cmd.SignatureLen           = SignatureLen;
     
     ExtCtrl.TxPayloadLen = ((SignatureLen+3) & (~3)); /* align */
-    ExtCtrl.pTxPayload   = pSignature;
-    ExtCtrl.RxPayloadLen = (_u16)Msg.Cmd.CertificFileNameLength;
-    ExtCtrl.pRxPayload   = pCeritificateFileName; /* Add signature */
+    ExtCtrl.pTxPayload   = (_u8*)pSignature;
+    ExtCtrl.RxPayloadLen = (_i16)Msg.Cmd.CertificFileNameLength;
+    ExtCtrl.pRxPayload   = (_u8*)pCeritificateFileName; /* Add signature */
     
     if(ExtCtrl.pRxPayload != NULL &&  ExtCtrl.RxPayloadLen != 0)
     {
-        g_pCB->RelayFlagsViaRxPayload = TRUE;
+       ExtCtrl.RxPayloadLen = ExtCtrl.RxPayloadLen * (-1);
     }
 
     VERIFY_RET_OK(_SlDrvCmdOp((_SlCmdCtrl_t *)&_SlFsCloseCmdCtrl, &Msg, &ExtCtrl));
@@ -198,20 +200,21 @@ _i16 sl_FsClose(_i32 FileHdl, _u8*  pCeritificateFileName,_u8*  pSignature ,_u32
 /*****************************************************************************/
 typedef union
 {
-    _FsReadCommand_t        Cmd;
-    _FsReadResponse_t       Rsp;
+	_FsReadCommand_t	    Cmd;
+	_FsReadResponse_t	    Rsp;
 }_SlFsReadMsg_u;
+
+#if _SL_INCLUDE_FUNC(sl_FsRead)
+
 
 const _SlCmdCtrl_t _SlFsReadCmdCtrl =
 {
     SL_OPCODE_NVMEM_FILEREADCOMMAND,
     sizeof(_FsReadCommand_t),
     sizeof(_FsReadResponse_t)
-};
+}; 
 
- 
-#if _SL_INCLUDE_FUNC(sl_FsRead)
-_i32 sl_FsRead(_i32 FileHdl, _u32 Offset, _u8*  pData, _u32 Len)
+_i32 sl_FsRead(const _i32 FileHdl,_u32 Offset, _u8*  pData,_u32 Len)
 {
     _SlFsReadMsg_u      Msg;
     _SlCmdExt_t         ExtCtrl;
@@ -269,9 +272,12 @@ _i32 sl_FsRead(_i32 FileHdl, _u32 Offset, _u8*  pData, _u32 Len)
 /*****************************************************************************/
 typedef union
 {
-    _FsWriteCommand_t       Cmd;
-    _FsWriteResponse_t      Rsp;
+	_FsWriteCommand_t	    Cmd;
+	_FsWriteResponse_t	    Rsp;
 }_SlFsWriteMsg_u;
+
+
+#if _SL_INCLUDE_FUNC(sl_FsWrite)
 
 const _SlCmdCtrl_t _SlFsWriteCmdCtrl =
 {
@@ -280,9 +286,7 @@ const _SlCmdCtrl_t _SlFsWriteCmdCtrl =
     sizeof(_FsWriteResponse_t)
 };
 
-
-#if _SL_INCLUDE_FUNC(sl_FsWrite)
-_i32 sl_FsWrite(_i32 FileHdl, _u32 Offset, _u8*  pData, _u32 Len)
+_i32 sl_FsWrite(const _i32 FileHdl,_u32 Offset, _u8*  pData,_u32 Len)
 {
     _SlFsWriteMsg_u     Msg;
     _SlCmdExt_t         ExtCtrl;
@@ -343,9 +347,13 @@ _i32 sl_FsWrite(_i32 FileHdl, _u32 Offset, _u8*  pData, _u32 Len)
 /*****************************************************************************/
 typedef union
 {
-    _FsGetInfoCommand_t     Cmd;
-    _FsGetInfoResponse_t    Rsp;
+	_FsGetInfoCommand_t	    Cmd;
+	_FsGetInfoResponse_t    Rsp;
 }_SlFsGetInfoMsg_u;
+
+
+#if _SL_INCLUDE_FUNC(sl_FsGetInfo)
+
 
 const _SlCmdCtrl_t _SlFsGetInfoCmdCtrl =
 {
@@ -354,15 +362,14 @@ const _SlCmdCtrl_t _SlFsGetInfoCmdCtrl =
     sizeof(_FsGetInfoResponse_t)
 };
 
-#if _SL_INCLUDE_FUNC(sl_FsGetInfo)
-_i16 sl_FsGetInfo(_u8 *pFileName,_u32 Token,SlFsFileInfo_t* pFsFileInfo)
+_i16 sl_FsGetInfo(const _u8 *pFileName,const _u32 Token,SlFsFileInfo_t* pFsFileInfo)
 {
     _SlFsGetInfoMsg_u    Msg;
     _SlCmdExt_t          CmdExt;
 
     CmdExt.TxPayloadLen = (_sl_Strlen(pFileName)+4) & (~3); /* add 4: 1 for NULL and the 3 for align  */
     CmdExt.RxPayloadLen = 0;
-    CmdExt.pTxPayload   = pFileName;
+    CmdExt.pTxPayload   = (_u8*)pFileName;
     CmdExt.pRxPayload   = NULL;
     Msg.Cmd.Token       = Token;
 
@@ -384,9 +391,12 @@ _i16 sl_FsGetInfo(_u8 *pFileName,_u32 Token,SlFsFileInfo_t* pFsFileInfo)
 /*****************************************************************************/
 typedef union
 {
-    _FsDeleteCommand_t          Cmd;
-    _FsDeleteResponse_t         Rsp;
+	_FsDeleteCommand_t   	    Cmd;
+	_FsDeleteResponse_t	        Rsp;
 }_SlFsDeleteMsg_u;
+
+
+#if _SL_INCLUDE_FUNC(sl_FsDel)
 
 const _SlCmdCtrl_t _SlFsDeleteCmdCtrl =
 {
@@ -395,15 +405,14 @@ const _SlCmdCtrl_t _SlFsDeleteCmdCtrl =
     sizeof(_FsDeleteResponse_t)
 };
 
-#if _SL_INCLUDE_FUNC(sl_FsDel)
-_i16 sl_FsDel(_u8 *pFileName,_u32 Token)
+_i16 sl_FsDel(const _u8 *pFileName,const _u32 Token)
 {
     _SlFsDeleteMsg_u Msg;
     _SlCmdExt_t          CmdExt;
 
     CmdExt.TxPayloadLen = (_sl_Strlen(pFileName)+4) & (~3); /* add 4: 1 for NULL and the 3 for align */
     CmdExt.RxPayloadLen = 0;
-    CmdExt.pTxPayload   = pFileName;
+    CmdExt.pTxPayload   = (_u8*)pFileName;
     CmdExt.pRxPayload   = NULL;
     Msg.Cmd.Token       = Token;
 

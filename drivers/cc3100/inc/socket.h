@@ -34,13 +34,15 @@
  *
 */
  
-#ifndef __SL_SOCKET_H__
-#define __SL_SOCKET_H__
-
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
 #include "simplelink.h"
+
+#ifndef __SL_SOCKET_H__
+#define __SL_SOCKET_H__
+
+
 
 
 #ifdef    __cplusplus
@@ -155,6 +157,60 @@ extern "C" {
 #define SL_ESEC_ALT_NAME_E                    (-177)  /* alt name size problem, too big */
 #define SL_ESEC_AES_GCM_AUTH_E                (-180)  /* AES-GCM Authentication check failure */
 #define SL_ESEC_AES_CCM_AUTH_E                (-181)  /* AES-CCM Authentication check failure */
+#define SL_SOCKET_ERROR_E                     (-208)  /* Error state on socket */
+
+#define SL_ESEC_MEMORY_ERROR                  (-203)  /* out of memory            */
+#define SL_ESEC_VERIFY_FINISHED_ERROR         (-204)  /* verify problem on finished */
+#define SL_ESEC_VERIFY_MAC_ERROR              (-205)  /* verify mac problem       */
+#define SL_ESEC_UNKNOWN_HANDSHAKE_TYPE        (-207)  /* weird handshake type     */
+#define SL_ESEC_SOCKET_ERROR_E                (-208)  /* error state on socket    */
+#define SL_ESEC_SOCKET_NODATA                 (-209)  /* expected data, not there */
+#define SL_ESEC_INCOMPLETE_DATA               (-210)  /* don't have enough data to complete task            */
+#define SL_ESEC_UNKNOWN_RECORD_TYPE           (-211)  /* unknown type in record hdr */
+#define SL_ESEC_FATAL_ERROR                   (-213)  /* recvd alert fatal error  */
+#define SL_ESEC_ENCRYPT_ERROR                 (-214)  /* error during encryption  */
+#define SL_ESEC_NO_PEER_KEY                   (-216)  /* need peer's key          */
+#define SL_ESEC_NO_PRIVATE_KEY                (-217)  /* need the private key     */
+#define SL_ESEC_RSA_PRIVATE_ERROR             (-218)  /* error during rsa priv op */
+#define SL_ESEC_NO_DH_PARAMS                  (-219)  /* server missing DH params */
+#define SL_ESEC_BUILD_MSG_ERROR               (-220)  /* build message failure    */
+#define SL_ESEC_BAD_HELLO                     (-221)  /* client hello malformed   */
+#define SL_ESEC_DOMAIN_NAME_MISMATCH          (-222)  /* peer subject name mismatch */
+#define SL_ESEC_WANT_READ                     (-223)  /* want read, call again    */
+#define SL_ESEC_NOT_READY_ERROR               (-224)  /* handshake layer not ready */
+#define SL_ESEC_PMS_VERSION_ERROR             (-225)  /* pre m secret version error */
+#define SL_ESEC_VERSION_ERROR                 (-226)  /* record layer version error */
+#define SL_ESEC_WANT_WRITE                    (-227)  /* want write, call again   */
+#define SL_ESEC_BUFFER_ERROR                  (-228)  /* malformed buffer input   */
+#define SL_ESEC_VERIFY_CERT_ERROR             (-229)  /* verify cert error        */
+#define SL_ESEC_VERIFY_SIGN_ERROR             (-230)  /* verify sign error        */
+
+#define SL_ESEC_LENGTH_ERROR                  (-241)  /* record layer length error */
+#define SL_ESEC_PEER_KEY_ERROR                (-242)  /* can't decode peer key */
+#define SL_ESEC_ZERO_RETURN                   (-243)  /* peer sent close notify */
+#define SL_ESEC_SIDE_ERROR                    (-244)  /* wrong client/server type */
+#define SL_ESEC_NO_PEER_CERT                  (-245)  /* peer didn't send key */
+#define SL_ESEC_ECC_CURVETYPE_ERROR           (-250)  /* Bad ECC Curve Type */
+#define SL_ESEC_ECC_CURVE_ERROR               (-251)  /* Bad ECC Curve */
+#define SL_ESEC_ECC_PEERKEY_ERROR             (-252)  /* Bad Peer ECC Key */
+#define SL_ESEC_ECC_MAKEKEY_ERROR             (-253)  /* Bad Make ECC Key */
+#define SL_ESEC_ECC_EXPORT_ERROR              (-254)  /* Bad ECC Export Key */
+#define SL_ESEC_ECC_SHARED_ERROR              (-255)  /* Bad ECC Shared Secret */
+#define SL_ESEC_NOT_CA_ERROR                  (-257)  /* Not a CA cert error */
+#define SL_ESEC_BAD_PATH_ERROR                (-258)  /* Bad path for opendir */
+#define SL_ESEC_BAD_CERT_MANAGER_ERROR        (-259)  /* Bad Cert Manager */
+#define SL_ESEC_MAX_CHAIN_ERROR               (-268)  /* max chain depth exceeded */
+#define SL_ESEC_SUITES_ERROR                  (-271)  /* suites pointer error */
+#define SL_ESEC_SSL_NO_PEM_HEADER             (-272)  /* no PEM header found */
+#define SL_ESEC_OUT_OF_ORDER_E                (-273)  /* out of order message */
+#define SL_ESEC_SANITY_CIPHER_E               (-275)  /* sanity check on cipher error */
+#define SL_ESEC_GEN_COOKIE_E                  (-277)  /* Generate Cookie Error */
+#define SL_ESEC_NO_PEER_VERIFY                (-278)  /* Need peer cert verify Error */
+#define SL_ESEC_UNKNOWN_SNI_HOST_NAME_E       (-281)  /* Unrecognized host name Error */
+/* begin negotiation parameter errors */
+#define SL_ESEC_UNSUPPORTED_SUITE     (-290)            /* unsupported cipher suite */
+#define SL_ESEC_MATCH_SUITE_ERROR      (-291 )            /* can't match cipher suite */
+
 /* ssl tls security start with -300 offset */
 #define SL_ESEC_CLOSE_NOTIFY                  (-300) /* ssl/tls alerts */   
 #define SL_ESEC_UNEXPECTED_MESSAGE            (-310) /* ssl/tls alerts */   
@@ -262,7 +318,13 @@ extern "C" {
 #define SL_SEC_MASK_TLS_DHE_RSA_WITH_AES_256_CBC_SHA       (1 << 3)
 #define SL_SEC_MASK_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA     (1 << 4)
 #define SL_SEC_MASK_TLS_ECDHE_RSA_WITH_RC4_128_SHA         (1 << 5)
-#define SL_SEC_MASK_SECURE_DEFAULT                         ((SEC_MASK_TLS_ECDHE_RSA_WITH_RC4_128_SHA  <<  1)  -  1)
+#define SL_SEC_MASK_TLS_RSA_WITH_AES_128_CBC_SHA256              (1 << 6)
+#define SL_SEC_MASK_TLS_RSA_WITH_AES_256_CBC_SHA256              (1 << 7)
+#define SL_SEC_MASK_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256        (1 << 8)
+#define SL_SEC_MASK_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256      (1 << 9)
+
+
+#define SL_SEC_MASK_SECURE_DEFAULT                         ((SL_SEC_MASK_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256  <<  1)  -  1)
 
 #define SL_MSG_DONTWAIT                                   (0x00000008)  /* Nonblocking IO */
 
@@ -415,26 +477,39 @@ typedef struct
     _u32 NonblockingEnabled;/* 0 = disabled;1 = enabled;default = 1*/
 }SlSockNonblocking_t;
 
+
 typedef struct
 {
-    _u8   sd;
-    _u8   type;
-    _u16  val;
+  _u8   sd;
+  _u8   type;
+  _i16  val;
+  _u8*  pExtraInfo;
 } SlSocketAsyncEvent_t;
 
 typedef struct
 {
-   _i16          status;
-   _u16        sd;
-   SlSocketAsyncEvent_t socketAsyncEvent;
-} SlSockEventData_t;
+  _i16       status;
+  _u8        sd;
+  _u8        padding;
+} SlSockTxFailEventData_t;
+
+
+typedef union
+{
+  SlSockTxFailEventData_t   SockTxFailData;
+  SlSocketAsyncEvent_t      SockAsyncData;
+} SlSockEventData_u;
 
 
 typedef struct
 {
    _u32                    Event;
-   SlSockEventData_t       EventData;
+   SlSockEventData_u       socketAsyncEvent;
 } SlSockEvent_t;
+
+
+
+
 
 
 typedef struct
@@ -819,7 +894,7 @@ _i16 sl_Connect(_i16 sd, const SlSockAddr_t *addr, _i16 addrlen);
     \param[in]  nfds        the highest-numbered file descriptor in any of the
                             three sets, plus 1.
     \param[out] readsds     socket descriptors list for read monitoring and accept monitoring
-    \param[out] writesds    socket descriptors list for connect monitoring only, write monitoring is not supported
+    \param[out] writesds    socket descriptors list for connect monitoring only, write monitoring is not supported, non blocking connect is supported
     \param[out] exceptsds   socket descriptors list for exception monitoring, not supported.
     \param[in]  timeout     is an upper bound on the amount of time elapsed
                             before select() returns. Null or above 0xffff seconds means 

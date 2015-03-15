@@ -34,14 +34,16 @@
  *
 */
 
-#ifndef __NETAPP_H__
-#define    __NETAPP_H__
-
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
 
 #include "simplelink.h"
+
+#ifndef __NETAPP_H__
+#define    __NETAPP_H__
+
+
 
 
 #ifdef    __cplusplus
@@ -356,7 +358,7 @@ typedef void (*P_SL_DEV_PING_CALLBACK)(SlPingReport_t*);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppStart)
-_i16 sl_NetAppStart(_u32 AppBitMap);
+_i16 sl_NetAppStart(const _u32 AppBitMap);
 #endif
 /*!
     \brief Stops a network application
@@ -382,7 +384,7 @@ _i16 sl_NetAppStart(_u32 AppBitMap);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppStop)
-_i16 sl_NetAppStop(_u32 AppBitMap);
+_i16 sl_NetAppStop(const _u32 AppBitMap);
 #endif
 
 /*!
@@ -417,6 +419,8 @@ _i16 sl_NetAppStop(_u32 AppBitMap);
             In this case, MAX_CONCURRENT_ACTIONS can be increased (result in memory increase) or try
             again later to issue the command.
     \warning
+           In case an IP address in a string format is set as input, without any prefix (e.g. "1.2.3.4") the device will not 
+           try to access the DNS and it will return the input address on the 'out_ip_addr' field 
     \par  Example:
     \code
     _u32 DestinationIP;
@@ -430,7 +434,7 @@ _i16 sl_NetAppStop(_u32 AppBitMap);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppDnsGetHostByName)
-_i16 sl_NetAppDnsGetHostByName(_i8 * hostname, _u16 usNameLen, _u32*  out_ip_addr,_u8 family );
+_i16 sl_NetAppDnsGetHostByName(_i8 * hostname,const  _u16 usNameLen, _u32*  out_ip_addr,const _u8 family );
 #endif
 
 /*!
@@ -490,8 +494,8 @@ _i16 sl_NetAppDnsGetHostByName(_i8 * hostname, _u16 usNameLen, _u32*  out_ip_add
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppDnsGetHostByService)
 _i32 sl_NetAppDnsGetHostByService(_i8  *pServiceName, /*  string containing all (or only part): name + subtype + service */
-                                  _u8  ServiceLen,
-                                  _u8  Family,        /*  4-IPv4 , 16-IPv6  */
+                                  const _u8  ServiceLen,
+                                  const _u8  Family,        /*  4-IPv4 , 16-IPv6  */
                                   _u32 pAddr[], 
                                   _u32 *pPort,
                                   _u16 *pTextLen,     /*  in: max len , out: actual len */
@@ -549,11 +553,11 @@ _i32 sl_NetAppDnsGetHostByService(_i8  *pServiceName, /*  string containing all 
 */
 
 #if _SL_INCLUDE_FUNC(sl_NetAppGetServiceList)
-_i16 sl_NetAppGetServiceList(_u8   IndexOffest,
-                             _u8   MaxServiceCount,
-                             _u8   Flags,
-                             _i8   *pBuffer,
-                             _u32  RxBufferLength
+_i16 sl_NetAppGetServiceList(const _u8   IndexOffest,
+                             const _u8   MaxServiceCount,
+                             const  _u8   Flags,
+                                   _i8   *pBuffer,
+                             const _u32  RxBufferLength
                             );
 
 #endif
@@ -582,7 +586,7 @@ _i16 sl_NetAppGetServiceList(_u8   IndexOffest,
         The size of the service length should be smaller than 255.
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppMDNSUnRegisterService)
-_i16 sl_NetAppMDNSUnRegisterService(const _i8 *pServiceName,_u8 ServiceNameLen);
+_i16 sl_NetAppMDNSUnRegisterService(const _i8 *pServiceName,const _u8 ServiceNameLen);
 #endif
 
 /*!
@@ -651,12 +655,12 @@ _i16 sl_NetAppMDNSUnRegisterService(const _i8 *pServiceName,_u8 ServiceNameLen);
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppMDNSRegisterService)
 _i16 sl_NetAppMDNSRegisterService( const _i8*  pServiceName, 
-                                   _u8         ServiceNameLen,
+                                   const _u8   ServiceNameLen,
                                    const _i8*  pText,
-                                   _u8         TextLen,
-                                   _u16        Port,
-                                   _u32        TTL,
-                                   _u32        Options);
+                                   const _u8   TextLen,
+                                   const _u16  Port,
+                                   const _u32  TTL,
+                                         _u32  Options);
 #endif
 
 /*!
@@ -720,7 +724,7 @@ _i16 sl_NetAppMDNSRegisterService( const _i8*  pServiceName,
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppPingStart)
-_i16 sl_NetAppPingStart(SlPingStartCommand_t* pPingParams,_u8 family,SlPingReport_t *pReport,const P_SL_DEV_PING_CALLBACK pPingCallback);
+_i16 sl_NetAppPingStart(const SlPingStartCommand_t* pPingParams,const _u8 family,SlPingReport_t *pReport,const P_SL_DEV_PING_CALLBACK pPingCallback);
 #endif
 
 /*!
@@ -732,10 +736,27 @@ _i16 sl_NetAppPingStart(SlPingStartCommand_t* pPingParams,_u8 family,SlPingRepor
     \param[in] AppId          Application id, could be one of the following: \n
                               - SL_NET_APP_HTTP_SERVER_ID
                               - SL_NET_APP_DHCP_SERVER_ID
-                              - SL_NET_APP_DHCP_SERVER_ID
+                              - SL_NET_APP_MDNS_ID
+                              - SL_NET_APP_DEVICE_CONFIG_ID
 
     \param[in] SetOptions     set option, could be one of the following: \n
-                              NETAPP_SET_BASIC_OPT
+                              - SL_NET_APP_DHCP_SERVER_ID
+                                 - NETAPP_SET_DHCP_SRV_BASIC_OPT
+                              - SL_NET_APP_HTTP_SERVER_ID
+                                 - NETAPP_SET_GET_HTTP_OPT_PORT_NUMBER
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_CHECK
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_NAME
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_PASSWORD
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_REALM
+                                 - NETAPP_SET_GET_HTTP_OPT_ROM_PAGES_ACCESS
+                              - SL_NET_APP_MDNS_ID
+                                 - NETAPP_SET_GET_MDNS_CONT_QUERY_OPT
+                                 - NETAPP_SET_GET_MDNS_QEVETN_MASK_OPT
+                                 - NETAPP_SET_GET_MDNS_TIMING_PARAMS_OPT
+                              - SL_NET_APP_DEVICE_CONFIG_ID
+                                 - NETAPP_SET_GET_DEV_CONF_OPT_DEVICE_URN
+                                 - NETAPP_SET_GET_DEV_CONF_OPT_DOMAIN_NAME
+
 
     \param[in] OptionLen       option structure length
 
@@ -770,7 +791,7 @@ _i16 sl_NetAppPingStart(SlPingStartCommand_t* pPingParams,_u8 family,SlPingRepor
 
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppSet)
-_i32 sl_NetAppSet(_u8 AppId ,_u8 Option,_u8 OptionLen, _u8 *pOptionValue);
+_i32 sl_NetAppSet(const _u8 AppId ,const _u8 Option,const _u8 OptionLen,const _u8 *pOptionValue);
 #endif
 
 /*!
@@ -782,9 +803,27 @@ _i32 sl_NetAppSet(_u8 AppId ,_u8 Option,_u8 OptionLen, _u8 *pOptionValue);
     \param[in] AppId          Application id, could be one of the following: \n
                               - SL_NET_APP_HTTP_SERVER_ID
                               - SL_NET_APP_DHCP_SERVER_ID
+                              - SL_NET_APP_MDNS_ID
+                              - SL_NET_APP_DEVICE_CONFIG_ID
 
-    \param[in] Options        Get option, could be one of the following: \n
-                              NETAPP_SET_BASIC_OPT
+    \param[in] SetOptions     set option, could be one of the following: \n
+                              - SL_NET_APP_DHCP_SERVER_ID
+                                 - NETAPP_SET_DHCP_SRV_BASIC_OPT
+                              - SL_NET_APP_HTTP_SERVER_ID
+                                 - NETAPP_SET_GET_HTTP_OPT_PORT_NUMBER
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_CHECK
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_NAME
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_PASSWORD
+                                 - NETAPP_SET_GET_HTTP_OPT_AUTH_REALM
+                                 - NETAPP_SET_GET_HTTP_OPT_ROM_PAGES_ACCESS
+                              - SL_NET_APP_MDNS_ID
+                                 - NETAPP_SET_GET_MDNS_CONT_QUERY_OPT
+                                 - NETAPP_SET_GET_MDNS_QEVETN_MASK_OPT
+                                 - NETAPP_SET_GET_MDNS_TIMING_PARAMS_OPT
+                              - SL_NET_APP_DEVICE_CONFIG_ID
+                                 - NETAPP_SET_GET_DEV_CONF_OPT_DEVICE_URN
+                                 - NETAPP_SET_GET_DEV_CONF_OPT_DOMAIN_NAME
+
 
     \param[in] OptionLen     The length of the allocated memory as input, when the
                                         function complete, the value of this parameter would be
@@ -824,7 +863,7 @@ _i32 sl_NetAppSet(_u8 AppId ,_u8 Option,_u8 OptionLen, _u8 *pOptionValue);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_NetAppGet)
-_i32 sl_NetAppGet(_u8 AppId, _u8 Option,_u8 *pOptionLen, _u8 *pOptionValue);
+_i32 sl_NetAppGet(const _u8 AppId,const  _u8 Option,_u8 *pOptionLen, _u8 *pOptionValue);
 #endif
 
 

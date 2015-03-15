@@ -33,14 +33,16 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
 */
-    
-#ifndef __NETCFG_H__
-#define __NETCFG_H__
 
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
 #include "simplelink.h"
+
+    
+#ifndef __NETCFG_H__
+#define __NETCFG_H__
+
 
 #ifdef    __cplusplus
 extern "C" {
@@ -182,7 +184,7 @@ typedef struct
    
 */
 #if _SL_INCLUDE_FUNC(sl_NetCfgSet)
-_i32 sl_NetCfgSet(_u8 ConfigId ,_u8 ConfigOpt, _u8 ConfigLen, _u8 *pValues);
+_i32 sl_NetCfgSet(const _u8 ConfigId,const _u8 ConfigOpt,const _u8 ConfigLen,const _u8 *pValues);
 #endif
 
 
@@ -262,7 +264,7 @@ _i32 sl_NetCfgSet(_u8 ConfigId ,_u8 ConfigOpt, _u8 ConfigLen, _u8 *pValues);
    
 */
 #if _SL_INCLUDE_FUNC(sl_NetCfgGet)
-_i32 sl_NetCfgGet(_u8 ConfigId ,_u8 *pConfigOpt, _u8 *pConfigLen, _u8 *pValues);
+_i32 sl_NetCfgGet(const _u8 ConfigId ,_u8 *pConfigOpt, _u8 *pConfigLen, _u8 *pValues);
 #endif
 
 /*!

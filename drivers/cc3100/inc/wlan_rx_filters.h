@@ -34,14 +34,16 @@
  *
 */
 
-#ifndef RX_FILTERS_PREPROCESSOR_CLI_IF_H_
-#define RX_FILTERS_PREPROCESSOR_CLI_IF_H_
-
 
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
 #include "simplelink.h"
+
+#ifndef RX_FILTERS_PREPROCESSOR_CLI_IF_H_
+#define RX_FILTERS_PREPROCESSOR_CLI_IF_H_
+
+
 
 #ifdef  __cplusplus
 extern "C" {

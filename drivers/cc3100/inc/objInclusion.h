@@ -168,25 +168,25 @@ extern "C" {
 #define _SL_INCLUDE_FUNC(Name)		(_SL_INC_##Name)
 
 /* Driver */
-#define _SL_INC_sl_NetAppStart          __nap
+#define _SL_INC_sl_NetAppStart          __nap__ext
+#define _SL_INC_sl_NetAppStop           __nap__ext
 
-#define _SL_INC_sl_NetAppStop           __nap
-
-#define _SL_INC_sl_NetAppDnsGetHostByName     __nap__clt
+#define _SL_INC_sl_NetAppDnsGetHostByName   __nap__clt
 
 
-#define _SL_INC_sl_NetAppDnsGetHostByService			__nap__clt
-#define _SL_INC_sl_NetAppMDNSRegisterService		__nap__clt
-#define _SL_INC_sl_NetAppMDNSUnRegisterService		__nap__clt
-#define _SL_INC_sl_NetAppMDNSRegisterUnregisterService	__nap__clt
-#define _SL_INC_sl_NetAppGetServiceList	                __nap__clt
+#define _SL_INC_sl_NetAppDnsGetHostByService			__nap__ext
+#define _SL_INC_sl_NetAppMDNSRegisterService		    __nap__ext
+#define _SL_INC_sl_NetAppMDNSUnRegisterService		    __nap__ext
+#define _SL_INC_sl_NetAppMDNSRegisterUnregisterService	__nap__ext
+#define _SL_INC_sl_NetAppGetServiceList	                __nap__ext
 	
 
 #define _SL_INC_sl_DnsGetHostByAddr     __nap__ext
+#define _SL_INC_sl_NetAppPingStart      __nap__ext
+#define _SL_INC_sl_NetAppPingReport     __nap__ext
+#define _SL_INC_sl_NetAppSet            __nap__ext
+#define _SL_INC_sl_NetAppGet            __nap__ext
 
-#define _SL_INC_sl_NetAppPingStart      __nap
-
-#define _SL_INC_sl_NetAppPingReport      __nap
 
 /* FS */
 #define _SL_INC_sl_FsOpen            __nvm
@@ -210,14 +210,11 @@ extern "C" {
 
 #define _SL_INC_sl_NetCfgSet          __ncg
 
-#define _SL_INC_sl_NetAppSet            __nap
-
-#define _SL_INC_sl_NetAppGet            __nap
 
 /* socket */
 #define _SL_INC_sl_Socket               __sck
 
-#define _SL_INC_sl_Close                __sck__ext
+#define _SL_INC_sl_Close                __sck
 
 #define _SL_INC_sl_Accept               __sck__srv
 
@@ -306,7 +303,7 @@ extern "C" {
 #define _SL_INC_sl_StatusGet            __dev
 
 #ifdef SL_IF_TYPE_UART  
-#define _SL_INC_sl_UartSetMode			__dev
+#define _SL_INC_sl_UartSetMode	        __dev__ext
 #endif
 
 #define _SL_INC_sl_EventMaskGet         __dev__ext

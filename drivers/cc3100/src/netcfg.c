@@ -52,6 +52,8 @@ typedef union
     _BasicResponse_t   Rsp;
 }_SlNetCfgMsgSet_u;
 
+#if _SL_INCLUDE_FUNC(sl_NetCfgSet)
+
 const _SlCmdCtrl_t _SlNetCfgSetCmdCtrl =
 {
     SL_OPCODE_DEVICE_NETCFG_SET_COMMAND,
@@ -59,16 +61,15 @@ const _SlCmdCtrl_t _SlNetCfgSetCmdCtrl =
     sizeof(_BasicResponse_t)
 };
 
-#if _SL_INCLUDE_FUNC(sl_NetCfgSet)
-_i32 sl_NetCfgSet(_u8 ConfigId ,_u8 ConfigOpt,_u8 ConfigLen, _u8 *pValues)
+_i32 sl_NetCfgSet(const _u8 ConfigId ,const _u8 ConfigOpt,const _u8 ConfigLen,const _u8 *pValues)
 {
     _SlNetCfgMsgSet_u         Msg;
     _SlCmdExt_t               CmdExt;
 
+
+    _SlDrvResetCmdExt(&CmdExt);
     CmdExt.TxPayloadLen = (ConfigLen+3) & (~3);
-    CmdExt.RxPayloadLen = 0;
     CmdExt.pTxPayload = (_u8 *)pValues;
-    CmdExt.pRxPayload = NULL;
 
 
     Msg.Cmd.ConfigId    = ConfigId;
@@ -91,6 +92,8 @@ typedef union
     _NetCfgSetGet_t	    Rsp;
 }_SlNetCfgMsgGet_u;
 
+#if _SL_INCLUDE_FUNC(sl_NetCfgGet)
+
 const _SlCmdCtrl_t _SlNetCfgGetCmdCtrl =
 {
     SL_OPCODE_DEVICE_NETCFG_GET_COMMAND,
@@ -98,8 +101,7 @@ const _SlCmdCtrl_t _SlNetCfgGetCmdCtrl =
     sizeof(_NetCfgSetGet_t)
 };
 
-#if _SL_INCLUDE_FUNC(sl_NetCfgGet)
-_i32 sl_NetCfgGet(_u8 ConfigId, _u8 *pConfigOpt,_u8 *pConfigLen, _u8 *pValues)
+_i32 sl_NetCfgGet(const _u8 ConfigId, _u8 *pConfigOpt,_u8 *pConfigLen, _u8 *pValues)
 {
     _SlNetCfgMsgGet_u         Msg;
     _SlCmdExt_t               CmdExt;
@@ -108,11 +110,10 @@ _i32 sl_NetCfgGet(_u8 ConfigId, _u8 *pConfigOpt,_u8 *pConfigLen, _u8 *pValues)
     {
         return SL_EZEROLEN;
     }
-    CmdExt.TxPayloadLen = 0;
+
+    _SlDrvResetCmdExt(&CmdExt);
     CmdExt.RxPayloadLen = *pConfigLen;
-    CmdExt.pTxPayload = NULL;
     CmdExt.pRxPayload = (_u8 *)pValues;
-    CmdExt.ActualRxPayloadLen = 0;
     Msg.Cmd.ConfigLen    = *pConfigLen;
     Msg.Cmd.ConfigId     = ConfigId;
 
@@ -128,8 +129,15 @@ _i32 sl_NetCfgGet(_u8 ConfigId, _u8 *pConfigOpt,_u8 *pConfigLen, _u8 *pValues)
     }
     if (CmdExt.RxPayloadLen < CmdExt.ActualRxPayloadLen) 
     {
-        *pConfigLen = (_u8)CmdExt.RxPayloadLen;
-        return SL_ESMALLBUF;
+         *pConfigLen = (_u8)CmdExt.RxPayloadLen;
+         if( SL_MAC_ADDRESS_GET == ConfigId )
+         {
+           return SL_RET_CODE_OK;  /* sp fix */
+         }
+         else
+         {
+           return SL_ESMALLBUF;
+         }
     }
     else
     {

@@ -33,15 +33,17 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
 */
-    
-#ifndef __FS_H__
-#define __FS_H__
 
 /*****************************************************************************/
 /* Include files                                                             */
 /*****************************************************************************/
 
 #include "simplelink.h"
+    
+#ifndef __FS_H__
+#define __FS_H__
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -180,7 +182,7 @@ typedef enum
    _FS_FILE_OPEN_FLAG_NO_SIGNATURE_TEST = 0x4,  /* Relevant to secure file only  */
    _FS_FILE_OPEN_FLAG_STATIC  =           0x8,  /*  Relevant to secure file only */
    _FS_FILE_OPEN_FLAG_VENDOR  =           0x10, /*  Relevant to secure file only */
-   _FS_FILE_PUBLIC_WRITE =                0x20, /* Relevant to secure file only, the file can be opened for write without Token */
+   _FS_FILE_PUBLIC_WRITE=                 0x20, /* Relevant to secure file only, the file can be opened for write without Token */
    _FS_FILE_PUBLIC_READ =                 0x40  /* Relevant to secure file only, the file can be opened for read without Token  */
 }SlFileOpenFlags_e;
 
@@ -256,7 +258,7 @@ _u32 _sl_GetCreateFsMode(_u32 maxSizeInBytes,_u32 accessFlags);
      \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_FsOpen)
-_i32 sl_FsOpen(_u8 *pFileName,_u32 AccessModeAndMaxSize,_u32 *pToken,_i32 *pFileHandle);
+_i32 sl_FsOpen(const _u8 *pFileName,const _u32 AccessModeAndMaxSize,_u32 *pToken,_i32 *pFileHandle);
 #endif
 
 /*!
@@ -279,7 +281,7 @@ _i32 sl_FsOpen(_u8 *pFileName,_u32 AccessModeAndMaxSize,_u32 *pToken,_i32 *pFile
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_FsClose)
-_i16 sl_FsClose(_i32 FileHdl,_u8* pCeritificateFileName,_u8* pSignature,_u32 SignatureLen);
+_i16 sl_FsClose(const _i32 FileHdl,const _u8* pCeritificateFileName,const _u8* pSignature,const _u32 SignatureLen);
 #endif
 
 /*!
@@ -301,7 +303,7 @@ _i16 sl_FsClose(_i32 FileHdl,_u8* pCeritificateFileName,_u8* pSignature,_u32 Sig
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_FsRead)
-_i32 sl_FsRead(_i32 FileHdl,_u32 Offset ,_u8*  pData,_u32 Len);
+_i32 sl_FsRead(const _i32 FileHdl,_u32 Offset ,_u8*  pData,_u32 Len);
 #endif
 
 /*!
@@ -323,7 +325,7 @@ _i32 sl_FsRead(_i32 FileHdl,_u32 Offset ,_u8*  pData,_u32 Len);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_FsWrite)
-_i32 sl_FsWrite(_i32 FileHdl,_u32 Offset,_u8*  pData,_u32 Len);
+_i32 sl_FsWrite(const _i32 FileHdl,_u32 Offset,_u8*  pData,_u32 Len);
 #endif
 
 /*!
@@ -344,7 +346,7 @@ _i32 sl_FsWrite(_i32 FileHdl,_u32 Offset,_u8*  pData,_u32 Len);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_FsGetInfo)
-_i16 sl_FsGetInfo(_u8 *pFileName,_u32 Token,SlFsFileInfo_t* pFsFileInfo);
+_i16 sl_FsGetInfo(const _u8 *pFileName,const _u32 Token,SlFsFileInfo_t* pFsFileInfo);
 #endif
 
 /*!
@@ -363,7 +365,7 @@ _i16 sl_FsGetInfo(_u8 *pFileName,_u32 Token,SlFsFileInfo_t* pFsFileInfo);
     \endcode
 */
 #if _SL_INCLUDE_FUNC(sl_FsDel)
-_i16 sl_FsDel(_u8 *pFileName,_u32 Token);
+_i16 sl_FsDel(const _u8 *pFileName,const _u32 Token);
 #endif
 /*!
 
