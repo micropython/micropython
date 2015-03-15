@@ -40,20 +40,16 @@
 #include "simplelink.h"
 
 
-static _SlLockObj_t hash_LockObj;
-
-
+/******************************************************************************
+ DEFINE PUBLIC FUNCTIONS
+ ******************************************************************************/
 void HASH_Init (void) {
     // Enable the Data Hashing and Transform Engine
     MAP_PRCMPeripheralClkEnable(PRCM_DTHE, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-    sl_LockObjCreate(&hash_LockObj, "HashLock");
+    MAP_PRCMPeripheralReset(PRCM_DTHE);
 }
 
 void HASH_SHAMD5Start (uint32_t algo, uint32_t blocklen) {
-    sl_LockObjLock (&hash_LockObj, SL_OS_WAIT_FOREVER);
-    // reset the perihperal before starting any new operation
-    MAP_PRCMPeripheralReset(PRCM_DTHE);
-
     // wait until the context is ready
     while ((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_CONTEXT_READY) == 0);
 
@@ -79,5 +75,4 @@ void HASH_SHAMD5Read (uint8_t *hash) {
     while((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_OUTPUT_READY) == 0);
     // read the result
     MAP_SHAMD5ResultRead(SHAMD5_BASE, hash);
-    sl_LockObjUnlock (&hash_LockObj);
 }
