@@ -38,11 +38,6 @@
 
 
 /******************************************************************************
- DECLARE PRIVATE FUNCTIONS
- ******************************************************************************/
-STATIC mpcallback_obj_t *mpcallback_find (mp_obj_t parent);
-
-/******************************************************************************
  DEFINE PUBLIC DATA
  ******************************************************************************/
 const mp_arg_t mpcallback_init_args[] = {
@@ -71,6 +66,17 @@ mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_
     mpcallback_remove(self->parent);
     mp_obj_list_append(&MP_STATE_PORT(mpcallback_obj_list), self);
     return self;
+}
+
+mpcallback_obj_t *mpcallback_find (mp_obj_t parent) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
+        // search for the object and then remove it
+        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+        if (callback_obj->parent == parent) {
+            return callback_obj;
+        }
+    }
+    return NULL;
 }
 
 void mpcallback_remove (const mp_obj_t parent) {
@@ -130,20 +136,6 @@ void mpcallback_handler (mp_obj_t self_in) {
         gc_unlock();
         enable_irq(primsk);
     }
-}
-
-/******************************************************************************
- DEFINE PRIVATE FUNCTIONS
- ******************************************************************************/
-STATIC mpcallback_obj_t *mpcallback_find (mp_obj_t parent) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
-        // search for the object and then remove it
-        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
-        if (callback_obj->parent == parent) {
-            return callback_obj;
-        }
-    }
-    return NULL;
 }
 
 /******************************************************************************/

@@ -35,7 +35,6 @@
 typedef struct {
     const mp_obj_base_t base;
     const qstr          name;
-    mp_obj_t            callback;
     const uint32_t      port;
     uint16_t            type;
     const uint8_t       bit;

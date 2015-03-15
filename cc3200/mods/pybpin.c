@@ -616,7 +616,8 @@ STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
 
     pin_obj_t *self = pos_args[0];
     // check if any parameters were passed
-    if (kw_args->used > 0 || self->callback == mp_const_none) {
+    mp_obj_t _callback = mpcallback_find(self);
+    if (kw_args->used > 0 || _callback == mp_const_none) {
         // convert the priority to the correct value
         uint priority = mpcallback_translate_priority (args[2].u_int);
         // verify the interrupt mode
@@ -720,15 +721,15 @@ STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
         }
 
         // all checks have passed, now we can create the callback
-        self->callback = mpcallback_new (self, args[1].u_obj, &pin_cb_methods);
+        _callback = mpcallback_new (self, args[1].u_obj, &pin_cb_methods);
         if (pwrmode & PYB_PWR_MODE_LPDS) {
-            pybsleep_set_gpio_lpds_callback (self->callback);
+            pybsleep_set_gpio_lpds_callback (_callback);
         }
 
         // enable the interrupt just before leaving
         pin_extint_enable(self);
     }
-    return self->callback;
+    return _callback;
 
 invalid_args:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
@@ -824,12 +825,13 @@ STATIC void GPIOA3IntHandler (void) {
 
 // common interrupt handler
 STATIC void EXTI_Handler(uint port) {
-    pin_obj_t *self;
     uint32_t bit = MAP_GPIOIntStatus(port, true);
-
     MAP_GPIOIntClear(port, bit);
-    if (NULL != (self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit))) {
-        mpcallback_handler(self->callback);
+
+    pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
+    mp_obj_t _callback = mpcallback_find(self);
+    if (_callback) {
+        mpcallback_handler(_callback);
     }
 }
 

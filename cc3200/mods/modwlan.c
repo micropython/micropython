@@ -79,7 +79,6 @@ typedef enum{
 
 typedef struct _wlan_obj_t {
     mp_obj_base_t   base;
-    mp_obj_t        callback;
     SlWlanMode_t    mode;
     uint32_t        status;
 
@@ -151,7 +150,6 @@ typedef struct _wlan_obj_t {
  DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC wlan_obj_t wlan_obj = {
-        .callback = mp_const_none,
         .mode = -1,
         .status = 0,
         .ip = 0,
@@ -646,7 +644,8 @@ STATIC mp_obj_t wlan_init_helper(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
 }
 
 STATIC void wlan_lpds_callback_enable (mp_obj_t self_in) {
-    pybsleep_set_wlan_lpds_callback (wlan_obj.callback);
+    mp_obj_t _callback = mpcallback_find(self_in);
+    pybsleep_set_wlan_lpds_callback (_callback);
 }
 
 STATIC void wlan_lpds_callback_disable (mp_obj_t self_in) {
@@ -922,8 +921,9 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
 
    wlan_obj_t *self = pos_args[0];
+   mp_obj_t _callback = mpcallback_find(self);
     // check if any parameters were passed
-    if (kw_args->used > 0) {
+    if (kw_args->used > 0 || _callback == mp_const_none) {
         // check the power mode
         if (args[4].u_int != PYB_PWR_MODE_LPDS) {
             // throw an exception since WLAN only supports LPDS mode
@@ -931,12 +931,12 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         }
 
         // create the callback
-        self->callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods);
+        _callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods);
 
         // enable network wakeup
-        pybsleep_set_wlan_lpds_callback (self->callback);
+        pybsleep_set_wlan_lpds_callback (_callback);
     }
-    return self->callback;
+    return _callback;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_callback_obj, 1, wlan_callback);
 

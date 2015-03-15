@@ -57,7 +57,6 @@
  DECLARE TYPES
  ******************************************************************************/
 typedef struct {
-    mp_obj_t callback;
     uint32_t alarm_sec;
     uint16_t alarm_msec;
     uint8_t  pwrmode;
@@ -66,7 +65,7 @@ typedef struct {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pybrtc_data_t   pybrtc_data = {.callback = mp_const_none};
+STATIC pybrtc_data_t pybrtc_data;
 STATIC const mp_cb_methods_t pybrtc_cb_methods;
 
 /******************************************************************************
@@ -159,7 +158,7 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
 /// \method callback(handler, intmode, value, priority, pwrmode)
 /// Creates a callback object associated with the real time clock
@@ -170,7 +169,8 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
 
     // check if any parameters were passed
-    if (kw_args->used > 0 || pybrtc_data.callback == mp_const_none) {
+    mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
+    if (kw_args->used > 0 || _callback == mp_const_none) {
         uint32_t seconds;
         uint16_t mseconds;
         // get the seconds and the milliseconds from the RTC
@@ -195,11 +195,10 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         pybrtc_data.alarm_msec = mseconds;
         pybrtc_data.pwrmode = args[4].u_int;
 
-        // create the callback
-        pybrtc_data.callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods);
+        // create the new callback
+        _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods);
     }
-
-    return pybrtc_data.callback;
+    return _callback;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_callback_obj, 1, pyb_rtc_callback);
 
