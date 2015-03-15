@@ -175,6 +175,7 @@ extern void AESKey2Set(uint32_t ui32Base, uint8_t *pui8Key,
                        uint32_t ui32Keysize);
 extern void AESKey3Set(uint32_t ui32Base, uint8_t *pui8Key);
 extern void AESIVSet(uint32_t ui32Base, uint8_t *pui8IVdata);
+extern void AESIVGet(uint32_t ui32Base, uint8_t *pui8IVdata);
 extern void AESTagRead(uint32_t ui32Base, uint8_t *pui8TagData);
 extern void AESDataLengthSet(uint32_t ui32Base, uint64_t ui64Length);
 extern void AESAuthDataLengthSet(uint32_t ui32Base, uint32_t ui32Length);

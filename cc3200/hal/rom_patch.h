@@ -84,4 +84,15 @@
 #undef ROM_GPIODirModeGet
 #undef ROM_GPIOIntTypeGet
 #undef ROM_I2CMasterInitExpClk
+#undef ROM_AESDataProcess
+#undef ROM_DESDataProcess
+#undef ROM_I2SEnable
+#undef ROM_I2SConfigSetExpClk
+#undef ROM_PinConfigSet
+#undef ROM_PRCMLPDSEnter
+#undef ROM_PRCMCC3200MCUInit
+#undef ROM_SDHostIntStatus
+#undef ROM_SDHostBlockCountSet
+#undef ROM_UARTModemControlSet
+#undef ROM_UARTModemControlClear
 

@@ -377,6 +377,36 @@ AESIVSet(uint32_t ui32Base, uint8_t *pui8IVdata)
     HWREG(ui32Base + AES_O_IV_IN_3) = *((uint32_t *)(pui8IVdata+12));
 }
 
+
+//*****************************************************************************
+//
+//! Reads the Initial Vector (IV) register, needed in some of the AES Modes.
+//!
+//! \param ui32Base is the base address of the AES module.
+//! \param pui8IVdata is pointer to an array of 16 bytes.
+//!
+//! This functions reads the initial vector registers in the AES module.
+//!
+//! \return None.
+//
+//*****************************************************************************
+void
+AESIVGet(uint32_t ui32Base, uint8_t *pui8IVdata)
+{
+    //
+    // Check the arguments.
+    //
+    ASSERT(ui32Base == AES_BASE);
+
+    //
+    // Write the initial vector registers.
+    //
+    *((uint32_t *)(pui8IVdata+ 0)) = HWREG(ui32Base + AES_O_IV_IN_0);
+    *((uint32_t *)(pui8IVdata+ 4)) = HWREG(ui32Base + AES_O_IV_IN_1);
+    *((uint32_t *)(pui8IVdata+ 8)) = HWREG(ui32Base + AES_O_IV_IN_2);
+    *((uint32_t *)(pui8IVdata+12)) = HWREG(ui32Base + AES_O_IV_IN_3);
+}
+
 //*****************************************************************************
 //
 //! Saves the tag registers to a user-defined location.
@@ -792,12 +822,12 @@ AESDataProcess(uint32_t ui32Base, uint8_t *pui8Src, uint8_t *pui8Dest,
     	//
     	// Write the data registers.
     	//
-    	AESDataWrite(ui32Base, pui8Src + (ui32Count*ui32BlkCount) ,ui32ByteCount);
+    	AESDataWrite(ui32Base, pui8Src + (16*ui32BlkCount) ,ui32ByteCount);
 
     	//
     	// Read the data registers.
     	//
-        AESDataRead(ui32Base, pui8Dest + (ui32Count*ui32BlkCount) ,ui32ByteCount);
+        AESDataRead(ui32Base, pui8Dest + (16*ui32BlkCount) ,ui32ByteCount);
     }
 
 

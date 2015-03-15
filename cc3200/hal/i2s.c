@@ -127,9 +127,16 @@ static void I2SGBLEnable(unsigned long ulBase, unsigned long ulFlag)
 void I2SEnable(unsigned long ulBase, unsigned long ulMode)
 {
   //
-  // Set FSYNC anc BitClk as output
+  // FSYNC and Bit clock are output only in master mode
   //
-  HWREG(ulBase + MCASP_O_PDIR) |= 0x14000000;
+  if( HWREG(ulBase + MCASP_O_ACLKXCTL) & 0x20)
+  {
+    //
+    // Set FSYNC anc BitClk as output
+    //
+    HWREG(ulBase + MCASP_O_PDIR) |= 0x14000000;
+  }
+
 
   if(ulMode & 0x2)
   {
@@ -159,18 +166,20 @@ void I2SEnable(unsigned long ulBase, unsigned long ulMode)
     I2SGBLEnable(ulBase, MCASP_GBL_RFSYNC);
   }
 
+
+  //
+  // Remove Tx  HCLK reset
+  //
+  I2SGBLEnable(ulBase, MCASP_GBL_XHCLK);
+
+  //
+  // Remove Tx XCLK reset
+  //
+  I2SGBLEnable(ulBase, MCASP_GBL_XCLK);
+
+
   if(ulMode & 0x1)
   {
-    //
-    // Remove Tx HCLK reset
-    //
-    I2SGBLEnable(ulBase, MCASP_GBL_XHCLK);
-
-    //
-    // Remove Tx XCLK reset
-    //
-    I2SGBLEnable(ulBase, MCASP_GBL_XCLK);
-
     //
     // Enable Tx SERDES(s)
     //
@@ -180,12 +189,12 @@ void I2SEnable(unsigned long ulBase, unsigned long ulMode)
     // Enable Tx state machine
     //
     I2SGBLEnable(ulBase, MCASP_GBL_XSM);
-
-    //
-    // Enable FSync generator
-    //
-    I2SGBLEnable(ulBase, MCASP_GBL_XFSYNC);
   }
+
+   //
+   // Enable FSync generator
+   //
+   I2SGBLEnable(ulBase, MCASP_GBL_XFSYNC);
 }
 
 //*****************************************************************************
@@ -390,8 +399,12 @@ long I2SDataGetNonBlocking(unsigned long ulBase, unsigned long ulDataLine,
 //! format.  The bit rate is provided in the \e ulBitClk parameter and the data
 //! format in the \e ulConfig parameter.
 //!
-//! The \e ulConfig parameter is the logical OR of two values: the slot size
-//! and the data read/write port select.
+//! The \e ulConfig parameter is the logical OR of three values: the slot size
+//! the data read/write port select, Master or Slave mode
+//!
+//! Follwoing selects the Master-Slave mode
+//! -\b I2S_MODE_MASTER
+//! -\b I2S_MODE_SLAVE
 //!
 //! Following selects the slot size:
 //! -\b I2S_SLOT_SIZE_24
@@ -409,6 +422,8 @@ void I2SConfigSetExpClk(unsigned long ulBase, unsigned long ulI2SClk,
 {
   unsigned long ulHClkDiv;
   unsigned long ulClkDiv;
+  unsigned long ulSlotSize;
+  unsigned long ulBitMask;
 
   //
   // Calculate clock dividers
@@ -429,39 +444,72 @@ void I2SConfigSetExpClk(unsigned long ulBase, unsigned long ulI2SClk,
     ulClkDiv = ((ulI2SClk/(ulBitClk * (ulHClkDiv + 1))) & 0x1F);
   }
 
-  HWREG(ulBase + MCASP_O_ACLKXCTL) = (0xA0|ulClkDiv);
+  //
+  //
+  //
+  ulClkDiv = ((ulConfig & I2S_MODE_SLAVE )?0x80:0xA0|ulClkDiv);
+
+  HWREG(ulBase + MCASP_O_ACLKXCTL) = ulClkDiv;
 
   HWREG(ulBase + MCASP_O_AHCLKXCTL) = (0x8000|ulHClkDiv);
 
   //
   // Write the Tx format register
   //
-  HWREG(ulBase + MCASP_O_TXFMT) = (0x18000 | (ulConfig & 0xFFFF));
+  HWREG(ulBase + MCASP_O_TXFMT) = (0x18000 | (ulConfig & 0x7FFF));
 
   //
   // Write the Rx format register
   //
-  HWREG(ulBase + MCASP_O_RXFMT) = (0x18000 | ((ulConfig >> 16) &0xFFFF));
+  HWREG(ulBase + MCASP_O_RXFMT) = (0x18000 | ((ulConfig >> 16) &0x7FFF));
 
   //
-  // Configure Tx FSync generator in I2S mode
+  // Check if in master mode
   //
-  HWREG(ulBase + MCASP_O_TXFMCTL) = 0x113;
+  if( ulConfig & I2S_MODE_SLAVE)
+  {
+    //
+    // Configure Tx FSync generator in I2S mode
+    //
+    HWREG(ulBase + MCASP_O_TXFMCTL) = 0x111;
+
+    //
+    // Configure Rx FSync generator in I2S mode
+    //
+    HWREG(ulBase + MCASP_O_RXFMCTL) = 0x111;
+  }
+  else
+  {
+    //
+    // Configure Tx FSync generator in I2S mode
+    //
+    HWREG(ulBase + MCASP_O_TXFMCTL) = 0x113;
+
+    //
+    // Configure Rx FSync generator in I2S mode
+    //
+    HWREG(ulBase + MCASP_O_RXFMCTL) = 0x113;
+  }
 
   //
-  // Configure Rx FSync generator in I2S mode
+  // Compute Slot Size
   //
-  HWREG(ulBase + MCASP_O_RXFMCTL) = 0x113;
+  ulSlotSize = ((((ulConfig & 0xFF) >> 4) + 1) * 2);
+
+  //
+  // Creat the bit mask
+  //
+  ulBitMask = (0xFFFFFFFF >> (32 - ulSlotSize));
 
   //
   // Set Tx bit valid mask
   //
-  HWREG(ulBase + MCASP_O_TXMASK) = 0xFFFFFFFF;
+  HWREG(ulBase + MCASP_O_TXMASK) = ulBitMask;
 
   //
   // Set Rx bit valid mask
   //
-  HWREG(ulBase + MCASP_O_RXMASK) = 0xFFFFFFFF;
+  HWREG(ulBase + MCASP_O_RXMASK) = ulBitMask;
 
   //
   // Set Tx slot valid mask
@@ -912,6 +960,48 @@ void I2SIntUnregister(unsigned long ulBase)
   //
   IntUnregister(INT_I2S);
 
+}
+
+//*****************************************************************************
+//
+//! Set the active slots for Trasmitter
+//!
+//! \param ulBase is the base address of the I2S module.
+//! \param ulActSlot is the bit-mask of activ slots
+//!
+//! This function sets the active slots for the transmitter. By default both
+//! the slots are active. The parameter \e ulActSlot is logical OR follwoing
+//! values:
+//! -\b I2S_ACT_SLOT_EVEN
+//! -\b I2S_ACT_SLOT_ODD
+//!
+//! \return None.
+//
+//*****************************************************************************
+void I2STxActiveSlotSet(unsigned long ulBase, unsigned long ulActSlot)
+{
+   HWREG(ulBase + MCASP_O_TXTDM) = ulActSlot;
+}
+
+//*****************************************************************************
+//
+//! Set the active slots for Receiver
+//!
+//! \param ulBase is the base address of the I2S module.
+//! \param ulActSlot is the bit-mask of activ slots
+//!
+//! This function sets the active slots for the receiver. By default both
+//! the slots are active. The parameter \e ulActSlot is logical OR follwoing
+//! values:
+//! -\b I2S_ACT_SLOT_EVEN
+//! -\b I2S_ACT_SLOT_ODD
+//!
+//! \return None.
+//
+//*****************************************************************************
+void I2SRxActiveSlotSet(unsigned long ulBase, unsigned long ulActSlot)
+{
+   HWREG(ulBase + MCASP_O_RXTDM) = ulActSlot;
 }
 
 //*****************************************************************************

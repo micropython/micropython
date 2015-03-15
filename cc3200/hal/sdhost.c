@@ -512,7 +512,7 @@ SDHostIntStatus(unsigned long ulBase)
   //
   // Get DMA done interrupt status
   //
-  ulIntStatus = HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_DMA_DONE_INT_MASK_SET);
+  ulIntStatus = HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_DMA_DONE_INT_STS_RAW);
   ulIntStatus = (ulIntStatus << 30);
 
   //
@@ -562,7 +562,7 @@ SDHostIntClear(unsigned long ulBase,unsigned long ulIntFlags)
 //! \param ulErrMask is the bit mask of card status errors to be enabled
 //!
 //! This function sets the card status error mask for response type R1, R1b,
-//! R5, R5b and R6 response. The parameter \ulErrMask is the bit mask of card
+//! R5, R5b and R6 response. The parameter \e ulErrMask is the bit mask of card
 //! status errors to be enabled, if the corresponding bits in the 'card status'
 //! field of a respose are set then the host controller indicates a card error
 //! interrupt status. Only bits referenced as type E (error) in status field in
@@ -732,7 +732,7 @@ SDHostBlockCountSet(unsigned long ulBase, unsigned short ulBlkCount)
   //
   // Set the number of blocks
   //
-  HWREG(ulBase + MMCHS_O_BLK) |= ((ulRegVal & 0x0000FFFF)|
+  HWREG(ulBase + MMCHS_O_BLK) = ((ulRegVal & 0x0000FFFF)|
                                   (ulBlkCount << 16));
 }
 

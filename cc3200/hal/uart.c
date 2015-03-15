@@ -1167,13 +1167,8 @@ UARTIntRegister(unsigned long ulBase, void (*pfnHandler)(void))
     //
     // Determine the interrupt number based on the UART port.
     //
-#if 1
-    ulInt = UARTIntNumberGet(ulBase);
-#else
 
-    ulInt = ((ulBase == UART0_BASE) ? INT_UART0 :
-             ((ulBase == UART1_BASE) ? INT_UART1 : INT_UART2));
-#endif
+    ulInt = UARTIntNumberGet(ulBase);
 
     //
     // Register the interrupt handler.
@@ -1216,12 +1211,7 @@ UARTIntUnregister(unsigned long ulBase)
     //
     // Determine the interrupt number based on the UART port.
     //
-#if 1
     ulInt = UARTIntNumberGet(ulBase);
-#else
-    ulInt = ((ulBase == UART0_BASE) ? INT_UART0 :
-             ((ulBase == UART1_BASE) ? INT_UART1 : INT_UART2));
-#endif
 
     //
     // Disable the interrupt.

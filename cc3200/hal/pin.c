@@ -334,7 +334,7 @@ void PinConfigSet(unsigned long ulPin,unsigned long  ulPinStrength,
     //
     // Isolate the output
     //
-    HWREG(ulPad) |= 0xC00;
+    HWREG(ulPad) = 0xC00;
 
   }
   else

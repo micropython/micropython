@@ -428,6 +428,9 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
         // Unregister mDNS services
         ASSERT_ON_ERROR(sl_NetAppMDNSUnRegisterService(0, 0));
 
+        // Stop the internal HTTP server
+        sl_NetAppStop(SL_NET_APP_HTTP_SERVER_ID);
+
         // Remove all 64 filters (8 * 8)
         _WlanRxFilterOperationCommandBuff_t  RxFilterIdMask;
         memset ((void *)&RxFilterIdMask, 0 ,sizeof(RxFilterIdMask));

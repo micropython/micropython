@@ -180,6 +180,8 @@ extern unsigned long TimerLoadGet(unsigned long ulBase, unsigned long ulTimer);
 
 extern unsigned long TimerValueGet(unsigned long ulBase,
                                    unsigned long ulTimer);
+extern void TimerValueSet(unsigned long ulBase, unsigned long ulTimer,
+              unsigned long ulValue);
 
 extern void TimerMatchSet(unsigned long ulBase, unsigned long ulTimer,
                           unsigned long ulValue);

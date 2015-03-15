@@ -265,6 +265,7 @@ extern void PRCMRTCMatchGet(unsigned long *ulSecs, unsigned short *usMsec);
 extern void PRCMCC3200MCUInit(void);
 extern unsigned long PRCMHIBRegRead(unsigned long ulRegAddr);
 extern void PRCMHIBRegWrite(unsigned long ulRegAddr, unsigned long ulValue);
+extern unsigned long PRCMCameraFreqSet(unsigned char ulDivider, unsigned char ulWidth);
 
 
 //*****************************************************************************

@@ -619,6 +619,45 @@ TimerValueGet(unsigned long ulBase, unsigned long ulTimer)
 
 //*****************************************************************************
 //
+//! Sets the current timer value.
+//!
+//! \param ulBase is the base address of the timer module.
+//! \param ulTimer specifies the timer; must be one of \b TIMER_A or
+//! \b TIMER_B.  Only \b TIMER_A should be used when the timer is configured
+//! for 32-bit operation.
+//! \param ulValue is the new value of the timer to be set.
+//!
+//! This function sets the current value of the specified timer.
+//!
+//! \return None.
+//
+//*****************************************************************************
+void
+TimerValueSet(unsigned long ulBase, unsigned long ulTimer,
+              unsigned long ulValue)
+{
+    //
+    // Check the arguments.
+    //
+    ASSERT(TimerBaseValid(ulBase));
+    ASSERT((ulTimer == TIMER_A) || (ulTimer == TIMER_B));
+
+    //
+    // Set the appropriate timer value.
+    //
+    if( (ulTimer == TIMER_A) )
+    {
+      HWREG(ulBase + TIMER_O_TAV) = ulValue;
+    }
+    else
+    {
+      HWREG(ulBase + TIMER_O_TBV) = ulValue;
+    }
+}
+
+
+//*****************************************************************************
+//
 //! Sets the timer match value.
 //!
 //! \param ulBase is the base address of the timer module.
@@ -979,8 +1018,8 @@ TimerIntClear(unsigned long ulBase, unsigned long ulIntFlags)
 //
 //! Enables the events that can trigger a DMA request.
 //!
-//! \param ui32Base is the base address of the timer module.
-//! \param ui32DMAEvent is a bit mask of the events that can trigger DMA.
+//! \param ulBase is the base address of the timer module.
+//! \param ulDMAEvent is a bit mask of the events that can trigger DMA.
 //!
 //! This function enables the timer events that can trigger the start of a DMA
 //! sequence.  The DMA trigger events are specified in the \e ui32DMAEvent
@@ -1022,7 +1061,7 @@ TimerDMAEventSet(unsigned long ulBase, unsigned long ulDMAEvent)
 //
 //! Returns the events that can trigger a DMA request.
 //!
-//! \param ui32Base is the base address of the timer module.
+//! \param ulBase is the base address of the timer module.
 //!
 //! This function returns the timer events that can trigger the start of a DMA
 //! sequence.  The DMA trigger events are the logical OR of the following

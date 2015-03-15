@@ -64,11 +64,16 @@ extern "C"
 // Values that can be passed to I2SConfigSetExpClk() as the ulConfig parameter.
 //
 //*****************************************************************************
-#define I2S_SLOT_SIZE_24      0x00B200B4
+#define I2S_SLOT_SIZE_8       0x00300032
 #define I2S_SLOT_SIZE_16      0x00700074
+#define I2S_SLOT_SIZE_24      0x00B000B6
 
-#define I2S_PORT_CPU          0x00000008
+
+#define I2S_PORT_CPU          0x00080008
 #define I2S_PORT_DMA          0x00000000
+
+#define I2S_MODE_MASTER       0x00000000
+#define I2S_MODE_SLAVE        0x00008000
 
 //*****************************************************************************
 //
@@ -116,6 +121,15 @@ extern "C"
 #define I2S_INT_RDATA         0x00200000
 #define I2S_INT_RSTAFRM       0x00800000
 #define I2S_INT_RDMA          0x40000000
+
+
+//*****************************************************************************
+//
+// Values that can be passed to I2SRxActiveSlotSet() and I2STxActiveSlotSet
+//
+//*****************************************************************************
+#define I2S_ACT_SLOT_EVEN     0x00000001
+#define I2S_ACT_SLOT_ODD      0x00000002
 
 //*****************************************************************************
 //
@@ -188,6 +202,8 @@ extern unsigned long I2SIntStatus(unsigned long ulBase);
 extern void I2SIntClear(unsigned long ulBase, unsigned long ulIntFlags);
 extern void I2SIntRegister(unsigned long ulBase, void (*pfnHandler)(void));
 extern void I2SIntUnregister(unsigned long ulBase);
+extern void I2STxActiveSlotSet(unsigned long ulBase, unsigned long ulActSlot);
+extern void I2SRxActiveSlotSet(unsigned long ulBase, unsigned long ulActSlot);
 
 //*****************************************************************************
 //

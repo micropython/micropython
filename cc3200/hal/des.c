@@ -542,7 +542,7 @@ DESDataProcess(uint32_t ui32Base, uint8_t *pui8Src, uint8_t *pui8Dest,
       //
       // Write the data registers.
       //
-      DESDataWriteNonBlocking(ui32Base, pui8Src + (ui32Count*ui32BlkCount) ,
+      DESDataWriteNonBlocking(ui32Base, pui8Src + (8*ui32BlkCount) ,
                               ui32ByteCount);
       //
       // Wait for the output ready
@@ -554,7 +554,7 @@ DESDataProcess(uint32_t ui32Base, uint8_t *pui8Src, uint8_t *pui8Dest,
       //
       // Read the data registers.
       //
-      DESDataReadNonBlocking(ui32Base, pui8Dest + (ui32Count*ui32BlkCount) ,
+      DESDataReadNonBlocking(ui32Base, pui8Dest + (8*ui32BlkCount) ,
                              ui32ByteCount);
     }
 
