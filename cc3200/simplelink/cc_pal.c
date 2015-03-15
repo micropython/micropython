@@ -310,6 +310,7 @@ int spi_Read(Fd_t fd, unsigned char *pBuff, int len)
         return -1;
     }
 
+    MAP_SPIWordCountSet(LSPI_BASE, 0);
     return spi_Read_CPU(pBuff, len);
 }
 
@@ -339,7 +340,8 @@ int spi_Write(Fd_t fd, unsigned char *pBuff, int len)
         return -1;
     }
 
-	return spi_Write_CPU(pBuff,len);
+    MAP_SPIWordCountSet(LSPI_BASE, 0);
+    return spi_Write_CPU(pBuff,len);
 }
 
 /*!
@@ -416,6 +418,7 @@ void NwpUnMaskInterrupt()
 	(*(unsigned long *)REG_INT_MASK_CLR) = 0x1;
 }
 
+#ifdef DEBUG
 /*!
     \brief		Preamble to the enabling the Network Processor.
                         Placeholder to implement any pre-process operations
@@ -465,6 +468,7 @@ void NwpPowerOnPreamble(void)
     /* Stop the networking services */
     NwpPowerOff();
 }
+#endif
 
 /*!
     \brief		Enable the Network Processor
@@ -481,8 +485,9 @@ void NwpPowerOn(void)
 
     //NWP Wakeup
     HWREG(0x44025118) = 1;
-
+#ifdef DEBUG
     UtilsDelay(8000000);
+#endif
 
     //UnMask Host Interrupt
     NwpUnMaskInterrupt();

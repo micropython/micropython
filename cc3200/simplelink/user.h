@@ -349,7 +349,11 @@ extern "C" {
     \note       belongs to \ref ported_sec
 
 */
+#ifdef DEBUG
 #define sl_DeviceEnablePreamble()		NwpPowerOnPreamble()
+#else
+#define sl_DeviceEnablePreamble()
+#endif
 
 /*!
     \brief		Enable the Network Processor
