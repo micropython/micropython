@@ -121,6 +121,7 @@ Q(recv)
 Q(RTC)
 Q(info)
 Q(datetime)
+Q(wakeup)
 
 // for Pin class
 Q(Pin)

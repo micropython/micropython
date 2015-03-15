@@ -341,7 +341,8 @@ void TAMP_STAMP_IRQHandler(void) {
 }
 
 void RTC_WKUP_IRQHandler(void) {
-    Handle_EXTI_Irq(EXTI_RTC_WAKEUP);
+    RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
+    Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
 }
 
 void TIM1_BRK_TIM9_IRQHandler(void) {
