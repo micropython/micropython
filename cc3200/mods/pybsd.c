@@ -131,10 +131,16 @@ STATIC mp_obj_t pybsd_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
         pin_verify_af (pybsd_obj.af_cmd);
 
         // configure the sdhost pins
+        // TODO: all pin configs must go through pin_config()
         MAP_PinTypeSDHost(pybsd_obj.pin_d0->pin_num, pybsd_obj.af_d0);
         MAP_PinTypeSDHost(pybsd_obj.pin_clk->pin_num, pybsd_obj.af_clk);
         MAP_PinDirModeSet(pybsd_obj.pin_clk->pin_num, PIN_DIR_MODE_OUT);
         MAP_PinTypeSDHost(pybsd_obj.pin_cmd->pin_num, pybsd_obj.af_cmd);
+
+        // enable pull-ups on data and cmd
+        // TODO: all pin configs must go through pin_config()
+        MAP_PinConfigSet(pybsd_obj.pin_d0->pin_num, PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
+        MAP_PinConfigSet(pybsd_obj.pin_cmd->pin_num, PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
 
         // card detect pin was provided
         if (n_args == 7) {
@@ -151,6 +157,8 @@ STATIC mp_obj_t pybsd_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
     }
+
+    // TODO: register with the sleep module!!
 
     pybsd_obj.base.type = &pyb_sd_type;
     return &pybsd_obj;

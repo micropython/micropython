@@ -360,6 +360,8 @@ DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCount) {
                     pBuffer += 4;
                 }
                 CardSendCmd(CMD_STOP_TRANS, 0);
+                // Wait for the command to complete
+                while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
                 Res = RES_OK;
             }
         }
@@ -430,6 +432,8 @@ DRESULT sd_disk_write (const BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCou
               // Wait for transfer complete
               while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
               CardSendCmd(CMD_STOP_TRANS, 0);
+              // Wait for the command to complete
+              while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
               Res = RES_OK;
           }
       }
