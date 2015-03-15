@@ -236,14 +236,19 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
         }
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
+            // TODO
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
+            // TODO
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
+            // TODO
             break;
         case SL_WLAN_P2P_NEG_REQ_RECEIVED_EVENT:
+            // TODO
             break;
         case SL_WLAN_CONNECTION_FAILED_EVENT:
+            // TODO
             break;
         default:
             break;
@@ -358,9 +363,27 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
 
     switch( pSock->Event ) {
     case SL_SOCKET_TX_FAILED_EVENT:
+        switch( pSock->socketAsyncEvent.SockTxFailData.status) {
+        case SL_ECLOSE:
+            break;
+        default:
+          break;
+        }
+        break;
+    case SL_SOCKET_ASYNC_EVENT:
+         switch(pSock->socketAsyncEvent.SockAsyncData.type) {
+         case SSL_ACCEPT:
+             //accept failed due to ssl issue ( tcp pass)
+             break;
+         case RX_FRAGMENTATION_TOO_BIG:
+             break;
+         case OTHER_SIDE_CLOSE_SSL_DATA_NOT_ENCRYPTED:
+         default:
+             break;
+         }
         break;
     default:
-        break;
+      break;
     }
 }
 
