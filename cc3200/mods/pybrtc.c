@@ -113,7 +113,7 @@ STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
 ///
 ///     (year, month, day, weekday, hours, minutes, seconds, milliseconds)
 ///
-/// `weekday` is 1-7 for Monday through Sunday.
+/// `weekday` is 0-6 for Monday through Sunday.
 ///
 mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     mod_struct_time tm;

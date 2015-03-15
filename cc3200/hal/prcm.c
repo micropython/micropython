@@ -142,11 +142,11 @@
 //*****************************************************************************
 static void RTCUseSet(void)
 {
-  unsigned short usRegValue;
+  unsigned int uiRegValue;
 
-  usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 31);
+  uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 31);
 
-  PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue);
+  PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
@@ -154,11 +154,11 @@ static void RTCUseSet(void)
 //*****************************************************************************
 static void RTCUseClear(void)
 {
-  unsigned short usRegValue;
+  unsigned int uiRegValue;
 
-  usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 31));
+  uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 31));
 
-  PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue);
+  PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
@@ -172,7 +172,7 @@ static tBoolean IsRTCUsed(void)
 //*****************************************************************************
 // Read 16-bit mSecs
 //*****************************************************************************
-static unsigned short RTCU16MSecRegRead(void)
+static unsigned short RTCU32MSecRegRead(void)
 {
   return ((MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) >> 16) & 0x03FF);
 }
@@ -180,15 +180,15 @@ static unsigned short RTCU16MSecRegRead(void)
 //*****************************************************************************
 // Write 16-bit mSecs
 //*****************************************************************************
-static void RTCU16MSecRegWrite(unsigned short u16Msec)
+static void RTCU32MSecRegWrite(unsigned int u32Msec)
 {
-   unsigned short usRegValue;
+   unsigned int uiRegValue;
 
    // read the whole register and clear the msec bits
-   usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(0x03FF << 16));
+   uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(0x03FF << 16));
 
    // write the msec bits only
-   MAP_PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue | ((u16Msec & 0x03FF) << 16));
+   MAP_PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue | ((u32Msec & 0x03FF) << 16));
 }
 
 //*****************************************************************************
@@ -214,8 +214,8 @@ static void RTCU32SecRegWrite(unsigned long u32Msec)
 #define RTC_USE_SET()                   RTCUseSet()
 #define RTC_USE_CLR()                   RTCUseClear()
 
-#define RTC_U16MSEC_REG_RD()            RTCU16MSecRegRead()
-#define RTC_U16MSEC_REG_WR(u16Msec)     RTCU16MSecRegWrite(u16Msec)
+#define RTC_U32MSEC_REG_RD()            RTCU32MSecRegRead()
+#define RTC_U32MSEC_REG_WR(u32Msec)     RTCU32MSecRegWrite(u32Msec)
 
 #define RTC_U32SECS_REG_RD()            RTCU32SecRegRead()
 #define RTC_U32SECS_REG_WR(u32Secs)     RTCU32SecRegWrite(u32Secs)
@@ -261,11 +261,11 @@ static const PRCM_PeriphRegs_t PRCM_PeriphRegsList[] =
 //*****************************************************************************
 void PRCMRequestSafeBoot(void)
 {
-    unsigned short usRegValue;
+    unsigned int uiRegValue;
 
-    usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 30);
+    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 30);
 
-    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue);
+    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
@@ -277,11 +277,11 @@ void PRCMRequestSafeBoot(void)
 //*****************************************************************************
 void PRCMClearSafeBootRequest(void)
 {
-    unsigned short usRegValue;
+    unsigned int uiRegValue;
 
-    usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 30));
+    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 30));
 
-    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue);
+    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
@@ -293,7 +293,7 @@ void PRCMClearSafeBootRequest(void)
 //*****************************************************************************
 tBoolean PRCMIsSafeBootRequested(void)
 {
-    tBoolean safeboot =  (MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (1 << 30)) ? true : false;
+    tBoolean safeboot = (MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (1 << 30)) ? true : false;
 
     PRCMClearSafeBootRequest();
 
@@ -309,11 +309,11 @@ tBoolean PRCMIsSafeBootRequested(void)
 //*****************************************************************************
 void PRCMSignalWDTReset(void)
 {
-    unsigned short usRegValue;
+    unsigned int uiRegValue;
 
-    usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 29);
+    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 29);
 
-    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue);
+    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
@@ -325,11 +325,11 @@ void PRCMSignalWDTReset(void)
 //*****************************************************************************
 void PRCMClearWDTResetSignal(void)
 {
-    unsigned short usRegValue;
+    unsigned int uiRegValue;
 
-    usRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 29));
+    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 29));
 
-    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, usRegValue);
+    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
@@ -1598,7 +1598,7 @@ void PRCMRTCSet(unsigned long ulSecs, unsigned short usMsec)
                 ullMsec = RTC_U64MSEC_MK(ulSecs, usMsec) - SCC_U64MSEC_GET();
 
                  RTC_U32SECS_REG_WR(RTC_SECS_IN_U64MSEC(ullMsec));
-                 RTC_U16MSEC_REG_WR(RTC_MSEC_IN_U64MSEC(ullMsec));
+                 RTC_U32MSEC_REG_WR(RTC_MSEC_IN_U64MSEC(ullMsec));
         }
 
         return;
@@ -1629,7 +1629,7 @@ void PRCMRTCGet(unsigned long *ulSecs, unsigned short *usMsec)
 
         if(IS_RTC_USED()) {
                 ullMsec  = RTC_U64MSEC_MK(RTC_U32SECS_REG_RD(),
-                                          RTC_U16MSEC_REG_RD());
+                                          RTC_U32MSEC_REG_RD());
                 ullMsec += SCC_U64MSEC_GET();
         }
 
@@ -1665,7 +1665,7 @@ void PRCMRTCMatchSet(unsigned long ulSecs, unsigned short usMsec)
         if(IS_RTC_USED()) {
                 ullMsec  = RTC_U64MSEC_MK(ulSecs, usMsec);
                 ullMsec -= RTC_U64MSEC_MK(RTC_U32SECS_REG_RD(),
-                                          RTC_U16MSEC_REG_RD());
+                                          RTC_U32MSEC_REG_RD());
                 SCC_U64MSEC_MATCH_SET(SELECT_SCC_U42BITS(ullMsec));
         }
 
@@ -1698,7 +1698,7 @@ void PRCMRTCMatchGet(unsigned long *ulSecs, unsigned short *usMsec)
         if(IS_RTC_USED()) {
                 ullMsec  = SCC_U64MSEC_MATCH_GET();
                 ullMsec += RTC_U64MSEC_MK(RTC_U32SECS_REG_RD(),
-                                          RTC_U16MSEC_REG_RD());
+                                          RTC_U32MSEC_REG_RD());
         }
 
         *ulSecs = RTC_SECS_IN_U64MSEC(ullMsec);
