@@ -72,8 +72,8 @@ typedef struct _pyb_obj_adc_t {
 
 
 STATIC void pybadc_init (pyb_obj_adc_t *self) {
-    // enable the ADC channel
-    MAP_ADCChannelEnable(ADC_BASE, self->channel);
+     // enable the ADC channel
+     MAP_ADCChannelEnable(ADC_BASE, self->channel);
     // enable and configure the timer
     MAP_ADCTimerConfig(ADC_BASE, (1 << 17) - 1);
     MAP_ADCTimerEnable(ADC_BASE);
@@ -161,7 +161,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 STATIC mp_obj_t adc_enable(mp_obj_t self_in) {
     pyb_obj_adc_t *self = self_in;
 
-    MAP_ADCChannelEnable(ADC_BASE, self->channel);
+    pybadc_init(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_enable_obj, adc_enable);
@@ -172,12 +172,13 @@ STATIC mp_obj_t adc_disable(mp_obj_t self_in) {
     pyb_obj_adc_t *self = self_in;
 
     MAP_ADCChannelDisable(ADC_BASE, self->channel);
+    // unregister it with the sleep module
+    pybsleep_remove ((const mp_obj_t)self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_disable_obj, adc_disable);
 
 STATIC const mp_map_elem_t adc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___del__),             (mp_obj_t)&adc_disable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),                (mp_obj_t)&adc_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable),              (mp_obj_t)&adc_enable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable),             (mp_obj_t)&adc_disable_obj },

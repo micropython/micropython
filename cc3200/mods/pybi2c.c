@@ -351,6 +351,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
 /// Turn off the I2C bus.
 STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     i2c_deinit();
+    // unregister it with the sleep module
+    pybsleep_remove ((const mp_obj_t)self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);
@@ -602,7 +604,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_write_obj, 1, pyb_i2c_mem_write);
 
 STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR___del__),         (mp_obj_t)&pyb_i2c_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),            (mp_obj_t)&pyb_i2c_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),          (mp_obj_t)&pyb_i2c_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready),        (mp_obj_t)&pyb_i2c_is_ready_obj },
