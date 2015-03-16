@@ -149,7 +149,7 @@ value_error:
         raise(exc, lex);
     } else {
         mp_obj_t exc = mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "invalid syntax for integer with base %d: '%s'", base, str_val_start);
+            "invalid syntax for integer with base %d: '%.*s'", base, top - str_val_start, str_val_start);
         raise(exc, lex);
     }
 }
