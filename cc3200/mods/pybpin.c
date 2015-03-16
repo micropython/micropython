@@ -45,6 +45,7 @@
 #include "gpio.h"
 #include "interrupt.h"
 #include "pybpin.h"
+#include "pins.h"
 #include "pybsleep.h"
 #include "mpcallback.h"
 #include "mpexception.h"
@@ -154,6 +155,11 @@ STATIC pybpin_wake_pin_t pybpin_wake_pin[PYBPIN_NUM_WAKE_PINS] =
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void pin_init0(void) {
+    // assign GPIO10 and GPIO11 to the GPIO peripheral (the default is I2C), so that the I2C bus can
+    // be assigned safely to any other pins (as recomended by the SDK release notes). Make them
+    // inputs with pull-downs enabled to ensure they are not floating during LDPS and hibernate.
+    pin_config ((pin_obj_t *)&pin_GPIO10, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PD, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&pin_GPIO11, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PD, PIN_STRENGTH_2MA);
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
