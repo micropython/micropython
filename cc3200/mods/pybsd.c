@@ -43,22 +43,18 @@
 #include "simplelink.h"
 #include "debug.h"
 #include "mpexception.h"
+#include "pybsleep.h"
 
 
 #if MICROPY_HW_HAS_SDCARD
 
-#define PYBSD_FREQUENCY_HZ      15000000        // 15MHz
+#define PYBSD_FREQUENCY_HZ              15000000    // 15MHz
 
 typedef struct {
     mp_obj_base_t base;
     FATFS        *fatfs;
-    pin_obj_t    *pin_d0;
     pin_obj_t    *pin_clk;
-    pin_obj_t    *pin_cmd;
-    pin_obj_t    *pin_sd_detect;
-    byte         af_d0;
-    byte         af_clk;
-    byte         af_cmd;
+    pin_obj_t    *pin_detect;
     bool         pinsset;
     bool         enabled;
     bool         inpath;
@@ -86,15 +82,35 @@ void pybsd_init0 (void) {
 }
 
 bool pybsd_is_present(void) {
-    if (pybsd_obj.pin_sd_detect) {
-        return pybsd_obj.enabled && MAP_GPIOPinRead(pybsd_obj.pin_sd_detect->port, pybsd_obj.pin_sd_detect->bit);
+    if (pybsd_obj.pin_detect) {
+        return pybsd_obj.enabled && MAP_GPIOPinRead(pybsd_obj.pin_detect->port, pybsd_obj.pin_detect->bit);
     }
     return pybsd_obj.enabled;
 }
 
 void pybsd_deinit (void) {
     pybsd_disable ((mp_obj_t)&pybsd_obj);
-    pybsd_obj.pin_sd_detect = NULL;
+    pybsd_obj.pin_detect = NULL;
+}
+
+/******************************************************************************
+ DECLARE PRIVATE FUNCTIONS
+ ******************************************************************************/
+/// Initalizes the sd card driver
+STATIC void pybsd_init (pybsd_obj_t *self) {
+    // Configure the clock pin as output only
+    MAP_PinDirModeSet(self->pin_clk->pin_num, PIN_DIR_MODE_OUT);
+
+    // Enable SD peripheral clock
+    MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+    // Reset MMCHS
+    MAP_PRCMPeripheralReset(PRCM_SDHOST);
+    // Initialize MMCHS
+    MAP_SDHostInit(SDHOST_BASE);
+    // Configure the card clock
+    MAP_SDHostSetExpClk(SDHOST_BASE, MAP_PRCMPeripheralClockGet(PRCM_SDHOST), PYBSD_FREQUENCY_HZ);
+
+    self->enabled = true;
 }
 
 /******************************************************************************/
@@ -119,35 +135,23 @@ STATIC mp_obj_t pybsd_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     mp_arg_check_num(n_args, n_kw, 0, 7, false);
 
     if (n_args >= 6) {
-        // get pins and afs
-        pybsd_obj.pin_d0  = (pin_obj_t *)pin_find(args[0]);
-        pybsd_obj.af_d0   = mp_obj_get_int(args[1]);
-        pin_verify_af (pybsd_obj.af_d0);
+        // save the clock pin for later use
         pybsd_obj.pin_clk = (pin_obj_t *)pin_find(args[2]);
-        pybsd_obj.af_clk  = mp_obj_get_int(args[3]);
-        pin_verify_af (pybsd_obj.af_clk);
-        pybsd_obj.pin_cmd = (pin_obj_t *)pin_find(args[4]);
-        pybsd_obj.af_cmd  = mp_obj_get_int(args[5]);
-        pin_verify_af (pybsd_obj.af_cmd);
 
-        // configure the sdhost pins
-        // TODO: all pin configs must go through pin_config()
-        MAP_PinTypeSDHost(pybsd_obj.pin_d0->pin_num, pybsd_obj.af_d0);
-        MAP_PinTypeSDHost(pybsd_obj.pin_clk->pin_num, pybsd_obj.af_clk);
-        MAP_PinDirModeSet(pybsd_obj.pin_clk->pin_num, PIN_DIR_MODE_OUT);
-        MAP_PinTypeSDHost(pybsd_obj.pin_cmd->pin_num, pybsd_obj.af_cmd);
-
-        // enable pull-ups on data and cmd
-        // TODO: all pin configs must go through pin_config()
-        MAP_PinConfigSet(pybsd_obj.pin_d0->pin_num, PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
-        MAP_PinConfigSet(pybsd_obj.pin_cmd->pin_num, PIN_STRENGTH_4MA, PIN_TYPE_STD_PU);
+        // configure the data pin with pull-up enabled
+        pin_config ((pin_obj_t *)pin_find(args[0]), mp_obj_get_int(args[1]), 0, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
+        // configure the clock pin
+        pin_config (pybsd_obj.pin_clk, mp_obj_get_int(args[3]), 0, PIN_TYPE_STD, PIN_STRENGTH_4MA);
+        // configure the command pin with pull-up enabled
+        pin_config ((pin_obj_t *)pin_find(args[4]), mp_obj_get_int(args[5]), 0, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
 
         // card detect pin was provided
         if (n_args == 7) {
-            pybsd_obj.pin_sd_detect = (pin_obj_t *)pin_find(args[6]);
-            pin_config (pybsd_obj.pin_sd_detect, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
+            pybsd_obj.pin_detect = (pin_obj_t *)pin_find(args[6]);
+            pin_config (pybsd_obj.pin_detect, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
         }
         pybsd_obj.pinsset = true;
+        pybsd_obj.base.type = &pyb_sd_type;
     }
     else if (n_args == 0) {
         if (!pybsd_obj.pinsset) {
@@ -158,9 +162,6 @@ STATIC mp_obj_t pybsd_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
     }
 
-    // TODO: register with the sleep module!!
-
-    pybsd_obj.base.type = &pyb_sd_type;
     return &pybsd_obj;
 }
 
@@ -168,16 +169,9 @@ STATIC mp_obj_t pybsd_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
 /// Enables the sd card and mounts the file system
 STATIC mp_obj_t pybsd_enable (mp_obj_t self_in) {
     pybsd_obj_t *self = self_in;
-    // Enable SD peripheral clock
-    MAP_PRCMPeripheralClkEnable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-    // Reset MMCHS
-    MAP_PRCMPeripheralReset(PRCM_SDHOST);
-    // Initialize MMCHS
-    MAP_SDHostInit(SDHOST_BASE);
-    // Configure the card clock
-    MAP_SDHostSetExpClk(SDHOST_BASE, MAP_PRCMPeripheralClockGet(PRCM_SDHOST), PYBSD_FREQUENCY_HZ);
 
-    self->enabled = true;
+    // do the init first
+    pybsd_init (self);
 
     // try to mount the sd card on /SD
     if (FR_OK != f_mount(self->fatfs, "/SD", 1)) {
@@ -187,6 +181,9 @@ STATIC mp_obj_t pybsd_enable (mp_obj_t self_in) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
     self->inpath = true;
+
+    // register it with the sleep module
+    pybsleep_add ((const mp_obj_t)&pybsd_obj, (WakeUpCB_t)pybsd_init);
 
     return mp_const_none;
 }
@@ -208,6 +205,9 @@ STATIC mp_obj_t pybsd_disable (mp_obj_t self_in) {
         }
         // disable the peripheral
         MAP_PRCMPeripheralClkDisable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+
+        // unregister with the sleep module
+        pybsleep_remove (self);
     }
     return mp_const_none;
 }
