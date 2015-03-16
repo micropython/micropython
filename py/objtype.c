@@ -75,10 +75,10 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
             continue;
         }
         if (is_native_type(bt)) {
-            *last_native_base = items[i];
+            *last_native_base = bt;
             count++;
         } else {
-            count += instance_count_native_bases(items[i], last_native_base);
+            count += instance_count_native_bases(bt, last_native_base);
         }
     }
 
