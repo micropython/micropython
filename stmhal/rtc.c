@@ -256,18 +256,29 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc) {
          __HAL_RCC_BACKUPRESET_RELEASE().
        - Configure the needed RTc clock source */
 
-    // set LSE as RTC clock source
+    // RTC clock source uses LSE (external crystal) only if relevant
+    // configuration variable is set.  Otherwise it uses LSI (internal osc).
+
     RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+    #if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+    #else
+    RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+    #endif
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         //Error_Handler();
         return;
     }
 
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+    #if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+    #else
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+    #endif
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         //Error_Handler();
         return;
