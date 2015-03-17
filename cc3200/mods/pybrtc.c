@@ -54,12 +54,16 @@
 ///     print(rtc.datetime())
 
 /******************************************************************************
- DECLARE TYPES
+ DECLARE CONSTANTS
+ ******************************************************************************/
+#define PYBRTC_CLOCK_FREQUENCY_HZ                   32768
+#define PYBRTC_MIN_INTERVAL_VALUE                   25
+
+/******************************************************************************
+ DEFINE TYPES
  ******************************************************************************/
 typedef struct {
-    uint32_t alarm_sec;
-    uint16_t alarm_msec;
-    uint8_t  pwrmode;
+    byte prwmode;
 } pybrtc_data_t;
 
 /******************************************************************************
@@ -92,11 +96,26 @@ void pybrtc_init(void) {
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
 STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
-
+    // check the wake from param
+    if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
+        // enable the slow clock interrupt
+        MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
+    }
+    else {
+        // just in case it was already enabled before
+        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
+    }
+    pybsleep_configure_timer_wakeup (pybrtc_data.prwmode);
 }
 
 STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
-
+    // check the wake from param
+    if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
+        // enable the slow clock interrupt
+        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
+    }
+    // disable wake from ldps and hibernate
+    pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
 }
 
 /******************************************************************************/
@@ -171,6 +190,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
     if (kw_args->used > 0 || _callback == mp_const_none) {
+        uint32_t f_mseconds = args[3].u_int;
         uint32_t seconds;
         uint16_t mseconds;
         // get the seconds and the milliseconds from the RTC
@@ -178,25 +198,26 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         mseconds = RTC_CYCLES_U16MS(mseconds);
 
         // configure the rtc alarm accordingly
-        seconds += args[3].u_int / 1000;
-        mseconds += args[3].u_int - ((args[3].u_int / 1000) * 1000);
-        if (mseconds > 1000) {
-            seconds++;
-            mseconds -= 1000;
-        }
+        seconds += f_mseconds / 1000;
+        mseconds += f_mseconds - ((f_mseconds / 1000) * 1000);
 
-        // check the wake from param
-        if (args[4].u_int & PYB_PWR_MODE_ACTIVE) {
-            MAP_PRCMRTCMatchSet(seconds, mseconds);
-        }
+        // set the match value
+        MAP_PRCMRTCMatchSet(seconds, mseconds);
 
-        // save the alarm config for later
-        pybrtc_data.alarm_sec = seconds;
-        pybrtc_data.alarm_msec = mseconds;
-        pybrtc_data.pwrmode = args[4].u_int;
+        // save the match data for later
+        pybrtc_data.prwmode = args[4].u_int;
 
-        // create the new callback
+        // create the callback
         _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods);
+
+        // set the lpds callback
+        pybsleep_set_timer_lpds_callback(_callback);
+
+        // the interrupt priority is ignored since is already set to to highest level by the sleep module
+        // to make sure that the wakeup callbacks are always called first when resuming from sleep
+
+        // enable the interrupt (the object is not relevant here, the function already knows it)
+        pyb_rtc_callback_enable(NULL);
     }
     return _callback;
 }

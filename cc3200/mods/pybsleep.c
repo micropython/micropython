@@ -67,6 +67,9 @@
 #define WAKEUP_TIME_LPDS                        (LPDS_UP_TIME + LPDS_DOWN_TIME + USER_OFFSET)   // 20 msec
 #define WAKEUP_TIME_HIB                         (32768)       // 1 s
 
+#define FORCED_TIMER_INTERRUPT_MS               (1)
+#define FAILED_SLEEP_DELAY_MS                   (FORCED_TIMER_INTERRUPT_MS * 3)
+
 /******************************************************************************
  DECLARE PRIVATE TYPES
  ******************************************************************************/
@@ -110,6 +113,7 @@ typedef struct {
     mp_obj_t    wlan_lpds_wake_cb;
     mp_obj_t    timer_lpds_wake_cb;
     mp_obj_t    gpio_lpds_wake_cb;
+    uint        timer_wake_pwrmode;
 } pybsleep_wake_cb_t;
 
 /******************************************************************************
@@ -131,6 +135,8 @@ void pybsleep_suspend_exit (void);
 STATIC void pybsleep_obj_wakeup (void);
 STATIC void PRCMInterruptHandler (void);
 STATIC void pybsleep_iopark (void);
+STATIC bool setup_timer_lpds_wake (void);
+STATIC bool setup_timer_hibernate_wake (void);
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -151,8 +157,8 @@ void pybsleep_init0 (void) {
     // disable all LPDS and hibernate wake up sources (WLAN is disabed/enabled before entering LDPS mode)
     MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_GPIO);
     MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
-    MAP_PRCMHibernateWakeupSourceDisable(PRCM_HIB_SLOW_CLK_CTR | PRCM_HIB_GPIO2 | PRCM_HIB_GPIO4 | PRCM_HIB_GPIO13 |
-                                         PRCM_HIB_GPIO17 | PRCM_HIB_GPIO11 |  PRCM_HIB_GPIO24 |  PRCM_HIB_GPIO26);
+    MAP_PRCMHibernateWakeupSourceDisable(PRCM_HIB_SLOW_CLK_CTR | PRCM_HIB_GPIO2  | PRCM_HIB_GPIO4  | PRCM_HIB_GPIO13 |
+                                         PRCM_HIB_GPIO17       | PRCM_HIB_GPIO11 | PRCM_HIB_GPIO24 | PRCM_HIB_GPIO26);
 
     // store the reset casue (if it's soft reset, leave it as it is)
     if (pybsleep_reset_cause != PYB_SLP_SOFT_RESET) {
@@ -214,6 +220,10 @@ void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj) {
 
 void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj) {
     pybsleep_wake_cb.timer_lpds_wake_cb = cb_obj;
+}
+
+void pybsleep_configure_timer_wakeup (uint pwrmode) {
+    pybsleep_wake_cb.timer_wake_pwrmode = pwrmode;
 }
 
 /******************************************************************************
@@ -405,6 +415,9 @@ STATIC void PRCMInterruptHandler (void) {
             }
             break;
         case PRCM_LPDS_TIMER:
+            // disable timer was wake-up source
+            pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
+            MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
             if (pybsleep_wake_cb.timer_lpds_wake_cb) {
                 mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
             }
@@ -466,6 +479,77 @@ STATIC void pybsleep_iopark (void) {
     HWREG(0x4402E10C) = 0x00000E61;
 }
 
+STATIC bool setup_timer_lpds_wake (void) {
+    uint64_t t_match, t_curr, t_remaining;
+
+    // get the time remaining for the RTC timer to expire
+    t_match = MAP_PRCMSlowClkCtrMatchGet();
+    t_curr  = MAP_PRCMSlowClkCtrGet();
+
+    if (t_match > t_curr) {
+        // get the time remaining in terms of slow clocks
+        t_remaining = (t_match - t_curr);
+        if (t_remaining > WAKEUP_TIME_LPDS) {
+            // subtract the time it takes for wakeup from lpds
+            t_remaining -= WAKEUP_TIME_LPDS;
+            t_remaining = (t_remaining > 0xFFFFFFFF) ? 0xFFFFFFFF: t_remaining;
+            // setup the LPDS wake time
+            MAP_PRCMLPDSIntervalSet((uint32_t)t_remaining);
+            // enable the wake source
+            MAP_PRCMLPDSWakeupSourceEnable(PRCM_LPDS_TIMER);
+            return true;
+        }
+    }
+    else {
+        // setup a timer interrupt immediately
+        MAP_PRCMRTCMatchSet(0, FORCED_TIMER_INTERRUPT_MS);
+    }
+
+    // disable the timer as wake source
+    MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
+
+    // LPDS wake by timer was not possible, force
+    // an interrupt in active mode instead
+    MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
+
+    return false;
+}
+
+STATIC bool setup_timer_hibernate_wake (void) {
+    uint64_t t_match, t_curr, t_remaining;
+
+    // get the time remaining for the RTC timer to expire
+    t_match = MAP_PRCMSlowClkCtrMatchGet();
+    t_curr  = MAP_PRCMSlowClkCtrGet();
+
+    if (t_match > t_curr) {
+        // get the time remaining in terms of slow clocks
+        t_remaining = (t_match - t_curr);
+        if (t_remaining > WAKEUP_TIME_HIB) {
+            // subtract the time it takes for wakeup from hibernate
+            t_remaining -= WAKEUP_TIME_HIB;
+            // setup the LPDS wake time
+            MAP_PRCMHibernateIntervalSet((uint32_t)t_remaining);
+            // enable the wake source
+            MAP_PRCMHibernateWakeupSourceEnable(PRCM_HIB_SLOW_CLK_CTR);
+            return true;
+        }
+    }
+    else {
+        // setup a timer interrupt immediately
+        MAP_PRCMRTCMatchSet(0, FORCED_TIMER_INTERRUPT_MS);
+    }
+
+    // disable the timer as wake source
+    MAP_PRCMLPDSWakeupSourceDisable(PRCM_HIB_SLOW_CLK_CTR);
+
+    // hibernate wake by timer was not possible, force
+    // an interrupt in active mode instead
+    MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
+
+    return false;
+}
+
 /******************************************************************************/
 // Micro Python bindings; Sleep class
 
@@ -483,6 +567,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_idle_obj, pyb_sleep_idle);
 STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     nlr_buf_t nlr;
 
+    // check if we should enable timer wake-up
+    if (pybsleep_wake_cb.timer_wake_pwrmode & PYB_PWR_MODE_LPDS) {
+        if (!setup_timer_lpds_wake()) {
+            // lpds entering is not possible, wait for the forced interrupt and return
+            pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
+            HAL_Delay (FAILED_SLEEP_DELAY_MS);
+            return mp_const_none;
+        }
+    }
+
     // check if we need to enable network wake-up
     if (pybsleep_wake_cb.wlan_lpds_wake_cb) {
         MAP_PRCMLPDSWakeupSourceEnable (PRCM_LPDS_HOST_IRQ);
@@ -498,6 +592,7 @@ STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
         pybsleep_suspend_enter();
         nlr_pop();
     }
+
     // an exception is always raised when exiting suspend mode
     enable_irq(primsk);
 
@@ -509,6 +604,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_suspend_obj, pyb_sleep_suspend);
 /// Enters hibernate mode. Wake up sources should have been enable prior to
 /// calling this method.
 STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
+    // check if we should enable timer wake-up
+    if (pybsleep_wake_cb.timer_wake_pwrmode & PYB_PWR_MODE_HIBERNATE) {
+        if (!setup_timer_hibernate_wake()) {
+            // hibernating is not possible, wait for the forced interrupt and return
+            pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_HIBERNATE;
+            HAL_Delay (FAILED_SLEEP_DELAY_MS);
+            return mp_const_none;
+        }
+    }
     wlan_stop();
     pybsleep_flash_powerdown();
     MAP_PRCMHibernateEnter();

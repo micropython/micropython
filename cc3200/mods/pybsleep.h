@@ -71,5 +71,6 @@ void pybsleep_remove (const mp_obj_t obj);
 void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj);
 void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj);
 void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj);
+void pybsleep_configure_timer_wakeup (uint pwrmode);
 
 #endif /* PYBSLEEP_H_ */
