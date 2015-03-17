@@ -327,6 +327,7 @@ extern const mp_obj_type_t mp_type_map; // map (the python builtin, not the dict
 extern const mp_obj_type_t mp_type_enumerate;
 extern const mp_obj_type_t mp_type_filter;
 extern const mp_obj_type_t mp_type_dict;
+extern const mp_obj_type_t mp_type_ordereddict;
 extern const mp_obj_type_t mp_type_range;
 extern const mp_obj_type_t mp_type_set;
 extern const mp_obj_type_t mp_type_frozenset;
