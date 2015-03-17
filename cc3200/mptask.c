@@ -250,7 +250,10 @@ soft_reset_exit:
     wlan_stop_servers();
     wlan_stop();
 
-    uart_deinit();
+    // de-initialize the stdio uart
+    if (pyb_stdio_uart) {
+        pyb_uart_deinit(pyb_stdio_uart);
+    }
 
     goto soft_reset;
 }

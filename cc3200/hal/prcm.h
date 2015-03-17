@@ -159,7 +159,7 @@ unsigned char ulRstReg;
 #define PRCM_HIB_WAKEUP_CAUSE_GPIO        0x00000004
 
 //*****************************************************************************
-// Values that can be passed to PRCMSEnableInterrupt
+// Values that can be passed to PRCMIntEnable
 //*****************************************************************************
 #define PRCM_INT_SLOW_CLK_CTR     0x00004000
 

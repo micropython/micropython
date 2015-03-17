@@ -87,25 +87,21 @@
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define PYBUART_TX_WAIT_MS              1
-#define PYBUART_TX_MAX_TIMEOUT_MS       5
+#define PYBUART_TX_WAIT_MS                  1
+#define PYBUART_TX_MAX_TIMEOUT_MS           5
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
 STATIC void uart_init (pyb_uart_obj_t *self);
 STATIC bool uart_rx_wait (pyb_uart_obj_t *self, uint32_t timeout);
-STATIC pyb_uart_obj_t* pyb_uart_add (pyb_uart_id_t uart_id);
-STATIC pyb_uart_obj_t* pyb_uart_find (pyb_uart_id_t uart_id);
 STATIC void UARTGenericIntHandler(uint32_t uart_id);
 STATIC void UART0IntHandler(void);
 STATIC void UART1IntHandler(void);
-STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
  ******************************************************************************/
-
 struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     pyb_uart_id_t uart_id;
@@ -123,20 +119,14 @@ struct _pyb_uart_obj_t {
 };
 
 /******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS];
+
+/******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void uart_init0 (void) {
-    mp_obj_list_init(&MP_STATE_PORT(pyb_uart_list), 0);
-}
-
-// unregister all interrupt sources
-void uart_deinit(void) {
-    for (int i = PYB_UART_0; i < PYB_NUM_UARTS; i++) {
-        pyb_uart_obj_t *self;
-        if ((self = pyb_uart_find (i))) {
-            pyb_uart_deinit(self);
-        }
-    }
 }
 
 bool uart_rx_any(pyb_uart_obj_t *self) {
@@ -255,50 +245,27 @@ STATIC bool uart_rx_wait (pyb_uart_obj_t *self, uint32_t timeout) {
     }
 }
 
-STATIC pyb_uart_obj_t* pyb_uart_add (pyb_uart_id_t uart_id) {
-    // create a new uart object
-    pyb_uart_obj_t *self = m_new_obj(pyb_uart_obj_t);
-    self->base.type = &pyb_uart_type;
-    self->uart_id = uart_id;
-    self->read_buf = NULL;
-    self->enabled = false;
-    // add it to the list
-    mp_obj_list_append(&MP_STATE_PORT(pyb_uart_list), self);
-    return self;
-}
-
-STATIC pyb_uart_obj_t* pyb_uart_find (pyb_uart_id_t uart_id) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_uart_list).len; i++) {
-        pyb_uart_obj_t *self = (pyb_uart_obj_t *)MP_STATE_PORT(pyb_uart_list).items[i];
-        if (self->uart_id == uart_id) {
-            return self;
-        }
-    }
-    return NULL;
-}
-
 STATIC void UARTGenericIntHandler(uint32_t uart_id) {
     pyb_uart_obj_t *self;
     uint32_t status;
 
-    if ((self = pyb_uart_find(uart_id))) {
-        status = MAP_UARTIntStatus(self->reg, true);
-        // receive interrupt
-        if (status & (UART_INT_RX | UART_INT_RT)) {
-            MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
-            while (UARTCharsAvail(self->reg)) {
-                int data = MAP_UARTCharGetNonBlocking(self->reg);
-                if (MICROPY_STDIO_UART == self->uart_id && data == user_interrupt_char) {
-                    // raise exception when interrupts are finished
-                    mpexception_keyboard_nlr_jump();
-                }
-                else if (self->read_buf_len != 0) {
-                    uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
-                    if (next_head != self->read_buf_tail) {
-                        // only store data if room in buf
-                        self->read_buf[self->read_buf_head] = data;
-                        self->read_buf_head = next_head;
-                    }
+    self = &pyb_uart_obj[uart_id];
+    status = MAP_UARTIntStatus(self->reg, true);
+    // receive interrupt
+    if (status & (UART_INT_RX | UART_INT_RT)) {
+        MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
+        while (UARTCharsAvail(self->reg)) {
+            int data = MAP_UARTCharGetNonBlocking(self->reg);
+            if (MICROPY_STDIO_UART == self->uart_id && data == user_interrupt_char) {
+                // raise exception when interrupts are finished
+                mpexception_keyboard_nlr_jump();
+            }
+            else if (self->read_buf_len != 0) {
+                uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
+                if (next_head != self->read_buf_tail) {
+                    // only store data if room in buf
+                    self->read_buf[self->read_buf_head] = data;
+                    self->read_buf_head = next_head;
                 }
             }
         }
@@ -469,13 +436,14 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
 
-    // search for an object in the list
-    pyb_uart_obj_t *self;
-    if (!(self = pyb_uart_find(uart_id))) {
-        self = pyb_uart_add(uart_id);
-    }
-
+    // get the correct uart instance
+    pyb_uart_obj_t *self = &pyb_uart_obj[uart_id];
+    self->base.type = &pyb_uart_type;
+    self->uart_id = uart_id;
     if (n_args > 1 || n_kw > 0) {
+        // invalidate the buffer and clear the enabled flag
+        self->read_buf = NULL;
+        self->enabled = false;
         // start the peripheral
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -492,7 +460,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
 /// \method deinit()
 /// Turn off the UART bus.
-STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
+mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
     uint uartPerh;
 

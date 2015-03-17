@@ -64,14 +64,25 @@
 ///
 ///     The sample rate is fixed to 62.5KHz and the resolution to 12 bits.
 
-typedef struct _pyb_obj_adc_t {
+
+/******************************************************************************
+ DECLARE CONSTANTS
+ ******************************************************************************/
+#define PYB_ADC_NUM_CHANNELS                4
+
+/******************************************************************************
+ DEFINE TYPES
+ ******************************************************************************/
+typedef struct {
     mp_obj_base_t base;
     byte channel;
     byte num;
-} pyb_obj_adc_t;
+} pyb_adc_obj_t;
 
-
-STATIC void pybadc_init (pyb_obj_adc_t *self) {
+/******************************************************************************
+ DEFINE PUBLIC FUNCTIONS
+ ******************************************************************************/
+STATIC void pybadc_init (pyb_adc_obj_t *self) {
      // enable the ADC channel
      MAP_ADCChannelEnable(ADC_BASE, self->channel);
     // enable and configure the timer
@@ -81,11 +92,16 @@ STATIC void pybadc_init (pyb_obj_adc_t *self) {
     MAP_ADCEnable(ADC_BASE);
 }
 
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC pyb_adc_obj_t pyb_adc_obj[PYB_ADC_NUM_CHANNELS];
+
 /******************************************************************************/
 /* Micro Python bindings : adc object                                         */
 
 STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_adc_obj_t *self = self_in;
     print(env, "<ADC, channel=%u>", self->num);
 }
 
@@ -123,7 +139,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
 
     // disable the callback before re-configuring
-    pyb_obj_adc_t *self = m_new_obj_with_finaliser(pyb_obj_adc_t);
+    pyb_adc_obj_t *self = &pyb_adc_obj[channel];
     self->base.type = &pyb_adc_type;
     self->channel = channel;
     self->num = num;
@@ -144,7 +160,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
 /// Read the value on the analog pin and return it.  The returned value
 /// will be between 0 and 4095.
 STATIC mp_obj_t adc_read(mp_obj_t self_in) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_adc_obj_t *self = self_in;
     uint32_t sample;
 
     // wait until a new value is available
@@ -159,7 +175,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 /// \method enable()
 /// Enable the adc channel
 STATIC mp_obj_t adc_enable(mp_obj_t self_in) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_adc_obj_t *self = self_in;
 
     pybadc_init(self);
     return mp_const_none;
@@ -169,7 +185,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_enable_obj, adc_enable);
 /// \method disable()
 /// Disable the adc channel
 STATIC mp_obj_t adc_disable(mp_obj_t self_in) {
-    pyb_obj_adc_t *self = self_in;
+    pyb_adc_obj_t *self = self_in;
 
     MAP_ADCChannelDisable(ADC_BASE, self->channel);
     // unregister it with the sleep module

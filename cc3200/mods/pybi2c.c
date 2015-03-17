@@ -120,6 +120,11 @@ typedef struct _pyb_i2c_obj_t {
                                                 }
 
 /******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC pyb_i2c_obj_t        pyb_i2c_obj;
+
+/******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 // only master mode is available for the moment
@@ -327,8 +332,8 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
-    // create and setup the object
-    pyb_i2c_obj_t *self = m_new_obj_with_finaliser(pyb_i2c_obj_t);
+    // setup the object
+    pyb_i2c_obj_t *self = &pyb_i2c_obj;
     self->base.type = &pyb_i2c_type;
     self->mode = PYBI2C_MODE_DISABLED;
 
