@@ -62,7 +62,7 @@ STATIC void module_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 STATIC bool module_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_module_t *self = self_in;
     mp_obj_dict_t *dict = self->globals;
-    if (dict->map.table_is_fixed_array) {
+    if (dict->map.is_fixed) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
         if (dict == &mp_module_builtins_globals) {
             if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {

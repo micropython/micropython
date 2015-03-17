@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "py/mpconfig.h"
@@ -36,7 +37,8 @@
 // without any keywords from C, etc.
 const mp_map_t mp_const_empty_map = {
     .all_keys_are_qstrs = 0,
-    .table_is_fixed_array = 1,
+    .is_fixed = 1,
+    .is_ordered = 1,
     .used = 0,
     .alloc = 0,
     .table = NULL,
@@ -70,14 +72,16 @@ void mp_map_init(mp_map_t *map, mp_uint_t n) {
     }
     map->used = 0;
     map->all_keys_are_qstrs = 1;
-    map->table_is_fixed_array = 0;
+    map->is_fixed = 0;
+    map->is_ordered = 0;
 }
 
 void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) {
     map->alloc = n;
     map->used = n;
     map->all_keys_are_qstrs = 1;
-    map->table_is_fixed_array = 1;
+    map->is_fixed = 1;
+    map->is_ordered = 1;
     map->table = (mp_map_elem_t*)table;
 }
 
@@ -89,7 +93,7 @@ mp_map_t *mp_map_new(mp_uint_t n) {
 
 // Differentiate from mp_map_clear() - semantics is different
 void mp_map_deinit(mp_map_t *map) {
-    if (!map->table_is_fixed_array) {
+    if (!map->is_fixed) {
         m_del(mp_map_elem_t, map->table, map->alloc);
     }
     map->used = map->alloc = 0;
@@ -101,13 +105,13 @@ void mp_map_free(mp_map_t *map) {
 }
 
 void mp_map_clear(mp_map_t *map) {
-    if (!map->table_is_fixed_array) {
+    if (!map->is_fixed) {
         m_del(mp_map_elem_t, map->table, map->alloc);
     }
     map->alloc = 0;
     map->used = 0;
     map->all_keys_are_qstrs = 1;
-    map->table_is_fixed_array = 0;
+    map->is_fixed = 0;
     map->table = NULL;
 }
 
@@ -153,20 +157,40 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
     }
 
-    // if the map is a fixed array then we must do a brute force linear search
-    if (map->table_is_fixed_array) {
-        if (lookup_kind != MP_MAP_LOOKUP) {
+    // if the map is an ordered array then we must do a brute force linear search
+    if (map->is_ordered) {
+        if (map->is_fixed && lookup_kind != MP_MAP_LOOKUP) {
+            // can't add/remove from a fixed array
             return NULL;
         }
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
+                if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {
+                    elem->key = MP_OBJ_SENTINEL;
+                    // keep elem->value so that caller can access it if needed
+                }
                 return elem;
             }
         }
-        return NULL;
+        if (MP_LIKELY(lookup_kind != MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
+            return NULL;
+        }
+        // TODO shrink array down over any previously-freed slots
+        if (map->used == map->alloc) {
+            // TODO: Alloc policy
+            map->alloc += 4;
+            map->table = m_renew(mp_map_elem_t, map->table, map->used, map->alloc);
+            mp_seq_clear(map->table, map->used, map->alloc, sizeof(*map->table));
+        }
+        mp_map_elem_t *elem = map->table + map->used++;
+        elem->key = index;
+        if (!MP_OBJ_IS_QSTR(index)) {
+            map->all_keys_are_qstrs = 0;
+        }
+        return elem;
     }
 
-    // map is a hash table (not a fixed array), so do a hash lookup
+    // map is a hash table (not an ordered array), so do a hash lookup
 
     if (map->alloc == 0) {
         if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {

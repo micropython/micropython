@@ -444,6 +444,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS (1)
 #endif
 
+// Whether to provide "collections.OrderedDict" type
+#ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
+#endif
+
 // Whether to provide "math" module
 #ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH (1)

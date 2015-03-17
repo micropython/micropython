@@ -109,7 +109,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
     const mp_map_t map_name = { \
         .all_keys_are_qstrs = 1, \
-        .table_is_fixed_array = 1, \
+        .is_fixed = 1, \
+        .is_ordered = 1, \
         .used = MP_ARRAY_SIZE(table_name), \
         .alloc = MP_ARRAY_SIZE(table_name), \
         .table = (mp_map_elem_t*)table_name, \
@@ -120,7 +121,8 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
         .base = {&mp_type_dict}, \
         .map = { \
             .all_keys_are_qstrs = 1, \
-            .table_is_fixed_array = 1, \
+            .is_fixed = 1, \
+            .is_ordered = 1, \
             .used = MP_ARRAY_SIZE(table_name), \
             .alloc = MP_ARRAY_SIZE(table_name), \
             .table = (mp_map_elem_t*)table_name, \
@@ -150,8 +152,9 @@ typedef struct _mp_map_elem_t {
 
 typedef struct _mp_map_t {
     mp_uint_t all_keys_are_qstrs : 1;
-    mp_uint_t table_is_fixed_array : 1;
-    mp_uint_t used : (8 * sizeof(mp_uint_t) - 2);
+    mp_uint_t is_fixed : 1;     // a fixed array that can't be modified; must also be ordered
+    mp_uint_t is_ordered : 1;   // an ordered array
+    mp_uint_t used : (8 * sizeof(mp_uint_t) - 3);
     mp_uint_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
@@ -327,6 +330,7 @@ extern const mp_obj_type_t mp_type_map; // map (the python builtin, not the dict
 extern const mp_obj_type_t mp_type_enumerate;
 extern const mp_obj_type_t mp_type_filter;
 extern const mp_obj_type_t mp_type_dict;
+extern const mp_obj_type_t mp_type_ordereddict;
 extern const mp_obj_type_t mp_type_range;
 extern const mp_obj_type_t mp_type_set;
 extern const mp_obj_type_t mp_type_frozenset;
