@@ -529,7 +529,7 @@ void wlan_update(void) {
 }
 
 // call this function to disable the complete WLAN subsystem before a system reset
-void wlan_stop (void) {
+void wlan_stop (uint32_t timeout) {
     if (wlan_obj.mode >= 0) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Stop all other processes using the wlan engine
@@ -539,7 +539,7 @@ void wlan_stop (void) {
 #endif
         sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
         wlan_obj.mode = -1;
-        sl_Stop(SL_STOP_TIMEOUT);
+        sl_Stop(MAX(timeout, SL_STOP_TIMEOUT));
     }
 }
 

@@ -246,9 +246,8 @@ soft_reset_exit:
     // wait for all bus transfers to complete
     HAL_Delay(50);
 
-    // disable wlan services
-    wlan_stop_servers();
-    wlan_stop();
+    // disable wlan
+    wlan_stop(SL_STOP_TIMEOUT_LONG);
 
     // de-initialize the stdio uart
     if (pyb_stdio_uart) {

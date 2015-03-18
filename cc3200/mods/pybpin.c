@@ -331,12 +331,12 @@ STATIC void pin_extint_enable (mp_obj_t self_in) {
             MAP_PRCMHibernateWakeupSourceDisable(hib_pin);
         }
     }
-    // if idx is invalid, the the pin supports active interrupts for sure
+    // if idx is invalid, the pin supports active interrupts for sure
     if (idx >= PYBPIN_NUM_WAKE_PINS || pybpin_wake_pin[idx].active) {
         MAP_GPIOIntClear(self->port, self->bit);
         MAP_GPIOIntEnable(self->port, self->bit);
     }
-    // in case in was enabled before
+    // in case it was enabled before
     else if (idx < PYBPIN_NUM_WAKE_PINS && !pybpin_wake_pin[idx].active) {
         MAP_GPIOIntDisable(self->port, self->bit);
     }

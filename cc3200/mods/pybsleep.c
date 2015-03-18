@@ -613,7 +613,7 @@ STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
             return mp_const_none;
         }
     }
-    wlan_stop();
+    wlan_stop(SL_STOP_TIMEOUT);
     pybsleep_flash_powerdown();
     MAP_PRCMHibernateEnter();
     return mp_const_none;
