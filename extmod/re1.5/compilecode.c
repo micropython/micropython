@@ -66,7 +66,7 @@ int re1_5_sizecode(const char *re)
 
 #define EMIT(at, byte) code[at] = byte
 
-const char *_compilecode(const char *re, ByteProg *prog)
+static const char *_compilecode(const char *re, ByteProg *prog)
 {
     char *code = prog->insts;
     int pc = prog->bytelen;
