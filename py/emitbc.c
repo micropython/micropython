@@ -111,12 +111,23 @@ STATIC void emit_align_code_info_to_machine_word(emit_t *emit) {
     emit->code_info_offset = (emit->code_info_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
 }
 
-STATIC void emit_write_code_info_uint(emit_t *emit, mp_uint_t val) {
+STATIC void emit_write_code_info_byte(emit_t* emit, byte val) {
+    *emit_get_cur_to_write_code_info(emit, 1) = val;
+}
+
+STATIC void emit_write_code_info_uint(emit_t* emit, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_code_info, val);
 }
 
 STATIC void emit_write_code_info_qstr(emit_t *emit, qstr qst) {
     emit_write_uint(emit, emit_get_cur_to_write_code_info, qst);
+}
+
+STATIC void emit_write_code_info_prealigned_ptr(emit_t* emit, void *ptr) {
+    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_code_info(emit, sizeof(mp_uint_t));
+    // Verify thar c is already uint-aligned
+    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
+    *c = (mp_uint_t)ptr;
 }
 
 #if MICROPY_ENABLE_SOURCE_LINE
@@ -167,11 +178,7 @@ STATIC void emit_write_bytecode_byte(emit_t *emit, byte b1) {
     c[0] = b1;
 }
 
-STATIC void emit_write_bytecode_uint(emit_t *emit, mp_uint_t val) {
-    emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
-}
-
-STATIC void emit_write_bytecode_byte_byte(emit_t *emit, byte b1, byte b2) {
+STATIC void emit_write_bytecode_byte_byte(emit_t* emit, byte b1, byte b2) {
     assert((b2 & (~0xff)) == 0);
     byte *c = emit_get_cur_to_write_bytecode(emit, 2);
     c[0] = b1;
@@ -210,13 +217,6 @@ STATIC void emit_write_bytecode_byte_uint(emit_t *emit, byte b, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
-STATIC void emit_write_bytecode_prealigned_ptr(emit_t *emit, void *ptr) {
-    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
-    // Verify thar c is already uint-aligned
-    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
-    *c = (mp_uint_t)ptr;
-}
-
 // aligns the pointer so it is friendly to GC
 STATIC void emit_write_bytecode_byte_ptr(emit_t *emit, byte b, void *ptr) {
     emit_write_bytecode_byte(emit, b);
@@ -227,15 +227,7 @@ STATIC void emit_write_bytecode_byte_ptr(emit_t *emit, byte b, void *ptr) {
     *c = (mp_uint_t)ptr;
 }
 
-/* currently unused
-STATIC void emit_write_bytecode_byte_uint_uint(emit_t *emit, byte b, mp_uint_t num1, mp_uint_t num2) {
-    emit_write_bytecode_byte(emit, b);
-    emit_write_bytecode_byte_uint(emit, num1);
-    emit_write_bytecode_byte_uint(emit, num2);
-}
-*/
-
-STATIC void emit_write_bytecode_byte_qstr(emit_t *emit, byte b, qstr qst) {
+STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, byte b, qstr qst) {
     emit_write_bytecode_byte_uint(emit, b, qst);
 }
 
@@ -289,19 +281,26 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->bytecode_offset = 0;
     emit->code_info_offset = 0;
 
-    // Write code info size as compressed uint.  If we are not in the final pass
-    // then space for this uint is reserved in emit_bc_end_pass.
-    if (pass == MP_PASS_EMIT) {
-        emit_write_code_info_uint(emit, emit->code_info_size);
+    // Write local state size and exception stack size.
+    {
+        mp_uint_t n_state = scope->num_locals + scope->stack_size;
+        if (n_state == 0) {
+            // Need at least 1 entry in the state, in the case an exception is
+            // propagated through this function, the exception is returned in
+            // the highest slot in the state (fastn[0], see vm.c).
+            n_state = 1;
+        }
+        emit_write_code_info_uint(emit, n_state);
+        emit_write_code_info_uint(emit, scope->exc_stack_size);
     }
 
-    // write the name and source file of this function
-    emit_write_code_info_qstr(emit, scope->simple_name);
-    emit_write_code_info_qstr(emit, scope->source_file);
+    // Align code-info so that following pointers are aligned on a machine word.
+    emit_align_code_info_to_machine_word(emit);
 
-    // bytecode prelude: argument names (needed to resolve positional args passed as keywords)
-    // we store them as full word-sized objects for efficient access in mp_setup_code_state
-    // this is the start of the prelude and is guaranteed to be aligned on a word boundary
+    // Write argument names (needed to resolve positional args passed as
+    // keywords).  We store them as full word-sized objects for efficient access
+    // in mp_setup_code_state this is the start of the prelude and is guaranteed
+    // to be aligned on a word boundary.
     {
         // For a given argument position (indexed by i) we need to find the
         // corresponding id_info which is a parameter, as it has the correct
@@ -322,22 +321,22 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
                     break;
                 }
             }
-            emit_write_bytecode_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(qst));
+            emit_write_code_info_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(qst));
         }
     }
 
-    // bytecode prelude: local state size and exception stack size
-    {
-        mp_uint_t n_state = scope->num_locals + scope->stack_size;
-        if (n_state == 0) {
-            // Need at least 1 entry in the state, in the case an exception is
-            // propagated through this function, the exception is returned in
-            // the highest slot in the state (fastn[0], see vm.c).
-            n_state = 1;
-        }
-        emit_write_bytecode_uint(emit, n_state);
-        emit_write_bytecode_uint(emit, scope->exc_stack_size);
+    // Write size of the rest of the code info.  We don't know how big this
+    // variable uint will be on the MP_PASS_CODE_SIZE pass so we reserve 2 bytes
+    // for it and hope that is enough!  TODO assert this or something.
+    if (pass == MP_PASS_EMIT) {
+        emit_write_code_info_uint(emit, emit->code_info_size - emit->code_info_offset);
+    } else  {
+        emit_get_cur_to_write_code_info(emit, 2);
     }
+
+    // Write the name and source file of this function.
+    emit_write_code_info_qstr(emit, scope->simple_name);
+    emit_write_code_info_qstr(emit, scope->source_file);
 
     // bytecode prelude: initialise closed over variables
     for (int i = 0; i < scope->id_info_len; i++) {
@@ -360,25 +359,10 @@ void mp_emit_bc_end_pass(emit_t *emit) {
         mp_printf(&mp_plat_print, "ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info
+    emit_write_code_info_byte(emit, 0); // end of line number info
 
     if (emit->pass == MP_PASS_CODE_SIZE) {
-        // Need to make sure we have enough room in the code-info block to write
-        // the size of the code-info block.  Since the size is written as a
-        // compressed uint, we don't know its size until we write it!  Thus, we
-        // take the biggest possible value it could be and write that here.
-        // Then there will be enough room to write the value, and any leftover
-        // space will be absorbed in the alignment at the end of the code-info
-        // block.
-        mp_uint_t max_code_info_size =
-            emit->code_info_offset  // current code-info size
-            + BYTES_FOR_INT         // maximum space for compressed uint
-            + BYTES_PER_WORD - 1;   // maximum space for alignment padding
-        emit_write_code_info_uint(emit, max_code_info_size);
-
-        // Align code-info so that following bytecode is aligned on a machine word.
-        // We don't need to write anything here, it's just dead space between the
-        // code-info block and the bytecode block that follows it.
+        // so bytecode is aligned
         emit_align_code_info_to_machine_word(emit);
 
         // calculate size of total code-info + bytecode, in bytes

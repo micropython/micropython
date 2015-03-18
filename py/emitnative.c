@@ -566,8 +566,6 @@ struct _emit_t {
     stack_info_t *stack_info;
     vtype_kind_t saved_stack_vtype;
 
-    int code_info_size;
-    int code_info_offset;
     int prelude_offset;
     int n_state;
     int stack_start;
@@ -774,10 +772,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_ARG_1);
         #endif
 
-        // set code_state.code_info (offset from start of this function to code_info data)
-        // XXX this encoding may change size
-        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->code_info_offset, offsetof(mp_code_state, code_info) / sizeof(mp_uint_t), REG_ARG_1);
-
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
         ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state, ip) / sizeof(mp_uint_t), REG_ARG_1);
@@ -829,11 +823,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     }
 
     if (!emit->do_viper_types) {
-        // write dummy code info (for mp_setup_code_state to parse) and arg names
-        emit->code_info_offset = ASM_GET_CODE_POS(emit->as);
-        ASM_DATA(emit->as, 1, emit->code_info_size);
+        emit->prelude_offset = ASM_GET_CODE_POS(emit->as);
         ASM_ALIGN(emit->as, ASM_WORD_SIZE);
-        emit->code_info_size = ASM_GET_CODE_POS(emit->as) - emit->code_info_offset;
+
+        // write argument names as qstr objects
         // see comment in corresponding part of emitbc.c about the logic here
         for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
             qstr qst = MP_QSTR__star_;
@@ -847,8 +840,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             ASM_DATA(emit->as, ASM_WORD_SIZE, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
         }
 
+        // write dummy code info (for mp_setup_code_state to parse)
+        ASM_DATA(emit->as, 1, 1);
+
         // bytecode prelude: initialise closed over variables
-        emit->prelude_offset = ASM_GET_CODE_POS(emit->as);
         for (int i = 0; i < emit->scope->id_info_len; i++) {
             id_info_t *id = &emit->scope->id_info[i];
             if (id->kind == ID_INFO_KIND_CELL) {
