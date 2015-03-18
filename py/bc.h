@@ -29,6 +29,30 @@
 #include "py/runtime.h"
 #include "py/obj.h"
 
+// bytecode layout:
+//
+//  n_state         : var uint
+//  n_exc_stack     : var uint
+//
+//  <word alignment padding>
+//
+//  argname0        : obj (qstr)
+//  ...             : obj (qstr)
+//  argnameN        : obj (qstr)    N = num_pos_args + num_kwonly_args
+//
+//  code_info_size  : var uint |    code_info_size counts bytes in this chunk
+//  simple_name     : var qstr |
+//  source_file     : var qstr |
+//  <line number info>         |
+//  <word alignment padding>   |
+//
+//  num_cells       : byte          number of locals that are cells
+//  local_num0      : byte
+//  ...             : byte
+//  local_numN      : byte          N = num_cells
+//
+//  <bytecode>
+
 // Exception stack entry
 typedef struct _mp_exc_stack {
     const byte *handler;
