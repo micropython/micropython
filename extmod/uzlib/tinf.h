@@ -76,7 +76,7 @@ int TINFCC tinf_zlib_uncompress_dyn(TINF_DATA *d, unsigned int sourceLen);
 
 /* high-level API */
 
-void TINFCC tinf_init();
+void TINFCC tinf_init(void);
 
 int TINFCC tinf_uncompress(void *dest, unsigned int *destLen,
                            const void *source, unsigned int sourceLen);
