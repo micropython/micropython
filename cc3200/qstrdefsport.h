@@ -142,7 +142,6 @@ Q(recv)
 Q(mem_read)
 Q(mem_write)
 Q(MASTER)
-Q(SLAVE)
 
 // for ADC class
 Q(ADC)
