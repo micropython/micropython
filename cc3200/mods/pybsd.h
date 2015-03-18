@@ -27,11 +27,10 @@
 #define PYBSD_H_
 
 #if MICROPY_HW_HAS_SDCARD
-void pybsd_init0 (void);
-bool pybsd_is_present(void);
-void pybsd_deinit (void);
-
 extern const mp_obj_type_t pyb_sd_type;
+
+void pybsd_init0 (void);
+void pybsd_deinit (void);
 #endif
 
 #endif // PYBSD_H_

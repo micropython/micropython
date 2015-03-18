@@ -20,6 +20,7 @@ typedef struct
 extern DiskInfo_t sd_disk_info;
 
 DSTATUS sd_disk_init (void);
+void sd_disk_deinit (void);
 DSTATUS sd_disk_status (void);
 bool sd_disk_ready (void);
 DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT bSectorCount);
