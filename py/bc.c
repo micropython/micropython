@@ -84,10 +84,8 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
-//    - code_state->code_info should be the offset in bytes from the start of
-//      the bytecode chunk to the start of the code-info within the bytecode
 //    - code_state->ip should contain the offset in bytes from the start of
-//      the bytecode chunk to the start of the prelude within the bytecode
+//      the bytecode chunk to just after n_state and n_exc_stack
 //    - code_state->n_state should be set to the state size (locals plus stack)
 void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
@@ -95,10 +93,16 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
     mp_obj_fun_bc_t *self = self_in;
     mp_uint_t n_state = code_state->n_state;
 
+    // ip comes in as an offset into bytecode, so turn it into a true pointer
+    code_state->ip = self->bytecode + (mp_uint_t)code_state->ip;
+
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
     #endif
-    code_state->code_info = self->bytecode + (mp_uint_t)code_state->code_info;
+
+    // align ip
+    code_state->ip = MP_ALIGN(code_state->ip, sizeof(mp_uint_t));
+
     code_state->sp = &code_state->state[0] - 1;
     code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
 
@@ -156,13 +160,8 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
             *var_pos_kw_args = dict;
         }
 
-        // get pointer to arg_names array at start of bytecode prelude
-        const mp_obj_t *arg_names;
-        {
-            const byte *code_info = code_state->code_info;
-            mp_uint_t code_info_size = mp_decode_uint(&code_info);
-            arg_names = (const mp_obj_t*)(code_state->code_info + code_info_size);
-        }
+        // get pointer to arg_names array
+        const mp_obj_t *arg_names = (const mp_obj_t*)code_state->ip;
 
         for (mp_uint_t i = 0; i < n_kw; i++) {
             mp_obj_t wanted_arg_name = kwargs[2 * i];
@@ -235,8 +234,19 @@ continue2:;
         }
     }
 
+    // get the ip and skip argument names
+    const byte *ip = code_state->ip;
+    ip += (self->n_pos_args + self->n_kwonly_args) * sizeof(mp_uint_t);
+
+    // store pointer to code_info and jump over it
+    {
+        code_state->code_info = ip;
+        const byte *ip2 = ip;
+        mp_uint_t code_info_size = mp_decode_uint(&ip2);
+        ip += code_info_size;
+    }
+
     // bytecode prelude: initialise closed over variables
-    const byte *ip = self->bytecode + (mp_uint_t)code_state->ip;
     mp_uint_t local_num;
     while ((local_num = *ip++) != 255) {
         code_state->state[n_state - 1 - local_num] =
