@@ -72,6 +72,7 @@ void mp_map_init(mp_map_t *map, mp_uint_t n) {
     map->used = 0;
     map->all_keys_are_qstrs = 1;
     map->table_is_fixed_array = 0;
+    map->is_ordered = 0;
 }
 
 void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) {
@@ -79,6 +80,7 @@ void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) 
     map->used = n;
     map->all_keys_are_qstrs = 1;
     map->table_is_fixed_array = 1;
+    map->is_ordered = 0;
     map->table = (mp_map_elem_t*)table;
 }
 
@@ -154,8 +156,11 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
     }
 
-    // if the map is a fixed array then we must do a brute force linear search
-    if (map->table_is_fixed_array) {
+    // if the map is a fixed or ordered array then we must do a brute force linear search
+    if (map->table_is_fixed_array || map->is_ordered) {
+        if (map->table_is_fixed_array && lookup_kind != MP_MAP_LOOKUP) {
+            return NULL;
+        }
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
                 if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {

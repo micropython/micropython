@@ -151,7 +151,8 @@ typedef struct _mp_map_elem_t {
 typedef struct _mp_map_t {
     mp_uint_t all_keys_are_qstrs : 1;
     mp_uint_t table_is_fixed_array : 1;
-    mp_uint_t used : (8 * sizeof(mp_uint_t) - 2);
+    mp_uint_t is_ordered : 1;
+    mp_uint_t used : (8 * sizeof(mp_uint_t) - 3);
     mp_uint_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;

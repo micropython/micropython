@@ -92,7 +92,7 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     dict->base.type = type_in;
     if (type_in == &mp_type_ordereddict) {
-        dict->map.table_is_fixed_array = 1;
+        dict->map.is_ordered = 1;
     }
     #endif
     if (n_args > 0 || n_kw > 0) {
@@ -241,9 +241,10 @@ STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
     other->map.all_keys_are_qstrs = self->map.all_keys_are_qstrs;
     other->map.table_is_fixed_array = 0;
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    other->map.is_ordered = 0;
     if (MP_UNLIKELY(self->base.type == &mp_type_ordereddict)) {
         other->base.type = self->base.type;
-        other->map.table_is_fixed_array = 1;
+        other->map.is_ordered = 1;
     }
     #endif
     memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
