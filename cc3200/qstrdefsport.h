@@ -149,10 +149,13 @@ Q(read)
 
 // for SD class
 Q(SD)
+Q(enable)
+Q(disable)
 
 // for RTC class
 Q(RTC)
 Q(datetime)
+Q(callback)
 
 // for time class
 Q(utime)
@@ -229,10 +232,13 @@ Q(WPS_PIN)
 
 // for WDT class
 Q(WDT)
+Q(enable)
 Q(kick)
 
 // for HeartBeat class
 Q(HeartBeat)
+Q(enable)
+Q(disable)
 
 // for callback class
 Q(init)
@@ -263,4 +269,20 @@ Q(SOFT_RESET)
 Q(WLAN_WAKE)
 Q(PIN_WAKE)
 Q(RTC_WAKE)
+
+// for SPI class
+Q(SPI)
+Q(mode)
+Q(baudrate)
+Q(bits)
+Q(submode)
+Q(cs)
+Q(init)
+Q(deinit)
+Q(send)
+Q(recv)
+Q(send_recv)
+Q(MASTER)
+Q(ACTIVE_LOW)
+Q(ACTIVE_HIGH)
 

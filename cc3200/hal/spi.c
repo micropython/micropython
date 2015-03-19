@@ -718,7 +718,7 @@ SPIReset(unsigned long ulBase)
 //! - \b SPI_WL_16
 //! - \b SPI_WL_32
 //!
-//! Active state of Chip[ Selece can be defined by:-
+//! Active state of Chip Select can be defined by:-
 //! - \b SPI_CS_ACTIVELOW
 //! - \b SPI_CS_ACTIVEHIGH
 //!

@@ -43,7 +43,7 @@
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
-#include "pybsystick.h"
+#include "mpsystick.h"
 #include "simplelink.h"
 #include "modwlan.h"
 #include "moduos.h"
@@ -62,6 +62,7 @@
 #include "pybsd.h"
 #include "pybwdt.h"
 #include "pybsleep.h"
+#include "pybspi.h"
 #include "utils.h"
 #include "gccollect.h"
 #include "mperror.h"
@@ -281,6 +282,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&pyb_spi_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Sleep),               (mp_obj_t)&pyb_sleep_obj },

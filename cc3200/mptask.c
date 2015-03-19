@@ -241,10 +241,7 @@ soft_reset_exit:
     pybsd_deinit();
 #endif
 
-    printf("PYB: soft reboot\n");
-
-    // wait for all bus transfers to complete
-    HAL_Delay(50);
+    printf("WiPy: soft reset\n");
 
     // disable wlan
     wlan_stop(SL_STOP_TIMEOUT_LONG);

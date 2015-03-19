@@ -105,7 +105,7 @@ typedef struct _pyb_i2c_obj_t {
 #define PYBI2C_MODE_MASTER                     (0)
 #define PYBI2C_MODE_SLAVE                      (1)
 
-#define PYBI2C_DEF_BAUD_RATE_HZ                (100000)
+#define PYBI2C_MIN_BAUD_RATE_HZ                (50000)
 #define PYBI2C_DEF_BAUD_RATE_HZ                (100000)
 #define PYBI2C_MAX_BAUD_RATE_HZ                (400000)
 
@@ -123,7 +123,7 @@ typedef struct _pyb_i2c_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_i2c_obj_t pyb_i2c_obj;
+STATIC pyb_i2c_obj_t pyb_i2c_obj = {.baudrate = 0};
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
@@ -140,6 +140,8 @@ STATIC void i2c_init (pyb_i2c_obj_t *self) {
 STATIC void i2c_deinit(void) {
     MAP_I2CMasterDisable(I2CA0_BASE);
     MAP_PRCMPeripheralClkDisable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+    // invalidate the baudrate
+    pyb_i2c_obj.baudrate = 0;
 }
 
 STATIC bool pyb_i2c_transaction(uint cmd, int timeout) {
@@ -287,11 +289,12 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self_in, mp_uint_t n_args, co
     mp_arg_parse_all(n_args, args, kw_args, PYB_I2C_INIT_NUM_ARGS, pyb_i2c_init_args, vals);
 
     if (vals[0].u_int != PYBI2C_MODE_MASTER) {
-        // thrown an exception since only master mode is supported for now
+        // thrown an exception since only master mode is supported
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
-    self->baudrate = MIN(vals[2].u_int, PYBI2C_MAX_BAUD_RATE_HZ);
+    // make sure the baudrate is between the valid range
+    self->baudrate = MIN(MAX(vals[2].u_int, PYBI2C_MIN_BAUD_RATE_HZ), PYBI2C_MAX_BAUD_RATE_HZ);
 
     // init the I2C bus
     i2c_init(self);
@@ -337,7 +340,12 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 
 STATIC void pyb_i2c_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
-    print(env, "<I2C0, I2C.MASTER, baudrate=%u>)", self->baudrate);
+    if (self->baudrate > 0) {
+        print(env, "<I2C0, I2C.MASTER, baudrate=%u>)", self->baudrate);
+    }
+    else {
+        print(env, "<I2C0>");
+    }
 }
 
 STATIC mp_obj_t pyb_i2c_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -545,7 +553,7 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *args, mp_map
     // determine width of mem_addr (1 or 2 bytes)
     mp_uint_t mem_addr_size = vals[4].u_int >> 3;
 
-    // Write the register address to be write to.
+    // Write the register address to write to.
     if (pyb_i2c_write (i2c_addr, (byte *)&mem_addr, mem_addr_size, false, vals[3].u_int)) {
         // Write the specified length of data
         if (pyb_i2c_write (i2c_addr, bufinfo.buf, bufinfo.len, true, vals[3].u_int)) {
