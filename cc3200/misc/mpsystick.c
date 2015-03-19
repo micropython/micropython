@@ -29,7 +29,7 @@
 #include MICROPY_HAL_H
 #include "py/obj.h"
 #include "irq.h"
-#include "pybsystick.h"
+#include "mpsystick.h"
 #include "systick.h"
 #include "inc/hw_types.h"
 #include "inc/hw_nvic.h"
