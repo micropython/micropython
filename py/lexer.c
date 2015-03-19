@@ -58,33 +58,33 @@ STATIC bool is_physical_newline(mp_lexer_t *lex) {
     return lex->chr0 == '\n';
 }
 
-STATIC bool is_char(mp_lexer_t *lex, char c) {
+STATIC bool is_char(mp_lexer_t *lex, byte c) {
     return lex->chr0 == c;
 }
 
-STATIC bool is_char_or(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_or(mp_lexer_t *lex, byte c1, byte c2) {
     return lex->chr0 == c1 || lex->chr0 == c2;
 }
 
-STATIC bool is_char_or3(mp_lexer_t *lex, char c1, char c2, char c3) {
+STATIC bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
 /*
-STATIC bool is_char_following(mp_lexer_t *lex, char c) {
+STATIC bool is_char_following(mp_lexer_t *lex, byte c) {
     return lex->chr1 == c;
 }
 */
 
-STATIC bool is_char_following_or(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_following_or(mp_lexer_t *lex, byte c1, byte c2) {
     return lex->chr1 == c1 || lex->chr1 == c2;
 }
 
-STATIC bool is_char_following_following_or(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_following_following_or(mp_lexer_t *lex, byte c1, byte c2) {
     return lex->chr2 == c1 || lex->chr2 == c2;
 }
 
-STATIC bool is_char_and(mp_lexer_t *lex, char c1, char c2) {
+STATIC bool is_char_and(mp_lexer_t *lex, byte c1, byte c2) {
     return lex->chr0 == c1 && lex->chr1 == c2;
 }
 

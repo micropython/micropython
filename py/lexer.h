@@ -141,7 +141,8 @@ typedef enum _mp_token_kind_t {
 // the next-byte function must return the next byte in the stream
 // it must return MP_LEXER_EOF if end of stream
 // it can be called again after returning MP_LEXER_EOF, and in that case must return MP_LEXER_EOF
-#define MP_LEXER_EOF (-1)
+#define MP_LEXER_EOF ((unichar)(-1))
+
 typedef mp_uint_t (*mp_lexer_stream_next_byte_t)(void*);
 typedef void (*mp_lexer_stream_close_t)(void*);
 

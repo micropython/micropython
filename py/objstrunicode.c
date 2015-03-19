@@ -53,7 +53,7 @@ STATIC void uni_print_quoted(void (*print)(void *env, const char *fmt, ...), voi
             has_double_quote = true;
         }
     }
-    int quote_char = '\'';
+    unichar quote_char = '\'';
     if (has_single_quote && !has_double_quote) {
         quote_char = '"';
     }

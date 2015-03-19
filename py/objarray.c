@@ -220,6 +220,8 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, mp_uint_t nitems, void *items) {
 }
 
 STATIC mp_obj_t memoryview_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    (void)type_in;
+
     // TODO possibly allow memoryview constructor to take start/stop so that one
     // can do memoryview(b, 4, 8) instead of memoryview(b)[4:8] (uses less RAM)
 
