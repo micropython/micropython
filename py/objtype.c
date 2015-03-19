@@ -131,8 +131,8 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             if (elem != NULL) {
                 lookup->dest[0] = elem->value;
                 if (lookup->is_type) {
-                    // If we look up class method, we need to pass original type there,
-                    // not type where we found a class method.
+                    // If we look up a class method, we need to return original type for which we
+                    // do a lookup, not a (base) type in which we found the class method.
                     const mp_obj_type_t *org_type = (const mp_obj_type_t*)lookup->obj;
                     instance_convert_return_attr(NULL, org_type, elem->value, lookup->dest);
                 } else {
@@ -425,7 +425,7 @@ STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *typ
         dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
         dest[1] = (mp_obj_t)type;
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
-        // Don't try to bind types
+        // Don't try to bind types (even though they're callable)
         dest[0] = member;
     } else if (mp_obj_is_callable(member)) {
         // return a bound method, with self being this object
