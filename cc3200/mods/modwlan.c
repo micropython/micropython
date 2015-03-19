@@ -416,7 +416,7 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Stop all other processes using the wlan engine
         if ((wlan_obj.servers_enabled = servers_are_enabled())) {
-            wlan_stop_servers();
+            servers_stop();
         }
 #endif
 
@@ -514,7 +514,7 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Start the servers again
         if (wlan_obj.servers_enabled) {
-            servers_enable();
+            servers_start();
         }
 #endif
         return MODWLAN_OK;
@@ -534,7 +534,7 @@ void wlan_stop (uint32_t timeout) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         // Stop all other processes using the wlan engine
         if ((wlan_obj.servers_enabled = servers_are_enabled())) {
-            wlan_stop_servers();
+            servers_stop();
         }
 #endif
         sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
@@ -553,15 +553,6 @@ void wlan_get_ip (uint32_t *ip) {
     if (ip) {
         *ip = IS_IP_ACQUIRED(wlan_obj.status) ? wlan_obj.ip : 0;
     }
-}
-
-void wlan_stop_servers (void) {
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-    servers_disable();
-    do {
-        HAL_Delay (5);
-    } while (servers_are_enabled());
-#endif
 }
 
 //*****************************************************************************
@@ -963,33 +954,6 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_callback_obj, 1, wlan_callback);
 
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-STATIC mp_obj_t wlan_serversstart(mp_obj_t self_in) {
-    servers_enable();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_serversstart_obj, wlan_serversstart);
-
-STATIC mp_obj_t wlan_serversstop(mp_obj_t self_in) {
-    wlan_stop_servers();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_serversstop_obj, wlan_serversstop);
-
-STATIC mp_obj_t wlan_serversenabled(mp_obj_t self_in) {
-    return MP_BOOL(servers_are_enabled());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_serversenabled_obj, wlan_serversenabled);
-
-STATIC mp_obj_t wlan_serversuserpass(mp_obj_t self_in, mp_obj_t user, mp_obj_t pass) {
-    const char *_user = mp_obj_str_get_str(user);
-    const char *_pass = mp_obj_str_get_str(pass);
-    servers_set_user_pass((char *)_user, (char *)_pass);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(wlan_serversuserpass_obj, wlan_serversuserpass);
-#endif
-
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
@@ -998,12 +962,6 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),            (mp_obj_t)&wlan_ifconfig_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback),            (mp_obj_t)&wlan_callback_obj },
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_start_servers),       (mp_obj_t)&wlan_serversstart_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stop_servers),        (mp_obj_t)&wlan_serversstop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_servers_enabled),     (mp_obj_t)&wlan_serversenabled_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_servers_userpass),    (mp_obj_t)&wlan_serversuserpass_obj },
-#endif
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_OPEN) },

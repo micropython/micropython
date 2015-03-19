@@ -162,7 +162,7 @@ soft_reset:
     mptask_init_sflash_filesystem();
 
     // enable telnet and ftp servers
-    servers_enable();
+    servers_start();
 
     // append the SFLASH paths to the system path
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH));

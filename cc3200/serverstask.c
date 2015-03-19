@@ -125,28 +125,31 @@ void TASK_Servers (void *pvParameters) {
     }
 }
 
-void servers_enable (void) {
+void servers_start (void) {
     servers_data.do_disable = false;
     servers_data.do_enable = true;
 }
 
-void servers_disable (void) {
+void servers_stop (void) {
     servers_data.do_enable = false;
     servers_data.do_disable = true;
+    do {
+        HAL_Delay (SERVERS_CYCLE_TIME_MS);
+    } while (servers_are_enabled());
 }
 
 bool servers_are_enabled (void) {
     return servers_data.enabled;
 }
 
-void servers_close_socket (_i16 *sd) {
+void servers_close_socket (int16_t *sd) {
     if (*sd > 0) {
         sl_Close(*sd);
         *sd = -1;
     }
 }
 
-void servers_set_user_pass (char *user, char *pass) {
+void servers_set_login (char *user, char *pass) {
     memcpy(servers_user, user, SERVERS_USER_LEN_MAX);
     memcpy(servers_pass, pass, SERVERS_PASS_LEN_MAX);
 }

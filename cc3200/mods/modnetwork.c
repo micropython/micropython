@@ -33,6 +33,7 @@
 #include MICROPY_HAL_H
 #include "modnetwork.h"
 #include "mpexception.h"
+#include "serverstask.h"
 
 /// \module network - network configuration
 ///
@@ -68,10 +69,44 @@ STATIC mp_obj_t network_route(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+STATIC mp_obj_t network_server_start(void) {
+    servers_start();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_start_obj, network_server_start);
+
+STATIC mp_obj_t network_server_stop(void) {
+    servers_stop();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_stop_obj, network_server_stop);
+
+STATIC mp_obj_t network_server_enabled(void) {
+    return MP_BOOL(servers_are_enabled());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_enabled_obj, network_server_enabled);
+
+STATIC mp_obj_t network_server_login(mp_obj_t user, mp_obj_t pass) {
+    const char *_user = mp_obj_str_get_str(user);
+    const char *_pass = mp_obj_str_get_str(pass);
+    servers_set_login ((char *)_user, (char *)_pass);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(network_server_login_obj, network_server_login);
+#endif
+
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),    MP_OBJ_NEW_QSTR(MP_QSTR_network) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN),        (mp_obj_t)&mod_network_nic_type_wlan },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_route),       (mp_obj_t)&network_route_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_network) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN),                (mp_obj_t)&mod_network_nic_type_wlan },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_route),               (mp_obj_t)&network_route_obj },
+
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+    { MP_OBJ_NEW_QSTR(MP_QSTR_start_server),        (mp_obj_t)&network_server_start_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop_server),         (mp_obj_t)&network_server_stop_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_server_enabled),      (mp_obj_t)&network_server_enabled_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_server_login),        (mp_obj_t)&network_server_login_obj },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);

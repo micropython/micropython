@@ -60,6 +60,5 @@ extern void wlan_first_start (void);
 extern void wlan_stop (uint32_t timeout);
 extern void wlan_get_mac (uint8_t *macAddress);
 extern void wlan_get_ip (uint32_t *ip);
-extern void wlan_stop_servers (void);
 
 #endif /* MODWLAN_H_ */
