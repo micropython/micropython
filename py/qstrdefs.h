@@ -148,6 +148,10 @@ Q(object)
 
 Q(NoneType)
 
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+Q(OrderedDict)
+#endif
+
 Q(abs)
 Q(all)
 Q(any)

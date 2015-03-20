@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "py/mpconfig.h"
@@ -71,6 +72,7 @@ void mp_map_init(mp_map_t *map, mp_uint_t n) {
     map->used = 0;
     map->all_keys_are_qstrs = 1;
     map->table_is_fixed_array = 0;
+    map->is_ordered = 0;
 }
 
 void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) {
@@ -78,6 +80,7 @@ void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) 
     map->used = n;
     map->all_keys_are_qstrs = 1;
     map->table_is_fixed_array = 1;
+    map->is_ordered = 0;
     map->table = (mp_map_elem_t*)table;
 }
 
@@ -153,17 +156,35 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
     }
 
-    // if the map is a fixed array then we must do a brute force linear search
-    if (map->table_is_fixed_array) {
-        if (lookup_kind != MP_MAP_LOOKUP) {
+    // if the map is a fixed or ordered array then we must do a brute force linear search
+    if (map->table_is_fixed_array || map->is_ordered) {
+        if (map->table_is_fixed_array && lookup_kind != MP_MAP_LOOKUP) {
             return NULL;
         }
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
+                if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {
+                    elem->key = MP_OBJ_SENTINEL;
+                    // keep elem->value so that caller can access it if needed
+                }
                 return elem;
             }
         }
-        return NULL;
+        if (MP_LIKELY(lookup_kind != MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
+            return NULL;
+        }
+        if (map->used == map->alloc) {
+            // TODO: Alloc policy
+            map->alloc += 4;
+            map->table = m_renew(mp_map_elem_t, map->table, map->used, map->alloc);
+            mp_seq_clear(map->table, map->used, map->alloc, sizeof(*map->table));
+        }
+        mp_map_elem_t *elem = map->table + map->used++;
+        elem->key = index;
+        if (!MP_OBJ_IS_QSTR(index)) {
+            map->all_keys_are_qstrs = 0;
+        }
+        return elem;
     }
 
     // map is a hash table (not a fixed array), so do a hash lookup
