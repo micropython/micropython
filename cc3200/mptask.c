@@ -144,15 +144,13 @@ soft_reset:
 
     mperror_enable_heartbeat();
 
-    if (MAP_PRCMSysResetCauseGet() != PRCM_HIB_EXIT) {
-        // only if not comming out of hibernate
+    if (pybsleep_get_reset_cause() < PYB_SLP_HIB_RESET) {
+        // only if not comming out of hibernate or a soft reset
         mptask_enter_ap_mode();
-        // don't check for safeboot when comming out of hibernate
     #ifndef DEBUG
         safeboot = PRCMIsSafeBootRequested();
     #endif
-    }
-    else {
+    } else {
         // when waking up from hibernate we just want
         // to enable simplelink and leave it as is
         wlan_first_start();
@@ -218,7 +216,7 @@ soft_reset:
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
-    for (;;) {
+    for ( ; ; ) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
                 break;

@@ -226,6 +226,10 @@ void pybsleep_configure_timer_wakeup (uint pwrmode) {
     pybsleep_wake_cb.timer_wake_pwrmode = pwrmode;
 }
 
+pybsleep_reset_cause_t pybsleep_get_reset_cause (void) {
+    return pybsleep_reset_cause;
+}
+
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
