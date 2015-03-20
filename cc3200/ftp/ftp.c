@@ -66,8 +66,8 @@
 #define FTP_UNIX_TIME_20000101              946684800
 #define FTP_UNIX_TIME_20150101              1420070400
 #define FTP_UNIX_SECONDS_180_DAYS           15552000
-#define FTP_DATA_TIMEOUT_MS                 5000        // 5 seconds
-#define FTP_CMD_TIMEOUT_MS                  120000      // 2 minutes
+#define FTP_DATA_TIMEOUT_MS                 5000            // 5 seconds
+#define FTP_CMD_TIMEOUT_MS                  300000          // 5 minutes
 #define FTP_SOCKETFIFO_ELEMENTS_MAX         4
 #define FTP_CYCLE_TIME_MS                   (SERVERS_CYCLE_TIME_MS * 2)
 
@@ -119,6 +119,7 @@ typedef enum {
 
 typedef struct {
     uint8_t             *dBuffer;
+    uint32_t            ctimeout;
     union {
         DIR             dp;
         FIL             fp;
@@ -126,7 +127,6 @@ typedef struct {
     int16_t             lc_sd;
     int16_t             ld_sd;
     int16_t             c_sd;
-    int16_t             ctimeout;
     int16_t             d_sd;
     int16_t             dtimeout;
     ftp_state_t         state;
@@ -212,7 +212,6 @@ static void ftp_process_cmd (void);
 static void ftp_close_files (void);
 static void ftp_close_filesystem_on_error (void);
 static void ftp_close_cmd_data (void);
-static void ftp_reset (void);
 static ftp_cmd_index_t ftp_pop_command (char **str);
 static void ftp_pop_param (char **str, char *param);
 static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno);
@@ -404,6 +403,16 @@ void ftp_disable (void) {
     ftp_reset();
     ftp_data.enabled = false;
     ftp_data.state = E_FTP_STE_DISABLED;
+}
+
+void ftp_reset (void) {
+    // close all connections and start all over again
+    servers_close_socket(&ftp_data.lc_sd);
+    servers_close_socket(&ftp_data.ld_sd);
+    ftp_close_cmd_data();
+    ftp_data.state = E_FTP_STE_START;
+    ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+    SOCKETFIFO_Flush();
 }
 
 /******************************************************************************
@@ -846,16 +855,6 @@ static void ftp_close_cmd_data (void) {
     servers_close_socket(&ftp_data.c_sd);
     servers_close_socket(&ftp_data.d_sd);
     ftp_close_filesystem_on_error ();
-}
-
-static void ftp_reset (void) {
-    // close all connections and start all over again
-    servers_close_socket(&ftp_data.lc_sd);
-    servers_close_socket(&ftp_data.ld_sd);
-    ftp_close_cmd_data();
-    ftp_data.state = E_FTP_STE_START;
-    ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
-    SOCKETFIFO_Flush();
 }
 
 static ftp_cmd_index_t ftp_pop_command (char **str) {

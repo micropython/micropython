@@ -48,7 +48,7 @@
 #define TELNET_TX_RETRIES_MAX               25
 #define TELNET_WAIT_TIME_MS                 7
 #define TELNET_LOGIN_RETRIES_MAX            3
-#define TELNET_TIMEOUT_MS                   300000        // 5 minutes
+#define TELNET_TIMEOUT_MS                   1800000        // 30 minutes
 #define TELNET_CYCLE_TIME_MS                (SERVERS_CYCLE_TIME_MS * 2)
 
 /******************************************************************************
@@ -87,11 +87,11 @@ typedef union {
 
 typedef struct {
     uint8_t             *rxBuffer;
+    uint32_t            timeout;
     int16_t             sd;
     int16_t             n_sd;
     int16_t             rxWindex;
     int16_t             rxRindex;
-    uint16_t            timeout;
     telnet_state_t      state;
     telnet_substate_t   substate;
     uint8_t             txRetries;
@@ -128,7 +128,7 @@ static telnet_result_t telnet_recv_text_non_blocking (void *buff, _i16 Maxlen, _
 static void telnet_process (void);
 static void telnet_parse_input (uint8_t *str, int16_t *len);
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len);
-static void telnet_reset (void);
+static void telnet_reset_buffer (void);
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -162,6 +162,8 @@ void telnet_run (void) {
                 telnet_send_and_proceed((void *)telnet_options_user, sizeof(telnet_options_user), E_TELNET_STE_SUB_REQ_USER);
                 break;
             case E_TELNET_STE_SUB_REQ_USER:
+                // to catch any left over characters from the previous actions
+                telnet_recv_text_non_blocking(telnet_data.rxBuffer, TELNET_RX_BUFFER_SIZE, &rxLen);
                 telnet_send_and_proceed((void *)telnet_request_user, strlen(telnet_request_user), E_TELNET_STE_SUB_GET_USER);
                 break;
             case E_TELNET_STE_SUB_GET_USER:
@@ -170,20 +172,20 @@ void telnet_run (void) {
                     if (rxLen < 2 || memcmp(servers_user, (const char *)telnet_data.rxBuffer, MAX((rxLen - 2), strlen(servers_user)))) {
                         telnet_data.credentialsValid = false;
                     }
-                    telnet_data.substate.connected = E_TELNET_STE_SUB_SND_PASSWORD_OPTIONS;
+                    telnet_data.substate.connected = E_TELNET_STE_SUB_REQ_PASSWORD;
                 }
                 break;
-            case E_TELNET_STE_SUB_SND_PASSWORD_OPTIONS:
-                telnet_send_and_proceed((void *)telnet_options_pass, sizeof(telnet_options_pass), E_TELNET_STE_SUB_REQ_PASSWORD);
-                break;
             case E_TELNET_STE_SUB_REQ_PASSWORD:
-                telnet_send_and_proceed((void *)telnet_request_password, strlen(telnet_request_password), E_TELNET_STE_SUB_GET_PASSWORD);
-                // to catch a possible "/r/n" that was left
+                telnet_send_and_proceed((void *)telnet_request_password, strlen(telnet_request_password), E_TELNET_STE_SUB_SND_PASSWORD_OPTIONS);
+                break;
+            case E_TELNET_STE_SUB_SND_PASSWORD_OPTIONS:
+                // to catch any left over characters from the previous actions
                 telnet_recv_text_non_blocking(telnet_data.rxBuffer, TELNET_RX_BUFFER_SIZE, &rxLen);
+                telnet_send_and_proceed((void *)telnet_options_pass, sizeof(telnet_options_pass), E_TELNET_STE_SUB_GET_PASSWORD);
                 break;
             case E_TELNET_STE_SUB_GET_PASSWORD:
                 if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(telnet_data.rxBuffer, TELNET_RX_BUFFER_SIZE, &rxLen)) {
-                    // Skip /r/n
+                    // skip /r/n
                     if (rxLen < 2 || memcmp(servers_pass, (const char *)telnet_data.rxBuffer, MAX((rxLen - 2), strlen(servers_pass)))) {
                         telnet_data.credentialsValid = false;
                     }
@@ -211,7 +213,9 @@ void telnet_run (void) {
                 break;
             case E_TELNET_STE_SUB_LOGGIN_SUCCESS:
                 if (E_TELNET_RESULT_OK == telnet_send_non_blocking((void *)telnet_loggin_success, strlen(telnet_loggin_success))) {
-                    // fake "enter" key pressed to display the prompt
+                    // clear the current line
+                    telnet_reset_buffer();
+                    // fake an "enter" key pressed to display the prompt
                     telnet_data.rxBuffer[telnet_data.rxWindex++] = '\r';
                     telnet_data.state= E_TELNET_STE_LOGGED_IN;
                 }
@@ -280,6 +284,13 @@ void telnet_disable (void) {
     telnet_reset();
     telnet_data.enabled = false;
     telnet_data.state = E_TELNET_STE_DISABLED;
+}
+
+void telnet_reset (void) {
+    // close the connection and start all over again
+    servers_close_socket(&telnet_data.n_sd);
+    servers_close_socket(&telnet_data.sd);
+    telnet_data.state = E_TELNET_STE_START;
 }
 
 bool telnet_is_enabled (void) {
@@ -389,7 +400,6 @@ static telnet_result_t telnet_send_non_blocking (void *data, _i16 Len) {
 
 static telnet_result_t telnet_recv_text_non_blocking (void *buff, _i16 Maxlen, _i16 *rxLen) {
     *rxLen = sl_Recv(telnet_data.n_sd, buff, Maxlen, 0);
-
     // if there's data received, parse it
     if (*rxLen > 0) {
         telnet_data.timeout = 0;
@@ -446,7 +456,6 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
 
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len) {
     int32_t retries = 0;
-
     // abort sending if we happen to be within interrupt context
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0) {
         do {
@@ -460,13 +469,11 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
             HAL_Delay (TELNET_WAIT_TIME_MS);
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
-
     return false;
 }
 
-static void telnet_reset (void) {
-    // close the connection and start all over again
-    servers_close_socket(&telnet_data.n_sd);
-    servers_close_socket(&telnet_data.sd);
-    telnet_data.state = E_TELNET_STE_START;
+static void telnet_reset_buffer (void) {
+    memset (telnet_data.rxBuffer, '\b', TELNET_RX_BUFFER_SIZE / 2);
+    telnet_data.rxWindex = TELNET_RX_BUFFER_SIZE / 2;
 }
+

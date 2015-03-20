@@ -38,6 +38,7 @@ extern bool telnet_rx_any (void);
 extern int  telnet_rx_char (void);
 extern void telnet_enable (void);
 extern void telnet_disable (void);
+extern void telnet_reset (void);
 extern bool telnet_is_enabled (void);
 extern bool telnet_is_active (void);
 

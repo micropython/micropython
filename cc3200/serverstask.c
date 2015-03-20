@@ -54,12 +54,13 @@ typedef struct {
     volatile bool enabled;
     volatile bool do_disable;
     volatile bool do_enable;
+    volatile bool do_reset;
 }servers_Data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false};
+static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false, .do_reset = false};
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -74,7 +75,6 @@ char *servers_pass;
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-
 void TASK_Servers (void *pvParameters) {
 
     bool cycle = false;
@@ -91,13 +91,20 @@ void TASK_Servers (void *pvParameters) {
 
         if (servers_data.enabled) {
             if (servers_data.do_disable) {
-                servers_data.do_disable = false;
-                // disable all net processes
+                // disable network services
                 telnet_disable();
                 ftp_disable();
-
-                // now clear the flag
+                // now clear the flags
+                servers_data.do_disable = false;
+                servers_data.do_reset = false;
                 servers_data.enabled = false;
+            }
+            else if (servers_data.do_reset) {
+                // reset network services
+                telnet_reset();
+                ftp_reset();
+                // clear the flag
+                servers_data.do_reset = false;
             }
             else {
                 if (cycle) {
@@ -109,15 +116,15 @@ void TASK_Servers (void *pvParameters) {
             }
         }
         else if (servers_data.do_enable) {
-            servers_data.do_enable = false;
-
+            // enable network services
             telnet_enable();
             ftp_enable();
-
-            // now set the flag
+            // now set/clear the flags
             servers_data.enabled = true;
+            servers_data.do_enable = false;
         }
 
+        // move to the next cycle
         cycle = cycle ? false : true;
         HAL_Delay(SERVERS_CYCLE_TIME_MS);
         // set the alive flag for the wdt
@@ -130,12 +137,18 @@ void servers_start (void) {
     servers_data.do_enable = true;
 }
 
+void servers_reset (void) {
+    servers_data.do_reset = true;
+}
+
 void servers_stop (void) {
     servers_data.do_enable = false;
     servers_data.do_disable = true;
     do {
         HAL_Delay (SERVERS_CYCLE_TIME_MS);
     } while (servers_are_enabled());
+    // clear the last command line
+    telnet_reset();
 }
 
 bool servers_are_enabled (void) {

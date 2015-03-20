@@ -78,21 +78,22 @@ typedef enum{
 }e_StatusBits;
 
 typedef struct _wlan_obj_t {
-    mp_obj_base_t   base;
-    SlWlanMode_t    mode;
-    uint32_t        status;
+    mp_obj_base_t       base;
+    SlWlanMode_t        mode;
+    uint32_t            status;
 
-    uint32_t        ip;
-    uint32_t        gateway;
-    uint32_t        dns;
+    uint32_t            ip;
+    uint32_t            gateway;
+    uint32_t            dns;
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-    bool            servers_enabled;
+    bool                servers_enabled;
 #endif
-    uint8_t         security;
-    uint8_t         mac[SL_MAC_ADDR_LEN];
-    uint8_t         ssid[33];
-    uint8_t         bssid[6];
+    uint8_t             security;
+    uint8_t             mac[SL_MAC_ADDR_LEN];
+    uint8_t             ssid[33];
+    uint8_t             bssid[6];
+    volatile uint8_t    stasconnected;
 
 } wlan_obj_t;
 
@@ -162,6 +163,7 @@ STATIC wlan_obj_t wlan_obj = {
         .ssid = {0},
         .bssid = {0},
         .mac = {0},
+        .stasconnected = 0,
 };
 
 STATIC const mp_cb_methods_t wlan_cb_methods;
@@ -193,7 +195,7 @@ STATIC void wlan_lpds_callback_disable (mp_obj_t self_in);
 //*****************************************************************************
 void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
 {
-    if(!pWlanEvent) {
+    if (!pWlanEvent) {
         return;
     }
 
@@ -202,44 +204,34 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
         case SL_WLAN_CONNECT_EVENT:
         {
             SET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
-            //
-            // Information about the connected AP (like name, MAC etc) will be
-            // available in 'slWlanConnectAsyncResponse_t'-Applications
-            // can use it if required
-            //
+
             slWlanConnectAsyncResponse_t *pEventData = &pWlanEvent->EventData.STAandP2PModeWlanConnected;
 
-            // Copy new connection SSID and BSSID to global parameters
+            // copy the new connection data
             memcpy(wlan_obj.ssid, pEventData->ssid_name, pEventData->ssid_len);
             memcpy(wlan_obj.bssid, pEventData->bssid, SL_BSSID_LENGTH);
         }
             break;
         case SL_WLAN_DISCONNECT_EVENT:
         {
-            slWlanConnectAsyncResponse_t*  pEventData = NULL;
-
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED);
 
-            pEventData = &pWlanEvent->EventData.STAandP2PModeDisconnected;
-
-            // If the user has initiated the 'Disconnect' request,
-            //'reason_code' is SL_USER_INITIATED_DISCONNECTION
-            if (SL_USER_INITIATED_DISCONNECTION == pEventData->reason_code) {
-                // TODO ...
-            }
-            else {
-                // TODO: Maybe trow an exception?
-            }
             memset(wlan_obj.ssid, 0, sizeof(wlan_obj.ssid));
             memset(wlan_obj.bssid, 0, sizeof(wlan_obj.bssid));
         }
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
-            // TODO
+            wlan_obj.stasconnected++;
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
-            // TODO
+            if (wlan_obj.stasconnected > 0) {
+                if (--wlan_obj.stasconnected == 0) {
+                #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+                    servers_reset();
+                #endif
+                }
+            }
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
             // TODO
