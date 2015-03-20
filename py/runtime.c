@@ -857,13 +857,13 @@ mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
 // no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
 // normal attribute found, returns: dest[0] == <attribute>, dest[1] == MP_OBJ_NULL
 // method attribute found, returns: dest[0] == <method>,    dest[1] == <self>
-void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
+void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     // clear output to indicate no attribute/method found yet
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
 
     // get the type
-    mp_obj_type_t *type = mp_obj_get_type(base);
+    mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // look for built-in names
     if (0) {
@@ -875,11 +875,11 @@ void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 
     } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
         dest[0] = (mp_obj_t)&mp_builtin_next_obj;
-        dest[1] = base;
+        dest[1] = obj;
 
     } else if (type->load_attr != NULL) {
         // this type can do its own load, so call it
-        type->load_attr(base, attr, dest);
+        type->load_attr(obj, attr, dest);
 
     } else if (type->locals_dict != NULL) {
         // generic method lookup
@@ -896,14 +896,14 @@ void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_classmethod)) {
                 // return a bound method, with self being the type of this object
                 dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
-                dest[1] = mp_obj_get_type(base);
+                dest[1] = type;
             } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_type)) {
                 // Don't try to bind types
                 dest[0] = elem->value;
             } else if (mp_obj_is_callable(elem->value)) {
                 // return a bound method, with self being this object
                 dest[0] = elem->value;
-                dest[1] = base;
+                dest[1] = obj;
             } else {
                 // class member is a value, so just return that value
                 dest[0] = elem->value;
