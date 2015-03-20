@@ -159,11 +159,12 @@ typedef struct _mp_map_t {
     mp_map_elem_t *table;
 } mp_map_t;
 
-// These can be or'd together
+// mp_set_lookup requires these constants to have the values they do
 typedef enum _mp_map_lookup_kind_t {
-    MP_MAP_LOOKUP,                    // 0
-    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND,   // 1
-    MP_MAP_LOOKUP_REMOVE_IF_FOUND,    // 2
+    MP_MAP_LOOKUP = 0,
+    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND = 1,
+    MP_MAP_LOOKUP_REMOVE_IF_FOUND = 2,
+    MP_MAP_LOOKUP_ADD_IF_NOT_FOUND_OR_REMOVE_IF_FOUND = 3, // only valid for mp_set_lookup
 } mp_map_lookup_kind_t;
 
 extern const mp_map_t mp_const_empty_map;

@@ -150,7 +150,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
             // and it won't necessarily benefit subsequent calls because these calls
             // most likely won't pass the newly-interned string.
             compare_only_ptrs = false;
-        } else if (!(lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
+        } else if (lookup_kind != MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             // If we are not adding, then we can return straight away a failed
             // lookup because we know that the index will never be found.
             return NULL;
@@ -193,7 +193,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     // map is a hash table (not an ordered array), so do a hash lookup
 
     if (map->alloc == 0) {
-        if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+        if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             mp_map_rehash(map);
         } else {
             return NULL;
@@ -208,7 +208,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         mp_map_elem_t *slot = &map->table[pos];
         if (slot->key == MP_OBJ_NULL) {
             // found NULL slot, so index is not in table
-            if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+            if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
                 map->used += 1;
                 if (avail_slot == NULL) {
                     avail_slot = slot;
@@ -230,7 +230,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         } else if (slot->key == index || (!compare_only_ptrs && mp_obj_equal(slot->key, index))) {
             // found index
             // Note: CPython does not replace the index; try x={True:'true'};x[1]='one';x
-            if (lookup_kind & MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
+            if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
                 // delete element in this slot
                 map->used--;
                 if (map->table[(pos + 1) % map->alloc].key == MP_OBJ_NULL) {
@@ -249,7 +249,7 @@ mp_map_elem_t* mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
         if (pos == start_pos) {
             // search got back to starting position, so index is not in table
-            if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+            if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
                 if (avail_slot != NULL) {
                     // there was an available slot, so use that
                     map->used++;
@@ -298,6 +298,9 @@ STATIC void mp_set_rehash(mp_set_t *set) {
 }
 
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
+    // Note: lookup_kind can be MP_MAP_LOOKUP_ADD_IF_NOT_FOUND_OR_REMOVE_IF_FOUND which
+    // is handled by using bitwise operations.
+
     if (set->alloc == 0) {
         if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             mp_set_rehash(set);
