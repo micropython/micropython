@@ -113,7 +113,7 @@ uint mpcallback_translate_priority (uint priority) {
 
 void mpcallback_handler (mp_obj_t self_in) {
     mpcallback_obj_t *self = self_in;
-    if (self->handler != mp_const_none) {
+    if (self && self->handler != mp_const_none) {
         // disable interrupts to avoid nesting
         uint primsk = disable_irq();
         // when executing code within a handler we must lock the GC to prevent

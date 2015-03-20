@@ -121,7 +121,7 @@ typedef struct {
  ******************************************************************************/
 STATIC const mp_obj_type_t pybsleep_type;
 STATIC nvic_reg_store_t    *nvic_reg_store;
-STATIC pybsleep_wake_cb_t   pybsleep_wake_cb;
+STATIC pybsleep_wake_cb_t   pybsleep_wake_cb = {NULL, NULL, NULL, 0};
 volatile arm_cm4_core_regs_t vault_arm_registers;
 STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
 
@@ -397,30 +397,22 @@ STATIC void PRCMInterruptHandler (void) {
     // reading the interrupt status automatically clears the interrupt
     if (PRCM_INT_SLOW_CLK_CTR == MAP_PRCMIntStatus()) {
         // this interrupt is triggered during active mode
-        if (pybsleep_wake_cb.timer_lpds_wake_cb) {
-            mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
-        }
+        mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
     }
     else {
         // interrupt has been triggered while waking up from LPDS
         switch (MAP_PRCMLPDSWakeupCauseGet()) {
         case PRCM_LPDS_HOST_IRQ:
-            if (pybsleep_wake_cb.wlan_lpds_wake_cb) {
-                mpcallback_handler(pybsleep_wake_cb.wlan_lpds_wake_cb);
-            }
+            mpcallback_handler(pybsleep_wake_cb.wlan_lpds_wake_cb);
             break;
         case PRCM_LPDS_GPIO:
-            if (pybsleep_wake_cb.gpio_lpds_wake_cb) {
-                mpcallback_handler(pybsleep_wake_cb.gpio_lpds_wake_cb);
-            }
+            mpcallback_handler(pybsleep_wake_cb.gpio_lpds_wake_cb);
             break;
         case PRCM_LPDS_TIMER:
-            // disable timer was wake-up source
+            // disable the timer as a wake-up source
             pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
             MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
-            if (pybsleep_wake_cb.timer_lpds_wake_cb) {
-                mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
-            }
+            mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
             break;
         default:
             break;
