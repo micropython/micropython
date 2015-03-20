@@ -71,6 +71,7 @@
 #include "stm32f4xx_hal.h"
 
 #include "py/obj.h"
+#include "pendsv.h"
 #include "extint.h"
 #include "timer.h"
 #include "uart.h"
@@ -162,7 +163,6 @@ void DebugMon_Handler(void) {
   * @retval None
   */
 void PendSV_Handler(void) {
-    extern void pendsv_isr_handler(void);
     pendsv_isr_handler();
 }
 

@@ -59,10 +59,6 @@ void pendsv_nlr_jump(void *o) {
     }
 }
 
-// since we play tricks with the stack, the compiler must not generate a
-// prelude for this function
-void pendsv_isr_handler(void) __attribute__((naked));
-
 void pendsv_isr_handler(void) {
     // re-jig the stack so that when we return from this interrupt handler
     // it returns instead to nlr_jump with argument pendsv_object

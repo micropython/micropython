@@ -261,7 +261,6 @@ STATIC mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(sd_power_obj, sd_power);
 
 STATIC mp_obj_t sd_info(mp_obj_t self) {
-    HAL_SD_ErrorTypedef HAL_SD_Init(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypedef *SDCardInfo);
     if (sd_handle.Instance == NULL) {
         return mp_const_none;
     }

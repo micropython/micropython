@@ -42,6 +42,7 @@
 #include "pendsv.h"
 
 #include "py/obj.h"
+#include "timer.h"
 #include "usb.h"
 
 // CDC control commands
