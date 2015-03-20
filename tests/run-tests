@@ -5,6 +5,7 @@ import subprocess
 import sys
 import platform
 import argparse
+import re
 from glob import glob
 
 # Tests require at least CPython 3.3. If your default python3 executable
@@ -49,18 +50,56 @@ def run_micropython(pyb, args, test_file):
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
 
-            # erase parts of the output that are not stable across runs
+            # unescape wanted regex chars and escape unwanted ones
+            def convert_regex_escapes(line):
+                cs = []
+                escape = False
+                for c in str(line, 'utf8'):
+                    if escape:
+                        escape = False
+                        cs.append(c)
+                    elif c == '\\':
+                        escape = True
+                    elif c in ('(', ')', '[', ']', '{', '}', '.', '*', '+', '^', '$'):
+                        cs.append('\\' + c)
+                    else:
+                        cs.append(c)
+                return bytes(''.join(cs), 'utf8')
+
+            # convert parts of the output that are not stable across runs
             with open(test_file + '.exp', 'rb') as f:
-                lines_exp = f.readlines()
+                lines_exp = []
+                for line in f.readlines():
+                    if line == b'########\n':
+                        line = (line,)
+                    else:
+                        line = (line, re.compile(convert_regex_escapes(line)))
+                    lines_exp.append(line)
             lines_mupy = [line + b'\n' for line in output_mupy.split(b'\n')]
             if output_mupy.endswith(b'\n'):
                 lines_mupy = lines_mupy[:-1] # remove erroneous last empty line
-            if len(lines_mupy) == len(lines_exp):
-                for i in range(len(lines_mupy)):
-                    pos = lines_exp[i].find(b'######')
-                    if pos != -1 and len(lines_mupy[i]) >= pos:
-                        lines_mupy[i] = lines_mupy[i][:pos] + b'######\n'
-                output_mupy = b''.join(lines_mupy)
+            i_mupy = 0
+            for i in range(len(lines_exp)):
+                if lines_exp[i][0] == b'########\n':
+                    # 8x #'s means match 0 or more whole lines
+                    line_exp = lines_exp[i + 1]
+                    skip = 0
+                    while i_mupy + skip < len(lines_mupy) and not line_exp[1].match(lines_mupy[i_mupy + skip]):
+                        skip += 1
+                    if i_mupy + skip >= len(lines_mupy):
+                        lines_mupy[i_mupy] = b'######## FAIL\n'
+                        break
+                    del lines_mupy[i_mupy:i_mupy + skip]
+                    lines_mupy.insert(i_mupy, b'########\n')
+                    i_mupy += 1
+                else:
+                    # a regex
+                    if lines_exp[i][1].match(lines_mupy[i_mupy]):
+                        lines_mupy[i_mupy] = lines_exp[i][0]
+                    i_mupy += 1
+                if i_mupy >= len(lines_mupy):
+                    break
+            output_mupy = b''.join(lines_mupy)
 
         else:
             # a standard test
