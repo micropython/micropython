@@ -405,7 +405,7 @@ STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
 
     mp_int_t len = self->len;
     for (mp_int_t i = 0; i < len/2; i++) {
-         mp_obj_t *a = self->items[i];
+         mp_obj_t a = self->items[i];
          self->items[i] = self->items[len-i-1];
          self->items[len-i-1] = a;
     }
