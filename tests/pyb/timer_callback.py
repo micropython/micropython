@@ -22,20 +22,28 @@ def cb3(x):
     return cb4
 
 # create a timer with a callback, using callback(None) to stop
-tim = Timer(1, freq=1000, callback=cb1)
-pyb.delay(10)
+tim = Timer(1, freq=100, callback=cb1)
+pyb.delay(5)
+print("before cb1")
+pyb.delay(15)
 
 # create a timer with a callback, using deinit to stop
-tim = Timer(2, freq=1000, callback=cb2)
-pyb.delay(10)
+tim = Timer(2, freq=100, callback=cb2)
+pyb.delay(5)
+print("before cb2")
+pyb.delay(15)
 
 # create a timer, then set the freq, then set the callback
 tim = Timer(4)
-tim.init(freq=2000)
+tim.init(freq=100)
 tim.callback(cb1)
-pyb.delay(10)
+pyb.delay(5)
+print("before cb1")
+pyb.delay(15)
 
 # test callback with a closure
-tim.init(freq=3000)
+tim.init(freq=100)
 tim.callback(cb3(3))
-pyb.delay(10)
+pyb.delay(5)
+print("before cb4")
+pyb.delay(15)
