@@ -275,6 +275,11 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("DELETE_NAME %s", qstr_str(qst));
             break;
 
+        case MP_BC_DELETE_GLOBAL:
+            DECODE_QSTR;
+            printf("DELETE_GLOBAL %s", qstr_str(qst));
+            break;
+
         case MP_BC_DUP_TOP:
             printf("DUP_TOP");
             break;
