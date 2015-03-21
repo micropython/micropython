@@ -303,7 +303,7 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 int main(int argc, char **argv) {
     prompt_read_history();
 
-    mp_stack_set_limit(32768);
+    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
     pre_process_options(argc, argv);
 
