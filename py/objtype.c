@@ -51,7 +51,6 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, mp_uint_t n_args,
 #define is_instance_type(type) ((type)->make_new == instance_make_new)
 #define is_native_type(type) ((type)->make_new != instance_make_new)
 mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
-STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
 
 STATIC mp_obj_t mp_obj_new_instance(mp_obj_t class, uint subobjs) {
     mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, subobjs);
@@ -129,19 +128,18 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
             mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(lookup->attr), MP_MAP_LOOKUP);
             if (elem != NULL) {
-                lookup->dest[0] = elem->value;
                 if (lookup->is_type) {
                     // If we look up a class method, we need to return original type for which we
                     // do a lookup, not a (base) type in which we found the class method.
                     const mp_obj_type_t *org_type = (const mp_obj_type_t*)lookup->obj;
-                    instance_convert_return_attr(NULL, org_type, elem->value, lookup->dest);
+                    mp_convert_member_lookup(NULL, org_type, elem->value, lookup->dest);
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
                     if (obj != MP_OBJ_NULL && is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
                         // If we're dealing with native base class, then it applies to native sub-object
                         obj = obj->subobj[0];
                     }
-                    instance_convert_return_attr(obj, type, elem->value, lookup->dest);
+                    mp_convert_member_lookup(obj, type, elem->value, lookup->dest);
                 }
 #if DEBUG_PRINT
                 printf("mp_obj_class_lookup: Returning: ");
@@ -411,32 +409,6 @@ const qstr mp_binary_op_method_name[] = {
     [MP_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
 };
 
-// Given a member that was extracted from an instance, convert it correctly
-// and put the result in the dest[] array for a possible method call.
-// Conversion means dealing with static/class methods, callables, and values.
-// see http://docs.python.org/3/howto/descriptor.html
-STATIC void instance_convert_return_attr(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
-    assert(dest[1] == NULL);
-    if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
-        // return just the function
-        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-    } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
-        // return a bound method, with self being the type of this object
-        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-        dest[1] = (mp_obj_t)type;
-    } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
-        // Don't try to bind types (even though they're callable)
-        dest[0] = member;
-    } else if (mp_obj_is_callable(member)) {
-        // return a bound method, with self being this object
-        dest[0] = member;
-        dest[1] = self;
-    } else {
-        // class member is a value, so just return that value
-        dest[0] = member;
-    }
-}
-
 STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
@@ -493,13 +465,13 @@ void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
             // object member is a property
             // delegate the store to the property
-            // TODO should this be part of instance_convert_return_attr?
+            // TODO should this be part of mp_convert_member_lookup?
             const mp_obj_t *proxy = mp_obj_property_get(member);
             if (proxy[0] == mp_const_none) {
                 // TODO
             } else {
                 dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
-                // TODO should we convert the returned value using instance_convert_return_attr?
+                // TODO should we convert the returned value using mp_convert_member_lookup?
             }
         }
 #endif
@@ -591,7 +563,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         return mp_obj_subscr(self->subobj[0], index, value);
     } else if (member[0] != MP_OBJ_NULL) {
         mp_obj_t args[3] = {self_in, index, value};
-        // TODO probably need to call instance_convert_return_attr, and use mp_call_method_n_kw
+        // TODO probably need to call mp_convert_member_lookup, and use mp_call_method_n_kw
         mp_obj_t ret = mp_call_function_n_kw(member[0], meth_args, 0, args);
         if (value == MP_OBJ_SENTINEL) {
             return ret;

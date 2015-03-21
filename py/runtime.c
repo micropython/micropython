@@ -854,6 +854,31 @@ mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
     }
 }
 
+// Given a member that was extracted from an instance, convert it correctly
+// and put the result in the dest[] array for a possible method call.
+// Conversion means dealing with static/class methods, callables, and values.
+// see http://docs.python.org/3/howto/descriptor.html
+void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
+    if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
+        // return just the function
+        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
+        // return a bound method, with self being the type of this object
+        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
+        dest[1] = (mp_obj_t)type;
+    } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
+        // Don't try to bind types (even though they're callable)
+        dest[0] = member;
+    } else if (mp_obj_is_callable(member)) {
+        // return a bound method, with self being this object
+        dest[0] = member;
+        dest[1] = self;
+    } else {
+        // class member is a value, so just return that value
+        dest[0] = member;
+    }
+}
+
 // no attribute found, returns:     dest[0] == MP_OBJ_NULL, dest[1] == MP_OBJ_NULL
 // normal attribute found, returns: dest[0] == <attribute>, dest[1] == MP_OBJ_NULL
 // method attribute found, returns: dest[0] == <method>,    dest[1] == <self>
@@ -888,26 +913,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
-            // check if the methods are functions, static or class methods
-            // see http://docs.python.org/3/howto/descriptor.html
-            if (MP_OBJ_IS_TYPE(elem->value, &mp_type_staticmethod)) {
-                // return just the function
-                dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
-            } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_classmethod)) {
-                // return a bound method, with self being the type of this object
-                dest[0] = ((mp_obj_static_class_method_t*)elem->value)->fun;
-                dest[1] = type;
-            } else if (MP_OBJ_IS_TYPE(elem->value, &mp_type_type)) {
-                // Don't try to bind types
-                dest[0] = elem->value;
-            } else if (mp_obj_is_callable(elem->value)) {
-                // return a bound method, with self being this object
-                dest[0] = elem->value;
-                dest[1] = obj;
-            } else {
-                // class member is a value, so just return that value
-                dest[0] = elem->value;
-            }
+            mp_convert_member_lookup(obj, type, elem->value, dest);
         }
     }
 }
