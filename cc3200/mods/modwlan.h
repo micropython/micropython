@@ -33,7 +33,7 @@
 #define SIMPLELINK_SPAWN_TASK_PRIORITY              3
 #define SIMPLELINK_TASK_STACK_SIZE                  2048
 #define SL_STOP_TIMEOUT                             35
-#define SL_STOP_TIMEOUT_LONG                        205
+#define SL_STOP_TIMEOUT_LONG                        575
 
 /******************************************************************************
  DEFINE TYPES

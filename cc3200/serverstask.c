@@ -135,6 +135,7 @@ void TASK_Servers (void *pvParameters) {
 void servers_start (void) {
     servers_data.do_disable = false;
     servers_data.do_enable = true;
+    servers_data.do_reset = true;
 }
 
 void servers_reset (void) {

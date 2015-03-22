@@ -38,15 +38,15 @@
 #include "serverstask.h"
 #include "genhdr/py-version.h"
 
-
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
  ******************************************************************************/
 #define TELNET_PORT                         23
+// rxRindex and rxWindex must be uint8_t and TELNET_RX_BUFFER_SIZE == 256
 #define TELNET_RX_BUFFER_SIZE               256
 #define TELNET_MAX_CLIENTS                  1
 #define TELNET_TX_RETRIES_MAX               25
-#define TELNET_WAIT_TIME_MS                 7
+#define TELNET_WAIT_TIME_MS                 5
 #define TELNET_LOGIN_RETRIES_MAX            3
 #define TELNET_TIMEOUT_MS                   1800000        // 30 minutes
 #define TELNET_CYCLE_TIME_MS                (SERVERS_CYCLE_TIME_MS * 2)
@@ -88,12 +88,15 @@ typedef union {
 typedef struct {
     uint8_t             *rxBuffer;
     uint32_t            timeout;
-    int16_t             sd;
-    int16_t             n_sd;
-    int16_t             rxWindex;
-    int16_t             rxRindex;
     telnet_state_t      state;
     telnet_substate_t   substate;
+    int16_t             sd;
+    int16_t             n_sd;
+
+    // rxRindex and rxWindex must be uint8_t and TELNET_RX_BUFFER_SIZE == 256
+    uint8_t             rxWindex;
+    uint8_t             rxRindex;
+
     uint8_t             txRetries;
     uint8_t             logginRetries;
     bool                enabled;
@@ -108,7 +111,7 @@ static const char* telnet_welcome_msg       = "Micro Python " MICROPY_GIT_TAG " 
 static const char* telnet_request_user      = "Login as:";
 static const char* telnet_request_password  = "Password:";
 static const char* telnet_invalid_loggin    = "\r\nInvalid credentials, try again\r\n";
-static char telnet_loggin_success[]         = "\r\nLogin succeeded!\r\nType \"help()\" for more information.\r\n";
+static const char* telnet_loggin_success    = "\r\nLogin succeeded!\r\nType \"help()\" for more information.\r\n";
 static const uint8_t telnet_options_user[]  = // IAC   WONT ECHO IAC   WONT SUPPRESS_GO_AHEAD IAC  WILL LINEMODE
                                                { 255,  252,   1, 255,  252,       3,          255, 251,   34 };
 static const uint8_t telnet_options_pass[]  = // IAC   WILL ECHO IAC   WONT SUPPRESS_GO_AHEAD IAC  WILL LINEMODE
@@ -264,13 +267,14 @@ void telnet_tx_strn_cooked (const char *str, uint len) {
 }
 
 bool telnet_rx_any (void) {
-    return (telnet_data.n_sd > 0) ? ((telnet_data.rxRindex < telnet_data.rxWindex) &&
-            (telnet_data.state == E_TELNET_STE_LOGGED_IN)) : false;
+    return (telnet_data.n_sd > 0) ? ((telnet_data.rxRindex != telnet_data.rxWindex) &&
+           (telnet_data.state == E_TELNET_STE_LOGGED_IN)) : false;
 }
 
 int telnet_rx_char (void) {
     int rx_char = -1;
-    if (telnet_data.rxRindex < telnet_data.rxWindex) {
+    if (telnet_data.rxRindex != telnet_data.rxWindex) {
+        // rxRindex must be uint8_t and TELNET_RX_BUFFER_SIZE == 256 so that it wraps around automatically
         rx_char = (int)telnet_data.rxBuffer[telnet_data.rxRindex++];
     }
     return rx_char;
@@ -417,16 +421,16 @@ static telnet_result_t telnet_recv_text_non_blocking (void *buff, _i16 Maxlen, _
 }
 
 static void telnet_process (void) {
-    if (!telnet_rx_any()) {
-        telnet_data.rxWindex = 0;
-        telnet_data.rxRindex = 0;
-    }
+    _i16 rxLen;
+    _i16 maxLen = (telnet_data.rxWindex >= telnet_data.rxRindex) ? (TELNET_RX_BUFFER_SIZE - telnet_data.rxWindex) :
+                                                                   ((telnet_data.rxRindex - telnet_data.rxWindex) - 1);
+    // to avoid an overrrun
+    maxLen = (telnet_data.rxRindex == 0) ? (maxLen - 1) : maxLen;
 
-    if (telnet_data.rxWindex < TELNET_RX_BUFFER_SIZE) {
-        _i16 rxLen;
-        if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(&telnet_data.rxBuffer[telnet_data.rxWindex],
-                                                                TELNET_RX_BUFFER_SIZE - telnet_data.rxWindex, &rxLen)) {
-            telnet_data.rxWindex += rxLen;
+    if (maxLen > 0) {
+        if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(&telnet_data.rxBuffer[telnet_data.rxWindex], maxLen, &rxLen)) {
+            // rxWindex must be uint8_t and TELNET_RX_BUFFER_SIZE == 256 so that it wraps around automatically
+            telnet_data.rxWindex = telnet_data.rxWindex + rxLen;
         }
     }
 }
