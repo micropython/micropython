@@ -169,6 +169,9 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     qstr name = mp_obj_str_get_qstr(name_in);
     mp_uint_t n_fields;
     mp_obj_t *fields;
+    if (!MP_OBJ_IS_TYPE(fields_in, &mp_type_list)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "list required"));
+    }
     mp_obj_list_get(fields_in, &n_fields, &fields);
     return mp_obj_new_namedtuple_type(name, n_fields, fields);
 }
