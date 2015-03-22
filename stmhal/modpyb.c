@@ -425,6 +425,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
 /// \function stop()
 STATIC mp_obj_t pyb_stop(void) {
+    // takes longer to wake but reduces stop current
+    HAL_PWREx_EnableFlashPowerDown();
+
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 
     // reconfigure the system clock after waking up
