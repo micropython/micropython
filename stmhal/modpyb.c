@@ -453,7 +453,35 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
 
 /// \function standby()
 STATIC mp_obj_t pyb_standby(void) {
+    // We need to clear the PWR wake-up-flag before entering standby, since
+    // the flag may have been set by a previous wake-up event.  Furthermore,
+    // we need to disable the wake-up sources while clearing this flag, so
+    // that if a source is active it does actually wake the device.
+    // See section 5.3.7 of RM0090.
+
+    // Note: we only support RTC ALRA, ALRB, WUT and TS.
+    // TODO support TAMP and WKUP (PA0 external pin).
+    uint32_t irq_bits = RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE;
+
+    // save RTC interrupts
+    uint32_t save_irq_bits = RTC->CR & irq_bits;
+
+    // disable RTC interrupts
+    RTC->CR &= ~irq_bits;
+
+    // clear RTC wake-up flags
+    RTC->ISR &= ~(RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF);
+
+    // clear global wake-up flag
+    PWR->CR |= PWR_CR_CWUF;
+
+    // enable previously-enabled RTC interrupts
+    RTC->CR |= save_irq_bits;
+
+    // enter standby mode
     HAL_PWR_EnterSTANDBYMode();
+    // we never return; MCU is reset on exit from standby
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
