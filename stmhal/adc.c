@@ -225,21 +225,48 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     // Start timer
     HAL_TIM_Base_Start(&TIM6_Handle);
 
-    // This uses the timer in polling mode to do the sampling
-    // We could use DMA, but then we can't convert the values correctly for the buffer
+    // configure the ADC channel
     adc_config_channel(self);
+
+    // This uses the timer in polling mode to do the sampling
+    // TODO use DMA
+
     uint nelems = bufinfo.len / typesize;
     for (uint index = 0; index < nelems; index++) {
-        // Wait for the timer to trigger
+        // Wait for the timer to trigger so we sample at the correct frequency
         while (__HAL_TIM_GET_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE) == RESET) {
         }
         __HAL_TIM_CLEAR_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE);
-        uint value = adc_read_channel(&self->handle);
+
+        if (index == 0) {
+            // for the first sample we need to turn the ADC on
+            HAL_ADC_Start(&self->handle);
+        } else {
+            // for subsequent samples we can just set the "start sample" bit
+            ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+        }
+
+        // wait for sample to complete
+        uint32_t tickstart = HAL_GetTick();
+        while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+            #define READ_TIMED_TIMEOUT (10) // in ms
+            if (((HAL_GetTick() - tickstart ) > READ_TIMED_TIMEOUT)) {
+                break; // timeout
+            }
+        }
+
+        // read value
+        uint value = ADCx->DR;
+
+        // store value in buffer
         if (typesize == 1) {
             value >>= 4;
         }
         mp_binary_set_val_array_from_int(bufinfo.typecode, bufinfo.buf, index, value);
     }
+
+    // turn the ADC off
+    HAL_ADC_Stop(&self->handle);
 
     // Stop timer
     HAL_TIM_Base_Stop(&TIM6_Handle);
