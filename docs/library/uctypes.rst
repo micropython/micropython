@@ -115,6 +115,17 @@ Module contents
    Native structure - with data endianness and alignment conforming to
    the target ABI.
 
+.. function:: sizeof(struct)
+
+   Return size of data structure in bytes. Argument can be either structure
+   class or specific instantiated structure object (or its field).
+
+.. function:: addressof(obj)
+
+   Return address of an object. Argument should be bytes, bytearray or
+   other object supporting buffer protocol (and address of this buffer
+   is what actually returned).
+
 (to be continued)
 
 Structure objects
