@@ -23,7 +23,6 @@ MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
 
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
-os.environ['MICROPYPATH'] = ''
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -400,6 +399,7 @@ def main():
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
+    cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
@@ -433,6 +433,10 @@ def main():
     else:
         # tests explicitly given
         tests = args.files
+
+    if not args.keep_path:
+        # clear search path to make sure tests use only builtin modules
+        os.environ['MICROPYPATH'] = ''
 
     if not run_tests(pyb, tests, args):
         sys.exit(1)
