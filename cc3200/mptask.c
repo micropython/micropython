@@ -118,10 +118,10 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
 
     // execute all basic initializations
-    mperror_init0();
     mpexception_init0();
     mpcallback_init0();
     pybsleep_init0();
+    mperror_init0();
     uart_init0();
     pin_init0();
     readline_init0();

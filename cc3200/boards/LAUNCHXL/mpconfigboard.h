@@ -41,6 +41,7 @@
 #define MICROPY_SAFE_BOOT_PRCM                      PRCM_GPIOA2
 #define MICROPY_SYS_LED_PORT                        GPIOA1_BASE
 #define MICROPY_SAFE_BOOT_PORT                      GPIOA2_BASE
+#define MICROPY_SYS_LED_GPIO                        pin_GPIO9
 #define MICROPY_SYS_LED_PIN_NUM                     PIN_64      // GPIO9
 #define MICROPY_SAFE_BOOT_PIN_NUM                   PIN_15      // GPIO22
 #define MICROPY_SYS_LED_PORT_PIN                    GPIO_PIN_1

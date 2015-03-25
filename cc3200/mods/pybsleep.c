@@ -325,6 +325,9 @@ STATIC NORETURN void pybsleep_suspend_enter (void) {
     // park the gpio pins
     pybsleep_iopark();
 
+    // turn-off the heartbeat led
+    mperror_heartbeat_switch_off();
+
     // store the cpu registers
     sleep_store();
 
@@ -383,9 +386,6 @@ void pybsleep_suspend_exit (void) {
 
     // reinitialize simplelink's bus
     sl_IfOpen (NULL, 0);
-
-    // initialize the system led
-    mperror_init0();
 
     // restore the configuration of all active peripherals
     pybsleep_obj_wakeup();
@@ -610,6 +610,7 @@ STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
         }
     }
     wlan_stop(SL_STOP_TIMEOUT);
+    mperror_heartbeat_switch_off();
     pybsleep_flash_powerdown();
     MAP_PRCMHibernateEnter();
     return mp_const_none;

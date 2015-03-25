@@ -40,6 +40,10 @@
 #include "hw_common_reg.h"
 #include "pin.h"
 #include "gpio.h"
+#ifndef BOOTLOADER
+#include "pybpin.h"
+#include "pins.h"
+#endif
 #include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
@@ -64,40 +68,29 @@ struct mperror_heart_beat {
     uint32_t on_time;
     bool beating;
     bool enabled;
-} mperror_heart_beat;
-
-/******************************************************************************
- DEFINE PRIVATE FUNCTIONS
- ******************************************************************************/
-STATIC void mperror_heartbeat_switch_off (void) {
-    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
-}
+} mperror_heart_beat = {.off_time = 0, .on_time = 0, .beating = false, .enabled = false};
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void mperror_init0 (void) {
-    // Enable SYS GPIOs peripheral clocks
+#ifdef BOOTLOADER
+    // enable the system led and the safe boot pin peripheral clocks
     MAP_PRCMPeripheralClkEnable(MICROPY_SYS_LED_PRCM, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-#ifdef BOOTLOADER
     MAP_PRCMPeripheralClkEnable(MICROPY_SAFE_BOOT_PRCM, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-#endif
-
-    // Configure the bld
-    MAP_PinTypeGPIO(MICROPY_SYS_LED_PIN_NUM, PIN_MODE_0, false);
-    MAP_PinConfigSet(MICROPY_SYS_LED_PIN_NUM, PIN_STRENGTH_6MA, PIN_TYPE_STD);
-    MAP_GPIODirModeSet(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, GPIO_DIR_MODE_OUT);
-
-#ifdef BOOTLOADER
-    // Configure the safe boot pin
+    // configure the safe boot pin
     MAP_PinTypeGPIO(MICROPY_SAFE_BOOT_PIN_NUM, PIN_MODE_0, false);
     MAP_PinConfigSet(MICROPY_SAFE_BOOT_PIN_NUM, PIN_STRENGTH_4MA, PIN_TYPE_STD_PD);
     MAP_GPIODirModeSet(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN, GPIO_DIR_MODE_IN);
+    // configure the bld
+    MAP_PinTypeGPIO(MICROPY_SYS_LED_PIN_NUM, PIN_MODE_0, false);
+    MAP_PinConfigSet(MICROPY_SYS_LED_PIN_NUM, PIN_STRENGTH_6MA, PIN_TYPE_STD);
+    MAP_GPIODirModeSet(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, GPIO_DIR_MODE_OUT);
+#else
+    // configure the system led
+    pin_config ((pin_obj_t *)&MICROPY_SYS_LED_GPIO, PIN_MODE_0, GPIO_DIR_MODE_OUT, PIN_TYPE_STD, PIN_STRENGTH_6MA);
 #endif
-
-    mperror_heart_beat.on_time = 0;
-    mperror_heart_beat.off_time = 0;
-    mperror_heart_beat.beating = false;
+    mperror_heartbeat_switch_off();
 }
 
 void mperror_bootloader_check_reset_cause (void) {
@@ -114,7 +107,7 @@ void mperror_bootloader_check_reset_cause (void) {
         HWREG(0x4402F024) &= 0xF7FFFFFF;
 
         // since the reset cause will be changed, we must store the right reason
-        // so that the application knows we booting the next time
+        // so that the application knows it when booting for the next time
         PRCMSignalWDTReset();
 
         MAP_PRCMHibernateWakeupSourceEnable(PRCM_HIB_SLOW_CLK_CTR);
@@ -142,6 +135,12 @@ void mperror_enable_heartbeat (void) {
     mperror_heart_beat.enabled = true;
 }
 
+void mperror_heartbeat_switch_off (void) {
+    mperror_heart_beat.on_time = 0;
+    mperror_heart_beat.off_time = 0;
+    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
+}
+
 void mperror_disable_heartbeat (void) {
     mperror_heart_beat.enabled = false;
     mperror_heartbeat_switch_off();
@@ -157,7 +156,7 @@ void mperror_heartbeat_signal (void) {
         }
         else {
             if ((mperror_heart_beat.off_time = HAL_GetTick()) - mperror_heart_beat.on_time > MPERROR_HEARTBEAT_ON_MS) {
-                mperror_heartbeat_switch_off();
+                MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
                 mperror_heart_beat.beating = false;
             }
         }
