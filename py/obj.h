@@ -89,6 +89,21 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 2))
 
+// Macros to convert between mp_obj_t and concrete object types.
+// These are identity operations in MicroPython, but ability to override
+// these operations are provided to experiment with other methods of
+// object representation and memory management.
+
+// Cast mp_obj_t to object pointer
+#ifndef MP_OBJ_CAST
+#define MP_OBJ_CAST(o) ((void*)o)
+#endif
+
+// Cast object pointer to mp_obj_t
+#ifndef MP_OBJ_UNCAST
+#define MP_OBJ_UNCAST(p) ((mp_obj_t)p)
+#endif
+
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
 
