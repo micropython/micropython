@@ -858,6 +858,9 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                     // empty tuple
                     goto cannot_assign;
                 } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
+                    if (assign_kind != ASSIGN_STORE) {
+                        goto bad_aug;
+                    }
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
                     goto testlist_comp;
                 } else {
