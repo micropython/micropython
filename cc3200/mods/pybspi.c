@@ -174,7 +174,7 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
     pyb_spi_obj_t *self = self_in;
 
     if (self->baudrate > 0) {
-        print(env, "<SPI0, SPI.MASTER, baudrate=%u, config=%u, submode=%u, bits=%u",
+        print(env, "<SPI0, SPI.MASTER, baudrate=%u, config=%u, submode=%u, bits=%u>",
               self->baudrate, self->config, self->submode, (self->wlen * 8));
     }
     else {

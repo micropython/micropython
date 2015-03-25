@@ -126,13 +126,11 @@ Q(FLOW_TXRX)
 
 // for I2C class
 Q(I2C)
-Q(mode)
 Q(addr)
 Q(baudrate)
 Q(data)
 Q(memaddr)
 Q(addr_size)
-Q(timeout)
 Q(init)
 Q(deinit)
 Q(is_ready)
@@ -141,7 +139,6 @@ Q(send)
 Q(recv)
 Q(mem_read)
 Q(mem_write)
-Q(MASTER)
 
 // for ADC class
 Q(ADC)
