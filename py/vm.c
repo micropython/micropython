@@ -566,25 +566,20 @@ dispatch_loop:
                         SET_TOP(mp_const_none);
                         mp_call_function_n_kw(obj, 3, 0, no_exc);
                     } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
-                        mp_obj_t cause = TOP();
-                        switch (MP_OBJ_SMALL_INT_VALUE(cause)) {
-                            case UNWIND_RETURN:
-                                mp_call_function_n_kw(sp[-2], 3, 0, no_exc);
-                                break;
-                            case UNWIND_JUMP:
-                            with_cleanup_no_other_choice:
-                                mp_call_function_n_kw(sp[-3], 3, 0, no_exc);
-                                // Pop __exit__ boundmethod at sp[-3]
-                                sp[-3] = sp[-2];
-                                break;
-                            default:
-                                assert(0);
-                                goto with_cleanup_no_other_choice; // to help flow control analysis
+                        mp_int_t cause_val = MP_OBJ_SMALL_INT_VALUE(TOP());
+                        if (cause_val == UNWIND_RETURN) {
+                            mp_call_function_n_kw(sp[-2], 3, 0, no_exc);
+                        } else {
+                            assert(cause_val == UNWIND_JUMP);
+                            mp_call_function_n_kw(sp[-3], 3, 0, no_exc);
+                            // Pop __exit__ boundmethod at sp[-3]
+                            sp[-3] = sp[-2];
                         }
                         sp[-2] = sp[-1]; // copy retval down
                         sp[-1] = sp[0]; // copy cause down
                         sp--; // discard top value (was cause)
-                    } else if (mp_obj_is_exception_type(TOP())) {
+                    } else {
+                        assert(mp_obj_is_exception_type(TOP()));
                         // Need to pass (sp[0], sp[-1], sp[-2]) as arguments so must reverse the
                         // order of these on the value stack (don't want to create a temporary
                         // array because it increases stack footprint of the VM).
@@ -612,8 +607,6 @@ dispatch_loop:
                             sp[-1] = obj;
                             sp--;
                         }
-                    } else {
-                        assert(0);
                     }
                     DISPATCH();
                 }
@@ -672,19 +665,17 @@ unwind_jump:;
                     }
                     if (TOP() == mp_const_none) {
                         sp--;
-                    } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
+                    } else {
+                        assert(MP_OBJ_IS_SMALL_INT(TOP()));
                         // We finished "finally" coroutine and now dispatch back
                         // to our caller, based on TOS value
                         mp_unwind_reason_t reason = MP_OBJ_SMALL_INT_VALUE(POP());
-                        switch (reason) {
-                            case UNWIND_RETURN:
-                                goto unwind_return;
-                            case UNWIND_JUMP:
-                                goto unwind_jump;
+                        if (reason == UNWIND_RETURN) {
+                            goto unwind_return;
+                        } else {
+                            assert(reason == UNWIND_JUMP);
+                            goto unwind_jump;
                         }
-                        assert(0);
-                    } else {
-                        assert(0);
                     }
                     DISPATCH();
 
