@@ -98,7 +98,7 @@ static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
  ******************************************************************************/
 
 void TASK_Micropython (void *pvParameters) {
-    // Initialize the garbage collector with the top of our stack
+    // initialize the garbage collector with the top of our stack
     uint32_t sp = gc_helper_get_sp();
     gc_collect_init (sp);
     bool safeboot = false;
@@ -111,7 +111,7 @@ soft_reset:
     // GC init
     gc_init(&_boot, &_eheap);
 
-    // Micro Python init
+    // MicroPython init
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
@@ -131,6 +131,9 @@ soft_reset:
     rng_init0();
 #endif
 
+    // we are alive, so let the world know it
+    mperror_enable_heartbeat();
+
     // configure stdio uart pins with the correct af
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
     pin_config ((pin_obj_t *)&pin_GPIO1, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
@@ -142,25 +145,27 @@ soft_reset:
     };
     pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
 
-    mperror_enable_heartbeat();
+    pybsleep_reset_cause_t rstcause = pybsleep_get_reset_cause();
+    if (rstcause < PYB_SLP_SOFT_RESET) {
+        if (rstcause == PYB_SLP_HIB_RESET) {
+            // when waking up from hibernate we just want
+            // to enable simplelink and leave it as is
+            wlan_first_start();
+        }
+        else {
+            // only if not comming out of hibernate or a soft reset
+            mptask_enter_ap_mode();
+        #ifndef DEBUG
+            safeboot = PRCMIsSafeBootRequested();
+        #endif
+        }
 
-    if (pybsleep_get_reset_cause() < PYB_SLP_HIB_RESET) {
-        // only if not comming out of hibernate or a soft reset
-        mptask_enter_ap_mode();
-    #ifndef DEBUG
-        safeboot = PRCMIsSafeBootRequested();
-    #endif
-    } else {
-        // when waking up from hibernate we just want
-        // to enable simplelink and leave it as is
-        wlan_first_start();
+        // enable telnet and ftp
+        servers_start();
     }
 
     // initialize the serial flash file system
     mptask_init_sflash_filesystem();
-
-    // enable telnet and ftp servers
-    servers_start();
 
     // append the SFLASH paths to the system path
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH));
@@ -185,14 +190,14 @@ soft_reset:
         }
     }
 
-    // Now we initialise sub-systems that need configuration from boot.py,
+    // now we initialise sub-systems that need configuration from boot.py,
     // or whose initialisation can be safely deferred until after running
     // boot.py.
 
-    // At this point everything is fully configured and initialised.
+    // at this point everything is fully configured and initialised.
 
     if (!safeboot) {
-        // Run the main script from the current directory.
+        // run the main script from the current directory.
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
             const char *main_py;
             if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
@@ -214,8 +219,8 @@ soft_reset:
         }
     }
 
-    // Main script is finished, so now go into REPL mode.
-    // The REPL mode can change, or it can request a soft reset.
+    // main script is finished, so now go into REPL mode.
+    // the REPL mode can change, or it can request a soft reset.
     for ( ; ; ) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
@@ -233,21 +238,13 @@ soft_reset_exit:
     // soft reset
     pybsleep_signal_soft_reset();
 
+    printf("WiPy: soft reset\n");
+
     sflash_disk_flush();
 
 #if MICROPY_HW_HAS_SDCARD
     pybsd_deinit();
 #endif
-
-    printf("WiPy: soft reset\n");
-
-    // disable wlan
-    wlan_stop(SL_STOP_TIMEOUT_LONG);
-
-    // de-initialize the stdio uart
-    if (pyb_stdio_uart) {
-        pyb_uart_deinit(pyb_stdio_uart);
-    }
 
     goto soft_reset;
 }

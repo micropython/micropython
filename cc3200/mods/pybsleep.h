@@ -54,6 +54,7 @@ typedef enum {
 } pybsleep_wake_reason_t;
 
 typedef void (*WakeUpCB_t)(const mp_obj_t self);
+typedef void (*DeinitCB_t)(const mp_obj_t self);
 
 /******************************************************************************
  DECLARE EXPORTED VARIABLES
