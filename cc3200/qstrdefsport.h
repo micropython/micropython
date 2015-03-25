@@ -127,7 +127,6 @@ Q(FLOW_TXRX)
 // for I2C class
 Q(I2C)
 Q(addr)
-Q(baudrate)
 Q(data)
 Q(memaddr)
 Q(addr_size)
@@ -269,7 +268,6 @@ Q(RTC_WAKE)
 
 // for SPI class
 Q(SPI)
-Q(mode)
 Q(baudrate)
 Q(bits)
 Q(submode)
@@ -279,7 +277,6 @@ Q(deinit)
 Q(send)
 Q(recv)
 Q(send_recv)
-Q(MASTER)
 Q(ACTIVE_LOW)
 Q(ACTIVE_HIGH)
 

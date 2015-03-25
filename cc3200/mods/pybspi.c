@@ -54,10 +54,10 @@
 /// parameters to init the SPI bus:
 ///
 ///     from pyb import SPI
-///     spi = SPI(0, SPI.MASTER, baudrate=2000000, bits=8, submode=0, cs=SPI.ACTIVE_LOW)
+///     spi = SPI(2000000, bits=8, submode=0, cs=SPI.ACTIVE_LOW)
 ///
-/// Only required parameter is mode, which must be SPI.MASTER. Submode may be 0-3.
-/// Bit accepts 8, 16, 32. Chip select values are ACTIVE_LOW, ACTIVE_HIGH or NONE
+/// Only required parameter is the baudrate, in Hz. Submode may be 0-3.
+/// Bit accepts 8, 16, 32. Chip select values are ACTIVE_LOW and ACTIVE_HIGH
 ///
 /// Additional method for SPI:
 ///
@@ -182,18 +182,16 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
     }
 }
 
-/// \method init(mode, baudrate=2000000, *, bits=8, submode=0, cs=SPI.ACTIVELOW)
+/// \method init(2000000, *, bits=8, submode=0, cs=SPI.ACTIVELOW)
 ///
 /// Initialise the SPI bus with the given parameters:
 ///
-///   - `mode` must be `SPI.MASTER`.
 ///   - `baudrate` is the SCK clock rate.
 ///   - `bits` is the transfer width size (8, 16, 32).
 ///   - `submode` is the spi mode (0, 1, 2, 3).
 ///   - `cs` can be ACTIVELOW, ACTIVEHIGH, or NONE
 static const mp_arg_t pybspi_init_args[] = {
-    { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,  {.u_int = SPI_MODE_MASTER} },
-    { MP_QSTR_baudrate,     MP_ARG_INT,                    {.u_int = PYBSPI_DEF_BAUDRATE} },
+    { MP_QSTR_baudrate,     MP_ARG_REQUIRED | MP_ARG_INT,  },
     { MP_QSTR_bits,         MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 8} },
     { MP_QSTR_submode,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },
     { MP_QSTR_cs,           MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SPI_CS_ACTIVELOW} },
@@ -204,13 +202,13 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
     mp_arg_val_t args[MP_ARRAY_SIZE(pybspi_init_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(pybspi_init_args), pybspi_init_args, args);
 
-    uint submode = args[3].u_int;
-    uint cs = args[4].u_int;
+    uint submode = args[2].u_int;
+    uint cs = args[3].u_int;
     uint bits;
 
     // save the word length for later use
-    self->wlen = args[2].u_int / 8;
-    switch (args[2].u_int) {
+    self->wlen = args[1].u_int / 8;
+    switch (args[1].u_int) {
     case 8:
         bits = SPI_WL_8;
         break;
@@ -229,12 +227,12 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
-    if (cs != SPI_CS_ACTIVELOW && cs != SPI_CS_ACTIVEHIGH && cs != PYBSPI_CS_NONE) {
+    if (cs != SPI_CS_ACTIVELOW && cs != SPI_CS_ACTIVEHIGH) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
     // build the configuration
-    self->baudrate = args[1].u_int;
+    self->baudrate = args[0].u_int;
     self->config = bits | cs | SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF;
     self->submode = submode;
 
@@ -249,8 +247,8 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct an SPI object on the given bus.  `bus` can be only 0.
-/// With no additional parameters, the SPI object is created but not
+/// Construct an SPI object with the given baudrate.
+/// With no parameters, the SPI object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).  If extra arguments are given, the bus is initialised.
 /// See `init` for parameters of initialisation.
@@ -259,21 +257,14 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    mp_int_t spi_id = mp_obj_get_int(args[0]);
-
-    // check the spi bus id
-    if (spi_id != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-
     pyb_spi_obj_t *self = &pyb_spi_obj;
     self->base.type = &pyb_spi_type;
 
-    if (n_args > 1 || n_kw > 0) {
+    if (n_args > 0 || n_kw > 0) {
         // start the peripheral
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        pyb_spi_init_helper(self, n_args - 1, args + 1, &kw_args);
+        pyb_spi_init_helper(self, n_args, args, &kw_args);
     }
 
     return self;
@@ -408,7 +399,6 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv),           (mp_obj_t)&pyb_spi_send_recv_obj },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER),              MP_OBJ_NEW_SMALL_INT(SPI_MODE_MASTER) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACTIVE_LOW),          MP_OBJ_NEW_SMALL_INT(SPI_CS_ACTIVELOW) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACTIVE_HIGH),         MP_OBJ_NEW_SMALL_INT(SPI_CS_ACTIVEHIGH) },
 };
