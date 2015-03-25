@@ -1,6 +1,13 @@
-# make sure syntax error works corrects for bad const definition
+# make sure syntax error works correctly for bad const definition
 
-try:
-    exec("a = const(x)")
-except SyntaxError:
-    print("SyntaxError")
+def test_syntax(code):
+    try:
+        exec(code)
+    except SyntaxError:
+        print("SyntaxError")
+
+# argument not a constant
+test_syntax("a = const(x)")
+
+# redefined constant
+test_syntax("A = const(1); A = const(2)")

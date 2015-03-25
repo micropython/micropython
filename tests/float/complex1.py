@@ -16,6 +16,8 @@ print(+(1j))
 print(-(1 + 2j))
 
 # binary ops
+print(1j + False)
+print(1j + True)
 print(1j + 2)
 print(1j + 2j)
 print(1j - 2)
@@ -30,3 +32,12 @@ ans = 1j ** 2.5j; print("%.5g %.5g" % (ans.real, ans.imag))
 # builtin abs
 print(abs(1j))
 print("%.5g" % abs(1j + 2))
+
+# convert bignum to complex on rhs
+ans = 1j + (1 << 70); print("%.5g %.5g" % (ans.real, ans.imag))
+
+# can't convert rhs to complex
+try:
+    1j + []
+except TypeError:
+    print("TypeError")

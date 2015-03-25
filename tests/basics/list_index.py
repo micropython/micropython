@@ -32,3 +32,6 @@ except ValueError:
     print("Raised ValueError")
 else:
     print("Did not raise ValueError")
+
+# 3rd argument to index greater than length of list
+print([1, 2].index(1, 0, 4))

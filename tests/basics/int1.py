@@ -81,3 +81,9 @@ test('1 1', 16)
 
 # check that we don't parse this as a floating point number
 print(0x1e+1)
+
+# can't convert list to int
+try:
+    int([])
+except TypeError:
+    print("TypeError")

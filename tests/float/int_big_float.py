@@ -2,6 +2,9 @@
 
 i = 1 << 65
 
+# convert bignum to float on rhs
+print("%.5g" % (2.0 * i))
+
 # this should convert to float
 print("%.5g" % (i / 5))
 

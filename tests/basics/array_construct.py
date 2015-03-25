@@ -14,3 +14,6 @@ print(array('i', bytearray(4)))
 # convert from other arrays
 print(array('H', array('b', [1, 2])))
 print(array('b', array('I', [1, 2])))
+
+# construct from something with unknown length
+print(array('i', (i for i in range(10))))

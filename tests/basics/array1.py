@@ -11,3 +11,12 @@ print(i[-1])
 print(len(array.array('h')))
 print(array.array('i'))
 
+# bool operator acting on arrays
+print(bool(array.array('i')))
+print(bool(array.array('i', [1])))
+
+# bad typecode
+try:
+    array.array('X')
+except ValueError:
+    print("ValueError")

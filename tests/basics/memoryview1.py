@@ -25,6 +25,10 @@ m = memoryview(b'1234')
 print(list(m[1:]))
 print(list(m[1:-1]))
 
+# this tests get_buffer of memoryview
+m = memoryview(bytearray(2))
+print(bytearray(m))
+
 import array
 a = array.array('i', [1, 2, 3, 4])
 m = memoryview(a)
