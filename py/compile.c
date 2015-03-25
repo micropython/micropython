@@ -732,9 +732,7 @@ STATIC void c_assign_power(compiler_t *comp, mp_parse_node_struct_t *pns, assign
             assert(MP_PARSE_NODE_IS_STRUCT(pns1->nodes[n - 1]));
             pns1 = (mp_parse_node_struct_t*)pns1->nodes[n - 1];
         }
-        if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_paren) {
-            goto cannot_assign;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
+        if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
             if (assign_kind == ASSIGN_AUG_STORE) {
                 EMIT(rot_three);
                 EMIT(store_subscr);
@@ -818,9 +816,8 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
 // assigns top of stack to pn
 STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
     tail_recursion:
-    if (MP_PARSE_NODE_IS_NULL(pn)) {
-        assert(0);
-    } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
+    assert(!MP_PARSE_NODE_IS_NULL(pn));
+    if (MP_PARSE_NODE_IS_LEAF(pn)) {
         if (MP_PARSE_NODE_IS_ID(pn)) {
             qstr arg = MP_PARSE_NODE_LEAF_ARG(pn);
             switch (assign_kind) {
@@ -838,6 +835,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
             return;
         }
     } else {
+        // pn must be a struct
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         switch (MP_PARSE_NODE_STRUCT_KIND(pns)) {
             case PN_power:
@@ -1252,10 +1250,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
                 assert(MP_PARSE_NODE_IS_STRUCT(pns1->nodes[n - 1]));
                 pns1 = (mp_parse_node_struct_t*)pns1->nodes[n - 1];
             }
-            if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_paren) {
-                // can't delete function calls
-                goto cannot_delete;
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
+            if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
                 compile_node(comp, pns1->nodes[0]);
                 EMIT(delete_subscr);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_period) {
@@ -1291,7 +1286,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
                         c_del_stmt(comp, pns1->nodes[i]);
                     }
                 } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_comp_for) {
-                    // TODO not implemented; can't del comprehension?
+                    // TODO not implemented; can't del comprehension? can we get here?
                     goto cannot_delete;
                 } else {
                     // sequence with 2 items
@@ -1570,6 +1565,7 @@ STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qs
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
     if (!added) {
+        // TODO this is not compliant with CPython
         compile_syntax_error(comp, pn, "identifier already used");
         return;
     }
@@ -1596,6 +1592,7 @@ STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr 
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
     if (!added) {
+        // TODO this is not compliant with CPython
         compile_syntax_error(comp, pn, "identifier already used");
         return;
     }
