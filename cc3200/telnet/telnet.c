@@ -48,7 +48,7 @@
 #define TELNET_TX_RETRIES_MAX               25
 #define TELNET_WAIT_TIME_MS                 5
 #define TELNET_LOGIN_RETRIES_MAX            3
-#define TELNET_TIMEOUT_MS                   1800000        // 30 minutes
+#define TELNET_TIMEOUT_MS                   300000        // 5 minutes
 #define TELNET_CYCLE_TIME_MS                (SERVERS_CYCLE_TIME_MS * 2)
 
 /******************************************************************************
@@ -131,6 +131,7 @@ static telnet_result_t telnet_recv_text_non_blocking (void *buff, _i16 Maxlen, _
 static void telnet_process (void);
 static void telnet_parse_input (uint8_t *str, int16_t *len);
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len);
+static void telnet_reset (void);
 static void telnet_reset_buffer (void);
 
 /******************************************************************************
@@ -288,13 +289,6 @@ void telnet_disable (void) {
     telnet_reset();
     telnet_data.enabled = false;
     telnet_data.state = E_TELNET_STE_DISABLED;
-}
-
-void telnet_reset (void) {
-    // close the connection and start all over again
-    servers_close_socket(&telnet_data.n_sd);
-    servers_close_socket(&telnet_data.sd);
-    telnet_data.state = E_TELNET_STE_START;
 }
 
 bool telnet_is_enabled (void) {
@@ -474,6 +468,13 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
     return false;
+}
+
+static void telnet_reset (void) {
+    // close the connection and start all over again
+    servers_close_socket(&telnet_data.n_sd);
+    servers_close_socket(&telnet_data.sd);
+    telnet_data.state = E_TELNET_STE_START;
 }
 
 static void telnet_reset_buffer (void) {

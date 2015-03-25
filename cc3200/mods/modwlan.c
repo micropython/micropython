@@ -93,7 +93,6 @@ typedef struct _wlan_obj_t {
     uint8_t             mac[SL_MAC_ADDR_LEN];
     uint8_t             ssid[33];
     uint8_t             bssid[6];
-    volatile uint8_t    stasconnected;
 
 } wlan_obj_t;
 
@@ -163,7 +162,6 @@ STATIC wlan_obj_t wlan_obj = {
         .ssid = {0},
         .bssid = {0},
         .mac = {0},
-        .stasconnected = 0,
 };
 
 STATIC const mp_cb_methods_t wlan_cb_methods;
@@ -222,16 +220,10 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
         }
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
-            wlan_obj.stasconnected++;
+            // TODO
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
-            if (wlan_obj.stasconnected > 0) {
-                if (--wlan_obj.stasconnected == 0) {
-                #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-                    servers_reset();
-                #endif
-                }
-            }
+            // TODO
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
             // TODO

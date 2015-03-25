@@ -83,8 +83,8 @@ typedef struct {
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 STATIC void pybadc_init (pyb_adc_obj_t *self) {
-     // enable the ADC channel
-     MAP_ADCChannelEnable(ADC_BASE, self->channel);
+    // enable the ADC channel
+    MAP_ADCChannelEnable(ADC_BASE, self->channel);
     // enable and configure the timer
     MAP_ADCTimerConfig(ADC_BASE, (1 << 17) - 1);
     MAP_ADCTimerEnable(ADC_BASE);

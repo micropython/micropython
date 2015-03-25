@@ -54,13 +54,12 @@ typedef struct {
     volatile bool enabled;
     volatile bool do_disable;
     volatile bool do_enable;
-    volatile bool do_reset;
 }servers_Data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false, .do_reset = false};
+static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false};
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -96,15 +95,7 @@ void TASK_Servers (void *pvParameters) {
                 ftp_disable();
                 // now clear the flags
                 servers_data.do_disable = false;
-                servers_data.do_reset = false;
                 servers_data.enabled = false;
-            }
-            else if (servers_data.do_reset) {
-                // reset network services
-                telnet_reset();
-                ftp_reset();
-                // clear the flag
-                servers_data.do_reset = false;
             }
             else {
                 if (cycle) {
@@ -135,11 +126,6 @@ void TASK_Servers (void *pvParameters) {
 void servers_start (void) {
     servers_data.do_disable = false;
     servers_data.do_enable = true;
-    servers_data.do_reset = true;
-}
-
-void servers_reset (void) {
-    servers_data.do_reset = true;
 }
 
 void servers_stop (void) {
@@ -148,8 +134,6 @@ void servers_stop (void) {
     do {
         HAL_Delay (SERVERS_CYCLE_TIME_MS);
     } while (servers_are_enabled());
-    // clear the last command line
-    telnet_reset();
 }
 
 bool servers_are_enabled (void) {
