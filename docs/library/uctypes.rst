@@ -126,7 +126,19 @@ Module contents
    other object supporting buffer protocol (and address of this buffer
    is what actually returned).
 
-(to be continued)
+.. function:: bytes_at(addr, size)
+
+   Capture memory at the given address and size as bytes object. As bytes
+   object is immutable, memory is actually duplicated and copied into
+   bytes object, so if memory contents change later, created object
+   retains original value.
+
+.. function:: bytearray_at(addr, size)
+
+   Capture memory at the given address and size as bytearray object.
+   Unlike bytes_at() function above, memory is captured by reference,
+   so it can be both written too, and you will access current value
+   at the given memory address.
 
 Structure objects
 -----------------
