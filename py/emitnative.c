@@ -564,8 +564,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // allocate memory for keeping track of the objects on the stack
     // XXX don't know stack size on entry, and it should be maximum over all scopes
+    // XXX this is such a big hack and really needs to be fixed
     if (emit->stack_info == NULL) {
-        emit->stack_info_alloc = scope->stack_size + 50;
+        emit->stack_info_alloc = scope->stack_size + 200;
         emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     }
 
