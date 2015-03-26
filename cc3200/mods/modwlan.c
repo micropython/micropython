@@ -911,17 +911,17 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
-/// \method callback(handler, intmode, value, priority, pwrmode)
+/// \method callback(handler, pwrmode)
 /// Creates a callback object associated with WLAN
 /// min num of arguments is 1 (pwrmode)
 STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
 
-   wlan_obj_t *self = pos_args[0];
-   mp_obj_t _callback = mpcallback_find(self);
+    wlan_obj_t *self = pos_args[0];
+    mp_obj_t _callback = mpcallback_find(self);
     // check if any parameters were passed
-    if (kw_args->used > 0 || _callback == mp_const_none) {
+    if (kw_args->used > 0 || !_callback) {
         // check the power mode
         if (args[4].u_int != PYB_PWR_MODE_LPDS) {
             // throw an exception since WLAN only supports LPDS mode

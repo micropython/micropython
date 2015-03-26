@@ -40,6 +40,7 @@
 #include "rom_map.h"
 #include "pin.h"
 #include "prcm.h"
+#include "interrupt.h"
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
@@ -134,16 +135,18 @@ soft_reset:
     // we are alive, so let the world know it
     mperror_enable_heartbeat();
 
-    // configure stdio uart pins with the correct af
+    // configure the stdio uart pins with the correct alternate functions
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
     pin_config ((pin_obj_t *)&pin_GPIO1, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
     pin_config ((pin_obj_t *)&pin_GPIO2, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
-    // Instantiate the stdio uart
+    // instantiate the stdio uart
     mp_obj_t args[2] = {
             mp_obj_new_int(MICROPY_STDIO_UART),
             mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
     };
     pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+    // create a callback for the uart, in order to enable the rx interrupts
+    uart_callback_new (pyb_stdio_uart, mp_const_none, MICROPY_STDIO_UART_RX_BUF_SIZE, INT_PRIORITY_LVL_3);
 
     pybsleep_reset_cause_t rstcause = pybsleep_get_reset_cause();
     if (rstcause < PYB_SLP_SOFT_RESET) {

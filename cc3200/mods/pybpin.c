@@ -617,7 +617,7 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
-/// \method callback(method, intmode, value, priority, pwrmode)
+/// \method callback(method, intmode, priority, pwrmode)
 /// Creates a callback object associated to a pin
 /// min num of arguments is 1 (intmode)
 STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -627,7 +627,7 @@ STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
     pin_obj_t *self = pos_args[0];
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find(self);
-    if (kw_args->used > 0 || _callback == mp_const_none) {
+    if (kw_args->used > 0 || !_callback) {
         // convert the priority to the correct value
         uint priority = mpcallback_translate_priority (args[2].u_int);
         // verify the interrupt mode
@@ -840,8 +840,6 @@ STATIC void EXTI_Handler(uint port) {
 
     pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
     mp_obj_t _callback = mpcallback_find(self);
-    if (_callback) {
-        mpcallback_handler(_callback);
-    }
+    mpcallback_handler(_callback);
 }
 

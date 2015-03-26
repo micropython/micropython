@@ -151,7 +151,6 @@ Q(disable)
 // for RTC class
 Q(RTC)
 Q(datetime)
-Q(callback)
 
 // for time class
 Q(utime)
@@ -245,7 +244,7 @@ Q(handler)
 Q(intmode)
 Q(value)
 Q(priority)
-Q(wake)
+Q(wakes)
 
 // for Sleep class
 Q(Sleep)

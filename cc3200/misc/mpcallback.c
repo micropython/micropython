@@ -45,7 +45,7 @@ const mp_arg_t mpcallback_init_args[] = {
     { MP_QSTR_handler,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_priority,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     { MP_QSTR_value,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_wake,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PYB_PWR_MODE_ACTIVE} },
+    { MP_QSTR_wakes,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PYB_PWR_MODE_ACTIVE} },
 };
 
 /******************************************************************************

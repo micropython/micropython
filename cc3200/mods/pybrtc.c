@@ -179,7 +179,7 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-/// \method callback(handler, intmode, value, priority, pwrmode)
+/// \method callback(handler, value, pwrmode)
 /// Creates a callback object associated with the real time clock
 /// min num of arguments is 1 (value). The value is the alarm time
 /// in the future, in msec
@@ -189,7 +189,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
-    if (kw_args->used > 0 || _callback == mp_const_none) {
+    if (kw_args->used > 0 || !_callback) {
         uint32_t f_mseconds = args[3].u_int;
         uint32_t seconds;
         uint16_t mseconds;
@@ -200,6 +200,10 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         // configure the rtc alarm accordingly
         seconds += f_mseconds / 1000;
         mseconds += f_mseconds - ((f_mseconds / 1000) * 1000);
+
+        // disable the interrupt before updating anything
+        // (the object is not relevant here, the function already knows it)
+        pyb_rtc_callback_disable(NULL);
 
         // set the match value
         MAP_PRCMRTCMatchSet(seconds, mseconds);

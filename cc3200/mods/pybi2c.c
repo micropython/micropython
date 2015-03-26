@@ -129,13 +129,6 @@ STATIC void i2c_init (pyb_i2c_obj_t *self) {
     MAP_I2CMasterInitExpClk(I2CA0_BASE, self->baudrate);
 }
 
-STATIC void i2c_deinit(void) {
-    MAP_I2CMasterDisable(I2CA0_BASE);
-    MAP_PRCMPeripheralClkDisable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-    // invalidate the baudrate
-    pyb_i2c_obj.baudrate = 0;
-}
-
 STATIC bool pyb_i2c_transaction(uint cmd) {
     // Convert the timeout to microseconds
     int32_t timeout = PYBI2C_TRANSC_TIMEOUT_MS * 1000;
@@ -319,7 +312,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_i2c_init_obj, pyb_i2c_init);
 /// \method deinit()
 /// Turn off the I2C bus.
 STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
-    i2c_deinit();
+    // disable the peripheral
+    MAP_I2CMasterDisable(I2CA0_BASE);
+    MAP_PRCMPeripheralClkDisable(PRCM_I2CA0, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+    // invalidate the baudrate
+    pyb_i2c_obj.baudrate = 0;
     // unregister it with the sleep module
     pybsleep_remove ((const mp_obj_t)self_in);
     return mp_const_none;

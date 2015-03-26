@@ -47,6 +47,7 @@
 #include "pybuart.h"
 #include "pybioctl.h"
 #include "pybsleep.h"
+#include "mpcallback.h"
 #include "mpexception.h"
 #include "py/mpstate.h"
 #include "osi.h"
@@ -98,6 +99,8 @@ STATIC bool uart_rx_wait (pyb_uart_obj_t *self, uint32_t timeout);
 STATIC void UARTGenericIntHandler(uint32_t uart_id);
 STATIC void UART0IntHandler(void);
 STATIC void UART1IntHandler(void);
+STATIC void uart_callback_enable (mp_obj_t self_in);
+STATIC void uart_callback_disable (mp_obj_t self_in);
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
@@ -115,13 +118,14 @@ struct _pyb_uart_obj_t {
     uint16_t read_buf_len;              // len in chars; buf can hold len-1 chars
     volatile uint16_t read_buf_head;    // indexes first empty slot
     uint16_t read_buf_tail;             // indexes first full slot (not full if equals head)
-    bool enabled;
+    byte peripheral;
 };
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS];
+STATIC const mp_cb_methods_t uart_cb_methods;
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -175,41 +179,60 @@ void uart_tx_strn_cooked(pyb_uart_obj_t *self, const char *str, uint len) {
     }
 }
 
+mp_obj_t uart_callback_new (pyb_uart_obj_t *self, mp_obj_t handler, uint rxbuffer_size, mp_int_t priority) {
+    // disable the uart interrupts before updating anything
+    uart_callback_disable (self);
+
+    if (self->uart_id == PYB_UART_0) {
+        MAP_IntPrioritySet(INT_UARTA0, priority);
+        MAP_UARTIntRegister(self->reg, UART0IntHandler);
+    }
+    else {
+        MAP_IntPrioritySet(INT_UARTA1, priority);
+        MAP_UARTIntRegister(self->reg, UART1IntHandler);
+    }
+
+    // check the rx buffer size
+    if (rxbuffer_size > 0) {
+        // allocate the read buffer
+        self->read_buf_len = rxbuffer_size;
+        self->read_buf = m_new(byte, rxbuffer_size);
+    }
+
+    // create the callback
+    mp_obj_t _callback = mpcallback_new ((mp_obj_t)self, handler, &uart_cb_methods);
+
+    // enable the interrupts now
+    uart_callback_enable (self);
+
+    return _callback;
+}
+
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 // assumes init parameters have been set up correctly
 STATIC void uart_init (pyb_uart_obj_t *self) {
-    uint uartPerh;
-
-    switch (self->uart_id) {
-    case PYB_UART_0:
+    if (self->uart_id == PYB_UART_0) {
         self->reg = UARTA0_BASE;
-        uartPerh = PRCM_UARTA0;
-        MAP_UARTIntRegister(UARTA0_BASE, UART0IntHandler);
-        MAP_IntPrioritySet(INT_UARTA0, INT_PRIORITY_LVL_3);
-        break;
-    case PYB_UART_1:
+        self->peripheral = PRCM_UARTA0;
+    }
+    else {
         self->reg = UARTA1_BASE;
-        uartPerh = PRCM_UARTA1;
-        MAP_UARTIntRegister(UARTA1_BASE, UART1IntHandler);
-        MAP_IntPrioritySet(INT_UARTA1, INT_PRIORITY_LVL_3);
-        break;
-    default:
-        return;
+        self->peripheral = PRCM_UARTA1;
     }
 
     // Enable the peripheral clock
-    MAP_PRCMPeripheralClkEnable(uartPerh, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(self->peripheral, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
 
     // Reset the uart
-    MAP_PRCMPeripheralReset(uartPerh);
+    MAP_PRCMPeripheralReset(self->peripheral);
 
     // Initialize the UART
-    MAP_UARTConfigSetExpClk(self->reg, MAP_PRCMPeripheralClockGet(uartPerh),
+    MAP_UARTConfigSetExpClk(self->reg, MAP_PRCMPeripheralClockGet(self->peripheral),
                             self->baudrate, self->config);
 
-    // Enbale the FIFO
+    // Enable the FIFO
     MAP_UARTFIFOEnable(self->reg);
 
     // Configure the FIFO interrupt levels
@@ -217,21 +240,13 @@ STATIC void uart_init (pyb_uart_obj_t *self) {
 
     // Configure the flow control mode
     UARTFlowControlSet(self->reg, self->flowcontrol);
-
-    // Setup the RX interrupts
-    if (self->read_buf != NULL) {
-        MAP_UARTIntEnable(self->reg, UART_INT_RX | UART_INT_RT);
-    }
-    else {
-        MAP_UARTIntDisable(self->reg, UART_INT_RX | UART_INT_RT);
-    }
 }
 
 // Waits at most timeout milliseconds for at least 1 char to become ready for
 // reading (from buf or for direct reading).
 // Returns true if something available, false if not.
 STATIC bool uart_rx_wait (pyb_uart_obj_t *self, uint32_t timeout) {
-    for (;;) {
+    for ( ; ; ) {
         if (uart_rx_any(self)) {
             return true; // have at least 1 char ready for reading
         }
@@ -256,8 +271,8 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         while (UARTCharsAvail(self->reg)) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (MICROPY_STDIO_UART == self->uart_id && data == user_interrupt_char) {
-                // raise exception when interrupts are finished
+            if (pyb_stdio_uart == self && data == user_interrupt_char) {
+                // raise an exception when interrupts are finished
                 mpexception_keyboard_nlr_jump();
             }
             else if (self->read_buf_len != 0) {
@@ -269,6 +284,9 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
                 }
             }
         }
+        // call the user defined handler
+        mp_obj_t _callback = mpcallback_find(self);
+        mpcallback_handler(_callback);
     }
 }
 
@@ -280,14 +298,23 @@ STATIC void UART1IntHandler(void) {
     UARTGenericIntHandler(1);
 }
 
+STATIC void uart_callback_enable (mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
+    MAP_UARTIntEnable(self->reg, UART_INT_RX | UART_INT_RT);
+}
+
+STATIC void uart_callback_disable (mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    MAP_UARTIntDisable(self->reg, UART_INT_RX | UART_INT_RT);
+}
+
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
 STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
-    if (!self->enabled) {
-        print(env, "<UART%u>", self->uart_id);
-    } else {
+    if (self->baudrate > 0) {
         print(env, "<UART%u, baudrate=%u, bits=", self->uart_id, self->baudrate);
         switch (self->config & UART_CONFIG_WLEN_MASK) {
         case UART_CONFIG_WLEN_5:
@@ -314,6 +341,9 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
               (self->config & UART_CONFIG_STOP_MASK) == UART_CONFIG_STOP_ONE ? 1 : 2,
                self->timeout, self->timeout_char, self->read_buf_len);
     }
+    else {
+        print(env, "<UART%u>", self->uart_id);
+    }
 }
 
 /// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, read_buf_len=128)
@@ -326,9 +356,8 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
 ///   - `stop` is the number of stop bits, 1 or 2.
 ///   - `flowcontrol` is the flow control mode, `None`, `UART.FLOW_TX`, 
 ///     `UART.FLOW_RX', 'UART.FLOW_TXRX`.
-///   - `timeout` is the timeout in milliseconds to wait for the first character.
-///   - `timeout_char` is the timeout in milliseconds to wait between characters.
-///   - `read_buf_len` is the character length of the read buffer (0 to disable).
+///   - `timeout` is the timeout (in milliseconds) when waiting for the first character.
+///   - `timeout_char` is the timeout (in milliseconds) between characters.
 STATIC const mp_arg_t pyb_uart_init_args[] = {
     { MP_QSTR_baudrate,     MP_ARG_REQUIRED | MP_ARG_INT,  },
     { MP_QSTR_bits,         MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 8} },
@@ -337,7 +366,6 @@ STATIC const mp_arg_t pyb_uart_init_args[] = {
     { MP_QSTR_flow,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_int = UART_FLOWCONTROL_NONE} },
     { MP_QSTR_timeout,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1000} },
     { MP_QSTR_timeout_char, MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1} },
-    { MP_QSTR_read_buf_len, MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 128} },
 };
 
 STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -349,21 +377,11 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     self->timeout = args[5].u_int;
     self->timeout_char = args[6].u_int;
 
-    // setup the read buffer
-    m_del(byte, self->read_buf, self->read_buf_len);
+    // no read buffer for the moment
     self->read_buf_head = 0;
     self->read_buf_tail = 0;
-
-    if (args[7].u_int <= 0) {
-        // no read buffer
-        self->read_buf_len = 0;
-        self->read_buf = NULL;
-    }
-    else {
-        // read buffer using interrupts
-        self->read_buf_len = args[7].u_int;
-        self->read_buf = m_new(byte, args[7].u_int);
-    }
+    self->read_buf_len = 0;
+    self->read_buf = NULL;
 
     // get the baudrate
     self->baudrate = args[0].u_int;
@@ -395,7 +413,6 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         }
         // Stop bits
         self->config |= (args[3].u_int == 1 ? UART_CONFIG_STOP_ONE : UART_CONFIG_STOP_TWO);
-        
         // Flow control
         self->flowcontrol = args[4].u_int;
     }
@@ -403,9 +420,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         self->config = UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE;
         self->flowcontrol = UART_FLOWCONTROL_NONE;
     }
+
     // initialize and enable the uart
     uart_init (self);
-    self->enabled = true;
     // register it with the sleep module
     pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)uart_init);
 
@@ -414,7 +431,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct a UART object on the given bus id.  `bus id` can be 0-1
+/// Construct a UART object on the given bus id.  `bus id` can be 0 or 1
 /// With no additional parameters, the UART object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).
@@ -441,9 +458,6 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
     if (n_args > 1 || n_kw > 0) {
-        // invalidate the buffer and clear the enabled flag
-        self->read_buf = NULL;
-        self->enabled = false;
         // start the peripheral
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -462,31 +476,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 /// Turn off the UART bus.
 mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    uint uartPerh;
-
-    switch (self->uart_id) {
-
-    case PYB_UART_0:
-        uartPerh = PRCM_UARTA0;
-        break;
-
-    case PYB_UART_1:
-        uartPerh = PRCM_UARTA1;
-        break;
-
-    default:
-        return mp_const_none;
-    }
 
     // unregister it with the sleep module
     pybsleep_remove (self);
-    self->enabled = false;
+    // invalidate the baudrate
+    self->baudrate = 0;
     MAP_UARTIntDisable(self->reg, UART_INT_RX | UART_INT_RT);
-    MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
-    MAP_UARTIntUnregister(self->reg);
     MAP_UARTDisable(self->reg);
-    MAP_PRCMPeripheralClkDisable(uartPerh, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-
+    MAP_PRCMPeripheralClkDisable(self->peripheral, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_deinit_obj, pyb_uart_deinit);
@@ -502,6 +499,33 @@ STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
+
+/// \method callback(handler, value, priority)
+/// Creates a callback object associated with the uart
+/// min num of arguments is 1 (value). The value is the size of the rx buffer
+STATIC mp_obj_t pyb_uart_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
+
+    // check if any parameters were passed
+    pyb_uart_obj_t *self = pos_args[0];
+    mp_obj_t _callback = mpcallback_find((mp_obj_t)self);
+    if (kw_args->used > 0 || !_callback) {
+
+        // convert the priority to the correct value
+        uint priority = mpcallback_translate_priority (args[2].u_int);
+
+        // check the power mode
+        if (PYB_PWR_MODE_ACTIVE != args[3].u_int) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+
+        // register a new callback
+        return uart_callback_new (self, args[1].u_obj, args[3].u_int, priority);
+    }
+    return _callback;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_callback_obj, 1, pyb_uart_callback);
 
 /// \method writechar(char)
 /// Write a single character on the bus.  `char` is an integer to write.
@@ -540,6 +564,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pyb_uart_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),      (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any),         (mp_obj_t)&pyb_uart_any_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),    (mp_obj_t)&pyb_uart_callback_obj },
 
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),        (mp_obj_t)&mp_stream_read_obj },
@@ -582,7 +607,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
 
     // read the data
     byte *orig_buf = buf;
-    for (;;) {
+    for ( ; ; ) {
         *buf++ = uart_rx_char(self);
         if (--size == 0 || !uart_rx_wait(self, self->timeout_char)) {
             // return number of bytes read
@@ -626,6 +651,12 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .write = pyb_uart_write,
     .ioctl = pyb_uart_ioctl,
     .is_text = false,
+};
+
+STATIC const mp_cb_methods_t uart_cb_methods = {
+    .init = pyb_uart_callback,
+    .enable = uart_callback_enable,
+    .disable = uart_callback_disable,
 };
 
 const mp_obj_type_t pyb_uart_type = {
