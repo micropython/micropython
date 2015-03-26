@@ -399,6 +399,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #endif
 
+// Whether to support descriptors
+#ifndef MICROPY_PY_BUILTINS_DESCRIPTOR
+#define MICROPY_PY_BUILTINS_DESCRIPTOR (0)
+#endif
+
 // Whether to implement the start/stop/step attributes (readback) on
 // the "range" builtin type. Rarely used, and costs ~60 bytes (x86).
 #ifndef MICROPY_PY_BUILTINS_RANGE_ATTRS
