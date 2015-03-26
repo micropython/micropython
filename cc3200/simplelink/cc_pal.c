@@ -310,7 +310,6 @@ int spi_Read(Fd_t fd, unsigned char *pBuff, int len)
         return -1;
     }
 
-    MAP_SPIWordCountSet(LSPI_BASE, 0);
     return spi_Read_CPU(pBuff, len);
 }
 
@@ -340,7 +339,6 @@ int spi_Write(Fd_t fd, unsigned char *pBuff, int len)
         return -1;
     }
 
-    MAP_SPIWordCountSet(LSPI_BASE, 0);
     return spi_Write_CPU(pBuff,len);
 }
 
