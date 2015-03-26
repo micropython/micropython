@@ -114,14 +114,14 @@ typedef struct {
     mp_obj_t    timer_lpds_wake_cb;
     mp_obj_t    gpio_lpds_wake_cb;
     uint        timer_wake_pwrmode;
-} pybsleep_wake_cb_t;
+} pybsleep_data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC const mp_obj_type_t pybsleep_type;
 STATIC nvic_reg_store_t    *nvic_reg_store;
-STATIC pybsleep_wake_cb_t   pybsleep_wake_cb = {NULL, NULL, NULL, 0};
+STATIC pybsleep_data_t   pybsleep_data = {NULL, NULL, NULL, 0};
 volatile arm_cm4_core_regs_t vault_arm_registers;
 STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
 
@@ -211,19 +211,19 @@ void pybsleep_remove (const mp_obj_t obj) {
 }
 
 void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj) {
-    pybsleep_wake_cb.wlan_lpds_wake_cb = cb_obj;
+    pybsleep_data.wlan_lpds_wake_cb = cb_obj;
 }
 
 void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj) {
-    pybsleep_wake_cb.gpio_lpds_wake_cb = cb_obj;
+    pybsleep_data.gpio_lpds_wake_cb = cb_obj;
 }
 
 void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj) {
-    pybsleep_wake_cb.timer_lpds_wake_cb = cb_obj;
+    pybsleep_data.timer_lpds_wake_cb = cb_obj;
 }
 
 void pybsleep_configure_timer_wakeup (uint pwrmode) {
-    pybsleep_wake_cb.timer_wake_pwrmode = pwrmode;
+    pybsleep_data.timer_wake_pwrmode = pwrmode;
 }
 
 pybsleep_reset_cause_t pybsleep_get_reset_cause (void) {
@@ -404,22 +404,22 @@ STATIC void PRCMInterruptHandler (void) {
     // reading the interrupt status automatically clears the interrupt
     if (PRCM_INT_SLOW_CLK_CTR == MAP_PRCMIntStatus()) {
         // this interrupt is triggered during active mode
-        mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
+        mpcallback_handler(pybsleep_data.timer_lpds_wake_cb);
     }
     else {
         // interrupt has been triggered while waking up from LPDS
         switch (MAP_PRCMLPDSWakeupCauseGet()) {
         case PRCM_LPDS_HOST_IRQ:
-            mpcallback_handler(pybsleep_wake_cb.wlan_lpds_wake_cb);
+            mpcallback_handler(pybsleep_data.wlan_lpds_wake_cb);
             break;
         case PRCM_LPDS_GPIO:
-            mpcallback_handler(pybsleep_wake_cb.gpio_lpds_wake_cb);
+            mpcallback_handler(pybsleep_data.gpio_lpds_wake_cb);
             break;
         case PRCM_LPDS_TIMER:
             // disable the timer as a wake-up source
-            pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
+            pybsleep_data.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
             MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
-            mpcallback_handler(pybsleep_wake_cb.timer_lpds_wake_cb);
+            mpcallback_handler(pybsleep_data.timer_lpds_wake_cb);
             break;
         default:
             break;
@@ -567,24 +567,24 @@ STATIC mp_obj_t pyb_sleep_suspend (mp_obj_t self_in) {
     nlr_buf_t nlr;
 
     // check if we should enable timer wake-up
-    if (pybsleep_wake_cb.timer_wake_pwrmode & PYB_PWR_MODE_LPDS) {
+    if (pybsleep_data.timer_wake_pwrmode & PYB_PWR_MODE_LPDS) {
         if (!setup_timer_lpds_wake()) {
             // lpds entering is not possible, wait for the forced interrupt and return
-            pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
+            pybsleep_data.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
             HAL_Delay (FAILED_SLEEP_DELAY_MS);
             return mp_const_none;
         }
     }
 
-    // check if we need to enable network wake-up
-    if (pybsleep_wake_cb.wlan_lpds_wake_cb) {
+    // do we need network wake-up?
+    if (pybsleep_data.wlan_lpds_wake_cb) {
         MAP_PRCMLPDSWakeupSourceEnable (PRCM_LPDS_HOST_IRQ);
     }
     else {
         MAP_PRCMLPDSWakeupSourceDisable (PRCM_LPDS_HOST_IRQ);
     }
 
-    // entering and exiting suspend mode must be an atomic operation
+    // entering and exiting suspended mode must be an atomic operation
     // therefore interrupts need to be disabled
     uint primsk = disable_irq();
     if (nlr_push(&nlr) == 0) {
@@ -604,10 +604,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_suspend_obj, pyb_sleep_suspend);
 /// calling this method.
 STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
     // check if we should enable timer wake-up
-    if (pybsleep_wake_cb.timer_wake_pwrmode & PYB_PWR_MODE_HIBERNATE) {
+    if (pybsleep_data.timer_wake_pwrmode & PYB_PWR_MODE_HIBERNATE) {
         if (!setup_timer_hibernate_wake()) {
             // hibernating is not possible, wait for the forced interrupt and return
-            pybsleep_wake_cb.timer_wake_pwrmode &= ~PYB_PWR_MODE_HIBERNATE;
+            pybsleep_data.timer_wake_pwrmode &= ~PYB_PWR_MODE_HIBERNATE;
             HAL_Delay (FAILED_SLEEP_DELAY_MS);
             return mp_const_none;
         }

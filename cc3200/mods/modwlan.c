@@ -191,8 +191,7 @@ STATIC void wlan_lpds_callback_disable (mp_obj_t self_in);
 //! \return None
 //!
 //*****************************************************************************
-void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
-{
+void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
     if (!pWlanEvent) {
         return;
     }
@@ -249,8 +248,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
 //! \return None
 //!
 //*****************************************************************************
-void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
-{
+void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent) {
     if(!pNetAppEvent) {
         return;
     }
@@ -295,8 +293,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
 //! \return None
 //!
 //****************************************************************************
-void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pHttpEvent, SlHttpServerResponse_t *pHttpResponse)
-{
+void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pHttpEvent, SlHttpServerResponse_t *pHttpResponse) {
     if (!pHttpEvent) {
         return;
     }
@@ -320,8 +317,7 @@ void SimpleLinkHttpServerCallback(SlHttpServerEvent_t *pHttpEvent, SlHttpServerR
 //! \return None
 //!
 //*****************************************************************************
-void SimpleLinkGeneralEventHandler(SlDeviceEvent_t *pDevEvent)
-{
+void SimpleLinkGeneralEventHandler(SlDeviceEvent_t *pDevEvent) {
     if (!pDevEvent) {
         return;
     }
@@ -339,8 +335,7 @@ void SimpleLinkGeneralEventHandler(SlDeviceEvent_t *pDevEvent)
 //! \return None
 //!
 //*****************************************************************************
-void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
-{
+void SimpleLinkSockEventHandler(SlSockEvent_t *pSock) {
     if (!pSock) {
         return;
     }
@@ -357,11 +352,11 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
     case SL_SOCKET_ASYNC_EVENT:
          switch(pSock->socketAsyncEvent.SockAsyncData.type) {
          case SSL_ACCEPT:
-             //accept failed due to ssl issue ( tcp pass)
              break;
          case RX_FRAGMENTATION_TOO_BIG:
              break;
          case OTHER_SIDE_CLOSE_SSL_DATA_NOT_ENCRYPTED:
+             break;
          default:
              break;
          }
@@ -512,19 +507,27 @@ void wlan_update(void) {
 #endif
 }
 
-// call this function to disable the complete WLAN subsystem before a system reset
 void wlan_stop (uint32_t timeout) {
-    if (wlan_obj.mode >= 0) {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-        // Stop all other processes using the wlan engine
-        if ((wlan_obj.servers_enabled = servers_are_enabled())) {
-            servers_stop();
-        }
-#endif
-        sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
-        wlan_obj.mode = -1;
-        sl_Stop(MAX(timeout, SL_STOP_TIMEOUT));
+    // Stop all other processes using the wlan engine
+    if ((wlan_obj.servers_enabled = servers_are_enabled())) {
+        servers_stop();
     }
+#endif
+    sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
+    sl_Stop(timeout);
+    wlan_obj.mode = -1;
+}
+
+void wlan_start (void) {
+    wlan_obj.mode = sl_Start(0, 0, 0);
+    sl_LockObjUnlock (&wlan_LockObj);
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+    // start the servers if they were enabled before
+    if (wlan_obj.servers_enabled) {
+        servers_start();
+    }
+#endif
 }
 
 void wlan_get_mac (uint8_t *macAddress) {
@@ -554,8 +557,7 @@ STATIC void wlan_initialize_data (void) {
 }
 
 STATIC void wlan_reenable (SlWlanMode_t mode) {
-    // Stop and start again
-    wlan_obj.mode = -1;
+    // stop and start again
     sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
     sl_Stop(SL_STOP_TIMEOUT);
     wlan_obj.mode = sl_Start(0, 0, 0);
@@ -566,13 +568,11 @@ STATIC void wlan_reenable (SlWlanMode_t mode) {
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len) {
     SlSecParams_t secParams;
-
     secParams.Key = (_i8*)key;
     secParams.KeyLen = ((key != NULL) ? key_len : 0);
     secParams.Type = sec;
 
     if (0 == sl_WlanConnect((_i8*)ssid, ssid_len, (_u8*)bssid, &secParams, NULL)) {
-
         // Wait for the WLAN Event
         uint32_t waitForConnectionMs = 0;
         while (!IS_CONNECTED(wlan_obj.status)) {
@@ -584,10 +584,8 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
                 return MODWLAN_ERROR_TIMEOUT;
             }
         }
-
         return MODWLAN_OK;
     }
-
     return MODWLAN_ERROR_INVALID_PARAMS;
 }
 
@@ -782,8 +780,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_connect_obj, 1, wlan_connect);
 
 /// \method wlan_disconnect()
-/// Closes the current WLAN connection
-///
+/// Close the current WLAN connection
 STATIC mp_obj_t wlan_disconnect(mp_obj_t self_in) {
     sl_WlanDisconnect();
     return mp_const_none;
@@ -791,8 +788,7 @@ STATIC mp_obj_t wlan_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_disconnect_obj, wlan_disconnect);
 
 /// \method is_connected()
-/// Returns true if connected to the AP and an IP address has been assigned. False otherwise.
-///
+/// Return true if connected to the AP and an IP address has been assigned. False otherwise.
 STATIC mp_obj_t wlan_isconnected(mp_obj_t self_in) {
     if (GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION) &&
         GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) {
@@ -803,7 +799,6 @@ STATIC mp_obj_t wlan_isconnected(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_isconnected_obj, wlan_isconnected);
 
 STATIC mp_obj_t wlan_ifconfig (mp_obj_t self_in) {
-
     unsigned char len = sizeof(SlNetCfgIpV4Args_t);
     unsigned char dhcpIsOn;
     SlNetCfgIpV4Args_t ipV4;
@@ -870,7 +865,7 @@ STATIC mp_obj_t wlan_urn (uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
 
 /// \method wlan_netlist()
-/// Returns a list of tuples with all the acces points within range
+/// Return a list of tuples with all the acces points within range
 STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
     Sl_WlanNetworkEntry_t wlanEntry;
     uint8_t _index = 0;
@@ -912,7 +907,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
 /// \method callback(handler, pwrmode)
-/// Creates a callback object associated with WLAN
+/// Create a callback object associated with WLAN
 /// min num of arguments is 1 (pwrmode)
 STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];

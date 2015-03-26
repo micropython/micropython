@@ -58,6 +58,7 @@ extern modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uin
                                         const char *key, uint8_t key_len, uint8_t channel);
 extern void wlan_first_start (void);
 extern void wlan_stop (uint32_t timeout);
+extern void wlan_start (void);
 extern void wlan_get_mac (uint8_t *macAddress);
 extern void wlan_get_ip (uint32_t *ip);
 
