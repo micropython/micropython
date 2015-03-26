@@ -199,13 +199,10 @@ void pin_verify_af (uint af) {
 
 void pin_config (pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
     // configure the pin in analog mode
-    self->af = af;
-    self->mode = mode;
-    self->type = type;
-    self->strength = strength;
+    self->af = af, self->mode = mode, self->type = type, self->strength = strength;
     pin_obj_configure ((const pin_obj_t *)self);
     // mark the pin as used
-    self->used = true;
+    self->isused = true;
     // register it with the sleep module
     pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pin_obj_configure);
 }

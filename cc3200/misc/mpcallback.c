@@ -62,6 +62,7 @@ mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_
     self->handler = handler;
     self->parent = parent;
     self->methods = (mp_cb_methods_t *)methods;
+    self->isenabled = true;
     // remove any old callback if present
     mpcallback_remove(self->parent);
     mp_obj_list_append(&MP_STATE_PORT(mpcallback_obj_list), self);
@@ -77,6 +78,16 @@ mpcallback_obj_t *mpcallback_find (mp_obj_t parent) {
         }
     }
     return NULL;
+}
+
+void mpcallback_wake_all (void) {
+    // re-enable all active callback objects one by one
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
+        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+        if (callback_obj->isenabled) {
+            callback_obj->methods->enable(callback_obj->parent);
+        }
+    }
 }
 
 void mpcallback_remove (const mp_obj_t parent) {
@@ -158,6 +169,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(callback_init_obj, 1, callback_init);
 STATIC mp_obj_t callback_enable (mp_obj_t self_in) {
     mpcallback_obj_t *self = self_in;
     self->methods->enable(self->parent);
+    self->isenabled = true;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_enable_obj, callback_enable);
@@ -167,6 +179,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_enable_obj, callback_enable);
 STATIC mp_obj_t callback_disable (mp_obj_t self_in) {
     mpcallback_obj_t *self = self_in;
     self->methods->disable(self->parent);
+    self->isenabled = false;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_disable_obj, callback_disable);

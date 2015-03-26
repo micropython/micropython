@@ -110,7 +110,7 @@ static telnet_data_t telnet_data;
 static const char* telnet_welcome_msg       = "Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n";
 static const char* telnet_request_user      = "Login as:";
 static const char* telnet_request_password  = "Password:";
-static const char* telnet_invalid_loggin    = "\r\nInvalid credentials, try again\r\n";
+static const char* telnet_invalid_loggin    = "\r\nInvalid credentials, try again.\r\n";
 static const char* telnet_loggin_success    = "\r\nLogin succeeded!\r\nType \"help()\" for more information.\r\n";
 static const uint8_t telnet_options_user[]  = // IAC   WONT ECHO IAC   WONT SUPPRESS_GO_AHEAD IAC  WILL LINEMODE
                                                { 255,  252,   1, 255,  252,       3,          255, 251,   34 };
@@ -217,10 +217,8 @@ void telnet_run (void) {
                 break;
             case E_TELNET_STE_SUB_LOGGIN_SUCCESS:
                 if (E_TELNET_RESULT_OK == telnet_send_non_blocking((void *)telnet_loggin_success, strlen(telnet_loggin_success))) {
-                    // clear the current line
+                    // clear the current line and force the prompt
                     telnet_reset_buffer();
-                    // fake an "enter" key pressed to display the prompt
-                    telnet_data.rxBuffer[telnet_data.rxWindex++] = '\r';
                     telnet_data.state= E_TELNET_STE_LOGGED_IN;
                 }
             default:
@@ -478,7 +476,10 @@ static void telnet_reset (void) {
 }
 
 static void telnet_reset_buffer (void) {
+    // erase any characters present in the current line
     memset (telnet_data.rxBuffer, '\b', TELNET_RX_BUFFER_SIZE / 2);
     telnet_data.rxWindex = TELNET_RX_BUFFER_SIZE / 2;
+    // fake an "enter" key pressed to display the prompt
+    telnet_data.rxBuffer[telnet_data.rxWindex++] = '\r';
 }
 

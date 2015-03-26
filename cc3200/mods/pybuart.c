@@ -346,7 +346,7 @@ STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void 
     }
 }
 
-/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, read_buf_len=128)
+/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0)
 ///
 /// Initialise the UART bus with the given parameters:
 ///

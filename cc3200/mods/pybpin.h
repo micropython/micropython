@@ -42,7 +42,7 @@ typedef struct {
     uint8_t             af;
     uint8_t             strength;
     uint8_t             mode;
-    bool                used;
+    bool                isused;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;

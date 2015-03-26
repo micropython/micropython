@@ -50,5 +50,5 @@
     .af       = PIN_MODE_0, \
     .strength = PIN_STRENGTH_4MA, \
     .mode     = GPIO_DIR_MODE_IN, \
-    .used     = false \
+    .isused   = false, \
 }

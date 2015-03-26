@@ -322,11 +322,11 @@ STATIC NORETURN void pybsleep_suspend_enter (void) {
         nvic_reg_store->int_priority[i] = base_reg_addr[i];
     }
 
+    // switch off the heartbeat led (this makes sure it will blink as soon as we wake up)
+    mperror_heartbeat_switch_off();
+
     // park the gpio pins
     pybsleep_iopark();
-
-    // turn-off the heartbeat led
-    mperror_heartbeat_switch_off();
 
     // store the cpu registers
     sleep_store();
@@ -384,11 +384,14 @@ void pybsleep_suspend_exit (void) {
     // ungate the clock to the shared spi bus
     MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
 
-    // reinitialize simplelink's bus
+    // reinitialize simplelink's interface
     sl_IfOpen (NULL, 0);
 
     // restore the configuration of all active peripherals
     pybsleep_obj_wakeup();
+
+    // reconfigure all the previously enabled interrupts
+    mpcallback_wake_all();
 
     // trigger a sw interrupt
     MAP_IntPendSet(INT_PRCM);
@@ -450,11 +453,11 @@ STATIC void pybsleep_iopark (void) {
 #endif
             break;
         default:
-            if (!pin->used) {
-                // enable the pull-down in unused pins
+            // enable a weak pull-down if the pin is unused
+            if (!pin->isused) {
                 MAP_PinConfigSet(pin->pin_num, pin->strength, PIN_TYPE_STD_PD);
             }
-            // make the pin an input
+            // make it an input
             MAP_PinDirModeSet(pin->pin_num, PIN_DIR_MODE_IN);
             break;
         }
@@ -610,8 +613,9 @@ STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
         }
     }
     wlan_stop(SL_STOP_TIMEOUT);
-    mperror_heartbeat_switch_off();
     pybsleep_flash_powerdown();
+    // must be done just before entering hibernate mode
+    pybsleep_iopark();
     MAP_PRCMHibernateEnter();
     return mp_const_none;
 }
