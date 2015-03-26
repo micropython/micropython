@@ -72,7 +72,7 @@ typedef struct _emit_method_table_t {
     void (*end_pass)(emit_t *emit);
     bool (*last_emit_was_return_value)(emit_t *emit);
     void (*adjust_stack_size)(emit_t *emit, mp_int_t delta);
-    void (*set_line_number)(emit_t *emit, mp_uint_t line);
+    void (*set_source_line)(emit_t *emit, mp_uint_t line);
 
     mp_emit_method_table_id_ops_t load_id;
     mp_emit_method_table_id_ops_t store_id;
@@ -166,6 +166,10 @@ extern const emit_method_table_t emit_native_x86_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
 extern const emit_method_table_t emit_native_arm_method_table;
 
+extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops;
+extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
+extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops;
+
 emit_t *emit_cpython_new(void);
 emit_t *emit_bc_new(void);
 emit_t *emit_native_x64_new(mp_uint_t max_num_labels);
@@ -182,6 +186,91 @@ void emit_native_x64_free(emit_t *emit);
 void emit_native_x86_free(emit_t *emit);
 void emit_native_thumb_free(emit_t *emit);
 void emit_native_arm_free(emit_t *emit);
+
+void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
+void mp_emit_bc_end_pass(emit_t *emit);
+bool mp_emit_bc_last_emit_was_return_value(emit_t *emit);
+void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta);
+void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t line);
+
+void mp_emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
+void mp_emit_bc_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num);
+void mp_emit_bc_load_name(emit_t *emit, qstr qst);
+void mp_emit_bc_load_global(emit_t *emit, qstr qst);
+void mp_emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
+void mp_emit_bc_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num);
+void mp_emit_bc_store_name(emit_t *emit, qstr qst);
+void mp_emit_bc_store_global(emit_t *emit, qstr qst);
+void mp_emit_bc_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
+void mp_emit_bc_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num);
+void mp_emit_bc_delete_name(emit_t *emit, qstr qst);
+void mp_emit_bc_delete_global(emit_t *emit, qstr qst);
+
+void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l);
+void mp_emit_bc_import_name(emit_t *emit, qstr qst);
+void mp_emit_bc_import_from(emit_t *emit, qstr qst);
+void mp_emit_bc_import_star(emit_t *emit);
+void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok);
+void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg);
+void mp_emit_bc_load_const_str(emit_t *emit, qstr qst, bool bytes);
+void mp_emit_bc_load_const_obj(emit_t *emit, void *obj);
+void mp_emit_bc_load_null(emit_t *emit);
+void mp_emit_bc_load_attr(emit_t *emit, qstr qst);
+void mp_emit_bc_load_method(emit_t *emit, qstr qst);
+void mp_emit_bc_load_build_class(emit_t *emit);
+void mp_emit_bc_load_subscr(emit_t *emit);
+void mp_emit_bc_store_attr(emit_t *emit, qstr qst);
+void mp_emit_bc_store_subscr(emit_t *emit);
+void mp_emit_bc_delete_attr(emit_t *emit, qstr qst);
+void mp_emit_bc_delete_subscr(emit_t *emit);
+void mp_emit_bc_dup_top(emit_t *emit);
+void mp_emit_bc_dup_top_two(emit_t *emit);
+void mp_emit_bc_pop_top(emit_t *emit);
+void mp_emit_bc_rot_two(emit_t *emit);
+void mp_emit_bc_rot_three(emit_t *emit);
+void mp_emit_bc_jump(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label);
+void mp_emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label);
+void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
+#define mp_emit_bc_break_loop mp_emit_bc_unwind_jump
+#define mp_emit_bc_continue_loop mp_emit_bc_unwind_jump
+void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_with_cleanup(emit_t *emit);
+void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_end_finally(emit_t *emit);
+void mp_emit_bc_get_iter(emit_t *emit);
+void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_for_iter_end(emit_t *emit);
+void mp_emit_bc_pop_block(emit_t *emit);
+void mp_emit_bc_pop_except(emit_t *emit);
+void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op);
+void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op);
+void mp_emit_bc_build_tuple(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_list_append(emit_t *emit, mp_uint_t list_stack_index);
+void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_store_map(emit_t *emit);
+void mp_emit_bc_map_add(emit_t *emit, mp_uint_t map_stack_index);
+#if MICROPY_PY_BUILTINS_SET
+void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_set_add(emit_t *emit, mp_uint_t set_stack_index);
+#endif
+#if MICROPY_PY_BUILTINS_SLICE
+void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args);
+#endif
+void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_unpack_ex(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
+void mp_emit_bc_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults);
+void mp_emit_bc_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_over, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults);
+void mp_emit_bc_call_function(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags);
+void mp_emit_bc_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags);
+void mp_emit_bc_return_value(emit_t *emit);
+void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_yield_value(emit_t *emit);
+void mp_emit_bc_yield_from(emit_t *emit);
+void mp_emit_bc_start_except_handler(emit_t *emit);
+void mp_emit_bc_end_except_handler(emit_t *emit);
 
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 

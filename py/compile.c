@@ -49,12 +49,27 @@ typedef enum {
     PN_const_object, // special node for a constant, generic Python object
 } pn_kind_t;
 
+#define NEED_METHOD_TABLE (MICROPY_EMIT_CPYTHON || MICROPY_EMIT_NATIVE)
+
+#if NEED_METHOD_TABLE
+
+// we need a method table to do the lookup for the emitter functions
 #define EMIT(fun) (comp->emit_method_table->fun(comp->emit))
 #define EMIT_ARG(fun, ...) (comp->emit_method_table->fun(comp->emit, __VA_ARGS__))
 #define EMIT_LOAD_FAST(qst, local_num) (comp->emit_method_table->load_id.fast(comp->emit, qst, local_num))
 #define EMIT_LOAD_GLOBAL(qst) (comp->emit_method_table->load_id.global(comp->emit, qst))
 #define EMIT_INLINE_ASM(fun) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm))
 #define EMIT_INLINE_ASM_ARG(fun, ...) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm, __VA_ARGS__))
+
+#else
+
+// if we only have the bytecode emitter enabled then we can do a direct call to the functions
+#define EMIT(fun) (mp_emit_bc_##fun(comp->emit))
+#define EMIT_ARG(fun, ...) (mp_emit_bc_##fun(comp->emit, __VA_ARGS__))
+#define EMIT_LOAD_FAST(qst, local_num) (mp_emit_bc_load_fast(comp->emit, qst, local_num))
+#define EMIT_LOAD_GLOBAL(qst) (mp_emit_bc_load_global(comp->emit, qst))
+
+#endif
 
 // elements in this struct are ordered to make it compact
 typedef struct _compiler_t {
@@ -83,7 +98,9 @@ typedef struct _compiler_t {
     scope_t *scope_cur;
 
     emit_t *emit;                                   // current emitter
+    #if NEED_METHOD_TABLE
     const emit_method_table_t *emit_method_table;   // current emit method table
+    #endif
 
     #if MICROPY_EMIT_INLINE_THUMB
     emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
@@ -406,7 +423,11 @@ STATIC void compile_load_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_load(comp->scope_cur, qst);
     } else {
+        #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->load_id, comp->scope_cur, qst);
+        #else
+        mp_emit_common_id_op(comp->emit, &mp_emit_bc_method_table_load_id_ops, comp->scope_cur, qst);
+        #endif
     }
 }
 
@@ -414,7 +435,11 @@ STATIC void compile_store_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_modification(comp->scope_cur, qst);
     } else {
+        #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->store_id, comp->scope_cur, qst);
+        #else
+        mp_emit_common_id_op(comp->emit, &mp_emit_bc_method_table_store_id_ops, comp->scope_cur, qst);
+        #endif
     }
 }
 
@@ -422,7 +447,11 @@ STATIC void compile_delete_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_modification(comp->scope_cur, qst);
     } else {
+        #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->delete_id, comp->scope_cur, qst);
+        #else
+        mp_emit_common_id_op(comp->emit, &mp_emit_bc_method_table_delete_id_ops, comp->scope_cur, qst);
+        #endif
     }
 }
 
@@ -2963,7 +2992,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         }
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        EMIT_ARG(set_line_number, pns->source_line);
+        EMIT_ARG(set_source_line, pns->source_line);
         compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
         if (f == NULL) {
 #if MICROPY_DEBUG_PRINTERS
@@ -3660,7 +3689,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->emit_method_table = &emit_cpython_method_table;
     #else
     comp->emit = emit_bc;
+    #if MICROPY_EMIT_NATIVE
     comp->emit_method_table = &emit_bc_method_table;
+    #endif
     #endif
     #if MICROPY_EMIT_INLINE_THUMB
     comp->emit_inline_asm = NULL;
@@ -3765,7 +3796,9 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 
                 default:
                     comp->emit = emit_bc;
+                    #if MICROPY_EMIT_NATIVE
                     comp->emit_method_table = &emit_bc_method_table;
+                    #endif
                     break;
             }
 #endif // !MICROPY_EMIT_CPYTHON
