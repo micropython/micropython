@@ -65,11 +65,14 @@ struct _emit_t {
 STATIC void emit_bc_rot_two(emit_t *emit);
 STATIC void emit_bc_rot_three(emit_t *emit);
 
-emit_t *emit_bc_new(mp_uint_t max_num_labels) {
+emit_t *emit_bc_new(void) {
     emit_t *emit = m_new0(emit_t, 1);
+    return emit;
+}
+
+void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels) {
     emit->max_num_labels = max_num_labels;
     emit->label_offsets = m_new(mp_uint_t, emit->max_num_labels);
-    return emit;
 }
 
 void emit_bc_free(emit_t *emit) {
@@ -338,6 +341,10 @@ STATIC void emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
 }
 
 STATIC void emit_bc_end_pass(emit_t *emit) {
+    if (emit->pass == MP_PASS_SCOPE) {
+        return;
+    }
+
     // check stack is back to zero size
     if (emit->stack_size != 0) {
         printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
@@ -403,6 +410,9 @@ STATIC void emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
 }
 
 STATIC void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
+    if (emit->pass == MP_PASS_SCOPE) {
+        return;
+    }
     assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
     if (emit->stack_size > emit->scope->stack_size) {
@@ -413,6 +423,9 @@ STATIC void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
 
 STATIC void emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
     emit_bc_pre(emit, 0);
+    if (emit->pass == MP_PASS_SCOPE) {
+        return;
+    }
     assert(l < emit->max_num_labels);
     if (emit->pass < MP_PASS_EMIT) {
         // assign label offset

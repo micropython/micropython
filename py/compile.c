@@ -3647,9 +3647,21 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     module_scope->pn = fold_constants(comp, module_scope->pn, &consts);
     mp_map_deinit(&consts);
 
+    // create standard emitter; it's used at least for MP_PASS_SCOPE
+    #if MICROPY_EMIT_CPYTHON
+    emit_t *emit_cpython = emit_cpython_new();
+    #else
+    emit_t *emit_bc = emit_bc_new();
+    #endif
+
     // compile pass 1
-    comp->emit = NULL;
-    comp->emit_method_table = &emit_pass1_method_table;
+    #if MICROPY_EMIT_CPYTHON
+    comp->emit = emit_cpython;
+    comp->emit_method_table = &emit_cpython_method_table;
+    #else
+    comp->emit = emit_bc;
+    comp->emit_method_table = &emit_bc_method_table;
+    #endif
     #if MICROPY_EMIT_INLINE_THUMB
     comp->emit_inline_asm = NULL;
     comp->emit_inline_asm_method_table = NULL;
@@ -3676,9 +3688,15 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
         scope_compute_things(s);
     }
 
+    // set max number of labels now that it's calculated
+    #if MICROPY_EMIT_CPYTHON
+    emit_cpython_set_max_num_labels(emit_cpython, max_num_labels);
+    #else
+    emit_bc_set_max_num_labels(emit_bc, max_num_labels);
+    #endif
+
     // compile pass 2 and 3
 #if !MICROPY_EMIT_CPYTHON
-    emit_t *emit_bc = NULL;
 #if MICROPY_EMIT_NATIVE
     emit_t *emit_native = NULL;
 #endif
@@ -3711,7 +3729,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
             // choose the emit type
 
 #if MICROPY_EMIT_CPYTHON
-            comp->emit = emit_cpython_new(max_num_labels);
+            comp->emit = emit_cpython;
             comp->emit_method_table = &emit_cpython_method_table;
 #else
             switch (s->emit_options) {
@@ -3746,9 +3764,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif // MICROPY_EMIT_NATIVE
 
                 default:
-                    if (emit_bc == NULL) {
-                        emit_bc = emit_bc_new(max_num_labels);
-                    }
                     comp->emit = emit_bc;
                     comp->emit_method_table = &emit_bc_method_table;
                     break;
@@ -3771,10 +3786,11 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     }
 
     // free the emitters
-#if !MICROPY_EMIT_CPYTHON
-    if (emit_bc != NULL) {
-        emit_bc_free(emit_bc);
-    }
+
+#if MICROPY_EMIT_CPYTHON
+    emit_cpython_free(emit_cpython);
+#else
+    emit_bc_free(emit_bc);
 #if MICROPY_EMIT_NATIVE
     if (emit_native != NULL) {
 #if MICROPY_EMIT_X64
@@ -3793,7 +3809,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
         emit_inline_thumb_free(emit_inline_thumb);
     }
 #endif
-#endif // !MICROPY_EMIT_CPYTHON
+#endif // MICROPY_EMIT_CPYTHON
 
     // free the parse tree
     mp_parse_node_free(module_scope->pn);

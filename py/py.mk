@@ -31,7 +31,6 @@ PY_O_BASENAME = \
 	scope.o \
 	compile.o \
 	emitcommon.o \
-	emitpass1.o \
 	emitcpy.o \
 	emitbc.o \
 	asmx64.o \
