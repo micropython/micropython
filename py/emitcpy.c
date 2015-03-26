@@ -86,18 +86,6 @@ STATIC void emit_cpy_adjust_stack_size(emit_t *emit, mp_int_t delta) {
 STATIC void emit_cpy_set_source_line(emit_t *emit, mp_uint_t source_line) {
 }
 
-STATIC void emit_cpy_load_id(emit_t *emit, qstr qst) {
-    emit_common_load_id(emit, &emit_cpython_method_table, emit->scope, qst);
-}
-
-STATIC void emit_cpy_store_id(emit_t *emit, qstr qst) {
-    emit_common_store_id(emit, &emit_cpython_method_table, emit->scope, qst);
-}
-
-STATIC void emit_cpy_delete_id(emit_t *emit, qstr qst) {
-    emit_common_delete_id(emit, &emit_cpython_method_table, emit->scope, qst);
-}
-
 // TODO: module-polymorphic function (read: name clash if made global)
 static void emit_pre(emit_t *emit, int stack_size_delta, int bytecode_size) {
     emit->stack_size += stack_size_delta;
@@ -809,9 +797,24 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_adjust_stack_size,
     emit_cpy_set_source_line,
 
-    emit_cpy_load_id,
-    emit_cpy_store_id,
-    emit_cpy_delete_id,
+    {
+        emit_cpy_load_fast,
+        emit_cpy_load_deref,
+        emit_cpy_load_name,
+        emit_cpy_load_global,
+    },
+    {
+        emit_cpy_store_fast,
+        emit_cpy_store_deref,
+        emit_cpy_store_name,
+        emit_cpy_store_global,
+    },
+    {
+        emit_cpy_delete_fast,
+        emit_cpy_delete_deref,
+        emit_cpy_delete_name,
+        emit_cpy_delete_global,
+    },
 
     emit_cpy_label_assign,
     emit_cpy_import_name,
@@ -822,24 +825,12 @@ const emit_method_table_t emit_cpython_method_table = {
     emit_cpy_load_const_str,
     emit_cpy_load_const_obj,
     emit_cpy_load_null,
-    emit_cpy_load_fast,
-    emit_cpy_load_deref,
-    emit_cpy_load_name,
-    emit_cpy_load_global,
     emit_cpy_load_attr,
     emit_cpy_load_method,
     emit_cpy_load_build_class,
     emit_cpy_load_subscr,
-    emit_cpy_store_fast,
-    emit_cpy_store_deref,
-    emit_cpy_store_name,
-    emit_cpy_store_global,
     emit_cpy_store_attr,
     emit_cpy_store_subscr,
-    emit_cpy_delete_fast,
-    emit_cpy_delete_deref,
-    emit_cpy_delete_name,
-    emit_cpy_delete_global,
     emit_cpy_delete_attr,
     emit_cpy_delete_subscr,
     emit_cpy_dup_top,

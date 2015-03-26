@@ -402,18 +402,6 @@ STATIC void emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
 #endif
 }
 
-STATIC void emit_bc_load_id(emit_t *emit, qstr qst) {
-    emit_common_load_id(emit, &emit_bc_method_table, emit->scope, qst);
-}
-
-STATIC void emit_bc_store_id(emit_t *emit, qstr qst) {
-    emit_common_store_id(emit, &emit_bc_method_table, emit->scope, qst);
-}
-
-STATIC void emit_bc_delete_id(emit_t *emit, qstr qst) {
-    emit_common_delete_id(emit, &emit_bc_method_table, emit->scope, qst);
-}
-
 STATIC void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
     assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
     emit->stack_size += stack_size_delta;
@@ -910,9 +898,24 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_adjust_stack_size,
     emit_bc_set_source_line,
 
-    emit_bc_load_id,
-    emit_bc_store_id,
-    emit_bc_delete_id,
+    {
+        emit_bc_load_fast,
+        emit_bc_load_deref,
+        emit_bc_load_name,
+        emit_bc_load_global,
+    },
+    {
+        emit_bc_store_fast,
+        emit_bc_store_deref,
+        emit_bc_store_name,
+        emit_bc_store_global,
+    },
+    {
+        emit_bc_delete_fast,
+        emit_bc_delete_deref,
+        emit_bc_delete_name,
+        emit_bc_delete_global,
+    },
 
     emit_bc_label_assign,
     emit_bc_import_name,
@@ -923,24 +926,12 @@ const emit_method_table_t emit_bc_method_table = {
     emit_bc_load_const_str,
     emit_bc_load_const_obj,
     emit_bc_load_null,
-    emit_bc_load_fast,
-    emit_bc_load_deref,
-    emit_bc_load_name,
-    emit_bc_load_global,
     emit_bc_load_attr,
     emit_bc_load_method,
     emit_bc_load_build_class,
     emit_bc_load_subscr,
-    emit_bc_store_fast,
-    emit_bc_store_deref,
-    emit_bc_store_name,
-    emit_bc_store_global,
     emit_bc_store_attr,
     emit_bc_store_subscr,
-    emit_bc_delete_fast,
-    emit_bc_delete_deref,
-    emit_bc_delete_name,
-    emit_bc_delete_global,
     emit_bc_delete_attr,
     emit_bc_delete_subscr,
     emit_bc_dup_top,

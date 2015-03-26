@@ -24,70 +24,72 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdint.h>
 #include <assert.h>
 
 #include "py/emit.h"
 
-#define EMIT(fun, ...) (emit_method_table->fun(emit, __VA_ARGS__))
-
-void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qst) {
-    // assumes pass is greater than 1, ie that all identifiers are defined in the scope
-
-    id_info_t *id = scope_find(scope, qst);
-    assert(id != NULL); // TODO can this ever fail?
-
-    // call the emit backend with the correct code
-    if (id == NULL || id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
-        EMIT(load_name, qst);
-    } else if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
-        EMIT(load_global, qst);
-    } else if (id->kind == ID_INFO_KIND_LOCAL) {
-        EMIT(load_fast, qst, id->local_num);
-    } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-        EMIT(load_deref, qst, id->local_num);
-    } else {
-        assert(0);
+void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
+    // name adding/lookup
+    bool added;
+    id_info_t *id = scope_find_or_add_id(scope, qst, &added);
+    if (added) {
+#if MICROPY_EMIT_CPYTHON
+        if (qst == MP_QSTR_super && scope->kind == SCOPE_FUNCTION) {
+            // special case, super is a global, and also counts as use of __class__
+            id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
+            id_info_t *id2 = scope_find_local_in_parent(scope, MP_QSTR___class__);
+            if (id2 != NULL) {
+                id2 = scope_find_or_add_id(scope, MP_QSTR___class__, &added);
+                if (added) {
+                    id2->kind = ID_INFO_KIND_FREE;
+                    scope_close_over_in_parents(scope, MP_QSTR___class__);
+                }
+            }
+        } else
+#endif
+        {
+            id_info_t *id2 = scope_find_local_in_parent(scope, qst);
+            if (id2 != NULL && (id2->kind == ID_INFO_KIND_LOCAL || id2->kind == ID_INFO_KIND_CELL || id2->kind == ID_INFO_KIND_FREE)) {
+                id->kind = ID_INFO_KIND_FREE;
+                scope_close_over_in_parents(scope, qst);
+            } else {
+                id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
+            }
+        }
     }
 }
 
-void emit_common_store_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qst) {
-    // assumes pass is greater than 1, ie that all identifiers are defined in the scope
-
-    id_info_t *id = scope_find(scope, qst);
-    assert(id != NULL); // TODO can this ever fail?
-
-    // call the emit backend with the correct code
-    if (id == NULL || id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
-        EMIT(store_name, qst);
-    } else if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
-        EMIT(store_global, qst);
-    } else if (id->kind == ID_INFO_KIND_LOCAL) {
-        EMIT(store_fast, qst, id->local_num);
-    } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-        EMIT(store_deref, qst, id->local_num);
-    } else {
-        assert(0);
+void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
+    // name adding/lookup
+    bool added;
+    id_info_t *id = scope_find_or_add_id(scope, qst, &added);
+    if (added) {
+        if (scope->kind == SCOPE_MODULE || scope->kind == SCOPE_CLASS) {
+            id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
+        } else {
+            id->kind = ID_INFO_KIND_LOCAL;
+        }
+    } else if (scope->kind >= SCOPE_FUNCTION && scope->kind <= SCOPE_GEN_EXPR && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+        // rebind as a local variable
+        id->kind = ID_INFO_KIND_LOCAL;
     }
 }
 
-void emit_common_delete_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qst) {
+void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emit_method_table, scope_t *scope, qstr qst) {
     // assumes pass is greater than 1, ie that all identifiers are defined in the scope
 
     id_info_t *id = scope_find(scope, qst);
-    assert(id != NULL); // TODO can this ever fail?
+    assert(id != NULL);
 
     // call the emit backend with the correct code
-    if (id == NULL || id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
-        EMIT(delete_name, qst);
+    if (id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+        emit_method_table->name(emit, qst);
     } else if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
-        EMIT(delete_global, qst);
+        emit_method_table->global(emit, qst);
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
-        EMIT(delete_fast, qst, id->local_num);
-    } else if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-        EMIT(delete_deref, qst, id->local_num);
+        emit_method_table->fast(emit, qst, id->local_num);
     } else {
-        assert(0);
+        assert(id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE);
+        emit_method_table->deref(emit, qst, id->local_num);
     }
 }

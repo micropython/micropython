@@ -59,6 +59,13 @@ typedef enum {
 
 typedef struct _emit_t emit_t;
 
+typedef struct _mp_emit_method_table_id_ops_t {
+    void (*fast)(emit_t *emit, qstr qst, mp_uint_t local_num);
+    void (*deref)(emit_t *emit, qstr qst, mp_uint_t local_num);
+    void (*name)(emit_t *emit, qstr qst);
+    void (*global)(emit_t *emit, qstr qst);
+} mp_emit_method_table_id_ops_t;
+
 typedef struct _emit_method_table_t {
     void (*set_native_type)(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2);
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
@@ -67,9 +74,9 @@ typedef struct _emit_method_table_t {
     void (*adjust_stack_size)(emit_t *emit, mp_int_t delta);
     void (*set_line_number)(emit_t *emit, mp_uint_t line);
 
-    void (*load_id)(emit_t *emit, qstr qst);
-    void (*store_id)(emit_t *emit, qstr qst);
-    void (*delete_id)(emit_t *emit, qstr qst);
+    mp_emit_method_table_id_ops_t load_id;
+    mp_emit_method_table_id_ops_t store_id;
+    mp_emit_method_table_id_ops_t delete_id;
 
     void (*label_assign)(emit_t *emit, mp_uint_t l);
     void (*import_name)(emit_t *emit, qstr qst);
@@ -80,24 +87,12 @@ typedef struct _emit_method_table_t {
     void (*load_const_str)(emit_t *emit, qstr qst, bool bytes);
     void (*load_const_obj)(emit_t *emit, void *obj);
     void (*load_null)(emit_t *emit);
-    void (*load_fast)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*load_deref)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*load_name)(emit_t *emit, qstr qst);
-    void (*load_global)(emit_t *emit, qstr qst);
     void (*load_attr)(emit_t *emit, qstr qst);
     void (*load_method)(emit_t *emit, qstr qst);
     void (*load_build_class)(emit_t *emit);
     void (*load_subscr)(emit_t *emit);
-    void (*store_fast)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*store_deref)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*store_name)(emit_t *emit, qstr qst);
-    void (*store_global)(emit_t *emit, qstr qst);
     void (*store_attr)(emit_t *emit, qstr qst);
     void (*store_subscr)(emit_t *emit);
-    void (*delete_fast)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*delete_deref)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*delete_name)(emit_t *emit, qstr qst);
-    void (*delete_global)(emit_t *emit, qstr qst);
     void (*delete_attr)(emit_t *emit, qstr qst);
     void (*delete_subscr)(emit_t *emit);
     void (*dup_top)(emit_t *emit);
@@ -160,9 +155,9 @@ typedef struct _emit_method_table_t {
 
 } emit_method_table_t;
 
-void emit_common_load_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qst);
-void emit_common_store_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qst);
-void emit_common_delete_id(emit_t *emit, const emit_method_table_t *emit_method_table, scope_t *scope, qstr qst);
+void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst);
+void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst);
+void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emit_method_table, scope_t *scope, qstr qst);
 
 extern const emit_method_table_t emit_pass1_method_table;
 extern const emit_method_table_t emit_cpython_method_table;
@@ -172,7 +167,6 @@ extern const emit_method_table_t emit_native_x86_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
 extern const emit_method_table_t emit_native_arm_method_table;
 
-emit_t *emit_pass1_new(void);
 emit_t *emit_cpython_new(mp_uint_t max_num_labels);
 emit_t *emit_bc_new(mp_uint_t max_num_labels);
 emit_t *emit_native_x64_new(mp_uint_t max_num_labels);
@@ -180,7 +174,6 @@ emit_t *emit_native_x86_new(mp_uint_t max_num_labels);
 emit_t *emit_native_thumb_new(mp_uint_t max_num_labels);
 emit_t *emit_native_arm_new(mp_uint_t max_num_labels);
 
-void emit_pass1_free(emit_t *emit);
 void emit_bc_free(emit_t *emit);
 void emit_native_x64_free(emit_t *emit);
 void emit_native_x86_free(emit_t *emit);

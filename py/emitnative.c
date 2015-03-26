@@ -1051,18 +1051,6 @@ STATIC void emit_get_stack_pointer_to_reg_for_push(emit_t *emit, mp_uint_t reg_d
     adjust_stack(emit, n_push);
 }
 
-STATIC void emit_native_load_id(emit_t *emit, qstr qst) {
-    emit_common_load_id(emit, &EXPORT_FUN(method_table), emit->scope, qst);
-}
-
-STATIC void emit_native_store_id(emit_t *emit, qstr qst) {
-    emit_common_store_id(emit, &EXPORT_FUN(method_table), emit->scope, qst);
-}
-
-STATIC void emit_native_delete_id(emit_t *emit, qstr qst) {
-    emit_common_delete_id(emit, &EXPORT_FUN(method_table), emit->scope, qst);
-}
-
 STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
     DEBUG_printf("label_assign(" UINT_FMT ")\n", l);
     emit_native_pre(emit);
@@ -2283,9 +2271,24 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_adjust_stack_size,
     emit_native_set_source_line,
 
-    emit_native_load_id,
-    emit_native_store_id,
-    emit_native_delete_id,
+    {
+        emit_native_load_fast,
+        emit_native_load_deref,
+        emit_native_load_name,
+        emit_native_load_global,
+    },
+    {
+        emit_native_store_fast,
+        emit_native_store_deref,
+        emit_native_store_name,
+        emit_native_store_global,
+    },
+    {
+        emit_native_delete_fast,
+        emit_native_delete_deref,
+        emit_native_delete_name,
+        emit_native_delete_global,
+    },
 
     emit_native_label_assign,
     emit_native_import_name,
@@ -2296,24 +2299,12 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_str,
     emit_native_load_const_obj,
     emit_native_load_null,
-    emit_native_load_fast,
-    emit_native_load_deref,
-    emit_native_load_name,
-    emit_native_load_global,
     emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
     emit_native_load_subscr,
-    emit_native_store_fast,
-    emit_native_store_deref,
-    emit_native_store_name,
-    emit_native_store_global,
     emit_native_store_attr,
     emit_native_store_subscr,
-    emit_native_delete_fast,
-    emit_native_delete_deref,
-    emit_native_delete_name,
-    emit_native_delete_global,
     emit_native_delete_attr,
     emit_native_delete_subscr,
     emit_native_dup_top,
