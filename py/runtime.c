@@ -577,7 +577,7 @@ mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *a
     return mp_call_function_n_kw(args[0], n_args + adjust, n_kw, args + 2 - adjust);
 }
 
-mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args) {
+void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, call_args_t *out_args) {
     mp_obj_t fun = *args++;
     mp_obj_t self = MP_OBJ_NULL;
     if (have_self) {
@@ -715,8 +715,19 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp
         }
     }
 
-    mp_obj_t res = mp_call_function_n_kw(fun, pos_args_len, (args2_len - pos_args_len) / 2, args2);
-    m_del(mp_obj_t, args2, args2_alloc);
+    out_args->fun = fun;
+    out_args->args = args2;
+    out_args->n_args = pos_args_len;
+    out_args->n_kw = (args2_len - pos_args_len) / 2;
+    out_args->n_alloc = args2_alloc;
+}
+
+mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args) {
+    call_args_t out_args;
+    mp_call_prepare_args_n_kw_var(have_self, n_args_n_kw, args, &out_args);
+
+    mp_obj_t res = mp_call_function_n_kw(out_args.fun, out_args.n_args, out_args.n_kw, out_args.args);
+    m_del(mp_obj_t, out_args.args, out_args.n_alloc);
 
     return res;
 }
