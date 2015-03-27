@@ -161,7 +161,10 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_arg
     // allocate state for locals and stack
     mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state *code_state;
-    code_state = m_new_obj_var(mp_code_state, byte, state_size);
+    code_state = m_new_obj_var_maybe(mp_code_state, byte, state_size);
+    if (!code_state) {
+        return NULL;
+    }
 
     code_state->n_state = n_state;
     code_state->ip = ip;
