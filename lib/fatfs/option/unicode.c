@@ -10,7 +10,7 @@
 #include "cc949.c"
 #elif _CODE_PAGE == 950	/* Traditional Chinese Big5 */
 #include "cc950.c"
-#else					/* Small character-set */
+#else					/* Single Byte Character-Set */
 #include "ccsbcs.c"
 #endif
 
