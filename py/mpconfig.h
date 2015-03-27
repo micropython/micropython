@@ -125,6 +125,11 @@
 #define MICROPY_QSTR_BYTES_IN_LEN (1)
 #endif
 
+// Avoid using C stack when making Python function calls.
+#ifndef MICROPY_STACKLESS
+#define MICROPY_STACKLESS (0)
+#endif
+
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 

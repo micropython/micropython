@@ -142,6 +142,38 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 // Set this to enable a simple stack overflow check.
 #define VM_DETECT_STACK_OVERFLOW (0)
 
+mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    MP_STACK_CHECK();
+    mp_obj_fun_bc_t *self = self_in;
+
+    // skip code-info block
+    const byte *code_info = self->bytecode;
+    mp_uint_t code_info_size = mp_decode_uint(&code_info);
+    const byte *ip = self->bytecode + code_info_size;
+
+    // bytecode prelude: skip arg names
+    ip += (self->n_pos_args + self->n_kwonly_args) * sizeof(mp_obj_t);
+
+    // bytecode prelude: state size and exception stack size
+    mp_uint_t n_state = mp_decode_uint(&ip);
+    mp_uint_t n_exc_stack = mp_decode_uint(&ip);
+
+    // allocate state for locals and stack
+    mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    mp_code_state *code_state;
+    code_state = m_new_obj_var(mp_code_state, byte, state_size);
+
+    code_state->n_state = n_state;
+    code_state->ip = ip;
+    mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
+
+    // execute the byte code with the correct globals context
+    code_state->old_globals = mp_globals_get();
+    mp_globals_set(self->globals);
+
+    return code_state;
+}
+
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
 

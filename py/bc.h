@@ -46,6 +46,9 @@ typedef struct _mp_code_state {
     // bit 0 is saved currently_in_except_block value
     mp_exc_stack_t *exc_sp;
     mp_obj_dict_t *old_globals;
+    #if MICROPY_STACKLESS
+    struct _mp_code_state *prev;
+    #endif
     mp_uint_t n_state;
     // Variable-length
     mp_obj_t state[0];
@@ -56,6 +59,7 @@ typedef struct _mp_code_state {
 mp_uint_t mp_decode_uint(const byte **ptr);
 
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc);
+mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *code, mp_uint_t len);
 void mp_bytecode_print2(const byte *code, mp_uint_t len);
