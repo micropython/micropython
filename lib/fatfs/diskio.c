@@ -8,14 +8,14 @@
 /*-----------------------------------------------------------------------*/
 
 #include "diskio.h"		/* FatFs lower layer API */
-#include "usbdisk.h"	/* Example: USB drive control */
-#include "atadrive.h"	/* Example: ATA drive control */
-#include "sdcard.h"		/* Example: MMC/SDC contorl */
+#include "usbdisk.h"	/* Example: Header file of existing USB MSD control module */
+#include "atadrive.h"	/* Example: Header file of existing ATA harddisk control module */
+#include "sdcard.h"		/* Example: Header file of existing MMC/SDC contorl module */
 
 /* Definitions of physical drive number for each drive */
-#define ATA		0	/* Example: Map ATA drive to drive number 0 */
-#define MMC		1	/* Example: Map MMC/SD card to drive number 1 */
-#define USB		2	/* Example: Map USB drive to drive number 2 */
+#define ATA		0	/* Example: Map ATA harddisk to physical drive 0 */
+#define MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
+#define USB		2	/* Example: Map USB MSD to physical drive 2 */
 
 
 /*-----------------------------------------------------------------------*/
