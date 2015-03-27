@@ -874,10 +874,12 @@ unwind_jump:;
                         code_state->sp = sp;
                         code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
                         mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1);
-                        new_state->prev = code_state;
-                        code_state = new_state;
-                        nlr_pop();
-                        goto run_code_state;
+                        if (new_state) {
+                            new_state->prev = code_state;
+                            code_state = new_state;
+                            nlr_pop();
+                            goto run_code_state;
+                        }
                     }
                     #endif
                     SET_TOP(mp_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
