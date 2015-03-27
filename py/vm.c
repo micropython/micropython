@@ -904,6 +904,25 @@ unwind_jump:;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 1;
+                    #if MICROPY_STACKLESS
+                    if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
+                        code_state->ip = ip;
+                        code_state->sp = sp;
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+
+                        mp_uint_t n_args = unum & 0xff;
+                        mp_uint_t n_kw = (unum >> 8) & 0xff;
+                        int adjust = (sp[1] == NULL) ? 0 : 1;
+
+                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(*sp, n_args + adjust, n_kw, sp + 2 - adjust);
+                        if (new_state) {
+                            new_state->prev = code_state;
+                            code_state = new_state;
+                            nlr_pop();
+                            goto run_code_state;
+                        }
+                    }
+                    #endif
                     SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
                     DISPATCH();
                 }
