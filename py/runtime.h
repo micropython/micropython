@@ -130,6 +130,7 @@ void mp_import_all(mp_obj_t module);
 
 // Raise NotImplementedError with given message
 NORETURN void mp_not_implemented(const char *msg);
+NORETURN void mp_exc_recursion_depth(void);
 
 // helper functions for native/viper code
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
