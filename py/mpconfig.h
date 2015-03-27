@@ -125,9 +125,17 @@
 #define MICROPY_QSTR_BYTES_IN_LEN (1)
 #endif
 
-// Avoid using C stack when making Python function calls.
+// Avoid using C stack when making Python function calls. C stack still
+// may be used if there's no free heap.
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS (0)
+#endif
+
+// Never use C stack when making Python function calls. This may break
+// testsuite as will subtly change which exception is thrown in case
+// of too deep recursion and other similar cases.
+#ifndef MICROPY_STACKLESS_STRICT
+#define MICROPY_STACKLESS_STRICT (0)
 #endif
 
 /*****************************************************************************/
