@@ -894,6 +894,26 @@ unwind_jump:;
                     // We have folowing stack layout here:
                     // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 2;
+                    #if MICROPY_STACKLESS
+                    if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
+                        code_state->ip = ip;
+                        code_state->sp = sp;
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+
+                        call_args_t out_args;
+                        mp_call_prepare_args_n_kw_var(false, unum, sp, &out_args);
+
+                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
+                            out_args.n_args, out_args.n_kw, out_args.args);
+                        m_del(mp_obj_t, out_args.args, out_args.n_alloc);
+                        if (new_state) {
+                            new_state->prev = code_state;
+                            code_state = new_state;
+                            nlr_pop();
+                            goto run_code_state;
+                        }
+                    }
+                    #endif
                     SET_TOP(mp_call_method_n_kw_var(false, unum, sp));
                     DISPATCH();
                 }
@@ -935,6 +955,26 @@ unwind_jump:;
                     // We have folowing stack layout here:
                     // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 3;
+                    #if MICROPY_STACKLESS
+                    if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
+                        code_state->ip = ip;
+                        code_state->sp = sp;
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+
+                        call_args_t out_args;
+                        mp_call_prepare_args_n_kw_var(true, unum, sp, &out_args);
+
+                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
+                            out_args.n_args, out_args.n_kw, out_args.args);
+                        m_del(mp_obj_t, out_args.args, out_args.n_alloc);
+                        if (new_state) {
+                            new_state->prev = code_state;
+                            code_state = new_state;
+                            nlr_pop();
+                            goto run_code_state;
+                        }
+                    }
+                    #endif
                     SET_TOP(mp_call_method_n_kw_var(true, unum, sp));
                     DISPATCH();
                 }
