@@ -129,9 +129,12 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_o
     // loop and the exception handler, leading to very obscure bugs.
     #define RAISE(o) do { nlr_pop(); nlr.ret_val = o; goto exception_handler; } while(0)
 
+#if MICROPY_STACKLESS
+run_code_state: ;
+#endif
     // Pointers which are constant for particular invocation of mp_execute_bytecode()
-    mp_obj_t *const fastn = &code_state->state[code_state->n_state - 1];
-    mp_exc_stack_t *const exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
+    mp_obj_t */*const*/ fastn = &code_state->state[code_state->n_state - 1];
+    mp_exc_stack_t */*const*/ exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
 
     // variables that are visible to the exception handler (declared volatile)
     volatile bool currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
@@ -865,6 +868,18 @@ unwind_jump:;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe);
+                    #if MICROPY_STACKLESS
+                    if (mp_obj_get_type(*sp) == &mp_type_fun_bc) {
+                        code_state->ip = ip;
+                        code_state->sp = sp;
+                        code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
+                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1);
+                        new_state->prev = code_state;
+                        code_state = new_state;
+                        nlr_pop();
+                        goto run_code_state;
+                    }
+                    #endif
                     SET_TOP(mp_call_function_n_kw(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1));
                     DISPATCH();
                 }
@@ -925,6 +940,15 @@ unwind_return:
                     nlr_pop();
                     code_state->sp = sp;
                     assert(exc_sp == exc_stack - 1);
+                    #if MICROPY_STACKLESS
+                    if (code_state->prev != NULL) {
+                        mp_obj_t res = *sp;
+                        mp_globals_set(code_state->old_globals);
+                        code_state = code_state->prev;
+                        *code_state->sp = res;
+                        goto run_code_state;
+                    }
+                    #endif
                     return MP_VM_RETURN_NORMAL;
 
                 ENTRY(MP_BC_RAISE_VARARGS): {
@@ -1122,6 +1146,9 @@ exception_handler:
                 goto outer_dispatch_loop; // continue with dispatch loop
             }
 
+#if MICROPY_STACKLESS
+unwind_loop:
+#endif
             // set file and line number that the exception occurred at
             // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
             // But consider how to handle nested exceptions.
@@ -1185,6 +1212,18 @@ exception_handler:
                 PUSH(mp_obj_get_type(nlr.ret_val));
                 code_state->sp = sp;
 
+            #if MICROPY_STACKLESS
+            } else if (code_state->prev != NULL) {
+                mp_globals_set(code_state->old_globals);
+                code_state = code_state->prev;
+                fastn = &code_state->state[code_state->n_state - 1];
+                exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
+                // variables that are visible to the exception handler (declared volatile)
+                currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
+                exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
+                goto unwind_loop;
+
+            #endif
             } else {
                 // propagate exception to higher level
                 // TODO what to do about ip and sp? they don't really make sense at this point
