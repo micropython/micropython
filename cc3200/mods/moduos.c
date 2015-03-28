@@ -40,6 +40,7 @@
 #include "modutime.h"
 #include "random.h"
 #include "sd_diskio.h"
+#include "mpexception.h"
 
 /// \module os - basic "operating system" services
 ///
@@ -54,6 +55,9 @@
 /// On boot up, the current directory is `/SFLASH` if no SD card is inserted,
 /// otherwise it is `/SD`.
 
+/******************************************************************************
+ DEFINE PRIVATE FUNCTIONS
+ ******************************************************************************/
 STATIC bool sd_in_root(void) {
 #if MICROPY_HW_HAS_SDCARD
     return sd_disk_ready();
@@ -61,6 +65,10 @@ STATIC bool sd_in_root(void) {
     return false;
 #endif
 }
+
+/******************************************************************************/
+// Micro Python bindings
+//
 
 /// \function chdir(path)
 /// Change current directory.
@@ -73,10 +81,9 @@ STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
     if (res == FR_OK) {
         res = f_chdir(path);
     }
-    // TODO: Warn if too many open files...
+
     if (res != FR_OK) {
-        // TODO should be mp_type_FileNotFoundError
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 
     return mp_const_none;
@@ -127,8 +134,7 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
 
     res = f_opendir(&dir, path);                       /* Open the directory */
     if (res != FR_OK) {
-        // TODO should be mp_type_FileNotFoundError
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 
     mp_obj_t dir_list = mp_obj_new_list(0, NULL);
@@ -168,43 +174,27 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
         case FR_OK:
             return mp_const_none;
         case FR_EXIST:
-            // TODO should be FileExistsError
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "File exists: '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+            break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
 /// \function remove(path)
-/// Remove a file.
+/// Remove a file or a directory
 STATIC mp_obj_t os_remove(mp_obj_t path_o) {
     const char *path = mp_obj_str_get_str(path_o);
-    // TODO check that path is actually a file before trying to unlink it
     FRESULT res = f_unlink(path);
     switch (res) {
         case FR_OK:
             return mp_const_none;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
-
-/// \function rmdir(path)
-/// Remove a directory.
-STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
-    const char *path = mp_obj_str_get_str(path_o);
-    // TODO check that path is actually a directory before trying to unlink it
-    FRESULT res = f_unlink(path);
-    switch (res) {
-        case FR_OK:
-            return mp_const_none;
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing directory '%s'", path));
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
 // Checks for path equality, ignoring trailing slashes:
 //   path_equal(/, /) -> true
@@ -282,11 +272,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
 /// \function sync()
 /// Sync all filesystems.
-mp_obj_t os_sync(void) {
+STATIC mp_obj_t os_sync(void) {
     sflash_disk_flush();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
 #if MICROPY_HW_ENABLE_RNG
 /// \function urandom(n)
@@ -304,26 +294,36 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
+/// \function mkdisk('path')
+/// Formats the selected drive, useful when the filesystem has been damaged beyond repair
+STATIC mp_obj_t os_mkdisk(mp_obj_t path_o) {
+    const char *path = mp_obj_str_get_str(path_o);
+    if (FR_OK != f_mkfs(path, 1, 0)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdisk_obj, os_mkdisk);
+
 STATIC const mp_map_elem_t os_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), (mp_obj_t)&os_chdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), (mp_obj_t)&os_getcwd_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_listdir), (mp_obj_t)&os_listdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir), (mp_obj_t)&os_mkdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&os_remove_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir), (mp_obj_t)&os_rmdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&os_stat_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), (mp_obj_t)&os_remove_obj }, // unlink aliases to remove
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&os_sync_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_chdir),           (mp_obj_t)&os_chdir_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd),          (mp_obj_t)&os_getcwd_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_listdir),         (mp_obj_t)&os_listdir_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir),           (mp_obj_t)&os_mkdir_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_remove),          (mp_obj_t)&os_remove_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir),           (mp_obj_t)&os_remove_obj },  // rmdir aliases to remove
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stat),            (mp_obj_t)&os_stat_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),          (mp_obj_t)&os_remove_obj },  // unlink aliases to remove
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sync),            (mp_obj_t)&os_sync_obj },
+#if MICROPY_HW_ENABLE_RNG
+    { MP_OBJ_NEW_QSTR(MP_QSTR_urandom),         (mp_obj_t)&os_urandom_obj },
+#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdisk),          (mp_obj_t)&os_mkdisk_obj },
 
     /// \constant sep - separation character used in paths
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },
-
-#if MICROPY_HW_ENABLE_RNG
-    { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), (mp_obj_t)&os_urandom_obj },
-#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sep),             MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

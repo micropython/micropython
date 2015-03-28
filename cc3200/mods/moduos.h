@@ -25,9 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODUTIME_H_
-#define MODUTIME_H_
+#ifndef MODUOS_H_
+#define MODUOS_H_
 
-MP_DECLARE_CONST_FUN_OBJ(os_sync_obj);
 
-#endif // MODUTIME_H_
+#endif // MODUOS_H_

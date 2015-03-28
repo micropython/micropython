@@ -73,7 +73,7 @@ STATIC mp_obj_t pybsd_disable (mp_obj_t self_in);
 STATIC mp_obj_t pybsd_enable (mp_obj_t self_in);
 
 /******************************************************************************
- DECLARE PUBLIC FUNCTIONS
+ DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 __attribute__ ((section (".boot")))
 void pybsd_init0 (void) {
@@ -86,7 +86,7 @@ void pybsd_deinit (void) {
 }
 
 /******************************************************************************
- DECLARE PRIVATE FUNCTIONS
+ DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 /// Initalizes the sd card driver
 STATIC void pybsd_init (pybsd_obj_t *self) {

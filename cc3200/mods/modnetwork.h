@@ -25,6 +25,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef MODNETWORK_H_
+#define MODNETWORK_H_
+
 #define MOD_NETWORK_IPV4ADDR_BUF_SIZE             (4)
 
 // Forward declaration
@@ -79,3 +82,5 @@ void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip);
 mp_uint_t mod_network_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip);
 mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip);
 mp_obj_t mod_network_format_inet_addr(uint8_t *ip, mp_uint_t port);
+
+#endif  // MODNETWORK_H_
