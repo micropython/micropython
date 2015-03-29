@@ -465,12 +465,20 @@ STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
-STATIC mp_obj_t mp_builtin_round(mp_obj_t o_in) {
-    // TODO support second arg
+STATIC mp_obj_t mp_builtin_round(mp_uint_t n_args, const mp_obj_t *args) {
+    // TODO really support second arg
+    mp_obj_t o_in = args[0];
     if (MP_OBJ_IS_INT(o_in)) {
         return o_in;
     }
 #if MICROPY_PY_BUILTINS_FLOAT
+    mp_int_t num_dig = 0;
+    if (n_args > 1) {
+        num_dig = mp_obj_get_int(args[1]);
+        if (num_dig > 0) {
+            mp_not_implemented("round(..., N>0)");
+        }
+    }
     mp_float_t val = mp_obj_get_float(o_in);
     mp_float_t rounded = MICROPY_FLOAT_C_FUN(round)(val);
     mp_int_t r = rounded;
@@ -480,12 +488,15 @@ STATIC mp_obj_t mp_builtin_round(mp_obj_t o_in) {
     } else if (val - rounded == -0.5) {
         r &= ~1;
     }
+    if (n_args > 1) {
+        return mp_obj_new_float(r);
+    }
 #else
     mp_int_t r = mp_obj_get_int(o_in);
 #endif
     return mp_obj_new_int(r);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_round_obj, mp_builtin_round);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj, 1, 2, mp_builtin_round);
 
 STATIC mp_obj_t mp_builtin_sum(mp_uint_t n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
