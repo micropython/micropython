@@ -30,11 +30,6 @@
 #include "py/misc.h"
 #include "py/qstr.h"
 
-// A Micro Python object is a machine word having the following form:
-//  - xxxx...xxx1 : a small int, bits 1 and above are the value
-//  - xxxx...xx10 : a qstr, bits 2 and above are the value
-//  - xxxx...xx00 : a pointer to an mp_obj_base_t (unless a fake object)
-
 // All Micro Python objects are at least this type
 // It must be of pointer size
 
@@ -71,23 +66,41 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #define MP_OBJ_SENTINEL         ((mp_obj_t)8)
 #endif
 
-// These macros check for small int, qstr or object, and access small int and qstr values
+// These macros/inline functions operate on objects and depend on the
+// particular object representation.  They are used to query, pack and
+// unpack small ints, qstrs and full object pointers.
 
-// these macros have now become inline functions; see below
-//#define MP_OBJ_IS_SMALL_INT(o) ((((mp_int_t)(o)) & 1) != 0)
-//#define MP_OBJ_IS_QSTR(o) ((((mp_int_t)(o)) & 3) == 2)
-//#define MP_OBJ_IS_OBJ(o) ((((mp_int_t)(o)) & 3) == 0)
-#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
-#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
-#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
-#define MP_OBJ_IS_STR_OR_BYTES(o) (MP_OBJ_IS_QSTR(o) || (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)(o))->type->binary_op == mp_obj_str_binary_op))
-#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type->name == MP_QSTR_function))
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
 
+static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 1) != 0); }
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
 
+static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 3) == 2); }
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 2))
+
+static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 3) == 0); }
+
+#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
+
+static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 3) == 1); }
+#define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 2)
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 2) | 1))
+
+static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 3) == 3); }
+#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 3))
+
+static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 1) == 0); }
+
+#endif
 
 // Macros to convert between mp_obj_t and concrete object types.
 // These are identity operations in MicroPython, but ability to override
@@ -103,6 +116,26 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 #ifndef MP_OBJ_UNCAST
 #define MP_OBJ_UNCAST(p) ((mp_obj_t)p)
 #endif
+
+// The macros below are derived from the ones above and are used to
+// check for more specific object types.
+
+#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
+#define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
+#define MP_OBJ_IS_STR_OR_BYTES(o) (MP_OBJ_IS_QSTR(o) || (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)(o))->type->binary_op == mp_obj_str_binary_op))
+#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type->name == MP_QSTR_function))
+
+// Note: inline functions sometimes use much more code space than the
+// equivalent macros, depending on the compiler.
+//static inline bool MP_OBJ_IS_TYPE(mp_const_obj_t o, const mp_obj_type_t *t) { return (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))); } // this does not work for checking a string, use below macro for that
+//static inline bool MP_OBJ_IS_INT(mp_const_obj_t o) { return (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int)); } // returns true if o is a small int or long int
+// Need to forward declare these for the inline function to compile.
+extern const struct _mp_obj_type_t mp_type_int;
+extern const struct _mp_obj_type_t mp_type_bool;
+static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_bool); } // returns true if o is bool, small int or long int
+//static inline bool MP_OBJ_IS_STR(mp_const_obj_t o) { return (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str)); }
+
 
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
@@ -462,16 +495,6 @@ void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t exc);
 
 bool mp_obj_is_true(mp_obj_t arg);
-
-// TODO make these all lower case when they have proven themselves
-static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o) { return ((((mp_int_t)(o)) & 3) == 0); }
-static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o) { return ((((mp_int_t)(o)) & 1) != 0); }
-//static inline bool MP_OBJ_IS_TYPE(mp_const_obj_t o, const mp_obj_type_t *t) { return (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))); } // this does not work for checking a string, use below macro for that
-//static inline bool MP_OBJ_IS_INT(mp_const_obj_t o) { return (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int)); } // returns true if o is a small int or long int
-static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_bool); } // returns true if o is bool, small int or long int
-static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o) { return ((((mp_int_t)(o)) & 3) == 2); }
-//static inline bool MP_OBJ_IS_STR(mp_const_obj_t o) { return (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str)); }
-
 bool mp_obj_is_callable(mp_obj_t o_in);
 mp_int_t mp_obj_hash(mp_obj_t o_in);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
