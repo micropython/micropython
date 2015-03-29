@@ -1,6 +1,14 @@
 Micro Python libraries
 ======================
 
+Functionality specific to the Micro Python implementation is available in
+the following library.
+
+.. toctree::
+   :maxdepth: 1
+
+   micropython.rst
+
 Python standard libraries
 -------------------------
 
