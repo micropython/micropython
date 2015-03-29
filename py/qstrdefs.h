@@ -85,6 +85,9 @@ Q(__truediv__)
 Q(__floordiv__)
 Q(__iadd__)
 Q(__isub__)
+Q(__invert__)
+Q(__neg__)
+Q(__pos__)
 #endif
 
 Q(micropython)
