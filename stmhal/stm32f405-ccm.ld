@@ -8,7 +8,7 @@ MEMORY
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x100000 /* entire flash, 1 MiB */
     FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 0x004000 /* sector 0, 16 KiB */
     FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x080000 /* sectors 5,6,7,8, 4*128KiB = 512 KiB (could increase it more) */
-    CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
+    CCMRAM (rw)     : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x020000 /* 128 KiB */
 }
 
@@ -19,14 +19,13 @@ _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
  
 /* Define tho top end of the stack.  The stack is full descending so begins just
-   above last byte of RAM.  Note that EABI requires the stack to be 8-byte
+   above last byte of CCMRAM.  Note that EABI requires the stack to be 8-byte
    aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
+_estack = ORIGIN(CCMRAM) + LENGTH(CCMRAM);
 
 /* RAM extents for the garbage collector */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_end = 0x2001c000; /* tunable */
-_stack_limit = _heap_end;
+_heap_end = _ram_end; /* whole ram is available as heap */
 
 /* define output sections */
 SECTIONS
@@ -91,7 +90,7 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >RAM AT> FLASH_TEXT
+    } >CCMRAM AT> FLASH_TEXT
             
     /* Uninitialized data section */
     .bss :
@@ -103,25 +102,25 @@ SECTIONS
 
         . = ALIGN(4);
         _ebss = .;         /* define a global symbol at bss end; used by startup code and GC */
-    } >RAM
-
-    /* this is to define the start of the heap, and make sure we have a minimum size */
-    .heap :
-    {
-        . = ALIGN(4);
-	PROVIDE ( end = . );
-	PROVIDE ( _end = . );
-        _heap_start = .;    /* define a global symbol at heap start */
-        . = . + _minimum_heap_size;
-    } >RAM
+    } >CCMRAM
 
     /* this just checks there is enough RAM for the stack */
     .stack :
     {
         . = ALIGN(4);
+        _stack_limit = .;
         . = . + _minimum_stack_size;
         . = ALIGN(4);
+    } >CCMRAM
+
+    /* this is to define the start of the heap, and make sure we have a minimum size */
+    .heap :
+    {
+        . = ALIGN(4);
+        _heap_start = .;    /* define a global symbol at heap start */
+        . = . + _minimum_heap_size;
     } >RAM
+
 
     /* Remove information from the standard libraries */
     /*
