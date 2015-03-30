@@ -149,12 +149,12 @@ you can instantiate a specific structure instance at a given
 memory address. Memory address usually comes from following sources:
 
 * Predefined address, when accessing hardware registers on a baremetal
-port. Lookup these addresses in datasheet for a particular MCU/SoC.
+  port. Lookup these addresses in datasheet for a particular MCU/SoC.
 * As return value from a call to some FFI (Foreign Function Interface)
-function.
+  function.
 * From uctypes.addressof(), when you want to pass arguments to FFI
-function, or alternatively, to access some data for I/O (for example,
-data read from file or network socket).
+  function, or alternatively, to access some data for I/O (for example,
+  data read from file or network socket).
 
 Structure objects
 -----------------
