@@ -241,7 +241,7 @@ soft_reset_exit:
     // soft reset
     pybsleep_signal_soft_reset();
 
-    printf("WiPy: soft reset\n");
+    printf("PYB: soft reboot\n");
 
     sflash_disk_flush();
 

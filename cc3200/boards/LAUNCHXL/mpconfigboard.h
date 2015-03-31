@@ -25,9 +25,12 @@
  * THE SOFTWARE.
  */
 
+#include "version.h"
+
 #define LAUNCHXL
 
-#define MICROPY_HW_BOARD_NAME                       "LaunchPad"
+#define BOARD_NAME                                  "LaunchPad "
+#define MICROPY_HW_BOARD_NAME                       VERSION_E(BOARD_NAME, VERSION_NUMBER)
 #define MICROPY_HW_MCU_NAME                         "CC3200"
 
 #define MICROPY_HW_HAS_SDCARD                       (0)
