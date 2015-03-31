@@ -1125,7 +1125,7 @@ STATIC void emit_native_load_const_small_int(emit_t *emit, mp_int_t arg) {
     if (emit->do_viper_types) {
         emit_post_push_imm(emit, VTYPE_INT, arg);
     } else {
-        emit_post_push_imm(emit, VTYPE_PYOBJ, (arg << 1) | 1);
+        emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_NEW_SMALL_INT(arg));
     }
 }
 
