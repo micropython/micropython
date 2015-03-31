@@ -338,9 +338,9 @@ STATIC void mptask_init_sflash_filesystem (void) {
 }
 
 STATIC void mptask_enter_ap_mode (void) {
-    // Enable simplelink in low power mode
-    wlan_sl_enable (ROLE_AP, SERVERS_DEF_AP_SSID, strlen(SERVERS_DEF_AP_SSID), SERVERS_DEF_AP_SECURITY,
-                    SERVERS_DEF_AP_KEY, strlen(SERVERS_DEF_AP_KEY), SERVERS_DEF_AP_CHANNEL);
+    // enable simplelink in low power mode
+    wlan_sl_enable (ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID), MICROPY_PORT_WLAN_AP_SECURITY,
+                    MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY), MICROPY_PORT_WLAN_AP_CHANNEL);
 }
 
 STATIC void mptask_create_main_py (void) {
