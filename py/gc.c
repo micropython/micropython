@@ -680,10 +680,11 @@ void gc_dump_alloc_table(void) {
                 }
             }
             // print header for new line of blocks
+            // (the cast to uint32_t is for 16-bit ports)
             #if EXTENSIVE_HEAP_PROFILING
-            printf("\n%05x: ", (uint)(bl * BYTES_PER_BLOCK) & 0xfffff);
+            printf("\n%05x: ", (uint)((bl * BYTES_PER_BLOCK) & (uint32_t)0xfffff));
             #else
-            printf("\n%05x: ", (uint)PTR_FROM_BLOCK(bl) & 0xfffff);
+            printf("\n%05x: ", (uint)(PTR_FROM_BLOCK(bl) & (uint32_t)0xfffff));
             #endif
         }
         int c = ' ';
