@@ -140,7 +140,11 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     }
 }
 
-STATIC void exception_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
     mp_obj_exception_t *self = self_in;
     if (attr == MP_QSTR_args) {
         dest[0] = self->args;
@@ -168,7 +172,7 @@ const mp_obj_type_t mp_type_BaseException = {
     .name = MP_QSTR_BaseException,
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
-    .load_attr = exception_load_attr,
+    .attr = exception_attr,
     .locals_dict = (mp_obj_t)&exc_locals_dict,
 };
 
@@ -181,7 +185,7 @@ const mp_obj_type_t mp_type_ ## exc_name = { \
     .name = MP_QSTR_ ## exc_name, \
     .print = mp_obj_exception_print, \
     .make_new = mp_obj_exception_make_new, \
-    .load_attr = exception_load_attr, \
+    .attr = exception_attr, \
     .bases_tuple = (mp_obj_t)&mp_type_ ## base_name ## _base_tuple, \
 };
 

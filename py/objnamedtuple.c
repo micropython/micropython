@@ -68,20 +68,20 @@ STATIC void namedtuple_print(void (*print)(void *env, const char *fmt, ...), voi
     print(env, ")");
 }
 
-STATIC void namedtuple_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_namedtuple_t *self = self_in;
-    int id = namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
-    if (id == -1) {
-        return;
+STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        // load attribute
+        mp_obj_namedtuple_t *self = self_in;
+        int id = namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
+        if (id == -1) {
+            return;
+        }
+        dest[0] = self->tuple.items[id];
+    } else {
+        // delete/store attribute
+        // provide more detailed error message than we'd get by just returning
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
     }
-    dest[0] = self->tuple.items[id];
-}
-
-STATIC bool namedtuple_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
-    (void)self_in;
-    (void)attr;
-    (void)value;
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
 }
 
 STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -154,8 +154,7 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj
     o->base.make_new = namedtuple_make_new;
     o->base.unary_op = mp_obj_tuple_unary_op;
     o->base.binary_op = mp_obj_tuple_binary_op;
-    o->base.load_attr = namedtuple_load_attr;
-    o->base.store_attr = namedtuple_store_attr;
+    o->base.attr = namedtuple_attr;
     o->base.subscr = mp_obj_tuple_subscr;
     o->base.getiter = mp_obj_tuple_getiter;
     o->base.bases_tuple = (mp_obj_t)&namedtuple_base_tuple;
