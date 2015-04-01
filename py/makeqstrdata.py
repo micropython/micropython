@@ -29,6 +29,7 @@ codepoint2name[ord('{')] = 'brace_open'
 codepoint2name[ord('}')] = 'brace_close'
 codepoint2name[ord('*')] = 'star'
 codepoint2name[ord('!')] = 'bang'
+codepoint2name[ord('\\')] = 'backslash'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr):
@@ -87,7 +88,8 @@ def do_work(infiles):
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
         qhash = compute_hash(qstr)
-        qlen = len(qstr)
+        # Calculate len of str, taking escapes into account
+        qlen = len(qstr.replace("\\\\", "-").replace("\\", ""))
         qdata = qstr.replace('"', '\\"')
         if qlen >= cfg_max_len:
             print('qstr is too long:', qstr)
