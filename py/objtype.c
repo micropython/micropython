@@ -440,7 +440,7 @@ STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 }
 
-void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in instance members then class locals
     assert(is_instance_type(mp_obj_get_type(self_in)));
     mp_obj_instance_t *self = self_in;
@@ -512,7 +512,7 @@ void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     mp_obj_instance_t *self = self_in;
 
     #if MICROPY_PY_BUILTINS_PROPERTY || MICROPY_PY_DESCRIPTORS
@@ -575,6 +575,16 @@ bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
         // store attribute
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
         return true;
+    }
+}
+
+void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        mp_obj_instance_load_attr(self_in, attr, dest);
+    } else {
+        if (mp_obj_instance_store_attr(self_in, attr, dest[1])) {
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
     }
 }
 
@@ -750,52 +760,52 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, co
     return o;
 }
 
-// for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
-STATIC void type_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
-    mp_obj_type_t *self = self_in;
-#if MICROPY_CPYTHON_COMPAT
-    if (attr == MP_QSTR___name__) {
-        dest[0] = MP_OBJ_NEW_QSTR(self->name);
-        return;
-    }
-#endif
-    struct class_lookup_data lookup = {
-        .obj = self_in,
-        .attr = attr,
-        .meth_offset = 0,
-        .dest = dest,
-        .is_type = true,
-    };
-    mp_obj_class_lookup(&lookup, self);
-}
-
-STATIC bool type_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
+STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = self_in;
 
-    // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
+    if (dest[0] == MP_OBJ_NULL) {
+        // load attribute
+        #if MICROPY_CPYTHON_COMPAT
+        if (attr == MP_QSTR___name__) {
+            dest[0] = MP_OBJ_NEW_QSTR(self->name);
+            return;
+        }
+        #endif
+        struct class_lookup_data lookup = {
+            .obj = self_in,
+            .attr = attr,
+            .meth_offset = 0,
+            .dest = dest,
+            .is_type = true,
+        };
+        mp_obj_class_lookup(&lookup, self);
+    } else {
+        // delete/store attribute
 
-    if (self->locals_dict != NULL) {
-        assert(MP_OBJ_IS_TYPE(self->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
-        mp_map_t *locals_map = mp_obj_dict_get_map(self->locals_dict);
-        if (value == MP_OBJ_NULL) {
-            // delete attribute
-            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
-            // note that locals_map may be in ROM, so remove will fail in that case
-            return elem != NULL;
-        } else {
-            // store attribute
-            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-            // note that locals_map may be in ROM, so add will fail in that case
-            if (elem != NULL) {
-                elem->value = value;
-                return true;
+        // TODO CPython allows STORE_ATTR to a class, but is this the correct implementation?
+
+        if (self->locals_dict != NULL) {
+            assert(MP_OBJ_IS_TYPE(self->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
+            mp_map_t *locals_map = mp_obj_dict_get_map(self->locals_dict);
+            if (dest[1] == MP_OBJ_NULL) {
+                // delete attribute
+                mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+                // note that locals_map may be in ROM, so remove will fail in that case
+                if (elem != NULL) {
+                    dest[0] = MP_OBJ_NULL; // indicate success
+                }
+            } else {
+                // store attribute
+                mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+                // note that locals_map may be in ROM, so add will fail in that case
+                if (elem != NULL) {
+                    elem->value = dest[1];
+                    dest[0] = MP_OBJ_NULL; // indicate success
+                }
             }
         }
     }
-
-    return false;
 }
 
 const mp_obj_type_t mp_type_type = {
@@ -804,8 +814,7 @@ const mp_obj_type_t mp_type_type = {
     .print = type_print,
     .make_new = type_make_new,
     .call = type_call,
-    .load_attr = type_load_attr,
-    .store_attr = type_store_attr,
+    .attr = type_attr,
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
@@ -841,8 +850,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->call = mp_obj_instance_call;
     o->unary_op = instance_unary_op;
     o->binary_op = instance_binary_op;
-    o->load_attr = mp_obj_instance_load_attr;
-    o->store_attr = mp_obj_instance_store_attr;
+    o->attr = mp_obj_instance_attr;
     o->subscr = instance_subscr;
     o->getiter = instance_getiter;
     //o->iternext = ; not implemented
@@ -897,8 +905,12 @@ STATIC mp_obj_t super_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     return mp_obj_new_super(args[0], args[1]);
 }
 
-// for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
-STATIC void super_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
+
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_super));
     mp_obj_super_t *self = self_in;
 
@@ -936,7 +948,7 @@ const mp_obj_type_t mp_type_super = {
     .name = MP_QSTR_super,
     .print = super_print,
     .make_new = super_make_new,
-    .load_attr = super_load_attr,
+    .attr = super_attr,
 };
 
 mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj) {

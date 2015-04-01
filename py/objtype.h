@@ -37,9 +37,8 @@ typedef struct _mp_obj_instance_t {
     // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_instance_t;
 
-// these need to be exposed for MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE to work
-void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
-bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value);
+// this needs to be exposed for MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE to work
+void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
 // these need to be exposed so mp_obj_is_callable can work correctly
 bool mp_obj_instance_is_callable(mp_obj_t self_in);

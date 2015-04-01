@@ -902,9 +902,9 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         dest[0] = (mp_obj_t)&mp_builtin_next_obj;
         dest[1] = obj;
 
-    } else if (type->load_attr != NULL) {
+    } else if (type->attr != NULL) {
         // this type can do its own load, so call it
-        type->load_attr(obj, attr, dest);
+        type->attr(obj, attr, dest);
 
     } else if (type->locals_dict != NULL) {
         // generic method lookup
@@ -946,8 +946,11 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     mp_obj_type_t *type = mp_obj_get_type(base);
-    if (type->store_attr != NULL) {
-        if (type->store_attr(base, attr, value)) {
+    if (type->attr != NULL) {
+        mp_obj_t dest[2] = {MP_OBJ_SENTINEL, value};
+        type->attr(base, attr, dest);
+        if (dest[0] == MP_OBJ_NULL) {
+            // success
             return;
         }
     }

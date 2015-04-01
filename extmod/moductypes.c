@@ -482,13 +482,17 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     return MP_OBJ_NULL;
 }
 
-STATIC void uctypes_struct_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_t val = uctypes_struct_attr_op(self_in, attr, MP_OBJ_NULL);
-    *dest = val;
-}
-
-STATIC bool uctypes_struct_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val) {
-    return uctypes_struct_attr_op(self_in, attr, val) != MP_OBJ_NULL;
+STATIC void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        // load attribute
+        mp_obj_t val = uctypes_struct_attr_op(self_in, attr, MP_OBJ_NULL);
+        dest[0] = val;
+    } else {
+        // delete/store attribute
+        if (uctypes_struct_attr_op(self_in, attr, dest[1]) != MP_OBJ_NULL) {
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
+    }
 }
 
 STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
@@ -589,8 +593,7 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .name = MP_QSTR_struct,
     .print = uctypes_struct_print,
     .make_new = uctypes_struct_make_new,
-    .load_attr = uctypes_struct_load_attr,
-    .store_attr = uctypes_struct_store_attr,
+    .attr = uctypes_struct_attr,
     .subscr = uctypes_struct_subscr,
 };
 
