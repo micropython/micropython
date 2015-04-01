@@ -577,7 +577,11 @@ mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *a
     return mp_call_function_n_kw(args[0], n_args + adjust, n_kw, args + 2 - adjust);
 }
 
-void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, call_args_t *out_args) {
+// This function only needs to be exposed externally when in stackless mode.
+#if !MICROPY_STACKLESS
+STATIC
+#endif
+void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
     mp_obj_t fun = *args++;
     mp_obj_t self = MP_OBJ_NULL;
     if (have_self) {
@@ -723,7 +727,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const 
 }
 
 mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args) {
-    call_args_t out_args;
+    mp_call_args_t out_args;
     mp_call_prepare_args_n_kw_var(have_self, n_args_n_kw, args, &out_args);
 
     mp_obj_t res = mp_call_function_n_kw(out_args.fun, out_args.n_args, out_args.n_kw, out_args.args);

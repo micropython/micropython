@@ -142,6 +142,7 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 // Set this to enable a simple stack overflow check.
 #define VM_DETECT_STACK_OVERFLOW (0)
 
+#if MICROPY_STACKLESS
 mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = self_in;
@@ -176,6 +177,7 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_arg
 
     return code_state;
 }
+#endif
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();

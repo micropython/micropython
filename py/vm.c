@@ -906,7 +906,7 @@ unwind_jump:;
                         code_state->sp = sp;
                         code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
 
-                        call_args_t out_args;
+                        mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(false, unum, sp, &out_args);
 
                         mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
@@ -977,7 +977,7 @@ unwind_jump:;
                         code_state->sp = sp;
                         code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
 
-                        call_args_t out_args;
+                        mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(true, unum, sp, &out_args);
 
                         mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,

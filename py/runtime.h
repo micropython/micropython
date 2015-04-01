@@ -97,16 +97,19 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun, mp_uint_t n_args, mp_uint_t n_kw, c
 mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args);
 
-typedef struct _call_args_t {
+typedef struct _mp_call_args_t {
     mp_obj_t fun;
     mp_uint_t n_args, n_kw, n_alloc;
     mp_obj_t *args;
-} call_args_t;
+} mp_call_args_t;
 
+#if MICROPY_STACKLESS
 // Takes arguments which are the most general mix of Python arg types, and
 // prepares argument array suitable for passing to ->call() method of a
 // function object (and mp_call_function_n_kw()).
-void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, call_args_t *out_args);
+// (Only needed in stackless mode.)
+void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
+#endif
 
 void mp_unpack_sequence(mp_obj_t seq, mp_uint_t num, mp_obj_t *items);
 void mp_unpack_ex(mp_obj_t seq, mp_uint_t num, mp_obj_t *items);
