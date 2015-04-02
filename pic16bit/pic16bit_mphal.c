@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_SMALLINT_H__
-#define __MICROPY_INCLUDED_PY_SMALLINT_H__
 
-#include "py/mpconfig.h"
-#include "py/misc.h"
+#include <string.h>
+#include "pic16bit_mphal.h"
+#include "board.h"
 
-// Functions for small integer arithmetic
+static int interrupt_char;
 
-// In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
+void mp_hal_init(void) {
+    MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+}
 
-#define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)WORD_MSBIT_HIGH) >> 1))
-#define MP_SMALL_INT_FITS(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
+mp_uint_t mp_hal_get_milliseconds(void) {
+    // TODO
+    return 0;
+}
 
-#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
+void mp_hal_milli_delay(mp_uint_t ms) {
+    // tuned for fixed CPU frequency
+    for (int i = ms; i > 0; i--) {
+        for (volatile int j = 0; j < 5000; j++) {
+        }
+    }
+}
 
-#define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)WORD_MSBIT_HIGH) >> 2))
-#define MP_SMALL_INT_FITS(n) ((((n) & MP_SMALL_INT_MIN) == 0) || (((n) & MP_SMALL_INT_MIN) == MP_SMALL_INT_MIN))
+void mp_hal_set_interrupt_char(int c) {
+    interrupt_char = c;
+}
 
-#endif
+int mp_hal_stdin_rx_chr(void) {
+    for (;;) {
+        if (uart_rx_any()) {
+            return uart_rx_char();
+        }
+    }
+}
 
-#define MP_SMALL_INT_MAX ((mp_int_t)(~(MP_SMALL_INT_MIN)))
+void mp_hal_stdout_tx_str(const char *str) {
+    mp_hal_stdout_tx_strn(str, strlen(str));
+}
 
-bool mp_small_int_mul_overflow(mp_int_t x, mp_int_t y);
-mp_int_t mp_small_int_modulo(mp_int_t dividend, mp_int_t divisor);
-mp_int_t mp_small_int_floor_divide(mp_int_t num, mp_int_t denom);
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    for (; len > 0; --len) {
+        uart_tx_char(*str++);
+    }
+}
 
-#endif // __MICROPY_INCLUDED_PY_SMALLINT_H__
+void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+    for (; len > 0; --len) {
+        if (*str == '\n') {
+            uart_tx_char('\r');
+        }
+        uart_tx_char(*str++);
+    }
+}
