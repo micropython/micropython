@@ -1614,14 +1614,11 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
 }
 
 STATIC void emit_native_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // TODO implement me!
-    // could support for Python types, just set to None (so GC can reclaim it)
-    // local is automatically deleted for exception block "as" var, and the message
-    // breaks tests.
-    //mp_emitter_warning(emit->pass, "Native codegeneration doesn't support deleting local");
-    (void)emit;
-    (void)qst;
-    (void)local_num;
+    // TODO: This is not compliant implementation. We could use MP_OBJ_SENTINEL
+    // to mark deleted vars but then every var would need to be checked on
+    // each access. Very inefficient, so just set value to None to enable GC.
+    emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE);
+    emit_native_store_fast(emit, qst, local_num);
 }
 
 STATIC void emit_native_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
