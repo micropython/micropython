@@ -555,8 +555,11 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
     }
 }
 
+STATIC void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest);
 STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
+STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
+
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
 
@@ -684,6 +687,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (id->kind == ID_INFO_KIND_CELL) {
+            if (emit->local_vtype[id->local_num] != VTYPE_UNBOUND) {
+                emit_native_load_fast(emit, id->qst, id->local_num);
+                vtype_kind_t vtype;
+                emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+            }
             ASM_CALL_IND(emit->as, mp_fun_table[MP_F_NEW_CELL], MP_F_NEW_CELL);
             emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
             emit_native_store_fast(emit, id->qst, id->local_num);
