@@ -73,6 +73,7 @@ MP_DECLARE_CONST_FUN_OBJ(str_index_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_rindex_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_join_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_split_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_splitlines_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_rsplit_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_startswith_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_endswith_obj);

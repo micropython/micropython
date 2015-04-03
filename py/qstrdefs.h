@@ -299,6 +299,11 @@ Q(find)
 Q(rfind)
 Q(rindex)
 Q(split)
+#if MICROPY_PY_BUILTINS_STR_SPLITLINES
+Q(splitlines)
+Q(keepends)
+Q(\n)
+#endif
 Q(rsplit)
 Q(startswith)
 Q(endswith)

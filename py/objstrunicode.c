@@ -245,6 +245,9 @@ STATIC const mp_map_elem_t struni_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rindex), (mp_obj_t)&str_rindex_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_join), (mp_obj_t)&str_join_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t)&str_split_obj },
+    #if MICROPY_PY_BUILTINS_STR_SPLITLINES
+    { MP_OBJ_NEW_QSTR(MP_QSTR_splitlines), (mp_obj_t)&str_splitlines_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_rsplit), (mp_obj_t)&str_rsplit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_startswith), (mp_obj_t)&str_startswith_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_endswith), (mp_obj_t)&str_endswith_obj },

@@ -407,6 +407,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
 #endif
 
+// Whether str.splitlines() method provided
+#ifndef MICROPY_PY_BUILTINS_STR_SPLITLINES
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES (0)
+#endif
+
 // Whether to support bytearray object
 #ifndef MICROPY_PY_BUILTINS_BYTEARRAY
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
