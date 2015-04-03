@@ -519,8 +519,8 @@ STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args
                 s++;
             }
             mp_uint_t sub_len = s - start;
-            if (MP_LIKELY(!(len == 0 && s == top && (type && SPLITLINES)))) {
-                if (start + len != top && (type & KEEP)) {
+            if (MP_LIKELY(!(sub_len == 0 && s == top && (type && SPLITLINES)))) {
+                if (start + sub_len != top && (type & KEEP)) {
                     sub_len++;
                 }
                 mp_obj_list_append(res, mp_obj_new_str_of_type(self_type, start, sub_len));
