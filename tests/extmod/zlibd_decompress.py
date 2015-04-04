@@ -23,3 +23,9 @@ exp = b"hello"
 out = zlib.decompress(v, -15)
 assert(out == exp)
 print(exp)
+
+# this should error
+try:
+    zlib.decompress(b'abc')
+except Exception:
+    print("Exception")

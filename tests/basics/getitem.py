@@ -20,3 +20,13 @@ try:
         next(it)
 except StopIteration:
     pass
+
+# this class raises a non-StopIteration exception on iteration
+class A:
+    def __getitem__(self, i):
+        raise TypeError
+try:
+    for i in A():
+        pass
+except TypeError:
+    print("TypeError")

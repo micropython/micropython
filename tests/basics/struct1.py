@@ -37,3 +37,6 @@ print(struct.pack("<I", 0xffffffff))
 # check maximum unpack
 print(struct.unpack("<I", b"\xff\xff\xff\xff"))
 print(struct.unpack("<Q", b"\xff\xff\xff\xff\xff\xff\xff\xff"))
+
+# network byte order
+print(struct.pack('!i', 123))
