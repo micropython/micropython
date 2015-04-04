@@ -19,12 +19,15 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_MAXSIZE      (1)
 
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+
+#define MP_SSIZE_MAX (0x7fffffff)
 
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
