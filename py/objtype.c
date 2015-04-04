@@ -1051,11 +1051,11 @@ STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, mp_uint_t n_args,
 const mp_obj_type_t mp_type_staticmethod = {
     { &mp_type_type },
     .name = MP_QSTR_staticmethod,
-    .make_new = static_class_method_make_new
+    .make_new = static_class_method_make_new,
 };
 
 const mp_obj_type_t mp_type_classmethod = {
     { &mp_type_type },
     .name = MP_QSTR_classmethod,
-    .make_new = static_class_method_make_new
+    .make_new = static_class_method_make_new,
 };

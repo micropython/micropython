@@ -67,9 +67,9 @@ byte* qstr_build_start(mp_uint_t len, byte **q_ptr);
 qstr qstr_build_end(byte *q_ptr);
 
 mp_uint_t qstr_hash(qstr q);
-const char* qstr_str(qstr q);
+const char *qstr_str(qstr q);
 mp_uint_t qstr_len(qstr q);
-const byte* qstr_data(qstr q, mp_uint_t *len);
+const byte *qstr_data(qstr q, mp_uint_t *len);
 
 void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_bytes, mp_uint_t *n_total_bytes);
 void qstr_dump_data(void);

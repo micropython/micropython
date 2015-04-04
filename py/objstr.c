@@ -789,7 +789,7 @@ STATIC mp_obj_t str_rstrip(mp_uint_t n_args, const mp_obj_t *args) {
 
 // Takes an int arg, but only parses unsigned numbers, and only changes
 // *num if at least one digit was parsed.
-static int str_to_int(const char *str, int *num) {
+STATIC int str_to_int(const char *str, int *num) {
     const char *s = str;
     if ('0' <= *s && *s <= '9') {
         *num = 0;
@@ -802,19 +802,19 @@ static int str_to_int(const char *str, int *num) {
     return s - str;
 }
 
-static bool isalignment(char ch) {
+STATIC bool isalignment(char ch) {
     return ch && strchr("<>=^", ch) != NULL;
 }
 
-static bool istype(char ch) {
+STATIC bool istype(char ch) {
     return ch && strchr("bcdeEfFgGnosxX%", ch) != NULL;
 }
 
-static bool arg_looks_integer(mp_obj_t arg) {
+STATIC bool arg_looks_integer(mp_obj_t arg) {
     return MP_OBJ_IS_TYPE(arg, &mp_type_bool) || MP_OBJ_IS_INT(arg);
 }
 
-static bool arg_looks_numeric(mp_obj_t arg) {
+STATIC bool arg_looks_numeric(mp_obj_t arg) {
     return arg_looks_integer(arg)
 #if MICROPY_PY_BUILTINS_FLOAT
         || MP_OBJ_IS_TYPE(arg, &mp_type_float)
@@ -822,7 +822,7 @@ static bool arg_looks_numeric(mp_obj_t arg) {
     ;
 }
 
-static mp_obj_t arg_as_int(mp_obj_t arg) {
+STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 #if MICROPY_PY_BUILTINS_FLOAT
     if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
         return mp_obj_new_int_from_float(mp_obj_get_float(arg));

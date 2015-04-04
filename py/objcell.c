@@ -55,7 +55,7 @@ STATIC void cell_print(void (*print)(void *env, const char *fmt, ...), void *env
 }
 #endif
 
-const mp_obj_type_t cell_type = {
+STATIC const mp_obj_type_t mp_type_cell = {
     { &mp_type_type },
     .name = MP_QSTR_, // cell representation is just value in < >
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
@@ -65,7 +65,7 @@ const mp_obj_type_t cell_type = {
 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj) {
     mp_obj_cell_t *o = m_new_obj(mp_obj_cell_t);
-    o->base.type = &cell_type;
+    o->base.type = &mp_type_cell;
     o->obj = obj;
     return o;
 }

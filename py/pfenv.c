@@ -41,7 +41,7 @@
 static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
-void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len){
+void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len) {
     vstr_add_strn(data, str, len);
 }
 
