@@ -1,6 +1,7 @@
 import _io as io
 
 a = io.StringIO()
+print('io.StringIO' in repr(a))
 print(a.getvalue())
 print(a.read())
 

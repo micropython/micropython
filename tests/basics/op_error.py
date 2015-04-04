@@ -11,6 +11,7 @@ def test_exc(code, exc):
 
 # unsupported unary operators
 test_exc("~None", TypeError)
+test_exc("~''", TypeError)
 test_exc("~[]", TypeError)
 test_exc("~bytearray()", TypeError)
 
@@ -28,6 +29,8 @@ test_exc("(1 << 70) in 1", TypeError)
 # unsupported subscription
 test_exc("1[0]", TypeError)
 test_exc("1[0] = 1", TypeError)
+test_exc("''['']", TypeError)
+test_exc("'a'[0] = 1", TypeError)
 test_exc("del 1[0]", TypeError)
 
 # not callable

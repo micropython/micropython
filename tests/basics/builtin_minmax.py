@@ -23,3 +23,9 @@ print(max(lst, key=lambda x:x))
 print(max(lst, key=lambda x:-x))
 print(max(1, 2, 3, 4, key=lambda x:-x))
 print(max(4, 3, 2, 1, key=lambda x:-x))
+
+# need at least 1 item in the iterable
+try:
+    min([])
+except ValueError:
+    print("ValueError")

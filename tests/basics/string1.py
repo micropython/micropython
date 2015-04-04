@@ -26,9 +26,11 @@ except IndexError:
 # iter
 print(list('str'))
 
+# comparison
 print('123' + '789' == '123789')
 print('a' + 'b' != 'a' + 'b ')
+print('1' + '2' > '2')
+print('1' + '2' < '2')
 
-# Not implemented so far
-# print('1' + '2' > '2')
-# print('1' + '2' < '2')
+# printing quote char in string
+print(repr('\'\"'))

@@ -33,7 +33,9 @@ functions = [('sqrt', sqrt, p_test_values),
              ('ceil', ceil, test_values),
              ('fabs', fabs, test_values),
              ('floor', floor, test_values),
-             ('trunc', trunc, test_values)
+             ('trunc', trunc, test_values),
+             ('radians', radians, test_values),
+             ('degrees', degrees, test_values),
             ]
 
 for function_name, function, test_vals in functions:
@@ -52,10 +54,14 @@ for function_name, function, test_vals in tuple_functions:
         print("{:.5g} {:.5g}".format(x, y))
 
 binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.),
-                                (-23., -42.), (1., 0.0), (1., -0.0)])
+                                (-23., -42.), (1., 0.0), (1., -0.0)]),
+                    ('pow', pow, ((1., 0.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
+                    ('atan2', atan2, ((1., 0.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
+                    ('fmod', fmod, ((1., 1.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
+                    ('ldexp', ldexp, ((1., 0), (0., 1), (2., 2), (3., -2), (-3., -4),)),
                    ]
 
 for function_name, function, test_vals in binary_functions:
     print(function_name)
     for value1, value2 in test_vals:
-        print("{:.7g}".format(function(value1, value2)))
+        print("{:.5g}".format(function(value1, value2)))

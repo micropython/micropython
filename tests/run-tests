@@ -29,7 +29,7 @@ def rm_f(fname):
 def run_micropython(pyb, args, test_file):
     if pyb is None:
         # run on PC
-        if test_file.startswith('cmdline/'):
+        if test_file.startswith('cmdline/') or test_file == 'micropython/meminfo.py':
             # special handling for tests of the unix cmdline program
 
             # check for any cmdline options needed for this test
@@ -141,6 +141,7 @@ def run_tests(pyb, tests, args):
     if pyb is not None:
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
         skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
+        skip_tests.add('micropython/meminfo.py') # output is very different to PC output
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -162,6 +163,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('float/cmath_fun.py') # requires f(*args) support
         skip_tests.add('import/gen_context.py')
         skip_tests.add('io/file_with.py')
+        skip_tests.add('io/stringio_with.py')
         skip_tests.add('micropython/heapalloc.py')
         skip_tests.add('misc/features.py')
         skip_tests.add('misc/recursion.py')

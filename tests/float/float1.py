@@ -1,4 +1,15 @@
-# basic float
+# test basic float capabilities
+
+# float construction
+print(float(1.2))
+
+# unary operators
+print(bool(0.0))
+print(bool(1.2))
+print(+(1.2))
+print(-(1.2))
+
+# division of integers
 x = 1 / 2
 print(x)
 
@@ -7,8 +18,15 @@ a = 1
 a /= 2
 print(a)
 
+# floor division
 print(1.0 // 2)
 print(2.0 // 2)
+
+# comparison
+print(1.2 <= 3.4)
+print(1.2 <= -3.4)
+print(1.2 >= 3.4)
+print(1.2 >= -3.4)
 
 try:
     1.0 / 0
@@ -19,6 +37,23 @@ try:
     1.0 // 0
 except ZeroDivisionError:
     print("ZeroDivisionError")
+
+try:
+    1.2 % 0
+except ZeroDivisionError:
+    print("ZeroDivisionError")
+
+# unsupported unary ops
+
+try:
+    ~1.2
+except TypeError:
+    print("TypeError")
+
+try:
+    1.2 in 3.4
+except TypeError:
+    print("TypeError")
 
 # can't convert list to float
 try:
