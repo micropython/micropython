@@ -170,6 +170,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, m
 
 STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
+    assert(type == &mp_type_str);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
@@ -182,22 +183,6 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                     "only slices with step=1 (aka None) are supported"));
             }
 
-            if (type == &mp_type_bytes) {
-                mp_int_t start = 0, stop = self_len;
-                if (ostart != mp_const_none) {
-                    start = MP_OBJ_SMALL_INT_VALUE(ostart);
-                    if (start < 0) {
-                        start = self_len + start;
-                    }
-                }
-                if (ostop != mp_const_none) {
-                    stop = MP_OBJ_SMALL_INT_VALUE(ostop);
-                    if (stop < 0) {
-                        stop = self_len + stop;
-                    }
-                }
-                return mp_obj_new_str_of_type(type, self_data + start, stop - start);
-            }
             const byte *pstart, *pstop;
             if (ostart != mp_const_none) {
                 pstart = str_index_to_ptr(type, self_data, self_len, ostart, true);
@@ -217,10 +202,6 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
 #endif
-        if (type == &mp_type_bytes) {
-            uint index_val = mp_get_index(type, self_len, index, false);
-            return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
-        }
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
