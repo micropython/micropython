@@ -1,4 +1,12 @@
+# literals
+print(b'123')
+print(br'123')
+print(rb'123')
+print(b'\u1234')
+
+# construction
 print(bytes())
+print(bytes(b'abc'))
 
 a = b"123"
 print(a)

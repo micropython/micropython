@@ -4,8 +4,27 @@ def test_syntax(code):
     try:
         exec(code)
         print("no SyntaxError")
+    except IndentationError:
+        print("IndentationError")
     except SyntaxError:
         print("SyntaxError")
+
+# non-newline after line-continuation character (lexer error)
+test_syntax("a \\a\n")
+
+# dedent mismatch (lexer error)
+test_syntax("def f():\n  a\n a\n")
+
+# unclosed string (lexer error)
+test_syntax("'abc")
+
+# invalid (lexer error)
+test_syntax("!")
+test_syntax("$")
+test_syntax("`")
+
+# bad indentation (lexer error)
+test_syntax(" a\n")
 
 # can't assign to literals
 test_syntax("1 = 2")

@@ -1,5 +1,10 @@
 # test basic float capabilities
 
+# literals
+print(.12)
+print(1.)
+print(1.2)
+
 # float construction
 print(float(1.2))
 
