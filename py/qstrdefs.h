@@ -69,6 +69,7 @@ Q(__str__)
 #if MICROPY_PY_DESCRIPTORS
 Q(__get__)
 Q(__set__)
+Q(__delete__)
 #endif
 Q(__getattr__)
 Q(__del__)

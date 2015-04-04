@@ -533,35 +533,59 @@ bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t value) {
     if (member[0] != MP_OBJ_NULL) {
         #if MICROPY_PY_BUILTINS_PROPERTY
         if (MP_OBJ_IS_TYPE(member[0], &mp_type_property)) {
-            // attribute exists and is a property; delegate the store
+            // attribute exists and is a property; delegate the store/delete
             // Note: This is an optimisation for code size and execution time.
-            // The proper way to do it is have the functionality just below
-            // in a __set__ method of the property object, and then it would
-            // be called by the descriptor code down below.  But that way
+            // The proper way to do it is have the functionality just below in
+            // a __set__/__delete__ method of the property object, and then it
+            // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
             const mp_obj_t *proxy = mp_obj_property_get(member[0]);
-            if (proxy[1] == mp_const_none) {
-                // TODO better error message?
-                return false;
+            mp_obj_t dest[2] = {self_in, value};
+            if (value == MP_OBJ_NULL) {
+                // delete attribute
+                if (proxy[2] == mp_const_none) {
+                    // TODO better error message?
+                    return false;
+                } else {
+                    mp_call_function_n_kw(proxy[2], 1, 0, dest);
+                    return true;
+                }
             } else {
-                mp_obj_t dest[2] = {self_in, value};
-                mp_call_function_n_kw(proxy[1], 2, 0, dest);
-                return true;
+                // store attribute
+                if (proxy[1] == mp_const_none) {
+                    // TODO better error message?
+                    return false;
+                } else {
+                    mp_call_function_n_kw(proxy[1], 2, 0, dest);
+                    return true;
+                }
             }
         }
         #endif
 
         #if MICROPY_PY_DESCRIPTORS
-        // found a class attribute; if it has a __set__ method then call it with the
-        // class instance and value as arguments
-        mp_obj_t attr_set_method[4];
-        mp_load_method_maybe(member[0], MP_QSTR___set__, attr_set_method);
-        if (attr_set_method[0] != MP_OBJ_NULL) {
-            attr_set_method[2] = self_in;
-            attr_set_method[3] = value;
-            mp_call_method_n_kw(2, 0, attr_set_method);
-            return true;
+        // found a class attribute; if it has a __set__/__delete__ method then
+        // call it with the class instance (and value) as arguments
+        if (value == MP_OBJ_NULL) {
+            // delete attribute
+            mp_obj_t attr_delete_method[3];
+            mp_load_method_maybe(member[0], MP_QSTR___delete__, attr_delete_method);
+            if (attr_delete_method[0] != MP_OBJ_NULL) {
+                attr_delete_method[2] = self_in;
+                mp_call_method_n_kw(1, 0, attr_delete_method);
+                return true;
+            }
+        } else {
+            // store attribute
+            mp_obj_t attr_set_method[4];
+            mp_load_method_maybe(member[0], MP_QSTR___set__, attr_set_method);
+            if (attr_set_method[0] != MP_OBJ_NULL) {
+                attr_set_method[2] = self_in;
+                attr_set_method[3] = value;
+                mp_call_method_n_kw(2, 0, attr_set_method);
+                return true;
+            }
         }
         #endif
     }
