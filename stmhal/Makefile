@@ -62,6 +62,7 @@ endif
 #LIBS += $(shell $(CC) -print-libgcc-file-name)
 
 SRC_LIB = $(addprefix lib/,\
+	libc/string0.c \
 	libm/math.c \
 	libm/asinfacosf.c \
 	libm/atanf.c \
@@ -94,7 +95,6 @@ SRC_LIB = $(addprefix lib/,\
 
 SRC_C = \
 	main.c \
-	string0.c \
 	system_stm32f4xx.c \
 	stm32f4xx_it.c \
 	usbd_conf.c \

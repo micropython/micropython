@@ -101,7 +101,6 @@ STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	pyexec.c \
 	pybstdio.c \
-	string0.c \
 	)
 
 STM_SRC_S = $(addprefix stmhal/,\
@@ -109,6 +108,7 @@ STM_SRC_S = $(addprefix stmhal/,\
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
+	libc/string0.c \
 	mp-readline/readline.c \
 	)
 

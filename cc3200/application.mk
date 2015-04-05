@@ -139,6 +139,7 @@ APP_MAIN_SRC_C = \
 	serverstask.c
 	
 APP_LIB_SRC_C = $(addprefix lib/,\
+	libc/string0.c \
 	fatfs/ff.c \
 	mp-readline/readline.c \
 	)
@@ -154,7 +155,6 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	pyexec.c \
 	pybstdio.c \
-	string0.c \
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))

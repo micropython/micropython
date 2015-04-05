@@ -52,12 +52,12 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
-	string0.c \
 	pyexec.c \
 	pybstdio.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
+	libc/string0.c \
 	mp-readline/readline.c \
 	)
 
