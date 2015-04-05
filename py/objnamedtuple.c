@@ -53,19 +53,23 @@ STATIC mp_uint_t namedtuple_find_field(mp_obj_namedtuple_type_t *type, qstr name
     return -1;
 }
 
+STATIC void namedtuple_print_helper(const mp_print_t *print, const qstr *fields, mp_obj_tuple_t *o) {
+    for (mp_uint_t i = 0; i < o->len; i++) {
+        if (i > 0) {
+            mp_print_str(print, ", ");
+        }
+        mp_printf(print, "%q=", fields[i]);
+        mp_obj_print_helper(print, o->items[i], PRINT_REPR);
+    }
+    mp_print_str(print, ")");
+}
+
 STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_namedtuple_t *o = o_in;
     mp_printf(print, "%q(", o->tuple.base.type->name);
     const qstr *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
-    for (mp_uint_t i = 0; i < o->tuple.len; i++) {
-        if (i > 0) {
-            mp_print_str(print, ", ");
-        }
-        mp_printf(print, "%q=", fields[i]);
-        mp_obj_print_helper(print, o->tuple.items[i], PRINT_REPR);
-    }
-    mp_print_str(print, ")");
+    namedtuple_print_helper(print, fields, &o->tuple);
 }
 
 STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -179,5 +183,50 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     return mp_obj_new_namedtuple_type(name, n_fields, fields);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_namedtuple_obj, new_namedtuple_type);
+
+STATIC void fakenamedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+    (void)kind;
+    mp_obj_tuple_t *o = o_in;
+    const qstr *fields = (const qstr*)o->items[o->len];
+    mp_print_str(print, "(");
+    namedtuple_print_helper(print, fields, o);
+}
+
+STATIC void fakenamedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        // load attribute
+        mp_obj_tuple_t *self = self_in;
+        mp_uint_t len = self->len;
+        const qstr *fields = (const qstr*)self->items[len];
+        for (mp_uint_t i = 0; i < len; i++) {
+            if (fields[i] == attr) {
+                dest[0] = self->items[i];
+                return;
+            }
+        }
+    }
+}
+
+mp_obj_t mp_obj_new_fakenamedtuple(const qstr *fields, mp_uint_t n, const mp_obj_t *items) {
+    mp_obj_tuple_t *o = mp_obj_new_tuple(n + 1, NULL);
+    o->base.type = &mp_type_fakenamedtuple;
+    for (mp_uint_t i = 0; i < n; i++) {
+        o->items[i] = items[i];
+    }
+    o->items[n] = (void*)fields;
+    return o;
+}
+
+const mp_obj_type_t mp_type_fakenamedtuple = {
+    { &mp_type_type },
+    .name = MP_QSTR_namedtuple,
+    .print = fakenamedtuple_print,
+    .unary_op = mp_obj_tuple_unary_op,
+    .binary_op = mp_obj_tuple_binary_op,
+    .attr = fakenamedtuple_attr,
+    .subscr = mp_obj_tuple_subscr,
+    .getiter = mp_obj_tuple_getiter,
+    .bases_tuple = (mp_obj_t)&namedtuple_base_tuple,
+};
 
 #endif // MICROPY_PY_COLLECTIONS
