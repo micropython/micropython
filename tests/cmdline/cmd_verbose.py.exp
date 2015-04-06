@@ -7,7 +7,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-3 line=1
   bc=0 line=3
 00 LOAD_NAME print (cache=0)

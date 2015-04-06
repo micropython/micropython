@@ -228,9 +228,10 @@ continue2:;
 
     // bytecode prelude: initialise closed over variables
     const byte *ip = code_state->ip;
-    for (mp_uint_t n_local = *ip++; n_local > 0; n_local--) {
-        mp_uint_t local_num = *ip++;
-        code_state->state[n_state - 1 - local_num] = mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
+    mp_uint_t local_num;
+    while ((local_num = *ip++) != 255) {
+        code_state->state[n_state - 1 - local_num] =
+            mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
 
     // now that we skipped over the prelude, set the ip for the VM

@@ -5,7 +5,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 3)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-3 line=1
 ########
   bc=\\d\+ line=134
@@ -32,7 +31,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 25)
 (N_EXC_STACK 2)
-(NUM_LOCAL 3)
 (INIT_CELL 14)
 (INIT_CELL 15)
 (INIT_CELL 16)
@@ -304,7 +302,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: a
 (N_STATE 5)
 (N_EXC_STACK 0)
-(NUM_LOCAL 1)
 (INIT_CELL 0)
 ########
   bc=\\d\+ line=124
@@ -323,7 +320,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-3 line=1
   bc=0 line=129
   bc=3 line=130
@@ -348,7 +344,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-3 line=1
   bc=10 line=135
 00 LOAD_NAME __name__ (cache=0)
@@ -364,7 +359,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:  c e
 (N_STATE 6)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-\\d\+ line=1
 00 LOAD_FAST 2
 01 FOR_ITER 17
@@ -384,7 +378,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:  c e
 (N_STATE 7)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-\\d\+ line=1
 00 BUILD_LIST 0
 02 LOAD_FAST 2
@@ -403,7 +396,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:  c e
 (N_STATE 8)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-\\d\+ line=1
 ########
 00 BUILD_MAP 0
@@ -424,7 +416,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: x
 (N_STATE 4)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-\\d\+ line=1
 ########
   bc=\\d\+ line=105
@@ -444,7 +435,6 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names: b a
 (N_STATE 4)
 (N_EXC_STACK 0)
-(NUM_LOCAL 0)
   bc=-\\d\+ line=1
 ########
   bc=\\d\+ line=125

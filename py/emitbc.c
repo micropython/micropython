@@ -322,21 +322,14 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     }
 
     // bytecode prelude: initialise closed over variables
-    int num_cell = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
         if (id->kind == ID_INFO_KIND_CELL) {
-            num_cell += 1;
-        }
-    }
-    assert(num_cell <= 255);
-    emit_write_bytecode_byte(emit, num_cell); // write number of locals that are cells
-    for (int i = 0; i < scope->id_info_len; i++) {
-        id_info_t *id = &scope->id_info[i];
-        if (id->kind == ID_INFO_KIND_CELL) {
+            assert(id->local_num < 255);
             emit_write_bytecode_byte(emit, id->local_num); // write the local which should be converted to a cell
         }
     }
+    emit_write_bytecode_byte(emit, 255); // end of list sentinel
 }
 
 void mp_emit_bc_end_pass(emit_t *emit) {
