@@ -29,6 +29,8 @@
 
 #include "py/runtime.h"
 
+#if MICROPY_PY_BUILTINS_ENUMERATE
+
 typedef struct _mp_obj_enumerate_t {
     mp_obj_base_t base;
     mp_obj_t iter;
@@ -83,3 +85,5 @@ STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
         return mp_obj_new_tuple(2, items);
     }
 }
+
+#endif // MICROPY_PY_BUILTINS_ENUMERATE

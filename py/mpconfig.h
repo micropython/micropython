@@ -459,6 +459,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPILE (0)
 #endif
 
+// Whether to support enumerate function(type)
+#ifndef MICROPY_PY_BUILTINS_ENUMERATE
+#define MICROPY_PY_BUILTINS_ENUMERATE (1)
+#endif
+
 // Whether to support the Python 2 execfile function
 #ifndef MICROPY_PY_BUILTINS_EXECFILE
 #define MICROPY_PY_BUILTINS_EXECFILE (0)
