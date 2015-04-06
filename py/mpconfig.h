@@ -469,6 +469,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_EXECFILE (0)
 #endif
 
+// Whether to support reversed function(type)
+#ifndef MICROPY_PY_BUILTINS_REVERSED
+#define MICROPY_PY_BUILTINS_REVERSED (1)
+#endif
+
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
 #define MICROPY_PY___FILE__ (1)

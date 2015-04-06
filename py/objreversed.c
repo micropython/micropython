@@ -30,6 +30,8 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 
+#if MICROPY_PY_BUILTINS_REVERSED
+
 typedef struct _mp_obj_reversed_t {
     mp_obj_base_t base;
     mp_obj_t seq;           // sequence object that we are reversing
@@ -75,3 +77,5 @@ const mp_obj_type_t mp_type_reversed = {
     .getiter = mp_identity,
     .iternext = reversed_iternext,
 };
+
+#endif // MICROPY_PY_BUILTINS_REVERSED
