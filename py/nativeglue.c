@@ -117,6 +117,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_make_function_from_raw_code,
     mp_native_call_function_n_kw,
     mp_call_method_n_kw,
+    mp_call_method_n_kw_var,
     mp_getiter,
     mp_iternext,
     nlr_push,

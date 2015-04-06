@@ -160,7 +160,6 @@ def run_tests(pyb, tests, args):
         skip_tests.add('basics/boundmeth1.py') # requires support for many args
         skip_tests.add('basics/closure_manyvars.py') # requires closures
         skip_tests.add('float/string_format.py')
-        skip_tests.add('float/cmath_fun.py') # requires f(*args) support
         skip_tests.add('import/gen_context.py')
         skip_tests.add('io/file_with.py')
         skip_tests.add('io/stringio_with.py')
