@@ -154,19 +154,22 @@ def run_tests(pyb, tests, args):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class closure_defargs del_deref del_local fun3 fun_calldblstar fun_callstar fun_callstardblstar fun_defargs fun_defargs2 fun_kwargs fun_kwonly fun_kwonlydef fun_kwvarargs fun_varargs gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send globals_del string_format string_join subclass_native2_list subclass_native2_tuple try_finally_loops try_finally_return try_reraise try_reraise2 unboundlocal with1 with_break with_continue with_return'.split()})
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
+        skip_tests.update({'basics/%s.py' % t for t in 'with1 with_break with_continue with_return'.split()}) # require with
         skip_tests.add('basics/array_construct2.py') # requires generators
         skip_tests.add('basics/bool1.py') # seems to randomly fail
-        skip_tests.add('basics/boundmeth1.py') # requires support for many args
-        skip_tests.add('basics/closure_manyvars.py') # requires closures
-        skip_tests.add('float/string_format.py')
-        skip_tests.add('import/gen_context.py')
-        skip_tests.add('io/file_with.py')
-        skip_tests.add('io/stringio_with.py')
-        skip_tests.add('micropython/heapalloc.py')
-        skip_tests.add('misc/features.py')
-        skip_tests.add('misc/recursion.py')
-        skip_tests.add('misc/rge_sm.py')
+        skip_tests.add('basics/del_deref.py') # requires checking for unbound local
+        skip_tests.add('basics/del_local.py') # requires checking for unbound local
+        skip_tests.add('basics/try_finally_loops.py') # requires proper try finally code
+        skip_tests.add('basics/try_finally_return.py') # requires proper try finally code
+        skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
+        skip_tests.add('import/gen_context.py') # requires yield_value
+        skip_tests.add('io/file_with.py') # requires with
+        skip_tests.add('io/stringio_with.py') # requires with
+        skip_tests.add('misc/features.py') # requires raise_varargs
+        skip_tests.add('misc/rge_sm.py') # requires yield
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
 
     for test_file in tests:

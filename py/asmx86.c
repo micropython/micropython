@@ -162,6 +162,10 @@ STATIC byte *asm_x86_get_cur_to_write_bytes(asm_x86_t *as, int num_bytes_to_writ
     }
 }
 
+mp_uint_t asm_x86_get_code_pos(asm_x86_t *as) {
+    return as->code_offset;
+}
+
 mp_uint_t asm_x86_get_code_size(asm_x86_t *as) {
     return as->code_size;
 }
@@ -194,6 +198,21 @@ STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
     c[1] = IMM32_L1(w32);
     c[2] = IMM32_L2(w32);
     c[3] = IMM32_L3(w32);
+}
+
+// align must be a multiple of 2
+void asm_x86_align(asm_x86_t* as, mp_uint_t align) {
+    // TODO fill unused data with NOPs?
+    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
+}
+
+void asm_x86_data(asm_x86_t* as, mp_uint_t bytesize, mp_uint_t val) {
+    byte *c = asm_x86_get_cur_to_write_bytes(as, bytesize);
+    // machine is little endian
+    for (uint i = 0; i < bytesize; i++) {
+        *c++ = val;
+        val >>= 8;
+    }
 }
 
 STATIC void asm_x86_write_r32_disp(asm_x86_t *as, int r32, int disp_r32, int disp_offset) {
@@ -541,7 +560,13 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 
 void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) {
     // TODO align stack on 16-byte boundary before the call
-    assert(n_args <= 3);
+    assert(n_args <= 5);
+    if (n_args > 4) {
+        asm_x86_push_r32(as, ASM_X86_REG_ARG_5);
+    }
+    if (n_args > 3) {
+        asm_x86_push_r32(as, ASM_X86_REG_ARG_4);
+    }
     if (n_args > 2) {
         asm_x86_push_r32(as, ASM_X86_REG_ARG_3);
     }

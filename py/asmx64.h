@@ -78,8 +78,12 @@ asm_x64_t* asm_x64_new(mp_uint_t max_num_labels);
 void asm_x64_free(asm_x64_t* as, bool free_code);
 void asm_x64_start_pass(asm_x64_t *as, uint pass);
 void asm_x64_end_pass(asm_x64_t *as);
+mp_uint_t asm_x64_get_code_pos(asm_x64_t *as);
 mp_uint_t asm_x64_get_code_size(asm_x64_t* as);
 void* asm_x64_get_code(asm_x64_t* as);
+
+void asm_x64_align(asm_x64_t *as, mp_uint_t align);
+void asm_x64_data(asm_x64_t *as, mp_uint_t bytesize, mp_uint_t val);
 
 void asm_x64_nop(asm_x64_t* as);
 void asm_x64_push_r64(asm_x64_t* as, int src_r64);

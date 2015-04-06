@@ -70,6 +70,7 @@ asm_thumb_t *asm_thumb_new(uint max_num_labels);
 void asm_thumb_free(asm_thumb_t *as, bool free_code);
 void asm_thumb_start_pass(asm_thumb_t *as, uint pass);
 void asm_thumb_end_pass(asm_thumb_t *as);
+uint asm_thumb_get_code_pos(asm_thumb_t *as);
 uint asm_thumb_get_code_size(asm_thumb_t *as);
 void *asm_thumb_get_code(asm_thumb_t *as);
 

@@ -61,6 +61,8 @@
 #define ASM_X86_REG_ARG_1 ASM_X86_REG_EAX
 #define ASM_X86_REG_ARG_2 ASM_X86_REG_ECX
 #define ASM_X86_REG_ARG_3 ASM_X86_REG_EDX
+#define ASM_X86_REG_ARG_4 ASM_X86_REG_EBX
+#define ASM_X86_REG_ARG_5 ASM_X86_REG_ESI
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X86_CC_JB  (0x2) // below, unsigned
@@ -79,8 +81,12 @@ asm_x86_t* asm_x86_new(mp_uint_t max_num_labels);
 void asm_x86_free(asm_x86_t* as, bool free_code);
 void asm_x86_start_pass(asm_x86_t *as, mp_uint_t pass);
 void asm_x86_end_pass(asm_x86_t *as);
+mp_uint_t asm_x86_get_code_pos(asm_x86_t *as);
 mp_uint_t asm_x86_get_code_size(asm_x86_t* as);
 void* asm_x86_get_code(asm_x86_t* as);
+
+void asm_x86_align(asm_x86_t *as, mp_uint_t align);
+void asm_x86_data(asm_x86_t *as, mp_uint_t bytesize, mp_uint_t val);
 
 void asm_x86_mov_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32);

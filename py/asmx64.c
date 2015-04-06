@@ -176,6 +176,10 @@ STATIC byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int num_bytes_to_writ
     }
 }
 
+mp_uint_t asm_x64_get_code_pos(asm_x64_t *as) {
+    return as->code_offset;
+}
+
 mp_uint_t asm_x64_get_code_size(asm_x64_t *as) {
     return as->code_size;
 }
@@ -220,6 +224,21 @@ STATIC void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
     c[5] = IMM64_L5(w64);
     c[6] = IMM64_L6(w64);
     c[7] = IMM64_L7(w64);
+}
+
+// align must be a multiple of 2
+void asm_x64_align(asm_x64_t* as, mp_uint_t align) {
+    // TODO fill unused data with NOPs?
+    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
+}
+
+void asm_x64_data(asm_x64_t* as, mp_uint_t bytesize, mp_uint_t val) {
+    byte *c = asm_x64_get_cur_to_write_bytes(as, bytesize);
+    // machine is little endian
+    for (uint i = 0; i < bytesize; i++) {
+        *c++ = val;
+        val >>= 8;
+    }
 }
 
 /* unused

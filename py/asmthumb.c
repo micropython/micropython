@@ -106,6 +106,10 @@ STATIC byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int num_bytes_to_
     }
 }
 
+uint asm_thumb_get_code_pos(asm_thumb_t *as) {
+    return as->code_offset;
+}
+
 uint asm_thumb_get_code_size(asm_thumb_t *as) {
     return as->code_size;
 }

@@ -108,8 +108,18 @@ qstr mp_obj_code_get_name(const byte *code_info) {
     return mp_decode_uint(&code_info);
 }
 
+#if MICROPY_EMIT_NATIVE
+STATIC const mp_obj_type_t mp_type_fun_native;
+#endif
+
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = fun_in;
+    #if MICROPY_EMIT_NATIVE
+    if (fun->base.type == &mp_type_fun_native) {
+        // TODO native functions don't have name stored
+        return MP_QSTR_;
+    }
+    #endif
     const byte *code_info = fun->bytecode;
     return mp_obj_code_get_name(code_info);
 }
@@ -168,7 +178,8 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_arg
     }
 
     code_state->n_state = n_state;
-    code_state->ip = ip;
+    code_state->code_info = 0; // offset to code-info
+    code_state->ip = ip - self->bytecode; // offset to prelude
     mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
@@ -216,7 +227,8 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
     }
 
     code_state->n_state = n_state;
-    code_state->ip = ip;
+    code_state->code_info = 0; // offset to code-info
+    code_state->ip = (byte*)(ip - self->bytecode); // offset to prelude
     mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
@@ -339,42 +351,11 @@ mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_
 
 #if MICROPY_EMIT_NATIVE
 
-typedef struct _mp_obj_fun_native_t {
-    mp_obj_base_t base;
-    mp_uint_t n_args;
-    void *fun_data; // GC must be able to trace this pointer
-    // TODO add mp_map_t *globals
-} mp_obj_fun_native_t;
-
-typedef mp_obj_t (*native_fun_0_t)(void);
-typedef mp_obj_t (*native_fun_1_t)(mp_obj_t);
-typedef mp_obj_t (*native_fun_2_t)(mp_obj_t, mp_obj_t);
-typedef mp_obj_t (*native_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
-
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_obj_fun_native_t *self = self_in;
-
-    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
-
-    void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
-
-    switch (n_args) {
-        case 0:
-            return ((native_fun_0_t)fun)();
-
-        case 1:
-            return ((native_fun_1_t)fun)(args[0]);
-
-        case 2:
-            return ((native_fun_2_t)fun)(args[0], args[1]);
-
-        case 3:
-            return ((native_fun_3_t)fun)(args[0], args[1], args[2]);
-
-        default:
-            assert(0);
-            return mp_const_none;
-    }
+    MP_STACK_CHECK();
+    mp_obj_fun_bc_t *self = self_in;
+    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void*)self->bytecode);
+    return fun(self_in, n_args, n_kw, args);
 }
 
 STATIC const mp_obj_type_t mp_type_fun_native = {
@@ -383,12 +364,9 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
     .call = fun_native_call,
 };
 
-mp_obj_t mp_obj_new_fun_native(mp_uint_t n_args, void *fun_data) {
-    assert(0 <= n_args && n_args <= 3);
-    mp_obj_fun_native_t *o = m_new_obj(mp_obj_fun_native_t);
+mp_obj_t mp_obj_new_fun_native(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data) {
+    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(scope_flags, n_pos_args, n_kwonly_args, def_args_in, def_kw_args, (const byte*)fun_data);
     o->base.type = &mp_type_fun_native;
-    o->n_args = n_args;
-    o->fun_data = fun_data;
     return o;
 }
 

@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/emitglue.h"
+#include "py/bc.h"
 
 #if MICROPY_EMIT_NATIVE
 
@@ -135,6 +136,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_delete_global,
     mp_obj_new_cell,
     mp_make_closure_from_raw_code,
+    mp_setup_code_state,
 };
 
 /*

@@ -48,6 +48,7 @@
 
 #include "py/nlr.h"
 #include "py/emit.h"
+#include "py/bc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -70,11 +71,14 @@
 
 #define EXPORT_FUN(name) emit_native_x64_##name
 
+#define ASM_WORD_SIZE (8)
+
 #define REG_RET ASM_X64_REG_RAX
 #define REG_ARG_1 ASM_X64_REG_RDI
 #define REG_ARG_2 ASM_X64_REG_RSI
 #define REG_ARG_3 ASM_X64_REG_RDX
 #define REG_ARG_4 ASM_X64_REG_RCX
+#define REG_ARG_5 ASM_X64_REG_R08
 
 // caller-save
 #define REG_TEMP0 ASM_X64_REG_RAX
@@ -94,11 +98,15 @@
 #define ASM_NEW             asm_x64_new
 #define ASM_FREE            asm_x64_free
 #define ASM_GET_CODE        asm_x64_get_code
+#define ASM_GET_CODE_POS    asm_x64_get_code_pos
 #define ASM_GET_CODE_SIZE   asm_x64_get_code_size
 #define ASM_START_PASS      asm_x64_start_pass
 #define ASM_END_PASS        asm_x64_end_pass
 #define ASM_ENTRY           asm_x64_entry
 #define ASM_EXIT            asm_x64_exit
+
+#define ASM_ALIGN           asm_x64_align
+#define ASM_DATA            asm_x64_data
 
 #define ASM_LABEL_ASSIGN    asm_x64_label_assign
 #define ASM_JUMP            asm_x64_jmp_label
@@ -202,14 +210,19 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_DELETE_GLOBAL] = 1,
     [MP_F_NEW_CELL] = 1,
     [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
+    [MP_F_SETUP_CODE_STATE] = 5,
 };
 
 #define EXPORT_FUN(name) emit_native_x86_##name
+
+#define ASM_WORD_SIZE (4)
 
 #define REG_RET ASM_X86_REG_EAX
 #define REG_ARG_1 ASM_X86_REG_ARG_1
 #define REG_ARG_2 ASM_X86_REG_ARG_2
 #define REG_ARG_3 ASM_X86_REG_ARG_3
+#define REG_ARG_4 ASM_X86_REG_ARG_4
+#define REG_ARG_5 ASM_X86_REG_ARG_5
 
 // caller-save, so can be used as temporaries
 #define REG_TEMP0 ASM_X86_REG_EAX
@@ -229,11 +242,15 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_NEW             asm_x86_new
 #define ASM_FREE            asm_x86_free
 #define ASM_GET_CODE        asm_x86_get_code
+#define ASM_GET_CODE_POS    asm_x86_get_code_pos
 #define ASM_GET_CODE_SIZE   asm_x86_get_code_size
 #define ASM_START_PASS      asm_x86_start_pass
 #define ASM_END_PASS        asm_x86_end_pass
 #define ASM_ENTRY           asm_x86_entry
 #define ASM_EXIT            asm_x86_exit
+
+#define ASM_ALIGN           asm_x86_align
+#define ASM_DATA            asm_x86_data
 
 #define ASM_LABEL_ASSIGN    asm_x86_label_assign
 #define ASM_JUMP            asm_x86_jmp_label
@@ -292,11 +309,14 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #define EXPORT_FUN(name) emit_native_thumb_##name
 
+#define ASM_WORD_SIZE (4)
+
 #define REG_RET ASM_THUMB_REG_R0
 #define REG_ARG_1 ASM_THUMB_REG_R0
 #define REG_ARG_2 ASM_THUMB_REG_R1
 #define REG_ARG_3 ASM_THUMB_REG_R2
 #define REG_ARG_4 ASM_THUMB_REG_R3
+// rest of args go on stack
 
 #define REG_TEMP0 ASM_THUMB_REG_R0
 #define REG_TEMP1 ASM_THUMB_REG_R1
@@ -314,11 +334,15 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_NEW             asm_thumb_new
 #define ASM_FREE            asm_thumb_free
 #define ASM_GET_CODE        asm_thumb_get_code
+#define ASM_GET_CODE_POS    asm_thumb_get_code_pos
 #define ASM_GET_CODE_SIZE   asm_thumb_get_code_size
 #define ASM_START_PASS      asm_thumb_start_pass
 #define ASM_END_PASS        asm_thumb_end_pass
 #define ASM_ENTRY           asm_thumb_entry
 #define ASM_EXIT            asm_thumb_exit
+
+#define ASM_ALIGN           asm_thumb_align
+#define ASM_DATA            asm_thumb_data
 
 #define ASM_LABEL_ASSIGN    asm_thumb_label_assign
 #define ASM_JUMP            asm_thumb_b_label
@@ -504,6 +528,10 @@ struct _emit_t {
     stack_info_t *stack_info;
     vtype_kind_t saved_stack_vtype;
 
+    int code_info_size;
+    int code_info_offset;
+    int prelude_offset;
+    int n_state;
     int stack_start;
     int stack_size;
 
@@ -561,6 +589,8 @@ STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
 STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 
+#define STATE_START (sizeof(mp_code_state) / sizeof(mp_uint_t))
+
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
 
@@ -584,14 +614,23 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->stack_info = m_new(stack_info_t, emit->stack_info_alloc);
     }
 
-    // set default type for return and arguments
+    // set default type for return
     emit->return_vtype = VTYPE_PYOBJ;
-    for (mp_uint_t i = 0; i < emit->scope->num_pos_args; i++) {
+
+    // set default type for arguments
+    mp_uint_t num_args = emit->scope->num_pos_args + emit->scope->num_kwonly_args;
+    if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
+        num_args += 1;
+    }
+    if (scope->scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) {
+        num_args += 1;
+    }
+    for (mp_uint_t i = 0; i < num_args; i++) {
         emit->local_vtype[i] = VTYPE_PYOBJ;
     }
 
     // local variables begin unbound, and have unknown type
-    for (mp_uint_t i = emit->scope->num_pos_args; i < emit->local_vtype_alloc; i++) {
+    for (mp_uint_t i = num_args; i < emit->local_vtype_alloc; i++) {
         emit->local_vtype[i] = VTYPE_UNBOUND;
     }
 
@@ -603,107 +642,157 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     ASM_START_PASS(emit->as, pass == MP_PASS_EMIT ? ASM_PASS_EMIT : ASM_PASS_COMPUTE);
 
-    // entry to function
-    int num_locals = 0;
-    if (pass > MP_PASS_SCOPE) {
-        num_locals = scope->num_locals - REG_LOCAL_NUM;
-        if (num_locals < 0) {
-            num_locals = 0;
-        }
-        emit->stack_start = num_locals;
-        num_locals += scope->stack_size;
-    }
-    ASM_ENTRY(emit->as, num_locals);
+    // generate code for entry to function
 
-    // initialise locals from parameters
-#if N_X64
-    for (int i = 0; i < scope->num_pos_args; i++) {
-        if (i == 0) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
-        } else if (i == 1) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
-        } else if (i == 2) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
-        } else if (i == 3) {
-            asm_x64_mov_r64_to_local(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
-        } else {
-            // TODO not implemented
-            assert(0);
+    if (emit->do_viper_types) {
+
+        // entry to function
+        int num_locals = 0;
+        if (pass > MP_PASS_SCOPE) {
+            num_locals = scope->num_locals - REG_LOCAL_NUM;
+            if (num_locals < 0) {
+                num_locals = 0;
+            }
+            emit->stack_start = num_locals;
+            num_locals += scope->stack_size;
         }
-    }
-#elif N_X86
-    for (int i = 0; i < scope->num_pos_args; i++) {
-        if (i == 0) {
-            asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_1);
-        } else if (i == 1) {
-            asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_2);
-        } else if (i == 2) {
-            asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_3);
-        } else {
-            asm_x86_mov_arg_to_r32(emit->as, i, REG_TEMP0);
-            asm_x86_mov_r32_to_local(emit->as, REG_TEMP0, i - REG_LOCAL_NUM);
+        ASM_ENTRY(emit->as, num_locals);
+
+        #if N_X86
+        for (int i = 0; i < scope->num_pos_args; i++) {
+            if (i == 0) {
+                asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_1);
+            } else if (i == 1) {
+                asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_2);
+            } else if (i == 2) {
+                asm_x86_mov_arg_to_r32(emit->as, i, REG_LOCAL_3);
+            } else {
+                asm_x86_mov_arg_to_r32(emit->as, i, REG_TEMP0);
+                asm_x86_mov_r32_to_local(emit->as, REG_TEMP0, i - REG_LOCAL_NUM);
+            }
         }
-    }
-#elif N_THUMB
-    for (int i = 0; i < scope->num_pos_args; i++) {
-        if (i == 0) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
-        } else if (i == 1) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
-        } else if (i == 2) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
-        } else if (i == 3) {
-            asm_thumb_mov_local_reg(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
-        } else {
-            // TODO not implemented
-            assert(0);
+        #else
+        for (int i = 0; i < scope->num_pos_args; i++) {
+            if (i == 0) {
+                ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
+            } else if (i == 1) {
+                ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
+            } else if (i == 2) {
+                ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
+            } else if (i == 3) {
+                ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
+            } else {
+                // TODO not implemented
+                assert(0);
+            }
+        }
+        #endif
+
+    } else {
+        // work out size of state (locals plus stack)
+        emit->n_state = scope->num_locals + scope->stack_size;
+
+        // allocate space on C-stack for code_state structure, which includes state
+        ASM_ENTRY(emit->as, STATE_START + emit->n_state);
+
+        // prepare incoming arguments for call to mp_setup_code_state
+        #if N_X86
+        asm_x86_mov_arg_to_r32(emit->as, 0, REG_ARG_2);
+        asm_x86_mov_arg_to_r32(emit->as, 1, REG_ARG_3);
+        asm_x86_mov_arg_to_r32(emit->as, 2, REG_ARG_4);
+        asm_x86_mov_arg_to_r32(emit->as, 3, REG_ARG_5);
+        #else
+        #if N_THUMB
+        ASM_MOV_REG_REG(emit->as, ASM_THUMB_REG_R4, REG_ARG_4);
+        #else
+        ASM_MOV_REG_REG(emit->as, REG_ARG_5, REG_ARG_4);
+        #endif
+        ASM_MOV_REG_REG(emit->as, REG_ARG_4, REG_ARG_3);
+        ASM_MOV_REG_REG(emit->as, REG_ARG_3, REG_ARG_2);
+        ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_ARG_1);
+        #endif
+
+        // set code_state.code_info (offset from start of this function to code_info data)
+        // XXX this encoding may change size
+        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->code_info_offset, offsetof(mp_code_state, code_info) / sizeof(mp_uint_t), REG_ARG_1);
+
+        // set code_state.ip (offset from start of this function to prelude info)
+        // XXX this encoding may change size
+        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state, ip) / sizeof(mp_uint_t), REG_ARG_1);
+
+        // set code_state.n_state
+        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->n_state, offsetof(mp_code_state, n_state) / sizeof(mp_uint_t), REG_ARG_1);
+
+        // put address of code_state into first arg
+        ASM_MOV_LOCAL_ADDR_TO_REG(emit->as, 0, REG_ARG_1);
+
+        // call mp_setup_code_state to prepare code_state structure
+        #if N_THUMB
+        asm_thumb_op16(emit->as, 0xb400 | (1 << ASM_THUMB_REG_R4)); // push 5th arg
+        asm_thumb_bl_ind(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE, ASM_THUMB_REG_R4);
+        asm_thumb_op16(emit->as, 0xbc00 | (1 << REG_RET)); // pop dummy (was 5th arg)
+        #else
+        ASM_CALL_IND(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE);
+        #endif
+
+        // cache some locals in registers
+        if (scope->num_locals > 0) {
+            ASM_MOV_LOCAL_TO_REG(emit->as, STATE_START + emit->n_state - 1 - 0, REG_LOCAL_1);
+            if (scope->num_locals > 1) {
+                ASM_MOV_LOCAL_TO_REG(emit->as, STATE_START + emit->n_state - 1 - 1, REG_LOCAL_2);
+                if (scope->num_locals > 2) {
+                    ASM_MOV_LOCAL_TO_REG(emit->as, STATE_START + emit->n_state - 1 - 2, REG_LOCAL_3);
+                }
+            }
+        }
+
+        // set the type of closed over variables
+        for (mp_uint_t i = 0; i < scope->id_info_len; i++) {
+            id_info_t *id = &scope->id_info[i];
+            if (id->kind == ID_INFO_KIND_CELL) {
+                emit->local_vtype[id->local_num] = VTYPE_PYOBJ;
+            }
         }
     }
 
+    #if N_THUMB
     // TODO don't load r7 if we don't need it
     asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
-#elif N_ARM
-    for (int i = 0; i < scope->num_pos_args; i++) {
-        if (i == 0) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_1, REG_ARG_1);
-        } else if (i == 1) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
-        } else if (i == 2) {
-            ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
-        } else if (i == 3) {
-            asm_arm_mov_local_reg(emit->as, i - REG_LOCAL_NUM, REG_ARG_4);
-        } else {
-            // TODO not implemented
-            assert(0);
-        }
-    }
+    #endif
 
+    #if N_ARM
     // TODO don't load r7 if we don't need it
     asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
-#else
-    #error not implemented
-#endif
-
-    // initialise closed over variables
-    for (int i = 0; i < scope->id_info_len; i++) {
-        id_info_t *id = &scope->id_info[i];
-        if (id->kind == ID_INFO_KIND_CELL) {
-            if (emit->local_vtype[id->local_num] != VTYPE_UNBOUND) {
-                emit_native_load_fast(emit, id->qst, id->local_num);
-                vtype_kind_t vtype;
-                emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-            }
-            ASM_CALL_IND(emit->as, mp_fun_table[MP_F_NEW_CELL], MP_F_NEW_CELL);
-            emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-            emit_native_store_fast(emit, id->qst, id->local_num);
-        }
-    }
+    #endif
 }
 
 STATIC void emit_native_end_pass(emit_t *emit) {
     if (!emit->last_emit_was_return_value) {
         ASM_EXIT(emit->as);
     }
+
+    if (!emit->do_viper_types) {
+        // write dummy code info (for mp_setup_code_state to parse) and arg names
+        emit->code_info_offset = ASM_GET_CODE_POS(emit->as);
+        ASM_DATA(emit->as, 1, emit->code_info_size);
+        ASM_ALIGN(emit->as, ASM_WORD_SIZE);
+        emit->code_info_size = ASM_GET_CODE_POS(emit->as) - emit->code_info_offset;
+        for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
+            ASM_DATA(emit->as, ASM_WORD_SIZE, (mp_uint_t)MP_OBJ_NEW_QSTR(emit->scope->id_info[i].qst));
+        }
+
+        // bytecode prelude: initialise closed over variables
+        emit->prelude_offset = ASM_GET_CODE_POS(emit->as);
+        for (int i = 0; i < emit->scope->id_info_len; i++) {
+            id_info_t *id = &emit->scope->id_info[i];
+            if (id->kind == ID_INFO_KIND_CELL) {
+                assert(id->local_num < 255);
+                ASM_DATA(emit->as, 1, id->local_num); // write the local which should be converted to a cell
+            }
+        }
+        ASM_DATA(emit->as, 1, 255); // end of list sentinel
+    }
+
     ASM_END_PASS(emit->as);
 
     // check stack is back to zero size
@@ -722,7 +811,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             type_sig |= (emit->local_vtype[i] & 3) << (i * 2 + 2);
         }
 
-        mp_emit_glue_assign_native(emit->scope->raw_code, emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY, f, f_len, emit->scope->num_pos_args, type_sig);
+        mp_emit_glue_assign_native(emit->scope->raw_code,
+            emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
+            f, f_len, emit->scope->num_pos_args, emit->scope->num_kwonly_args,
+            emit->scope->scope_flags, type_sig);
     }
 }
 
@@ -1199,7 +1291,6 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
         printf("ViperTypeError: local %s used before type known\n", qstr_str(qst));
     }
     emit_native_pre(emit);
-#if N_X64
     if (local_num == 0) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_1);
     } else if (local_num == 1) {
@@ -1208,48 +1299,13 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
         emit_post_push_reg(emit, vtype, REG_LOCAL_3);
     } else {
         need_reg_single(emit, REG_TEMP0, 0);
-        asm_x64_mov_local_to_r64(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
+        if (emit->do_viper_types) {
+            ASM_MOV_LOCAL_TO_REG(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
+        } else {
+            ASM_MOV_LOCAL_TO_REG(emit->as, STATE_START + emit->n_state - 1 - local_num, REG_TEMP0);
+        }
         emit_post_push_reg(emit, vtype, REG_TEMP0);
     }
-#elif N_X86
-    if (local_num == 0) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
-    } else {
-        need_reg_single(emit, REG_TEMP0, 0);
-        asm_x86_mov_local_to_r32(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
-        emit_post_push_reg(emit, vtype, REG_TEMP0);
-    }
-#elif N_THUMB
-    if (local_num == 0) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
-    } else {
-        need_reg_single(emit, REG_TEMP0, 0);
-        asm_thumb_mov_reg_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
-        emit_post_push_reg(emit, vtype, REG_TEMP0);
-    }
-#elif N_ARM
-    if (local_num == 0) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_post_push_reg(emit, vtype, REG_LOCAL_3);
-    } else {
-        need_reg_single(emit, REG_TEMP0, 0);
-        asm_arm_mov_reg_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
-        emit_post_push_reg(emit, vtype, REG_TEMP0);
-    }
-#else
-    #error not implemented
-#endif
 }
 
 STATIC void emit_native_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
@@ -1417,7 +1473,6 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
 
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     vtype_kind_t vtype;
-#if N_X64
     if (local_num == 0) {
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
     } else if (local_num == 1) {
@@ -1426,45 +1481,12 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
         emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
     } else {
         emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-        asm_x64_mov_r64_to_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
+        if (emit->do_viper_types) {
+            ASM_MOV_REG_TO_LOCAL(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
+        } else {
+            ASM_MOV_REG_TO_LOCAL(emit->as, REG_TEMP0, STATE_START + emit->n_state - 1 - local_num);
+        }
     }
-#elif N_X86
-    if (local_num == 0) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
-    } else {
-        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-        asm_x86_mov_r32_to_local(emit->as, REG_TEMP0, local_num - REG_LOCAL_NUM);
-    }
-#elif N_THUMB
-    if (local_num == 0) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
-    } else {
-        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-        asm_thumb_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
-    }
-#elif N_ARM
-    if (local_num == 0) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_1);
-    } else if (local_num == 1) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_2);
-    } else if (local_num == 2) {
-        emit_pre_pop_reg(emit, &vtype, REG_LOCAL_3);
-    } else {
-        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
-        asm_arm_mov_local_reg(emit->as, local_num - REG_LOCAL_NUM, REG_TEMP0);
-    }
-#else
-    #error not implemented
-#endif
-
     emit_post(emit);
 
     // check types

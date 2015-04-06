@@ -78,8 +78,13 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 #define dump_args(...) (void)0
 #endif
 
-// code_state should have ->ip filled in (pointing past code info block),
-// as well as ->n_state.
+// On entry code_state should be allocated somewhere (stack/heap) and
+// contain the following valid entries:
+//    - code_state->code_info should be the offset in bytes from the start of
+//      the bytecode chunk to the start of the code-info within the bytecode
+//    - code_state->ip should contain the offset in bytes from the start of
+//      the bytecode chunk to the start of the prelude within the bytecode
+//    - code_state->n_state should be set to the state size (locals plus stack)
 void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
@@ -89,7 +94,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
     #endif
-    code_state->code_info = self->bytecode;
+    code_state->code_info = self->bytecode + (mp_uint_t)code_state->code_info;
     code_state->sp = &code_state->state[0] - 1;
     code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
 
@@ -227,7 +232,7 @@ continue2:;
     }
 
     // bytecode prelude: initialise closed over variables
-    const byte *ip = code_state->ip;
+    const byte *ip = self->bytecode + (mp_uint_t)code_state->ip;
     mp_uint_t local_num;
     while ((local_num = *ip++) != 255) {
         code_state->state[n_state - 1 - local_num] =
