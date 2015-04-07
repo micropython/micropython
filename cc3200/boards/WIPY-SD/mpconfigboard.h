@@ -27,7 +27,7 @@
 
 #include "version.h"
 
-#define WIPY-SD
+#define WIPY_SD
 
 #define BOARD_NAME                                  "WiPy-SD "
 #define MICROPY_HW_BOARD_NAME                       VERSION_E(BOARD_NAME, VERSION_NUMBER)
