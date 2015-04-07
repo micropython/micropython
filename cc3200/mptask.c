@@ -137,8 +137,8 @@ soft_reset:
 
     // configure the stdio uart pins with the correct alternate functions
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
-    pin_config ((pin_obj_t *)&pin_GPIO1, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
-    pin_config ((pin_obj_t *)&pin_GPIO2, PIN_MODE_3, 0, PIN_TYPE_STD, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&pin_GPIO1, PIN_MODE_3, 0, PIN_TYPE_STD_PU, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&pin_GPIO2, PIN_MODE_3, 0, PIN_TYPE_STD_PU, PIN_STRENGTH_2MA);
     // instantiate the stdio uart
     mp_obj_t args[2] = {
             mp_obj_new_int(MICROPY_STDIO_UART),
