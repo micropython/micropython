@@ -162,6 +162,13 @@ Miscellaneous functions
 
    Print out lots of information about the board.
 
+.. function:: main(filename)
+
+   Set the filename of the main script to run after boot.py is finished.  If
+   this function is not called then the default file main.py will be executed.
+
+   It only makes sense to call this function from within boot.py.
+
 .. function:: mount(device, mountpoint, \*, readonly=False, mkfs=False)
 
    Mount a block device and make it available as part of the filesystem.
