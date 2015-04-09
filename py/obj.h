@@ -265,8 +265,7 @@ typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, mp_uint_t n_args, mp_uin
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_unary_op_fun_t)(mp_uint_t op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(mp_uint_t op, mp_obj_t, mp_obj_t);
-typedef void (*mp_load_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest); // for fail, do nothing; for attr, dest[0] = value; for method, dest[0] = method, dest[1] = self
-typedef bool (*mp_store_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t value); // return true if store succeeded; if value==MP_OBJ_NULL then delete
+typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 
 typedef struct _mp_method_t {
@@ -330,8 +329,18 @@ struct _mp_obj_type_t {
     mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NULL if op not supported
     mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NULL if op not supported
 
-    mp_load_attr_fun_t load_attr;
-    mp_store_attr_fun_t store_attr; // if value is MP_OBJ_NULL, then delete that attribute
+    // implements load, store and delete attribute
+    //
+    // dest[0] = MP_OBJ_NULL means load
+    //  return: for fail, do nothing
+    //          for attr, dest[0] = value
+    //          for method, dest[0] = method, dest[1] = self
+    //
+    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
+    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
+    //  return: for fail, do nothing
+    //          for success set dest[0] = MP_OBJ_NULL
+    mp_attr_fun_t attr;
 
     mp_subscr_fun_t subscr;         // implements load, store, delete subscripting
                                     // value=MP_OBJ_NULL means delete, value=MP_OBJ_SENTINEL means load, else store

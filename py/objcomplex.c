@@ -141,7 +141,11 @@ STATIC mp_obj_t complex_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in
     return mp_obj_complex_binary_op(op, lhs->real, lhs->imag, rhs_in);
 }
 
-STATIC void complex_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
     mp_obj_complex_t *self = self_in;
     if (attr == MP_QSTR_real) {
         dest[0] = mp_obj_new_float(self->real);
@@ -157,7 +161,7 @@ const mp_obj_type_t mp_type_complex = {
     .make_new = complex_make_new,
     .unary_op = complex_unary_op,
     .binary_op = complex_binary_op,
-    .load_attr = complex_load_attr,
+    .attr = complex_attr,
 };
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
