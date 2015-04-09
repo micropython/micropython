@@ -314,8 +314,8 @@ typedef struct _pyb_usb_vcp_obj_t {
 
 STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp_obj = {{&pyb_usb_vcp_type}};
 
-STATIC void pyb_usb_vcp_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    print(env, "USB_VCP()");
+STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_print_str(print, "USB_VCP()");
 }
 
 /// \classmethod \constructor()

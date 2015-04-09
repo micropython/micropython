@@ -53,19 +53,19 @@ STATIC mp_uint_t namedtuple_find_field(mp_obj_namedtuple_type_t *type, qstr name
     return -1;
 }
 
-STATIC void namedtuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_namedtuple_t *o = o_in;
-    print(env, "%s(", qstr_str(o->tuple.base.type->name));
+    mp_printf(print, "%s(", qstr_str(o->tuple.base.type->name));
     const qstr *fields = ((mp_obj_namedtuple_type_t*)o->tuple.base.type)->fields;
     for (mp_uint_t i = 0; i < o->tuple.len; i++) {
         if (i > 0) {
-            print(env, ", ");
+            mp_print_str(print, ", ");
         }
-        print(env, "%s=", qstr_str(fields[i]));
-        mp_obj_print_helper(print, env, o->tuple.items[i], PRINT_REPR);
+        mp_printf(print, "%s=", qstr_str(fields[i]));
+        mp_obj_print_helper(print, o->tuple.items[i], PRINT_REPR);
     }
-    print(env, ")");
+    mp_print_str(print, ")");
 }
 
 STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {

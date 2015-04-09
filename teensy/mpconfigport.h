@@ -66,6 +66,9 @@ typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
+void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+
 // We have inlined IRQ functions for efficiency (they are generally
 // 1 machine instruction).
 //

@@ -183,7 +183,7 @@ STATIC const pyb_i2c_obj_t pyb_i2c_obj[] = {
     {{&pyb_i2c_type}, &I2CHandle2}
 };
 
-STATIC void pyb_i2c_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
 
     uint i2c_num;
@@ -191,12 +191,12 @@ STATIC void pyb_i2c_print(void (*print)(void *env, const char *fmt, ...), void *
     else { i2c_num = 2; }
 
     if (self->i2c->State == HAL_I2C_STATE_RESET) {
-        print(env, "I2C(%u)", i2c_num);
+        mp_printf(print, "I2C(%u)", i2c_num);
     } else {
         if (in_master_mode(self)) {
-            print(env, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, self->i2c->Init.ClockSpeed);
+            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, self->i2c->Init.ClockSpeed);
         } else {
-            print(env, "I2C(%u, I2C.SLAVE, addr=0x%02x)", i2c_num, (self->i2c->Instance->OAR1 >> 1) & 0x7f);
+            mp_printf(print, "I2C(%u, I2C.SLAVE, addr=0x%02x)", i2c_num, (self->i2c->Instance->OAR1 >> 1) & 0x7f);
         }
     }
 }

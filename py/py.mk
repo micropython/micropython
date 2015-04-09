@@ -22,6 +22,7 @@ PY_O_BASENAME = \
 	gc.o \
 	qstr.o \
 	vstr.o \
+	mpprint.o \
 	unicode.o \
 	mpz.o \
 	lexer.o \
@@ -108,8 +109,6 @@ PY_O_BASENAME = \
 	showbc.o \
 	repl.o \
 	smallint.o \
-	pfenv.o \
-	pfenv_printf.o \
 	frozenmod.o \
 	../extmod/moductypes.o \
 	../extmod/modujson.o \

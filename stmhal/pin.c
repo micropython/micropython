@@ -180,17 +180,17 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
 
 /// \method __str__()
 /// Return a string describing the pin object.
-STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_obj_t *self = self_in;
 
     // pin name
-    print(env, "Pin(Pin.cpu.%s, mode=Pin.", qstr_str(self->name));
+    mp_printf(print, "Pin(Pin.cpu.%s, mode=Pin.", qstr_str(self->name));
 
     uint32_t mode = pin_get_mode(self);
 
     if (mode == GPIO_MODE_ANALOG) {
         // analog
-        print(env, "ANALOG)");
+        mp_print_str(print, "ANALOG)");
 
     } else {
         // IO mode
@@ -210,7 +210,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
                 mode_qst = MP_QSTR_AF_OD;
             }
         }
-        print(env, qstr_str(mode_qst)); // safe because mode_qst has no formating chars
+        mp_print_str(print, qstr_str(mode_qst));
 
         // pull mode
         qstr pull_qst = MP_QSTR_NULL;
@@ -221,7 +221,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
             pull_qst = MP_QSTR_PULL_DOWN;
         }
         if (pull_qst != MP_QSTR_NULL) {
-            print(env, ", pull=Pin.%s", qstr_str(pull_qst));
+            mp_printf(print, ", pull=Pin.%s", qstr_str(pull_qst));
         }
 
         // AF mode
@@ -229,12 +229,12 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
             mp_uint_t af_idx = pin_get_af(self);
             const pin_af_obj_t *af_obj = pin_find_af_by_index(self, af_idx);
             if (af_obj == NULL) {
-                print(env, ", af=%d)", af_idx);
+                mp_printf(print, ", af=%d)", af_idx);
             } else {
-                print(env, ", af=Pin.%s)", qstr_str(af_obj->name));
+                mp_printf(print, ", af=Pin.%s)", qstr_str(af_obj->name));
             }
         } else {
-            print(env, ")");
+            mp_print_str(print, ")");
         }
     }
 }
@@ -616,9 +616,9 @@ const mp_obj_type_t pin_type = {
 
 /// \method __str__()
 /// Return a string describing the alternate function.
-STATIC void pin_af_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pin_af_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_af_obj_t *self = self_in;
-    print(env, "Pin.%s", qstr_str(self->name));
+    mp_printf(print, "Pin.%s", qstr_str(self->name));
 }
 
 /// \method index()

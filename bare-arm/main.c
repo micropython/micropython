@@ -6,7 +6,6 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
-#include "py/pfenv.h"
 
 void do_str(const char *src) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -23,7 +22,7 @@ void do_str(const char *src) {
         nlr_pop();
     } else {
         // uncaught exception
-        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
 }
 

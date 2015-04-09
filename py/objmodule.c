@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_module_t *self = self_in;
     const char *name = qstr_str(self->name);
@@ -43,12 +43,12 @@ STATIC void module_print(void (*print)(void *env, const char *fmt, ...), void *e
     // symbol to give more information about the module.
     mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
     if (elem != NULL) {
-        print(env, "<module '%s' from '%s'>", name, mp_obj_str_get_str(elem->value));
+        mp_printf(print, "<module '%s' from '%s'>", name, mp_obj_str_get_str(elem->value));
         return;
     }
 #endif
 
-    print(env, "<module '%s'>", name);
+    mp_printf(print, "<module '%s'>", name);
 }
 
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {

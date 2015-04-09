@@ -31,7 +31,6 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "py/pfenv.h"
 #include "py/gc.h"
 #include MICROPY_HAL_H
 #include "pin.h"
@@ -188,13 +187,13 @@ STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
     #endif
 }
 
-STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
 
     if (self->ftm.State == HAL_FTM_STATE_RESET) {
-        print(env, "Timer(%u)", self->tim_id);
+        mp_printf(print, "Timer(%u)", self->tim_id);
     } else {
-        print(env, "Timer(%u, prescaler=%u, period=%u, mode=%s)",
+        mp_printf(print, "Timer(%u, prescaler=%u, period=%u, mode=%s)",
             self->tim_id,
             1 << (self->ftm.Instance->SC & 7),
             self->ftm.Instance->MOD & 0xffff,
@@ -752,10 +751,10 @@ const mp_obj_type_t pyb_timer_type = {
 /// Timer channels are used to generate/capture a signal using a timer.
 ///
 /// TimerChannel objects are created using the Timer.channel() method.
-STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_channel_obj_t *self = self_in;
 
-    print(env, "TimerChannel(timer=%u, channel=%u, mode=%s)",
+    mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%s)",
           self->timer->tim_id,
           self->channel,
           qstr_str(channel_mode_info[self->mode].name));
@@ -913,7 +912,7 @@ STATIC bool ftm_handle_irq_callback(pyb_timer_obj_t *self, mp_uint_t channel, mp
             printf("Uncaught exception in Timer(" UINT_FMT ") channel "
                    UINT_FMT " interrupt handler\n", self->tim_id, channel);
         }
-        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
     gc_unlock();
     return handled;

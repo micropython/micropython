@@ -31,7 +31,6 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/objint.h"
-#include "py/pfenv.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_SYS
@@ -78,12 +77,10 @@ STATIC mp_obj_t mp_sys_print_exception(mp_uint_t n_args, const mp_obj_t *args) {
         stream_obj = args[1];
     }
 
-    pfenv_t pfenv;
-    pfenv.data = stream_obj;
-    pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
-    mp_obj_print_exception((void (*)(void *env, const char *fmt, ...))pfenv_printf, &pfenv, args[0]);
+    mp_print_t print = {stream_obj, (mp_print_strn_t)mp_stream_write};
+    mp_obj_print_exception(&print, args[0]);
     #else
-    mp_obj_print_exception(printf_wrapper, NULL, args[0]);
+    mp_obj_print_exception(&mp_plat_print, args[0]);
     #endif
 
     return mp_const_none;

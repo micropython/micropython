@@ -51,10 +51,10 @@ typedef struct _mp_obj_match_t {
 } mp_obj_match_t;
 
 
-STATIC void match_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void match_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_match_t *self = self_in;
-    print(env, "<match num=%d>", self->num_matches);
+    mp_printf(print, "<match num=%d>", self->num_matches);
 }
 
 STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
@@ -86,10 +86,10 @@ STATIC const mp_obj_type_t match_type = {
     .locals_dict = (mp_obj_t)&match_locals_dict,
 };
 
-STATIC void re_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_re_t *self = self_in;
-    print(env, "<re %p>", self);
+    mp_printf(print, "<re %p>", self);
 }
 
 STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {

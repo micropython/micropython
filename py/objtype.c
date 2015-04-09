@@ -196,7 +196,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
     }
 }
 
-STATIC void instance_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_instance_t *self = self_in;
     qstr meth = (kind == PRINT_STR) ? MP_QSTR___str__ : MP_QSTR___repr__;
     mp_obj_t member[2] = {MP_OBJ_NULL};
@@ -219,23 +219,23 @@ STATIC void instance_print(void (*print)(void *env, const char *fmt, ...), void 
         // Handle Exception subclasses specially
         if (mp_obj_is_native_exception_instance(self->subobj[0])) {
             if (kind != PRINT_STR) {
-                print(env, "%s", qstr_str(self->base.type->name));
+                mp_print_str(print, qstr_str(self->base.type->name));
             }
-            mp_obj_print_helper(print, env, self->subobj[0], kind | PRINT_EXC_SUBCLASS);
+            mp_obj_print_helper(print, self->subobj[0], kind | PRINT_EXC_SUBCLASS);
         } else {
-            mp_obj_print_helper(print, env, self->subobj[0], kind);
+            mp_obj_print_helper(print, self->subobj[0], kind);
         }
         return;
     }
 
     if (member[0] != MP_OBJ_NULL) {
         mp_obj_t r = mp_call_function_1(member[0], self_in);
-        mp_obj_print_helper(print, env, r, PRINT_STR);
+        mp_obj_print_helper(print, r, PRINT_STR);
         return;
     }
 
     // TODO: CPython prints fully-qualified type name
-    print(env, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
+    mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
 mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -737,10 +737,10 @@ STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
 //  - there is a constant mp_obj_type_t (called mp_type_type) for the 'type' object
 //  - creating a new class (a new type) creates a new mp_obj_type_t
 
-STATIC void type_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_type_t *self = self_in;
-    print(env, "<class '%s'>", qstr_str(self->name));
+    mp_printf(print, "<class '%s'>", qstr_str(self->name));
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -911,14 +911,14 @@ typedef struct _mp_obj_super_t {
     mp_obj_t obj;
 } mp_obj_super_t;
 
-STATIC void super_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void super_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_super_t *self = self_in;
-    print(env, "<super: ");
-    mp_obj_print_helper(print, env, self->type, PRINT_STR);
-    print(env, ", ");
-    mp_obj_print_helper(print, env, self->obj, PRINT_STR);
-    print(env, ">");
+    mp_print_str(print, "<super: ");
+    mp_obj_print_helper(print, self->type, PRINT_STR);
+    mp_print_str(print, ", ");
+    mp_obj_print_helper(print, self->obj, PRINT_STR);
+    mp_print_str(print, ">");
 }
 
 STATIC mp_obj_t super_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

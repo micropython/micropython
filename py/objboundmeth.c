@@ -36,14 +36,14 @@ typedef struct _mp_obj_bound_meth_t {
 } mp_obj_bound_meth_t;
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-STATIC void bound_meth_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void bound_meth_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_bound_meth_t *o = o_in;
-    print(env, "<bound_method %p ", o);
-    mp_obj_print_helper(print, env, o->self, PRINT_REPR);
-    print(env, ".");
-    mp_obj_print_helper(print, env, o->meth, PRINT_REPR);
-    print(env, ">");
+    mp_printf(print, "<bound_method %p ", o);
+    mp_obj_print_helper(print, o->self, PRINT_REPR);
+    mp_print_str(print, ".");
+    mp_obj_print_helper(print, o->meth, PRINT_REPR);
+    mp_print_str(print, ">");
 }
 #endif
 

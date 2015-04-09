@@ -335,7 +335,7 @@ SPI_HandleTypeDef *spi_get_handle(mp_obj_t o) {
     return self->spi;
 }
 
-STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
 
     uint spi_num;
@@ -344,7 +344,7 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
     else { spi_num = 3; }
 
     if (self->spi->State == HAL_SPI_STATE_RESET) {
-        print(env, "SPI(%u)", spi_num);
+        mp_printf(print, "SPI(%u)", spi_num);
     } else {
         if (self->spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
@@ -358,15 +358,15 @@ STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *
             }
             uint log_prescaler = (self->spi->Init.BaudRatePrescaler >> 3) + 1;
             uint baudrate = spi_clock >> log_prescaler;
-            print(env, "SPI(%u, SPI.MASTER, baudrate=%u, prescaler=%u", spi_num, baudrate, 1 << log_prescaler);
+            mp_printf(print, "SPI(%u, SPI.MASTER, baudrate=%u, prescaler=%u", spi_num, baudrate, 1 << log_prescaler);
         } else {
-            print(env, "SPI(%u, SPI.SLAVE", spi_num);
+            mp_printf(print, "SPI(%u, SPI.SLAVE", spi_num);
         }
-        print(env, ", polarity=%u, phase=%u, bits=%u", self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
         if (self->spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED) {
-            print(env, ", crc=0x%x", self->spi->Init.CRCPolynomial);
+            mp_printf(print, ", crc=0x%x", self->spi->Init.CRCPolynomial);
         }
-        print(env, ")");
+        mp_print_str(print, ")");
     }
 }
 

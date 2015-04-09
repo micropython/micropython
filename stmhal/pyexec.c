@@ -33,7 +33,6 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
-#include "py/pfenv.h"
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
 #endif
@@ -87,7 +86,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
             // at the moment, the value of SystemExit is unused
             ret = PYEXEC_FORCED_EXIT;
         } else {
-            mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
             ret = 0;
         }
     }

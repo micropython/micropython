@@ -42,16 +42,16 @@ void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
 }
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-STATIC void cell_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_cell_t *o = o_in;
-    print(env, "<cell %p ", o->obj);
+    mp_printf(print, "<cell %p ", o->obj);
     if (o->obj == MP_OBJ_NULL) {
-        print(env, "(nil)");
+        mp_print_str(print, "(nil)");
     } else {
-        mp_obj_print_helper(print, env, o->obj, PRINT_REPR);
+        mp_obj_print_helper(print, o->obj, PRINT_REPR);
     }
-    print(env, ">");
+    mp_print_str(print, ">");
 }
 #endif
 

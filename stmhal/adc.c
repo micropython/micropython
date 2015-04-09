@@ -138,11 +138,11 @@ STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
 /******************************************************************************/
 /* Micro Python bindings : adc object (single channel)                        */
 
-STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_obj_adc_t *self = self_in;
-    print(env, "<ADC on ");
-    mp_obj_print_helper(print, env, self->pin_name, PRINT_STR);
-    print(env, " channel=%lu>", self->channel);
+    mp_print_str(print, "<ADC on ");
+    mp_obj_print_helper(print, self->pin_name, PRINT_STR);
+    mp_printf(print, " channel=%lu>", self->channel);
 }
 
 /// \classmethod \constructor(pin)

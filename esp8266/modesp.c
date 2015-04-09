@@ -32,7 +32,6 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "py/pfenv.h"
 #include MICROPY_HAL_H
 #include "queue.h"
 #include "user_interface.h"
@@ -52,7 +51,7 @@ mp_obj_t call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
     if (nlr_push(&nlr) == 0) {
         return mp_call_function_1(fun, arg);
     } else {
-        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
         return (mp_obj_t)nlr.ret_val;
     }
 }

@@ -32,7 +32,6 @@
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
-#include "py/pfenv.h"
 
 void do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);

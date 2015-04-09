@@ -35,8 +35,9 @@
 
 STATIC mp_obj_t mod_ujson_dumps(mp_obj_t obj) {
     vstr_t vstr;
-    vstr_init(&vstr, 8);
-    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, &vstr, obj, PRINT_JSON);
+    mp_print_t print;
+    vstr_init_print(&vstr, 8, &print);
+    mp_obj_print_helper(&print, obj, PRINT_JSON);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_dumps_obj, mod_ujson_dumps);

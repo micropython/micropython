@@ -44,19 +44,19 @@ STATIC mp_obj_t list_pop(mp_uint_t n_args, const mp_obj_t *args);
 /******************************************************************************/
 /* list                                                                       */
 
-STATIC void list_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_list_t *o = MP_OBJ_CAST(o_in);
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     }
-    print(env, "[");
+    mp_print_str(print, "[");
     for (mp_uint_t i = 0; i < o->len; i++) {
         if (i > 0) {
-            print(env, ", ");
+            mp_print_str(print, ", ");
         }
-        mp_obj_print_helper(print, env, o->items[i], kind);
+        mp_obj_print_helper(print, o->items[i], kind);
     }
-    print(env, "]");
+    mp_print_str(print, "]");
 }
 
 STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {

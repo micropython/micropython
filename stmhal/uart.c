@@ -330,23 +330,23 @@ void uart_irq_handler(mp_uint_t uart_id) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
     if (!self->is_enabled) {
-        print(env, "UART(%u)", self->uart_id);
+        mp_printf(print, "UART(%u)", self->uart_id);
     } else {
         mp_int_t bits = (self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9);
         if (self->uart.Init.Parity != UART_PARITY_NONE) {
             bits -= 1;
         }
-        print(env, "UART(%u, baudrate=%u, bits=%u, parity=",
+        mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
             self->uart_id, self->uart.Init.BaudRate, bits);
         if (self->uart.Init.Parity == UART_PARITY_NONE) {
-            print(env, "None");
+            mp_print_str(print, "None");
         } else {
-            print(env, "%u", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
+            mp_printf(print, "%u", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
         }
-        print(env, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u)",
+        mp_printf(print, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u)",
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2,
             self->timeout, self->timeout_char, self->read_buf_len);
     }
