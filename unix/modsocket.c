@@ -82,10 +82,10 @@ STATIC mp_obj_socket_t *socket_new(int fd) {
 }
 
 
-STATIC void socket_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_socket_t *self = self_in;
-    print(env, "<_socket %d>", self->fd);
+    mp_printf(print, "<_socket %d>", self->fd);
 }
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {

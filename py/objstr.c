@@ -34,7 +34,7 @@
 #include "py/objlist.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
-#include "py/pfenv.h"
+//#include "py/pfenv.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
@@ -45,8 +45,7 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 /******************************************************************************/
 /* str                                                                        */
 
-void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *env,
-                         const byte *str_data, mp_uint_t str_len, bool is_bytes) {
+void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, mp_uint_t str_len, bool is_bytes) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -61,72 +60,72 @@ void mp_str_print_quoted(void (*print)(void *env, const char *fmt, ...), void *e
     if (has_single_quote && !has_double_quote) {
         quote_char = '"';
     }
-    print(env, "%c", quote_char);
+    mp_printf(print, "%c", quote_char);
     for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
         if (*s == quote_char) {
-            print(env, "\\%c", quote_char);
+            mp_printf(print, "\\%c", quote_char);
         } else if (*s == '\\') {
-            print(env, "\\\\");
+            mp_print_str(print, "\\\\");
         } else if (*s >= 0x20 && *s != 0x7f && (!is_bytes || *s < 0x80)) {
             // In strings, anything which is not ascii control character
             // is printed as is, this includes characters in range 0x80-0xff
             // (which can be non-Latin letters, etc.)
-            print(env, "%c", *s);
+            mp_printf(print, "%c", *s);
         } else if (*s == '\n') {
-            print(env, "\\n");
+            mp_print_str(print, "\\n");
         } else if (*s == '\r') {
-            print(env, "\\r");
+            mp_print_str(print, "\\r");
         } else if (*s == '\t') {
-            print(env, "\\t");
+            mp_print_str(print, "\\t");
         } else {
-            print(env, "\\x%02x", *s);
+            mp_printf(print, "\\x%02x", *s);
         }
     }
-    print(env, "%c", quote_char);
+    mp_printf(print, "%c", quote_char);
 }
 
 #if MICROPY_PY_UJSON
-void mp_str_print_json(void (*print)(void *env, const char *fmt, ...), void *env, const byte *str_data, mp_uint_t str_len) {
+void mp_str_print_json(const mp_print_t *print, const byte *str_data, mp_uint_t str_len) {
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
-    print(env, "\"");
+    mp_print_str(print, "\"");
     for (const byte *s = str_data, *top = str_data + str_len; s < top; s++) {
         if (*s == '"' || *s == '\\') {
-            print(env, "\\%c", *s);
+            mp_printf(print, "\\%c", *s);
         } else if (*s >= 32) {
             // this will handle normal and utf-8 encoded chars
-            print(env, "%c", *s);
+            mp_printf(print, "%c", *s);
         } else if (*s == '\n') {
-            print(env, "\\n");
+            mp_print_str(print, "\\n");
         } else if (*s == '\r') {
-            print(env, "\\r");
+            mp_print_str(print, "\\r");
         } else if (*s == '\t') {
-            print(env, "\\t");
+            mp_print_str(print, "\\t");
         } else {
             // this will handle control chars
-            print(env, "\\u%04x", *s);
+            mp_printf(print, "\\u%04x", *s);
         }
     }
-    print(env, "\"");
+    mp_print_str(print, "\"");
 }
 #endif
 
-STATIC void str_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     #if MICROPY_PY_UJSON
     if (kind == PRINT_JSON) {
-        mp_str_print_json(print, env, str_data, str_len);
+        mp_str_print_json(print, str_data, str_len);
         return;
     }
     #endif
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
     if (kind == PRINT_STR && !is_bytes) {
-        print(env, "%.*s", str_len, str_data);
+        mp_printf(print, "%.*s", str_len, str_data);
     } else {
         if (is_bytes) {
-            print(env, "b");
+            mp_print_str(print, "b");
         }
-        mp_str_print_quoted(print, env, str_data, str_len, is_bytes);
+        mp_str_print_quoted(print, str_data, str_len, is_bytes);
     }
 }
 
@@ -145,8 +144,9 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
 
         case 1: {
             vstr_t vstr;
-            vstr_init(&vstr, 16);
-            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, &vstr, args[0], PRINT_STR);
+            mp_print_t print;
+            vstr_init_print(&vstr, 16, &print);
+            mp_obj_print_helper(&print, args[0], PRINT_STR);
             return mp_obj_new_str_from_vstr(type_in, &vstr);
         }
 
@@ -841,10 +841,8 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
     GET_STR_DATA_LEN(args[0], str, len);
     int arg_i = 0;
     vstr_t vstr;
-    vstr_init(&vstr, 16);
-    pfenv_t pfenv_vstr;
-    pfenv_vstr.data = &vstr;
-    pfenv_vstr.print_strn = pfenv_vstr_add_strn;
+    mp_print_t print;
+    vstr_init_print(&vstr, 16, &print);
 
     for (const byte *top = str + len; str < top; str++) {
         if (*str == '}') {
@@ -999,8 +997,9 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 }
             }
             vstr_t arg_vstr;
-            vstr_init(&arg_vstr, 16);
-            mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, &arg_vstr, arg, print_kind);
+            mp_print_t arg_print;
+            vstr_init_print(&arg_vstr, 16, &arg_print);
+            mp_obj_print_helper(&arg_print, arg, print_kind);
             arg = mp_obj_new_str_from_vstr(&mp_type_str, &arg_vstr);
         }
 
@@ -1109,20 +1108,20 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
         if (arg_looks_integer(arg)) {
             switch (type) {
                 case 'b':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 2, 'a', flags, fill, width, 0);
+                    mp_print_mp_int(&print, arg, 2, 'a', flags, fill, width, 0);
                     continue;
 
                 case 'c':
                 {
                     char ch = mp_obj_get_int(arg);
-                    pfenv_print_strn(&pfenv_vstr, &ch, 1, flags, fill, width);
+                    mp_print_strn(&print, &ch, 1, flags, fill, width);
                     continue;
                 }
 
                 case '\0':  // No explicit format type implies 'd'
                 case 'n':   // I don't think we support locales in uPy so use 'd'
                 case 'd':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 10, 'a', flags, fill, width, 0);
+                    mp_print_mp_int(&print, arg, 10, 'a', flags, fill, width, 0);
                     continue;
 
                 case 'o':
@@ -1130,12 +1129,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                         flags |= PF_FLAG_SHOW_OCTAL_LETTER;
                     }
 
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 8, 'a', flags, fill, width, 0);
+                    mp_print_mp_int(&print, arg, 8, 'a', flags, fill, width, 0);
                     continue;
 
                 case 'X':
                 case 'x':
-                    pfenv_print_mp_int(&pfenv_vstr, arg, 16, type - ('X' - 'A'), flags, fill, width, 0);
+                    mp_print_mp_int(&print, arg, 16, type - ('X' - 'A'), flags, fill, width, 0);
                     continue;
 
                 case 'e':
@@ -1207,7 +1206,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 case 'F':
                 case 'g':
                 case 'G':
-                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg), type, flags, fill, width, precision);
+                    mp_print_float(&print, mp_obj_get_float(arg), type, flags, fill, width, precision);
                     break;
 
                 case '%':
@@ -1217,7 +1216,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                     #else
                     #define F100 100.0
                     #endif
-                    pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg) * F100, 'f', flags, fill, width, precision);
+                    mp_print_float(&print, mp_obj_get_float(arg) * F100, 'f', flags, fill, width, precision);
                     #undef F100
                     break;
 #endif
@@ -1245,7 +1244,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
 
             switch (type) {
                 case '\0':
-                    mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf, &vstr, arg, PRINT_STR);
+                    mp_obj_print_helper(&print, arg, PRINT_STR);
                     break;
 
                 case 's': {
@@ -1257,7 +1256,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                     if (slen > (mp_uint_t)precision) {
                         slen = precision;
                     }
-                    pfenv_print_strn(&pfenv_vstr, s, slen, flags, fill, width);
+                    mp_print_strn(&print, s, slen, flags, fill, width);
                     break;
                 }
 
@@ -1283,10 +1282,8 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
     const byte *start_str = str;
     int arg_i = 0;
     vstr_t vstr;
-    vstr_init(&vstr, 16);
-    pfenv_t pfenv_vstr;
-    pfenv_vstr.data = &vstr;
-    pfenv_vstr.print_strn = pfenv_vstr_add_strn;
+    mp_print_t print;
+    vstr_init_print(&vstr, 16, &print);
 
     for (const byte *top = str + len; str < top; str++) {
         mp_obj_t arg = MP_OBJ_NULL;
@@ -1390,10 +1387,10 @@ not_enough_args:
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                             "%%c requires int or char"));
                     }
-                    pfenv_print_strn(&pfenv_vstr, s, 1, flags, ' ', width);
+                    mp_print_strn(&print, s, 1, flags, ' ', width);
                 } else if (arg_looks_integer(arg)) {
                     char ch = mp_obj_get_int(arg);
-                    pfenv_print_strn(&pfenv_vstr, &ch, 1, flags, ' ', width);
+                    mp_print_strn(&print, &ch, 1, flags, ' ', width);
                 } else {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                         "integer required"));
@@ -1403,7 +1400,7 @@ not_enough_args:
             case 'd':
             case 'i':
             case 'u':
-                pfenv_print_mp_int(&pfenv_vstr, arg_as_int(arg), 10, 'a', flags, fill, width, prec);
+                mp_print_mp_int(&print, arg_as_int(arg), 10, 'a', flags, fill, width, prec);
                 break;
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -1413,7 +1410,7 @@ not_enough_args:
             case 'F':
             case 'g':
             case 'G':
-                pfenv_print_float(&pfenv_vstr, mp_obj_get_float(arg), *str, flags, fill, width, prec);
+                mp_print_float(&print, mp_obj_get_float(arg), *str, flags, fill, width, prec);
                 break;
 #endif
 
@@ -1421,16 +1418,16 @@ not_enough_args:
                 if (alt) {
                     flags |= (PF_FLAG_SHOW_PREFIX | PF_FLAG_SHOW_OCTAL_LETTER);
                 }
-                pfenv_print_mp_int(&pfenv_vstr, arg, 8, 'a', flags, fill, width, prec);
+                mp_print_mp_int(&print, arg, 8, 'a', flags, fill, width, prec);
                 break;
 
             case 'r':
             case 's':
             {
                 vstr_t arg_vstr;
-                vstr_init(&arg_vstr, 16);
-                mp_obj_print_helper((void (*)(void*, const char*, ...))vstr_printf,
-                                    &arg_vstr, arg, *str == 'r' ? PRINT_REPR : PRINT_STR);
+                mp_print_t arg_print;
+                vstr_init_print(&arg_vstr, 16, &arg_print);
+                mp_obj_print_helper(&arg_print, arg, *str == 'r' ? PRINT_REPR : PRINT_STR);
                 uint vlen = arg_vstr.len;
                 if (prec < 0) {
                     prec = vlen;
@@ -1438,14 +1435,14 @@ not_enough_args:
                 if (vlen > (uint)prec) {
                     vlen = prec;
                 }
-                pfenv_print_strn(&pfenv_vstr, arg_vstr.buf, vlen, flags, ' ', width);
+                mp_print_strn(&print, arg_vstr.buf, vlen, flags, ' ', width);
                 vstr_clear(&arg_vstr);
                 break;
             }
 
             case 'X':
             case 'x':
-                pfenv_print_mp_int(&pfenv_vstr, arg, 16, *str - ('X' - 'A'), flags | alt, fill, width, prec);
+                mp_print_mp_int(&print, arg, 16, *str - ('X' - 'A'), flags | alt, fill, width, prec);
                 break;
 
             default:

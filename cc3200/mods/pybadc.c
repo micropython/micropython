@@ -100,9 +100,9 @@ STATIC pyb_adc_obj_t pyb_adc_obj[PYB_ADC_NUM_CHANNELS];
 /******************************************************************************/
 /* Micro Python bindings : adc object                                         */
 
-STATIC void adc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_adc_obj_t *self = self_in;
-    print(env, "<ADC, channel=%u>", self->num);
+    mp_printf(print, "<ADC, channel=%u>", self->num);
 }
 
 /// \classmethod \constructor(channel)

@@ -31,6 +31,7 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
+#include "py/mpprint.h"
 
 // returned value is always at least 1 greater than argument
 #define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
@@ -63,6 +64,12 @@ void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf) {
     vstr->buf = buf;
     vstr->had_error = false;
     vstr->fixed_buf = true;
+}
+
+void vstr_init_print(vstr_t *vstr, size_t alloc, mp_print_t *print) {
+    vstr_init(vstr, alloc);
+    print->data = vstr;
+    print->print_strn = (mp_print_strn_t)vstr_add_strn;
 }
 
 void vstr_clear(vstr_t *vstr) {
@@ -322,32 +329,6 @@ void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
         return;
     }
 
-    while (1) {
-        // try to print in the allocated space
-        // need to make a copy of the va_list because we may call vsnprintf multiple times
-        size_t size = vstr->alloc - vstr->len;
-        va_list ap2;
-        va_copy(ap2, ap);
-        int n = vsnprintf(vstr->buf + vstr->len, size, fmt, ap2);
-        va_end(ap2);
-
-        // if that worked, return
-        if (n > -1 && (size_t)n < size) {
-            vstr->len += n;
-            return;
-        }
-
-        // else try again with more space
-        if (n > -1) { // glibc 2.1
-            // n + 1 is precisely what is needed
-            if (!vstr_ensure_extra(vstr, n + 1)) {
-                return;
-            }
-        } else { // glibc 2.0
-            // increase to twice the old size
-            if (!vstr_ensure_extra(vstr, size * 2)) {
-                return;
-            }
-        }
-    }
+    mp_print_t print = {vstr, (mp_print_strn_t)vstr_add_strn};
+    mp_vprintf(&print, fmt, ap);
 }

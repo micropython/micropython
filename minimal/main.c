@@ -6,7 +6,6 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
-#include "py/pfenv.h"
 #include "py/gc.h"
 #include "pyexec.h"
 
@@ -26,7 +25,7 @@ void do_str(const char *src) {
         nlr_pop();
     } else {
         // uncaught exception
-        mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
 }
 

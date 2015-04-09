@@ -37,27 +37,27 @@ STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, mp_uint_t cur);
 /******************************************************************************/
 /* tuple                                                                      */
 
-void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_tuple_t *o = o_in;
     if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
-        print(env, "[");
+        mp_print_str(print, "[");
     } else {
-        print(env, "(");
+        mp_print_str(print, "(");
         kind = PRINT_REPR;
     }
     for (mp_uint_t i = 0; i < o->len; i++) {
         if (i > 0) {
-            print(env, ", ");
+            mp_print_str(print, ", ");
         }
-        mp_obj_print_helper(print, env, o->items[i], kind);
+        mp_obj_print_helper(print, o->items[i], kind);
     }
     if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
-        print(env, "]");
+        mp_print_str(print, "]");
     } else {
         if (o->len == 1) {
-            print(env, ",");
+            mp_print_str(print, ",");
         }
-        print(env, ")");
+        mp_print_str(print, ")");
     }
 }
 

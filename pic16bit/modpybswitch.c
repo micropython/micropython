@@ -40,9 +40,9 @@ STATIC const pyb_switch_obj_t pyb_switch_obj[] = {
 #define NUM_SWITCH MP_ARRAY_SIZE(pyb_switch_obj)
 #define SWITCH_ID(obj) ((obj) - &pyb_switch_obj[0] + 1)
 
-void pyb_switch_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void pyb_switch_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_switch_obj_t *self = self_in;
-    print(env, "Switch(%u)", SWITCH_ID(self));
+    mp_printf(print, "Switch(%u)", SWITCH_ID(self));
 }
 
 STATIC mp_obj_t pyb_switch_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

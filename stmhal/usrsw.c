@@ -75,8 +75,8 @@ typedef struct _pyb_switch_obj_t {
 
 STATIC const pyb_switch_obj_t pyb_switch_obj = {{&pyb_switch_type}};
 
-void pyb_switch_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
-    print(env, "Switch()");
+void pyb_switch_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_print_str(print, "Switch()");
 }
 
 /// \classmethod \constructor()

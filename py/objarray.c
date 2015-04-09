@@ -76,26 +76,26 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 // array
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
-STATIC void array_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_array_t *o = o_in;
     if (o->typecode == BYTEARRAY_TYPECODE) {
-        print(env, "bytearray(b");
-        mp_str_print_quoted(print, env, o->items, o->len, true);
+        mp_print_str(print, "bytearray(b");
+        mp_str_print_quoted(print, o->items, o->len, true);
     } else {
-        print(env, "array('%c'", o->typecode);
+        mp_printf(print, "array('%c'", o->typecode);
         if (o->len > 0) {
-            print(env, ", [");
+            mp_print_str(print, ", [");
             for (mp_uint_t i = 0; i < o->len; i++) {
                 if (i > 0) {
-                    print(env, ", ");
+                    mp_print_str(print, ", ");
                 }
-                mp_obj_print_helper(print, env, mp_binary_get_val_array(o->typecode, o->items, i), PRINT_REPR);
+                mp_obj_print_helper(print, mp_binary_get_val_array(o->typecode, o->items, i), PRINT_REPR);
             }
-            print(env, "]");
+            mp_print_str(print, "]");
         }
     }
-    print(env, ")");
+    mp_print_str(print, ")");
 }
 #endif
 

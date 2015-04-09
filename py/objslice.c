@@ -38,10 +38,10 @@ typedef struct _mp_obj_ellipsis_t {
     mp_obj_base_t base;
 } mp_obj_ellipsis_t;
 
-STATIC void ellipsis_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ellipsis_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)self_in;
     (void)kind;
-    print(env, "Ellipsis");
+    mp_print_str(print, "Ellipsis");
 }
 
 const mp_obj_type_t mp_type_ellipsis = {
@@ -66,16 +66,16 @@ typedef struct _mp_obj_slice_t {
     mp_obj_t step;
 } mp_obj_slice_t;
 
-STATIC void slice_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_slice_t *o = o_in;
-    print(env, "slice(");
-    mp_obj_print_helper(print, env, o->start, PRINT_REPR);
-    print(env, ", ");
-    mp_obj_print_helper(print, env, o->stop, PRINT_REPR);
-    print(env, ", ");
-    mp_obj_print_helper(print, env, o->step, PRINT_REPR);
-    print(env, ")");
+    mp_print_str(print, "slice(");
+    mp_obj_print_helper(print, o->start, PRINT_REPR);
+    mp_print_str(print, ", ");
+    mp_obj_print_helper(print, o->stop, PRINT_REPR);
+    mp_print_str(print, ", ");
+    mp_obj_print_helper(print, o->step, PRINT_REPR);
+    mp_print_str(print, ")");
 }
 
 const mp_obj_type_t mp_type_slice = {

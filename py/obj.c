@@ -36,7 +36,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
-#include "py/pfenv.h"
+//#include "py/pfenv.h"
 #include "py/stream.h" // for mp_obj_print
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
@@ -54,20 +54,20 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type(o_in)->name);
 }
 
-void mp_obj_print_helper(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
 #ifndef NDEBUG
     if (o_in == NULL) {
-        print(env, "(nil)");
+        mp_print_str(print, "(nil)");
         return;
     }
 #endif
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
-        type->print(print, env, o_in, kind);
+        type->print((mp_print_t*)print, o_in, kind);
     } else {
-        print(env, "<%s>", qstr_str(type->name));
+        mp_printf(print, "<%s>", qstr_str(type->name));
     }
 }
 
@@ -75,41 +75,41 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 #if MICROPY_PY_IO
     // defined per port; type of these is irrelevant, just need pointer
     extern struct _mp_dummy_t mp_sys_stdout_obj;
-    pfenv_t pfenv;
-    pfenv.data = &mp_sys_stdout_obj;
-    pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
-    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))pfenv_printf, &pfenv, o_in, kind);
+    mp_print_t print;
+    print.data = &mp_sys_stdout_obj;
+    print.print_strn = (mp_print_strn_t)mp_stream_write;
+    mp_obj_print_helper(&print, o_in, kind);
 #else
-    mp_obj_print_helper(printf_wrapper, NULL, o_in, kind);
+    mp_obj_print_helper(&mp_plat_print, o_in, kind);
 #endif
 }
 
 // helper function to print an exception with traceback
-void mp_obj_print_exception(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t exc) {
+void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     if (mp_obj_is_exception_instance(exc)) {
         mp_uint_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
-            print(env, "Traceback (most recent call last):\n");
+            mp_print_str(print, "Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                print(env, "  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
+                mp_printf(print, "  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
 #else
-                print(env, "  File \"%s\"", qstr_str(values[i]));
+                mp_printf(print, "  File \"%s\"", qstr_str(values[i]));
 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTR_NULL) {
-                    print(env, "\n");
+                    mp_print_str(print, "\n");
                 } else {
-                    print(env, ", in %s\n", qstr_str(block));
+                    mp_printf(print, ", in %s\n", qstr_str(block));
                 }
             }
         }
     }
-    mp_obj_print_helper(print, env, exc, PRINT_EXC);
-    print(env, "\n");
+    mp_obj_print_helper(print, exc, PRINT_EXC);
+    mp_print_str(print, "\n");
 }
 
 bool mp_obj_is_true(mp_obj_t arg) {

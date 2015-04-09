@@ -90,28 +90,28 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 // definition module-private so far, have it here.
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, MP_OBJ_NULL, mp_const_empty_tuple};
 
-STATIC void mp_obj_exception_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = o_in;
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
-        print(env, "%s", qstr_str(o->base.type->name));
+        mp_printf(print, "%s", qstr_str(o->base.type->name));
     }
 
     if (k == PRINT_EXC) {
-        print(env, ": ");
+        mp_print_str(print, ": ");
     }
 
     if (k == PRINT_STR || k == PRINT_EXC) {
         if (o->args == NULL || o->args->len == 0) {
-            print(env, "");
+            mp_print_str(print, "");
             return;
         } else if (o->args->len == 1) {
-            mp_obj_print_helper(print, env, o->args->items[0], PRINT_STR);
+            mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
     }
-    mp_obj_tuple_print(print, env, o->args, kind);
+    mp_obj_tuple_print(print, o->args, kind);
 }
 
 mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

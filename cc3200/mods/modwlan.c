@@ -689,19 +689,19 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     return &wlan_obj;
 }
 
-STATIC void wlan_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void wlan_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     wlan_obj_t *self = self_in;
-    print(env, "<WLAN, mode=%u", self->mode);
+    mp_printf(print, "<WLAN, mode=%u", self->mode);
 
     // only print the bssid if in station mode
     if (self->mode != ROLE_AP && GET_STATUS_BIT(self->status, STATUS_BIT_CONNECTION)) {
-        print(env, ", connected to: ssid=%s, bssid=%02x:%02x:%02x:%02x:%02x:%02x", self->ssid,
+        mp_printf(print, ", connected to: ssid=%s, bssid=%02x:%02x:%02x:%02x:%02x:%02x", self->ssid,
               self->bssid[0], self->bssid[1], self->bssid[2], self->bssid[3], self->bssid[4], self->bssid[5]);
     }
     else {
-        print(env, ", ssid=%s", self->ssid);
+        mp_printf(print, ", ssid=%s", self->ssid);
     }
-    print(env, ", security=%u>", self->security);
+    mp_printf(print, ", security=%u>", self->security);
 }
 
 /// \method connect(ssid, security=OPEN, key=None, bssid=None)

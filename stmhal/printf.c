@@ -29,7 +29,6 @@
 #include <stdarg.h>
 
 #include "py/obj.h"
-#include "py/pfenv.h"
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
 #endif
@@ -38,22 +37,16 @@
 #include "py/formatfloat.h"
 #endif
 
-STATIC void stdout_print_strn(void *dummy_env, const char *str, mp_uint_t len) {
-    mp_hal_stdout_tx_strn_cooked(str, len);
-}
-
-STATIC const pfenv_t pfenv_stdout = {0, stdout_print_strn};
-
 int printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    int ret = pfenv_vprintf(&pfenv_stdout, fmt, ap);
+    int ret = mp_vprintf(&mp_plat_print, fmt, ap);
     va_end(ap);
     return ret;
 }
 
 int vprintf(const char *fmt, va_list ap) {
-    return pfenv_vprintf(&pfenv_stdout, fmt, ap);
+    return mp_vprintf(&mp_plat_print, fmt, ap);
 }
 
 #if MICROPY_DEBUG_PRINTERS
@@ -62,7 +55,7 @@ mp_uint_t mp_verbose_flag = 1;
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    int ret = pfenv_vprintf(&pfenv_stdout, fmt, ap);
+    int ret = mp_vprintf(&mp_plat_print, fmt, ap);
     va_end(ap);
     return ret;
 }
@@ -71,47 +64,43 @@ int DEBUG_printf(const char *fmt, ...) {
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;
-    stdout_print_strn(0, &chr, 1);
+    mp_hal_stdout_tx_strn_cooked(&chr, 1);
     return chr;
 }
 
 // need this because gcc optimises printf("string\n") -> puts("string")
 int puts(const char *s) {
-    stdout_print_strn(0, s, strlen(s));
+    mp_hal_stdout_tx_strn_cooked(s, strlen(s));
     char chr = '\n';
-    stdout_print_strn(0, &chr, 1);
+    mp_hal_stdout_tx_strn_cooked(&chr, 1);
     return 1;
 }
 
-typedef struct _strn_pfenv_t {
+typedef struct _strn_print_env_t {
     char *cur;
     size_t remain;
-} strn_pfenv_t;
+} strn_print_env_t;
 
 STATIC void strn_print_strn(void *data, const char *str, mp_uint_t len) {
-    strn_pfenv_t *strn_pfenv = data;
-    if (len > strn_pfenv->remain) {
-        len = strn_pfenv->remain;
+    strn_print_env_t *strn_print_env = data;
+    if (len > strn_print_env->remain) {
+        len = strn_print_env->remain;
     }
-    memcpy(strn_pfenv->cur, str, len);
-    strn_pfenv->cur += len;
-    strn_pfenv->remain -= len;
+    memcpy(strn_print_env->cur, str, len);
+    strn_print_env->cur += len;
+    strn_print_env->remain -= len;
 }
 
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
-    strn_pfenv_t strn_pfenv;
-    strn_pfenv.cur = str;
-    strn_pfenv.remain = size;
-    pfenv_t pfenv;
-    pfenv.data = &strn_pfenv;
-    pfenv.print_strn = strn_print_strn;
-    int len = pfenv_vprintf(&pfenv, fmt, ap);
+    strn_print_env_t strn_print_env = {str, size};
+    mp_print_t print = {&strn_print_env, strn_print_strn};
+    int len = mp_vprintf(&print, fmt, ap);
     // add terminating null byte
     if (size > 0) {
-        if (strn_pfenv.remain == 0) {
-            strn_pfenv.cur[-1] = 0;
+        if (strn_print_env.remain == 0) {
+            strn_print_env.cur[-1] = 0;
         } else {
-            strn_pfenv.cur[0] = 0;
+            strn_print_env.cur[0] = 0;
         }
     }
     return len;
