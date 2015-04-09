@@ -77,7 +77,9 @@ void emit_bc_free(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-STATIC void emit_write_uint(emit_t *emit, byte*(*allocator)(emit_t*, int), mp_uint_t val) {
+typedef byte *(*emit_allocator_t)(emit_t *emit, int nbytes);
+
+STATIC void emit_write_uint(emit_t *emit, emit_allocator_t allocator, mp_uint_t val) {
     // We store each 7 bits in a separate byte, and that's how many bytes needed
     byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);

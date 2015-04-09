@@ -400,7 +400,9 @@ STATIC scope_t *scope_new_and_link(compiler_t *comp, scope_kind_t kind, mp_parse
     return scope;
 }
 
-STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_list_kind, void (*f)(compiler_t*, mp_parse_node_t)) {
+typedef void (*apply_list_fun_t)(compiler_t *comp, mp_parse_node_t pn);
+
+STATIC void apply_to_single_or_list(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_list_kind, apply_list_fun_t f) {
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, pn_list_kind)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
