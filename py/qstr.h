@@ -63,7 +63,7 @@ qstr qstr_find_strn(const char *str, mp_uint_t str_len); // returns MP_QSTR_NULL
 qstr qstr_from_str(const char *str);
 qstr qstr_from_strn(const char *str, mp_uint_t len);
 
-byte* qstr_build_start(mp_uint_t len, byte **q_ptr);
+byte *qstr_build_start(mp_uint_t len, byte **q_ptr);
 qstr qstr_build_end(byte *q_ptr);
 
 mp_uint_t qstr_hash(qstr q);

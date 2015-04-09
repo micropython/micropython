@@ -36,7 +36,7 @@ typedef struct _mp_obj_str_t {
     const byte *data;
 } mp_obj_str_t;
 
-#define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str};
+#define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str}
 
 // use this macro to extract the string hash
 #define GET_STR_HASH(str_obj_in, str_hash) \

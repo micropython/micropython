@@ -72,7 +72,7 @@ STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_
 
 #if MICROPY_PY_FUNCTION_ATTRS
 STATIC void bound_meth_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if(attr == MP_QSTR___name__) {
+    if (attr == MP_QSTR___name__) {
         mp_obj_bound_meth_t *o = self_in;
         dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(o->meth));
     }

@@ -297,7 +297,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
 
 #if MICROPY_PY_FUNCTION_ATTRS
 STATIC void fun_bc_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if(attr == MP_QSTR___name__) {
+    if (attr == MP_QSTR___name__) {
         dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(self_in));
     }
 }

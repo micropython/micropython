@@ -1174,8 +1174,7 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 /* computes dest = lhs * rhs
    can have dest, lhs, rhs the same
 */
-void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs)
-{
+void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     if (lhs->len == 0 || rhs->len == 0) {
         mpz_set_from_int(dest, 0);
         return;

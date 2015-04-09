@@ -223,7 +223,7 @@ void asm_arm_entry(asm_arm_t *as, int num_locals) {
         | 1 << ASM_ARM_REG_R8;
 
     // Only adjust the stack if there are more locals than usable registers
-    if(num_locals > 3) {
+    if (num_locals > 3) {
         as->stack_adjust = num_locals * 4;
         // Align stack to 8 bytes
         if (num_locals & 1) {
@@ -424,12 +424,12 @@ void asm_arm_b_label(asm_arm_t *as, uint label) {
 
 void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
     // If the table offset fits into the ldr instruction
-    if(fun_id < (0x1000 / 4)) {
+    if (fun_id < (0x1000 / 4)) {
         emit_al(as, asm_arm_op_mov_reg(ASM_ARM_REG_LR, ASM_ARM_REG_PC)); // mov lr, pc
         emit_al(as, 0x597f000 | (fun_id << 2)); // ldr pc, [r7, #fun_id*4]
         return;
     }
-    
+
     emit_al(as, 0x59f0004 | (reg_temp << 12)); // ldr rd, [pc, #4]
     // Set lr after fun_ptr
     emit_al(as, asm_arm_op_add_imm(ASM_ARM_REG_LR, ASM_ARM_REG_PC, 4)); // add lr, pc, #4

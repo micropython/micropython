@@ -67,7 +67,7 @@ emit_t *emit_bc_new(void) {
     return emit;
 }
 
-void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels) {
+void emit_bc_set_max_num_labels(emit_t *emit, mp_uint_t max_num_labels) {
     emit->max_num_labels = max_num_labels;
     emit->label_offsets = m_new(mp_uint_t, emit->max_num_labels);
 }
@@ -77,7 +77,7 @@ void emit_bc_free(emit_t *emit) {
     m_del_obj(emit_t, emit);
 }
 
-STATIC void emit_write_uint(emit_t* emit, byte*(*allocator)(emit_t*, int), mp_uint_t val) {
+STATIC void emit_write_uint(emit_t *emit, byte*(*allocator)(emit_t*, int), mp_uint_t val) {
     // We store each 7 bits in a separate byte, and that's how many bytes needed
     byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);
@@ -86,7 +86,7 @@ STATIC void emit_write_uint(emit_t* emit, byte*(*allocator)(emit_t*, int), mp_ui
         *--p = val & 0x7f;
         val >>= 7;
     } while (val != 0);
-    byte* c = allocator(emit, buf + sizeof(buf) - p);
+    byte *c = allocator(emit, buf + sizeof(buf) - p);
     while (p != buf + sizeof(buf) - 1) {
         *c++ = *p++ | 0x80;
     }
@@ -94,7 +94,7 @@ STATIC void emit_write_uint(emit_t* emit, byte*(*allocator)(emit_t*, int), mp_ui
 }
 
 // all functions must go through this one to emit code info
-STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_write) {
+STATIC byte *emit_get_cur_to_write_code_info(emit_t *emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
     if (emit->pass < MP_PASS_EMIT) {
         emit->code_info_offset += num_bytes_to_write;
@@ -107,20 +107,20 @@ STATIC byte* emit_get_cur_to_write_code_info(emit_t* emit, int num_bytes_to_writ
     }
 }
 
-STATIC void emit_align_code_info_to_machine_word(emit_t* emit) {
+STATIC void emit_align_code_info_to_machine_word(emit_t *emit) {
     emit->code_info_offset = (emit->code_info_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
 }
 
-STATIC void emit_write_code_info_uint(emit_t* emit, mp_uint_t val) {
+STATIC void emit_write_code_info_uint(emit_t *emit, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_code_info, val);
 }
 
-STATIC void emit_write_code_info_qstr(emit_t* emit, qstr qst) {
+STATIC void emit_write_code_info_qstr(emit_t *emit, qstr qst) {
     emit_write_uint(emit, emit_get_cur_to_write_code_info, qst);
 }
 
 #if MICROPY_ENABLE_SOURCE_LINE
-STATIC void emit_write_code_info_bytes_lines(emit_t* emit, mp_uint_t bytes_to_skip, mp_uint_t lines_to_skip) {
+STATIC void emit_write_code_info_bytes_lines(emit_t *emit, mp_uint_t bytes_to_skip, mp_uint_t lines_to_skip) {
     assert(bytes_to_skip > 0 || lines_to_skip > 0);
     //printf("  %d %d\n", bytes_to_skip, lines_to_skip);
     while (bytes_to_skip > 0 || lines_to_skip > 0) {
@@ -145,7 +145,7 @@ STATIC void emit_write_code_info_bytes_lines(emit_t* emit, mp_uint_t bytes_to_sk
 #endif
 
 // all functions must go through this one to emit byte code
-STATIC byte* emit_get_cur_to_write_bytecode(emit_t* emit, int num_bytes_to_write) {
+STATIC byte *emit_get_cur_to_write_bytecode(emit_t *emit, int num_bytes_to_write) {
     //printf("emit %d\n", num_bytes_to_write);
     if (emit->pass < MP_PASS_EMIT) {
         emit->bytecode_offset += num_bytes_to_write;
@@ -158,28 +158,28 @@ STATIC byte* emit_get_cur_to_write_bytecode(emit_t* emit, int num_bytes_to_write
     }
 }
 
-STATIC void emit_align_bytecode_to_machine_word(emit_t* emit) {
+STATIC void emit_align_bytecode_to_machine_word(emit_t *emit) {
     emit->bytecode_offset = (emit->bytecode_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
 }
 
-STATIC void emit_write_bytecode_byte(emit_t* emit, byte b1) {
-    byte* c = emit_get_cur_to_write_bytecode(emit, 1);
+STATIC void emit_write_bytecode_byte(emit_t *emit, byte b1) {
+    byte *c = emit_get_cur_to_write_bytecode(emit, 1);
     c[0] = b1;
 }
 
-STATIC void emit_write_bytecode_uint(emit_t* emit, mp_uint_t val) {
+STATIC void emit_write_bytecode_uint(emit_t *emit, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
-STATIC void emit_write_bytecode_byte_byte(emit_t* emit, byte b1, byte b2) {
+STATIC void emit_write_bytecode_byte_byte(emit_t *emit, byte b1, byte b2) {
     assert((b2 & (~0xff)) == 0);
-    byte* c = emit_get_cur_to_write_bytecode(emit, 2);
+    byte *c = emit_get_cur_to_write_bytecode(emit, 2);
     c[0] = b1;
     c[1] = b2;
 }
 
 // Similar to emit_write_bytecode_uint(), just some extra handling to encode sign
-STATIC void emit_write_bytecode_byte_int(emit_t* emit, byte b1, mp_int_t num) {
+STATIC void emit_write_bytecode_byte_int(emit_t *emit, byte b1, mp_int_t num) {
     emit_write_bytecode_byte(emit, b1);
 
     // We store each 7 bits in a separate byte, and that's how many bytes needed
@@ -198,19 +198,19 @@ STATIC void emit_write_bytecode_byte_int(emit_t* emit, byte b1, mp_int_t num) {
         *--p = 0;
     }
 
-    byte* c = emit_get_cur_to_write_bytecode(emit, buf + sizeof(buf) - p);
+    byte *c = emit_get_cur_to_write_bytecode(emit, buf + sizeof(buf) - p);
     while (p != buf + sizeof(buf) - 1) {
         *c++ = *p++ | 0x80;
     }
     *c = *p;
 }
 
-STATIC void emit_write_bytecode_byte_uint(emit_t* emit, byte b, mp_uint_t val) {
+STATIC void emit_write_bytecode_byte_uint(emit_t *emit, byte b, mp_uint_t val) {
     emit_write_bytecode_byte(emit, b);
     emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
-STATIC void emit_write_bytecode_prealigned_ptr(emit_t* emit, void *ptr) {
+STATIC void emit_write_bytecode_prealigned_ptr(emit_t *emit, void *ptr) {
     mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
     // Verify thar c is already uint-aligned
     assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
@@ -218,7 +218,7 @@ STATIC void emit_write_bytecode_prealigned_ptr(emit_t* emit, void *ptr) {
 }
 
 // aligns the pointer so it is friendly to GC
-STATIC void emit_write_bytecode_byte_ptr(emit_t* emit, byte b, void *ptr) {
+STATIC void emit_write_bytecode_byte_ptr(emit_t *emit, byte b, void *ptr) {
     emit_write_bytecode_byte(emit, b);
     emit_align_bytecode_to_machine_word(emit);
     mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
@@ -228,19 +228,19 @@ STATIC void emit_write_bytecode_byte_ptr(emit_t* emit, byte b, void *ptr) {
 }
 
 /* currently unused
-STATIC void emit_write_bytecode_byte_uint_uint(emit_t* emit, byte b, mp_uint_t num1, mp_uint_t num2) {
+STATIC void emit_write_bytecode_byte_uint_uint(emit_t *emit, byte b, mp_uint_t num1, mp_uint_t num2) {
     emit_write_bytecode_byte(emit, b);
     emit_write_bytecode_byte_uint(emit, num1);
     emit_write_bytecode_byte_uint(emit, num2);
 }
 */
 
-STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, byte b, qstr qst) {
+STATIC void emit_write_bytecode_byte_qstr(emit_t *emit, byte b, qstr qst) {
     emit_write_bytecode_byte_uint(emit, b, qst);
 }
 
 // unsigned labels are relative to ip following this instruction, stored as 16 bits
-STATIC void emit_write_bytecode_byte_unsigned_label(emit_t* emit, byte b1, mp_uint_t label) {
+STATIC void emit_write_bytecode_byte_unsigned_label(emit_t *emit, byte b1, mp_uint_t label) {
     mp_uint_t bytecode_offset;
     if (emit->pass < MP_PASS_EMIT) {
         bytecode_offset = 0;
@@ -254,14 +254,14 @@ STATIC void emit_write_bytecode_byte_unsigned_label(emit_t* emit, byte b1, mp_ui
 }
 
 // signed labels are relative to ip following this instruction, stored as 16 bits, in excess
-STATIC void emit_write_bytecode_byte_signed_label(emit_t* emit, byte b1, mp_uint_t label) {
+STATIC void emit_write_bytecode_byte_signed_label(emit_t *emit, byte b1, mp_uint_t label) {
     int bytecode_offset;
     if (emit->pass < MP_PASS_EMIT) {
         bytecode_offset = 0;
     } else {
         bytecode_offset = emit->label_offsets[label] - emit->bytecode_offset - 3 + 0x8000;
     }
-    byte* c = emit_get_cur_to_write_bytecode(emit, 3);
+    byte *c = emit_get_cur_to_write_bytecode(emit, 3);
     c[0] = b1;
     c[1] = bytecode_offset;
     c[2] = bytecode_offset >> 8;

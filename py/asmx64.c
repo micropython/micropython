@@ -646,8 +646,7 @@ void asm_x64_push_local(asm_x64_t *as, int local_num) {
     asm_x64_push_disp(as, ASM_X64_REG_RBP, asm_x64_local_offset_from_ebp(as, local_num));
 }
 
-void asm_x64_push_local_addr(asm_x64_t *as, int local_num, int temp_r64)
-{
+void asm_x64_push_local_addr(asm_x64_t *as, int local_num, int temp_r64) {
     asm_x64_mov_r64_r64(as, temp_r64, ASM_X64_REG_RBP);
     asm_x64_add_i32_to_r32(as, asm_x64_local_offset_from_ebp(as, local_num), temp_r64);
     asm_x64_push_r64(as, temp_r64);
@@ -657,16 +656,14 @@ void asm_x64_push_local_addr(asm_x64_t *as, int local_num, int temp_r64)
 /*
    can't use these because code might be relocated when resized
 
-void asm_x64_call(asm_x64_t *as, void* func)
-{
+void asm_x64_call(asm_x64_t *as, void* func) {
     asm_x64_sub_i32_from_r32(as, 8, ASM_X64_REG_RSP);
     asm_x64_write_byte_1(as, OPCODE_CALL_REL32);
     asm_x64_write_word32(as, func - (void*)(as->code_cur + 4));
     asm_x64_mov_r64_r64(as, ASM_X64_REG_RSP, ASM_X64_REG_RBP);
 }
 
-void asm_x64_call_i1(asm_x64_t *as, void* func, int i1)
-{
+void asm_x64_call_i1(asm_x64_t *as, void* func, int i1) {
     asm_x64_sub_i32_from_r32(as, 8, ASM_X64_REG_RSP);
     asm_x64_sub_i32_from_r32(as, 12, ASM_X64_REG_RSP);
     asm_x64_push_i32(as, i1);

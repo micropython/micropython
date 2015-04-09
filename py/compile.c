@@ -325,7 +325,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                 } else if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_NULL(pns->nodes[1]) && !MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
                     // int ** x
                     // can overflow; enabled only to compare with CPython
-                    mp_parse_node_struct_t* pns2 = (mp_parse_node_struct_t*)pns->nodes[2];
+                    mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[2];
                     if (MP_PARSE_NODE_IS_SMALL_INT(pns2->nodes[0])) {
                         int power = MP_PARSE_NODE_LEAF_SMALL_INT(pns2->nodes[0]);
                         if (power >= 0) {
@@ -342,7 +342,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                 } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_trailer_period) && MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
                     // id.id
                     // look it up in constant table, see if it can be replaced with an integer
-                    mp_parse_node_struct_t* pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
+                    mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
                     assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
                     qstr q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
                     qstr q_attr = MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]);
@@ -2225,8 +2225,8 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 2
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 2) {
                 // optimisation for a, b = c, d; to match CPython's optimisation
-                mp_parse_node_struct_t* pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
-                mp_parse_node_struct_t* pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
+                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
+                mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
                     || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)) {
                     // can't optimise when it's a star expression on the lhs
@@ -2243,8 +2243,8 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 3
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 3) {
                 // optimisation for a, b, c = d, e, f; to match CPython's optimisation
-                mp_parse_node_struct_t* pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
-                mp_parse_node_struct_t* pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
+                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
+                mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
                     || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)
                     || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[2], PN_star_expr)) {
@@ -3193,7 +3193,7 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
 
     // check the first statement for a doc string
     if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_expr_stmt)) {
-        mp_parse_node_struct_t* pns = (mp_parse_node_struct_t*)pn;
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0])
                 && MP_PARSE_NODE_LEAF_KIND(pns->nodes[0]) == MP_PARSE_NODE_STRING)
             || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)) {

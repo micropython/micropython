@@ -112,7 +112,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_o
         TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \
         goto *entry_table[*ip++]; \
-    } while(0)
+    } while (0)
     #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
@@ -127,7 +127,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_o
     // sees that it's possible for us to jump from the dispatch loop to the exception
     // handler.  Without this, the code may have a different stack layout in the dispatch
     // loop and the exception handler, leading to very obscure bugs.
-    #define RAISE(o) do { nlr_pop(); nlr.ret_val = o; goto exception_handler; } while(0)
+    #define RAISE(o) do { nlr_pop(); nlr.ret_val = o; goto exception_handler; } while (0)
 
 #if MICROPY_STACKLESS
 run_code_state: ;
