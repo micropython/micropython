@@ -42,7 +42,7 @@
 #endif
 
 #if MICROPY_PY_IO
-extern mp_uint_t mp_sys_stdout_obj; // type is irrelevant, just need pointer
+extern struct _mp_dummy_t mp_sys_stdout_obj; // type is irrelevant, just need pointer
 #endif
 
 // args[0] is function from class body
