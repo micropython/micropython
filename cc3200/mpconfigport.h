@@ -54,8 +54,8 @@
     2: Enable LFN with dynamic working buffer on the STACK.
     3: Enable LFN with dynamic working buffer on the HEAP.
 */
-#define MICROPY_ENABLE_LFN                          (0)
-#define MICROPY_LFN_CODE_PAGE                       (1)
+#define MICROPY_ENABLE_LFN                          (2)
+#define MICROPY_LFN_CODE_PAGE                       (437)       // 1=SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (0)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (0)

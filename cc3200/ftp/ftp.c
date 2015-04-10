@@ -301,18 +301,20 @@ void ftp_run (void) {
             if (SOCKETFIFO_IsEmpty()) {
                 uint32_t readsize;
                 ftp_result_t result;
+                ftp_data.ctimeout = 0;
                 result = ftp_read_file ((char *)ftp_data.dBuffer, FTP_BUFFER_SIZE, &readsize);
-                if (readsize > 0 && result != E_FTP_RESULT_FAILED) {
-                    ftp_send_data(readsize);
-                    ftp_data.ctimeout = 0;
+                if (result == E_FTP_RESULT_FAILED) {
+                    ftp_send_reply(451, NULL);
+                    ftp_data.state = E_FTP_STE_END_TRANSFER;
+                }
+                else {
+                    if (readsize > 0) {
+                        ftp_send_data(readsize);
+                    }
                     if (result == E_FTP_RESULT_OK) {
                         ftp_send_reply(226, NULL);
                         ftp_data.state = E_FTP_STE_END_TRANSFER;
                     }
-                }
-                else {
-                    ftp_send_reply(451, NULL);
-                    ftp_data.state = E_FTP_STE_END_TRANSFER;
                 }
             }
             break;
@@ -588,8 +590,12 @@ static void ftp_process_cmd (void) {
     char *bufptr = (char *)ftp_cmd_buffer;
     ftp_result_t result;
     uint32_t listsize;
-    FILINFO fno;
     FRESULT fres;
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
 
     ftp_data.closechild = false;
     // also use the reply buffer to receive new commands
@@ -887,12 +893,20 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
     if (FTP_UNIX_SECONDS_180_DAYS < tseconds - fseconds) {
         return snprintf(dest, destsize, "%srw-rw-r--   1 root  root %9u %s %2u %5u %s\r\n",
                         type, (_u32)fno->fsize, ftp_month[mindex].month, day,
+                    #if _USE_LFN
+                        1980 + ((fno->fdate >> 9) & 0x7f), *fno->lfname ? fno->lfname : fno->fname);
+                    #else
                         1980 + ((fno->fdate >> 9) & 0x7f), fno->fname);
+                    #endif
     }
     else {
         return snprintf(dest, destsize, "%srw-rw-r--   1 root  root %9u %s %2u %02u:%02u %s\r\n",
                         type, (_u32)fno->fsize, ftp_month[mindex].month, day,
+                    #if _USE_LFN
+                        (fno->ftime >> 11) & 0x1f, (fno->ftime >> 5) & 0x3f, *fno->lfname ? fno->lfname : fno->fname);
+                    #else
                         (fno->ftime >> 11) & 0x1f, (fno->ftime >> 5) & 0x3f, fno->fname);
+                    #endif
     }
 }
 
@@ -956,10 +970,10 @@ static ftp_result_t ftp_open_dir_for_listing (const char *path, char *list, uint
     uint next = 0;
     // "hack" to list root directory
     if (path[0] == '/' && path[1] == '\0') {
-        next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "SFLASH");
+        next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "flash");
 #if MICROPY_HW_HAS_SDCARD
         if (sd_disk_ready()) {
-            next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "SD");
+            next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "sd");
         }
 #endif
         *listsize = next;
@@ -979,11 +993,18 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
     uint next = 0;
     uint count = 0;
     FRESULT res;
-    FILINFO fno;
     ftp_result_t result = E_FTP_RESULT_CONTINUE;
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = mem_Malloc(_MAX_LFN);
+    fno.lfsize = _MAX_LFN;
 
-    /* read up to 4 directory items */
-    while (count++ < 4) {
+    // read up to 2 directory items
+    while (count < 2) {
+#else
+    // read up to 4 directory items
+    while (count < 4) {
+#endif
         res = f_readdir(&ftp_data.dp, &fno);                                                       /* Read a directory item */
         if (res != FR_OK || fno.fname[0] == 0) {
             result = E_FTP_RESULT_OK;
@@ -992,13 +1013,17 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
         if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;                                    /* Ignore . entry */
         if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
 
-        // Add the entry to the list
+        // add the entry to the list
         next += ftp_print_eplf_item((list + next), (maxlistsize - next), &fno);
+        count++;
     }
     if (result == E_FTP_RESULT_OK) {
         ftp_close_files();
     }
     *listsize = next;
+#if _USE_LFN
+    mem_Free(fno.lfname);
+#endif
     return result;
 }
 

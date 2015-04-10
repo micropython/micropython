@@ -14,9 +14,9 @@
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
  ******************************************************************************/
-#define UPDATER_IMG_PATH            "/SFLASH/SYS/MCUIMG.BIN"
-#define UPDATER_SRVPACK_PATH        "/SFLASH/SYS/SRVPCK.UCF"
-#define UPDATER_SIGN_PATH           "/SFLASH/SYS/SRVPCK.SIG"
+#define UPDATER_IMG_PATH            "/flash/sys/mcuimg.bin"
+#define UPDATER_SRVPACK_PATH        "/flash/sys/servicepack.ucf"
+#define UPDATER_SIGN_PATH           "/flash/sys/servicepack.sig"
 
 /******************************************************************************
  DEFINE TYPES
@@ -37,8 +37,6 @@ static updater_data_t updater_data;
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 bool updater_check_path (void *path) {
-    // conert the path supplied to upper case
-    stoupper (path);
     if (!strcmp(UPDATER_IMG_PATH, path)) {
         updater_data.path = IMG_UPDATE;
         updater_data.fsize = IMG_SIZE;

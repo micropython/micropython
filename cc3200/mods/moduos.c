@@ -49,11 +49,11 @@
 /// The filesystem has `/` as the root directory, and the available physical
 /// drives are accessible from here.  They are currently:
 ///
-///     /SFLASH     -- the serial flash filesystem
-///     /SD         -- the SD card (if it exists)
+///     /flash      -- the serial flash filesystem
+///     /sd         -- the SD card (if it exists)
 ///
-/// On boot up, the current directory is `/SFLASH` if no SD card is inserted,
-/// otherwise it is `/SD`.
+/// On boot up, the current directory is `/flash` if no SD card is inserted,
+/// otherwise it is `/sd`.
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
@@ -109,6 +109,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
     bool is_str_type = true;
     const char *path;
+
     if (n_args == 1) {
         if (mp_obj_get_type(args[0]) == &mp_type_bytes) {
             is_str_type = false;
@@ -121,16 +122,21 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
     // "hack" to list root directory
     if (path[0] == '/' && path[1] == '\0') {
         mp_obj_t dir_list = mp_obj_new_list(0, NULL);
-        mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_SFLASH));
+        mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
         if (sd_in_root()) {
-            mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_SD));
+            mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
         }
         return dir_list;
     }
 
     FRESULT res;
-    FILINFO fno;
     DIR dir;
+    FILINFO fno;
+#if _USE_LFN
+    char lfn_buf[_MAX_LFN + 1];
+    fno.lfname = lfn_buf;
+    fno.lfsize = sizeof(lfn_buf);
+#endif
 
     res = f_opendir(&dir, path);                       /* Open the directory */
     if (res != FR_OK) {
@@ -145,7 +151,11 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
         if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;             /* Ignore . entry */
         if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
 
+#if _USE_LFN
+        char *fn = *fno.lfname ? fno.lfname : fno.fname;
+#else
         char *fn = fno.fname;
+#endif
 
         // make a string object for this entry
         mp_obj_t entry_o;
@@ -215,14 +225,18 @@ STATIC bool path_equal(const char *path, const char *path_canonical) {
 /// Get the status of a file or directory.
 STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
-    stoupper((char *)path);
 
-    FILINFO fno;
     FRESULT res;
-    if (path_equal(path, "/") || path_equal(path, "/SFLASH") || path_equal(path, "/SD")) {
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+
+    if (path_equal(path, "/") || path_equal(path, "/flash") || path_equal(path, "/sd")) {
         // stat built-in directory
-        if (path[1] == 'S' && !sd_in_root()) {
-            // no /SD directory
+        if (path[1] == 's' && !sd_in_root()) {
+            // no /sd directory
             res = FR_NO_PATH;
             goto error;
         }

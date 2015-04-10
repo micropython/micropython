@@ -148,13 +148,13 @@ STATIC mp_obj_t pybsd_enable (mp_obj_t self_in) {
         // do the init first
         pybsd_init (self);
 
-        // try to mount the sd card on /SD
-        if (FR_OK != f_mount(self->fatfs, "/SD", 1)) {
+        // try to mount the sd card on /sd
+        if (FR_OK != f_mount(self->fatfs, "/sd", 1)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
         }
 
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
 
         // register it with the sleep module
         pybsleep_add ((const mp_obj_t)&pybsd_obj, (WakeUpCB_t)pybsd_init);
@@ -172,10 +172,10 @@ STATIC mp_obj_t pybsd_disable (mp_obj_t self_in) {
     if (self->enabled) {
         self->enabled = false;
         // unmount the sd card
-        f_mount (NULL, "/SD", 1);
+        f_mount (NULL, "/sd", 1);
         // remove sd paths from mp_sys_path
-        mp_obj_list_remove(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD));
-        mp_obj_list_remove(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SD_slash_LIB));
+        mp_obj_list_remove(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+        mp_obj_list_remove(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
 
         // disable the peripheral
         MAP_PRCMPeripheralClkDisable(PRCM_SDHOST, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
@@ -186,8 +186,8 @@ STATIC mp_obj_t pybsd_disable (mp_obj_t self_in) {
         // unregister it with the sleep module
         pybsleep_remove (self);
 
-        // change the drive in case it was /SD
-        f_chdrive("/SFLASH");
+        // change the drive in case it was /sd
+        f_chdrive("/flash");
     }
     return mp_const_none;
 }

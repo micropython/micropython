@@ -3,8 +3,6 @@
 /* (C)ChaN, 2014                                                          */
 /*------------------------------------------------------------------------*/
 
-#include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "ff.h"
 
 
@@ -134,7 +132,7 @@ void* ff_memalloc ( /* Returns pointer to the allocated memory block */
     UINT msize      /* Number of bytes to allocate */
 )
 {
-    return malloc(msize);   /* Allocate a new memory block with POSIX API */
+    return pvPortMalloc(msize);   /* Allocate a new memory block with POSIX API */
 }
 
 
@@ -146,7 +144,7 @@ void ff_memfree (
     void* mblock    /* Pointer to the memory block to free */
 )
 {
-    free(mblock);   /* Discard the memory block with POSIX API */
+    vPortFree(mblock);   /* Discard the memory block with POSIX API */
 }
 
 #endif

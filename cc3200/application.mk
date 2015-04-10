@@ -139,8 +139,9 @@ APP_MAIN_SRC_C = \
 	serverstask.c
 	
 APP_LIB_SRC_C = $(addprefix lib/,\
-	libc/string0.c \
 	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
+	libc/string0.c \
 	mp-readline/readline.c \
 	)
 	
@@ -206,7 +207,7 @@ endif
 SHELL = bash
 APP_SIGN = appsign.sh
 
-all: $(BUILD)/MCUIMG.BIN
+all: $(BUILD)/mcuimg.bin
 
 $(BUILD)/application.axf: $(OBJ) $(LINKER_SCRIPT)
 	$(ECHO) "LINK $@"
@@ -217,7 +218,7 @@ $(BUILD)/application.bin: $(BUILD)/application.axf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary $< $@
 
-$(BUILD)/MCUIMG.BIN: $(BUILD)/application.bin
+$(BUILD)/mcuimg.bin: $(BUILD)/application.bin
 	$(ECHO) "Create $@"
 	$(Q)$(SHELL) $(APP_SIGN) $(BOARD) $(BTYPE)
 

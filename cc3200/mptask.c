@@ -174,16 +174,16 @@ soft_reset:
     // initialize the serial flash file system
     mptask_init_sflash_filesystem();
 
-    // append the SFLASH paths to the system path
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH));
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_SFLASH_slash_LIB));
+    // append the flash paths to the system path
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
 
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
     if (!safeboot) {
         // run boot.py, if it exists
-        const char *boot_py = "BOOT.PY";
+        const char *boot_py = "boot.py";
         res = f_stat(boot_py, NULL);
         if (res == FR_OK) {
             int ret = pyexec_file(boot_py);
@@ -208,7 +208,7 @@ soft_reset:
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
             const char *main_py;
             if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
-                main_py = "MAIN.PY";
+                main_py = "main.py";
             } else {
                 main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
             }
@@ -290,38 +290,42 @@ STATIC void mptask_pre_init (void) {
 }
 
 STATIC void mptask_init_sflash_filesystem (void) {
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+
     // Initialise the local flash filesystem.
-    // Create it if needed, and mount in on /sflash.
+    // Create it if needed, and mount in on /flash.
     // try to mount the flash
-    FRESULT res = f_mount(sflash_fatfs, "/SFLASH", 1);
+    FRESULT res = f_mount(sflash_fatfs, "/flash", 1);
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem, so create a fresh one
-        res = f_mkfs("/SFLASH", 1, 0);
+        res = f_mkfs("/flash", 1, 0);
         if (res == FR_OK) {
             // success creating fresh LFS
         } else {
-            __fatal_error("failed to create /SFLASH");
+            __fatal_error("failed to create /flash");
         }
         // create empty main.py
         mptask_create_main_py();
     } else if (res == FR_OK) {
         // mount sucessful
-        FILINFO fno;
-        if (FR_OK != f_stat("/SFLASH/MAIN.PY", &fno)) {
+        if (FR_OK != f_stat("/flash/main.py", &fno)) {
             // create empty main.py
             mptask_create_main_py();
         }
     } else {
-        __fatal_error("failed to create /SFLASH");
+        __fatal_error("failed to create /flash");
     }
 
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
-    f_chdrive("/SFLASH");
+    f_chdrive("/flash");
 
     // Make sure we have a /flash/boot.py.  Create it if needed.
-    FILINFO fno;
-    res = f_stat("/SFLASH/BOOT.PY", &fno);
+    res = f_stat("/flash/boot.py", &fno);
     if (res == FR_OK) {
         if (fno.fattrib & AM_DIR) {
             // exists as a directory
@@ -333,7 +337,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
     } else {
         // doesn't exist, create fresh file
         FIL fp;
-        f_open(&fp, "/SFLASH/BOOT.PY", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
@@ -350,7 +354,7 @@ STATIC void mptask_enter_ap_mode (void) {
 STATIC void mptask_create_main_py (void) {
     // create empty main.py
     FIL fp;
-    f_open(&fp, "/SFLASH/MAIN.PY", FA_WRITE | FA_CREATE_ALWAYS);
+    f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
     UINT n;
     f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
     f_close(&fp);

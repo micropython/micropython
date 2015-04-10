@@ -38,7 +38,6 @@ extern BYTE ff_CurrVol;
 #endif
 
 STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_t mount_point_len) {
-    stoupper ((char *)(*path));
     if (strncmp(*path, mount_point_str, mount_point_len) == 0) {
         if ((*path)[mount_point_len] == '/') {
             *path += mount_point_len;
@@ -66,11 +65,11 @@ int ff_get_ldnumber (const TCHAR **path) {
     #endif
     }
 
-    if (check_path(path, "/SFLASH", 7)) {
+    if (check_path(path, "/flash", 6)) {
         return 0;
     }
 #if MICROPY_HW_HAS_SDCARD
-    else if (check_path(path, "/SD", 3)) {
+    else if (check_path(path, "/sd", 3)) {
         return 1;
     }
 #endif
@@ -84,13 +83,13 @@ void ff_get_volname(BYTE vol, TCHAR **dest) {
     if (vol == 0)
 #endif
     {
-        memcpy(*dest, "/SFLASH", 7);
+        memcpy(*dest, "/flash", 6);
         *dest += 7;
     }
 #if MICROPY_HW_HAS_SDCARD
     else
     {
-        memcpy(*dest, "/SD", 3);
+        memcpy(*dest, "/sd", 3);
         *dest += 3;
     }
 #endif
