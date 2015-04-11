@@ -95,7 +95,7 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_REPR || k == PRINT_EXC)) {
-        mp_printf(print, "%s", qstr_str(o->base.type->name));
+        mp_print_str(print, qstr_str(o->base.type->name));
     }
 
     if (k == PRINT_EXC) {
@@ -317,13 +317,17 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             uint max_len = MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size
                          - str_data;
 
+            vstr_t vstr;
+            vstr_init_fixed_buf(&vstr, max_len, (char *)str_data);
+
             va_list ap;
             va_start(ap, fmt);
-            str->len = vsnprintf((char *)str_data, max_len, fmt, ap);
+            vstr_vprintf(&vstr, fmt, ap);
             va_end(ap);
 
             str->base.type = &mp_type_str;
             str->hash = qstr_compute_hash(str_data, str->len);
+            str->len = vstr.len;
             str->data = str_data;
 
             o->args = tuple;

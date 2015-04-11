@@ -319,7 +319,7 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "module not found"));
                     } else {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                            "no module named '%s'", qstr_str(mod_name)));
+                            "no module named '%q'", mod_name));
                     }
                 }
             } else {

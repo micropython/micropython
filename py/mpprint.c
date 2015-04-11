@@ -487,6 +487,17 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_strn(print, &str, 1, flags, fill, width);
                 break;
             }
+            case 'q':
+            {
+                qstr qst = va_arg(args, qstr);
+                mp_uint_t len;
+                const char *str = (const char*)qstr_data(qst, &len);
+                if (prec < 0) {
+                    prec = len;
+                }
+                chrs += mp_print_strn(print, str, prec, flags, fill, width);
+                break;
+            }
             case 's':
             {
                 const char *str = va_arg(args, const char*);

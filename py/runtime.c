@@ -149,7 +149,7 @@ mp_obj_t mp_load_global(qstr qst) {
                     "name not defined"));
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError,
-                    "name '%s' is not defined", qstr_str(qst)));
+                    "name '%q' is not defined", qst));
             }
         }
     }
@@ -228,8 +228,8 @@ mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
                 "unsupported type for operator"));
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "unsupported type for %s: '%s'",
-                qstr_str(mp_unary_op_method_name[op]), mp_obj_get_type_str(arg)));
+                "unsupported type for %q: '%s'",
+                mp_unary_op_method_name[op], mp_obj_get_type_str(arg)));
         }
     }
 }
@@ -522,8 +522,8 @@ unsupported_op:
             "unsupported type for operator"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "unsupported types for %s: '%s', '%s'",
-            qstr_str(mp_binary_op_method_name[op]), mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
+            "unsupported types for %q: '%s', '%s'",
+            mp_binary_op_method_name[op], mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs)));
     }
 
 zero_division:
@@ -947,12 +947,12 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             // following CPython, we give a more detailed error message for type objects
             if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-                    "type object '%s' has no attribute '%s'",
-                    qstr_str(((mp_obj_type_t*)base)->name), qstr_str(attr)));
+                    "type object '%q' has no attribute '%q'",
+                    ((mp_obj_type_t*)base)->name, attr));
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-                    "'%s' object has no attribute '%s'",
-                    mp_obj_get_type_str(base), qstr_str(attr)));
+                    "'%s' object has no attribute '%q'",
+                    mp_obj_get_type_str(base), attr));
             }
         }
     }
@@ -971,8 +971,8 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             "no such attribute"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            "'%s' object has no attribute '%s'",
-            mp_obj_get_type_str(base), qstr_str(attr)));
+            "'%s' object has no attribute '%q'",
+            mp_obj_get_type_str(base), attr));
     }
 }
 
@@ -1177,7 +1177,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     if (dest[1] != MP_OBJ_NULL) {
         // Hopefully we can't import bound method from an object
 import_error:
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "cannot import name %s", qstr_str(name)));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError, "cannot import name %q", name));
     }
 
     if (dest[0] != MP_OBJ_NULL) {

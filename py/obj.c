@@ -36,7 +36,6 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
-//#include "py/pfenv.h"
 #include "py/stream.h" // for mp_obj_print
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
@@ -67,7 +66,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     if (type->print != NULL) {
         type->print((mp_print_t*)print, o_in, kind);
     } else {
-        mp_printf(print, "<%s>", qstr_str(type->name));
+        mp_printf(print, "<%q>", type->name);
     }
 }
 
@@ -89,16 +88,16 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
             mp_print_str(print, "Traceback (most recent call last):\n");
             for (int i = n - 3; i >= 0; i -= 3) {
 #if MICROPY_ENABLE_SOURCE_LINE
-                mp_printf(print, "  File \"%s\", line %d", qstr_str(values[i]), (int)values[i + 1]);
+                mp_printf(print, "  File \"%q\", line %d", values[i], (int)values[i + 1]);
 #else
-                mp_printf(print, "  File \"%s\"", qstr_str(values[i]));
+                mp_printf(print, "  File \"%q\"", values[i]);
 #endif
                 // the block name can be NULL if it's unknown
                 qstr block = values[i + 2];
                 if (block == MP_QSTR_NULL) {
                     mp_print_str(print, "\n");
                 } else {
-                    mp_printf(print, ", in %s\n", qstr_str(block));
+                    mp_printf(print, ", in %q\n", block);
                 }
             }
         }
@@ -387,8 +386,8 @@ mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index,
                 "indices must be integers"));
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "%s indices must be integers, not %s",
-                qstr_str(type->name), mp_obj_get_type_str(index)));
+                "%q indices must be integers, not %s",
+                type->name, mp_obj_get_type_str(index)));
         }
     }
 
@@ -407,7 +406,7 @@ mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index,
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "index out of range"));
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError,
-                    "%s index out of range", qstr_str(type->name)));
+                    "%q index out of range", type->name));
             }
         }
     }
