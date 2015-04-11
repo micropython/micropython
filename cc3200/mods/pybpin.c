@@ -429,14 +429,14 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
 
 /// \method print()
 /// Return a string describing the pin object.
-STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_obj_t *self = self_in;
     uint32_t af = MAP_PinModeGet(self->pin_num);
     uint32_t type = pin_get_type(self);
     uint32_t strength = pin_get_strenght(self);
 
     // pin name
-    print(env, "<Pin.cpu.%s, af=%u", qstr_str(self->name), af);
+    mp_printf(print, "<Pin.cpu.%s, af=%u", qstr_str(self->name), af);
 
     if (af == PIN_MODE_0) {
         // IO mode
@@ -447,7 +447,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
         } else {
             mode_qst = MP_QSTR_OUT;
         }
-        print(env, ", mode=Pin.%s", qstr_str(mode_qst)); // safe because mode_qst has no formatting chars
+        mp_printf(print, ", mode=Pin.%s", qstr_str(mode_qst));
     }
 
     // pin type
@@ -465,7 +465,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     } else {
         type_qst = MP_QSTR_OD_PD;
     }
-    print(env, ", pull=Pin.%s", qstr_str(type_qst));
+    mp_printf(print, ", pull=Pin.%s", qstr_str(type_qst));
 
     // Strength
     qstr str_qst;
@@ -476,7 +476,7 @@ STATIC void pin_print(void (*print)(void *env, const char *fmt, ...), void *env,
     } else {
         str_qst = MP_QSTR_S6MA;
     }
-    print(env, ", strength=Pin.%s>", qstr_str(str_qst));
+    mp_printf(print, ", strength=Pin.%s>", qstr_str(str_qst));
 }
 
 /// \classmethod \constructor(id, ...)

@@ -167,10 +167,10 @@ STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
 
 // FFI module
 
-STATIC void ffimod_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ffimod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_ffimod_t *self = self_in;
-    print(env, "<ffimod %p>", self->handle);
+    mp_printf(print, "<ffimod %p>", self->handle);
 }
 
 STATIC mp_obj_t ffimod_close(mp_obj_t self_in) {
@@ -338,10 +338,10 @@ STATIC const mp_obj_type_t ffimod_type = {
 
 // FFI function
 
-STATIC void ffifunc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ffifunc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_ffifunc_t *self = self_in;
-    print(env, "<ffifunc %p>", self->func);
+    mp_printf(print, "<ffifunc %p>", self->func);
 }
 
 STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -410,10 +410,10 @@ STATIC const mp_obj_type_t ffifunc_type = {
 
 // FFI callback for Python function
 
-STATIC void fficallback_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void fficallback_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fficallback_t *self = self_in;
-    print(env, "<fficallback %p>", self->func);
+    mp_printf(print, "<fficallback %p>", self->func);
 }
 
 STATIC const mp_obj_type_t fficallback_type = {
@@ -424,11 +424,11 @@ STATIC const mp_obj_type_t fficallback_type = {
 
 // FFI variable
 
-STATIC void ffivar_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void ffivar_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_ffivar_t *self = self_in;
     // Variable value printed as cast to int
-    print(env, "<ffivar @%p: 0x%x>", self->var, *(int*)self->var);
+    mp_printf(print, "<ffivar @%p: 0x%x>", self->var, *(int*)self->var);
 }
 
 STATIC mp_obj_t ffivar_get(mp_obj_t self_in) {

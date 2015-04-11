@@ -34,7 +34,7 @@ typedef struct _mp_obj_tuple_t {
     mp_obj_t items[];
 } mp_obj_tuple_t;
 
-void mp_obj_tuple_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind);
+void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in);
 mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
 mp_obj_t mp_obj_tuple_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value);

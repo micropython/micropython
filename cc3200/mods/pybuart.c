@@ -312,37 +312,37 @@ STATIC void uart_callback_disable (mp_obj_t self_in) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
     if (self->baudrate > 0) {
-        print(env, "<UART%u, baudrate=%u, bits=", self->uart_id, self->baudrate);
+        mp_printf(print, "<UART%u, baudrate=%u, bits=", self->uart_id, self->baudrate);
         switch (self->config & UART_CONFIG_WLEN_MASK) {
         case UART_CONFIG_WLEN_5:
-            print(env, "5");
+            mp_print_str(print, "5");
             break;
         case UART_CONFIG_WLEN_6:
-            print(env, "6");
+            mp_print_str(print, "6");
             break;
         case UART_CONFIG_WLEN_7:
-            print(env, "7");
+            mp_print_str(print, "7");
             break;
         case UART_CONFIG_WLEN_8:
-            print(env, "8");
+            mp_print_str(print, "8");
             break;
         default:
             break;
         }
         if ((self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_NONE) {
-            print(env, ", parity=None");
+            mp_print_str(print, ", parity=None");
         } else {
-            print(env, ", parity=%u", (self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_EVEN ? 0 : 1);
+            mp_printf(print, ", parity=%u", (self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_EVEN ? 0 : 1);
         }
-        print(env, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u>",
+        mp_printf(print, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u>",
               (self->config & UART_CONFIG_STOP_MASK) == UART_CONFIG_STOP_ONE ? 1 : 2,
                self->timeout, self->timeout_char, self->read_buf_len);
     }
     else {
-        print(env, "<UART%u>", self->uart_id);
+        mp_printf(print, "<UART%u>", self->uart_id);
     }
 }
 

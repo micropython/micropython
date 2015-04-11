@@ -41,9 +41,9 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
 #define NUM_LED MP_ARRAY_SIZE(pyb_led_obj)
 #define LED_ID(obj) ((obj) - &pyb_led_obj[0] + 1)
 
-void pyb_led_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void pyb_led_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
-    print(env, "LED(%u)", LED_ID(self));
+    mp_printf(print, "LED(%u)", LED_ID(self));
 }
 
 STATIC mp_obj_t pyb_led_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

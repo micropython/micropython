@@ -163,15 +163,15 @@ STATIC void pybspi_transfer (pyb_spi_obj_t *self, const char *txdata, char *rxda
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 /******************************************************************************/
-STATIC void pyb_spi_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
 
     if (self->baudrate > 0) {
-        print(env, "<SPI0, SPI.MASTER, baudrate=%u, config=%u, submode=%u, bits=%u>",
+        mp_printf(print, "<SPI0, SPI.MASTER, baudrate=%u, config=%u, submode=%u, bits=%u>",
               self->baudrate, self->config, self->submode, (self->wlen * 8));
     }
     else {
-        print(env, "<SPI0>");
+        mp_print_str(print, "<SPI0>");
     }
 }
 

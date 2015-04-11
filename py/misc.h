@@ -147,6 +147,8 @@ typedef struct _vstr_t {
 void vstr_init(vstr_t *vstr, size_t alloc);
 void vstr_init_len(vstr_t *vstr, size_t len);
 void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf);
+struct _mp_print_t;
+void vstr_init_print(vstr_t *vstr, size_t alloc, struct _mp_print_t *print);
 void vstr_clear(vstr_t *vstr);
 vstr_t *vstr_new(void);
 vstr_t *vstr_new_size(size_t alloc);

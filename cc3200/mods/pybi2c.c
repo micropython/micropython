@@ -294,13 +294,13 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     return (mp_obj_t)self;
 }
 
-STATIC void pyb_i2c_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
     if (self->baudrate > 0) {
-        print(env, "<I2C0, I2C.MASTER, baudrate=%u>)", self->baudrate);
+        mp_printf(print, "<I2C0, I2C.MASTER, baudrate=%u>)", self->baudrate);
     }
     else {
-        print(env, "<I2C0>");
+        mp_print_str(print, "<I2C0>");
     }
 }
 

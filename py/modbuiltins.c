@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/stream.h"
-#include "py/pfenv.h"
+//#include "py/pfenv.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -413,28 +413,26 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
         stream_obj = file_elem->value;
     }
 
-    pfenv_t pfenv;
-    pfenv.data = stream_obj;
-    pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
+    mp_print_t print = {stream_obj, (mp_print_strn_t)mp_stream_write};
     #endif
     for (mp_uint_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO
             mp_stream_write(stream_obj, sep_data, sep_len);
             #else
-            printf("%.*s", (int)sep_len, sep_data);
+            mp_print_strn(&mp_plat_print, sep_data, sep_len, 0, 0, 0);
             #endif
         }
         #if MICROPY_PY_IO
-        mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))pfenv_printf, &pfenv, args[i], PRINT_STR);
+        mp_obj_print_helper(&print, args[i], PRINT_STR);
         #else
-        mp_obj_print(args[i], PRINT_STR);
+        mp_obj_print_helper(&mp_plat_print, args[i], PRINT_STR);
         #endif
     }
     #if MICROPY_PY_IO
     mp_stream_write(stream_obj, end_data, end_len);
     #else
-    printf("%.*s", (int)end_len, end_data);
+    mp_print_strn(&mp_plat_print, end_data, end_len, 0, 0, 0);
     #endif
     return mp_const_none;
 }
@@ -443,14 +441,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
     if (o != mp_const_none) {
         #if MICROPY_PY_IO
-        pfenv_t pfenv;
-        pfenv.data = &mp_sys_stdout_obj;
-        pfenv.print_strn = (void (*)(void *, const char *, mp_uint_t))mp_stream_write;
-        mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))pfenv_printf, &pfenv, o, PRINT_REPR);
-        mp_stream_write(&mp_sys_stdout_obj, "\n", 1);
+        mp_obj_print_helper(&mp_sys_stdout_print, o, PRINT_REPR);
+        mp_print_str(&mp_sys_stdout_print, "\n");
         #else
-        mp_obj_print(o, PRINT_REPR);
-        printf("\n");
+        mp_obj_print_helper(&mp_plat_print, o, PRINT_REPR);
+        mp_print_str(&mp_plat_print, "\n");
         #endif
     }
     return mp_const_none;
@@ -459,8 +454,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin___repl_print___obj, mp_builtin___repl_print
 
 STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
     vstr_t vstr;
-    vstr_init(&vstr, 16);
-    mp_obj_print_helper((void (*)(void *env, const char *fmt, ...))vstr_printf, &vstr, o_in, PRINT_REPR);
+    mp_print_t print;
+    vstr_init_print(&vstr, 16, &print);
+    mp_obj_print_helper(&print, o_in, PRINT_REPR);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);

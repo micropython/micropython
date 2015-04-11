@@ -83,10 +83,10 @@ void led_toggle(pyb_led_t led) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
     (void)kind;
-    print(env, "<LED %lu>", self->led_id);
+    mp_printf(print, "<LED %lu>", self->led_id);
 }
 
 STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, uint n_args, uint n_kw, const mp_obj_t *args) {

@@ -224,20 +224,20 @@ void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-STATIC void pyb_uart_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
     if (!self->is_enabled) {
-        print(env, "UART(%lu)", self->uart_id);
+        mp_printf(print, "UART(%lu)", self->uart_id);
     } else {
 #if 0
-        print(env, "UART(%lu, baudrate=%u, bits=%u, stop=%u",
+        mp_printf(print, "UART(%lu, baudrate=%u, bits=%u, stop=%u",
             self->uart_id, self->uart.Init.BaudRate,
             self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9,
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2);
         if (self->uart.Init.Parity == UART_PARITY_NONE) {
-            print(env, ", parity=None)");
+            mp_print_str(print, ", parity=None)");
         } else {
-            print(env, ", parity=%u)", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
+            mp_printf(print, ", parity=%u)", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
         }
 #endif
     }

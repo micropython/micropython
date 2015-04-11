@@ -33,7 +33,6 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/pfenv.h"
 #include "bufhelper.h"
 #include "can.h"
 #include "pybioctl.h"
@@ -174,12 +173,12 @@ STATIC void can_clearfilter(uint32_t f) {
 /******************************************************************************/
 // Micro Python bindings
 
-STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_can_obj_t *self = self_in;
     if (!self->is_enabled) {
-        print(env, "CAN(%u)", self->can_id);
+        mp_printf(print, "CAN(%u)", self->can_id);
     } else {
-        print(env, "CAN(%u, CAN.", self->can_id);
+        mp_printf(print, "CAN(%u, CAN.", self->can_id);
         qstr mode;
         switch (self->can.Init.Mode) {
             case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
@@ -187,13 +186,13 @@ STATIC void pyb_can_print(void (*print)(void *env, const char *fmt, ...), void *
             case CAN_MODE_SILENT: mode = MP_QSTR_SILENT; break;
             case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
         }
-        print(env, "%s, extframe=", qstr_str(mode));
+        mp_printf(print, "%s, extframe=", qstr_str(mode));
         if (self->extframe) {
             mode = MP_QSTR_True;
         } else {
             mode = MP_QSTR_False;
         }
-        print(env, "%s)", qstr_str(mode));
+        mp_printf(print, "%s)", qstr_str(mode));
     }
 }
 
@@ -714,7 +713,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
             // Uncaught exception; disable the callback so it doesn't run again.
             pyb_can_rxcallback(self, MP_OBJ_NEW_SMALL_INT(fifo_id), mp_const_none);
             printf("uncaught exception in CAN(%u) rx interrupt handler\n", self->can_id);
-            mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
         }
         gc_unlock();
     }

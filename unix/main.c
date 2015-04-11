@@ -43,7 +43,6 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
-#include "py/pfenv.h"
 #include "genhdr/py-version.h"
 #include "input.h"
 
@@ -91,7 +90,7 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
     }
 
     // Report all other exceptions
-    mp_obj_print_exception(printf_wrapper, NULL, exc);
+    mp_obj_print_exception(&mp_plat_print, exc);
     return 1;
 }
 

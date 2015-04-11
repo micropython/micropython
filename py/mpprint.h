@@ -23,12 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_PFENV_H__
-#define __MICROPY_INCLUDED_PY_PFENV_H__
+#ifndef __MICROPY_INCLUDED_PY_MPPRINT_H__
+#define __MICROPY_INCLUDED_PY_MPPRINT_H__
 
-#include <stdarg.h>
-
-#include "py/obj.h"
+#include "py/mpconfig.h"
 
 #define PF_FLAG_LEFT_ADJUST       (0x001)
 #define PF_FLAG_SHOW_SIGN         (0x002)
@@ -42,24 +40,31 @@
 #define PF_FLAG_PAD_NAN_INF       (0x200)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x400)
 
-typedef struct _pfenv_t {
+typedef void (*mp_print_strn_t)(void *data, const char *str, mp_uint_t len);
+
+typedef struct _mp_print_t {
     void *data;
-    void (*print_strn)(void *, const char *str, mp_uint_t len);
-} pfenv_t;
+    mp_print_strn_t print_strn;
+} mp_print_t;
 
-void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len);
-
-int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int flags, char fill, int width);
-int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width);
-int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
-#if MICROPY_PY_BUILTINS_FLOAT
-int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
+// All (non-debug) prints go through one of the two interfaces below.
+// 1) Wrapper for platform print function, which wraps MP_PLAT_PRINT_STRN.
+extern const mp_print_t mp_plat_print;
+#if MICROPY_PY_IO
+// 2) Wrapper for printing to sys.stdout.
+extern const mp_print_t mp_sys_stdout_print;
 #endif
 
-int pfenv_vprintf(const pfenv_t *pfenv, const char *fmt, va_list args);
-int pfenv_printf(const pfenv_t *pfenv, const char *fmt, ...);
+int mp_print_str(const mp_print_t *print, const char *str);
+int mp_print_strn(const mp_print_t *print, const char *str, mp_uint_t len, int flags, char fill, int width);
+int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width);
+#if MICROPY_PY_BUILTINS_FLOAT
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
+#endif
 
-// Wrapper for system printf
-void printf_wrapper(void *env, const char *fmt, ...);
+int mp_printf(const mp_print_t *print, const char *fmt, ...);
+#ifdef va_start
+int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
+#endif
 
-#endif // __MICROPY_INCLUDED_PY_PFENV_H__
+#endif // __MICROPY_INCLUDED_PY_MPPRINT_H__

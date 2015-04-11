@@ -55,30 +55,30 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, mp_uint_t *cur) {
     return NULL;
 }
 
-STATIC void dict_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_obj_dict_t *self = MP_OBJ_CAST(self_in);
     bool first = true;
     if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     }
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict) {
-        print(env, "%s(", qstr_str(self->base.type->name));
+        mp_printf(print, "%q(", self->base.type->name);
     }
-    print(env, "{");
+    mp_print_str(print, "{");
     mp_uint_t cur = 0;
     mp_map_elem_t *next = NULL;
     while ((next = dict_iter_next(self, &cur)) != NULL) {
         if (!first) {
-            print(env, ", ");
+            mp_print_str(print, ", ");
         }
         first = false;
-        mp_obj_print_helper(print, env, next->key, kind);
-        print(env, ": ");
-        mp_obj_print_helper(print, env, next->value, kind);
+        mp_obj_print_helper(print, next->key, kind);
+        mp_print_str(print, ": ");
+        mp_obj_print_helper(print, next->value, kind);
     }
-    print(env, "}");
+    mp_print_str(print, "}");
     if (MICROPY_PY_COLLECTIONS_ORDEREDDICT && self->base.type != &mp_type_dict) {
-        print(env, ")");
+        mp_print_str(print, ")");
     }
 }
 
@@ -473,23 +473,23 @@ STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
     return o_out;
 }
 
-STATIC void dict_view_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     assert(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
     mp_obj_dict_view_t *self = MP_OBJ_CAST(self_in);
     bool first = true;
-    print(env, mp_dict_view_names[self->kind]);
-    print(env, "([");
+    mp_print_str(print, mp_dict_view_names[self->kind]);
+    mp_print_str(print, "([");
     mp_obj_t self_iter = dict_view_getiter(self_in);
     mp_obj_t next = MP_OBJ_NULL;
     while ((next = dict_view_it_iternext(self_iter)) != MP_OBJ_STOP_ITERATION) {
         if (!first) {
-            print(env, ", ");
+            mp_print_str(print, ", ");
         }
         first = false;
-        mp_obj_print_helper(print, env, next, PRINT_REPR);
+        mp_obj_print_helper(print, next, PRINT_REPR);
     }
-    print(env, "])");
+    mp_print_str(print, "])");
 }
 
 STATIC mp_obj_t dict_view_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

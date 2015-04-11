@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,16 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+#include <stdarg.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
+#include "py/mpprint.h"
+#include "py/obj.h"
 #include "py/objint.h"
-#include "py/pfenv.h"
+#include "py/runtime.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #include <stdio.h>
@@ -41,11 +46,22 @@
 static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
-void pfenv_vstr_add_strn(void *data, const char *str, mp_uint_t len) {
-    vstr_add_strn(data, str, len);
+STATIC void plat_print_strn(void *env, const char *str, mp_uint_t len) {
+    (void)env;
+    MP_PLAT_PRINT_STRN(str, len);
 }
 
-int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int flags, char fill, int width) {
+const mp_print_t mp_plat_print = {NULL, plat_print_strn};
+
+int mp_print_str(const mp_print_t *print, const char *str) {
+    mp_uint_t len = strlen(str);
+    if (len) {
+        print->print_strn(print->data, str, len);
+    }
+    return len;
+}
+
+int mp_print_strn(const mp_print_t *print, const char *str, mp_uint_t len, int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
@@ -53,7 +69,7 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int f
     int total_chars_printed = 0;
     const char *pad_chars;
 
-    if (!fill || fill == ' ' ) {
+    if (!fill || fill == ' ') {
         pad_chars = pad_spaces;
         pad_size = sizeof(pad_spaces) - 1;
     } else if (fill == '0') {
@@ -82,12 +98,12 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int f
             if (p > pad_size) {
                 p = pad_size;
             }
-            pfenv->print_strn(pfenv->data, pad_chars, p);
+            print->print_strn(print->data, pad_chars, p);
             left_pad -= p;
         }
     }
     if (len) {
-        pfenv->print_strn(pfenv->data, str, len);
+        print->print_strn(print->data, str, len);
         total_chars_printed += len;
     }
     if (right_pad > 0) {
@@ -97,7 +113,7 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int f
             if (p > pad_size) {
                 p = pad_size;
             }
-            pfenv->print_strn(pfenv->data, pad_chars, p);
+            print->print_strn(print->data, pad_chars, p);
             right_pad -= p;
         }
     }
@@ -109,8 +125,8 @@ int pfenv_print_strn(const pfenv_t *pfenv, const char *str, mp_uint_t len, int f
 #define INT_BUF_SIZE (sizeof(mp_int_t) * 4)
 
 // This function is used by stmhal port to implement printf.
-// It needs to be a separate function to pfenv_print_mp_int, since converting to a mp_int looses the MSB.
-int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+// It needs to be a separate function to mp_print_mp_int, since converting to a mp_int looses the MSB.
+int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
     char sign = 0;
     if (sgn) {
         if ((mp_int_t)x < 0) {
@@ -156,12 +172,12 @@ int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int ba
     int len = 0;
     if (flags & PF_FLAG_PAD_AFTER_SIGN) {
         if (sign) {
-            len += pfenv_print_strn(pfenv, &sign, 1, flags, fill, 1);
+            len += mp_print_strn(print, &sign, 1, flags, fill, 1);
             width--;
         }
         if (prefix_char) {
-            len += pfenv_print_strn(pfenv, "0", 1, flags, fill, 1);
-            len += pfenv_print_strn(pfenv, &prefix_char, 1, flags, fill, 1);
+            len += mp_print_strn(print, "0", 1, flags, fill, 1);
+            len += mp_print_strn(print, &prefix_char, 1, flags, fill, 1);
             width -= 2;
         }
     } else {
@@ -174,11 +190,11 @@ int pfenv_print_int(const pfenv_t *pfenv, mp_uint_t x, int sgn, int base, int ba
         }
     }
 
-    len += pfenv_print_strn(pfenv, b, buf + INT_BUF_SIZE - b, flags, fill, width);
+    len += mp_print_strn(print, b, buf + INT_BUF_SIZE - b, flags, fill, width);
     return len;
 }
 
-int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec) {
+int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec) {
     if (!MP_OBJ_IS_INT(x)) {
         // This will convert booleans to int, or raise an error for
         // non-integer types.
@@ -282,16 +298,16 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int base, int base_char
 
     int len = 0;
     if (spaces_before) {
-        len += pfenv_print_strn(pfenv, "", 0, 0, ' ', spaces_before);
+        len += mp_print_strn(print, "", 0, 0, ' ', spaces_before);
     }
     if (flags & PF_FLAG_PAD_AFTER_SIGN) {
         // pad after sign implies pad after prefix as well.
         if (sign) {
-            len += pfenv_print_strn(pfenv, &sign, 1, 0, 0, 1);
+            len += mp_print_strn(print, &sign, 1, 0, 0, 1);
             width--;
         }
         if (prefix_len) {
-            len += pfenv_print_strn(pfenv, prefix, prefix_len, 0, 0, 1);
+            len += mp_print_strn(print, prefix, prefix_len, 0, 0, 1);
             width -= prefix_len;
         }
     }
@@ -299,10 +315,10 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int base, int base_char
         width = prec;
     }
 
-    len += pfenv_print_strn(pfenv, str, fmt_size, flags, fill, width);
+    len += mp_print_strn(print, str, fmt_size, flags, fill, width);
 
     if (spaces_after) {
-        len += pfenv_print_strn(pfenv, "", 0, 0, ' ', spaces_after);
+        len += mp_print_strn(print, "", 0, 0, ' ', spaces_after);
     }
 
     if (buf != stack_buf) {
@@ -312,7 +328,7 @@ int pfenv_print_mp_int(const pfenv_t *pfenv, mp_obj_t x, int base, int base_char
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, char fill, int width, int prec) {
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec) {
     char buf[32];
     char sign = '\0';
     int chrs = 0;
@@ -361,7 +377,7 @@ int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, c
         if (*s <= '9' || (flags & PF_FLAG_PAD_NAN_INF)) {
             // We have a number, or we have a inf/nan and PAD_NAN_INF is set
             // With '{:06e}'.format(float('-inf')) you get '-00inf'
-            chrs += pfenv_print_strn(pfenv, &buf[0], 1, 0, 0, 1);
+            chrs += mp_print_strn(print, &buf[0], 1, 0, 0, 1);
             width--;
             len--;
         }
@@ -373,8 +389,179 @@ int pfenv_print_float(const pfenv_t *pfenv, mp_float_t f, char fmt, int flags, c
         // so suppress the zero fill.
         fill = ' ';
     }
-    chrs += pfenv_print_strn(pfenv, s, len, flags, fill, width);
+    chrs += mp_print_strn(print, s, len, flags, fill, width);
 
     return chrs;
 }
 #endif
+
+int mp_printf(const mp_print_t *print, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = mp_vprintf(print, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
+    int chrs = 0;
+    for (;;) {
+        {
+            const char *f = fmt;
+            while (*f != '\0' && *f != '%') {
+                ++f; // XXX UTF8 advance char
+            }
+            if (f > fmt) {
+                print->print_strn(print->data, fmt, f - fmt);
+                chrs += f - fmt;
+                fmt = f;
+            }
+        }
+
+        if (*fmt == '\0') {
+            break;
+        }
+
+        // move past % character
+        ++fmt;
+
+        // parse flags, if they exist
+        int flags = 0;
+        char fill = ' ';
+        while (*fmt != '\0') {
+            if (*fmt == '-') flags |= PF_FLAG_LEFT_ADJUST;
+            else if (*fmt == '+') flags |= PF_FLAG_SHOW_SIGN;
+            else if (*fmt == ' ') flags |= PF_FLAG_SPACE_SIGN;
+            else if (*fmt == '!') flags |= PF_FLAG_NO_TRAILZ;
+            else if (*fmt == '0') {
+                flags |= PF_FLAG_PAD_AFTER_SIGN;
+                fill = '0';
+            } else break;
+            ++fmt;
+        }
+
+        // parse width, if it exists
+        int width = 0;
+        for (; '0' <= *fmt && *fmt <= '9'; ++fmt) {
+            width = width * 10 + *fmt - '0';
+        }
+
+        // parse precision, if it exists
+        int prec = -1;
+        if (*fmt == '.') {
+            ++fmt;
+            if (*fmt == '*') {
+                ++fmt;
+                prec = va_arg(args, int);
+            } else {
+                prec = 0;
+                for (; '0' <= *fmt && *fmt <= '9'; ++fmt) {
+                    prec = prec * 10 + *fmt - '0';
+                }
+            }
+            if (prec < 0) {
+                prec = 0;
+            }
+        }
+
+        // parse long specifiers (current not used)
+        //bool long_arg = false;
+        if (*fmt == 'l') {
+            ++fmt;
+            //long_arg = true;
+        }
+
+        if (*fmt == '\0') {
+            break;
+        }
+
+        switch (*fmt) {
+            case 'b':
+                if (va_arg(args, int)) {
+                    chrs += mp_print_strn(print, "true", 4, flags, fill, width);
+                } else {
+                    chrs += mp_print_strn(print, "false", 5, flags, fill, width);
+                }
+                break;
+            case 'c':
+            {
+                char str = va_arg(args, int);
+                chrs += mp_print_strn(print, &str, 1, flags, fill, width);
+                break;
+            }
+            case 'q':
+            {
+                qstr qst = va_arg(args, qstr);
+                mp_uint_t len;
+                const char *str = (const char*)qstr_data(qst, &len);
+                if (prec < 0) {
+                    prec = len;
+                }
+                chrs += mp_print_strn(print, str, prec, flags, fill, width);
+                break;
+            }
+            case 's':
+            {
+                const char *str = va_arg(args, const char*);
+                if (str) {
+                    if (prec < 0) {
+                        prec = strlen(str);
+                    }
+                    chrs += mp_print_strn(print, str, prec, flags, fill, width);
+                } else {
+                    chrs += mp_print_strn(print, "(null)", 6, flags, fill, width);
+                }
+                break;
+            }
+            case 'u':
+                chrs += mp_print_int(print, va_arg(args, int), 0, 10, 'a', flags, fill, width);
+                break;
+            case 'd':
+                chrs += mp_print_int(print, va_arg(args, int), 1, 10, 'a', flags, fill, width);
+                break;
+            case 'x':
+                chrs += mp_print_int(print, va_arg(args, int), 0, 16, 'a', flags, fill, width);
+                break;
+            case 'X':
+                chrs += mp_print_int(print, va_arg(args, int), 0, 16, 'A', flags, fill, width);
+                break;
+            case 'p':
+            case 'P': // don't bother to handle upcase for 'P'
+                chrs += mp_print_int(print, va_arg(args, unsigned int), 0, 16, 'a', flags, fill, width);
+                break;
+#if MICROPY_PY_BUILTINS_FLOAT
+            case 'e':
+            case 'E':
+            case 'f':
+            case 'F':
+            case 'g':
+            case 'G':
+            {
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+                mp_float_t f = va_arg(args, double);
+                chrs += mp_print_float(print, f, *fmt, flags, fill, width, prec);
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+                // Currently mp_print_float uses snprintf, but snprintf
+                // itself may be implemented in terms of mp_vprintf() for
+                // some ports. So, for extra caution, this case is handled
+                // with assert below. Note that currently ports which
+                // use MICROPY_FLOAT_IMPL_DOUBLE, don't call mp_vprintf()
+                // with float format specifier at all.
+                // TODO: resolve this completely
+                assert(0);
+//#error Calling mp_print_float with double not supported from within printf
+#else
+#error Unknown MICROPY FLOAT IMPL
+#endif
+                break;
+            }
+#endif
+            default:
+                print->print_strn(print->data, fmt, 1);
+                chrs += 1;
+                break;
+        }
+        ++fmt;
+    }
+    return chrs;
+}

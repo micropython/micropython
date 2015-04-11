@@ -35,7 +35,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/pfenv.h"
+#include MICROPY_HAL_H
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"
@@ -468,17 +468,17 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks) {
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }
 
-STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
 
     if (self->tim.State == HAL_TIM_STATE_RESET) {
-        print(env, "Timer(%u)", self->tim_id);
+        mp_printf(print, "Timer(%u)", self->tim_id);
     } else {
         uint32_t prescaler = self->tim.Instance->PSC & 0xffff;
         uint32_t period = __HAL_TIM_GetAutoreload(&self->tim) & TIMER_CNT_MASK(self);
         // for efficiency, we compute and print freq as an int (not a float)
         uint32_t freq = timer_get_source_freq(self->tim_id) / ((prescaler + 1) * (period + 1));
-        print(env, "Timer(%u, freq=%u, prescaler=%u, period=%u, mode=%s, div=%u",
+        mp_printf(print, "Timer(%u, freq=%u, prescaler=%u, period=%u, mode=%s, div=%u",
             self->tim_id,
             freq,
             prescaler,
@@ -488,9 +488,10 @@ STATIC void pyb_timer_print(void (*print)(void *env, const char *fmt, ...), void
             self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV4 ? 4 :
             self->tim.Init.ClockDivision == TIM_CLOCKDIVISION_DIV2 ? 2 : 1);
         if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance)) {
-            print(env, ", deadtime=%u", compute_ticks_from_dtg(self->tim.Instance->BDTR & TIM_BDTR_DTG));
+            mp_printf(print, ", deadtime=%u",
+                compute_ticks_from_dtg(self->tim.Instance->BDTR & TIM_BDTR_DTG));
         }
-        print(env, ")");
+        mp_print_str(print, ")");
     }
 }
 
@@ -1166,10 +1167,10 @@ const mp_obj_type_t pyb_timer_type = {
 /// Timer channels are used to generate/capture a signal using a timer.
 ///
 /// TimerChannel objects are created using the Timer.channel() method.
-STATIC void pyb_timer_channel_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_channel_obj_t *self = self_in;
 
-    print(env, "TimerChannel(timer=%u, channel=%u, mode=%s)",
+    mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%s)",
           self->timer->tim_id,
           self->channel,
           qstr_str(channel_mode_info[self->mode].name));
@@ -1308,7 +1309,7 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                     } else {
                         printf("uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
                     }
-                    mp_obj_print_exception(printf_wrapper, NULL, (mp_obj_t)nlr.ret_val);
+                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
             }

@@ -91,8 +91,7 @@ void mp_arg_parse_all(mp_uint_t n_pos, const mp_obj_t *pos, mp_map_t *kws, mp_ui
                         mp_arg_error_terse_mismatch();
                     } else {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "'%s' argument required",
-                            qstr_str(allowed[i].qst)));
+                            "'%q' argument required", allowed[i].qst));
                     }
                 }
                 out_vals[i] = allowed[i].defval;

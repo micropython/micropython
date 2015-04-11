@@ -11,7 +11,6 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/repl.h"
-#include "py/pfenv.h"
 
 #include "tinytest.h"
 #include "tinytest_macros.h"
@@ -39,7 +38,7 @@ inline void do_str(const char *src) {
             tinytest_set_test_skipped_();
             return;
         }
-        mp_obj_print_exception(printf_wrapper, NULL, exc);
+        mp_obj_print_exception(&mp_extern_printf_wrapper, exc);
         tt_abort_msg("Uncaught exception");
     }
 end:

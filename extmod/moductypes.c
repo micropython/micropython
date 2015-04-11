@@ -137,7 +137,7 @@ STATIC mp_obj_t uctypes_struct_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_u
     return o;
 }
 
-STATIC void uctypes_struct_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_uctypes_struct_t *self = self_in;
     const char *typen = "unk";
@@ -154,7 +154,7 @@ STATIC void uctypes_struct_print(void (*print)(void *env, const char *fmt, ...),
     } else {
         typen = "ERROR";
     }
-    print(env, "<struct %s %p>", typen, self->addr);
+    mp_printf(print, "<struct %s %p>", typen, self->addr);
 }
 
 // Get size of any type descriptor

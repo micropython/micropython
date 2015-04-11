@@ -125,10 +125,10 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
 }
 
 #if MICROPY_CPYTHON_COMPAT
-STATIC void fun_bc_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fun_bc_t *o = o_in;
-    print(env, "<function %s at 0x%x>", qstr_str(mp_obj_fun_get_name(o)), o);
+    mp_printf(print, "<function %q at 0x%x>", mp_obj_fun_get_name(o), o);
 }
 #endif
 

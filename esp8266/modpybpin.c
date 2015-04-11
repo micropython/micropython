@@ -65,11 +65,11 @@ STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
     {{&pyb_pin_type}, 15, 15, PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15},
 };
 
-STATIC void pyb_pin_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void pyb_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_pin_obj_t *self = self_in;
 
     // pin name
-    print(env, "Pin(%u)", self->pin_id);
+    mp_printf(print, "Pin(%u)", self->pin_id);
 }
 
 // pin.init(mode, pull=Pin.PULL_NONE, af=-1)

@@ -124,7 +124,7 @@ mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 #undef MP_FLOAT_EXP_SHIFT_I32
 #endif
 
-void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
+void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
@@ -134,7 +134,7 @@ void mp_obj_int_print(void (*print)(void *env, const char *fmt, ...), void *env,
     mp_uint_t fmt_size;
 
     char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, self_in, 10, NULL, '\0', '\0');
-    print(env, "%s", str);
+    mp_print_str(print, str);
 
     if (buf != stack_buf) {
         m_del(char, buf, buf_size);
