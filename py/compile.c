@@ -268,7 +268,6 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         arg0 -= arg1;
                     }
                     if (MP_SMALL_INT_FITS(arg0)) {
-                        //printf("%ld + %ld\n", arg0, arg1);
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg0);
                     }
                 }
@@ -3432,13 +3431,6 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     mp_parse_node_t pn_body = pns->nodes[3]; // body
     mp_parse_node_t *nodes;
     int num = mp_parse_node_extract_list(&pn_body, PN_suite_block_stmts, &nodes);
-
-    /*
-    if (comp->pass == MP_PASS_EMIT) {
-        //printf("----\n");
-        scope_print_info(scope);
-    }
-    */
 
     for (int i = 0; i < num; i++) {
         assert(MP_PARSE_NODE_IS_STRUCT(nodes[i]));
