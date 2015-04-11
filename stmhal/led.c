@@ -212,7 +212,7 @@ void led_debug(int n, int delay) {
 
 void led_obj_print(void (*print)(void *env, const char *fmt, ...), void *env, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
-    print(env, "<LED %lu>", self->led_id);
+    print(env, "LED(%lu)", self->led_id);
 }
 
 /// \classmethod \constructor(id)
@@ -228,7 +228,7 @@ STATIC mp_obj_t led_obj_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 
     // check led number
     if (!(1 <= led_id && led_id <= NUM_LEDS)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED %d does not exist", led_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED(%d) does not exist", led_id));
     }
 
     // return static led object
