@@ -235,7 +235,7 @@ void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_
 void qstr_dump_data(void) {
     for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &const_pool; pool = pool->prev) {
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-            printf("Q(%s)\n", Q_GET_DATA(*q));
+            mp_printf(&mp_plat_print, "Q(%s)\n", Q_GET_DATA(*q));
         }
     }
 }

@@ -648,8 +648,9 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
 void gc_dump_info(void) {
     gc_info_t info;
     gc_info(&info);
-    printf("GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n", info.total, info.used, info.free);
-    printf(" No. of 1-blocks: " UINT_FMT ", 2-blocks: " UINT_FMT ", max blk sz: " UINT_FMT "\n",
+    mp_printf(&mp_plat_print, "GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n",
+        info.total, info.used, info.free);
+    mp_printf(&mp_plat_print, " No. of 1-blocks: " UINT_FMT ", 2-blocks: " UINT_FMT ", max blk sz: " UINT_FMT "\n",
            info.num_1block, info.num_2block, info.max_block);
 }
 
@@ -658,7 +659,7 @@ void gc_dump_alloc_table(void) {
     #if !EXTENSIVE_HEAP_PROFILING
     // When comparing heap output we don't want to print the starting
     // pointer of the heap because it changes from run to run.
-    printf("GC memory layout; from %p:", MP_STATE_MEM(gc_pool_start));
+    mp_printf(&mp_plat_print, "GC memory layout; from %p:", MP_STATE_MEM(gc_pool_start));
     #endif
     for (mp_uint_t bl = 0; bl < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; bl++) {
         if (bl % DUMP_BYTES_PER_LINE == 0) {
@@ -671,7 +672,7 @@ void gc_dump_alloc_table(void) {
                 }
                 if (bl2 - bl >= 2 * DUMP_BYTES_PER_LINE) {
                     // there are at least 2 lines containing only free blocks, so abbreviate their printing
-                    printf("\n       (" UINT_FMT " lines all free)", (bl2 - bl) / DUMP_BYTES_PER_LINE);
+                    mp_printf(&mp_plat_print, "\n       (" UINT_FMT " lines all free)", (bl2 - bl) / DUMP_BYTES_PER_LINE);
                     bl = bl2 & (~(DUMP_BYTES_PER_LINE - 1));
                     if (bl >= MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB) {
                         // got to end of heap
@@ -682,9 +683,9 @@ void gc_dump_alloc_table(void) {
             // print header for new line of blocks
             // (the cast to uint32_t is for 16-bit ports)
             #if EXTENSIVE_HEAP_PROFILING
-            printf("\n%05x: ", (uint)((bl * BYTES_PER_BLOCK) & (uint32_t)0xfffff));
+            mp_printf(&mp_plat_print, "\n%05x: ", (uint)((bl * BYTES_PER_BLOCK) & (uint32_t)0xfffff));
             #else
-            printf("\n%05x: ", (uint)(PTR_FROM_BLOCK(bl) & (uint32_t)0xfffff));
+            mp_printf(&mp_plat_print, "\n%05x: ", (uint)(PTR_FROM_BLOCK(bl) & (uint32_t)0xfffff));
             #endif
         }
         int c = ' ';
@@ -752,9 +753,9 @@ void gc_dump_alloc_table(void) {
             case AT_TAIL: c = 't'; break;
             case AT_MARK: c = 'm'; break;
         }
-        printf("%c", c);
+        mp_printf(&mp_plat_print, "%c", c);
     }
-    printf("\n");
+    mp_print_str(&mp_plat_print, "\n");
 }
 
 #if DEBUG_PRINT

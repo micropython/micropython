@@ -56,13 +56,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_peak_obj, mp_micropython_mem
 mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args) {
     (void)args;
 #if MICROPY_MEM_STATS
-    printf("mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
+    mp_printf(&mp_plat_print, "mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
         (mp_uint_t)m_get_total_bytes_allocated(), (mp_uint_t)m_get_current_bytes_allocated(), (mp_uint_t)m_get_peak_bytes_allocated());
 #endif
 #if MICROPY_STACK_CHECK
-    printf("stack: " UINT_FMT " out of " INT_FMT "\n", mp_stack_usage(), MP_STATE_VM(stack_limit));
+    mp_printf(&mp_plat_print, "stack: " UINT_FMT " out of " INT_FMT "\n", mp_stack_usage(), MP_STATE_VM(stack_limit));
 #else
-    printf("stack: " UINT_FMT "\n", mp_stack_usage());
+    mp_printf(&mp_plat_print, "stack: " UINT_FMT "\n", mp_stack_usage());
 #endif
 #if MICROPY_ENABLE_GC
     gc_dump_info();
@@ -81,7 +81,7 @@ STATIC mp_obj_t mp_micropython_qstr_info(mp_uint_t n_args, const mp_obj_t *args)
     (void)args;
     mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-    printf("qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes=" UINT_FMT ", n_total_bytes=" UINT_FMT "\n",
+    mp_printf(&mp_plat_print, "qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes=" UINT_FMT ", n_total_bytes=" UINT_FMT "\n",
         n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     if (n_args == 1) {
         // arg given means dump qstr data
