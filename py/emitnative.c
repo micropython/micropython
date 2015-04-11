@@ -571,7 +571,7 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
                 case MP_QSTR_ptr: type = VTYPE_PTR; break;
                 case MP_QSTR_ptr8: type = VTYPE_PTR8; break;
                 case MP_QSTR_ptr16: type = VTYPE_PTR16; break;
-                default: mp_printf(&mp_plat_print, "ViperTypeError: unknown type %s\n", qstr_str(arg2)); return;
+                default: mp_printf(&mp_plat_print, "ViperTypeError: unknown type %q\n", arg2); return;
             }
             if (op == MP_EMIT_NATIVE_TYPE_RETURN) {
                 emit->return_vtype = type;
@@ -1288,7 +1288,7 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     DEBUG_printf("load_fast(%s, " UINT_FMT ")\n", qstr_str(qst), local_num);
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
-        mp_printf(&mp_plat_print, "ViperTypeError: local %s used before type known\n", qstr_str(qst));
+        mp_printf(&mp_plat_print, "ViperTypeError: local %q used before type known\n", qst);
     }
     emit_native_pre(emit);
     if (local_num == 0) {
@@ -1495,7 +1495,7 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
         emit->local_vtype[local_num] = vtype;
     } else if (emit->local_vtype[local_num] != vtype) {
         // type of local is not the same as object stored in it
-        mp_printf(&mp_plat_print, "ViperTypeError: type mismatch, local %s has type %d but source object has type %d\n", qstr_str(qst), emit->local_vtype[local_num], vtype);
+        mp_printf(&mp_plat_print, "ViperTypeError: type mismatch, local %q has type %d but source object has type %d\n", qst, emit->local_vtype[local_num], vtype);
     }
 }
 

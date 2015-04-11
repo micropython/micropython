@@ -740,7 +740,7 @@ STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
 STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_type_t *self = self_in;
-    mp_printf(print, "<class '%s'>", qstr_str(self->name));
+    mp_printf(print, "<class '%q'>", self->name);
 }
 
 STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -773,7 +773,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, co
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "cannot create instance"));
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "cannot create '%s' instances", qstr_str(self->name)));
+                "cannot create '%q' instances", self->name));
         }
     }
 
@@ -861,7 +861,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
                     "type is not an acceptable base type"));
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "type '%s' is not an acceptable base type", qstr_str(t->name)));
+                    "type '%q' is not an acceptable base type", t->name));
             }
         }
     }
