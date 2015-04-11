@@ -33,6 +33,7 @@
 #include "py/mpprint.h"
 #include "py/obj.h"
 #include "py/objint.h"
+#include "py/runtime.h"
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #include <stdio.h>
@@ -46,6 +47,7 @@ static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
 STATIC void plat_print_strn(void *env, const char *str, mp_uint_t len) {
+    (void)env;
     MP_PLAT_PRINT_STRN(str, len);
 }
 
