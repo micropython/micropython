@@ -73,12 +73,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
 
 void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 #if MICROPY_PY_IO
-    // defined per port; type of these is irrelevant, just need pointer
-    extern struct _mp_dummy_t mp_sys_stdout_obj;
-    mp_print_t print;
-    print.data = &mp_sys_stdout_obj;
-    print.print_strn = (mp_print_strn_t)mp_stream_write;
-    mp_obj_print_helper(&print, o_in, kind);
+    mp_obj_print_helper(&mp_sys_stdout_print, o_in, kind);
 #else
     mp_obj_print_helper(&mp_plat_print, o_in, kind);
 #endif

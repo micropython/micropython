@@ -47,10 +47,13 @@ typedef struct _mp_print_t {
     mp_print_strn_t print_strn;
 } mp_print_t;
 
-// Wrapper for platform print function, which wraps MP_PLAT_PRINT_STRN.
-// All (non-debug) prints go through this interface (except some which
-// go through mp_sys_stdout_obj if MICROPY_PY_IO is defined).
+// All (non-debug) prints go through one of the two interfaces below.
+// 1) Wrapper for platform print function, which wraps MP_PLAT_PRINT_STRN.
 extern const mp_print_t mp_plat_print;
+#if MICROPY_PY_IO
+// 2) Wrapper for printing to sys.stdout.
+extern const mp_print_t mp_sys_stdout_print;
+#endif
 
 int mp_print_str(const mp_print_t *print, const char *str);
 int mp_print_strn(const mp_print_t *print, const char *str, mp_uint_t len, int flags, char fill, int width);

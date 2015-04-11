@@ -440,9 +440,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_print_obj, 0, mp_builtin_print);
 STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
     if (o != mp_const_none) {
         #if MICROPY_PY_IO
-        mp_print_t print = {&mp_sys_stdout_obj, (mp_print_strn_t)mp_stream_write};
-        mp_obj_print_helper(&print, o, PRINT_REPR);
-        mp_stream_write(&mp_sys_stdout_obj, "\n", 1);
+        mp_obj_print_helper(&mp_sys_stdout_print, o, PRINT_REPR);
+        mp_print_str(&mp_sys_stdout_print, "\n");
         #else
         mp_obj_print(o, PRINT_REPR);
         printf("\n");

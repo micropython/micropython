@@ -42,6 +42,10 @@ extern struct _mp_dummy_t mp_sys_stdin_obj;
 extern struct _mp_dummy_t mp_sys_stdout_obj;
 extern struct _mp_dummy_t mp_sys_stderr_obj;
 
+#if MICROPY_PY_IO
+const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, (mp_print_strn_t)mp_stream_write};
+#endif
+
 /// \constant version - Python language version that this implementation conforms to, as a string
 STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 
