@@ -341,7 +341,7 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
     // check stack is back to zero size
     if (emit->stack_size != 0) {
-        printf("ERROR: stack size not back to zero; got %d\n", emit->stack_size);
+        mp_printf(&mp_plat_print, "ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
     *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info

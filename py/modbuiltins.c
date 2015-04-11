@@ -419,19 +419,19 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
             #if MICROPY_PY_IO
             mp_stream_write(stream_obj, sep_data, sep_len);
             #else
-            printf("%.*s", (int)sep_len, sep_data);
+            mp_print_strn(&mp_plat_print, sep_data, sep_len, 0, 0, 0);
             #endif
         }
         #if MICROPY_PY_IO
         mp_obj_print_helper(&print, args[i], PRINT_STR);
         #else
-        mp_obj_print(args[i], PRINT_STR);
+        mp_obj_print_helper(&mp_plat_print, args[i], PRINT_STR);
         #endif
     }
     #if MICROPY_PY_IO
     mp_stream_write(stream_obj, end_data, end_len);
     #else
-    printf("%.*s", (int)end_len, end_data);
+    mp_print_strn(&mp_plat_print, end_data, end_len, 0, 0, 0);
     #endif
     return mp_const_none;
 }
@@ -443,8 +443,8 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
         mp_obj_print_helper(&mp_sys_stdout_print, o, PRINT_REPR);
         mp_print_str(&mp_sys_stdout_print, "\n");
         #else
-        mp_obj_print(o, PRINT_REPR);
-        printf("\n");
+        mp_obj_print_helper(&mp_plat_print, o, PRINT_REPR);
+        mp_print_str(&mp_plat_print, "\n");
         #endif
     }
     return mp_const_none;
