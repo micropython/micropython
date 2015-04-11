@@ -6,6 +6,8 @@ print("   a   b    ".split(None, 2))
 print("   a   b  c  ".split(None, 1))
 print("   a   b  c  ".split(None, 0))
 print("   a   b  c  ".split(None, -1))
+print("foo\n\t\x07\v\nbar".split())
+print("foo\nbar\n".split())
 
 # empty separator should fail
 try:

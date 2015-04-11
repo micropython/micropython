@@ -454,7 +454,6 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
 
-#define is_ws(c) ((c) == ' ' || (c) == '\t')
 enum {SPLIT = 0, KEEP = 1, SPLITLINES = 2};
 
 STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args, int type) {
@@ -476,15 +475,15 @@ STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args
         // sep not given, so separate on whitespace
 
         // Initial whitespace is not counted as split, so we pre-do it
-        while (s < top && is_ws(*s)) s++;
+        while (s < top && unichar_isspace(*s)) s++;
         while (s < top && splits != 0) {
             const byte *start = s;
-            while (s < top && !is_ws(*s)) s++;
+            while (s < top && !unichar_isspace(*s)) s++;
             mp_obj_list_append(res, mp_obj_new_str_of_type(self_type, start, s - start));
             if (s >= top) {
                 break;
             }
-            while (s < top && is_ws(*s)) s++;
+            while (s < top && unichar_isspace(*s)) s++;
             if (splits > 0) {
                 splits--;
             }
