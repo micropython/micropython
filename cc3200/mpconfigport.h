@@ -38,7 +38,7 @@
 #define MICROPY_COMP_MODULE_CONST                   (1)
 #define MICROPY_ENABLE_GC                           (1)
 #define MICROPY_ENABLE_FINALISER                    (1)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN            (1)
+#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN            (0)
 #define MICROPY_STACK_CHECK                         (0)
 #define MICROPY_HELPER_REPL                         (1)
 #define MICROPY_ENABLE_SOURCE_LINE                  (1)
