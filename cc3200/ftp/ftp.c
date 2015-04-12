@@ -435,7 +435,7 @@ static bool ftp_create_listening_socket (_i16 *sd, _u16 port, _u8 backlog) {
 
         // Bind the socket to a port number
         sServerAddress.sin_family = AF_INET;
-        sServerAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+        sServerAddress.sin_addr.s_addr = INADDR_ANY;
         sServerAddress.sin_port = htons(port);
 
         ASSERT (sl_Bind(_sd, (const SlSockAddr_t *)&sServerAddress, sizeof(sServerAddress)) == SL_SOC_OK);

@@ -120,13 +120,8 @@ const mp_obj_module_t mp_module_network = {
 /******************************************************************************/
 // Miscellaneous helpers
 
-void mod_network_convert_ipv4_endianness(uint8_t *ip) {
-    uint8_t ip0 = ip[0]; ip[0] = ip[3]; ip[3] = ip0;
-    uint8_t ip1 = ip[1]; ip[1] = ip[2]; ip[2] = ip1;
-}
-
-// Takes an address of the form '192.168.0.1' and converts it to network format
-// in out_ip (big endian, so the 192 is the first byte).
+// Takes an address of the form '192.168.0.1' and converts it to integer
+// in out_ip (little endian, so the 192 is the last byte).
 void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip) {
     mp_uint_t addr_len;
     const char *addr_str = mp_obj_str_get_data(addr_in, &addr_len);
@@ -137,15 +132,15 @@ void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip) {
     }
     const char *s = addr_str;
     const char *s_top = addr_str + addr_len;
-    for (mp_uint_t i = 0;; i++) {
+    for (mp_uint_t i = 3 ; ; i--) {
         mp_uint_t val = 0;
         for (; s < s_top && *s != '.'; s++) {
             val = val * 10 + *s - '0';
         }
         out_ip[i] = val;
-        if (i == 3 && s == s_top) {
+        if (i == 0 && s == s_top) {
             return;
-        } else if (i < 3 && s < s_top && *s == '.') {
+        } else if (i > 0 && s < s_top && *s == '.') {
             s++;
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
@@ -165,7 +160,7 @@ mp_uint_t mod_network_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip) {
 // Takes an array with a raw IPv4 address and returns something like '192.168.0.1'.
 mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip) {
     char ip_str[16];
-    mp_uint_t ip_len = snprintf(ip_str, 16, "%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+    mp_uint_t ip_len = snprintf(ip_str, 16, "%u.%u.%u.%u", ip[3], ip[2], ip[1], ip[0]);
     return mp_obj_new_str(ip_str, ip_len, false);
 }
 
