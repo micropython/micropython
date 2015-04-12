@@ -142,8 +142,14 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
                 num.f *= *pos_pow;
             }
         }
+        char first_dig = '0';
+        char e_sign_char = '-';
         if (num.f < 1.0F && num.f >= 0.9999995F) {
             num.f = 1.0F;
+            first_dig = '1';
+            if (e == 0) {
+                e_sign_char = '+';
+            }
         } else {
             e++; 
             num.f *= 10.0F;
@@ -155,7 +161,7 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
         if (fmt == 'f' || (fmt == 'g' && e <= 4)) {
             fmt = 'f';
             dec = -1;
-            *s++ = '0';
+            *s++ = first_dig;
 
             if (prec + e + 1 > buf_remaining) {
                 prec = buf_remaining - e - 1;
@@ -175,7 +181,7 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
         } else {
             // For e & g formats, we'll be printing the exponent, so set the
             // sign.
-            e_sign = '-';
+            e_sign = e_sign_char;
             dec = 0;
 
             if (prec > (buf_remaining - 6)) {
