@@ -701,7 +701,7 @@ static void ftp_process_cmd (void) {
                     ftp_data.dtimeout = 0;
                     wlan_get_ip(&ip);
                     snprintf((char *)ftp_data.dBuffer, FTP_BUFFER_SIZE, "(%u,%u,%u,%u,%u,%u)",
-                             pip[0], pip[1], pip[2], pip[3], (FTP_PASIVE_DATA_PORT >> 8), (FTP_PASIVE_DATA_PORT & 0xFF));
+                             pip[3], pip[2], pip[1], pip[0], (FTP_PASIVE_DATA_PORT >> 8), (FTP_PASIVE_DATA_PORT & 0xFF));
                     ftp_data.substate.data = E_FTP_STE_SUB_LISTEN_FOR_DATA;
                     ftp_send_reply(227, (char *)ftp_data.dBuffer);
                 }
