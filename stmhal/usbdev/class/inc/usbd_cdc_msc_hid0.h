@@ -44,6 +44,7 @@ typedef struct _USBD_HID_ModeInfoTypeDef {
     uint8_t subclass; // 0=no sub class, 1=boot
     uint8_t protocol; // 0=none, 1=keyboard, 2=mouse
     uint8_t max_packet_len; // only support up to 255
+    uint8_t polling_interval; // in units of 1ms
     uint8_t report_desc_len;
     const uint8_t *report_desc;
 } USBD_HID_ModeInfoTypeDef;

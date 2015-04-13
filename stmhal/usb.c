@@ -58,11 +58,12 @@ STATIC const mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
 };
 const mp_obj_tuple_t pyb_usb_hid_mouse_obj = {
     {&mp_type_tuple},
-    4,
+    5,
     {
         MP_OBJ_NEW_SMALL_INT(1), // subclass: boot
         MP_OBJ_NEW_SMALL_INT(2), // protocol: mouse
         MP_OBJ_NEW_SMALL_INT(USBD_HID_MOUSE_MAX_PACKET),
+        MP_OBJ_NEW_SMALL_INT(8), // polling interval: 8ms
         (mp_obj_t)&pyb_usb_hid_mouse_desc_obj,
     },
 };
@@ -76,11 +77,12 @@ STATIC const mp_obj_str_t pyb_usb_hid_keyboard_desc_obj = {
 };
 const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
     {&mp_type_tuple},
-    4,
+    5,
     {
         MP_OBJ_NEW_SMALL_INT(1), // subclass: boot
         MP_OBJ_NEW_SMALL_INT(1), // protocol: keyboard
         MP_OBJ_NEW_SMALL_INT(USBD_HID_KEYBOARD_MAX_PACKET),
+        MP_OBJ_NEW_SMALL_INT(8), // polling interval: 8ms
         (mp_obj_t)&pyb_usb_hid_keyboard_desc_obj,
     },
 };
@@ -184,7 +186,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
     pyb.usb_mode('VCP+HID', vid=0xf055, pid=0x9800) # specify VID and PID
     pyb.usb_mode('VCP+HID', hid=pyb.hid_mouse)
     pyb.usb_mode('VCP+HID', hid=pyb.hid_keyboard)
-    pyb.usb_mode('VCP+HID', pid=0x1234, hid=(subclass, protocol, max_packet_len, report_desc))
+    pyb.usb_mode('VCP+HID', pid=0x1234, hid=(subclass, protocol, max_packet_len, polling_interval, report_desc))
 
     vcp = pyb.USB_VCP() # get the VCP device for read/write
     hid = pyb.USB_HID() # get the HID device for write/poll
@@ -265,17 +267,18 @@ STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     USBD_HID_ModeInfoTypeDef hid_info;
     if (mode & USBD_MODE_HID) {
         mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[3].u_obj, 4, &items);
+        mp_obj_get_array_fixed_n(args[3].u_obj, 5, &items);
         hid_info.subclass = mp_obj_get_int(items[0]);
         hid_info.protocol = mp_obj_get_int(items[1]);
         hid_info.max_packet_len = mp_obj_get_int(items[2]);
+        hid_info.polling_interval = mp_obj_get_int(items[3]);
         mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(items[3], &bufinfo, MP_BUFFER_READ);
+        mp_get_buffer_raise(items[4], &bufinfo, MP_BUFFER_READ);
         hid_info.report_desc = bufinfo.buf;
         hid_info.report_desc_len = bufinfo.len;
 
         // need to keep a copy of this so report_desc does not get GC'd
-        MP_STATE_PORT(pyb_hid_report_desc) = items[3];
+        MP_STATE_PORT(pyb_hid_report_desc) = items[4];
     }
 
     // init the USB device
