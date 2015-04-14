@@ -196,6 +196,35 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     return 0;
 }
 
+#if MICROPY_EMIT_INLINE_THUMB_FLOAT
+STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+    const char *reg_str = get_arg_str(pn);
+    if (reg_str[0] == 's' && reg_str[1] != '\0') {
+        mp_uint_t regno = 0;
+        for (++reg_str; *reg_str; ++reg_str) {
+            mp_uint_t v = *reg_str;
+            if (!('0' <= v && v <= '9')) {
+                goto malformed;
+            }
+            regno = 10 * regno + v - '0';
+        }
+        if (regno > 31) {
+            emit_inline_thumb_error_exc(emit,
+                 mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                       "'%s' expects at most r%d", op, 31));
+            return 0;
+        } else {
+            return regno;
+        }
+    }
+malformed:
+    emit_inline_thumb_error_exc(emit,
+         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+            "'%s' expects an FPU register", op));
+    return 0;
+}
+#endif
+
 STATIC mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     // a register list looks like {r0, r1, r2} and is parsed as a Python set
 
@@ -352,6 +381,17 @@ STATIC const format_9_10_op_t format_9_10_op_table[] = {
 };
 #undef X
 
+#if MICROPY_EMIT_INLINE_THUMB_FLOAT
+// actual opcodes are: 0xee00 | op.hi_nibble, 0x0a00 | op.lo_nibble
+typedef struct _format_vfp_op_t { byte op; char name[3]; } format_vfp_op_t;
+STATIC const format_vfp_op_t format_vfp_op_table[] = {
+    { 0x30, "add" },
+    { 0x34, "sub" },
+    { 0x20, "mul" },
+    { 0x80, "div" },
+};
+#endif
+
 STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
     // one_args =
@@ -366,6 +406,102 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     mp_uint_t op_len;
     const char *op_str = (const char*)qstr_data(op, &op_len);
 
+    #if MICROPY_EMIT_INLINE_THUMB_FLOAT
+    if (op_str[0] == 'v') {
+        // floating point operations
+        if (n_args == 2) {
+            mp_uint_t op_code = 0x0ac0, op_code_hi;
+            if (strcmp(op_str, "vcmp") == 0) {
+                op_code_hi = 0xeeb4;
+                op_vfp_twoargs:;
+                mp_uint_t vd = get_arg_vfpreg(emit, op_str, pn_args[0]);
+                mp_uint_t vm = get_arg_vfpreg(emit, op_str, pn_args[1]);
+                asm_thumb_op32(emit->as,
+                    op_code_hi | ((vd & 1) << 6),
+                    op_code | ((vd & 0x1e) << 11) | ((vm & 1) << 5) | (vm & 0x1e) >> 1);
+            } else if (strcmp(op_str, "vsqrt") == 0) {
+                op_code_hi = 0xeeb1;
+                goto op_vfp_twoargs;
+            } else if (strcmp(op_str, "vneg") == 0) {
+                op_code_hi = 0xeeb1;
+                op_code = 0x0a40;
+                goto op_vfp_twoargs;
+            } else if (strcmp(op_str, "vcvt_f32_s32") == 0) {
+                op_code_hi = 0xeeb8; // int to float
+                goto op_vfp_twoargs;
+            } else if (strcmp(op_str, "vcvt_s32_f32") == 0) {
+                op_code_hi = 0xeebd; // float to int
+                goto op_vfp_twoargs;
+            } else if (strcmp(op_str, "vmrs") == 0) {
+                mp_uint_t reg_dest;
+                const char *reg_str0 = get_arg_str(pn_args[0]);
+                if (strcmp(reg_str0, "APSR_nzcv") == 0) {
+                    reg_dest = 15;
+                } else {
+                    reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                }
+                const char *reg_str1 = get_arg_str(pn_args[1]);
+                if (strcmp(reg_str1, "FPSCR") == 0) {
+                    // FP status to ARM reg
+                    asm_thumb_op32(emit->as, 0xeef1, 0x0a10 | (reg_dest << 12));
+                } else {
+                    goto unknown_op;
+                }
+            } else if (strcmp(op_str, "vmov") == 0) {
+                op_code_hi = 0xee00;
+                mp_uint_t r_arm, vm;
+                const char *reg_str = get_arg_str(pn_args[0]);
+                if (reg_str[0] == 'r') {
+                    r_arm = get_arg_reg(emit, op_str, pn_args[0], 15);
+                    vm = get_arg_vfpreg(emit, op_str, pn_args[1]);
+                    op_code_hi |= 0x10;
+                } else {
+                    vm = get_arg_vfpreg(emit, op_str, pn_args[0]);
+                    r_arm = get_arg_reg(emit, op_str, pn_args[1], 15);
+                }
+                asm_thumb_op32(emit->as,
+                    op_code_hi | ((vm & 0x1e) >> 1),
+                    0x0a10 | (r_arm << 12) | ((vm & 1) << 7));
+            } else if (strcmp(op_str, "vldr") == 0) {
+                op_code_hi = 0xed90;
+                op_vldr_vstr:;
+                mp_uint_t vd = get_arg_vfpreg(emit, op_str, pn_args[0]);
+                mp_parse_node_t pn_base, pn_offset;
+                if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
+                    mp_uint_t rlo_base = get_arg_reg(emit, op_str, pn_base, 7);
+                    mp_uint_t i8;
+                    i8 = get_arg_i(emit, op_str, pn_offset, 0xff);
+                    asm_thumb_op32(emit->as,
+                        op_code_hi | rlo_base | ((vd & 1) << 6),
+                        0x0a00 | ((vd & 0x1e) << 11) | i8);
+                }
+            } else if (strcmp(op_str, "vstr") == 0) {
+                op_code_hi = 0xed80;
+                goto op_vldr_vstr;
+            } else {
+                goto unknown_op;
+            }
+        } else if (n_args == 3) {
+            // search table for arith ops
+            for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_vfp_op_table); i++) {
+                if (strncmp(op_str + 1, format_vfp_op_table[i].name, 3) == 0 && op_str[4] == '\0') {
+                    mp_uint_t op_code_hi = 0xee00 | (format_vfp_op_table[i].op & 0xf0);
+                    mp_uint_t op_code = 0x0a00 | ((format_vfp_op_table[i].op & 0x0f) << 4);
+                    mp_uint_t vd = get_arg_vfpreg(emit, op_str, pn_args[0]);
+                    mp_uint_t vn = get_arg_vfpreg(emit, op_str, pn_args[1]);
+                    mp_uint_t vm = get_arg_vfpreg(emit, op_str, pn_args[2]);
+                    asm_thumb_op32(emit->as,
+                        op_code_hi | ((vd & 1) << 6) | (vn >> 1),
+                        op_code | (vm >> 1) | ((vm & 1) << 5) | ((vd & 0x1e) << 11) | ((vn & 1) << 7));
+                    return;
+                }
+            }
+            goto unknown_op;
+        } else {
+            goto unknown_op;
+        }
+    } else
+    #endif
     if (n_args == 0) {
         if (strcmp(op_str, "nop") == 0) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_NOP);

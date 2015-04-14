@@ -186,6 +186,11 @@
 #define MICROPY_EMIT_INLINE_THUMB (0)
 #endif
 
+// Whether to enable float support in the Thumb2 inline assembler
+#ifndef MICROPY_EMIT_INLINE_THUMB_FLOAT
+#define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
+#endif
+
 // Whether to emit ARM native code
 #ifndef MICROPY_EMIT_ARM
 #define MICROPY_EMIT_ARM (0)
