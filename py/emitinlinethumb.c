@@ -161,6 +161,46 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
+/* PGH */
+
+typedef struct _fp_reg_name_t { byte reg; byte name[3]; } fp_reg_name_t;
+STATIC const fp_reg_name_t fp_reg_name_table[] = {
+    {0, "s0\0"},
+    {1, "s1\0"},
+    {2, "s2\0"},
+    {3, "s3\0"},
+    {4, "s4\0"},
+    {5, "s5\0"},
+    {6, "s6\0"},
+    {7, "s7\0"},
+    {8, "s8\0"},
+    {9, "s9\0"},
+    {10, "s10"},
+    {11, "s11"},
+    {12, "s12"},
+    {13, "s13"},
+    {14, "s14"},
+    {15, "s15"},
+    {16, "s16"},
+    {17, "s17"},
+    {18, "s18"},
+    {19, "s19"},
+    {20, "s20"},
+    {21, "s21"},
+    {22, "s22"},
+    {23, "s23"},
+    {24, "s24"},
+    {25, "s25"},
+    {26, "s26"},
+    {27, "s27"},
+    {28, "s28"},
+    {29, "s29"},
+    {30, "s30"},
+    {31, "s31"},
+};
+
+/* !PGH */
+
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
 STATIC const char *get_arg_str(mp_parse_node_t pn) {
@@ -171,6 +211,33 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
         return "";
     }
 }
+/* PGH */
+STATIC mp_uint_t get_arg_fpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+    const char *reg_str = get_arg_str(pn);
+    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
+        const fp_reg_name_t *r = &fp_reg_name_table[i];
+        if (reg_str[0] == r->name[0]
+            && reg_str[1] == r->name[1]
+            && reg_str[2] == r->name[2]
+            && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
+            if (r->reg > 31) {
+                emit_inline_thumb_error_exc(emit,
+                    mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                        "'%s' expects at most r%d", op, 31));
+                return 0;
+            } else {
+                return r->reg;
+            }
+        }
+    }
+    emit_inline_thumb_error_exc(emit,
+        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+            "'%s' expects an FPU register", op));
+    return 0;
+}
+
+/* !PGH */
+
 
 STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
     const char *reg_str = get_arg_str(pn);
@@ -482,6 +549,13 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code_hi = 0xfa90;
                 op_code = 0xf0a0;
                 goto op_clz_rbit;
+            } else if (strcmp(op_str, "vneg") == 0) {
+                op_code_hi = 0xeeb1;
+                op_code = 0x0a40;
+                mp_uint_t vd, vm;
+                vd = get_arg_fpreg(emit, op_str, pn_args[0]); // return no. in range 0..31
+                vm = get_arg_fpreg(emit, op_str, pn_args[1]);
+                asm_thumb_op32(emit->as, op_code_hi |((vd & 1) << 6), op_code |((vd & 0x1e) << 11)|((vm & 1) << 5) | (vm & 0x1e) >> 1); 
             } else {
                 if (strcmp(op_str, "and_") == 0) {
                     op_code = ASM_THUMB_FORMAT_4_AND;
@@ -573,7 +647,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         }
 
     } else if (n_args == 3) {
-        mp_uint_t op_code;
+        mp_uint_t op_code, op_code2; /* PGH */
         if (strcmp(op_str, "add") == 0) {
             op_code = ASM_THUMB_FORMAT_2_ADD;
             mp_uint_t rlo_dest, rlo_src;
@@ -612,6 +686,29 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                 asm_thumb_op32(emit->as, 0xe840 | r_base, (r_src << 12) | (r_dest << 8) | i8);
             }
+/* PGH */
+        } else if (strcmp(op_str, "vmul") == 0) {
+            op_code = 0xee20;
+            op_code2 = 0x0a00 ;
+            mp_uint_t vd, vn, vm;
+            op_fp_arith:
+            vd = get_arg_fpreg(emit, op_str, pn_args[0]); // return no. in range 0..31
+            vn = get_arg_fpreg(emit, op_str, pn_args[1]);
+            vm = get_arg_fpreg(emit, op_str, pn_args[2]);
+            asm_thumb_op32(emit->as, op_code |((vd & 1) << 6)|(vn >> 1), op_code2 |(vm >> 1) |((vm & 1) << 5)|((vd & 0x1e) << 11)|((vn & 1) << 7)); 
+        } else if (strcmp(op_str, "vadd") == 0) {
+            op_code = 0xee30;
+            op_code2 = 0x0a00 ;
+            goto op_fp_arith;
+        } else if (strcmp(op_str, "vsub") == 0) {
+            op_code = 0xee30;
+            op_code2 = 0x0a40;
+            goto op_fp_arith;
+        } else if (strcmp(op_str, "vdiv") == 0) {
+            op_code = 0xee80;
+            op_code2 = 0x0a00;
+            goto op_fp_arith;
+/* !PGH */
         } else {
             goto unknown_op;
         }
