@@ -214,7 +214,7 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
 /* PGH */
 STATIC mp_uint_t get_arg_fpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
-    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
+    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(fp_reg_name_table); i++) {
         const fp_reg_name_t *r = &fp_reg_name_table[i];
         if (reg_str[0] == r->name[0]
             && reg_str[1] == r->name[1]
@@ -438,6 +438,8 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op16(emit->as, ASM_THUMB_OP_NOP);
         } else if (strcmp(op_str, "wfi") == 0) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
+        } else if (strcmp(op_str, "vmrs") == 0) {
+            asm_thumb_op32(emit->as, 0xEEF1, 0xFA10);
         } else {
             goto unknown_op;
         }
@@ -553,9 +555,22 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code_hi = 0xeeb1;
                 op_code = 0x0a40;
                 mp_uint_t vd, vm;
+                op_fp_twoargs:
                 vd = get_arg_fpreg(emit, op_str, pn_args[0]); // return no. in range 0..31
                 vm = get_arg_fpreg(emit, op_str, pn_args[1]);
                 asm_thumb_op32(emit->as, op_code_hi |((vd & 1) << 6), op_code |((vd & 0x1e) << 11)|((vm & 1) << 5) | (vm & 0x1e) >> 1); 
+            } else if (strcmp(op_str, "vcmp") == 0) {
+                op_code_hi = 0xeeb4;
+                op_code = 0x0ac0;
+                goto op_fp_twoargs;
+            } else if (strcmp(op_str, "fsitos") == 0) {
+                op_code_hi = 0xeeb8;
+                op_code = 0x0ac0;
+                goto op_fp_twoargs;
+            } else if (strcmp(op_str, "ftosizs") == 0) {
+                op_code_hi = 0xeebd;
+                op_code = 0x0ac0;
+                goto op_fp_twoargs;
             } else {
                 if (strcmp(op_str, "and_") == 0) {
                     op_code = ASM_THUMB_FORMAT_4_AND;
