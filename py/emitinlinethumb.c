@@ -571,6 +571,21 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code_hi = 0xeebd;
                 op_code = 0x0ac0;
                 goto op_fp_twoargs;
+            } else if (strcmp(op_str, "vmov") == 0) {
+                op_code_hi = 0xee00;
+                op_code = 0x0a10;
+                mp_uint_t r_arm, vm;
+                r_arm = vm = 0 ;
+                const char *reg_str = get_arg_str(pn_args[0]);
+                if (reg_str[0] == 'r'){
+                    r_arm = get_arg_reg(emit, op_str, pn_args[0], 15);
+                    vm = get_arg_fpreg(emit, op_str, pn_args[1]);
+                    op_code_hi = op_code_hi | 0x10;
+                } else if (reg_str[0] == 's'){
+                    vm = get_arg_fpreg(emit, op_str, pn_args[0]);
+                    r_arm = get_arg_reg(emit, op_str, pn_args[1], 15);
+                } else goto unknown_op;
+                asm_thumb_op32(emit->as, op_code_hi |((vm & 0x1e) >>1), op_code | (r_arm << 12) | ((vm & 1) <<7)); 
             } else {
                 if (strcmp(op_str, "and_") == 0) {
                     op_code = ASM_THUMB_FORMAT_4_AND;
