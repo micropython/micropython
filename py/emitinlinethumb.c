@@ -161,45 +161,12 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
-/* PGH */
-
-typedef struct _fp_reg_name_t { byte reg; byte name[3]; } fp_reg_name_t;
-STATIC const fp_reg_name_t fp_reg_name_table[] = {
-    {0, "s0\0"},
-    {1, "s1\0"},
-    {2, "s2\0"},
-    {3, "s3\0"},
-    {4, "s4\0"},
-    {5, "s5\0"},
-    {6, "s6\0"},
-    {7, "s7\0"},
-    {8, "s8\0"},
-    {9, "s9\0"},
-    {10, "s10"},
-    {11, "s11"},
-    {12, "s12"},
-    {13, "s13"},
-    {14, "s14"},
-    {15, "s15"},
-    {16, "s16"},
-    {17, "s17"},
-    {18, "s18"},
-    {19, "s19"},
-    {20, "s20"},
-    {21, "s21"},
-    {22, "s22"},
-    {23, "s23"},
-    {24, "s24"},
-    {25, "s25"},
-    {26, "s26"},
-    {27, "s27"},
-    {28, "s28"},
-    {29, "s29"},
-    {30, "s30"},
-    {31, "s31"},
+STATIC const char * fp_regno[] = {
+    "0", "1", "2", "3","4","5","6","7","8","9",
+    "10","11","12","13","14","15","16","17","18","19",
+    "20","21","22","23","24","25","26","27","28","29",
+    "30","31",
 };
-
-/* !PGH */
 
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
@@ -211,33 +178,18 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
         return "";
     }
 }
-/* PGH */
+
 STATIC mp_uint_t get_arg_fpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
-    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(fp_reg_name_table); i++) {
-        const fp_reg_name_t *r = &fp_reg_name_table[i];
-        if (reg_str[0] == r->name[0]
-            && reg_str[1] == r->name[1]
-            && reg_str[2] == r->name[2]
-            && (reg_str[2] == '\0' || reg_str[3] == '\0')) {
-            if (r->reg > 31) {
-                emit_inline_thumb_error_exc(emit,
-                    mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
-                        "'%s' expects at most r%d", op, 31));
-                return 0;
-            } else {
-                return r->reg;
-            }
-        }
+    for (mp_uint_t i = 0; i < 32; i++){
+        if (reg_str[0] == 's' && strcmp(reg_str+1, fp_regno[i]) == 0)
+            return i ;
     }
     emit_inline_thumb_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
             "'%s' expects an FPU register", op));
     return 0;
 }
-
-/* !PGH */
-
 
 STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, mp_uint_t max_reg) {
     const char *reg_str = get_arg_str(pn);
@@ -439,7 +391,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         } else if (strcmp(op_str, "wfi") == 0) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
         } else if (strcmp(op_str, "vmrs") == 0) {
-            asm_thumb_op32(emit->as, 0xEEF1, 0xFA10);
+            asm_thumb_op32(emit->as, 0xEEF1, 0xFA10);// FP status to ARM status reg
         } else {
             goto unknown_op;
         }
@@ -535,6 +487,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         if (MP_PARSE_NODE_IS_ID(pn_args[1])) {
             // second arg is a register (or should be)
             mp_uint_t op_code, op_code_hi, vd, vm;
+            op_code = 0x0ac0; // default
             if (strcmp(op_str, "mov") == 0) {
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_uint_t reg_src = get_arg_reg(emit, op_str, pn_args[1], 15);
@@ -553,26 +506,22 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto op_clz_rbit;
             } else if (strcmp(op_str, "vcmp") == 0) {
                 op_code_hi =  0xeeb4;
-                op_code = 0x0ac0;
                 op_fp_twoargs:
-                vd = get_arg_fpreg(emit, op_str, pn_args[0]); // return no. in range 0..31
+                vd = get_arg_fpreg(emit, op_str, pn_args[0]);
                 vm = get_arg_fpreg(emit, op_str, pn_args[1]);
                 asm_thumb_op32(emit->as, op_code_hi |((vd & 1) << 6), op_code |((vd & 0x1e) << 11)|((vm & 1) << 5) | (vm & 0x1e) >> 1); 
             } else if (strcmp(op_str, "vsqrt") == 0) {
                 op_code_hi = 0xeeb1;
-                op_code = 0x0ac0;
                 goto op_fp_twoargs;
             } else if (strcmp(op_str, "vneg") == 0) {
                 op_code_hi = 0xeeb1;
                 op_code = 0x0a40;
                 goto op_fp_twoargs;
-            } else if (strcmp(op_str, "fsitos") == 0) {
-                op_code_hi = 0xeeb8;
-                op_code = 0x0ac0;
+            } else if (strcmp(op_str, "vcvt_f32_s32") == 0) {
+                op_code_hi = 0xeeb8; // int to float (_ replaces .)
                 goto op_fp_twoargs;
-            } else if (strcmp(op_str, "ftosizs") == 0) {
-                op_code_hi = 0xeebd;
-                op_code = 0x0ac0;
+            } else if (strcmp(op_str, "vcvt_s32_f32") == 0) {
+                op_code_hi = 0xeebd; // float to int
                 goto op_fp_twoargs;
             } else if (strcmp(op_str, "vmov") == 0) {
                 op_code_hi = 0xee00;
@@ -696,7 +645,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         }
 
     } else if (n_args == 3) {
-        mp_uint_t op_code, op_code2; /* PGH */
+        mp_uint_t op_code, op_code2;
         if (strcmp(op_str, "add") == 0) {
             op_code = ASM_THUMB_FORMAT_2_ADD;
             mp_uint_t rlo_dest, rlo_src;
@@ -735,7 +684,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                 asm_thumb_op32(emit->as, 0xe840 | r_base, (r_src << 12) | (r_dest << 8) | i8);
             }
-/* PGH */
         } else if (strcmp(op_str, "vmul") == 0) {
             op_code = 0xee20;
             op_code2 = 0x0a00 ;
@@ -757,7 +705,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             op_code = 0xee80;
             op_code2 = 0x0a00;
             goto op_fp_arith;
-/* !PGH */
         } else {
             goto unknown_op;
         }
