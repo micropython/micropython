@@ -46,3 +46,9 @@ print(l)
 b = bytearray(2)
 b[2:] = bytearray(10)
 print(b)
+
+
+# Assignment of bytes to array slice
+b = bytearray(2)
+b[1:1] = b"12345"
+print(b)
