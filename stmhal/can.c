@@ -348,7 +348,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -382,8 +382,18 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     self->can.pTxMsg = &tx_msg;
     HAL_StatusTypeDef status = HAL_CAN_Transmit(&self->can, args[2].u_int);
 
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
+    if (args[2].u_int != 0) {
+        if (status != HAL_OK) {
+            mp_hal_raise(status);
+        }
+    } else {
+        if (status == HAL_ERROR || status == HAL_BUSY) {
+            // HAL_CAN_Transmit returns HAL_ERROR when timeout = 0 and all three
+            // Tx buffers is in use. It returns HAL_BUSY when the HAL is in use 
+            // by another thread in an RTOS environment. Here we throw a busy exception
+            // to make it possible for the Python code to retry the send again.
+            mp_hal_raise(HAL_BUSY);
+        }
     }
 
     return mp_const_none;
