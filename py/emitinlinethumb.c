@@ -161,13 +161,6 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
-STATIC const char * fp_regno[] = {
-    "0", "1", "2", "3","4","5","6","7","8","9",
-    "10","11","12","13","14","15","16","17","18","19",
-    "20","21","22","23","24","25","26","27","28","29",
-    "30","31",
-};
-
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
 STATIC const char *get_arg_str(mp_parse_node_t pn) {
@@ -179,14 +172,42 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
     }
 }
 
+STATIC mp_uint_t strto_uint_t(const char *nptr, char **endptr) {
+    mp_uint_t val = 0;
+    for (; *nptr; nptr++) {
+        int v = *nptr;
+        if ('0' <= v && v <= '9') {
+            v -= '0';
+        } else {
+            break;
+        }
+        if (v >= 10) {
+            break;
+        }
+        val = val * 10 + v;
+    }
+    *endptr = (char*)nptr;
+    return val;
+}
+
 STATIC mp_uint_t get_arg_fpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
-    for (mp_uint_t i = 0; i < 32; i++){
-        if (reg_str[0] == 's' && strcmp(reg_str+1, fp_regno[i]) == 0)
-            return i ;
+    char *end ;
+    mp_uint_t regno ;
+    regno = 0;
+    if (reg_str[0] == 's'){
+        regno =strto_uint_t(reg_str+1, &end) ;
+        if (regno <= 31 && end > reg_str +1)
+            return regno ;
+    }
+    if (regno > 31){
+        emit_inline_thumb_error_exc(emit,
+             mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+                   "'%s' expects at most r%d", op, 31));
+        return 0;
     }
     emit_inline_thumb_error_exc(emit,
-        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
             "'%s' expects an FPU register", op));
     return 0;
 }
