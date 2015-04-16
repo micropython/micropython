@@ -124,7 +124,7 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
         } else if (pin == &pin_A5) {
             dac_id = 2;
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have DAC capabilities", qstr_str(pin->name)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have DAC capabilities", pin->name));
         }
     }
 

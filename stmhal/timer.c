@@ -846,7 +846,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s doesn't have an af for TIM%d", qstr_str(pin->name), self->tim_id));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q doesn't have an af for TIM%d", pin->name, self->tim_id));
         }
         // pin.init(mode=AF_PP, af=idx)
         const mp_obj_t args2[6] = {

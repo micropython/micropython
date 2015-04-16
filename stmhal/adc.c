@@ -163,7 +163,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC1) == 0) {
             // No ADC1 function on that pin
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %s does not have ADC capabilities", qstr_str(pin->name)));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have ADC capabilities", pin->name));
         }
         channel = pin->adc_channel;
     }
