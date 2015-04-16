@@ -27,7 +27,7 @@ void do_str(const char *src) {
         nlr_pop();
     } else {
         // uncaught exception
-        mp_obj_print_exception(&mp_extern_printf_wrapper, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
 }
 
