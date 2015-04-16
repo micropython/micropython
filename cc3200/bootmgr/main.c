@@ -347,3 +347,12 @@ int main (void) {
     }
 }
 
+//*****************************************************************************
+//! The following stub function is needed to link mp_vprintf
+//*****************************************************************************
+#include "py/qstr.h"
+
+const byte *qstr_data(qstr q, mp_uint_t *len) {
+    *len = 0;
+    return NULL;
+}

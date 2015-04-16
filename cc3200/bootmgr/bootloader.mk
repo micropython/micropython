@@ -60,8 +60,7 @@ BOOT_MAIN_SRC_S = \
 	bootmgr/runapp.s
 
 BOOT_PY_SRC_C = $(addprefix py/,\
-	pfenv.c \
-	pfenv_printf.c \
+	mpprint.c \
 	)
 
 BOOT_STM_SRC_C = $(addprefix stmhal/,\
