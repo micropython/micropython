@@ -170,6 +170,96 @@ STATIC void can_clearfilter(uint32_t f) {
     HAL_CAN_ConfigFilter(NULL, &filter);
 }
 
+// We have our own version of CAN transmit so we can handle Timeout=0 correctly.
+STATIC HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
+    uint32_t transmitmailbox;
+    uint32_t tickstart;
+    uint32_t rqcpflag;
+    uint32_t txokflag;
+
+    // Check the parameters
+    assert_param(IS_CAN_IDTYPE(hcan->pTxMsg->IDE));
+    assert_param(IS_CAN_RTR(hcan->pTxMsg->RTR));
+    assert_param(IS_CAN_DLC(hcan->pTxMsg->DLC));
+
+    // Select one empty transmit mailbox
+    if ((hcan->Instance->TSR&CAN_TSR_TME0) == CAN_TSR_TME0) {
+        transmitmailbox = CAN_TXMAILBOX_0;
+        rqcpflag = CAN_FLAG_RQCP0;
+        txokflag = CAN_FLAG_TXOK0;
+    } else if ((hcan->Instance->TSR&CAN_TSR_TME1) == CAN_TSR_TME1) {
+        transmitmailbox = CAN_TXMAILBOX_1;
+        rqcpflag = CAN_FLAG_RQCP1;
+        txokflag = CAN_FLAG_TXOK1;
+    } else if ((hcan->Instance->TSR&CAN_TSR_TME2) == CAN_TSR_TME2) {
+        transmitmailbox = CAN_TXMAILBOX_2;
+        rqcpflag = CAN_FLAG_RQCP2;
+        txokflag = CAN_FLAG_TXOK2;
+    } else {
+        transmitmailbox = CAN_TXSTATUS_NOMAILBOX;
+    }
+
+    if (transmitmailbox != CAN_TXSTATUS_NOMAILBOX) {
+        // Set up the Id
+        hcan->Instance->sTxMailBox[transmitmailbox].TIR &= CAN_TI0R_TXRQ;
+        if (hcan->pTxMsg->IDE == CAN_ID_STD) {
+            assert_param(IS_CAN_STDID(hcan->pTxMsg->StdId));
+            hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->StdId << 21) | \
+                                                        hcan->pTxMsg->RTR);
+        } else {
+            assert_param(IS_CAN_EXTID(hcan->pTxMsg->ExtId));
+            hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->ExtId << 3) | \
+                                                        hcan->pTxMsg->IDE | \
+                                                        hcan->pTxMsg->RTR);
+        }
+
+        // Set up the DLC
+        hcan->pTxMsg->DLC &= (uint8_t)0x0000000F;
+        hcan->Instance->sTxMailBox[transmitmailbox].TDTR &= (uint32_t)0xFFFFFFF0;
+        hcan->Instance->sTxMailBox[transmitmailbox].TDTR |= hcan->pTxMsg->DLC;
+
+        // Set up the data field
+        hcan->Instance->sTxMailBox[transmitmailbox].TDLR = (((uint32_t)hcan->pTxMsg->Data[3] << 24) |
+                                                ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
+                                                ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
+                                                ((uint32_t)hcan->pTxMsg->Data[0]));
+        hcan->Instance->sTxMailBox[transmitmailbox].TDHR = (((uint32_t)hcan->pTxMsg->Data[7] << 24) |
+                                                ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
+                                                ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
+                                                ((uint32_t)hcan->pTxMsg->Data[4]));
+        // Request transmission
+        hcan->Instance->sTxMailBox[transmitmailbox].TIR |= CAN_TI0R_TXRQ;
+
+        if (Timeout == 0) {
+            return HAL_OK;
+        }
+
+        // Get tick
+        tickstart = HAL_GetTick();
+        // Check End of transmission flag
+        while (!(__HAL_CAN_TRANSMIT_STATUS(hcan, transmitmailbox))) {
+            // Check for the Timeout
+            if (Timeout != HAL_MAX_DELAY) {
+                if ((HAL_GetTick() - tickstart) > Timeout) {
+                    // When the timeout expires, we try to abort the transmission of the packet
+                    __HAL_CAN_CANCEL_TRANSMIT(hcan, transmitmailbox);
+                    while (!__HAL_CAN_GET_FLAG(hcan, rqcpflag)) {
+                    }
+                    if (__HAL_CAN_GET_FLAG(hcan, txokflag)) {
+                        // The abort attempt failed and the message was sent properly
+                        return HAL_OK;
+                    } else {
+                        return HAL_TIMEOUT;
+                    }
+                }
+            }
+        }
+        return HAL_OK;
+    } else {
+        return HAL_BUSY;
+    }
+}
+
 /******************************************************************************/
 // Micro Python bindings
 
@@ -348,7 +438,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -380,7 +470,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         tx_msg.Data[i] = ((byte*)bufinfo.buf)[i]; // Data is uint32_t but holds only 1 byte
     }
     self->can.pTxMsg = &tx_msg;
-    HAL_StatusTypeDef status = HAL_CAN_Transmit(&self->can, args[2].u_int);
+    HAL_StatusTypeDef status = CAN_Transmit(&self->can, args[2].u_int);
 
     if (status != HAL_OK) {
         mp_hal_raise(status);

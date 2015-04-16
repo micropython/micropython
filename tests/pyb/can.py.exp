@@ -32,3 +32,9 @@ cb1a
 pending
 (1, 0, 0, b'11111111')
 (5, 0, 0, b'55555555')
+False
+(1, 0, 0, b'abcde')
+passed
+(2, 0, 0, b'abcde')
+(3, 0, 0, b'abcde')
+(4, 0, 0, b'abcde')

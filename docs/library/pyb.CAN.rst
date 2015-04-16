@@ -126,13 +126,19 @@ Methods
 
    Return value: buffer of data bytes.
 
-.. method:: can.send(send, addr, \*, timeout=5000)
+.. method:: can.send(send, addr, \*, timeout=0)
 
    Send a message on the bus:
 
      - ``send`` is the data to send (an integer to send, or a buffer object).
      - ``addr`` is the address to send to
      - ``timeout`` is the timeout in milliseconds to wait for the send.
+
+     If timeout is 0 the message is placed in a buffer in one of three hardware
+     buffers and the method returns immediately. If all three buffers are in use
+     an exception is thrown. If timeout is not 0, the method waits until the
+     message is transmitted. If the message can't be transmitted within the
+     specified time an exception is thrown.
 
    Return value: ``None``.
 
