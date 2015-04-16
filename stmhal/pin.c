@@ -184,7 +184,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     pin_obj_t *self = self_in;
 
     // pin name
-    mp_printf(print, "Pin(Pin.cpu.%s, mode=Pin.", qstr_str(self->name));
+    mp_printf(print, "Pin(Pin.cpu.%q, mode=Pin.", self->name);
 
     uint32_t mode = pin_get_mode(self);
 
@@ -221,7 +221,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
             pull_qst = MP_QSTR_PULL_DOWN;
         }
         if (pull_qst != MP_QSTR_NULL) {
-            mp_printf(print, ", pull=Pin.%s", qstr_str(pull_qst));
+            mp_printf(print, ", pull=Pin.%q", pull_qst);
         }
 
         // AF mode
@@ -231,7 +231,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
             if (af_obj == NULL) {
                 mp_printf(print, ", af=%d)", af_idx);
             } else {
-                mp_printf(print, ", af=Pin.%s)", qstr_str(af_obj->name));
+                mp_printf(print, ", af=Pin.%q)", af_obj->name);
             }
         } else {
             mp_print_str(print, ")");
@@ -618,7 +618,7 @@ const mp_obj_type_t pin_type = {
 /// Return a string describing the alternate function.
 STATIC void pin_af_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_af_obj_t *self = self_in;
-    mp_printf(print, "Pin.%s", qstr_str(self->name));
+    mp_printf(print, "Pin.%q", self->name);
 }
 
 /// \method index()

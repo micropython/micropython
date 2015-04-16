@@ -186,13 +186,13 @@ STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
             case CAN_MODE_SILENT: mode = MP_QSTR_SILENT; break;
             case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
         }
-        mp_printf(print, "%s, extframe=", qstr_str(mode));
+        mp_printf(print, "%q, extframe=", mode);
         if (self->extframe) {
             mode = MP_QSTR_True;
         } else {
             mode = MP_QSTR_False;
         }
-        mp_printf(print, "%s)", qstr_str(mode));
+        mp_printf(print, "%q)", mode);
     }
 }
 
