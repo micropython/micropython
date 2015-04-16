@@ -1,0 +1,31 @@
+# Per default everything gets normalized and gets LF line endings on checkout.
+* text eol=lf
+
+# These will always have CRLF line endings on checkout.
+*.vcxproj text eol=crlf
+*.props text eol=crlf
+*.bat text eol=crlf
+
+# These are binary so should never be modified by git.
+*.png binary
+*.jpg binary
+*.dxf binary
+
+# These should also not be modified by git.
+tests/basics/string_cr_conversion.py -text
+tests/basics/string_crlf_conversion.py -text
+stmhal/startup_stm32f40xx.s -text
+stmhal/pybcdc.inf_template -text
+stmhal/usbd_* -text
+stmhal/boards/*/stm32f4xx_hal_conf.h -text
+stmhal/cmsis/** -text
+stmhal/hal/** -text
+stmhal/usbdev/** -text
+stmhal/usbhost/** -text
+cc3200/hal/aes.c -text
+cc3200/hal/aes.h -text
+cc3200/hal/des.c -text
+cc3200/hal/i2s.c -text
+cc3200/hal/i2s.h -text
+cc3200/version.h -text
+lib/fatfs/** -text
