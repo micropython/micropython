@@ -196,7 +196,7 @@ static bool bootmgr_verify (void) {
             }
 
             // read the hash from the file and close it
-            ASSERT (BOOTMGR_HASH_SIZE == sl_FsRead(fHandle, offset, bootmgr_file_buf, BOOTMGR_HASH_SIZE));
+            sl_FsRead(fHandle, offset, bootmgr_file_buf, BOOTMGR_HASH_SIZE);
             sl_FsClose (fHandle, NULL, NULL, 0);
             bootmgr_file_buf[BOOTMGR_HASH_SIZE] = '\0';
             // compare both hashes
