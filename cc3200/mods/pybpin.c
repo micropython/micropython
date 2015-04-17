@@ -436,7 +436,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     uint32_t strength = pin_get_strenght(self);
 
     // pin name
-    mp_printf(print, "<Pin.cpu.%s, af=%u", qstr_str(self->name), af);
+    mp_printf(print, "<Pin.cpu.%q, af=%u", self->name, af);
 
     if (af == PIN_MODE_0) {
         // IO mode
@@ -447,7 +447,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         } else {
             mode_qst = MP_QSTR_OUT;
         }
-        mp_printf(print, ", mode=Pin.%s", qstr_str(mode_qst));
+        mp_printf(print, ", mode=Pin.%q", mode_qst);
     }
 
     // pin type
@@ -465,7 +465,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     } else {
         type_qst = MP_QSTR_OD_PD;
     }
-    mp_printf(print, ", pull=Pin.%s", qstr_str(type_qst));
+    mp_printf(print, ", pull=Pin.%q", type_qst);
 
     // Strength
     qstr str_qst;
@@ -476,7 +476,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     } else {
         str_qst = MP_QSTR_S6MA;
     }
-    mp_printf(print, ", strength=Pin.%s>", qstr_str(str_qst));
+    mp_printf(print, ", strength=Pin.%q>", str_qst);
 }
 
 /// \classmethod \constructor(id, ...)
