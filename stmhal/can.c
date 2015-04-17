@@ -439,6 +439,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_addr,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_rtr,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
@@ -464,11 +465,17 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         tx_msg.StdId = args[1].u_int & 0x7FF;
         tx_msg.IDE = CAN_ID_STD;
     }
-    tx_msg.RTR = CAN_RTR_DATA;
-    tx_msg.DLC = bufinfo.len;
-    for (mp_uint_t i = 0; i < bufinfo.len; i++) {
-        tx_msg.Data[i] = ((byte*)bufinfo.buf)[i]; // Data is uint32_t but holds only 1 byte
+    if (args[3].u_bool == false) {
+        tx_msg.RTR = CAN_RTR_DATA;
+        tx_msg.DLC = bufinfo.len;
+        for (mp_uint_t i = 0; i < bufinfo.len; i++) {
+            tx_msg.Data[i] = ((byte*)bufinfo.buf)[i]; // Data is uint32_t but holds only 1 byte
+        }
+    } else  {
+        tx_msg.RTR = CAN_RTR_REMOTE;
+        tx_msg.DLC = 0;
     }
+
     self->can.pTxMsg = &tx_msg;
     HAL_StatusTypeDef status = CAN_Transmit(&self->can, args[2].u_int);
 
@@ -543,7 +550,7 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     } else {
         tuple->items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.ExtId);
     }
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(rx_msg.RTR);
+    tuple->items[1] = rx_msg.RTR == CAN_RTR_REMOTE ? mp_const_true : mp_const_false;
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
     vstr_t vstr;
     vstr_init_len(&vstr, rx_msg.DLC);
@@ -597,6 +604,7 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = CAN_FILTER_FIFO0} },
         { MP_QSTR_params,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rtr,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
@@ -605,8 +613,15 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_uint_t len;
+    mp_uint_t rtr_len;
+    mp_uint_t rtr_masks[4] = {0,0,0,0};
+    mp_obj_t *rtr_flags;
     mp_obj_t *params;
     mp_obj_get_array(args[3].u_obj, &len, &params);
+    if (args[4].u_obj != MP_OBJ_NULL){
+        mp_obj_get_array(args[4].u_obj, &rtr_len, &rtr_flags);
+    }
+
 
     CAN_FilterConfTypeDef filter;
     if (args[1].u_int == MASK16 || args[1].u_int == LIST16) {
@@ -615,15 +630,41 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         }
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
         if (self->extframe) {
-            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[0])); // id1
-            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[1])); // mask1
-            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[2])); // id2
-            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[3])); // mask2
-        } else {
-            filter.FilterIdLow      = mp_obj_get_int(params[0]) << 5; // id1
-            filter.FilterMaskIdLow  = mp_obj_get_int(params[1]) << 5; // mask1
-            filter.FilterIdHigh     = mp_obj_get_int(params[2]) << 5; // id2
-            filter.FilterMaskIdHigh = mp_obj_get_int(params[3]) << 5; // mask2
+            if (args[4].u_obj != MP_OBJ_NULL) {
+                if (args[1].u_int == MASK16) {
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                    rtr_masks[1] = 0x02;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+                    rtr_masks[3] = 0x02;
+                } else {  //LIST16
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                    rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[2]) ? 0x02 : 0;
+                    rtr_masks[3] = mp_obj_get_int(rtr_flags[3]) ? 0x02 : 0;
+                }
+            }
+            filter.FilterIdLow      = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[0])) | rtr_masks[0]; // id1
+            filter.FilterMaskIdLow  = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[1])) | rtr_masks[1]; // mask1
+            filter.FilterIdHigh     = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[2])) | rtr_masks[2]; // id2
+            filter.FilterMaskIdHigh = EXTENDED_ID_TO_16BIT_FILTER(mp_obj_get_int(params[3])) | rtr_masks[3]; // mask2
+        } else { // Basic frames
+            if (args[4].u_obj != MP_OBJ_NULL) {
+                if (args[1].u_int == MASK16) {
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x10 : 0;
+                    rtr_masks[1] = 0x10;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[1]) ? 0x10 : 0;
+                    rtr_masks[3] = 0x10;
+                } else {  //LIST16
+                    rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x10 : 0;
+                    rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x10 : 0;
+                    rtr_masks[2] = mp_obj_get_int(rtr_flags[2]) ? 0x10 : 0;
+                    rtr_masks[3] = mp_obj_get_int(rtr_flags[3]) ? 0x10 : 0;
+                }
+            }
+            filter.FilterIdLow      = (mp_obj_get_int(params[0]) << 5) | rtr_masks[0]; // id1
+            filter.FilterMaskIdLow  = (mp_obj_get_int(params[1]) << 5) | rtr_masks[1]; // mask1
+            filter.FilterIdHigh     = (mp_obj_get_int(params[2]) << 5) | rtr_masks[2]; // id2
+            filter.FilterMaskIdHigh = (mp_obj_get_int(params[3]) << 5) | rtr_masks[3]; // mask2
         }
         if (args[1].u_int == MASK16) {
             filter.FilterMode  = CAN_FILTERMODE_IDMASK;
@@ -636,12 +677,20 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         if (len != 2) {
             goto error;
         }
-        filter.FilterScale      = CAN_FILTERSCALE_32BIT;
-
+        filter.FilterScale = CAN_FILTERSCALE_32BIT;
+        if (args[4].u_obj != MP_OBJ_NULL) {
+            if (args[1].u_int == MASK32) {
+                rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                rtr_masks[1] = 0x02;
+            } else {  //LIST32
+                rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
+                rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
+            }
+        }
         filter.FilterIdHigh     = (mp_obj_get_int(params[0]) & 0xFF00)  >> 13;
-        filter.FilterIdLow      = ((mp_obj_get_int(params[0]) & 0x00FF) << 3) | 4;
+        filter.FilterIdLow      = (((mp_obj_get_int(params[0]) & 0x00FF) << 3) | 4) | rtr_masks[0];
         filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0xFF00 ) >> 13;
-        filter.FilterMaskIdLow  = ((mp_obj_get_int(params[1]) & 0x00FF) << 3) | 4;
+        filter.FilterMaskIdLow  = (((mp_obj_get_int(params[1]) & 0x00FF) << 3) | 4) | rtr_masks[1];
         if (args[1].u_int == MASK32) {
             filter.FilterMode  = CAN_FILTERMODE_IDMASK;
         }

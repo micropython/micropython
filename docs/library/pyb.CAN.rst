@@ -82,7 +82,7 @@ Methods
 
    Turn off the CAN bus.
 
-.. method:: can.setfilter(bank, mode, fifo, params)
+.. method:: can.setfilter(bank, mode, fifo, params, \*, rtr)
 
    Configure a filter bank:
 
@@ -106,6 +106,19 @@ Methods
    +-----------+---------------------------------------------------------+
    |CAN.MASK32 |As with CAN.MASK16 but with only one 32 bit id/mask pair.|
    +-----------+---------------------------------------------------------+
+   - ``rtr`` is an array of booleans that states if a filter should accept a rtr message. The length of the array depends on the ``mode`` argument.
+
+   +-----------+----------------------+
+   |``mode``   |length of rtr array   |
+   +===========+======================+
+   |CAN.LIST16 |4                     |
+   +-----------+----------------------+
+   |CAN.LIST32 |2                     |
+   +-----------+----------------------+
+   |CAN.MASK16 |2                     |
+   +-----------+----------------------+
+   |CAN.MASK32 |1                     |
+   +-----------+----------------------+
 
 .. method:: can.clearfilter(bank)
 
@@ -124,15 +137,21 @@ Methods
      - ``fifo`` is an integer, which is the FIFO to receive on
      - ``timeout`` is the timeout in milliseconds to wait for the receive.
 
-   Return value: buffer of data bytes.
+   Return value: A tuple containing four values.
 
-.. method:: can.send(send, addr, \*, timeout=0)
+     - The id of the message.
+     - A boolean that indicates if the message is a RTR message.
+     - The FMI (Filter Match Index) value.
+     - An array containing the data.
+
+.. method:: can.send(data, addr, \*, timeout=0, rtr=False)
 
    Send a message on the bus:
 
-     - ``send`` is the data to send (an integer to send, or a buffer object).
-     - ``addr`` is the address to send to
+     - ``data`` is the data to send (an integer to send, or a buffer object).
+     - ``id`` is the id of the message to be sent.
      - ``timeout`` is the timeout in milliseconds to wait for the send.
+     - ``rtr`` boolean that specifies if the message shall be sent as a remote transmission request.
 
      If timeout is 0 the message is placed in a buffer in one of three hardware
      buffers and the method returns immediately. If all three buffers are in use
