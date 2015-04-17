@@ -151,3 +151,40 @@ except OSError as e:
 pyb.delay(500)
 while can.any(0):
     print(can.recv(0))
+
+# Testing rtr messages
+bus1 = CAN(1, CAN.LOOPBACK)
+bus2 = CAN(2, CAN.LOOPBACK, extframe = True)
+while bus1.any(0):
+    bus1.recv(0)
+while bus2.any(0):
+    bus2.recv(0)
+bus1.setfilter(0, CAN.LIST16, 0, (1, 2, 3, 4))
+bus1.setfilter(1, CAN.LIST16, 0, (5, 6, 7, 8), rtr=(True, True, True, True))
+bus1.setfilter(2, CAN.MASK16, 0, (64, 64, 32, 32), rtr=(False, True))
+bus2.setfilter(0, CAN.LIST32, 0, (1, 2), rtr=(True, True))
+bus2.setfilter(1, CAN.LIST32, 0, (3, 4), rtr=(True, False))
+bus2.setfilter(2, CAN.MASK32, 0, (16, 16), rtr=(False,))
+bus2.setfilter(2, CAN.MASK32, 0, (32, 32), rtr=(True,))
+
+bus1.send('',1,rtr=True)
+print(bus1.any(0))
+bus1.send('',5,rtr=True)
+print(bus1.recv(0))
+bus1.send('',6,rtr=True)
+print(bus1.recv(0))
+bus1.send('',7,rtr=True)
+print(bus1.recv(0))
+bus1.send('',16,rtr=True)
+print(bus1.any(0))
+bus1.send('',32,rtr=True)
+print(bus1.recv(0))
+
+bus2.send('',1,rtr=True)
+print(bus2.recv(0))
+bus2.send('',2,rtr=True)
+print(bus2.recv(0))
+bus2.send('',3,rtr=True)
+print(bus2.recv(0))
+bus2.send('',4,rtr=True)
+print(bus2.any(0))
