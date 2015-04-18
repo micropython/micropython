@@ -37,10 +37,12 @@
 #define ADDR_FLASH_SECTOR_5     ((uint32_t)0x08020000) /* Base @ of Sector 5, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_6     ((uint32_t)0x08040000) /* Base @ of Sector 6, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_7     ((uint32_t)0x08060000) /* Base @ of Sector 7, 128 Kbytes */
+#if defined(FLASH_SECTOR_8)
 #define ADDR_FLASH_SECTOR_8     ((uint32_t)0x08080000) /* Base @ of Sector 8, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_9     ((uint32_t)0x080A0000) /* Base @ of Sector 9, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
+#endif
 
 static const uint32_t flash_info_table[26] = {
     ADDR_FLASH_SECTOR_0, FLASH_SECTOR_0,
@@ -51,11 +53,15 @@ static const uint32_t flash_info_table[26] = {
     ADDR_FLASH_SECTOR_5, FLASH_SECTOR_5,
     ADDR_FLASH_SECTOR_6, FLASH_SECTOR_6,
     ADDR_FLASH_SECTOR_7, FLASH_SECTOR_7,
+    #if defined(FLASH_SECTOR_8)
     ADDR_FLASH_SECTOR_8, FLASH_SECTOR_8,
     ADDR_FLASH_SECTOR_9, FLASH_SECTOR_9,
     ADDR_FLASH_SECTOR_10, FLASH_SECTOR_10,
     ADDR_FLASH_SECTOR_11, FLASH_SECTOR_11,
     ADDR_FLASH_SECTOR_11 + 0x20000, 0,
+    #else
+    ADDR_FLASH_SECTOR_7 + 0x20000, 0,
+    #endif
 };
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {

@@ -34,10 +34,26 @@
 #include "flash.h"
 #include "storage.h"
 
+#if defined(STM32F405xx)
+
 #define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
 #define FLASH_PART1_START_BLOCK (0x100)
 #define FLASH_PART1_NUM_BLOCKS (224) // 16k+16k+16k+64k=112k
 #define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
+#define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of CCM
+
+#elif defined(STM32F401xE)
+
+STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
+#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
+#define FLASH_PART1_START_BLOCK (0x100)
+#define FLASH_PART1_NUM_BLOCKS (128) // 16k+16k+16k+16k(of64k)=64k
+#define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
+#define FLASH_SECTOR_SIZE_MAX (0x4000) // 16k max due to size of cache buffer
+
+#else
+#error "no storage support for this MCU"
+#endif
 
 #define FLASH_FLAG_DIRTY        (1)
 #define FLASH_FLAG_FORCE_WRITE  (2)
@@ -62,6 +78,9 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
     uint32_t flash_sector_start;
     uint32_t flash_sector_size;
     uint32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
+    if (flash_sector_size > FLASH_SECTOR_SIZE_MAX) {
+        flash_sector_size = FLASH_SECTOR_SIZE_MAX;
+    }
     if (flash_cache_sector_id != flash_sector_id) {
         flash_cache_flush();
         memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
