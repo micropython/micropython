@@ -77,6 +77,7 @@ void dac_init(void) {
     HAL_DAC_Init(&DAC_Handle);
 }
 
+#if defined(TIM6)
 STATIC void TIM6_Config(uint freq) {
     // Init TIM6 at the required frequency (in Hz)
     timer_tim6_init(freq);
@@ -90,6 +91,7 @@ STATIC void TIM6_Config(uint freq) {
     // TIM6 start counter
     HAL_TIM_Base_Start(&TIM6_Handle);
 }
+#endif
 
 /******************************************************************************/
 // Micro Python bindings
@@ -167,6 +169,7 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     return dac;
 }
 
+#if defined(TIM6)
 /// \method noise(freq)
 /// Generate a pseudo-random noise signal.  A new random sample is written
 /// to the DAC output at the given frequency.
@@ -193,7 +196,9 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
+#endif
 
+#if defined(TIM6)
 /// \method triangle(freq)
 /// Generate a triangle wave.  The value on the DAC output changes at
 /// the given frequency, and the frequence of the repeating triangle wave
@@ -221,6 +226,7 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
+#endif
 
 /// \method write(value)
 /// Direct access to the DAC output (8 bit only at the moment).
@@ -242,6 +248,7 @@ STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 
+#if defined(TIM6)
 /// \method write_timed(data, freq, *, mode=DAC.NORMAL)
 /// Initiates a burst of RAM to DAC using a DMA transfer.
 /// The input data is treated as an array of bytes (8 bit data).
@@ -352,13 +359,16 @@ mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_write_timed_obj, 1, pyb_dac_write_timed);
+#endif
 
 STATIC const mp_map_elem_t pyb_dac_locals_dict_table[] = {
     // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_dac_write_obj },
+    #if defined(TIM6)
     { MP_OBJ_NEW_QSTR(MP_QSTR_noise), (mp_obj_t)&pyb_dac_noise_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_triangle), (mp_obj_t)&pyb_dac_triangle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_dac_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_timed), (mp_obj_t)&pyb_dac_write_timed_obj },
+    #endif
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_NORMAL),      MP_OBJ_NEW_SMALL_INT(DMA_NORMAL) },
