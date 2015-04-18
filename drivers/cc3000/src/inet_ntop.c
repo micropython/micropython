@@ -15,11 +15,15 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <std.h>
 #include <string.h>
 #include "cc3000_common.h"
 #include "socket.h"
 #include "inet_ntop.h"
+
+// We can't include stdio.h because it defines _types_fd_set, but we
+// need to use the CC3000 version of this type.  So we must provide
+// our own declaration of snprintf.  Grrr.
+int snprintf(char *str, size_t size, const char *fmt, ...);
 
 #define IN6ADDRSZ       16
 #define INADDRSZ         4

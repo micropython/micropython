@@ -24,10 +24,6 @@
  * THE SOFTWARE.
  */
 
-// We can't include stdio.h because it defines _types_fd_set, but we
-// need to use the CC3000 version of this type.
-
-#include <std.h>
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
@@ -531,9 +527,9 @@ STATIC mp_obj_t cc3k_ifconfig(mp_obj_t self_in) {
     mod_network_convert_ipv4_endianness(ipconfig.aucDHCPServer);
 
     // render MAC address
-    char mac_str[18];
+    VSTR_FIXED(mac_vstr, 18);
     const uint8_t *mac = ipconfig.uaMacAddr;
-    mp_uint_t mac_len = snprintf(mac_str, 18, "%02X:%02x:%02x:%02x:%02x:%02x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+    vstr_printf(&mac_vstr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 
     // create and return tuple with ifconfig info
     mp_obj_t tuple[7] = {
@@ -542,7 +538,7 @@ STATIC mp_obj_t cc3k_ifconfig(mp_obj_t self_in) {
         mod_network_format_ipv4_addr(ipconfig.aucDefaultGateway),
         mod_network_format_ipv4_addr(ipconfig.aucDNSServer),
         mod_network_format_ipv4_addr(ipconfig.aucDHCPServer),
-        mp_obj_new_str(mac_str, mac_len, false),
+        mp_obj_new_str(mac_vstr.buf, mac_vstr.len, false),
         mp_obj_new_str((const char*)ipconfig.uaSSID, strlen((const char*)ipconfig.uaSSID), false),
     };
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
@@ -566,7 +562,7 @@ STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in, mp_obj_t key_in) {
     if (key[0] == 'p' && key[1] == 'g' && key[2] == 'm' && key[3] == '\0') {
         patch_prog_start();
     } else {
-        printf("pass 'pgm' as argument in order to program\n");
+        mp_print_str(&mp_plat_print, "pass 'pgm' as argument in order to program\n");
     }
     return mp_const_none;
 }
