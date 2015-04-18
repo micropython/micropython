@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "std.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "std.h"
 
 #include "simplelink.h"
 #include "py/mpconfig.h"

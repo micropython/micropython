@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include <ctype.h>
-#include <std.h>
+#include "std.h"
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H

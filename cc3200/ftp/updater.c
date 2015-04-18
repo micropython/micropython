@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "std.h"
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H

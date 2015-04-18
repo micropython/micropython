@@ -26,7 +26,6 @@
  */
 
 #include <stdint.h>
-#include <std.h>
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
@@ -245,7 +244,7 @@ soft_reset_exit:
     // soft reset
     pybsleep_signal_soft_reset();
 
-    printf("PYB: soft reboot\n");
+    mp_printf(&mp_plat_print, "PYB: soft reboot\n");
 
     sflash_disk_flush();
 

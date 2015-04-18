@@ -25,7 +25,6 @@
  */
 
 #include <string.h>
-#include <std.h>
 
 #include "py/mpconfig.h"
 #include "py/misc.h"

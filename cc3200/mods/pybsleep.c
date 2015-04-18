@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <std.h>
 #include <stdint.h>
 #include <string.h>
 

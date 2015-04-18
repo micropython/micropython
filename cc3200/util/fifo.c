@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "std.h"
 #include "fifo.h"
 
 
