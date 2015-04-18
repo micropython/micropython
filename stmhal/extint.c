@@ -102,7 +102,10 @@ typedef struct {
 STATIC uint32_t pyb_extint_mode[EXTI_NUM_VECTORS];
 
 #if !defined(ETH)
-#define ETH_WKUP_IRQn   62  // The 405 doesn't have ETH, but we want a value to put in our table
+#define ETH_WKUP_IRQn   62  // Some MCUs don't have ETH, but we want a value to put in our table
+#endif
+#if !defined(OTG_HS_WKUP_IRQn)
+#define OTG_HS_WKUP_IRQn 76  // Some MCUs don't have HS, but we want a value to put in our table
 #endif
 
 STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
