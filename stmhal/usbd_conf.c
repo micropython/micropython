@@ -94,6 +94,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
   } 
   
+  #if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {
     /* Configure USB FS GPIOs */
@@ -158,6 +159,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USBHS Interrupt */
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
   }   
+  #endif
 }
 /**
   * @brief  DeInitializes the PCD MSP.
@@ -172,12 +174,14 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
     __USB_OTG_FS_CLK_DISABLE();
     __SYSCFG_CLK_DISABLE(); 
   }
+  #if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {  
     /* Disable USB FS Clocks */ 
     __USB_OTG_HS_CLK_DISABLE();
     __SYSCFG_CLK_DISABLE(); 
   }  
+  #endif
 }
 
 /*******************************************************************************
