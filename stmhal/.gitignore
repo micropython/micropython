@@ -1,5 +1,1 @@
-build-PYBV3/
-build-PYBV4/
-build-PYBV10/
-build-STM32F4DISC/
-build-NETDUINO_PLUS_2/
+build-*/
