@@ -25,7 +25,7 @@
  */
 
 #include <stdint.h>
-#include "std.h"
+#include <string.h>
 
 #define likely(x) __builtin_expect((x), 1)
 
@@ -102,10 +102,12 @@ void *memset(void *s, int c, size_t n) {
     return s;
 }
 
-int memcmp(const char *s1, const char *s2, size_t n) {
+int memcmp(const void *s1, const void *s2, size_t n) {
+    const uint8_t *s1_8 = s1;
+    const uint8_t *s2_8 = s2;
     while (n--) {
-        char c1 = *s1++;
-        char c2 = *s2++;
+        char c1 = *s1_8++;
+        char c2 = *s2_8++;
         if (c1 < c2) return -1;
         else if (c1 > c2) return 1;
     }
