@@ -192,15 +192,16 @@ STATIC mp_uint_t strto_uint_t(const char *nptr, char **endptr) {
 
 STATIC mp_uint_t get_arg_fpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
-    char *end ;
-    mp_uint_t regno ;
+    char *end;
+    mp_uint_t regno;
     regno = 0;
-    if (reg_str[0] == 's'){
-        regno =strto_uint_t(reg_str+1, &end) ;
-        if (regno <= 31 && end > reg_str +1)
-            return regno ;
+    if (reg_str[0] == 's') {
+        regno =strto_uint_t(reg_str+1, &end);
+        if (regno <= 31 && end > reg_str +1) {
+            return regno;
+        }
     }
-    if (regno > 31){
+    if (regno > 31) {
         emit_inline_thumb_error_exc(emit,
              mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
                    "'%s' expects at most r%d", op, 31));
@@ -411,8 +412,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op16(emit->as, ASM_THUMB_OP_NOP);
         } else if (strcmp(op_str, "wfi") == 0) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
-        } else if (strcmp(op_str, "vmrs") == 0) {
-            asm_thumb_op32(emit->as, 0xEEF1, 0xFA10);// FP status to ARM status reg
         } else {
             goto unknown_op;
         }
@@ -507,7 +506,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     } else if (n_args == 2) {
         if (MP_PARSE_NODE_IS_ID(pn_args[1])) {
             // second arg is a register (or should be)
-            mp_uint_t op_code, op_code_hi, vd, vm;
+            mp_uint_t op_code, op_code_hi;
             op_code = 0x0ac0; // default
             if (strcmp(op_str, "mov") == 0) {
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
@@ -526,6 +525,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code = 0xf0a0;
                 goto op_clz_rbit;
             } else if (strcmp(op_str, "vcmp") == 0) {
+                mp_uint_t vd, vm;
                 op_code_hi =  0xeeb4;
                 op_fp_twoargs:
                 vd = get_arg_fpreg(emit, op_str, pn_args[0]);
@@ -544,16 +544,27 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (strcmp(op_str, "vcvt_s32_f32") == 0) {
                 op_code_hi = 0xeebd; // float to int
                 goto op_fp_twoargs;
+            } else if (strcmp(op_str, "vmrs") == 0) {
+                mp_uint_t reg_dest = 15;
+                const char *reg_str0 = get_arg_str(pn_args[0]);
+                if (strcmp(reg_str0, "APSR_nzcv") != 0) {
+                    reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+                }
+                const char *reg_str1 = get_arg_str(pn_args[1]);
+                if (strcmp(reg_str1, "FPSCR") == 0) {
+                    asm_thumb_op32(emit->as, 0xEEF1, 0x0A10 | reg_dest << 12);// FP status to ARM reg
+                } else { goto unknown_op;
+                }
             } else if (strcmp(op_str, "vmov") == 0) {
                 op_code_hi = 0xee00;
                 op_code = 0x0a10;
                 mp_uint_t r_arm, vm;
                 const char *reg_str = get_arg_str(pn_args[0]);
-                if (reg_str[0] == 'r'){
+                if (reg_str[0] == 'r') {
                     r_arm = get_arg_reg(emit, op_str, pn_args[0], 15);
                     vm = get_arg_fpreg(emit, op_str, pn_args[1]);
                     op_code_hi = op_code_hi | 0x10;
-                } else if (reg_str[0] == 's'){
+                } else if (reg_str[0] == 's') {
                     vm = get_arg_fpreg(emit, op_str, pn_args[0]);
                     r_arm = get_arg_reg(emit, op_str, pn_args[1], 15);
                 } else goto unknown_op;
@@ -579,7 +590,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             }
         } else {
             // second arg is not a register
-            mp_uint_t op_code, op_code2;
+            mp_uint_t op_code;
             if (strcmp(op_str, "mov") == 0) {
                 op_code = ASM_THUMB_FORMAT_3_MOV;
                 mp_uint_t rlo_dest, i8_src;
@@ -622,9 +633,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     asm_thumb_op32(emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
                 }
             } else if (strcmp(op_str, "vldr") == 0) {
+                mp_uint_t op_code2;
                 op_code = 0xed90;
                 op_vstr:
-                op_code2 = 0x0a00 ;
+                op_code2 = 0x0a00;
                 mp_uint_t vd;
                 vd = get_arg_fpreg(emit, op_str, pn_args[0]);
                 mp_parse_node_t pn_base, pn_offset;
@@ -705,9 +717,20 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                 asm_thumb_op32(emit->as, 0xe840 | r_base, (r_src << 12) | (r_dest << 8) | i8);
             }
+        } else if (strcmp(op_str, "getlbl") == 0) {
+            // pseudo-instruction enables using labels to access data
+            // getlbl(reg1, reg2, label) reg1 = pc reg2 = label offset
+            mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+            mp_uint_t reg_offs = get_arg_reg(emit, op_str, pn_args[1], 15);
+            int label_num = get_arg_label(emit, op_str, pn_args[2]);
+            mp_int_t rel = get_label_abs_addr(emit->as, label_num);
+            asm_thumb_mov_reg_reg(emit->as, reg_dest, 15); // pc
+            asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVW, reg_offs, rel & 0xffff);
+            asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVT, reg_offs, (rel >> 16)); // can be -ve
+
         } else if (strcmp(op_str, "vmul") == 0) {
             op_code = 0xee20;
-            op_code2 = 0x0a00 ;
+            op_code2 = 0x0a00;
             mp_uint_t vd, vn, vm;
             op_fp_arith:
             vd = get_arg_fpreg(emit, op_str, pn_args[0]); // return no. in range 0..31
@@ -716,7 +739,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op32(emit->as, op_code |((vd & 1) << 6)|(vn >> 1), op_code2 |(vm >> 1) |((vm & 1) << 5)|((vd & 0x1e) << 11)|((vn & 1) << 7)); 
         } else if (strcmp(op_str, "vadd") == 0) {
             op_code = 0xee30;
-            op_code2 = 0x0a00 ;
+            op_code2 = 0x0a00;
             goto op_fp_arith;
         } else if (strcmp(op_str, "vsub") == 0) {
             op_code = 0xee30;
