@@ -91,6 +91,7 @@
   * @{
   */
 
+#include "mpconfigboard.h"
 #include "stm32f4xx_hal.h"
 
 void __fatal_error(const char *msg);
@@ -365,10 +366,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = HSE_VALUE/1000000;
-  RCC_OscInitStruct.PLL.PLLN = 336;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
+  RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
+  RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
+  RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     __fatal_error("HAL_RCC_OscConfig");

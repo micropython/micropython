@@ -20,6 +20,12 @@
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
 
+// HSE is 8MHz
+#define MICROPY_HW_CLK_PLLM (8)
+#define MICROPY_HW_CLK_PLLN (336)
+#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
+#define MICROPY_HW_CLK_PLLQ (7)
+
 // The pyboard has a 32kHz crystal for the RTC
 #define MICROPY_HW_RTC_USE_LSE      (1)
 

@@ -20,6 +20,12 @@
 #define MICROPY_HW_ENABLE_SPI3      (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
 
+// HSE is 12MHz
+#define MICROPY_HW_CLK_PLLM (12)
+#define MICROPY_HW_CLK_PLLN (336)
+#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
+#define MICROPY_HW_CLK_PLLQ (7)
+
 // The Cerb40 has No LEDs
 
 // The Cerb40 has No SDCard
