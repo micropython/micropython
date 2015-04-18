@@ -45,6 +45,7 @@ Additional components:
 - teensy/ -- a version of Micro Python that runs on the Teensy 3.1
   (preliminary but functional).
 - pic16bit/ -- a version of Micro Python for 16-bit PIC microcontrollers.
+- cc3200/ -- a version of Micro Python that runs on the CC3200 from TI.
 - unix-cpy/ -- a version of Micro Python that outputs bytecode (for testing).
 - tests/ -- test framework and test scripts.
 - tools/ -- various tools, including the pyboard.py module.
