@@ -34,7 +34,7 @@
 #include "flash.h"
 #include "storage.h"
 
-#if defined(STM32F405xx)
+#if defined(STM32F405xx) || defined(STM32F407xx)
 
 #define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
 #define FLASH_PART1_START_BLOCK (0x100)
