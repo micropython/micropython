@@ -42,7 +42,7 @@
 #define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
 #define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of CCM
 
-#elif defined(STM32F401xE)
+#elif defined(STM32F401xE) || defined(STM32F411xE)
 
 STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
