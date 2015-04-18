@@ -244,8 +244,8 @@ void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
     if (vstr->had_error || !vstr_ensure_extra(vstr, len)) {
         // if buf is fixed, we got here because there isn't enough room left
         // so just try to copy as much as we can, with room for a possible null byte
-        if (vstr->fixed_buf && vstr->len + 1 < vstr->alloc) {
-            len = vstr->alloc - vstr->len - 1;
+        if (vstr->fixed_buf && vstr->len < vstr->alloc) {
+            len = vstr->alloc - vstr->len;
             goto copy;
         }
         return;
@@ -325,10 +325,6 @@ void vstr_printf(vstr_t *vstr, const char *fmt, ...) {
 }
 
 void vstr_vprintf(vstr_t *vstr, const char *fmt, va_list ap) {
-    if (vstr->had_error || !vstr_ensure_extra(vstr, strlen(fmt))) {
-        return;
-    }
-
     mp_print_t print = {vstr, (mp_print_strn_t)vstr_add_strn};
     mp_vprintf(&print, fmt, ap);
 }
