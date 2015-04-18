@@ -153,6 +153,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             __USART2_CLK_ENABLE();
             break;
 
+        #if defined(USART3)
         // USART3 is on PB10/PB11 (CK,CTS,RTS on PB12,PB13,PB14), PC10/PC11 (CK on PC12), PD8/PD9 (CK on PD10)
         case PYB_UART_3:
             UARTx = USART3;
@@ -175,7 +176,9 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
 #endif
             __USART3_CLK_ENABLE();
             break;
+        #endif
 
+        #if defined(UART4)
         // UART4 is on PA0/PA1, PC10/PC11
         case PYB_UART_4:
             UARTx = UART4;
@@ -187,6 +190,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
 
             __UART4_CLK_ENABLE();
             break;
+        #endif
 
         // USART6 is on PC6/PC7 (CK on PC8)
         case PYB_UART_6:
@@ -570,16 +574,20 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __USART2_FORCE_RESET();
         __USART2_RELEASE_RESET();
         __USART2_CLK_DISABLE();
+    #if defined(USART3)
     } else if (uart->Instance == USART3) {
         HAL_NVIC_DisableIRQ(USART3_IRQn);
         __USART3_FORCE_RESET();
         __USART3_RELEASE_RESET();
         __USART3_CLK_DISABLE();
+    #endif
+    #if defined(UART4)
     } else if (uart->Instance == UART4) {
         HAL_NVIC_DisableIRQ(UART4_IRQn);
         __UART4_FORCE_RESET();
         __UART4_RELEASE_RESET();
         __UART4_CLK_DISABLE();
+    #endif
     } else if (uart->Instance == USART6) {
         HAL_NVIC_DisableIRQ(USART6_IRQn);
         __USART6_FORCE_RESET();
