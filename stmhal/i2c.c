@@ -87,19 +87,30 @@
 #define PYB_I2C_MASTER (0)
 #define PYB_I2C_SLAVE  (1)
 
-#if MICROPY_HW_ENABLE_I2C1
+#if defined(MICROPY_HW_I2C1_SCL)
 I2C_HandleTypeDef I2CHandle1 = {.Instance = NULL};
 #endif
+#if defined(MICROPY_HW_I2C2_SCL)
 I2C_HandleTypeDef I2CHandle2 = {.Instance = NULL};
+#endif
+#if defined(MICROPY_HW_I2C3_SCL)
+I2C_HandleTypeDef I2CHandle3 = {.Instance = NULL};
+#endif
 
 void i2c_init0(void) {
     // reset the I2C1 handles
-#if MICROPY_HW_ENABLE_I2C1
+    #if defined(MICROPY_HW_I2C1_SCL)
     memset(&I2CHandle1, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle1.Instance = I2C1;
-#endif
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
     memset(&I2CHandle2, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle2.Instance = I2C2;
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    memset(&I2CHandle3, 0, sizeof(I2C_HandleTypeDef));
+    I2CHandle3.Instance = I2C3;
+    #endif
 }
 
 void i2c_init(I2C_HandleTypeDef *i2c) {
@@ -111,22 +122,27 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
 
     const pin_obj_t *pins[2];
     if (0) {
-#if MICROPY_HW_ENABLE_I2C1
+    #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c == &I2CHandle1) {
-        // X-skin: X9=PB6=SCL, X10=PB7=SDA
-        pins[0] = &pin_B6;
-        pins[1] = &pin_B7;
+        pins[0] = &MICROPY_HW_I2C1_SCL;
+        pins[1] = &MICROPY_HW_I2C1_SDA;
         GPIO_InitStructure.Alternate = GPIO_AF4_I2C1;
-        // enable the I2C clock
         __I2C1_CLK_ENABLE();
-#endif
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c == &I2CHandle2) {
-        // Y-skin: Y9=PB10=SCL, Y10=PB11=SDA
-        pins[0] = &pin_B10;
-        pins[1] = &pin_B11;
+        pins[0] = &MICROPY_HW_I2C2_SCL;
+        pins[1] = &MICROPY_HW_I2C2_SDA;
         GPIO_InitStructure.Alternate = GPIO_AF4_I2C2;
-        // enable the I2C clock
         __I2C2_CLK_ENABLE();
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    } else if (i2c == &I2CHandle3) {
+        pins[0] = &MICROPY_HW_I2C3_SCL;
+        pins[1] = &MICROPY_HW_I2C3_SDA;
+        GPIO_InitStructure.Alternate = GPIO_AF4_I2C3;
+        __I2C3_CLK_ENABLE();
+    #endif
     } else {
         // I2C does not exist for this board (shouldn't get here, should be checked by caller)
         return;
@@ -151,16 +167,24 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
 void i2c_deinit(I2C_HandleTypeDef *i2c) {
     HAL_I2C_DeInit(i2c);
     if (0) {
-#if MICROPY_HW_ENABLE_I2C1
+    #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c->Instance == I2C1) {
         __I2C1_FORCE_RESET();
         __I2C1_RELEASE_RESET();
         __I2C1_CLK_DISABLE();
-#endif
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c->Instance == I2C2) {
         __I2C2_FORCE_RESET();
         __I2C2_RELEASE_RESET();
         __I2C2_CLK_DISABLE();
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    } else if (i2c->Instance == I2C3) {
+        __I2C3_FORCE_RESET();
+        __I2C3_RELEASE_RESET();
+        __I2C3_CLK_DISABLE();
+    #endif
     }
 }
 
@@ -175,20 +199,31 @@ typedef struct _pyb_i2c_obj_t {
 STATIC inline bool in_master_mode(pyb_i2c_obj_t *self) { return self->i2c->Init.OwnAddress1 == PYB_I2C_MASTER_ADDRESS; }
 
 STATIC const pyb_i2c_obj_t pyb_i2c_obj[] = {
-#if MICROPY_HW_ENABLE_I2C1
+    #if defined(MICROPY_HW_I2C1_SCL)
     {{&pyb_i2c_type}, &I2CHandle1},
-#else
-    {{&pyb_i2c_type}, NULL},
-#endif
-    {{&pyb_i2c_type}, &I2CHandle2}
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
+    {{&pyb_i2c_type}, &I2CHandle2},
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    {{&pyb_i2c_type}, &I2CHandle3},
+    #endif
 };
 
 STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
 
-    uint i2c_num;
-    if (self->i2c->Instance == I2C1) { i2c_num = 1; }
-    else { i2c_num = 2; }
+    uint i2c_num = 0;
+    if (0) { }
+    #if defined(MICROPY_HW_I2C1_SCL)
+    else if (self->i2c->Instance == I2C1) { i2c_num = 1; }
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
+    else if (self->i2c->Instance == I2C2) { i2c_num = 2; }
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    else if (self->i2c->Instance == I2C3) { i2c_num = 3; }
+    #endif
 
     if (self->i2c->State == HAL_I2C_STATE_RESET) {
         mp_printf(print, "I2C(%u)", i2c_num);
