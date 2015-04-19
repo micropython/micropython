@@ -33,6 +33,9 @@ import sys
 import time
 import serial
 
+def stdout_write_bytes(b):
+    sys.stdout.buffer.write(b)
+
 class PyboardError(BaseException):
     pass
 
@@ -101,7 +104,7 @@ class Pyboard:
         if isinstance(command, bytes):
             command_bytes = command
         else:
-            command_bytes = bytes(command, encoding='ascii')
+            command_bytes = bytes(command, encoding='utf8')
 
         # write command
         for i in range(0, len(command_bytes), 256):
@@ -128,19 +131,19 @@ class Pyboard:
         return ret
 
     def execfile(self, filename):
-        with open(filename) as f:
+        with open(filename, 'rb') as f:
             pyfile = f.read()
         return self.exec(pyfile)
 
     def get_time(self):
-        t = str(self.eval('pyb.RTC().datetime()'), encoding='ascii')[1:-1].split(', ')
+        t = str(self.eval('pyb.RTC().datetime()'), encoding='utf8')[1:-1].split(', ')
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
 def execfile(filename, device='/dev/ttyACM0'):
     pyb = Pyboard(device)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
-    print(str(output, encoding='ascii'), end='')
+    stdout_write_bytes(output)
     pyb.exit_raw_repl()
     pyb.close()
 
@@ -214,7 +217,7 @@ def main():
     if len(args.files) == 0:
         try:
             pyb = Pyboard(args.device)
-            ret, ret_err = pyb.follow(timeout=None, data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
+            ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
             pyb.close()
         except PyboardError as er:
             print(er)
@@ -222,16 +225,16 @@ def main():
         except KeyboardInterrupt:
             sys.exit(1)
         if ret_err:
-            print(str(ret_err, encoding='ascii'), end='')
+            stdout_write_bytes(ret_err)
             sys.exit(1)
 
     for filename in args.files:
         try:
             pyb = Pyboard(args.device)
             pyb.enter_raw_repl()
-            with open(filename) as f:
+            with open(filename, 'rb') as f:
                 pyfile = f.read()
-            ret, ret_err = pyb.exec_raw(pyfile, timeout=None, data_consumer=lambda d:print(str(d, encoding='ascii'), end=''))
+            ret, ret_err = pyb.exec_raw(pyfile, timeout=None, data_consumer=stdout_write_bytes)
             pyb.exit_raw_repl()
             pyb.close()
         except PyboardError as er:
@@ -240,7 +243,7 @@ def main():
         except KeyboardInterrupt:
             sys.exit(1)
         if ret_err:
-            print(str(ret_err, encoding='ascii'), end='')
+            stdout_write_bytes(ret_err)
             sys.exit(1)
 
 if __name__ == "__main__":
