@@ -351,9 +351,12 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     mp_uint_t len;
     const char *str = mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
-    len = unichar_charlen(str, len);
-    if (len == 1) {
-        if (MP_OBJ_IS_STR(o_in) && UTF8_IS_NONASCII(*str)) {
+    if (MP_OBJ_IS_STR(o_in)) {
+        len = unichar_charlen(str, len);
+        if (len == 1) {
+            if (!UTF8_IS_NONASCII(*str)) {
+                goto return_first_byte;
+            }
             mp_int_t ord = *str++ & 0x7F;
             for (mp_int_t mask = 0x40; ord & mask; mask >>= 1) {
                 ord &= ~mask;
@@ -362,8 +365,12 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
                 ord = (ord << 6) | (*str++ & 0x3F);
             }
             return mp_obj_new_int(ord);
-        } else {
-            return mp_obj_new_int(((const byte*)str)[0]);
+        }
+    } else {
+        // a bytes object
+        if (len == 1) {
+        return_first_byte:
+            return MP_OBJ_NEW_SMALL_INT(((const byte*)str)[0]);
         }
     }
     #else
