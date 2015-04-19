@@ -397,6 +397,12 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 // this could be wrong, because it should have a range of +/- 16MiB...
 #define OP_BW_HI(byte_offset) (0xf000 | (((byte_offset) >> 12) & 0x07ff))
 #define OP_BW_LO(byte_offset) (0xb800 | (((byte_offset) >> 1) & 0x07ff))
+mp_int_t get_label_abs_addr(asm_thumb_t *as, uint label) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    return rel ;
+}
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
