@@ -53,6 +53,20 @@ STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
 // TODO: CPython is now at 5-element array, but save 2 els so far...
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
+
+// sys.implementation object
+// this is the MicroPython version
+STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj =
+    {{&mp_type_tuple}, 3, {I(1), I(4), I(1)}};
+STATIC const qstr impl_fields[] = { MP_QSTR_name, MP_QSTR_version };
+STATIC MP_DEFINE_FAKENAMEDTUPLE(
+    mp_sys_implementation_obj,
+    impl_fields,
+    2,
+    MP_OBJ_NEW_QSTR(MP_QSTR_micropython),
+    (mp_obj_t)&mp_sys_implementation_version_info_obj
+);
+
 #undef I
 
 #ifdef MICROPY_PY_SYS_PLATFORM
@@ -98,6 +112,7 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&MP_STATE_VM(mp_sys_argv_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version_info), (mp_obj_t)&mp_sys_version_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_implementation), (mp_obj_t)&mp_sys_implementation_obj },
 #ifdef MICROPY_PY_SYS_PLATFORM
     { MP_OBJ_NEW_QSTR(MP_QSTR_platform), (mp_obj_t)&platform_obj },
 #endif
