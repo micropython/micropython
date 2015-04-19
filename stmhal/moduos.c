@@ -30,8 +30,10 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
+#include "py/objstr.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
+#include "genhdr/py-version.h"
 #include "rng.h"
 #include "file.h"
 #include "sdcard.h"
@@ -63,6 +65,29 @@ STATIC bool sd_in_root(void) {
     return false;
 #endif
 }
+
+STATIC const qstr os_uname_info_fields[] = { MP_QSTR_sysname, MP_QSTR_nodename,
+    MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine };
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "pyboard");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "pyboard");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, "1.4.1");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
+STATIC MP_DEFINE_FAKENAMEDTUPLE(
+    os_uname_info_obj,
+    os_uname_info_fields,
+    5,
+    (mp_obj_t)&os_uname_info_sysname_obj,
+    (mp_obj_t)&os_uname_info_nodename_obj,
+    (mp_obj_t)&os_uname_info_release_obj,
+    (mp_obj_t)&os_uname_info_version_obj,
+    (mp_obj_t)&os_uname_info_machine_obj
+);
+
+STATIC mp_obj_t os_uname(void) {
+    return (mp_obj_t)&os_uname_info_obj;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
 /// \function chdir(path)
 /// Change current directory.
@@ -333,6 +358,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uname), (mp_obj_t)&os_uname_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), (mp_obj_t)&os_chdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), (mp_obj_t)&os_getcwd_obj },
