@@ -29,6 +29,7 @@
 
 typedef unsigned int size_t;
 
+int printf(const char *fmt, ...);
 int snprintf(char *str, size_t size, const char *fmt, ...);
 
 // Convenience function, defined in main.c.
