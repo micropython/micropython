@@ -141,9 +141,9 @@ raw_repl_reset:
             } else if (c == CHAR_CTRL_D) {
                 // input finished
                 break;
-            } else if (c <= 127) {
-                // let through any other ASCII character
-                vstr_add_char(&line, c);
+            } else {
+                // let through any other raw 8-bit value
+                vstr_add_byte(&line, c);
             }
         }
 
