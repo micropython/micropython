@@ -482,6 +482,10 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #endif
 
+#define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
+        *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
+    } while (0)
+
 typedef enum {
     STACK_VALUE,
     STACK_REG,
@@ -505,6 +509,19 @@ typedef enum {
     VTYPE_BUILTIN_CAST = 0x60 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
+STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
+    switch (vtype) {
+        case VTYPE_PYOBJ: return MP_QSTR_object;
+        case VTYPE_BOOL: return MP_QSTR_bool;
+        case VTYPE_INT: return MP_QSTR_int;
+        case VTYPE_UINT: return MP_QSTR_uint;
+        case VTYPE_PTR: return MP_QSTR_ptr;
+        case VTYPE_PTR8: return MP_QSTR_ptr8;
+        case VTYPE_PTR16: return MP_QSTR_ptr16;
+        case VTYPE_PTR_NONE: default: return MP_QSTR_None;
+    }
+}
+
 typedef struct _stack_info_t {
     vtype_kind_t vtype;
     stack_info_kind_t kind;
@@ -515,6 +532,7 @@ typedef struct _stack_info_t {
 } stack_info_t;
 
 struct _emit_t {
+    mp_obj_t *error_slot;
     int pass;
 
     bool do_viper_types;
@@ -542,8 +560,9 @@ struct _emit_t {
     ASM_T *as;
 };
 
-emit_t *EXPORT_FUN(new)(mp_uint_t max_num_labels) {
+emit_t *EXPORT_FUN(new)(mp_obj_t *error_slot, mp_uint_t max_num_labels) {
     emit_t *emit = m_new0(emit_t, 1);
+    emit->error_slot = error_slot;
     emit->as = ASM_NEW(max_num_labels);
     return emit;
 }
@@ -571,7 +590,7 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
                 case MP_QSTR_ptr: type = VTYPE_PTR; break;
                 case MP_QSTR_ptr8: type = VTYPE_PTR8; break;
                 case MP_QSTR_ptr16: type = VTYPE_PTR16; break;
-                default: mp_printf(&mp_plat_print, "ViperTypeError: unknown type %q\n", arg2); return;
+                default: EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "unknown type '%q'", arg2); return;
             }
             if (op == MP_EMIT_NATIVE_TYPE_RETURN) {
                 emit->return_vtype = type;
@@ -1288,7 +1307,7 @@ STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     DEBUG_printf("load_fast(%s, " UINT_FMT ")\n", qstr_str(qst), local_num);
     vtype_kind_t vtype = emit->local_vtype[local_num];
     if (vtype == VTYPE_UNBOUND) {
-        mp_printf(&mp_plat_print, "ViperTypeError: local %q used before type known\n", qst);
+        EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "local '%q' used before type known", qst);
     }
     emit_native_pre(emit);
     if (local_num == 0) {
@@ -1438,7 +1457,8 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                     break;
                 }
                 default:
-                    mp_printf(&mp_plat_print, "ViperTypeError: can't load from type %d\n", vtype_base);
+                    EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                        "can't load from '%q'", vtype_to_qstr(vtype_base));
             }
         } else {
             // index is not an immediate
@@ -1464,7 +1484,8 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                     break;
                 }
                 default:
-                    mp_printf(&mp_plat_print, "ViperTypeError: can't load from type %d\n", vtype_base);
+                    EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                        "can't load from '%q'", vtype_to_qstr(vtype_base));
             }
         }
         emit_post_push_reg(emit, VTYPE_INT, REG_RET);
@@ -1495,7 +1516,9 @@ STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) 
         emit->local_vtype[local_num] = vtype;
     } else if (emit->local_vtype[local_num] != vtype) {
         // type of local is not the same as object stored in it
-        mp_printf(&mp_plat_print, "ViperTypeError: type mismatch, local %q has type %d but source object has type %d\n", qst, emit->local_vtype[local_num], vtype);
+        EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+            "local '%q' has type '%q' but source is '%q'",
+            qst, vtype_to_qstr(emit->local_vtype[local_num]), vtype_to_qstr(vtype));
     }
 }
 
@@ -1625,7 +1648,8 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                     break;
                 }
                 default:
-                    mp_printf(&mp_plat_print, "ViperTypeError: can't store to type %d\n", vtype_base);
+                    EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                        "can't store to '%q'", vtype_to_qstr(vtype_base));
             }
         } else {
             // index is not an immediate
@@ -1666,7 +1690,8 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                     break;
                 }
                 default:
-                    mp_printf(&mp_plat_print, "ViperTypeError: can't store to type %d\n", vtype_base);
+                    EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                        "can't store to '%q'", vtype_to_qstr(vtype_base));
             }
         }
 
@@ -1761,25 +1786,21 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
 
 STATIC void emit_native_jump_helper(emit_t *emit, bool pop) {
     vtype_kind_t vtype = peek_vtype(emit, 0);
-    switch (vtype) {
-        case VTYPE_PYOBJ:
-            emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-            if (!pop) {
-                adjust_stack(emit, 1);
-            }
-            emit_call(emit, MP_F_OBJ_IS_TRUE);
-            break;
-        case VTYPE_BOOL:
-        case VTYPE_INT:
-        case VTYPE_UINT:
-            emit_pre_pop_reg(emit, &vtype, REG_RET);
-            if (!pop) {
-                adjust_stack(emit, 1);
-            }
-            break;
-        default:
-            mp_printf(&mp_plat_print, "ViperTypeError: expecting a bool or pyobj, got %d\n", vtype);
-            assert(0);
+    if (vtype == VTYPE_PYOBJ) {
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+        if (!pop) {
+            adjust_stack(emit, 1);
+        }
+        emit_call(emit, MP_F_OBJ_IS_TRUE);
+    } else {
+        emit_pre_pop_reg(emit, &vtype, REG_RET);
+        if (!pop) {
+            adjust_stack(emit, 1);
+        }
+        if (!(vtype == VTYPE_BOOL || vtype == VTYPE_INT || vtype == VTYPE_UINT)) {
+            EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                "can't implicitly convert '%q' to 'bool'", vtype_to_qstr(vtype));
+        }
     }
     // For non-pop need to save the vtype so that emit_native_adjust_stack_size
     // can use it.  This is a bit of a hack.
@@ -2056,7 +2077,9 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         }
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
-        mp_printf(&mp_plat_print, "ViperTypeError: can't do binary op between types %d and %d\n", vtype_lhs, vtype_rhs);
+        EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+            "can't do binary op between '%q' and '%q'",
+            vtype_to_qstr(vtype_lhs), vtype_to_qstr(vtype_rhs));
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     }
 }
@@ -2302,7 +2325,9 @@ STATIC void emit_native_return_value(emit_t *emit) {
             vtype_kind_t vtype;
             emit_pre_pop_reg(emit, &vtype, REG_RET);
             if (vtype != emit->return_vtype) {
-                mp_printf(&mp_plat_print, "ViperTypeError: incompatible return type\n");
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                    "return expected '%q' but got '%q'",
+                    vtype_to_qstr(emit->return_vtype), vtype_to_qstr(vtype));
             }
         }
     } else {
@@ -2320,7 +2345,7 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     vtype_kind_t vtype_exc;
     emit_pre_pop_reg(emit, &vtype_exc, REG_ARG_1); // arg1 = object to raise
     if (vtype_exc != VTYPE_PYOBJ) {
-        mp_printf(&mp_plat_print, "ViperTypeError: must raise an object\n");
+        EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "must raise an object");
     }
     // TODO probably make this 1 call to the runtime (which could even call convert, native_raise(obj, type))
     emit_call(emit, MP_F_NATIVE_RAISE);

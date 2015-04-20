@@ -144,6 +144,9 @@ Q(SystemExit)
 Q(TypeError)
 Q(UnboundLocalError)
 Q(ValueError)
+#if MICROPY_EMIT_NATIVE
+Q(ViperTypeError)
+#endif
 Q(ZeroDivisionError)
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 Q(UnicodeError)

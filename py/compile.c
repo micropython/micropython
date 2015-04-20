@@ -3764,22 +3764,22 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
                 case MP_EMIT_OPT_VIPER:
 #if MICROPY_EMIT_X64
                     if (emit_native == NULL) {
-                        emit_native = emit_native_x64_new(max_num_labels);
+                        emit_native = emit_native_x64_new(&comp->compile_error, max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_x64_method_table;
 #elif MICROPY_EMIT_X86
                     if (emit_native == NULL) {
-                        emit_native = emit_native_x86_new(max_num_labels);
+                        emit_native = emit_native_x86_new(&comp->compile_error, max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_x86_method_table;
 #elif MICROPY_EMIT_THUMB
                     if (emit_native == NULL) {
-                        emit_native = emit_native_thumb_new(max_num_labels);
+                        emit_native = emit_native_thumb_new(&comp->compile_error, max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_thumb_method_table;
 #elif MICROPY_EMIT_ARM
                     if (emit_native == NULL) {
-                        emit_native = emit_native_arm_new(max_num_labels);
+                        emit_native = emit_native_arm_new(&comp->compile_error, max_num_labels);
                     }
                     comp->emit_method_table = &emit_native_arm_method_table;
 #endif

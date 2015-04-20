@@ -252,6 +252,10 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
       */
   //MP_DEFINE_EXCEPTION(SystemError, Exception)
   MP_DEFINE_EXCEPTION(TypeError, Exception)
+#if MICROPY_EMIT_NATIVE
+    MP_DEFINE_EXCEPTION_BASE(TypeError)
+    MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
+#endif
   MP_DEFINE_EXCEPTION(ValueError, Exception)
 #if MICROPY_PY_BUILTINS_STR_UNICODE
     MP_DEFINE_EXCEPTION_BASE(ValueError)
