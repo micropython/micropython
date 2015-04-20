@@ -748,6 +748,16 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                 asm_thumb_op32(emit->as, 0xe840 | r_base, (r_src << 12) | (r_dest << 8) | i8);
             }
+        } else if (strcmp(op_str, "getlbl") == 0) {
+            // pseudo-instruction enables using labels to access data
+            // getlbl(reg1, reg2, label) reg1 = pc reg2 = label offset
+            mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
+            mp_uint_t reg_offs = get_arg_reg(emit, op_str, pn_args[1], 15);
+            int label_num = get_arg_label(emit, op_str, pn_args[2]);
+            mp_int_t rel = get_label_abs_addr(emit->as, label_num);
+            asm_thumb_mov_reg_reg(emit->as, reg_dest, 15); // pc
+            asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVW, reg_offs, rel & 0xffff);
+            asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVT, reg_offs, (rel >> 16)); // can be -ve
         } else {
             goto unknown_op;
         }

@@ -248,6 +248,13 @@ STATIC mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
     return as->label_offsets[label];
 }
 
+mp_int_t get_label_abs_addr(asm_thumb_t *as, uint label) {
+    mp_uint_t dest = get_label_dest(as, label);
+    mp_int_t rel = dest - as->code_offset;
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    return rel;
+}
+
 void asm_thumb_op16(asm_thumb_t *as, uint op) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 2);
     // little endian
