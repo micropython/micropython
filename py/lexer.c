@@ -231,6 +231,8 @@ STATIC const char *tok_kw[] = {
     "and",
     "as",
     "assert",
+    "async",
+    "await",
     "break",
     "class",
     "continue",
