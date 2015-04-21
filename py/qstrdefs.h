@@ -450,6 +450,10 @@ Q(stdout)
 Q(stderr)
 Q(version)
 Q(version_info)
+#if MICROPY_PY_ATTRTUPLE
+Q(name)
+#endif
+Q(implementation)
 #if MICROPY_PY_SYS_MAXSIZE
 Q(maxsize)
 #endif
