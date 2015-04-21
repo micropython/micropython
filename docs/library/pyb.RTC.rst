@@ -38,6 +38,17 @@ Methods
    
    ``subseconds`` counts down from 255 to 0
 
+.. method:: rtc.wakeup(timeout, callback=None)
+
+   Set the RTC wakeup timer to trigger repeatedly at every ``timeout``
+   milliseconds.  This trigger can wake the pyboard from both the sleep
+   states: :meth:`pyb.stop` and :meth:`pyb.standby`.
+
+   If ``timeout`` is ``None`` then the wakeup timer is disabled.
+
+   If ``callback`` is given then it is executed at every trigger of the
+   wakeup timer.  ``callback`` must take exactly one argument.
+
 .. method:: rtc.info()
 
    Get information about the startup time and reset source.

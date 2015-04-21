@@ -133,14 +133,33 @@ Power related functions
 
 .. function:: wfi()
 
-   Wait for an interrupt.
-   This executies a ``wfi`` instruction which reduces power consumption
-   of the MCU until an interrupt occurs, at which point execution continues.
+   Wait for an internal or external interrupt.
+
+   This executes a ``wfi`` instruction which reduces power consumption
+   of the MCU until any interrupt occurs (be it internal or external),
+   at which point execution continues.  Note that the system-tick interrupt
+   occurs once every millisecond (1000Hz) so this function will block for
+   at most 1ms.
+
+.. function:: stop()
+
+   Put the pyboard in a "sleeping" state.
+
+   This reduces power consumption to less than 500 uA.  To wake from this
+   sleep state requires an external interrupt or a real-time-clock event.
+   Upon waking execution continues where it left off.
+
+   See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
 
 .. function:: standby()
 
+   Put the pyboard into a "deep sleep" state.
 
-.. function:: stop()
+   This reduces power consumption to less than 50 uA.  To wake from this
+   sleep state requires an external interrupt or a real-time-clock event.
+   Upon waking the system undergoes a hard reset.
+
+   See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
 
 Miscellaneous functions
 -----------------------
