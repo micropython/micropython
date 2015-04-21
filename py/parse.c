@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,7 @@
 #define RULE_ARG_ARG_MASK       (0x0fff)
 #define RULE_ARG_TOK            (0x1000)
 #define RULE_ARG_RULE           (0x2000)
-#define RULE_ARG_OPT_TOK        (0x3000)
-#define RULE_ARG_OPT_RULE       (0x4000)
+#define RULE_ARG_OPT_RULE       (0x3000)
 
 #define ADD_BLANK_NODE(rule) ((rule->act & RULE_ACT_ADD_BLANK) != 0)
 
@@ -84,7 +83,6 @@ enum {
 #define list_with_end           (RULE_ACT_LIST | 3)
 #define tok(t)                  (RULE_ARG_TOK | MP_TOKEN_##t)
 #define rule(r)                 (RULE_ARG_RULE | RULE_##r)
-#define opt_tok(t)              (RULE_ARG_OPT_TOK | MP_TOKEN_##t)
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
 #ifdef USE_RULE_NAME
 #define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { __VA_ARGS__ } };
@@ -98,7 +96,6 @@ enum {
 #undef list_with_end
 #undef tok
 #undef rule
-#undef opt_tok
 #undef opt_rule
 #undef one_or_more
 #undef DEF_RULE
@@ -603,13 +600,10 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         num_not_nil += 1;
                     }
                 }
-                //printf("done and %s n=%d i=%d notnil=%d\n", rule->rule_name, n, i, num_not_nil);
                 if (emit_rule) {
                     push_result_rule(&parser, rule_src_line, rule, i);
                 } else if (num_not_nil == 0) {
                     push_result_rule(&parser, rule_src_line, rule, i); // needed for, eg, atom_paren, testlist_comp_3b
-                    //result_stack_show(parser);
-                    //assert(0);
                 } else if (num_not_nil == 1) {
                     // single result, leave it on stack
                     mp_parse_node_t pn = MP_PARSE_NODE_NULL;
@@ -711,7 +705,6 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         // just leave single item on stack (ie don't wrap in a list)
                     }
                 } else {
-                    //printf("done list %s %d %d\n", rule->rule_name, n, i);
                     push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
@@ -739,7 +732,6 @@ memory_error:
         goto syntax_error;
     }
 
-    //printf("--------------\n");
     //result_stack_show(parser);
     //printf("rule stack alloc: %d\n", parser.rule_stack_alloc);
     //printf("result stack alloc: %d\n", parser.result_stack_alloc);

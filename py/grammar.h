@@ -55,7 +55,6 @@ DEF_RULE(eval_input_2, nc, and(1), tok(NEWLINE))
 // vfpdef: NAME
 
 DEF_RULE(decorator, nc, and(4), tok(DEL_AT), rule(dotted_name), opt_rule(trailer_paren), tok(NEWLINE))
-//DEF_RULE(decorator_2, nc, and(3), tok(DEL_PAREN_OPEN), opt_rule(arglist), tok(DEL_PAREN_CLOSE))
 DEF_RULE(decorators, nc, one_or_more, rule(decorator))
 DEF_RULE(decorated, c(decorated), and(2), rule(decorators), rule(decorated_body))
 DEF_RULE(decorated_body, nc, or(2), rule(classdef), rule(funcdef))
