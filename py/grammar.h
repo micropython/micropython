@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,9 +79,9 @@ DEF_RULE(varargslist_dbl_star, nc, and(2), tok(OP_DBL_STAR), tok(NAME))
 DEF_RULE(varargslist_equal, nc, and(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE(vfpdef, nc, ident | and(1), tok(NAME))
 
-// stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | simple_stmt
+// stmt: compound_stmt | simple_stmt
 
-DEF_RULE(stmt, nc, or(9), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated), rule(simple_stmt))
+DEF_RULE(stmt, nc, or(2), rule(compound_stmt), rule(simple_stmt))
 
 // simple_stmt: small_stmt (';' small_stmt)* [';'] NEWLINE
 
