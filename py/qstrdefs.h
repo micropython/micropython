@@ -450,6 +450,8 @@ Q(stdout)
 Q(stderr)
 Q(version)
 Q(version_info)
+Q(name)
+Q(implementation)
 #if MICROPY_PY_SYS_MAXSIZE
 Q(maxsize)
 #endif
