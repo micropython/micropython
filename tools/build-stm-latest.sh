@@ -38,3 +38,5 @@ do_build pybv3 PYBV3
 do_build pybv3-network PYBV3 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
 do_build pybv10 PYBV10
 do_build pybv10-network PYBV10 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
+do_build stm32f4disc STM32F4DISC
+do_build espruino-pico ESPRUINO_PICO
