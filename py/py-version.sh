@@ -35,4 +35,5 @@ cat <<EOF
 #define MICROPY_VERSION_MAJOR (${ver_major})
 #define MICROPY_VERSION_MINOR (${ver_minor})
 #define MICROPY_VERSION_MICRO (${ver_micro})
+#define MICROPY_VERSION_STRING "${ver_major}.${ver_minor}.${ver_micro}"
 EOF
