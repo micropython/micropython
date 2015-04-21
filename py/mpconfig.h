@@ -502,6 +502,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
 #endif
 
+// Whether to support attrtuple type (MicroPython extension)
+// It provides space-efficient tuples with attribute access
+#ifndef MICROPY_PY_ATTRTUPLE
+#define MICROPY_PY_ATTRTUPLE (1)
+#endif
+
 // Whether to provide "collections" module
 #ifndef MICROPY_PY_COLLECTIONS
 #define MICROPY_PY_COLLECTIONS (1)
