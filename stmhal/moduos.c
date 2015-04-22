@@ -31,7 +31,7 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
-#include "genhdr/py-version.h"
+#include "genhdr/mpversion.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "rng.h"

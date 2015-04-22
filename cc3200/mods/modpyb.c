@@ -65,7 +65,7 @@
 #include "utils.h"
 #include "gccollect.h"
 #include "mperror.h"
-#include "genhdr/py-version.h"
+#include "genhdr/mpversion.h"
 
 
 #ifdef DEBUG

@@ -43,7 +43,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
-#include "genhdr/py-version.h"
+#include "genhdr/mpversion.h"
 #include "input.h"
 
 // Command line options, with their defaults
