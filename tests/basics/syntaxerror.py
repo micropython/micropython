@@ -26,6 +26,9 @@ test_syntax("`")
 # bad indentation (lexer error)
 test_syntax(" a\n")
 
+# malformed integer literal (parser error)
+test_syntax("123z")
+
 # can't assign to literals
 test_syntax("1 = 2")
 test_syntax("'' = 1")

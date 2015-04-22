@@ -9,6 +9,7 @@ print(sys.version[:3])
 print(sys.version_info[0], sys.version_info[1])
 print(sys.byteorder in ('little', 'big'))
 print(sys.maxsize > 100)
+print(sys.implementation.name in ('cpython', 'micropython'))
 
 try:
     sys.exit()
