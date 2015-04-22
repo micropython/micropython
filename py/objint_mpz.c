@@ -314,7 +314,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     if ((value & (WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    return mp_obj_new_int_from_ll(value);
+    return mp_obj_new_int_from_ull(value);
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
