@@ -1,2 +1,12 @@
-SyntaxError
-SyntaxError
+SyntaxError('parameter annotation must be an identifier',)
+SyntaxError('return annotation must be an identifier',)
+ViperTypeError("local 'x' used before type known",)
+ViperTypeError("local 'x' has type 'int' but source is 'object'",)
+ViperTypeError("can't implicitly convert 'ptr' to 'bool'",)
+ViperTypeError("return expected 'int' but got 'object'",)
+ViperTypeError("can't do binary op between 'int' and 'object'",)
+ViperTypeError("can't load from 'int'",)
+ViperTypeError("can't load from 'int'",)
+ViperTypeError("can't store to 'int'",)
+ViperTypeError("can't store to 'int'",)
+ViperTypeError('must raise an object',)

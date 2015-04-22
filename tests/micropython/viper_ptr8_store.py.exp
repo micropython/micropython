@@ -1,4 +1,5 @@
 bytearray(b'\x00\x00\x00\x00')
-bytearray(b'*\x00\x00\x00')
+bytearray(b')\x00\x00\x00')
+bytearray(b')*\x00\x00')
 bytearray(b'++++')
 bytearray(b',,,,')

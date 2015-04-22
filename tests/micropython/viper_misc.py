@@ -12,6 +12,25 @@ def viper_object(x:object, y:object) -> object:
     return x + y
 print(viper_object(1, 2))
 
+# return None as non-object (should return 0)
+@micropython.viper
+def viper_ret_none() -> int:
+    return None
+print(viper_ret_none())
+
+# 3 args
+@micropython.viper
+def viper_3args(a:int, b:int, c:int) -> int:
+    return a + b + c
+print(viper_3args(1, 2, 3))
+
+# 4 args
+@micropython.viper
+def viper_4args(a:int, b:int, c:int, d:int) -> int:
+    return a + b + c + d
+# viper call with 4 args not yet supported
+#print(viper_4args(1, 2, 3, 4))
+
 # a local (should have automatic type int)
 @micropython.viper
 def viper_local(x:int) -> int:
@@ -24,6 +43,13 @@ print(viper_local(3))
 def viper_no_annotation(x, y):
     return x * y
 print(viper_no_annotation(4, 5))
+
+# unsigned ints
+@micropython.viper
+def viper_uint() -> uint:
+    return uint(-1)
+import sys
+print(viper_uint() == (sys.maxsize << 1 | 1))
 
 # a for loop
 @micropython.viper
@@ -47,6 +73,12 @@ print(viper_access_global(), gl)
 def viper_print(x, y:int):
     print(x, y + 1)
 viper_print(1, 2)
+
+# convert constants to objects in tuple
+@micropython.viper
+def viper_tuple_consts(x):
+    return (x, 1, False, True)
+print(viper_tuple_consts(0))
 
 # making a tuple from an object and an int
 @micropython.viper
@@ -74,11 +106,6 @@ try:
     viper_raise(1)
 except OSError as e:
     print(repr(e))
-
-# this doesn't work at the moment
-#@micropython.viper
-#def g() -> uint:
-#    return -1
 
 # calling GC after defining the function
 @micropython.viper

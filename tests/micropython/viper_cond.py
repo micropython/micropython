@@ -1,4 +1,14 @@
-# using a bool as a conditional
+# using False as a conditional
+@micropython.viper
+def f():
+    x = False
+    if x:
+        pass
+    else:
+        print("not x", x)
+f()
+
+# using True as a conditional
 @micropython.viper
 def f():
     x = True

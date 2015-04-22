@@ -6,6 +6,10 @@ def get(src:ptr16) -> int:
     return src[0]
 
 @micropython.viper
+def get1(src:ptr16) -> int:
+    return src[1]
+
+@micropython.viper
 def memadd(src:ptr16, n:int) -> int:
     sum = 0
     for i in range(n):
@@ -14,5 +18,5 @@ def memadd(src:ptr16, n:int) -> int:
 
 b = bytearray(b'1234')
 print(b)
-print(get(b))
+print(get(b), get1(b))
 print(memadd(b, 2))
