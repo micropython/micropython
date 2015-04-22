@@ -1088,6 +1088,10 @@ STATIC mp_obj_t pyb_timer_freq(mp_uint_t n_args, const mp_obj_t *args) {
         uint32_t prescaler = compute_prescaler_period_from_freq(self, args[1], &period);
         self->tim.Instance->PSC = prescaler;
         __HAL_TIM_SetAutoreload(&self->tim, period);
+        // Reset the counter to zero. Otherwise, if counter >= period it will
+        // continue counting until it wraps (at either 16 or 32 bits depending
+        // on the timer).
+        __HAL_TIM_SetCounter(&self->tim, 0);
         return mp_const_none;
     }
 }
@@ -1118,6 +1122,10 @@ STATIC mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         // set
         __HAL_TIM_SetAutoreload(&self->tim, mp_obj_get_int(args[1]) & TIMER_CNT_MASK(self));
+        // Reset the counter to zero. Otherwise, if counter >= period it will
+        // continue counting until it wraps (at either 16 or 32 bits depending
+        // on the timer).
+        __HAL_TIM_SetCounter(&self->tim, 0); 
         return mp_const_none;
     }
 }
