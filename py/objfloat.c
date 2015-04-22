@@ -49,16 +49,16 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     char buf[16];
     mp_format_float(o->value, buf, sizeof(buf), 'g', 7, '\0');
     mp_print_str(print, buf);
-    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL) {
-        // Python floats always have decimal point
+    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
+        // Python floats always have decimal point (unless inf or nan)
         mp_print_str(print, ".0");
     }
 #else
     char buf[32];
     sprintf(buf, "%.16g", (double) o->value);
     mp_print_str(print, buf);
-    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL) {
-        // Python floats always have decimal point
+    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
+        // Python floats always have decimal point (unless inf or nan)
         mp_print_str(print, ".0");
     }
 #endif

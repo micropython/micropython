@@ -7,6 +7,25 @@ print(1.2)
 
 # float construction
 print(float(1.2))
+print(float("1.2"))
+print(float("+1"))
+print(float("1e1"))
+print(float("1e+1"))
+print(float("1e-1"))
+print(float("inf"))
+print(float("INF"))
+print(float("infinity"))
+print(float("INFINITY"))
+print(float("nan"))
+print(float("NaN"))
+try:
+    float("1e+")
+except ValueError:
+    print("ValueError")
+try:
+    float("1z")
+except ValueError:
+    print("ValueError")
 
 # unary operators
 print(bool(0.0))
