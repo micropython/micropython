@@ -97,7 +97,7 @@ STATIC mp_uint_t mpn_shl(mpz_dig_t *idig, mpz_dig_t *jdig, mp_uint_t jlen, mp_ui
 
     // work out length of result
     jlen += n_whole;
-    if (idig[jlen - 1] == 0) {
+    while (jlen != 0 && idig[jlen - 1] == 0) {
         jlen--;
     }
 
