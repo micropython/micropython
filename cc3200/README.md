@@ -28,12 +28,12 @@ make BTARGET=bootloader BTYPE=release
 - Make sure that you have built both the *bootloader* and the *application* in **release** mode.
 - Make sure the SOP2 jumper is in position.
 - Open CCS_Uniflash and connect to the board (by default on port 22). 
-- Format the serial flash (select 1MB size in case of the CC3200-LAUNCHXL, leave the rest unchecked).
+- Format the serial flash (select 1MB size in case of the CC3200-LAUNCHXL, 2MB in case of the WiPy, leave the rest unchecked).
 - Mark the following files for erasing: `/cert/ca.pem`, `/cert/client.pm`, `/cert/private.key` and `/tmp/pac.bin`.
 - Add a new file with the name of /sys/mcuimg.bin, and select the URL to point to cc3200\bootmgr\build\<BOARD_NAME>\bootloader.bin.
-- Add another file with the name of /sys/factimg.bin, and select the URL to point to cc3200\build\<BOARD_NAME>\MCUIMG.BIN.
+- Add another file with the name of /sys/factimg.bin, and select the URL to point to cc3200\build\<BOARD_NAME>\mcuimg.bin.
 - Click "Program" to apply all changes.
-- Flash the latest service pack (servicepack_1.0.0.1.2.bin) using the "Service Pack Update" button.
+- Flash the latest service pack (servicepack_1.0.0.10.0.bin) using the "Service Pack Update" button.
 - Close CCS_Uniflash, remove the SOP2 jumper and reset the board.
 
 ## Playing with MicroPython and the CC3200:
@@ -43,15 +43,15 @@ Once the software is running, you have two options to access the MicroPython REP
 - Through the UART. 
   **Connect to PORT 22, baud rate = 115200, parity = none, stop bits = 1**
 - Through telnet. 
-  * Connect to the network created by the board (as boots up in AP mode), **ssid = "micropy-wlan", key = "micropython"**
+  * Connect to the network created by the board (as boots up in AP mode), **ssid = "wipy-wlan", key = "www.wipy.io"** in the case of the WiPy
+    and **ssid = "launchpad-wlan", key = "micropython"** in the case of the Launchpad.
     * You can also reinitialize the WLAN in station mode and connect to another AP, or in AP mode but with a
       different ssid and/or key.
   * Use your favourite telnet client with the following settings: **host = 192.168.1.1, port = 23.**
   * Log in with **user = "micro" and password = "python"**
 
-The board has a small file system of 64K located in the serial flash connected to the CC3200. SD cards are also supported, but
-since the CC3200 LaunchXL doesn't come with an SD card socket installed, you will need to add one yourself. Any SD card breakout
-board will do, as long as you connect it as described here: <http://processors.wiki.ti.com/index.php/CC32xx_SDHost_FatFS>
+The board has a small file system of 192K (WiPy) or 64K (Launchpad) located in the serial flash connected to the CC3200. 
+SD cards are also supported, you can connect any SD card and configure the pinout using the SD class API.
 
 ## Uploading scripts:
 
@@ -64,14 +64,14 @@ not 100% sure of it.
 ## Upgrading the firmware Over The Air:
 
 OTA software updates can be performed through the FTP server. After building a new MCUIMG.BIN in release mode, upload it to:
-`/SFLASH/SYS/MCUIMG.BIN` it will take around 8s (The TI simplelink file system is quite slow because every file is mirrored for
-safety). You won't see the file being stored inside `/SFLASH/SYS/` because it's actually saved bypassing FatFS, but rest assured that
+`/flash/sys/mcuimg.bin` it will take around 6s (The TI simplelink file system is quite slow because every file is mirrored for
+safety). You won't see the file being stored inside `/flash/sys/` because it's actually saved bypassing FatFS, but rest assured that
 the file was successfully transferred, and it has been signed with a MD5 checksum to verify its integrity. 
 Now, reset the MCU by pressing the switch on the board, or by typing:
 
 ```python
 import pyb
-pyb.hard_reset()
+pyb.reset()
 ```
 
 ### Note regarding FileZilla:
