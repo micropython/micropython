@@ -126,9 +126,8 @@ PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 FORCE:
 .PHONY: FORCE
 
-$(HEADER_BUILD)/py-version.h: FORCE | $(HEADER_BUILD)
-	$(Q)$(PY_SRC)/py-version.sh > $@.tmp
-	$(Q)if [ -f "$@" ] && cmp -s $@ $@.tmp; then rm $@.tmp; else echo "Generating $@"; mv $@.tmp $@; fi
+$(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
+	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
 
 # qstr data
 

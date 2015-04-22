@@ -35,7 +35,7 @@
 #include "debug.h"
 #include "mpexception.h"
 #include "serverstask.h"
-#include "genhdr/py-version.h"
+#include "genhdr/mpversion.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS

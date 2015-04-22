@@ -128,6 +128,6 @@ $(BUILD)/bootloader.bin: $(BUILD)/bootmgr.bin
 $(HEADER_BUILD)/qstrdefs.generated.h: | $(HEADER_BUILD)
 	touch $@
 
-# Create an empty "py-version.h" needed by py/mkrules.mk
-$(HEADER_BUILD)/py-version.h: | $(HEADER_BUILD)
+# Create an empty "mpversion.h" needed by py/mkrules.mk
+$(HEADER_BUILD)/mpversion.h: | $(HEADER_BUILD)
 	touch $@

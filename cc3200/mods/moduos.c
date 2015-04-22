@@ -33,7 +33,7 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
-#include "genhdr/py-version.h"
+#include "genhdr/mpversion.h"
 #include "ff.h"
 #include "diskio.h"
 #include "sflash_diskio.h"
