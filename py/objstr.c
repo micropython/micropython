@@ -222,7 +222,13 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     mp_obj_t iterable = mp_getiter(args[0]);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-        vstr_add_byte(&vstr, mp_obj_get_int(item));
+        mp_int_t val = mp_obj_get_int(item);
+        #if MICROPY_CPYTHON_COMPAT
+        if (val < 0 || val > 255) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bytes value out of range"));
+        }
+        #endif
+        vstr_add_byte(&vstr, val);
     }
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
