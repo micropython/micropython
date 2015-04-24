@@ -680,12 +680,15 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
 }
 
 void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, 7);
+    // TODO We can probably optimise the amount of needed stack space, since
+    // we don't actually need 4 slots during the entire with block, only in
+    // the cleanup handler in certain cases.  It needs some thinking.
+    emit_bc_pre(emit, 4);
     emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
 }
 
 void mp_emit_bc_with_cleanup(emit_t *emit) {
-    emit_bc_pre(emit, -7);
+    emit_bc_pre(emit, -4);
     emit_write_bytecode_byte(emit, MP_BC_WITH_CLEANUP);
 }
 

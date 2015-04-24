@@ -29,7 +29,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
 arg names:
-(N_STATE 25)
+(N_STATE 22)
 (N_EXC_STACK 2)
 (INIT_CELL 14)
 (INIT_CELL 15)
