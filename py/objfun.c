@@ -179,7 +179,7 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_arg
 
     code_state->n_state = n_state;
     code_state->code_info = 0; // offset to code-info
-    code_state->ip = ip - self->bytecode; // offset to prelude
+    code_state->ip = (byte*)(ip - self->bytecode); // offset to prelude
     mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
