@@ -573,6 +573,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_MAXSIZE (0)
 #endif
 
+// Whether to provide "sys.exc_info" function
+// Avoid enabling this, this function is Python2 heritage
+#ifndef MICROPY_PY_SYS_EXC_INFO
+#define MICROPY_PY_SYS_EXC_INFO (0)
+#endif
+
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
 #define MICROPY_PY_SYS_EXIT (0)

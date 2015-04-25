@@ -121,6 +121,26 @@ STATIC mp_obj_t mp_sys_print_exception(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_print_exception);
 
+#if MICROPY_PY_SYS_EXC_INFO
+STATIC mp_obj_t mp_sys_exc_info(void) {
+    mp_obj_t cur_exc = MP_STATE_VM(cur_exception);
+    mp_obj_tuple_t *t = mp_obj_new_tuple(3, NULL);
+
+    if (cur_exc == MP_OBJ_NULL) {
+        t->items[0] = mp_const_none;
+        t->items[1] = mp_const_none;
+        t->items[2] = mp_const_none;
+        return t;
+    }
+
+    t->items[0] = mp_obj_get_type(cur_exc);
+    t->items[1] = cur_exc;
+    t->items[2] = mp_const_none;
+    return t;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
+#endif
+
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
 
@@ -162,6 +182,10 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdout), (mp_obj_t)&mp_sys_stdout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stderr), (mp_obj_t)&mp_sys_stderr_obj },
 #endif
+
+    #if MICROPY_PY_SYS_EXC_INFO
+    { MP_OBJ_NEW_QSTR(MP_QSTR_exc_info), (mp_obj_t)&mp_sys_exc_info_obj },
+    #endif
 
     /*
      * Extensions to CPython

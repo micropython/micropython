@@ -1228,6 +1228,10 @@ pending_exception_check:
 exception_handler:
             // exception occurred
 
+            #if MICROPY_PY_SYS_EXC_INFO
+            MP_STATE_VM(cur_exception) = nlr.ret_val;
+            #endif
+
             #if SELECTIVE_EXC_IP
             // with selective ip, we store the ip 1 byte past the opcode, so move ptr back
             code_state->ip -= 1;
