@@ -63,6 +63,24 @@ mp_int_t mp_obj_int_hash(mp_obj_t self_in) {
     return self->val;
 }
 
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = self_in;
+    long long val = self->val;
+    if (big_endian) {
+        byte *b = buf + len;
+        while (b > buf) {
+            *--b = val;
+            val >>= 8;
+        }
+    } else {
+        for (; len > 0; --len) {
+            *buf++ = val;
+            val >>= 8;
+        }
+    }
+}
+
 bool mp_obj_int_is_positive(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;

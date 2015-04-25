@@ -56,6 +56,7 @@ char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size,
 char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma);
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf);
 bool mp_obj_int_is_positive(mp_obj_t self_in);
 mp_obj_t mp_obj_int_abs(mp_obj_t self_in);
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in);

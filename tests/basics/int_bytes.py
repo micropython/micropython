@@ -1,6 +1,7 @@
 print((10).to_bytes(1, "little"))
 print((111111).to_bytes(4, "little"))
 print((100).to_bytes(10, "little"))
+print((2**64).to_bytes(9, "little"))
 print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))
 print(int.from_bytes(b"\x01\0\0\0\0\0\0\0", "little"))
 print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))

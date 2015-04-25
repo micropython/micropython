@@ -125,6 +125,7 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 mp_int_t mpz_hash(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);
 bool mpz_as_uint_checked(const mpz_t *z, mp_uint_t *value);
+void mpz_as_bytes(const mpz_t *z, bool big_endian, mp_uint_t len, byte *buf);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif

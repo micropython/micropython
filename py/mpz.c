@@ -1425,6 +1425,40 @@ bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
     return true;
 }
 
+// writes at most len bytes to buf (so buf should be zeroed before calling)
+void mpz_as_bytes(const mpz_t *z, bool big_endian, mp_uint_t len, byte *buf) {
+    byte *b = buf;
+    if (big_endian) {
+        b += len;
+    }
+    mpz_dig_t *zdig = z->dig;
+    int bits = 0;
+    mpz_dbl_dig_t d = 0;
+    mpz_dbl_dig_t carry = 1;
+    for (mp_uint_t zlen = z->len; zlen > 0; --zlen) {
+        bits += DIG_SIZE;
+        d = (d << DIG_SIZE) | *zdig++;
+        for (; bits >= 8; bits -= 8, d >>= 8) {
+            mpz_dig_t val = d;
+            if (z->neg) {
+                d = (~d & 0xff) + carry;
+                carry = d >> 8;
+            }
+            if (big_endian) {
+                *--b = val;
+                if (b == buf) {
+                    return;
+                }
+            } else {
+                *b++ = val;
+                if (b == buf + len) {
+                    return;
+                }
+            }
+        }
+    }
+}
+
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *i) {
     mp_float_t val = 0;
