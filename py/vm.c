@@ -78,6 +78,12 @@ typedef enum {
 #define TOP() (*sp)
 #define SET_TOP(val) *sp = (val)
 
+#if MICROPY_PY_SYS_EXC_INFO
+#define CLEAR_SYS_EXC_INFO() MP_STATE_VM(cur_exception) = MP_OBJ_NULL;
+#else
+#define CLEAR_SYS_EXC_INFO()
+#endif
+
 #define PUSH_EXC_BLOCK(with_or_finally) do { \
     DECODE_ULABEL; /* except labels are always forward */ \
     ++exc_sp; \
@@ -89,7 +95,8 @@ typedef enum {
 
 #define POP_EXC_BLOCK() \
     currently_in_except_block = MP_TAGPTR_TAG0(exc_sp->val_sp); /* restore previous state */ \
-    exc_sp--; /* pop back to previous exception handler */
+    exc_sp--; /* pop back to previous exception handler */ \
+    CLEAR_SYS_EXC_INFO() /* just clear sys.exc_info(), not compliant, but it shouldn't be used in 1st place */
 
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up

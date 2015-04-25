@@ -14,9 +14,8 @@ except:
     print(sys.exc_info()[0:2])
     f()
 
-# MicroPython currently doesn't reset sys.exc_info() value
-# on exit from "except" block.
-#f()
+# Outside except block, sys.exc_info() should be back to None's
+f()
 
-# Recursive except blocks are not handled either - just don't
-# use exc_info() at all!
+# Recursive except blocks are not handled - just don't
+# use exc_info() at all, use explicit variables in "except".
