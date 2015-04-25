@@ -179,6 +179,22 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_INPLACE_RSHIFT:
             return mp_obj_new_int_from_ll(lhs_val >> (int)rhs_val);
 
+        case MP_BINARY_OP_POWER:
+        case MP_BINARY_OP_INPLACE_POWER: {
+            long long ans = 1;
+            while (rhs_val > 0) {
+                if (rhs_val & 1) {
+                    ans *= lhs_val;
+                }
+                if (rhs_val == 1) {
+                    break;
+                }
+                rhs_val /= 2;
+                lhs_val *= lhs_val;
+            }
+            return mp_obj_new_int_from_ll(ans);
+        }
+
         case MP_BINARY_OP_LESS:
             return MP_BOOL(lhs_val < rhs_val);
         case MP_BINARY_OP_MORE:
