@@ -137,16 +137,16 @@ typedef struct _wlan_obj_t {
                                             addr.sa_family = AF_INET; \
                                             addr.sa_data[0] = port >> 8; \
                                             addr.sa_data[1] = port; \
-                                            addr.sa_data[2] = ip[0]; \
-                                            addr.sa_data[3] = ip[1]; \
-                                            addr.sa_data[4] = ip[2]; \
-                                            addr.sa_data[5] = ip[3];
+                                            addr.sa_data[2] = ip[3]; \
+                                            addr.sa_data[3] = ip[2]; \
+                                            addr.sa_data[4] = ip[1]; \
+                                            addr.sa_data[5] = ip[0];
 
 #define UNPACK_SOCKADDR(addr, ip, port)     port = (addr.sa_data[0] << 8) | addr.sa_data[1]; \
-                                            ip[0] = addr.sa_data[2]; \
-                                            ip[1] = addr.sa_data[3]; \
-                                            ip[2] = addr.sa_data[4]; \
-                                            ip[3] = addr.sa_data[5];
+                                            ip[0] = addr.sa_data[5]; \
+                                            ip[1] = addr.sa_data[4]; \
+                                            ip[2] = addr.sa_data[3]; \
+                                            ip[3] = addr.sa_data[2];
 
 /******************************************************************************
  DECLARE PRIVATE DATA
