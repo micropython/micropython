@@ -1441,8 +1441,8 @@ void mpz_as_bytes(const mpz_t *z, bool big_endian, mp_uint_t len, byte *buf) {
         for (; bits >= 8; bits -= 8, d >>= 8) {
             mpz_dig_t val = d;
             if (z->neg) {
-                d = (~d & 0xff) + carry;
-                carry = d >> 8;
+                val = (~val & 0xff) + carry;
+                carry = val >> 8;
             }
             if (big_endian) {
                 *--b = val;
