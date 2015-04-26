@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/repl.h"
 #include "readline.h"
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
@@ -134,6 +135,28 @@ int readline_process_char(int c) {
                 redraw_step_back = 1;
                 redraw_from_cursor = true;
             }
+        #if MICROPY_HELPER_REPL
+        } else if (c == 9) {
+            // tab magic
+            const char *compl_str;
+            mp_uint_t compl_len = mp_repl_autocomplete(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len, &mp_plat_print, &compl_str);
+            if (compl_len == 0) {
+                // no match
+            } else if (compl_len == (mp_uint_t)(-1)) {
+                // many matches
+                mp_hal_stdout_tx_str(rl.prompt);
+                mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+                redraw_from_cursor = true;
+            } else {
+                // one match
+                for (int i = 0; i < compl_len; ++i) {
+                    vstr_ins_byte(rl.line, rl.cursor_pos + i, *compl_str++);
+                }
+                // set redraw parameters
+                redraw_from_cursor = true;
+                redraw_step_forward = compl_len;
+            }
+        #endif
         } else if (32 <= c && c <= 126) {
             // printable character
             vstr_ins_char(rl.line, rl.cursor_pos, c);
