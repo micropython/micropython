@@ -25,7 +25,17 @@
  */
 
 #include "py/builtin.h"
+#include "objlist.h"
 
+#include <string.h>
+#include <assert.h>
+
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/obj.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
+#include "py/stackctrl.h"
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
 #include <math.h>
@@ -120,7 +130,6 @@ MATH_FUN_1_TO_BOOL(isnan, isnan)
 MATH_FUN_1_TO_INT(trunc, trunc)
 /// \function ldexp(x, exp)
 MATH_FUN_2(ldexp, ldexp)
-#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 /// \function erf(x)
 /// Return the error function of `x`.
 MATH_FUN_1(erf, erf)
@@ -133,7 +142,6 @@ MATH_FUN_1(gamma, tgamma)
 /// \function lgamma(x)
 /// return the natural logarithm of the gamma function of `x`.
 MATH_FUN_1(lgamma, lgamma)
-#endif
 //TODO: factorial, fsum
 
 // Functions that return a tuple
@@ -171,9 +179,35 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_radians_obj, mp_math_radians);
 
 /// \function degrees(x)
 STATIC mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
-    return mp_obj_new_float(mp_obj_get_float(x_obj) * 180.0 / M_PI);
+    float one_eighty = 0.0;
+    for (int i = 0; i<2; i++){one_eighty+=2.0;}
+    return mp_obj_new_float(mp_obj_get_float(x_obj) * one_eighty);
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
+
+STATIC mp_obj_t mp_math_custom(mp_obj_t x_obj){
+    //implement a naive DFT algorithm x_obj is a python list, which is implememnted as a struct as follows:
+    
+    mp_obj_list_t *o = ((void*)x_obj); //
+    int length = o->len; 
+    mp_obj_t list = mp_obj_new_list(0.0, NULL);
+    for (int i = 0; i <length; i++)
+        {
+        //real += mp_obj_get_float(o->items[i])*mp_obj_get_float(o->items[i]);
+        float real = 0.0;
+        for (int j = 0; j<length;j++)
+            {
+            mp_float_t item = mp_obj_get_float( o->items[j] );
+            mp_float_t factor = cos(-2.0*M_PI*i*j/length) ;
+            real += item * factor;
+            }
+        mp_obj_list_append(list, mp_obj_new_float(real));
+        }
+    return list;
+    }
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_custom_obj, mp_math_custom);
 
 STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_math) },
@@ -213,12 +247,11 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_trunc), (mp_obj_t)&mp_math_trunc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&mp_math_radians_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&mp_math_degrees_obj },
-    #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_custom), (mp_obj_t)&mp_math_custom_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&mp_math_erf_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&mp_math_erfc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gamma), (mp_obj_t)&mp_math_gamma_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_lgamma), (mp_obj_t)&mp_math_lgamma_obj },
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_math_globals, mp_module_math_globals_table);
