@@ -181,14 +181,13 @@ friendly_repl_t repl;
 void pyexec_friendly_repl_init(void) {
     vstr_init(&repl.line, 32);
     repl.cont_line = false;
-    readline_init(&repl.line);
-    mp_hal_stdout_tx_str(">>> ");
+    readline_init(&repl.line, ">>> ");
 }
 
-void pyexec_friendly_repl_reset() {
-    repl.cont_line = false;
+void pyexec_friendly_repl_reset(void) {
     vstr_reset(&repl.line);
-    readline_init(&repl.line);
+    repl.cont_line = false;
+    readline_init(&repl.line, ">>> ");
 }
 
 int pyexec_friendly_repl_process_char(int c) {
@@ -229,8 +228,7 @@ int pyexec_friendly_repl_process_char(int c) {
 
         vstr_add_byte(&repl.line, '\n');
         repl.cont_line = true;
-        mp_hal_stdout_tx_str("... ");
-        readline_note_newline();
+        readline_note_newline("... ");
         return 0;
 
     } else {
@@ -251,8 +249,7 @@ int pyexec_friendly_repl_process_char(int c) {
 
         if (mp_repl_continue_with_input(vstr_null_terminated_str(&repl.line))) {
             vstr_add_byte(&repl.line, '\n');
-            mp_hal_stdout_tx_str("... ");
-            readline_note_newline();
+            readline_note_newline("... ");
             return 0;
         }
 
@@ -270,7 +267,6 @@ exec: ;
 friendly_repl_reset: // TODO
 input_restart:
         pyexec_friendly_repl_reset();
-        mp_hal_stdout_tx_str(">>> ");
         return 0;
     }
 }

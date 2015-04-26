@@ -85,6 +85,7 @@ typedef struct _readline_t {
     int hist_cur;
     int cursor_pos;
     char escape_seq_buf[1];
+    const char *prompt;
 } readline_t;
 
 STATIC readline_t rl;
@@ -260,23 +261,26 @@ end_key:
     return -1;
 }
 
-void readline_note_newline(void) {
+void readline_note_newline(const char *prompt) {
     rl.orig_line_len = rl.line->len;
     rl.cursor_pos = rl.orig_line_len;
+    rl.prompt = prompt;
+    mp_hal_stdout_tx_str(prompt);
 }
 
-void readline_init(vstr_t *line) {
+void readline_init(vstr_t *line, const char *prompt) {
     rl.line = line;
     rl.orig_line_len = line->len;
     rl.escape_seq = ESEQ_NONE;
     rl.escape_seq_buf[0] = 0;
     rl.hist_cur = -1;
     rl.cursor_pos = rl.orig_line_len;
+    rl.prompt = prompt;
+    mp_hal_stdout_tx_str(prompt);
 }
 
 int readline(vstr_t *line, const char *prompt) {
-    mp_hal_stdout_tx_str(prompt);
-    readline_init(line);
+    readline_init(line, prompt);
     for (;;) {
         int c = mp_hal_stdin_rx_chr();
         int r = readline_process_char(c);
