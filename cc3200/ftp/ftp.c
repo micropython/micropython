@@ -671,7 +671,7 @@ static void ftp_process_cmd (void) {
         case E_FTP_CMD_USER:
             ftp_pop_param (&bufptr, ftp_scratch_buffer);
             if (!memcmp(ftp_scratch_buffer, servers_user, MAX(strlen(ftp_scratch_buffer), strlen(servers_user)))) {
-                ftp_data.loggin.uservalid = true;
+                ftp_data.loggin.uservalid = true && (strlen(servers_user) == strlen(ftp_scratch_buffer));
             }
             ftp_send_reply(331, NULL);
             break;
@@ -679,12 +679,13 @@ static void ftp_process_cmd (void) {
             ftp_pop_param (&bufptr, ftp_scratch_buffer);
             if (!memcmp(ftp_scratch_buffer, servers_pass, MAX(strlen(ftp_scratch_buffer), strlen(servers_pass))) &&
                     ftp_data.loggin.uservalid) {
-                ftp_data.loggin.passvalid = true;
-                ftp_send_reply(230, NULL);
+                ftp_data.loggin.passvalid = true && (strlen(servers_pass) == strlen(ftp_scratch_buffer));
+                if (ftp_data.loggin.passvalid) {
+                    ftp_send_reply(230, NULL);
+                    break;
+                }
             }
-            else {
-                ftp_send_reply(530, NULL);
-            }
+            ftp_send_reply(530, NULL);
             break;
         case E_FTP_CMD_PASV:
             {

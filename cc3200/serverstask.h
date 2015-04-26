@@ -36,8 +36,7 @@
 #define SERVERS_SSID_LEN_MAX                    16
 #define SERVERS_KEY_LEN_MAX                     16
 
-#define SERVERS_USER_LEN_MAX                    16
-#define SERVERS_PASS_LEN_MAX                    16
+#define SERVERS_USER_PASS_LEN_MAX               16
 
 #define SERVERS_CYCLE_TIME_MS                   5
 
@@ -48,8 +47,8 @@
 /******************************************************************************
  EXPORTED DATA
  ******************************************************************************/
-extern char *servers_user;
-extern char *servers_pass;
+extern char servers_user[];
+extern char servers_pass[];
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS

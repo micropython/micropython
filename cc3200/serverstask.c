@@ -25,15 +25,14 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/misc.h"
-#include "simplelink.h"
 #include "serverstask.h"
-#include "modwlan.h"
+#include "simplelink.h"
 #include "debug.h"
-#include "mpexception.h"
 #include "telnet.h"
 #include "ftp.h"
 #include "pybwdt.h"
@@ -67,8 +66,8 @@ static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
-char *servers_user;
-char *servers_pass;
+char servers_user[SERVERS_USER_PASS_LEN_MAX + 1];
+char servers_pass[SERVERS_USER_PASS_LEN_MAX + 1];
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
@@ -77,8 +76,6 @@ void TASK_Servers (void *pvParameters) {
 
     bool cycle = false;
 
-    ASSERT ((servers_user = mem_Malloc(SERVERS_USER_LEN_MAX + 1)) != NULL);
-    ASSERT ((servers_pass = mem_Malloc(SERVERS_PASS_LEN_MAX + 1)) != NULL);
     strcpy (servers_user, SERVERS_DEF_USER);
     strcpy (servers_pass, SERVERS_DEF_PASS);
 
@@ -148,8 +145,8 @@ void servers_close_socket (int16_t *sd) {
 }
 
 void servers_set_login (char *user, char *pass) {
-    memcpy(servers_user, user, SERVERS_USER_LEN_MAX);
-    memcpy(servers_pass, pass, SERVERS_PASS_LEN_MAX);
+    memcpy(servers_user, user, SERVERS_USER_PASS_LEN_MAX);
+    memcpy(servers_pass, pass, SERVERS_USER_PASS_LEN_MAX);
 }
 
 /******************************************************************************
