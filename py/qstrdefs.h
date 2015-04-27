@@ -391,6 +391,7 @@ Q(frexp)
 Q(ldexp)
 Q(degrees)
 Q(radians)
+Q(DFT)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 Q(erf)
 Q(erfc)

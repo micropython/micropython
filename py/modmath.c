@@ -1,5 +1,4 @@
-/*
- * This file is part of the Micro Python project, http://micropython.org/
+/* * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -29,6 +28,7 @@
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
 #include <math.h>
+#include <py/objlist.h>
 
 /// \module math - mathematical functions
 ///
@@ -175,6 +175,29 @@ STATIC mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
 
+//function DFT(list)
+STATIC mp_obj_t mp_math_DFT(mp_obj_t x_obj){
+    //implement a naive DFT algorithm x_obj is a python list, which is implememnted as a struct as follows:
+    
+    mp_obj_list_t *o = ((void*)x_obj); //
+    int length = o->len; 
+    mp_obj_t list = mp_obj_new_list(0.0, NULL);
+    for (int i = 0; i <length; i++)
+        {
+        //real += mp_obj_get_float(o->items[i])*mp_obj_get_float(o->items[i]);
+        float real = 0.0;
+        for (int j = 0; j<length;j++)
+            {
+            mp_float_t item = mp_obj_get_float( o->items[j] );
+            mp_float_t factor = cos(-2.0*M_PI*i*j/length) ;
+            real += item * factor;
+            }
+        mp_obj_list_append(list, mp_obj_new_float(real));
+        }
+    return list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_DFT_obj, mp_math_DFT);
+    
 STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_math) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_e), (mp_obj_t)&mp_math_e_obj },
@@ -213,6 +236,7 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_trunc), (mp_obj_t)&mp_math_trunc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&mp_math_radians_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&mp_math_degrees_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DFT), (mp_obj_t)&mp_math_DFT_obj },
     #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&mp_math_erf_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&mp_math_erfc_obj },
