@@ -1,4 +1,6 @@
-/* * This file is part of the Micro Python project, http://micropython.org/
+
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -38,7 +40,6 @@
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
 #include <math.h>
-#include <py/objlist.h>
 
 /// \module math - mathematical functions
 ///
@@ -186,12 +187,7 @@ STATIC mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
 
-<<<<<<< HEAD
-//function DFT(list)
-STATIC mp_obj_t mp_math_DFT(mp_obj_t x_obj){
-=======
 STATIC mp_obj_t mp_math_custom(mp_obj_t x_obj){
->>>>>>> 917da99e4896f1cb2dd556f74b5c5c814fb05c85
     //implement a naive DFT algorithm x_obj is a python list, which is implememnted as a struct as follows:
     
     mp_obj_list_t *o = ((void*)x_obj); //
@@ -210,41 +206,10 @@ STATIC mp_obj_t mp_math_custom(mp_obj_t x_obj){
         mp_obj_list_append(list, mp_obj_new_float(real));
         }
     return list;
-<<<<<<< HEAD
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_DFT_obj, mp_math_DFT);
-
-//function dot returns matrix vector product of a list of lists times a list
-STATIC mp_obj_t mp_math_dot(mp_obj_t matrix_obj, mp_obj_t vector_obj){
-    //implement a matrix vector dot product
-    mp_obj_list_t *M = ((void*)matrix_obj); //
-    mp_obj_list_t *v = ((void*)vector_obj); //
-    int length = v->len;
-    mp_obj_list_t *r = mp_obj_new_list(length, NULL); //list for result
-    int i;
-    int j;
-    for(i=0;i<length;i++) 
-        {
-        mp_obj_list_t *M_i = ((void*)M->items[i]);
-        //r->items[i] = mp_obj_new_float(0.0);
-        float summation = 0.0;
-        for(j=0;j<length;j++) 
-            {
-            summation += mp_obj_get_float(M_i->items[j]) * mp_obj_get_float(v->items[j]);
-            //r->items[i] += current_multiply;
-            }
-        r->items[i] = mp_obj_new_float(summation);
-        }
-    return r;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_dot_obj, mp_math_dot);
-    
-=======
     }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_custom_obj, mp_math_custom);
 
->>>>>>> 917da99e4896f1cb2dd556f74b5c5c814fb05c85
 STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_math) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_e), (mp_obj_t)&mp_math_e_obj },
@@ -283,13 +248,7 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_trunc), (mp_obj_t)&mp_math_trunc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_radians), (mp_obj_t)&mp_math_radians_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_degrees), (mp_obj_t)&mp_math_degrees_obj },
-<<<<<<< HEAD
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DFT), (mp_obj_t)&mp_math_DFT_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_dot), (mp_obj_t)&mp_math_dot_obj },
-    #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-=======
     { MP_OBJ_NEW_QSTR(MP_QSTR_custom), (mp_obj_t)&mp_math_custom_obj },
->>>>>>> 917da99e4896f1cb2dd556f74b5c5c814fb05c85
     { MP_OBJ_NEW_QSTR(MP_QSTR_erf), (mp_obj_t)&mp_math_erf_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_erfc), (mp_obj_t)&mp_math_erfc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gamma), (mp_obj_t)&mp_math_gamma_obj },
