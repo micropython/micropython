@@ -177,14 +177,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_degrees_obj, mp_math_degrees);
 
 //function DFT(list)
 STATIC mp_obj_t mp_math_DFT(mp_obj_t x_obj){
-    //implement a naive DFT algorithm x_obj is a python list, which is implememnted as a struct as follows:
+    //implement a naive DFT algorithm x_obj is a python list, and a list is also returned
     
     mp_obj_list_t *o = ((void*)x_obj); //
     int length = o->len; 
     mp_obj_t list = mp_obj_new_list(0.0, NULL);
     for (int i = 0; i <length; i++)
         {
-        //real += mp_obj_get_float(o->items[i])*mp_obj_get_float(o->items[i]);
         float real = 0.0;
         for (int j = 0; j<length;j++)
             {
