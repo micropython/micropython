@@ -54,13 +54,11 @@ void mod_network_register_nic(mp_obj_t nic) {
     mp_obj_list_append(&MP_STATE_PORT(mod_network_nic_list), nic);
 }
 
-mp_obj_t mod_network_find_nic(const uint8_t *ip) {
-    // find a NIC that is suited to given IP address
+mp_obj_t mod_network_find_nic(void) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
         return nic;
     }
-
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
 }
 
