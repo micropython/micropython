@@ -34,7 +34,7 @@ STATIC
 #endif
 void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, mp_obj_tuple_t *o) {
     mp_print_str(print, "(");
-    for (mp_uint_t i = 0; i < o->len; i++) {
+    for (mp_uint_t i = 0; i < (o->len - 1); i++) {
         if (i > 0) {
             mp_print_str(print, ", ");
         }
@@ -51,7 +51,7 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
 STATIC void mp_obj_attrtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_tuple_t *o = o_in;
-    const qstr *fields = (const qstr*)o->items[o->len];
+    const qstr *fields = (const qstr*)o->items[o->len - 1];
     mp_obj_attrtuple_print_helper(print, fields, o);
 }
 
