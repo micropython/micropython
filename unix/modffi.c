@@ -356,6 +356,14 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
         mp_obj_t a = args[i];
         if (*argtype == 'O') {
             values[i] = (ffi_arg)a;
+        #if MICROPY_PY_BUILTINS_FLOAT
+        } else if (*argtype == 'f') {
+            float *p = (float*)&values[i];
+            *p = mp_obj_get_float(a);
+        } else if (*argtype == 'd') {
+            double *p = (double*)&values[i];
+            *p = mp_obj_get_float(a);
+        #endif
         } else if (a == mp_const_none) {
             values[i] = 0;
         } else if (MP_OBJ_IS_INT(a)) {
