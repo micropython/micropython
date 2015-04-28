@@ -170,12 +170,32 @@ void telnet_run (void) {
                 telnet_send_and_proceed((void *)telnet_request_user, strlen(telnet_request_user), E_TELNET_STE_SUB_GET_USER);
                 break;
             case E_TELNET_STE_SUB_GET_USER:
-                if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(telnet_data.rxBuffer, TELNET_RX_BUFFER_SIZE, &rxLen)) {
-                    // Skip /r/n
-                    if (rxLen < 2 || memcmp(servers_user, (const char *)telnet_data.rxBuffer, MAX((rxLen - 2), strlen(servers_user)))) {
-                        telnet_data.credentialsValid = false;
+                if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(telnet_data.rxBuffer + telnet_data.rxWindex,
+                                                                        TELNET_RX_BUFFER_SIZE - telnet_data.rxWindex,
+                                                                        &rxLen)) {
+                    telnet_data.rxWindex += rxLen;
+
+                    if (telnet_data.rxWindex >= SERVERS_USER_LEN_MAX) {
+                        telnet_data.rxWindex = SERVERS_USER_LEN_MAX;
                     }
-                    telnet_data.substate.connected = E_TELNET_STE_SUB_REQ_PASSWORD;
+
+                    uint8_t *p = telnet_data.rxBuffer + SERVERS_USER_LEN_MAX;
+
+                    /* If a '\r' is found, or the length exceeds the max username length. */
+                    if (telnet_data.rxWindex >= SERVERS_USER_LEN_MAX ||
+                        (p = memchr(telnet_data.rxBuffer, '\r', telnet_data.rxWindex)))
+                    {
+                        uint8_t len = p - telnet_data.rxBuffer;
+
+                        telnet_data.credentialsValid =
+                            len > 0 &&
+                            memcmp(servers_user,
+                                   telnet_data.rxBuffer,
+                                   MAX(len, strlen(servers_user))) == 0;
+
+                        telnet_data.rxWindex = 0;
+                        telnet_data.substate.connected = E_TELNET_STE_SUB_REQ_PASSWORD;
+                    }
                 }
                 break;
             case E_TELNET_STE_SUB_REQ_PASSWORD:
@@ -187,16 +207,36 @@ void telnet_run (void) {
                 telnet_send_and_proceed((void *)telnet_options_pass, sizeof(telnet_options_pass), E_TELNET_STE_SUB_GET_PASSWORD);
                 break;
             case E_TELNET_STE_SUB_GET_PASSWORD:
-                if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(telnet_data.rxBuffer, TELNET_RX_BUFFER_SIZE, &rxLen)) {
-                    // skip /r/n
-                    if (rxLen < 2 || memcmp(servers_pass, (const char *)telnet_data.rxBuffer, MAX((rxLen - 2), strlen(servers_pass)))) {
-                        telnet_data.credentialsValid = false;
-                    }
-                    if (telnet_data.credentialsValid) {
-                        telnet_data.substate.connected = E_TELNET_STE_SUB_SND_REPL_OPTIONS;
-                    }
-                    else {
-                        telnet_data.substate.connected = E_TELNET_STE_SUB_INVALID_LOGGIN;
+                if (E_TELNET_RESULT_OK == telnet_recv_text_non_blocking(telnet_data.rxBuffer + telnet_data.rxWindex,
+                                                                        TELNET_RX_BUFFER_SIZE - telnet_data.rxWindex,
+                                                                        &rxLen)) {
+                    telnet_data.rxWindex += rxLen;
+                    if (telnet_data.rxWindex >= SERVERS_PASS_LEN_MAX)
+                        telnet_data.rxWindex = SERVERS_PASS_LEN_MAX;
+
+                    uint8_t *p = telnet_data.rxBuffer + SERVERS_PASS_LEN_MAX;
+
+                    /* If a '\r' is found, or the length exceeds the max password length. */
+                    if (telnet_data.rxWindex >= SERVERS_PASS_LEN_MAX ||
+                        (p = memchr(telnet_data.rxBuffer, '\r', telnet_data.rxWindex)))
+                    {
+                        uint8_t len = p - telnet_data.rxBuffer;
+
+                        telnet_data.credentialsValid =
+                            telnet_data.credentialsValid &&
+                            len > 0 &&
+                            memcmp(servers_pass,
+                                   telnet_data.rxBuffer,
+                                   MAX(len, strlen(servers_pass))) == 0;
+
+                        telnet_data.rxWindex = 0;
+
+                        if (telnet_data.credentialsValid) {
+                            telnet_data.substate.connected = E_TELNET_STE_SUB_SND_REPL_OPTIONS;
+                        }
+                        else {
+                            telnet_data.substate.connected = E_TELNET_STE_SUB_INVALID_LOGGIN;
+                        }
                     }
                 }
                 break;
