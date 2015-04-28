@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "modnetwork.h"
 #include "modwlan.h"
@@ -185,6 +186,7 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
                                          const char* key, uint32_t key_len);
 STATIC void wlan_lpds_callback_enable (mp_obj_t self_in);
 STATIC void wlan_lpds_callback_disable (mp_obj_t self_in);
+STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid);
 
 //*****************************************************************************
 //
@@ -650,6 +652,17 @@ STATIC void wlan_lpds_callback_disable (mp_obj_t self_in) {
     pybsleep_set_wlan_lpds_callback (NULL);
 }
 
+STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
+    for (int i = 0; i < nets->len; i++) {
+        // index 1 in the list is the bssid
+        mp_obj_str_t *_bssid = (mp_obj_str_t *)((mp_obj_tuple_t *)nets->items[i])->items[1];
+        if (!memcmp (_bssid->data, bssid, SL_BSSID_LENGTH)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /******************************************************************************/
 // Micro Python bindings; WLAN class
 
@@ -865,38 +878,49 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
 /// \method wlan_netlist()
 /// Return a list of tuples with all the acces points within range
 STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
+    STATIC const qstr wlan_scan_info_fields[] = {
+        MP_QSTR_ssid, MP_QSTR_bssid,
+        MP_QSTR_security, MP_QSTR_channel, MP_QSTR_rssi
+    };
+
     Sl_WlanNetworkEntry_t wlanEntry;
     uint8_t _index = 0;
     mp_obj_t nets = NULL;
 
-    // trigger a new newtork scanning
+    // trigger a new network scan
     uint32_t scanSeconds = MODWLAN_SCAN_PERIOD_S;
     ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_SCAN , MODWLAN_SL_SCAN_ENABLE, (_u8 *)&scanSeconds, sizeof(scanSeconds)));
 
-    // wait for the scan to be completed
+    // wait for the scan to complete
     HAL_Delay (MODWLAN_WAIT_FOR_SCAN_MS);
 
     do {
         if (sl_WlanGetNetworkList(_index++, 1, &wlanEntry) <= 0) {
             break;
         }
-        mp_obj_t tuple[4];
 
+        if (_index == 1) {
+            // initialize the list
+            nets = mp_obj_new_list(0, NULL);
+        }
+        // we must skip any duplicated results
+        else if (!wlan_scan_result_is_unique(nets, wlanEntry.bssid)) {
+            continue;
+        }
+
+        mp_obj_t tuple[5];
         tuple[0] = mp_obj_new_str((const char *)wlanEntry.ssid, wlanEntry.ssid_len, false);
-        tuple[1] = mp_obj_new_str((const char *)wlanEntry.bssid, SL_BSSID_LENGTH, false);
-        // 'Normalize' the security type
+        tuple[1] = mp_obj_new_bytes((const byte *)wlanEntry.bssid, SL_BSSID_LENGTH);
+        // 'normalize' the security type
         if (wlanEntry.sec_type > 2) {
             wlanEntry.sec_type = 2;
         }
         tuple[2] = mp_obj_new_int(wlanEntry.sec_type);
-        tuple[3] = mp_obj_new_int(wlanEntry.rssi);
+        tuple[3] = mp_const_none;
+        tuple[4] = mp_obj_new_int(wlanEntry.rssi);
 
-        if (_index == 1) {
-            // Initialize the set
-            nets = mp_obj_new_set(0, NULL);
-        }
-        // Add the network found to the list if it's unique
-        mp_obj_set_store(nets, mp_obj_new_tuple(4, tuple));
+        // add the network to the list
+        mp_obj_list_append(nets, mp_obj_new_attrtuple(wlan_scan_info_fields, 5, tuple));
 
     } while (_index < MODWLAN_SL_MAX_NETWORKS);
 
