@@ -468,8 +468,9 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
             }
         }
         else {
-            _str += 3;
-            *len -= 3;
+            // in case we have received an incomplete telnet option, unlikely, but possible
+            _str += MIN(3, *len);
+            *len -= MIN(3, *len);
         }
     }
 }
