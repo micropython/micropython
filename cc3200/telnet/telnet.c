@@ -128,6 +128,7 @@ static void telnet_send_and_proceed (void *data, _i16 Len, telnet_connected_subs
 static telnet_result_t telnet_send_non_blocking (void *data, _i16 Len);
 static telnet_result_t telnet_recv_text_non_blocking (void *buff, _i16 Maxlen, _i16 *rxLen);
 static void telnet_process (void);
+static int telnet_process_credential (char *credential, _i16 rxLen);
 static void telnet_parse_input (uint8_t *str, int16_t *len);
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len);
 static void telnet_reset (void);
@@ -141,28 +142,6 @@ void telnet_init (void) {
     ASSERT ((telnet_data.rxBuffer = mem_Malloc(TELNET_RX_BUFFER_SIZE)) != NULL);
     telnet_data.state = E_TELNET_STE_DISABLED;
 }
-
-
-static int telnet_process_credential (char *credential, _i16 rxLen) {
-    telnet_data.rxWindex += rxLen;
-    if (telnet_data.rxWindex >= SERVERS_USER_PASS_LEN_MAX) {
-        telnet_data.rxWindex = SERVERS_USER_PASS_LEN_MAX;
-    }
-
-    uint8_t *p = telnet_data.rxBuffer + SERVERS_USER_PASS_LEN_MAX;
-    // if a '\r' is found, or the length exceeds the max username length
-    if ((p = memchr(telnet_data.rxBuffer, '\r', telnet_data.rxWindex)) || (telnet_data.rxWindex >= SERVERS_USER_PASS_LEN_MAX)) {
-        uint8_t len = p - telnet_data.rxBuffer;
-
-        telnet_data.rxWindex = 0;
-        if ((len > 0) && (memcmp(credential, telnet_data.rxBuffer, MAX(len, strlen(credential))) == 0)) {
-            return 1;
-        }
-        return -1;
-    }
-    return 0;
-}
-
 
 void telnet_run (void) {
     _i16 rxLen;
@@ -449,6 +428,26 @@ static void telnet_process (void) {
             telnet_data.rxWindex = telnet_data.rxWindex + rxLen;
         }
     }
+}
+
+static int telnet_process_credential (char *credential, _i16 rxLen) {
+    telnet_data.rxWindex += rxLen;
+    if (telnet_data.rxWindex >= SERVERS_USER_PASS_LEN_MAX) {
+        telnet_data.rxWindex = SERVERS_USER_PASS_LEN_MAX;
+    }
+
+    uint8_t *p = telnet_data.rxBuffer + SERVERS_USER_PASS_LEN_MAX;
+    // if a '\r' is found, or the length exceeds the max username length
+    if ((p = memchr(telnet_data.rxBuffer, '\r', telnet_data.rxWindex)) || (telnet_data.rxWindex >= SERVERS_USER_PASS_LEN_MAX)) {
+        uint8_t len = p - telnet_data.rxBuffer;
+
+        telnet_data.rxWindex = 0;
+        if ((len > 0) && (memcmp(credential, telnet_data.rxBuffer, MAX(len, strlen(credential))) == 0)) {
+            return 1;
+        }
+        return -1;
+    }
+    return 0;
 }
 
 static void telnet_parse_input (uint8_t *str, int16_t *len) {
