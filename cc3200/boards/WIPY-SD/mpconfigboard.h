@@ -25,18 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include "version.h"
-
 #define WIPY_SD
 
-#define BOARD_NAME                                  "WiPy-SD "
-#define MICROPY_HW_BOARD_NAME                       VERSION_E(BOARD_NAME, VERSION_NUMBER)
+#define MICROPY_HW_BOARD_NAME                       "WiPy-SD"
 #define MICROPY_HW_MCU_NAME                         "CC3200"
-
-#define MICROPY_PORT_WLAN_AP_SSID                   "wipy-wlan"
-#define MICROPY_PORT_WLAN_AP_KEY                    "www.wipy.io"
-#define MICROPY_PORT_WLAN_AP_SECURITY               SL_SEC_TYPE_WPA_WPA2
-#define MICROPY_PORT_WLAN_AP_CHANNEL                5
 
 #define MICROPY_HW_HAS_SDCARD                       (1)
 #define MICROPY_HW_ENABLE_RNG                       (1)

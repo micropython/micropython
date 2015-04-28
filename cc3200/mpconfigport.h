@@ -174,5 +174,11 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 #define MICROPY_PIN_DEFS_PORT_H                     "pin_defs_cc3200.h"
 #define MICROPY_PORT_HAS_TELNET                     (1)
 #define MICROPY_PORT_HAS_FTP                        (1)
+#define MICROPY_PY_SYS_PLATFORM                     "WiPy"
+
+#define MICROPY_PORT_WLAN_AP_SSID                   "wipy-wlan"
+#define MICROPY_PORT_WLAN_AP_KEY                    "www.wipy.io"
+#define MICROPY_PORT_WLAN_AP_SECURITY               SL_SEC_TYPE_WPA_WPA2
+#define MICROPY_PORT_WLAN_AP_CHANNEL                5
 
 #endif // __INCLUDED_MPCONFIGPORT_H

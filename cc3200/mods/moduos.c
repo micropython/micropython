@@ -32,6 +32,8 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
+#include "py/objstr.h"
+#include "genhdr/py-version.h"
 #include "ff.h"
 #include "diskio.h"
 #include "sflash_diskio.h"
@@ -40,6 +42,7 @@
 #include "random.h"
 #include "sd_diskio.h"
 #include "mpexception.h"
+#include "version.h"
 
 /// \module os - basic "operating system" services
 ///
@@ -68,6 +71,31 @@ STATIC bool sd_in_root(void) {
 /******************************************************************************/
 // Micro Python bindings
 //
+
+STATIC const qstr os_uname_info_fields[] = {
+    MP_QSTR_sysname, MP_QSTR_nodename,
+    MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
+};
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, WIPY_SW_VERSION_NUMBER);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
+STATIC MP_DEFINE_ATTRTUPLE(
+    os_uname_info_obj,
+    os_uname_info_fields,
+    5,
+    (mp_obj_t)&os_uname_info_sysname_obj,
+    (mp_obj_t)&os_uname_info_nodename_obj,
+    (mp_obj_t)&os_uname_info_release_obj,
+    (mp_obj_t)&os_uname_info_version_obj,
+    (mp_obj_t)&os_uname_info_machine_obj
+);
+
+STATIC mp_obj_t os_uname(void) {
+    return (mp_obj_t)&os_uname_info_obj;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
 /// \function chdir(path)
 /// Change current directory.
@@ -321,6 +349,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdisk_obj, os_mkdisk);
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uname),           (mp_obj_t)&os_uname_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_chdir),           (mp_obj_t)&os_chdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd),          (mp_obj_t)&os_getcwd_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir),         (mp_obj_t)&os_listdir_obj },

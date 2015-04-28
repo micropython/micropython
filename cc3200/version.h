@@ -27,9 +27,6 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define VERSION_NUMBER                          v0.9.0
-
-#define VERSION_PASTE(name, number)             name # number
-#define VERSION_E(name, number)                 VERSION_PASTE(name, number)
+#define WIPY_SW_VERSION_NUMBER                              "0.9.1"
 
 #endif /* VERSION_H_ */
