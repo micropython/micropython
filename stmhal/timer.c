@@ -1382,6 +1382,7 @@ void timer_irq_handler(uint tim_id) {
         // just get called continuously.
         uint32_t unhandled = tim->tim.Instance->DIER & 0xff & ~handled;
         if (unhandled != 0) {
+            __HAL_TIM_DISABLE_IT(&tim->tim, unhandled);
             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
             printf("Unhandled interrupt SR=0x%02lx (now disabled)\n", unhandled);
         }
