@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+#include "py/obj.h"
+#include "py/runtime.h"
 #include "py/repl.h"
 
 #if MICROPY_HELPER_REPL
@@ -103,6 +106,143 @@ bool mp_repl_continue_with_input(const char *input) {
 
     // otherwise, don't continue
     return false;
+}
+
+const char *mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t *print, mp_uint_t *compl_len) {
+    // scan backwards to find start of "a.b.c" chain
+    const char *top = str + len;
+    for (const char *s = top; --s >= str;) {
+        if (!(unichar_isalpha(*s) || unichar_isdigit(*s) || *s == '_' || *s == '.')) {
+            ++s;
+            str = s;
+            break;
+        }
+    }
+
+    // begin search in locals dict
+    mp_obj_dict_t *dict = mp_locals_get();
+
+    for (;;) {
+        // get next word in string to complete
+        const char *s_start = str;
+        while (str < top && *str != '.') {
+            ++str;
+        }
+        mp_uint_t s_len = str - s_start;
+
+        if (str < top) {
+            // a complete word, lookup in current dict
+
+            mp_obj_t obj = MP_OBJ_NULL;
+            for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+                if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
+                    mp_uint_t d_len;
+                    const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
+                    if (s_len == d_len && strncmp(s_start, d_str, d_len) == 0) {
+                        obj = dict->map.table[i].value;
+                        break;
+                    }
+                }
+            }
+
+            if (obj == MP_OBJ_NULL) {
+                // lookup failed
+                return NULL;
+            }
+
+            // found an object of this name; try to get its dict
+            if (MP_OBJ_IS_TYPE(obj, &mp_type_module)) {
+                dict = mp_obj_module_get_globals(obj);
+            } else {
+                mp_obj_type_t *type;
+                if (MP_OBJ_IS_TYPE(obj, &mp_type_type)) {
+                    type = obj;
+                } else {
+                    type = mp_obj_get_type(obj);
+                }
+                if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
+                    dict = type->locals_dict;
+                } else {
+                    // obj has no dict
+                    return NULL;
+                }
+            }
+
+            // skip '.' to move to next word
+            ++str;
+
+        } else {
+            // end of string, do completion on this partial name
+
+            // look for matches
+            int n_found = 0;
+            const char *match_str = NULL;
+            mp_uint_t match_len = 0;
+            for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+                if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
+                    mp_uint_t d_len;
+                    const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
+                    if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
+                        if (match_str == NULL) {
+                            match_str = d_str;
+                            match_len = d_len;
+                        } else {
+                            for (mp_uint_t i = s_len; i < match_len && i < d_len; ++i) {
+                                if (match_str[i] != d_str[i]) {
+                                    match_len = i;
+                                    break;
+                                }
+                            }
+                        }
+                        ++n_found;
+                    }
+                }
+            }
+
+            // nothing found
+            if (n_found == 0) {
+                return NULL;
+            }
+
+            // 1 match found, or multiple matches with a common prefix
+            if (n_found == 1 || match_len > s_len) {
+                *compl_len = match_len - s_len;
+                return match_str + s_len;
+            }
+
+            // multiple matches found, print them out
+
+            #define WORD_SLOT_LEN (16)
+            #define MAX_LINE_LEN  (4 * WORD_SLOT_LEN)
+
+            int line_len = MAX_LINE_LEN; // force a newline for first word
+            for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+                if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
+                    mp_uint_t d_len;
+                    const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
+                    if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
+                        int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
+                        if (gap < 2) {
+                            gap += WORD_SLOT_LEN;
+                        }
+                        if (line_len + gap + d_len <= MAX_LINE_LEN) {
+                            // TODO optimise printing of gap?
+                            for (int i = 0; i < gap; ++i) {
+                                mp_print_str(print, " ");
+                            }
+                            mp_print_str(print, d_str);
+                            line_len += gap + d_len;
+                        } else {
+                            mp_printf(print, "\n%s", d_str);
+                            line_len = d_len;
+                        }
+                    }
+                }
+            }
+            mp_print_str(print, "\n");
+            return (void*)1; // hack!
+        }
+    }
 }
 
 #endif // MICROPY_HELPER_REPL

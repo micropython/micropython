@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/repl.h"
 #include "readline.h"
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
@@ -85,6 +86,7 @@ typedef struct _readline_t {
     int hist_cur;
     int cursor_pos;
     char escape_seq_buf[1];
+    const char *prompt;
 } readline_t;
 
 STATIC readline_t rl;
@@ -132,6 +134,26 @@ int readline_process_char(int c) {
                 // set redraw parameters
                 redraw_step_back = 1;
                 redraw_from_cursor = true;
+            }
+        } else if (c == 9) {
+            // tab magic
+            mp_uint_t compl_len = 0;
+            const char *compl = mp_repl_autocomplete(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len, &mp_plat_print, &compl_len);
+            if (compl == NULL) {
+                // no match
+            } else if (compl == (void*)1) {
+                // many matches
+                mp_hal_stdout_tx_str(rl.prompt);
+                mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+                redraw_from_cursor = true;
+            } else {
+                // one match
+                for (int i = 0; i < compl_len; ++i) {
+                    vstr_ins_byte(rl.line, rl.cursor_pos + i, *compl++);
+                }
+                // set redraw parameters
+                redraw_from_cursor = true;
+                redraw_step_forward = compl_len;
             }
         } else if (32 <= c && c <= 126) {
             // printable character
@@ -260,23 +282,26 @@ end_key:
     return -1;
 }
 
-void readline_note_newline(void) {
+void readline_note_newline(const char *prompt) {
     rl.orig_line_len = rl.line->len;
     rl.cursor_pos = rl.orig_line_len;
+    rl.prompt = prompt;
+    mp_hal_stdout_tx_str(prompt);
 }
 
-void readline_init(vstr_t *line) {
+void readline_init(vstr_t *line, const char *prompt) {
     rl.line = line;
     rl.orig_line_len = line->len;
     rl.escape_seq = ESEQ_NONE;
     rl.escape_seq_buf[0] = 0;
     rl.hist_cur = -1;
     rl.cursor_pos = rl.orig_line_len;
+    rl.prompt = prompt;
+    mp_hal_stdout_tx_str(prompt);
 }
 
 int readline(vstr_t *line, const char *prompt) {
-    mp_hal_stdout_tx_str(prompt);
-    readline_init(line);
+    readline_init(line, prompt);
     for (;;) {
         int c = mp_hal_stdin_rx_chr();
         int r = readline_process_char(c);
