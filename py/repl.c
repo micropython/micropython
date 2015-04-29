@@ -187,9 +187,9 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
                             match_str = d_str;
                             match_len = d_len;
                         } else {
-                            for (mp_uint_t i = s_len; i < match_len && i < d_len; ++i) {
-                                if (match_str[i] != d_str[i]) {
-                                    match_len = i;
+                            for (mp_uint_t j = s_len; j < match_len && j < d_len; ++j) {
+                                if (match_str[j] != d_str[j]) {
+                                    match_len = j;
                                     break;
                                 }
                             }
@@ -227,7 +227,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
                         }
                         if (line_len + gap + d_len <= MAX_LINE_LEN) {
                             // TODO optimise printing of gap?
-                            for (int i = 0; i < gap; ++i) {
+                            for (int j = 0; j < gap; ++j) {
                                 mp_print_str(print, " ");
                             }
                             mp_print_str(print, d_str);
