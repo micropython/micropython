@@ -62,7 +62,7 @@
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512
 
-#define BOOTMGR_WAIT_SAFE_MODE_MS           1600
+#define BOOTMGR_WAIT_SAFE_MODE_MS           1200
 #define BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS    200
 
 #define BOOTMGR_SAFE_MODE_ENTER_MS          800
