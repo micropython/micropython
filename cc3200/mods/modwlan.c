@@ -95,6 +95,8 @@ typedef struct _wlan_obj_t {
     uint8_t             ssid[33];
     uint8_t             bssid[6];
 
+    uint8_t             staconnected;
+
 } wlan_obj_t;
 
 /******************************************************************************
@@ -165,6 +167,7 @@ STATIC wlan_obj_t wlan_obj = {
         .ssid = {0},
         .bssid = {0},
         .mac = {0},
+        .staconnected = 0
 };
 
 STATIC const mp_cb_methods_t wlan_cb_methods;
@@ -225,10 +228,12 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
         }
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
-            // TODO
+            wlan_obj.staconnected++;
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
-            // TODO
+            if (wlan_obj.staconnected > 0) {
+                wlan_obj.staconnected--;
+            }
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
             // TODO
@@ -380,10 +385,8 @@ void wlan_init0 (void) {
 }
 
 void wlan_first_start (void) {
-    // clear wlan data after checking any of the status flags
-    wlan_initialize_data();
-
     if (wlan_obj.mode < 0) {
+        wlan_initialize_data();
         wlan_obj.mode = sl_Start(0, 0, 0);
         sl_LockObjUnlock (&wlan_LockObj);
     }
@@ -540,6 +543,7 @@ STATIC void wlan_initialize_data (void) {
     wlan_obj.gateway = 0;
     wlan_obj.ip = 0;
     wlan_obj.security = SL_SEC_TYPE_OPEN;
+    wlan_obj.staconnected = 0;
     memset(wlan_obj.ssid, 0, sizeof(wlan_obj.ssid));
     memset(wlan_obj.bssid, 0, sizeof(wlan_obj.bssid));
 }
@@ -548,6 +552,7 @@ STATIC void wlan_reenable (SlWlanMode_t mode) {
     // stop and start again
     sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
     sl_Stop(SL_STOP_TIMEOUT);
+    wlan_initialize_data();
     wlan_obj.mode = sl_Start(0, 0, 0);
     sl_LockObjUnlock (&wlan_LockObj);
     ASSERT (wlan_obj.mode == mode);
@@ -801,10 +806,11 @@ STATIC mp_obj_t wlan_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_disconnect_obj, wlan_disconnect);
 
 /// \method is_connected()
-/// Return true if connected to the AP and an IP address has been assigned. False otherwise.
+/// Return true if connected to the AP and an IP address has been assigned. Also true if there's any station connected.
+///        false otherwise.
 STATIC mp_obj_t wlan_isconnected(mp_obj_t self_in) {
-    if (GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION) &&
-        GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) {
+    if ((GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION) &&
+         GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) || (wlan_obj.staconnected > 0)) {
         return mp_const_true;
     }
     return mp_const_false;
