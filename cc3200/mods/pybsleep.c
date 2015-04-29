@@ -660,7 +660,7 @@ STATIC MP_DEFINE_CONST_DICT(pybsleep_locals_dict, pybsleep_locals_dict_table);
 
 STATIC const mp_obj_type_t pybsleep_type = {
     { &mp_type_type },
-    .name = MP_QSTR_sleep,
+    .name = MP_QSTR_Sleep,
     .locals_dict = (mp_obj_t)&pybsleep_locals_dict,
 };
 
