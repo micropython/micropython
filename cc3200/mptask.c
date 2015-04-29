@@ -126,7 +126,6 @@ soft_reset:
     pin_init0();
     readline_init0();
     mod_network_init0();
-    wlan_init0();
 #if MICROPY_HW_ENABLE_RNG
     rng_init0();
 #endif
@@ -272,6 +271,9 @@ STATIC void mptask_pre_init (void) {
 
     // this one allocates memory for the nvic vault
     pybsleep_pre_init();
+
+    // this one allocates mameory for the WLAN semaphore
+    wlan_init0();
 
 #if MICROPY_HW_HAS_SDCARD
     pybsd_init0();

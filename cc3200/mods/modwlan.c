@@ -379,6 +379,7 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock) {
 // SimpleLink Asynchronous Event Handlers -- End
 //*****************************************************************************
 
+__attribute__ ((section (".boot")))
 void wlan_init0 (void) {
     // create the wlan lock
     ASSERT(OSI_OK == sl_LockObjCreate(&wlan_LockObj, "WlanLock"));
