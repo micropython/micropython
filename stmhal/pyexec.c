@@ -36,6 +36,10 @@
 #ifdef MICROPY_HAL_H
 #include MICROPY_HAL_H
 #endif
+#if defined(USE_DEVICE_MODE)
+#include "irq.h"
+#include "usb.h"
+#endif
 #include "readline.h"
 #include "pyexec.h"
 #include "genhdr/mpversion.h"
@@ -307,6 +311,20 @@ friendly_repl_reset:
 
     for (;;) {
     input_restart:
+
+        #if defined(USE_DEVICE_MODE)
+        if (usb_vcp_is_enabled()) {
+            // If the user gets to here and interrupts are disabled then
+            // they'll never see the prompt, traceback etc. The USB REPL needs
+            // interrupts to be enabled or no transfers occur. So we try to
+            // do the user a favor and reenable interrupts.
+            if (query_irq() == IRQ_STATE_DISABLED) {
+                enable_irq(IRQ_STATE_ENABLED);
+                mp_hal_stdout_tx_str("PYB: enabling IRQs\r\n");
+            }
+        }
+        #endif
+
         vstr_reset(&line);
         int ret = readline(&line, ">>> ");
 
