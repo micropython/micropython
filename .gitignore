@@ -33,5 +33,7 @@ tests/*.out
 ######################
 __pycache__/
 
-# Customized Makefile overrides
+# Customized Makefile/project overrides
+######################
 GNUmakefile
+user.props

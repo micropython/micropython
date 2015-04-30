@@ -72,7 +72,9 @@
     <Import Project="msvc/common.props" />
     <Import Project="msvc/release.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <CustomPropsFile Condition="'$(CustomPropsFile)'==''">msvc/user.props</CustomPropsFile>
+  </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile />
@@ -94,6 +96,7 @@
   </ItemGroup>
   <Import Project="msvc/sources.props" />
   <Import Project="msvc/genhdr.targets" />
+  <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
   <Target Name="GenHeaders" BeforeTargets="BuildGenerateSources" DependsOnTargets="GenerateHeaders">
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
