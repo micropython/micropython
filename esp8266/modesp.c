@@ -36,6 +36,8 @@
 #include "queue.h"
 #include "user_interface.h"
 
+#define MODESP_INCLUDE_CONSTANTS (1)
+
 // Singleton instance of scan callback, meaning that there can be only
 // one concurrent AP scan.
 STATIC mp_obj_t scan_cb_obj;
@@ -116,6 +118,21 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
+
+#if MODESP_INCLUDE_CONSTANTS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),
+        MP_OBJ_NEW_SMALL_INT(STATION_IDLE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECTING),
+        MP_OBJ_NEW_SMALL_INT(STATION_CONNECTING)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_WRONG_PASSWORD),
+        MP_OBJ_NEW_SMALL_INT(STATION_WRONG_PASSWORD)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_NO_AP_FOUND),
+        MP_OBJ_NEW_SMALL_INT(STATION_NO_AP_FOUND)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECT_FAIL),
+        MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
+        MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);

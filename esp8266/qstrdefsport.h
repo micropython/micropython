@@ -46,6 +46,12 @@ Q(connect)
 Q(disconnect)
 Q(scan)
 Q(status)
+Q(STAT_IDLE)
+Q(STAT_CONNECTING)
+Q(STAT_WRONG_PASSWORD)
+Q(STAT_NO_AP_FOUND)
+Q(STAT_CONNECT_FAIL)
+Q(STAT_GOT_IP)
 
 // Pin class
 Q(Pin)
