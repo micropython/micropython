@@ -111,11 +111,13 @@ STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
 STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
     // check the wake from param
     if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
-        // enable the slow clock interrupt
+        // disable the slow clock interrupt
         MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
     }
     // disable wake from ldps and hibernate
     pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
+    // read the interrupt status to clear any pending interrupt
+    (void)MAP_PRCMIntStatus();
 }
 
 /******************************************************************************/
@@ -217,7 +219,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         // set the lpds callback
         pybsleep_set_timer_lpds_callback(_callback);
 
-        // the interrupt priority is ignored since is already set to to highest level by the sleep module
+        // the interrupt priority is ignored since it's already set to to highest level by the sleep module
         // to make sure that the wakeup callbacks are always called first when resuming from sleep
 
         // enable the interrupt (the object is not relevant here, the function already knows it)
