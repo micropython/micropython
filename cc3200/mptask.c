@@ -273,7 +273,7 @@ STATIC void mptask_pre_init (void) {
     pybsleep_pre_init();
 
     // this one allocates mameory for the WLAN semaphore
-    wlan_init0();
+    wlan_pre_init();
 
 #if MICROPY_HW_HAS_SDCARD
     pybsd_init0();

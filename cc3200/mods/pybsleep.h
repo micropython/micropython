@@ -42,19 +42,17 @@ typedef enum {
     PYB_SLP_HARD_RESET,
     PYB_SLP_WDT_RESET,
     PYB_SLP_HIB_RESET,
-    PYB_SLP_SOFT_RESET,
-
+    PYB_SLP_SOFT_RESET
 } pybsleep_reset_cause_t;
 
 typedef enum {
+    PYB_SLP_WAKED_PWRON = 0,
     PYB_SLP_WAKED_BY_WLAN,
-    PYB_SLP_WAKED_BY_PIN,
+    PYB_SLP_WAKED_BY_GPIO,
     PYB_SLP_WAKED_BY_RTC
-
 } pybsleep_wake_reason_t;
 
 typedef void (*WakeUpCB_t)(const mp_obj_t self);
-typedef void (*DeinitCB_t)(const mp_obj_t self);
 
 /******************************************************************************
  DECLARE EXPORTED VARIABLES

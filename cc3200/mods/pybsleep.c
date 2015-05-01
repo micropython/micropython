@@ -123,6 +123,7 @@ STATIC nvic_reg_store_t    *nvic_reg_store;
 STATIC pybsleep_data_t   pybsleep_data = {NULL, NULL, NULL, 0};
 volatile arm_cm4_core_regs_t vault_arm_registers;
 STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
+STATIC pybsleep_reset_cause_t pybsleep_wake_reason = PYB_SLP_WAKED_PWRON;
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -179,6 +180,17 @@ void pybsleep_init0 (void) {
             }
             else {
                 pybsleep_reset_cause = PYB_SLP_HIB_RESET;
+                // set the correct wake reason
+                switch (MAP_PRCMHibernateWakeupCauseGet()) {
+                case PRCM_HIB_WAKEUP_CAUSE_SLOW_CLOCK:
+                    pybsleep_wake_reason = PYB_SLP_WAKED_BY_RTC;
+                    break;
+                case PRCM_HIB_WAKEUP_CAUSE_GPIO:
+                    pybsleep_wake_reason = PYB_SLP_WAKED_BY_GPIO;
+                    break;
+                default:
+                    break;
+                }
             }
             break;
         default:
@@ -410,15 +422,18 @@ STATIC void PRCMInterruptHandler (void) {
         switch (MAP_PRCMLPDSWakeupCauseGet()) {
         case PRCM_LPDS_HOST_IRQ:
             mpcallback_handler(pybsleep_data.wlan_lpds_wake_cb);
+            pybsleep_wake_reason = PYB_SLP_WAKED_BY_WLAN;
             break;
         case PRCM_LPDS_GPIO:
             mpcallback_handler(pybsleep_data.gpio_lpds_wake_cb);
+            pybsleep_wake_reason = PYB_SLP_WAKED_BY_GPIO;
             break;
         case PRCM_LPDS_TIMER:
             // disable the timer as a wake-up source
             pybsleep_data.timer_wake_pwrmode &= ~PYB_PWR_MODE_LPDS;
             MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
             mpcallback_handler(pybsleep_data.timer_lpds_wake_cb);
+            pybsleep_wake_reason = PYB_SLP_WAKED_BY_RTC;
             break;
         default:
             break;
@@ -630,7 +645,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_reset_cause_obj, pyb_sleep_reset_caus
 /// \function wake_reason()
 /// Returns the wake up reson from ldps or hibernate
 STATIC mp_obj_t pyb_sleep_wake_reason (mp_obj_t self_in) {
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(pybsleep_wake_reason);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sleep_wake_reason_obj, pyb_sleep_wake_reason);
 
@@ -646,13 +661,13 @@ STATIC const mp_map_elem_t pybsleep_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACTIVE),                  MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SUSPENDED),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HIBERNATING),             MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PWR_ON_RESET),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),                MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),              MP_OBJ_NEW_SMALL_INT(PYB_SLP_HARD_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),               MP_OBJ_NEW_SMALL_INT(PYB_SLP_WDT_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HIB_RESET),               MP_OBJ_NEW_SMALL_INT(PYB_SLP_HIB_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),              MP_OBJ_NEW_SMALL_INT(PYB_SLP_SOFT_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN_WAKE),               MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_WLAN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PIN_WAKE),                MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_PIN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PIN_WAKE),                MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_GPIO) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC_WAKE),                MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_RTC) },
 };
 

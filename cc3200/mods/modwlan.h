@@ -53,7 +53,7 @@ extern _SlLockObj_t wlan_LockObj;
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-extern void wlan_init0 (void);
+extern void wlan_pre_init (void);
 extern modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ssid_len, uint8_t sec,
                                         const char *key, uint8_t key_len, uint8_t channel);
 extern void wlan_first_start (void);

@@ -380,7 +380,7 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock) {
 //*****************************************************************************
 
 __attribute__ ((section (".boot")))
-void wlan_init0 (void) {
+void wlan_pre_init (void) {
     // create the wlan lock
     ASSERT(OSI_OK == sl_LockObjCreate(&wlan_LockObj, "WlanLock"));
 }
