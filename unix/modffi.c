@@ -375,7 +375,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
             mp_obj_base_t *o = (mp_obj_base_t*)a;
             mp_buffer_info_t bufinfo;
             int ret = o->type->buffer_p.get_buffer(o, &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
-            if (ret != 0 || bufinfo.buf == NULL) {
+            if (ret != 0) {
                 goto error;
             }
             values[i] = (ffi_arg)bufinfo.buf;
