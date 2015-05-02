@@ -37,33 +37,12 @@
 #include "pybpin.h"
 #include MICROPY_HAL_H
 
-STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pin_named_pins_obj_t *self = self_in;
-    mp_printf(print, "<Pin.%q>", self->name);
-}
-
-const mp_obj_type_t pin_cpu_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_cpu,
-    .print = pin_named_pins_obj_print,
-    .locals_dict = (mp_obj_t)&pin_cpu_pins_locals_dict,
-};
 
 pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
     mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL && named_elem->value != NULL) {
         return named_elem->value;
-    }
-    return NULL;
-}
-
-pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
-    for (uint i = 0; i < named_map->used; i++) {
-        if (((pin_obj_t *)named_map->table[i].value)->pin_num == pin_num) {
-            return named_map->table[i].value;
-        }
     }
     return NULL;
 }

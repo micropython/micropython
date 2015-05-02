@@ -28,12 +28,14 @@
 #ifndef PYBPIN_H_
 #define PYBPIN_H_
 
-// This file requires pin_defs_xxx.h (which has port specific enums and
-// defines, so we include it here. It should never be included directly
-
-#include MICROPY_PIN_DEFS_PORT_H
-
 #define PYBPIN_ANALOG_TYPE          0xFF
+
+enum {
+  PORT_A0 = GPIOA0_BASE,
+  PORT_A1 = GPIOA1_BASE,
+  PORT_A2 = GPIOA2_BASE,
+  PORT_A3 = GPIOA3_BASE
+};
 
 typedef struct {
     const mp_obj_base_t base;
@@ -70,7 +72,6 @@ void pin_config(pin_obj_t *self, uint af, uint mode, uint type, uint strength);
 void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority);
 pin_obj_t *pin_find(mp_obj_t user_obj);
 pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
-pin_obj_t *pin_find_pin(const mp_obj_dict_t *named_pins, uint pin_num);
 pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit);
 uint32_t pin_get_mode(const pin_obj_t *self);
 uint32_t pin_get_type(const pin_obj_t *self);

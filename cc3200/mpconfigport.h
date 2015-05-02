@@ -171,7 +171,6 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 #include "mpconfigboard.h"
 
 #define MICROPY_HAL_H                               "cc3200_hal.h"
-#define MICROPY_PIN_DEFS_PORT_H                     "pin_defs_cc3200.h"
 #define MICROPY_PORT_HAS_TELNET                     (1)
 #define MICROPY_PORT_HAS_FTP                        (1)
 #define MICROPY_PY_SYS_PLATFORM                     "WiPy"
