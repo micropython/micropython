@@ -819,35 +819,29 @@ STATIC mp_obj_t wlan_isconnected(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_isconnected_obj, wlan_isconnected);
 
 STATIC mp_obj_t wlan_ifconfig (mp_obj_t self_in) {
+    STATIC const qstr wlan_ifconfig_fields[] = {
+        MP_QSTR_mode, MP_QSTR_ssid,
+        MP_QSTR_mac, MP_QSTR_bssid,
+        MP_QSTR_ip, MP_QSTR_subnet,
+        MP_QSTR_gateway, MP_QSTR_dns
+    };
+
     unsigned char len = sizeof(SlNetCfgIpV4Args_t);
     unsigned char dhcpIsOn;
     SlNetCfgIpV4Args_t ipV4;
-
     sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO, &dhcpIsOn, &len, (uint8_t *)&ipV4);
 
-    mp_obj_t ifconfig = mp_obj_new_dict(0);
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("ip", strlen("ip"), false), mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.ip));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("subnet", strlen("subnet"), false), mod_network_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("gateway", strlen("gateway"), false), mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.gateway));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("dns", strlen("dns"), false), mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.dns));
-    char mac_str[18];
-    mp_uint_t mac_len = snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", wlan_obj.mac[0], wlan_obj.mac[1], wlan_obj.mac[2],
-                                 wlan_obj.mac[3], wlan_obj.mac[4], wlan_obj.mac[5]);
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("mac", strlen("mac"), false), mp_obj_new_str(mac_str, mac_len, false));
-    char *mode_str;
-    if (wlan_obj.mode == ROLE_STA) {
-        mode_str = "station";
-    }
-    else if (wlan_obj.mode == ROLE_AP) {
-        mode_str = "ap";
-    }
-    else {
-        mode_str = "p2p";
-    }
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("mode", strlen("mode"), false), mp_obj_new_str(mode_str, strlen(mode_str), false));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("ssid", strlen("ssid"), false), mp_obj_new_str((const char *)wlan_obj.ssid, strlen((const char *)wlan_obj.ssid), false));
+    mp_obj_t ifconfig[8];
+    ifconfig[0] = mp_obj_new_int(wlan_obj.mode);
+    ifconfig[1] = mp_obj_new_str((const char *)wlan_obj.ssid, strlen((const char *)wlan_obj.ssid), false);
+    ifconfig[2] = mp_obj_new_bytes((const byte *)wlan_obj.bssid, SL_BSSID_LENGTH);
+    ifconfig[3] = mp_obj_new_bytes((const byte *)wlan_obj.mac, SL_BSSID_LENGTH);
+    ifconfig[4] = mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.ip);
+    ifconfig[5] = mod_network_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask);
+    ifconfig[6] = mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.gateway);
+    ifconfig[7] = mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.dns);
 
-    return ifconfig;
+    return mp_obj_new_attrtuple(wlan_ifconfig_fields, 8, ifconfig);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_ifconfig_obj, wlan_ifconfig);
 
