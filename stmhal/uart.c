@@ -122,13 +122,17 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             UARTx = USART1;
             irqn = USART1_IRQn;
             GPIO_AF_UARTx = GPIO_AF7_USART1;
-
+#if defined(PYB_USART_1_PORT) && defined(PYB_USART_1_PINS)
+            GPIO_Port = PYB_USART_1_PORT;
+            GPIO_Pin = PYB_USART_1_PINS;
+#else
 #if defined (PYBV4) || defined(PYBV10)
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
 #else
             GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_9 | GPIO_PIN_10;
+#endif
 #endif
 
             __USART1_CLK_ENABLE();
@@ -140,6 +144,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART2_IRQn;
             GPIO_AF_UARTx = GPIO_AF7_USART2;
 
+#if defined(PYB_USART_2_PORT) && defined(PYB_USART_2_PINS) && defined(PYB_USART_2_RTS) && defined(PYB_USART_2_CTS)
+            GPIO_Port = PYB_USART_2_PORT;
+            GPIO_Pin = PYB_USART_2_PINS;
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                GPIO_Pin |= PYB_USART_2_RTS;
+            }
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                GPIO_Pin |= PYB_USART_2_CTS;
+            }
+#else
             GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_2 | GPIO_PIN_3;
 
@@ -149,7 +163,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
                 GPIO_Pin |= GPIO_PIN_0;
             }
-
+#endif
             __USART2_CLK_ENABLE();
             break;
 
@@ -159,7 +173,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             UARTx = USART3;
             irqn = USART3_IRQn;
             GPIO_AF_UARTx = GPIO_AF7_USART3;
-
+#if defined(PYB_USART_3_PORT) && defined(PYB_USART_3_PINS) && defined(PYB_USART_3_RTS) && defined(PYB_USART_3_CTS)
+            GPIO_Port = PYB_USART_3_PORT;
+            GPIO_Pin = PYB_USART_3_PINS;
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                GPIO_Pin |= PYB_USART_3_RTS;
+            }
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                GPIO_Pin |= PYB_USART_3_CTS;
+            }
+#else
 #if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_10 | GPIO_PIN_11;
@@ -174,6 +197,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             GPIO_Port = GPIOD;
             GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
 #endif
+#endif
             __USART3_CLK_ENABLE();
             break;
         #endif
@@ -185,8 +209,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART4_IRQn;
             GPIO_AF_UARTx = GPIO_AF8_UART4;
 
+#if defined(PYB_USART_4_PORT) && defined(PYB_USART_4_PINS)
+            GPIO_Port = PYB_USART_4_PORT;
+            GPIO_Pin = PYB_USART_4_PINS;
+#else
             GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_0 | GPIO_PIN_1;
+#endif
 
             __UART4_CLK_ENABLE();
             break;
@@ -198,8 +227,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART6_IRQn;
             GPIO_AF_UARTx = GPIO_AF8_USART6;
 
+#if defined(PYB_USART_6_PORT) && defined(PYB_USART_6_PINS)
+            GPIO_Port = PYB_USART_6_PORT;
+            GPIO_Pin = PYB_USART_6_PINS;
+#else
             GPIO_Port = GPIOC;
             GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
+#endif
 
             __USART6_CLK_ENABLE();
             break;
