@@ -117,94 +117,88 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     GPIO_TypeDef* GPIO_Port = NULL;
 
     switch (uart_obj->uart_id) {
+        #if defined(MICROPY_HW_UART1_PORT) && defined(MICROPY_HW_UART1_PINS)
         // USART1 is on PA9/PA10 (CK on PA8), PB6/PB7
         case PYB_UART_1:
             UARTx = USART1;
             irqn = USART1_IRQn;
             GPIO_AF_UARTx = GPIO_AF7_USART1;
-
-#if defined (PYBV4) || defined(PYBV10)
-            GPIO_Port = GPIOB;
-            GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
-#else
-            GPIO_Port = GPIOA;
-            GPIO_Pin = GPIO_PIN_9 | GPIO_PIN_10;
-#endif
-
+            GPIO_Port = MICROPY_HW_UART1_PORT;
+            GPIO_Pin = MICROPY_HW_UART1_PINS;
             __USART1_CLK_ENABLE();
             break;
+        #endif
 
+        #if defined(MICROPY_HW_UART2_PORT) && defined(MICROPY_HW_UART2_PINS)
         // USART2 is on PA2/PA3 (CTS,RTS,CK on PA0,PA1,PA4), PD5/PD6 (CK on PD7)
         case PYB_UART_2:
             UARTx = USART2;
             irqn = USART2_IRQn;
             GPIO_AF_UARTx = GPIO_AF7_USART2;
-
-            GPIO_Port = GPIOA;
-            GPIO_Pin = GPIO_PIN_2 | GPIO_PIN_3;
-
+            GPIO_Port = MICROPY_HW_UART2_PORT;
+            GPIO_Pin = MICROPY_HW_UART2_PINS;
+            #if defined(MICROPY_HW_UART2_RTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
-                GPIO_Pin |= GPIO_PIN_1;
+                GPIO_Pin |= MICROPY_HW_UART2_RTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART2_CTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
-                GPIO_Pin |= GPIO_PIN_0;
+                GPIO_Pin |= MICROPY_HW_UART2_CTS;
             }
-
+            #endif
             __USART2_CLK_ENABLE();
             break;
+        #endif
 
-        #if defined(USART3)
+        #if defined(USART3) && defined(MICROPY_HW_UART3_PORT) && defined(MICROPY_HW_UART3_PINS)
         // USART3 is on PB10/PB11 (CK,CTS,RTS on PB12,PB13,PB14), PC10/PC11 (CK on PC12), PD8/PD9 (CK on PD10)
         case PYB_UART_3:
             UARTx = USART3;
             irqn = USART3_IRQn;
             GPIO_AF_UARTx = GPIO_AF7_USART3;
-
-#if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
-            GPIO_Port = GPIOB;
-            GPIO_Pin = GPIO_PIN_10 | GPIO_PIN_11;
-
+            GPIO_Port = MICROPY_HW_UART3_PORT;
+            GPIO_Pin = MICROPY_HW_UART3_PINS;
+            #if defined(MICROPY_HW_UART3_RTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
-                GPIO_Pin |= GPIO_PIN_14;
+                GPIO_Pin |= MICROPY_HW_UART3_RTS;
             }
+            #endif
+            #if defined(MICROPY_HW_UART3_CTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
-                GPIO_Pin |= GPIO_PIN_13;
+                GPIO_Pin |= MICROPY_HW_UART3_CTS;
             }
-#else
-            GPIO_Port = GPIOD;
-            GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
-#endif
+            #endif
             __USART3_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(UART4)
+        #if defined(UART4) && defined(MICROPY_HW_UART4_PORT) && defined(MICROPY_HW_UART4_PINS)
         // UART4 is on PA0/PA1, PC10/PC11
         case PYB_UART_4:
             UARTx = UART4;
             irqn = UART4_IRQn;
             GPIO_AF_UARTx = GPIO_AF8_UART4;
-
-            GPIO_Port = GPIOA;
-            GPIO_Pin = GPIO_PIN_0 | GPIO_PIN_1;
-
+            GPIO_Port = MICROPY_HW_UART4_PORT;
+            GPIO_Pin = MICROPY_HW_UART4_PINS;
             __UART4_CLK_ENABLE();
             break;
         #endif
 
+        #if defined(MICROPY_HW_UART6_PORT) && defined(MICROPY_HW_UART6_PINS)
         // USART6 is on PC6/PC7 (CK on PC8)
         case PYB_UART_6:
             UARTx = USART6;
             irqn = USART6_IRQn;
             GPIO_AF_UARTx = GPIO_AF8_USART6;
-
-            GPIO_Port = GPIOC;
-            GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
-
+            GPIO_Port = MICROPY_HW_UART6_PORT;
+            GPIO_Pin = MICROPY_HW_UART6_PINS;
             __USART6_CLK_ENABLE();
             break;
+        #endif
 
         default:
+            // UART does not exist or is not configured for this board
             return false;
     }
 
