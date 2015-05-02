@@ -14,6 +14,7 @@ INC =  -I.
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
+INC += -I../lib/netutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
@@ -49,6 +50,7 @@ SRC_C = \
 	modpyb.c \
 	modpybpin.c \
 	modesp.c \
+	utils.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
@@ -59,6 +61,7 @@ STM_SRC_C = $(addprefix stmhal/,\
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
+	netutils/netutils.c \
 	)
 
 SRC_S = \
