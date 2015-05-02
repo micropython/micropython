@@ -49,6 +49,7 @@ SRC_C = \
 	modpyb.c \
 	modpybpin.c \
 	modesp.c \
+	utils.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
