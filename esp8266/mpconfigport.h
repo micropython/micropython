@@ -71,7 +71,11 @@ extern const struct _mp_obj_module_t esp_module;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+    const char *readline_hist[8]; \
+    \
+    /* Singleton instance of scan callback, meaning that there can
+       be only one concurrent AP scan. */ \
+    mp_obj_t scan_cb_obj; \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
