@@ -126,13 +126,8 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             GPIO_Port = PYB_USART_1_PORT;
             GPIO_Pin = PYB_USART_1_PINS;
 #else
-#if defined (PYBV4) || defined(PYBV10)
-            GPIO_Port = GPIOB;
-            GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
-#else
             GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_9 | GPIO_PIN_10;
-#endif
 #endif
 
             __USART1_CLK_ENABLE();
@@ -191,20 +186,8 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             }
 #endif
 #else
-#if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
-            GPIO_Port = GPIOB;
-            GPIO_Pin = GPIO_PIN_10 | GPIO_PIN_11;
-
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
-                GPIO_Pin |= GPIO_PIN_14;
-            }
-            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
-                GPIO_Pin |= GPIO_PIN_13;
-            }
-#else
             GPIO_Port = GPIOD;
             GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
-#endif
 #endif
             __USART3_CLK_ENABLE();
             break;

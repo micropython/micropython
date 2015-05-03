@@ -59,3 +59,20 @@
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+
+// UARTs config
+#define PYB_USART_1_PORT    GPIOB
+#define PYB_USART_1_PINS    (GPIO_PIN_6 | GPIO_PIN_7)
+#define PYB_USART_2_PORT    GPIOA
+#define PYB_USART_2_PINS    (GPIO_PIN_2 | GPIO_PIN_3)
+#define PYB_USART_2_RTS     GPIO_PIN_1
+#define PYB_USART_2_CTS     GPIO_PIN_0
+#define PYB_USART_3_PORT    GPIOB
+#define PYB_USART_3_PINS    (GPIO_PIN_10 | GPIO_PIN_11)
+#define PYB_USART_3_RTS     GPIO_PIN_14
+#define PYB_USART_3_CTS     GPIO_PIN_13
+#define PYB_USART_4_PORT    GPIOA
+#define PYB_USART_4_PINS    (GPIO_PIN_0 | GPIO_PIN_1)
+// There is no 5
+#define PYB_USART_6_PORT    GPIOC
+#define PYB_USART_6_PINS    (GPIO_PIN_6 | GPIO_PIN_7)
