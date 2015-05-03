@@ -583,3 +583,11 @@ Q(sha256)
 Q(ubinascii)
 Q(hexlify)
 #endif
+
+#if MICROPY_PY_MACHINE
+Q(machine)
+Q(mem)
+Q(mem8)
+Q(mem16)
+Q(mem32)
+#endif
