@@ -32,6 +32,7 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -422,20 +423,20 @@ STATIC mp_obj_t wiznet5k_ifconfig(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // get
         mp_obj_t tuple[4] = {
-            mod_network_format_ipv4_addr(netinfo.ip),
-            mod_network_format_ipv4_addr(netinfo.sn),
-            mod_network_format_ipv4_addr(netinfo.gw),
-            mod_network_format_ipv4_addr(netinfo.dns),
+            netutils_format_ipv4_addr(netinfo.ip, NETUTILS_BIG),
+            netutils_format_ipv4_addr(netinfo.sn, NETUTILS_BIG),
+            netutils_format_ipv4_addr(netinfo.gw, NETUTILS_BIG),
+            netutils_format_ipv4_addr(netinfo.dns, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
-        mod_network_parse_ipv4_addr(items[0], netinfo.ip);
-        mod_network_parse_ipv4_addr(items[1], netinfo.sn);
-        mod_network_parse_ipv4_addr(items[2], netinfo.gw);
-        mod_network_parse_ipv4_addr(items[3], netinfo.dns);
+        netutils_parse_ipv4_addr(items[0], netinfo.ip, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[1], netinfo.sn, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[2], netinfo.gw, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], netinfo.dns, NETUTILS_BIG);
         ctlnetwork(CN_SET_NETINFO, &netinfo);
         return mp_const_none;
     }

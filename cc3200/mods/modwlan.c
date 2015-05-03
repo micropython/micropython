@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "netutils.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 #include "pybioctl.h"
@@ -836,10 +837,10 @@ STATIC mp_obj_t wlan_ifconfig (mp_obj_t self_in) {
     ifconfig[1] = mp_obj_new_str((const char *)wlan_obj.ssid, strlen((const char *)wlan_obj.ssid), false);
     ifconfig[2] = mp_obj_new_bytes((const byte *)wlan_obj.bssid, SL_BSSID_LENGTH);
     ifconfig[3] = mp_obj_new_bytes((const byte *)wlan_obj.mac, SL_BSSID_LENGTH);
-    ifconfig[4] = mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.ip);
-    ifconfig[5] = mod_network_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask);
-    ifconfig[6] = mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.gateway);
-    ifconfig[7] = mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.dns);
+    ifconfig[4] = netutils_format_ipv4_addr((uint8_t *)&wlan_obj.ip, NETUTILS_LITTLE);
+    ifconfig[5] = netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE);
+    ifconfig[6] = netutils_format_ipv4_addr((uint8_t *)&wlan_obj.gateway, NETUTILS_LITTLE);
+    ifconfig[7] = netutils_format_ipv4_addr((uint8_t *)&wlan_obj.dns, NETUTILS_LITTLE);
 
     return mp_obj_new_attrtuple(wlan_ifconfig_fields, 8, ifconfig);
 }
@@ -992,10 +993,10 @@ STATIC mp_obj_t wlan_config_ip (mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
         }
 
         SlNetCfgIpV4Args_t ipV4;
-        mod_network_parse_ipv4_addr(args[1].u_obj, (uint8_t *)&ipV4.ipV4);
-        mod_network_parse_ipv4_addr(args[2].u_obj, (uint8_t *)&ipV4.ipV4Mask);
-        mod_network_parse_ipv4_addr(args[3].u_obj, (uint8_t *)&ipV4.ipV4Gateway);
-        mod_network_parse_ipv4_addr(args[4].u_obj, (uint8_t *)&ipV4.ipV4DnsServer);
+        netutils_parse_ipv4_addr(args[1].u_obj, (uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE);
+        netutils_parse_ipv4_addr(args[2].u_obj, (uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE);
+        netutils_parse_ipv4_addr(args[3].u_obj, (uint8_t *)&ipV4.ipV4Gateway, NETUTILS_LITTLE);
+        netutils_parse_ipv4_addr(args[4].u_obj, (uint8_t *)&ipV4.ipV4DnsServer, NETUTILS_LITTLE);
 
         wlan_servers_stop();
 

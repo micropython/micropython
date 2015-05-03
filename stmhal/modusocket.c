@@ -32,6 +32,7 @@
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "netutils.h"
 #include "modnetwork.h"
 
 /******************************************************************************/
@@ -93,7 +94,7 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 
     // get address
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-    mp_uint_t port = mod_network_parse_inet_addr(addr_in, ip);
+    mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
 
     // check if we need to select a NIC
     socket_select_nic(self, ip);
@@ -153,7 +154,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     // make the return value
     mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
     client->items[0] = socket2;
-    client->items[1] = mod_network_format_inet_addr(ip, port);
+    client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
 
     return client;
 }
@@ -165,7 +166,7 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 
     // get address
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-    mp_uint_t port = mod_network_parse_inet_addr(addr_in, ip);
+    mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
 
     // check if we need to select a NIC
     socket_select_nic(self, ip);
@@ -231,7 +232,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
 
     // get address
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-    mp_uint_t port = mod_network_parse_inet_addr(addr_in, ip);
+    mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
 
     // check if we need to select a NIC
     socket_select_nic(self, ip);
@@ -270,7 +271,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
         vstr.len = ret;
         tuple[0] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
     }
-    tuple[1] = mod_network_format_inet_addr(ip, port);
+    tuple[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
     return mp_obj_new_tuple(2, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
@@ -404,7 +405,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
             tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
             tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
             tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-            tuple->items[4] = mod_network_format_inet_addr(out_ip, port);
+            tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
             return mp_obj_new_list(1, (mp_obj_t*)&tuple);
         }
     }

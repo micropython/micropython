@@ -36,6 +36,7 @@
 #include "py/objlist.h"
 #include "py/stream.h"
 #include "py/runtime.h"
+#include "netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -519,13 +520,6 @@ STATIC mp_obj_t cc3k_ifconfig(mp_obj_t self_in) {
     tNetappIpconfigRetArgs ipconfig;
     netapp_ipconfig(&ipconfig);
 
-    // CC3000 returns little endian, but we want big endian
-    mod_network_convert_ipv4_endianness(ipconfig.aucIP);
-    mod_network_convert_ipv4_endianness(ipconfig.aucSubnetMask);
-    mod_network_convert_ipv4_endianness(ipconfig.aucDefaultGateway);
-    mod_network_convert_ipv4_endianness(ipconfig.aucDNSServer);
-    mod_network_convert_ipv4_endianness(ipconfig.aucDHCPServer);
-
     // render MAC address
     VSTR_FIXED(mac_vstr, 18);
     const uint8_t *mac = ipconfig.uaMacAddr;
@@ -533,11 +527,11 @@ STATIC mp_obj_t cc3k_ifconfig(mp_obj_t self_in) {
 
     // create and return tuple with ifconfig info
     mp_obj_t tuple[7] = {
-        mod_network_format_ipv4_addr(ipconfig.aucIP),
-        mod_network_format_ipv4_addr(ipconfig.aucSubnetMask),
-        mod_network_format_ipv4_addr(ipconfig.aucDefaultGateway),
-        mod_network_format_ipv4_addr(ipconfig.aucDNSServer),
-        mod_network_format_ipv4_addr(ipconfig.aucDHCPServer),
+        netutils_format_ipv4_addr(ipconfig.aucIP, NETUTILS_LITTLE),
+        netutils_format_ipv4_addr(ipconfig.aucSubnetMask, NETUTILS_LITTLE),
+        netutils_format_ipv4_addr(ipconfig.aucDefaultGateway, NETUTILS_LITTLE),
+        netutils_format_ipv4_addr(ipconfig.aucDNSServer, NETUTILS_LITTLE),
+        netutils_format_ipv4_addr(ipconfig.aucDHCPServer, NETUTILS_LITTLE),
         mp_obj_new_str(mac_vstr.buf, mac_vstr.len, false),
         mp_obj_new_str((const char*)ipconfig.uaSSID, strlen((const char*)ipconfig.uaSSID), false),
     };
