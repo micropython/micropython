@@ -183,6 +183,9 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UBINASCII
     { MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii), (mp_obj_t)&mp_module_ubinascii },
 #endif
+#if MICROPY_PY_MACHINE
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES

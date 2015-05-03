@@ -620,6 +620,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_UBINASCII (0)
 #endif
 
+#ifndef MICROPY_PY_MACHINE
+#define MICROPY_PY_MACHINE (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
