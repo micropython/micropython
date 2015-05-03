@@ -77,9 +77,3 @@ extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 void mod_network_init(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
-
-void mod_network_convert_ipv4_endianness(uint8_t *ip);
-void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip);
-mp_uint_t mod_network_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip);
-mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip);
-mp_obj_t mod_network_format_inet_addr(uint8_t *ip, mp_uint_t port);

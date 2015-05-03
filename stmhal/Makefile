@@ -41,6 +41,7 @@ INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 INC += -I../lib/mp-readline
+INC += -I../lib/netutils
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_CORTEX_M4) $(COPT)
@@ -92,6 +93,7 @@ SRC_LIB = $(addprefix lib/,\
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
 	mp-readline/readline.c \
+	netutils/netutils.c \
 	)
 
 SRC_C = \

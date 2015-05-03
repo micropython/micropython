@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "netutils.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 #include "pybioctl.h"
@@ -826,10 +827,10 @@ STATIC mp_obj_t wlan_ifconfig (mp_obj_t self_in) {
     sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO, &dhcpIsOn, &len, (uint8_t *)&ipV4);
 
     mp_obj_t ifconfig = mp_obj_new_dict(0);
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("ip", strlen("ip"), false), mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.ip));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("subnet", strlen("subnet"), false), mod_network_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("gateway", strlen("gateway"), false), mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.gateway));
-    mp_obj_dict_store (ifconfig, mp_obj_new_str("dns", strlen("dns"), false), mod_network_format_ipv4_addr((uint8_t *)&wlan_obj.dns));
+    mp_obj_dict_store (ifconfig, mp_obj_new_str("ip", strlen("ip"), false), netutils_format_ipv4_addr((uint8_t *)&wlan_obj.ip, NETUTILS_LITTLE));
+    mp_obj_dict_store (ifconfig, mp_obj_new_str("subnet", strlen("subnet"), false), netutils_format_ipv4_addr((uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE));
+    mp_obj_dict_store (ifconfig, mp_obj_new_str("gateway", strlen("gateway"), false), netutils_format_ipv4_addr((uint8_t *)&wlan_obj.gateway, NETUTILS_LITTLE));
+    mp_obj_dict_store (ifconfig, mp_obj_new_str("dns", strlen("dns"), false), netutils_format_ipv4_addr((uint8_t *)&wlan_obj.dns, NETUTILS_LITTLE));
     char mac_str[18];
     mp_uint_t mac_len = snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", wlan_obj.mac[0], wlan_obj.mac[1], wlan_obj.mac[2],
                                  wlan_obj.mac[3], wlan_obj.mac[4], wlan_obj.mac[5]);
@@ -998,10 +999,10 @@ STATIC mp_obj_t wlan_config_ip (mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
         }
 
         SlNetCfgIpV4Args_t ipV4;
-        mod_network_parse_ipv4_addr(args[1].u_obj, (uint8_t *)&ipV4.ipV4);
-        mod_network_parse_ipv4_addr(args[2].u_obj, (uint8_t *)&ipV4.ipV4Mask);
-        mod_network_parse_ipv4_addr(args[3].u_obj, (uint8_t *)&ipV4.ipV4Gateway);
-        mod_network_parse_ipv4_addr(args[4].u_obj, (uint8_t *)&ipV4.ipV4DnsServer);
+        netutils_parse_ipv4_addr(args[1].u_obj, (uint8_t *)&ipV4.ipV4, NETUTILS_LITTLE);
+        netutils_parse_ipv4_addr(args[2].u_obj, (uint8_t *)&ipV4.ipV4Mask, NETUTILS_LITTLE);
+        netutils_parse_ipv4_addr(args[3].u_obj, (uint8_t *)&ipV4.ipV4Gateway, NETUTILS_LITTLE);
+        netutils_parse_ipv4_addr(args[4].u_obj, (uint8_t *)&ipV4.ipV4DnsServer, NETUTILS_LITTLE);
 
         wlan_servers_stop();
 

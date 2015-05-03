@@ -77,9 +77,4 @@ void mod_network_init0(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(void);
 
-void mod_network_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip);
-mp_uint_t mod_network_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip);
-mp_obj_t mod_network_format_ipv4_addr(uint8_t *ip);
-mp_obj_t mod_network_format_inet_addr(uint8_t *ip, mp_uint_t port);
-
 #endif  // MODNETWORK_H_
