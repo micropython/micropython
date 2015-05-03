@@ -26,9 +26,8 @@
 
 #include <stdlib.h>
 
+#include "py/objtype.h"
 #include "py/runtime.h"
-
-mp_obj_t instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 
 typedef struct _mp_obj_object_t {
     mp_obj_base_t base;
@@ -50,8 +49,12 @@ STATIC mp_obj_t object___init__(mp_obj_t self) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
 
 STATIC mp_obj_t object___new__(mp_obj_t cls) {
+    if (!MP_OBJ_IS_TYPE(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t*)cls)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                    "__new__ arg must be a user-type"));
+    }
     mp_obj_t o = MP_OBJ_SENTINEL;
-    mp_obj_t res = instance_make_new(cls, 1, 0, &o);
+    mp_obj_t res = mp_obj_instance_make_new(cls, 1, 0, &o);
     return res;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___new___fun_obj, object___new__);
