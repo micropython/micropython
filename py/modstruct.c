@@ -197,7 +197,7 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
 STATIC const mp_map_elem_t mp_module_struct_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_struct) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ustruct) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_calcsize), (mp_obj_t)&struct_calcsize_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pack), (mp_obj_t)&struct_pack_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unpack), (mp_obj_t)&struct_unpack_obj },
@@ -205,9 +205,9 @@ STATIC const mp_map_elem_t mp_module_struct_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_table);
 
-const mp_obj_module_t mp_module_struct = {
+const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_struct,
+    .name = MP_QSTR_ustruct,
     .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
 };
 

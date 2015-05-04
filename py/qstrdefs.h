@@ -461,7 +461,7 @@ Q(print_exception)
 #endif
 
 #if MICROPY_PY_STRUCT
-Q(struct)
+Q(ustruct)
 Q(pack)
 Q(unpack)
 Q(calcsize)
@@ -469,6 +469,7 @@ Q(calcsize)
 
 #if MICROPY_PY_UCTYPES
 Q(uctypes)
+Q(struct)
 Q(sizeof)
 Q(addressof)
 Q(bytes_at)
