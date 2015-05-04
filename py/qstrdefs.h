@@ -115,6 +115,9 @@ Q(builtins)
 
 Q(Ellipsis)
 Q(StopIteration)
+#if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
+Q(NotImplemented)
+#endif
 
 Q(BaseException)
 Q(ArithmeticError)
