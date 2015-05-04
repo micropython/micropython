@@ -62,6 +62,14 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
         return;
     }
 #endif
+
+    #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
+    if (o_in == MP_OBJ_SENTINEL) {
+        mp_printf(print, "%q", MP_QSTR_NotImplemented);
+        return;
+    }
+    #endif
+
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->print != NULL) {
         type->print((mp_print_t*)print, o_in, kind);

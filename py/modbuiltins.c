@@ -634,6 +634,9 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
 
     // built-in objects
     { MP_OBJ_NEW_QSTR(MP_QSTR_Ellipsis), (mp_obj_t)&mp_const_ellipsis_obj },
+    #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
+    { MP_OBJ_NEW_QSTR(MP_QSTR_NotImplemented), MP_OBJ_SENTINEL },
+    #endif
 
     // built-in user functions
     { MP_OBJ_NEW_QSTR(MP_QSTR_abs), (mp_obj_t)&mp_builtin_abs_obj },
