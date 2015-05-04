@@ -181,9 +181,6 @@ Q(memoryview)
 #endif
 Q(bytes)
 Q(callable)
-#if MICROPY_PY_STRUCT
-Q(calcsize)
-#endif
 Q(chr)
 Q(classmethod)
 Q(_collections)
@@ -467,6 +464,7 @@ Q(print_exception)
 Q(struct)
 Q(pack)
 Q(unpack)
+Q(calcsize)
 #endif
 
 #if MICROPY_PY_UCTYPES
