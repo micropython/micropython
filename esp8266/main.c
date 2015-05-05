@@ -39,8 +39,7 @@
 
 STATIC char heap[16384];
 
-void user_init(void) {
-soft_reset:
+STATIC void mp_reset(void) {
     mp_stack_set_limit(10240);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
@@ -48,29 +47,20 @@ soft_reset:
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
+}
 
-    printf("\n");
+void soft_reset(void) {
+    mp_hal_stdout_tx_str("PYB: soft reset\r\n");
+    mp_hal_udelay(10000); // allow UART to flush output
+    mp_reset();
+    pyexec_event_repl_init();
+}
 
-#if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_friendly_repl_init();
+void user_init(void) {
+    mp_reset();
+    mp_hal_stdout_tx_str("\r\n");
+    pyexec_event_repl_init();
     uart_task_init();
-    return;
-    goto soft_reset;
-#else
-    for (;;) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            if (pyexec_raw_repl() != 0) {
-                break;
-            }
-        } else {
-            if (pyexec_friendly_repl() != 0) {
-                break;
-            }
-        }
-    }
-
-    goto soft_reset;
-#endif
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {

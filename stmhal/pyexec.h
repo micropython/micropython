@@ -37,7 +37,7 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);
-void pyexec_friendly_repl_init(void);
-int pyexec_friendly_repl_process_char(int c);
+void pyexec_event_repl_init(void);
+int pyexec_event_repl_process_char(int c);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);

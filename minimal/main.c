@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
     #endif
     mp_init();
     #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_friendly_repl_init();
+    pyexec_event_repl_init();
     for (;;) {
-        int c = stdin_rx_chr();
-        if (pyexec_friendly_repl_process_char(c)) {
+        int c = mp_hal_stdin_rx_chr();
+        if (pyexec_event_repl_process_char(c)) {
             break;
         }
     }
