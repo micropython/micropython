@@ -19,3 +19,16 @@ class A:
 
 print(hash(A()))
 print({A():1})
+
+class B:
+    pass
+hash(B())
+
+
+class C:
+    def __eq__(self, another):
+        return True
+try:
+    hash(C())
+except TypeError:
+    print("TypeError")
