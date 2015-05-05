@@ -6,6 +6,9 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 # include py core make definitions
 include ../py/py.mk
 
+MAKE_FROZEN = ../tools/make-frozen.py
+
+SCRIPTDIR = scripts
 PORT = /dev/ttyACM0
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
@@ -51,6 +54,7 @@ SRC_C = \
 	modpybpin.c \
 	modesp.c \
 	utils.c \
+	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
@@ -76,6 +80,19 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: $(BUILD)/firmware-combined.bin
+
+SCRIPTDIR_FILE = $(BUILD)/scriptdir
+
+ifeq ($(wildcard $(SCRIPTDIR_FILE)),)
+$(shell $(MKDIR) -p $(BUILD))
+$(shell echo $(SCRIPTDIR) > $(SCRIPTDIR_FILE))
+else ifneq ($(shell cat $(SCRIPTDIR_FILE)), $(SCRIPTDIR))
+$(shell echo $(SCRIPTDIR) > $(SCRIPTDIR_FILE))
+endif
+
+$(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(SCRIPTDIR_FILE)
+	$(ECHO) "Generating $@"
+	$(Q)$(MAKE_FROZEN) $(SCRIPTDIR) > $@
 
 .PHONY: deploy
 
