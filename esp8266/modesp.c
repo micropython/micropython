@@ -413,7 +413,7 @@ STATIC void esp_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) {
         tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
         tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
         tuple->items[4] = netutils_format_inet_addr(ip,
-            esp_getaddrinfo_cb_struct.port, NETUTILS_BIG);
+            esp_getaddrinfo_cb_struct.port, NETUTILS_LITTLE);
         call_function_2_protected(esp_getaddrinfo_cb_struct.lambda, namestr, tuple);
     } else {
         call_function_2_protected(esp_getaddrinfo_cb_struct.lambda, namestr, mp_const_none);
