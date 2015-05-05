@@ -49,3 +49,16 @@ The images that are built are:
 There is also a combined image, made up of the above 2 binary files with the
 appropriate padding:
 - `firmware-combined.bin`: to be flashed at 0x00000
+
+Uploading user script
+----------------------
+
+To upload user script, it first has to be prepended with appropriate header
+using `./packscript.py`
+```
+$ ./packscript.py main.py out-0x60000.bin
+```
+And then the resulting binary has to be uploaded to 0x60000
+```
+$ esptool.py write_flash 0x60000 out-0x60000.bin
+```
