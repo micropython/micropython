@@ -192,10 +192,6 @@ dispatch_loop:
                     PUSH(mp_const_true);
                     DISPATCH();
 
-                ENTRY(MP_BC_LOAD_CONST_ELLIPSIS):
-                    PUSH((mp_obj_t)&mp_const_ellipsis_obj);
-                    DISPATCH();
-
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT): {
                     mp_int_t num = 0;
                     if ((ip[0] & 0x40) != 0) {

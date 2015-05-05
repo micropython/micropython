@@ -142,10 +142,6 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("LOAD_CONST_TRUE");
             break;
 
-        case MP_BC_LOAD_CONST_ELLIPSIS:
-            printf("LOAD_CONST_ELLIPSIS");
-            break;
-
         case MP_BC_LOAD_CONST_SMALL_INT: {
             mp_int_t num = 0;
             if ((ip[0] & 0x40) != 0) {

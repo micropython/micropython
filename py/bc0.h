@@ -32,7 +32,6 @@
 #define MP_BC_LOAD_CONST_FALSE   (0x10)
 #define MP_BC_LOAD_CONST_NONE    (0x11)
 #define MP_BC_LOAD_CONST_TRUE    (0x12)
-#define MP_BC_LOAD_CONST_ELLIPSIS    (0x13)
 #define MP_BC_LOAD_CONST_SMALL_INT   (0x14) // signed var-int
 #define MP_BC_LOAD_CONST_BYTES   (0x15) // qstr
 #define MP_BC_LOAD_CONST_STRING  (0x16) // qstr
