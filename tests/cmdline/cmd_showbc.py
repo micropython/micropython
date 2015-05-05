@@ -3,7 +3,7 @@
 
 def f():
     # constants
-    a = None + False + True + ...
+    a = None + False + True
     a = 0
     a = 1000
     a = -1000
