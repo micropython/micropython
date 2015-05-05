@@ -81,7 +81,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        return mp_obj_new_int(mp_hal_get_cpu_freq());
+        return mp_obj_new_int(mp_hal_get_cpu_freq() * 1000000);
     } else {
         // set
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't change freq"));
