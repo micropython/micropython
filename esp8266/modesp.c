@@ -70,6 +70,7 @@ STATIC mp_obj_t esp_socket_make_new_base() {
     s->cb_recv = mp_const_none;
     s->cb_disconnect = mp_const_none;
     s->fromserver = false;
+    s->connlist = NULL;
     return s;
 }
 
