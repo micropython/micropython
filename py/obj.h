@@ -449,7 +449,8 @@ extern const struct _mp_obj_bool_t mp_const_false_obj;
 extern const struct _mp_obj_bool_t mp_const_true_obj;
 extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
-extern const struct _mp_obj_ellipsis_t mp_const_ellipsis_obj;
+extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
+extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
 extern const struct _mp_obj_exception_t mp_const_MemoryError_obj;
 extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 

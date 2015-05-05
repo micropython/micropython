@@ -32,52 +32,26 @@
 #include "py/runtime0.h"
 
 /******************************************************************************/
-/* slice object                                                               */
+/* singleton objects defined by Python                                        */
 
-#if MICROPY_PY_BUILTINS_SLICE
-
-// TODO: This implements only variant of slice with 2 integer args only.
-// CPython supports 3rd arg (step), plus args can be arbitrary Python objects.
-typedef struct _mp_obj_slice_t {
+typedef struct _mp_obj_singleton_t {
     mp_obj_base_t base;
-    mp_obj_t start;
-    mp_obj_t stop;
-    mp_obj_t step;
-} mp_obj_slice_t;
+    qstr name;
+} mp_obj_singleton_t;
 
-STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void singleton_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_slice_t *o = o_in;
-    mp_print_str(print, "slice(");
-    mp_obj_print_helper(print, o->start, PRINT_REPR);
-    mp_print_str(print, ", ");
-    mp_obj_print_helper(print, o->stop, PRINT_REPR);
-    mp_print_str(print, ", ");
-    mp_obj_print_helper(print, o->step, PRINT_REPR);
-    mp_print_str(print, ")");
+    mp_obj_singleton_t *self = self_in;
+    mp_printf(print, "%q", self->name);
 }
 
-const mp_obj_type_t mp_type_slice = {
+const mp_obj_type_t mp_type_singleton = {
     { &mp_type_type },
-    .name = MP_QSTR_slice,
-    .print = slice_print,
+    .name = MP_QSTR_,
+    .print = singleton_print,
 };
 
-mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
-    mp_obj_slice_t *o = m_new_obj(mp_obj_slice_t);
-    o->base.type = &mp_type_slice;
-    o->start = ostart;
-    o->stop = ostop;
-    o->step = ostep;
-    return o;
-}
-
-void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_slice));
-    mp_obj_slice_t *self = self_in;
-    *start = self->start;
-    *stop = self->stop;
-    *step = self->step;
-}
-
+const mp_obj_singleton_t mp_const_ellipsis_obj = {{&mp_type_singleton}, MP_QSTR_Ellipsis};
+#if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
+const mp_obj_singleton_t mp_const_notimplemented_obj = {{&mp_type_singleton}, MP_QSTR_NotImplemented};
 #endif
