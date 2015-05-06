@@ -29,16 +29,11 @@
 #include "py/gc.h"
 #include "gccollect.h"
 
-STATIC uint32_t stack_end;
+// As we do not have control over the application entry point, there is no way
+// to figure out the real stack base on runtime, so it needs to be hardcoded
+#define STACK_END   0x40000000
 
 mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
-
-void gc_collect_init(void) {
-    mp_uint_t regs[8];
-    mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
-    stack_end = sp;
-    //printf("stack=%p ram_end=%p %d\n", stack_end, &_ram_end);
-}
 
 void gc_collect(void) {
     // start the GC
@@ -53,7 +48,7 @@ void gc_collect(void) {
     mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, (stack_end - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, (STACK_END - sp) / sizeof(uint32_t));
 
     // end the GC
     gc_collect_end();
