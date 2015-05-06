@@ -540,6 +540,7 @@ mp_uint_t gc_nbytes(const void *ptr_in) {
 }
 
 #if 1
+/*#define use_alloc*/
 void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         return NULL;
@@ -558,8 +559,11 @@ void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
     mp_uint_t block_in = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
 
     if(!mem_valid(block_in)){return NULL;}
+#ifdef use_alloc
+#if MICROPY_ENABLE_FINALISER
     int8_t has_finaliser = FTB_GET(block_in);
-
+#endif
+#endif
     mp_uint_t original_bytes = mem_sizeof(block_in);
     mp_uint_t block = mem_realloc(block_in, n_bytes);
     if(block == MEM_BLOCK_ERROR){return NULL;}  // no change
@@ -576,25 +580,27 @@ void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
         return ptr_in;
     }
     // block grew
-    if(block_in == block){  // grew in place
-        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
-        memset((byte*)mem_void_p(block) + n_bytes, 0, mem_sizeof(block) - n_bytes);
-
+    // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
+    memset((byte*)mem_void_p(block) + n_bytes, 0, mem_sizeof(block) - n_bytes);
+    if(block_in == block) {  // grew in place
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
         #endif
     } else {  // data moved, deal with finalizer
+#ifdef use_allloc
 #if MICROPY_ENABLE_FINALISER
-        if (has_finaliser) {
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table(); // dump because a pointer has been freed
+        #endif
+        if (has_finaliser) { // deal with finalsier
             // clear type pointer in case it is never set
             ((mp_obj_base_t*)mem_void_p(block))->type = MP_OBJ_NULL;
             // set mp_obj flag only if it has a finaliser
             FTB_SET(block);
-            FTB_CLEAR(block_in);
         }
 #endif
+#endif
     }
-
     return mem_void_p(block);
 }
 

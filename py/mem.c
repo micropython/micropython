@@ -7,6 +7,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mem.h"
+#include "py/gc.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -300,6 +301,8 @@ mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
     }
 
     // can't resize inplace; try to find a new contiguous chain
+    //
+#if 0
     mp_uint_t block_out = mem_alloc(n_bytes);
 
     // check that the alloc succeeded
@@ -308,6 +311,20 @@ mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
     DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
     memcpy(mem_void_p(block_out), mem_void_p(block), n_blocks * BYTES_PER_BLOCK);
     mem_free(block);
+#else
+    mp_uint_t ptr = (mp_uint_t) gc_alloc(n_bytes,
+        #if MICROPY_ENABLE_FINALISER
+        FTB_GET(block)
+        #else
+        false
+        #endif
+    );
+    if(!ptr) return MEM_BLOCK_ERROR;
+    mp_uint_t block_out = BLOCK_FROM_PTR(ptr);
+    DEBUG_printf("gc_realloc(%p -> %p)\n", block_in, block);
+    memcpy(mem_void_p(block_out), mem_void_p(block), n_blocks * BYTES_PER_BLOCK);
+    gc_free(mem_void_p(block));
+#endif
     return block_out;
 }
 #endif
