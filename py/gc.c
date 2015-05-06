@@ -50,6 +50,7 @@
 #include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mem.h"
 
 #if MICROPY_ENABLE_GC
 
@@ -269,6 +270,18 @@ bool gc_is_locked(void) {
         } \
     } while (0)
 
+#define VERIFY_MARK_AND_PUSH2(ptr) \
+    if(mem_valid(block)){ \
+        if(!mem_get_mark(block)){ \
+            mem_set_mark(block); \
+            if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
+                *MP_STATE_MEM(gc_sp)++ = block; \
+            } else { \
+                MP_STATE_MEM(gc_stack_overflow) = 1; \
+            } \
+        } \
+    }
+
 /*----------------------------------------------------------------------------*/
 /**
  * \brief       "drain" the garbage collector stack
@@ -283,21 +296,17 @@ STATIC void gc_drain_stack(void) {
     while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
         // pop the next block off the stack
         mp_uint_t block = *--MP_STATE_MEM(gc_sp);
+        mp_uint_t size_ints = mem_sizeof(block) / sizeof(mp_uint_t);
 
-        // work out number of consecutive blocks in the chain starting with this one
-        mp_uint_t n_blocks = 0;
-        do {
-            n_blocks += 1;
-        } while (ATB_GET_KIND(block + n_blocks) == AT_TAIL);
-
-        // check this block's children
-        mp_uint_t *scan = (mp_uint_t*)PTR_FROM_BLOCK(block);
-        for (mp_uint_t i = n_blocks * WORDS_PER_BLOCK; i > 0; i--, scan++) {
-            mp_uint_t ptr2 = *scan;
-            VERIFY_MARK_AND_PUSH(ptr2);
+    /*    // check this block's children*/
+        mp_uint_t *scan = (mp_uint_t*)mem_void_p(block);
+        for (mp_uint_t i = size_ints; i > 0; i--, scan++) {
+            block = BLOCK_FROM_PTR(*scan);
+            VERIFY_MARK_AND_PUSH2(block);
         }
     }
 }
+
 
 /*----------------------------------------------------------------------------*/
 /**
