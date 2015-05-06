@@ -377,6 +377,17 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     mp_obj_list_init(mp_sys_argv, 0);
 
+    // Initialise low-level sub-systems.  Here we need to very basic things like
+    // zeroing out memory and resetting any of the sub-systems.  Following this
+    // we can run Python scripts (eg boot.py), but anything that is configurable
+    // by boot.py must be set after boot.py is run.
+
+    readline_init0();
+    pin_init0();
+    extint_init0();
+    timer_init0();
+    uart_init0();
+
     // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
     // as well as on USB VCP
 #if 0
@@ -391,16 +402,6 @@ soft_reset:
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
 #endif
 
-    // Initialise low-level sub-systems.  Here we need to very basic things like
-    // zeroing out memory and resetting any of the sub-systems.  Following this
-    // we can run Python scripts (eg boot.py), but anything that is configurable
-    // by boot.py must be set after boot.py is run.
-
-    readline_init0();
-    pin_init0();
-    extint_init0();
-    timer_init0();
-    uart_init0();
 #if MICROPY_HW_ENABLE_CAN
     can_init0();
 #endif
