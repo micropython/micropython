@@ -47,6 +47,7 @@ typedef struct _esp_socket_obj_t {
 
     mp_obj_t cb_connect;
     mp_obj_t cb_recv;
+    mp_obj_t cb_sent;
     mp_obj_t cb_disconnect;
 
     uint8_t *recvbuf;
@@ -69,7 +70,9 @@ STATIC mp_obj_t esp_socket_make_new_base() {
     s->cb_connect = mp_const_none;
     s->cb_recv = mp_const_none;
     s->cb_disconnect = mp_const_none;
+    s->cb_sent = mp_const_none;
     s->fromserver = false;
+    s->connlist = NULL;
     return s;
 }
 
@@ -167,6 +170,12 @@ STATIC void esp_socket_recv_callback(void *arg, char *pdata, unsigned short len)
 }
 
 STATIC void esp_socket_sent_callback(void *arg) {
+    struct espconn *conn = arg;
+    esp_socket_obj_t *s = conn->reverse;
+
+    if (s->cb_sent != mp_const_none) {
+        call_function_1_protected(s->cb_sent, s);
+    }
 }
 
 STATIC void esp_socket_disconnect_callback(void *arg) {
@@ -378,6 +387,13 @@ STATIC mp_obj_t esp_socket_onrecv(mp_obj_t self_in, mp_obj_t lambda_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_onrecv_obj, esp_socket_onrecv);
 
+STATIC mp_obj_t esp_socket_onsent(mp_obj_t self_in, mp_obj_t lambda_in) {
+    esp_socket_obj_t *s = self_in;
+    s->cb_sent = lambda_in;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_onsent_obj, esp_socket_onsent);
+
 STATIC mp_obj_t esp_socket_ondisconnect(mp_obj_t self_in, mp_obj_t lambda_in) {
     esp_socket_obj_t *s = self_in;
     s->cb_disconnect = lambda_in;
@@ -453,6 +469,7 @@ STATIC const mp_map_elem_t esp_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&esp_socket_recvfrom_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_onconnect), (mp_obj_t)&esp_socket_onconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_onrecv), (mp_obj_t)&esp_socket_onrecv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_onsent), (mp_obj_t)&esp_socket_onsent_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ondisconnect), (mp_obj_t)&esp_socket_ondisconnect_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(esp_socket_locals_dict, esp_socket_locals_dict_table);

@@ -6,6 +6,9 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 # include py core make definitions
 include ../py/py.mk
 
+MAKE_FROZEN = ../tools/make-frozen.py
+
+SCRIPTDIR = scripts
 PORT = /dev/ttyACM0
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
@@ -64,11 +67,14 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	)
 
+SRC_FROZEN = $(BUILD)/frozen.c
+
 SRC_S = \
 	gchelper.s \
 
 OBJ =
 OBJ += $(PY_O)
+OBJ += $(SRC_FROZEN:.c=.o)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
@@ -76,6 +82,17 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: $(BUILD)/firmware-combined.bin
+
+SCRIPTDIR_FILE = $(BUILD)/scriptdir
+
+ifeq ($(wildcard $(SCRIPTDIR_FILE)),)
+$(shell echo $(SCRIPTDIR) > $(SCRIPTDIR_FILE))
+else ifneq ($(shell cat $(SCRIPTDIR_FILE)), $(SCRIPTDIR))
+$(shell echo $(SCRIPTDIR) > $(SCRIPTDIR_FILE))
+endif
+
+$(SRC_FROZEN): $(wildcard $(SCRIPTDIR)/*) $(SCRIPTDIR_FILE)
+	$(MAKE_FROZEN) $(SCRIPTDIR) > $@
 
 .PHONY: deploy
 
