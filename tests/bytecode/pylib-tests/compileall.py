@@ -88,7 +88,7 @@ def compile_file(fullname, ddir=None, force=False, rx=None, quiet=False,
             return success
     if os.path.isfile(fullname):
         if legacy:
-            cfile = fullname + ('c' if __debug__ else 'o')
+            cfile = fullname + 'c'
         else:
             if optimize >= 0:
                 cfile = imp.cache_from_source(fullname,

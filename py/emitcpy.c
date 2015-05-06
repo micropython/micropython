@@ -782,7 +782,7 @@ STATIC void emit_cpy_start_except_handler(emit_t *emit) {
 }
 
 STATIC void emit_cpy_end_except_handler(emit_t *emit) {
-    emit_cpy_adjust_stack_size(emit, -5); // stack adjust
+    emit_cpy_adjust_stack_size(emit, -2); // stack adjust
 }
 
 STATIC void emit_cpy_load_const_verbatim_strn(emit_t *emit, const char *str, mp_uint_t len) {
