@@ -354,7 +354,7 @@ File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
-arg names:  c e
+arg names: * * *
 (N_STATE 6)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
@@ -373,7 +373,7 @@ File cmdline/cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode 
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
-arg names:  c e
+arg names: * * *
 (N_STATE 7)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
@@ -391,7 +391,7 @@ File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode 
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
-arg names:  c e
+arg names: * * *
 (N_STATE 8)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
@@ -411,7 +411,7 @@ File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
-arg names: x
+arg names: *
 (N_STATE 4)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
@@ -430,7 +430,7 @@ File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ byt
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
-arg names: b a
+arg names: * b
 (N_STATE 4)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1

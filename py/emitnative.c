@@ -796,8 +796,17 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         ASM_DATA(emit->as, 1, emit->code_info_size);
         ASM_ALIGN(emit->as, ASM_WORD_SIZE);
         emit->code_info_size = ASM_GET_CODE_POS(emit->as) - emit->code_info_offset;
+        // see comment in corresponding part of emitbc.c about the logic here
         for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
-            ASM_DATA(emit->as, ASM_WORD_SIZE, (mp_uint_t)MP_OBJ_NEW_QSTR(emit->scope->id_info[i].qst));
+            qstr qst = MP_QSTR__star_;
+            for (int j = 0; j < emit->scope->id_info_len; ++j) {
+                id_info_t *id = &emit->scope->id_info[j];
+                if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
+                    qst = id->qst;
+                    break;
+                }
+            }
+            ASM_DATA(emit->as, ASM_WORD_SIZE, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
         }
 
         // bytecode prelude: initialise closed over variables

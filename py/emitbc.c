@@ -305,8 +305,26 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     // we store them as full word-sized objects for efficient access in mp_setup_code_state
     // this is the start of the prelude and is guaranteed to be aligned on a word boundary
     {
+        // For a given argument position (indexed by i) we need to find the
+        // corresponding id_info which is a parameter, as it has the correct
+        // qstr name to use as the argument name.  Note that it's not a simple
+        // 1-1 mapping (ie i!=j in general) because of possible closed-over
+        // variables.  In the case that the argument i has no corresponding
+        // parameter we use "*" as its name (since no argument can ever be named
+        // "*").  We could use a blank qstr but "*" is better for debugging.
+        // Note: there is some wasted RAM here for the case of storing a qstr
+        // for each closed-over variable, and maybe there is a better way to do
+        // it, but that would require changes to mp_setup_code_state.
         for (int i = 0; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
-            emit_write_bytecode_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(scope->id_info[i].qst));
+            qstr qst = MP_QSTR__star_;
+            for (int j = 0; j < scope->id_info_len; ++j) {
+                id_info_t *id = &scope->id_info[j];
+                if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
+                    qst = id->qst;
+                    break;
+                }
+            }
+            emit_write_bytecode_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(qst));
         }
     }
 
