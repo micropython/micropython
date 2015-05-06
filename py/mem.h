@@ -8,6 +8,7 @@
 #define MEM_BLOCK_ERROR     (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB)
 #define MEM_ERROR           (NULL)
 
+void                mem_init(void *start, void *end);
 mp_uint_t           mem_first();
 mp_uint_t           mem_sizeof(mp_uint_t block);
 void*               mem_void_p(mp_uint_t block);

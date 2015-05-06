@@ -84,6 +84,53 @@
         && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
     )
 
+void mem_init(void *start, void *end) {
+    // align end pointer on block boundary
+    end = (void*)((mp_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
+    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
+
+    // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
+    // T = A + F + P
+    //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
+    //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
+    // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+    mp_uint_t total_byte_len = (byte*)end - (byte*)start;
+#if MICROPY_ENABLE_FINALISER
+    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+#else
+    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+#endif
+
+    MP_STATE_MEM(gc_alloc_table_start) = (byte*)start;
+
+#if MICROPY_ENABLE_FINALISER
+    mp_uint_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len);
+#endif
+
+    mp_uint_t gc_pool_block_len = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
+    MP_STATE_MEM(gc_pool_start) = (mp_uint_t*)((byte*)end - gc_pool_block_len * BYTES_PER_BLOCK);
+    MP_STATE_MEM(gc_pool_end) = (mp_uint_t*)end;
+
+#if MICROPY_ENABLE_FINALISER
+    assert((byte*)MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
+#endif
+
+    // clear ATBs
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len));
+
+    // set last free ATB index to start of heap
+    MP_STATE_MEM(gc_last_free_atb_index) = 0;
+
+
+    DEBUG_printf("GC layout:\n");
+    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
+#if MICROPY_ENABLE_FINALISER
+    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
+#endif
+    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+}
+
 mp_uint_t mem_first(){
     for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
         if(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD){return block;}

@@ -163,6 +163,24 @@
  * /brief           initialize the upython memory manager
  */
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
+#if 1
+void gc_init(void *start, void *end) {
+    // initialize the underlying memory manager
+    mem_init(start, end);
+
+#if MICROPY_ENABLE_FINALISER
+    // clear FTBs
+    mp_uint_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
+#endif
+
+    // unlock the GC
+    MP_STATE_MEM(gc_lock_depth) = 0;
+
+    // allow auto collection
+    MP_STATE_MEM(gc_auto_collect_enabled) = 1;
+}
+#else
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((mp_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
@@ -219,6 +237,7 @@ void gc_init(void *start, void *end) {
 #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
+#endif
 
 /*----------------------------------------------------------------------------*/
 /**
@@ -245,32 +264,8 @@ bool gc_is_locked(void) {
 }
 
 /*----------------------------------------------------------------------------*/
-/* return 1 if the pointer falls within the memory pool                       */
-#define VERIFY_PTR(ptr) ( \
-        (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-        && ptr >= (mp_uint_t)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-    )
-
-/*----------------------------------------------------------------------------*/
 /* Verify the pointer, "mark" it, and push it onto the gc_stack array         */
 #define VERIFY_MARK_AND_PUSH(ptr) \
-    do { \
-        if (VERIFY_PTR(ptr)) { \
-            mp_uint_t _block = BLOCK_FROM_PTR(ptr); \
-            if (ATB_GET_KIND(_block) == AT_HEAD) { \
-                /* an unmarked head, mark it, and push it on gc stack */ \
-                ATB_HEAD_TO_MARK(_block); \
-                if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
-                    *MP_STATE_MEM(gc_sp)++ = _block; \
-                } else { \
-                    MP_STATE_MEM(gc_stack_overflow) = 1; \
-                } \
-            } \
-        } \
-    } while (0)
-
-#define VERIFY_MARK_AND_PUSH2(ptr) \
     if(mem_valid(block)){ \
         if(!mem_get_mark(block)){ \
             mem_set_mark(block); \
@@ -302,7 +297,7 @@ STATIC void gc_drain_stack(void) {
         mp_uint_t *scan = (mp_uint_t*)mem_void_p(block);
         for (mp_uint_t i = size_ints; i > 0; i--, scan++) {
             block = BLOCK_FROM_PTR(*scan);
-            VERIFY_MARK_AND_PUSH2(block);
+            VERIFY_MARK_AND_PUSH(block);
         }
     }
 }
@@ -408,7 +403,7 @@ void gc_collect_root(void **ptrs, mp_uint_t len) {
         VERIFY_MARK_AND_PUSH(ptr);
 #else
         mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptrs[i]);
-        VERIFY_MARK_AND_PUSH2(block);
+        VERIFY_MARK_AND_PUSH(block);
 #endif
         gc_drain_stack();
     }
@@ -539,8 +534,6 @@ mp_uint_t gc_nbytes(const void *ptr_in) {
     return mem_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
 }
 
-#if 1
-
 void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         return NULL;
@@ -591,10 +584,10 @@ void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
         gc_dump_alloc_table();
         #endif
     } else {  // data moved, deal with finalizer
-#if MICROPY_ENABLE_FINALISER
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table(); // dump because a pointer has been freed
         #endif
+#if MICROPY_ENABLE_FINALISER
         if (has_finaliser) { // deal with finalsier
             // clear type pointer in case it is never set
             ((mp_obj_base_t*)mem_void_p(block))->type = MP_OBJ_NULL;
@@ -606,129 +599,6 @@ void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
     return mem_void_p(block);
 }
 
-#else
-void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
-        return NULL;
-    }
-
-    // check for pure allocation
-    if (ptr_in == NULL) {
-        return gc_alloc(n_bytes, false);
-    }
-
-    // check for pure free
-    if (n_bytes == 0) {
-        gc_free(ptr_in);
-        return NULL;
-    }
-
-    mp_uint_t ptr = (mp_uint_t)ptr_in;
-
-    // sanity check the ptr
-    if (!VERIFY_PTR(ptr)) {
-        return NULL;
-    }
-
-    // get first block
-    mp_uint_t block = BLOCK_FROM_PTR(ptr);
-
-    // sanity check the ptr is pointing to the head of a block
-    if (ATB_GET_KIND(block) != AT_HEAD) {
-        return NULL;
-    }
-
-    // compute number of new blocks that are requested
-    mp_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
-
-    // Get the total number of consecutive blocks that are already allocated to
-    // this chunk of memory, and then count the number of free blocks following
-    // it.  Stop if we reach the end of the heap, or if we find enough extra
-    // free blocks to satisfy the realloc.  Note that we need to compute the
-    // total size of the existing memory chunk so we can correctly and
-    // efficiently shrink it (see below for shrinking code).
-    mp_uint_t n_free   = 0;
-    mp_uint_t n_blocks = 1; // counting HEAD block
-    mp_uint_t max_block = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
-    for (mp_uint_t bl = block + n_blocks; bl < max_block; bl++) {
-        byte block_type = ATB_GET_KIND(bl);
-        if (block_type == AT_TAIL) {
-            n_blocks++;
-            continue;
-        }
-        if (block_type == AT_FREE) {
-            n_free++;
-            if (n_blocks + n_free >= new_blocks) {
-                // stop as soon as we find enough blocks for n_bytes
-                break;
-            }
-            continue;
-        }
-        break;
-    }
-
-    // return original ptr if it already has the requested number of blocks
-    if (new_blocks == n_blocks) {
-        return ptr_in;
-    }
-
-    // check if we can shrink the allocated area
-    if (new_blocks < n_blocks) {
-        // free unneeded tail blocks
-        for (mp_uint_t bl = block + new_blocks, count = n_blocks - new_blocks; count > 0; bl++, count--) {
-            ATB_ANY_TO_FREE(bl);
-        }
-
-        // set the last_free pointer to end of this block if it's earlier in the heap
-        if ((block + new_blocks) / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
-            MP_STATE_MEM(gc_last_free_atb_index) = (block + new_blocks) / BLOCKS_PER_ATB;
-        }
-
-        #if EXTENSIVE_HEAP_PROFILING
-        gc_dump_alloc_table();
-        #endif
-
-        return ptr_in;
-    }
-
-    // check if we can expand in place
-    if (new_blocks <= n_blocks + n_free) {
-        // mark few more blocks as used tail
-        for (mp_uint_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
-            assert(ATB_GET_KIND(bl) == AT_FREE);
-            ATB_FREE_TO_TAIL(bl);
-        }
-
-        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
-        memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
-
-        #if EXTENSIVE_HEAP_PROFILING
-        gc_dump_alloc_table();
-        #endif
-
-        return ptr_in;
-    }
-
-    // can't resize inplace; try to find a new contiguous chain
-    void *ptr_out = gc_alloc(n_bytes,
-#if MICROPY_ENABLE_FINALISER
-        FTB_GET(block)
-#else
-        false
-#endif
-    );
-
-    // check that the alloc succeeded
-    if (ptr_out == NULL) {
-        return NULL;
-    }
-
-    DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
-    memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
-    gc_free(ptr_in);
-    return ptr_out;
-}
-#endif // Alternative gc_realloc impl
 
 void gc_dump_info(void) {
     gc_info_t info;
