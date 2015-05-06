@@ -37,5 +37,4 @@ extern uint32_t _bss_end;
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
-void gc_collect_init(void);
 void gc_collect(void);

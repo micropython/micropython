@@ -43,7 +43,6 @@ STATIC void mp_reset(void) {
     mp_stack_set_limit(10240);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
-    gc_collect_init();
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
