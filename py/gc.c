@@ -52,8 +52,6 @@
 #include "py/runtime.h"
 #include "py/mem.h"
 
-void gc_free_con(void *ptr_in, int8_t dump);
-
 #if MICROPY_ENABLE_GC
 
 #if 0 // print debugging info
@@ -369,7 +367,7 @@ STATIC void gc_sweep(void) {
             assert(!mem_get_mark(block));
             assert(!mem_get_mark(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))));
             assert(ATB_GET_KIND(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))) == AT_HEAD);
-            gc_free_con(mem_void_p(block), 0);
+            mem_free(mem_void_p(block));  // don't use gc free, as it clears the gc_collected
         }
     }
 }
@@ -471,6 +469,42 @@ void gc_info(gc_info_t *info) {
 /**
  * \brief           Allocate from the upython memory pool
  */
+#if 1
+void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
+    if (MP_STATE_MEM(gc_lock_depth) > 0) {
+        return NULL;
+    }
+    if(!n_bytes){return NULL;}
+    mp_uint_t block = mem_alloc(n_bytes);
+    if(block == MEM_BLOCK_ERROR){
+        if(!MP_STATE_MEM(gc_auto_collect_enabled)){return NULL;}
+        gc_collect();
+        block = mem_alloc(n_bytes);
+    }
+    if(block == MEM_BLOCK_ERROR){return NULL;}  // failed after garbage collect
+
+    // zero out the additional bytes of the newly allocated blocks
+    // This is needed because the blocks may have previously held pointers
+    // to the heap and will not be set to something else if the caller
+    // doesn't actually use the entire block.  As such they will continue
+    // to point to the heap and may prevent other blocks from being reclaimed.
+    memset((byte*)mem_void_p(block) + n_bytes, 0, mem_sizeof(block) - n_bytes);
+#if MICROPY_ENABLE_FINALISER
+    if (has_finaliser) {
+        // clear type pointer in case it is never set
+        ((mp_obj_base_t*)mem_void_p(block))->type = MP_OBJ_NULL;
+        // set mp_obj flag only if it has a finaliser
+        FTB_SET(block);
+    }
+#endif
+
+#if EXTENSIVE_HEAP_PROFILING
+    gc_dump_alloc_table();
+#endif
+    return mem_void_p(block);
+}
+
+#else
 void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     mp_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
@@ -560,6 +594,7 @@ found:
 
     return ret_ptr;
 }
+#endif
 
 /*
 void *gc_alloc(mp_uint_t n_bytes) {
@@ -581,12 +616,9 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
  *              but through it's own methods
  */
 
-void gc_free(void *ptr_in) {
-    gc_free_con(ptr_in, 1);
-}
 
-void gc_free_con(void *ptr_in, int8_t dump) {
-    if (dump && MP_STATE_MEM(gc_lock_depth) > 0) {
+void gc_free(void *ptr_in) {
+    if (MP_STATE_MEM(gc_lock_depth) > 0) {
         // TODO how to deal with this error?
         return;
     }
@@ -594,48 +626,17 @@ void gc_free_con(void *ptr_in, int8_t dump) {
     /*mp_uint_t ptr = (mp_uint_t)ptr_in;*/
     /*DEBUG_printf("gc_free(%p)\n", ptr);*/
 
-    if (VERIFY_PTR((mp_uint_t)ptr_in)) {
-        mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
-        if (ATB_GET_KIND(block) == AT_HEAD) {
-            // set the last_free pointer to this block if it's earlier in the heap
-            if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
-                MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
-            }
-
-            // free head and all of its tail blocks
-            do {
-                ATB_ANY_TO_FREE(block);
-                block += 1;
-            } while (ATB_GET_KIND(block) == AT_TAIL);
-
-            #if EXTENSIVE_HEAP_PROFILING
-            if(dump){gc_dump_alloc_table();}
-            #endif
-        } else {
-            assert(!"bad free, ptr not at head");
-        }
-    } else if (ptr_in != NULL) {
-        assert(!"bad free, ptr not valid");
+    mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
+    if (mem_valid(block)) {
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
+        mem_free(ptr_in);
     }
 }
 
 mp_uint_t gc_nbytes(const void *ptr_in) {
-    mp_uint_t ptr = (mp_uint_t)ptr_in;
-
-    if (VERIFY_PTR(ptr)) {
-        mp_uint_t block = BLOCK_FROM_PTR(ptr);
-        if (ATB_GET_KIND(block) == AT_HEAD) {
-            // work out number of consecutive blocks in the chain starting with this on
-            mp_uint_t n_blocks = 0;
-            do {
-                n_blocks += 1;
-            } while (ATB_GET_KIND(block + n_blocks) == AT_TAIL);
-            return n_blocks * BYTES_PER_BLOCK;
-        }
-    }
-
-    // invalid pointer
-    return 0;
+    return mem_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
 }
 
 #if 0
