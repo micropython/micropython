@@ -84,7 +84,10 @@
     )
 
 mp_uint_t mem_first(){
-    return 0;
+    for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+        if(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD){return block;}
+    }
+    return MEM_BLOCK_ERROR;
 }
 
 mp_uint_t mem_sizeof(mp_uint_t block){
@@ -101,6 +104,7 @@ mp_uint_t mem_sizeof(mp_uint_t block){
  */
 void *mem_void_p(mp_uint_t block){
     assert(VERIFY_PTR(PTR_FROM_BLOCK(block)));
+    assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
     return (void *)PTR_FROM_BLOCK(block);
 }
 
@@ -149,3 +153,4 @@ int8_t mem_get_mark(mp_uint_t block){
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
     return ATB_GET_KIND(block) == AT_MARK;
 }
+

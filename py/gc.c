@@ -52,6 +52,8 @@
 #include "py/runtime.h"
 #include "py/mem.h"
 
+void gc_free_con(void *ptr_in, int8_t dump);
+
 #if MICROPY_ENABLE_GC
 
 #if 0 // print debugging info
@@ -320,12 +322,10 @@ STATIC void gc_deal_with_stack_overflow(void) {
         MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
         // scan entire memory looking for blocks which have been marked but not their children
-        for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+        for (mp_uint_t block = mem_first(); block != MEM_BLOCK_ERROR; block = mem_next(block)) {
             // trace (again) if mark bit set
-            if (ATB_GET_KIND(block) == AT_MARK) {
-                *MP_STATE_MEM(gc_sp)++ = block;
-                gc_drain_stack();
-            }
+            *MP_STATE_MEM(gc_sp)++ = block;
+            gc_drain_stack();
         }
     }
 }
@@ -343,43 +343,33 @@ STATIC void gc_sweep(void) {
     MP_STATE_MEM(gc_collected) = 0;
     #endif
     // free unmarked heads and their tails
-    int free_tail = 0;
-    for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
-        switch (ATB_GET_KIND(block)) {
-            case AT_HEAD:
+    for (mp_uint_t block = mem_first(); block != MEM_BLOCK_ERROR; block = mem_next(block)) {
+        if(mem_get_mark(block)) {
+            mem_clear_mark(block);
+        } else {
 #if MICROPY_ENABLE_FINALISER        // python __del__ method
-                if (FTB_GET(block)) {
-                    mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
-                    if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
-                        // if the object has a type then see if it has a __del__ method
-                        mp_obj_t dest[2];
-                        mp_load_method_maybe(obj, MP_QSTR___del__, dest);
-                        if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
-                        }
+            if (FTB_GET(block)) {
+                mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
+                if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
+                    // if the object has a type then see if it has a __del__ method
+                    mp_obj_t dest[2];
+                    mp_load_method_maybe(obj, MP_QSTR___del__, dest);
+                    if (dest[0] != MP_OBJ_NULL) {
+                        // load_method returned a method
+                        mp_call_method_n_kw(0, 0, dest);
                     }
-                    // clear finaliser flag
-                    FTB_CLEAR(block);
                 }
+                // clear finaliser flag
+                FTB_CLEAR(block);
+            }
 #endif
-                free_tail = 1;
-                #if MICROPY_PY_GC_COLLECT_RETVAL
-                MP_STATE_MEM(gc_collected)++;
-                #endif
-                // fall through to free the head
-
-            case AT_TAIL:
-                if (free_tail) {
-                    DEBUG_printf("gc_sweep(%p)\n",PTR_FROM_BLOCK(block));
-                    ATB_ANY_TO_FREE(block);
-                }
-                break;
-
-            case AT_MARK:
-                ATB_MARK_TO_HEAD(block);
-                free_tail = 0;
-                break;
+            #if MICROPY_PY_GC_COLLECT_RETVAL
+            MP_STATE_MEM(gc_collected)++;
+            #endif
+            assert(!mem_get_mark(block));
+            assert(!mem_get_mark(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))));
+            assert(ATB_GET_KIND(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))) == AT_HEAD);
+            gc_free_con(mem_void_p(block), 0);
         }
     }
 }
@@ -585,17 +575,22 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
  *              Also note that gc_sweep frees memory as well,
  *              but through it's own methods
  */
+
 void gc_free(void *ptr_in) {
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
+    gc_free_con(ptr_in, 1);
+}
+
+void gc_free_con(void *ptr_in, int8_t dump) {
+    if (dump && MP_STATE_MEM(gc_lock_depth) > 0) {
         // TODO how to deal with this error?
         return;
     }
 
-    mp_uint_t ptr = (mp_uint_t)ptr_in;
-    DEBUG_printf("gc_free(%p)\n", ptr);
+    /*mp_uint_t ptr = (mp_uint_t)ptr_in;*/
+    /*DEBUG_printf("gc_free(%p)\n", ptr);*/
 
-    if (VERIFY_PTR(ptr)) {
-        mp_uint_t block = BLOCK_FROM_PTR(ptr);
+    if (VERIFY_PTR((mp_uint_t)ptr_in)) {
+        mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
         if (ATB_GET_KIND(block) == AT_HEAD) {
             // set the last_free pointer to this block if it's earlier in the heap
             if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
@@ -609,13 +604,13 @@ void gc_free(void *ptr_in) {
             } while (ATB_GET_KIND(block) == AT_TAIL);
 
             #if EXTENSIVE_HEAP_PROFILING
-            gc_dump_alloc_table();
+            if(dump){gc_dump_alloc_table();}
             #endif
         } else {
-            assert(!"bad free");
+            assert(!"bad free, ptr not at head");
         }
     } else if (ptr_in != NULL) {
-        assert(!"bad free");
+        assert(!"bad free, ptr not valid");
     }
 }
 
