@@ -24,6 +24,24 @@
  * THE SOFTWARE.
  */
 
+
+/**
+ * /file        micro-python garbage collector and memory manager
+ * /brief       This is micropython's initial garbage collector and memory
+ *              manager implementation.
+ *
+ *              It contains 2 important objects
+ *              - the Allocation Table (AT) which is what is used as the "allocator"
+ *                  determining if memory is free or not
+ *              - the mp_state_mem structure, defined in mpstate.h. This does:
+ *                  - contains the allocation table (gc_alloc_table_start) and other
+ *                      associated members
+ *                  - contains the memory pool (gc_pool_start) and associated members
+ *                  - contains the "gc stack" and "garbage collector stack pointer"
+ *                      `gc_stack` and `gc_sp`, used during garbage collection
+ *
+ */
+
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -49,6 +67,39 @@
 #define WORDS_PER_BLOCK (4)
 #define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
 
+/**
+ * /brief       Allocation Table
+ *
+ *              The allocation table is just a member of the mp_state object that
+ *              contols the following:
+ *                  - object is allocated
+ *                  - object is freed
+ *                  - object is marked (during garbage collection)
+ *
+ *              It actually does this by marking the "blocks" of data with a 2bit
+ *              value in the allocation table. Each 2 bits corresponds to one block.
+ *
+ *              The "Kind" of each block can be retrieved with ATB_GET_KIND(block) macro
+ *
+ *              The kinds are:
+ *              - FREE: the block is currently free
+ *              - HEAD: the block is not free and is the beginning of a bunch of data
+ *              - TAIL: the block is not free and is part of the previous head (there can
+ *                  be multiple tails)
+ *              - MARK: the block is a head and has been marked by the garbace collector
+ *                  as reachable memory
+ *
+ *
+ *              Allocation is accomplished by:
+ *              - searching in memory for contiguous blocks of the requested size
+ *              - if found, marking the first as HEAD and the rest as TAIL
+ *              - returning the converted pointer
+ *
+ *              Freeing memory is accomplished by:
+ *              - converting a pointer to a block
+ *              - marking all of the blocks as freed.
+ */
+
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
 // 0b01 = HEAD -- head of a chain of blocks
@@ -71,6 +122,14 @@
 #define ATB_2_IS_FREE(a) (((a) & ATB_MASK_2) == 0)
 #define ATB_3_IS_FREE(a) (((a) & ATB_MASK_3) == 0)
 
+/**
+ *  /brief      ATB Access Macros
+ *
+ *              These macros are designed to mark "blocks" in the allocation table
+ *              as used, free or marked (during garbage collection).
+ *
+ *              See the documentation for the Allocation Table for more information.
+ */
 #define BLOCK_SHIFT(block) (2 * ((block) & (BLOCKS_PER_ATB - 1)))
 #define ATB_GET_KIND(block) ((MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
 #define ATB_ANY_TO_FREE(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
@@ -84,6 +143,11 @@
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
 
 #if MICROPY_ENABLE_FINALISER
+/**
+ * /brief           The "finalizer" is the method that is called when an object is
+ *                  freed/deleted. In python, it is created by creating the __del__
+ *                  method.
+ */
 // FTB = finaliser table byte
 // if set, then the corresponding block may have a finaliser
 
@@ -94,6 +158,9 @@
 #define FTB_CLEAR(block) do { MP_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
 #endif
 
+/**
+ * /brief           initialize the upython memory manager
+ */
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
@@ -152,6 +219,18 @@ void gc_init(void *start, void *end) {
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
+/*----------------------------------------------------------------------------*/
+/**
+ * \brief       micropython garbage collector algorithms
+ *
+ *              The below functions represent the micropython garbage collector
+ *
+ *              The micropython is a standard "stop the world" naive
+ *              mark-and-sweep garbage collector with conservative marking
+ *
+ *              You can read more about these terms here:
+ *              http://en.wikipedia.org/wiki/Tracing_garbage_collection
+ */
 void gc_lock(void) {
     MP_STATE_MEM(gc_lock_depth)++;
 }
@@ -164,12 +243,16 @@ bool gc_is_locked(void) {
     return MP_STATE_MEM(gc_lock_depth) != 0;
 }
 
+/*----------------------------------------------------------------------------*/
+/* return 1 if the pointer falls within the memory pool                       */
 #define VERIFY_PTR(ptr) ( \
         (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
         && ptr >= (mp_uint_t)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
         && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
     )
 
+/*----------------------------------------------------------------------------*/
+/* Verify the pointer, "mark" it, and push it onto the gc_stack array         */
 #define VERIFY_MARK_AND_PUSH(ptr) \
     do { \
         if (VERIFY_PTR(ptr)) { \
@@ -186,6 +269,16 @@ bool gc_is_locked(void) {
         } \
     } while (0)
 
+/*----------------------------------------------------------------------------*/
+/**
+ * \brief       "drain" the garbage collector stack
+ *              This method goes through the garbage collector stack (backwards)
+ *              marking all of the block's children.
+ *
+ *              Note that the gc_stack grows and shrinks throughout this method,
+ *              as marking the children also pushes them onto the stack, meaning
+ *              they have to be "drained".
+ */
 STATIC void gc_drain_stack(void) {
     while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
         // pop the next block off the stack
@@ -206,6 +299,12 @@ STATIC void gc_drain_stack(void) {
     }
 }
 
+/*----------------------------------------------------------------------------*/
+/**
+ * \brief       VERIFY_MARK_AND_PUSH will sometimes result in a "stack overflow"
+ *              of the garbage collector. When this happens, this function
+ *              must be called, as not all children have been marked
+ */
 STATIC void gc_deal_with_stack_overflow(void) {
     while (MP_STATE_MEM(gc_stack_overflow)) {
         MP_STATE_MEM(gc_stack_overflow) = 0;
@@ -222,6 +321,14 @@ STATIC void gc_deal_with_stack_overflow(void) {
     }
 }
 
+/*----------------------------------------------------------------------------*/
+/**
+ * \brief       gc_sweep is the standard "sweep" phase of the mark-and-sweep
+ *              garbage collector
+ *
+ *              Basically it goes through all memory and anything that isn't
+ *              marked is deleted.
+ */
 STATIC void gc_sweep(void) {
     #if MICROPY_PY_GC_COLLECT_RETVAL
     MP_STATE_MEM(gc_collected) = 0;
@@ -231,7 +338,7 @@ STATIC void gc_sweep(void) {
     for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
-#if MICROPY_ENABLE_FINALISER
+#if MICROPY_ENABLE_FINALISER        // python __del__ method
                 if (FTB_GET(block)) {
                     mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
                     if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
@@ -268,6 +375,18 @@ STATIC void gc_sweep(void) {
     }
 }
 
+/*----------------------------------------------------------------------------*/
+/**
+ * \brief       gc collection routines
+ *
+ *              Collection is "conservative", meaning that every value that
+ *              could be a pointer is assumed to be, and the data pointed to
+ *              is marked as "used"
+ *
+ *              This may sound like it would cause bugs and lost memory, but
+ *              in a 150k memory space which is split into blocks of 16 bytes,
+ *              it is rare that memory is marked that is not actually used.
+ */
 void gc_collect_start(void) {
     gc_lock();
     MP_STATE_MEM(gc_stack_overflow) = 0;
@@ -279,6 +398,12 @@ void gc_collect_start(void) {
     gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t));
 }
 
+/*----------------------------------------------------------------------------*/
+/**
+ * \brief       The "root" is objects that are known to be referenced.
+ *              Traditionally they are all global variables and variables
+ *              on the stack
+ */
 void gc_collect_root(void **ptrs, mp_uint_t len) {
     for (mp_uint_t i = 0; i < len; i++) {
         mp_uint_t ptr = (mp_uint_t)ptrs[i];
@@ -339,6 +464,9 @@ void gc_info(gc_info_t *info) {
     info->free *= BYTES_PER_BLOCK;
 }
 
+/**
+ * \brief           Allocate from the upython memory pool
+ */
 void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     mp_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
@@ -439,7 +567,15 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 }
 */
 
-// force the freeing of a piece of memory
+/**
+ * \brief       force the freeing of a piece of memory
+ *              remember that upython is garbage collected, so
+ *              this is mostly for C methods that allocate and
+ *              free memory from the pool
+ *
+ *              Also note that gc_sweep frees memory as well,
+ *              but through it's own methods
+ */
 void gc_free(void *ptr_in) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         // TODO how to deal with this error?
