@@ -405,8 +405,13 @@ void gc_collect_start(void) {
  */
 void gc_collect_root(void **ptrs, mp_uint_t len) {
     for (mp_uint_t i = 0; i < len; i++) {
+#if 0
         mp_uint_t ptr = (mp_uint_t)ptrs[i];
         VERIFY_MARK_AND_PUSH(ptr);
+#else
+        mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptrs[i]);
+        VERIFY_MARK_AND_PUSH2(block);
+#endif
         gc_drain_stack();
     }
 }
