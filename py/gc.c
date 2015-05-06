@@ -367,7 +367,7 @@ STATIC void gc_sweep(void) {
             assert(!mem_get_mark(block));
             assert(!mem_get_mark(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))));
             assert(ATB_GET_KIND(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))) == AT_HEAD);
-            mem_free(mem_void_p(block));  // don't use gc free, as it clears the gc_collected
+            mem_free(block);  // don't use gc free, as it clears the gc_collected
         }
     }
 }
@@ -469,7 +469,6 @@ void gc_info(gc_info_t *info) {
 /**
  * \brief           Allocate from the upython memory pool
  */
-#if 1
 void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         return NULL;
@@ -504,107 +503,6 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     return mem_void_p(block);
 }
 
-#else
-void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
-    mp_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
-    DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
-
-    // check if GC is locked
-    if (MP_STATE_MEM(gc_lock_depth) > 0) {
-        return NULL;
-    }
-
-    // check for 0 allocation
-    if (n_blocks == 0) {
-        return NULL;
-    }
-
-    mp_uint_t i;
-    mp_uint_t end_block;
-    mp_uint_t start_block;
-    mp_uint_t n_free = 0;
-    int collected = !MP_STATE_MEM(gc_auto_collect_enabled);
-    for (;;) {
-
-        // look for a run of n_blocks available blocks
-        for (i = MP_STATE_MEM(gc_last_free_atb_index); i < MP_STATE_MEM(gc_alloc_table_byte_len); i++) {
-            byte a = MP_STATE_MEM(gc_alloc_table_start)[i];
-            if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
-            if (ATB_1_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 1; goto found; } } else { n_free = 0; }
-            if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
-            if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
-        }
-
-        // nothing found!
-        if (collected) {
-            return NULL;
-        }
-        DEBUG_printf("gc_alloc(" UINT_FMT "): no free mem, triggering GC\n", n_bytes);
-        gc_collect();
-        collected = 1;
-    }
-
-    // found, ending at block i inclusive
-found:
-    // get starting and end blocks, both inclusive
-    end_block = i;
-    start_block = i - n_free + 1;
-
-    // Set last free ATB index to block after last block we found, for start of
-    // next scan.  To reduce fragmentation, we only do this if we were looking
-    // for a single free block, which guarantees that there are no free blocks
-    // before this one.  Also, whenever we free or shink a block we must check
-    // if this index needs adjusting (see gc_realloc and gc_free).
-    if (n_free == 1) {
-        MP_STATE_MEM(gc_last_free_atb_index) = (i + 1) / BLOCKS_PER_ATB;
-    }
-
-    // mark first block as used head
-    ATB_FREE_TO_HEAD(start_block);
-
-    // mark rest of blocks as used tail
-    // TODO for a run of many blocks can make this more efficient
-    for (mp_uint_t bl = start_block + 1; bl <= end_block; bl++) {
-        ATB_FREE_TO_TAIL(bl);
-    }
-
-    // get pointer to first block
-    void *ret_ptr = (void*)(MP_STATE_MEM(gc_pool_start) + start_block * WORDS_PER_BLOCK);
-    DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
-
-    // zero out the additional bytes of the newly allocated blocks
-    // This is needed because the blocks may have previously held pointers
-    // to the heap and will not be set to something else if the caller
-    // doesn't actually use the entire block.  As such they will continue
-    // to point to the heap and may prevent other blocks from being reclaimed.
-    memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
-
-#if MICROPY_ENABLE_FINALISER
-    if (has_finaliser) {
-        // clear type pointer in case it is never set
-        ((mp_obj_base_t*)ret_ptr)->type = MP_OBJ_NULL;
-        // set mp_obj flag only if it has a finaliser
-        FTB_SET(start_block);
-    }
-#endif
-
-    #if EXTENSIVE_HEAP_PROFILING
-    gc_dump_alloc_table();
-    #endif
-
-    return ret_ptr;
-}
-#endif
-
-/*
-void *gc_alloc(mp_uint_t n_bytes) {
-    return _gc_alloc(n_bytes, false);
-}
-
-void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
-    return _gc_alloc(n_bytes, true);
-}
-*/
 
 /**
  * \brief       force the freeing of a piece of memory
@@ -617,7 +515,7 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
  */
 
 
-void gc_free(void *ptr_in) {
+void gc_free(const void *ptr_in) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         // TODO how to deal with this error?
         return;
@@ -631,7 +529,9 @@ void gc_free(void *ptr_in) {
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
         #endif
-        mem_free(ptr_in);
+        mem_free(block);
+    } else {
+        /*assert(!"bad free");*/
     }
 }
 
@@ -639,35 +539,66 @@ mp_uint_t gc_nbytes(const void *ptr_in) {
     return mem_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
 }
 
-#if 0
-// old, simple realloc that didn't expand memory in place
-void *gc_realloc(void *ptr, mp_uint_t n_bytes) {
-    mp_uint_t n_existing = gc_nbytes(ptr);
-    if (n_bytes <= n_existing) {
-        return ptr;
-    } else {
-        bool has_finaliser;
-        if (ptr == NULL) {
-            has_finaliser = false;
-        } else {
-#if MICROPY_ENABLE_FINALISER
-            has_finaliser = FTB_GET(BLOCK_FROM_PTR((mp_uint_t)ptr));
-#else
-            has_finaliser = false;
-#endif
-        }
-        void *ptr2 = gc_alloc(n_bytes, has_finaliser);
-        if (ptr2 == NULL) {
-            return ptr2;
-        }
-        memcpy(ptr2, ptr, n_existing);
-        gc_free(ptr);
-        return ptr2;
+#if 1
+void *gc_realloc(void *ptr_in, const mp_uint_t n_bytes) {
+    if (MP_STATE_MEM(gc_lock_depth) > 0) {
+        return NULL;
     }
+
+    // check for pure allocation
+    if (ptr_in == NULL) {
+        return gc_alloc(n_bytes, false);
+    }
+
+    // check for pure free
+    if (n_bytes == 0) {
+        gc_free(ptr_in);
+        return NULL;
+    }
+    mp_uint_t block_in = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
+
+    if(!mem_valid(block_in)){return NULL;}
+    int8_t has_finaliser = FTB_GET(block_in);
+
+    mp_uint_t original_bytes = mem_sizeof(block_in);
+    mp_uint_t block = mem_realloc(block_in, n_bytes);
+    if(block == MEM_BLOCK_ERROR){return NULL;}  // no change
+
+    if(mem_sizeof(block) == original_bytes){  // block stayed the same size
+        assert(mem_void_p(block) == ptr_in);
+        return ptr_in;
+    }
+    if(mem_sizeof(block) < original_bytes){  // block shrank
+        assert(mem_void_p(block) == ptr_in);
+#if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+#endif
+        return ptr_in;
+    }
+    // block grew
+    if(block_in == block){  // grew in place
+        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
+        memset((byte*)mem_void_p(block) + n_bytes, 0, mem_sizeof(block) - n_bytes);
+
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
+    } else {  // data moved, deal with finalizer
+#if MICROPY_ENABLE_FINALISER
+        if (has_finaliser) {
+            // clear type pointer in case it is never set
+            ((mp_obj_base_t*)mem_void_p(block))->type = MP_OBJ_NULL;
+            // set mp_obj flag only if it has a finaliser
+            FTB_SET(block);
+            FTB_CLEAR(block_in);
+        }
+#endif
+    }
+
+    return mem_void_p(block);
 }
 
-#else // Alternative gc_realloc impl
-
+#else
 void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         return NULL;

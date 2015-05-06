@@ -20,7 +20,8 @@ void                mem_set_mark(mp_uint_t block);
 void                mem_clear_mark(mp_uint_t block);
 int8_t              mem_get_mark(mp_uint_t block);
 
-void                mem_free(void *ptr_in);
+void                mem_free(mp_uint_t block);
 mp_uint_t           mem_alloc(mp_uint_t n_bytes);
+mp_uint_t           mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes);
 
 #endif

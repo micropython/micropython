@@ -154,12 +154,11 @@ int8_t mem_get_mark(mp_uint_t block){
     return ATB_GET_KIND(block) == AT_MARK;
 }
 
-void mem_free(void *ptr_in) {
-    if (VERIFY_PTR((mp_uint_t)ptr_in)) {
-        mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
+void mem_free(mp_uint_t block) {
+    if(mem_valid(block)){
         if (ATB_GET_KIND(block) == AT_HEAD) {
             // set the last_free pointer to this block if it's earlier in the heap
-            if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+           if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
                 MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
             }
             // free head and all of its tail blocks
@@ -170,7 +169,7 @@ void mem_free(void *ptr_in) {
         } else {
             assert(!"bad free, ptr not at head");
         }
-    } else if (ptr_in != NULL) {
+    } else if (block != MEM_BLOCK_ERROR) {
         assert(!"bad free, ptr not valid");
     }
 }
@@ -224,3 +223,91 @@ found:
 
     return start_block;
 }
+
+
+#if 1
+mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
+    // check for pure allocation
+    if (block == MEM_BLOCK_ERROR) {
+        return mem_alloc(n_bytes);
+    }
+
+    // check for pure free
+    if (n_bytes == 0) {
+        mem_free(block);
+        return MEM_BLOCK_ERROR;
+    }
+
+    if (!mem_valid(block)){return MEM_BLOCK_ERROR;}
+
+    // compute number of new blocks that are requested
+    mp_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
+
+    // Get the total number of consecutive blocks that are already allocated to
+    // this chunk of memory, and then count the number of free blocks following
+    // it.  Stop if we reach the end of the heap, or if we find enough extra
+    // free blocks to satisfy the realloc.  Note that we need to compute the
+    // total size of the existing memory chunk so we can correctly and
+    // efficiently shrink it (see below for shrinking code).
+    mp_uint_t n_free   = 0;
+    mp_uint_t n_blocks = 1; // counting HEAD block
+    mp_uint_t max_block = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
+    for (mp_uint_t bl = block + n_blocks; bl < max_block; bl++) {
+        byte block_type = ATB_GET_KIND(bl);
+        if (block_type == AT_TAIL) {
+            n_blocks++;
+            continue;
+        }
+        if (block_type == AT_FREE) {
+            n_free++;
+            if (n_blocks + n_free >= new_blocks) {
+                // stop as soon as we find enough blocks for n_bytes
+                break;
+            }
+            continue;
+        }
+        break;
+    }
+
+    // return original ptr if it already has the requested number of blocks
+    if (new_blocks == n_blocks) {
+        return block;
+    }
+
+    // check if we can shrink the allocated area
+    if (new_blocks < n_blocks) {
+        // free unneeded tail blocks
+        for (mp_uint_t bl = block + new_blocks, count = n_blocks - new_blocks; count > 0; bl++, count--) {
+            ATB_ANY_TO_FREE(bl);
+        }
+
+        // set the last_free pointer to end of this block if it's earlier in the heap
+        if ((block + new_blocks) / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+            MP_STATE_MEM(gc_last_free_atb_index) = (block + new_blocks) / BLOCKS_PER_ATB;
+        }
+
+        return block;
+    }
+
+    // check if we can expand in place
+    if (new_blocks <= n_blocks + n_free) {
+        // mark few more blocks as used tail
+        for (mp_uint_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
+            assert(ATB_GET_KIND(bl) == AT_FREE);
+            ATB_FREE_TO_TAIL(bl);
+        }
+        return block;
+    }
+
+    // can't resize inplace; try to find a new contiguous chain
+    mp_uint_t block_out = mem_alloc(n_bytes);
+
+    // check that the alloc succeeded
+    if (block_out == MEM_BLOCK_ERROR) {return MEM_BLOCK_ERROR;}
+
+    DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
+    memcpy(mem_void_p(block_out), mem_void_p(block), n_blocks * BYTES_PER_BLOCK);
+    mem_free(block);
+    return block_out;
+}
+#endif
