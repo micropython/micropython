@@ -302,7 +302,7 @@ mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
 
     // can't resize inplace; try to find a new contiguous chain
     //
-#if 0
+#if 1
     mp_uint_t block_out = mem_alloc(n_bytes);
 
     // check that the alloc succeeded
