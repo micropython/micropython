@@ -35,6 +35,7 @@ import serial
 
 def stdout_write_bytes(b):
     sys.stdout.buffer.write(b)
+    sys.stdout.buffer.flush()
 
 class PyboardError(BaseException):
     pass
@@ -207,6 +208,7 @@ def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
     cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the pyboard')
+    cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('--test', action='store_true', help='run a small test suite on the pyboard')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
@@ -214,10 +216,14 @@ def main():
     if args.test:
         run_test(device=args.device)
 
-    if len(args.files) == 0:
+    for filename in args.files:
         try:
             pyb = Pyboard(args.device)
-            ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
+            pyb.enter_raw_repl()
+            with open(filename, 'rb') as f:
+                pyfile = f.read()
+            ret, ret_err = pyb.exec_raw(pyfile, timeout=None, data_consumer=stdout_write_bytes)
+            pyb.exit_raw_repl()
             pyb.close()
         except PyboardError as er:
             print(er)
@@ -228,14 +234,10 @@ def main():
             stdout_write_bytes(ret_err)
             sys.exit(1)
 
-    for filename in args.files:
+    if args.follow or len(args.files) == 0:
         try:
             pyb = Pyboard(args.device)
-            pyb.enter_raw_repl()
-            with open(filename, 'rb') as f:
-                pyfile = f.read()
-            ret, ret_err = pyb.exec_raw(pyfile, timeout=None, data_consumer=stdout_write_bytes)
-            pyb.exit_raw_repl()
+            ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
             pyb.close()
         except PyboardError as er:
             print(er)
