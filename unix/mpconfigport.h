@@ -35,8 +35,11 @@
 #endif
 #if !defined(MICROPY_EMIT_THUMB) && defined(__thumb2__)
     #define MICROPY_EMIT_THUMB      (1)
+    #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 #endif
-#if !defined(MICROPY_EMIT_ARM) && defined(__arm__)
+// Some compilers define __thumb2__ and __arm__ at the same time, let
+// autodetected thumb2 emitter have priority.
+#if !defined(MICROPY_EMIT_ARM) && defined(__arm__) && !defined(__thumb2__)
     #define MICROPY_EMIT_ARM        (1)
 #endif
 #define MICROPY_COMP_MODULE_CONST   (1)
