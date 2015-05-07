@@ -434,6 +434,12 @@ int main(int argc, char **argv) {
                     MP_STATE_VM(mp_optimise_value) = 0;
                     for (char *p = argv[a] + 1; *p && *p == 'O'; p++, MP_STATE_VM(mp_optimise_value)++);
                 }
+            #if defined(MICROPY_UNIX_COVERAGE)
+            } else if (strcmp(argv[a], "--coverage") == 0) {
+                void run_extra_coverage_tests(void);
+                run_extra_coverage_tests();
+                ret = 0;
+            #endif
             } else {
                 return usage(argv);
             }
