@@ -496,10 +496,36 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_wakeup_obj, 2, 4, pyb_rtc_wakeup);
 
+// setcal(None)
+// setcal(cal)
+// When an integer argument is provided, check that it falls in the range [-511 to 512]
+// and set the calibration value; otherwise print value in RTC_CALR
+mp_obj_t pyb_rtc_setcal(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 2) {
+	mp_int_t cal = mp_obj_get_int(args[1]);
+	// printf("cal = %d\n", cal);
+	if (cal <= 512 && cal > 0) {
+	    HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC,
+				     RTC_SMOOTHCALIB_PLUSPULSES_SET, (uint32_t) (512 - cal));
+	} else if (cal <= 0 && cal > -512) {
+	    HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC,
+				     RTC_SMOOTHCALIB_PLUSPULSES_RESET, (uint32_t) -cal);
+	} else {
+	    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+					       "calibration value out of range"));
+	}
+    } else {
+        printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_setcal_obj, 1, 2, pyb_rtc_setcal);
+    
 STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_rtc_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_wakeup), (mp_obj_t)&pyb_rtc_wakeup_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setcal), (mp_obj_t)&pyb_rtc_setcal_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
