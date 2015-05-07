@@ -399,6 +399,8 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 
 #include "py/asmarm.h"
 
+#define ASM_WORD_SIZE (4)
+
 #define EXPORT_FUN(name) emit_native_arm_##name
 
 #define REG_RET ASM_ARM_REG_R0
@@ -423,11 +425,15 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_NEW             asm_arm_new
 #define ASM_FREE            asm_arm_free
 #define ASM_GET_CODE        asm_arm_get_code
+#define ASM_GET_CODE_POS    asm_arm_get_code_pos
 #define ASM_GET_CODE_SIZE   asm_arm_get_code_size
 #define ASM_START_PASS      asm_arm_start_pass
 #define ASM_END_PASS        asm_arm_end_pass
 #define ASM_ENTRY           asm_arm_entry
 #define ASM_EXIT            asm_arm_exit
+
+#define ASM_ALIGN           asm_arm_align
+#define ASM_DATA            asm_arm_data
 
 #define ASM_LABEL_ASSIGN    asm_arm_label_assign
 #define ASM_JUMP            asm_arm_b_label
@@ -468,11 +474,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_arm_add_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 #define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
 
-#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_arm_ldrb_reg_reg((as), (reg_dest), (reg_base))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_arm_ldrh_reg_reg((as), (reg_dest), (reg_base))
 
-#define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base))
+#define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
+#define ASM_STORE_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_str_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_value, reg_base) asm_arm_strb_reg_reg((as), (reg_value), (reg_base))
 #define ASM_STORE16_REG_REG(as, reg_value, reg_base) asm_arm_strh_reg_reg((as), (reg_value), (reg_base))
 
@@ -723,6 +731,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #else
         #if N_THUMB
         ASM_MOV_REG_REG(emit->as, ASM_THUMB_REG_R4, REG_ARG_4);
+        #elif N_ARM
+        ASM_MOV_REG_REG(emit->as, ASM_ARM_REG_R4, REG_ARG_4);
         #else
         ASM_MOV_REG_REG(emit->as, REG_ARG_5, REG_ARG_4);
         #endif
@@ -750,6 +760,10 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         asm_thumb_op16(emit->as, 0xb400 | (1 << ASM_THUMB_REG_R4)); // push 5th arg
         asm_thumb_bl_ind(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE, ASM_THUMB_REG_R4);
         asm_thumb_op16(emit->as, 0xbc00 | (1 << REG_RET)); // pop dummy (was 5th arg)
+        #elif N_ARM
+        asm_arm_push(emit->as, 1 << ASM_ARM_REG_R4); // push 5th arg
+        asm_arm_bl_ind(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE, ASM_ARM_REG_R4);
+        asm_arm_pop(emit->as, 1 << REG_RET); // pop dummy (was 5th arg)
         #else
         ASM_CALL_IND(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE);
         #endif

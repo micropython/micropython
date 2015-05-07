@@ -74,6 +74,7 @@ asm_arm_t *asm_arm_new(uint max_num_labels);
 void asm_arm_free(asm_arm_t *as, bool free_code);
 void asm_arm_start_pass(asm_arm_t *as, uint pass);
 void asm_arm_end_pass(asm_arm_t *as);
+uint asm_arm_get_code_pos(asm_arm_t *as);
 uint asm_arm_get_code_size(asm_arm_t *as);
 void *asm_arm_get_code(asm_arm_t *as);
 
@@ -108,16 +109,20 @@ void asm_arm_lsl_reg_reg(asm_arm_t *as, uint rd, uint rs);
 void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs);
 
 // memory
-void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn);
+void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn, uint byte_offset);
 void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn);
 void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn);
-void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm);
+void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset);
 void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm);
 void asm_arm_strb_reg_reg(asm_arm_t *as, uint rd, uint rm);
 // store to array
 void asm_arm_str_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
 void asm_arm_strh_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
 void asm_arm_strb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn);
+
+// stack
+void asm_arm_push(asm_arm_t *as, uint reglist);
+void asm_arm_pop(asm_arm_t *as, uint reglist);
 
 // control flow
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);

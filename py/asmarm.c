@@ -111,6 +111,10 @@ STATIC byte *asm_arm_get_cur_to_write_bytes(asm_arm_t *as, int num_bytes_to_writ
     }
 }
 
+uint asm_arm_get_code_pos(asm_arm_t *as) {
+    return as->code_offset;
+}
+
 uint asm_arm_get_code_size(asm_arm_t *as) {
     return as->code_size;
 }
@@ -245,6 +249,14 @@ void asm_arm_exit(asm_arm_t *as) {
     emit_al(as, asm_arm_op_pop(as->push_reglist | (1 << ASM_ARM_REG_PC)));
 }
 
+void asm_arm_push(asm_arm_t *as, uint reglist) {
+    emit_al(as, asm_arm_op_push(reglist));
+}
+
+void asm_arm_pop(asm_arm_t *as, uint reglist) {
+    emit_al(as, asm_arm_op_pop(reglist));
+}
+
 void asm_arm_label_assign(asm_arm_t *as, uint label) {
     assert(label < as->max_num_labels);
     if (as->pass < ASM_ARM_PASS_EMIT) {
@@ -358,9 +370,9 @@ void asm_arm_asr_reg_reg(asm_arm_t *as, uint rd, uint rs) {
     emit_al(as, 0x1a00050 | (rd << 12) | (rs << 8) | rd);
 }
 
-void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn) {
-    // ldr rd, [rn]
-    emit_al(as, 0x5900000 | (rn << 16) | (rd << 12));
+void asm_arm_ldr_reg_reg(asm_arm_t *as, uint rd, uint rn, uint byte_offset) {
+    // ldr rd, [rn, #off]
+    emit_al(as, 0x5900000 | (rn << 16) | (rd << 12) | byte_offset);
 }
 
 void asm_arm_ldrh_reg_reg(asm_arm_t *as, uint rd, uint rn) {
@@ -373,9 +385,9 @@ void asm_arm_ldrb_reg_reg(asm_arm_t *as, uint rd, uint rn) {
     emit_al(as, 0x5d00000 | (rn << 16) | (rd << 12));
 }
 
-void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm) {
-    // str rd, [rm]
-    emit_al(as, 0x5800000 | (rm << 16) | (rd << 12));
+void asm_arm_str_reg_reg(asm_arm_t *as, uint rd, uint rm, uint byte_offset) {
+    // str rd, [rm, #off]
+    emit_al(as, 0x5800000 | (rm << 16) | (rd << 12) | byte_offset);
 }
 
 void asm_arm_strh_reg_reg(asm_arm_t *as, uint rd, uint rm) {
