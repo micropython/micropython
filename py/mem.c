@@ -166,7 +166,7 @@ mp_uint_t mem_next(mp_uint_t block){
     return MEM_BLOCK_ERROR;
 }
 
-inline int8_t mem_valid(mp_uint_t block){
+inline bool mem_valid(mp_uint_t block){
     if(block >= MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB){return 0;}
     if((ATB_GET_KIND(block) != AT_HEAD) && (ATB_GET_KIND(block) != AT_MARK)){return 0;}
     return 1;

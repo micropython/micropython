@@ -84,18 +84,8 @@ void gc_init(void *start, void *end) {
     mem_init(start, end);
 
 #if MICROPY_ENABLE_FINALISER
-    // TODO: move this to gc
     mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     MP_STATE_MEM(gc_finaliser_table_start) = MEM_STATE_MEM(gc_alloc_table_start) + MEM_STATE_MEM(gc_alloc_table_byte_len);
-#endif
-
-#if 0
-#if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    // TODO: separate this from mem table
-    mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-#endif
 #endif
 
 #if MICROPY_ENABLE_FINALISER
