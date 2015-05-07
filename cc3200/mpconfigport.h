@@ -59,8 +59,8 @@
 #define MICROPY_ENABLE_LFN                          (2)
 #define MICROPY_LFN_CODE_PAGE                       (437)       // 1=SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
-#define MICROPY_MODULE_WEAK_LINKS                   (0)
-#define MICROPY_CAN_OVERRIDE_BUILTINS               (0)
+#define MICROPY_MODULE_WEAK_LINKS                   (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE             (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES          (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW              (1)
@@ -109,14 +109,22 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb),     (mp_obj_t)&pyb_module },          \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_os),      (mp_obj_t)&mp_module_uos },       \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time),    (mp_obj_t)&mp_module_utime },     \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_select),  (mp_obj_t)&mp_module_uselect },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket),  (mp_obj_t)&mp_module_usocket },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos),     (mp_obj_t)&mp_module_uos },       \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_utime),   (mp_obj_t)&mp_module_utime },     \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uselect), (mp_obj_t)&mp_module_uselect },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_re),      (mp_obj_t)&mp_module_ure },       \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_json),    (mp_obj_t)&mp_module_ujson },     \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heapq),   (mp_obj_t)&mp_module_uheapq },    \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_binascii),    (mp_obj_t)&mp_module_ubinascii }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_re),          (mp_obj_t)&mp_module_ure },       \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_json),        (mp_obj_t)&mp_module_ujson },     \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_heapq),       (mp_obj_t)&mp_module_uheapq },    \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os),          (mp_obj_t)&mp_module_uos },       \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time),        (mp_obj_t)&mp_module_utime },     \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select),      (mp_obj_t)&mp_module_uselect },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket),      (mp_obj_t)&mp_module_usocket },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct),      (mp_obj_t)&mp_module_ustruct },   \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
