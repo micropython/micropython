@@ -57,3 +57,19 @@ Methods
       start up.
     - Bit 0x10000 is set if a power-on reset occurred.
     - Bit 0x20000 is set if an external reset occurred
+
+.. method:: rtc.calibration(cal)
+
+   Get or set RTC calibration.
+
+   With no arguments, ``calibration()`` returns the current calibration
+   value, which is an integer in the range [-511 : 512].  With one
+   argument it sets the RTC calibration.
+
+   The RTC Smooth Calibration mechanism addjusts the RTC clock rate by
+   adding or subtracting the given number of ticks from the 32768 Hz
+   clock over a 32 second period (corresponding to 2^20 clock ticks.)
+   Each tick added will speed up the clock by 1 part in 2^20, or 0.954
+   ppm; likewise the RTC clock it slowed by negative values. The
+   usable calibration range is:
+   (-511 * 0.954) ~= -487.5 ppm up to (512 * 0.954) ~= 488.5 ppm
