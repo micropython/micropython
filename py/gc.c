@@ -245,9 +245,6 @@ void gc_collect_root(void **ptrs, mp_uint_t len) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
-    // TODO: separate this from gc. It might already be able to be separated
-    //      because I am using mem_free instead of the custom stuff.
-    MEM_STATE_MEM(gc_last_free_atb_index) = 0;
     gc_unlock();
 }
 
