@@ -61,9 +61,7 @@
 #define AT_TAIL (2)
 #define AT_MARK (3)
 
-
-
-#define BLOCK_FROM_PTR(ptr) (((ptr) - (mp_uint_t)MP_STATE_MEM(gc_pool_start)) / BYTES_PER_BLOCK)
+#define BLOCK_FROM_PTR(ptr) (((ptr) - (mp_uint_t)MEM_STATE_MEM(gc_pool_start)) / BYTES_PER_BLOCK)
 
 #if MICROPY_ENABLE_FINALISER
 /**
@@ -86,8 +84,26 @@ void gc_init(void *start, void *end) {
     mem_init(start, end);
 
 #if MICROPY_ENABLE_FINALISER
+    // TODO: move this to gc
+    mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    MP_STATE_MEM(gc_finaliser_table_start) = MEM_STATE_MEM(gc_alloc_table_start) + MEM_STATE_MEM(gc_alloc_table_byte_len);
+#endif
+
+#if 0
+#if MICROPY_ENABLE_FINALISER
     // clear FTBs
-    mp_uint_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    // TODO: separate this from mem table
+    mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
+#endif
+#endif
+
+#if MICROPY_ENABLE_FINALISER
+    assert((byte*)MEM_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
+#endif
+
+#if MICROPY_ENABLE_FINALISER
+    // clear FTBs
     memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
 #endif
 
@@ -229,7 +245,9 @@ void gc_collect_root(void **ptrs, mp_uint_t len) {
 void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
-    MP_STATE_MEM(gc_last_free_atb_index) = 0;
+    // TODO: separate this from gc. It might already be able to be separated
+    //      because I am using mem_free instead of the custom stuff.
+    MEM_STATE_MEM(gc_last_free_atb_index) = 0;
     gc_unlock();
 }
 

@@ -7,8 +7,21 @@
 #include "py/misc.h"
 
 #define MEM_BLOCKS_PER_ATB  (4)
-#define MEM_BLOCK_ERROR     (MP_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB)
+#define MEM_BLOCK_ERROR     (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB)
 #define MEM_ERROR           (NULL)
+
+typedef struct _mem_state_mem_t {
+    byte *gc_alloc_table_start;
+    mp_uint_t gc_alloc_table_byte_len;
+    mp_uint_t *gc_pool_start;
+    mp_uint_t *gc_pool_end;
+    mp_uint_t gc_last_free_atb_index;
+} mem_state_mem_t;
+
+extern mem_state_mem_t mem_state_mem;
+
+#define MEM_STATE_MEM(x) (mem_state_mem.x)
+
 
 typedef struct _mem_info_t {
     mp_uint_t total;            // total memory (in bytes)
