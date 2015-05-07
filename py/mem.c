@@ -354,7 +354,7 @@ mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
     return block_out;
 }
 
-void mem_info(gc_info_t *info) {
+void mem_info(mem_info_t *info) {
     info->total = (MP_STATE_MEM(gc_pool_end) - MP_STATE_MEM(gc_pool_start)) * sizeof(mp_uint_t);
     info->used = 0;
     info->free = 0;

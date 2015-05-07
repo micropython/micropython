@@ -10,6 +10,15 @@
 #define MEM_BLOCK_ERROR     (MP_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB)
 #define MEM_ERROR           (NULL)
 
+typedef struct _mem_info_t {
+    mp_uint_t total;            // total memory (in bytes)
+    mp_uint_t used;             // used memory  (in bytes)
+    mp_uint_t free;             // free memory  (in bytesp
+    mp_uint_t num_1block;       // number of 1 block allocations
+    mp_uint_t num_2block;       // number of 2 block allocations
+    mp_uint_t max_block;        // largest block
+} mem_info_t;
+
 void                mem_init(void *start, void *end);
 mp_uint_t           mem_first();
 mp_uint_t           mem_sizeof(mp_uint_t block);
@@ -29,6 +38,7 @@ mp_uint_t           mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes);
 
 void                mem_dump_alloc_table(void);
 #include "py/gc.h"      // temporary while we figure out how we want to separate data types
-void                mem_info(gc_info_t *info);
+void                mem_info(mem_info_t *info);
+
 
 #endif
