@@ -499,27 +499,35 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_wakeup_obj, 2, 4, pyb_rtc_wakeup);
 // setcal(None)
 // setcal(cal)
 // When an integer argument is provided, check that it falls in the range [-511 to 512]
-// and set the calibration value; otherwise print value in RTC_CALR
+// and set the calibration value; otherwise return calibration value
 mp_obj_t pyb_rtc_setcal(mp_uint_t n_args, const mp_obj_t *args) {
+    mp_int_t cal;
     if (n_args == 2) {
-	mp_int_t cal = mp_obj_get_int(args[1]);
+	cal = mp_obj_get_int(args[1]);
 	mp_uint_t cal_p, cal_m;
-	// printf("cal = %d\n", cal);
-	if (cal <= 512 && cal > 0) {
-	    cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
-	    cal_m = 512 - cal;
-	} else if (cal <= 0 && cal > -512) {
-	    cal_p = RTC_SMOOTHCALIB_PLUSPULSES_RESET;
-	    cal_m = -cal;
-	} else {
+	if (cal < -511 || cal > 512) {
 	    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
 					       "calibration value out of range"));
 	}
+	if (cal > 0) {
+	    cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
+	    cal_m = 512 - cal;
+	} else {
+	    cal_p = RTC_SMOOTHCALIB_PLUSPULSES_RESET;
+	    cal_m = -cal;
+	}
 	HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
+	return mp_const_none;
     } else {
-        printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR);
+        // printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR); // DEBUG
+	// Test if CALP bit is set in CALR:
+	if (RTCHandle.Instance->CALR & 0x8000) {
+	    cal = 512 - (RTCHandle.Instance->CALR & 0x1ff);
+	} else {
+	    cal = -(RTCHandle.Instance->CALR & 0x1ff);
+	}
+	return mp_obj_new_int(cal);
     }
-    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_setcal_obj, 1, 2, pyb_rtc_setcal);
     
