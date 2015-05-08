@@ -128,8 +128,10 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelay						1
 #ifdef DEBUG
 #define INCLUDE_uxTaskGetStackHighWaterMark		1
+#define INCLUDE_uxTaskGetSystemState            1
 #else
 #define INCLUDE_uxTaskGetStackHighWaterMark     0
+#define INCLUDE_uxTaskGetSystemState            0
 #endif
 #define INCLUDE_xTaskGetSchedulerState			0
 #define INCLUDE_xTimerGetTimerDaemonTaskHandle	0
