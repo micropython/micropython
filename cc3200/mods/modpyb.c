@@ -120,6 +120,67 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 #endif
 
+#ifdef DEBUG
+/// \function tasks()
+/// Return information on FreeRTOS task state as a list of 7-tuple
+///     ( task name, tcb handle (Address), state, current priority, base priority, runtime, stack )
+///
+/// A friendly task list can displayed on the shell using a function similar to:
+///
+/// def i():
+///   print("    Name       TCB    St Prio     Time   Stack")
+///   print("----------------------------------------------")
+///   for t in pyb.tasks():
+///     print("%9s  0x%08x  %c  %u %u  %8u   %u" % t)
+///
+STATIC mp_obj_t pyb_tasks(void) {
+    const char taskstate_char[5] = {
+            /* eRunning */   'E', /* executing */
+            /* eReady   */   'R',
+            /* eBlocked */   'B',
+            /* eSuspended */ 'S',
+            /* eDeleted */   'D'
+        };
+    TaskStatus_t status[20];
+    uint32_t ntasks;
+
+    ntasks = uxTaskGetSystemState(status, 20, 0);
+
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+
+    for (uint t = 0; t < ntasks; ++t) {
+      mp_obj_t tuple[7] = {
+          mp_obj_new_str(status[t].pcTaskName, strlen(status[t].pcTaskName), false),
+          mp_obj_new_int((uint32_t) status[t].xHandle),
+          mp_obj_new_str(&taskstate_char[status[t].eCurrentState], 1, false),
+          mp_obj_new_int(status[t].uxCurrentPriority),
+          mp_obj_new_int(status[t].uxBasePriority),
+          mp_obj_new_int(status[t].ulRunTimeCounter),
+          mp_obj_new_int(status[t].usStackHighWaterMark),
+      };
+
+      mp_obj_list_append(list, mp_obj_new_tuple(7, tuple));
+    }
+
+    return list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_tasks_obj, pyb_tasks);
+#endif
+
+/// \function heap()
+/// Return a 3-tuple containing information on FreeRTOS heap:
+///     (total heap, currently free, minimum ever)
+STATIC mp_obj_t pyb_heap(void) {
+    mp_obj_t tuple[3] = {
+        mp_obj_new_int(configTOTAL_HEAP_SIZE),
+        mp_obj_new_int(xPortGetFreeHeapSize()),
+        mp_obj_new_int(xPortGetMinimumEverFreeHeapSize()),
+    };
+
+    return mp_obj_new_tuple(3, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_heap_obj, pyb_heap);
+
 /// \function freq()
 /// Returns the CPU frequency: (F_CPU).
 STATIC mp_obj_t pyb_freq(void) {
@@ -241,7 +302,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&pyb_hard_reset_obj },
 #ifdef DEBUG
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&pyb_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tasks),               (mp_obj_t)&pyb_tasks_obj },
 #endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_heap),                (mp_obj_t)&pyb_heap_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&pyb_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info),           (mp_obj_t)&pyb_set_repl_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart),           (mp_obj_t)&pyb_repl_uart_obj },

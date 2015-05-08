@@ -475,7 +475,7 @@ static TCB_t *prvAllocateTCBAndStack( const uint16_t usStackDepth, StackType_t *
  * THIS FUNCTION IS INTENDED FOR DEBUGGING ONLY, AND SHOULD NOT BE CALLED FROM
  * NORMAL APPLICATION CODE.
  */
-#if ( configUSE_TRACE_FACILITY == 1 )
+#if ( INCLUDE_uxTaskGetSystemState == 1 || configUSE_TRACE_FACILITY == 1 )
 
 	static UBaseType_t prvListTaskWithinSingleList( TaskStatus_t *pxTaskStatusArray, List_t *pxList, eTaskState eState ) PRIVILEGED_FUNCTION;
 
@@ -1745,7 +1745,7 @@ UBaseType_t uxTaskGetNumberOfTasks( void )
 #endif /* INCLUDE_pcTaskGetTaskName */
 /*-----------------------------------------------------------*/
 
-#if ( configUSE_TRACE_FACILITY == 1 )
+#if ( INCLUDE_uxTaskGetSystemState == 1 || configUSE_TRACE_FACILITY == 1 )
 
 	UBaseType_t uxTaskGetSystemState( TaskStatus_t * const pxTaskStatusArray, const UBaseType_t uxArraySize, uint32_t * const pulTotalRunTime )
 	{
@@ -2952,7 +2952,7 @@ TCB_t *pxNewTCB;
 }
 /*-----------------------------------------------------------*/
 
-#if ( configUSE_TRACE_FACILITY == 1 )
+#if ( INCLUDE_uxTaskGetSystemState == 1 || configUSE_TRACE_FACILITY == 1 )
 
 	static UBaseType_t prvListTaskWithinSingleList( TaskStatus_t *pxTaskStatusArray, List_t *pxList, eTaskState eState )
 	{
@@ -2973,7 +2973,11 @@ TCB_t *pxNewTCB;
 
 				pxTaskStatusArray[ uxTask ].xHandle = ( TaskHandle_t ) pxNextTCB;
 				pxTaskStatusArray[ uxTask ].pcTaskName = ( const char * ) &( pxNextTCB->pcTaskName [ 0 ] );
+				#if ( configUSE_TRACE_FACILITY == 1 )
 				pxTaskStatusArray[ uxTask ].xTaskNumber = pxNextTCB->uxTCBNumber;
+				#else
+				pxTaskStatusArray[ uxTask ].xTaskNumber = 0;
+				#endif /* configUSE_TRACE_FACILITY */
 				pxTaskStatusArray[ uxTask ].eCurrentState = eState;
 				pxTaskStatusArray[ uxTask ].uxCurrentPriority = pxNextTCB->uxPriority;
 
