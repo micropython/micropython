@@ -1293,8 +1293,23 @@ STATIC void compile_funcdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // TODO compile async stmt here (can be def, with or for)
-    compile_node(comp, pns->nodes[0]);
+    assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[0]));
+    mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
+    if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_funcdef) {
+        // async def
+        compile_funcdef(comp, pns0);
+        scope_t *fscope = (scope_t*)pns0->nodes[4];
+        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_COROUTINE;
+    } else if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
+        // async for
+        // TODO implement me
+        compile_node(comp, pns->nodes[0]);
+    } else {
+        // async with
+        // TODO implement me
+        assert(MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_with_stmt);
+        compile_node(comp, pns->nodes[0]);
+    }
 }
 
 STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
@@ -2481,8 +2496,14 @@ STATIC void compile_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_await_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // TODO compile await expr here
     compile_atom_expr(comp, pns);
+    // TODO We only support await on an object with __await__ special
+    // method.  Need to support objects that are coroutines.
+    EMIT_ARG(load_method, MP_QSTR___await__);
+    EMIT_ARG(call_method, 0, 0, 0);
+    EMIT(get_iter);
+    EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
+    EMIT(yield_from);
 }
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
