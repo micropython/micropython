@@ -98,6 +98,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybsd.c \
 	pybsleep.c \
 	pybspi.c \
+	pybtimer.c \
 	pybuart.c \
 	pybwdt.c \
 	)
@@ -192,6 +193,7 @@ $(BUILD)/FreeRTOS/Source/%.o: CFLAGS += -Os
 $(BUILD)/ftp/%.o: CFLAGS += -Os
 $(BUILD)/hal/%.o: CFLAGS += -Os
 $(BUILD)/misc/%.o: CFLAGS += -Os
+$(BUILD)/mods/%.o: CFLAGS += -Os
 $(BUILD)/py/%.o: CFLAGS += -Os
 $(BUILD)/simplelink/%.o: CFLAGS += -Os
 $(BUILD)/drivers/cc3100/%.o: CFLAGS += -Os

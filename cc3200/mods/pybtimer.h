@@ -25,15 +25,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef PYBRTC_H_
-#define PYBRTC_H_
+/******************************************************************************
+ DECLARE EXPORTED DATA
+ ******************************************************************************/
+extern const mp_obj_type_t pyb_timer_type;
 
-#define RTC_U16MS_CYCLES(msec)      ((msec * 1024) / 1000)
-#define RTC_CYCLES_U16MS(cycles)    ((cycles * 1000) / 1024)
+/******************************************************************************
+ DECLARE PUBLIC FUNCTIONS
+ ******************************************************************************/
+void timer_init0 (void);
+void timer_disable_all (void);
 
-extern const mp_obj_base_t pyb_rtc_obj;
-
-void pybrtc_init(void);
-void pyb_rtc_callback_disable (mp_obj_t self_in);
-
-#endif  // PYBRTC_H_

@@ -71,7 +71,6 @@ mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_
 
 mpcallback_obj_t *mpcallback_find (mp_obj_t parent) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
-        // search for the object and then remove it
         mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
         if (callback_obj->parent == parent) {
             return callback_obj;

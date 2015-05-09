@@ -92,6 +92,18 @@ void pybrtc_init(void) {
     }
 }
 
+void pyb_rtc_callback_disable (mp_obj_t self_in) {
+    // check the wake from param
+    if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
+        // disable the slow clock interrupt
+        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
+    }
+    // disable wake from ldps and hibernate
+    pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
+    // read the interrupt status to clear any pending interrupt
+    (void)MAP_PRCMIntStatus();
+}
+
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
@@ -106,18 +118,6 @@ STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
         MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
     }
     pybsleep_configure_timer_wakeup (pybrtc_data.prwmode);
-}
-
-STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
-    // check the wake from param
-    if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
-        // disable the slow clock interrupt
-        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
-    }
-    // disable wake from ldps and hibernate
-    pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
-    // read the interrupt status to clear any pending interrupt
-    (void)MAP_PRCMIntStatus();
 }
 
 /******************************************************************************/

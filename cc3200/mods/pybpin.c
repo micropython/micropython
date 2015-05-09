@@ -755,6 +755,7 @@ STATIC void EXTI_Handler(uint port) {
     uint32_t bit = MAP_GPIOIntStatus(port, true);
     MAP_GPIOIntClear(port, bit);
 
+    // TODO: loop through all the active bits before exiting
     pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
     mp_obj_t _callback = mpcallback_find(self);
     mpcallback_handler(_callback);

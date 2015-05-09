@@ -787,6 +787,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     // connect to the requested access point
     modwlan_Status_t status;
     status = wlan_do_connect (ssid, ssid_len, bssid, sec, key, key_len);
+    // TODO: make the timeout a parameter so that is configurable
     if (status == MODWLAN_ERROR_TIMEOUT) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }

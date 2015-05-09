@@ -63,6 +63,7 @@
 #include "pybsd.h"
 #include "pins.h"
 #include "pybsleep.h"
+#include "pybtimer.h"
 #include "mpcallback.h"
 
 /******************************************************************************
@@ -124,6 +125,7 @@ soft_reset:
     mperror_init0();
     uart_init0();
     pin_init0();
+    timer_init0();
     readline_init0();
     mod_network_init0();
 #if MICROPY_HW_ENABLE_RNG
@@ -242,14 +244,22 @@ soft_reset_exit:
 
     // soft reset
     pybsleep_signal_soft_reset();
-
     mp_printf(&mp_plat_print, "PYB: soft reboot\n");
 
+    // disable all peripherals that could trigger a callback
+    pyb_rtc_callback_disable(NULL);
+    timer_disable_all();
+    uart_disable_all();
+
+    // flush the serial flash buffer
     sflash_disk_flush();
 
 #if MICROPY_HW_HAS_SDCARD
     pybsd_deinit();
 #endif
+
+    // wait for pending transactions to complete
+    HAL_Delay(20);
 
     goto soft_reset;
 }

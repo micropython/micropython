@@ -139,6 +139,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     mp_obj_list_t mod_network_nic_list;                                   \
     mp_obj_list_t pybsleep_obj_list;                                      \
     mp_obj_list_t mpcallback_obj_list;                                    \
+    mp_obj_list_t pyb_timer_channel_obj_list;                             \
 
 
 // type definitions for the specific machine
