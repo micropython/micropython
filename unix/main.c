@@ -73,6 +73,13 @@ STATIC void sighandler(int signum) {
 }
 #endif
 
+STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
+    (void)env;
+    fwrite(str, len, 1, stderr);
+}
+
+const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
+
 #define FORCED_EXIT (0x100)
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
@@ -90,7 +97,7 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
     }
 
     // Report all other exceptions
-    mp_obj_print_exception(&mp_plat_print, exc);
+    mp_obj_print_exception(&mp_stderr_print, exc);
     return 1;
 }
 
