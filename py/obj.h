@@ -143,7 +143,7 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
 
 #define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_builtin_t obj_name
 
-#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_builtin_t obj_name = {{&mp_type_fun_builtin}, is_kw, n_args_min, n_args_max, (void *)fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_builtin_t obj_name = {{&mp_type_fun_builtin}, is_kw, n_args_min, n_args_max, (void(*)(void))fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 0, 0, (mp_fun_0_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 1, 1, (mp_fun_1_t)fun_name)
 #define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 2, 2, (mp_fun_2_t)fun_name)
@@ -622,7 +622,7 @@ typedef struct _mp_obj_fun_builtin_t { // use this to make const objects that go
     bool is_kw : 1;
     mp_uint_t n_args_min : 15; // inclusive
     mp_uint_t n_args_max : 16; // inclusive
-    void *fun; // must be a pointer to a callable function in ROM
+    void (*fun)(void); // must be a pointer to a callable function in ROM
 } mp_obj_fun_builtin_t;
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun);
