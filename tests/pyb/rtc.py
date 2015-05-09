@@ -29,13 +29,13 @@ set_and_print((2016, 12, 31, 7, 23, 59, 1, 0))
 set_and_print((2016, 12, 31, 7, 23, 59, 59, 0))
 set_and_print((2099, 12, 31, 7, 23, 59, 59, 0))
 
-# check that setcal works correctly
+# check that calibration works correctly
 # save existing calibration value:
-cal_tmp = rtc.setcal()
+cal_tmp = rtc.calibration()
 
 def set_and_print_calib(cal):
-    rtc.setcal(cal)
-    print(rtc.setcal())
+    rtc.calibration(cal)
+    print(rtc.calibration())
 
 set_and_print_calib(512)
 set_and_print_calib(511)
@@ -48,5 +48,5 @@ set_and_print_calib(-510)
 set_and_print_calib(-511)
 
 # restore existing calibration value
-rtc.setcal(cal_tmp)
+rtc.calibration(cal_tmp)
 

@@ -122,7 +122,7 @@ Q(RTC)
 Q(info)
 Q(datetime)
 Q(wakeup)
-Q(setcal)
+Q(calibration)
 
 // for Pin class
 Q(Pin)

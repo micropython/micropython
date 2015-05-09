@@ -58,11 +58,11 @@ Methods
     - Bit 0x10000 is set if a power-on reset occurred.
     - Bit 0x20000 is set if an external reset occurred
 
-.. method:: rtc.setcal(cal)
+.. method:: rtc.calibration(cal)
 
    Get or set RTC calibration.
 
-   With no arguments, ``setcal()`` returns the current calibration
+   With no arguments, ``calibration()`` returns the current calibration
    value, which is an integer in the range [-511 : 512].  With one
    argument it sets the RTC calibration.
 
