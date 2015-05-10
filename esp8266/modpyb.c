@@ -108,13 +108,13 @@ STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
 
 STATIC mp_obj_t pyb_micros(void) {
-    return MP_OBJ_NEW_SMALL_INT(0);
+    return MP_OBJ_NEW_SMALL_INT(system_get_time());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 
 STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
     uint32_t startMicros = mp_obj_get_int(start);
-    uint32_t currMicros = 0;
+    uint32_t currMicros = system_get_time();
     return MP_OBJ_NEW_SMALL_INT((currMicros - startMicros) & 0x3fffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);

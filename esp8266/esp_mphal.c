@@ -29,6 +29,7 @@
 #include "etshal.h"
 #include "uart.h"
 #include "esp_mphal.h"
+#include "user_interface.h"
 
 extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
@@ -82,8 +83,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
 }
 
 uint32_t HAL_GetTick(void) {
-    // TODO
-    return 0;
+    return system_get_time() / 1000;
 }
 
 void HAL_Delay(uint32_t Delay) {
