@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// Debugging help - use printf() easily
+#include <stdio.h>
+
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
