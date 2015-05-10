@@ -1249,6 +1249,12 @@ exception_handler:
                         code_state->ip = ip + ulab; // jump to after for-block
                         code_state->sp -= 1; // pop the exhausted iterator
                         goto outer_dispatch_loop; // continue with dispatch loop
+                    } else if (*code_state->ip == MP_BC_YIELD_FROM) {
+                        // StopIteration inside yield from call means return a value of
+                        // yield from, so inject exception's value as yield from's result
+                        *++code_state->sp = mp_obj_exception_get_value(nlr.ret_val);
+                        code_state->ip++; // yield from is over, move to next instruction
+                        goto outer_dispatch_loop; // continue with dispatch loop
                     }
                 }
             }

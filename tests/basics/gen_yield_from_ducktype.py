@@ -42,3 +42,25 @@ g = gen3()
 print(next(g))
 print(g.send(5))
 print(g.send(100))
+
+
+#
+# Test proper handling of StopIteration vs other exceptions
+#
+class MyIter:
+    def __iter__(self):
+        return self
+    def __next__(self):
+        raise StopIteration(42)
+
+def gen4():
+    global ret
+    ret = yield from MyIter()
+    1//0
+
+ret = None
+try:
+    print(list(gen4()))
+except ZeroDivisionError:
+    print("ZeroDivisionError")
+print(ret)
