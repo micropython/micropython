@@ -102,7 +102,7 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
-    if (typecode_size <= 0) {
+    if (typecode_size == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
     }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
@@ -134,7 +134,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
         && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
         // construct array from raw bytes
         // we round-down the len to make it a multiple of sz (CPython raises error)
-        int sz = mp_binary_get_size('@', typecode, NULL);
+        size_t sz = mp_binary_get_size('@', typecode, NULL);
         mp_uint_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
         memcpy(o->items, bufinfo.buf, len * sz);
@@ -262,7 +262,7 @@ STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
             array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
             mp_get_buffer_raise(rhs_in, &rhs_bufinfo, MP_BUFFER_READ);
 
-            int sz = mp_binary_get_size('@', lhs_bufinfo.typecode, NULL);
+            size_t sz = mp_binary_get_size('@', lhs_bufinfo.typecode, NULL);
 
             // convert byte count to element count (in case rhs is not multiple of sz)
             mp_uint_t rhs_len = rhs_bufinfo.len / sz;
@@ -305,7 +305,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_array_t *self = self_in;
 
     if (self->free == 0) {
-        int item_sz = mp_binary_get_size('@', self->typecode, NULL);
+        size_t item_sz = mp_binary_get_size('@', self->typecode, NULL);
         // TODO: alloc policy
         self->free = 8;
         self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + self->free));
@@ -326,7 +326,7 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     mp_buffer_info_t arg_bufinfo;
     mp_get_buffer_raise(arg_in, &arg_bufinfo, MP_BUFFER_READ);
 
-    int sz = mp_binary_get_size('@', self->typecode, NULL);
+    size_t sz = mp_binary_get_size('@', self->typecode, NULL);
 
     // convert byte count to element count
     mp_uint_t len = arg_bufinfo.len / sz;
@@ -371,7 +371,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 // Assign
                 mp_uint_t src_len;
                 void *src_items;
-                int item_sz = mp_binary_get_size('@', o->typecode, NULL);
+                size_t item_sz = mp_binary_get_size('@', o->typecode, NULL);
                 if (MP_OBJ_IS_TYPE(value, &mp_type_array) || MP_OBJ_IS_TYPE(value, &mp_type_bytearray)) {
                     mp_obj_array_t *src_slice = value;
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode, NULL)) {
@@ -418,7 +418,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             }
 
             mp_obj_array_t *res;
-            int sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
+            size_t sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
             assert(sz > 0);
             if (0) {
                 // dummy
@@ -460,7 +460,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
 
 STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_array_t *o = o_in;
-    int sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
+    size_t sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
     bufinfo->buf = o->items;
     bufinfo->len = o->len * sz;
     bufinfo->typecode = o->typecode & TYPECODE_MASK;

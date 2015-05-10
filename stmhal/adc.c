@@ -219,7 +219,7 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    int typesize = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    size_t typesize = mp_binary_get_size('@', bufinfo.typecode, NULL);
 
     // Init TIM6 at the required frequency (in Hz)
     timer_tim6_init(mp_obj_get_int(freq_in));
