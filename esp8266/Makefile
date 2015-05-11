@@ -18,6 +18,7 @@ INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
 INC += -I../lib/netutils
+INC += -I../lib/timeutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
@@ -52,7 +53,9 @@ SRC_C = \
 	uart.c \
 	modpyb.c \
 	modpybpin.c \
+	modpybrtc.c \
 	modesp.c \
+	modutime.c \
 	utils.c \
 	$(BUILD)/frozen.c \
 
@@ -66,6 +69,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
+	timeutils/timeutils.c \
 	)
 
 SRC_S = \
