@@ -46,6 +46,10 @@ Functions
 
    Remove a directory.
 
+.. function:: rename(old_path, new_path)
+
+   Rename a file.
+
 .. function:: stat(path)
 
    Get the status of a file or directory.
