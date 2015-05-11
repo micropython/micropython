@@ -38,6 +38,7 @@ Q(_os)
 Q(stat)
 Q(system)
 Q(unlink)
+Q(rename)
 
 Q(ffi)
 Q(ffimod)
