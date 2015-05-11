@@ -210,7 +210,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         // set the match value
         MAP_PRCMRTCMatchSet(seconds, mseconds);
 
-        // save the match data for later
+        // save the power mode data for later
         pybrtc_data.prwmode = args[4].u_int;
 
         // create the callback

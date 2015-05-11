@@ -516,7 +516,7 @@ STATIC mp_obj_t pyb_uart_callback (mp_uint_t n_args, const mp_obj_t *pos_args, m
         uint priority = mpcallback_translate_priority (args[2].u_int);
 
         // check the power mode
-        if (PYB_PWR_MODE_ACTIVE != args[3].u_int) {
+        if (PYB_PWR_MODE_ACTIVE != args[4].u_int) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
         }
 
