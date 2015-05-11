@@ -50,6 +50,7 @@
 typedef enum {
     MP_UNARY_OP_BOOL, // __bool__
     MP_UNARY_OP_LEN, // __len__
+    MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_POSITIVE,
     MP_UNARY_OP_NEGATIVE,
     MP_UNARY_OP_INVERT,

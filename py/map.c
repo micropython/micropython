@@ -31,7 +31,8 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
-#include "py/obj.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 // Fixed empty map. Useful when need to call kw-receiving functions
 // without any keywords from C, etc.
@@ -200,7 +201,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
     }
 
-    mp_uint_t hash = mp_obj_hash(index);
+    mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     mp_uint_t pos = hash % map->alloc;
     mp_uint_t start_pos = pos;
     mp_map_elem_t *avail_slot = NULL;
@@ -308,7 +309,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
             return NULL;
         }
     }
-    mp_uint_t hash = mp_obj_hash(index);
+    mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     mp_uint_t pos = hash % set->alloc;
     mp_uint_t start_pos = pos;
     mp_obj_t *avail_slot = NULL;

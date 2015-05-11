@@ -69,18 +69,21 @@ STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_int_t value = ((mp_obj_bool_t*)o_in)->value;
     switch (op) {
         case MP_UNARY_OP_BOOL: return o_in;
+        // needs to hash to the same value as if converting to an integer
+        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(value);
         case MP_UNARY_OP_POSITIVE: return MP_OBJ_NEW_SMALL_INT(value);
         case MP_UNARY_OP_NEGATIVE: return MP_OBJ_NEW_SMALL_INT(-value);
         case MP_UNARY_OP_INVERT: return MP_OBJ_NEW_SMALL_INT(~value);
 
         // only bool needs to implement MP_UNARY_OP_NOT
         case MP_UNARY_OP_NOT:
-        default: // no other cases
             if (value) {
                 return mp_const_false;
             } else {
                 return mp_const_true;
             }
+
+        default: return MP_OBJ_NULL; // op not supported
     }
 }
 
