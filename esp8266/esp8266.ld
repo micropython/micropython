@@ -5,7 +5,7 @@ MEMORY
     dport0_0_seg : org = 0x3ff00000, len = 0x10
     dram0_0_seg :  org = 0x3ffe8000, len = 0x14000
     iram1_0_seg :  org = 0x40100000, len = 0x8000
-    irom0_0_seg :  org = 0x40210000, len = 0x40000
+    irom0_0_seg :  org = 0x40210000, len = 0x5A000
 }
 
 /* define the top of RAM */
@@ -82,6 +82,7 @@ SECTIONS
         *modpyb.o(.literal*, .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
+        *modesp.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */
