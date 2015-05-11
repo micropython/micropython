@@ -34,5 +34,3 @@ extern const mp_obj_module_t mp_module_usocket;
 // additional helper functions exported by the modules
 
 MP_DECLARE_CONST_FUN_OBJ(mod_os_sync_obj);
-
-mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second);

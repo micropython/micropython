@@ -38,11 +38,11 @@
 #include "diskio.h"
 #include "sflash_diskio.h"
 #include "file.h"
-#include "modutime.h"
 #include "random.h"
 #include "sd_diskio.h"
 #include "mpexception.h"
 #include "version.h"
+#include "timeutils.h"
 
 /// \module os - basic "operating system" services
 ///
@@ -285,7 +285,7 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     } else {
         mode |= 0x8000; // stat.S_IFREG
     }
-    mp_int_t seconds = mod_time_seconds_since_2000(
+    mp_int_t seconds = timeutils_seconds_since_2000(
         1980 + ((fno.fdate >> 9) & 0x7f),
         (fno.fdate >> 5) & 0x0f,
         fno.fdate & 0x1f,
