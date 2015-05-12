@@ -1982,16 +1982,6 @@ STATIC void bad_implicit_conversion(mp_obj_t self_in) {
     }
 }
 
-mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in) {
-    // TODO: This has too big overhead for hash accessor
-    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
-        GET_STR_HASH(self_in, h);
-        return h;
-    } else {
-        bad_implicit_conversion(self_in);
-    }
-}
-
 mp_uint_t mp_obj_str_get_len(mp_obj_t self_in) {
     // TODO This has a double check for the type, one in obj.c and one here
     if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {

@@ -126,6 +126,14 @@ mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
+        case MP_UNARY_OP_HASH: {
+            // start hash with pointer to empty tuple, to make it fairly unique
+            mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
+            for (mp_uint_t i = 0; i < self->len; i++) {
+                hash += MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, self->items[i]));
+            }
+            return MP_OBJ_NEW_SMALL_INT(hash);
+        }
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
         default: return MP_OBJ_NULL; // op not supported
     }
@@ -256,17 +264,6 @@ void mp_obj_tuple_del(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = self_in;
     m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
-}
-
-mp_int_t mp_obj_tuple_hash(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
-    mp_obj_tuple_t *self = self_in;
-    // start hash with pointer to empty tuple, to make it fairly unique
-    mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
-    for (mp_uint_t i = 0; i < self->len; i++) {
-        hash += mp_obj_hash(self->items[i]);
-    }
-    return hash;
 }
 
 /******************************************************************************/
