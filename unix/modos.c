@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
