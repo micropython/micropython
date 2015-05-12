@@ -287,7 +287,7 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     mp_uint_t optlen;
     mp_int_t val;
     if (mp_obj_is_integer(args[3])) {
-        val = mp_obj_int_get_truncated(args[3]);
+        val = mp_obj_get_int_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
     } else {

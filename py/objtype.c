@@ -359,7 +359,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
         mp_obj_t val = mp_call_function_1(member[0], self_in);
         // __hash__ must return a small int
         if (op == MP_UNARY_OP_HASH) {
-            val = MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_truncated(val));
+            val = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int_truncated(val));
         }
         return val;
     } else {

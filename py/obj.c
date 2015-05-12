@@ -231,6 +231,14 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     }
 }
 
+mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg) {
+    if (MP_OBJ_IS_INT(arg)) {
+        return mp_obj_int_get_truncated(arg);
+    } else {
+        return mp_obj_get_int(arg);
+    }
+}
+
 // returns false if arg is not of integral type
 // returns true and sets *value if it is of integral type
 // can throw OverflowError if arg is of integral type, but doesn't fit in a mp_int_t
