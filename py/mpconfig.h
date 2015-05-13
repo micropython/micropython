@@ -594,6 +594,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDFILES (0)
 #endif
 
+// Whether to provide sys.{stdin,stdout,stderr}.buffer object
+// This is implemented per-port
+#ifndef MICROPY_PY_SYS_STDIO_BUFFER
+#define MICROPY_PY_SYS_STDIO_BUFFER (0)
+#endif
 
 // Extended modules
 
