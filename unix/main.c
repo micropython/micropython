@@ -44,6 +44,7 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
+#include "unix_mphal.h"
 #include "input.h"
 
 // Command line options, with their defaults
@@ -55,22 +56,6 @@ mp_uint_t mp_verbose_flag = 0;
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
-#endif
-
-#ifndef _WIN32
-#include <signal.h>
-
-STATIC void sighandler(int signum) {
-    if (signum == SIGINT) {
-        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
-        MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
-        // disable our handler so next we really die
-        struct sigaction sa;
-        sa.sa_handler = SIG_DFL;
-        sigemptyset(&sa.sa_mask);
-        sigaction(SIGINT, &sa, NULL);
-    }
-}
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
@@ -110,14 +95,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         return 1;
     }
 
-    #ifndef _WIN32
-    // enable signal handler
-    struct sigaction sa;
-    sa.sa_handler = sighandler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGINT, &sa, NULL);
-    sa.sa_handler = SIG_DFL;
-    #endif
+    mp_hal_set_interrupt_char(3); // ctrl-C
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -144,20 +122,13 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
             mp_call_function_0(module_fun);
         }
 
-        #ifndef _WIN32
-        // disable signal handler
-        sigaction(SIGINT, &sa, NULL);
-        #endif
-
+        mp_hal_set_interrupt_char(-1);
         nlr_pop();
         return 0;
 
     } else {
         // uncaught exception
-        #ifndef _WIN32
-        // disable signal handler
-        sigaction(SIGINT, &sa, NULL);
-        #endif
+        mp_hal_set_interrupt_char(-1);
         return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
     }
 }
@@ -177,7 +148,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 }
 
 STATIC int do_repl(void) {
-    printf("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
+    mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
     for (;;) {
         char *line = prompt(">>> ");
@@ -306,9 +277,8 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
+#include <unistd.h>
 int main(int argc, char **argv) {
-    prompt_read_history();
-
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
     pre_process_options(argc, argv);
@@ -318,7 +288,10 @@ int main(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 #endif
 
+    mp_hal_init();
     mp_init();
+
+    prompt_read_history();
 
     #ifndef _WIN32
     // create keyboard interrupt object
@@ -483,7 +456,10 @@ int main(int argc, char **argv) {
     }
     #endif
 
+    prompt_write_history();
+
     mp_deinit();
+    mp_hal_deinit();
 
 #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
@@ -492,7 +468,6 @@ int main(int argc, char **argv) {
 #endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
-    prompt_write_history();
     return ret & 0xff;
 }
 

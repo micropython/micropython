@@ -15,6 +15,7 @@ include ../py/py.mk
 
 INC =  -I.
 INC +=  -I..
+INC +=  -I../lib/mp-readline
 INC += -I$(BUILD)
 
 # compiler settings
@@ -56,12 +57,6 @@ endif
 endif
 endif
 
-ifeq ($(MICROPY_USE_READLINE),1)
-CFLAGS_MOD += -DMICROPY_USE_READLINE=1
-LDFLAGS_MOD += -lreadline
-# the following is needed for BSD
-#LDFLAGS_MOD += -ltermcap
-endif
 ifeq ($(MICROPY_PY_TIME),1)
 CFLAGS_MOD += -DMICROPY_PY_TIME=1
 SRC_MOD += modtime.c
@@ -95,10 +90,17 @@ SRC_C = \
 	modos.c \
 	alloc.c \
 	coverage.c \
+	unix_mphal.c \
 	$(SRC_MOD)
 
+LIB_SRC_C = $(addprefix lib/,\
+	mp-readline/readline.c \
+	)
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+
+OBJ = $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 include ../py/mkrules.mk
 
