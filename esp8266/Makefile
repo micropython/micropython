@@ -22,12 +22,15 @@ INC += -I../lib/timeutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
+UART_OS = 1
+
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
 	-fno-inline-functions \
 	-Wl,-EL -mlongcalls -mtext-section-literals \
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_XTENSA) $(COPT)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+	$(CFLAGS_XTENSA) $(COPT)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
 LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
@@ -85,16 +88,18 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 all: $(BUILD)/firmware-combined.bin
 
-SCRIPTDIR_FILE = $(BUILD)/scriptdir
+CONFVARS_FILE = $(BUILD)/confvars
 
-ifeq ($(wildcard $(SCRIPTDIR_FILE)),)
+ifeq ($(wildcard $(CONFVARS_FILE)),)
 $(shell $(MKDIR) -p $(BUILD))
-$(shell echo $(SCRIPTDIR) > $(SCRIPTDIR_FILE))
-else ifneq ($(shell cat $(SCRIPTDIR_FILE)), $(SCRIPTDIR))
-$(shell echo $(SCRIPTDIR) > $(SCRIPTDIR_FILE))
+$(shell echo $(SCRIPTDIR) $(UART_OS) > $(CONFVARS_FILE))
+else ifneq ($(shell cat $(CONFVARS_FILE)), $(SCRIPTDIR) $(UART_OS))
+$(shell echo $(SCRIPTDIR) $(UART_OS) > $(CONFVARS_FILE))
 endif
 
-$(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(SCRIPTDIR_FILE)
+$(BUILD)/uart.o: $(CONFVARS_FILE)
+
+$(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(CONFVARS_FILE)
 	$(ECHO) "Generating $@"
 	$(Q)$(MAKE_FROZEN) $(SCRIPTDIR) > $@
 
