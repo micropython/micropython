@@ -219,6 +219,22 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
+/// \function rename(old_path, new_path)
+/// Rename a file
+STATIC mp_obj_t os_rename(mp_obj_t path_in, mp_obj_t path_out) {
+    const char *old_path = mp_obj_str_get_str(path_in);
+    const char *new_path = mp_obj_str_get_str(path_out);
+    FRESULT res = f_rename(old_path, new_path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+    }
+
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
+
 /// \function remove(path)
 /// Remove a file or a directory
 STATIC mp_obj_t os_remove(mp_obj_t path_o) {
@@ -354,6 +370,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd),          (mp_obj_t)&os_getcwd_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir),         (mp_obj_t)&os_listdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir),           (mp_obj_t)&os_mkdir_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rename),          (mp_obj_t)&os_rename_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove),          (mp_obj_t)&os_remove_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir),           (mp_obj_t)&os_remove_obj },  // rmdir aliases to remove
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat),            (mp_obj_t)&os_stat_obj },
