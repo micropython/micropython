@@ -42,6 +42,25 @@
 #include "py/formatfloat.h"
 #endif
 
+#ifndef _MSC_VER
+#define sprintf_impl sprintf
+#else
+// workaround for msvc's sprintf implementation which prints 1#.INF and 1.#QNAN
+void sprintf_impl(char *buf, const char *fmt, double value) {
+    if (isnan(value)) {
+        strcpy(buf, "nan");
+    } else if (isinf(value)) {
+        if (copysign(1., value) == 1.) {
+            strcpy(buf, "inf");
+        } else {
+            strcpy(buf, "-inf");
+        }
+    } else {
+        sprintf(buf, fmt, value);
+    }
+}
+#endif
+
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_float_t *o = o_in;
@@ -55,7 +74,7 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     }
 #else
     char buf[32];
-    sprintf(buf, "%.16g", (double) o->value);
+    sprintf_impl(buf, "%.16g", (double) o->value);
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
         // Python floats always have decimal point (unless inf or nan)
