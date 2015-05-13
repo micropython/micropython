@@ -47,7 +47,7 @@ typedef struct _pyb_rtc_obj_t {
 #define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_DELTA_ADDR) * 4)
 
 STATIC uint64_t pyb_rtc_raw_us(uint64_t cal) {
-    return system_get_rtc_time() * ((cal >> 12) * 1000 + (cal & 0x0) / 4) / 1000;
+    return system_get_rtc_time() * ((cal >> 12) * 1000 + (cal & 0xfff) / 4) / 1000;
 };
 
 void pyb_rtc_set_us_since_2000(uint64_t nowus) {
