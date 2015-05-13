@@ -79,10 +79,13 @@ SECTIONS
         *pyexec.o(.literal*, .text*)
         *readline.o(.literal*, .text*)
         *pybstdio.o(.literal*, .text*)
-        *modpyb.o(.literal*, .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
+        *modpyb.o(.literal*, .text*)
+        *modpybpin.o(.literal*, .text*)
+        *modpybrtc.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
+        *modutime.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */
