@@ -70,6 +70,7 @@ Q(millis)
 Q(micros)
 Q(elapsed_millis)
 Q(elapsed_micros)
+Q(buffer)
 
 // for user-mountable block devices
 Q(mount)
