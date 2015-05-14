@@ -448,6 +448,7 @@ Q(platform)
 Q(stdin)
 Q(stdout)
 Q(stderr)
+Q(raw)
 Q(version)
 Q(version_info)
 #if MICROPY_PY_ATTRTUPLE
