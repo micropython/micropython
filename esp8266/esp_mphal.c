@@ -93,7 +93,3 @@ void HAL_Delay(uint32_t Delay) {
 void mp_hal_set_interrupt_char(int c) {
     // TODO
 }
-
-uint32_t mp_hal_get_cpu_freq(void) {
-    return ets_get_cpu_frequency();
-}
