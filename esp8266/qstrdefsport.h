@@ -53,6 +53,8 @@ Q(version)
 Q(machine)
 
 Q(esp)
+Q(esp.wifi)
+Q(wifi)
 Q(socket)
 Q(connect)
 Q(disconnect)
