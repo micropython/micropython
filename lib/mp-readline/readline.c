@@ -112,17 +112,7 @@ int readline_process_char(int c) {
         } else if (c == '\r') {
             // newline
             mp_hal_stdout_tx_str("\r\n");
-            if (rl.line->len > rl.orig_line_len && (MP_STATE_PORT(readline_hist)[0] == NULL || strcmp(MP_STATE_PORT(readline_hist)[0], rl.line->buf + rl.orig_line_len) != 0)) {
-                // a line which is not empty and different from the last one
-                // so update the history
-                char *most_recent_hist = str_dup_maybe(vstr_null_terminated_str(rl.line) + rl.orig_line_len);
-                if (most_recent_hist != NULL) {
-                    for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
-                        MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
-                    }
-                    MP_STATE_PORT(readline_hist)[0] = most_recent_hist;
-                }
-            }
+            readline_push_history(vstr_null_terminated_str(rl.line) + rl.orig_line_len);
             return 0;
         } else if (c == 27) {
             // escape sequence
@@ -309,6 +299,22 @@ int readline(vstr_t *line, const char *prompt) {
         int r = readline_process_char(c);
         if (r >= 0) {
             return r;
+        }
+    }
+}
+
+void readline_push_history(const char *line) {
+    if (line[0] != '\0'
+        && (MP_STATE_PORT(readline_hist)[0] == NULL
+            || strcmp(MP_STATE_PORT(readline_hist)[0], line) != 0)) {
+        // a line which is not empty and different from the last one
+        // so update the history
+        char *most_recent_hist = str_dup_maybe(line);
+        if (most_recent_hist != NULL) {
+            for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
+                MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
+            }
+            MP_STATE_PORT(readline_hist)[0] = most_recent_hist;
         }
     }
 }

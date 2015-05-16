@@ -32,6 +32,7 @@
 
 void readline_init0(void);
 int readline(vstr_t *line, const char *prompt);
+void readline_push_history(const char *line);
 
 void readline_init(vstr_t *line, const char *prompt);
 void readline_note_newline(const char *prompt);
