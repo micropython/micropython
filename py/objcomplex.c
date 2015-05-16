@@ -37,10 +37,7 @@
 #if MICROPY_PY_BUILTINS_COMPLEX
 
 #include <math.h>
-
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #include "py/formatfloat.h"
-#endif
 
 typedef struct _mp_obj_complex_t {
     mp_obj_base_t base;
@@ -53,33 +50,23 @@ STATIC void complex_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_
     mp_obj_complex_t *o = o_in;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
-    if (o->real == 0) {
-        mp_format_float(o->imag, buf, sizeof(buf), 'g', 7, '\0');
-        mp_printf(print, "%sj", buf);
-    } else {
-        mp_format_float(o->real, buf, sizeof(buf), 'g', 7, '\0');
-        mp_printf(print, "(%s", buf);
-        if (o->imag >= 0 || isnan(o->imag)) {
-            mp_print_str(print, "+");
-        }
-        mp_format_float(o->imag, buf, sizeof(buf), 'g', 7, '\0');
-        mp_printf(print, "%sj)", buf);
-    }
+    const int precision = 7;
 #else
     char buf[32];
+    const int precision = 16;
+#endif
     if (o->real == 0) {
-        sprintf(buf, "%.16g", (double)o->imag);
+        mp_format_float(o->imag, buf, sizeof(buf), 'g', precision, '\0');
         mp_printf(print, "%sj", buf);
     } else {
-        sprintf(buf, "%.16g", (double)o->real);
+        mp_format_float(o->real, buf, sizeof(buf), 'g', precision, '\0');
         mp_printf(print, "(%s", buf);
         if (o->imag >= 0 || isnan(o->imag)) {
             mp_print_str(print, "+");
         }
-        sprintf(buf, "%.16g", (double)o->imag);
+        mp_format_float(o->imag, buf, sizeof(buf), 'g', precision, '\0');
         mp_printf(print, "%sj)", buf);
     }
-#endif
 }
 
 STATIC mp_obj_t complex_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

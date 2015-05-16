@@ -198,7 +198,4 @@ void msec_sleep(double msec);
 #include <stddef.h> //for NULL
 #include <assert.h> //for assert
 
-// Functions implemented in platform code
-
-int snprintf(char *dest, size_t count, const char *format, ...);
 #endif
