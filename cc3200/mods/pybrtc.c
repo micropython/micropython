@@ -192,7 +192,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
     if (kw_args->used > 0 || !_callback) {
-        uint32_t f_mseconds = args[3].u_int;
+        uint32_t f_mseconds = MAX(1, args[3].u_int);
         uint32_t seconds;
         uint16_t mseconds;
         // get the seconds and the milliseconds from the RTC
