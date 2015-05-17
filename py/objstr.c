@@ -37,7 +37,6 @@
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
-mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 
@@ -1856,6 +1855,8 @@ STATIC const mp_map_elem_t str8_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+
 const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
     .name = MP_QSTR_str,
@@ -2030,15 +2031,15 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len) {
 /******************************************************************************/
 /* str iterator                                                               */
 
-typedef struct _mp_obj_str_it_t {
+typedef struct _mp_obj_str8_it_t {
     mp_obj_base_t base;
     mp_obj_t str;
     mp_uint_t cur;
-} mp_obj_str_it_t;
+} mp_obj_str8_it_t;
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
-    mp_obj_str_it_t *self = self_in;
+    mp_obj_str8_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
         mp_obj_t o_out = mp_obj_new_str((const char*)str + self->cur, 1, true);
@@ -2056,8 +2057,8 @@ STATIC const mp_obj_type_t mp_type_str_it = {
     .iternext = str_it_iternext,
 };
 
-mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
-    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
+    mp_obj_str8_it_t *o = m_new_obj(mp_obj_str8_it_t);
     o->base.type = &mp_type_str_it;
     o->str = str;
     o->cur = 0;
@@ -2066,7 +2067,7 @@ mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
 #endif
 
 STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
-    mp_obj_str_it_t *self = self_in;
+    mp_obj_str8_it_t *self = self_in;
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
         mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(str[self->cur]);
@@ -2085,7 +2086,7 @@ STATIC const mp_obj_type_t mp_type_bytes_it = {
 };
 
 mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
-    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+    mp_obj_str8_it_t *o = m_new_obj(mp_obj_str8_it_t);
     o->base.type = &mp_type_bytes_it;
     o->str = str;
     o->cur = 0;

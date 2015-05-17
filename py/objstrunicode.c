@@ -293,7 +293,7 @@ STATIC const mp_obj_type_t mp_type_str_it = {
     .iternext = str_it_iternext,
 };
 
-mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
     mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
     o->base.type = &mp_type_str_it;
     o->str = str;
