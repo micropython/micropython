@@ -712,7 +712,6 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_RISING_FALLING),      MP_OBJ_NEW_SMALL_INT(GPIO_BOTH_EDGES) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_LOW_LEVEL),           MP_OBJ_NEW_SMALL_INT(GPIO_LOW_LEVEL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_HIGH_LEVEL),          MP_OBJ_NEW_SMALL_INT(GPIO_HIGH_LEVEL) },
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_S2MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_S4MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_4MA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_S6MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },
@@ -752,12 +751,18 @@ STATIC void GPIOA3IntHandler (void) {
 
 // common interrupt handler
 STATIC void EXTI_Handler(uint port) {
-    uint32_t bit = MAP_GPIOIntStatus(port, true);
-    MAP_GPIOIntClear(port, bit);
+    uint32_t bits = MAP_GPIOIntStatus(port, true);
+    MAP_GPIOIntClear(port, bits);
 
-    // TODO: loop through all the active bits before exiting
-    pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
-    mp_obj_t _callback = mpcallback_find(self);
-    mpcallback_handler(_callback);
+    // might be that we have more than one Pin interrupt triggered at the same time
+    // therefore we must loop through all the 8 possible bits
+    for (int i = 0; i < 8; i++) {
+        uint32_t bit = (1 << i);
+        if (bit & bits) {
+            pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
+            mp_obj_t _callback = mpcallback_find(self);
+            mpcallback_handler(_callback);
+        }
+    }
 }
 
