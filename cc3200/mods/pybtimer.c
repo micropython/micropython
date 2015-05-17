@@ -349,7 +349,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, co
 
     timer_init(tim);
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)tim, (WakeUpCB_t)timer_channel_init);
+    pybsleep_add ((const mp_obj_t)tim, (WakeUpCB_t)timer_init);
 
     return mp_const_none;
 
@@ -431,7 +431,6 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     if (!tim->config) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
     }
-
     if (channel_n != TIMER_A && channel_n != TIMER_B && channel_n != (TIMER_A | TIMER_B)) {
         // invalid channel
         goto error;
@@ -463,10 +462,6 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     if ((tim->config & TIMER_A) == TIMER_CFG_A_PWM && args[1].u_int == (PYBTIMER_POLARITY_POS | PYBTIMER_POLARITY_NEG)) {
         goto error;
     }
-    // check the range of the duty cycle
-    if (args[2].u_int < 0 || args[2].u_int > 100) {
-        goto error;
-    }
 
     // allocate a new timer channel
     pyb_timer_channel_obj_t *ch = m_new_obj(pyb_timer_channel_obj_t);
@@ -477,9 +472,12 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     // get the frequency the polarity and the duty cycle
     ch->frequency = args[0].u_int;
     ch->polarity = args[1].u_int;
-    ch->duty_cycle = args[2].u_int;
+    ch->duty_cycle = MIN(100, MAX(0, args[2].u_int));
 
     timer_channel_init(ch);
+
+    // register it with the sleep module
+    pybsleep_add ((const mp_obj_t)ch, (WakeUpCB_t)timer_channel_init);
 
     // add the timer to the list
     pyb_timer_channel_add(ch);
@@ -687,7 +685,7 @@ STATIC mp_obj_t pyb_timer_channel_duty_cycle(mp_uint_t n_args, const mp_obj_t *a
         // calculate the period, the prescaler and the match value
         uint32_t period;
         uint32_t match;
-        ch->duty_cycle = mp_obj_get_int(args[1]);
+        ch->duty_cycle = MIN(100, MAX(0, mp_obj_get_int(args[1])));
         compute_prescaler_period_and_match_value(ch, &period, &match);
         if (n_args == 3) {
             // set the new polarity if requested
@@ -742,7 +740,7 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
             break;
         }
         if (ch->channel == (TIMER_A | TIMER_B)) {
-            // again a special case for the match interrupt
+            // again a special case for the pwm match interrupt
             if (_config == TIMER_CFG_A_PWM) {
                 ch->timer->intflags |= TIMER_TIMB_MATCH;
             } else {
@@ -798,11 +796,17 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
         // create the callback
         _callback = mpcallback_new (ch, args[1].u_obj, &pyb_timer_channel_cb_methods);
 
+        // get the value if given
+        uint32_t c_value = MAX(0, args[3].u_int);
+        ch->duty_cycle = MIN(100, c_value);
+
         // reload the timer
         uint32_t period;
         uint32_t match;
         compute_prescaler_period_and_match_value(ch, &period, &match);
         MAP_TimerLoadSet(ch->timer->timer, ch->channel, period);
+        // set the appropiate match value
+        MAP_TimerMatchSet(ch->timer->timer, ch->channel, (_config == TIMER_CFG_A_PWM) ? match : c_value);
 
         // enable the callback before returning
         pyb_timer_channel_callback_enable(ch);
