@@ -754,7 +754,7 @@ STATIC void EXTI_Handler(uint port) {
     uint32_t bits = MAP_GPIOIntStatus(port, true);
     MAP_GPIOIntClear(port, bits);
 
-    // might be that we have more than one Pin interrupt triggered at the same time
+    // might be that we have more than one Pin interrupt pending
     // therefore we must loop through all of the 8 possible bits
     for (int i = 0; i < 8; i++) {
         uint32_t bit = (1 << i);

@@ -124,7 +124,7 @@ typedef struct _wlan_obj_t {
 
 #define MODWLAN_TIMEOUT_MS              5000
 #define MODWLAN_MAX_NETWORKS            20
-#define MODWLAN_SCAN_PERIOD_S           300     // 5 minutes
+#define MODWLAN_SCAN_PERIOD_S           3600     // 1 hour
 #define MODWLAN_WAIT_FOR_SCAN_MS        1050
 
 #define ASSERT_ON_ERROR( x )            ASSERT((x) >= 0 )
@@ -850,6 +850,7 @@ STATIC mp_obj_t wlan_ifconfig (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_ifconfig_obj, wlan_ifconfig);
 
+#if MICROPY_PORT_WLAN_URN
 STATIC mp_obj_t wlan_urn (uint n_args, const mp_obj_t *args) {
     char urn[MAX_DEVICE_URN_LEN];
     uint8_t len = MAX_DEVICE_URN_LEN;
@@ -880,6 +881,7 @@ STATIC mp_obj_t wlan_urn (uint n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
+#endif
 
 /// \method wlan_netlist()
 /// Return a list of tuples with all the acces points within range
@@ -1037,7 +1039,9 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),          (mp_obj_t)&wlan_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),         (mp_obj_t)&wlan_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),            (mp_obj_t)&wlan_ifconfig_obj },
+#if MICROPY_PORT_WLAN_URN
     { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback),            (mp_obj_t)&wlan_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_config_ip),           (mp_obj_t)&wlan_config_ip_obj },
 
