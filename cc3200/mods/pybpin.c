@@ -72,7 +72,7 @@
 ///         print(pin.get_config().name)
 ///
 ///     extint = pyb.Pin('GPIO10', 0, pyb.Pin.INT_RISING, pyb.GPIO.STD_PD, pyb.S2MA)
-///     extint.callback (intmode=pyb.Pin.INT_RISING, handler=pincb)
+///     extint.callback (mode=pyb.Pin.INT_RISING, handler=pincb)
 ///     # the callback can be triggered manually
 ///     extint.callback()()
 ///     # to disable the callback
@@ -543,9 +543,9 @@ STATIC mp_obj_t pin_get_config(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_get_config_obj, pin_get_config);
 
-/// \method callback(method, intmode, priority, pwrmode)
+/// \method callback(method, mode, priority, pwrmode)
 /// Creates a callback object associated to a pin
-/// min num of arguments is 1 (intmode)
+/// min num of arguments is 1 (mode)
 STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
