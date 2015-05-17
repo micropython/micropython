@@ -37,6 +37,7 @@
 #include "pyexec.h"
 #include "gccollect.h"
 #include MICROPY_HAL_H
+#include "user_interface.h"
 
 STATIC char heap[16384];
 
@@ -60,11 +61,15 @@ void soft_reset(void) {
     pyexec_event_repl_init();
 }
 
-void user_init(void) {
+void init_done(void) {
     mp_reset();
     mp_hal_stdout_tx_str("\r\n");
     pyexec_event_repl_init();
     uart_task_init();
+}
+
+void user_init(void) {
+    system_init_done_cb(init_done);
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
