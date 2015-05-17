@@ -86,7 +86,6 @@ STATIC mp_obj_t esp_socket_make_new(mp_obj_t type_in, mp_uint_t n_args,
 
     esp_socket_obj_t *s = esp_socket_make_new_base();
     s->espconn = m_new_obj(struct espconn);
-    espconn_create(s->espconn);
 
     s->espconn->reverse = s;
     // TODO: UDP Support
