@@ -101,6 +101,10 @@ Q(RTC)
 Q(datetime)
 Q(memory)
 
+// ADC
+Q(ADC)
+Q(read)
+
 // utime
 Q(utime)
 Q(localtime)
