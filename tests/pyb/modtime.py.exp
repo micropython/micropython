@@ -32,3 +32,15 @@ Testing 2030
 Testing 2031
 Testing 2032
 Testing 2033
+time.localtime( 0 ) returned (2000, 1, 1, 0, 0, 0, 5, 1) (pass)
+time.localtime( 1 ) returned (2000, 1, 1, 0, 0, 1, 5, 1) (pass)
+time.localtime( 59 ) returned (2000, 1, 1, 0, 0, 59, 5, 1) (pass)
+time.localtime( 60 ) returned (2000, 1, 1, 0, 1, 0, 5, 1) (pass)
+time.localtime( 3599 ) returned (2000, 1, 1, 0, 59, 59, 5, 1) (pass)
+time.localtime( 3600 ) returned (2000, 1, 1, 1, 0, 0, 5, 1) (pass)
+time.localtime( -1 ) returned (1999, 12, 31, 23, 59, 59, 4, 365) (pass)
+time.localtime( 447549467 ) returned (2014, 3, 7, 23, 17, 47, 4, 66) (pass)
+time.localtime( -940984933 ) returned (1970, 3, 7, 23, 17, 47, 5, 66) (pass)
+time.localtime( -1072915199 ) returned (1966, 1, 1, 0, 0, 1, 5, 1) (pass)
+time.localtime( -1072915200 ) returned (1966, 1, 1, 0, 0, 0, 5, 1) (pass)
+time.localtime( -1072915201 ) returned (1965, 12, 31, 23, 59, 59, 4, 365) (pass)
