@@ -73,6 +73,10 @@ void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t, timeutils_struct_t
 
     mp_int_t days = seconds / 86400;
     seconds %= 86400;
+    if (seconds < 0) {
+        seconds += 86400;
+        days -= 1;
+    }
     tm->tm_hour = seconds / 3600;
     tm->tm_min = seconds / 60 % 60;
     tm->tm_sec = seconds % 60;
