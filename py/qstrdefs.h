@@ -584,6 +584,7 @@ Q(sha256)
 #if MICROPY_PY_UBINASCII
 Q(ubinascii)
 Q(hexlify)
+Q(unhexlify)
 #endif
 
 #if MICROPY_PY_MACHINE
