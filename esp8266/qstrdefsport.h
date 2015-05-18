@@ -41,6 +41,16 @@ Q(udelay)
 Q(sync)
 Q(hard_reset)
 
+// uos module
+Q(uos)
+Q(os)
+Q(uname)
+Q(sysname)
+Q(nodename)
+Q(release)
+Q(version)
+Q(machine)
+
 Q(esp)
 Q(socket)
 Q(connect)

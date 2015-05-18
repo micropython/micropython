@@ -59,6 +59,7 @@ SRC_C = \
 	modpybrtc.c \
 	modesp.c \
 	modutime.c \
+	moduos.c \
 	utils.c \
 	$(BUILD)/frozen.c \
 

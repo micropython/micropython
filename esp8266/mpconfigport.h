@@ -66,14 +66,17 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t esp_module;
 extern const struct _mp_obj_module_t utime_module;
+extern const struct _mp_obj_module_t uos_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -92,3 +95,4 @@ extern const struct _mp_obj_module_t utime_module;
 #define MICROPY_HAL_H "esp_mphal.h"
 #define MICROPY_HW_BOARD_NAME "ESP module"
 #define MICROPY_HW_MCU_NAME "ESP8266"
+#define MICROPY_PY_SYS_PLATFORM "ESP8266"
