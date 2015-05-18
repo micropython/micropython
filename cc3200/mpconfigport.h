@@ -67,7 +67,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN               (0)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN               (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_SYS_MAXSIZE                      (0)
 #define MICROPY_PY_SYS_EXIT                         (1)
@@ -76,7 +76,7 @@
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
 #define MICROPY_PY_UBINASCII                        (1)
-#define MICROPY_PY_UCTYPES                          (1)
+#define MICROPY_PY_UCTYPES                          (0)
 #define MICROPY_PY_UZLIB                            (0)
 #define MICROPY_PY_UJSON                            (1)
 #define MICROPY_PY_URE                              (1)
@@ -124,7 +124,6 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_time),        (mp_obj_t)&mp_module_utime },     \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select),      (mp_obj_t)&mp_module_uselect },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),      (mp_obj_t)&mp_module_usocket },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_struct),      (mp_obj_t)&mp_module_ustruct },   \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
