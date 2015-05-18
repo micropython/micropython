@@ -169,3 +169,13 @@ unichar unichar_toupper(unichar c) {
     }
     return c;
 }
+
+mp_uint_t unichar_xdigit_value(unichar c) {
+    // c is assumed to be hex digit
+    mp_uint_t n = c - '0';
+    if (n > 9) {
+        n &= ~('a' - 'A');
+        n -= ('A' - ('9' + 1));
+    }
+    return n;
+}

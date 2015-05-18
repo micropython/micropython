@@ -261,16 +261,6 @@ STATIC const char *tok_kw[] = {
     "__debug__",
 };
 
-STATIC mp_uint_t hex_digit(unichar c) {
-    // c is assumed to be hex digit
-    mp_uint_t n = c - '0';
-    if (n > 9) {
-        n &= ~('a' - 'A');
-        n -= ('A' - ('9' + 1));
-    }
-    return n;
-}
-
 // This is called with CUR_CHAR() before first hex digit, and should return with
 // it pointing to last hex digit
 // num_digits must be greater than zero
@@ -282,7 +272,7 @@ STATIC bool get_hex(mp_lexer_t *lex, mp_uint_t num_digits, mp_uint_t *result) {
         if (!unichar_isxdigit(c)) {
             return false;
         }
-        num = (num << 4) + hex_digit(c);
+        num = (num << 4) + unichar_xdigit_value(c);
     }
     *result = num;
     return true;

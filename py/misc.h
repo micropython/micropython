@@ -127,6 +127,7 @@ bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
 unichar unichar_toupper(unichar c);
+mp_uint_t unichar_xdigit_value(unichar c);
 mp_uint_t unichar_charlen(const char *str, mp_uint_t len);
 #define UTF8_IS_NONASCII(ch) ((ch) & 0x80)
 #define UTF8_IS_CONT(ch) (((ch) & 0xC0) == 0x80)
