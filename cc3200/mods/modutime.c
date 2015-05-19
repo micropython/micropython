@@ -73,11 +73,11 @@ STATIC mp_obj_t time_localtime(mp_uint_t n_args, const mp_obj_t *args) {
                 mp_obj_new_int(tm.tm_year),
                 mp_obj_new_int(tm.tm_mon),
                 mp_obj_new_int(tm.tm_mday),
-                mp_obj_new_int(tm.tm_wday),
                 mp_obj_new_int(tm.tm_hour),
                 mp_obj_new_int(tm.tm_min),
                 mp_obj_new_int(tm.tm_sec),
-                mp_obj_new_int(mseconds)
+                mp_obj_new_int(tm.tm_wday),
+                mp_obj_new_int(tm.tm_yday)
         };
         return mp_obj_new_tuple(8, tuple);
     } else {
@@ -105,7 +105,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 /// which expresses a time as per localtime. It returns an integer which is
 /// the number of seconds since Jan 1, 2000.
 STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
-
     mp_uint_t len;
     mp_obj_t *elem;
 
@@ -119,7 +118,6 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
     return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]),
             mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
             mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
-
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
