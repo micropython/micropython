@@ -35,20 +35,20 @@
 #include "rom_map.h"
 #include "prcm.h"
 #include "shamd5.h"
-#include "hash.h"
-#include "simplelink.h"
+#include "cryptohash.h"
 
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
-void HASH_Init (void) {
+__attribute__ ((section (".boot")))
+void CRYPTOHASH_Init (void) {
     // Enable the Data Hashing and Transform Engine
     MAP_PRCMPeripheralClkEnable(PRCM_DTHE, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     MAP_PRCMPeripheralReset(PRCM_DTHE);
 }
 
-void HASH_SHAMD5Start (uint32_t algo, uint32_t blocklen) {
+void CRYPTOHASH_SHAMD5Start (uint32_t algo, uint32_t blocklen) {
     // wait until the context is ready
     while ((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_CONTEXT_READY) == 0);
 
@@ -64,12 +64,12 @@ void HASH_SHAMD5Start (uint32_t algo, uint32_t blocklen) {
     HWREG(SHAMD5_BASE + SHAMD5_O_LENGTH) = blocklen;
 }
 
-void HASH_SHAMD5Update (uint8_t *data, uint32_t datalen) {
+void CRYPTOHASH_SHAMD5Update (uint8_t *data, uint32_t datalen) {
     // write the data
     SHAMD5DataWriteMultiple(data, datalen);
 }
 
-void HASH_SHAMD5Read (uint8_t *hash) {
+void CRYPTOHASH_SHAMD5Read (uint8_t *hash) {
     // wait for the output to be ready
     while((HWREG(SHAMD5_BASE + SHAMD5_O_IRQSTATUS) & SHAMD5_INT_OUTPUT_READY) == 0);
     // read the result

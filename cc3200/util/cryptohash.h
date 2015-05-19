@@ -24,59 +24,15 @@
  * THE SOFTWARE.
  */
 
-__stack_size__  = 1024;
+#ifndef CRYPTOHASH_H_
+#define CRYPTOHASH_H_
 
-MEMORY
-{
-    SRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00004000
-}
+/******************************************************************************
+ DECLARE PUBLIC FUNCTIONS
+ ******************************************************************************/
+extern void CRYPTOHASH_Init (void);
+extern void CRYPTOHASH_SHAMD5Start (uint32_t algo, uint32_t blocklen);
+extern void CRYPTOHASH_SHAMD5Update (uint8_t *data, uint32_t datalen);
+extern void CRYPTOHASH_SHAMD5Read (uint8_t *hash);
 
-ENTRY(ResetISR)
-
-SECTIONS
-{
-    .text :
-    {
-        _text = .;
-        KEEP(*(.intvecs))
-        *(.boot*)
-        *(.text*)
-        *(.rodata*)
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-        . = ALIGN(8);
-    } > SRAM
-
-    .ARM :
-    {
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        __exidx_end = .;
-        _etext = .;
-    } > SRAM
-
-    .data :
-    {
-        _data = .;
-        *(.data*)
-        . = ALIGN (8);
-        _edata = .;
-    } > SRAM
-
-    .bss :
-    {
-        _bss = .;
-        *(.bss*)
-        *(COMMON)
-        _ebss = .;
-    } > SRAM
-
-    .stack ORIGIN(SRAM) + LENGTH(SRAM) - __stack_size__ :
-    {
-        . = ALIGN(8);
-        _stack = .;
-        . = . + __stack_size__;
-        . = ALIGN(8);
-        _estack = .;
-    } > SRAM
-}
-
+#endif /* CRYPTOHASH_H_ */

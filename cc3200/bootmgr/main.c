@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
 #include "std.h"
 
 #include "py/mpconfig.h"
@@ -47,7 +48,7 @@
 #include "flc.h"
 #include "bootmgr.h"
 #include "shamd5.h"
-#include "hash.h"
+#include "cryptohash.h"
 #include "utils.h"
 #include "cc3200_hal.h"
 #include "debug.h"
@@ -151,7 +152,7 @@ static void bootmgr_board_init(void) {
     mperror_bootloader_check_reset_cause();
 
     // Enable the Data Hashing Engine
-    HASH_Init();
+    CRYPTOHASH_Init();
 
     // Init the system led and the system switch
     mperror_init0();
@@ -175,7 +176,7 @@ static bool bootmgr_verify (void) {
 
         if (FsFileInfo.FileLen > BOOTMGR_HASH_SIZE) {
             FsFileInfo.FileLen -= BOOTMGR_HASH_SIZE;
-            HASH_SHAMD5Start(BOOTMGR_HASH_ALGO, FsFileInfo.FileLen);
+            CRYPTOHASH_SHAMD5Start(BOOTMGR_HASH_ALGO, FsFileInfo.FileLen);
             do {
                 if ((FsFileInfo.FileLen - offset) > BOOTMGR_BUFF_SIZE) {
                     reqlen = BOOTMGR_BUFF_SIZE;
@@ -185,10 +186,10 @@ static bool bootmgr_verify (void) {
                 }
 
                 offset += sl_FsRead(fHandle, offset, bootmgr_file_buf, reqlen);
-                HASH_SHAMD5Update(bootmgr_file_buf, reqlen);
+                CRYPTOHASH_SHAMD5Update(bootmgr_file_buf, reqlen);
             } while (offset < FsFileInfo.FileLen);
 
-            HASH_SHAMD5Read (bootmgr_file_buf);
+            CRYPTOHASH_SHAMD5Read (bootmgr_file_buf);
 
             // convert the resulting hash to hex
             for (_u32 i = 0; i < (BOOTMGR_HASH_SIZE / 2); i++) {

@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2014 Paul Sokolovsky
  * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,16 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MODUHASHLIB_H_
+#define MODUHASHLIB_H_
 
-#ifndef HASH_H_
-#define HASH_H_
+extern const mp_obj_module_t mp_module_uhashlib;
 
-/******************************************************************************
- DECLARE PUBLIC FUNCTIONS
- ******************************************************************************/
-extern void HASH_Init (void);
-extern void HASH_SHAMD5Start (uint32_t algo, uint32_t blocklen);
-extern void HASH_SHAMD5Update (uint8_t *data, uint32_t datalen);
-extern void HASH_SHAMD5Read (uint8_t *hash);
-
-#endif /* HASH_H_ */
+#endif // MODUHASHLIB_H_

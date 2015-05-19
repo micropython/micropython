@@ -50,7 +50,7 @@ BOOT_SL_SRC_C = $(addprefix simplelink/,\
 	)
 
 BOOT_UTIL_SRC_C = $(addprefix util/,\
-	hash.c \
+	cryptohash.c \
 	) 
 
 BOOT_MAIN_SRC_C = \

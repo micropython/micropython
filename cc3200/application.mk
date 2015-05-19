@@ -86,6 +86,7 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 
 APP_MODS_SRC_C = $(addprefix mods/,\
 	modnetwork.c \
+	moduhashlib.c \
 	modpyb.c \
 	moduos.c \
 	modusocket.c \
@@ -124,6 +125,7 @@ APP_TELNET_SRC_C = $(addprefix telnet/,\
 	)
 	
 APP_UTIL_SRC_C = $(addprefix util/,\
+	cryptohash.c \
 	fifo.c \
 	gccollect.c \
 	random.c \

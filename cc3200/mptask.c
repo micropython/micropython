@@ -65,6 +65,7 @@
 #include "pybsleep.h"
 #include "pybtimer.h"
 #include "mpcallback.h"
+#include "cryptohash.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -288,6 +289,8 @@ STATIC void mptask_pre_init (void) {
 #if MICROPY_HW_HAS_SDCARD
     pybsd_init0();
 #endif
+
+    CRYPTOHASH_Init();
 
 #ifdef DEBUG
     ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
