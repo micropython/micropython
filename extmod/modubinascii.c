@@ -31,10 +31,10 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "modubinascii.h"
 
-#if MICROPY_PY_UBINASCII
 
-STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
     // Second argument is for an extension to allow a separator to be used
     // between values.
     (void)n_args;
@@ -60,7 +60,7 @@ STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_hexlify_obj, 1, 2, mod_binascii_hexlify);
 
-STATIC mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
+mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
@@ -88,6 +88,8 @@ STATIC mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj, mod_binascii_unhexlify);
+
+#if MICROPY_PY_UBINASCII
 
 STATIC const mp_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii) },
