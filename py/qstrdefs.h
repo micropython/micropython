@@ -577,7 +577,6 @@ Q(heapify)
 Q(uhashlib)
 Q(update)
 Q(digest)
-Q(hexdigest)
 Q(sha256)
 #endif
 
