@@ -163,16 +163,9 @@ STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 
-STATIC mp_obj_t hash_hexdigest(mp_obj_t self_in) {
-    (void)self_in;
-    mp_not_implemented("");
-}
-MP_DEFINE_CONST_FUN_OBJ_1(hash_hexdigest_obj, hash_hexdigest);
-
 STATIC const mp_map_elem_t hash_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_update),    (mp_obj_t) &hash_update_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_digest),    (mp_obj_t) &hash_digest_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hexdigest), (mp_obj_t) &hash_hexdigest_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);

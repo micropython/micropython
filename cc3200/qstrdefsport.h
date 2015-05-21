@@ -74,6 +74,7 @@ Q(binascii)
 Q(re)
 Q(json)
 Q(heapq)
+Q(hashlib)
 
 // for os module
 Q(uos)
@@ -350,11 +351,9 @@ Q(POSITIVE)
 Q(NEGATIVE)
 
 // for uhashlib module
-Q(hashlib)
 Q(uhashlib)
 Q(update)
 Q(digest)
-Q(hexdigest)
 //Q(md5)
 Q(sha1)
 Q(sha256)
