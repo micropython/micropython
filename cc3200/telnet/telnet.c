@@ -32,6 +32,7 @@
 #include "telnet.h"
 #include "simplelink.h"
 #include "modwlan.h"
+#include "modusocket.h"
 #include "debug.h"
 #include "mpexception.h"
 #include "serverstask.h"
@@ -322,6 +323,9 @@ static bool telnet_create_socket (void) {
     // Open a socket for telnet
     ASSERT ((telnet_data.sd = sl_Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) > 0);
     if (telnet_data.sd > 0) {
+        // add the socket to the network administration
+        modusocket_socket_add(telnet_data.sd, false);
+
         // Enable non-blocking mode
         nonBlockingOption.NonblockingEnabled = 1;
         ASSERT (sl_SetSockOpt(telnet_data.sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption)) == SL_SOC_OK);
@@ -352,14 +356,17 @@ static void telnet_wait_for_connection (void) {
         return;
     }
     else {
-        // close the listening socket, we don't need it anymore
-        sl_Close(telnet_data.sd);
-
         if (telnet_data.n_sd <= 0) {
             // error
             telnet_reset();
             return;
         }
+
+        // close the listening socket, we don't need it anymore
+        servers_close_socket(&telnet_data.sd);
+
+        // add the new socket to the network administration
+        modusocket_socket_add(telnet_data.n_sd, false);
 
         // client connected, so go on
         telnet_data.rxWindex = 0;

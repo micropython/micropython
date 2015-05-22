@@ -50,6 +50,7 @@
 #include "mperror.h"
 #include "simplelink.h"
 #include "modnetwork.h"
+#include "modusocket.h"
 #include "modwlan.h"
 #include "serverstask.h"
 #include "telnet.h"
@@ -255,6 +256,9 @@ soft_reset_exit:
     // flush the serial flash buffer
     sflash_disk_flush();
 
+    // clean-up the user socket space
+    modusocket_close_all_user_sockets();
+
 #if MICROPY_HW_HAS_SDCARD
     pybsd_deinit();
 #endif
@@ -283,8 +287,11 @@ STATIC void mptask_pre_init (void) {
     // this one allocates memory for the nvic vault
     pybsleep_pre_init();
 
-    // this one allocates mameory for the WLAN semaphore
+    // this one allocates memory for the WLAN semaphore
     wlan_pre_init();
+
+    // this one allocates memory for the Socket semaphore
+    modusocket_pre_init();
 
 #if MICROPY_HW_HAS_SDCARD
     pybsd_init0();

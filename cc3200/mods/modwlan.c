@@ -36,6 +36,7 @@
 #include "py/runtime.h"
 #include "netutils.h"
 #include "modnetwork.h"
+#include "modusocket.h"
 #include "modwlan.h"
 #include "pybioctl.h"
 #include "debug.h"
@@ -229,6 +230,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
         {
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED);
+            // TODO reset the servers
         }
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
@@ -243,6 +245,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
             wlan_obj.staconnected = false;
+            // TODO reset the servers
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
             // TODO
@@ -718,8 +721,6 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     }
 
     wlan_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wlan;
-    // register with the network module
-    mod_network_register_nic(&wlan_obj);
 
     return &wlan_obj;
 }
@@ -1065,7 +1066,7 @@ STATIC const mp_cb_methods_t wlan_cb_methods = {
 /******************************************************************************/
 // Micro Python bindings; WLAN socket
 
-STATIC int wlan_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip, uint8_t family) {
+STATIC int wlan_gethostbyname(const char *name, mp_uint_t len, uint8_t *out_ip, uint8_t family) {
     uint32_t ip;
     int result = sl_NetAppDnsGetHostByName((_i8 *)name, (_u16)len, (_u32*)&ip, (_u8)family);
 
@@ -1090,14 +1091,11 @@ STATIC int wlan_socket_socket(struct _mod_network_socket_obj_t *s, int *_errno) 
     // save the socket descriptor
     s->sd = sd;
 
-    // make it blocking by default
-    int32_t optval = 0;
-    sl_SetSockOpt(sd, SOL_SOCKET, SO_NONBLOCKING, &optval, (SlSocklen_t)sizeof(optval));
-
     return 0;
 }
 
 STATIC void wlan_socket_close(mod_network_socket_obj_t *s) {
+    modusocket_socket_delete(s->sd);
     s->closed = true;
     sl_Close(s->sd);
 }
@@ -1152,12 +1150,6 @@ STATIC int wlan_socket_connect(mod_network_socket_obj_t *s, byte *ip, mp_uint_t 
 }
 
 STATIC int wlan_socket_send(mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, int *_errno) {
-    if (s->closed) {
-        sl_Close (s->sd);
-        *_errno = EBADF;
-        return -1;
-    }
-
     mp_int_t bytes = 0;
     if (len > 0) {
         bytes = sl_Send(s->sd, (const void *)buf, len, 0);
@@ -1173,7 +1165,7 @@ STATIC int wlan_socket_send(mod_network_socket_obj_t *s, const byte *buf, mp_uin
 STATIC int wlan_socket_recv(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, int *_errno) {
     // check if the socket is open
     if (s->closed) {
-        // socket is closed, but the CC3200 may have some data remaining in its buffer, so check
+        // socket is closed, but the there might be data remaining in the buffer, so check
         fd_set rfds;
         FD_ZERO(&rfds);
         FD_SET(s->sd, &rfds);
@@ -1182,8 +1174,8 @@ STATIC int wlan_socket_recv(mod_network_socket_obj_t *s, byte *buf, mp_uint_t le
         tv.tv_usec = 2;
         int nfds = sl_Select(s->sd + 1, &rfds, NULL, NULL, &tv);
         if (nfds == -1 || !FD_ISSET(s->sd, &rfds)) {
-            // no data waiting, so close socket and return 0 data
-            sl_Close(s->sd);
+            // no data waiting, so close the socket and return 0 data
+            wlan_socket_close(s);
             return 0;
         }
     }

@@ -40,6 +40,7 @@
 #include "ftp.h"
 #include "simplelink.h"
 #include "modwlan.h"
+#include "modusocket.h"
 #include "debug.h"
 #include "serverstask.h"
 #include "ff.h"
@@ -49,7 +50,6 @@
 #include "sd_diskio.h"
 #include "updater.h"
 #include "timeutils.h"
-
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
@@ -429,6 +429,9 @@ static bool ftp_create_listening_socket (_i16 *sd, _u16 port, _u8 backlog) {
     _sd = *sd;
 
     if (_sd > 0) {
+        // add the new socket to the network administration
+        modusocket_socket_add(_sd, false);
+
         // Enable non-blocking mode
         nonBlockingOption.NonblockingEnabled = 1;
         ASSERT (sl_SetSockOpt(_sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption)) == SL_SOC_OK);
@@ -463,6 +466,9 @@ static ftp_result_t ftp_wait_for_connection (_i16 l_sd, _i16 *n_sd) {
         ftp_reset();
         return E_FTP_RESULT_FAILED;
     }
+
+    // add the new socket to the network administration
+    modusocket_socket_add(_sd, false);
 
     // client connected, so go on
     return E_FTP_RESULT_OK;

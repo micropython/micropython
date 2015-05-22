@@ -37,7 +37,7 @@ typedef struct _mod_network_nic_type_t {
     mp_obj_type_t base;
 
     // API for non-socket operations
-    int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out, uint8_t family);
+    int (*gethostbyname)(const char *name, mp_uint_t len, uint8_t *ip_out, uint8_t family);
 
     // API for socket operations; return -1 on error
     int (*socket)(struct _mod_network_socket_obj_t *s, int *_errno);
@@ -57,7 +57,6 @@ typedef struct _mod_network_nic_type_t {
 
 typedef struct _mod_network_socket_obj_t {
     mp_obj_base_t base;
-    mp_obj_t nic;
     mod_network_nic_type_t *nic_type;
     union {
         struct {
@@ -74,7 +73,5 @@ typedef struct _mod_network_socket_obj_t {
 extern const mod_network_nic_type_t mod_network_nic_type_wlan;
 
 void mod_network_init0(void);
-void mod_network_register_nic(mp_obj_t nic);
-mp_obj_t mod_network_find_nic(void);
 
 #endif  // MODNETWORK_H_

@@ -25,47 +25,22 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <std.h>
 
 #include "py/mpstate.h"
 #include MICROPY_HAL_H
 #include "modnetwork.h"
 #include "mpexception.h"
 #include "serverstask.h"
+#include "simplelink.h"
+
 
 /// \module network - network configuration
 ///
 /// This module provides network drivers and routing configuration.
 
 void mod_network_init0(void) {
-    mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
-
-void mod_network_register_nic(mp_obj_t nic) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
-            // nic already registered
-            return;
-        }
-    }
-    // nic not registered so add to list
-    mp_obj_list_append(&MP_STATE_PORT(mod_network_nic_list), nic);
-}
-
-mp_obj_t mod_network_find_nic(void) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-        return nic;
-    }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
-}
-
-STATIC mp_obj_t network_route(void) {
-    return &MP_STATE_PORT(mod_network_nic_list);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 STATIC mp_obj_t network_server_start(void) {
@@ -97,7 +72,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(network_server_login_obj, network_server_login)
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN),                (mp_obj_t)&mod_network_nic_type_wlan },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_route),               (mp_obj_t)&network_route_obj },
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     { MP_OBJ_NEW_QSTR(MP_QSTR_start_server),        (mp_obj_t)&network_server_start_obj },

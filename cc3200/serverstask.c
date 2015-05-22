@@ -36,6 +36,7 @@
 #include "telnet.h"
 #include "ftp.h"
 #include "pybwdt.h"
+#include "modusocket.h"
 
 
 /******************************************************************************
@@ -58,6 +59,7 @@ typedef struct {
  DECLARE PRIVATE DATA
  ******************************************************************************/
 static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false};
+static volatile bool sleep_sockets = false;
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -108,11 +110,17 @@ void TASK_Servers (void *pvParameters) {
             ftp_run();
         }
 
+        // set the alive flag for the wdt
+        pybwdt_srv_alive();
+
+        if (sleep_sockets) {
+            sleep_sockets = false;
+            modusocket_enter_sleep();
+        }
+
         // move to the next cycle
         cycle = cycle ? false : true;
         HAL_Delay(SERVERS_CYCLE_TIME_MS);
-        // set the alive flag for the wdt
-        pybwdt_srv_alive();
     }
 }
 
@@ -133,8 +141,14 @@ bool servers_are_enabled (void) {
     return servers_data.enabled;
 }
 
+void server_sleep_sockets (void) {
+    sleep_sockets = true;
+    HAL_Delay (SERVERS_CYCLE_TIME_MS + 1);
+}
+
 void servers_close_socket (int16_t *sd) {
     if (*sd > 0) {
+        modusocket_socket_delete(*sd);
         sl_Close(*sd);
         *sd = -1;
     }

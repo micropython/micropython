@@ -233,7 +233,6 @@ Q(IPPROTO_RAW)
 
 // for network class
 Q(network)
-Q(route)
 Q(start_server)
 Q(stop_server)
 Q(server_running)
