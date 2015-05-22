@@ -88,6 +88,11 @@ STATIC mp_uint_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t siz
         *errcode = fresult_to_errno_table[res];
         return MP_STREAM_ERROR;
     }
+    if (sz_out != size) {
+        // The FatFS documentation says that this means disk full.
+        *errcode = ENOSPC;
+        return MP_STREAM_ERROR;
+    }
     return sz_out;
 }
 
