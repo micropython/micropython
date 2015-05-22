@@ -35,10 +35,6 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#include <stdio.h>
-#endif
-
 #if MICROPY_PY_BUILTINS_FLOAT
 #include "py/formatfloat.h"
 #endif
@@ -340,29 +336,12 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
     if (flags & PF_FLAG_SPACE_SIGN) {
         sign = ' ';
     }
-    int len;
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-    char fmt_buf[6];
-    char *fmt_s = fmt_buf;
 
-    *fmt_s++ = '%';
-    if (sign) {
-        *fmt_s++ = sign;
-    }
-    *fmt_s++ = '.';
-    *fmt_s++ = '*';
-    *fmt_s++ = fmt;
-    *fmt_s = '\0';
-
-    len = snprintf(buf, sizeof(buf), fmt_buf, prec, f);
+    int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
     if (len < 0) {
         len = 0;
     }
-#else
-#error Unknown MICROPY FLOAT IMPL
-#endif
+
     char *s = buf;
 
     if ((flags & PF_FLAG_ADD_PERCENT) && (size_t)(len + 1) < sizeof(buf)) {

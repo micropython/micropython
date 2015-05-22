@@ -31,10 +31,12 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "modubinascii.h"
 
-#if MICROPY_PY_UBINASCII
 
-STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
+    // Second argument is for an extension to allow a separator to be used
+    // between values.
     (void)n_args;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
@@ -58,10 +60,41 @@ STATIC mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_hexlify_obj, 1, 2, mod_binascii_hexlify);
 
+mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+
+    if ((bufinfo.len & 1) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "odd-length string"));
+    }
+    vstr_t vstr;
+    vstr_init_len(&vstr, bufinfo.len / 2);
+    byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
+    byte hex_byte = 0;
+    for (mp_uint_t i = bufinfo.len; i--;) {
+        byte hex_ch = *in++;
+        if (unichar_isxdigit(hex_ch)) {
+            hex_byte += unichar_xdigit_value(hex_ch);
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "non-hex digit found"));
+        }
+        if (i & 1) {
+            hex_byte <<= 4;
+        } else {
+            *out++ = hex_byte;
+            hex_byte = 0;
+        }
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj, mod_binascii_unhexlify);
+
+#if MICROPY_PY_UBINASCII
+
 STATIC const mp_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hexlify), (mp_obj_t)&mod_binascii_hexlify_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_unhexlify), (mp_obj_t)&mod_binascii_unhexlify_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unhexlify), (mp_obj_t)&mod_binascii_unhexlify_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_a2b_base64), (mp_obj_t)&mod_binascii_a2b_base64_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_b2a_base64), (mp_obj_t)&mod_binascii_b2a_base64_obj },
 };

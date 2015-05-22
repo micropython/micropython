@@ -35,14 +35,17 @@
 #define FL_ALPHA (0x08)
 #define FL_UPPER (0x10)
 #define FL_LOWER (0x20)
+#define FL_XDIGIT (0x40)
 
 // shorthand character attributes
 #define AT_PR (FL_PRINT)
 #define AT_SP (FL_SPACE | FL_PRINT)
-#define AT_DI (FL_DIGIT | FL_PRINT)
+#define AT_DI (FL_DIGIT | FL_PRINT | FL_XDIGIT)
 #define AT_AL (FL_ALPHA | FL_PRINT)
 #define AT_UP (FL_UPPER | FL_ALPHA | FL_PRINT)
 #define AT_LO (FL_LOWER | FL_ALPHA | FL_PRINT)
+#define AT_UX (FL_UPPER | FL_ALPHA | FL_PRINT | FL_XDIGIT)
+#define AT_LX (FL_LOWER | FL_ALPHA | FL_PRINT | FL_XDIGIT)
 
 // table of attributes for ascii characters
 STATIC const uint8_t attr[] = {
@@ -54,11 +57,11 @@ STATIC const uint8_t attr[] = {
     AT_PR, AT_PR, AT_PR, AT_PR, AT_PR, AT_PR, AT_PR, AT_PR,
     AT_DI, AT_DI, AT_DI, AT_DI, AT_DI, AT_DI, AT_DI, AT_DI,
     AT_DI, AT_DI, AT_PR, AT_PR, AT_PR, AT_PR, AT_PR, AT_PR,
-    AT_PR, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP,
+    AT_PR, AT_UX, AT_UX, AT_UX, AT_UX, AT_UX, AT_UX, AT_UP,
     AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP,
     AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP, AT_UP,
     AT_UP, AT_UP, AT_UP, AT_PR, AT_PR, AT_PR, AT_PR, AT_PR,
-    AT_PR, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO,
+    AT_PR, AT_LX, AT_LX, AT_LX, AT_LX, AT_LX, AT_LX, AT_LO,
     AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO,
     AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO, AT_LO,
     AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0
@@ -139,7 +142,7 @@ bool unichar_isdigit(unichar c) {
 }
 
 bool unichar_isxdigit(unichar c) {
-    return unichar_isdigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+    return c < 128 && (attr[c] & FL_XDIGIT) != 0;
 }
 
 /*
@@ -168,4 +171,14 @@ unichar unichar_toupper(unichar c) {
         return c - 0x20;
     }
     return c;
+}
+
+mp_uint_t unichar_xdigit_value(unichar c) {
+    // c is assumed to be hex digit
+    mp_uint_t n = c - '0';
+    if (n > 9) {
+        n &= ~('a' - 'A');
+        n -= ('A' - ('9' + 1));
+    }
+    return n;
 }

@@ -21,6 +21,7 @@ APP_INC += -I$(BUILD)/genhdr
 APP_INC += -I../lib/fatfs
 APP_INC += -I../lib/mp-readline
 APP_INC += -I../lib/netutils
+APP_INC += -I../lib/timeutils
 APP_INC += -I../stmhal
 
 APP_CPPDEFINES = -Dgcc -DTARGET_IS_CC3200 -DSL_FULL -DUSE_FREERTOS
@@ -85,6 +86,7 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 
 APP_MODS_SRC_C = $(addprefix mods/,\
 	modnetwork.c \
+	moduhashlib.c \
 	modpyb.c \
 	moduos.c \
 	modusocket.c \
@@ -97,6 +99,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybsd.c \
 	pybsleep.c \
 	pybspi.c \
+	pybtimer.c \
 	pybuart.c \
 	pybwdt.c \
 	)
@@ -122,6 +125,7 @@ APP_TELNET_SRC_C = $(addprefix telnet/,\
 	)
 	
 APP_UTIL_SRC_C = $(addprefix util/,\
+	cryptohash.c \
 	fifo.c \
 	gccollect.c \
 	random.c \
@@ -144,6 +148,7 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
+	timeutils/timeutils.c \
 	)
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\
@@ -190,6 +195,7 @@ $(BUILD)/FreeRTOS/Source/%.o: CFLAGS += -Os
 $(BUILD)/ftp/%.o: CFLAGS += -Os
 $(BUILD)/hal/%.o: CFLAGS += -Os
 $(BUILD)/misc/%.o: CFLAGS += -Os
+$(BUILD)/mods/%.o: CFLAGS += -Os
 $(BUILD)/py/%.o: CFLAGS += -Os
 $(BUILD)/simplelink/%.o: CFLAGS += -Os
 $(BUILD)/drivers/cc3100/%.o: CFLAGS += -Os

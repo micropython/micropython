@@ -34,5 +34,6 @@
 extern const mp_obj_base_t pyb_rtc_obj;
 
 void pybrtc_init(void);
+void pyb_rtc_callback_disable (mp_obj_t self_in);
 
 #endif  // PYBRTC_H_

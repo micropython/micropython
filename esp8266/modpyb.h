@@ -1,1 +1,2 @@
 extern const mp_obj_type_t pyb_pin_type;
+extern const mp_obj_base_t pyb_rtc_obj;

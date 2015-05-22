@@ -31,7 +31,6 @@
 #include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "modutime.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -40,6 +39,7 @@
 #include "pybrtc.h"
 #include "pybsleep.h"
 #include "mpcallback.h"
+#include "timeutils.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -82,7 +82,7 @@ void pybrtc_init(void) {
         // fresh reset; configure the RTC Calendar
         // set the date to 1st Jan 2015
         // set the time to 00:00:00
-        uint32_t seconds = mod_time_seconds_since_2000(2015, 1, 1, 0, 0, 0);
+        uint32_t seconds = timeutils_seconds_since_2000(2015, 1, 1, 0, 0, 0);
 
         // Mark the RTC in use first
         MAP_PRCMRTCInUseSet();
@@ -90,6 +90,18 @@ void pybrtc_init(void) {
         // Now set the RTC calendar seconds
         MAP_PRCMRTCSet(seconds, 0);
     }
+}
+
+void pyb_rtc_callback_disable (mp_obj_t self_in) {
+    // check the wake from param
+    if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
+        // disable the slow clock interrupt
+        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
+    }
+    // disable wake from ldps and hibernate
+    pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
+    // read the interrupt status to clear any pending interrupt
+    (void)MAP_PRCMIntStatus();
 }
 
 /******************************************************************************
@@ -106,18 +118,6 @@ STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
         MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
     }
     pybsleep_configure_timer_wakeup (pybrtc_data.prwmode);
-}
-
-STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
-    // check the wake from param
-    if (pybrtc_data.prwmode & PYB_PWR_MODE_ACTIVE) {
-        // disable the slow clock interrupt
-        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
-    }
-    // disable wake from ldps and hibernate
-    pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
-    // read the interrupt status to clear any pending interrupt
-    (void)MAP_PRCMIntStatus();
 }
 
 /******************************************************************************/
@@ -137,7 +137,7 @@ STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
 /// `weekday` is 0-6 for Monday through Sunday.
 ///
 mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
-    mod_struct_time tm;
+    timeutils_struct_time_t tm;
     uint32_t seconds;
     uint16_t mseconds;
 
@@ -145,7 +145,7 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         // get the seconds and the milliseconds from the RTC
         MAP_PRCMRTCGet(&seconds, &mseconds);
         mseconds = RTC_CYCLES_U16MS(mseconds);
-        mod_time_seconds_since_2000_to_struct_time(seconds, &tm);
+        timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
 
         mp_obj_t tuple[8] = {
             mp_obj_new_int(tm.tm_year),
@@ -172,7 +172,7 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         tm.tm_sec = mp_obj_get_int(items[6]);
         mseconds = mp_obj_get_int(items[7]);
 
-        seconds = mod_time_seconds_since_2000(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        seconds = timeutils_seconds_since_2000(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         mseconds = RTC_U16MS_CYCLES(mseconds);
         MAP_PRCMRTCSet(seconds, mseconds);
 
@@ -192,7 +192,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
     if (kw_args->used > 0 || !_callback) {
-        uint32_t f_mseconds = args[3].u_int;
+        uint32_t f_mseconds = MAX(1, args[3].u_int);
         uint32_t seconds;
         uint16_t mseconds;
         // get the seconds and the milliseconds from the RTC
@@ -210,7 +210,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         // set the match value
         MAP_PRCMRTCMatchSet(seconds, mseconds);
 
-        // save the match data for later
+        // save the power mode data for later
         pybrtc_data.prwmode = args[4].u_int;
 
         // create the callback

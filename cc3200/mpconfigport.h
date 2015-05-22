@@ -67,7 +67,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN               (0)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN               (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_SYS_MAXSIZE                      (0)
 #define MICROPY_PY_SYS_EXIT                         (1)
@@ -76,7 +76,7 @@
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
 #define MICROPY_PY_UBINASCII                        (1)
-#define MICROPY_PY_UCTYPES                          (1)
+#define MICROPY_PY_UCTYPES                          (0)
 #define MICROPY_PY_UZLIB                            (0)
 #define MICROPY_PY_UJSON                            (1)
 #define MICROPY_PY_URE                              (1)
@@ -108,12 +108,13 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb),     (mp_obj_t)&pyb_module },          \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uos),     (mp_obj_t)&mp_module_uos },       \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_utime),   (mp_obj_t)&mp_module_utime },     \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uselect), (mp_obj_t)&mp_module_uselect },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb),         (mp_obj_t)&pyb_module },          \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos),         (mp_obj_t)&mp_module_uos },       \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_utime),       (mp_obj_t)&mp_module_utime },     \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uselect),     (mp_obj_t)&mp_module_uselect },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket),     (mp_obj_t)&mp_module_usocket },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_network),     (mp_obj_t)&mp_module_network },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib),    (mp_obj_t)&mp_module_uhashlib },  \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii),    (mp_obj_t)&mp_module_ubinascii }, \
@@ -124,7 +125,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_time),        (mp_obj_t)&mp_module_utime },     \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select),      (mp_obj_t)&mp_module_uselect },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),      (mp_obj_t)&mp_module_usocket },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_struct),      (mp_obj_t)&mp_module_ustruct },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib),     (mp_obj_t)&mp_module_uhashlib },  \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
@@ -139,6 +140,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     mp_obj_list_t mod_network_nic_list;                                   \
     mp_obj_list_t pybsleep_obj_list;                                      \
     mp_obj_list_t mpcallback_obj_list;                                    \
+    mp_obj_list_t pyb_timer_channel_obj_list;                             \
 
 
 // type definitions for the specific machine
@@ -182,6 +184,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 #define MICROPY_HAL_H                               "cc3200_hal.h"
 #define MICROPY_PORT_HAS_TELNET                     (1)
 #define MICROPY_PORT_HAS_FTP                        (1)
+#define MICROPY_PORT_WLAN_URN                       (0)
 #define MICROPY_PY_SYS_PLATFORM                     "WiPy"
 
 #define MICROPY_PORT_WLAN_AP_SSID                   "wipy-wlan"

@@ -1196,7 +1196,7 @@ yield:
                     } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
                         fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
                         DISPATCH();
-                    } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + 5) {
+                    } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + 6) {
                         SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
                         DISPATCH();
                     } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + 35) {
@@ -1240,13 +1240,23 @@ exception_handler:
             code_state->ip -= 1;
             #endif
 
-            // check if it's a StopIteration within a for block
-            if (*code_state->ip == MP_BC_FOR_ITER && mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
-                const byte *ip = code_state->ip + 1;
-                DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
-                code_state->ip = ip + ulab; // jump to after for-block
-                code_state->sp -= 1; // pop the exhausted iterator
-                goto outer_dispatch_loop; // continue with dispatch loop
+            if (mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
+                if (code_state->ip) {
+                    // check if it's a StopIteration within a for block
+                    if (*code_state->ip == MP_BC_FOR_ITER) {
+                        const byte *ip = code_state->ip + 1;
+                        DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
+                        code_state->ip = ip + ulab; // jump to after for-block
+                        code_state->sp -= 1; // pop the exhausted iterator
+                        goto outer_dispatch_loop; // continue with dispatch loop
+                    } else if (*code_state->ip == MP_BC_YIELD_FROM) {
+                        // StopIteration inside yield from call means return a value of
+                        // yield from, so inject exception's value as yield from's result
+                        *++code_state->sp = mp_obj_exception_get_value(nlr.ret_val);
+                        code_state->ip++; // yield from is over, move to next instruction
+                        goto outer_dispatch_loop; // continue with dispatch loop
+                    }
+                }
             }
 
 #if MICROPY_STACKLESS

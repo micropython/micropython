@@ -577,13 +577,13 @@ Q(heapify)
 Q(uhashlib)
 Q(update)
 Q(digest)
-Q(hexdigest)
 Q(sha256)
 #endif
 
 #if MICROPY_PY_UBINASCII
 Q(ubinascii)
 Q(hexlify)
+Q(unhexlify)
 #endif
 
 #if MICROPY_PY_MACHINE

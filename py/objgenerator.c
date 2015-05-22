@@ -134,6 +134,9 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_YIELD:
             *ret_val = *self->code_state.sp;
+            if (*ret_val == MP_OBJ_STOP_ITERATION) {
+                self->code_state.ip = 0;
+            }
             break;
 
         case MP_VM_RETURN_EXCEPTION:
@@ -168,10 +171,12 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             // of mp_iternext() protocol, but this function is called by other methods
             // too, which may not handled MP_OBJ_STOP_ITERATION.
             if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
-                return MP_OBJ_STOP_ITERATION;
-            } else {
-                nlr_raise(ret);
+                mp_obj_t val = mp_obj_exception_get_value(ret);
+                if (val == mp_const_none) {
+                    return MP_OBJ_STOP_ITERATION;
+                }
             }
+            nlr_raise(ret);
     }
 }
 

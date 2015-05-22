@@ -47,6 +47,7 @@ STATIC mp_obj_t none_unary_op(mp_uint_t op, mp_obj_t o_in) {
     (void)o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_const_false;
+        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
         default: return MP_OBJ_NULL; // op not supported
     }
 }

@@ -225,7 +225,7 @@ STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
     // https://docs.python.org/3/library/socket.html#socket.socket.recv_into
     mp_uint_t len = bufinfo.len;
     if (n_args > 2) {
-        len = mp_obj_int_get_truncated(args[2]);
+        len = mp_obj_get_int(args[2]);
         if (len > bufinfo.len) {
             len = bufinfo.len;
         }

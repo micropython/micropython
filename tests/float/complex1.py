@@ -43,6 +43,11 @@ print("%.5g" % abs(1j + 2))
 # float on lhs should delegate to complex
 print(1.2 + 3j)
 
+# check printing of inf/nan
+print(float('nan') * 1j)
+print(float('inf') * (1 + 1j))
+print(float('-inf') * (1 + 1j))
+
 # convert bignum to complex on rhs
 ans = 1j + (1 << 70); print("%.5g %.5g" % (ans.real, ans.imag))
 

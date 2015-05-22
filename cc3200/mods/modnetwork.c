@@ -80,10 +80,10 @@ STATIC mp_obj_t network_server_stop(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_stop_obj, network_server_stop);
 
-STATIC mp_obj_t network_server_enabled(void) {
+STATIC mp_obj_t network_server_running(void) {
     return MP_BOOL(servers_are_enabled());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_enabled_obj, network_server_enabled);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_running_obj, network_server_running);
 
 STATIC mp_obj_t network_server_login(mp_obj_t user, mp_obj_t pass) {
     const char *_user = mp_obj_str_get_str(user);
@@ -102,7 +102,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
     { MP_OBJ_NEW_QSTR(MP_QSTR_start_server),        (mp_obj_t)&network_server_start_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop_server),         (mp_obj_t)&network_server_stop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_server_enabled),      (mp_obj_t)&network_server_enabled_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_server_running),      (mp_obj_t)&network_server_running_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_server_login),        (mp_obj_t)&network_server_login_obj },
 #endif
 };

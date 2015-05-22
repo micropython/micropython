@@ -15,12 +15,12 @@
 #if MICROPY_HW_HAS_SDCARD
 #include "sd_diskio.h"		    /* SDCARD disk IO API */
 #endif
-#include "modutime.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "rom_map.h"
 #include "prcm.h"
+#include "timeutils.h"
 
 /* Definitions of physical drive number for each drive */
 #define SFLASH		0	/* Map SFLASH drive to drive number 0 */
@@ -192,13 +192,13 @@ DWORD get_fattime (
     void
 )
 {
-    mod_struct_time tm;
+    timeutils_struct_time_t tm;
     uint32_t seconds;
     uint16_t mseconds;
 
     // Get the time from the on-chip RTC and convert it to struct_time
     MAP_PRCMRTCGet(&seconds, &mseconds);
-    mod_time_seconds_since_2000_to_struct_time(seconds, &tm);
+    timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
 
     return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21)  |
             ((tm.tm_mday) << 16)       | ((tm.tm_hour) << 11) |

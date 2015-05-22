@@ -40,7 +40,6 @@
 #include "ftp.h"
 #include "simplelink.h"
 #include "modwlan.h"
-#include "modutime.h"
 #include "debug.h"
 #include "serverstask.h"
 #include "ff.h"
@@ -49,6 +48,7 @@
 #include "diskio.h"
 #include "sd_diskio.h"
 #include "updater.h"
+#include "timeutils.h"
 
 
 /******************************************************************************
@@ -884,7 +884,7 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
     uint16_t mseconds;
     uint mindex = (((fno->fdate >> 5) & 0x0f) > 0) ? (((fno->fdate >> 5) & 0x0f) - 1) : 0;
     uint day = ((fno->fdate & 0x1f) > 0) ? (fno->fdate & 0x1f) : 1;
-    uint fseconds = mod_time_seconds_since_2000(1980 + ((fno->fdate >> 9) & 0x7f),
+    uint fseconds = timeutils_seconds_since_2000(1980 + ((fno->fdate >> 9) & 0x7f),
                                                         (fno->fdate >> 5) & 0x0f,
                                                         fno->fdate & 0x1f,
                                                         (fno->ftime >> 11) & 0x1f,
@@ -912,12 +912,12 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
 }
 
 static int ftp_print_eplf_drive (char *dest, uint32_t destsize, char *name) {
-    mod_struct_time tm;
+    timeutils_struct_time_t tm;
     uint32_t tseconds;
     uint16_t mseconds;
     char *type = "d";
 
-    mod_time_seconds_since_2000_to_struct_time((FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101), &tm);
+    timeutils_seconds_since_2000_to_struct_time((FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101), &tm);
 
     MAP_PRCMRTCGet(&tseconds, &mseconds);
     if (FTP_UNIX_SECONDS_180_DAYS < tseconds - (FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101)) {

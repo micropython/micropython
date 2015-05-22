@@ -39,6 +39,7 @@ SECTIONS
     {
         _text = .;
         KEEP(*(.intvecs))
+        *(.boot*)
         *(.text*)
         *(.rodata*)
         *(.ARM.extab* .gnu.linkonce.armextab.*)

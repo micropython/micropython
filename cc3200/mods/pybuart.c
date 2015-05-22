@@ -101,6 +101,7 @@ STATIC void UART0IntHandler(void);
 STATIC void UART1IntHandler(void);
 STATIC void uart_callback_enable (mp_obj_t self_in);
 STATIC void uart_callback_disable (mp_obj_t self_in);
+STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
@@ -124,7 +125,8 @@ struct _pyb_uart_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS];
+STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS] = {{.reg = UARTA0_BASE, .peripheral = PRCM_UARTA0},
+                                                     {.reg = UARTA1_BASE, .peripheral = PRCM_UARTA1}};
 STATIC const mp_cb_methods_t uart_cb_methods;
 
 /******************************************************************************
@@ -208,20 +210,19 @@ mp_obj_t uart_callback_new (pyb_uart_obj_t *self, mp_obj_t handler, uint rxbuffe
     return _callback;
 }
 
+void uart_disable_all (void) {
+    for (int i = 0; i < PYB_NUM_UARTS; i++) {
+        // in case it's not clocked
+        MAP_PRCMPeripheralClkEnable(pyb_uart_obj[i].peripheral, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
+        pyb_uart_deinit(&pyb_uart_obj[i]);
+    }
+}
+
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 // assumes init parameters have been set up correctly
 STATIC void uart_init (pyb_uart_obj_t *self) {
-    if (self->uart_id == PYB_UART_0) {
-        self->reg = UARTA0_BASE;
-        self->peripheral = PRCM_UARTA0;
-    }
-    else {
-        self->reg = UARTA1_BASE;
-        self->peripheral = PRCM_UARTA1;
-    }
-
     // Enable the peripheral clock
     MAP_PRCMPeripheralClkEnable(self->peripheral, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
 
@@ -457,6 +458,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     pyb_uart_obj_t *self = &pyb_uart_obj[uart_id];
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
+
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
         mp_map_t kw_args;
@@ -474,7 +476,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
 /// \method deinit()
 /// Turn off the UART bus.
-mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
+STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
 
     // unregister it with the sleep module
@@ -516,7 +518,7 @@ STATIC mp_obj_t pyb_uart_callback (mp_uint_t n_args, const mp_obj_t *pos_args, m
         uint priority = mpcallback_translate_priority (args[2].u_int);
 
         // check the power mode
-        if (PYB_PWR_MODE_ACTIVE != args[3].u_int) {
+        if (PYB_PWR_MODE_ACTIVE != args[4].u_int) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
         }
 

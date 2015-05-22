@@ -36,15 +36,49 @@ Methods
 
 .. method:: usb_vcp.close()
 
+   This method does nothing.  It exists so the USB_VCP object can act as
+   a file.
 
 .. method:: usb_vcp.read([nbytes])
 
+   Read at most ``nbytes`` from the serial device and return them as a
+   bytes object.  If ``nbytes`` is not specified then the method acts as
+   ``readall()``.
 
 .. method:: usb_vcp.readall()
 
+   Read all available bytes from the serial device and return them as
+   a bytes object.
+
+.. method:: usb_vcp.readinto(buf, [maxlen])
+
+   Read bytes from the serial device and store them into ``buf``, which
+   should be a buffer-like object.  At most ``len(buf)`` bytes are read.
+   If ``maxlen`` is given and then at most ``min(maxlen, len(buf))`` bytes
+   are read.
+
+   Returns the number of bytes read and stored into ``buf``.
 
 .. method:: usb_vcp.readline()
 
+   Read a whole line from the serial device.
+
+   Returns a bytes object containing the data, including the trailing
+   newline character.
+
+.. method:: usb_vcp.readlines()
+
+   Read as much data as possible from the serial device, breaking it into
+   lines.
+
+   Returns a list of bytes objects, each object being one of the lines.
+   Each line will include the newline character.
+
+.. method:: usb_vcp.write(buf)
+
+   Write the bytes from ``buf`` to the serial device.
+
+   Returns the number of bytes written.
 
 .. method:: usb_vcp.recv(data, \*, timeout=5000)
 
@@ -65,6 +99,3 @@ Methods
      - ``timeout`` is the timeout in milliseconds to wait for the send.
    
    Return value: number of bytes sent.
-
-.. method:: usb_vcp.write(buf)
-

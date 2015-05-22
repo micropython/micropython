@@ -40,8 +40,8 @@
 #define alignof(type) offsetof(struct { char c; type t; }, t)
 #endif
 
-int mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
-    int size = 0;
+size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
+    size_t size = 0;
     int align = 1;
     switch (struct_type) {
         case '<': case '>':
@@ -179,7 +179,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     byte *p = *ptr;
     mp_uint_t align;
 
-    int size = mp_binary_get_size(struct_type, val_type, &align);
+    size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
         // Make pointer aligned
         p = (byte*)(((mp_uint_t)p + align - 1) & ~((mp_uint_t)align - 1));
@@ -244,7 +244,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
     byte *p = *ptr;
     mp_uint_t align;
 
-    int size = mp_binary_get_size(struct_type, val_type, &align);
+    size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
         // Make pointer aligned
         p = (byte*)(((mp_uint_t)p + align - 1) & ~((mp_uint_t)align - 1));

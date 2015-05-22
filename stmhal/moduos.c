@@ -34,6 +34,7 @@
 #include "genhdr/mpversion.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
+#include "timeutils.h"
 #include "rng.h"
 #include "file.h"
 #include "sdcard.h"
@@ -239,6 +240,22 @@ STATIC mp_obj_t os_remove(mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 
+/// \function rename(old_path, new_path)
+/// Rename a file
+STATIC mp_obj_t os_rename(mp_obj_t path_in, mp_obj_t path_out) {
+    const char *old_path = mp_obj_str_get_str(path_in);
+    const char *new_path = mp_obj_str_get_str(path_out);
+    FRESULT res = f_rename(old_path, new_path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error renaming file '%s' to '%s'", old_path, new_path));
+    }
+
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
+
 /// \function rmdir(path)
 /// Remove a directory.
 STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
@@ -306,7 +323,7 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     } else {
         mode |= 0x8000; // stat.S_IFREG
     }
-    mp_int_t seconds = mod_time_seconds_since_2000(
+    mp_int_t seconds = timeutils_seconds_since_2000(
         1980 + ((fno.fdate >> 9) & 0x7f),
         (fno.fdate >> 5) & 0x0f,
         fno.fdate & 0x1f,
@@ -368,6 +385,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir), (mp_obj_t)&os_listdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir), (mp_obj_t)&os_mkdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&os_remove_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rename),(mp_obj_t)&os_rename_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir), (mp_obj_t)&os_rmdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&os_stat_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), (mp_obj_t)&os_remove_obj }, // unlink aliases to remove

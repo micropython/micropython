@@ -85,3 +85,15 @@ Q(OUT_OD)
 Q(PULL_NONE)
 Q(PULL_UP)
 Q(PULL_DOWN)
+
+// RTC
+Q(RTC)
+Q(datetime)
+Q(memory)
+
+// utime
+Q(utime)
+Q(localtime)
+Q(mktime)
+Q(sleep)
+Q(time)

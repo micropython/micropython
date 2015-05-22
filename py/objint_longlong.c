@@ -53,16 +53,6 @@
 const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
-mp_int_t mp_obj_int_hash(mp_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        return MP_OBJ_SMALL_INT_VALUE(self_in);
-    }
-    mp_obj_int_t *self = self_in;
-    // truncate value to fit in mp_int_t, which gives the same hash as
-    // small int if the value fits without truncation
-    return self->val;
-}
-
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
@@ -117,6 +107,11 @@ mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
+
+        // truncate value to fit in mp_int_t, which gives the same hash as
+        // small int if the value fits without truncation
+        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_int_t)o->val);
+
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
         case MP_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);

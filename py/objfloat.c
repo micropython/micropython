@@ -37,31 +37,24 @@
 #if MICROPY_PY_BUILTINS_FLOAT
 
 #include <math.h>
-
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #include "py/formatfloat.h"
-#endif
 
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_float_t *o = o_in;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
-    mp_format_float(o->value, buf, sizeof(buf), 'g', 7, '\0');
-    mp_print_str(print, buf);
-    if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
-        // Python floats always have decimal point (unless inf or nan)
-        mp_print_str(print, ".0");
-    }
+    const int precision = 7;
 #else
     char buf[32];
-    sprintf(buf, "%.16g", (double) o->value);
+    const int precision = 16;
+#endif
+    mp_format_float(o->value, buf, sizeof(buf), 'g', precision, '\0');
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
         // Python floats always have decimal point (unless inf or nan)
         mp_print_str(print, ".0");
     }
-#endif
 }
 
 STATIC mp_obj_t float_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {

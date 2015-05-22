@@ -59,7 +59,7 @@ STATIC void match_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
 
 STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     mp_obj_match_t *self = self_in;
-    mp_int_t no = mp_obj_int_get_truncated(no_in);
+    mp_int_t no = mp_obj_get_int(no_in);
     if (no < 0 || no >= self->num_matches) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, no_in));
     }
@@ -135,7 +135,7 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 
     int maxsplit = 0;
     if (n_args > 2) {
-        maxsplit = mp_obj_int_get_truncated(args[2]);
+        maxsplit = mp_obj_get_int(args[2]);
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);

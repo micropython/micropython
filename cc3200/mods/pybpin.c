@@ -72,7 +72,7 @@
 ///         print(pin.get_config().name)
 ///
 ///     extint = pyb.Pin('GPIO10', 0, pyb.Pin.INT_RISING, pyb.GPIO.STD_PD, pyb.S2MA)
-///     extint.callback (intmode=pyb.Pin.INT_RISING, handler=pincb)
+///     extint.callback (mode=pyb.Pin.INT_RISING, handler=pincb)
 ///     # the callback can be triggered manually
 ///     extint.callback()()
 ///     # to disable the callback
@@ -543,9 +543,9 @@ STATIC mp_obj_t pin_get_config(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_get_config_obj, pin_get_config);
 
-/// \method callback(method, intmode, priority, pwrmode)
+/// \method callback(method, mode, priority, pwrmode)
 /// Creates a callback object associated to a pin
-/// min num of arguments is 1 (intmode)
+/// min num of arguments is 1 (mode)
 STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
@@ -712,7 +712,6 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_RISING_FALLING),      MP_OBJ_NEW_SMALL_INT(GPIO_BOTH_EDGES) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_LOW_LEVEL),           MP_OBJ_NEW_SMALL_INT(GPIO_LOW_LEVEL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_HIGH_LEVEL),          MP_OBJ_NEW_SMALL_INT(GPIO_HIGH_LEVEL) },
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_S2MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_S4MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_4MA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_S6MA),                    MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },
@@ -752,11 +751,18 @@ STATIC void GPIOA3IntHandler (void) {
 
 // common interrupt handler
 STATIC void EXTI_Handler(uint port) {
-    uint32_t bit = MAP_GPIOIntStatus(port, true);
-    MAP_GPIOIntClear(port, bit);
+    uint32_t bits = MAP_GPIOIntStatus(port, true);
+    MAP_GPIOIntClear(port, bits);
 
-    pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
-    mp_obj_t _callback = mpcallback_find(self);
-    mpcallback_handler(_callback);
+    // might be that we have more than one Pin interrupt pending
+    // therefore we must loop through all of the 8 possible bits
+    for (int i = 0; i < 8; i++) {
+        uint32_t bit = (1 << i);
+        if (bit & bits) {
+            pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
+            mp_obj_t _callback = mpcallback_find(self);
+            mpcallback_handler(_callback);
+        }
+    }
 }
 

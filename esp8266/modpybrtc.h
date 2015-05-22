@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
+ * Copyright (c) 2015 Josef Gajdusek
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODUTIME_H_
-#define MODUTIME_H_
+void pyb_rtc_set_us_since_2000(uint64_t nowus);
 
-typedef struct {
-    uint16_t    tm_year;    // i.e. 2014
-    uint8_t     tm_mon;     // 1..12
-    uint8_t     tm_mday;    // 1..31
-    uint8_t     tm_hour;    // 0..23
-    uint8_t     tm_min;     // 0..59
-    uint8_t     tm_sec;     // 0..59
-    uint8_t     tm_wday;    // 0..6  0 = Monday
-    uint16_t    tm_yday;    // 1..366
-} mod_struct_time;
-
-
-extern mp_uint_t mod_time_seconds_since_2000(mp_uint_t year, mp_uint_t month, mp_uint_t date,
-                                             mp_uint_t hour, mp_uint_t minute, mp_uint_t second);
-
-extern void mod_time_seconds_since_2000_to_struct_time(mp_uint_t t, mod_struct_time *tm);
-
-#endif // MODUTIME_H_
+uint64_t pyb_rtc_get_us_since_2000();

@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,15 +25,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef HASH_H_
-#define HASH_H_
+/******************************************************************************
+ DECLARE EXPORTED DATA
+ ******************************************************************************/
+extern const mp_obj_type_t pyb_timer_type;
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-extern void HASH_Init (void);
-extern void HASH_SHAMD5Start (uint32_t algo, uint32_t blocklen);
-extern void HASH_SHAMD5Update (uint8_t *data, uint32_t datalen);
-extern void HASH_SHAMD5Read (uint8_t *hash);
+void timer_init0 (void);
+void timer_disable_all (void);
 
-#endif /* HASH_H_ */
