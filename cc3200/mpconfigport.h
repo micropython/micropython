@@ -75,7 +75,7 @@
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
-#define MICROPY_PY_UBINASCII                        (1)
+#define MICROPY_PY_UBINASCII                        (0)
 #define MICROPY_PY_UCTYPES                          (0)
 #define MICROPY_PY_UZLIB                            (0)
 #define MICROPY_PY_UJSON                            (1)
@@ -97,7 +97,6 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t pyb_module;
-extern const struct _mp_obj_module_t mp_module_ubinascii;
 extern const struct _mp_obj_module_t mp_module_ure;
 extern const struct _mp_obj_module_t mp_module_ujson;
 extern const struct _mp_obj_module_t mp_module_uheapq;
@@ -106,6 +105,8 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
+extern const struct _mp_obj_module_t mp_module_uhashlib;
+extern const struct _mp_obj_module_t mp_module_ubinascii;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb),         (mp_obj_t)&pyb_module },          \
@@ -115,9 +116,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket),     (mp_obj_t)&mp_module_usocket },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network),     (mp_obj_t)&mp_module_network },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib),    (mp_obj_t)&mp_module_uhashlib },  \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii),   (mp_obj_t)&mp_module_ubinascii }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_binascii),    (mp_obj_t)&mp_module_ubinascii }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re),          (mp_obj_t)&mp_module_ure },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json),        (mp_obj_t)&mp_module_ujson },     \
     { MP_OBJ_NEW_QSTR(MP_QSTR_heapq),       (mp_obj_t)&mp_module_uheapq },    \
@@ -126,6 +127,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_select),      (mp_obj_t)&mp_module_uselect },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),      (mp_obj_t)&mp_module_usocket },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib),     (mp_obj_t)&mp_module_uhashlib },  \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_binascii),    (mp_obj_t)&mp_module_ubinascii }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \

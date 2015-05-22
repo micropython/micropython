@@ -357,3 +357,9 @@ Q(digest)
 //Q(md5)
 Q(sha1)
 Q(sha256)
+
+// for ubinascii module
+Q(ubinascii)
+Q(hexlify)
+Q(unhexlify)
+
