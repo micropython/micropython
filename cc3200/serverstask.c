@@ -53,12 +53,13 @@ typedef struct {
     volatile bool enabled;
     volatile bool do_disable;
     volatile bool do_enable;
+    volatile bool do_reset;
 }servers_Data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false};
+static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false, .do_reset = false};
 static volatile bool sleep_sockets = false;
 
 /******************************************************************************
@@ -103,11 +104,21 @@ void TASK_Servers (void *pvParameters) {
             servers_data.enabled = false;
         }
 
-        if (cycle) {
-            telnet_run();
+        if (servers_data.do_reset) {
+            telnet_reset();
+            ftp_reset();
+            servers_data.do_reset = false;
+            // resetting the servers is needed to preven half-open sockets
+            // and we should also close all user sockets
+            modusocket_close_all_user_sockets();
         }
         else {
-            ftp_run();
+            if (cycle) {
+                telnet_run();
+            }
+            else {
+                ftp_run();
+            }
         }
 
         // set the alive flag for the wdt
@@ -135,6 +146,10 @@ void servers_stop (void) {
         HAL_Delay (SERVERS_CYCLE_TIME_MS);
     } while (servers_are_enabled());
     HAL_Delay (SERVERS_CYCLE_TIME_MS * 5);
+}
+
+void servers_reset (void) {
+    servers_data.do_reset = true;
 }
 
 bool servers_are_enabled (void) {

@@ -94,7 +94,6 @@ void modusocket_enter_sleep (void) {
     fd_set socketset;
     int16_t maxfd = 0;
 
-    sl_LockObjLock (&modusocket_LockObj, SL_OS_WAIT_FOREVER);
     for (int i = 0; i < MOD_NETWORK_MAX_SOCKETS; i++) {
         int16_t sd;
         if ((sd = modusocket_sockets[i].sd) >= 0) {
@@ -105,7 +104,6 @@ void modusocket_enter_sleep (void) {
 
     // wait for any of the sockets to become ready...
     sl_Select(maxfd + 1, &socketset, NULL, NULL, NULL);
-    sl_LockObjUnlock (&modusocket_LockObj);
 }
 
 void modusocket_close_all_user_sockets (void) {

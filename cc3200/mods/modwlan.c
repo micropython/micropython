@@ -230,7 +230,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
         {
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED);
-            // TODO reset the servers
+            servers_reset();
         }
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
@@ -245,7 +245,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
             wlan_obj.staconnected = false;
-            // TODO reset the servers
+            servers_reset();
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
             // TODO

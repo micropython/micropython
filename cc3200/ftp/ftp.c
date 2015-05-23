@@ -224,7 +224,6 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
 static void ftp_open_child (char *pwd, char *dir);
 static void ftp_close_child (char *pwd);
 static void ftp_return_to_previous_path (char *pwd, char *dir);
-static void ftp_reset (void);
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -406,6 +405,16 @@ void ftp_disable (void) {
     ftp_reset();
     ftp_data.enabled = false;
     ftp_data.state = E_FTP_STE_DISABLED;
+}
+
+void ftp_reset (void) {
+    // close all connections and start all over again
+    servers_close_socket(&ftp_data.lc_sd);
+    servers_close_socket(&ftp_data.ld_sd);
+    ftp_close_cmd_data();
+    ftp_data.state = E_FTP_STE_START;
+    ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+    SOCKETFIFO_Flush();
 }
 
 /******************************************************************************
@@ -1079,12 +1088,3 @@ static void ftp_return_to_previous_path (char *pwd, char *dir) {
     }
 }
 
-static void ftp_reset (void) {
-    // close all connections and start all over again
-    servers_close_socket(&ftp_data.lc_sd);
-    servers_close_socket(&ftp_data.ld_sd);
-    ftp_close_cmd_data();
-    ftp_data.state = E_FTP_STE_START;
-    ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
-    SOCKETFIFO_Flush();
-}

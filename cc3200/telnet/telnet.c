@@ -132,7 +132,6 @@ static void telnet_process (void);
 static int telnet_process_credential (char *credential, _i16 rxLen);
 static void telnet_parse_input (uint8_t *str, int16_t *len);
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len);
-static void telnet_reset (void);
 static void telnet_reset_buffer (void);
 
 /******************************************************************************
@@ -291,6 +290,13 @@ void telnet_disable (void) {
     telnet_reset();
     telnet_data.enabled = false;
     telnet_data.state = E_TELNET_STE_DISABLED;
+}
+
+void telnet_reset (void) {
+    // close the connection and start all over again
+    servers_close_socket(&telnet_data.n_sd);
+    servers_close_socket(&telnet_data.sd);
+    telnet_data.state = E_TELNET_STE_START;
 }
 
 bool telnet_is_enabled (void) {
@@ -497,13 +503,6 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
     return false;
-}
-
-static void telnet_reset (void) {
-    // close the connection and start all over again
-    servers_close_socket(&telnet_data.n_sd);
-    servers_close_socket(&telnet_data.sd);
-    telnet_data.state = E_TELNET_STE_START;
 }
 
 static void telnet_reset_buffer (void) {

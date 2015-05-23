@@ -56,6 +56,7 @@ extern char servers_pass[];
 extern void TASK_Servers (void *pvParameters);
 extern void servers_start (void);
 extern void servers_stop (void);
+extern void servers_reset (void);
 extern bool servers_are_enabled (void);
 extern void servers_close_socket (int16_t *sd);
 extern void servers_set_login (char *user, char *pass);
