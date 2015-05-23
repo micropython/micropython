@@ -3,10 +3,12 @@
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
+#include "py/obj.h"
 #include "simplelink.h"
 #include "flc.h"
 #include "updater.h"
 #include "shamd5.h"
+#include "modnetwork.h"
 #include "modwlan.h"
 #include "debug.h"
 

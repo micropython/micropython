@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "telnet.h"
 #include "simplelink.h"
+#include "modnetwork.h"
 #include "modwlan.h"
 #include "modusocket.h"
 #include "debug.h"

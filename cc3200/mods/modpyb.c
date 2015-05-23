@@ -44,6 +44,7 @@
 #include "pybrtc.h"
 #include "mpsystick.h"
 #include "simplelink.h"
+#include "modnetwork.h"
 #include "modwlan.h"
 #include "moduos.h"
 #include "telnet.h"

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "netutils.h"
 #include "modnetwork.h"
+#include "modwlan.h"
 #include "modusocket.h"
 #include "mpexception.h"
 
@@ -129,7 +130,6 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     // create socket object
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     s->base.type = (mp_obj_t)&socket_type;
-    s->nic_type = (mod_network_nic_type_t *)&mod_network_nic_type_wlan;
     s->u_param.domain = AF_INET;
     s->u_param.type = SOCK_STREAM;
     s->u_param.proto = IPPROTO_TCP;
@@ -149,7 +149,7 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
 
     // create the socket
     int _errno;
-    if (s->nic_type->socket(s, &_errno) != 0) {
+    if (wlan_socket_socket(s, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
 
@@ -160,7 +160,7 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
 // method socket.close()
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = self_in;
-    self->nic_type->close(self);
+    wlan_socket_close(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
@@ -175,7 +175,7 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 
     // call the NIC to bind the socket
     int _errno;
-    if (self->nic_type->bind(self, ip, port, &_errno) != 0) {
+    if (wlan_socket_bind(self, ip, port, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
     return mp_const_none;
@@ -187,7 +187,7 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
     mod_network_socket_obj_t *self = self_in;
 
     int _errno;
-    if (self->nic_type->listen(self, mp_obj_get_int(backlog), &_errno) != 0) {
+    if (wlan_socket_listen(self, mp_obj_get_int(backlog), &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
     return mp_const_none;
@@ -199,21 +199,16 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = self_in;
 
     // create new socket object
-    // starts with empty nic so that the finaliser doesn't run close() method if accept() fails
     mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     socket2->base.type = (mp_obj_t)&socket_type;
-    socket2->nic_type = MP_OBJ_NULL;
 
     // accept incoming connection
     uint8_t ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
     mp_uint_t port;
     int _errno;
-    if (self->nic_type->accept(self, socket2, ip, &port, &_errno) != 0) {
+    if (wlan_socket_accept(self, socket2, ip, &port, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
-
-    // new socket has valid state, so set the nic to the same as parent
-    socket2->nic_type = self->nic_type;
 
     // add the socket to the list
     modusocket_socket_add(socket2->sd, true);
@@ -236,7 +231,7 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 
     // call the NIC to connect the socket
     int _errno;
-    if (self->nic_type->connect(self, ip, port, &_errno) != 0) {
+    if (wlan_socket_connect(self, ip, port, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
     return mp_const_none;
@@ -249,7 +244,7 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     int _errno;
-    mp_uint_t ret = self->nic_type->send(self, bufinfo.buf, bufinfo.len, &_errno);
+    mp_uint_t ret = wlan_socket_send(self, bufinfo.buf, bufinfo.len, &_errno);
     if (ret == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
@@ -264,7 +259,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, len);
     int _errno;
-    mp_uint_t ret = self->nic_type->recv(self, (byte*)vstr.buf, len, &_errno);
+    mp_uint_t ret = wlan_socket_recv(self, (byte*)vstr.buf, len, &_errno);
     if (ret == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
@@ -291,7 +286,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
 
     // call the nic to sendto
     int _errno;
-    mp_int_t ret = self->nic_type->sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
+    mp_int_t ret = wlan_socket_sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
     if (ret == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
@@ -307,7 +302,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     byte ip[4];
     mp_uint_t port;
     int _errno;
-    mp_int_t ret = self->nic_type->recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
+    mp_int_t ret = wlan_socket_recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
@@ -346,7 +341,7 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     }
 
     int _errno;
-    if (self->nic_type->setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
+    if (wlan_socket_setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
     return mp_const_none;
@@ -366,7 +361,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         timeout = 1000 * mp_obj_get_int(timeout_in);
     }
     int _errno;
-    if (self->nic_type->settimeout(self, timeout, &_errno) != 0) {
+    if (wlan_socket_settimeout(self, timeout, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
     return mp_const_none;
@@ -403,7 +398,7 @@ STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
 mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     mod_network_socket_obj_t *self = self_in;
-    return self->nic_type->ioctl(self, request, arg, errcode);
+    return wlan_socket_ioctl(self, request, arg, errcode);
 }
 
 STATIC const mp_stream_p_t socket_stream_p = {
@@ -431,7 +426,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
 
     // ipv4 only
     uint8_t out_ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
-    int32_t result = mod_network_nic_type_wlan.gethostbyname(host, hlen, out_ip, AF_INET);
+    int32_t result = wlan_gethostbyname(host, hlen, out_ip, AF_INET);
     if (result != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(result)));
     }

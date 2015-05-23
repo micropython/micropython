@@ -4,10 +4,12 @@
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
+#include "py/obj.h"
 #include "simplelink.h"
 #include "diskio.h"
 #include "sflash_diskio.h"
 #include "debug.h"
+#include "modnetwork.h"
 #include "modwlan.h"
 
 #define SFLASH_TIMEOUT_MAX_MS               5500

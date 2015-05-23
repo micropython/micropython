@@ -39,6 +39,7 @@
 #include "pybrtc.h"
 #include "ftp.h"
 #include "simplelink.h"
+#include "modnetwork.h"
 #include "modwlan.h"
 #include "modusocket.h"
 #include "debug.h"

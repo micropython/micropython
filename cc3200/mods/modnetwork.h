@@ -28,36 +28,20 @@
 #ifndef MODNETWORK_H_
 #define MODNETWORK_H_
 
+/******************************************************************************
+ DEFINE CONSTANTS
+ ******************************************************************************/
 #define MOD_NETWORK_IPV4ADDR_BUF_SIZE             (4)
 
-// Forward declaration
-struct _mod_network_socket_obj_t;
-
+/******************************************************************************
+ DEFINE TYPES
+ ******************************************************************************/
 typedef struct _mod_network_nic_type_t {
     mp_obj_type_t base;
-
-    // API for non-socket operations
-    int (*gethostbyname)(const char *name, mp_uint_t len, uint8_t *ip_out, uint8_t family);
-
-    // API for socket operations; return -1 on error
-    int (*socket)(struct _mod_network_socket_obj_t *s, int *_errno);
-    void (*close)(struct _mod_network_socket_obj_t *socket);
-    int (*bind)(struct _mod_network_socket_obj_t *s, byte *ip, mp_uint_t port, int *_errno);
-    int (*listen)(struct _mod_network_socket_obj_t *s, mp_int_t backlog, int *_errno);
-    int (*accept)(struct _mod_network_socket_obj_t *s, struct _mod_network_socket_obj_t *s2, byte *ip, mp_uint_t *port, int *_errno);
-    int (*connect)(struct _mod_network_socket_obj_t *s, byte *ip, mp_uint_t port, int *_errno);
-    int (*send)(struct _mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, int *_errno);
-    int (*recv)(struct _mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, int *_errno);
-    int (*sendto)(struct _mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno);
-    int (*recvfrom)(struct _mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno);
-    int (*setsockopt)(struct _mod_network_socket_obj_t *s, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
-    int (*settimeout)(struct _mod_network_socket_obj_t *s, mp_uint_t timeout_ms, int *_errno);
-    int (*ioctl)(struct _mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t arg, int *_errno);
 } mod_network_nic_type_t;
 
 typedef struct _mod_network_socket_obj_t {
     mp_obj_base_t base;
-    mod_network_nic_type_t *nic_type;
     union {
         struct {
             uint8_t domain;
@@ -70,8 +54,14 @@ typedef struct _mod_network_socket_obj_t {
     bool  closed;
 } mod_network_socket_obj_t;
 
+/******************************************************************************
+ EXPORTED DATA
+ ******************************************************************************/
 extern const mod_network_nic_type_t mod_network_nic_type_wlan;
 
+/******************************************************************************
+ DECLARE FUNCTIONS
+ ******************************************************************************/
 void mod_network_init0(void);
 
 #endif  // MODNETWORK_H_

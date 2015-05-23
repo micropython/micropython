@@ -27,14 +27,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "rom_map.h"
 #include "prcm.h"
 #include "simplelink.h"
+#include "modnetwork.h"
 #include "modwlan.h"
-#include "py/obj.h"
 #include "random.h"
 #include "debug.h"
 
