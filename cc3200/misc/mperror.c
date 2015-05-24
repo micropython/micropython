@@ -68,7 +68,8 @@ struct mperror_heart_beat {
     uint32_t on_time;
     bool beating;
     bool enabled;
-} mperror_heart_beat = {.off_time = 0, .on_time = 0, .beating = false, .enabled = false};
+    bool do_disable;
+} mperror_heart_beat = {.off_time = 0, .on_time = 0, .beating = false, .enabled = false, .do_disable = false};
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -142,12 +143,16 @@ void mperror_heartbeat_switch_off (void) {
 }
 
 void mperror_disable_heartbeat (void) {
-    mperror_heart_beat.enabled = false;
-    mperror_heartbeat_switch_off();
+    mperror_heart_beat.do_disable = true;
 }
 
 void mperror_heartbeat_signal (void) {
-    if (mperror_heart_beat.enabled) {
+    if (mperror_heart_beat.do_disable) {
+        mperror_heart_beat.enabled = false;
+        mperror_heart_beat.do_disable = false;
+        mperror_heartbeat_switch_off();
+    }
+    else if (mperror_heart_beat.enabled) {
         if (!mperror_heart_beat.beating) {
             if ((mperror_heart_beat.on_time = HAL_GetTick()) - mperror_heart_beat.off_time > MPERROR_HEARTBEAT_OFF_MS) {
                 MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
