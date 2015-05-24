@@ -94,21 +94,23 @@ void prompt_read_history(void) {
         vstr_init(&vstr, 50);
         vstr_printf(&vstr, "%s/.micropython.history", home);
         FILE *fp = fopen(vstr_null_terminated_str(&vstr), "r");
-        vstr_reset(&vstr);
-        for (;;) {
-            int c = fgetc(fp);
-            if (c == EOF || c == '\n') {
-                readline_push_history(vstr_null_terminated_str(&vstr));
-                if (c == EOF) {
-                    break;
+        if (fp != NULL) {
+            vstr_reset(&vstr);
+            for (;;) {
+                int c = fgetc(fp);
+                if (c == EOF || c == '\n') {
+                    readline_push_history(vstr_null_terminated_str(&vstr));
+                    if (c == EOF) {
+                        break;
+                    }
+                    vstr_reset(&vstr);
+                } else {
+                    vstr_add_byte(&vstr, c);
                 }
-                vstr_reset(&vstr);
-            } else {
-                vstr_add_byte(&vstr, c);
             }
+            fclose(fp);
         }
         vstr_clear(&vstr);
-        fclose(fp);
     }
     #elif MICROPY_USE_READLINE == 2
     read_history(tilde_expand("~/.micropython.history"));
@@ -125,14 +127,16 @@ void prompt_write_history(void) {
         vstr_init(&vstr, 50);
         vstr_printf(&vstr, "%s/.micropython.history", home);
         FILE *fp = fopen(vstr_null_terminated_str(&vstr), "w");
-        for (int i = MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)) - 1; i >= 0; i--) {
-            const char *line = MP_STATE_PORT(readline_hist)[i];
-            if (line != NULL) {
-                fwrite(line, 1, strlen(line), fp);
-                fputc('\n', fp);
+        if (fp != NULL) {
+            for (int i = MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)) - 1; i >= 0; i--) {
+                const char *line = MP_STATE_PORT(readline_hist)[i];
+                if (line != NULL) {
+                    fwrite(line, 1, strlen(line), fp);
+                    fputc('\n', fp);
+                }
             }
+            fclose(fp);
         }
-        fclose(fp);
     }
     #elif MICROPY_USE_READLINE == 2
     write_history(tilde_expand("~/.micropython.history"));
