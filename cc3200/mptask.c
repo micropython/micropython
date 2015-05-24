@@ -105,7 +105,6 @@ void TASK_Micropython (void *pvParameters) {
     uint32_t sp = gc_helper_get_sp();
     gc_collect_init (sp);
     bool safeboot = false;
-    FRESULT res;
 
     mptask_pre_init();
 
@@ -184,18 +183,14 @@ soft_reset:
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
     if (!safeboot) {
-        // run boot.py, if it exists
-        const char *boot_py = "boot.py";
-        res = f_stat(boot_py, NULL);
-        if (res == FR_OK) {
-            int ret = pyexec_file(boot_py);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                goto soft_reset_exit;
-            }
-            if (!ret) {
-                // flash the system led
-                mperror_signal_error();
-            }
+        // run boot.py
+        int ret = pyexec_file("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        if (!ret) {
+            // flash the system led
+            mperror_signal_error();
         }
     }
 
@@ -214,16 +209,13 @@ soft_reset:
             } else {
                 main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
             }
-            res = f_stat(main_py, NULL);
-            if (res == FR_OK) {
-                int ret = pyexec_file(main_py);
-                if (ret & PYEXEC_FORCED_EXIT) {
-                    goto soft_reset_exit;
-                }
-                if (!ret) {
-                    // flash the system led
-                    mperror_signal_error();
-                }
+            int ret = pyexec_file(main_py);
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+            if (!ret) {
+                // flash the system led
+                mperror_signal_error();
             }
         }
     }
