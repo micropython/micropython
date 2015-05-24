@@ -25,9 +25,19 @@
  */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "py/mpstate.h"
+
+#if MICROPY_USE_READLINE == 1
+#include <termios.h>
+#include "lib/mp-readline/readline.h"
+
+static struct termios orig_termios;
+static struct termios cur_termios;
+#endif
+
 #include "unix_mphal.h"
 
 #ifndef _WIN32
@@ -35,21 +45,44 @@
 
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
+        if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
+            // this is the second time we are called, so die straight away
+            mp_hal_deinit();
+            exit(1);
+        }
         mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
         MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
-        // disable our handler so next we really die
-        struct sigaction sa;
-        sa.sa_handler = SIG_DFL;
-        sigemptyset(&sa.sa_mask);
-        sigaction(SIGINT, &sa, NULL);
     }
 }
 #endif
 
 void mp_hal_init(void) {
+    #if MICROPY_USE_READLINE == 1
+    // save and set terminal settings
+    tcgetattr(0, &orig_termios);
+    cur_termios = orig_termios;
+    cur_termios.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+    cur_termios.c_cflag = (cur_termios.c_cflag & ~(CSIZE | PARENB)) | CS8;
+    cur_termios.c_lflag = 0;
+    cur_termios.c_cc[VMIN] = 1;
+    cur_termios.c_cc[VTIME] = 0;
+    tcsetattr(0, TCSAFLUSH, &cur_termios);
+    #endif
 }
 
 void mp_hal_deinit(void) {
+    #ifndef _WIN32
+    // disable signal handler
+    struct sigaction sa;
+    sa.sa_handler = SIG_DFL;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+    #endif
+
+    #if MICROPY_USE_READLINE == 1
+    // restore terminal settings
+    tcsetattr(0, TCSAFLUSH, &orig_termios);
+    #endif
 }
 
 void mp_hal_set_interrupt_char(char c) {
@@ -62,6 +95,11 @@ void mp_hal_set_interrupt_char(char c) {
         sigemptyset(&sa.sa_mask);
         sigaction(SIGINT, &sa, NULL);
         #endif
+
+        #if MICROPY_USE_READLINE == 1
+        cur_termios.c_lflag = ISIG;
+        tcsetattr(0, TCSAFLUSH, &cur_termios);
+        #endif
     } else {
         #ifndef _WIN32
         // disable signal handler
@@ -69,6 +107,11 @@ void mp_hal_set_interrupt_char(char c) {
         sa.sa_handler = SIG_DFL;
         sigemptyset(&sa.sa_mask);
         sigaction(SIGINT, &sa, NULL);
+        #endif
+
+        #if MICROPY_USE_READLINE == 1
+        cur_termios.c_lflag = 0;
+        tcsetattr(0, TCSAFLUSH, &cur_termios);
         #endif
     }
 }
