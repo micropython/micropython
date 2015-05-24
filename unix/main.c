@@ -278,8 +278,6 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #endif
 
 int main(int argc, char **argv) {
-    prompt_read_history();
-
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
     pre_process_options(argc, argv);
@@ -445,7 +443,9 @@ int main(int argc, char **argv) {
     }
 
     if (ret == NOTHING_EXECUTED) {
+        prompt_read_history();
         ret = do_repl();
+        prompt_write_history();
     }
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
@@ -463,7 +463,6 @@ int main(int argc, char **argv) {
 #endif
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
-    prompt_write_history();
     return ret & 0xff;
 }
 

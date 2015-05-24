@@ -28,26 +28,50 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
+#include "py/mpstate.h"
 #include "input.h"
 
-#if MICROPY_USE_READLINE
+#if MICROPY_USE_READLINE == 1
+#include MICROPY_HAL_H
+#include "lib/mp-readline/readline.h"
+#elif MICROPY_USE_READLINE == 2
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <readline/tilde.h>
-#else
-#undef MICROPY_USE_READLINE_HISTORY
-#define MICROPY_USE_READLINE_HISTORY (0)
 #endif
 
 char *prompt(char *p) {
-#if MICROPY_USE_READLINE
+#if MICROPY_USE_READLINE == 1
+    // MicroPython supplied readline
+    vstr_t vstr;
+    vstr_init(&vstr, 16);
+    mp_hal_stdio_mode_raw();
+    int ret = readline(&vstr, p);
+    mp_hal_stdio_mode_orig();
+    if (ret != 0) {
+        vstr_clear(&vstr);
+        if (ret == CHAR_CTRL_D) {
+            // EOF
+            return NULL;
+        } else {
+            printf("\n");
+            char *line = malloc(1);
+            line[0] = '\0';
+            return line;
+        }
+    }
+    vstr_null_terminated_str(&vstr);
+    char *line = malloc(vstr.len + 1);
+    memcpy(line, vstr.buf, vstr.len + 1);
+    vstr_clear(&vstr);
+#elif MICROPY_USE_READLINE == 2
+    // GNU readline
     char *line = readline(p);
     if (line) {
         add_history(line);
     }
 #else
+    // simple read string
     static char buf[256];
     fputs(p, stdout);
     char *s = fgets(buf, sizeof(buf), stdin);
@@ -68,13 +92,61 @@ char *prompt(char *p) {
 
 void prompt_read_history(void) {
 #if MICROPY_USE_READLINE_HISTORY
+    #if MICROPY_USE_READLINE == 1
+    readline_init0(); // will clear history pointers
+    char *home = getenv("HOME");
+    if (home != NULL) {
+        vstr_t vstr;
+        vstr_init(&vstr, 50);
+        vstr_printf(&vstr, "%s/.micropython.history", home);
+        FILE *fp = fopen(vstr_null_terminated_str(&vstr), "r");
+        if (fp != NULL) {
+            vstr_reset(&vstr);
+            for (;;) {
+                int c = fgetc(fp);
+                if (c == EOF || c == '\n') {
+                    readline_push_history(vstr_null_terminated_str(&vstr));
+                    if (c == EOF) {
+                        break;
+                    }
+                    vstr_reset(&vstr);
+                } else {
+                    vstr_add_byte(&vstr, c);
+                }
+            }
+            fclose(fp);
+        }
+        vstr_clear(&vstr);
+    }
+    #elif MICROPY_USE_READLINE == 2
     read_history(tilde_expand("~/.micropython.history"));
+    #endif
 #endif
 }
 
 void prompt_write_history(void) {
 #if MICROPY_USE_READLINE_HISTORY
+    #if MICROPY_USE_READLINE == 1
+    char *home = getenv("HOME");
+    if (home != NULL) {
+        vstr_t vstr;
+        vstr_init(&vstr, 50);
+        vstr_printf(&vstr, "%s/.micropython.history", home);
+        FILE *fp = fopen(vstr_null_terminated_str(&vstr), "w");
+        if (fp != NULL) {
+            for (int i = MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)) - 1; i >= 0; i--) {
+                const char *line = MP_STATE_PORT(readline_hist)[i];
+                if (line != NULL) {
+                    fwrite(line, 1, strlen(line), fp);
+                    fputc('\n', fp);
+                }
+            }
+            fclose(fp);
+        }
+    }
+    #elif MICROPY_USE_READLINE == 2
     write_history(tilde_expand("~/.micropython.history"));
+    #endif
 #endif
 }
 

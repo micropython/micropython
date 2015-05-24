@@ -3,7 +3,10 @@
 # Build 32-bit binaries on a 64-bit host
 MICROPY_FORCE_32BIT = 0
 
-# Linking with GNU readline causes binary to be licensed under GPL
+# This variable can take the following values:
+#  0 - no readline, just simple input
+#  1 - use MicroPython version of readline
+#  2 - use GNU readline (causes binary to be licensed under GPL)
 MICROPY_USE_READLINE = 1
 
 # Subset of CPython time module

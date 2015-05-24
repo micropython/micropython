@@ -25,6 +25,7 @@
  */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "py/mpstate.h"
@@ -35,13 +36,12 @@
 
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
+        if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
+            // this is the second time we are called, so die straight away
+            exit(1);
+        }
         mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
         MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
-        // disable our handler so next we really die
-        struct sigaction sa;
-        sa.sa_handler = SIG_DFL;
-        sigemptyset(&sa.sa_mask);
-        sigaction(SIGINT, &sa, NULL);
     }
 }
 #endif
@@ -66,6 +66,32 @@ void mp_hal_set_interrupt_char(char c) {
         #endif
     }
 }
+
+#if MICROPY_USE_READLINE == 1
+
+#include <termios.h>
+
+static struct termios orig_termios;
+
+void mp_hal_stdio_mode_raw(void) {
+    // save and set terminal settings
+    tcgetattr(0, &orig_termios);
+    static struct termios termios;
+    termios = orig_termios;
+    termios.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+    termios.c_cflag = (termios.c_cflag & ~(CSIZE | PARENB)) | CS8;
+    termios.c_lflag = 0;
+    termios.c_cc[VMIN] = 1;
+    termios.c_cc[VTIME] = 0;
+    tcsetattr(0, TCSAFLUSH, &termios);
+}
+
+void mp_hal_stdio_mode_orig(void) {
+    // restore terminal settings
+    tcsetattr(0, TCSAFLUSH, &orig_termios);
+}
+
+#endif
 
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
