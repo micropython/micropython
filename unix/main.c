@@ -290,8 +290,6 @@ int main(int argc, char **argv) {
     mp_hal_init();
     mp_init();
 
-    prompt_read_history();
-
     #ifndef _WIN32
     // create keyboard interrupt object
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
@@ -446,7 +444,9 @@ int main(int argc, char **argv) {
     }
 
     if (ret == NOTHING_EXECUTED) {
+        prompt_read_history();
         ret = do_repl();
+        prompt_write_history();
     }
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
@@ -454,8 +454,6 @@ int main(int argc, char **argv) {
         mp_micropython_mem_info(0, NULL);
     }
     #endif
-
-    prompt_write_history();
 
     mp_deinit();
     mp_hal_deinit();
