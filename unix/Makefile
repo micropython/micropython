@@ -90,6 +90,7 @@ endif
 SRC_C = \
 	main.c \
 	gccollect.c \
+	unix_mphal.c \
 	input.c \
 	file.c \
 	modos.c \
