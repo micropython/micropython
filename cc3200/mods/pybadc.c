@@ -139,7 +139,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
 
     // disable the callback before re-configuring
-    pyb_adc_obj_t *self = &pyb_adc_obj[channel];
+    pyb_adc_obj_t *self = &pyb_adc_obj[num];
     self->base.type = &pyb_adc_type;
     self->channel = channel;
     self->num = num;
