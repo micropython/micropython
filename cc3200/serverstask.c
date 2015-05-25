@@ -121,13 +121,15 @@ void TASK_Servers (void *pvParameters) {
             }
         }
 
-        // set the alive flag for the wdt
-        pybwdt_srv_alive();
-
         if (sleep_sockets) {
             sleep_sockets = false;
+            pybwdt_srv_sleeping(true);
             modusocket_enter_sleep();
+            pybwdt_srv_sleeping(false);
         }
+
+        // set the alive flag for the wdt
+        pybwdt_srv_alive();
 
         // move to the next cycle
         cycle = cycle ? false : true;

@@ -34,6 +34,7 @@ extern const mp_obj_base_t pyb_wdt_obj;
 void pybwdt_init0 (void);
 void pybwdt_kick (void);
 void pybwdt_srv_alive (void);
+void pybwdt_srv_sleeping (bool state);
 void pybwdt_sl_alive (void);
 
 #endif /* PYBWDT_H_ */

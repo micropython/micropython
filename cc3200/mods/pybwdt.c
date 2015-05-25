@@ -54,6 +54,7 @@
  ******************************************************************************/
 typedef struct {
     bool    servers;
+    bool    servers_sleeping;
     bool    simplelink;
     bool    running;
 }pybwdt_data_t;
@@ -61,7 +62,7 @@ typedef struct {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static  pybwdt_data_t   pybwdt_data;
+static  pybwdt_data_t   pybwdt_data = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -69,12 +70,11 @@ static  pybwdt_data_t   pybwdt_data;
 // must be called in main.c just after initializing the hal
 __attribute__ ((section (".boot")))
 void pybwdt_init0 (void) {
-    pybwdt_data.running = false;
 }
 
 void pybwdt_kick (void) {
     // check that the servers and simplelink are running fine
-    if (pybwdt_data.servers && pybwdt_data.simplelink && pybwdt_data.running) {
+    if ((pybwdt_data.servers || pybwdt_data.servers_sleeping) && pybwdt_data.simplelink && pybwdt_data.running) {
         pybwdt_data.servers = false;
         pybwdt_data.simplelink = false;
         MAP_WatchdogIntClear(WDT_BASE);
@@ -83,6 +83,10 @@ void pybwdt_kick (void) {
 
 void pybwdt_srv_alive (void) {
     pybwdt_data.servers = true;
+}
+
+void pybwdt_srv_sleeping (bool state) {
+    pybwdt_data.servers_sleeping = state;
 }
 
 void pybwdt_sl_alive (void) {
