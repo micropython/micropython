@@ -60,7 +60,7 @@
 ///
 /// Example usage to toggle an LED at a fixed frequency:
 ///
-///     tim = pyb.Timer(3)                                              # create a timer object using timer 4
+///     tim = pyb.Timer(4)                                              # create a timer object using timer 4
 ///     tim.init(mode=Timer.PERIODIC)                                   # initialize it in periodic mode
 ///     tim_ch = tim.channel(Timer.A, freq=2)                           # configure channel A at a frequency of 2Hz
 ///     tim_ch.callback(handler=lambda t:led.toggle())                  # toggle a led on every cycle of the timer
@@ -68,7 +68,7 @@
 /// Further examples:
 ///
 ///     tim1 = pyb.Timer(2, mode=Timer.EVENT_COUNT)                     # initialize it capture mode
-///     tim2 = pyb.Timer(0, mode=Timer.PWM)                             # initialize it in PWM mode
+///     tim2 = pyb.Timer(1, mode=Timer.PWM)                             # initialize it in PWM mode
 ///     tim_ch = tim1.channel(Timer.A, freq=1, polarity=Timer.POSITIVE) # start the PWM on channel B with a 50% duty cycle
 ///     tim_ch = tim2.channel(Timer.B, freq=10000, duty_cycle=50)       # start the event counter with a frequency of 1Hz and triggered by positive edges
 ///     tim_ch.time()                                                   # get the current time in usec (can also be set)
@@ -303,7 +303,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     default:
         break;
     }
-    mp_printf(print, "<Timer%u, mode=Timer.%q>", tim->id, mode_qst);
+    mp_printf(print, "<Timer%u, mode=Timer.%q>", (tim->id + 1), mode_qst);
 }
 
 /// \method init(mode, *, width)
@@ -360,13 +360,13 @@ error:
 /// \classmethod \constructor(id, ...)
 /// Construct a new timer object of the given id.  If additional
 /// arguments are given, then the timer is initialised by `init(...)`.
-/// `id` can be 0 to 3
+/// `id` can be 1 to 4
 STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create a new Timer object
-    uint32_t timer_idx = mp_obj_get_int(args[0]);
+    int32_t timer_idx = mp_obj_get_int(args[0]) - 1;
     if (timer_idx < 0 || timer_idx > (PYBTIMER_NUM_TIMERS - 1)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
@@ -579,7 +579,7 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
     }
 
     mp_printf(print, "<%q %s, timer=%u, %q=%u", MP_QSTR_TimerChannel,
-              ch_id, ch->timer->id, MP_QSTR_freq, ch->frequency);
+              ch_id, (ch->timer->id + 1), MP_QSTR_freq, ch->frequency);
 
     uint32_t mode = ch->timer->config & 0xFF;
     if (mode == TIMER_CFG_A_CAP_COUNT || mode == TIMER_CFG_A_CAP_TIME || mode == TIMER_CFG_A_PWM) {

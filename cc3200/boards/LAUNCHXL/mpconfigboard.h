@@ -34,7 +34,7 @@
 #define MICROPY_HW_ENABLE_RNG                       (1)
 #define MICROPY_HW_ENABLE_RTC                       (1)
 
-#define MICROPY_STDIO_UART                          PYB_UART_0
+#define MICROPY_STDIO_UART                          1
 #define MICROPY_STDIO_UART_BAUD                     115200
 #define MICROPY_STDIO_UART_RX_BUF_SIZE              128
 

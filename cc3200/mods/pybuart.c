@@ -62,7 +62,7 @@
 ///
 ///     from pyb import UART
 ///
-///     uart = UART(0, 9600)                         # init with given baudrate
+///     uart = UART(1, 9600)                         # init with given baudrate
 ///     uart.init(9600, bits=8, stop=1, parity=None) # init with given parameters
 ///
 /// Bits can be 5, 6, 7, 8, parity can be None, 0 (even), 1 (odd). Stop can be 1 or 2.
@@ -316,7 +316,7 @@ STATIC void uart_callback_disable (mp_obj_t self_in) {
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = self_in;
     if (self->baudrate > 0) {
-        mp_printf(print, "<UART%u, baudrate=%u, bits=", self->uart_id, self->baudrate);
+        mp_printf(print, "<UART%u, baudrate=%u, bits=", (self->uart_id + 1), self->baudrate);
         switch (self->config & UART_CONFIG_WLEN_MASK) {
         case UART_CONFIG_WLEN_5:
             mp_print_str(print, "5");
@@ -343,7 +343,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
                self->timeout, self->timeout_char, self->read_buf_len);
     }
     else {
-        mp_printf(print, "<UART%u>", self->uart_id);
+        mp_printf(print, "<UART%u>", (self->uart_id + 1));
     }
 }
 
@@ -432,7 +432,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct a UART object on the given bus id.  `bus id` can be 0 or 1
+/// Construct a UART object on the given bus id.  `bus id` can be 1 or 2
 /// With no additional parameters, the UART object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).
@@ -448,7 +448,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     mp_arg_check_num(n_args, n_kw, 1, MP_ARRAY_SIZE(pyb_uart_init_args), true);
 
     // work out the uart id
-    pyb_uart_id_t uart_id = mp_obj_get_int(args[0]);
+    int32_t uart_id = mp_obj_get_int(args[0]) - 1;
 
     if (uart_id < PYB_UART_0 || uart_id > PYB_UART_1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));

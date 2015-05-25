@@ -56,10 +56,10 @@
 ///
 ///     from pyb import I2C
 ///
-///     i2c = I2C()                          # create
-///     i2c = I2C(50000)                     # create and init with a 50KHz baudrate
-///     i2c.init(100000)                     # init with a 100KHz baudrate
-///     i2c.deinit()                         # turn off the peripheral
+///     i2c = I2C(1)                            # create
+///     i2c = I2C(1, 50000)                     # create and init with a 50KHz baudrate
+///     i2c.init(100000)                        # init with a 100KHz baudrate
+///     i2c.deinit()                            # turn off the peripheral
 ///
 /// Printing the i2c object gives you information about its configuration.
 ///
@@ -76,7 +76,7 @@
 ///
 /// A master must specify the recipient's address:
 ///
-///     i2c.init(100000)
+///     i2c.init(1, 100000)
 ///     i2c.send('123', 0x42)        # send 3 bytes to slave with address 0x42
 ///     i2c.send(b'456', addr=0x42)  # keyword for address
 ///
@@ -98,6 +98,8 @@ typedef struct _pyb_i2c_obj_t {
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
+#define PYBI2C_MASTER                          (0)
+
 #define PYBI2C_MIN_BAUD_RATE_HZ                (50000)
 #define PYBI2C_MAX_BAUD_RATE_HZ                (400000)
 
@@ -251,16 +253,35 @@ STATIC bool pyb_i2c_scan_device(byte devAddr) {
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 /******************************************************************************/
-
-/// \method init(100000)
-///
-/// Initialise the I2C bus as a master with the given baudrate.
-///
-STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self_in, mp_obj_t baudrate) {
+STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
+    if (self->baudrate > 0) {
+        mp_printf(print, "<I2C1, I2C.MASTER, baudrate=%u>)", self->baudrate);
+    }
+    else {
+        mp_print_str(print, "<I2C1>");
+    }
+}
+
+/// \method init(mode, *, baudrate=100000)
+///
+/// Initialise the I2C bus with the given parameters:
+///
+///   - `mode` must be either `I2C.MASTER` or `I2C.SLAVE`
+///   - `baudrate` is the SCL clock rate (only sensible for a master)
+STATIC const mp_arg_t pyb_i2c_init_args[] = {
+    { MP_QSTR_mode,     MP_ARG_REQUIRED  | MP_ARG_INT, },
+    { MP_QSTR_baudrate, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 100000} },
+};
+#define PYB_I2C_INIT_NUM_ARGS   MP_ARRAY_SIZE(pyb_i2c_init_args)
+
+STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // parse args
+    mp_arg_val_t vals[PYB_I2C_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args, args, kw_args, PYB_I2C_INIT_NUM_ARGS, pyb_i2c_init_args, vals);
 
     // make sure the baudrate is between the valid range
-    self->baudrate = MIN(MAX(mp_obj_get_int(baudrate), PYBI2C_MIN_BAUD_RATE_HZ), PYBI2C_MAX_BAUD_RATE_HZ);
+    self->baudrate = MIN(MAX(vals[1].u_int, PYBI2C_MIN_BAUD_RATE_HZ), PYBI2C_MAX_BAUD_RATE_HZ);
 
     // init the I2C bus
     i2c_init(self);
@@ -273,7 +294,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self_in, mp_obj_t baudrate) {
 
 /// \classmethod \constructor(bus, ...)
 ///
-/// Construct an I2C object on the given bus.  `bus` can only be 0.
+/// Construct an I2C object on the given bus.  `bus` can only be 1.
 /// With no additional parameters, the I2C object is created but not
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).  If extra arguments are given, the bus is initialised.
@@ -282,32 +303,29 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
+    // work out the i2c bus id
+    if (mp_obj_get_int(args[0]) != 1) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+    }
+
     // setup the object
     pyb_i2c_obj_t *self = &pyb_i2c_obj;
     self->base.type = &pyb_i2c_type;
 
-    if (n_args > 0) {
+    if (n_args > 1 || n_kw > 0) {
         // start the peripheral
-        pyb_i2c_init_helper(self, *args);
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        pyb_i2c_init_helper(self, n_args - 1, args + 1, &kw_args);
     }
 
     return (mp_obj_t)self;
 }
 
-STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_i2c_obj_t *self = self_in;
-    if (self->baudrate > 0) {
-        mp_printf(print, "<I2C0, I2C.MASTER, baudrate=%u>)", self->baudrate);
-    }
-    else {
-        mp_print_str(print, "<I2C0>");
-    }
+STATIC mp_obj_t pyb_i2c_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    return pyb_i2c_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
-
-STATIC mp_obj_t pyb_i2c_init(mp_obj_t self_in, mp_obj_t baudrate) {
-    return pyb_i2c_init_helper(self_in, baudrate);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_i2c_init_obj, pyb_i2c_init);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
 
 /// \method deinit()
 /// Turn off the I2C bus.
@@ -529,6 +547,10 @@ STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv),            (mp_obj_t)&pyb_i2c_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read),        (mp_obj_t)&pyb_i2c_mem_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write),       (mp_obj_t)&pyb_i2c_mem_write_obj },
+
+    // class constants
+    /// \constant MASTER - for initialising the bus to master mode
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER),          MP_OBJ_NEW_SMALL_INT(PYBI2C_MASTER) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);

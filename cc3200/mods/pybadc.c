@@ -57,7 +57,7 @@
 ///
 /// Usage:
 ///
-///     adc = pyb.ADC(channel)                # create an adc object on the given channel (0 to 3)
+///     adc = pyb.ADC(channel)                # create an adc object on the given channel (1 to 4)
 ///                                             this automatically configures the pin associated to
 ///                                             that analog channel.
 ///     adc.read()                            # read channel value
@@ -76,7 +76,7 @@
 typedef struct {
     mp_obj_base_t base;
     byte channel;
-    byte num;
+    byte idx;
 } pyb_adc_obj_t;
 
 /******************************************************************************
@@ -102,7 +102,7 @@ STATIC pyb_adc_obj_t pyb_adc_obj[PYB_ADC_NUM_CHANNELS];
 
 STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_adc_obj_t *self = self_in;
-    mp_printf(print, "<ADC, channel=%u>", self->num);
+    mp_printf(print, "<ADC, channel=%u>", (self->idx + 1));
 }
 
 /// \classmethod \constructor(channel)
@@ -113,10 +113,10 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // the first argument is the channel number
-    uint num = mp_obj_get_int(args[0]);
+    int32_t idx = mp_obj_get_int(args[0]) - 1;
     const pin_obj_t *pin;
     uint channel;
-    switch (num) {
+    switch (idx) {
     case 0:
         channel = ADC_CH_0;
         pin = &pin_GPIO2;
@@ -139,10 +139,10 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
 
     // disable the callback before re-configuring
-    pyb_adc_obj_t *self = &pyb_adc_obj[num];
+    pyb_adc_obj_t *self = &pyb_adc_obj[idx];
     self->base.type = &pyb_adc_type;
     self->channel = channel;
-    self->num = num;
+    self->idx = idx;
 
     // configure the pin in analog mode
     pin_config ((pin_obj_t *)pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PYBPIN_ANALOG_TYPE, PIN_STRENGTH_2MA);
