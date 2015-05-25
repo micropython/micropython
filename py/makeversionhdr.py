@@ -7,16 +7,20 @@ import os
 import datetime
 import subprocess
 
-def make_version_header(filename):
+def get_version_info_from_git():
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(["git", "describe", "--dirty", "--always"], universal_newlines=True).strip()
     except subprocess.CalledProcessError:
         git_tag = ""
+    except OSError:
+        return None
     try:
         git_hash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
     except subprocess.CalledProcessError:
         git_hash = "unknown"
+    except OSError:
+        return None
 
     try:
         # Check if there are any modified files.
@@ -25,6 +29,8 @@ def make_version_header(filename):
         subprocess.check_call(["git", "diff-index", "--cached", "--quiet", "HEAD", "--"], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
         git_hash += "-dirty"
+    except OSError:
+        return None
 
     # Try to extract MicroPython version from git tag
     if git_tag.startswith("v"):
@@ -33,6 +39,28 @@ def make_version_header(filename):
             ver.append("0")
     else:
         ver = ["0", "0", "1"]
+
+    return git_tag, git_hash, ver
+
+def get_version_info_from_docs_conf():
+    with open("%s/docs/conf.py" % sys.argv[0].rsplit("/", 2)[0]) as f:
+        for line in f:
+            if line.startswith("release = '"):
+                ver = line.strip()[10:].strip("'")
+                git_tag = "v" + ver
+                ver = ver.split(".")
+                if len(ver) == 2:
+                    ver.append("0")
+                return git_tag, "<no hash>", ver
+    return None
+
+def make_version_header(filename):
+    # Get version info using git, with fallback to docs/conf.py
+    info = get_version_info_from_git()
+    if info is None:
+        info = get_version_info_from_docs_conf()
+
+    git_tag, git_hash, ver = info
 
     # Generate the file with the git and version info
     file_data = """\
