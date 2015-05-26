@@ -201,6 +201,11 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
     mp_arg_val_t args[MP_ARRAY_SIZE(pybspi_init_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(pybspi_init_args), pybspi_init_args, args);
 
+    // verify that mode is master
+    if (args[0].u_int != SPI_MODE_MASTER) {
+        goto invalid_args;
+    }
+
     uint bits;
     switch (args[2].u_int) {
     case 8:
@@ -213,7 +218,7 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
         bits = SPI_WL_32;
         break;
     default:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto invalid_args;
         break;
     }
 
@@ -240,7 +245,7 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
 
     uint nss = args[5].u_int;
     if (nss != SPI_CS_ACTIVELOW && nss != SPI_CS_ACTIVEHIGH) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto invalid_args;
     }
 
     // build the configuration
@@ -258,6 +263,9 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
     pybsleep_add((const mp_obj_t)self, (WakeUpCB_t)pybspi_init);
 
     return mp_const_none;
+
+invalid_args:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
 /// \classmethod \constructor(bus, ...)
@@ -271,11 +279,6 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
 STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    // work out the spi bus id
-    if (mp_obj_get_int(args[0]) != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
-    }
 
     pyb_spi_obj_t *self = &pyb_spi_obj;
     self->base.type = &pyb_spi_type;

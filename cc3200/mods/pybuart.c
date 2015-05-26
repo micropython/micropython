@@ -540,7 +540,7 @@ STATIC mp_obj_t pyb_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
 
     // send the character
     if (!uart_tx_char(self, data)) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ETIMEDOUT)));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 
     return mp_const_none;
@@ -624,7 +624,7 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
 
     // write the data
     if (!uart_tx_strn(self, buf, size)) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ETIMEDOUT)));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
     return size;
 }

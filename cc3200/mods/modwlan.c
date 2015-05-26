@@ -657,8 +657,9 @@ STATIC mp_obj_t wlan_init_helper(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
-    // Force the channel to be between 1-11
-    uint8_t channel = args[4].u_int > 0 ? args[4].u_int % 12 : 1;
+    // force the channel to be between 1-11
+    uint8_t channel = args[4].u_int;
+    channel = (channel > 0 && channel != 12) ? channel % 12 : 1;
 
     if (MODWLAN_OK != wlan_sl_enable (args[0].u_int, ssid, ssid_len, args[2].u_int, key, key_len, channel)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
@@ -700,7 +701,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     mp_arg_check_num(n_args, n_kw, 0, MP_ARRAY_SIZE(wlan_init_args), true);
 
     if (n_args > 0) {
-        // Get the mode
+        // get the mode
         SlWlanMode_t mode = mp_obj_get_int(args[0]);
         if (mode == ROLE_AP) {
             // start the peripheral
@@ -708,7 +709,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
             mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
             wlan_init_helper(n_args, args, &kw_args);
         }
-        // TODO: Only STA mode supported for the moment. What if P2P?
+        // TODO only STA mode supported for the moment. What if P2P?
         else if (n_args == 1) {
             if (MODWLAN_OK != wlan_sl_enable (mode, NULL, 0, 0, NULL, 0, 0)) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
@@ -717,12 +718,9 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
         }
-    } else if (wlan_obj.mode < 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
     }
 
     wlan_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wlan;
-
     return &wlan_obj;
 }
 

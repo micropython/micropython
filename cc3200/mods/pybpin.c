@@ -367,32 +367,35 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
     // get the af
     uint af = args[0].u_int;
     if (af < PIN_MODE_0 || af > PIN_MODE_15) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto invalid_args;
     }
     // get the io mode
     uint mode = args[1].u_int;
     // checking the mode only makes sense if af == GPIO
     if (af == PIN_MODE_0) {
         if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            goto invalid_args;
         }
     }
     // get the type
     uint type = args[2].u_int;
     if (type != PIN_TYPE_STD && type != PIN_TYPE_STD_PU && type != PIN_TYPE_STD_PD &&
             type != PIN_TYPE_OD && type != PIN_TYPE_OD_PU && type != PIN_TYPE_OD_PD) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto invalid_args;
     }
     // get the strenght
     uint strength = args[3].u_int;
     if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto invalid_args;
     }
 
     // configure the pin as requested
     pin_config (self, af, mode, type, strength);
 
     return mp_const_none;
+
+invalid_args:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
 /// \method print()
@@ -560,7 +563,7 @@ STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
         uint intmode = args[0].u_int;
         if (intmode != GPIO_FALLING_EDGE && intmode != GPIO_RISING_EDGE && intmode != GPIO_BOTH_EDGES &&
             intmode != GPIO_LOW_LEVEL && intmode != GPIO_HIGH_LEVEL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            goto invalid_args;
         }
 
         uint pwrmode = args[4].u_int;

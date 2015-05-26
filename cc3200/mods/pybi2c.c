@@ -280,6 +280,11 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_uint_t n_args, const
     mp_arg_val_t vals[PYB_I2C_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kw_args, PYB_I2C_INIT_NUM_ARGS, pyb_i2c_init_args, vals);
 
+    // verify that mode is master
+    if (vals[0].u_int != PYBI2C_MASTER) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+
     // make sure the baudrate is between the valid range
     self->baudrate = MIN(MAX(vals[1].u_int, PYBI2C_MIN_BAUD_RATE_HZ), PYBI2C_MAX_BAUD_RATE_HZ);
 
@@ -302,11 +307,6 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_uint_t n_args, const
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    // work out the i2c bus id
-    if (mp_obj_get_int(args[0]) != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
-    }
 
     // setup the object
     pyb_i2c_obj_t *self = &pyb_i2c_obj;
