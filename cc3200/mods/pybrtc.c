@@ -71,6 +71,7 @@ typedef struct {
  ******************************************************************************/
 STATIC pybrtc_data_t pybrtc_data;
 STATIC const mp_cb_methods_t pybrtc_cb_methods;
+STATIC const mp_obj_base_t pyb_rtc_obj = {&pyb_rtc_type};
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
@@ -122,6 +123,16 @@ STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
 
 /******************************************************************************/
 // Micro Python bindings
+
+/// \classmethod \constructor()
+/// Create an RTC object.
+STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // return constant object
+    return (mp_obj_t)&pyb_rtc_obj;
+}
 
 /// \method datetime([datetimetuple])
 /// Get or set the date and time of the RTC.
@@ -235,9 +246,10 @@ STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
-STATIC const mp_obj_type_t pyb_rtc_type = {
+const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
+    .make_new = pyb_rtc_make_new,
     .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
 };
 
@@ -246,5 +258,3 @@ STATIC const mp_cb_methods_t pybrtc_cb_methods = {
     .enable = pyb_rtc_callback_enable,
     .disable = pyb_rtc_callback_disable,
 };
-
-const mp_obj_base_t pyb_rtc_obj = {&pyb_rtc_type};
