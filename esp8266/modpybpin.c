@@ -40,7 +40,8 @@
 #define GPIO_MODE_OUTPUT (1)
 #define GPIO_PULL_NONE (0)
 #define GPIO_PULL_UP (1)
-#define GPIO_PULL_DOWN (2)
+// Removed in SDK 1.1.0
+//#define GPIO_PULL_DOWN (2)
 
 typedef struct _pyb_pin_obj_t {
     mp_obj_base_t base;
@@ -91,15 +92,20 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
 
     // configure the GPIO as requested
     PIN_FUNC_SELECT(self->periph, self->func);
+    #if 0
+    // Removed in SDK 1.1.0
     if ((pull & GPIO_PULL_DOWN) == 0) {
         PIN_PULLDWN_DIS(self->periph);
     }
+    #endif
     if ((pull & GPIO_PULL_UP) == 0) {
         PIN_PULLUP_DIS(self->periph);
     }
+    #if 0
     if ((pull & GPIO_PULL_DOWN) != 0) {
         PIN_PULLDWN_EN(self->periph);
     }
+    #endif
     if ((pull & GPIO_PULL_UP) != 0) {
         PIN_PULLUP_EN(self->periph);
     }
@@ -191,7 +197,7 @@ STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_OUT_PP),    MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_NONE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULL_UP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_DOWN) },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_DOWN) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_pin_locals_dict, pyb_pin_locals_dict_table);
