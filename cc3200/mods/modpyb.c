@@ -37,6 +37,7 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_uart.h"
+#include "rom_map.h"
 #include "prcm.h"
 #include "pyexec.h"
 #include "pybuart.h"
@@ -87,8 +88,8 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 STATIC mp_obj_t pyb_hard_reset(void) {
     // disable wlan
     wlan_stop(SL_STOP_TIMEOUT_LONG);
-    // perform a SoC reset
-    PRCMSOCReset();
+    // reset the cpu and it's peripherals
+    MAP_PRCMMCUReset(true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_hard_reset_obj, pyb_hard_reset);
