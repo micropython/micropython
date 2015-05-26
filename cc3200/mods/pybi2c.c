@@ -56,10 +56,10 @@
 ///
 ///     from pyb import I2C
 ///
-///     i2c = I2C(1)                            # create
-///     i2c = I2C(1, 50000)                     # create and init with a 50KHz baudrate
-///     i2c.init(100000)                        # init with a 100KHz baudrate
-///     i2c.deinit()                            # turn off the peripheral
+///     i2c = I2C(1)                               # create
+///     i2c = I2C(1, I2C.MASTER, baudrate=50000)   # create and init with a 50KHz baudrate
+///     i2c.init(I2C.MASTER, baudrate=100000)      # init with a 100KHz baudrate
+///     i2c.deinit()                               # turn off the peripheral
 ///
 /// Printing the i2c object gives you information about its configuration.
 ///
@@ -76,7 +76,6 @@
 ///
 /// A master must specify the recipient's address:
 ///
-///     i2c.init(1, 100000)
 ///     i2c.send('123', 0x42)        # send 3 bytes to slave with address 0x42
 ///     i2c.send(b'456', addr=0x42)  # keyword for address
 ///

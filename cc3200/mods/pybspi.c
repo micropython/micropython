@@ -54,7 +54,7 @@
 /// parameters to init the SPI bus:
 ///
 ///     from pyb import SPI
-///     spi = SPI(2000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
+///     spi = SPI(1, SPI.MASTER, baudrate=2000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
 ///
 /// Only required parameter is the baudrate, in Hz. polarity and phase may be 0 or 1.
 /// Bit accepts 8, 16, 32. Chip select values are ACTIVE_LOW and ACTIVE_HIGH
