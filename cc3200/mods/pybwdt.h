@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-extern const mp_obj_base_t pyb_wdt_obj;
+extern const mp_obj_type_t pyb_wdt_type;
 
 void pybwdt_init0 (void);
 void pybwdt_kick (void);

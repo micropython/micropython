@@ -275,7 +275,6 @@ Q(WPS_PIN)
 
 // for WDT class
 Q(WDT)
-Q(enable)
 Q(kick)
 
 // for HeartBeat class
