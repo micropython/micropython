@@ -65,3 +65,15 @@ The following libraries are specific to the pyboard.
 
    pyb.rst
    network.rst
+
+.. only:: port_esp8266
+
+    Libraries specific to the ESP8266
+    ---------------------------------
+
+    The following libraries are specific to the ESP8266.
+
+    .. toctree::
+       :maxdepth: 2
+
+       esp.rst
