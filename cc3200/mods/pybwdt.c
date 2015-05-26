@@ -114,15 +114,17 @@ STATIC mp_obj_t pyb_enable_wdt(mp_obj_t self, mp_obj_t msec_in) {
     // Unlock to be able to configure the registers
     MAP_WatchdogUnlock(WDT_BASE);
 
+#ifdef DEBUG
     // make the WDT stall when the debugger stops on a breakpoint
     MAP_WatchdogStallEnable (WDT_BASE);
+#endif
 
     // set the watchdog timer reload value
     // the WDT trigger a system reset after the second timeout
-    // so, divide by the 2 timeout value received
+    // so, divide by 2 the timeout value received
     MAP_WatchdogReloadSet(WDT_BASE, PYBWDT_MILLISECONDS_TO_TICKS(msec / 2));
 
-    // start the timer. Once wdt is started, it cannot be disabled.
+    // start the timer. Once it's started, it cannot be disabled.
     MAP_WatchdogEnable(WDT_BASE);
     pybwdt_data.running = true;
 
