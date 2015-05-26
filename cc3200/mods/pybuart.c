@@ -125,8 +125,8 @@ struct _pyb_uart_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS] = {{.reg = UARTA0_BASE, .peripheral = PRCM_UARTA0},
-                                                     {.reg = UARTA1_BASE, .peripheral = PRCM_UARTA1}};
+STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS] = {{.reg = UARTA0_BASE, .baudrate = 0, .peripheral = PRCM_UARTA0},
+                                                     {.reg = UARTA1_BASE, .baudrate = 0, .peripheral = PRCM_UARTA1}};
 STATIC const mp_cb_methods_t uart_cb_methods;
 
 /******************************************************************************

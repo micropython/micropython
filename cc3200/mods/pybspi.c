@@ -54,9 +54,9 @@
 /// parameters to init the SPI bus:
 ///
 ///     from pyb import SPI
-///     spi = SPI(2000000, bits=8, submode=0, cs=SPI.ACTIVE_LOW)
+///     spi = SPI(2000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
 ///
-/// Only required parameter is the baudrate, in Hz. Submode may be 0-3.
+/// Only required parameter is the baudrate, in Hz. polarity and phase may be 0 or 1.
 /// Bit accepts 8, 16, 32. Chip select values are ACTIVE_LOW and ACTIVE_HIGH
 ///
 /// Additional method for SPI:
@@ -77,6 +77,8 @@ typedef struct _pyb_spi_obj_t {
     vstr_t rx_vstr;
     uint tx_index;
     uint rx_index;
+    byte polarity;
+    byte phase;
     byte submode;
     byte wlen;
 } pyb_spi_obj_t;
@@ -85,7 +87,6 @@ typedef struct _pyb_spi_obj_t {
  DEFINE CONSTANTS
  ******************************************************************************/
 #define PYBSPI_DEF_BAUDRATE                     1000000     // 1MHz
-#define PYBSPI_CS_NONE                          0xFF        // spi cs is controlled by the user
 
 /******************************************************************************
  DECLARE PRIVATE DATA
@@ -167,29 +168,32 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     pyb_spi_obj_t *self = self_in;
 
     if (self->baudrate > 0) {
-        mp_printf(print, "<SPI1, SPI.MASTER, baudrate=%u, config=%u, submode=%u, bits=%u>",
-                  self->baudrate, self->config, self->submode, (self->wlen * 8));
+        mp_printf(print, "<SPI1, SPI.MASTER, baudrate=%u, bits=%u, polarity=%u, phase=%u, nss=%q>",
+                  self->baudrate, (self->wlen * 8), self->polarity, self->phase,
+                  (self->config & SPI_CS_ACTIVELOW) ? MP_QSTR_ACTIVE_LOW : MP_QSTR_ACTIVE_HIGH);
     }
     else {
         mp_print_str(print, "<SPI1>");
     }
 }
 
-/// \method init(mode, *, baudrate=1000000, bits=8, submode=0, cs=SPI.ACTIVELOW)
+/// \method init(mode, *, baudrate=1000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVELOW)
 ///
 /// Initialise the SPI bus with the given parameters:
 ///
 ///   - `mode` must be MASTER.
 ///   - `baudrate` is the SCK clock rate.
 ///   - `bits` is the transfer width size (8, 16, 32).
-///   - `submode` is the spi mode (0, 1, 2, 3).
-///   - `cs` can be ACTIVELOW, ACTIVEHIGH, or NONE
+///   - `polarity` (0, 1).
+///   - `phase` (0, 1).
+///   - `nss` can be ACTIVE_LOW or ACTIVE_HIGH.
 static const mp_arg_t pybspi_init_args[] = {
     { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,  },
-    { MP_QSTR_baudrate,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1000000} },
+    { MP_QSTR_baudrate,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = PYBSPI_DEF_BAUDRATE} },
     { MP_QSTR_bits,         MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 8} },
-    { MP_QSTR_submode,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },
-    { MP_QSTR_cs,           MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SPI_CS_ACTIVELOW} },
+    { MP_QSTR_polarity,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },
+    { MP_QSTR_phase,        MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },
+    { MP_QSTR_nss,          MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SPI_CS_ACTIVELOW} },
 };
 
 STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -213,20 +217,38 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
         break;
     }
 
-    uint submode = args[3].u_int;
-    if (submode < SPI_SUB_MODE_0 || submode > SPI_SUB_MODE_3) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    uint polarity = args[3].u_int;
+    uint phase = args[4].u_int;
+    uint submode;
+    if (polarity) {
+        if (phase) {
+            // polarity = 1, phase = 1
+            submode = 3;
+        } else {
+            // polarity = 1, phase = 0
+            submode = 2;
+        }
+    } else {
+        if (phase) {
+            // polarity = 0, phase = 1
+            submode = 1;
+        } else {
+            // polarity = 0, phase = 0
+            submode = 0;
+        }
     }
 
-    uint cs = args[4].u_int;
-    if (cs != SPI_CS_ACTIVELOW && cs != SPI_CS_ACTIVEHIGH) {
+    uint nss = args[5].u_int;
+    if (nss != SPI_CS_ACTIVELOW && nss != SPI_CS_ACTIVEHIGH) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 
     // build the configuration
     self->baudrate = args[1].u_int;
     self->wlen = args[2].u_int >> 3;
-    self->config = bits | cs | SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF;
+    self->config = bits | nss | SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF;
+    self->polarity = polarity;
+    self->phase = phase;
     self->submode = submode;
 
     // init the bus
