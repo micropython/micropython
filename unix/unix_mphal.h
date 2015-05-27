@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,16 @@
  * THE SOFTWARE.
  */
 
-#define CHAR_CTRL_A (1)
-#define CHAR_CTRL_B (2)
+#ifndef CHAR_CTRL_C
 #define CHAR_CTRL_C (3)
-#define CHAR_CTRL_D (4)
-#define CHAR_CTRL_E (5)
+#endif
 
-void readline_init0(void);
-int readline(vstr_t *line, const char *prompt);
-void readline_push_history(const char *line);
+void mp_hal_init(void);
+void mp_hal_deinit(void);
 
-void readline_init(vstr_t *line, const char *prompt);
-void readline_note_newline(const char *prompt);
-int readline_process_char(int c);
+void mp_hal_set_interrupt_char(char c);
+
+int mp_hal_stdin_rx_chr(void);
+void mp_hal_stdout_tx_str(const char *str);
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
+void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);

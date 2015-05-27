@@ -57,7 +57,12 @@ endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
+INC +=  -I../lib/mp-readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
+LIB_SRC_C_EXTRA += mp-readline/readline.c
+endif
+ifeq ($(MICROPY_USE_READLINE),2)
+CFLAGS_MOD += -DMICROPY_USE_READLINE=2
 LDFLAGS_MOD += -lreadline
 # the following is needed for BSD
 #LDFLAGS_MOD += -ltermcap
@@ -90,6 +95,7 @@ endif
 SRC_C = \
 	main.c \
 	gccollect.c \
+	unix_mphal.c \
 	input.c \
 	file.c \
 	modos.c \
@@ -97,8 +103,13 @@ SRC_C = \
 	coverage.c \
 	$(SRC_MOD)
 
+LIB_SRC_C = $(addprefix lib/,\
+	$(LIB_SRC_C_EXTRA) \
+	)
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ = $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 include ../py/mkrules.mk
 
