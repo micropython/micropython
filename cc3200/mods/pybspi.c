@@ -224,23 +224,8 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
 
     uint polarity = args[3].u_int;
     uint phase = args[4].u_int;
-    uint submode;
-    if (polarity) {
-        if (phase) {
-            // polarity = 1, phase = 1
-            submode = 3;
-        } else {
-            // polarity = 1, phase = 0
-            submode = 2;
-        }
-    } else {
-        if (phase) {
-            // polarity = 0, phase = 1
-            submode = 1;
-        } else {
-            // polarity = 0, phase = 0
-            submode = 0;
-        }
+    if (polarity > 1 || phase > 1) {
+        goto invalid_args;
     }
 
     uint nss = args[5].u_int;
@@ -254,7 +239,7 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
     self->config = bits | nss | SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF;
     self->polarity = polarity;
     self->phase = phase;
-    self->submode = submode;
+    self->submode = (polarity << 1) | phase;
 
     // init the bus
     pybspi_init((const pyb_spi_obj_t *)self);
