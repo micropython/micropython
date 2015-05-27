@@ -54,6 +54,10 @@
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
 
+// SPI busses
+#define MICROPY_HW_SPI1_NAME "X"
+#define MICROPY_HW_SPI2_NAME "Y"
+
 // CAN busses
 #define MICROPY_HW_CAN1_NAME "YA" // CAN1 on RX,TX = Y3,Y4 = PB8,PB9
 #define MICROPY_HW_CAN2_NAME "YB" // CAN2 on RX,TX = Y5,Y6 = PB12,PB13

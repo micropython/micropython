@@ -325,7 +325,6 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
     {{&pyb_spi_type}, NULL},
 #endif
 };
-#define PYB_NUM_SPI MP_ARRAY_SIZE(pyb_spi_obj)
 
 SPI_HandleTypeDef *spi_get_handle(mp_obj_t o) {
     if (!MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
@@ -462,16 +461,38 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get SPI number
-    mp_int_t spi_id = mp_obj_get_int(args[0]) - 1;
-
-    // check SPI number
-    if (!(0 <= spi_id && spi_id < PYB_NUM_SPI && pyb_spi_obj[spi_id].spi != NULL)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "SPI bus %d does not exist", spi_id + 1));
+    // work out SPI bus
+    int spi_id = 0;
+    if (MP_OBJ_IS_STR(args[0])) {
+        const char *port = mp_obj_str_get_str(args[0]);
+        if (0) {
+        #ifdef MICROPY_HW_SPI1_NAME
+        } else if (strcmp(port, MICROPY_HW_SPI1_NAME) == 0) {
+            spi_id = 1;
+        #endif
+        #ifdef MICROPY_HW_SPI2_NAME
+        } else if (strcmp(port, MICROPY_HW_SPI2_NAME) == 0) {
+            spi_id = 2;
+        #endif
+        #ifdef MICROPY_HW_SPI3_NAME
+        } else if (strcmp(port, MICROPY_HW_SPI3_NAME) == 0) {
+            spi_id = 3;
+        #endif
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                "SPI(%s) does not exist", port));
+        }
+    } else {
+        spi_id = mp_obj_get_int(args[0]);
+        if (spi_id < 1 || spi_id > MP_ARRAY_SIZE(pyb_spi_obj)
+            || pyb_spi_obj[spi_id].spi == NULL) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                "SPI(%d) does not exist", spi_id));
+        }
     }
 
     // get SPI object
-    const pyb_spi_obj_t *spi_obj = &pyb_spi_obj[spi_id];
+    const pyb_spi_obj_t *spi_obj = &pyb_spi_obj[spi_id - 1];
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
