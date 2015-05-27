@@ -8,36 +8,53 @@
     v{{ release|e }}{% if last_updated %}, {{ _('last updated') }} {{ last_updated|e }}{% endif %}.
   </p>
 
+  <p>
+    MicroPython runs on a variety of systems and each has their own specific
+    documentation.  You are currently viewing the documentation for
+    <strong>{{ port_name }}</strong>.
+  </p>
+
+  <p>
+    Documentation for other systems are available:
+    {% for p in all_ports %}
+      <a href="{{ p[1] }}">{{ p[0] }}</a>{% if not loop.last %}, {% endif %}
+    {% endfor %}.
+  </p>
+
   <p><strong>Documentation for Micro Python and the pyboard:</strong></p>
 
   <table class="contentstable"><tr>
     <td width="40%" style="padding-left:2em;">
-      <p class="biglink">
-        <a class="biglink" href="{{ pathto("quickref") }}">Quick reference for the pyboard</a><br/>
-        <span class="linkdescr">pinout for the pyboard and snippets of useful code</span>
-      </p>
-      <p class="biglink">
-        <a class="biglink" href="{{ pathto("general") }}">General information about the pyboard</a><br/>
-        <span class="linkdescr">read this first for a quick overview</span>
-      </p>
-      <p class="biglink">
-        <a class="biglink" href="{{ pathto("tutorial/index") }}">Tutorials and code examples</a><br/>
-        <span class="linkdescr">start here</span>
-      </p>
+      {% if port == "pyboard" %}
+        <p class="biglink">
+          <a class="biglink" href="{{ pathto(port + "/quickref") }}">Quick reference for {{ port_name }}</a><br/>
+          <span class="linkdescr">pinout for {{ port_name }} and snippets of useful code</span>
+        </p>
+        <p class="biglink">
+          <a class="biglink" href="{{ pathto(port + "/general") }}">General information about {{ port_name }}</a><br/>
+          <span class="linkdescr">read this first for a quick overview</span>
+        </p>
+        <p class="biglink">
+          <a class="biglink" href="{{ pathto(port + "/tutorial/index") }}">Tutorials and code examples</a><br/>
+          <span class="linkdescr">start here</span>
+        </p>
+      {% endif %}
       <p class="biglink">
         <a class="biglink" href="{{ pathto("library/index") }}">Library Reference</a><br/>
         <span class="linkdescr">Micro Python libraries, including the <a href="{{ pathto("library/pyb") }}">pyb module</a></span>
       </p>
     </td>
     <td width="40%" style="padding-left:2em;">
-      <p class="biglink">
-        <a class="biglink" href="{{ pathto("hardware/index") }}">The pyboard hardware</a><br/>
-        <span class="linkdescr">schematics, dimensions and component datasheets</span>
-      </p>
-      <p class="biglink">
-        <a class="biglink" href="http://micropython.org/resources/Micro-Python-Windows-setup.pdf">Guide for pyboard on Windows (PDF)</a><br/>
-        <span class="linkdescr">including DFU programming</span>
-      </p>
+      {% if port == "pyboard" %}
+        <p class="biglink">
+            <a class="biglink" href="{{ pathto(port + "/hardware/index") }}">The {{ port }} hardware</a><br/>
+            <span class="linkdescr">schematics, dimensions and component datasheets</span>
+        </p>
+        <p class="biglink">
+            <a class="biglink" href="http://micropython.org/resources/Micro-Python-Windows-setup.pdf">Guide for {{ port_name }} on Windows (PDF)</a><br/>
+            <span class="linkdescr">including DFU programming</span>
+        </p>
+      {% endif %}
       <p class="biglink">
         <a class="biglink" href="{{ pathto("license") }}">License</a><br/>
         <span class="linkdescr">Micro Python license information</span>
@@ -61,10 +78,6 @@
       <p class="biglink">
         <a class="biglink" href="{{ pathto("contents") }}">Table of contents</a><br/>
         <span class="linkdescr">a list of all sections and subsections</span>
-      </p>
-      <p class="biglink">
-        <a class="biglink" href="{{ pathto("search") }}">Search page</a><br/>
-        <span class="linkdescr">search this documentation</span>
       </p>
     </td></tr>
   </table>
