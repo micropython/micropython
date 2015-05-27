@@ -46,11 +46,11 @@
 #define MICROPY_HW_UART6_PORT (GPIOC)
 #define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
 
-// X-skin: X9=PB6=SCL, X10=PB7=SDA
+// I2C busses
+#define MICROPY_HW_I2C1_NAME "X"
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B7)
-
-// Y-skin: Y9=PB10=SCL, Y10=PB11=SDA
+#define MICROPY_HW_I2C2_NAME "Y"
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
 

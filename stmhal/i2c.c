@@ -201,12 +201,18 @@ STATIC inline bool in_master_mode(pyb_i2c_obj_t *self) { return self->i2c->Init.
 STATIC const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
     {{&pyb_i2c_type}, &I2CHandle1},
+    #else
+    {{&pyb_i2c_type}, NULL},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     {{&pyb_i2c_type}, &I2CHandle2},
+    #else
+    {{&pyb_i2c_type}, NULL},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     {{&pyb_i2c_type}, &I2CHandle3},
+    #else
+    {{&pyb_i2c_type}, NULL},
     #endif
 };
 
@@ -297,16 +303,38 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // get i2c number
-    mp_int_t i2c_id = mp_obj_get_int(args[0]) - 1;
-
-    // check i2c number
-    if (!(0 <= i2c_id && i2c_id < MP_ARRAY_SIZE(pyb_i2c_obj) && pyb_i2c_obj[i2c_id].i2c != NULL)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C bus %d does not exist", i2c_id + 1));
+    // work out i2c bus
+    int i2c_id = 0;
+    if (MP_OBJ_IS_STR(args[0])) {
+        const char *port = mp_obj_str_get_str(args[0]);
+        if (0) {
+        #ifdef MICROPY_HW_I2C1_NAME
+        } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
+            i2c_id = 1;
+        #endif
+        #ifdef MICROPY_HW_I2C2_NAME
+        } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
+            i2c_id = 2;
+        #endif
+        #ifdef MICROPY_HW_I2C3_NAME
+        } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
+            i2c_id = 3;
+        #endif
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                "I2C(%s) does not exist", port));
+        }
+    } else {
+        i2c_id = mp_obj_get_int(args[0]);
+        if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(pyb_i2c_obj)
+            || pyb_i2c_obj[i2c_id].i2c == NULL) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                "I2C(%d) does not exist", i2c_id));
+        }
     }
 
     // get I2C object
-    const pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id];
+    const pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id - 1];
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
