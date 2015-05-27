@@ -504,16 +504,30 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     if (MP_OBJ_IS_STR(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
-#if defined(PYBV10)
-        } else if (strcmp(port, "XA") == 0) {
-            uart_id = PYB_UART_XA;
-        } else if (strcmp(port, "XB") == 0) {
-            uart_id = PYB_UART_XB;
-        } else if (strcmp(port, "YA") == 0) {
-            uart_id = PYB_UART_YA;
-        } else if (strcmp(port, "YB") == 0) {
-            uart_id = PYB_UART_YB;
-#endif
+        #ifdef MICROPY_HW_UART1_NAME
+        } else if (strcmp(port, MICROPY_HW_UART1_NAME) == 0) {
+            uart_id = PYB_UART_1;
+        #endif
+        #ifdef MICROPY_HW_UART2_NAME
+        } else if (strcmp(port, MICROPY_HW_UART2_NAME) == 0) {
+            uart_id = PYB_UART_2;
+        #endif
+        #ifdef MICROPY_HW_UART3_NAME
+        } else if (strcmp(port, MICROPY_HW_UART3_NAME) == 0) {
+            uart_id = PYB_UART_3;
+        #endif
+        #ifdef MICROPY_HW_UART4_NAME
+        } else if (strcmp(port, MICROPY_HW_UART4_NAME) == 0) {
+            uart_id = PYB_UART_4;
+        #endif
+        #ifdef MICROPY_HW_UART5_NAME
+        } else if (strcmp(port, MICROPY_HW_UART5_NAME) == 0) {
+            uart_id = PYB_UART_5;
+        #endif
+        #ifdef MICROPY_HW_UART6_NAME
+        } else if (strcmp(port, MICROPY_HW_UART6_NAME) == 0) {
+            uart_id = PYB_UART_6;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%s) does not exist", port));
         }

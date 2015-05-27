@@ -27,12 +27,6 @@
 #define PYB_CAN_1 (1)
 #define PYB_CAN_2 (2)
 
-// aliases for pyboard
-#if defined(PYBV10)
-#define PYB_CAN_YA PYB_CAN_1 // CAN1 on RX,TX = Y3,Y4 = PB8,PB9
-#define PYB_CAN_YB PYB_CAN_2 // CAN2 on RX,TX = Y5,Y6 = PB12,PB13
-#endif
-
 extern const mp_obj_type_t pyb_can_type;
 
 void can_init0(void);

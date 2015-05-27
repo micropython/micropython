@@ -1,5 +1,3 @@
-#define PYBV3
-
 #define MICROPY_HW_BOARD_NAME       "PYBv3"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
 

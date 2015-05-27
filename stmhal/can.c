@@ -352,11 +352,13 @@ STATIC mp_obj_t pyb_can_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     if (MP_OBJ_IS_STR(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
-        #if defined(PYBV10)
-        } else if (strcmp(port, "YA") == 0) {
-            o->can_id = PYB_CAN_YA;
-        } else if (strcmp(port, "YB") == 0) {
-            o->can_id = PYB_CAN_YB;
+        #ifdef MICROPY_HW_CAN1_NAME
+        } else if (strcmp(port, MICROPY_HW_CAN1_NAME) == 0) {
+            o->can_id = PYB_CAN_1;
+        #endif
+        #ifdef MICROPY_HW_CAN2_NAME
+        } else if (strcmp(port, MICROPY_HW_CAN2_NAME) == 0) {
+            o->can_id = PYB_CAN_2;
         #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN port %s does not exist", port));
