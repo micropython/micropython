@@ -1,11 +1,20 @@
 Micro Python documentation contents
 ===================================
 
-.. toctree::
+.. only:: port_pyboard
 
-   quickref.rst
-   general.rst
-   tutorial/index.rst
-   library/index.rst
-   hardware/index.rst
-   license.rst
+    .. toctree::
+
+        pyboard/quickref.rst
+        pyboard/general.rst
+        pyboard/tutorial/index.rst
+        library/index.rst
+        pyboard/hardware/index.rst
+        license.rst
+
+.. only:: port_esp8266
+
+    .. toctree::
+
+        library/index.rst
+        license.rst

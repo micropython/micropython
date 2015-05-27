@@ -134,7 +134,7 @@ else:
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = '../logo/trans-logo.png'
+#html_logo = '../../logo/trans-logo.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -277,3 +277,23 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+
+# Work out the port to generate the docs for
+from collections import OrderedDict
+micropy_port = os.getenv('MICROPY_PORT') or 'pyboard'
+tags.add('port_' + micropy_port)
+ports = OrderedDict((
+    ("unix", "unix"),
+    ("pyboard", "the pyboard"),
+    ("wipy", "the WiPy"),
+    ("esp8266", "esp8266"),
+))
+
+# The members of the html_context dict are available inside topindex.html
+url_prefix = os.getenv('MICROPY_URL_PREFIX') or '/'
+html_context = {
+    'port':micropy_port,
+    'port_name':ports[micropy_port],
+    'all_ports':[(n, url_prefix + p) for p, n in ports.items()],
+}
