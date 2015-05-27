@@ -41,8 +41,8 @@ class PyboardError(BaseException):
     pass
 
 class Pyboard:
-    def __init__(self, serial_device):
-        self.serial = serial.Serial(serial_device, baudrate=115200, interCharTimeout=1)
+    def __init__(self, serial_device, baudrate=115200):
+        self.serial = serial.Serial(serial_device, baudrate=baudrate, interCharTimeout=1)
 
     def close(self):
         self.serial.close()
