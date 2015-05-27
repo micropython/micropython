@@ -29,7 +29,7 @@ make BTARGET=bootloader BTYPE=release
 - Make sure the SOP2 jumper is in position.
 - Open CCS_Uniflash and connect to the board (by default on port 22). 
 - Format the serial flash (select 1MB size in case of the CC3200-LAUNCHXL, 2MB in case of the WiPy, leave the rest unchecked).
-- Mark the following files for erasing: `/cert/ca.pem`, `/cert/client.pm`, `/cert/private.key` and `/tmp/pac.bin`.
+- Mark the following files for erasing: `/cert/ca.pem`, `/cert/client.pem`, `/cert/private.key` and `/tmp/pac.bin`.
 - Add a new file with the name of /sys/mcuimg.bin, and select the URL to point to cc3200\bootmgr\build\<BOARD_NAME>\bootloader.bin.
 - Add another file with the name of /sys/factimg.bin, and select the URL to point to cc3200\build\<BOARD_NAME>\mcuimg.bin.
 - Click "Program" to apply all changes.
