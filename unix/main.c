@@ -325,10 +325,14 @@ int main(int argc, char **argv) {
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     #endif
 
-    char *home = getenv("HOME");
+    char *home = getenv(MP_ENVVAR_HOME);
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
+#ifndef _MSC_VER
         path = "~/.micropython/lib:/usr/lib/micropython";
+#else
+        path = "~/.micropython/lib";
+#endif
     }
     mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {

@@ -169,7 +169,7 @@ void msec_sleep(double msec);
 #else
 #define MP_SSIZE_MAX                _I32_MAX
 #endif
-
+#define MP_ENVVAR_HOME              "USERPROFILE"
 
 // CL specific definitions
 
