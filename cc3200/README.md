@@ -24,6 +24,10 @@ make BTARGET=application BTYPE=release
 make BTARGET=bootloader BTYPE=release
 ```
 
+## Regarding old revisions of the CC3200-LAUNCHXL
+First silicon (pre-release) revisions of the CC3200 had issues with the ram blocks, and Micro Python cannot run
+there. Make sure to use a **v4.1 (or higer) LAUNCHXL board** when trying this port, otherwise it won't work.
+
 ## Flashing the CC3200
 - Make sure that you have built both the *bootloader* and the *application* in **release** mode.
 - Make sure the SOP2 jumper is in position.
