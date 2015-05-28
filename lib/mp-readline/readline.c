@@ -228,6 +228,12 @@ home_key:
             } else if (rl.escape_seq_buf[0] == '4' || rl.escape_seq_buf[0] == '8') {
 end_key:
                 redraw_step_forward = rl.line->len - rl.cursor_pos;
+            } else if (rl.escape_seq_buf[0] == '3') {
+                // delete
+                if (rl.cursor_pos >= rl.orig_line_len && rl.cursor_pos < rl.line->len) {
+                    vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
+                    redraw_from_cursor = true;
+                }
             } else {
                 DEBUG_printf("(ESC [ %c %d)", rl.escape_seq_buf[0], c);
             }
