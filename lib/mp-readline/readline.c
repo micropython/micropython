@@ -60,7 +60,14 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
-STATIC void move_cursor_back(uint pos) {
+// By default assume terminal which implements VT100 commands...
+#ifndef MICROPY_HAL_HAS_VT100
+#define MICROPY_HAL_HAS_VT100 (1)
+#endif
+
+// ...and provide the implementation using them
+#if MICROPY_HAL_HAS_VT100
+STATIC void mp_hal_move_cursor_back(uint pos) {
     if (pos <= 4) {
         // fast path for most common case of 1 step back
         mp_hal_stdout_tx_strn("\b\b\b\b", pos);
@@ -75,9 +82,10 @@ STATIC void move_cursor_back(uint pos) {
     }
 }
 
-STATIC void erase_line_from_cursor(void) {
+STATIC void mp_hal_erase_line_from_cursor(void) {
     mp_hal_stdout_tx_strn("\x1b[K", 3);
 }
+#endif
 
 typedef struct _readline_t {
     vstr_t *line;
@@ -257,19 +265,19 @@ end_key:
 
     // redraw command prompt, efficiently
     if (redraw_step_back > 0) {
-        move_cursor_back(redraw_step_back);
+        mp_hal_move_cursor_back(redraw_step_back);
         rl.cursor_pos -= redraw_step_back;
     }
     if (redraw_from_cursor) {
         if (rl.line->len < last_line_len) {
             // erase old chars
             // (number of chars to erase: last_line_len - rl.cursor_pos)
-            erase_line_from_cursor();
+            mp_hal_erase_line_from_cursor();
         }
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
-        move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
+        mp_hal_move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
         rl.cursor_pos += redraw_step_forward;
     } else if (redraw_step_forward > 0) {
         // draw over old chars to move cursor forwards
