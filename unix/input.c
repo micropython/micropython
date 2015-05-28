@@ -52,6 +52,7 @@ char *prompt(char *p) {
         vstr_clear(&vstr);
         if (ret == CHAR_CTRL_D) {
             // EOF
+            printf("\n");
             return NULL;
         } else {
             printf("\n");
