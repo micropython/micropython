@@ -120,9 +120,13 @@ int mp_print_strn(const mp_print_t *print, const char *str, mp_uint_t len, int f
 // We can use 16 characters for 32-bit and 32 characters for 64-bit
 #define INT_BUF_SIZE (sizeof(mp_int_t) * 4)
 
-// This function is used by stmhal port to implement printf.
+// Our mp_vprintf function below does not support the '#' format modifier to
+// print the prefix of a non-base-10 number, so we don't need code for this.
+#define SUPPORT_INT_BASE_PREFIX (0)
+
+// This function is used exclusively by mp_vprintf to format ints.
 // It needs to be a separate function to mp_print_mp_int, since converting to a mp_int looses the MSB.
-int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
+STATIC int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int base_char, int flags, char fill, int width) {
     char sign = 0;
     if (sgn) {
         if ((mp_int_t)x < 0) {
@@ -153,6 +157,7 @@ int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int ba
         } while (b > buf && x != 0);
     }
 
+    #if SUPPORT_INT_BASE_PREFIX
     char prefix_char = '\0';
 
     if (flags & PF_FLAG_SHOW_PREFIX) {
@@ -164,6 +169,7 @@ int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int ba
             prefix_char = base_char + 'x' - 'a';
         }
     }
+    #endif
 
     int len = 0;
     if (flags & PF_FLAG_PAD_AFTER_SIGN) {
@@ -171,16 +177,20 @@ int mp_print_int(const mp_print_t *print, mp_uint_t x, int sgn, int base, int ba
             len += mp_print_strn(print, &sign, 1, flags, fill, 1);
             width--;
         }
+        #if SUPPORT_INT_BASE_PREFIX
         if (prefix_char) {
             len += mp_print_strn(print, "0", 1, flags, fill, 1);
             len += mp_print_strn(print, &prefix_char, 1, flags, fill, 1);
             width -= 2;
         }
+        #endif
     } else {
+        #if SUPPORT_INT_BASE_PREFIX
         if (prefix_char && b > &buf[1]) {
             *(--b) = prefix_char;
             *(--b) = '0';
         }
+        #endif
         if (sign && b > buf) {
             *(--b) = sign;
         }
