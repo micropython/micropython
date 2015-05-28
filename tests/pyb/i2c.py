@@ -1,8 +1,15 @@
 import pyb
 from pyb import I2C
 
+# test we can correctly create by id or name
+for bus in (-1, 0, 1, 2, 3, "X", "Y", "Z"):
+    try:
+        I2C(bus)
+        print("I2C", bus)
+    except ValueError:
+        print("ValueError", bus)
+
 i2c = I2C(1)
-i2c2 = I2C(2)
 
 i2c.init(I2C.MASTER, baudrate=400000)
 print(i2c.scan())

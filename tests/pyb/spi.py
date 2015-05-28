@@ -1,5 +1,13 @@
 from pyb import SPI
 
+# test we can correctly create by id or name
+for bus in (-1, 0, 1, 2, 3, "X", "Y", "Z"):
+    try:
+        SPI(bus)
+        print("SPI", bus)
+    except ValueError:
+        print("ValueError", bus)
+
 spi = SPI(1)
 print(spi)
 

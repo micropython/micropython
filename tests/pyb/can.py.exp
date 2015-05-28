@@ -1,3 +1,11 @@
+ValueError -1
+ValueError 0
+CAN 1
+CAN 2
+ValueError 3
+CAN YA
+CAN YB
+ValueError YC
 CAN(1)
 CAN(1, CAN.LOOPBACK, extframe=False)
 False
