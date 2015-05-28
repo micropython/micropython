@@ -327,7 +327,7 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     } else {
         i2c_id = mp_obj_get_int(args[0]);
         if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(pyb_i2c_obj)
-            || pyb_i2c_obj[i2c_id].i2c == NULL) {
+            || pyb_i2c_obj[i2c_id - 1].i2c == NULL) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "I2C(%d) does not exist", i2c_id));
         }

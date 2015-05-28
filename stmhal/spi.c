@@ -485,7 +485,7 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     } else {
         spi_id = mp_obj_get_int(args[0]);
         if (spi_id < 1 || spi_id > MP_ARRAY_SIZE(pyb_spi_obj)
-            || pyb_spi_obj[spi_id].spi == NULL) {
+            || pyb_spi_obj[spi_id - 1].spi == NULL) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "SPI(%d) does not exist", spi_id));
         }
