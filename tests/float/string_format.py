@@ -122,6 +122,9 @@ if full_tests:
                             test_fmt('', fill, alignment, sign, '', width, prec, type, num)
                     for num in pct_nums2:
                         test_fmt('', fill, alignment, sign, '', width, '', type, num)
+else:
+    for num in pct_nums1:
+        test_fmt('', '', '', '', '', '', '1', '%', num)
 
 # We don't currently test a type of '' with floats (see the detailed comment
 # in  objstr.c)

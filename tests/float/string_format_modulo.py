@@ -21,3 +21,8 @@ print("%G" % 1.23456)
 print("%06e" % float("inf"))
 print("%06e" % float("-inf"))
 print("%06e" % float("nan"))
+
+print("%02.3d" % 123) # prec > width
+print("%+f %+f" % (1.23, -1.23)) # float sign
+print("% f % f" % (1.23, -1.23)) # float space sign
+print("%0f" % -1.23) # negative number with 0 padding
