@@ -623,9 +623,9 @@ STATIC bool wlan_is_connected (void) {
              GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) || wlan_obj.staconnected);
 }
 
-/// \method init(mode, ssid=myWlan, security=wlan.WPA_WPA2, key=myWlanKey)
+/// \method init(mode, ssid=None, *, security=wlan.OPEN, key=None, channel=5)
 ///
-/// Initialise the UART bus with the given parameters:
+/// Initialise the WLAN engine with the given parameters:
 ///
 ///   - `mode` can be ROLE_AP, ROLE_STA and ROLE_P2P.
 ///   - `ssid` is the network ssid in case of AP mode
@@ -634,7 +634,7 @@ STATIC bool wlan_is_connected (void) {
 ///   - `channel` is the channel to use for the AP network
 STATIC const mp_arg_t wlan_init_args[] = {
     { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,  {.u_int = ROLE_STA} },
-    { MP_QSTR_ssid,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+    { MP_QSTR_ssid,                           MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     { MP_QSTR_security,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SL_SEC_TYPE_OPEN} },
     { MP_QSTR_key,          MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     { MP_QSTR_channel,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 5} },
@@ -724,15 +724,15 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     return &wlan_obj;
 }
 
-/// \method connect(ssid, security=OPEN, key=None, bssid=None)
+/// \method connect(ssid, *, security=OPEN, key=None, bssid=None, timeout=5000)
 //          if security is WPA/WPA2, the key must be a string
 ///         if security is WEP, the key must be binary
 STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
         { MP_QSTR_security, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = SL_SEC_TYPE_OPEN} },
-        { MP_QSTR_key,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_key,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout,  MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = MODWLAN_TIMEOUT_MS} },
     };
 
@@ -756,21 +756,21 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_uint_t key_len = 0;
     const char *key = NULL;
     mp_buffer_info_t wepkey;
-    if (args[2].u_obj != mp_const_none) {
+    mp_obj_t key_o = args[2].u_obj;
+    if (key_o != MP_OBJ_NULL) {
         // wep key must be given as raw bytes
         if (sec == SL_SEC_TYPE_WEP) {
-            mp_get_buffer_raise(args[2].u_obj, &wepkey, MP_BUFFER_READ);
+            mp_get_buffer_raise(key_o, &wepkey, MP_BUFFER_READ);
             key = wepkey.buf;
             key_len = wepkey.len;
-        }
-        else {
-            key = mp_obj_str_get_data(args[2].u_obj, &key_len);
+        } else {
+            key = mp_obj_str_get_data(key_o, &key_len);
         }
     }
 
     // get bssid
     const char *bssid = NULL;
-    if (args[3].u_obj != mp_const_none) {
+    if (args[3].u_obj != MP_OBJ_NULL) {
         bssid = mp_obj_str_get_str(args[3].u_obj);
     }
 
