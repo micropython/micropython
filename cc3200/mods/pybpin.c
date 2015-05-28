@@ -333,7 +333,7 @@ STATIC void pin_extint_disable (mp_obj_t self_in) {
 /// Initialise the pin:
 ///
 ///   - `af` can be in range 0-15, please check the CC3200 datasheet
-///     for the details on the AFs availables on each pin (af=0, keeps it as a gpio pin).
+///          for the details on the AFs availables on each pin (af=0 keeps it as a gpio pin).
 ///   - `mode` can be one of:
 ///     - `Pin.IN`     - configure the pin for input;
 ///     - `Pin.OUT`    - configure the pin for output;
@@ -344,7 +344,6 @@ STATIC void pin_extint_disable (mp_obj_t self_in) {
 ///     - `Pin.OD`     - standard without pull up or pull down;
 ///     - `Pin.OD_PU`  - open drain with pull-up resistor;
 ///     - `Pin.OD_PD`  - open drain with pull-down resistor.
-///     - `Pin.ANALOG` - configured in analog (adc) mode
 ///   - `strength` can be one of:
 ///     - `Pin.S2MA`    - 2ma drive strength;
 ///     - `Pin.S4MA`    - 4ma drive strength;
@@ -526,10 +525,10 @@ STATIC mp_obj_t pin_toggle(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_toggle_obj, pin_toggle);
 
-/// \method get_config()
+/// \method info()
 /// Returns a named tupple with the current configuration of the gpio pin
-STATIC mp_obj_t pin_get_config(mp_obj_t self_in) {
-    STATIC const qstr pin_config_fields[] = {
+STATIC mp_obj_t pin_info(mp_obj_t self_in) {
+    STATIC const qstr pin_info_fields[] = {
         MP_QSTR_name, MP_QSTR_af, MP_QSTR_mode,
         MP_QSTR_type, MP_QSTR_strength
     };
@@ -542,9 +541,9 @@ STATIC mp_obj_t pin_get_config(mp_obj_t self_in) {
     pin_config[3] = mp_obj_new_int(self->type);
     pin_config[4] = mp_obj_new_int(self->strength);
 
-    return mp_obj_new_attrtuple(pin_config_fields, 5, pin_config);
+    return mp_obj_new_attrtuple(pin_info_fields, 5, pin_config);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_get_config_obj, pin_get_config);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_info_obj, pin_info);
 
 /// \method callback(method, mode, priority, pwrmode)
 /// Creates a callback object associated to a pin
@@ -682,7 +681,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_low),                     (mp_obj_t)&pin_low_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_high),                    (mp_obj_t)&pin_high_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),                  (mp_obj_t)&pin_toggle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get_config),              (mp_obj_t)&pin_get_config_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info),                    (mp_obj_t)&pin_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback),                (mp_obj_t)&pin_callback_obj },
 
     // class constants
