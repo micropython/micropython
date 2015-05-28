@@ -363,21 +363,11 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
     if ((flags & PF_FLAG_PAD_AFTER_SIGN) && buf[0] < '0') {
         // We have a sign character
         s++;
-        if (*s <= '9' || (flags & PF_FLAG_PAD_NAN_INF)) {
-            // We have a number, or we have a inf/nan and PAD_NAN_INF is set
-            // With '{:06e}'.format(float('-inf')) you get '-00inf'
-            chrs += mp_print_strn(print, &buf[0], 1, 0, 0, 1);
-            width--;
-            len--;
-        }
+        chrs += mp_print_strn(print, &buf[0], 1, 0, 0, 1);
+        width--;
+        len--;
     }
 
-    if (*s > 'A' && (flags & PF_FLAG_PAD_NAN_INF) == 0) {
-        // We have one of the inf or nan variants, suppress zero fill.
-        // With printf, if you use: printf("%06e", -inf) then you get "  -inf"
-        // so suppress the zero fill.
-        fill = ' ';
-    }
     chrs += mp_print_strn(print, s, len, flags, fill, width);
 
     return chrs;

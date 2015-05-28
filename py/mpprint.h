@@ -37,8 +37,7 @@
 #define PF_FLAG_PAD_AFTER_SIGN    (0x040)
 #define PF_FLAG_CENTER_ADJUST     (0x080)
 #define PF_FLAG_ADD_PERCENT       (0x100)
-#define PF_FLAG_PAD_NAN_INF       (0x200)
-#define PF_FLAG_SHOW_OCTAL_LETTER (0x400)
+#define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
 
 typedef void (*mp_print_strn_t)(void *data, const char *str, mp_uint_t len);
 

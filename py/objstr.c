@@ -1200,7 +1200,6 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 type = 'g';
             }
 
-            flags |= PF_FLAG_PAD_NAN_INF; // '{:06e}'.format(float('-inf')) should give '-00inf'
             switch (type) {
 #if MICROPY_PY_BUILTINS_FLOAT
                 case 'e':

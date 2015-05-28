@@ -23,6 +23,10 @@ test("{:10.4F}", -123.456)
 test("{:10.4G}", 123.456)
 test("{:10.4G}", -123.456)
 
+test("{:06e}", float("inf"))
+test("{:06e}", float("-inf"))
+test("{:06e}", float("nan"))
+
 # The following fails right now
 #test("{:10.1}", 0.0)
 
