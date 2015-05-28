@@ -1,10 +1,11 @@
 # Select the board to build for: if not given on the command line,
-# then default to LAUNCHXL
-BOARD ?= LAUNCHXL
+# then default to WIPY
+BOARD ?= WIPY
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
 
+# Make 'release' the default build type
 BTYPE ?= release
 
 # If the build directory is not given, make it reflect the board name.
