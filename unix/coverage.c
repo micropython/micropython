@@ -8,6 +8,21 @@
 
 // function to run extra tests for things that can't be checked by scripts
 STATIC mp_obj_t extra_coverage(void) {
+    // mp_printf (used by ports that don't have a native printf)
+    {
+        printf("# mp_printf\n");
+        mp_printf(&mp_plat_print, "%"); // nothing after percent
+        mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
+        mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
+        mp_printf(&mp_plat_print, "%ld\n", 123); // long
+        mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
+        mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
+        mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
+        mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
+        mp_printf(&mp_plat_print, "%s\n", NULL); // null string
+        mp_printf(&mp_plat_print, "%t\n"); // non-format char
+    }
+
     // vstr
     {
         printf("# vstr\n");

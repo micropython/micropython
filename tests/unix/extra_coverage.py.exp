@@ -1,3 +1,13 @@
+# mp_printf
+-123 +123  123
+-0123
+123
+1ABCDEF
+ab abc
+
+false true
+(null)
+t
 # vstr
 tests
 sts
