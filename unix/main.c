@@ -297,7 +297,11 @@ int main(int argc, char **argv) {
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
+        #ifdef MICROPY_PY_SYS_PATH_DEFAULT
+        path = MICROPY_PY_SYS_PATH_DEFAULT;
+        #else
         path = "~/.micropython/lib:/usr/lib/micropython";
+        #endif
     }
     mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
