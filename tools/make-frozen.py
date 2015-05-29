@@ -49,8 +49,8 @@ print("const char mp_frozen_content[] = {")
 for f, st in modules:
     m = module_name(f)
     print('"%s\\0"' % m)
-    data = open(sys.argv[1] + "/" + f).read()
-    data = repr(data)[1:-1]
+    data = open(sys.argv[1] + "/" + f, "rb").read()
+    data = repr(data)[2:-1]
     data = data.replace('"', '\\"')
     print('"%s"' % data)
 print("};")
