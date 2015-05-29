@@ -227,11 +227,11 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
         }
             break;
         case SL_WLAN_DISCONNECT_EVENT:
-        {
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED);
+        #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
             servers_reset();
-        }
+        #endif
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
         {
@@ -245,7 +245,9 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
             wlan_obj.staconnected = false;
+        #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
             servers_reset();
+        #endif
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
             // TODO
@@ -1002,15 +1004,20 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_callback_obj, 1, wlan_callback);
 
 /// \method info()
-/// returns (mode, security, ssid/name, mac)
+/// returns (mode, ssid, security, mac)
 STATIC mp_obj_t wlan_info (mp_obj_t self_in) {
-    mp_obj_t info[4];
-    info[0] = mp_obj_new_int(wlan_obj.mode);
-    info[1] = mp_obj_new_int(wlan_obj.security);
-    info[2] = wlan_obj.mode != ROLE_STA ?
+    STATIC const qstr wlan_info_fields[] = {
+        MP_QSTR_mode, MP_QSTR_ssid,
+        MP_QSTR_security, MP_QSTR_mac
+    };
+
+    mp_obj_t wlan_info[4];
+    wlan_info[0] = mp_obj_new_int(wlan_obj.mode);
+    wlan_info[1] = wlan_obj.mode != ROLE_STA ?
               mp_obj_new_str((const char *)wlan_obj.ssid, strlen((const char *)wlan_obj.ssid), false) : MP_OBJ_NEW_QSTR(MP_QSTR_);
-    info[3] = mp_obj_new_bytes((const byte *)wlan_obj.mac, SL_BSSID_LENGTH);
-    return mp_obj_new_tuple(MP_ARRAY_SIZE(info), info);
+    wlan_info[2] = mp_obj_new_int(wlan_obj.security);
+    wlan_info[3] = mp_obj_new_bytes((const byte *)wlan_obj.mac, SL_BSSID_LENGTH);
+    return mp_obj_new_attrtuple(wlan_info_fields, MP_ARRAY_SIZE(wlan_info), wlan_info);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_info_obj, wlan_info);
 
