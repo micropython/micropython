@@ -1,6 +1,11 @@
+"""
+Process raw qstr file and output qstr data with length, hash and data bytes.
+
+This script works with Python 2.6, 2.7, 3.3 and 3.4.
+"""
+
 from __future__ import print_function
 
-import argparse
 import re
 import sys
 
@@ -97,17 +102,5 @@ def do_work(infiles):
         qlen_str = ('\\x%02x' * cfg_bytes_len) % tuple(((qlen >> (8 * i)) & 0xff) for i in range(cfg_bytes_len))
         print('QDEF(MP_QSTR_%s, (const byte*)"\\x%02x\\x%02x%s" "%s")' % (ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen_str, qdata))
 
-    return True
-
-def main():
-    arg_parser = argparse.ArgumentParser(description='Process raw qstr file and output qstr data with length, hash and data bytes')
-    arg_parser.add_argument('files', nargs='+', help='input file(s)')
-    args = arg_parser.parse_args()
-
-    result = do_work(args.files)
-    if not result:
-        print('exiting with error code', file=sys.stderr)
-        exit(1)
-
 if __name__ == "__main__":
-    main()
+    do_work(sys.argv[1:])

@@ -1,4 +1,8 @@
-# This script works with Python 2 and 3
+"""
+Generate header file with macros defining MicroPython version info.
+
+This script works with Python 2.6, 2.7, 3.3 and 3.4.
+"""
 
 from __future__ import print_function
 
@@ -8,6 +12,13 @@ import datetime
 import subprocess
 
 def get_version_info_from_git():
+    # Python 2.6 doesn't have check_output, so check for that
+    try:
+        subprocess.check_output
+        subprocess.check_call
+    except AttributeError:
+        return None
+
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(["git", "describe", "--dirty", "--always"], universal_newlines=True).strip()
@@ -89,4 +100,5 @@ def make_version_header(filename):
         with open(filename, 'w') as f:
             f.write(file_data)
 
-make_version_header(sys.argv[1])
+if __name__ == "__main__":
+    make_version_header(sys.argv[1])
