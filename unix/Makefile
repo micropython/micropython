@@ -103,6 +103,11 @@ SRC_C = \
 	coverage.c \
 	$(SRC_MOD)
 
+# Include builtin package manager in the standard build
+ifeq ($(PROG),micropython)
+SRC_C += _frozen_upip.c
+endif
+
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	)
@@ -153,3 +158,9 @@ coverage_test: coverage
 	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
 	gcov -o build-coverage/py ../py/*.c
 	gcov -o build-coverage/extmod ../extmod/*.c
+
+_frozen_upip.c: frozen_upip/upip.py
+	../tools/make-frozen.py frozen_upip > $@
+
+frozen_upip/upip.py:
+	../tools/bootstrap_upip.sh frozen_upip
