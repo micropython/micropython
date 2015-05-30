@@ -135,11 +135,12 @@ $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
+# Note: we need to protect the qstr names from the preprocessor, so we wrap
+# the lines in "" and then unwrap after the preprocessor is finished.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
-	$(ECHO) "CPP $<"
-	$(Q)$(CPP) $(CFLAGS) $(PY_QSTR_DEFS) -o $(HEADER_BUILD)/qstrdefs.preprocessed.h
-	$(ECHO) "makeqstrdata $(PY_QSTR_DEFS) $(QSTR_DEFS)"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h $(QSTR_DEFS) > $@
+	$(ECHO) "GEN $@"
+	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | sed 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 # emitters
 
