@@ -35,7 +35,7 @@
 #include <math.h>
 #endif
 
-STATIC NORETURN void raise(mp_obj_t exc, mp_lexer_t *lex) {
+STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // if lex!=NULL then the parser called us and we need to make a SyntaxError with traceback
     if (lex != NULL) {
         ((mp_obj_base_t*)exc)->type = &mp_type_SyntaxError;
@@ -146,11 +146,11 @@ value_error:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
             "invalid syntax for integer");
-        raise(exc, lex);
+        raise_exc(exc, lex);
     } else {
         mp_obj_t exc = mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "invalid syntax for integer with base %d: '%.*s'", base, top - str_val_start, str_val_start);
-        raise(exc, lex);
+        raise_exc(exc, lex);
     }
 }
 
@@ -288,16 +288,16 @@ mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, b
         return mp_obj_new_complex(dec_val, 0);
 #else
     if (imag || force_complex) {
-        raise(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
+        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
 #endif
     } else {
         return mp_obj_new_float(dec_val);
     }
 
 value_error:
-    raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid syntax for number"), lex);
+    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid syntax for number"), lex);
 
 #else
-    raise(mp_obj_new_exception_msg(&mp_type_ValueError, "decimal numbers not supported"), lex);
+    raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "decimal numbers not supported"), lex);
 #endif
 }
