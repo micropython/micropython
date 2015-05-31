@@ -103,8 +103,10 @@ SRC_C = \
 	coverage.c \
 	$(SRC_MOD)
 
-# Include builtin package manager in the standard build
+# Include builtin package manager in the standard build (and coverage)
 ifeq ($(PROG),micropython)
+SRC_C += _frozen_upip.c
+else ifeq ($(PROG),micropython_coverage)
 SRC_C += _frozen_upip.c
 endif
 
