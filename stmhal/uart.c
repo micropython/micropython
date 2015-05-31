@@ -185,6 +185,31 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             break;
         #endif
 
+        #if defined(UART5) && \
+            defined(MICROPY_HW_UART5_TX_PORT) && \
+            defined(MICROPY_HW_UART5_TX_PIN) && \
+            defined(MICROPY_HW_UART5_RX_PORT) && \
+            defined(MICROPY_HW_UART5_RX_PIN)
+        case PYB_UART_5:
+            UARTx = UART5;
+            irqn = UART5_IRQn;
+            GPIO_AF_UARTx = GPIO_AF8_UART5;
+            GPIO_Port = MICROPY_HW_UART5_TX_PORT;
+            GPIO_Pin = MICROPY_HW_UART5_TX_PIN;
+            __UART5_CLK_ENABLE();
+
+            // The code after the case only deals with the case where the TX & RX
+            // pins are on the same port. UART5 has them on different ports.
+            GPIO_InitTypeDef GPIO_InitStructure;
+            GPIO_InitStructure.Pin = MICROPY_HW_UART5_RX_PIN;
+            GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
+            GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+            GPIO_InitStructure.Pull = GPIO_PULLUP;
+            GPIO_InitStructure.Alternate = GPIO_AF_UARTx;
+            HAL_GPIO_Init(MICROPY_HW_UART5_RX_PORT, &GPIO_InitStructure);
+            break;
+        #endif
+
         #if defined(MICROPY_HW_UART6_PORT) && defined(MICROPY_HW_UART6_PINS)
         // USART6 is on PC6/PC7 (CK on PC8)
         case PYB_UART_6:
@@ -595,6 +620,13 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __UART4_FORCE_RESET();
         __UART4_RELEASE_RESET();
         __UART4_CLK_DISABLE();
+    #endif
+    #if defined(UART5)
+    } else if (uart->Instance == UART5) {
+        HAL_NVIC_DisableIRQ(UART5_IRQn);
+        __UART5_FORCE_RESET();
+        __UART5_RELEASE_RESET();
+        __UART5_CLK_DISABLE();
     #endif
     } else if (uart->Instance == USART6) {
         HAL_NVIC_DisableIRQ(USART6_IRQn);
