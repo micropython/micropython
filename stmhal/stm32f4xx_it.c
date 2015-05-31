@@ -413,6 +413,10 @@ void UART4_IRQHandler(void) {
     uart_irq_handler(4);
 }
 
+void UART5_IRQHandler(void) {
+    uart_irq_handler(5);
+}
+
 void USART6_IRQHandler(void) {
     uart_irq_handler(6);
 }
