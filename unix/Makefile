@@ -162,5 +162,12 @@ coverage_test: coverage
 _frozen_upip.c: frozen_upip/upip.py
 	../tools/make-frozen.py frozen_upip > $@
 
-frozen_upip/upip.py:
-	../tools/bootstrap_upip.sh frozen_upip
+# Select latest upip version available
+UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)
+
+frozen_upip/upip.py: $(UPIP_TARBALL)
+	rm -rf micropython-upip-*
+	tar xfz $^
+	rm -rf frozen_upip
+	mkdir -p frozen_upip
+	cp micropython-upip-*/upip*.py frozen_upip/
