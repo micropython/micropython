@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include "py/lexer.h"
+#include "py/frozenmod.h"
 
 #if MICROPY_MODULE_FROZEN
 
