@@ -4,9 +4,10 @@
   <ItemGroup>
     <ClCompile Include="$(PyBaseDir)py\*.c" />
     <ClCompile Include="$(PyBaseDir)extmod\*.c" />
-    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\alloc.c;$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modsocket.c;$(PyBaseDir)unix\modtermios.c;$(PyBaseDir)unix\seg_helpers.c" />
+    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\alloc.c;$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modsocket.c;$(PyBaseDir)unix\modtermios.c;$(PyBaseDir)unix\seg_helpers.c;$(PyBaseDir)unix\unix_mphal.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
+    <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(PyBaseDir)py\*.h" />

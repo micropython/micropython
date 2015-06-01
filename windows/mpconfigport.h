@@ -26,9 +26,9 @@
 
 // options to control how Micro Python is built
 
-// Linking with GNU readline causes binary to be licensed under GPL
+// Linking with GNU readline (MICROPY_USE_READLINE == 2) causes binary to be licensed under GPL
 #ifndef MICROPY_USE_READLINE
-#define MICROPY_USE_READLINE        (0)
+#define MICROPY_USE_READLINE        (1)
 #endif
 
 #define MICROPY_ALLOC_PATH_MAX      (260) //see minwindef.h for msvc or limits.h for mingw
@@ -43,6 +43,7 @@
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
+#define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
@@ -138,6 +139,15 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
+
+#if MICROPY_USE_READLINE == 1
+#define MICROPY_PORT_ROOT_POINTERS \
+    char *readline_hist[50];
+#endif
+
+#define MP_STATE_PORT               MP_STATE_VM
+
+#define MICROPY_HAL_H               "windows_mphal.h"
 
 // We need to provide a declaration/definition of alloca()
 #include <malloc.h>
