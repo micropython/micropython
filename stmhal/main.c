@@ -62,7 +62,9 @@
 #include "modnetwork.h"
 #include MICROPY_HAL_H
 
+#ifndef MCU_STM32F2
 void SystemClock_Config(void);
+#endif
 
 static FATFS fatfs0;
 #if MICROPY_HW_HAS_SDCARD
@@ -259,8 +261,10 @@ int main(void) {
        */
     HAL_Init();
 
+#ifndef MCU_STM32F2
     // set the system clock to be HSE
     SystemClock_Config();
+#endif
 
     // enable GPIO clocks
     __GPIOA_CLK_ENABLE();
@@ -268,8 +272,10 @@ int main(void) {
     __GPIOC_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
 
+#ifndef MCU_STM32F2
     // enable the CCM RAM
     __CCMDATARAMEN_CLK_ENABLE();
+#endif
 
 #if 0
 #if defined(NETDUINO_PLUS_2)

@@ -25,8 +25,8 @@
  */
 
 #include <stdio.h>
-#include <stm32f4xx_hal.h>
 #include <string.h>
+#include HAL_H
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -59,7 +59,7 @@
 #if defined(STM32F405xx) || defined(STM32F415xx) || \
     defined(STM32F407xx) || defined(STM32F417xx) || \
     defined(STM32F401xC) || defined(STM32F401xE) || \
-    defined(STM32F411xE)
+    defined(STM32F411xE) || defined(STM32F205xx)
 #define VBAT_DIV (2)
 #elif defined(STM32F427xx) || defined(STM32F429xx) || \
       defined(STM32F437xx) || defined(STM32F439xx)

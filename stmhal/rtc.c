@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 
-#include "stm32f4xx_hal.h"
+#include HAL_H
 
 #include "py/runtime.h"
 #include "rtc.h"
@@ -44,6 +44,8 @@
 ///     print(rtc.datetime())
 
 RTC_HandleTypeDef RTCHandle;
+
+#if MICROPY_HW_ENABLE_RTC
 
 // rtc_info indicates various things about RTC startup
 // it's a bit of a hack at the moment
@@ -530,7 +532,7 @@ mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_calibration_obj, 1, 2, pyb_rtc_calibration);
-    
+
 STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_rtc_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
@@ -545,3 +547,5 @@ const mp_obj_type_t pyb_rtc_type = {
     .make_new = pyb_rtc_make_new,
     .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
 };
+
+#endif
