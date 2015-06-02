@@ -170,7 +170,7 @@ UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)
 frozen_upip/upip.py: $(UPIP_TARBALL)
 	$(Q)rm -rf micropython-upip-*
 	$(ECHO) "MISC Preparing upip as frozen module"
-	$(Q)tar xfz $^
+	$(Q)tar -C $(BUILD) -xz -f $^
 	$(Q)rm -rf frozen_upip
 	$(Q)mkdir -p frozen_upip
-	$(Q)cp micropython-upip-*/upip*.py frozen_upip/
+	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py frozen_upip/
