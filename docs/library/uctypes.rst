@@ -96,10 +96,11 @@ Following are encoding examples for various field types:
 Module contents
 ---------------
 
-.. class:: struct(descriptor, layout_type)
+.. class:: struct(descriptor, addr, layout_type-NATIVE)
 
-   Create a "foreign data structure" class based on its descriptor (encoded
-   as a dictionary) and layout type (see below).
+   Instantiate a "foreign data structure" object based on structure descriptor
+   (encoded as a dictionary), layout type (see below), and actual structure
+   address.
 
 .. data:: LITTLE_ENDIAN
 
@@ -140,16 +141,16 @@ Module contents
    so it can be both written too, and you will access current value
    at the given memory address.
 
-Structure classes and instantiating structure objects
+Structure descriptors and instantiating structure objects
 -----------------------------------------------------
 
-Given structure descriptor and layout type, you can instantiate a
-"structure class" using uctypes.struct() factory function. From it,
-you can instantiate a specific structure instance at a given
-memory address. Memory address usually comes from following sources:
+Given a structure descriptor dictionary and its layout type, you can
+instantiate a specific structure instance at a given memory address
+using uctypes.struct() constructor. Memory address usually comes from
+following sources:
 
 * Predefined address, when accessing hardware registers on a baremetal
-  port. Lookup these addresses in datasheet for a particular MCU/SoC.
+  system. Lookup these addresses in datasheet for a particular MCU/SoC.
 * As return value from a call to some FFI (Foreign Function Interface)
   function.
 * From uctypes.addressof(), when you want to pass arguments to FFI
