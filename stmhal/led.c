@@ -122,6 +122,11 @@ void led_state(pyb_led_t led, int state) {
         }
         return;
     }
+#ifdef MCU_STM32F2
+    if (led == 3) {
+      state = !state;
+    }
+#endif
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
     //printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
