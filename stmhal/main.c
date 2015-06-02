@@ -394,9 +394,18 @@ soft_reset:
     timer_init0();
     uart_init0();
 
-    // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
-    // as well as on USB VCP
-#if 0
+
+#ifdef MCU_STM32F2
+    {
+        mp_obj_t args[2] = {
+            MP_OBJ_NEW_SMALL_INT(PYB_UART_1),
+            MP_OBJ_NEW_SMALL_INT(115200),
+        };
+        MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+    }
+#elif 0
+// Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
+// as well as on USB VCP
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(PYB_UART_6),
