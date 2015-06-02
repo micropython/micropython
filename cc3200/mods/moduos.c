@@ -150,9 +150,11 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
     if (path[0] == '/' && path[1] == '\0') {
         mp_obj_t dir_list = mp_obj_new_list(0, NULL);
         mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
+#if MICROPY_HW_HAS_SDCARD
         if (sd_in_root()) {
             mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
         }
+#endif
         return dir_list;
     }
 
