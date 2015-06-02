@@ -96,7 +96,7 @@ Following are encoding examples for various field types:
 Module contents
 ---------------
 
-.. class:: struct(descriptor, addr, layout_type-NATIVE)
+.. class:: struct(descriptor, addr, layout_type=NATIVE)
 
    Instantiate a "foreign data structure" object based on structure descriptor
    (encoded as a dictionary), layout type (see below), and actual structure
