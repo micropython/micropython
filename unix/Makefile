@@ -161,16 +161,16 @@ coverage_test: coverage
 	gcov -o build-coverage/py ../py/*.c
 	gcov -o build-coverage/extmod ../extmod/*.c
 
-$(BUILD)/_frozen_upip.c: frozen_upip/upip.py
-	../tools/make-frozen.py frozen_upip > $@
+$(BUILD)/_frozen_upip.c: $(BUILD)/frozen_upip/upip.py
+	../tools/make-frozen.py $(dir $^) > $@
 
 # Select latest upip version available
 UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)
 
-frozen_upip/upip.py: $(UPIP_TARBALL)
-	$(Q)rm -rf micropython-upip-*
+$(BUILD)/frozen_upip/upip.py: $(UPIP_TARBALL)
 	$(ECHO) "MISC Preparing upip as frozen module"
+	$(Q)rm -rf $(BUILD)/micropython-upip-*
 	$(Q)tar -C $(BUILD) -xz -f $^
-	$(Q)rm -rf frozen_upip
-	$(Q)mkdir -p frozen_upip
-	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py frozen_upip/
+	$(Q)rm -rf $(dir $@)
+	$(Q)mkdir -p $(dir $@)
+	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py $(dir $@)
