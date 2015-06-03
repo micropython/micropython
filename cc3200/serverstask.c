@@ -43,23 +43,27 @@
  DECLARE PRIVATE DEFINITIONS
  ******************************************************************************/
 
-#define SERVERS_DEF_USER            "micro"
-#define SERVERS_DEF_PASS            "python"
+#define SERVERS_DEF_USER                "micro"
+#define SERVERS_DEF_PASS                "python"
+#define SERVERS_DEF_TIMEOUT_MS          300000        // 5 minutes
+#define SERVERS_MIN_TIMEOUT_MS          5000          // 5 seconds
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
  ******************************************************************************/
 typedef struct {
-    volatile bool enabled;
-    volatile bool do_disable;
-    volatile bool do_enable;
-    volatile bool do_reset;
-}servers_Data_t;
+    uint32_t timeout;
+    bool enabled;
+    bool do_disable;
+    bool do_enable;
+    bool do_reset;
+} servers_data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static servers_Data_t servers_data = {.enabled = false, .do_disable = false, .do_enable = false, .do_reset = false};
+static servers_data_t servers_data = {.timeout = SERVERS_DEF_TIMEOUT_MS, .enabled = false, .do_disable = false,
+                                      .do_enable = false, .do_reset = false};
 static volatile bool sleep_sockets = false;
 
 /******************************************************************************
@@ -103,8 +107,7 @@ void TASK_Servers (void *pvParameters) {
             servers_data.do_disable = false;
             servers_data.enabled = false;
         }
-
-        if (servers_data.do_reset) {
+        else if (servers_data.do_reset && servers_data.enabled) {
             telnet_reset();
             ftp_reset();
             servers_data.do_reset = false;
@@ -112,13 +115,12 @@ void TASK_Servers (void *pvParameters) {
             // and we should also close all user sockets
             modusocket_close_all_user_sockets();
         }
+
+        if (cycle) {
+            telnet_run();
+        }
         else {
-            if (cycle) {
-                telnet_run();
-            }
-            else {
-                ftp_run();
-            }
+            ftp_run();
         }
 
         if (sleep_sockets) {
@@ -174,6 +176,18 @@ void servers_close_socket (int16_t *sd) {
 void servers_set_login (char *user, char *pass) {
     memcpy(servers_user, user, SERVERS_USER_PASS_LEN_MAX);
     memcpy(servers_pass, pass, SERVERS_USER_PASS_LEN_MAX);
+}
+
+bool servers_set_timeout (uint32_t timeout) {
+    if (timeout < SERVERS_MIN_TIMEOUT_MS) {
+        return false;
+    }
+    servers_data.timeout = timeout;
+    return true;
+}
+
+uint32_t servers_get_timeout (void) {
+    return servers_data.timeout;
 }
 
 /******************************************************************************

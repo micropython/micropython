@@ -37,36 +37,54 @@
 
 /// \module network - network configuration
 ///
-/// This module provides network drivers and routing configuration.
+/// This module provides network drivers and server configuration.
 
 void mod_network_init0(void) {
 }
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-STATIC mp_obj_t network_server_start(void) {
-    servers_start();
-    return mp_const_none;
+STATIC mp_obj_t network_server_running(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args > 0) {
+        // set
+        if (mp_obj_is_true(args[0])) {
+            servers_start();
+        } else {
+            servers_stop();
+        }
+        return mp_const_none;
+    } else {
+        // get
+        return MP_BOOL(servers_are_enabled());
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_start_obj, network_server_start);
-
-STATIC mp_obj_t network_server_stop(void) {
-    servers_stop();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_stop_obj, network_server_stop);
-
-STATIC mp_obj_t network_server_running(void) {
-    return MP_BOOL(servers_are_enabled());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_server_running_obj, network_server_running);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_server_running_obj, 0, 1, network_server_running);
 
 STATIC mp_obj_t network_server_login(mp_obj_t user, mp_obj_t pass) {
     const char *_user = mp_obj_str_get_str(user);
     const char *_pass = mp_obj_str_get_str(pass);
+    if (strlen(user) > SERVERS_USER_PASS_LEN_MAX || strlen(pass) > SERVERS_USER_PASS_LEN_MAX) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
     servers_set_login ((char *)_user, (char *)_pass);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(network_server_login_obj, network_server_login);
+
+// timeout value given in seconds
+STATIC mp_obj_t network_server_timeout(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args > 0) {
+        uint32_t _timeout = mp_obj_get_int(args[0]);
+        if (!servers_set_timeout(_timeout * 1000)) {
+            // timeout is too low
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+        return mp_const_none;
+    } else {
+        // get
+        return mp_obj_new_int(servers_get_timeout() / 1000);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_server_timeout_obj, 0, 1, network_server_timeout);
 #endif
 
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
@@ -74,10 +92,9 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN),                (mp_obj_t)&mod_network_nic_type_wlan },
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_start_server),        (mp_obj_t)&network_server_start_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stop_server),         (mp_obj_t)&network_server_stop_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_server_running),      (mp_obj_t)&network_server_running_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_server_login),        (mp_obj_t)&network_server_login_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_server_timeout),      (mp_obj_t)&network_server_timeout_obj },
 #endif
 };
 

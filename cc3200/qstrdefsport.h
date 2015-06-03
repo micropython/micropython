@@ -237,10 +237,9 @@ Q(IPPROTO_RAW)
 
 // for network class
 Q(network)
-Q(start_server)
-Q(stop_server)
 Q(server_running)
 Q(server_login)
+Q(server_timeout)
 
 // for WLAN class
 Q(WLAN)

@@ -193,7 +193,6 @@ STATIC void wlan_reenable (SlWlanMode_t mode);
 STATIC void wlan_servers_start (void);
 STATIC void wlan_servers_stop (void);
 STATIC void wlan_get_sl_mac (void);
-STATIC bool wlan_is_connected (void);
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len, uint32_t timeout);
 STATIC void wlan_lpds_callback_enable (mp_obj_t self_in);
@@ -224,6 +223,11 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             memcpy(wlan_obj.ssid_o, pEventData->ssid_name, pEventData->ssid_len);
             wlan_obj.ssid_o[pEventData->ssid_len] = '\0';
             SET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
+        #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+            // we must reset the servers in case that the last connection
+            // was lost without any notification being received
+            servers_reset();
+        #endif
         }
             break;
         case SL_WLAN_DISCONNECT_EVENT:
@@ -241,6 +245,11 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             memcpy(wlan_obj.ssid_o, pEventData->go_peer_device_name, pEventData->go_peer_device_name_len);
             wlan_obj.ssid_o[pEventData->go_peer_device_name_len] = '\0';
             wlan_obj.staconnected = true;
+        #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+            // we must reset the servers in case that the last connection
+            // was lost without any notification being received
+            servers_reset();
+        #endif
         }
             break;
         case SL_WLAN_STA_DISCONNECTED_EVENT:
@@ -547,12 +556,17 @@ void wlan_get_ip (uint32_t *ip) {
     }
 }
 
+bool wlan_is_connected (void) {
+    return ((GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION) &&
+             GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) || wlan_obj.staconnected);
+}
+
 //*****************************************************************************
 // DEFINE STATIC FUNCTIONS
 //*****************************************************************************
 
 STATIC void wlan_initialize_data (void) {
-    wlan_obj.status = 0;
+    CLR_STATUS_BIT_ALL(wlan_obj.status);
     wlan_obj.dns = 0;
     wlan_obj.gateway = 0;
     wlan_obj.ip = 0;
@@ -567,7 +581,8 @@ STATIC void wlan_reenable (SlWlanMode_t mode) {
     // stop and start again
     sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
     sl_Stop(SL_STOP_TIMEOUT);
-    wlan_obj.status = 0;
+    CLR_STATUS_BIT_ALL(wlan_obj.status);
+    wlan_obj.staconnected = false;
     wlan_obj.mode = sl_Start(0, 0, 0);
     sl_LockObjUnlock (&wlan_LockObj);
     ASSERT (wlan_obj.mode == mode);
@@ -618,11 +633,6 @@ STATIC void wlan_get_sl_mac (void) {
     // Get the MAC address
     uint8_t macAddrLen = SL_MAC_ADDR_LEN;
     sl_NetCfgGet(SL_MAC_ADDRESS_GET, NULL, &macAddrLen, wlan_obj.mac);
-}
-
-STATIC bool wlan_is_connected (void) {
-    return ((GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION) &&
-             GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) || wlan_obj.staconnected);
 }
 
 /// \method init(mode, ssid=None, *, security=wlan.OPEN, key=None, channel=5)

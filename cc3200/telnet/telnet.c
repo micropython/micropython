@@ -49,7 +49,6 @@
 #define TELNET_TX_RETRIES_MAX               25
 #define TELNET_WAIT_TIME_MS                 5
 #define TELNET_LOGIN_RETRIES_MAX            3
-#define TELNET_TIMEOUT_MS                   300000        // 5 minutes
 #define TELNET_CYCLE_TIME_MS                (SERVERS_CYCLE_TIME_MS * 2)
 
 /******************************************************************************
@@ -151,7 +150,7 @@ void telnet_run (void) {
             telnet_wait_for_enabled();
             break;
         case E_TELNET_STE_START:
-            if (telnet_create_socket()) {
+            if (wlan_is_connected() && telnet_create_socket()) {
                 telnet_data.state = E_TELNET_STE_LISTEN;
             }
             break;
@@ -237,7 +236,7 @@ void telnet_run (void) {
     }
 
     if (telnet_data.state >= E_TELNET_STE_CONNECTED) {
-        if (telnet_data.timeout++ > (TELNET_TIMEOUT_MS / TELNET_CYCLE_TIME_MS)) {
+        if (telnet_data.timeout++ > (servers_get_timeout() / TELNET_CYCLE_TIME_MS)) {
             telnet_reset();
         }
     }
