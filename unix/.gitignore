@@ -1,8 +1,9 @@
 build
 build-fast
 build-minimal
+build-coverage
 micropython
 micropython_fast
 micropython_minimal
+micropython_coverage
 *.py
-micropython-upip-*
