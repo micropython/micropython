@@ -32,7 +32,6 @@
 extern const mp_obj_type_t pyb_wdt_type;
 
 void pybwdt_init0 (void);
-void pybwdt_kick (void);
 void pybwdt_srv_alive (void);
 void pybwdt_srv_sleeping (bool state);
 void pybwdt_sl_alive (void);

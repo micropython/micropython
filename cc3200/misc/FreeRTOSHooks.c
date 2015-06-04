@@ -34,7 +34,6 @@
 #include "inc/hw_memmap.h"
 #include "pybuart.h"
 #include "osi.h"
-#include "pybwdt.h"
 #include "mperror.h"
 
 
@@ -49,8 +48,6 @@
 //*****************************************************************************
 void vApplicationIdleHook (void)
 {
-    // kick the watchdog
-    pybwdt_kick();
     // signal that we are alive and kicking
     mperror_heartbeat_signal();
     // gate the processor's clock to save power
