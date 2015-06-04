@@ -1424,10 +1424,17 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
     vtype_kind_t vtype_base = peek_vtype(emit, 1);
 
     if (vtype_base == VTYPE_PYOBJ) {
-        // standard Python call
-        vtype_kind_t vtype_index;
-        emit_pre_pop_reg_reg(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1);
-        assert(vtype_index == VTYPE_PYOBJ);
+        // standard Python subscr
+        // TODO factor this implicit cast code with other uses of it
+        vtype_kind_t vtype_index = peek_vtype(emit, 0);
+        if (vtype_index == VTYPE_PYOBJ) {
+            emit_pre_pop_reg(emit, &vtype_index, REG_ARG_2);
+        } else {
+            emit_pre_pop_reg(emit, &vtype_index, REG_ARG_1);
+            emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype_index, REG_ARG_2); // arg2 = type
+            ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
+        }
+        emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
         emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, (mp_uint_t)MP_OBJ_SENTINEL, REG_ARG_3);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
@@ -1599,11 +1606,16 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     vtype_kind_t vtype_base = peek_vtype(emit, 1);
 
     if (vtype_base == VTYPE_PYOBJ) {
-        // standard Python call
-        vtype_kind_t vtype_index, vtype_value;
+        // standard Python subscr
+        vtype_kind_t vtype_index = peek_vtype(emit, 0);
+        vtype_kind_t vtype_value = peek_vtype(emit, 2);
+        if (vtype_index != VTYPE_PYOBJ || vtype_value != VTYPE_PYOBJ) {
+            // need to implicitly convert non-objects to objects
+            // TODO do this properly
+            emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_1, 3);
+            adjust_stack(emit, 3);
+        }
         emit_pre_pop_reg_reg_reg(emit, &vtype_index, REG_ARG_2, &vtype_base, REG_ARG_1, &vtype_value, REG_ARG_3);
-        assert(vtype_index == VTYPE_PYOBJ);
-        assert(vtype_value == VTYPE_PYOBJ);
         emit_call(emit, MP_F_OBJ_SUBSCR);
     } else {
         // viper store
@@ -2081,7 +2093,9 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             emit_post_push_reg(emit, VTYPE_BOOL, REG_RET);
         } else {
             // TODO other ops not yet implemented
-            assert(0);
+            adjust_stack(emit, 1);
+            EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                "binary op %q not implemented", mp_binary_op_method_name[op]);
         }
     } else if (vtype_lhs == VTYPE_PYOBJ && vtype_rhs == VTYPE_PYOBJ) {
         emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_3, &vtype_lhs, REG_ARG_2);
