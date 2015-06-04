@@ -19,6 +19,17 @@ sub(-1, 2)
 sub(-42, -3)
 
 @micropython.viper
+def mul(x:int, y:int):
+    print(x * y)
+    print(y * x)
+mul(0, 1)
+mul(1, -1)
+mul(1, 2)
+mul(8, 3)
+mul(-3, 4)
+mul(-9, -6)
+
+@micropython.viper
 def shl(x:int, y:int):
     print(x << y)
 shl(1, 0)

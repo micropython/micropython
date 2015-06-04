@@ -179,6 +179,12 @@ STATIC uint asm_arm_op_sub_reg(uint rd, uint rn, uint rm) {
     return 0x0400000 | (rn << 16) | (rd << 12) | rm;
 }
 
+STATIC uint asm_arm_op_mul_reg(uint rd, uint rm, uint rs) {
+    // mul rd, rm, rs
+    assert(rd != rm);
+    return 0x0000090 | (rd << 16) | (rs << 8) | rm;
+}
+
 STATIC uint asm_arm_op_and_reg(uint rd, uint rn, uint rm) {
     // and rd, rn, rm
     return 0x0000000 | (rn << 16) | (rd << 12) | rm;
@@ -338,6 +344,12 @@ void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
 void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
     // sub rd, rn, rm
     emit_al(as, asm_arm_op_sub_reg(rd, rn, rm));
+}
+
+void asm_arm_mul_reg_reg_reg(asm_arm_t *as, uint rd, uint rs, uint rm) {
+    // rs and rm are swapped because of restriction rd!=rm
+    // mul rd, rm, rs
+    emit_al(as, asm_arm_op_mul_reg(rd, rm, rs));
 }
 
 void asm_arm_and_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {

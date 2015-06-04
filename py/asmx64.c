@@ -453,6 +453,12 @@ void asm_x64_sub_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, src_r64, OPCODE_SUB_R64_FROM_RM64);
 }
 
+void asm_x64_mul_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
+    // imul reg64, reg/mem64 -- 0x0f 0xaf /r
+    asm_x64_write_byte_1(as, REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_R) | (src_r64 < 8 ? 0 : REX_B));
+    asm_x64_write_byte_3(as, 0x0f, 0xaf, MODRM_R64(dest_r64) | MODRM_RM_REG | MODRM_RM_R64(src_r64));
+}
+
 /*
 void asm_x64_sub_i32_from_r32(asm_x64_t *as, int src_i32, int dest_r32) {
     if (SIGNED_FIT8(src_i32)) {

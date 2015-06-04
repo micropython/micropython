@@ -105,6 +105,7 @@ void asm_x64_shl_r64_cl(asm_x64_t* as, int dest_r64);
 void asm_x64_sar_r64_cl(asm_x64_t* as, int dest_r64);
 void asm_x64_add_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
 void asm_x64_sub_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
+void asm_x64_mul_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
 void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);

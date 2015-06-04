@@ -369,6 +369,11 @@ STATIC void asm_x86_sub_r32_i32(asm_x86_t *as, int dest_r32, int src_i32) {
     }
 }
 
+void asm_x86_mul_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
+    // imul reg32, reg/mem32 -- 0x0f 0xaf /r
+    asm_x86_write_byte_3(as, 0x0f, 0xaf, MODRM_R32(dest_r32) | MODRM_RM_REG | MODRM_RM_R32(src_r32));
+}
+
 #if 0
 /* shifts not tested */
 void asm_x86_shl_r32_by_imm(asm_x86_t *as, int r32, int imm) {

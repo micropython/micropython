@@ -104,6 +104,7 @@ void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32);
 void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32);
 void asm_x86_add_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_sub_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
+void asm_x86_mul_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_cmp_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_test_r8_with_r8(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_setcc_r8(asm_x86_t* as, mp_uint_t jcc_type, int dest_r8);
