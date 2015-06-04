@@ -334,19 +334,22 @@ static bool telnet_create_socket (void) {
 
         // Enable non-blocking mode
         nonBlockingOption.NonblockingEnabled = 1;
-        ASSERT (sl_SetSockOpt(telnet_data.sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption)) == SL_SOC_OK);
+        ASSERT ((result = sl_SetSockOpt(telnet_data.sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption))) == SL_SOC_OK);
 
         // Bind the socket to a port number
         sServerAddress.sin_family = AF_INET;
         sServerAddress.sin_addr.s_addr = INADDR_ANY;
         sServerAddress.sin_port = htons(TELNET_PORT);
 
-        ASSERT (sl_Bind(telnet_data.sd, (const SlSockAddr_t *)&sServerAddress, sizeof(sServerAddress)) == SL_SOC_OK);
+        ASSERT ((result |= sl_Bind(telnet_data.sd, (const SlSockAddr_t *)&sServerAddress, sizeof(sServerAddress))) == SL_SOC_OK);
 
         // Start listening
-        ASSERT ((result = sl_Listen (telnet_data.sd, TELNET_MAX_CLIENTS)) == SL_SOC_OK);
+        ASSERT ((result |= sl_Listen (telnet_data.sd, TELNET_MAX_CLIENTS)) == SL_SOC_OK);
 
-        return (result == SL_SOC_OK) ? true : false;
+        if (result == SL_SOC_OK) {
+            return true;
+        }
+        servers_close_socket(&telnet_data.sd);
     }
 
     return false;

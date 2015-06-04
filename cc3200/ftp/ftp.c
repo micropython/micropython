@@ -443,19 +443,22 @@ static bool ftp_create_listening_socket (_i16 *sd, _u16 port, _u8 backlog) {
 
         // Enable non-blocking mode
         nonBlockingOption.NonblockingEnabled = 1;
-        ASSERT (sl_SetSockOpt(_sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption)) == SL_SOC_OK);
+        ASSERT ((result = sl_SetSockOpt(_sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption))) == SL_SOC_OK);
 
         // Bind the socket to a port number
         sServerAddress.sin_family = AF_INET;
         sServerAddress.sin_addr.s_addr = INADDR_ANY;
         sServerAddress.sin_port = htons(port);
 
-        ASSERT (sl_Bind(_sd, (const SlSockAddr_t *)&sServerAddress, sizeof(sServerAddress)) == SL_SOC_OK);
+        ASSERT ((result |= sl_Bind(_sd, (const SlSockAddr_t *)&sServerAddress, sizeof(sServerAddress))) == SL_SOC_OK);
 
         // Start listening
-        ASSERT ((result = sl_Listen (_sd, backlog)) == SL_SOC_OK);
+        ASSERT ((result |= sl_Listen (_sd, backlog)) == SL_SOC_OK);
 
-        return (result == SL_SOC_OK) ? true : false;
+        if (result == SL_SOC_OK) {
+            return true;
+        }
+        servers_close_socket(sd);
     }
     return false;
 }
