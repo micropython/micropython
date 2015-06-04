@@ -39,6 +39,7 @@
 
 typedef struct _mp_lexer_file_buf_t {
     int fd;
+    bool close_fd;
     byte buf[20];
     mp_uint_t len;
     mp_uint_t pos;
@@ -62,24 +63,34 @@ STATIC mp_uint_t file_buf_next_byte(mp_lexer_file_buf_t *fb) {
 }
 
 STATIC void file_buf_close(mp_lexer_file_buf_t *fb) {
-    close(fb->fd);
+    if (fb->close_fd) {
+        close(fb->fd);
+    }
     m_del_obj(mp_lexer_file_buf_t, fb);
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd) {
     mp_lexer_file_buf_t *fb = m_new_obj_maybe(mp_lexer_file_buf_t);
     if (fb == NULL) {
+        if (close_fd) {
+            close(fd);
+        }
         return NULL;
     }
-    fb->fd = open(filename, O_RDONLY);
-    if (fb->fd < 0) {
-        m_del_obj(mp_lexer_file_buf_t, fb);
-        return NULL;
-    }
+    fb->fd = fd;
+    fb->close_fd = close_fd;
     int n = read(fb->fd, fb->buf, sizeof(fb->buf));
     fb->len = n;
     fb->pos = 0;
-    return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_byte_t)file_buf_next_byte, (mp_lexer_stream_close_t)file_buf_close);
+    return mp_lexer_new(filename, fb, (mp_lexer_stream_next_byte_t)file_buf_next_byte, (mp_lexer_stream_close_t)file_buf_close);
+}
+
+mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    int fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        return NULL;
+    }
+    return mp_lexer_new_from_fd(qstr_from_str(filename), fd, true);
 }
 
 #endif // MICROPY_HELPER_LEXER_UNIX

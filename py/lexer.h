@@ -194,4 +194,8 @@ typedef enum {
 mp_import_stat_t mp_import_stat(const char *path);
 mp_lexer_t *mp_lexer_new_from_file(const char *filename);
 
+#if MICROPY_HELPER_LEXER_UNIX
+mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);
+#endif
+
 #endif // __MICROPY_INCLUDED_PY_LEXER_H__

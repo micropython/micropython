@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -447,9 +448,14 @@ int main(int argc, char **argv) {
     }
 
     if (ret == NOTHING_EXECUTED) {
-        prompt_read_history();
-        ret = do_repl();
-        prompt_write_history();
+        if (isatty(0)) {
+            prompt_read_history();
+            ret = do_repl();
+            prompt_write_history();
+        } else {
+            mp_lexer_t *lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
+            ret = execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+        }
     }
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
