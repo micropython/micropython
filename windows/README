@@ -24,3 +24,19 @@ Open micropython.vcxproj and build
 To compile using Visual Studio 2013 commandline:
 
 msbuild micropython.vcxproj
+
+
+To run on Linux using Wine:
+
+Default build (MICROPY_USE_READLINE=1) uses extended Windows console
+functions and thus should be run using "wineconsole" tool. Depending
+on Wine build configuration, you may also want to select curses backend
+which has look&feel of a standard Unix console:
+
+    wineconsole --backend=curses ./micropython.exe
+
+For more info, see https://www.winehq.org/docs/wineusr-guide/cui-programs
+
+If built without line editing and history capabilities
+(MICROPY_USE_READLINE=0), the resulting binary can be built using standard
+"wine" tool.
