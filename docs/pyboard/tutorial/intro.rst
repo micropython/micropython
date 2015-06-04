@@ -24,7 +24,7 @@ As long as you take care of the hardware, you should be okay.  It's almost
 impossible to break the software on the pyboard, so feel free to play around
 with writing code as much as you like.  If the filesystem gets corrupt, see
 below on how to reset it.  In the worst case you might need to reflash the
-Micro Python software, but that can be done over USB.
+MicroPython software, but that can be done over USB.
 
 Layout of the pyboard
 ---------------------

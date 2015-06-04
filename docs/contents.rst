@@ -1,5 +1,5 @@
-Micro Python documentation contents
-===================================
+MicroPython documentation contents
+==================================
 
 .. only:: port_pyboard
 

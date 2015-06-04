@@ -23,7 +23,7 @@ For circuit schematics and datasheets for the components on the skin see :ref:`h
 Using the LCD
 -------------
 
-To get started using the LCD, try the following at the Micro Python prompt.
+To get started using the LCD, try the following at the MicroPython prompt.
 Make sure the LCD skin is attached to the pyboard as pictured at the top of this page. ::
 
     >>> import pyb

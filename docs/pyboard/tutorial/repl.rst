@@ -1,8 +1,8 @@
-Getting a Micro Python REPL prompt
-==================================
+Getting a MicroPython REPL prompt
+=================================
 
 REPL stands for Read Evaluate Print Loop, and is the name given to the
-interactive Micro Python prompt that you can access on the pyboard.  Using
+interactive MicroPython prompt that you can access on the pyboard.  Using
 the REPL is by far the easiest way to test out your code and run commands.
 You can use the REPL in addition to writing scripts in ``main.py``.
 
@@ -59,11 +59,11 @@ or use sudo).
 Using the REPL prompt
 ---------------------
 
-Now let's try running some Micro Python code directly on the pyboard.
+Now let's try running some MicroPython code directly on the pyboard.
 
 With your serial program open (PuTTY, screen, picocom, etc) you may see a blank
 screen with a flashing cursor.  Press Enter and you should be presented with a
-Micro Python prompt, i.e. ``>>>``.  Let's make sure it is working with the obligatory test::
+MicroPython prompt, i.e. ``>>>``.  Let's make sure it is working with the obligatory test::
 
     >>> print("hello pyboard!")
     hello pyboard!
@@ -93,7 +93,7 @@ Resetting the board
 -------------------
 
 If something goes wrong, you can reset the board in two ways. The first is to press CTRL-D
-at the Micro Python prompt, which performs a soft reset.  You will see a message something like ::
+at the MicroPython prompt, which performs a soft reset.  You will see a message something like ::
 
     >>> 
     PYB: sync filesystems

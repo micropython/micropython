@@ -39,7 +39,7 @@ Constants
 
 .. data:: platform
 
-   The platform that Micro Python is running on.  This is "pyboard" on the
+   The platform that MicroPython is running on.  This is "pyboard" on the
    pyboard and provides a robust way of determining if a script is running
    on the pyboard or not.
 

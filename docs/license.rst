@@ -1,5 +1,5 @@
-Micro Python license information
-================================
+MicroPython license information
+===============================
 
 The MIT License (MIT)
 

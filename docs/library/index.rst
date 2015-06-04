@@ -1,7 +1,7 @@
-Micro Python libraries
-======================
+MicroPython libraries
+=====================
 
-Functionality specific to the Micro Python implementation is available in
+Functionality specific to the MicroPython implementation is available in
 the following library.
 
 .. toctree::
@@ -12,7 +12,7 @@ the following library.
 Python standard libraries
 -------------------------
 
-The following standard Python libraries are built in to Micro Python.
+The following standard Python libraries are built in to MicroPython.
 
 For additional libraries, please download them from the `micropython-lib repository
 <https://github.com/micropython/micropython-lib>`_.
@@ -33,7 +33,7 @@ Python micro-libraries
 ----------------------
 
 The following standard Python libraries have been "micro-ified" to fit in with
-the philosophy of Micro Python.  They provide the core functionality of that
+the philosophy of MicroPython.  They provide the core functionality of that
 module and are intended to be a drop-in replacement for the standard Python
 library.
 

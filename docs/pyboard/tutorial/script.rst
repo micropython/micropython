@@ -101,5 +101,5 @@ on the right edge.
 When you press RST the green LED will flash quickly, and then the blue
 LED should turn on and stay on.
 
-Congratulations!  You have written and run your very first Micro Python
+Congratulations!  You have written and run your very first MicroPython
 program!

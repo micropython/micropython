@@ -1,12 +1,12 @@
 Inline assembler
 ================
 
-Here you will learn how to write inline assembler in Micro Python.
+Here you will learn how to write inline assembler in MicroPython.
 
 **Note**: this is an advanced tutorial, intended for those who already
 know a bit about microcontrollers and assembly language.
 
-Micro Python includes an inline assembler.  It allows you to write
+MicroPython includes an inline assembler.  It allows you to write
 assembly routines as a Python function, and you can call them as you would
 a normal Python function.
 
@@ -23,7 +23,7 @@ Let's start with the simplest example::
 You can enter this in a script or at the REPL.  This function takes no
 arguments and returns the number 42.  ``r0`` is a register, and the value
 in this register when the function returns is the value that is returned.
-Micro Python always interprets the ``r0`` as an integer, and converts it to an
+MicroPython always interprets the ``r0`` as an integer, and converts it to an
 integer object for the caller.
 
 If you run ``print(fun())`` you will see it print out 42.
