@@ -268,6 +268,14 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
     mp_lexer_t *lex = mp_find_frozen_module(mod_str, mod_len);
     if (lex != NULL) {
         module_obj = mp_obj_new_module(module_name_qstr);
+        // if args[3] (fromtuple) has magic value False, set up
+        // this module for command-line "-m" option (set module's
+        // name to __main__ instead of real name).
+        // TODO: Duplicated below too.
+        if (fromtuple == mp_const_false) {
+            mp_obj_module_t *o = module_obj;
+            mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+        }
         do_load_from_lexer(module_obj, lex, mod_str);
         return module_obj;
     }
