@@ -690,6 +690,7 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ImportError), (mp_obj_t)&mp_type_ImportError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IndentationError), (mp_obj_t)&mp_type_IndentationError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IndexError), (mp_obj_t)&mp_type_IndexError },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_KeyboardInterrupt), (mp_obj_t)&mp_type_KeyboardInterrupt },
     { MP_OBJ_NEW_QSTR(MP_QSTR_KeyError), (mp_obj_t)&mp_type_KeyError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LookupError), (mp_obj_t)&mp_type_LookupError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MemoryError), (mp_obj_t)&mp_type_MemoryError },
