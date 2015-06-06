@@ -7,7 +7,7 @@ desc = {
 
 data = bytearray(b"01234567")
 
-S = uctypes.struct(desc, uctypes.addressof(data), uctypes.LITTLE_ENDIAN)
+S = uctypes.struct(uctypes.addressof(data), desc, uctypes.LITTLE_ENDIAN)
 
 # Arrays of UINT8 are accessed as bytearrays
 print(S.arr)

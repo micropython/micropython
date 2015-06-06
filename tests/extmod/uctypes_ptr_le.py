@@ -16,7 +16,7 @@ bytes = b"01"
 addr = uctypes.addressof(bytes)
 buf = addr.to_bytes(uctypes.sizeof(desc))
 
-S = uctypes.struct(desc, uctypes.addressof(buf), uctypes.LITTLE_ENDIAN)
+S = uctypes.struct(uctypes.addressof(buf), desc, uctypes.LITTLE_ENDIAN)
 
 print(S.ptr[0])
 assert S.ptr[0] == ord("0")

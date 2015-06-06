@@ -22,7 +22,7 @@ desc = {
 
 data = bytearray(b"01")
 
-S = uctypes.struct(desc, uctypes.addressof(data), uctypes.LITTLE_ENDIAN)
+S = uctypes.struct(uctypes.addressof(data), desc, uctypes.LITTLE_ENDIAN)
 
 #print(S)
 print(hex(S.s0))

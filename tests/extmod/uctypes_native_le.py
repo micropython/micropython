@@ -31,7 +31,7 @@ desc = {
 
 data = bytearray(b"01")
 
-S = uctypes.struct(desc, uctypes.addressof(data), uctypes.NATIVE)
+S = uctypes.struct(uctypes.addressof(data), desc, uctypes.NATIVE)
 
 #print(S)
 print(hex(S.s0))

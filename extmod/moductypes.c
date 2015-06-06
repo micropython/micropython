@@ -122,14 +122,11 @@ STATIC NORETURN void syntax_error(void) {
 }
 
 STATIC mp_obj_t uctypes_struct_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    (void)n_kw;
-    if (n_args < 2 || n_args > 3) {
-        syntax_error();
-    }
+    mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
     o->base.type = type_in;
-    o->desc = args[0];
-    o->addr = (void*)mp_obj_get_int(args[1]);
+    o->addr = (void*)mp_obj_get_int(args[0]);
+    o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
     if (n_args == 3) {
         o->flags = mp_obj_get_int(args[2]);
