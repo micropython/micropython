@@ -96,16 +96,15 @@ Following are encoding examples for various field types:
 Module contents
 ---------------
 
-.. class:: struct(descriptor, addr, layout_type=NATIVE)
+.. class:: struct(addr, descriptor, layout_type=NATIVE)
 
-   Instantiate a "foreign data structure" object based on structure descriptor
-   (encoded as a dictionary), layout type (see below), and actual structure
-   address.
+   Instantiate a "foreign data structure" object based on structure address in
+   memory, descriptor (encoded as a dictionary), and layout type (see below).
 
 .. data:: LITTLE_ENDIAN
 
    Little-endian packed structure. (Packed means that every field occupies
-   exactly many bytes as defined in the descriptor, i.e. alignment is 1).
+   exactly as many bytes as defined in the descriptor, i.e. alignment is 1).
 
 .. data:: BIG_ENDIAN
 
@@ -114,12 +113,12 @@ Module contents
 .. data:: NATIVE
 
    Native structure - with data endianness and alignment conforming to
-   the target ABI.
+   the ABI of the system on which MicroPython runs.
 
 .. function:: sizeof(struct)
 
    Return size of data structure in bytes. Argument can be either structure
-   class or specific instantiated structure object (or its field).
+   class or specific instantiated structure object (or its aggregate field).
 
 .. function:: addressof(obj)
 
