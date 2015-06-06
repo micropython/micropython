@@ -136,7 +136,7 @@ STATIC NORETURN void pybsleep_suspend_enter (void);
 void pybsleep_suspend_exit (void);
 STATIC void pybsleep_obj_wakeup (void);
 STATIC void PRCMInterruptHandler (void);
-STATIC void pybsleep_iopark (void);
+STATIC void pybsleep_iopark (bool hibernate);
 STATIC bool setup_timer_lpds_wake (void);
 STATIC bool setup_timer_hibernate_wake (void);
 
@@ -339,7 +339,7 @@ STATIC NORETURN void pybsleep_suspend_enter (void) {
     mperror_heartbeat_switch_off();
 
     // park the gpio pins
-    pybsleep_iopark();
+    pybsleep_iopark(false);
 
     // store the cpu registers
     sleep_store();
@@ -450,31 +450,29 @@ STATIC void pybsleep_obj_wakeup (void) {
     }
 }
 
-STATIC void pybsleep_iopark (void) {
+STATIC void pybsleep_iopark (bool hibernate) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_cpu_pins_locals_dict);
     for (uint i = 0; i < named_map->used; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
         // skip the sflash pins since these are shared with the network processor
         switch (pin->pin_num) {
-        case PIN_11:
-        case PIN_12:
-        case PIN_13:
-        case PIN_14:
 #ifdef DEBUG
-        // also skip the JTAG pins
+        // skip the JTAG pins
         case PIN_16:
         case PIN_17:
         case PIN_19:
         case PIN_20:
-#endif
             break;
+#endif
         default:
             // enable a weak pull-down if the pin is unused
             if (!pin->isused) {
                 MAP_PinConfigSet(pin->pin_num, pin->strength, PIN_TYPE_STD_PD);
             }
-            // make it an input
-            MAP_PinDirModeSet(pin->pin_num, PIN_DIR_MODE_IN);
+            if (hibernate) {
+                // make it an input
+                MAP_PinDirModeSet(pin->pin_num, PIN_DIR_MODE_IN);
+            }
             break;
         }
     }
@@ -489,9 +487,17 @@ STATIC void pybsleep_iopark (void) {
     HWREG(0x4402E0F4) &= ~(0x3 << 8);
     HWREG(0x4402E0F4) |= (0x1 << 8);
 
-    // park the antenna selection pins
-    HWREG(0x4402E108) = 0x00000E61;
-    HWREG(0x4402E10C) = 0x00000E61;
+    // if the board has antenna diversity, only park the antenna
+    // selection pins when going into hibernation
+#if MICROPY_HW_ANTENNA_DIVERSITY
+    if (hibernate) {
+#endif
+        // park the antenna selection pins
+        HWREG(0x4402E108) = 0x00000E61;
+        HWREG(0x4402E10C) = 0x00000E61;
+#if MICROPY_HW_ANTENNA_DIVERSITY
+    }
+#endif
 }
 
 STATIC bool setup_timer_lpds_wake (void) {
@@ -632,7 +638,7 @@ STATIC mp_obj_t pyb_sleep_hibernate (mp_obj_t self_in) {
     wlan_stop(SL_STOP_TIMEOUT);
     pybsleep_flash_powerdown();
     // must be done just before entering hibernate mode
-    pybsleep_iopark();
+    pybsleep_iopark(true);
     MAP_PRCMHibernateEnter();
     return mp_const_none;
 }

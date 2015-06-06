@@ -46,6 +46,7 @@
 #include "mpexception.h"
 #include "mpcallback.h"
 #include "pybsleep.h"
+#include "antenna.h"
 
 
 /******************************************************************************
@@ -1047,6 +1048,24 @@ STATIC mp_obj_t wlan_connections (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_connections_obj, wlan_connections);
 
+#if MICROPY_HW_ANTENNA_DIVERSITY
+/// \method antenna()
+/// select the antenna type to use (internal or external)
+STATIC mp_obj_t wlan_antenna (mp_obj_t self_in, mp_obj_t antenna_o) {
+    antenna_type_t _antenna = mp_obj_get_int(antenna_o);
+
+    if (_antenna != ANTENNA_TYPE_INTERNAL && _antenna != ANTENNA_TYPE_EXTERNAL) {
+        // invalid antenna type
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+
+    antenna_select (_antenna);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(wlan_antenna_obj, wlan_antenna);
+#endif
+
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
@@ -1055,6 +1074,9 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),            (mp_obj_t)&wlan_ifconfig_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&wlan_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connections),         (mp_obj_t)&wlan_connections_obj },
+#if MICROPY_HW_ANTENNA_DIVERSITY
+    { MP_OBJ_NEW_QSTR(MP_QSTR_antenna),             (mp_obj_t)&wlan_antenna_obj },
+#endif
 #if MICROPY_PORT_WLAN_URN
     { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
 #endif
@@ -1070,6 +1092,8 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_STA),                 MP_OBJ_NEW_SMALL_INT(ROLE_STA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_AP),                  MP_OBJ_NEW_SMALL_INT(ROLE_AP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_P2P),                 MP_OBJ_NEW_SMALL_INT(ROLE_P2P) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_ANTENNA),         MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_INTERNAL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EXT_ANTENNA),         MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_EXTERNAL) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 

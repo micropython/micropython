@@ -33,6 +33,7 @@
 #define MICROPY_HW_HAS_SDCARD                       (1)
 #define MICROPY_HW_ENABLE_RNG                       (1)
 #define MICROPY_HW_ENABLE_RTC                       (1)
+#define MICROPY_HW_ANTENNA_DIVERSITY                (1)
 
 #define MICROPY_SYS_LED_PRCM                        PRCM_GPIOA3
 #define MICROPY_SAFE_BOOT_PRCM                      PRCM_GPIOA3

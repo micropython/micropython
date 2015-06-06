@@ -133,9 +133,6 @@ soft_reset:
     rng_init0();
 #endif
 
-    // we are alive, so let the world know it
-    mperror_enable_heartbeat();
-
 #ifdef LAUNCHXL
     // configure the stdio uart pins with the correct alternate functions
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO

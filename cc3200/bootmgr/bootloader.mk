@@ -42,6 +42,7 @@ BOOT_CC3100_SRC_C = $(addprefix drivers/cc3100/,\
 	)
 
 BOOT_MISC_SRC_C = $(addprefix misc/,\
+	antenna.c \
 	mperror.c \
 	)
 

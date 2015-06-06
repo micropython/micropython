@@ -53,6 +53,7 @@
 #include "cc3200_hal.h"
 #include "debug.h"
 #include "mperror.h"
+#include "antenna.h"
 
 
 //*****************************************************************************
@@ -150,6 +151,13 @@ static void bootmgr_board_init(void) {
     PRCMCC3200MCUInit();
 
     mperror_bootloader_check_reset_cause();
+
+#if MICROPY_HW_ANTENNA_DIVERSITY
+    // configure the antenna selection pins
+    antenna_init0();
+    // select the internal antenna
+    antenna_select(ANTENNA_TYPE_INTERNAL);
+#endif
 
     // Enable the Data Hashing Engine
     CRYPTOHASH_Init();

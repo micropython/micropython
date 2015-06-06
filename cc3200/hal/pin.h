@@ -143,6 +143,13 @@ extern "C"
 #define PIN_TYPE_OD_PD    0x00000210
 #define PIN_TYPE_ANALOG   0x10000000
 
+//*****************************************************************************
+// Macros for mode and type
+//*****************************************************************************
+#define PAD_MODE_MASK       0x0000000F
+#define PAD_STRENGTH_MASK   0x000000E0
+#define PAD_TYPE_MASK       0x00000310
+#define PAD_CONFIG_BASE     ((OCP_SHARED_BASE + OCP_SHARED_O_GPIO_PAD_CONFIG_0))
 
 //*****************************************************************************
 //

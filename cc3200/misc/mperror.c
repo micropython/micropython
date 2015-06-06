@@ -91,6 +91,7 @@ void mperror_init0 (void) {
     // configure the system led
     pin_config ((pin_obj_t *)&MICROPY_SYS_LED_GPIO, PIN_MODE_0, GPIO_DIR_MODE_OUT, PIN_TYPE_STD, PIN_STRENGTH_6MA);
 #endif
+    mperror_heart_beat.enabled = true;
     mperror_heartbeat_switch_off();
 }
 
@@ -132,25 +133,19 @@ void mperror_signal_error (void) {
     }
 }
 
-void mperror_enable_heartbeat (void) {
-    mperror_heart_beat.enabled = true;
-}
-
 void mperror_heartbeat_switch_off (void) {
-    mperror_heart_beat.on_time = 0;
-    mperror_heart_beat.off_time = 0;
-    MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
-}
-
-void mperror_disable_heartbeat (void) {
-    mperror_heart_beat.do_disable = true;
+    if (mperror_heart_beat.enabled) {
+        mperror_heart_beat.on_time = 0;
+        mperror_heart_beat.off_time = 0;
+        MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
+    }
 }
 
 void mperror_heartbeat_signal (void) {
     if (mperror_heart_beat.do_disable) {
-        mperror_heart_beat.enabled = false;
         mperror_heart_beat.do_disable = false;
         mperror_heartbeat_switch_off();
+        mperror_heart_beat.enabled = false;
     }
     else if (mperror_heart_beat.enabled) {
         if (!mperror_heart_beat.beating) {
@@ -206,7 +201,7 @@ void nlr_jump_fail(void *val) {
 /// \function enable()
 /// Enables the heartbeat signal
 STATIC mp_obj_t pyb_enable_heartbeat(mp_obj_t self) {
-    mperror_enable_heartbeat ();
+    mperror_heart_beat.enabled = true;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_enable_heartbeat_obj, pyb_enable_heartbeat);
@@ -214,7 +209,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_enable_heartbeat_obj, pyb_enable_heartbeat)
 /// \function disable()
 /// Disables the heartbeat signal
 STATIC mp_obj_t pyb_disable_heartbeat(mp_obj_t self) {
-    mperror_disable_heartbeat ();
+    mperror_heart_beat.do_disable = true;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_disable_heartbeat_obj, pyb_disable_heartbeat);

@@ -50,15 +50,6 @@
 #include "pin.h"
 
 //*****************************************************************************
-// Macros
-//*****************************************************************************
-#define PAD_MODE_MASK		0x0000000F
-#define PAD_STRENGTH_MASK	0x000000E0
-#define PAD_TYPE_MASK		0x00000310
-#define PAD_CONFIG_BASE		((OCP_SHARED_BASE + \
-                                  OCP_SHARED_O_GPIO_PAD_CONFIG_0))
-
-//*****************************************************************************
 // PIN to PAD matrix
 //*****************************************************************************
 static const unsigned long g_ulPinToPadMap[64] =

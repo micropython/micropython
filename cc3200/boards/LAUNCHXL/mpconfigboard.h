@@ -33,6 +33,7 @@
 #define MICROPY_HW_HAS_SDCARD                       (0)
 #define MICROPY_HW_ENABLE_RNG                       (1)
 #define MICROPY_HW_ENABLE_RTC                       (1)
+#define MICROPY_HW_ANTENNA_DIVERSITY                (0)
 
 #define MICROPY_STDIO_UART                          1
 #define MICROPY_STDIO_UART_BAUD                     115200
