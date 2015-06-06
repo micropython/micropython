@@ -405,7 +405,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 mp_int_t len_adj = src_len - (slice.stop - slice.start);
                 if (len_adj > 0) {
                     if (o->base.type == &mp_type_memoryview) {
-                            goto compat_error;
+                        goto compat_error;
                     }
                     if (len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
