@@ -402,37 +402,30 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
 
                 // TODO: check src/dst compat
                 mp_int_t len_adj = src_len - (slice.stop - slice.start);
-                if (len_adj > 0) {
-                    #if MICROPY_PY_BUILTINS_MEMORYVIEW
-                    if (o->base.type == &mp_type_memoryview) {
+                uint8_t* dest_items = o->items;
+                #if MICROPY_PY_BUILTINS_MEMORYVIEW
+                if (o->base.type == &mp_type_memoryview) {
+                    if (len_adj != 0) {
                         goto compat_error;
                     }
-                    #endif
+                    dest_items += o->free * item_sz;
+                }
+                #endif
+                if (len_adj > 0) {
                     if (len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
                         o->free = 0;
                     }
-                    mp_seq_replace_slice_grow_inplace(o->items, o->len,
+                    mp_seq_replace_slice_grow_inplace(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, len_adj, item_sz);
                 } else {
-                    #if MICROPY_PY_BUILTINS_MEMORYVIEW
-                    if (o->base.type == &mp_type_memoryview) {
-                        if (len_adj != 0) {
-                            goto compat_error;
-                        }
-                        mp_seq_replace_slice_no_grow((uint8_t*)o->items + (o->free * item_sz), o->len,
-                            slice.start, slice.stop, src_items, src_len, item_sz);
-                    } else
-                    #endif
-                    {
-                        mp_seq_replace_slice_no_grow(o->items, o->len,
-                            slice.start, slice.stop, src_items, src_len, item_sz);
-                        // Clear "freed" elements at the end of list
-                        // TODO: This is actually only needed for typecode=='O'
-                        mp_seq_clear(o->items, o->len + len_adj, o->len, item_sz);
-                        // TODO: alloc policy after shrinking
-                    }
+                    mp_seq_replace_slice_no_grow(dest_items, o->len,
+                        slice.start, slice.stop, src_items, src_len, item_sz);
+                    // Clear "freed" elements at the end of list
+                    // TODO: This is actually only needed for typecode=='O'
+                    mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
+                    // TODO: alloc policy after shrinking
                 }
                 o->len += len_adj;
                 return mp_const_none;
