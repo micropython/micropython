@@ -69,8 +69,6 @@ int main (void) {
 #if MICROPY_HW_ANTENNA_DIVERSITY
     // configure the antenna selection pins
     antenna_init0();
-    // select the internal antenna
-    antenna_select(ANTENNA_TYPE_INTERNAL);
 #endif
 
     // Init the watchdog

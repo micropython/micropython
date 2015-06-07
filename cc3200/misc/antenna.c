@@ -47,6 +47,11 @@ DEFINE CONSTANTS
 #define REG_PAD_CONFIG_27           (0x4402E10C)
 
 /******************************************************************************
+DEFINE PRIVATE DATA
+******************************************************************************/
+static antenna_type_t antenna_type_selected = ANTENNA_TYPE_INTERNAL;
+
+/******************************************************************************
 DEFINE PUBLIC FUNCTIONS
 ******************************************************************************/
 void antenna_init0(void) {
@@ -76,14 +81,18 @@ void antenna_init0(void) {
 
     // set the direction
     HWREG(REG_PAD_CONFIG_26) = ((HWREG(REG_PAD_CONFIG_27) & ~0xC00) | 0x00000800);
+
+    // select the currently active antenna
+    antenna_select(antenna_type_selected);
 }
 
-void antenna_select (antenna_type_t antenna_type) {
-    if (antenna_type == ANTENNA_TYPE_INTERNAL) {
+void antenna_select (antenna_type_t _antenna) {
+    if (_antenna == ANTENNA_TYPE_INTERNAL) {
         MAP_GPIOPinWrite(GPIOA3_BASE, 0x0C, 0x04);
     } else {
         MAP_GPIOPinWrite(GPIOA3_BASE, 0x0C, 0x08);
     }
+    antenna_type_selected = _antenna;
 }
 
 #endif
