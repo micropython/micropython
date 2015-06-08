@@ -113,6 +113,12 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 
+// Define to 1 to exclude main() from compilation and make main uPy
+// initialization/configuration/execution functions non-static
+#ifndef MICROPY_PY_EMBED
+    #define MICROPY_PY_EMBED        (0)
+#endif
+
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_termios;

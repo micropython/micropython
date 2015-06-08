@@ -95,6 +95,10 @@
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
 
+#ifndef MICROPY_PY_EMBED
+    #define MICROPY_PY_EMBED        (0)
+#endif
+
 // type definitions for the specific machine
 
 #if defined( __MINGW32__ ) && defined( __LP64__ )

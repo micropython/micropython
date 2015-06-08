@@ -47,6 +47,14 @@
 #include "genhdr/mpversion.h"
 #include "unix_mphal.h"
 #include "input.h"
+#include "pyexec.h"
+
+// Leave functions declared STATIC_EMBED non-static when this flag is on
+#if MICROPY_PY_EMBED
+    #define STATIC_EMBED
+#else
+    #define STATIC_EMBED STATIC
+#endif
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
@@ -148,7 +156,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-STATIC int do_repl(void) {
+STATIC_EMBED int do_repl(void) {
     mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
     for (;;) {
@@ -177,16 +185,17 @@ STATIC int do_repl(void) {
     }
 }
 
-STATIC int do_file(const char *file) {
+STATIC_EMBED int do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int do_str(const char *str) {
+STATIC_EMBED int do_str(const char *str) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
     return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
+#if !MICROPY_PY_EMBED
 STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
@@ -265,8 +274,9 @@ STATIC void pre_process_options(int argc, char **argv) {
         }
     }
 }
+#endif
 
-STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
+STATIC_EMBED void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }
@@ -281,7 +291,7 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 // Initialize the mp_sys_path list from the given colon-seperated path.
 // If path is NULL the value of the MICROPYPATH environment variable is used instead.
 // If MICROPYPATH is not found, the default path is used.
-STATIC void set_sys_path(const char *path) {
+STATIC_EMBED void set_sys_path(const char *path) {
     char *home = getenv("HOME");
     if (path == NULL) {
         path = getenv("MICROPYPATH");
@@ -325,7 +335,7 @@ STATIC void set_sys_path(const char *path) {
 
 // Set the first item of the mp_sys_path list to the dir of the given file.
 // Returns false if the file is not accessible.
-STATIC bool set_sys_path_from_file(const char *file) {
+STATIC_EMBED bool set_sys_path_from_file(const char *file) {
     char *pathbuf = malloc(PATH_MAX);
     const char *basedir = realpath(file, pathbuf);
     if (basedir == NULL) {
@@ -348,7 +358,7 @@ STATIC char *heap = NULL;
 #endif
 
 // Main uPy initialization: stack, heap (if enabled) and mp_sys_path/mp_sys_argv lists
-STATIC void initialize(void) {
+STATIC_EMBED void initialize(void) {
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
 #if MICROPY_ENABLE_GC
@@ -380,7 +390,7 @@ STATIC void initialize(void) {
 }
 
 // Counterpart of initialize()
-STATIC void deinitialize(void) {
+STATIC_EMBED void deinitialize(void) {
     mp_deinit();
 
 #if MICROPY_ENABLE_GC && !defined(NDEBUG)
@@ -390,6 +400,7 @@ STATIC void deinitialize(void) {
 #endif
 }
 
+#if !MICROPY_PY_EMBED
 int main(int argc, char **argv) {
     pre_process_options(argc, argv);
 
@@ -516,6 +527,7 @@ int main(int argc, char **argv) {
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
+#endif
 
 uint mp_import_stat(const char *path) {
     struct stat st;
