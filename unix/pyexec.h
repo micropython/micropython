@@ -35,6 +35,8 @@ void set_sys_path(const char *path);
 bool set_sys_path_from_file(const char *file);
 void set_sys_argv(char *argv[], int argc, int start_arg);
 
+void set_lexer_options(bool compile_only, uint emit_opt);
+
 int do_repl(void);
 int do_file(const char *file);
 int do_str(const char *str);

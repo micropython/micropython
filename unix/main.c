@@ -74,6 +74,13 @@ STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
+#if MICROPY_PY_EMBED
+void set_lexer_options(bool compileOnly, uint emitOpt) {
+    compile_only = compileOnly;
+    emit_opt = emitOpt;
+}
+#endif
+
 #define FORCED_EXIT (0x100)
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
