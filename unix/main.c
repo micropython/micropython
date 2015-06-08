@@ -278,23 +278,9 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
-int main(int argc, char **argv) {
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
-
-    pre_process_options(argc, argv);
-
-#if MICROPY_ENABLE_GC
-    char *heap = malloc(heap_size);
-    gc_init(heap, heap + heap_size);
-#endif
-
-    mp_init();
-
-    #ifndef _WIN32
-    // create keyboard interrupt object
-    MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    #endif
-
+// Initialize the mp_sys_path list from the MICROPYPATH environment variable.
+// If MICROPYPATH is not found, the default path is used.
+STATIC void init_sys_path(void) {
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
@@ -315,7 +301,7 @@ int main(int argc, char **argv) {
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    {
+
     char *p = path;
     for (mp_uint_t i = 1; i < path_num; i++) {
         char *p1 = strchr(p, PATHLIST_SEP_CHAR);
@@ -333,8 +319,46 @@ int main(int argc, char **argv) {
         }
         p = p1 + 1;
     }
+}
+
+// Set the first item of the mp_sys_path list to the dir of the given file.
+// Returns false if the file is not accessible.
+STATIC bool set_sys_path_from_file(const char *file) {
+    char *pathbuf = malloc(PATH_MAX);
+    const char *basedir = realpath(file, pathbuf);
+    if (basedir == NULL) {
+        return false;
     }
 
+    // Set base dir of the script as first entry in sys.path
+    char *p = strrchr(basedir, '/');
+    mp_uint_t path_num;
+    mp_obj_t *path_items;
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    assert(path_num > 0);
+    path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+    free(pathbuf);
+    return true;
+}
+
+int main(int argc, char **argv) {
+    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+
+    pre_process_options(argc, argv);
+
+#if MICROPY_ENABLE_GC
+    char *heap = malloc(heap_size);
+    gc_init(heap, heap + heap_size);
+#endif
+
+    mp_init();
+
+    #ifndef _WIN32
+    // create keyboard interrupt object
+    MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    #endif
+
+    init_sys_path();
     mp_obj_list_init(mp_sys_argv, 0);
 
     #if defined(MICROPY_UNIX_COVERAGE)
@@ -426,20 +450,13 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-            char *pathbuf = malloc(PATH_MAX);
-            char *basedir = realpath(argv[a], pathbuf);
-            if (basedir == NULL) {
+            if (!set_sys_path_from_file(argv[a])) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
                 perror("");
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
             }
-
-            // Set base dir of the script as first entry in sys.path
-            char *p = strrchr(basedir, '/');
-            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
-            free(pathbuf);
 
             set_sys_argv(argv, argc, a);
             ret = do_file(argv[a]);
