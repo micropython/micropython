@@ -341,13 +341,16 @@ STATIC bool set_sys_path_from_file(const char *file) {
     return true;
 }
 
-int main(int argc, char **argv) {
+#if MICROPY_ENABLE_GC
+STATIC char *heap = NULL;
+#endif
+
+// Main uPy initialization: stack, heap (if enabled) and mp_sys_path/mp_sys_argv lists
+STATIC void initialize(void) {
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
-    pre_process_options(argc, argv);
-
 #if MICROPY_ENABLE_GC
-    char *heap = malloc(heap_size);
+    heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
 #endif
 
@@ -367,6 +370,23 @@ int main(int argc, char **argv) {
         mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), (mp_obj_t)&extra_coverage_obj);
     }
     #endif
+}
+
+// Counterpart of initialize()
+STATIC void deinitialize(void) {
+    mp_deinit();
+
+#if MICROPY_ENABLE_GC && !defined(NDEBUG)
+    // We don't really need to free memory since we are about to exit the
+    // process, but doing so helps to find memory leaks.
+    free(heap);
+#endif
+}
+
+int main(int argc, char **argv) {
+    pre_process_options(argc, argv);
+
+    initialize();
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
@@ -481,13 +501,7 @@ int main(int argc, char **argv) {
     }
     #endif
 
-    mp_deinit();
-
-#if MICROPY_ENABLE_GC && !defined(NDEBUG)
-    // We don't really need to free memory since we are about to exit the
-    // process, but doing so helps to find memory leaks.
-    free(heap);
-#endif
+    deinitialize();
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
