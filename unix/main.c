@@ -278,11 +278,14 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
-// Initialize the mp_sys_path list from the MICROPYPATH environment variable.
+// Initialize the mp_sys_path list from the given colon-seperated path.
+// If path is NULL the value of the MICROPYPATH environment variable is used instead.
 // If MICROPYPATH is not found, the default path is used.
-STATIC void init_sys_path(void) {
+STATIC void set_sys_path(const char *path) {
     char *home = getenv("HOME");
-    char *path = getenv("MICROPYPATH");
+    if (path == NULL) {
+        path = getenv("MICROPYPATH");
+    }
     if (path == NULL) {
         #ifdef MICROPY_PY_SYS_PATH_DEFAULT
         path = MICROPY_PY_SYS_PATH_DEFAULT;
@@ -291,20 +294,19 @@ STATIC void init_sys_path(void) {
         #endif
     }
     mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
+    for (const char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
         path_num++;
         if (p != NULL) {
             p++;
         }
     }
-    mp_obj_list_init(mp_sys_path, path_num);
     mp_obj_t *path_items;
+    mp_obj_list_set_len(mp_sys_path, path_num);
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
 
-    char *p = path;
+    const char *p = path;
     for (mp_uint_t i = 1; i < path_num; i++) {
-        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
+        const char *p1 = strchr(p, PATHLIST_SEP_CHAR);
         if (p1 == NULL) {
             p1 = p + strlen(p);
         }
@@ -361,7 +363,12 @@ STATIC void initialize(void) {
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     #endif
 
-    init_sys_path();
+    mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
+    mp_obj_list_init(mp_sys_path, path_num);
+    mp_obj_t *path_items;
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+
     mp_obj_list_init(mp_sys_argv, 0);
 
     #if defined(MICROPY_UNIX_COVERAGE)
@@ -387,6 +394,9 @@ int main(int argc, char **argv) {
     pre_process_options(argc, argv);
 
     initialize();
+
+    // Use default path
+    set_sys_path(NULL);
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
