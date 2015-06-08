@@ -147,7 +147,7 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 
 // With this macro you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
-// than this will use the heap.
+// than this will try to use the heap, with fallback to stack allocation.
 #define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
 
 // Set this to enable a simple stack overflow check.
@@ -220,11 +220,13 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
 
     // allocate state for locals and stack
     mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
-    mp_code_state *code_state;
+    mp_code_state *code_state = NULL;
     if (state_size > VM_MAX_STATE_ON_STACK) {
-        code_state = m_new_obj_var(mp_code_state, byte, state_size);
-    } else {
+        code_state = m_new_obj_var_maybe(mp_code_state, byte, state_size);
+    }
+    if (code_state == NULL) {
         code_state = alloca(sizeof(mp_code_state) + state_size);
+        state_size = 0; // indicate that we allocated using alloca
     }
 
     code_state->n_state = n_state;
@@ -285,7 +287,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
     }
 
     // free the state if it was allocated on the heap
-    if (state_size > VM_MAX_STATE_ON_STACK) {
+    if (state_size != 0) {
         m_del_var(mp_code_state, byte, state_size, code_state);
     }
 
