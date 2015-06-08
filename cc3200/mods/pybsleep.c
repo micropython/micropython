@@ -398,8 +398,10 @@ void pybsleep_suspend_exit (void) {
     // ungate the clock to the shared spi bus
     MAP_PRCMPeripheralClkEnable(PRCM_SSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
 
+#if MICROPY_HW_ANTENNA_DIVERSITY
     // re-configure the antenna selection pins
     antenna_init0();
+#endif
 
     // reinitialize simplelink's interface
     sl_IfOpen (NULL, 0);
