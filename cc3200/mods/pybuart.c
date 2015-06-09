@@ -51,6 +51,7 @@
 #include "mpexception.h"
 #include "py/mpstate.h"
 #include "osi.h"
+#include "utils.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -568,6 +569,18 @@ STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
+/// \method sendbreak()
+STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    // send a break signal for at least 2 complete frames
+    MAP_UARTBreakCtl(self->reg, true);
+    UtilsDelay(UTILS_DELAY_US_TO_COUNT((22 * 1000000) / self->baudrate));
+    MAP_UARTBreakCtl(self->reg, false);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
+
+
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pyb_uart_init_obj },
@@ -588,6 +601,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_writechar),   (mp_obj_t)&pyb_uart_writechar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar),    (mp_obj_t)&pyb_uart_readchar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sendbreak),   (mp_obj_t)&pyb_uart_sendbreak_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_CTS),         MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_TX) },
