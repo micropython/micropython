@@ -28,6 +28,7 @@
 
 #if MICROPY_PY_EMBED
 
+void set_heap(char *new_heap, long new_heap_size);
 void initialize(void);
 void deinitialize(void);
 

@@ -377,6 +377,38 @@ STATIC_EMBED bool set_sys_path_from_file(const char *file) {
 
 #if MICROPY_ENABLE_GC
 STATIC char *heap = NULL;
+STATIC bool own_heap = true;
+
+#if MICROPY_PY_EMBED
+// Set heap and it's size, use before initialize() to take effect
+void set_heap(char *new_heap, long new_heap_size) {
+    heap = new_heap;
+    heap_size = new_heap_size;
+    own_heap = false;
+}
+#endif
+
+STATIC void allocate_heap(void) {
+#if MICROPY_PY_EMBED
+    // If we have a heap already, suppose it was set using set_heap() and don't touch it
+    if (heap) {
+        return;
+    }
+#endif
+    heap = malloc(heap_size);
+    own_heap = true;
+}
+
+STATIC void free_heap(void) {
+   if (own_heap) {
+#if !MICROPY_PY_EMBED && !defined(NDEBUG)
+      // We don't really need to free memory since we are about to exit the
+      // process, but doing so helps to find memory leaks.
+      free(heap);
+#endif
+      heap = NULL;
+   }
+}
 #endif
 
 // Main uPy initialization: stack, heap (if enabled) and mp_sys_path/mp_sys_argv lists
@@ -384,7 +416,7 @@ STATIC_EMBED void initialize(void) {
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
 #if MICROPY_ENABLE_GC
-    heap = malloc(heap_size);
+    allocate_heap();
     gc_init(heap, heap + heap_size);
 #endif
 
@@ -415,10 +447,8 @@ STATIC_EMBED void initialize(void) {
 STATIC_EMBED void deinitialize(void) {
     mp_deinit();
 
-#if MICROPY_ENABLE_GC && !defined(NDEBUG)
-    // We don't really need to free memory since we are about to exit the
-    // process, but doing so helps to find memory leaks.
-    free(heap);
+#if MICROPY_ENABLE_GC
+    free_heap();
 #endif
 }
 
