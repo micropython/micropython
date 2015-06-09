@@ -79,6 +79,17 @@ void set_lexer_options(bool compileOnly, uint emitOpt) {
     compile_only = compileOnly;
     emit_opt = emitOpt;
 }
+
+// Default exception reporting which prints to stderr
+void print_exception_stderr(mp_obj_t exc) {
+    mp_obj_print_exception(&mp_stderr_print, exc);
+}
+
+STATIC report_exception_t report_exception = print_exception_stderr;
+
+void set_exception_handler(report_exception_t report_exc) {
+    report_exception = report_exc;
+}
 #endif
 
 #define FORCED_EXIT (0x100)
@@ -98,7 +109,11 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
     }
 
     // Report all other exceptions
+#if MICROPY_PY_EMBED
+    report_exception(exc);
+#else
     mp_obj_print_exception(&mp_stderr_print, exc);
+#endif
     return 1;
 }
 

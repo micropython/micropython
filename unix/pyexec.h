@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "py/obj.h"
 
 #if MICROPY_PY_EMBED
 
@@ -36,6 +36,10 @@ bool set_sys_path_from_file(const char *file);
 void set_sys_argv(char *argv[], int argc, int start_arg);
 
 void set_lexer_options(bool compile_only, uint emit_opt);
+
+typedef void(*report_exception_t)(mp_obj_t);
+void print_exception_stderr(mp_obj_t exc);
+void set_exception_handler(report_exception_t report_exception);
 
 int do_repl(void);
 int do_file(const char *file);
