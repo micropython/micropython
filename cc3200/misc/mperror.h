@@ -29,7 +29,7 @@
 #define MPERROR_H_
 
 #ifndef BOOTLOADER
-extern const mp_obj_base_t pyb_heartbeat_obj;
+extern const mp_obj_type_t pyb_heartbeat_type;
 #endif
 
 extern void NORETURN __fatal_error(const char *msg);
