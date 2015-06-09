@@ -744,8 +744,8 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
         { MP_QSTR_security, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = SL_SEC_TYPE_OPEN} },
-        { MP_QSTR_key,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_key,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout,  MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = MODWLAN_TIMEOUT_MS} },
     };
 
@@ -770,7 +770,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     const char *key = NULL;
     mp_buffer_info_t wepkey;
     mp_obj_t key_o = args[2].u_obj;
-    if (key_o != MP_OBJ_NULL) {
+    if (key_o != mp_const_none) {
         // wep key must be given as raw bytes
         if (sec == SL_SEC_TYPE_WEP) {
             mp_get_buffer_raise(key_o, &wepkey, MP_BUFFER_READ);
@@ -783,7 +783,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // get bssid
     const char *bssid = NULL;
-    if (args[3].u_obj != MP_OBJ_NULL) {
+    if (args[3].u_obj != mp_const_none) {
         bssid = mp_obj_str_get_str(args[3].u_obj);
     }
 
