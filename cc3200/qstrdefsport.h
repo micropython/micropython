@@ -154,10 +154,8 @@ Q(timeout)
 Q(timeout_char)
 Q(repl_uart)
 Q(flow)
-Q(FLOW_NONE)
-Q(FLOW_TX)
-Q(FLOW_RX)
-Q(FLOW_TXRX)
+Q(RTS)
+Q(CTS)
 
 // for I2C class
 Q(I2C)
@@ -370,4 +368,3 @@ Q(sha256)
 Q(ubinascii)
 Q(hexlify)
 Q(unhexlify)
-
