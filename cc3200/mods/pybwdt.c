@@ -57,12 +57,12 @@ typedef struct {
     bool    servers_sleeping;
     bool    simplelink;
     bool    running;
-}pybwdt_data_t;
+} pybwdt_data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static  pybwdt_data_t   pybwdt_data = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
+STATIC pybwdt_data_t   pybwdt_data = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
 STATIC const mp_obj_base_t pyb_wdt_obj = {&pyb_wdt_type};
 
 /******************************************************************************
@@ -130,7 +130,7 @@ STATIC mp_obj_t pyb_wdt_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
 /// \function wdt_kick()
 /// Kicks the watchdog timer
 STATIC mp_obj_t pyb_kick_wdt(mp_obj_t self) {
-    if ((pybwdt_data.servers || pybwdt_data.servers_sleeping) && pybwdt_data.simplelink) {
+    if ((pybwdt_data.servers || pybwdt_data.servers_sleeping) && pybwdt_data.simplelink && pybwdt_data.running) {
         pybwdt_data.servers = false;
         pybwdt_data.simplelink = false;
         MAP_WatchdogIntClear(WDT_BASE);
