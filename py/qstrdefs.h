@@ -596,3 +596,8 @@ Q(mem8)
 Q(mem16)
 Q(mem32)
 #endif
+
+#if MICROPY_PY_USSL
+Q(ussl)
+Q(wrap_socket)
+#endif
