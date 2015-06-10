@@ -59,7 +59,6 @@ Q(elapsed_micros)
 Q(udelay)
 Q(flush)
 Q(FileIO)
-Q(mkdisk)
 Q(enable)
 Q(disable)
 // Entries for sys.path
@@ -102,6 +101,7 @@ Q(unlink)
 Q(sep)
 Q(stat)
 Q(urandom)
+Q(mkfs)
 
 // for file class
 Q(seek)

@@ -353,16 +353,16 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
-/// \function mkdisk('path')
+/// \function mkfs('path')
 /// Formats the selected drive, useful when the filesystem has been damaged beyond repair
-STATIC mp_obj_t os_mkdisk(mp_obj_t path_o) {
+STATIC mp_obj_t os_mkfs(mp_obj_t path_o) {
     const char *path = mp_obj_str_get_str(path_o);
     if (FR_OK != f_mkfs(path, 1, 0)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdisk_obj, os_mkdisk);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkfs_obj, os_mkfs);
 
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
@@ -381,7 +381,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
 #if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_urandom),         (mp_obj_t)&os_urandom_obj },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdisk),          (mp_obj_t)&os_mkdisk_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mkfs),            (mp_obj_t)&os_mkfs_obj },
 
     /// \constant sep - separation character used in paths
     { MP_OBJ_NEW_QSTR(MP_QSTR_sep),             MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },
