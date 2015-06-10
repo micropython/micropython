@@ -72,6 +72,7 @@
 
 #include "py/obj.h"
 #include "pendsv.h"
+#include "irq.h"
 #include "extint.h"
 #include "timer.h"
 #include "uart.h"
@@ -306,12 +307,16 @@ void SysTick_Handler(void) {
   */
 #if defined(USE_USB_FS)
 void OTG_FS_IRQHandler(void) {
+    IRQ_ENTER(OTG_FS_IRQn);
     HAL_PCD_IRQHandler(&pcd_fs_handle);
+    IRQ_EXIT(OTG_FS_IRQn);
 }
 #endif
 #if defined(USE_USB_HS)
 void OTG_HS_IRQHandler(void) {
+    IRQ_ENTER(OTG_HS_IRQn);
     HAL_PCD_IRQHandler(&pcd_hs_handle);
+    IRQ_EXIT(OTG_HS_IRQn);
 }
 #endif
 
@@ -363,12 +368,14 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
   * @retval None
   */
 void OTG_FS_WKUP_IRQHandler(void) {
+    IRQ_ENTER(OTG_FS_WKUP_IRQn);
 
   OTG_CMD_WKUP_Handler(&pcd_fs_handle);
 
   /* Clear EXTI pending Bit*/
   __HAL_USB_FS_EXTI_CLEAR_FLAG();
 
+    IRQ_EXIT(OTG_FS_WKUP_IRQn);
 }
 #endif
 
@@ -379,12 +386,14 @@ void OTG_FS_WKUP_IRQHandler(void) {
   * @retval None
   */
 void OTG_HS_WKUP_IRQHandler(void) {
+    IRQ_ENTER(OTG_HS_WKUP_IRQn);
 
   OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
   /* Clear EXTI pending Bit*/
   __HAL_USB_HS_EXTI_CLEAR_FLAG();
 
+    IRQ_EXIT(OTG_HS_WKUP_IRQn);
 }
 #endif
 
@@ -399,6 +408,7 @@ void OTG_HS_WKUP_IRQHandler(void) {
 
 // Handle a flash (erase/program) interrupt.
 void FLASH_IRQHandler(void) {
+    IRQ_ENTER(FLASH_IRQn);
     // This calls the real flash IRQ handler, if needed
     /*
     uint32_t flash_cr = FLASH->CR;
@@ -408,6 +418,7 @@ void FLASH_IRQHandler(void) {
     */
     // This call the storage IRQ handler, to check if the flash cache needs flushing
     storage_irq_handler();
+    IRQ_EXIT(FLASH_IRQn);
 }
 
 /**
@@ -416,163 +427,231 @@ void FLASH_IRQHandler(void) {
   * @retval None
   */
 void EXTI0_IRQHandler(void) {
+    IRQ_ENTER(EXTI0_IRQn);
     Handle_EXTI_Irq(0);
+    IRQ_EXIT(EXTI0_IRQn);
 }
 
 void EXTI1_IRQHandler(void) {
+    IRQ_ENTER(EXTI1_IRQn);
     Handle_EXTI_Irq(1);
+    IRQ_EXIT(EXTI1_IRQn);
 }
 
 void EXTI2_IRQHandler(void) {
+    IRQ_ENTER(EXTI2_IRQn);
     Handle_EXTI_Irq(2);
+    IRQ_EXIT(EXTI2_IRQn);
 }
 
 void EXTI3_IRQHandler(void) {
+    IRQ_ENTER(EXTI3_IRQn);
     Handle_EXTI_Irq(3);
+    IRQ_EXIT(EXTI3_IRQn);
 }
 
 void EXTI4_IRQHandler(void) {
+    IRQ_ENTER(EXTI4_IRQn);
     Handle_EXTI_Irq(4);
+    IRQ_EXIT(EXTI4_IRQn);
 }
 
 void EXTI9_5_IRQHandler(void) {
+    IRQ_ENTER(EXTI9_5_IRQn);
     Handle_EXTI_Irq(5);
     Handle_EXTI_Irq(6);
     Handle_EXTI_Irq(7);
     Handle_EXTI_Irq(8);
     Handle_EXTI_Irq(9);
+    IRQ_EXIT(EXTI9_5_IRQn);
 }
 
 void EXTI15_10_IRQHandler(void) {
+    IRQ_ENTER(EXTI15_10_IRQn);
     Handle_EXTI_Irq(10);
     Handle_EXTI_Irq(11);
     Handle_EXTI_Irq(12);
     Handle_EXTI_Irq(13);
     Handle_EXTI_Irq(14);
     Handle_EXTI_Irq(15);
+    IRQ_EXIT(EXTI15_10_IRQn);
 }
 
 void PVD_IRQHandler(void) {
+    IRQ_ENTER(PVD_IRQn);
     #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
     extern void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
     USBD_CDC_HAL_TIM_PeriodElapsedCallback();
     #endif
     Handle_EXTI_Irq(EXTI_PVD_OUTPUT);
+    IRQ_EXIT(PVD_IRQn);
 }
 
 void RTC_Alarm_IRQHandler(void) {
+    IRQ_ENTER(RTC_Alarm_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_ALARM);
+    IRQ_EXIT(RTC_Alarm_IRQn);
 }
 
 #if defined(ETH)    // The 407 has ETH, the 405 doesn't
 void ETH_WKUP_IRQHandler(void)  {
+    IRQ_ENTER(ETH_WKUP_IRQn);
     Handle_EXTI_Irq(EXTI_ETH_WAKEUP);
+    IRQ_EXIT(ETH_WKUP_IRQn);
 }
 #endif
 
 void TAMP_STAMP_IRQHandler(void) {
+    IRQ_ENTER(TAMP_STAMP_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP);
+    IRQ_EXIT(TAMP_STAMP_IRQn);
 }
 
 void RTC_WKUP_IRQHandler(void) {
+    IRQ_ENTER(RTC_WKUP_IRQn);
     RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    IRQ_EXIT(RTC_WKUP_IRQn);
 }
 
 void TIM1_BRK_TIM9_IRQHandler(void) {
+    IRQ_ENTER(TIM1_BRK_TIM9_IRQn);
     timer_irq_handler(9);
+    IRQ_EXIT(TIM1_BRK_TIM9_IRQn);
 }
 
 void TIM1_UP_TIM10_IRQHandler(void) {
+    IRQ_ENTER(TIM1_UP_TIM10_IRQn);
     timer_irq_handler(1);
     timer_irq_handler(10);
+    IRQ_EXIT(TIM1_UP_TIM10_IRQn);
 }
 
 void TIM1_TRG_COM_TIM11_IRQHandler(void) {
+    IRQ_ENTER(TIM1_TRG_COM_TIM11_IRQn);
     timer_irq_handler(11);
+    IRQ_EXIT(TIM1_TRG_COM_TIM11_IRQn);
 }
 
 void TIM2_IRQHandler(void) {
+    IRQ_ENTER(TIM2_IRQn);
     timer_irq_handler(2);
+    IRQ_EXIT(TIM2_IRQn);
 }
 
 void TIM3_IRQHandler(void) {
+    IRQ_ENTER(TIM3_IRQn);
     #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
     timer_irq_handler(3);
     #else
     HAL_TIM_IRQHandler(&TIM3_Handle);
     #endif
+    IRQ_EXIT(TIM3_IRQn);
 }
 
 void TIM4_IRQHandler(void) {
+    IRQ_ENTER(TIM4_IRQn);
     timer_irq_handler(4);
+    IRQ_EXIT(TIM4_IRQn);
 }
 
 void TIM5_IRQHandler(void) {
+    IRQ_ENTER(TIM5_IRQn);
     timer_irq_handler(5);
     HAL_TIM_IRQHandler(&TIM5_Handle);
+    IRQ_EXIT(TIM5_IRQn);
 }
 
 void TIM6_DAC_IRQHandler(void) {
+    IRQ_ENTER(TIM6_DAC_IRQn);
     timer_irq_handler(6);
+    IRQ_EXIT(TIM6_DAC_IRQn);
 }
 
 void TIM7_IRQHandler(void) {
+    IRQ_ENTER(TIM7_IRQn);
     timer_irq_handler(7);
+    IRQ_EXIT(TIM7_IRQn);
 }
 
 void TIM8_BRK_TIM12_IRQHandler(void) {
+    IRQ_ENTER(TIM8_BRK_TIM12_IRQn);
     timer_irq_handler(12);
+    IRQ_EXIT(TIM8_BRK_TIM12_IRQn);
 }
 
 void TIM8_UP_TIM13_IRQHandler(void) {
+    IRQ_ENTER(TIM8_UP_TIM13_IRQn);
     timer_irq_handler(8);
     timer_irq_handler(13);
+    IRQ_EXIT(TIM8_UP_TIM13_IRQn);
 }
 
 void TIM8_TRG_COM_TIM14_IRQHandler(void) {
+    IRQ_ENTER(TIM8_TRG_COM_TIM14_IRQn);
     timer_irq_handler(14);
+    IRQ_EXIT(TIM8_TRG_COM_TIM14_IRQn);
 }
 
 // UART/USART IRQ handlers
 void USART1_IRQHandler(void) {
+    IRQ_ENTER(USART1_IRQn);
     uart_irq_handler(1);
+    IRQ_EXIT(USART1_IRQn);
 }
 
 void USART2_IRQHandler(void) {
+    IRQ_ENTER(USART2_IRQn);
     uart_irq_handler(2);
+    IRQ_EXIT(USART2_IRQn);
 }
 
 void USART3_IRQHandler(void) {
+    IRQ_ENTER(USART3_IRQn);
     uart_irq_handler(3);
+    IRQ_EXIT(USART3_IRQn);
 }
 
 void UART4_IRQHandler(void) {
+    IRQ_ENTER(UART4_IRQn);
     uart_irq_handler(4);
+    IRQ_EXIT(UART4_IRQn);
 }
 
 void UART5_IRQHandler(void) {
+    IRQ_ENTER(UART5_IRQn);
     uart_irq_handler(5);
+    IRQ_EXIT(UART5_IRQn);
 }
 
 void USART6_IRQHandler(void) {
+    IRQ_ENTER(USART6_IRQn);
     uart_irq_handler(6);
+    IRQ_EXIT(USART6_IRQn);
 }
 
 #if MICROPY_HW_ENABLE_CAN
 void CAN1_RX0_IRQHandler(void) {
+    IRQ_ENTER(CAN1_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
+    IRQ_EXIT(CAN1_RX0_IRQn);
 }
 
 void CAN1_RX1_IRQHandler(void) {
+    IRQ_ENTER(CAN1_RX1_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
+    IRQ_EXIT(CAN1_RX1_IRQn);
 }
 
 void CAN2_RX0_IRQHandler(void) {
+    IRQ_ENTER(CAN2_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
+    IRQ_EXIT(CAN2_RX0_IRQn);
 }
 
 void CAN2_RX1_IRQHandler(void) {
+    IRQ_ENTER(CAN2_RX1_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
+    IRQ_EXIT(CAN2_RX1_IRQn);
 }
 #endif // MICROPY_HW_ENABLE_CAN
