@@ -119,6 +119,8 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
 /******************************************************************************/
 // Micro Python bindings
 
+/// \classmethod \constructor([data[, block_size]])
+/// initial data must be given if block_size wants to be passed
 STATIC mp_obj_t hash_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
     mp_obj_hash_t *self = m_new0(mp_obj_hash_t, 1);
@@ -136,8 +138,8 @@ STATIC mp_obj_t hash_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
 
     if (n_args) {
         // CPython extension to avoid buffering the data before digesting it
-        // note: care must be taken to provide all intermidiate blocks as multiple
-        //       of four bytes, otherwise the resulted hash will be incorrect.
+        // Note: care must be taken to provide all intermediate blocks as multiple
+        //       of four bytes, otherwise the resulting hash will be incorrect.
         //       the final block can be of any length
         if (n_args > 1) {
             // block size given, we will feed the data directly into the hash engine
