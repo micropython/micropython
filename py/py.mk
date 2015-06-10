@@ -131,13 +131,17 @@ FORCE:
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
 
+# mpconfigport.mk is optional, but changes to it may drastically change
+# overall config, so they need to be caught
+MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
+
 # qstr data
 
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
 # Note: we need to protect the qstr names from the preprocessor, so we wrap
 # the lines in "" and then unwrap after the preprocessor is finished.
-$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
+$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | sed 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
