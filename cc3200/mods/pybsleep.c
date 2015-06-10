@@ -499,9 +499,17 @@ STATIC void pybsleep_iopark (bool hibernate) {
     if (hibernate) {
 #endif
         // park the antenna selection pins
+        // (tri-stated with pull down enabled)
         HWREG(0x4402E108) = 0x00000E61;
         HWREG(0x4402E10C) = 0x00000E61;
 #if MICROPY_HW_ANTENNA_DIVERSITY
+    } else {
+        // park the antenna selection pins
+        // (tri-stated without changing the pull up/down resistors)
+        HWREG(0x4402E108) &= ~0x000000FF;
+        HWREG(0x4402E108) |=  0x00000C61;
+        HWREG(0x4402E10C) &= ~0x000000FF;
+        HWREG(0x4402E10C) |=  0x00000C61;
     }
 #endif
 }
