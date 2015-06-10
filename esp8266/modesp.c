@@ -528,7 +528,10 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
 
 STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
     MP_STATE_PORT(scan_cb_obj) = cb_in;
-    wifi_set_opmode(STATION_MODE);
+    if (wifi_get_opmode() == SOFTAP_MODE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, 
+            "Scan not supported in AP mode"));
+    }
     wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
     return mp_const_none;
 }
