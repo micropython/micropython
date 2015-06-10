@@ -510,7 +510,6 @@ STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_A),                       MP_OBJ_NEW_SMALL_INT(TIMER_A) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_B),                       MP_OBJ_NEW_SMALL_INT(TIMER_B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AB),                      MP_OBJ_NEW_SMALL_INT(TIMER_A | TIMER_B) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ONE_SHOT),                MP_OBJ_NEW_SMALL_INT(TIMER_CFG_A_ONE_SHOT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PERIODIC),                MP_OBJ_NEW_SMALL_INT(TIMER_CFG_A_PERIODIC) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_EDGE_COUNT),              MP_OBJ_NEW_SMALL_INT(TIMER_CFG_A_CAP_COUNT) },
