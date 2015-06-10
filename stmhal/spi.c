@@ -33,6 +33,7 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "bufhelper.h"
+#include "dma.h"
 #include "spi.h"
 #include MICROPY_HAL_H
 
@@ -60,6 +61,23 @@
 ///     spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
 ///     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
 
+// Possible DMA configurations for SPI busses:
+// SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
+// SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
+// SPI2_TX: DMA1_Stream4.CHANNEL_0
+// SPI2_RX: DMA1_Stream3.CHANNEL_0
+// SPI3_TX: DMA1_Stream5.CHANNEL_0 or DMA1_Stream7.CHANNEL_0
+// SPI3_RX: DMA1_Stream0.CHANNEL_0 or DMA1_Stream2.CHANNEL_0
+
+typedef struct _pyb_spi_obj_t {
+    mp_obj_base_t base;
+    SPI_HandleTypeDef *spi;
+    DMA_Stream_TypeDef *tx_dma_stream;
+    uint32_t tx_dma_channel;
+    DMA_Stream_TypeDef *rx_dma_stream;
+    uint32_t rx_dma_channel;
+} pyb_spi_obj_t;
+
 #if MICROPY_HW_ENABLE_SPI1
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
@@ -70,61 +88,23 @@ SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
 SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 #endif
 
-// Possible DMA configurations for SPI busses:
-// SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
-// SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
-// SPI2_RX: DMA1_Stream3.CHANNEL_0
-// SPI2_TX: DMA1_Stream4.CHANNEL_0
-// SPI3_RX: DMA1_Stream0.CHANNEL_0 or DMA1_Stream2.CHANNEL_0
-// SPI3_TX: DMA1_Stream5.CHANNEL_0 or DMA1_Stream7.CHANNEL_0
-
-#define SPI1_DMA_CLK_ENABLE __DMA2_CLK_ENABLE
-#define SPI1_RX_DMA_STREAM (DMA2_Stream2)
-#define SPI1_TX_DMA_STREAM (DMA2_Stream5)
-#define SPI1_DMA_CHANNEL (DMA_CHANNEL_3)
-#define SPI1_RX_DMA_IRQN (DMA2_Stream2_IRQn)
-#define SPI1_TX_DMA_IRQN (DMA2_Stream5_IRQn)
-#define SPI1_RX_DMA_IRQ_HANDLER DMA2_Stream2_IRQHandler
-#define SPI1_TX_DMA_IRQ_HANDLER DMA2_Stream5_IRQHandler
-
-#define SPI2_DMA_CLK_ENABLE __DMA1_CLK_ENABLE
-#define SPI2_RX_DMA_STREAM (DMA1_Stream3)
-#define SPI2_TX_DMA_STREAM (DMA1_Stream4)
-#define SPI2_DMA_CHANNEL (DMA_CHANNEL_0)
-#define SPI2_RX_DMA_IRQN (DMA1_Stream3_IRQn)
-#define SPI2_TX_DMA_IRQN (DMA1_Stream4_IRQn)
-#define SPI2_RX_DMA_IRQ_HANDLER DMA1_Stream3_IRQHandler
-#define SPI2_TX_DMA_IRQ_HANDLER DMA1_Stream4_IRQHandler
-
-#define SPI3_DMA_CLK_ENABLE __DMA1_CLK_ENABLE
-#define SPI3_RX_DMA_STREAM (DMA1_Stream2)
-#define SPI3_TX_DMA_STREAM (DMA1_Stream7)
-#define SPI3_DMA_CHANNEL (DMA_CHANNEL_0)
-#define SPI3_RX_DMA_IRQN (DMA1_Stream2_IRQn)
-#define SPI3_TX_DMA_IRQN (DMA1_Stream7_IRQn)
-#define SPI3_RX_DMA_IRQ_HANDLER DMA1_Stream2_IRQHandler
-#define SPI3_TX_DMA_IRQ_HANDLER DMA1_Stream7_IRQHandler
-
+STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
 #if MICROPY_HW_ENABLE_SPI1
-STATIC DMA_HandleTypeDef spi1_rx_dma_handle;
-STATIC DMA_HandleTypeDef spi1_tx_dma_handle;
-void SPI1_RX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi1_rx_dma_handle); }
-void SPI1_TX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi1_tx_dma_handle); }
+    {{&pyb_spi_type}, &SPIHandle1, DMA2_Stream5, DMA_CHANNEL_3, DMA2_Stream2, DMA_CHANNEL_3},
+#else
+    {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif
-
 #if MICROPY_HW_ENABLE_SPI2
-STATIC DMA_HandleTypeDef spi2_rx_dma_handle;
-STATIC DMA_HandleTypeDef spi2_tx_dma_handle;
-void SPI2_RX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi2_rx_dma_handle); }
-void SPI2_TX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi2_tx_dma_handle); }
+    {{&pyb_spi_type}, &SPIHandle2, DMA1_Stream4, DMA_CHANNEL_0, DMA1_Stream3, DMA_CHANNEL_0},
+#else
+    {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif
-
 #if MICROPY_HW_ENABLE_SPI3
-STATIC DMA_HandleTypeDef spi3_rx_dma_handle;
-STATIC DMA_HandleTypeDef spi3_tx_dma_handle;
-void SPI3_RX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi3_rx_dma_handle); }
-void SPI3_TX_DMA_IRQ_HANDLER(void) { HAL_DMA_IRQHandler(&spi3_tx_dma_handle); }
+    {{&pyb_spi_type}, &SPIHandle3, DMA1_Stream7, DMA_CHANNEL_0, DMA1_Stream2, DMA_CHANNEL_0},
+#else
+    {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif
+};
 
 void spi_init0(void) {
     // reset the SPI handles
@@ -150,14 +130,14 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Pull = spi->Init.CLKPolarity == SPI_POLARITY_LOW ? GPIO_PULLDOWN : GPIO_PULLUP;
 
-    DMA_HandleTypeDef *rx_dma, *tx_dma;
-    IRQn_Type rx_dma_irqn, tx_dma_irqn;
-
+    const pyb_spi_obj_t *self;
     const pin_obj_t *pins[4];
+
     if (0) {
 #if MICROPY_HW_ENABLE_SPI1
     } else if (spi->Instance == SPI1) {
         // X-skin: X5=PA4=SPI1_NSS, X6=PA5=SPI1_SCK, X7=PA6=SPI1_MISO, X8=PA7=SPI1_MOSI
+        self = &pyb_spi_obj[0];
         pins[0] = &pin_A4;
         pins[1] = &pin_A5;
         pins[2] = &pin_A6;
@@ -165,19 +145,11 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         GPIO_InitStructure.Alternate = GPIO_AF5_SPI1;
         // enable the SPI clock
         __SPI1_CLK_ENABLE();
-        // configure DMA
-        SPI1_DMA_CLK_ENABLE();
-        spi1_rx_dma_handle.Instance = SPI1_RX_DMA_STREAM;
-        spi1_rx_dma_handle.Init.Channel = SPI1_DMA_CHANNEL;
-        spi1_tx_dma_handle.Instance = SPI1_TX_DMA_STREAM;
-        rx_dma = &spi1_rx_dma_handle;
-        tx_dma = &spi1_tx_dma_handle;
-        rx_dma_irqn = SPI1_RX_DMA_IRQN;
-        tx_dma_irqn = SPI1_TX_DMA_IRQN;
 #endif
 #if MICROPY_HW_ENABLE_SPI2
     } else if (spi->Instance == SPI2) {
         // Y-skin: Y5=PB12=SPI2_NSS, Y6=PB13=SPI2_SCK, Y7=PB14=SPI2_MISO, Y8=PB15=SPI2_MOSI
+        self = &pyb_spi_obj[1];
         pins[0] = &pin_B12;
         pins[1] = &pin_B13;
         pins[2] = &pin_B14;
@@ -185,18 +157,10 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         GPIO_InitStructure.Alternate = GPIO_AF5_SPI2;
         // enable the SPI clock
         __SPI2_CLK_ENABLE();
-        // configure DMA
-        SPI2_DMA_CLK_ENABLE();
-        spi2_rx_dma_handle.Instance = SPI2_RX_DMA_STREAM;
-        spi2_rx_dma_handle.Init.Channel = SPI2_DMA_CHANNEL;
-        spi2_tx_dma_handle.Instance = SPI2_TX_DMA_STREAM;
-        rx_dma = &spi2_rx_dma_handle;
-        tx_dma = &spi2_tx_dma_handle;
-        rx_dma_irqn = SPI2_RX_DMA_IRQN;
-        tx_dma_irqn = SPI2_TX_DMA_IRQN;
 #endif
 #if MICROPY_HW_ENABLE_SPI3
     } else if (spi->Instance == SPI3) {
+        self = &pyb_spi_obj[2];
         pins[0] = &pin_A4;
         pins[1] = &pin_B3;
         pins[2] = &pin_B4;
@@ -204,15 +168,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         GPIO_InitStructure.Alternate = GPIO_AF6_SPI3;
         // enable the SPI clock
         __SPI3_CLK_ENABLE();
-        // configure DMA
-        SPI3_DMA_CLK_ENABLE();
-        spi3_rx_dma_handle.Instance = SPI3_RX_DMA_STREAM;
-        spi3_rx_dma_handle.Init.Channel = SPI3_DMA_CHANNEL;
-        spi3_tx_dma_handle.Instance = SPI3_TX_DMA_STREAM;
-        rx_dma = &spi3_rx_dma_handle;
-        tx_dma = &spi3_tx_dma_handle;
-        rx_dma_irqn = SPI3_RX_DMA_IRQN;
-        tx_dma_irqn = SPI3_TX_DMA_IRQN;
 #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
@@ -233,36 +188,11 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         return;
     }
 
-    // configure DMA
-
-    rx_dma->Init.Direction           = DMA_PERIPH_TO_MEMORY;
-    rx_dma->Init.PeriphInc           = DMA_PINC_DISABLE;
-    rx_dma->Init.MemInc              = DMA_MINC_ENABLE;
-    rx_dma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    rx_dma->Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    rx_dma->Init.Mode                = DMA_NORMAL;
-    rx_dma->Init.Priority            = DMA_PRIORITY_LOW;
-    rx_dma->Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
-    rx_dma->Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    rx_dma->Init.MemBurst            = DMA_MBURST_INC4;
-    rx_dma->Init.PeriphBurst         = DMA_PBURST_INC4;
-
-    tx_dma->Init = rx_dma->Init; // copy rx settings
-    tx_dma->Init.Direction = DMA_MEMORY_TO_PERIPH;
-
-    __HAL_LINKDMA(spi, hdmarx, *rx_dma);
-    HAL_DMA_DeInit(rx_dma);
-    HAL_DMA_Init(rx_dma);
-
-    __HAL_LINKDMA(spi, hdmatx, *tx_dma);
-    HAL_DMA_DeInit(tx_dma);
-    HAL_DMA_Init(tx_dma);
-
-    // Enable the relevant IRQs.
-    HAL_NVIC_SetPriority(rx_dma_irqn, 6, 0);
-    HAL_NVIC_EnableIRQ(rx_dma_irqn);
-    HAL_NVIC_SetPriority(tx_dma_irqn, 6, 0);
-    HAL_NVIC_EnableIRQ(tx_dma_irqn);
+    // After calling HAL_SPI_Init() it seems that the DMA gets disconnected if
+    // it was previously configured.  So we invalidate the DMA channel to force
+    // an initialisation the next time we use it.
+    dma_invalidate_channel(self->tx_dma_stream, self->tx_dma_channel);
+    dma_invalidate_channel(self->rx_dma_stream, self->rx_dma_channel);
 }
 
 void spi_deinit(SPI_HandleTypeDef *spi) {
@@ -304,29 +234,6 @@ STATIC HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t 
 
 /******************************************************************************/
 /* Micro Python bindings                                                      */
-
-typedef struct _pyb_spi_obj_t {
-    mp_obj_base_t base;
-    SPI_HandleTypeDef *spi;
-} pyb_spi_obj_t;
-
-STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
-#if MICROPY_HW_ENABLE_SPI1
-    {{&pyb_spi_type}, &SPIHandle1},
-#else
-    {{&pyb_spi_type}, NULL},
-#endif
-#if MICROPY_HW_ENABLE_SPI2
-    {{&pyb_spi_type}, &SPIHandle2},
-#else
-    {{&pyb_spi_type}, NULL},
-#endif
-#if MICROPY_HW_ENABLE_SPI3
-    {{&pyb_spi_type}, &SPIHandle3},
-#else
-    {{&pyb_spi_type}, NULL},
-#endif
-};
 
 SPI_HandleTypeDef *spi_get_handle(mp_obj_t o) {
     if (!MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
@@ -550,10 +457,15 @@ STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     if (query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, args[1].u_int);
     } else {
+        DMA_HandleTypeDef tx_dma;
+        dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
+        self->spi->hdmatx = &tx_dma;
+        self->spi->hdmarx = NULL;
         status = HAL_SPI_Transmit_DMA(self->spi, bufinfo.buf, bufinfo.len);
         if (status == HAL_OK) {
             status = spi_wait_dma_finished(self->spi, args[1].u_int);
         }
+        dma_deinit(&tx_dma);
     }
 
     if (status != HAL_OK) {
@@ -596,10 +508,23 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     if (query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_Receive(self->spi, (uint8_t*)vstr.buf, vstr.len, args[1].u_int);
     } else {
+        DMA_HandleTypeDef tx_dma, rx_dma;
+        if (self->spi->Init.Mode == SPI_MODE_MASTER) {
+            // in master mode the HAL actually does a TransmitReceive call
+            dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
+            self->spi->hdmatx = &tx_dma;
+        } else {
+            self->spi->hdmatx = NULL;
+        }
+        dma_init(&rx_dma, self->rx_dma_stream, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->spi);
+        self->spi->hdmarx = &rx_dma;
+
         status = HAL_SPI_Receive_DMA(self->spi, (uint8_t*)vstr.buf, vstr.len);
         if (status == HAL_OK) {
             status = spi_wait_dma_finished(self->spi, args[1].u_int);
         }
+        dma_deinit(&tx_dma);
+        dma_deinit(&rx_dma);
     }
 
     if (status != HAL_OK) {
@@ -678,10 +603,17 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     if (query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_TransmitReceive(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len, args[2].u_int);
     } else {
+        DMA_HandleTypeDef tx_dma, rx_dma;
+        dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
+        self->spi->hdmatx = &tx_dma;
+        dma_init(&rx_dma, self->rx_dma_stream, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->spi);
+        self->spi->hdmarx = &rx_dma;
         status = HAL_SPI_TransmitReceive_DMA(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len);
         if (status == HAL_OK) {
             status = spi_wait_dma_finished(self->spi, args[2].u_int);
         }
+        dma_deinit(&tx_dma);
+        dma_deinit(&rx_dma);
     }
 
     if (status != HAL_OK) {
