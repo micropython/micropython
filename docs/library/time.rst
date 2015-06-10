@@ -31,10 +31,24 @@ Functions
    which expresses a time as per localtime. It returns an integer which is
    the number of seconds since Jan 1, 2000.
 
-.. function:: sleep(seconds)
+.. only:: port_pyboard
 
-   Sleep for the given number of seconds.  Seconds can be a floating-point number to
-   sleep for a fractional number of seconds.
+    .. function:: sleep(seconds)
+    
+       Sleep for the given number of seconds.  Seconds can be a floating-point number to
+       sleep for a fractional number of seconds.
+
+.. only:: port_esp8266
+
+    .. function:: sleep(seconds)
+    
+       Sleep for the given number of seconds.
+
+.. only:: port_wipy
+
+    .. function:: sleep(milliseconds)
+    
+       Sleep for the given number of milliseconds.
 
 .. function:: time()
 

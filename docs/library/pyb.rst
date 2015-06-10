@@ -1,10 +1,10 @@
-:mod:`pyb` --- functions related to the pyboard
-===============================================
+:mod:`pyb` --- functions related to the board
+=============================================
 
 .. module:: pyb
-   :synopsis: functions related to the pyboard
+   :synopsis: functions related to the board
 
-The ``pyb`` module contains specific functions related to the pyboard.
+The ``pyb`` module contains specific functions related to the board.
 
 Time related functions
 ----------------------
@@ -63,14 +63,25 @@ Time related functions
 Reset related functions
 -----------------------
 
-.. function:: hard_reset()
+.. only:: port_pyboard
 
-   Resets the pyboard in a manner similar to pushing the external RESET
-   button.
+    .. function:: hard_reset()
+    
+       Resets the pyboard in a manner similar to pushing the external RESET
+       button.
 
-.. function:: bootloader()
+.. only:: port_wipy
 
-   Activate the bootloader without BOOT\* pins.
+    .. function:: reset()
+    
+       Resets the WiPy in a manner similar to pushing the external RESET
+       button.
+
+.. only:: port_pyboard
+
+    .. function:: bootloader()
+    
+       Activate the bootloader without BOOT\* pins.
 
 Interrupt related functions
 ---------------------------
@@ -93,93 +104,106 @@ Interrupt related functions
 Power related functions
 -----------------------
 
-.. function:: freq([sysclk[, hclk[, pclk1[, pclk2]]]])
+.. only:: port_pyboard
 
-   If given no arguments, returns a tuple of clock frequencies:
-   (sysclk, hclk, pclk1, pclk2).
-   These correspond to:
+    .. function:: freq([sysclk[, hclk[, pclk1[, pclk2]]]])
+    
+       If given no arguments, returns a tuple of clock frequencies:
+       (sysclk, hclk, pclk1, pclk2).
+       These correspond to:
+    
+        - sysclk: frequency of the CPU
+        - hclk: frequency of the AHB bus, core memory and DMA
+        - pclk1: frequency of the APB1 bus
+        - pclk2: frequency of the APB2 bus
+    
+       If given any arguments then the function sets the frequency of the CPU,
+       and the busses if additional arguments are given.  Frequencies are given in
+       Hz.  Eg freq(120000000) sets sysclk (the CPU frequency) to 120MHz.  Note that
+       not all values are supported and the largest supported frequency not greater
+       than the given value will be selected.
+    
+       Supported sysclk frequencies are (in MHz): 8, 16, 24, 30, 32, 36, 40, 42, 48,
+       54, 56, 60, 64, 72, 84, 96, 108, 120, 144, 168.
+    
+       The maximum frequency of hclk is 168MHz, of pclk1 is 42MHz, and of pclk2 is
+       84MHz.  Be sure not to set frequencies above these values.
+    
+       The hclk, pclk1 and pclk2 frequencies are derived from the sysclk frequency
+       using a prescaler (divider).  Supported prescalers for hclk are: 1, 2, 4, 8,
+       16, 64, 128, 256, 512.  Supported prescalers for pclk1 and pclk2 are: 1, 2,
+       4, 8.  A prescaler will be chosen to best match the requested frequency.
+    
+       A sysclk frequency of
+       8MHz uses the HSE (external crystal) directly and 16MHz uses the HSI
+       (internal oscillator) directly.  The higher frequencies use the HSE to
+       drive the PLL (phase locked loop), and then use the output of the PLL.
+    
+       Note that if you change the frequency while the USB is enabled then
+       the USB may become unreliable.  It is best to change the frequency
+       in boot.py, before the USB peripheral is started.  Also note that sysclk
+       frequencies below 36MHz do not allow the USB to function correctly.
+    
+    .. function:: wfi()
+    
+       Wait for an internal or external interrupt.
+    
+       This executes a ``wfi`` instruction which reduces power consumption
+       of the MCU until any interrupt occurs (be it internal or external),
+       at which point execution continues.  Note that the system-tick interrupt
+       occurs once every millisecond (1000Hz) so this function will block for
+       at most 1ms.
+    
+    .. function:: stop()
+    
+       Put the pyboard in a "sleeping" state.
+    
+       This reduces power consumption to less than 500 uA.  To wake from this
+       sleep state requires an external interrupt or a real-time-clock event.
+       Upon waking execution continues where it left off.
+    
+       See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
+    
+    .. function:: standby()
+    
+       Put the pyboard into a "deep sleep" state.
+    
+       This reduces power consumption to less than 50 uA.  To wake from this
+       sleep state requires an external interrupt or a real-time-clock event.
+       Upon waking the system undergoes a hard reset.
+    
+       See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
 
-    - sysclk: frequency of the CPU
-    - hclk: frequency of the AHB bus, core memory and DMA
-    - pclk1: frequency of the APB1 bus
-    - pclk2: frequency of the APB2 bus
+.. only:: port_wipy
 
-   If given any arguments then the function sets the frequency of the CPU,
-   and the busses if additional arguments are given.  Frequencies are given in
-   Hz.  Eg freq(120000000) sets sysclk (the CPU frequency) to 120MHz.  Note that
-   not all values are supported and the largest supported frequency not greater
-   than the given value will be selected.
+    .. function:: freq([sysclk])
 
-   Supported sysclk frequencies are (in MHz): 8, 16, 24, 30, 32, 36, 40, 42, 48,
-   54, 56, 60, 64, 72, 84, 96, 108, 120, 144, 168.
+       Returns a tuple of clock frequencies: ``(sysclk)``
+       These correspond to:
 
-   The maximum frequency of hclk is 168MHz, of pclk1 is 42MHz, and of pclk2 is
-   84MHz.  Be sure not to set frequencies above these values.
-
-   The hclk, pclk1 and pclk2 frequencies are derived from the sysclk frequency
-   using a prescaler (divider).  Supported prescalers for hclk are: 1, 2, 4, 8,
-   16, 64, 128, 256, 512.  Supported prescalers for pclk1 and pclk2 are: 1, 2,
-   4, 8.  A prescaler will be chosen to best match the requested frequency.
-
-   A sysclk frequency of
-   8MHz uses the HSE (external crystal) directly and 16MHz uses the HSI
-   (internal oscillator) directly.  The higher frequencies use the HSE to
-   drive the PLL (phase locked loop), and then use the output of the PLL.
-
-   Note that if you change the frequency while the USB is enabled then
-   the USB may become unreliable.  It is best to change the frequency
-   in boot.py, before the USB peripheral is started.  Also note that sysclk
-   frequencies below 36MHz do not allow the USB to function correctly.
-
-.. function:: wfi()
-
-   Wait for an internal or external interrupt.
-
-   This executes a ``wfi`` instruction which reduces power consumption
-   of the MCU until any interrupt occurs (be it internal or external),
-   at which point execution continues.  Note that the system-tick interrupt
-   occurs once every millisecond (1000Hz) so this function will block for
-   at most 1ms.
-
-.. function:: stop()
-
-   Put the pyboard in a "sleeping" state.
-
-   This reduces power consumption to less than 500 uA.  To wake from this
-   sleep state requires an external interrupt or a real-time-clock event.
-   Upon waking execution continues where it left off.
-
-   See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
-
-.. function:: standby()
-
-   Put the pyboard into a "deep sleep" state.
-
-   This reduces power consumption to less than 50 uA.  To wake from this
-   sleep state requires an external interrupt or a real-time-clock event.
-   Upon waking the system undergoes a hard reset.
-
-   See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
+          - sysclk: frequency of the CPU
 
 Miscellaneous functions
 -----------------------
 
-.. function:: have_cdc()
+.. only:: port_pyboard
 
-   Return True if USB is connected as a serial device, False otherwise.
-
-   .. note:: This function is deprecated.  Use pyb.USB_VCP().isconnected() instead.
-
-.. function:: hid((buttons, x, y, z))
-
-   Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
-   signal a HID mouse-motion event.
-
-   .. note:: This function is deprecated.  Use pyb.USB_HID().send(...) instead.
-
-.. function:: info([dump_alloc_table])
-
-   Print out lots of information about the board.
+    .. function:: have_cdc()
+    
+       Return True if USB is connected as a serial device, False otherwise.
+    
+       .. note:: This function is deprecated.  Use pyb.USB_VCP().isconnected() instead.
+    
+    .. function:: hid((buttons, x, y, z))
+    
+       Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
+       signal a HID mouse-motion event.
+    
+       .. note:: This function is deprecated.  Use pyb.USB_HID().send(...) instead.
+    
+    .. function:: info([dump_alloc_table])
+    
+       Print out lots of information about the board.
 
 .. function:: main(filename)
 
@@ -188,72 +212,109 @@ Miscellaneous functions
 
    It only makes sense to call this function from within boot.py.
 
-.. function:: mount(device, mountpoint, \*, readonly=False, mkfs=False)
+.. only:: port_pyboard
 
-   Mount a block device and make it available as part of the filesystem.
-   ``device`` must be an object that provides the block protocol:
-
-    - ``readblocks(self, blocknum, buf)``
-    - ``writeblocks(self, blocknum, buf)`` (optional)
-    - ``count(self)``
-    - ``sync(self)`` (optional)
-
-   ``readblocks`` and ``writeblocks`` should copy data between ``buf`` and
-   the block device, starting from block number ``blocknum`` on the device.
-   ``buf`` will be a bytearray with length a multiple of 512.  If
-   ``writeblocks`` is not defined then the device is mounted read-only.
-   The return value of these two functions is ignored.
-
-   ``count`` should return the number of blocks available on the device.
-   ``sync``, if implemented, should sync the data on the device.
-
-   The parameter ``mountpoint`` is the location in the root of the filesystem
-   to mount the device.  It must begin with a forward-slash.
-
-   If ``readonly`` is ``True``, then the device is mounted read-only,
-   otherwise it is mounted read-write.
-
-   If ``mkfs`` is ``True``, then a new filesystem is created if one does not
-   already exist.
-
-   To unmount a device, pass ``None`` as the device and the mount location
-   as ``mountpoint``.
+    .. function:: mount(device, mountpoint, \*, readonly=False, mkfs=False)
+    
+       Mount a block device and make it available as part of the filesystem.
+       ``device`` must be an object that provides the block protocol:
+    
+        - ``readblocks(self, blocknum, buf)``
+        - ``writeblocks(self, blocknum, buf)`` (optional)
+        - ``count(self)``
+        - ``sync(self)`` (optional)
+    
+       ``readblocks`` and ``writeblocks`` should copy data between ``buf`` and
+       the block device, starting from block number ``blocknum`` on the device.
+       ``buf`` will be a bytearray with length a multiple of 512.  If
+       ``writeblocks`` is not defined then the device is mounted read-only.
+       The return value of these two functions is ignored.
+    
+       ``count`` should return the number of blocks available on the device.
+       ``sync``, if implemented, should sync the data on the device.
+    
+       The parameter ``mountpoint`` is the location in the root of the filesystem
+       to mount the device.  It must begin with a forward-slash.
+    
+       If ``readonly`` is ``True``, then the device is mounted read-only,
+       otherwise it is mounted read-write.
+    
+       If ``mkfs`` is ``True``, then a new filesystem is created if one does not
+       already exist.
+    
+       To unmount a device, pass ``None`` as the device and the mount location
+       as ``mountpoint``.
 
 .. function:: repl_uart(uart)
 
    Get or set the UART object that the REPL is repeated on.
 
-.. function:: rng()
+.. only:: port_pyboard
 
-   Return a 30-bit hardware generated random number.
+    .. function:: rng()
+    
+       Return a 30-bit hardware generated random number.
+
+.. only:: port_wipy
+
+    .. function:: rng()
+    
+       Return a 24-bit software generated random number.
 
 .. function:: sync()
 
    Sync all file systems.
 
-.. function:: unique_id()
+.. only:: port_pyboard
 
-   Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
+    .. function:: unique_id()
+    
+       Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
+
+.. only:: port_wipy
+
+    .. function:: unique_id()
+    
+       Returns a string of 6 bytes (48 bits), which is the unique ID for the MCU.
+       This also corresponds to the ``MAC address`` of the WiPy.
 
 Classes
 -------
 
-.. toctree::
-   :maxdepth: 1
+.. only:: port_pyboard
 
-   pyb.Accel.rst
-   pyb.ADC.rst
-   pyb.CAN.rst
-   pyb.DAC.rst
-   pyb.ExtInt.rst
-   pyb.I2C.rst
-   pyb.LCD.rst
-   pyb.LED.rst
-   pyb.Pin.rst
-   pyb.RTC.rst
-   pyb.Servo.rst
-   pyb.SPI.rst
-   pyb.Switch.rst
-   pyb.Timer.rst
-   pyb.UART.rst
-   pyb.USB_VCP.rst
+    .. toctree::
+       :maxdepth: 1
+    
+       pyb.Accel.rst
+       pyb.ADC.rst
+       pyb.CAN.rst
+       pyb.DAC.rst
+       pyb.ExtInt.rst
+       pyb.I2C.rst
+       pyb.LCD.rst
+       pyb.LED.rst
+       pyb.Pin.rst
+       pyb.RTC.rst
+       pyb.Servo.rst
+       pyb.SPI.rst
+       pyb.Switch.rst
+       pyb.Timer.rst
+       pyb.UART.rst
+       pyb.USB_VCP.rst
+
+.. only:: port_wipy
+
+    .. toctree::
+       :maxdepth: 1
+    
+       pyb.ADC.rst
+       pyb.HeartBeat.rst
+       pyb.I2C.rst
+       pyb.Pin.rst
+       pyb.RTC.rst
+       pyb.SD.rst
+       pyb.SPI.rst
+       pyb.Timer.rst
+       pyb.UART.rst
+       pyb.WDT.rst

@@ -121,6 +121,8 @@ preferably in a virtualenv:
 
 In `micropython/docs`, build the docs:
 
-    make html
+    make MICROPY_PORT=<port_name> BUILDDIR=<port_name>/build html
 
-You'll find the index page at `micropython/docs/build/html/index.html`.
+Where ``<port_name>`` can be ``port_unix``, ``port_pyboard``, ``port_wipy`` or ``port_esp8266``.
+
+You'll find the index page at `micropython/docs/<port_name>/build/html/index.html`.

@@ -7,23 +7,25 @@
 Functions
 ---------
 
-.. function:: mem_info([verbose])
+.. only:: port_pyboard or port_unix
 
-   Print information about currently used memory.  If the ``verbose`` argument
-   is given then extra information is printed.
-
-   The information that is printed is implementation dependent, but currently
-   includes the amount of stack and heap used.  In verbose mode it prints out
-   the entire heap indicating which blocks are used and which are free.
-
-.. function:: qstr_info([verbose])
-
-   Print information about currently interned strings.  If the ``verbose``
-   argument is given then extra information is printed.
-
-   The information that is printed is implementation dependent, but currently
-   includes the number of interned strings and the amount of RAM they use.  In
-   verbose mode it prints out the names of all RAM-interned strings.
+    .. function:: mem_info([verbose])
+    
+       Print information about currently used memory.  If the ``verbose`` argument
+       is given then extra information is printed.
+    
+       The information that is printed is implementation dependent, but currently
+       includes the amount of stack and heap used.  In verbose mode it prints out
+       the entire heap indicating which blocks are used and which are free.
+    
+    .. function:: qstr_info([verbose])
+    
+       Print information about currently interned strings.  If the ``verbose``
+       argument is given then extra information is printed.
+    
+       The information that is printed is implementation dependent, but currently
+       includes the number of interned strings and the amount of RAM they use.  In
+       verbose mode it prints out the names of all RAM-interned strings.
 
 .. function:: alloc_emergency_exception_buf(size)
 

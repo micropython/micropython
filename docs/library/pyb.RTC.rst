@@ -1,3 +1,5 @@
+.. _pyb.RTC:
+
 class RTC -- real time clock
 ============================
 
@@ -38,38 +40,52 @@ Methods
    
    ``subseconds`` counts down from 255 to 0
 
-.. method:: rtc.wakeup(timeout, callback=None)
+.. only:: port_pyboard
 
-   Set the RTC wakeup timer to trigger repeatedly at every ``timeout``
-   milliseconds.  This trigger can wake the pyboard from both the sleep
-   states: :meth:`pyb.stop` and :meth:`pyb.standby`.
+    .. method:: rtc.wakeup(timeout, callback=None)
+    
+       Set the RTC wakeup timer to trigger repeatedly at every ``timeout``
+       milliseconds.  This trigger can wake the pyboard from both the sleep
+       states: :meth:`pyb.stop` and :meth:`pyb.standby`.
+    
+       If ``timeout`` is ``None`` then the wakeup timer is disabled.
+    
+       If ``callback`` is given then it is executed at every trigger of the
+       wakeup timer.  ``callback`` must take exactly one argument.
+    
+    .. method:: rtc.info()
+    
+       Get information about the startup time and reset source.
+       
+        - The lower 0xffff are the number of milliseconds the RTC took to
+          start up.
+        - Bit 0x10000 is set if a power-on reset occurred.
+        - Bit 0x20000 is set if an external reset occurred
+    
+    .. method:: rtc.calibration(cal)
+    
+       Get or set RTC calibration.
+    
+       With no arguments, ``calibration()`` returns the current calibration
+       value, which is an integer in the range [-511 : 512].  With one
+       argument it sets the RTC calibration.
+    
+       The RTC Smooth Calibration mechanism addjusts the RTC clock rate by
+       adding or subtracting the given number of ticks from the 32768 Hz
+       clock over a 32 second period (corresponding to 2^20 clock ticks.)
+       Each tick added will speed up the clock by 1 part in 2^20, or 0.954
+       ppm; likewise the RTC clock it slowed by negative values. The
+       usable calibration range is:
+       (-511 * 0.954) ~= -487.5 ppm up to (512 * 0.954) ~= 488.5 ppm
 
-   If ``timeout`` is ``None`` then the wakeup timer is disabled.
+.. only:: port_wipy
 
-   If ``callback`` is given then it is executed at every trigger of the
-   wakeup timer.  ``callback`` must take exactly one argument.
+    .. method:: rtc.callback(\*, value, handler=None, wakes=pyb.Sleep.ACTIVE)
+    
+       Create a callback object triggered by a real time clock alarm.
+    
+          - ``value`` is the alarm timeout in milliseconds. This parameter is required.
+          - ``handler`` is the function to be called when the callback is triggered.
+          - ``wakes`` specifies the power mode from where this interrupt can wake
+            up the system.
 
-.. method:: rtc.info()
-
-   Get information about the startup time and reset source.
-   
-    - The lower 0xffff are the number of milliseconds the RTC took to
-      start up.
-    - Bit 0x10000 is set if a power-on reset occurred.
-    - Bit 0x20000 is set if an external reset occurred
-
-.. method:: rtc.calibration(cal)
-
-   Get or set RTC calibration.
-
-   With no arguments, ``calibration()`` returns the current calibration
-   value, which is an integer in the range [-511 : 512].  With one
-   argument it sets the RTC calibration.
-
-   The RTC Smooth Calibration mechanism addjusts the RTC clock rate by
-   adding or subtracting the given number of ticks from the 32768 Hz
-   clock over a 32 second period (corresponding to 2^20 clock ticks.)
-   Each tick added will speed up the clock by 1 part in 2^20, or 0.954
-   ppm; likewise the RTC clock it slowed by negative values. The
-   usable calibration range is:
-   (-511 * 0.954) ~= -487.5 ppm up to (512 * 0.954) ~= 488.5 ppm

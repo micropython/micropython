@@ -47,7 +47,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+#master_doc = 'index'
 
 # General information about the project.
 project = 'MicroPython'
@@ -297,3 +297,9 @@ html_context = {
     'port_name':ports[micropy_port],
     'all_ports':[(n, url_prefix + p) for p, n in ports.items()],
 }
+
+# Append the other ports' specific folders/files to the exclude pattern
+exclude_patterns.extend([port + '*' for port in ports if port != micropy_port])
+
+# Specify a custom master document based on the port name
+master_doc = micropy_port + '_' + 'index'

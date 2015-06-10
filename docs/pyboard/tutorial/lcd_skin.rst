@@ -60,7 +60,7 @@ enables the 4 touch sensors.  The third line reads the touch
 status and the ``touch`` variable holds the state of the 4 touch
 buttons (A, B, X, Y).
 
-There is a simple driver `here <http://micropython.org/resources/examples/mpr121.py>`_
+There is a simple driver `here <http://micropython.org/resources/examples/mpr121.py>`__
 which allows you to set the threshold and debounce parameters, and
 easily read the touch status and electrode voltage levels.  Copy
 this script to your pyboard (either flash or SD card, in the top
@@ -83,4 +83,4 @@ initialise the I2C bus using::
     >>> m = mpr121.MPR121(pyb.I2C(2, pyb.I2C.MASTER))
 
 There is also a demo which uses the LCD and the touch sensors together,
-and can be found `here <http://micropython.org/resources/examples/lcddemo.py>`_.
+and can be found `here <http://micropython.org/resources/examples/lcddemo.py>`__.
