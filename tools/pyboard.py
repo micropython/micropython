@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 pyboard interface
@@ -32,6 +32,13 @@ Or:
 import sys
 import time
 import serial
+import glob
+t = glob.glob('/dev/ttyACM*')
+t.extend(glob.glob('/dev/tty.usb*'))
+try:
+    default_device = t[0]
+except IndexError:
+    default_device = None
 
 def stdout_write_bytes(b):
     sys.stdout.buffer.write(b)
@@ -142,7 +149,7 @@ class Pyboard:
         t = str(self.eval('pyb.RTC().datetime()'), encoding='utf8')[1:-1].split(', ')
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
-def execfile(filename, device='/dev/ttyACM0'):
+def execfile(filename, device=default_device):
     pyb = Pyboard(device)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
@@ -209,7 +216,7 @@ def run_test(device):
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
-    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the pyboard')
+    cmd_parser.add_argument('--device', default=default_device, help='the serial device of the pyboard')
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('--test', action='store_true', help='run a small test suite on the pyboard')
     cmd_parser.add_argument('files', nargs='*', help='input files')
