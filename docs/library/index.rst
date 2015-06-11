@@ -17,17 +17,30 @@ The following standard Python libraries are built in to MicroPython.
 For additional libraries, please download them from the `micropython-lib repository
 <https://github.com/micropython/micropython-lib>`_.
 
-.. toctree::
-   :maxdepth: 1
+.. only:: port_pyboard
 
-   cmath.rst
-   gc.rst
-   math.rst
-   os.rst
-   select.rst
-   struct.rst
-   sys.rst
-   time.rst
+    .. toctree::
+       :maxdepth: 1
+    
+       cmath.rst
+       gc.rst
+       math.rst
+       os.rst
+       select.rst
+       struct.rst
+       sys.rst
+       time.rst
+
+.. only:: port_wipy
+
+    .. toctree::
+       :maxdepth: 1
+    
+       gc.rst
+       os.rst
+       select.rst
+       sys.rst
+       time.rst
 
 Python micro-libraries
 ----------------------
@@ -43,37 +56,68 @@ For example, ``import json`` will first search for a file ``json.py`` or
 directory ``json`` and load that package if it is found.  If nothing is found,
 it will fallback to loading the built-in ``ujson`` module.
 
-.. toctree::
-   :maxdepth: 1
+.. only:: port_pyboard
 
-   ubinascii.rst
-   uctypes.rst
-   uhashlib.rst
-   uheapq.rst
-   ujson.rst
-   ure.rst
-   usocket.rst
-   uzlib.rst
+   .. toctree::
+      :maxdepth: 1
+    
+      ubinascii.rst
+      uctypes.rst
+      uhashlib.rst
+      uheapq.rst
+      ujson.rst
+      ure.rst
+      usocket.rst
+      uzlib.rst
 
-Libraries specific to the pyboard
----------------------------------
+.. only:: port_pyboard
 
-The following libraries are specific to the pyboard.
+   Libraries specific to the pyboard
+   ---------------------------------
+    
+   The following libraries are specific to the pyboard.
+    
+   .. toctree::
+      :maxdepth: 2
+    
+      pyb.rst
+      network.rst
 
-.. toctree::
-   :maxdepth: 2
+.. only:: port_wipy
 
-   pyb.rst
-   network.rst
+   .. toctree::
+      :maxdepth: 1
+    
+      ubinascii.rst
+      uhashlib.rst
+      uheapq.rst
+      ujson.rst
+      ure.rst
+      usocket.rst
+
+.. only:: port_wipy
+
+   Libraries specific to the WiPy
+   ---------------------------------
+
+   The following libraries are specific to the WiPy.
+
+   .. toctree::
+      :maxdepth: 2
+
+      pyb.rst
+      network.rst
+
 
 .. only:: port_esp8266
 
-    Libraries specific to the ESP8266
-    ---------------------------------
+   Libraries specific to the ESP8266
+   ---------------------------------
 
-    The following libraries are specific to the ESP8266.
+   The following libraries are specific to the ESP8266.
 
-    .. toctree::
-       :maxdepth: 2
+   .. toctree::
+      :maxdepth: 2
 
-       esp.rst
+      pyb.rst
+      esp.rst

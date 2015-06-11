@@ -32,6 +32,7 @@
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/obj.h"
+#include "py/runtime.h"
 #include "hw_ints.h"
 #include "hw_types.h"
 #include "hw_gpio.h"
@@ -63,6 +64,10 @@
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
+#ifndef BOOTLOADER
+STATIC const mp_obj_base_t pyb_heartbeat_obj = {&pyb_heartbeat_type};
+#endif
+
 struct mperror_heart_beat {
     uint32_t off_time;
     uint32_t on_time;
@@ -198,6 +203,17 @@ void nlr_jump_fail(void *val) {
 /******************************************************************************/
 // Micro Python bindings
 
+/// \classmethod \constructor()
+///
+/// Return the heart beat object
+STATIC mp_obj_t pyb_heartbeat_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // return constant object
+    return (mp_obj_t)&pyb_heartbeat_obj;
+}
+
 /// \function enable()
 /// Enables the heartbeat signal
 STATIC mp_obj_t pyb_enable_heartbeat(mp_obj_t self) {
@@ -220,11 +236,11 @@ STATIC const mp_map_elem_t pyb_heartbeat_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_heartbeat_locals_dict, pyb_heartbeat_locals_dict_table);
 
-static const mp_obj_type_t pyb_heartbeat_type = {
+const mp_obj_type_t pyb_heartbeat_type = {
     { &mp_type_type },
     .name = MP_QSTR_HeartBeat,
+    .make_new = pyb_heartbeat_make_new,
     .locals_dict = (mp_obj_t)&pyb_heartbeat_locals_dict,
 };
 
-const mp_obj_base_t pyb_heartbeat_obj = {&pyb_heartbeat_type};
 #endif

@@ -82,17 +82,17 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 ///
 /// The `pyb` module contains specific functions related to the pyboard.
 
-/// \function hard_reset()
-/// Resets the pyboard in a manner similar to pushing the external RESET
-/// button.
-STATIC mp_obj_t pyb_hard_reset(void) {
+/// \function reset()
+/// Resets the pyboard in a manner similar to pushing the external
+/// reset button.
+STATIC mp_obj_t pyb_reset(void) {
     // disable wlan
     wlan_stop(SL_STOP_TIMEOUT_LONG);
     // reset the cpu and it's peripherals
     MAP_PRCMMCUReset(true);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_hard_reset_obj, pyb_hard_reset);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_reset_obj, pyb_reset);
 
 #ifdef DEBUG
 /// \function info([dump_alloc_table])
@@ -126,7 +126,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 /// \function freq()
 /// Returns the CPU frequency: (F_CPU).
 STATIC mp_obj_t pyb_freq(void) {
-    return mp_obj_new_int(HAL_FCPU_HZ);
+    mp_obj_t tuple[1] = {
+       mp_obj_new_int(HAL_FCPU_HZ),
+    };
+    return mp_obj_new_tuple(1, tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
 
@@ -250,7 +253,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hard_reset),          (mp_obj_t)&pyb_hard_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&pyb_reset_obj },
 #ifdef DEBUG
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&pyb_info_obj },
 #endif
@@ -287,7 +290,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer),               (mp_obj_t)&pyb_timer_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Sleep),               (mp_obj_t)&pyb_sleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_type },
 
 #if MICROPY_HW_HAS_SDCARD
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },

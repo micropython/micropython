@@ -51,6 +51,7 @@
 #include "mpexception.h"
 #include "py/mpstate.h"
 #include "osi.h"
+#include "utils.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -352,11 +353,11 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 /// Initialise the UART bus with the given parameters:
 ///
 ///   - `baudrate` is the clock rate.
-///   - `bits` is the number of bits per byte, 7, 8 or 9.
+///   - `bits` is the number of bits per byte, 5, 6, 7, 8
 ///   - `parity` is the parity, `None`, 0 (even) or 1 (odd).
 ///   - `stop` is the number of stop bits, 1 or 2.
-///   - `flowcontrol` is the flow control mode, `None`, `UART.FLOW_TX`, 
-///     `UART.FLOW_RX', 'UART.FLOW_TXRX`.
+///   - `flow` is the flow control mode, `None`, `UART.RTS`,
+///     `UART.CTS', or `UART.CTS | UART.RTS`
 ///   - `timeout` is the timeout (in milliseconds) when waiting for the first character.
 ///   - `timeout_char` is the timeout (in milliseconds) between characters.
 STATIC const mp_arg_t pyb_uart_init_args[] = {
@@ -403,7 +404,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
             self->config = UART_CONFIG_WLEN_8;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            goto error;
             break;
         }
         // Parity
@@ -415,6 +416,10 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         // Stop bits
         self->config |= (args[3].u_int == 1 ? UART_CONFIG_STOP_ONE : UART_CONFIG_STOP_TWO);
         // Flow control
+        if (args[4].u_int != UART_FLOWCONTROL_NONE || args[4].u_int != UART_FLOWCONTROL_TX ||
+            args[4].u_int != UART_FLOWCONTROL_RX || args[4].u_int != (UART_FLOWCONTROL_TX | UART_FLOWCONTROL_RX)) {
+            goto error;
+        }
         self->flowcontrol = args[4].u_int;
     }
     else {
@@ -428,6 +433,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)uart_init);
 
     return mp_const_none;
+
+error:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
 /// \classmethod \constructor(bus, ...)
@@ -561,6 +569,18 @@ STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
+/// \method sendbreak()
+STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    // send a break signal for at least 2 complete frames
+    MAP_UARTBreakCtl(self->reg, true);
+    UtilsDelay(UTILS_DELAY_US_TO_COUNT((22 * 1000000) / self->baudrate));
+    MAP_UARTBreakCtl(self->reg, false);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
+
+
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),        (mp_obj_t)&pyb_uart_init_obj },
@@ -581,12 +601,11 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_writechar),   (mp_obj_t)&pyb_uart_writechar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar),    (mp_obj_t)&pyb_uart_readchar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sendbreak),   (mp_obj_t)&pyb_uart_sendbreak_obj },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_NONE),   MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_NONE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_TX),     MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_TX) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_RX),     MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_RX) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FLOW_TXRX),   MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_TX | UART_FLOWCONTROL_RX) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CTS),         MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_TX) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTS),         MP_OBJ_NEW_SMALL_INT(UART_FLOWCONTROL_RX) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);

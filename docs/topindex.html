@@ -21,11 +21,11 @@
     {% endfor %}.
   </p-->
 
-  <p><strong>Documentation for MicroPython and the pyboard:</strong></p>
+  <p><strong>Documentation for MicroPython and {{ port_name }}:</strong></p>
 
   <table class="contentstable"><tr>
     <td width="40%" style="padding-left:2em;">
-      {% if port == "pyboard" %}
+      {% if port == "pyboard" or port == "wipy" %}
         <p class="biglink">
           <a class="biglink" href="{{ pathto(port + "/quickref") }}">Quick reference for {{ port_name }}</a><br/>
           <span class="linkdescr">pinout for {{ port_name }} and snippets of useful code</span>
@@ -34,6 +34,8 @@
           <a class="biglink" href="{{ pathto(port + "/general") }}">General information about {{ port_name }}</a><br/>
           <span class="linkdescr">read this first for a quick overview</span>
         </p>
+      {% endif %}
+      {% if port == "pyboard" %}
         <p class="biglink">
           <a class="biglink" href="{{ pathto(port + "/tutorial/index") }}">Tutorials and code examples</a><br/>
           <span class="linkdescr">start here</span>
@@ -76,7 +78,7 @@
     </td>
     <td width="40%" style="padding-left:2em;">
       <p class="biglink">
-        <a class="biglink" href="{{ pathto("contents") }}">Table of contents</a><br/>
+        <a class="biglink" href="{{ pathto(port + "_contents") }}">Table of contents</a><br/>
         <span class="linkdescr">a list of all sections and subsections</span>
       </p>
     </td></tr>
@@ -100,6 +102,12 @@
         <a class="biglink" href="https://github.com/micropython">MicroPython on GitHub</a><br/>
         <span class="linkdescr">contribute to the source code on GitHub</span>
       </p>
+      {% if port == "wipy" %}
+        <p class="biglink">
+          <a class="biglink" href="http://wipy.io">The WiPy homepage</a><br/>
+          <span class="linkdescr">the official WiPy site</span>
+        </p>
+      {% endif %}
     </td>
   </tr></table>
 

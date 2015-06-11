@@ -15,10 +15,17 @@ UART objects can be created and initialised using::
     uart = UART(1, 9600)                         # init with given baudrate
     uart.init(9600, bits=8, parity=None, stop=1) # init with given parameters
 
-Bits can be 7, 8 or 9.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+.. only:: port_pyboard
 
-*Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
-only 7 and 8 bits are supported.
+    Bits can be 7, 8 or 9.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+    
+    *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
+    only 7 and 8 bits are supported.
+
+.. only:: port_wipy
+
+    Bits can be 5, 6, 7, 8.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+
 
 A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
@@ -44,46 +51,77 @@ Earlier versions use ``uart.send`` and ``uart.recv``.
 Constructors
 ------------
 
-.. class:: pyb.UART(bus, ...)
+.. only:: port_pyboard
 
-   Construct a UART object on the given bus.  ``bus`` can be 1-6, or 'XA', 'XB', 'YA', or 'YB'.
-   With no additional parameters, the UART object is created but not
-   initialised (it has the settings from the last initialisation of
-   the bus, if any).  If extra arguments are given, the bus is initialised.
-   See ``init`` for parameters of initialisation.
+    .. class:: pyb.UART(bus, ...)
+    
+       Construct a UART object on the given bus.  ``bus`` can be 1-6, or 'XA', 'XB', 'YA', or 'YB'.
+       With no additional parameters, the UART object is created but not
+       initialised (it has the settings from the last initialisation of
+       the bus, if any).  If extra arguments are given, the bus is initialised.
+       See ``init`` for parameters of initialisation.
+    
+       The physical pins of the UART busses are:
+    
+         - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
+         - ``UART(1)`` is on ``XB``: ``(TX, RX) = (X9, X10) = (PB6, PB7)``
+         - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
+         - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
+         - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
 
-   The physical pins of the UART busses are:
+.. only:: port_wipy
 
-     - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
-     - ``UART(1)`` is on ``XB``: ``(TX, RX) = (X9, X10) = (PB6, PB7)``
-     - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
-     - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
-     - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
+    .. class:: pyb.UART(bus, ...)
+    
+       Construct a UART object on the given bus.  ``bus`` can be 1 or 2.
+       With no additional parameters, the UART object is created but not
+       initialised (it has the settings from the last initialisation of
+       the bus, if any).  If extra arguments are given, the bus is initialised.
+       See ``init`` for parameters of initialisation.
 
 Methods
 -------
 
-.. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, timeout_char=0, read_buf_len=64)
+.. only:: port_pyboard
 
-   Initialise the UART bus with the given parameters:
+    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=None, timeout_char=0, read_buf_len=64)
+    
+       Initialise the UART bus with the given parameters:
+    
+         - ``baudrate`` is the clock rate.
+         - ``bits`` is the number of bits per character, 7, 8 or 9.
+         - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
+         - ``stop`` is the number of stop bits, 1 or 2.
+         - ``flow`` sets the flow control type. Can be None, ``UART.RTS``, ``UART.CTS``
+           or ``UART.RTS | UART.CTS``.
+         - ``timeout`` is the timeout in milliseconds to wait for the first character.
+         - ``timeout_char`` is the timeout in milliseconds to wait between characters.
+         - ``read_buf_len`` is the character length of the read buffer (0 to disable).
+    
+       This method will raise an exception if the baudrate could not be set within
+       5% of the desired value.  The minimum baudrate is dictated by the frequency
+       of the bus that the UART is on; UART(1) and UART(6) are APB2, the rest are on
+       APB1.  The default bus frequencies give a minimum baudrate of 1300 for
+       UART(1) and UART(6) and 650 for the others.  Use :func:`pyb.freq <pyb.freq>`
+       to reduce the bus frequencies to get lower baudrates.
+    
+       *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
+       only 7 and 8 bits are supported.
 
-     - ``baudrate`` is the clock rate.
-     - ``bits`` is the number of bits per character, 7, 8 or 9.
-     - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
-     - ``stop`` is the number of stop bits, 1 or 2.
-     - ``timeout`` is the timeout in milliseconds to wait for the first character.
-     - ``timeout_char`` is the timeout in milliseconds to wait between characters.
-     - ``read_buf_len`` is the character length of the read buffer (0 to disable).
+.. only:: port_wipy
 
-   This method will raise an exception if the baudrate could not be set within
-   5% of the desired value.  The minimum baudrate is dictated by the frequency
-   of the bus that the UART is on; UART(1) and UART(6) are APB2, the rest are on
-   APB1.  The default bus frequencies give a minimum baudrate of 1300 for
-   UART(1) and UART(6) and 650 for the others.  Use :func:`pyb.freq <pyb.freq>`
-   to reduce the bus frequencies to get lower baudrates.
-
-   *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
-   only 7 and 8 bits are supported.
+    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=None, timeout_char=0)
+    
+       Initialise the UART bus with the given parameters:
+    
+         - ``baudrate`` is the clock rate.
+         - ``bits`` is the number of bits per character, 7, 8 or 9.
+         - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
+         - ``stop`` is the number of stop bits, 1 or 2.
+         - ``flow`` sets the flow control type. Can be None, ``UART.RTS``, ``UART.CTS``
+           or ``UART.RTS | UART.CTS``.
+         - ``timeout`` is the timeout in milliseconds to wait for the first character.
+         - ``timeout_char`` is the timeout in milliseconds to wait between characters.
 
 .. method:: uart.deinit()
 
@@ -97,11 +135,18 @@ Methods
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
 
-   *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
-   be even, and the number of characters is ``nbytes/2``.
+   .. only:: port_pyboard
 
-   Return value: a bytes object containing the bytes read in.  Returns ``b''``
-   on timeout.
+      *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
+      be even, and the number of characters is ``nbytes/2``.
+
+      Return value: a bytes object containing the bytes read in.  Returns ``b''``
+      on timeout.
+
+   .. only:: port_wipy
+    
+      Return value: a bytes object containing the bytes read in.  Returns ``b''``
+      on timeout.
 
 .. method:: uart.readall()
 
@@ -130,12 +175,20 @@ Methods
 
 .. method:: uart.write(buf)
 
-   Write the buffer of bytes to the bus.  If characters are 7 or 8 bits wide
-   then each byte is one character.  If characters are 9 bits wide then two
-   bytes are used for each character (little endian), and ``buf`` must contain
-   an even number of bytes.
+   .. only:: port_pyboard
 
-   Return value: number of bytes written.
+      Write the buffer of bytes to the bus.  If characters are 7 or 8 bits wide
+      then each byte is one character.  If characters are 9 bits wide then two
+      bytes are used for each character (little endian), and ``buf`` must contain
+      an even number of bytes.
+
+      Return value: number of bytes written.
+
+   .. only:: port_wipy
+
+      Write the buffer of bytes to the bus.
+
+      Return value: number of bytes written.
 
 .. method:: uart.writechar(char)
 
@@ -147,3 +200,36 @@ Methods
    Send a break condition on the bus.  This drives the bus low for a duration
    of 13 bits.
    Return value: ``None``.
+
+.. only:: port_wipy
+
+    .. method:: uart.callback(value, priority=1, handler=None)
+
+       Create a callback to be triggered when data is received on the UART.
+
+           - ``value`` sets the size in bytes of the Rx buffer. Every character
+             received is put into this buffer as long as there's space free.
+           - ``priority`` level of the interrupt. Can take values in the range 1-7.
+             Higher values represent higher priorities.
+           - ``handler`` an optional function to be called when new characters arrive.
+
+       .. note::
+
+          The handler will be called whenever any of the following two conditions are met:
+          
+              - 4 new characters have been received.
+              - At least 1 new character is waiting in the Rx buffer and the Rx line has been
+                silent for the duration of 1 complete frame.
+
+          This means that when the handler function is called there might be 1, 2, 3 or 4
+          characters waiting.
+
+       Return a callback object.
+
+Constants
+---------
+
+.. data:: UART.RTS
+.. data:: UART.CTS
+   
+   to select the flow control type

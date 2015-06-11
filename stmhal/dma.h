@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MPERROR_H_
-#define MPERROR_H_
-
-#ifndef BOOTLOADER
-extern const mp_obj_type_t pyb_heartbeat_type;
-#endif
-
-extern void NORETURN __fatal_error(const char *msg);
-
-void mperror_init0 (void);
-void mperror_bootloader_check_reset_cause (void);
-void mperror_deinit_sfe_pin (void);
-void mperror_signal_error (void);
-void mperror_heartbeat_switch_off (void);
-void mperror_heartbeat_signal (void);
-
-#endif // MPERROR_H_
+void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel, uint32_t direction, void *data);
+void dma_deinit(DMA_HandleTypeDef *dma);
+void dma_invalidate_channel(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel);

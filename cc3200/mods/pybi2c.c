@@ -378,7 +378,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
 ///   - `addr` is the address to send to (only required in master mode)
 /// Return value: `None`.
 STATIC const mp_arg_t pyb_i2c_send_args[] = {
-    { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
     { MP_QSTR_addr,                      MP_ARG_INT, {.u_int = 0} },
 };
 #define PYB_I2C_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_i2c_send_args)
@@ -413,7 +413,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_send_obj, 1, pyb_i2c_send);
 /// Return value: if `recv` is an integer then a new buffer of the bytes received,
 /// otherwise the same buffer that was passed in to `recv`.
 STATIC const mp_arg_t pyb_i2c_recv_args[] = {
-    { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
     { MP_QSTR_addr,                      MP_ARG_INT, {.u_int = 0} },
 };
 #define PYB_I2C_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_i2c_recv_args)
@@ -454,7 +454,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_recv_obj, 1, pyb_i2c_recv);
 /// Returns the read data.
 /// This is only valid in master mode.
 STATIC const mp_arg_t pyb_i2c_mem_read_args[] = {
-    { MP_QSTR_data,      MP_ARG_REQUIRED  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_data,      MP_ARG_REQUIRED  | MP_ARG_OBJ, },
     { MP_QSTR_addr,      MP_ARG_REQUIRED  | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_memaddr,   MP_ARG_REQUIRED  | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_addr_size, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 8} },

@@ -141,7 +141,7 @@ Module contents
    at the given memory address.
 
 Structure descriptors and instantiating structure objects
------------------------------------------------------
+---------------------------------------------------------
 
 Given a structure descriptor dictionary and its layout type, you can
 instantiate a specific structure instance at a given memory address
