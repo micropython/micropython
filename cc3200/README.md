@@ -1,6 +1,6 @@
 # Build Instructions for the CC3200
 
-Currently the CC3200 port of Micro Python builds under Linux and OSX and not under Windows.
+Currently the CC3200 port of Micro Python builds under Linux and OSX **but not under Windows**.
 
 The tool chain required for the build can be found at <https://launchpad.net/gcc-arm-embedded>.
 
@@ -13,15 +13,15 @@ In order to debug the port specific code, optimizations need to be disabled on t
 port file (check the Makefile for specific details). You can use CCS from TI.
 Use the CC3200.ccxml file supplied with this distribution for the debuuger configuration. 
 ```bash
-make BTARGET=application BTYPE=debug
+make BTARGET=application BTYPE=debug BOARD=LAUNCHXL
 ```
 ## To build an image suitable to be flashed to the device:
 ```bash
-make BTARGET=application BTYPE=release
+make BTARGET=application BTYPE=release BOARD=LAUNCHXL
 ```
 ## Building the bootloader
 ```bash
-make BTARGET=bootloader BTYPE=release
+make BTARGET=bootloader BTYPE=release BOARD=LAUNCHXL
 ```
 
 ## Regarding old revisions of the CC3200-LAUNCHXL
