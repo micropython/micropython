@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <std.h>
 
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
@@ -40,6 +40,7 @@
 #include "pybsleep.h"
 #include "mpcallback.h"
 #include "timeutils.h"
+#include "simplelink.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -177,7 +178,7 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         tm.tm_year = mp_obj_get_int(items[0]);
         tm.tm_mon = mp_obj_get_int(items[1]);
         tm.tm_mday = mp_obj_get_int(items[2]);
-        // Skip the weekday
+        // skip the weekday
         tm.tm_hour = mp_obj_get_int(items[4]);
         tm.tm_min = mp_obj_get_int(items[5]);
         tm.tm_sec = mp_obj_get_int(items[6]);
@@ -187,6 +188,15 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         mseconds = RTC_U16MS_CYCLES(mseconds);
         MAP_PRCMRTCSet(seconds, mseconds);
 
+        // set simplelink's time and date, this is needed to verify certificates
+        SlDateTime_t sl_datetime = {0};
+        sl_datetime.sl_tm_day  = tm.tm_mday;
+        sl_datetime.sl_tm_mon  = tm.tm_mon;
+        sl_datetime.sl_tm_year = tm.tm_year;
+        sl_datetime.sl_tm_hour = tm.tm_hour;
+        sl_datetime.sl_tm_min  = tm.tm_min;
+        sl_datetime.sl_tm_sec  = tm.tm_sec;
+        sl_DevSet(SL_DEVICE_GENERAL_CONFIGURATION, SL_DEVICE_GENERAL_CONFIGURATION_DATE_TIME, sizeof(SlDateTime_t), (_u8 *)(&sl_datetime));
         return mp_const_none;
     }
 }
