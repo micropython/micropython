@@ -237,6 +237,21 @@ Q(IPPROTO_TCP)
 Q(IPPROTO_UDP)
 Q(IPPROTO_RAW)
 
+// for ssl class
+Q(ssl)
+Q(ussl)
+Q(wrap_socket)
+Q(sock)
+Q(keyfile)
+Q(certfile)
+Q(server_side)
+Q(cert_reqs)
+Q(ca_certs)
+Q(SSLError)
+Q(CERT_NONE)
+Q(CERT_OPTIONAL)
+Q(CERT_REQUIRED)
+
 // for network class
 Q(network)
 Q(server_running)

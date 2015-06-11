@@ -27,6 +27,9 @@
 #ifndef MODUSOCKET_H_
 #define MODUSOCKET_H_
 
+extern const mp_obj_dict_t socket_locals_dict;
+extern const mp_stream_p_t socket_stream_p;
+
 extern void modusocket_pre_init (void);
 extern void modusocket_socket_add (int16_t sd, bool user);
 extern void modusocket_socket_delete (int16_t sd);

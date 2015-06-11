@@ -40,8 +40,7 @@ typedef struct _mod_network_nic_type_t {
     mp_obj_type_t base;
 } mod_network_nic_type_t;
 
-typedef struct _mod_network_socket_obj_t {
-    mp_obj_base_t base;
+typedef struct _mod_network_socket_base_t {
     union {
         struct {
             uint8_t domain;
@@ -51,8 +50,14 @@ typedef struct _mod_network_socket_obj_t {
         } u_param;
         int16_t sd;
     };
-    bool  closed;
-    bool  has_timeout;
+    bool has_timeout;
+    bool cert_req;
+    bool closed;
+} mod_network_socket_base_t;
+
+typedef struct _mod_network_socket_obj_t {
+    mp_obj_base_t base;
+    mod_network_socket_base_t sock_base;
 } mod_network_socket_obj_t;
 
 /******************************************************************************
