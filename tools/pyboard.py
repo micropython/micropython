@@ -148,7 +148,6 @@ def default_tty():
     t = glob.glob('/dev/ttyACM*')
     t.extend(glob.glob('/dev/tty.usb*'))
     t.append(None)
-    print("default_tty returning %s" % t[0])
     return t[0]
 
 def execfile(filename, device=None):
