@@ -32,13 +32,7 @@ Or:
 import sys
 import time
 import serial
-import glob
-t = glob.glob('/dev/ttyACM*')
-t.extend(glob.glob('/dev/tty.usb*'))
-try:
-    default_device = t[0]
-except IndexError:
-    default_device = None
+
 
 def stdout_write_bytes(b):
     sys.stdout.buffer.write(b)
@@ -149,7 +143,15 @@ class Pyboard:
         t = str(self.eval('pyb.RTC().datetime()'), encoding='utf8')[1:-1].split(', ')
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
-def execfile(filename, device=default_device):
+def default_tty():
+    import glob
+    t = glob.glob('/dev/ttyACM*')
+    t.extend(glob.glob('/dev/tty.usb*'))
+    t.append(None)
+    print("default_tty returning %s" % t[0])
+    return t[0]
+
+def execfile(filename, device=None):
     pyb = Pyboard(device)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
@@ -216,18 +218,20 @@ def run_test(device):
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
-    cmd_parser.add_argument('--device', default=default_device, help='the serial device of the pyboard')
+    #cmd_parser.add_argument('--device', default=None, help='the serial device of the pyboard')
+    cmd_parser.add_argument('--device', help='the serial device of the pyboard')
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('--test', action='store_true', help='run a small test suite on the pyboard')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
+    device = args.device or default_tty()
 
     if args.test:
-        run_test(device=args.device)
+        run_test(device)
 
     for filename in args.files:
         try:
-            pyb = Pyboard(args.device)
+            pyb = Pyboard(device)
             pyb.enter_raw_repl()
             with open(filename, 'rb') as f:
                 pyfile = f.read()
@@ -245,7 +249,7 @@ def main():
 
     if args.follow or len(args.files) == 0:
         try:
-            pyb = Pyboard(args.device)
+            pyb = Pyboard(device)
             ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
             pyb.close()
         except PyboardError as er:
