@@ -123,6 +123,6 @@ In `micropython/docs`, build the docs:
 
     make MICROPY_PORT=<port_name> BUILDDIR=<port_name>/build html
 
-Where ``<port_name>`` can be ``port_unix``, ``port_pyboard``, ``port_wipy`` or ``port_esp8266``.
+Where `<port_name>` can be `unix`, `pyboard`, `wipy` or `esp8266`.
 
 You'll find the index page at `micropython/docs/<port_name>/build/html/index.html`.
