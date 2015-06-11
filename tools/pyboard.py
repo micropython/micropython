@@ -144,7 +144,10 @@ class Pyboard:
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
 def default_tty():
-    import glob
+    try:
+        import glob
+    except ImportError:
+        return '/dev/ttyACM0'
     t = glob.glob('/dev/ttyACM*')
     t.extend(glob.glob('/dev/tty.usb*'))
     t.append(None)
