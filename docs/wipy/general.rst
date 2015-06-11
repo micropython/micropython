@@ -35,12 +35,12 @@ If you power up normally, or press the reset button, the WiPy will boot
 into standard mode: the ``boot.py`` file will be executed first, then 
 ``main.py`` will run.
 
-You can override this boot sequence by pulling ``GPIO28`` **up** during reset.
-The heart beat LED will flash slowly 3 times to signal that safe boot is being
-requested, and then 3 more times quickly to let you know that safe boot is
-going to be performed. While safe booting, the WiPy runs the factory firmware
-and skips the execution of ``boot.py`` and ``main.py``. This is useful to
-recover from any crash situation. 
+You can override this boot sequence by pulling ``GPIO28`` **up** (connect
+it to the 3v3 output pin) during reset. The heart beat LED will flash slowly
+3 times to signal that safe boot is being requested, and then 3 more times
+quickly to let you know that safe boot is going to be performed. While safe
+booting, the WiPy runs the factory firmware and skips the execution of
+``boot.py`` and ``main.py``. This is useful to recover from any crash situation.
 
 The heart beat LED
 ------------------

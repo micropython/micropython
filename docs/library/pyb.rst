@@ -247,7 +247,7 @@ Miscellaneous functions
 
 .. function:: repl_uart(uart)
 
-   Get or set the UART object that the REPL is repeated on.
+   Get or set the UART object where the REPL is repeated on.
 
 .. only:: port_pyboard
 
@@ -269,13 +269,13 @@ Miscellaneous functions
 
     .. function:: unique_id()
     
-       Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
+       Returns a string of 12 bytes (96 bits), which is the unique ID of the MCU.
 
 .. only:: port_wipy
 
     .. function:: unique_id()
     
-       Returns a string of 6 bytes (48 bits), which is the unique ID for the MCU.
+       Returns a string of 6 bytes (48 bits), which is the unique ID of the MCU.
        This also corresponds to the ``MAC address`` of the WiPy.
 
 Classes

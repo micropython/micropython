@@ -32,13 +32,23 @@ Methods
    date and time.  With 1 argument (being an 8-tuple) it sets the date
    and time.
    
-   The 8-tuple has the following format:
+   .. only:: port_pyboard
    
-       (year, month, day, weekday, hours, minutes, seconds, subseconds)
+       The 8-tuple has the following format:
+       
+           (year, month, day, weekday, hours, minutes, seconds, subseconds)
+       
+       ``weekday`` is 1-7 for Monday through Sunday.
+       
+       ``subseconds`` counts down from 255 to 0
+       
+   .. only:: port_wipy
    
-   ``weekday`` is 1-7 for Monday through Sunday.
-   
-   ``subseconds`` counts down from 255 to 0
+       The 8-tuple has the following format:
+       
+           ``(year, month, day, weekday, hours, minutes, seconds, milliseconds)``
+       
+       ``weekday`` is 0-6 for Monday through Sunday.
 
 .. only:: port_pyboard
 

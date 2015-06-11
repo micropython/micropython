@@ -1,6 +1,4 @@
-.. only:: port_pyboard
-
-    .. _quickref:
+.. _quickref:
 
 Quick reference for the pyboard
 ===============================

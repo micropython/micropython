@@ -262,9 +262,9 @@ Methods
         Return a 5-tuple with the configuration of the pin:
         ``(name, alternate-function, mode, type, strength)``
 
-    .. method:: pin.callback(mode, priority=1, handler=None, wakes=pyb.Sleep.ACTIVE)
+    .. method:: pin.callback(\*, mode, priority=1, handler=None, wakes=pyb.Sleep.ACTIVE)
 
-        Create a callback to be triggered when data is received on the UART.
+        Create a callback to be triggered when the input level at the pin changes.
 
             - ``mode`` configures the pin level which can generate an interrupt. Possible values are:
 
@@ -286,8 +286,8 @@ Methods
                 of this pins can be enabled as a wake source at the same time, so, only
                 the last enabled pin as a ``pyb.Sleep.SUSPENDED`` wake source will have effect.
               - If ``wakes=pyb.Sleep.SUSPENDED`` pins ``GPIO2``, ``GPIO4``, ``GPIO10``, 
-                ``GPIO11``, GPIO17`` and ``GPIO24`` can wake the board. In this case all this 6
-                pins can be enabled as a ``pyb.Sleep.HIBERNATE`` wake source at the same time.
+                ``GPIO11``, ``GPIO17`` and ``GPIO24`` can wake the board. In this case all of the
+                6 pins can be enabled as a ``pyb.Sleep.HIBERNATE`` wake source at the same time.
               - Values can be ORed to make a pin generate interrupts in more than one power
                 mode.
 

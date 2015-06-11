@@ -43,7 +43,7 @@ Constructors
        :class: attention
    
        Due to hardware implementation details of the WiPy, data must be buffered before being
-       digested, which would make impossible to calculate the hash of big blocks of data that
+       digested, which would make it impossible to calculate the hash of big blocks of data that
        do not fit in RAM. In this case, since most likely the total size of the data is known
        in advance, the size can be passed to the constructor and hence the HASH hardware engine
        of the WiPy can be properly initialized without needing buffering. If ``block_size`` is

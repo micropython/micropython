@@ -1,6 +1,4 @@
-.. only:: port_wipy
-
-    .. _quickref_:
+.. _quickref_:
 
 Quick reference for the WiPy
 ============================
@@ -20,7 +18,7 @@ See :mod:`pyb`. ::
     pyb.delay(50) # wait 50 milliseconds
     pyb.millis() # number of milliseconds since boot-up
     pyb.freq() # get the CPU frequency
-    pyb.unique_id() # return the 6-byte unique id of the board (it's MAC address)
+    pyb.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
 
 Pins and GPIO
 -------------
@@ -176,7 +174,7 @@ See :ref:`pyb.SD <pyb.SD>`. ::
 
     # SD card pins need special configuration so we pass 'em to the constructor
     # data pin, data af, clock pin, clock af, cmd pin, cmd af
-    sd = SD('GPIO15', 8, 'GPIO16', 8, 'GPIO17', 8)
+    sd = pyb.SD('GPIO15', 8, 'GPIO10', 6, 'GPIO11', 6)
     sd.enable()
 
 WLAN (WiFi) 
@@ -213,16 +211,16 @@ See ``pyb.Sleep``. ::
     Sleep.suspend()     # everything except for WLAN is powered down (~950uA)
                         # wakes from Pin, RTC or WLAN
 
-    Sleep.hibernate()   # deepest sleep mode, mcu starts from reset. Wakes from Pin and RTC.
+    Sleep.hibernate()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
 
 Heart beat LED
------------------------------
+--------------
 
 See :ref:`pyb.HeartBeat <pyb.HeartBeat>`. ::
 
     from pyb import HeartBeat
 
-    # disable the heart beat indication (you are free to use this led connected to GPIO25)
-    HeartBeat.disable()
+    # disable the heart beat indication (you are free to use this LED connected to GPIO25)
+    HeartBeat().disable()
     # enable the heart beat again
-    HeartBeat.enable()
+    HeartBeat().enable()

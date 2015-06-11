@@ -315,8 +315,9 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 /// Initialise the timer.  Initialisation must give the desired mode
 /// and an optional timer width
 ///
+///     tim.init(mode=Timer.ONE_SHOT, width=32)        # one shot mode
 ///     tim.init(mode=Timer.PERIODIC)                  # configure in free running periodic mode
-///     tim.init(mode=Timer.ONE_SHOT, width=16)        # one shot mode splitted into two 16-bit independent timers
+///                                                      split into two 16-bit independent timers
 ///
 /// Keyword arguments:
 ///
@@ -326,7 +327,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT, },
-        { MP_QSTR_width,        MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 32} },
+        { MP_QSTR_width,        MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 16} },
     };
 
     // parse args
@@ -405,7 +406,7 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 
-/// \method channel(channel, *, freq, polarity, duty_cycle)
+/// \method channel(channel, *, freq, period, polarity, duty_cycle)
 /// Initialise the timer channel. Initialization requires at least a frequency param. With no
 /// extra params given besides the channel id, the channel is returned with the previous configuration
 /// os 'None', if it hasn't been initialized before.
@@ -735,7 +736,7 @@ STATIC mp_obj_t pyb_timer_channel_duty_cycle(mp_uint_t n_args, const mp_obj_t *a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_duty_cycle_obj, 1, 3, pyb_timer_channel_duty_cycle);
 
-/// \method callback(handler, value, priority)
+/// \method callback(handler, priority, value)
 /// create a callback object associated with the timer channel
 STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
@@ -753,10 +754,21 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
             goto invalid_args;
         }
 
+        uint32_t _config = (ch->channel == TIMER_B) ? ((ch->timer->config & TIMER_B) >> 8) : (ch->timer->config & TIMER_A);
+
+        // validate and set the value if we are in edge count mode
+        if (_config == TIMER_CFG_A_CAP_COUNT) {
+            uint32_t c_value = args[3].u_int;
+            if (!c_value || c_value > 0xFFFF) {
+                // zero or exceeds the maximum value of a 16-bit timer
+                goto invalid_args;
+            }
+            MAP_TimerMatchSet(ch->timer->timer, ch->channel, c_value);
+        }
+
         // disable the callback first
         pyb_timer_channel_callback_disable(ch);
 
-        uint32_t _config = (ch->channel == TIMER_B) ? ((ch->timer->config & TIMER_B) >> 8) : (ch->timer->config & TIMER_A);
         uint8_t shift = (ch->channel == TIMER_B) ? 8 : 0;
         switch (_config) {
         case TIMER_CFG_A_ONE_SHOT:
@@ -778,13 +790,9 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
         default:
             break;
         }
+        // special case for a 32-bit timer
         if (ch->channel == (TIMER_A | TIMER_B)) {
-            // again a special case for the pwm match interrupt
-            if (_config == TIMER_CFG_A_PWM) {
-                ch->timer->intflags |= TIMER_TIMB_MATCH;
-            } else {
-                ch->timer->intflags |= (ch->timer->intflags << 8);
-            }
+           ch->timer->intflags |= (ch->timer->intflags << 8);
         }
 
         void (*pfnHandler)(void);
@@ -834,6 +842,12 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
 
         // create the callback
         _callback = mpcallback_new (ch, args[1].u_obj, &pyb_timer_channel_cb_methods);
+
+        // reload the timer
+        uint32_t period_c;
+        uint32_t match;
+        compute_prescaler_period_and_match_value(ch, &period_c, &match);
+        MAP_TimerLoadSet(ch->timer->timer, ch->channel, period_c);
 
         // enable the callback before returning
         pyb_timer_channel_callback_enable(ch);
