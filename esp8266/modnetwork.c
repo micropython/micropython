@@ -32,14 +32,44 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
-#include "modnetwork.h"
+#include "netutils.h"
+#include "queue.h"
+#include "user_interface.h"
+#include "espconn.h"
+#include "ip_addr.h"
+#include "spi_flash.h"
+#include "utils.h"
 
+void error_check(bool status, const char *msg);
 extern const mp_obj_module_t network_module;
 
 STATIC mp_obj_t get_module() {
     return (mp_obj_t)&network_module;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(get_module_obj, get_module);
+
+STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
+    struct station_config config = {{0}};
+    mp_uint_t len;
+    const char *p;
+
+    p = mp_obj_str_get_data(args[0], &len);
+    memcpy(config.ssid, p, len);
+    p = mp_obj_str_get_data(args[1], &len);
+    memcpy(config.password, p, len);
+
+    error_check(wifi_station_set_config(&config), "Cannot set STA config");
+    error_check(wifi_station_connect(), "Cannot connect to AP");
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 2, 6, esp_connect);
+
+STATIC mp_obj_t esp_disconnect() {
+    error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_disconnect_obj, esp_disconnect);
 
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
@@ -48,6 +78,8 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     // use module as a "class", and just make all methods module-global
     // functions.
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_module_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);

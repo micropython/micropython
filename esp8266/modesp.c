@@ -503,7 +503,7 @@ STATIC const mp_obj_type_t esp_socket_type = {
 
 #define MODESP_INCLUDE_CONSTANTS (1)
 
-static void error_check(bool status, const char *msg) {
+void error_check(bool status, const char *msg) {
     if (!status) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, msg));
     }
@@ -533,29 +533,6 @@ STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
-
-STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
-    struct station_config config = {{0}};
-    mp_uint_t len;
-    const char *p;
-
-    p = mp_obj_str_get_data(args[0], &len);
-    memcpy(config.ssid, p, len);
-    p = mp_obj_str_get_data(args[1], &len);
-    memcpy(config.password, p, len);
-
-    error_check(wifi_station_set_config(&config), "Cannot set STA config");
-    error_check(wifi_station_connect(), "Cannot connect to AP");
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 2, 6, esp_connect);
-
-STATIC mp_obj_t esp_disconnect() {
-    error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_disconnect_obj, esp_disconnect);
 
 STATIC mp_obj_t esp_status() {
     return MP_OBJ_NEW_SMALL_INT(wifi_station_get_connect_status());
@@ -616,8 +593,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
