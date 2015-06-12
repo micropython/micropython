@@ -277,28 +277,28 @@ STATIC void gc_sweep(void) {
             ATB_MARK_TO_HEAD(block);
         } else {
             // TODO: bad indentation kept intentionally for git diff (will move back next commit)
-#if MjICROPY_ENABLE_FINALISER
-                if (FTB_GET(block)) {
-                    mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
-                    if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
-                        // if the object has a type then see if it has a __del__ method
-                        mp_obj_t dest[2];
-                        mp_load_method_maybe(obj, MP_QSTR___del__, dest);
-                        if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
-                        }
+#if MICROPY_ENABLE_FINALISER
+            if (FTB_GET(block)) {
+                mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
+                if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
+                    // if the object has a type then see if it has a __del__ method
+                    mp_obj_t dest[2];
+                    mp_load_method_maybe(obj, MP_QSTR___del__, dest);
+                    if (dest[0] != MP_OBJ_NULL) {
+                        // load_method returned a method
+                        mp_call_method_n_kw(0, 0, dest);
                     }
-                    // clear finaliser flag
-                    FTB_CLEAR(block);
                 }
+                // clear finaliser flag
+                FTB_CLEAR(block);
+            }
 #endif
-                #if MICROPY_PY_GC_COLLECT_RETVAL
-                MP_STATE_MEM(gc_collected)++;
-                #endif
-                assert(ATB_GET_KIND(block) != AT_MARK);
-                assert(ATB_GET_KIND(BLOCK_FROM_PTR((mp_uint_t)PTR_FROM_BLOCK(block))) != AT_MARK);
-                mem_free(block);
+            #if MICROPY_PY_GC_COLLECT_RETVAL
+            MP_STATE_MEM(gc_collected)++;
+            #endif
+            assert(ATB_GET_KIND(block) != AT_MARK);
+            assert(ATB_GET_KIND(BLOCK_FROM_PTR((mp_uint_t)PTR_FROM_BLOCK(block))) != AT_MARK);
+            mem_free(block);
         }
     }
 }
