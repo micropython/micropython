@@ -63,7 +63,7 @@
 ///     tim = pyb.Timer(4)                                              # create a timer object using timer 4
 ///     tim.init(mode=Timer.PERIODIC)                                   # initialize it in periodic mode
 ///     tim_ch = tim.channel(Timer.A, freq=2)                           # configure channel A at a frequency of 2Hz
-///     tim_ch.callback(handler=lambda t:led.toggle())                  # toggle a led on every cycle of the timer
+///     tim_ch.callback(handler=lambda t:led.toggle())                  # toggle a LED on every cycle of the timer
 ///
 /// Further examples:
 ///
@@ -765,12 +765,14 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
             break;
         case TIMER_CFG_A_CAP_COUNT:
             ch->timer->intflags |= TIMER_CAPA_MATCH << shift;
+            // set the match value and make 1 the minimum
+            MAP_TimerMatchSet(ch->timer->timer, ch->channel, MAX(1, args[3].u_int));
             break;
         case TIMER_CFG_A_CAP_TIME:
             ch->timer->intflags |= TIMER_CAPA_EVENT << shift;
             break;
         case TIMER_CFG_A_PWM:
-            // special case for the match interrupt
+            // special case for the PWM match interrupt
             ch->timer->intflags |= ((ch->channel & TIMER_A) == TIMER_A) ? TIMER_TIMA_MATCH : TIMER_TIMB_MATCH;
             break;
         default:
@@ -832,18 +834,6 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
 
         // create the callback
         _callback = mpcallback_new (ch, args[1].u_obj, &pyb_timer_channel_cb_methods);
-
-        // get the value if given
-        uint32_t c_value = MAX(0, args[3].u_int);
-        ch->duty_cycle = MIN(100, c_value);
-
-        // reload the timer
-        uint32_t period_c;
-        uint32_t match;
-        compute_prescaler_period_and_match_value(ch, &period_c, &match);
-        MAP_TimerLoadSet(ch->timer->timer, ch->channel, period_c);
-        // set the appropiate match value
-        MAP_TimerMatchSet(ch->timer->timer, ch->channel, (_config == TIMER_CFG_A_PWM) ? match : c_value);
 
         // enable the callback before returning
         pyb_timer_channel_callback_enable(ch);
