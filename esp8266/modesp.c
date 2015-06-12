@@ -549,7 +549,7 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_connect_obj, esp_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 2, 6, esp_connect);
 
 STATIC mp_obj_t esp_disconnect() {
     error_check(wifi_station_disconnect(), "Cannot disconnect from AP");
