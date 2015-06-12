@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,111 +24,36 @@
  * THE SOFTWARE.
  */
 
-// qstrs specific to this port
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <errno.h>
 
-Q(help)
+#include "py/nlr.h"
+#include "py/objlist.h"
+#include "py/runtime.h"
+#include "modnetwork.h"
 
-// pyb module
-Q(pyb)
-Q(info)
-Q(freq)
-Q(millis)
-Q(elapsed_millis)
-Q(micros)
-Q(elapsed_micros)
-Q(delay)
-Q(udelay)
-Q(sync)
-Q(hard_reset)
-Q(unique_id)
+extern const mp_obj_module_t network_module;
 
-// uos module
-Q(uos)
-Q(os)
-Q(uname)
-Q(sysname)
-Q(nodename)
-Q(release)
-Q(version)
-Q(machine)
+STATIC mp_obj_t get_module() {
+    return (mp_obj_t)&network_module;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(get_module_obj, get_module);
 
-Q(esp)
-Q(socket)
-Q(connect)
-Q(disconnect)
-Q(scan)
-Q(status)
-Q(phy_mode)
-Q(sleep_type)
-Q(deepsleep)
-Q(adc)
-Q(vdd33)
-Q(chip_id)
-Q(flash_id)
-Q(sdk_version)
-Q(mac)
-Q(getaddrinfo)
-Q(send)
-Q(sendto)
-Q(recv)
-Q(recvfrom)
-Q(listen)
-Q(accept)
-Q(bind)
-Q(settimeout)
-Q(setblocking)
-Q(setsockopt)
-Q(close)
-Q(protocol)
-Q(getpeername)
-Q(onconnect)
-Q(onrecv)
-Q(onsent)
-Q(ondisconnect)
-Q(STAT_IDLE)
-Q(STAT_CONNECTING)
-Q(STAT_WRONG_PASSWORD)
-Q(STAT_NO_AP_FOUND)
-Q(STAT_CONNECT_FAIL)
-Q(STAT_GOT_IP)
-Q(MODE_11B)
-Q(MODE_11G)
-Q(MODE_11N)
-Q(SLEEP_NONE)
-Q(SLEEP_LIGHT)
-Q(SLEEP_MODEM)
+STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
+    // MicroPython "network" module interface requires it to contains classes
+    // to instantiate. But as we have just a static network interace,
+    // use module as a "class", and just make all methods module-global
+    // functions.
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_module_obj },
+};
 
-// network module
-Q(network)
-Q(WLAN)
+STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
 
-// Pin class
-Q(Pin)
-Q(init)
-Q(mode)
-Q(pull)
-Q(value)
-Q(low)
-Q(high)
-Q(IN)
-Q(OUT_PP)
-Q(OUT_OD)
-Q(PULL_NONE)
-Q(PULL_UP)
-Q(PULL_DOWN)
-
-// RTC
-Q(RTC)
-Q(datetime)
-Q(memory)
-
-// ADC
-Q(ADC)
-Q(read)
-
-// utime
-Q(utime)
-Q(localtime)
-Q(mktime)
-Q(sleep)
-Q(time)
+const mp_obj_module_t network_module = {
+    .base = { &mp_type_module },
+    .name = MP_QSTR_network,
+    .globals = (mp_obj_dict_t*)&mp_module_network_globals,
+};

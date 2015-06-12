@@ -59,6 +59,7 @@ SRC_C = \
 	modpybrtc.c \
 	modpybadc.c \
 	modesp.c \
+	modnetwork.c \
 	modutime.c \
 	moduos.c \
 	utils.c \
