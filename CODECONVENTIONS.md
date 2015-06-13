@@ -52,13 +52,19 @@ general guidelines are:
 - You can use int/uint, but remember that they may be 16-bits wide.
 - If in doubt, use mp_int_t/mp_uint_t.
 
+Comments:
+- Be concise and only write comments for things that are not obvious.
+- Use `// ` prefix, NOT `/* ... */`. No extra fluff.
+
 Examples
 --------
 
-Braces, spaces and names:
+Braces, spaces, names and comments:
 
     #define TO_ADD (123)
 
+    // This function will always recurse indefinitely and is only used to show
+    // coding style
     int foo_function(int x, int some_value) {
         if (x < some_value) {
             foo(some_value, x);
