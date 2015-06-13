@@ -230,44 +230,7 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
 
 STATIC mp_obj_t mp_builtin_divmod(mp_obj_t o1_in, mp_obj_t o2_in) {
-    // TODO handle big int
-    if (MP_OBJ_IS_SMALL_INT(o1_in) && MP_OBJ_IS_SMALL_INT(o2_in)) {
-        mp_int_t i1 = MP_OBJ_SMALL_INT_VALUE(o1_in);
-        mp_int_t i2 = MP_OBJ_SMALL_INT_VALUE(o2_in);
-        if (i2 == 0) {
-            #if MICROPY_PY_BUILTINS_FLOAT
-            zero_division_error:
-            #endif
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
-        }
-        mp_obj_t args[2];
-        args[0] = MP_OBJ_NEW_SMALL_INT(mp_small_int_floor_divide(i1, i2));
-        args[1] = MP_OBJ_NEW_SMALL_INT(mp_small_int_modulo(i1, i2));
-        return mp_obj_new_tuple(2, args);
-    #if MICROPY_PY_BUILTINS_FLOAT
-    } else if (MP_OBJ_IS_TYPE(o1_in, &mp_type_float) || MP_OBJ_IS_TYPE(o2_in, &mp_type_float)) {
-        mp_float_t f1 = mp_obj_get_float(o1_in);
-        mp_float_t f2 = mp_obj_get_float(o2_in);
-        if (f2 == 0.0) {
-            goto zero_division_error;
-        }
-        mp_obj_float_divmod(&f1, &f2);
-        mp_obj_t tuple[2] = {
-            mp_obj_new_float(f1),
-            mp_obj_new_float(f2),
-        };
-        return mp_obj_new_tuple(2, tuple);
-    #endif
-    } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "unsupported operand type(s) for divmod()"));
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "unsupported operand type(s) for divmod(): '%s' and '%s'",
-                mp_obj_get_type_str(o1_in), mp_obj_get_type_str(o2_in)));
-        }
-    }
+    return mp_binary_op(MP_BINARY_OP_DIVMOD, o1_in, o2_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_divmod_obj, mp_builtin_divmod);
 

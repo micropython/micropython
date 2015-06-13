@@ -126,6 +126,41 @@ mp_float_t mp_obj_float_get(mp_obj_t self_in) {
     return self->value;
 }
 
+STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
+    // logic here follows that of CPython
+    // https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations
+    // x == (x//y)*y + (x%y)
+    // divmod(x, y) == (x//y, x%y)
+    mp_float_t mod = MICROPY_FLOAT_C_FUN(fmod)(*x, *y);
+    mp_float_t div = (*x - mod) / *y;
+
+    // Python specs require that mod has same sign as second operand
+    if (mod == 0.0) {
+        mod = MICROPY_FLOAT_C_FUN(copysign)(0.0, *y);
+    } else {
+        if ((mod < 0.0) != (*y < 0.0)) {
+            mod += *y;
+            div -= 1.0;
+        }
+    }
+
+    mp_float_t floordiv;
+    if (div == 0.0) {
+        // if division is zero, take the correct sign of zero
+        floordiv = MICROPY_FLOAT_C_FUN(copysign)(0.0, *x / *y);
+    } else {
+        // Python specs require that x == (x//y)*y + (x%y)
+        floordiv = MICROPY_FLOAT_C_FUN(floor)(div);
+        if (div - floordiv > 0.5) {
+            floordiv += 1.0;
+        }
+    }
+
+    // return results
+    *x = floordiv;
+    *y = mod;
+}
+
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
     mp_float_t rhs_val = mp_obj_get_float(rhs_in); // can be any type, this function will convert to float (if possible)
     switch (op) {
@@ -170,6 +205,17 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             break;
         case MP_BINARY_OP_POWER:
         case MP_BINARY_OP_INPLACE_POWER: lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val); break;
+        case MP_BINARY_OP_DIVMOD: {
+            if (rhs_val == 0) {
+                goto zero_division_error;
+            }
+            mp_obj_float_divmod(&lhs_val, &rhs_val);
+            mp_obj_t tuple[2] = {
+                mp_obj_new_float(lhs_val),
+                mp_obj_new_float(rhs_val),
+            };
+            return mp_obj_new_tuple(2, tuple);
+        }
         case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
         case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
         case MP_BINARY_OP_EQUAL: return MP_BOOL(lhs_val == rhs_val);
@@ -180,41 +226,6 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             return MP_OBJ_NULL; // op not supported
     }
     return mp_obj_new_float(lhs_val);
-}
-
-void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
-    // logic here follows that of CPython
-    // https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations
-    // x == (x//y)*y + (x%y)
-    // divmod(x, y) == (x//y, x%y)
-    mp_float_t mod = MICROPY_FLOAT_C_FUN(fmod)(*x, *y);
-    mp_float_t div = (*x - mod) / *y;
-
-    // Python specs require that mod has same sign as second operand
-    if (mod == 0.0) {
-        mod = MICROPY_FLOAT_C_FUN(copysign)(0.0, *y);
-    } else {
-        if ((mod < 0.0) != (*y < 0.0)) {
-            mod += *y;
-            div -= 1.0;
-        }
-    }
-
-    mp_float_t floordiv;
-    if (div == 0.0) {
-        // if division is zero, take the correct sign of zero
-        floordiv = MICROPY_FLOAT_C_FUN(copysign)(0.0, *x / *y);
-    } else {
-        // Python specs require that x == (x//y)*y + (x%y)
-        floordiv = MICROPY_FLOAT_C_FUN(floor)(div);
-        if (div - floordiv > 0.5) {
-            floordiv += 1.0;
-        }
-    }
-
-    // return results
-    *x = floordiv;
-    *y = mod;
 }
 
 #endif // MICROPY_PY_BUILTINS_FLOAT

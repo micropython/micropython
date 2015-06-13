@@ -441,6 +441,17 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
                     lhs = mp_obj_new_int_from_ll(MP_OBJ_SMALL_INT_VALUE(lhs));
                     goto generic_binary_op;
 
+                case MP_BINARY_OP_DIVMOD: {
+                    if (rhs_val == 0) {
+                        goto zero_division;
+                    }
+                    // to reduce stack usage we don't pass a temp array of the 2 items
+                    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
+                    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(mp_small_int_floor_divide(lhs_val, rhs_val));
+                    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(mp_small_int_modulo(lhs_val, rhs_val));
+                    return tuple;
+                }
+
                 case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val); break;
                 case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val); break;
                 case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val); break;

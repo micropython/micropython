@@ -400,6 +400,7 @@ const qstr mp_binary_op_method_name[] = {
     /*
     MP_BINARY_OP_MODULO,
     MP_BINARY_OP_POWER,
+    MP_BINARY_OP_DIVMOD,
     MP_BINARY_OP_INPLACE_OR,
     MP_BINARY_OP_INPLACE_XOR,
     MP_BINARY_OP_INPLACE_AND,
