@@ -121,3 +121,4 @@ it will fallback to loading the built-in ``ujson`` module.
 
       pyb.rst
       esp.rst
+      network.rst
