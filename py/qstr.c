@@ -92,6 +92,7 @@ STATIC const qstr_pool_t const_pool = {
 
 void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
+    MP_STATE_VM(qstr_last_chunk) = NULL;
 }
 
 STATIC const byte *find_qstr(qstr q) {
@@ -152,8 +153,46 @@ qstr qstr_from_strn(const char *str, mp_uint_t len) {
     assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
+        // qstr does not exist in interned pool so need to add it
+
+        // compute number of bytes needed to intern this string
+        mp_uint_t n_bytes = 2 + MICROPY_QSTR_BYTES_IN_LEN + len + 1;
+
+        if (MP_STATE_VM(qstr_last_chunk) != NULL && MP_STATE_VM(qstr_last_used) + n_bytes > MP_STATE_VM(qstr_last_alloc)) {
+            // not enough room at end of previously interned string so try to grow
+            byte *new_p = m_renew_maybe(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_alloc) + n_bytes, false);
+            if (new_p == NULL) {
+                // could not grow existing memory; shrink it to fit previous
+                (void)m_renew(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_used));
+                MP_STATE_VM(qstr_last_chunk) = NULL;
+            } else {
+                // could grow existing memory
+                MP_STATE_VM(qstr_last_alloc) += n_bytes;
+            }
+        }
+
+        if (MP_STATE_VM(qstr_last_chunk) == NULL) {
+            // no existing memory for the interned string so allocate a new chunk
+            mp_uint_t al = n_bytes;
+            if (al < MICROPY_ALLOC_QSTR_CHUNK_INIT) {
+                al = MICROPY_ALLOC_QSTR_CHUNK_INIT;
+            }
+            MP_STATE_VM(qstr_last_chunk) = m_new_maybe(byte, al);
+            if (MP_STATE_VM(qstr_last_chunk) == NULL) {
+                // failed to allocate a large chunk so try with exact size
+                MP_STATE_VM(qstr_last_chunk) = m_new(byte, n_bytes);
+                al = n_bytes;
+            }
+            MP_STATE_VM(qstr_last_alloc) = al;
+            MP_STATE_VM(qstr_last_used) = 0;
+        }
+
+        // allocate memory from the chunk for this new interned string's data
+        byte *q_ptr = MP_STATE_VM(qstr_last_chunk) + MP_STATE_VM(qstr_last_used);
+        MP_STATE_VM(qstr_last_used) += n_bytes;
+
+        // store the interned strings' data
         mp_uint_t hash = qstr_compute_hash((const byte*)str, len);
-        byte *q_ptr = m_new(byte, 2 + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
         q_ptr[0] = hash;
         q_ptr[1] = hash >> 8;
         Q_SET_LENGTH(q_ptr, len);
