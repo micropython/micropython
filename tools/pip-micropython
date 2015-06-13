@@ -5,6 +5,12 @@
 # complete library snapshot to be deployed on a device for baremetal
 # ports (if PIP_MICROPY_DEST environment var is set).
 #
+# Note: this tool is deprecated in favor of "upip" native MicroPython
+# package manager, which is bundled with MicroPython unix binary
+# as a frozen module and can be run as "micropython -u pip" or installed
+# from PyPI package "micropython-upip". This utility is left for
+# reference, regression testing, debugging, etc.
+#
 
 if [ "$1" != "install" ]; then
     echo "Only install command is supported currently"
