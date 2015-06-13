@@ -51,11 +51,32 @@ integer types.  The general guidelines are:
 - You can use int/uint, but remember that they may be 16-bits wide.
 - If in doubt, use mp_int_t/mp_uint_t.
 
+Documentation:
+- Be concise
+- Only write comments for things that are not obvious
+- In general, there should not be lengthy or unnecessary comments. If something
+  may be confusing to new contributors or people unfamiliar with computer
+  science, it is fine to use a few key words and a link to a wikipedia article
+  or a wiki page.
+- use `// ` prefix, NOT `/* ... */`. No extra fluff.
+
+
 Examples
 --------
 
-Braces and spaces:
+Comments:
 
+    // This is a correctly formatted comment about a feature that may be confusing.
+
+    /*******************************************************************************
+     * This is an incorrectly formatted comment. There is too much “fluff”. Keep it
+     * simple.
+     */
+
+Braces, spaces and comments:
+
+    // This function will always recurse indefinitely and is only used to show
+    // coding style
     int foo(int x, int y) {
         if (x < y) {
             foo(y, x);
