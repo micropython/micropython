@@ -262,6 +262,17 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
+            case MP_BINARY_OP_DIVMOD: {
+                mp_obj_int_t *quo = mp_obj_int_new_mpz();
+                mpz_divmod_inpl(&quo->mpz, &res->mpz, zlhs, zrhs);
+                // Check signs and do Python style modulo
+                if (zlhs->neg != zrhs->neg) {
+                    mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
+                }
+                mp_obj_t tuple[2] = {quo, res};
+                return mp_obj_new_tuple(2, tuple);
+            }
+
             default:
                 return MP_OBJ_NULL; // op not supported
         }

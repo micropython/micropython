@@ -14,3 +14,9 @@ try:
 except TypeError:
     print("TypeError")
 
+# bignum
+l = (1 << 65) + 123
+print(divmod(3, l))
+print(divmod(l, 5))
+print(divmod(l + 3, l))
+print(divmod(l * 20, l + 2))
