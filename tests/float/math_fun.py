@@ -59,6 +59,7 @@ binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.)
                     ('atan2', atan2, ((1., 0.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
                     ('fmod', fmod, ((1., 1.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
                     ('ldexp', ldexp, ((1., 0), (0., 1), (2., 2), (3., -2), (-3., -4),)),
+                    ('log', log, ((2., 2.), (3., 2.), (4., 5.))),
                    ]
 
 for function_name, function, test_vals in binary_functions:

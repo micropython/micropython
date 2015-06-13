@@ -68,8 +68,6 @@ MATH_FUN_2(pow, pow)
 MATH_FUN_1(exp, exp)
 /// \function expm1(x)
 MATH_FUN_1(expm1, expm1)
-/// \function log(x)
-MATH_FUN_1(log, log)
 /// \function log2(x)
 MATH_FUN_1(log2, log2)
 /// \function log10(x)
@@ -135,6 +133,19 @@ MATH_FUN_1(gamma, tgamma)
 MATH_FUN_1(lgamma, lgamma)
 #endif
 //TODO: factorial, fsum
+
+// Function that takes a variable number of arguments
+
+// log(x[, base])
+STATIC mp_obj_t mp_math_log(mp_uint_t n_args, const mp_obj_t *args) {
+    mp_float_t l = MICROPY_FLOAT_C_FUN(log)(mp_obj_get_float(args[0]));
+    if (n_args == 1) {
+        return mp_obj_new_float(l);
+    } else {
+        return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(mp_obj_get_float(args[1])));
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_math_log_obj, 1, 2, mp_math_log);
 
 // Functions that return a tuple
 
