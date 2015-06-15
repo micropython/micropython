@@ -33,6 +33,19 @@ import sys
 import time
 import serial
 
+def default_port():
+    try:
+    	from serial.tools import list_ports
+    except ImportError:
+        # No list_ports - fallback to original behaviour
+        return '/dev/ttyACM0'
+    # See if we can find a USB device with a VID/PID
+    # which matches the pyboard default.
+    for port_entry in list_ports.comports():
+        usb_info = port_entry[2].lower()
+        if usb_info.find('f055:9800') >= 0:
+            return port_entry[0]
+
 def stdout_write_bytes(b):
     sys.stdout.buffer.write(b)
     sys.stdout.buffer.flush()
@@ -208,12 +221,20 @@ def run_test(device):
 
 def main():
     import argparse
+    def_port = default_port()
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
-    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the pyboard')
+    device_help = 'the serial device of the pyboard'
+    if def_port:
+        device_help += ' (default %s)' % def_port
+    cmd_parser.add_argument('--device', default=def_port, help=device_help)
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('--test', action='store_true', help='run a small test suite on the pyboard')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
+
+    if not args.device:
+        print('No pyboard detected. Must specify --device')
+        sys.exit(1)
 
     if args.test:
         run_test(device=args.device)
