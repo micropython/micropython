@@ -34,12 +34,13 @@
 #define MP_SCOPE_FLAG_VARKEYWORDS  0x08
 #define MP_SCOPE_FLAG_NESTED       0x10
 #define MP_SCOPE_FLAG_GENERATOR    0x20
+#define MP_SCOPE_FLAG_COROUTINE    0x40
 /* The MP_SCOPE_FLAG_NOFREE flag is set if there are no free or cell variables.
    This information is redundant, but it allows a single flag test
    to determine whether there is any extra work to be done when the
    call frame is setup.
 */
-#define MP_SCOPE_FLAG_NOFREE       0x40
+#define MP_SCOPE_FLAG_NOFREE       0x80
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)

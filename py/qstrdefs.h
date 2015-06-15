@@ -90,6 +90,7 @@ Q(__invert__)
 Q(__neg__)
 Q(__pos__)
 #endif
+Q(__await__)
 
 Q(micropython)
 Q(bytecode)
