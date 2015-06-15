@@ -71,14 +71,22 @@ class Pyboard:
 
     def enter_raw_repl(self):
         self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
+
+        # flush input (without relying on serial.flushInput())
+        n = self.serial.inWaiting()
+        while n > 0:
+            self.serial.read(n)
+            n = self.serial.inWaiting()
+
         self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
         data = self.read_until(1, b'to exit\r\n>')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
             raise PyboardError('could not enter raw repl')
+
         self.serial.write(b'\x04') # ctrl-D: soft reset
-        data = self.read_until(1, b'to exit\r\n>')
-        if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
+        data = self.read_until(1, b'to exit\r\n')
+        if not data.endswith(b'raw REPL; CTRL-B to exit\r\n'):
             print(data)
             raise PyboardError('could not enter raw repl')
 
@@ -93,8 +101,8 @@ class Pyboard:
         data = data[:-1]
 
         # wait for error output
-        data_err = self.read_until(2, b'\x04>', timeout=timeout)
-        if not data_err.endswith(b'\x04>'):
+        data_err = self.read_until(1, b'\x04', timeout=timeout)
+        if not data_err.endswith(b'\x04'):
             raise PyboardError('timeout waiting for second EOF reception')
         data_err = data_err[:-2]
 
@@ -106,6 +114,11 @@ class Pyboard:
             command_bytes = command
         else:
             command_bytes = bytes(command, encoding='utf8')
+
+        # check we have a prompt
+        data = self.read_until(1, b'>')
+        if not data.endswith(b'>'):
+            raise PyboardError('could not enter raw repl')
 
         # write command
         for i in range(0, len(command_bytes), 256):
