@@ -1,6 +1,12 @@
 # test machine module
 
-import machine
+try:
+    import machine
+except ImportError:
+    print("SKIP")
+    import sys
+    sys.exit()
+
 import uctypes
 
 print(machine.mem8)
