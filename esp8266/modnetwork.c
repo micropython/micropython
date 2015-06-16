@@ -71,6 +71,33 @@ STATIC mp_obj_t esp_disconnect() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_disconnect_obj, esp_disconnect);
 
+STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
+    struct bss_info *bs;
+    if (si->pbss) {
+        STAILQ_FOREACH(bs, si->pbss, next) {
+            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
+            t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
+            t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
+            t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
+            t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
+            t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
+            t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
+            call_function_1_protected(MP_STATE_PORT(scan_cb_obj), t);
+        }
+    }
+}
+
+STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
+    MP_STATE_PORT(scan_cb_obj) = cb_in;
+    if (wifi_get_opmode() == SOFTAP_MODE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, 
+            "Scan not supported in AP mode"));
+    }
+    wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     // MicroPython "network" module interface requires it to contains classes
@@ -80,6 +107,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_module_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
