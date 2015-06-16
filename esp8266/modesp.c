@@ -509,34 +509,6 @@ void error_check(bool status, const char *msg) {
     }
 }
 
-STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
-    //printf("in pyb_scan_cb: %d, si=%p, si->pbss=%p\n", status, si, si->pbss);
-    struct bss_info *bs;
-    if (si->pbss) {
-        STAILQ_FOREACH(bs, si->pbss, next) {
-            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-            t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
-            t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
-            t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
-            t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
-            t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
-            t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
-            call_function_1_protected(MP_STATE_PORT(scan_cb_obj), t);
-        }
-    }
-}
-
-STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
-    MP_STATE_PORT(scan_cb_obj) = cb_in;
-    if (wifi_get_opmode() == SOFTAP_MODE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, 
-            "Scan not supported in AP mode"));
-    }
-    wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
-
 STATIC mp_obj_t esp_status() {
     return MP_OBJ_NEW_SMALL_INT(wifi_station_get_connect_status());
 }
@@ -596,7 +568,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
