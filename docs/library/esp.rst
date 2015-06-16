@@ -14,9 +14,27 @@ Functions
 
     Initiate scanning for the available wireless networks.
 
+    Scanning is only possible if the radio is in station or station+AP mode; if
+    called while in AP only mode, an exception will be raised.
+
     Once the scanning is complete, the provided callback function ``cb`` will
     be called once for each network found, and passed a tuple with information
-    about that network.
+    about that network:
+
+        (ssid, bssid, channel, RSSI, authmode, hidden)
+
+    There are five values for authmode:
+
+        * 0 -- open
+        * 1 -- WEP
+        * 2 -- WPA-PSK
+        * 3 -- WPA2-PSK
+        * 4 -- WPA/WPA2-PSK
+
+    and two for hidden:
+
+        * 0 -- visible
+        * 1 -- hidden
 
 .. function:: status()
 
