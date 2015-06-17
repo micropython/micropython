@@ -8,14 +8,16 @@ Currently implemented features include:
 - 24k heap RAM available for Python code.
 - Garbage collector, exceptions.
 - Unicode support.
-- Builtin modules: gc, array, collections, io, struct, sys.
-- C long-long type used as bignum implementation (gives 64 signed ints).
+- Builtin modules: gc, array, collections, io, struct, sys, esp, network.
+- C long-long type used as bignum implementation (gives 64 bit signed ints).
+- Rudimentary WiFi support in station mode.
+- Sockets with callbacks.
+- Basic GPIO support.
 
 Note that floating-point numbers are not supported.
 
 On the TODO list:
-- Wifi support.
-- GPIO support.
+- Full wifi support.
 - Internal filesystem using the flash.
 - ...
 
