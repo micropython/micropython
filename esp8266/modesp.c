@@ -542,6 +542,16 @@ STATIC mp_obj_t esp_status() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_status_obj, esp_status);
 
+STATIC mp_obj_t esp_wifi_opmode(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_obj_new_int(wifi_get_opmode());
+    } else {
+        wifi_set_opmode(mp_obj_get_int(args[0]));
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_wifi_opmode_obj, 0, 1, esp_wifi_opmode);
+
 STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_phy_mode());
@@ -600,6 +610,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wifi_opmode), (mp_obj_t)&esp_wifi_opmode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_type), (mp_obj_t)&esp_sleep_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
@@ -633,6 +644,12 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
         MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_MODE),
+        MP_OBJ_NEW_SMALL_INT(STATION_MODE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_MODE),
+        MP_OBJ_NEW_SMALL_INT(SOFTAP_MODE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_AP_MODE),
+        MP_OBJ_NEW_SMALL_INT(STATIONAP_MODE)},
 #endif
 };
 
