@@ -71,6 +71,13 @@ STATIC mp_obj_t esp_disconnect() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_disconnect_obj, esp_disconnect);
 
+#define MODNETWORK_INCLUDE_CONSTANTS (1)
+
+STATIC mp_obj_t esp_status() {
+    return MP_OBJ_NEW_SMALL_INT(wifi_station_get_connect_status());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_status_obj, esp_status);
+
 STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
     struct bss_info *bs;
     if (si->pbss) {
@@ -107,7 +114,23 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_module_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
+
+#if MODNETWORK_INCLUDE_CONSTANTS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),
+        MP_OBJ_NEW_SMALL_INT(STATION_IDLE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECTING),
+        MP_OBJ_NEW_SMALL_INT(STATION_CONNECTING)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_WRONG_PASSWORD),
+        MP_OBJ_NEW_SMALL_INT(STATION_WRONG_PASSWORD)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_NO_AP_FOUND),
+        MP_OBJ_NEW_SMALL_INT(STATION_NO_AP_FOUND)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECT_FAIL),
+        MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
+        MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
