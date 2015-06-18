@@ -21,7 +21,7 @@ CFLAGS = -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTE
 CFLAGS += -g -ffunction-sections -fdata-sections -fno-common -fsigned-char -mno-unaligned-access
 CFLAGS += -Iboards/$(BOARD)
 
-LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map --specs=nano.specs
+LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
 
 ifeq ($(BTARGET), application)
 # qstr definitions (must come before including py.mk)
