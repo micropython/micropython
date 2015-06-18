@@ -509,11 +509,6 @@ void error_check(bool status, const char *msg) {
     }
 }
 
-STATIC mp_obj_t esp_status() {
-    return MP_OBJ_NEW_SMALL_INT(wifi_station_get_connect_status());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_status_obj, esp_status);
-
 STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_phy_mode());
@@ -568,7 +563,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
@@ -591,19 +585,6 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(LIGHT_SLEEP_T) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_MODEM),
         MP_OBJ_NEW_SMALL_INT(MODEM_SLEEP_T) },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),
-        MP_OBJ_NEW_SMALL_INT(STATION_IDLE)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECTING),
-        MP_OBJ_NEW_SMALL_INT(STATION_CONNECTING)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_WRONG_PASSWORD),
-        MP_OBJ_NEW_SMALL_INT(STATION_WRONG_PASSWORD)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_NO_AP_FOUND),
-        MP_OBJ_NEW_SMALL_INT(STATION_NO_AP_FOUND)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECT_FAIL),
-        MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
-        MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
 #endif
 };
 
