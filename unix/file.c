@@ -161,7 +161,7 @@ STATIC mp_obj_t fdfile_open(mp_obj_t type_in, mp_arg_val_t *args) {
                 mode |= O_WRONLY | O_CREAT | O_TRUNC;
                 break;
             case 'a':
-                mode |= O_APPEND;
+                mode |= O_WRONLY | O_CREAT | O_APPEND;
                 break;
             case '+':
                 mode |= O_RDWR;
