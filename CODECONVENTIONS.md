@@ -33,9 +33,8 @@ Braces:
   closing brace.
 
 Header files:
-- Try to stick to the Plan 9 header style, where header files do not
-  include other header files.
-- Don't protect a header file from multiple inclusion with #if directives.
+- Header files should be protected from multiple inclusion with #if
+  directives. See an existing header for naming convention.
 
 Type names and declarations:
 - When defining a type, put '_t' after it.
