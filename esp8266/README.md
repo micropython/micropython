@@ -1,7 +1,7 @@
 Micro Python port to ESP8266
 ============================
 
-This is a highly experimental port of MicroPython for thw WiFi modules based
+This is a highly experimental port of MicroPython for the WiFi modules based
 on Espressif ESP8266 chip.
 
 WARNING: The port is highly experimental and any APIs are subject to change.
