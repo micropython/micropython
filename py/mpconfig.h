@@ -393,6 +393,15 @@ typedef double mp_float_t;
 #define MICROPY_CAN_OVERRIDE_BUILTINS (0)
 #endif
 
+// Whether to check that the "self" argument of a builtin method has the
+// correct type.  Such an explicit check is only needed if a builtin
+// method escapes to Python land without a first argument, eg
+// list.append([], 1).  Without this check such calls will have undefined
+// behaviour (usually segfault) if the first argument is the wrong type.
+#ifndef MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
+#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
