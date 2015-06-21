@@ -61,6 +61,16 @@ __verbose = None
 # USB DFU interface
 __DFU_INTERFACE = 0
 
+import inspect
+if 'length' in inspect.getargspec(usb.util.get_string).args:
+    # PyUSB 1.0.0.b1 has the length argument
+    def get_string(dev, index):
+        return usb.util.get_string(dev, 255, index)
+else:
+    # PyUSB 1.0.0.b2 dropped the length argument
+    def get_string(dev, index):
+        return usb.util.get_string(dev, index)
+
 
 def init():
     """Initializes the found DFU device so that we can program it."""
@@ -216,12 +226,15 @@ def exit_dfu():
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE,
                         None, __TIMEOUT)
 
-    # Execute last command
-    if get_status() != __DFU_STATE_DFU_MANIFEST:
-        print("Failed to reset device")
+    try:
+        # Execute last command
+        if get_status() != __DFU_STATE_DFU_MANIFEST:
+            print("Failed to reset device")
 
-    # Release device
-    usb.util.dispose_resources(__dev)
+        # Release device
+        usb.util.dispose_resources(__dev)
+    except:
+        pass
 
 
 def named(values, names):
@@ -239,7 +252,7 @@ def consume(fmt, data, names):
 
 def cstring(string):
     """Extracts a null-terminated string from a byte array."""
-    return string.split(b'\0', 1)[0]
+    return string.decode('utf-8').split('\0', 1)[0]
 
 
 def compute_crc(data):
@@ -360,7 +373,7 @@ def get_dfu_devices(*args, **kwargs):
     Additional filters (like idProduct and idVendor) can be passed in to
     refine the search.
     """
-
+    # convert to list for compatibility with newer pyusb
     return list(usb.core.find(*args, find_all=True,
                               custom_match=FilterDFU(), **kwargs))
 
@@ -376,7 +389,7 @@ def get_memory_layout(device):
     """
     cfg = device[0]
     intf = cfg[(0, 0)]
-    mem_layout_str = usb.util.get_string(device, 255, intf.iInterface)
+    mem_layout_str = get_string(device, intf.iInterface)
     mem_layout = mem_layout_str.split('/')
     addr = int(mem_layout[1], 0)
     segments = mem_layout[2].split(',')
@@ -504,11 +517,7 @@ def main():
         list_dfu_devices(idVendor=__VID, idProduct=__PID)
         return
 
-    try:
-        init()
-    except ValueError as er:
-        print(str(er))
-        sys.exit(1)
+    init()
 
     if args.mass_erase:
         print ("Mass erase...")
