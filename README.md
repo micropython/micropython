@@ -65,7 +65,7 @@ as ARM and MIPS. Making full-featured port to another architecture requires
 writing some assembly code for the exception handling and garbage collection.
 Alternatively, fallback implementation based on setjmp/longjmp can be used.
 
-To build:
+To build (*):
 
     $ cd unix
     $ make
@@ -79,10 +79,19 @@ Run complete testsuite:
 
     $ make test
 
-Debian/Ubuntu/Mint derivative Linux distros will require build-essentials and
-libreadline-dev packages installed. To build FFI (Foreign Function Interface)
-module, libffi-dev and pkg-config packages are required. If you have problems
-with some dependencies, they can be disabled in unix/mpconfigport.mk .
+Unix version comes with a builtin package manager called upip, e.g.:
+
+    $ ./micropython -m upip install micropython-pystone
+    $ ./micropython -m pystone
+
+Browse available modules on
+[PyPI](https://pypi.python.org/pypi?%3Aaction=search&term=micropython).
+Standard library modules come from
+[micropython-lib](https://github.com/micropython/micropython-lib) project.
+
+(*) Debian/Ubuntu/Mint derivative Linux distros will require build-essentials,
+libffi-dev and pkg-config packages installed. If you have problems with some
+dependencies, they can be disabled in unix/mpconfigport.mk .
 
 The STM version
 ---------------
