@@ -458,7 +458,7 @@ STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, args[1].u_int);
     } else {
         DMA_HandleTypeDef tx_dma;
-        dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
+        dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_spi_i2c, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
         self->spi->hdmatx = &tx_dma;
         self->spi->hdmarx = NULL;
         status = HAL_SPI_Transmit_DMA(self->spi, bufinfo.buf, bufinfo.len);
@@ -511,12 +511,12 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         DMA_HandleTypeDef tx_dma, rx_dma;
         if (self->spi->Init.Mode == SPI_MODE_MASTER) {
             // in master mode the HAL actually does a TransmitReceive call
-            dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
+            dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_spi_i2c, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
             self->spi->hdmatx = &tx_dma;
         } else {
             self->spi->hdmatx = NULL;
         }
-        dma_init(&rx_dma, self->rx_dma_stream, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->spi);
+        dma_init(&rx_dma, self->rx_dma_stream, &dma_init_struct_spi_i2c, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->spi);
         self->spi->hdmarx = &rx_dma;
 
         status = HAL_SPI_Receive_DMA(self->spi, (uint8_t*)vstr.buf, vstr.len);
@@ -604,9 +604,9 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         status = HAL_SPI_TransmitReceive(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len, args[2].u_int);
     } else {
         DMA_HandleTypeDef tx_dma, rx_dma;
-        dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
+        dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_spi_i2c, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->spi);
         self->spi->hdmatx = &tx_dma;
-        dma_init(&rx_dma, self->rx_dma_stream, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->spi);
+        dma_init(&rx_dma, self->rx_dma_stream, &dma_init_struct_spi_i2c, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->spi);
         self->spi->hdmarx = &rx_dma;
         status = HAL_SPI_TransmitReceive_DMA(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len);
         if (status == HAL_OK) {

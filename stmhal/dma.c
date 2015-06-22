@@ -52,6 +52,23 @@ static const uint8_t dma_irqn[NSTREAM] = {
     DMA2_Stream7_IRQn,
 };
 
+// Default parameters to dma_init() shared by spi and i2c; Channel and Direction
+// vary depending on the peripheral instance so they get passed separately
+const DMA_InitTypeDef dma_init_struct_spi_i2c = {
+    .Channel             = 0,
+    .Direction           = 0,
+    .PeriphInc           = DMA_PINC_DISABLE,
+    .MemInc              = DMA_MINC_ENABLE,
+    .PeriphDataAlignment = DMA_PDATAALIGN_BYTE,
+    .MemDataAlignment    = DMA_MDATAALIGN_BYTE,
+    .Mode                = DMA_NORMAL,
+    .Priority            = DMA_PRIORITY_LOW,
+    .FIFOMode            = DMA_FIFOMODE_DISABLE,
+    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst            = DMA_MBURST_INC4,
+    .PeriphBurst         = DMA_PBURST_INC4
+};
+
 static DMA_HandleTypeDef *dma_handle[NSTREAM] = {NULL};
 static uint32_t dma_last_channel[NSTREAM];
 
@@ -80,7 +97,7 @@ static int get_dma_id(DMA_Stream_TypeDef *dma_stream) {
     }
 }
 
-void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel, uint32_t direction, void *data) {
+void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, const DMA_InitTypeDef *dma_init, uint32_t dma_channel, uint32_t direction, void *data) {
     int dma_id = get_dma_id(dma_stream);
     //printf("dma_init(%p, %p(%d), 0x%x, 0x%x, %p)\n", dma, dma_stream, dma_id, (uint)dma_channel, (uint)direction, data);
 
@@ -90,9 +107,11 @@ void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, uint32_t d
     // set global pointer for IRQ handler
     dma_handle[dma_id] = dma;
 
-    // initialise critical parameters
+    // initialise parameters
     dma->Instance = dma_stream;
+    dma->Init = *dma_init;
     dma->Init.Direction = direction;
+    dma->Init.Channel = dma_channel;
 
     // half of __HAL_LINKDMA(data, xxx, *dma)
     // caller must implement other half by doing: data->xxx = dma
@@ -104,19 +123,6 @@ void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, uint32_t d
         goto same_channel;
     }
     dma_last_channel[dma_id] = dma_channel;
-
-    // set DMA parameters (these are only used by HAL_DMA_Init)
-    dma->Init.Channel             = dma_channel;
-    dma->Init.PeriphInc           = DMA_PINC_DISABLE;
-    dma->Init.MemInc              = DMA_MINC_ENABLE;
-    dma->Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    dma->Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-    dma->Init.Mode                = DMA_NORMAL;
-    dma->Init.Priority            = DMA_PRIORITY_LOW;
-    dma->Init.FIFOMode            = DMA_FIFOMODE_DISABLE;
-    dma->Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    dma->Init.MemBurst            = DMA_MBURST_INC4;
-    dma->Init.PeriphBurst         = DMA_PBURST_INC4;
 
     // enable clock for needed DMA peripheral
     if (dma_id <= 7) {

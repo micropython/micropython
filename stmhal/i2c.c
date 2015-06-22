@@ -471,7 +471,7 @@ STATIC mp_obj_t pyb_i2c_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     // if IRQs are enabled then we can use DMA
     DMA_HandleTypeDef tx_dma;
     if (query_irq() == IRQ_STATE_ENABLED) {
-        dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->i2c);
+        dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_spi_i2c, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->i2c);
         self->i2c->hdmatx = &tx_dma;
         self->i2c->hdmarx = NULL;
     }
@@ -545,7 +545,7 @@ STATIC mp_obj_t pyb_i2c_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     // if IRQs are enabled then we can use DMA
     DMA_HandleTypeDef rx_dma;
     if (query_irq() == IRQ_STATE_ENABLED) {
-        dma_init(&rx_dma, self->rx_dma_stream, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->i2c);
+        dma_init(&rx_dma, self->rx_dma_stream, &dma_init_struct_spi_i2c, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->i2c);
         self->i2c->hdmatx = NULL;
         self->i2c->hdmarx = &rx_dma;
     }
@@ -639,7 +639,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
         status = HAL_I2C_Mem_Read(self->i2c, i2c_addr, mem_addr, mem_addr_size, (uint8_t*)vstr.buf, vstr.len, args[3].u_int);
     } else {
         DMA_HandleTypeDef rx_dma;
-        dma_init(&rx_dma, self->rx_dma_stream, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->i2c);
+        dma_init(&rx_dma, self->rx_dma_stream, &dma_init_struct_spi_i2c, self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, self->i2c);
         self->i2c->hdmatx = NULL;
         self->i2c->hdmarx = &rx_dma;
         status = HAL_I2C_Mem_Read_DMA(self->i2c, i2c_addr, mem_addr, mem_addr_size, (uint8_t*)vstr.buf, vstr.len);
@@ -703,7 +703,7 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         status = HAL_I2C_Mem_Write(self->i2c, i2c_addr, mem_addr, mem_addr_size, bufinfo.buf, bufinfo.len, args[3].u_int);
     } else {
         DMA_HandleTypeDef tx_dma;
-        dma_init(&tx_dma, self->tx_dma_stream, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->i2c);
+        dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_spi_i2c, self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, self->i2c);
         self->i2c->hdmatx = &tx_dma;
         self->i2c->hdmarx = NULL;
         status = HAL_I2C_Mem_Write_DMA(self->i2c, i2c_addr, mem_addr, mem_addr_size, bufinfo.buf, bufinfo.len);
