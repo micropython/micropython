@@ -772,7 +772,7 @@ void mp_lexer_show_token(const mp_lexer_t *lex) {
             unichar c = utf8_get_char(i);
             i = utf8_next_char(i);
             if (unichar_isprint(c)) {
-                printf("%c", c);
+                printf("%c", (int)c);
             } else {
                 printf("?");
             }
