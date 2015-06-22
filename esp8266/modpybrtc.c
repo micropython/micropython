@@ -33,6 +33,7 @@
 #include MICROPY_HAL_H
 #include "timeutils.h"
 #include "user_interface.h"
+#include "modpyb.h"
 
 typedef struct _pyb_rtc_obj_t {
     mp_obj_base_t base;
@@ -45,6 +46,17 @@ typedef struct _pyb_rtc_obj_t {
 #define MEM_USER_LEN_ADDR   (MEM_USER_MAGIC_ADDR + 1)
 #define MEM_USER_DATA_ADDR  (MEM_USER_LEN_ADDR + 1)
 #define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_DELTA_ADDR) * 4)
+
+// singleton RTC object
+STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
+
+STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    // return constant object
+    return (mp_obj_t)&pyb_rtc_obj;
+}
 
 STATIC uint64_t pyb_rtc_raw_us(uint64_t cal) {
     return system_get_rtc_time() * ((cal >> 12) * 1000 + (cal & 0xfff) / 4) / 1000;
@@ -158,10 +170,9 @@ STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
-STATIC const mp_obj_type_t pyb_rtc_type = {
+const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
+    .make_new = pyb_rtc_make_new,
     .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
 };
-
-const mp_obj_base_t pyb_rtc_obj = {&pyb_rtc_type};
