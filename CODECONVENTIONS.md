@@ -50,11 +50,18 @@ general guidelines are:
 - You can use int/uint, but remember that they may be 16-bits wide.
 - If in doubt, use mp_int_t/mp_uint_t.
 
+Documentation:
+- Be concise and only write comments for things that are not obvious
+- use `// ` prefix, NOT `/* ... */`. No extra fluff.
+
+
 Examples
 --------
 
-Braces and spaces:
+Braces, spaces and comments:
 
+    // This function will always recurse indefinitely and is only used to show
+    // coding style
     int foo(int x, int y) {
         if (x < y) {
             foo(y, x);
