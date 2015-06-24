@@ -36,11 +36,10 @@ Header files:
 - Header files should be protected from multiple inclusion with #if
   directives. See an existing header for naming convention.
 
-Function, variable and argument names:
+Names:
 - Use underscore_case, not camelCase for all names.
-
-Type names and declarations:
-- When defining a type, put '_t' after it.
+- Use CAPS_WITH_UNDERSCORE for enums and macros.
+- When defining a type use underscore_case and put '_t' after it.
 
 Integer types: Micro Python runs on 16, 32, and 64 bit machines, so it's
 important to use the correctly-sized (and signed) integer types.  The
@@ -58,11 +57,13 @@ Examples
 
 Braces, spaces and names:
 
+    #define TO_ADD (123)
+
     int foo_function(int x, int some_value) {
         if (x < some_value) {
             foo(some_value, x);
         } else {
-            foo(x + 1, some_value - 1);
+            foo(x + TO_ADD, some_value - 1);
         }
 
         for (int my_counter = 0; my_counter < x; my_counter++) {
