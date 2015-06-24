@@ -7,7 +7,7 @@ print("1")
 print("2")
 print(three)
 print("{}".format(4))
-five=25/5
+five=25//5
 print(int(five))
 j=0
 for i in range(4):
@@ -15,7 +15,7 @@ for i in range(4):
 print(j)
 print(3+4)
 try:
-	a=4/zero
+	a=4//zero
 except:
 	print(8)
 print("xxxxxxxxx".count("x"))
