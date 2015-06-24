@@ -8,3 +8,10 @@ documentation at
 
 Differences to standard Python as well as additional features of
 MicroPython are described in the sections here.
+
+.. only:: port_pyboard
+
+   .. toctree::
+      :maxdepth: 1
+
+      asm_thumb2_index.rst
