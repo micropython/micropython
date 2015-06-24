@@ -215,8 +215,18 @@ endif
 
 SHELL = bash
 APP_SIGN = appsign.sh
+UPDATE_WIPY ?= tools/update-wipy.py
+WIPY_IP ?= '192.168.1.1'
+WIPY_USER ?= 'micro'
+WIPY_PWD ?= 'python'
 
 all: $(BUILD)/mcuimg.bin
+
+.PHONY: deploy
+
+deploy: $(BUILD)/mcuimg.bin
+	$(ECHO) "Writing $< to the board"
+	$(Q)$(PYTHON) $(UPDATE_WIPY) --verify --ip $(WIPY_IP) --user $(WIPY_USER) --password $(WIPY_PWD) --file $<
 
 $(BUILD)/application.axf: $(OBJ) $(LINKER_SCRIPT)
 	$(ECHO) "LINK $@"

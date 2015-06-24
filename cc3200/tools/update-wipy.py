@@ -21,7 +21,7 @@ from telnetlib import Telnet
 
 
 def print_exception(e):
-    print ('Error: {}, on line {}'.format(e, sys.exc_info()[-1].tb_lineno))
+    print ('Exception: {}, on line {}'.format(e, sys.exc_info()[-1].tb_lineno))
 
 
 def transfer_file(args):
@@ -65,13 +65,19 @@ def reset_board(args):
                 time.sleep(1)
                 tn.write(bytes(args.password, 'ascii') + b"\r\n")
 
-                if b"Login succeeded!" in tn.read_until(b"for more information.", timeout=5):
+                if b'Type "help()" for more information.' in tn.read_until(b'Type "help()" for more information.', timeout=5):
                     print("Telnet login succeeded")
-                    tn.write(b"import pyb\r\n")
-                    tn.write(b"pyb.reset()\r\n")
+                    tn.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
                     time.sleep(1)
-                    print("Reset performed")
-                    success = True
+                    tn.write(b'\r\x02') # ctrl-B: enter friendly REPL
+                    if b'Type "help()" for more information.' in tn.read_until(b'Type "help()" for more information.', timeout=5):
+                        tn.write(b"import pyb\r\n")
+                        tn.write(b"pyb.reset()\r\n")
+                        time.sleep(1)
+                        print("Reset performed")
+                        success = True
+                    else:
+                        print("Error: cannot enter friendly REPL")
                 else:
                     print("Error: telnet login failed")
 
