@@ -1,3 +1,5 @@
+.. _pyboard_tutorial_assembler:
+
 Inline assembler
 ================
 
