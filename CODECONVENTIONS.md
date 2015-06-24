@@ -36,6 +36,9 @@ Header files:
 - Header files should be protected from multiple inclusion with #if
   directives. See an existing header for naming convention.
 
+Function, variable and argument names:
+- Use underscore_case, not camelCase for all names.
+
 Type names and declarations:
 - When defining a type, put '_t' after it.
 
@@ -53,16 +56,16 @@ general guidelines are:
 Examples
 --------
 
-Braces and spaces:
+Braces, spaces and names:
 
-    int foo(int x, int y) {
-        if (x < y) {
-            foo(y, x);
+    int foo_function(int x, int some_value) {
+        if (x < some_value) {
+            foo(some_value, x);
         } else {
-            foo(x + 1, y - 1);
+            foo(x + 1, some_value - 1);
         }
 
-        for (int i = 0; i < x; i++) {
+        for (int my_counter = 0; my_counter < x; my_counter++) {
         }
     }
 
