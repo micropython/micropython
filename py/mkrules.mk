@@ -87,10 +87,16 @@ ifndef DEBUG
 endif
 	$(Q)$(SIZE) $(PROG)
 
-clean: clean-prog
+staticlib: $(OBJ)
+	$(ECHO) "LIB $@"
+	$(Q)$(AR) rcs $(PROG).a $(OBJ)
+
+clean: clean-prog clean-staticlib
 clean-prog:
 	$(RM) -f $(PROG)
 	$(RM) -f $(PROG).map
+clean-staticlib:
+	$(RM) -f $(PROG).a
 
 .PHONY: clean-prog
 endif

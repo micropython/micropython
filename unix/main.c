@@ -47,6 +47,14 @@
 #include "genhdr/mpversion.h"
 #include "unix_mphal.h"
 #include "input.h"
+#include "pyexec.h"
+
+// Leave functions declared STATIC_EMBED non-static when this flag is on
+#if MICROPY_PY_EMBED
+    #define STATIC_EMBED
+#else
+    #define STATIC_EMBED STATIC
+#endif
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
@@ -66,6 +74,24 @@ STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
+#if MICROPY_PY_EMBED
+void set_lexer_options(bool compileOnly, uint emitOpt) {
+    compile_only = compileOnly;
+    emit_opt = emitOpt;
+}
+
+// Default exception reporting which prints to stderr
+void print_exception_stderr(mp_obj_t exc) {
+    mp_obj_print_exception(&mp_stderr_print, exc);
+}
+
+STATIC report_exception_t report_exception = print_exception_stderr;
+
+void set_exception_handler(report_exception_t report_exc) {
+    report_exception = report_exc;
+}
+#endif
+
 #define FORCED_EXIT (0x100)
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
@@ -83,7 +109,11 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
     }
 
     // Report all other exceptions
+#if MICROPY_PY_EMBED
+    report_exception(exc);
+#else
     mp_obj_print_exception(&mp_stderr_print, exc);
+#endif
     return 1;
 }
 
@@ -148,7 +178,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     return s;
 }
 
-STATIC int do_repl(void) {
+STATIC_EMBED int do_repl(void) {
     mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
     for (;;) {
@@ -177,16 +207,17 @@ STATIC int do_repl(void) {
     }
 }
 
-STATIC int do_file(const char *file) {
+STATIC_EMBED int do_file(const char *file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
-STATIC int do_str(const char *str) {
+STATIC_EMBED int do_str(const char *str) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
     return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
+#if !MICROPY_PY_EMBED
 STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
@@ -265,8 +296,9 @@ STATIC void pre_process_options(int argc, char **argv) {
         }
     }
 }
+#endif
 
-STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
+STATIC_EMBED void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }
@@ -278,25 +310,14 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
-int main(int argc, char **argv) {
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
-
-    pre_process_options(argc, argv);
-
-#if MICROPY_ENABLE_GC
-    char *heap = malloc(heap_size);
-    gc_init(heap, heap + heap_size);
-#endif
-
-    mp_init();
-
-    #ifndef _WIN32
-    // create keyboard interrupt object
-    MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    #endif
-
+// Initialize the mp_sys_path list from the given colon-seperated path.
+// If path is NULL the value of the MICROPYPATH environment variable is used instead.
+// If MICROPYPATH is not found, the default path is used.
+STATIC_EMBED void set_sys_path(const char *path) {
     char *home = getenv("HOME");
-    char *path = getenv("MICROPYPATH");
+    if (path == NULL) {
+        path = getenv("MICROPYPATH");
+    }
     if (path == NULL) {
         #ifdef MICROPY_PY_SYS_PATH_DEFAULT
         path = MICROPY_PY_SYS_PATH_DEFAULT;
@@ -305,20 +326,19 @@ int main(int argc, char **argv) {
         #endif
     }
     mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
+    for (const char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
         path_num++;
         if (p != NULL) {
             p++;
         }
     }
-    mp_obj_list_init(mp_sys_path, path_num);
     mp_obj_t *path_items;
+    mp_obj_list_set_len(mp_sys_path, path_num);
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    {
-    char *p = path;
+
+    const char *p = path;
     for (mp_uint_t i = 1; i < path_num; i++) {
-        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
+        const char *p1 = strchr(p, PATHLIST_SEP_CHAR);
         if (p1 == NULL) {
             p1 = p + strlen(p);
         }
@@ -333,7 +353,85 @@ int main(int argc, char **argv) {
         }
         p = p1 + 1;
     }
+}
+
+// Set the first item of the mp_sys_path list to the dir of the given file.
+// Returns false if the file is not accessible.
+STATIC_EMBED bool set_sys_path_from_file(const char *file) {
+    char *pathbuf = malloc(PATH_MAX);
+    const char *basedir = realpath(file, pathbuf);
+    if (basedir == NULL) {
+        return false;
     }
+
+    // Set base dir of the script as first entry in sys.path
+    char *p = strrchr(basedir, '/');
+    mp_uint_t path_num;
+    mp_obj_t *path_items;
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    assert(path_num > 0);
+    path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+    free(pathbuf);
+    return true;
+}
+
+#if MICROPY_ENABLE_GC
+STATIC char *heap = NULL;
+STATIC bool own_heap = true;
+
+#if MICROPY_PY_EMBED
+// Set heap and it's size, use before initialize() to take effect
+void set_heap(char *new_heap, long new_heap_size) {
+    heap = new_heap;
+    heap_size = new_heap_size;
+    own_heap = false;
+}
+#endif
+
+STATIC void allocate_heap(void) {
+#if MICROPY_PY_EMBED
+    // If we have a heap already, suppose it was set using set_heap() and don't touch it
+    if (heap) {
+        return;
+    }
+#endif
+    heap = malloc(heap_size);
+    own_heap = true;
+}
+
+STATIC void free_heap(void) {
+   if (own_heap) {
+#if !MICROPY_PY_EMBED && !defined(NDEBUG)
+      // We don't really need to free memory since we are about to exit the
+      // process, but doing so helps to find memory leaks.
+      free(heap);
+#endif
+      heap = NULL;
+   }
+}
+#endif
+
+// Main uPy initialization: stack, heap (if enabled) and mp_sys_path/mp_sys_argv lists
+STATIC_EMBED void initialize(void) {
+    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+
+#if MICROPY_ENABLE_GC
+    allocate_heap();
+    gc_init(heap, heap + heap_size);
+#endif
+
+    mp_init();
+
+    #ifndef _WIN32
+    // create keyboard interrupt object
+    MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    #endif
+
+    mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
+    mp_obj_list_init(mp_sys_path, path_num);
+    mp_obj_t *path_items;
+    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
+    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
 
     mp_obj_list_init(mp_sys_argv, 0);
 
@@ -343,6 +441,25 @@ int main(int argc, char **argv) {
         mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), (mp_obj_t)&extra_coverage_obj);
     }
     #endif
+}
+
+// Counterpart of initialize()
+STATIC_EMBED void deinitialize(void) {
+    mp_deinit();
+
+#if MICROPY_ENABLE_GC
+    free_heap();
+#endif
+}
+
+#if !MICROPY_PY_EMBED
+int main(int argc, char **argv) {
+    pre_process_options(argc, argv);
+
+    initialize();
+
+    // Use default path
+    set_sys_path(NULL);
 
     // Here is some example code to create a class and instance of that class.
     // First is the Python, then the C code.
@@ -426,20 +543,13 @@ int main(int argc, char **argv) {
                 return usage(argv);
             }
         } else {
-            char *pathbuf = malloc(PATH_MAX);
-            char *basedir = realpath(argv[a], pathbuf);
-            if (basedir == NULL) {
+            if (!set_sys_path_from_file(argv[a])) {
                 fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
                 perror("");
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
             }
-
-            // Set base dir of the script as first entry in sys.path
-            char *p = strrchr(basedir, '/');
-            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
-            free(pathbuf);
 
             set_sys_argv(argv, argc, a);
             ret = do_file(argv[a]);
@@ -464,17 +574,12 @@ int main(int argc, char **argv) {
     }
     #endif
 
-    mp_deinit();
-
-#if MICROPY_ENABLE_GC && !defined(NDEBUG)
-    // We don't really need to free memory since we are about to exit the
-    // process, but doing so helps to find memory leaks.
-    free(heap);
-#endif
+    deinitialize();
 
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
+#endif
 
 uint mp_import_stat(const char *path) {
     struct stat st;

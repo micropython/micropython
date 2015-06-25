@@ -45,6 +45,7 @@ SED = sed
 PYTHON = python
 
 AS = $(CROSS_COMPILE)as
+AR = $(CROSS_COMPILE)ar
 CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
