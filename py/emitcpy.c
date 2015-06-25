@@ -176,7 +176,7 @@ STATIC void emit_cpy_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-STATIC void print_quoted_str(qstr qst, bool bytes) {
+STATIC void print_quoted_str(qstr qst) {
     const char *str = qstr_str(qst);
     int len = strlen(str);
     bool has_single_quote = false;
@@ -187,9 +187,6 @@ STATIC void print_quoted_str(qstr qst, bool bytes) {
         } else if (str[i] == '"') {
             has_double_quote = true;
         }
-    }
-    if (bytes) {
-        printf("b");
     }
     int quote_char = '\'';
     if (has_single_quote && !has_double_quote) {
@@ -213,11 +210,11 @@ STATIC void print_quoted_str(qstr qst, bool bytes) {
     printf("%c", quote_char);
 }
 
-STATIC void emit_cpy_load_const_str(emit_t *emit, qstr qst, bool bytes) {
+STATIC void emit_cpy_load_const_str(emit_t *emit, qstr qst) {
     emit_pre(emit, 1, 3);
     if (emit->pass == MP_PASS_EMIT) {
         printf("LOAD_CONST ");
-        print_quoted_str(qst, bytes);
+        print_quoted_str(qst);
         printf("\n");
     }
 }

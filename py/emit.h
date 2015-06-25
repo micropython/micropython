@@ -84,7 +84,7 @@ typedef struct _emit_method_table_t {
     void (*import_star)(emit_t *emit);
     void (*load_const_tok)(emit_t *emit, mp_token_kind_t tok);
     void (*load_const_small_int)(emit_t *emit, mp_int_t arg);
-    void (*load_const_str)(emit_t *emit, qstr qst, bool bytes);
+    void (*load_const_str)(emit_t *emit, qstr qst);
     void (*load_const_obj)(emit_t *emit, void *obj);
     void (*load_null)(emit_t *emit);
     void (*load_attr)(emit_t *emit, qstr qst);
@@ -212,7 +212,7 @@ void mp_emit_bc_import_from(emit_t *emit, qstr qst);
 void mp_emit_bc_import_star(emit_t *emit);
 void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok);
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg);
-void mp_emit_bc_load_const_str(emit_t *emit, qstr qst, bool bytes);
+void mp_emit_bc_load_const_str(emit_t *emit, qstr qst);
 void mp_emit_bc_load_const_obj(emit_t *emit, void *obj);
 void mp_emit_bc_load_null(emit_t *emit);
 void mp_emit_bc_load_attr(emit_t *emit, qstr qst);

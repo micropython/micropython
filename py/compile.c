@@ -1078,7 +1078,7 @@ STATIC void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
             if (comp->have_star) {
                 comp->num_dict_params += 1;
 #if MICROPY_EMIT_CPYTHON
-                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id), false);
+                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id));
                 compile_node(comp, pn_equal);
 #else
                 // in Micro Python we put the default dict parameters into a dictionary using the bytecode
@@ -1096,7 +1096,7 @@ STATIC void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
 
                 // compile value then key, then store it to the dict
                 compile_node(comp, pn_equal);
-                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id), false);
+                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id));
                 EMIT(store_map);
 #endif
             } else {
@@ -1178,7 +1178,7 @@ STATIC qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pn
     close_over_variables_etc(comp, cscope, 0, 0);
 
     // get its name
-    EMIT_ARG(load_const_str, cscope->simple_name, false);
+    EMIT_ARG(load_const_str, cscope->simple_name);
 
     // nodes[1] has parent classes, if any
     // empty parenthesis (eg class C():) gets here as an empty PN_classdef_2 and needs special handling
@@ -1553,7 +1553,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #if MICROPY_EMIT_CPYTHON
         EMIT_ARG(load_const_verbatim_strn, "('*',)", 6);
 #else
-        EMIT_ARG(load_const_str, MP_QSTR__star_, false);
+        EMIT_ARG(load_const_str, MP_QSTR__star_);
         EMIT_ARG(build_tuple, 1);
 #endif
 
@@ -1597,7 +1597,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
             mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
             qstr id2 = MP_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
-            EMIT_ARG(load_const_str, id2, false);
+            EMIT_ARG(load_const_str, id2);
         }
         EMIT_ARG(build_tuple, n);
 #endif
@@ -2531,7 +2531,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                         compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "LHS of keyword arg must be an id");
                         return;
                     }
-                    EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]), false);
+                    EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]));
                     compile_node(comp, pns2->nodes[0]);
                     n_keyword += 1;
                 } else {
@@ -2979,8 +2979,17 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: compile_load_id(comp, arg); break;
-            case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg, false); break;
-            case MP_PARSE_NODE_BYTES: EMIT_ARG(load_const_str, arg, true); break;
+            case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg); break;
+            case MP_PARSE_NODE_BYTES:
+                // only create and load the actual bytes object on the last pass
+                if (comp->pass != MP_PASS_EMIT) {
+                    EMIT_ARG(load_const_obj, mp_const_none);
+                } else {
+                    mp_uint_t len;
+                    const byte *data = qstr_data(arg, &len);
+                    EMIT_ARG(load_const_obj, mp_obj_new_bytes(data, len));
+                }
+                break;
             case MP_PARSE_NODE_TOKEN: default:
                 if (arg == MP_TOKEN_NEWLINE) {
                     // this can occur when file_input lets through a NEWLINE (eg if file starts with a newline)
@@ -3367,7 +3376,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
         compile_load_id(comp, MP_QSTR___name__);
         compile_store_id(comp, MP_QSTR___module__);
-        EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]), false); // 0 is class name
+        EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // 0 is class name
         compile_store_id(comp, MP_QSTR___qualname__);
 
         check_for_doc_string(comp, pns->nodes[2]);

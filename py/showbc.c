@@ -155,11 +155,6 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             break;
         }
 
-        case MP_BC_LOAD_CONST_BYTES:
-            DECODE_QSTR;
-            printf("LOAD_CONST_BYTES %s", qstr_str(qst));
-            break;
-
         case MP_BC_LOAD_CONST_STRING:
             DECODE_QSTR;
             printf("LOAD_CONST_STRING '%s'", qstr_str(qst));
@@ -168,7 +163,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
         case MP_BC_LOAD_CONST_OBJ:
             DECODE_PTR;
             printf("LOAD_CONST_OBJ %p=", (void*)unum);
-            mp_obj_print((mp_obj_t)unum, PRINT_REPR);
+            mp_obj_print_helper(&mp_plat_print, (mp_obj_t)unum, PRINT_REPR);
             break;
 
         case MP_BC_LOAD_NULL:

@@ -104,13 +104,6 @@ void mp_deinit(void) {
 #endif
 }
 
-mp_obj_t mp_load_const_bytes(qstr qst) {
-    DEBUG_OP_printf("load b'%s'\n", qstr_str(qst));
-    mp_uint_t len;
-    const byte *data = qstr_data(qst, &len);
-    return mp_obj_new_bytes(data, len);
-}
-
 mp_obj_t mp_load_name(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));

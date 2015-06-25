@@ -167,7 +167,6 @@
 STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_CONVERT_OBJ_TO_NATIVE] = 2,
     [MP_F_CONVERT_NATIVE_TO_OBJ] = 2,
-    [MP_F_LOAD_CONST_BYTES] = 1,
     [MP_F_LOAD_NAME] = 1,
     [MP_F_LOAD_GLOBAL] = 1,
     [MP_F_LOAD_BUILD_CLASS] = 0,
@@ -1295,7 +1294,7 @@ STATIC void emit_native_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-STATIC void emit_native_load_const_str(emit_t *emit, qstr qst, bool bytes) {
+STATIC void emit_native_load_const_str(emit_t *emit, qstr qst) {
     emit_native_pre(emit);
     // TODO: Eventually we want to be able to work with raw pointers in viper to
     // do native array access.  For now we just load them as any other object.
@@ -1308,12 +1307,7 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst, bool bytes) {
     } else
     */
     {
-        if (bytes) {
-            emit_call_with_imm_arg(emit, MP_F_LOAD_CONST_BYTES, qst, REG_ARG_1);
-            emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-        } else {
-            emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
-        }
+        emit_post_push_imm(emit, VTYPE_PYOBJ, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
     }
 }
 

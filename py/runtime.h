@@ -88,10 +88,6 @@ void mp_delete_global(qstr qst);
 mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg);
 mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
 
-mp_obj_t mp_load_const_int(qstr qst);
-mp_obj_t mp_load_const_dec(qstr qst);
-mp_obj_t mp_load_const_bytes(qstr qst);
-
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);
 mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);

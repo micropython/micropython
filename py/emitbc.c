@@ -486,13 +486,9 @@ void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
     }
 }
 
-void mp_emit_bc_load_const_str(emit_t *emit, qstr qst, bool bytes) {
+void mp_emit_bc_load_const_str(emit_t *emit, qstr qst) {
     emit_bc_pre(emit, 1);
-    if (bytes) {
-        emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_BYTES, qst);
-    } else {
-        emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_STRING, qst);
-    }
+    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_STRING, qst);
 }
 
 void mp_emit_bc_load_const_obj(emit_t *emit, void *obj) {
