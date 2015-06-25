@@ -48,7 +48,7 @@
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
-#define MICROPY_CPYTHON_COMPAT                      (0)
+#define MICROPY_CPYTHON_COMPAT                      (1)
 
 /* Enable FatFS LFNs
     0: Disable LFN feature.
@@ -62,14 +62,14 @@
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE             (1)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES          (0)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES          (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW              (1)
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN               (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
-#define MICROPY_PY_SYS_MAXSIZE                      (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
+#define MICROPY_PY_SYS_MAXSIZE                      (1)
 #define MICROPY_PY_SYS_EXIT                         (1)
 #define MICROPY_PY_SYS_STDFILES                     (1)
 #define MICROPY_PY_CMATH                            (0)
