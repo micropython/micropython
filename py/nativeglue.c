@@ -92,7 +92,6 @@ void mp_native_raise(mp_obj_t o) {
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_convert_obj_to_native,
     mp_convert_native_to_obj,
-    mp_load_const_str,
     mp_load_const_bytes,
     mp_load_name,
     mp_load_global,

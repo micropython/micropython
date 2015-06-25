@@ -90,7 +90,6 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
 
 mp_obj_t mp_load_const_int(qstr qst);
 mp_obj_t mp_load_const_dec(qstr qst);
-mp_obj_t mp_load_const_str(qstr qst);
 mp_obj_t mp_load_const_bytes(qstr qst);
 
 mp_obj_t mp_call_function_0(mp_obj_t fun);

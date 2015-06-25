@@ -104,11 +104,6 @@ void mp_deinit(void) {
 #endif
 }
 
-mp_obj_t mp_load_const_str(qstr qst) {
-    DEBUG_OP_printf("load '%s'\n", qstr_str(qst));
-    return MP_OBJ_NEW_QSTR(qst);
-}
-
 mp_obj_t mp_load_const_bytes(qstr qst) {
     DEBUG_OP_printf("load b'%s'\n", qstr_str(qst));
     mp_uint_t len;

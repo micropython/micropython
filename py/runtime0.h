@@ -109,7 +109,6 @@ typedef enum {
 typedef enum {
     MP_F_CONVERT_OBJ_TO_NATIVE = 0,
     MP_F_CONVERT_NATIVE_TO_OBJ,
-    MP_F_LOAD_CONST_STR,
     MP_F_LOAD_CONST_BYTES,
     MP_F_LOAD_NAME,
     MP_F_LOAD_GLOBAL,
