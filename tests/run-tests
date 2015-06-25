@@ -155,8 +155,8 @@ def run_tests(pyb, tests, args):
             skip_tests.add('misc/rge_sm.py')                # requires floating point
             skip_tests.update({'extmod/uctypes_%s.py' % t for t in 'bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native'.split()}) # requires uctypes
             skip_tests.add('extmod/zlibd_decompress.py')    # requires zlib
-            skip_tests.add('extmod/ujson_dumps.py')         # requires floating point
-            skip_tests.add('extmod/ujson_loads.py')         # requires floating point
+            skip_tests.add('extmod/ujson_dumps_float.py')   # requires floating point
+            skip_tests.add('extmod/ujson_loads_float.py')   # requires floating point
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
