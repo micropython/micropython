@@ -1465,6 +1465,8 @@ not_enough_args:
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 
+// The implementation is optimized, returning the original string if there's
+// nothing to replace.
 STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
