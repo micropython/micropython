@@ -1219,7 +1219,7 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
 }
 
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
-    DEBUG_printf("import name %s\n", qstr_str(name));
+    DEBUG_printf("import name '%s' level=%d\n", qstr_str(name), MP_OBJ_SMALL_INT_VALUE(level));
 
     // build args array
     mp_obj_t args[5];
