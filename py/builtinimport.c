@@ -238,7 +238,11 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
         }
 
         qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
-        DEBUG_printf("Resolved relative name: %s\n", qstr_str(new_mod_q));
+        DEBUG_printf("Resolved base name for relative import: '%s'\n", qstr_str(new_mod_q));
+        if (new_mod_q == MP_QSTR_) {
+            // CPython raises SystemError
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "cannot perform relative import"));
+        }
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
         mod_str = new_mod;
         mod_len = new_mod_l;
