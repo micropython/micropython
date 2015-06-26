@@ -123,3 +123,9 @@ The following example flashes the green LED.  It flashes it ``r0`` times. ::
         label(loop_entry)
         cmp(r0, 0)
         bgt(loop1)
+
+Further reading
+---------------
+
+For further information about supported instructions of the inline assembler,
+see the :ref:`reference documentation <asm_thumb2_index>`.
