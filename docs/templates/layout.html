@@ -1,2 +1,6 @@
 {% extends "!layout.html" %}
 {% set css_files = css_files + ["_static/customstyle.css"] %}
+
+{# we change the master_doc variable so that links to the index
+   page are to index.html instead of <port>_index.html #}
+{% set master_doc = "index" %}
