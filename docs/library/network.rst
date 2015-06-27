@@ -178,12 +178,12 @@ For example::
     
        Dump the WIZnet5x00 registers.  Useful for debugging.
 
+class WLAN
+==========
+
+.. _network.WLAN:
+
 .. only:: port_esp8266
-
-    class WLAN
-    ==========
-
-    .. _network.WLAN:
 
     This class provides a driver for WiFi network processor in the ESP8266.  Example usage::
 
@@ -237,11 +237,6 @@ For example::
             * 1 -- hidden
 
 .. only:: port_wipy
-
-    class WLAN
-    ==========
-
-    .. _network.WLAN:
 
     This class provides a driver for WiFi network processor in the WiPy.  Example usage::
     
