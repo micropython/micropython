@@ -37,23 +37,35 @@
 #if defined(STM32F405xx) || defined(STM32F407xx)
 
 #define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
-#define FLASH_PART1_START_BLOCK (0x100)
-#define FLASH_PART1_NUM_BLOCKS (224) // 16k+16k+16k+64k=112k
-#define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
 #define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of CCM
+#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
+#define FLASH_MEM_SEG1_NUM_BLOCKS (224) // sectors 1,2,3,4: 16k+16k+16k+64k=112k
+
+// enable this to get an extra 64k of storage (uses the last sector of the flash)
+#if 0
+#define FLASH_MEM_SEG2_START_ADDR (0x080e0000) // sector 11
+#define FLASH_MEM_SEG2_NUM_BLOCKS (128) // sector 11: 128k
+#endif
 
 #elif defined(STM32F401xE) || defined(STM32F411xE)
 
 STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_PART1_START_BLOCK (0x100)
-#define FLASH_PART1_NUM_BLOCKS (128) // 16k+16k+16k+16k(of64k)=64k
-#define FLASH_MEM_START_ADDR (0x08004000) // sector 1, 16k
 #define FLASH_SECTOR_SIZE_MAX (0x4000) // 16k max due to size of cache buffer
+#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
+#define FLASH_MEM_SEG1_NUM_BLOCKS (128) // sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k
 
 #else
 #error "no storage support for this MCU"
 #endif
+
+#if !defined(FLASH_MEM_SEG2_START_ADDR)
+#define FLASH_MEM_SEG2_START_ADDR (0) // no second segment
+#define FLASH_MEM_SEG2_NUM_BLOCKS (0) // no second segment
+#endif
+
+#define FLASH_PART1_START_BLOCK (0x100)
+#define FLASH_PART1_NUM_BLOCKS (FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS)
 
 #define FLASH_FLAG_DIRTY        (1)
 #define FLASH_FLAG_FORCE_WRITE  (2)
@@ -212,6 +224,21 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
     buf[15] = num_blocks >> 24;
 }
 
+static uint32_t convert_block_to_flash_addr(uint32_t block) {
+    if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
+        // a block in partition 1
+        block -= FLASH_PART1_START_BLOCK;
+        if (block < FLASH_MEM_SEG1_NUM_BLOCKS) {
+            return FLASH_MEM_SEG1_START_ADDR + block * FLASH_BLOCK_SIZE;
+        } else if (block < FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS) {
+            return FLASH_MEM_SEG2_START_ADDR + (block - FLASH_MEM_SEG1_NUM_BLOCKS) * FLASH_BLOCK_SIZE;
+        }
+        // can add more flash segments here if needed, following above pattern
+    }
+    // bad block
+    return -1;
+}
+
 bool storage_read_block(uint8_t *dest, uint32_t block) {
     //printf("RD %u\n", block);
     if (block == 0) {
@@ -231,16 +258,16 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
 
-    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
+    } else {
         // non-MBR block, get data from flash memory, possibly via cache
-        uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+        uint32_t flash_addr = convert_block_to_flash_addr(block);
+        if (flash_addr == -1) {
+            // bad block number
+            return false;
+        }
         uint8_t *src = flash_cache_get_addr_for_read(flash_addr);
         memcpy(dest, src, FLASH_BLOCK_SIZE);
         return true;
-
-    } else {
-        // bad block number
-        return false;
     }
 }
 
@@ -250,15 +277,15 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
         // can't write MBR, but pretend we did
         return true;
 
-    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
+    } else {
         // non-MBR block, copy to cache
-        uint32_t flash_addr = FLASH_MEM_START_ADDR + (block - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
+        uint32_t flash_addr = convert_block_to_flash_addr(block);
+        if (flash_addr == -1) {
+            // bad block number
+            return false;
+        }
         uint8_t *dest = flash_cache_get_addr_for_write(flash_addr);
         memcpy(dest, src, FLASH_BLOCK_SIZE);
         return true;
-
-    } else {
-        // bad block number
-        return false;
     }
 }
