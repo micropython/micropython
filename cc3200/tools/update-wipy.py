@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 """
-The WiPy firmware update script. Transmits the specified firmware file over FTP
-and then resets the WiPy.
+The WiPy firmware update script. Transmits the specified firmware file
+over FTP, and then resets the WiPy and optionally verifies that software
+was correctly updated.
 
 Usage:
 
@@ -62,7 +63,7 @@ def reset_board(args):
 
             if b'Password:' in tn.read_until(b"Password:", timeout=5):
                 # needed because of internal implementation details of the WiPy's telnet server
-                time.sleep(1)
+                time.sleep(0.2)
                 tn.write(bytes(args.password, 'ascii') + b"\r\n")
 
                 if b'Type "help()" for more information.' in tn.read_until(b'Type "help()" for more information.', timeout=5):
@@ -92,7 +93,6 @@ def reset_board(args):
 
 
 def verify_update(args):
-
     success = False
     firmware_tag = ''
 
@@ -105,8 +105,8 @@ def verify_update(args):
             print("Error: verification failed, the git tag doesn't match")
 
     try:
-        # Specify a longer time out value because the board has just been reset
-        # and the wireless connection might not be fully established yet
+        # Specify a longer time out value here because the board has just been
+        # reset and the wireless connection might not be fully established yet
         tn = Telnet(args.ip, timeout=15)
         print("Connected via telnet again, lets check the git tag")
 
@@ -140,7 +140,7 @@ def main():
     cmd_parser.add_argument('-u', '--user', default='micro', help='the username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the login password')
     cmd_parser.add_argument('--ip', default='192.168.1.1', help='the ip address of the WiPy')
-    cmd_parser.add_argument('--verify', action='store_true', help='verify that the update succeded')
+    cmd_parser.add_argument('--verify', action='store_true', help='verify that the update succeeded')
     cmd_parser.add_argument('-t', '--tag', default=None, help='git tag of the firmware image')
     args = cmd_parser.parse_args()
 
@@ -155,8 +155,8 @@ def main():
                     print ('Waiting for the WiFi connection to come up again...')
                     # this time is to allow the system's wireless network card to connect to the
                     # WiPy again. Sometimes it might only take a couple of seconds, but let's
-                    # leave 10s to be on the safe side
-                    time.sleep(10)
+                    # leave 15s to be on the safe side
+                    time.sleep(15)
                     if verify_update(args):
                         result = 0
                 else:
