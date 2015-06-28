@@ -30,13 +30,25 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
+#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "pybpin.h"
-#include MICROPY_HAL_H
 
+
+STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    pin_named_pins_obj_t *self = self_in;
+    mp_printf(print, "<Pin.%q>", self->name);
+}
+
+const mp_obj_type_t pin_cpu_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_cpu,
+    .print = pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&pin_cpu_pins_locals_dict,
+};
 
 pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);

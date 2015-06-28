@@ -72,7 +72,7 @@ Usage Model:
     You can also configure the Pin to generate interrupts. For instance::
 
         def pincb(pin):
-            print(pin.info().name)
+            print(pin.name())
 
         pin_int = pyb.Pin('GPIO10', af=0, mode=Pin.IN, type=pyb.Pin.STD_PD, strength=pyb.Pin.S2MA)
         pin_int.callback (mode=pyb.Pin.INT_RISING, handler=pincb)
@@ -229,10 +229,12 @@ Methods
        will match one of the allowed constants for the mode argument to the init
        function.
     
-    .. method:: pin.name()
-    
-       Get the pin name.
-    
+.. method:: pin.name()
+
+   Get the pin name.
+
+.. only:: port_pyboard
+
     .. method:: pin.names()
     
        Returns the cpu and board names for this pin.
@@ -261,6 +263,11 @@ Methods
 
         Return a 5-tuple with the configuration of the pin:
         ``(name, alternate-function, mode, type, strength)``
+
+        .. warning:: 
+            This method cannot be called within a callback (interrupt-context)
+            because it needs to allocate memory to return the tuple and memory
+            allocations are disabled while interrupts are being serviced.
 
     .. method:: pin.callback(\*, mode, priority=1, handler=None, wakes=pyb.Sleep.ACTIVE)
 

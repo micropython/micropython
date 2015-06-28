@@ -109,6 +109,7 @@ Q(tell)
 
 // for Pin class
 Q(Pin)
+Q(cpu)
 Q(init)
 Q(value)
 Q(low)

@@ -69,7 +69,7 @@
 /// Example callback:
 ///
 ///     def pincb(pin):
-///         print(pin.get_config().name)
+///         print(pin.name())
 ///
 ///     extint = pyb.Pin('GPIO10', 0, pyb.Pin.INT_RISING, pyb.GPIO.STD_PD, pyb.S2MA)
 ///     extint.callback (mode=pyb.Pin.INT_RISING, handler=pincb)
@@ -525,6 +525,14 @@ STATIC mp_obj_t pin_toggle(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_toggle_obj, pin_toggle);
 
+/// \method name()
+/// Returns the qstr name of the pin
+STATIC mp_obj_t pin_name(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    return MP_OBJ_NEW_QSTR(self->name);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_name_obj, pin_name);
+
 /// \method info()
 /// Returns a named tupple with the current configuration of the gpio pin
 STATIC mp_obj_t pin_info(mp_obj_t self_in) {
@@ -681,8 +689,12 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_low),                     (mp_obj_t)&pin_low_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_high),                    (mp_obj_t)&pin_high_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),                  (mp_obj_t)&pin_toggle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_name),                    (mp_obj_t)&pin_name_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                    (mp_obj_t)&pin_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback),                (mp_obj_t)&pin_callback_obj },
+
+    // class attributes
+    { MP_OBJ_NEW_QSTR(MP_QSTR_cpu),                     (mp_obj_t)&pin_cpu_pins_obj_type },
 
     // class constants
     /// \constant IN                                    - set the pin to input mode
