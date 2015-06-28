@@ -184,6 +184,12 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
         level--;
         mp_obj_t this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
         assert(this_name_q != MP_OBJ_NULL);
+        #if MICROPY_CPYTHON_COMPAT
+        if (MP_OBJ_QSTR_VALUE(this_name_q) == MP_QSTR___main__) {
+            // This is a module run by -m command-line switch, get its real name from backup attribute
+            this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+        }
+        #endif
         mp_map_t *globals_map = mp_obj_dict_get_map(mp_globals_get());
         mp_map_elem_t *elem = mp_map_lookup(globals_map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP);
         bool is_pkg = (elem != NULL);
@@ -350,6 +356,10 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
                 if (i == mod_len && fromtuple == mp_const_false) {
                     mp_obj_module_t *o = module_obj;
                     mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+                    #if MICROPY_CPYTHON_COMPAT
+                    // Store real name in "__main__" attribute. Choosen semi-randonly, to reuse existing qstr's.
+                    mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___main__), MP_OBJ_NEW_QSTR(mod_name));
+                    #endif
                 }
 
                 if (stat == MP_IMPORT_STAT_DIR) {
