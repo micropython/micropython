@@ -66,6 +66,7 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW              (1)
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
+#define MICROPY_PY_BUILTINS_TIMEOUTERROR            (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN               (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)

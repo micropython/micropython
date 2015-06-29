@@ -1281,6 +1281,7 @@ int wlan_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp
 
 int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int *_errno) {
     int ret;
+    bool has_timeout;
     if (timeout_s == 0 || timeout_s == -1) {
         SlSockNonblocking_t option;
         if (timeout_s == 0) {
@@ -1291,12 +1292,14 @@ int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int
             option.NonblockingEnabled = 0;
         }
         ret = sl_SetSockOpt(s->sd, SOL_SOCKET, SO_NONBLOCKING, &option, sizeof(option));
+        has_timeout = false;
     } else {
         // set timeout
         struct SlTimeval_t timeVal;
         timeVal.tv_sec = timeout_s;       // seconds
         timeVal.tv_usec = 0;              // microseconds. 10000 microseconds resolution
         ret = sl_SetSockOpt(s->sd, SOL_SOCKET, SO_RCVTIMEO, &timeVal, sizeof(timeVal));
+        has_timeout = true;
     }
 
     if (ret != 0) {
@@ -1304,6 +1307,7 @@ int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int
         return -1;
     }
 
+    s->has_timeout = has_timeout;
     return 0;
 }
 
