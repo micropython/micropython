@@ -140,6 +140,9 @@ Q(MemoryError)
 Q(NameError)
 Q(NotImplementedError)
 Q(OSError)
+#if MICROPY_PY_BUILTINS_TIMEOUTERROR
+Q(TimeoutError)
+#endif
 Q(OverflowError)
 Q(RuntimeError)
 Q(SyntaxError)

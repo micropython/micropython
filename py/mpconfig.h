@@ -462,6 +462,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (1)
 #endif
 
+// Whether to support timeout exceptions (like socket.timeout)
+#ifndef MICROPY_PY_BUILTINS_TIMEOUTERROR
+#define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
+#endif
+
 // Whether to support complete set of special methods
 // for user classes, otherwise only the most used
 #ifndef MICROPY_PY_ALL_SPECIAL_METHODS
