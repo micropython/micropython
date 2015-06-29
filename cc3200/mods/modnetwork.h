@@ -52,6 +52,7 @@ typedef struct _mod_network_socket_obj_t {
         int16_t sd;
     };
     bool  closed;
+    bool  has_timeout;
 } mod_network_socket_obj_t;
 
 /******************************************************************************
