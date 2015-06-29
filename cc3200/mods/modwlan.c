@@ -1279,21 +1279,24 @@ int wlan_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp
     return 0;
 }
 
-int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_ms, int *_errno) {
+int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int *_errno) {
     int ret;
-    if (timeout_ms == 0 || timeout_ms == -1) {
-        int optval;
-        if (timeout_ms == 0) {
+    if (timeout_s == 0 || timeout_s == -1) {
+        SlSockNonblocking_t option;
+        if (timeout_s == 0) {
             // set non-blocking mode
-            optval = 1;
+            option.NonblockingEnabled = 1;
         } else {
             // set blocking mode
-            optval = 0;
+            option.NonblockingEnabled = 0;
         }
-        ret = sl_SetSockOpt(s->sd, SOL_SOCKET, SO_NONBLOCKING, &optval, sizeof(optval));
+        ret = sl_SetSockOpt(s->sd, SOL_SOCKET, SO_NONBLOCKING, &option, sizeof(option));
     } else {
         // set timeout
-        ret = sl_SetSockOpt(s->sd, SOL_SOCKET, SO_RCVTIMEO, &timeout_ms, sizeof(timeout_ms));
+        struct SlTimeval_t timeVal;
+        timeVal.tv_sec = timeout_s;       // seconds
+        timeVal.tv_usec = 0;              // microseconds. 10000 microseconds resolution
+        ret = sl_SetSockOpt(s->sd, SOL_SOCKET, SO_RCVTIMEO, &timeVal, sizeof(timeVal));
     }
 
     if (ret != 0) {

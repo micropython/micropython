@@ -358,7 +358,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     if (timeout_in == mp_const_none) {
         timeout = -1;
     } else {
-        timeout = 1000 * mp_obj_get_int(timeout_in);
+        timeout = mp_obj_get_int(timeout_in);
     }
     int _errno;
     if (wlan_socket_settimeout(self, timeout, &_errno) != 0) {
