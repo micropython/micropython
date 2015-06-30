@@ -48,12 +48,17 @@ extern "C"
 #define IMG_SRVPACK             "/sys/servicepack.ucf"
 #define SRVPACK_SIGN            "/sys/servicepack.sig"
 
+#define CA_FILE                 "/cert/ca.pem"
+#define CERT_FILE               "/cert/cert.pem"
+#define KEY_FILE                "/cert/private.key"
+
 /******************************************************************************
-   Image file sizes
+   Special file sizes
 *******************************************************************************/
 #define IMG_SIZE                (232 * 1024)    /* 16KB are reserved for the bootloader and at least 8KB for the heap*/
 #define SRVPACK_SIZE            (16  * 1024)
 #define SIGN_SIZE               (2   * 1024)
+#define CA_KEY_SIZE             (4   * 1024)
 
 /******************************************************************************
    Active Image

@@ -137,17 +137,16 @@ typedef struct {
     uint8_t             e_open;
     bool                closechild;
     bool                enabled;
-    bool                swupdating;
-
+    bool                special_file;
 } ftp_data_t;
 
 typedef struct {
     char * cmd;
-}ftp_cmd_t;
+} ftp_cmd_t;
 
 typedef struct {
     char * month;
-}ftp_month_t;
+} ftp_month_t;
 
 typedef enum {
     E_FTP_CMD_NOT_SUPPORTED = -1,
@@ -174,7 +173,7 @@ typedef enum {
     E_FTP_CMD_NOOP,
     E_FTP_CMD_QUIT,
     E_FTP_NUM_FTP_CMDS
-}ftp_cmd_index_t;
+} ftp_cmd_index_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
@@ -243,7 +242,7 @@ void ftp_init (void) {
     ftp_data.e_open = E_FTP_NOTHING_OPEN;
     ftp_data.state = E_FTP_STE_DISABLED;
     ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
-    ftp_data.swupdating = false;
+    ftp_data.special_file = false;
 }
 
 void ftp_run (void) {
@@ -325,7 +324,7 @@ void ftp_run (void) {
                     ftp_data.dtimeout = 0;
                     ftp_data.ctimeout = 0;
                     // its a software update
-                    if (ftp_data.swupdating) {
+                    if (ftp_data.special_file) {
                         if (updater_write(ftp_data.dBuffer, len)) {
                             break;
                         }
@@ -345,8 +344,8 @@ void ftp_run (void) {
                     }
                 }
                 else {
-                    if (ftp_data.swupdating) {
-                        ftp_data.swupdating = false;
+                    if (ftp_data.special_file) {
+                        ftp_data.special_file = false;
                         updater_finnish();
                     }
                     ftp_close_files();
@@ -578,8 +577,8 @@ static void ftp_send_from_fifo (void) {
         // close the listening and the data sockets
         servers_close_socket(&ftp_data.ld_sd);
         servers_close_socket(&ftp_data.d_sd);
-        if (ftp_data.swupdating) {
-            ftp_data.swupdating = false;
+        if (ftp_data.special_file) {
+            ftp_data.special_file = false;
         }
     }
 }
@@ -759,11 +758,8 @@ static void ftp_process_cmd (void) {
             ftp_get_param_and_open_child (&bufptr);
             // first check if a software update is being requested
             if (updater_check_path (ftp_path)) {
-                // start by erasing the previous status file
-                // must be done before starting the updater
-                f_unlink(ftp_path);
                 if (updater_start()) {
-                    ftp_data.swupdating = true;
+                    ftp_data.special_file = true;
                     ftp_data.state = E_FTP_STE_CONTINUE_FILE_RX;
                     ftp_send_reply(150, NULL);
                 }
@@ -861,9 +857,9 @@ static void ftp_close_files (void) {
 
 static void ftp_close_filesystem_on_error (void) {
     ftp_close_files();
-    if (ftp_data.swupdating) {
+    if (ftp_data.special_file) {
         updater_finnish ();
-        ftp_data.swupdating = false;
+        ftp_data.special_file = false;
     }
 }
 
