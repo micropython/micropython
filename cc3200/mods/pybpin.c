@@ -92,15 +92,17 @@
 /******************************************************************************
 DECLARE PRIVATE FUNCTIONS
 ******************************************************************************/
+STATIC void pin_obj_configure (const pin_obj_t *self);
+STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *wake_pin, uint *idx);
+STATIC void pin_extint_enable (mp_obj_t self_in);
+STATIC void pin_extint_disable (mp_obj_t self_in);
+STATIC void pin_verify_af (uint af);
+STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority);
 STATIC void GPIOA0IntHandler (void);
 STATIC void GPIOA1IntHandler (void);
 STATIC void GPIOA2IntHandler (void);
 STATIC void GPIOA3IntHandler (void);
 STATIC void EXTI_Handler(uint port);
-STATIC void pin_obj_configure (const pin_obj_t *self);
-STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *wake_pin, uint *idx);
-STATIC void pin_extint_enable (mp_obj_t self_in);
-STATIC void pin_extint_disable (mp_obj_t self_in);
 
 /******************************************************************************
 DEFINE CONSTANTS
@@ -159,12 +161,6 @@ pin_obj_t *pin_find(mp_obj_t user_obj) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
-void pin_verify_af (uint af) {
-    if (af > PIN_MODE_15) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-}
-
 void pin_config (pin_obj_t *self, uint af, uint mode, uint type, uint strength) {
     // configure the pin in analog mode
     self->af = af, self->mode = mode, self->type = type, self->strength = strength;
@@ -173,37 +169,6 @@ void pin_config (pin_obj_t *self, uint af, uint mode, uint type, uint strength) 
     self->isused = true;
     // register it with the sleep module
     pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pin_obj_configure);
-}
-
-void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority) {
-    void *handler;
-    uint32_t intnum;
-
-    // configure the interrupt type
-    MAP_GPIOIntTypeSet(self->port, self->bit, intmode);
-    switch (self->port) {
-    case GPIOA0_BASE:
-        handler = GPIOA0IntHandler;
-        intnum = INT_GPIOA0;
-        break;
-    case GPIOA1_BASE:
-        handler = GPIOA1IntHandler;
-        intnum = INT_GPIOA1;
-        break;
-    case GPIOA2_BASE:
-        handler = GPIOA2IntHandler;
-        intnum = INT_GPIOA2;
-        break;
-    case GPIOA3_BASE:
-    default:
-        handler = GPIOA3IntHandler;
-        intnum = INT_GPIOA3;
-        break;
-    }
-    MAP_GPIOIntRegister(self->port, handler);
-    // set the interrupt to the lowest priority, to make sure that
-    // no other ISRs will be preemted by this one
-    MAP_IntPrioritySet(intnum, priority);
 }
 
 /******************************************************************************
@@ -325,6 +290,77 @@ STATIC void pin_extint_disable (mp_obj_t self_in) {
     // not need to check for the active flag, it's safe to disable it anyway
     MAP_GPIOIntDisable(self->port, self->bit);
 }
+
+STATIC void pin_verify_af (uint af) {
+    if (af > PIN_MODE_15) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+}
+
+STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority) {
+    void *handler;
+    uint32_t intnum;
+
+    // configure the interrupt type
+    MAP_GPIOIntTypeSet(self->port, self->bit, intmode);
+    switch (self->port) {
+    case GPIOA0_BASE:
+        handler = GPIOA0IntHandler;
+        intnum = INT_GPIOA0;
+        break;
+    case GPIOA1_BASE:
+        handler = GPIOA1IntHandler;
+        intnum = INT_GPIOA1;
+        break;
+    case GPIOA2_BASE:
+        handler = GPIOA2IntHandler;
+        intnum = INT_GPIOA2;
+        break;
+    case GPIOA3_BASE:
+    default:
+        handler = GPIOA3IntHandler;
+        intnum = INT_GPIOA3;
+        break;
+    }
+    MAP_GPIOIntRegister(self->port, handler);
+    // set the interrupt to the lowest priority, to make sure that
+    // no other ISRs will be preemted by this one
+    MAP_IntPrioritySet(intnum, priority);
+}
+
+STATIC void GPIOA0IntHandler (void) {
+    EXTI_Handler(GPIOA0_BASE);
+}
+
+STATIC void GPIOA1IntHandler (void) {
+    EXTI_Handler(GPIOA1_BASE);
+}
+
+STATIC void GPIOA2IntHandler (void) {
+    EXTI_Handler(GPIOA2_BASE);
+}
+
+STATIC void GPIOA3IntHandler (void) {
+    EXTI_Handler(GPIOA3_BASE);
+}
+
+// common interrupt handler
+STATIC void EXTI_Handler(uint port) {
+    uint32_t bits = MAP_GPIOIntStatus(port, true);
+    MAP_GPIOIntClear(port, bits);
+
+    // might be that we have more than one Pin interrupt pending
+    // therefore we must loop through all of the 8 possible bits
+    for (int i = 0; i < 8; i++) {
+        uint32_t bit = (1 << i);
+        if (bit & bits) {
+            pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
+            mp_obj_t _callback = mpcallback_find(self);
+            mpcallback_handler(_callback);
+        }
+    }
+}
+
 
 /******************************************************************************/
 // Micro Python bindings
@@ -746,37 +782,4 @@ STATIC const mp_cb_methods_t pin_cb_methods = {
     .enable = pin_extint_enable,
     .disable = pin_extint_disable,
 };
-
-STATIC void GPIOA0IntHandler (void) {
-    EXTI_Handler(GPIOA0_BASE);
-}
-
-STATIC void GPIOA1IntHandler (void) {
-    EXTI_Handler(GPIOA1_BASE);
-}
-
-STATIC void GPIOA2IntHandler (void) {
-    EXTI_Handler(GPIOA2_BASE);
-}
-
-STATIC void GPIOA3IntHandler (void) {
-    EXTI_Handler(GPIOA3_BASE);
-}
-
-// common interrupt handler
-STATIC void EXTI_Handler(uint port) {
-    uint32_t bits = MAP_GPIOIntStatus(port, true);
-    MAP_GPIOIntClear(port, bits);
-
-    // might be that we have more than one Pin interrupt pending
-    // therefore we must loop through all of the 8 possible bits
-    for (int i = 0; i < 8; i++) {
-        uint32_t bit = (1 << i);
-        if (bit & bits) {
-            pin_obj_t *self = (pin_obj_t *)pin_find_pin_by_port_bit(&pin_cpu_pins_locals_dict, port, bit);
-            mp_obj_t _callback = mpcallback_find(self);
-            mpcallback_handler(_callback);
-        }
-    }
-}
 

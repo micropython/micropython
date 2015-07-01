@@ -67,14 +67,9 @@ extern const mp_obj_type_t pin_cpu_pins_obj_type;
 extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
 
 void pin_init0(void);
-void pin_verify_af (uint af);
 void pin_config(pin_obj_t *self, uint af, uint mode, uint type, uint strength);
-void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority);
 pin_obj_t *pin_find(mp_obj_t user_obj);
 pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
 pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit);
-uint32_t pin_get_mode(const pin_obj_t *self);
-uint32_t pin_get_type(const pin_obj_t *self);
-uint32_t pin_get_strenght(const pin_obj_t *self);
 
 #endif  // PYBPIN_H_
