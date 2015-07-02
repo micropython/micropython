@@ -946,6 +946,11 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
         MP_QSTR_security, MP_QSTR_channel, MP_QSTR_rssi
     };
 
+    // check for correct wlan mode
+    if (wlan_obj.mode != ROLE_STA && wlan_obj.mode != ROLE_P2P) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+    }
+
     Sl_WlanNetworkEntry_t wlanEntry;
     mp_obj_t nets = mp_obj_new_list(0, NULL);
     uint8_t _index = 0;
