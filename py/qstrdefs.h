@@ -590,6 +590,8 @@ Q(sha256)
 Q(ubinascii)
 Q(hexlify)
 Q(unhexlify)
+Q(a2b_base64)
+Q(b2a_base64)
 #endif
 
 #if MICROPY_PY_MACHINE
