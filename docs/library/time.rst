@@ -38,17 +38,11 @@ Functions
        Sleep for the given number of seconds.  Seconds can be a floating-point number to
        sleep for a fractional number of seconds.
 
-.. only:: port_esp8266
+.. only:: port_esp8266 or port_wipy
 
     .. function:: sleep(seconds)
     
        Sleep for the given number of seconds.
-
-.. only:: port_wipy
-
-    .. function:: sleep(milliseconds)
-    
-       Sleep for the given number of milliseconds.
 
 .. function:: time()
 

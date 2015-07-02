@@ -122,10 +122,10 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
 
-/// \function sleep(milliseconds)
-/// Sleep for the given number of milliseconds.
-STATIC mp_obj_t time_sleep(mp_obj_t milliseconds_o) {
-    HAL_Delay(mp_obj_get_int(milliseconds_o));
+/// \function sleep(seconds)
+/// Sleep for the given number of seconds.
+STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
+    HAL_Delay(mp_obj_get_int(seconds_o) * 1000);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
