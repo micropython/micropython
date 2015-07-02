@@ -750,7 +750,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     };
 
     // check for correct wlan mode
-    if (wlan_obj.mode != ROLE_STA && wlan_obj.mode != ROLE_P2P) {
+    if (wlan_obj.mode == ROLE_AP) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
     }
 
@@ -947,7 +947,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
     };
 
     // check for correct wlan mode
-    if (wlan_obj.mode != ROLE_STA && wlan_obj.mode != ROLE_P2P) {
+    if (wlan_obj.mode == ROLE_AP) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
     }
 
