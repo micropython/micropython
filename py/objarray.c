@@ -130,7 +130,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
             && typecode == BYTEARRAY_TYPECODE)
         || (MICROPY_PY_ARRAY
             && (MP_OBJ_IS_TYPE(initializer, &mp_type_bytes)
-                || MP_OBJ_IS_TYPE(initializer, &mp_type_bytearray))))
+                || (MICROPY_PY_BUILTINS_BYTEARRAY && MP_OBJ_IS_TYPE(initializer, &mp_type_bytearray)))))
         && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
         // construct array from raw bytes
         // we round-down the len to make it a multiple of sz (CPython raises error)
@@ -301,7 +301,8 @@ STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     // self is not a memoryview, so we don't need to use (& TYPECODE_MASK)
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
+    assert((MICROPY_PY_BUILTINS_BYTEARRAY && MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray))
+        || (MICROPY_PY_ARRAY && MP_OBJ_IS_TYPE(self_in, &mp_type_array)));
     mp_obj_array_t *self = self_in;
 
     if (self->free == 0) {
@@ -319,7 +320,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // self is not a memoryview, so we don't need to use (& TYPECODE_MASK)
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_array) || MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
+    assert((MICROPY_PY_BUILTINS_BYTEARRAY && MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray))
+        || (MICROPY_PY_ARRAY && MP_OBJ_IS_TYPE(self_in, &mp_type_array)));
     mp_obj_array_t *self = self_in;
 
     // allow to extend by anything that has the buffer protocol (extension to CPython)
