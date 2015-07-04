@@ -147,17 +147,20 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 
     vstr_t vstr;
     vstr_init_len(&vstr, ((bufinfo.len != 0) ? (((bufinfo.len - 1) / 3) + 1) * 4 : 0) + 1);
+
+    // First pass, we convert input buffer to numeric base 64 values
     byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
-    for (mp_uint_t i = bufinfo.len; i >= 3; i -= 3) {
+    mp_uint_t i;
+    for (i = bufinfo.len; i >= 3; i -= 3) {
         *out++ = (in[0] & 0xFC) >> 2;
         *out++ = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
         *out++ = (in[1] & 0x0F) << 2 | (in[2] & 0xC0) >> 6;
         *out++ = in[2] & 0x3F;
         in += 3;
     }
-    if (bufinfo.len % 3 != 0) {
+    if (i != 0) {
         *out++ = (in[0] & 0xFC) >> 2;
-        if (bufinfo.len % 3 == 2) {
+        if (i == 2) {
             *out++ = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
             *out++ = (in[1] & 0x0F) << 2;
         }
@@ -167,6 +170,8 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
         }
         *out++ = 64;
     }
+
+    // Second pass, we convert number base 64 values to actual base64 ascii encoding
     out = (byte*)vstr.buf;
     for (mp_uint_t i = vstr.len - 1; i--;) {
         if (*out < 26) {
