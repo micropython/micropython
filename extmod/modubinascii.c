@@ -173,7 +173,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding
     out = (byte*)vstr.buf;
-    for (mp_uint_t i = vstr.len - 1; i--;) {
+    for (mp_uint_t j = vstr.len - 1; j--;) {
         if (*out < 26) {
             *out += 'A';
         } else if (*out < 52) {
