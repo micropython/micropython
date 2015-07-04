@@ -47,7 +47,7 @@ there. Make sure to use a **v4.1 (or higer) LAUNCHXL board** when trying this po
 make BTARGET=application BTYPE=release BOARD=LAUNCHXL WIPY_IP=192.168.1.1 WIPY_USER=micro WIPY_PWD=python deploy
 ```
 
-If WIPY_IP, WIPY_USER or WIPY_PWD are omitted the default values (the ones shown above) will be used.
+If `WIPY_IP`, `WIPY_USER` or `WIPY_PWD` are omitted the default values (the ones shown above) will be used.
 
 ## Playing with MicroPython and the CC3200:
 
