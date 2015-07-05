@@ -25,26 +25,43 @@ def print_exception(e):
     print ('Exception: {}, on line {}'.format(e, sys.exc_info()[-1].tb_lineno))
 
 
+def ftp_directory_exists(ftpobj, directory_name):
+    filelist = []
+    ftpobj.retrlines('LIST',filelist.append)
+    for f in filelist:
+        if f.split()[-1] == directory_name:
+            return True
+    return False
+
+
 def transfer_file(args):
-    with FTP(args.ip, timeout=10) as ftp:
+    with FTP(args.ip, timeout=20) as ftp:
         print ('FTP connection established')
 
         if '230' in ftp.login(args.user, args.password):
             print ('Login successful')
 
-            if '250' in ftp.cwd('/flash/sys'):
-                print ("Entered '/flash/sys' directory")
-
-                with open(args.file, "rb") as fwfile:
-                    print ('Firmware image found, initiating transfer...')
-
-                    if '226' in ftp.storbinary("STOR " + 'mcuimg.bin', fwfile, 512):
-                        print ('File transfer complete')
-                        return True
+            if '250' in ftp.cwd('/flash'):
+                if not ftp_directory_exists(ftp, 'sys'):
+                    print ('/flash/sys directory does not exist')
+                    if not '550' in ftp.mkd('sys'):
+                        print ('/flash/sys directory created')
                     else:
-                        print ('Error: file transfer failed')
+                        print ('Error: cannot create /flash/sys directory')
+                        return False
+                if '250' in ftp.cwd('sys'):
+                    print ("Entered '/flash/sys' directory")
+                    with open(args.file, "rb") as fwfile:
+                        print ('Firmware image found, initiating transfer...')
+                        if '226' in ftp.storbinary("STOR " + 'mcuimg.bin', fwfile, 512):
+                            print ('File transfer complete')
+                            return True
+                        else:
+                            print ('Error: file transfer failed')
+                else:
+                    print ('Error: cannot enter /flash/sys directory')
             else:
-                print ('Error: cannot enter /flash/sys directory')
+                print ('Error: cannot enter /flash directory')
         else:
             print ('Error: ftp login failed')
 
@@ -97,12 +114,12 @@ def verify_update(args):
     firmware_tag = ''
 
     def find_tag (tag):
-        nonlocal success, firmware_tag
         if tag in firmware_tag:
-            success = True
             print("Verification passed")
+            return True
         else:
             print("Error: verification failed, the git tag doesn't match")
+            return False
 
     try:
         # Specify a longer time out value here because the board has just been
@@ -114,14 +131,14 @@ def verify_update(args):
         tag_file_path = args.file.rstrip('mcuimg.bin') + 'genhdr/mpversion.h'
         
         if args.tag is not None:
-            find_tag(bytes(args.tag, 'ascii'))
+            success = find_tag(bytes(args.tag, 'ascii'))
         else:
             with open(tag_file_path) as tag_file:
                 for line in tag_file:
                     bline = bytes(line, 'ascii')
                     if b'MICROPY_GIT_HASH' in bline:
                         bline = bline.lstrip(b'#define MICROPY_GIT_HASH ').replace(b'"', b'').replace(b'\r', b'').replace(b'\n', b'')
-                        find_tag(bline)
+                        success = find_tag(bline)
                         break
 
     except Exception as e:
