@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/objtuple.h"
 #include "py/binary.h"
@@ -104,7 +105,9 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
         }
         if (cnt > 1) {
             // TODO: count spec support only for string len
-            assert(*fmt == 's');
+            if (*fmt != 's') {
+                mp_not_implemented("count>1");
+            }
         }
 
         mp_uint_t sz;
@@ -140,7 +143,9 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
         }
         if (sz > 1) {
             // TODO: size spec support only for string len
-            assert(*fmt == 's');
+            if (*fmt != 's') {
+                mp_not_implemented("count>1");
+            }
         }
         mp_obj_t item;
         if (*fmt == 's') {
@@ -173,7 +178,9 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
         }
         if (sz > 1) {
             // TODO: size spec support only for string len
-            assert(*fmt == 's');
+            if (*fmt != 's') {
+                mp_not_implemented("count>1");
+            }
         }
 
         if (*fmt == 's') {
