@@ -308,7 +308,6 @@ STATIC void mptask_init_sflash_filesystem (void) {
 
     // Initialise the local flash filesystem.
     // Create it if needed, and mount in on /flash.
-    // try to mount the flash
     FRESULT res = f_mount(sflash_fatfs, "/flash", 1);
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem, so create a fresh one
@@ -333,6 +332,16 @@ STATIC void mptask_init_sflash_filesystem (void) {
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
     f_chdrive("/flash");
+
+    // create /flash/sys and /flash/lib if they don't exist
+    if (FR_OK != f_chdir ("/flash/sys")) {
+        res = f_mkdir("/flash/sys");
+    }
+    if (FR_OK != f_chdir ("/flash/lib")) {
+        res = f_mkdir("/flash/lib");
+    }
+
+    f_chdir ("/flash");
 
     // Make sure we have a /flash/boot.py.  Create it if needed.
     res = f_stat("/flash/boot.py", &fno);
