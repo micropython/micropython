@@ -89,8 +89,8 @@
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define PYBUART_TX_WAIT_MS                  1
-#define PYBUART_TX_MAX_TIMEOUT_MS           5
+#define PYBUART_TX_WAIT_US                      (50)
+#define PYBUART_TX_MAX_TIMEOUT_MS               (5)
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -156,10 +156,10 @@ bool uart_tx_char(pyb_uart_obj_t *self, int c) {
     uint32_t timeout = 0;
 
     while (!MAP_UARTCharPutNonBlocking(self->reg, c)) {
-        if (timeout++ > (PYBUART_TX_MAX_TIMEOUT_MS / PYBUART_TX_WAIT_MS)) {
+        if (timeout++ > ((PYBUART_TX_MAX_TIMEOUT_MS * 1000) / PYBUART_TX_WAIT_US)) {
             return false;
         }
-        HAL_Delay (PYBUART_TX_WAIT_MS);
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(PYBUART_TX_WAIT_US));
     }
     return true;
 }

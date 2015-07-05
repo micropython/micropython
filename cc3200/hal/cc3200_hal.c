@@ -45,6 +45,7 @@
 #include "mpexception.h"
 #include "telnet.h"
 #include "pybuart.h"
+#include "utils.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"
@@ -107,16 +108,23 @@ uint32_t HAL_GetTick(void) {
 }
 
 void HAL_Delay(uint32_t delay) {
-#ifdef USE_FREERTOS
-    vTaskDelay (delay / portTICK_PERIOD_MS);
-#else
-    uint32_t start = HAL_tickCount;
-    // Wraparound of tick is taken care of by 2's complement arithmetic.
-    while (HAL_tickCount - start < delay) {
-        // Enter sleep mode, waiting for (at least) the SysTick interrupt.
-        __WFI();
+    // only if we are not within interrupt context
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0) {
+        #ifdef USE_FREERTOS
+            vTaskDelay (delay / portTICK_PERIOD_MS);
+        #else
+            uint32_t start = HAL_tickCount;
+            // wraparound of tick is taken care of by 2's complement arithmetic.
+            while (HAL_tickCount - start < delay) {
+                // enter sleep mode, waiting for (at least) the SysTick interrupt.
+                __WFI();
+            }
+        #endif
+    } else {
+        for (int ms = 1; ms <= delay; ms++) {
+            UtilsDelay(UTILS_DELAY_US_TO_COUNT(ms * 1000));
+        }
     }
-#endif
 }
 
 void mp_hal_set_interrupt_char (int c) {

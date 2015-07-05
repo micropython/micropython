@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "std.h"
+
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/obj.h"
@@ -124,10 +126,8 @@ uint mpcallback_translate_priority (uint priority) {
 void mpcallback_handler (mp_obj_t self_in) {
     mpcallback_obj_t *self = self_in;
     if (self && self->handler != mp_const_none) {
-        // disable interrupts to avoid nesting
-        uint primsk = disable_irq();
         // when executing code within a handler we must lock the GC to prevent
-        // any memory allocations.  We must also catch any exceptions.
+        // any memory allocations.
         gc_lock();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
@@ -138,13 +138,13 @@ void mpcallback_handler (mp_obj_t self_in) {
             // uncaught exception; disable the callback so that it doesn't run again
             self->methods->disable (self->parent);
             self->handler = mp_const_none;
-            // printing an exception here will cause a stack overflow that will end up in
-            // a hard fault, so is better to signal the uncaught (probably non-recoverable)
-            // exception by blinking the system led instead.
+            // signal the error using the heart beat led and print an
+            // exception message as well
             mperror_signal_error();
+            printf("Uncaught exception in callback handler\n");
+            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
         }
         gc_unlock();
-        enable_irq(primsk);
     }
 }
 
