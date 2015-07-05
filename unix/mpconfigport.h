@@ -179,6 +179,11 @@ void mp_unix_mark_exec(void);
 
 #define MP_PLAT_PRINT_STRN(str, len) fwrite(str, 1, len, stdout)
 
+#ifdef __linux__
+// Can access physical memory using /dev/mem
+#define MICROPY_PLAT_DEV_MEM  (1)
+#endif
+
 extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
