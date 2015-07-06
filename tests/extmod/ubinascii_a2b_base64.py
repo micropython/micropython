@@ -18,17 +18,17 @@ print(binascii.a2b_base64(b'MTIzNEFCQ0RhYmNk'))
 
 try:
     print(binascii.a2b_base64(b'abc'))
-except:
-    print("caught")
+except ValueError:
+    print("ValueError")
 try:
     print(binascii.a2b_base64(b'abcde='))
-except:
-    print("caught")
+except ValueError:
+    print("ValueError")
 try:
     print(binascii.a2b_base64(b'ab*d'))
-except:
-    print("caught")
+except ValueError:
+    print("ValueError")
 try:
     print(binascii.a2b_base64(b'ab=cdef='))
-except:
-    print("caught")
+except ValueError:
+    print("ValueError")
