@@ -120,7 +120,7 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
                 hold[j] = 63;
             } else if (in[j] == '=') {
                 if (j < 2 || i > 4) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid padding"));
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incorrect padding"));
                 }
                 hold[j] = 64;
             } else {
