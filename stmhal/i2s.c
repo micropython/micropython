@@ -30,6 +30,9 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+
+#if MICROPY_HW_ENABLE_I2S2 || MICROPY_HW_ENABLE_I2S3
+
 #include "py/objstr.h"
 #include "py/objlist.h"
 #include "irq.h"
@@ -399,7 +402,7 @@ STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
     init->CPOL       = args[3].u_int;
     init->AudioFreq  = args[4].u_int;
     init->MCLKOutput = args[6].u_int;
-    init->FullDuplexMode = self->is_duplex ? \
+    init->FullDuplexMode = self->is_duplex ?
 	I2S_FULLDUPLEXMODE_ENABLE : I2S_FULLDUPLEXMODE_DISABLE;
 
     // -------------Possible bug in HAL-------------------
@@ -599,17 +602,22 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
 						"Invalid pins for I2S, err: %d", err_code));
     }
 
+#if (MICROPY_HW_ENABLE_I2S3) && !(MICROPY_HW_ENABLE_I2S2)
+#define I2S_OBJECT_OFFSET (3)
+#else
+#define I2S_OBJECT_OFFSET (2)
+#endif
     // get I2S object
     pyb_i2s_obj_t *i2s_obj;
-    if (MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - 2] == NULL) {
+    if (MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - I2S_OBJECT_OFFSET] == NULL) {
 	// create new I2S object
 	i2s_obj = m_new_obj(pyb_i2s_obj_t);
 	i2s_obj->base.type = &pyb_i2s_type;
 	i2s_obj->i2s_id = i2s_id;
 	i2s_obj->is_enabled = false;
-	MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - 2] = i2s_obj;
+	MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - I2S_OBJECT_OFFSET] = i2s_obj;
     } else {
-	i2s_obj = MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - 2];
+	i2s_obj = MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - I2S_OBJECT_OFFSET];
     }
 
     i2s_obj->is_duplex = is_duplex;
@@ -958,3 +966,5 @@ const mp_obj_type_t pyb_i2s_type = {
     .make_new = pyb_i2s_make_new,
     .locals_dict = (mp_obj_t)&pyb_i2s_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_I2S2 || MICROPY_HW_ENABLE_I2S3
