@@ -53,8 +53,10 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
 }
 
 // Init the vstr so it allocs exactly enough ram to hold given length, and set the length.
+// As an optimization we over-allocate by 1 byte, which in many situations
+// will prevent an extra allocation later on when this is converted to a string.
 void vstr_init_len(vstr_t *vstr, size_t len) {
-    vstr_init(vstr, len);
+    vstr_init(vstr, len + 1);
     vstr->len = len;
 }
 

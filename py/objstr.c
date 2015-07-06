@@ -1922,7 +1922,11 @@ mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     o->base.type = type;
     o->len = vstr->len;
     o->hash = qstr_compute_hash((byte*)vstr->buf, vstr->len);
-    o->data = (byte*)m_renew(char, vstr->buf, vstr->alloc, vstr->len + 1);
+    if (vstr->len + 1 == vstr->alloc) {
+        o->data = (byte*)vstr->buf;
+    } else {
+        o->data = (byte*)m_renew(char, vstr->buf, vstr->alloc, vstr->len + 1);
+    }
     ((byte*)o->data)[o->len] = '\0'; // add null byte
     vstr->buf = NULL;
     vstr->alloc = 0;
