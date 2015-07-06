@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Create frozen modules structure for MicroPython.
 #
@@ -49,7 +49,11 @@ for f, st in modules:
     m = module_name(f)
     print('"%s\\0"' % m)
     data = open(sys.argv[1] + "/" + f, "rb").read()
-    data = repr(data)[2:-1]
+    # Python2 vs Python3 tricks
+    data = repr(data)
+    if data[0] == "b":
+        data = data[1:]
+    data = data[1:-1]
     data = data.replace('"', '\\"')
     print('"%s"' % data)
 print("};")
