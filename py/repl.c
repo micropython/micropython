@@ -187,7 +187,9 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
                             match_str = d_str;
                             match_len = d_len;
                         } else {
-                            for (mp_uint_t j = s_len; j < match_len && j < d_len; ++j) {
+                            // search for longest common prefix of match_str and d_str
+                            // (assumes these strings are null-terminated)
+                            for (mp_uint_t j = s_len; j <= match_len && j <= d_len; ++j) {
                                 if (match_str[j] != d_str[j]) {
                                     match_len = j;
                                     break;
