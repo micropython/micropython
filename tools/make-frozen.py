@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Create frozen modules structure for MicroPython.
 #
@@ -17,6 +17,7 @@
 # Include frozen.c in your build, having defined MICROPY_MODULE_FROZEN in
 # config.
 #
+from __future__ import print_function
 import sys
 import os
 
