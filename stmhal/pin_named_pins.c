@@ -69,6 +69,16 @@ const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit) 
     return NULL;
 }
 
+const pin_af_obj_t *pin_find_af_type(const pin_obj_t *pin, uint8_t type) {
+    const pin_af_obj_t *af = pin->af;
+    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
+        if (af->type == type) {
+            return af;
+        }
+    }
+    return NULL;
+}
+
 const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx) {
     const pin_af_obj_t *af = pin->af;
     for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
