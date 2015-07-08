@@ -90,10 +90,11 @@ LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
 SRC_MOD += modffi.c
 endif
 
+MAIN_C = main.c
 
 # source files
 SRC_C = \
-	main.c \
+	$(MAIN_C) \
 	gccollect.c \
 	unix_mphal.c \
 	input.c \
@@ -174,3 +175,6 @@ $(BUILD)/frozen_upip/upip.py: $(UPIP_TARBALL)
 	$(Q)rm -rf $(dir $@)
 	$(Q)mkdir -p $(dir $@)
 	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py $(dir $@)
+
+embed_: embed.c
+	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' PROG=embed MAIN_C=$< BUILD=build-embed MICROPY_PY_TIME=0 MICROPY_PY_TERMIOS=0 MICROPY_PY_SOCKET=0 MICROPY_PY_FFI=0 MICROPY_USE_READLINE=0
