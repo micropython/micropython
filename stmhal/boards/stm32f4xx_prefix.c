@@ -23,7 +23,7 @@
     .name = MP_QSTR_ ## p_port ## p_pin, \
     .port = PORT_ ## p_port, \
     .pin = (p_pin), \
-    .num_af = (sizeof(p_af) / sizeof(pin_obj_t)), \
+    .num_af = (sizeof(p_af) / sizeof(pin_af_obj_t)), \
     .pin_mask = (1 << ((p_pin) & 0x0f)), \
     .gpio = GPIO ## p_port, \
     .af = p_af, \
