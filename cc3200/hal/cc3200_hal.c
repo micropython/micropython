@@ -123,9 +123,7 @@ void HAL_Delay(uint32_t delay) {
         #endif
     } else {
         for (int ms = 0; ms < delay; ms++) {
-            // 500 instead of 1000 us to compensate the overhead of the for loop
-            // and the function call
-            UtilsDelay(UTILS_DELAY_US_TO_COUNT(500));
+            UtilsDelay(UTILS_DELAY_US_TO_COUNT(1000));
         }
     }
 }
