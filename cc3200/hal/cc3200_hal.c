@@ -46,6 +46,7 @@
 #include "telnet.h"
 #include "pybuart.h"
 #include "utils.h"
+#include "irq.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"
@@ -108,8 +109,8 @@ uint32_t HAL_GetTick(void) {
 }
 
 void HAL_Delay(uint32_t delay) {
-    // only if we are not within interrupt context
-    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0) {
+    // only if we are not within interrupt context and interrupts are enabled
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
         #ifdef USE_FREERTOS
             vTaskDelay (delay / portTICK_PERIOD_MS);
         #else
@@ -121,8 +122,10 @@ void HAL_Delay(uint32_t delay) {
             }
         #endif
     } else {
-        for (int ms = 1; ms <= delay; ms++) {
-            UtilsDelay(UTILS_DELAY_US_TO_COUNT(ms * 1000));
+        for (int ms = 0; ms < delay; ms++) {
+            // 500 instead of 1000 us to compensate the overhead of the for loop
+            // and the function call
+            UtilsDelay(UTILS_DELAY_US_TO_COUNT(500));
         }
     }
 }

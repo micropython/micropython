@@ -28,7 +28,6 @@
 #include "py/mpconfig.h"
 #include MICROPY_HAL_H
 #include "py/obj.h"
-#include "irq.h"
 #include "mpsystick.h"
 #include "systick.h"
 #include "inc/hw_types.h"

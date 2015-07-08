@@ -38,6 +38,7 @@
 #include "mpexception.h"
 #include "serverstask.h"
 #include "genhdr/mpversion.h"
+#include "irq.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
@@ -492,8 +493,8 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
 
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len) {
     int32_t retries = 0;
-    // abort sending if we happen to be within interrupt context
-    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0) {
+    // only if we are not within interrupt context and interrupts are enabled
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
         do {
             _i16 result = sl_Send(sd, pBuf, len, 0);
             if (result > 0) {
