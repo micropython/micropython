@@ -47,7 +47,7 @@
 // rxRindex and rxWindex must be uint8_t and TELNET_RX_BUFFER_SIZE == 256
 #define TELNET_RX_BUFFER_SIZE               256
 #define TELNET_MAX_CLIENTS                  1
-#define TELNET_TX_RETRIES_MAX               25
+#define TELNET_TX_RETRIES_MAX               50
 #define TELNET_WAIT_TIME_MS                 5
 #define TELNET_LOGIN_RETRIES_MAX            3
 #define TELNET_CYCLE_TIME_MS                (SERVERS_CYCLE_TIME_MS * 2)
@@ -109,8 +109,8 @@ typedef struct {
  ******************************************************************************/
 static telnet_data_t telnet_data;
 static const char* telnet_welcome_msg       = "Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n";
-static const char* telnet_request_user      = "Login as:";
-static const char* telnet_request_password  = "Password:";
+static const char* telnet_request_user      = "Login as: ";
+static const char* telnet_request_password  = "Password: ";
 static const char* telnet_invalid_loggin    = "\r\nInvalid credentials, try again.\r\n";
 static const char* telnet_loggin_success    = "\r\nLogin succeeded!\r\nType \"help()\" for more information.\r\n";
 static const uint8_t telnet_options_user[]  = // IAC   WONT ECHO IAC   WONT SUPPRESS_GO_AHEAD IAC  WILL LINEMODE
@@ -493,6 +493,7 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
 
 static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len) {
     int32_t retries = 0;
+    uint32_t delay = TELNET_WAIT_TIME_MS;
     // only if we are not within interrupt context and interrupts are enabled
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
         do {
@@ -503,7 +504,8 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
             else if (SL_EAGAIN != result) {
                 return false;
             }
-            HAL_Delay (TELNET_WAIT_TIME_MS);
+            // start with the default delay and increment it on each retry
+            HAL_Delay (delay++);
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
     return false;
