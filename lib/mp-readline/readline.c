@@ -111,12 +111,24 @@ int readline_process_char(int c) {
         } else if (c == CHAR_CTRL_A) {
             // CTRL-A with non-empty line is go-to-start-of-line
             goto home_key;
+        } else if (c == CHAR_CTRL_B) {
+            // CTRL-B with non-empty line is go-back-one-char
+            goto left_arrow_key;
         } else if (c == CHAR_CTRL_C) {
             // CTRL-C with non-empty line is cancel
             return c;
         } else if (c == CHAR_CTRL_E) {
             // CTRL-E is go-to-end-of-line
             goto end_key;
+        } else if (c == CHAR_CTRL_F) {
+            // CTRL-F with non-empty line is go-forward-one-char
+            goto right_arrow_key;
+        } else if (c == CHAR_CTRL_N) {
+            // CTRL-N is go to next line in history
+            goto down_arrow_key;
+        } else if (c == CHAR_CTRL_P) {
+            // CTRL-P is go to previous line in history
+            goto up_arrow_key;
         } else if (c == '\r') {
             // newline
             mp_hal_stdout_tx_str("\r\n");
@@ -131,6 +143,20 @@ int readline_process_char(int c) {
                 vstr_cut_out_bytes(rl.line, rl.cursor_pos - 1, 1);
                 // set redraw parameters
                 redraw_step_back = 1;
+                redraw_from_cursor = true;
+            }
+        } else if (c == CHAR_CTRL_D) {
+            // delete at cursor
+            if (rl.cursor_pos >= rl.orig_line_len) {
+                vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
+                // set redraw parameters
+                redraw_from_cursor = true;
+            }
+        } else if (c == CHAR_CTRL_K) {
+            // kill from cursor to end-of-line, inclusive
+            if (rl.cursor_pos >= rl.orig_line_len) {
+                vstr_cut_out_bytes(rl.line, rl.cursor_pos, last_line_len-rl.cursor_pos);
+                // set redraw parameters
                 redraw_from_cursor = true;
             }
         #if MICROPY_HELPER_REPL
@@ -181,6 +207,7 @@ int readline_process_char(int c) {
         } else {
             rl.escape_seq = ESEQ_NONE;
             if (c == 'A') {
+up_arrow_key:
                 // up arrow
                 if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
                     // increase hist num
@@ -194,6 +221,7 @@ int readline_process_char(int c) {
                     redraw_step_forward = rl.line->len - rl.orig_line_len;
                 }
             } else if (c == 'B') {
+down_arrow_key:
                 // down arrow
                 if (rl.hist_cur >= 0) {
                     // decrease hist num
@@ -209,11 +237,13 @@ int readline_process_char(int c) {
                     redraw_step_forward = rl.line->len - rl.orig_line_len;
                 }
             } else if (c == 'C') {
+right_arrow_key:
                 // right arrow
                 if (rl.cursor_pos < rl.line->len) {
                     redraw_step_forward = 1;
                 }
             } else if (c == 'D') {
+left_arrow_key:
                 // left arrow
                 if (rl.cursor_pos > rl.orig_line_len) {
                     redraw_step_back = 1;
