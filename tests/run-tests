@@ -226,7 +226,7 @@ def run_tests(pyb, tests, args):
             # (using Wine).
             output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
-        if output_mupy == b'SKIP\n' or output_mupy == b'SKIP\r\n':
+        if b'SKIP' in output_mupy[-6:]:
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
