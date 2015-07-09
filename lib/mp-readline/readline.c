@@ -111,12 +111,44 @@ int readline_process_char(int c) {
         } else if (c == CHAR_CTRL_A) {
             // CTRL-A with non-empty line is go-to-start-of-line
             goto home_key;
+        #if MICROPY_REPL_EMACS_KEYS
+        } else if (c == CHAR_CTRL_B) {
+            // CTRL-B with non-empty line is go-back-one-char
+            goto left_arrow_key;
+        #endif
         } else if (c == CHAR_CTRL_C) {
             // CTRL-C with non-empty line is cancel
             return c;
+        #if MICROPY_REPL_EMACS_KEYS
+        } else if (c == CHAR_CTRL_D) {
+            // CTRL-D with non-empty line is delete-at-cursor
+            goto delete_key;
+        #endif
         } else if (c == CHAR_CTRL_E) {
             // CTRL-E is go-to-end-of-line
             goto end_key;
+        #if MICROPY_REPL_EMACS_KEYS
+        } else if (c == CHAR_CTRL_F) {
+            // CTRL-F with non-empty line is go-forward-one-char
+            goto right_arrow_key;
+        } else if (c == CHAR_CTRL_K) {
+            // CTRL-K is kill from cursor to end-of-line, inclusive
+	    vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
+	    // set redraw parameters
+	    redraw_from_cursor = true;
+        } else if (c == CHAR_CTRL_N) {
+            // CTRL-N is go to next line in history
+            goto down_arrow_key;
+        } else if (c == CHAR_CTRL_P) {
+            // CTRL-P is go to previous line in history
+            goto up_arrow_key;
+        } else if (c == CHAR_CTRL_U) {
+            // CTRL-U is kill from beginning-of-line up to cursor
+	    vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+	    // set redraw parameters
+	    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+	    redraw_from_cursor = true;
+        #endif
         } else if (c == '\r') {
             // newline
             mp_hal_stdout_tx_str("\r\n");
@@ -181,6 +213,9 @@ int readline_process_char(int c) {
         } else {
             rl.escape_seq = ESEQ_NONE;
             if (c == 'A') {
+#if MICROPY_REPL_EMACS_KEYS
+up_arrow_key:
+#endif
                 // up arrow
                 if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
                     // increase hist num
@@ -194,6 +229,9 @@ int readline_process_char(int c) {
                     redraw_step_forward = rl.line->len - rl.orig_line_len;
                 }
             } else if (c == 'B') {
+#if MICROPY_REPL_EMACS_KEYS
+down_arrow_key:
+#endif
                 // down arrow
                 if (rl.hist_cur >= 0) {
                     // decrease hist num
@@ -209,11 +247,17 @@ int readline_process_char(int c) {
                     redraw_step_forward = rl.line->len - rl.orig_line_len;
                 }
             } else if (c == 'C') {
+#if MICROPY_REPL_EMACS_KEYS
+right_arrow_key:
+#endif
                 // right arrow
                 if (rl.cursor_pos < rl.line->len) {
                     redraw_step_forward = 1;
                 }
             } else if (c == 'D') {
+#if MICROPY_REPL_EMACS_KEYS
+left_arrow_key:
+#endif
                 // left arrow
                 if (rl.cursor_pos > rl.orig_line_len) {
                     redraw_step_back = 1;
@@ -238,7 +282,10 @@ end_key:
                 redraw_step_forward = rl.line->len - rl.cursor_pos;
             } else if (rl.escape_seq_buf[0] == '3') {
                 // delete
-                if (rl.cursor_pos >= rl.orig_line_len && rl.cursor_pos < rl.line->len) {
+#if MICROPY_REPL_EMACS_KEYS
+delete_key:
+#endif
+                if (rl.cursor_pos < rl.line->len) {
                     vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
                     redraw_from_cursor = true;
                 }
