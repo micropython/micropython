@@ -34,11 +34,18 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "inc/hw_types.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_memmap.h"
+#include "rom_map.h"
+#include "prcm.h"
+#include "timeutils.h"
 #include "netutils.h"
 #include "modnetwork.h"
 #include "modusocket.h"
 #include "modwlan.h"
 #include "pybioctl.h"
+#include "pybrtc.h"
 #include "debug.h"
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 #include "serverstask.h"
@@ -519,8 +526,13 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
             // set connection policy to Auto + Fast (tries to connect to the last connected AP)
             ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_CONNECTION,SL_CONNECTION_POLICY(1, 1, 0, 0, 0), NULL, 0));
         }
+
+        // set current time and date (needed to validate certificates)
+        wlan_set_current_time (pybrtc_get_seconds());
+
         // start the servers before returning
         wlan_servers_start();
+
         return MODWLAN_OK;
     }
     return MODWLAN_ERROR_INVALID_PARAMS;
@@ -560,6 +572,20 @@ void wlan_get_ip (uint32_t *ip) {
 bool wlan_is_connected (void) {
     return ((GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION) &&
              GET_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED)) || wlan_obj.staconnected);
+}
+
+void wlan_set_current_time (uint32_t seconds_since_2000) {
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_2000_to_struct_time(seconds_since_2000, &tm);
+
+    SlDateTime_t sl_datetime = {0};
+    sl_datetime.sl_tm_day  = tm.tm_mday;
+    sl_datetime.sl_tm_mon  = tm.tm_mon;
+    sl_datetime.sl_tm_year = tm.tm_year;
+    sl_datetime.sl_tm_hour = tm.tm_hour;
+    sl_datetime.sl_tm_min  = tm.tm_min;
+    sl_datetime.sl_tm_sec  = tm.tm_sec;
+    sl_DevSet(SL_DEVICE_GENERAL_CONFIGURATION, SL_DEVICE_GENERAL_CONFIGURATION_DATE_TIME, sizeof(SlDateTime_t), (_u8 *)(&sl_datetime));
 }
 
 //*****************************************************************************
@@ -900,6 +926,8 @@ STATIC mp_obj_t wlan_ifconfig (mp_uint_t n_args, const mp_obj_t *args) {
                 wlan_servers_start();
             }
         }
+        // set current time and date (needed to validate certificates)
+        wlan_set_current_time (pybrtc_get_seconds());
         return mp_const_none;
     }
 }

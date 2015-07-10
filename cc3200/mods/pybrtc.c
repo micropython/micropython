@@ -41,6 +41,8 @@
 #include "mpcallback.h"
 #include "timeutils.h"
 #include "simplelink.h"
+#include "modnetwork.h"
+#include "modwlan.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -92,6 +94,14 @@ void pybrtc_init(void) {
         // Now set the RTC calendar seconds
         MAP_PRCMRTCSet(seconds, 0);
     }
+}
+
+uint32_t pybrtc_get_seconds (void) {
+    uint32_t seconds;
+    uint16_t mseconds;
+
+    MAP_PRCMRTCGet(&seconds, &mseconds);
+    return seconds;
 }
 
 void pyb_rtc_callback_disable (mp_obj_t self_in) {
@@ -188,15 +198,8 @@ mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         mseconds = RTC_U16MS_CYCLES(mseconds);
         MAP_PRCMRTCSet(seconds, mseconds);
 
-        // set simplelink's time and date, this is needed to verify certificates
-        SlDateTime_t sl_datetime = {0};
-        sl_datetime.sl_tm_day  = tm.tm_mday;
-        sl_datetime.sl_tm_mon  = tm.tm_mon;
-        sl_datetime.sl_tm_year = tm.tm_year;
-        sl_datetime.sl_tm_hour = tm.tm_hour;
-        sl_datetime.sl_tm_min  = tm.tm_min;
-        sl_datetime.sl_tm_sec  = tm.tm_sec;
-        sl_DevSet(SL_DEVICE_GENERAL_CONFIGURATION, SL_DEVICE_GENERAL_CONFIGURATION_DATE_TIME, sizeof(SlDateTime_t), (_u8 *)(&sl_datetime));
+        // set WLAN time and date, this is needed to verify certificates
+        wlan_set_current_time(seconds);
         return mp_const_none;
     }
 }

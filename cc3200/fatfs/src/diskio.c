@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 #include "py/mpconfig.h"
+#include "py/obj.h"
 #include "diskio.h"		        /* FatFs lower layer API */
 #include "sflash_diskio.h"      /* Serial flash disk IO API */
 #if MICROPY_HW_HAS_SDCARD
@@ -20,6 +21,7 @@
 #include "inc/hw_memmap.h"
 #include "rom_map.h"
 #include "prcm.h"
+#include "pybrtc.h"
 #include "timeutils.h"
 
 /* Definitions of physical drive number for each drive */
@@ -193,12 +195,7 @@ DWORD get_fattime (
 )
 {
     timeutils_struct_time_t tm;
-    uint32_t seconds;
-    uint16_t mseconds;
-
-    // Get the time from the on-chip RTC and convert it to struct_time
-    MAP_PRCMRTCGet(&seconds, &mseconds);
-    timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
+    timeutils_seconds_since_2000_to_struct_time(pybrtc_get_seconds(), &tm);
 
     return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21)  |
             ((tm.tm_mday) << 16)       | ((tm.tm_hour) << 11) |

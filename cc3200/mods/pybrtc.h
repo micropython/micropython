@@ -33,7 +33,8 @@
 
 extern const mp_obj_type_t pyb_rtc_type;
 
-void pybrtc_init(void);
-void pyb_rtc_callback_disable (mp_obj_t self_in);
+extern void pybrtc_init(void);
+extern void pyb_rtc_callback_disable (mp_obj_t self_in);
+extern uint32_t pybrtc_get_seconds (void);
 
 #endif  // PYBRTC_H_

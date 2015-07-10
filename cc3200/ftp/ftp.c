@@ -895,7 +895,6 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
 
     char *type = (fno->fattrib & AM_DIR) ? "d" : "-";
     uint32_t tseconds;
-    uint16_t mseconds;
     uint mindex = (((fno->fdate >> 5) & 0x0f) > 0) ? (((fno->fdate >> 5) & 0x0f) - 1) : 0;
     uint day = ((fno->fdate & 0x1f) > 0) ? (fno->fdate & 0x1f) : 1;
     uint fseconds = timeutils_seconds_since_2000(1980 + ((fno->fdate >> 9) & 0x7f),
@@ -904,7 +903,7 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
                                                         (fno->ftime >> 11) & 0x1f,
                                                         (fno->ftime >> 5) & 0x3f,
                                                         2 * (fno->ftime & 0x1f));
-    MAP_PRCMRTCGet(&tseconds, &mseconds);
+    tseconds = pybrtc_get_seconds();
     if (FTP_UNIX_SECONDS_180_DAYS < tseconds - fseconds) {
         return snprintf(dest, destsize, "%srw-rw-r--   1 root  root %9u %s %2u %5u %s\r\n",
                         type, (_u32)fno->fsize, ftp_month[mindex].month, day,
@@ -928,12 +927,11 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
 static int ftp_print_eplf_drive (char *dest, uint32_t destsize, char *name) {
     timeutils_struct_time_t tm;
     uint32_t tseconds;
-    uint16_t mseconds;
     char *type = "d";
 
     timeutils_seconds_since_2000_to_struct_time((FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101), &tm);
 
-    MAP_PRCMRTCGet(&tseconds, &mseconds);
+    tseconds = pybrtc_get_seconds();
     if (FTP_UNIX_SECONDS_180_DAYS < tseconds - (FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101)) {
         return snprintf(dest, destsize, "%srw-rw-r--   1 root  root %9u %s %2u %5u %s\r\n",
                         type, 0, ftp_month[(tm.tm_mon - 1)].month, tm.tm_mday, tm.tm_year, name);
