@@ -70,6 +70,7 @@ Q(/sd/lib)
 #endif
 
 // for module weak links
+Q(struct)
 Q(binascii)
 Q(re)
 Q(json)
