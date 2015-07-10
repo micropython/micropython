@@ -107,12 +107,15 @@ void TASK_Servers (void *pvParameters) {
             servers_data.do_disable = false;
             servers_data.enabled = false;
         }
-        else if (servers_data.do_reset && servers_data.enabled) {
-            telnet_reset();
-            ftp_reset();
+        else if (servers_data.do_reset) {
+            // resetting the servers is needed to prevent half-open sockets
             servers_data.do_reset = false;
-            // resetting the servers is needed to preven half-open sockets
-            // and we should also close all user sockets
+            if (servers_data.enabled) {
+                telnet_reset();
+                ftp_reset();
+            }
+            // and we should also close all user sockets. We do it here
+            // for convinience and to save on code size.
             modusocket_close_all_user_sockets();
         }
 

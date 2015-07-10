@@ -138,7 +138,6 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     s->sock_base.u_param.fileno = -1;
     s->sock_base.has_timeout = false;
     s->sock_base.cert_req = false;
-    s->sock_base.closed = false;
 
     if (n_args > 0) {
         s->sock_base.u_param.domain = mp_obj_get_int(args[0]);
@@ -158,7 +157,6 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     if (wlan_socket_socket(s, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
     }
-
     return s;
 }
 

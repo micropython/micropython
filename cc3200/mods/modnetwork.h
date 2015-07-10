@@ -43,16 +43,17 @@ typedef struct _mod_network_nic_type_t {
 typedef struct _mod_network_socket_base_t {
     union {
         struct {
+            // this order is important so that fileno gets > 0 once
+            // the socket descriptor is assigned after being created.
             uint8_t domain;
+            int8_t fileno;
             uint8_t type;
             uint8_t proto;
-            int8_t fileno;
         } u_param;
         int16_t sd;
     };
     bool has_timeout;
     bool cert_req;
-    bool closed;
 } mod_network_socket_base_t;
 
 typedef struct _mod_network_socket_obj_t {
