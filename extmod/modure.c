@@ -169,12 +169,13 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
 STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_re_t *self = args[0];
     const mp_obj_t args2[] = { self, args[2] };
     mp_obj_match_t *match = re_exec(is_anchored, 2, args2);
     if (!MP_OBJ_IS_TYPE(match, &mp_type_NoneType)) {
         mp_obj_t repl = (mp_obj_is_callable(args[1]) ? mp_call_function_1(args[1], mp_const_none) : args[1]);
-        for (mp_uint_t i = 0; i < match->num_matches; i++) {
+        for (int i = 0; i < match->num_matches; i++) {
             const char subs[] = { 0x5c, (0x30 + i) };
             mp_obj_t subs_str_obj = mp_obj_new_str(subs, 2, false);
             const mp_obj_t str_count_args2[] = { repl, subs_str_obj };
