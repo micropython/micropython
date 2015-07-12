@@ -206,6 +206,27 @@ STATIC mp_obj_t socket_send(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
 
+STATIC mp_obj_t socket_sendto(mp_uint_t n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = args[0];
+    int flags = 0;
+
+    mp_obj_t dst_addr = args[2];
+    if (n_args > 3) {
+        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+        dst_addr = args[3];
+    }
+
+    mp_buffer_info_t bufinfo, addr_bi;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(dst_addr, &addr_bi, MP_BUFFER_READ);
+    int out_sz = sendto(self->fd, bufinfo.buf, bufinfo.len, flags,
+                        (struct sockaddr *)addr_bi.buf, addr_bi.len);
+    RAISE_ERRNO(out_sz, errno);
+
+    return MP_OBJ_NEW_SMALL_INT(out_sz);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendto_obj, 3, 4, socket_sendto);
+
 STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     mp_obj_socket_t *self = args[0];
@@ -300,6 +321,7 @@ STATIC const mp_map_elem_t usocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_accept), (mp_obj_t)&socket_accept_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&socket_sendto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
