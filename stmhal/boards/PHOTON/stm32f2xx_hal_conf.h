@@ -49,7 +49,7 @@
 /* Exported constants --------------------------------------------------------*/
 
 #define STM32F205xx
-#define USE_USB_FS
+#define USE_USB_HS
 
 /* ########################## Module Selection ############################## */
 /**
