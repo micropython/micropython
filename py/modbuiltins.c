@@ -441,7 +441,9 @@ STATIC mp_obj_t mp_builtin_round(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         num_dig = mp_obj_get_int(args[1]);
         if (num_dig > 0) {
-            mp_not_implemented("round(..., N>0)");
+            mp_float_t val = mp_obj_get_float(o_in);
+            mp_float_t rounded = roundf(val * pow(10, num_dig)) / pow(10, num_dig);
+            return mp_obj_new_float(rounded);
         }
     }
     mp_float_t val = mp_obj_get_float(o_in);
