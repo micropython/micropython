@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_URE
 
@@ -167,10 +168,39 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
+STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    mp_obj_re_t *self = args[0];
+    const mp_obj_t args2[] = { self, args[2] };
+    mp_obj_match_t *match = re_exec(is_anchored, 2, args2);
+    if (!MP_OBJ_IS_TYPE(match, &mp_type_NoneType)) {
+        mp_obj_t repl = (mp_obj_is_callable(args[1]) ? mp_call_function_1(args[1], mp_const_none) : args[1]);
+        for (mp_uint_t i = 0; i < match->num_matches; i++) {
+            const char subs[] = { 0x5c, (0x30 + i) };
+            mp_obj_t subs_str_obj = mp_obj_new_str(subs, 2, false);
+            const mp_obj_t str_count_args2[] = { repl, subs_str_obj };
+            mp_uint_t subs_occurrence = (mp_uint_t)((mp_fun_var_t)(&str_count_obj)->fun)(2, str_count_args2);
+            if (subs_occurrence) {
+                mp_obj_t match_element = match_group(match, mp_obj_new_int_from_uint(i));
+                const mp_obj_t str_replace_args3[] = { repl, subs_str_obj, match_element};
+                repl = (mp_obj_t)((mp_fun_var_t)(&str_replace_obj)->fun)(3, str_replace_args3);
+            }
+        }
+        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+        return repl;
+    }
+    return args[2];
+}
+
+STATIC mp_obj_t re_sub(uint n_args, const mp_obj_t *args) {
+	return re_exec_sub(false, n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 4, re_sub);
+
 STATIC const mp_map_elem_t re_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t) &re_match_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t) &re_search_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t) &re_split_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sub), (mp_obj_t) &re_sub_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -221,11 +251,26 @@ STATIC mp_obj_t mod_re_search(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 
+STATIC mp_obj_t mod_re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    (void)n_args;
+    mp_obj_re_t *self = mod_re_compile(1, args);
+    
+    const mp_obj_t args3[] = { self, args[1], args[2], (n_args>3 ? args[3] : 0) };
+    mp_obj_t retval = re_exec_sub(is_anchored, n_args, args3);
+    return retval;
+}
+
+STATIC mp_obj_t mod_re_sub(uint n_args, const mp_obj_t *args) {
+    return mod_re_exec_sub(false, n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
+
 STATIC const mp_map_elem_t mp_module_re_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ure) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_compile), (mp_obj_t)&mod_re_compile_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t)&mod_re_match_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t)&mod_re_search_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sub), (mp_obj_t)&mod_re_sub_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEBUG), MP_OBJ_NEW_SMALL_INT(FLAG_DEBUG) },
 };
 
