@@ -431,7 +431,6 @@ STATIC mp_obj_t mp_builtin_repr(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 
 STATIC mp_obj_t mp_builtin_round(mp_uint_t n_args, const mp_obj_t *args) {
-    // TODO really support second arg
     mp_obj_t o_in = args[0];
     if (MP_OBJ_IS_INT(o_in)) {
         return o_in;
@@ -441,7 +440,9 @@ STATIC mp_obj_t mp_builtin_round(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         num_dig = mp_obj_get_int(args[1]);
         if (num_dig > 0) {
-            mp_not_implemented("round(..., N>0)");
+            mp_float_t val = mp_obj_get_float(o_in);
+            mp_float_t rounded = roundf(val * powf(10, num_dig)) / powf(10, num_dig);
+            return mp_obj_new_float(rounded);
         }
     }
     mp_float_t val = mp_obj_get_float(o_in);
