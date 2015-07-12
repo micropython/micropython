@@ -83,10 +83,13 @@ double __aeabi_dmul(double x , double y) {
 }
 
 float sqrtf(float x) {
+// TODO: F2 doesn't have FPU
+#ifndef MCU_STM32F2
     asm volatile (
             "vsqrt.f32  %[r], %[x]\n"
             : [r] "=t" (x)
             : [x] "t"  (x));
+#endif
     return x;
 }
 

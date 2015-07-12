@@ -5,6 +5,10 @@ ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
 
+ifeq ($(BOARD), PHOTON)
+MCU_STM32F2 ?= 1
+endif
+
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
@@ -44,12 +48,19 @@ INC += -I../lib/mp-readline
 INC += -I../lib/netutils
 INC += -I../lib/timeutils
 
+ifeq ($(MCU_STM32F2),1)
+CFLAGS_CORTEX_M3 = -mthumb -mtune=cortex-m3 -mcpu=cortex-m3 -mfpu=vfp -msoft-float -fsingle-precision-constant -Wdouble-promotion
+CFLAGS = $(INC) -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_CORTEX_M3) $(COPT)
+LIBS = -L "/usr/local/gcc_arm/gcc-arm-none-eabi-4_9-2015q1/lib/gcc/arm-none-eabi/4.9.3" -lgcc
+# LIBS += -L "/usr/local/gcc_arm/gcc-arm-none-eabi-4_9-2015q1/arm-none-eabi/lib" -lc
+else
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_CORTEX_M4) $(COPT)
+LIBS =
+endif
 CFLAGS += -Iboards/$(BOARD)
 
 LDFLAGS = -nostdlib -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
-LIBS =
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -100,8 +111,6 @@ SRC_LIB = $(addprefix lib/,\
 
 SRC_C = \
 	main.c \
-	system_stm32f4xx.c \
-	stm32f4xx_it.c \
 	usbd_conf.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
@@ -155,8 +164,75 @@ SRC_C = \
 	adc.c \
 
 SRC_S = \
-	startup_stm32f40xx.s \
 	gchelper.s \
+
+ifeq ($(MCU_STM32F2),1)
+SRC_C += \
+	system_stm32f2xx.c \
+	stm32f2xx_it.c \
+
+SRC_S += \
+	startup_stm32f205xx.s \
+
+SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
+	stm32f2xx_hal.c \
+	stm32f2xx_hal_adc.c \
+	stm32f2xx_hal_adc_ex.c \
+	stm32f2xx_hal_can.c \
+	stm32f2xx_hal_cortex.c \
+	stm32f2xx_hal_crc.c \
+	stm32f2xx_hal_cryp.c \
+	stm32f2xx_hal_dac.c \
+	stm32f2xx_hal_dac_ex.c \
+	stm32f2xx_hal_dcmi.c \
+	stm32f2xx_hal_dma.c \
+	stm32f2xx_hal_dma_ex.c \
+	stm32f2xx_hal_eth.c \
+	stm32f2xx_hal_flash.c \
+	stm32f2xx_hal_flash_ex.c \
+	stm32f2xx_hal_gpio.c \
+	stm32f2xx_hal_hash.c \
+	stm32f2xx_hal_hcd.c \
+	stm32f2xx_hal_i2c.c \
+	stm32f2xx_hal_i2s.c \
+	stm32f2xx_hal_irda.c \
+	stm32f2xx_hal_iwdg.c \
+	stm32f2xx_hal_msp_template.c \
+	stm32f2xx_hal_nand.c \
+	stm32f2xx_hal_nor.c \
+	stm32f2xx_hal_pccard.c \
+	stm32f2xx_hal_pcd.c \
+	stm32f2xx_hal_pwr.c \
+	stm32f2xx_hal_pwr_ex.c \
+	stm32f2xx_hal_rcc.c \
+	stm32f2xx_hal_rcc_ex.c \
+	stm32f2xx_hal_rng.c \
+	stm32f2xx_hal_rtc.c \
+	stm32f2xx_hal_rtc_ex.c \
+	stm32f2xx_hal_sd.c \
+	stm32f2xx_hal_smartcard.c \
+	stm32f2xx_hal_spi.c \
+	stm32f2xx_hal_sram.c \
+	stm32f2xx_hal_tim.c \
+	stm32f2xx_hal_tim_ex.c \
+	stm32f2xx_hal_uart.c \
+	stm32f2xx_hal_usart.c \
+	stm32f2xx_hal_wwdg.c \
+	stm32f2xx_ll_fsmc.c \
+	stm32f2xx_ll_sdmmc.c \
+	stm32f2xx_ll_usb.c \
+	)
+
+CFLAGS_MOD += -DMCU_STM32F2=1
+CFLAGS_MOD += -DHAL_H="<stm32f2xx_hal.h>"
+
+else
+SRC_C += \
+	system_stm32f4xx.c \
+	stm32f4xx_it.c \
+
+SRC_S += \
+	startup_stm32f40xx.s \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_hal.c \
@@ -188,6 +264,10 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/,\
 	stm32f4xx_ll_sdmmc.c \
 	stm32f4xx_ll_usb.c \
 	)
+
+CFLAGS_MOD += -DHAL_H="<stm32f4xx_hal.h>"
+
+endif
 
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
@@ -250,7 +330,11 @@ OBJ += $(BUILD)/pins_$(BOARD).o
 # to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
 # and comment out the following 2 lines.
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
+ifeq ($(MCU_STM32F2),1)
+$(BUILD)/$(HAL_DIR)/src/stm32f2xx_hal_sd.o: COPT += -Os
+else
 $(BUILD)/$(HAL_DIR)/src/stm32f4xx_hal_sd.o: COPT += -Os
+endif
 
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
@@ -281,7 +365,14 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv
+
+ifeq ($(MCU_STM32F2),1)
+PREFIX_FILE = boards/stm32f2xx_prefix.c
+else
 PREFIX_FILE = boards/stm32f4xx_prefix.c
+endif
+
+
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
