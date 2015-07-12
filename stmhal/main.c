@@ -62,7 +62,9 @@
 #include "modnetwork.h"
 #include MICROPY_HAL_H
 
+#ifndef MCU_STM32F2
 void SystemClock_Config(void);
+#endif
 
 static FATFS fatfs0;
 #if MICROPY_HW_HAS_SDCARD
@@ -259,8 +261,10 @@ int main(void) {
        */
     HAL_Init();
 
+#ifndef MCU_STM32F2
     // set the system clock to be HSE
     SystemClock_Config();
+#endif
 
     // enable GPIO clocks
     __GPIOA_CLK_ENABLE();
@@ -268,8 +272,10 @@ int main(void) {
     __GPIOC_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
 
+#ifndef MCU_STM32F2
     // enable the CCM RAM
     __CCMDATARAMEN_CLK_ENABLE();
+#endif
 
 #if 0
 #if defined(NETDUINO_PLUS_2)
@@ -388,9 +394,18 @@ soft_reset:
     timer_init0();
     uart_init0();
 
-    // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
-    // as well as on USB VCP
-#if 0
+
+#ifdef MCU_STM32F2
+    {
+        mp_obj_t args[2] = {
+            MP_OBJ_NEW_SMALL_INT(PYB_UART_1),
+            MP_OBJ_NEW_SMALL_INT(115200),
+        };
+        MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+    }
+#elif 0
+// Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
+// as well as on USB VCP
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(PYB_UART_6),

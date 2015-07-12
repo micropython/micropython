@@ -1,0 +1,66 @@
+#define PHOTON
+
+#define MICROPY_HW_BOARD_NAME       "Particle Photon"
+#define MICROPY_HW_MCU_NAME         "STM32F205"
+
+#define MICROPY_HW_HAS_SWITCH       (1)
+
+// On the netuino, the sdcard appears to be wired up as a 1-bit
+// SPI, so the driver needs to be converted to support that before
+// we can turn this on.
+#define MICROPY_HW_HAS_SDCARD       (0)
+#define MICROPY_HW_HAS_MMA7660      (0)
+#define MICROPY_HW_HAS_LIS3DSH      (0)
+#define MICROPY_HW_HAS_LCD          (0)
+#define MICROPY_HW_ENABLE_RNG       (1)
+#define MICROPY_HW_ENABLE_RTC       (0)
+#define MICROPY_HW_ENABLE_TIMER     (1)
+#define MICROPY_HW_ENABLE_SERVO     (1)
+#define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_HW_ENABLE_SPI1      (1)
+#define MICROPY_HW_ENABLE_SPI2      (0)
+#define MICROPY_HW_ENABLE_SPI3      (1)
+#define MICROPY_HW_ENABLE_CAN       (0)
+
+#define MICROPY_HW_CLK_PLLM (25)
+#define MICROPY_HW_CLK_PLLN (336)
+#define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
+#define MICROPY_HW_CLK_PLLQ (7)
+
+// UART config
+#define MICROPY_HW_UART1_PORT (GPIOA)
+#define MICROPY_HW_UART1_PINS (GPIO_PIN_9 | GPIO_PIN_10)
+#define MICROPY_HW_UART2_PORT (GPIOA)
+#define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
+#define MICROPY_HW_UART2_RTS  (GPIO_PIN_1)
+#define MICROPY_HW_UART2_CTS  (GPIO_PIN_0)
+#define MICROPY_HW_UART3_PORT (GPIOB)
+#define MICROPY_HW_UART3_PINS (GPIO_PIN_10 | GPIO_PIN_11)
+#define MICROPY_HW_UART3_RTS  (GPIO_PIN_14)
+#define MICROPY_HW_UART3_CTS  (GPIO_PIN_13)
+#define MICROPY_HW_UART4_PORT (GPIOA)
+#define MICROPY_HW_UART4_PINS (GPIO_PIN_0 | GPIO_PIN_1)
+#define MICROPY_HW_UART6_PORT (GPIOC)
+#define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
+
+// I2C busses
+#define MICROPY_HW_I2C2_SCL (pin_B6)
+#define MICROPY_HW_I2C2_SDA (pin_B7)
+
+// USRSW is pulled low. Pressing the button makes the input go high.
+#define MICROPY_HW_USRSW_PIN        (pin_C7)
+#define MICROPY_HW_USRSW_PULL       (GPIO_PULLUP)
+#define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_FALLING)
+#define MICROPY_HW_USRSW_PRESSED    (0)
+
+// LEDs
+#define MICROPY_HW_LED1             (pin_A1)   // Red LED
+#define MICROPY_HW_LED2             (pin_A2)   // Green LED
+#define MICROPY_HW_LED3             (pin_A13)  // D7
+#define MICROPY_HW_LED4             (pin_A3)   // Blue LED
+#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
+#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRH = pin->pin_mask)
+#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRL = pin->pin_mask)
+
+// USB VBUS detect pin
+// #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)

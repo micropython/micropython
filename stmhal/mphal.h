@@ -1,5 +1,5 @@
 // We use the ST Cube HAL library for most hardware peripherals
-#include <stm32f4xx_hal.h>
+#include HAL_H
 
 // Basic GPIO functions
 #define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)

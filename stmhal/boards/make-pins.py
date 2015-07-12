@@ -42,6 +42,7 @@ def parse_port_pin(name_str):
 
 def split_name_num(name_num):
     num = None
+    name = None
     for num_idx in range(len(name_num) - 1, -1, -1):
         if not name_num[num_idx].isdigit():
             name = name_num[0:num_idx + 1]

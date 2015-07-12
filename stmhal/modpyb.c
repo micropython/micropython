@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "stm32f4xx_hal.h"
+#include HAL_H
 
 #include "py/mpstate.h"
 #include "py/nlr.h"
