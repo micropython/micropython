@@ -47,13 +47,9 @@ typedef struct _mp_state_mem_t {
     size_t peak_bytes_allocated;
     #endif
 
-    byte *gc_alloc_table_start;
-    mp_uint_t gc_alloc_table_byte_len;
     #if MICROPY_ENABLE_FINALISER
     byte *gc_finaliser_table_start;
     #endif
-    mp_uint_t *gc_pool_start;
-    mp_uint_t *gc_pool_end;
 
     int gc_stack_overflow;
     mp_uint_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
@@ -65,7 +61,6 @@ typedef struct _mp_state_mem_t {
     // you can still allocate/free memory and also explicitly call gc_collect.
     uint16_t gc_auto_collect_enabled;
 
-    mp_uint_t gc_last_free_atb_index;
 
     #if MICROPY_PY_GC_COLLECT_RETVAL
     mp_uint_t gc_collected;
