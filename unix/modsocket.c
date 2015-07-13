@@ -74,6 +74,10 @@ STATIC const mp_obj_type_t usocket_type;
     { if (err_flag == -1) \
         { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_val))); } }
 
+static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen_t len) {
+    return mp_obj_new_bytes((const byte *)addr, len);
+}
+
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
     o->base.type = &usocket_type;
@@ -185,6 +189,33 @@ STATIC mp_obj_t socket_recv(mp_uint_t n_args, const mp_obj_t *args) {
     return ret;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
+
+STATIC mp_obj_t socket_recvfrom(mp_uint_t n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = args[0];
+    int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    int flags = 0;
+
+    if (n_args > 2) {
+        flags = MP_OBJ_SMALL_INT_VALUE(args[2]);
+    }
+
+    struct sockaddr_storage addr;
+    socklen_t addr_len = sizeof(addr);
+
+    byte *buf = m_new(byte, sz);
+    int out_sz = recvfrom(self->fd, buf, sz, flags, (struct sockaddr*)&addr, &addr_len);
+    RAISE_ERRNO(out_sz, errno);
+
+    mp_obj_t buf_o = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
+    m_del(char, buf, sz);
+
+    mp_obj_tuple_t *t = mp_obj_new_tuple(2, NULL);
+    t->items[0] = buf_o;
+    t->items[1] = mp_obj_from_sockaddr((struct sockaddr*)&addr, addr_len);
+
+    return t;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recvfrom_obj, 2, 3, socket_recvfrom);
 
 // Note: besides flag param, this differs from write() in that
 // this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
@@ -320,6 +351,7 @@ STATIC const mp_map_elem_t usocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&socket_listen_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_accept), (mp_obj_t)&socket_accept_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&socket_recvfrom_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&socket_sendto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
