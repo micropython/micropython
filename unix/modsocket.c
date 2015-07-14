@@ -383,17 +383,6 @@ STATIC mp_obj_t mod_socket_htons(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_htons_obj, mod_socket_htons);
 
-STATIC mp_obj_t mod_socket_inet_aton(mp_obj_t arg) {
-    assert(MP_OBJ_IS_TYPE(arg, &mp_type_str));
-    const char *s = mp_obj_str_get_str(arg);
-    struct in_addr addr;
-    if (!inet_aton(s, &addr)) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
-    }
-
-    return mp_obj_new_int(addr.s_addr);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_inet_aton_obj, mod_socket_inet_aton);
 
 STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     assert(MP_OBJ_IS_TYPE(arg, &mp_type_str));
@@ -408,6 +397,28 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_gethostbyname_obj, mod_socket_gethostbyname);
 #endif // MICROPY_SOCKET_EXTRA
+
+#define BINADDR_MAX_LEN sizeof(struct in6_addr)
+STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {
+    int family = mp_obj_get_int(family_in);
+    byte binaddr[BINADDR_MAX_LEN];
+    int r = inet_pton(family, mp_obj_str_get_str(addr_in), binaddr);
+    RAISE_ERRNO(r, errno);
+    if (r == 0) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
+    }
+    int binaddr_len = 0;
+    switch (family) {
+        case AF_INET:
+            binaddr_len = sizeof(struct in_addr);
+            break;
+        case AF_INET6:
+            binaddr_len = sizeof(struct in6_addr);
+            break;
+    }
+    return mp_obj_new_bytes(binaddr, binaddr_len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_socket_inet_pton_obj, mod_socket_inet_pton);
 
 STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: Implement all args
@@ -487,10 +498,10 @@ STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&usocket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&mod_socket_getaddrinfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_inet_pton), (mp_obj_t)&mod_socket_inet_pton_obj },
 #if MICROPY_SOCKET_EXTRA
     { MP_OBJ_NEW_QSTR(MP_QSTR_sockaddr_in), (mp_obj_t)&sockaddr_in_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_htons), (mp_obj_t)&mod_socket_htons_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_inet_aton), (mp_obj_t)&mod_socket_inet_aton_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gethostbyname), (mp_obj_t)&mod_socket_gethostbyname_obj },
 #endif
 
