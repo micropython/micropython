@@ -2,7 +2,7 @@
 
 tests = [
     False, True,
-    0, 1, -1, 10,
+    0, 1, -1, 10
 ]
 for t in tests:
     print(round(t))
