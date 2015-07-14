@@ -48,7 +48,7 @@ void gc_collect_end(void);
 void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser);
 void gc_free(void *ptr);
 mp_uint_t gc_nbytes(const void *ptr);
-void *gc_realloc(void *ptr, mp_uint_t n_bytes);
+void *gc_realloc(void *ptr, mp_uint_t n_bytes, bool allow_move);
 
 typedef struct _gc_info_t {
     mp_uint_t total;

@@ -522,7 +522,7 @@ void *gc_realloc(void *ptr, mp_uint_t n_bytes) {
 
 #else // Alternative gc_realloc impl
 
-void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
+void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         return NULL;
     }
@@ -622,6 +622,11 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes) {
         #endif
 
         return ptr_in;
+    }
+
+    if (!allow_move) {
+        // not allowed to move memory block so return failure
+        return NULL;
     }
 
     // can't resize inplace; try to find a new contiguous chain
