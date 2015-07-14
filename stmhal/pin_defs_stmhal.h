@@ -95,6 +95,7 @@ enum {
 #define GPIO_AF5_I2S3   GPIO_AF5_I2S3ext
 #define GPIO_AF6_I2S2   GPIO_AF6_I2S2ext
 #define GPIO_AF6_I2S3   GPIO_AF6_SPI3
+// Note: 'GPIO_AF7_SPI2' is not defined in the HAL; there is no AF7 for SPI2
 #define GPIO_AF7_I2S2   GPIO_AF7_SPI2
 #define GPIO_AF7_I2S3   GPIO_AF7_I2S3ext
 
