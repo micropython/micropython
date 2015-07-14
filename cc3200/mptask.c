@@ -67,6 +67,7 @@
 #include "pybtimer.h"
 #include "mpcallback.h"
 #include "cryptohash.h"
+#include "updater.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -278,6 +279,9 @@ STATIC void mptask_pre_init (void) {
 
     // this one allocates memory for the WLAN semaphore
     wlan_pre_init();
+
+    // this one allocates memory for the updater semaphore
+    updater_pre_init();
 
     // this one allocates memory for the Socket semaphore
     modusocket_pre_init();

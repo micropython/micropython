@@ -764,6 +764,8 @@ static void ftp_process_cmd (void) {
                     ftp_send_reply(150, NULL);
                 }
                 else {
+                    // to unlock the updater
+                    updater_finnish();
                     ftp_data.state = E_FTP_STE_END_TRANSFER;
                     ftp_send_reply(550, NULL);
                 }
