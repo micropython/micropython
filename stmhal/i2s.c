@@ -73,10 +73,8 @@ typedef struct _pyb_i2s_obj_t {
     DMA_Stream_TypeDef *tx_dma_stream;
     uint32_t tx_dma_channel;
     DMA_Stream_TypeDef *rx_dma_stream;
-    uint32_t rx_dma_channel;
-    // pins are Bit Clock, Word Select, TX Data, RX Data, and MCK Out
+    uint32_t rx_dma_channel;    
     const pin_obj_t *pins[5];
-    // const pin_af_obj_t *af[5];
     mp_int_t i2s_id : 8;
     bool is_enabled : 1;
     bool is_master : 1;
@@ -84,6 +82,7 @@ typedef struct _pyb_i2s_obj_t {
     bool base_is_tx : 1; // base instance SPIx is either tx or rx
 } pyb_i2s_obj_t;
 
+// pins are Bit Clock, Word Select, TX Data, RX Data, and Master Clock Out
 typedef enum { BCK, WS, TX, RX, MCK, NUM_PINS } i2s_pin_t;
 
 // Note: This is where spi.c defines SPI_HandleTypeDef SPIHandle[1,2,3]
@@ -167,37 +166,13 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
 	    i2s_obj->rx_dma_channel = DMA_CHANNEL_0;
 	}
 
-
-	// REVAMP THIS SECTION TO USE PROVIDED AF VLAUES; NO LONGER
-	// SEPARATE BETWEEN I2S2 and I2S3
-
-	// MCLK now gets set in make_new; no longer needed here.
-	// decide whether to init or not here
-
-	/*
-	// Configure MCLK output pin if selected; MCLK for I2S2 is PC6, AF5
-	i2s_obj->pins[4] = (i2s_obj->i2s.Init.MCLKOutput ==
-			    I2S_MCLKOUTPUT_ENABLE) ? &pin_C6 : MP_OBJ_NULL;
-	// Initialize GPIO pins for I2S operation
-	for (uint i = 0; i < 5; i++) {
-	    if (i2s_obj->pins[i] != MP_OBJ_NULL) {
-		GPIO_InitStructure.Pin = i2s_obj->pins[i]->pin_mask;
-		if (i2s_obj->pins[i] == &pin_B14 || i2s_obj->pins[i] == &pin_C2) {
-		    GPIO_InitStructure.Alternate = GPIO_AF6_I2S2ext;
-		} else {
-		    GPIO_InitStructure.Alternate = GPIO_AF5_SPI2;
-		}
-		HAL_GPIO_Init(i2s_obj->pins[i]->gpio, &GPIO_InitStructure);
-	    }
-	}
-	*/
 #endif
 #if MICROPY_HW_ENABLE_I2S3
     } else if (i2s_obj->i2s_id == 3) {
 	i2s_obj->i2s.Instance = SPI3;
 	__SPI3_CLK_ENABLE();
 	// configure DMA streams - see RM0090 section 10.3.3, Tables 42 & 43
-	// alternate stream configurations commented out
+	// I2S3 has alternate stream configurations, listed here in comments
 	if (i2s_obj->is_duplex) {
 	    if (i2s_obj->base_is_tx) {
 		// SPI3 instance is TX
@@ -227,25 +202,6 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
 	    //i2s_obj->rx_dma_stream = DMA1_Stream2;
 	    i2s_obj->rx_dma_channel = DMA_CHANNEL_0;
 	}
-	/*
-	// Configure MCLK output pin, if selected; MCLK for I2S3 is PC7, AF6
-	i2s_obj->pins[4] = (i2s_obj->i2s.Init.MCLKOutput ==
-			    I2S_MCLKOUTPUT_ENABLE) ? &pin_C7 : MP_OBJ_NULL;
-	// Initialize GPIO pins for I2S operation
-	for (uint i = 0; i < 5; i++) {
-	    if (i2s_obj->pins[i] != MP_OBJ_NULL) {
-		GPIO_InitStructure.Pin = i2s_obj->pins[i]->pin_mask;
-		if (i2s_obj->pins[i] == &pin_B4) {
-		    GPIO_InitStructure.Alternate = GPIO_AF7_I2S3ext;
-		} else if (i2s_obj->pins[i] == &pin_C11) {
-		    GPIO_InitStructure.Alternate = GPIO_AF5_I2S3ext;
-		} else {
-		    GPIO_InitStructure.Alternate = GPIO_AF6_SPI3;
-		HAL_GPIO_Init(i2s_obj->pins[i]->gpio, &GPIO_InitStructure);
-		}
-	    }
-	}
-	*/
 #endif
     } else {
 	// invalid i2s_id number; shouldn't get here as i2s object should not
@@ -254,10 +210,10 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
     }
 
     // New GPIO initialization section, supercedes the separate I2S2/3 sections
-    // Compiles! Try it tomorrow, try to edit out the mess above!
-
     // Seems to work! Check with logic analyzer and some more pin combinations
+    // TODO - needs better description
 
+    // If master clock is not enabled, its pin will not get initialized
     int num_pins = (i2s_obj->i2s.Init.MCLKOutput ==
 		    I2S_MCLKOUTPUT_ENABLE) ? NUM_PINS : NUM_PINS - 1;
 
@@ -271,9 +227,6 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
 	    HAL_GPIO_Init(i2s_obj->pins[i]->gpio, &GPIO_InitStructure);
 	}
     }
-
-
-
 
     // Configure and enable I2SPLL:
     // TODO: This may not be the correct method to initialize and activate
@@ -559,59 +512,24 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
 	}
     }
 
-    //DEBUG
-    /* const pin_af_obj_t *af1 = pin_find_af(pins[0], (uint8_t)AF_FN_I2S, (uint8_t)2); */
-    /* if (af1 == NULL) { */
-    /*	const pin_af_obj_t *af1 = pin_find_af(pins[0], (uint8_t)AF_FN_I2S, (uint8_t)3); */
-    /*	if (af1 == NULL) { */
-    /*	    printf("Not an I2S pin\n"); */
-    /*	} else { */
-    /*	    printf("%s\n", qstr_str(af1->name)); */
-    /*	    printf("I2S 3\n"); */
-    /*	} */
-    /* } else { */
-    /*	printf("%s\n", qstr_str(af1->name)); */
-    /*	printf("I2S 2\n"); */
-    /* } */
-
-
     // Check if pins represents a valid I2S port configuration:
-    // Each entry of pins[] array (0=CK, 1=WS, 2=TX, 3=RX) is checked to
+    // Each entry of pins[] array (0=BCK, 1=WS, 2=TX, 3=RX) is checked to
     // determine if it is valid for its designated function.
-    // Of the two entries for data pins (2-TX and 3-RX) exactly one
-    // of them be a valid base SD pin for the same I2S port as CK and WS; the
+    // Of the two entries for data pins (2-TX and 3-RX) exactly one of them
+    // must be a valid base SD pin for the same I2S port as BCK and WS; the
     // other can be either a valid SDext pin to select duplex mode, or empty
     // to select simplex mode.
-    // Is there a more elegant way to do this?
-    // --------> YES!!! <-------------------
-    // We now query each  pin to see if there is an AF for I2S associated with it.
-    // Error codes replaced with specific error messages.
+
+    const pin_af_obj_t *pin_af[5];
     mp_uint_t i2s_id = 0;
-    // mp_uint_t err_code = 0;
     bool is_duplex = false;
     bool base_is_tx = false;
-    const pin_af_obj_t *pin_af[5];
-    // const pin_obj_t *pin_err[1];
-    //pin_err[0] = NULL;
     qstr pin_err = 0;
 
-
-    // redesign pin validation code to use pin_find_af (it works now!)
-    // create a typedef enum to use as indices for pins[] array
-    // test first pin to see if it is I2S, which instance and if that instance is supported
-
-    /* pin_af[BCK] = pin_find_af(pins[BCK], AF_FN_I2S, 2); */
-    /* if ((pin_af[BCK] != NULL) && MICROPY_HW_ENABLE_I2S2) { */
-    /*	i2s_id = 2; */
-    /* } else if (MICROPY_HW_ENABLE_I2S3) { */
-    /*	pin_af[BCK] = pin_find_af(pins[BCK], AF_FN_I2S, 3); */
-    /*	if (pin_af[BCK] != NULL) { */
-    /*	    i2s_id = 3; */
-    /*	} */
-    /* } */
-
-    // Check first entry in pins[] to determine which I2S port it belongs to
-    // The af will be non-NULL for at most one of these tests:
+    // Check pins[BCK] (first entry in array) to determine which I2S instance
+    // it belongs to. The pin will have an I2S af for at most one of the
+    // available ports. Each I2S instance has one pin that can be used for MCK,
+    // this gets added to the array here as the I2S instance is selected.
 #if MICROPY_HW_ENABLE_I2S2
     pin_af[BCK] = pin_find_af(pins[BCK], AF_FN_I2S, 2);
     if (pin_af[BCK]->type == AF_PIN_TYPE_I2S_CK) {
@@ -636,6 +554,7 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
 	}
     }
 
+#if (0)
     for (int i = 0; i < NUM_PINS; i++) {
 	if (pins[i]) {
 	    printf("pin = %s, af = %s\n", qstr_str(pins[i]->name), qstr_str(pin_af[i]->name));
@@ -643,10 +562,10 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
 	    printf("pin = %s, af = %s\n", "no pin", "no af");
 	}
     }
+#endif
 
     if (pin_af[WS]->type == AF_PIN_TYPE_I2S_WS) {
 	// Clock and Word Select pins are valid
-	// printf("AF Test works!\n");
 	if (pin_af[TX]->type == AF_PIN_TYPE_I2S_SD) {
 	    base_is_tx = true;
 	    if (pin_af[RX]->type == AF_PIN_TYPE_I2S_EXTSD) {
@@ -654,9 +573,7 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
 	    } else if (pins[RX] == MP_OBJ_NULL) {
 		is_duplex = false;
 	    } else {
-		//pin_err[0] = pins[RX];
 		pin_err = pins[RX]->name;
-		// err_code = 2; // RX pin not valid
 	    }
 	} else if (pin_af[RX]->type == AF_PIN_TYPE_I2S_SD) {
 	    base_is_tx = false;
@@ -665,104 +582,29 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
 	    } else if (pins[TX] == MP_OBJ_NULL) {
 		is_duplex = false;
 	    } else {
-		//pin_err[0] = pins[TX];
 		pin_err = pins[TX]->name;
-		// err_code = 3; // TX pin not valid
 	    }
 	} else {
 	    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
 						    "no valid SD pin for I2S%d", i2s_id));
-	    // err_code = 4; // No valid SD pin
 	}
     } else {
-	//pin_err[0] = pins[WS];
 	pin_err = pins[WS]->name;
-	// err_code = 1;
     }
 
     if (pin_err) {
 	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
 						"%q not valid for I2S%d",
-						//pin_err[0]->name, i2s_id));
 						pin_err, i2s_id));
     }
 
-
-/*     if (0) { */
-/* #if MICROPY_HW_ENABLE_I2S2 */
-/*     } else if ((pins[0] == &pin_B10 || pins[0] == &pin_B13) && */
-/*	       (pins[1] == &pin_B12 || pins[1] == &pin_B9)) { */
-/*	// pins[0:1] are valid CLK and WS pins of I2S2, set i2s_id */
-/*	i2s_id = 2; */
-/*	if (pins[2] == &pin_B15 || pins[2] == &pin_C3) { */
-/*	    // pins[2] is valid SD pin; config as TX */
-/*	    base_is_tx = true; */
-/*	    if (pins[3] == &pin_B14 || pins[3] == &pin_C2) { */
-/*		// pins[3] is valid SDext pin; duplex mode */
-/*		is_duplex = true; */
-/*	    } else if (pins[3] == MP_OBJ_NULL) { */
-/*		is_duplex = false; */
-/*	    } else { */
-/*		err_code = 2; // pins[3] is not valid */
-/*	    } */
-/*	} else if (pins[3] == &pin_B15 || pins[3] == &pin_C3) { */
-/*	    // pins[3] is valid SD pin; config as RX */
-/*	    base_is_tx = false; */
-/*	    if (pins[2] == &pin_B14 || pins[2] == &pin_C2) { */
-/*		// pins[2] is valid SDext pin; duplex mode */
-/*		is_duplex = true; */
-/*	    } else if (pins[2] == MP_OBJ_NULL) { */
-/*		is_duplex = false; */
-/*	    } else { */
-/*		err_code = 3; // pins[2] is not valid */
-/*	    } */
-/*	} else { */
-/*	    err_code = 4; // No valid SD pin for I2S2 */
-/*	} */
-/* #endif */
-/* #if MICROPY_HW_ENABLE_I2S3 */
-/*     } else if ((pins[0] == &pin_B3 || pins[0] == &pin_C10) && */
-/*	       (pins[1] == &pin_A4 || pins[1] == &pin_A15)) { */
-/*	// pins[0:1] are valid CLK and WS pins of I2S3, set i2s_id */
-/*	i2s_id = 3; */
-/*	if (pins[2] == &pin_B5 || pins[2] == &pin_C12) { */
-/*	    // pins[2] is valid SD pin; config as TX */
-/*	    base_is_tx = true; */
-/*	    if (pins[3] == &pin_B4 || pins[3] == &pin_C11) { */
-/*		is_duplex = true; */
-/*	    } else if (pins[3] == MP_OBJ_NULL) { */
-/*		is_duplex = false; */
-/*	    } else { */
-/*		err_code = 5; // pins[3] is not valid */
-/*	    } */
-/*	} else if (pins[3] == &pin_B5 || pins[3] == &pin_C12) { */
-/*	    // pins[3] is valid SD pin; config as RX */
-/*	    base_is_tx = false; */
-/*	    if (pins[2] == &pin_B4 || pins[2] == &pin_C11) { */
-/*		is_duplex = true; */
-/*	    } else if (pins[2] == MP_OBJ_NULL) { */
-/*		is_duplex = false; */
-/*	    } else { */
-/*		err_code = 6; // pins[2] is not valid */
-/*	    } */
-/*	} else { */
-/*	    err_code = 7; // No valid SD pin for I2S3 */
-/*	} */
-/* #endif */
-/*     } else { */
-/*	err_code = 1; // pins[0:1] not valid clock and WS for available I2S ports */
-/*     } */
-    /* if (err_code) { */
-    /*	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, */
-    /*						"Invalid pins for I2S, err: %d", err_code)); */
-    /* } */
 
 #if (MICROPY_HW_ENABLE_I2S3) && !(MICROPY_HW_ENABLE_I2S2)
 #define I2S_OBJECT_OFFSET (3)
 #else
 #define I2S_OBJECT_OFFSET (2)
 #endif
-    // get I2S object
+    // get I2S object and set initialization flags
     pyb_i2s_obj_t *i2s_obj;
     if (MP_STATE_PORT(pyb_i2s_obj_all)[i2s_id - I2S_OBJECT_OFFSET] == NULL) {
 	// create new I2S object
@@ -779,23 +621,7 @@ STATIC mp_obj_t pyb_i2s_make_new(mp_obj_t type_in, mp_uint_t n_args,
     i2s_obj->base_is_tx = base_is_tx;
     for (int i = 0; i < NUM_PINS; i++) {
 	i2s_obj->pins[i] = pins[i];
-	// i2s_obj->af[i] = pin_af[i];
     }
-
-    // DEBUG:
-    // const pin_af_obj_t *af = pin_find_af(pins[0], AF_FN_SPI, i2s_obj->i2s_id); // works
-    // const pin_af_obj_t *af = pin_find_af_type(pins[0], AF_PIN_TYPE_I2S_CK); // works after renumbering
-    // const pin_af_obj_t *af = pin_find_af_type(pins[0], AF_PIN_TYPE_SPI_SCK); // also works!
-
-
-    /* const pin_af_obj_t *af = pin_find_af_type(pins[1], AF_PIN_TYPE_I2S_WS); */
-    /* if (af != NULL) { */
-    /*	printf("AF name = %s\n", qstr_str(af->name)); */
-    /*	printf("AF type = %d\n", af->type); */
-    /*	printf("clock pin found\n"); */
-    /* } else { */
-    /*	printf("no clock pin\n"); */
-    /* } */
 
     if (n_args > 1 || n_kw > 0) {
 	// start the peripheral
@@ -895,7 +721,7 @@ STATIC mp_obj_t pyb_i2s_send(mp_uint_t n_args, const mp_obj_t *pos_args,
 	self->i2s.hdmarx = NULL;
 	status = HAL_I2S_Transmit_DMA(&self->i2s, bufinfo.buf, bufinfo.len / 2);
 	if (status == HAL_OK) {
-	    led_toggle(1);
+	    //led_toggle(1);
 	    status = i2s_wait_dma_finished(&self->i2s, args[1].u_int);
 	}
 	dma_deinit(&tx_dma);
