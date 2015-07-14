@@ -17,7 +17,7 @@
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
 #define MICROPY_HW_ENABLE_I2S2      (1)
-#define MICROPY_HW_ENABLE_I2S3      (0)
+#define MICROPY_HW_ENABLE_I2S3      (1)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8)
