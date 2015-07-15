@@ -21,10 +21,8 @@ include ../py/py.mk
 CMSIS_DIR=cmsis
 ifeq ($(MCU_STM32F2),1)
 HAL_DIR=hal/f2
-CMSIS_DEVINC_DIR=$(CMSIS_DIR)/devinc/f2
 else
 HAL_DIR=hal/f4
-CMSIS_DEVINC_DIR=$(CMSIS_DIR)/devinc/f4
 endif
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
@@ -42,7 +40,7 @@ INC =  -I.
 INC += -I..
 INC += -I$(BUILD)
 INC += -I$(CMSIS_DIR)/inc
-INC += -I$(CMSIS_DEVINC_DIR)
+INC += -I$(CMSIS_DIR)/devinc
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
