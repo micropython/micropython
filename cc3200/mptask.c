@@ -339,13 +339,13 @@ STATIC void mptask_init_sflash_filesystem (void) {
 
     // create /flash/sys, /flash/lib and /flash/cert if they don't exist
     if (FR_OK != f_chdir ("/flash/sys")) {
-        res = f_mkdir("/flash/sys");
+        f_mkdir("/flash/sys");
     }
     if (FR_OK != f_chdir ("/flash/lib")) {
-        res = f_mkdir("/flash/lib");
+        f_mkdir("/flash/lib");
     }
     if (FR_OK != f_chdir ("/flash/cert")) {
-        res = f_mkdir("/flash/cert");
+        f_mkdir("/flash/cert");
     }
 
     f_chdir ("/flash");
