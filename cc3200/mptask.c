@@ -337,17 +337,20 @@ STATIC void mptask_init_sflash_filesystem (void) {
     // It is set to the internal flash filesystem by default.
     f_chdrive("/flash");
 
-    // create /flash/sys and /flash/lib if they don't exist
+    // create /flash/sys, /flash/lib and /flash/cert if they don't exist
     if (FR_OK != f_chdir ("/flash/sys")) {
         res = f_mkdir("/flash/sys");
     }
     if (FR_OK != f_chdir ("/flash/lib")) {
         res = f_mkdir("/flash/lib");
     }
+    if (FR_OK != f_chdir ("/flash/cert")) {
+        res = f_mkdir("/flash/cert");
+    }
 
     f_chdir ("/flash");
 
-    // Make sure we have a /flash/boot.py.  Create it if needed.
+    // make sure we have a /flash/boot.py.  Create it if needed.
     res = f_stat("/flash/boot.py", &fno);
     if (res == FR_OK) {
         if (fno.fattrib & AM_DIR) {
