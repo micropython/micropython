@@ -1357,7 +1357,7 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
         }
     } else {
         *_errno = EINVAL;
-        ret = -1;
+        ret = MP_STREAM_ERROR;
     }
     return ret;
 }

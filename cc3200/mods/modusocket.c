@@ -418,12 +418,24 @@ MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
 STATIC mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     mod_network_socket_obj_t *self = self_in;
-    return wlan_socket_recv(self, buf, size, errcode);
+    mp_int_t ret = wlan_socket_recv(self, buf, size, errcode);
+    if (ret < 0) {
+        ret = MP_STREAM_ERROR;
+        // needed to convert simplelink's negative error codes to POSIX
+        (*errcode) *= -1;
+    }
+    return ret;
 }
 
 STATIC mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mod_network_socket_obj_t *self = self_in;
-    return wlan_socket_send(self, buf, size, errcode);
+    mp_int_t ret = wlan_socket_send(self, buf, size, errcode);
+    if (ret < 0) {
+        ret = MP_STREAM_ERROR;
+        // needed to convert simplelink's negative error codes to POSIX
+        (*errcode) *= -1;
+    }
+    return ret;
 }
 
 STATIC mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
