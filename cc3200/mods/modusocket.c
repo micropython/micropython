@@ -399,6 +399,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_accept),          (mp_obj_t)&socket_accept_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),         (mp_obj_t)&socket_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send),            (mp_obj_t)&socket_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sendall),         (mp_obj_t)&socket_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv),            (mp_obj_t)&socket_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendto),          (mp_obj_t)&socket_sendto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom),        (mp_obj_t)&socket_recvfrom_obj },
