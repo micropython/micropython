@@ -548,8 +548,8 @@ typedef struct
 
 #define __DIV_SAMPLING8(_PCLK_, _BAUD_)             (((_PCLK_)*25)/(2*(_BAUD_)))
 #define __DIVMANT_SAMPLING8(_PCLK_, _BAUD_)         (__DIV_SAMPLING8((_PCLK_), (_BAUD_))/100)
-#define __DIVFRAQ_SAMPLING8(_PCLK_, _BAUD_)         (((__DIV_SAMPLING8((_PCLK_), (_BAUD_)) - (__DIVMANT_SAMPLING8((_PCLK_), (_BAUD_)) * 100)) * 16 + 50) / 100)
-#define __UART_BRR_SAMPLING8(_PCLK_, _BAUD_)        ((__DIVMANT_SAMPLING8((_PCLK_), (_BAUD_)) << 4)|(__DIVFRAQ_SAMPLING8((_PCLK_), (_BAUD_)) & 0x0F))
+#define __DIVFRAQ_SAMPLING8(_PCLK_, _BAUD_)         (((__DIV_SAMPLING8((_PCLK_), (_BAUD_)) - (__DIVMANT_SAMPLING8((_PCLK_), (_BAUD_)) * 100)) * 8 + 50) / 100)
+#define __UART_BRR_SAMPLING8(_PCLK_, _BAUD_)        ((__DIVMANT_SAMPLING8((_PCLK_), (_BAUD_)) << 4)|(__DIVFRAQ_SAMPLING8((_PCLK_), (_BAUD_)) & 0x07))
 
 #define IS_UART_BAUDRATE(BAUDRATE) ((BAUDRATE) < 10500001)
 #define IS_UART_ADDRESS(ADDRESS) ((ADDRESS) <= 0xF)                             
