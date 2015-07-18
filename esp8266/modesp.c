@@ -157,7 +157,7 @@ STATIC void esp_socket_recv_callback(void *arg, char *pdata, unsigned short len)
                 memcpy(s->recvbuf, pdata, len);
             }
         } else {
-            s->recvbuf = gc_realloc(s->recvbuf, s->recvbuf_len + len);
+            s->recvbuf = gc_realloc(s->recvbuf, s->recvbuf_len + len, true);
             if (s->recvbuf != NULL) {
                 memcpy(&s->recvbuf[s->recvbuf_len], pdata, len);
                 s->recvbuf_len += len;
@@ -330,7 +330,7 @@ STATIC mp_obj_t esp_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         mp_obj_t trt = mp_obj_new_bytes(s->recvbuf, mxl);
         memmove(s->recvbuf, &s->recvbuf[mxl], s->recvbuf_len - mxl);
         s->recvbuf_len -= mxl;
-        s->recvbuf = gc_realloc(s->recvbuf, s->recvbuf_len);
+        s->recvbuf = gc_realloc(s->recvbuf, s->recvbuf_len, true);
         return trt;
     }
 }
