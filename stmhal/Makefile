@@ -19,7 +19,11 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 include ../py/py.mk
 
 CMSIS_DIR=cmsis
-HAL_DIR=hal
+ifeq ($(MCU_STM32F2),1)
+HAL_DIR=hal/f2
+else
+HAL_DIR=hal/f4
+endif
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 FATFS_DIR=lib/fatfs
