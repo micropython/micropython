@@ -167,10 +167,134 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
+int count_str(const char *s, const char *p) {
+    int c = 0, l = strlen(p);
+    while (*s != '\0') {
+        if (strncmp(s++, p, l)) continue;
+        c++;
+    }
+    return c;
+}
+
+char *replace_str(const char *str, const char *old, const char *new) {
+    if (str == NULL || old == NULL || new == NULL || !strlen(old))
+        return NULL;
+    size_t cache_sz_inc = 16;
+    const size_t cache_sz_inc_factor = 3;
+    const size_t cache_sz_inc_max = 1048576;
+
+    char *pret, *ret = NULL;
+    const char *pstr2, *pstr = str;
+    size_t i, count = 0;
+    ptrdiff_t *pos_cache = NULL;
+    size_t cache_sz = 0;
+    size_t cpylen, orglen, retlen, newlen, oldlen = strlen(old);
+
+    while ((pstr2 = strstr(pstr, old)) != NULL) {
+        count++;
+        if (cache_sz < count) {
+            cache_sz += cache_sz_inc;
+            pos_cache = realloc(pos_cache, sizeof(*pos_cache) * cache_sz);
+            if (pos_cache == NULL) {
+                goto end_repl_str;
+            }
+            cache_sz_inc *= cache_sz_inc_factor;
+            if (cache_sz_inc > cache_sz_inc_max) {
+                cache_sz_inc = cache_sz_inc_max;
+            }
+        }
+        pos_cache[count - 1] = pstr2 - str;
+        pstr = pstr2 + oldlen;
+    }
+
+    orglen = pstr - str + strlen(pstr);
+    if (count > 0) {
+        newlen = strlen(new);
+        retlen = orglen + (newlen - oldlen) * count;
+    } else	
+        retlen = orglen;
+
+    ret = malloc(retlen + 1);
+    if (ret == NULL) {
+        goto end_repl_str;
+    }
+
+    if (count == 0) {
+        memcpy(ret, str, strlen(str));
+    } else {
+        pret = ret;
+        memcpy(pret, str, pos_cache[0]);
+        pret += pos_cache[0];
+        for (i = 0; i < count; i++) {
+            memcpy(pret, new, newlen);
+            pret += newlen;
+            pstr = str + pos_cache[i] + oldlen;
+            cpylen = (i == count - 1 ? orglen : pos_cache[i + 1]) - pos_cache[i] - oldlen;
+            memcpy(pret, pstr, cpylen);
+            pret += cpylen;
+        }
+        ret[retlen] = '\0';
+    }
+
+end_repl_str:
+    free(pos_cache);
+    return ret;
+}
+
+STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    mp_obj_re_t *self = args[0];
+    const mp_obj_t args2[] = { self, args[2] };
+    mp_obj_match_t *match = re_exec(is_anchored, 2, args2);
+    mp_obj_t ret = args[2];
+    if (!MP_OBJ_IS_TYPE(match, &mp_type_NoneType)) {
+        mp_obj_t repl = args[1];
+        const char *str_repl = mp_obj_str_get_str(repl);
+        mp_uint_t str_repl_len = strlen(str_repl);
+        char *str_repl_cpy = m_new(char, str_repl_len + 1);
+        memset(str_repl_cpy, 0, str_repl_len + 1);
+        memcpy(str_repl_cpy, str_repl, str_repl_len);
+        mp_uint_t str_repl_cpy_len = strlen(str_repl_cpy);
+        for (mp_uint_t no = 1; no < match->num_matches; no++) {
+            const char subs[] = { 0x5C, (0x30 + no), 0x00 };
+            if(count_str(str_repl_cpy, subs) > 0) {
+                const char *start_match = match->caps[no * 2];
+                if (start_match != NULL) {
+                    mp_uint_t start_match_len = match->caps[no * 2 + 1] - start_match;
+                    char *str_match_element = m_new(char, start_match_len + 1);
+                    memset(str_match_element, 0, start_match_len + 1);
+                    memcpy(str_match_element, start_match, start_match_len);
+                    char *str_repl_new = NULL; 
+                    if ((str_repl_new = replace_str(str_repl_cpy, subs, str_match_element)) != NULL) {
+                        mp_uint_t str_repl_new_len = strlen(str_repl_new);
+                        str_repl_cpy = m_renew(char, str_repl_cpy, str_repl_cpy_len, str_repl_new_len);
+                        memset(str_repl_cpy, 0, str_repl_new_len);
+                        memcpy(str_repl_cpy, str_repl_new, str_repl_new_len);
+                        str_repl_cpy_len = strlen(str_repl_new);
+                        free(str_repl_new);
+                    } 
+                    m_del(char, str_match_element, strlen(str_match_element));
+                }
+            }
+        }
+        if(str_repl_cpy != NULL) {
+            ret = mp_obj_new_str(str_repl_cpy, str_repl_cpy_len, false);
+            m_del(char, str_repl_cpy, str_repl_cpy_len);
+        }
+        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+    }
+    return ret;
+}
+
+STATIC mp_obj_t re_sub(uint n_args, const mp_obj_t *args) {
+    return re_exec_sub(false, n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 4, re_sub);
+
 STATIC const mp_map_elem_t re_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t) &re_match_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t) &re_search_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t) &re_split_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sub), (mp_obj_t)&re_sub_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -221,11 +345,26 @@ STATIC mp_obj_t mod_re_search(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 
+STATIC mp_obj_t mod_re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    (void)n_args;
+    mp_obj_re_t *self = mod_re_compile(1, args);
+
+    const mp_obj_t args3[] = { self, args[1], args[2], (n_args>3 ? args[3] : 0) };
+    mp_obj_t retval = re_exec_sub(is_anchored, n_args, args3);
+    return retval;
+}
+
+STATIC mp_obj_t mod_re_sub(uint n_args, const mp_obj_t *args) {
+    return mod_re_exec_sub(false, n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
+
 STATIC const mp_map_elem_t mp_module_re_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ure) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_compile), (mp_obj_t)&mod_re_compile_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t)&mod_re_match_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t)&mod_re_search_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sub), (mp_obj_t)&mod_re_sub_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEBUG), MP_OBJ_NEW_SMALL_INT(FLAG_DEBUG) },
 };
 

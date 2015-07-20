@@ -570,6 +570,7 @@ Q(compile)
 Q(match)
 Q(search)
 Q(group)
+Q(sub)
 Q(DEBUG)
 #endif
 
