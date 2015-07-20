@@ -37,12 +37,12 @@ codepoint2name[ord('!')] = 'bang'
 codepoint2name[ord('\\')] = 'backslash'
 
 # this must match the equivalent function in qstr.c
-def compute_hash(qstr):
+def compute_hash(qstr, bytes_hash):
     hash = 5381
     for char in qstr:
         hash = (hash * 33) ^ ord(char)
     # Make sure that valid hash is never zero, zero means "hash not computed"
-    return (hash & 0xffff) or 1
+    return (hash & ((1 << (8 * bytes_hash)) - 1)) or 1
 
 def do_work(infiles):
     # read the qstrs in from the input files
@@ -81,6 +81,7 @@ def do_work(infiles):
 
     # get config variables
     cfg_bytes_len = int(qcfgs['BYTES_IN_LEN'])
+    cfg_bytes_hash = int(qcfgs['BYTES_IN_HASH'])
     cfg_max_len = 1 << (8 * cfg_bytes_len)
 
     # print out the starte of the generated C header file
@@ -88,11 +89,11 @@ def do_work(infiles):
     print('')
 
     # add NULL qstr with no hash or data
-    print('QDEF(MP_QSTR_NULL, (const byte*)"\\x00\\x00%s" "")' % ('\\x00' * cfg_bytes_len))
+    print('QDEF(MP_QSTR_NULL, (const byte*)"%s%s" "")' % ('\\x00' * cfg_bytes_hash, '\\x00' * cfg_bytes_len))
 
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
-        qhash = compute_hash(qstr)
+        qhash = compute_hash(qstr, cfg_bytes_hash)
         # Calculate len of str, taking escapes into account
         qlen = len(qstr.replace("\\\\", "-").replace("\\", ""))
         qdata = qstr.replace('"', '\\"')
@@ -100,7 +101,8 @@ def do_work(infiles):
             print('qstr is too long:', qstr)
             assert False
         qlen_str = ('\\x%02x' * cfg_bytes_len) % tuple(((qlen >> (8 * i)) & 0xff) for i in range(cfg_bytes_len))
-        print('QDEF(MP_QSTR_%s, (const byte*)"\\x%02x\\x%02x%s" "%s")' % (ident, qhash & 0xff, (qhash >> 8) & 0xff, qlen_str, qdata))
+        qhash_str = ('\\x%02x' * cfg_bytes_hash) % tuple(((qhash >> (8 * i)) & 0xff) for i in range(cfg_bytes_hash))
+        print('QDEF(MP_QSTR_%s, (const byte*)"%s%s" "%s")' % (ident, qhash_str, qlen_str, qdata))
 
 if __name__ == "__main__":
     do_work(sys.argv[1:])

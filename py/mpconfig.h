@@ -152,6 +152,11 @@
 #define MICROPY_QSTR_BYTES_IN_LEN (1)
 #endif
 
+// Number of bytes used to store qstr hash
+#ifndef MICROPY_QSTR_BYTES_IN_HASH
+#define MICROPY_QSTR_BYTES_IN_HASH (2)
+#endif
+
 // Avoid using C stack when making Python function calls. C stack still
 // may be used if there's no free heap.
 #ifndef MICROPY_STACKLESS
