@@ -374,7 +374,8 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 mp_uint_t src_len;
                 void *src_items;
                 size_t item_sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
-                if (MP_OBJ_IS_TYPE(value, &mp_type_array) || MP_OBJ_IS_TYPE(value, &mp_type_bytearray)) {
+                if (MP_OBJ_IS_OBJ(value) && ((mp_obj_base_t*)value)->type->subscr == array_subscr) {
+                    // value is array, bytearray or memoryview
                     mp_obj_array_t *src_slice = value;
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
@@ -382,6 +383,11 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
+                    #if MICROPY_PY_BUILTINS_MEMORYVIEW
+                    if (MP_OBJ_IS_TYPE(value, &mp_type_memoryview)) {
+                        src_items = (uint8_t*)src_items + (src_slice->free * item_sz);
+                    }
+                    #endif
                 } else if (MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
                     if (item_sz != 1) {
                         goto compat_error;
@@ -390,13 +396,6 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
-                } else if (MP_OBJ_IS_TYPE(value, &mp_type_memoryview)) {
-                    mp_obj_array_t *src_slice = value;
-                    if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
-                        goto compat_error;
-                    }
-                    src_len = src_slice->len;
-                    src_items = (uint8_t*)src_slice->items + (src_slice->free * item_sz);
                 } else {
                     mp_not_implemented("array/bytes required on right side");
                 }
@@ -404,9 +403,11 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 // TODO: check src/dst compat
                 mp_int_t len_adj = src_len - (slice.stop - slice.start);
                 if (len_adj > 0) {
+                    #if MICROPY_PY_BUILTINS_MEMORYVIEW
                     if (o->base.type == &mp_type_memoryview) {
                         goto compat_error;
                     }
+                    #endif
                     if (len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
@@ -415,13 +416,16 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_seq_replace_slice_grow_inplace(o->items, o->len,
                         slice.start, slice.stop, src_items, src_len, len_adj, item_sz);
                 } else {
+                    #if MICROPY_PY_BUILTINS_MEMORYVIEW
                     if (o->base.type == &mp_type_memoryview) {
                         if (len_adj != 0) {
                             goto compat_error;
                         }
                         mp_seq_replace_slice_no_grow((uint8_t*)o->items + (o->free * item_sz), o->len,
                             slice.start, slice.stop, src_items, src_len, item_sz);
-                    } else {
+                    } else
+                    #endif
+                    {
                         mp_seq_replace_slice_no_grow(o->items, o->len,
                             slice.start, slice.stop, src_items, src_len, item_sz);
                         // Clear "freed" elements at the end of list
