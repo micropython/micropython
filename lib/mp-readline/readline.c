@@ -160,7 +160,15 @@ int readline_process_char(int c) {
         } else if (c == CHAR_CTRL_K) {
             // kill from cursor to end-of-line, inclusive
             if (rl.cursor_pos >= rl.orig_line_len) {
-                vstr_cut_out_bytes(rl.line, rl.cursor_pos, last_line_len-rl.cursor_pos);
+                vstr_cut_tail_bytes(rl.line, last_line_len-rl.cursor_pos);
+                // set redraw parameters
+                redraw_from_cursor = true;
+            }
+        } else if (c == CHAR_CTRL_U) {
+            // kill from beginning-of-line up to cursor
+            if (rl.cursor_pos >= rl.orig_line_len) {
+                vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos-rl.orig_line_len);
+		redraw_step_back = rl.cursor_pos - rl.orig_line_len;
                 // set redraw parameters
                 redraw_from_cursor = true;
             }
