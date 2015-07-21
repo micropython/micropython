@@ -9,10 +9,17 @@ s0 = re.sub(
     'static PyObject*\npy_\\1(void)\n{',
     'def myfunc():'
 )
-print(s0, len(s0))
+print(s0, len(s0)) 
+
+s0_0 = re.sub(
+    '(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)',
+    '\\0\\g<0>\n\\g<21>\\g<20>\\g<19>\\g<18>\\g<17>\\g<16>\\g<15>\\g<14>\\g<13>\\g<12>\\g<11>\\g<10>\\9\\8\\7\\6\\5\\4\\3\\2\\1',
+    'utsrqponmlkjihgfedcba'
+)
+print(repr(s0_0), len(s0_0))
 
 regex = r'(.*)(blu|bianco|rossa)(.*)(blu|bianco|rossa)$'
-replacement = r'\1colore (\2) ma veramente tanto(\2)\3colore (\4) ma veramente tanto (\4)'
+replacement = r'\1colore (\2) ma veramente tanto (\2)\3colore (\4) ma veramente tanto (\4)'
 where = 'calzino blu e scarpa rossa'
 for index in range(1):
     p1 = re.compile(regex)

@@ -167,7 +167,7 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
-int count_str(const char *s, const char *p) {
+STATIC int count_str(const char *s, const char *p) {
     int c = 0, l = strlen(p);
     while (*s != '\0') {
         if (strncmp(s++, p, l)) continue;
@@ -176,7 +176,7 @@ int count_str(const char *s, const char *p) {
     return c;
 }
 
-char *replace_str(const char *str, const char *old, const char *new) {
+STATIC char *replace_str(const char *str, const char *old, const char *new) {
     if (str == NULL || old == NULL || new == NULL || !strlen(old))
         return NULL;
     size_t cache_sz_inc = 16;
@@ -241,46 +241,99 @@ end_repl_str:
     return ret;
 }
 
+#if !defined itoa
+char* itoa(int value, char* result, int base) {
+    // check that the base if valid
+    if (base < 2 || base > 36) { *result = '\0'; return result; }
+
+    char* ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
+
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+    } while ( value );
+
+    // Apply negative sign
+    if (tmp_value < 0) *ptr++ = '-';
+    *ptr-- = '\0';
+    while(ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr--= *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return result;
+}
+#endif
+
 STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = args[0];
-    const mp_obj_t args2[] = { self, args[2] };
-    mp_obj_match_t *match = re_exec(is_anchored, 2, args2);
+    mp_obj_t repl = args[1];
     mp_obj_t ret = args[2];
+    const mp_obj_t args2[] = { self, ret };
+    mp_obj_match_t *match = re_exec(is_anchored, 2, args2);
     if (!MP_OBJ_IS_TYPE(match, &mp_type_NoneType)) {
-        mp_obj_t repl = args[1];
+        
         const char *str_repl = mp_obj_str_get_str(repl);
-        mp_uint_t str_repl_len = strlen(str_repl);
-        char *str_repl_cpy = m_new(char, str_repl_len + 1);
-        memset(str_repl_cpy, 0, str_repl_len + 1);
+        mp_uint_t str_repl_len = mp_obj_str_get_len(repl);
+        char *str_repl_cpy = m_new(char, str_repl_len);
         memcpy(str_repl_cpy, str_repl, str_repl_len);
-        mp_uint_t str_repl_cpy_len = strlen(str_repl_cpy);
-        for (mp_uint_t no = 1; no < match->num_matches; no++) {
-            const char subs[] = { 0x5C, (0x30 + no), 0x00 };
-            if(count_str(str_repl_cpy, subs) > 0) {
-                const char *start_match = match->caps[no * 2];
-                if (start_match != NULL) {
-                    mp_uint_t start_match_len = match->caps[no * 2 + 1] - start_match;
-                    char *str_match_element = m_new(char, start_match_len + 1);
-                    memset(str_match_element, 0, start_match_len + 1);
-                    memcpy(str_match_element, start_match, start_match_len);
-                    char *str_repl_new = NULL; 
-                    if ((str_repl_new = replace_str(str_repl_cpy, subs, str_match_element)) != NULL) {
-                        mp_uint_t str_repl_new_len = strlen(str_repl_new);
-                        str_repl_cpy = m_renew(char, str_repl_cpy, str_repl_cpy_len, str_repl_new_len);
-                        memset(str_repl_cpy, 0, str_repl_new_len);
-                        memcpy(str_repl_cpy, str_repl_new, str_repl_new_len);
-                        str_repl_cpy_len = strlen(str_repl_new);
-                        free(str_repl_new);
-                    } 
-                    m_del(char, str_match_element, strlen(str_match_element));
+        str_repl_cpy[str_repl_len] = '\0';
+        mp_uint_t str_repl_cpy_len = str_repl_len;
+        
+		int no = 0; 
+        for (no = 0; no < match->num_matches; no++) {
+            
+			int sub_no = 0; 
+            for (sub_no = 0; sub_no < 2; sub_no++) {
+                
+                // Ignore replace of group "\0".
+                if(!no && !sub_no%2)
+                    continue;
+                
+                // https://docs.python.org/3/library/re.html:
+                // *syntax. \g<number> uses the corresponding group number; 
+                // \g<2> is therefore equivalent to \2, but isn’t ambiguous in a replacement such as \g<2>0. 
+                // \20 would be interpreted as a reference to group 20, not a reference to group 2 followed by the literal character '0'. 
+                // The backreference \g<0> substitutes in the entire substring matched by the RE.                
+                const char *sub_group = (sub_no%2?"\\g<#>\0":"\\#\0");
+                
+                char *sub = replace_str(sub_group, "#\0", itoa(no,(char[]){0,0,0,0}, 10));
+                if (sub != NULL) {                   
+                    if( count_str(str_repl_cpy, sub) > 0 ) {
+                                   
+                        const char *start_match = match->caps[no * 2];
+                        if (start_match != NULL) {
+                            mp_uint_t start_match_len = (match->caps[no * 2 + 1] - start_match);
+                            char *str_match_element = m_new(char, start_match_len);
+                            memcpy(str_match_element, start_match, start_match_len);
+                            str_match_element[start_match_len] = '\0';
+                            
+                            char *str_repl_new = NULL; 
+                            if ((str_repl_new = replace_str(str_repl_cpy, sub, str_match_element)) != NULL) {
+                                mp_uint_t str_repl_new_len = strlen(str_repl_new);
+                                str_repl_cpy = m_renew(char, str_repl_cpy, str_repl_cpy_len, str_repl_new_len);
+                                memcpy(str_repl_cpy, str_repl_new, str_repl_new_len);
+                                str_repl_cpy[str_repl_new_len] = '\0';
+                                str_repl_cpy_len = str_repl_new_len;
+                                
+                                free(str_repl_new);
+                            } 
+                            m_del(char, str_match_element, start_match_len);
+                        }
+                    }
+                    free(sub);
                 }
-            }
+			}
         }
+        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+        
         if(str_repl_cpy != NULL) {
             ret = mp_obj_new_str(str_repl_cpy, str_repl_cpy_len, false);
             m_del(char, str_repl_cpy, str_repl_cpy_len);
         }
-        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+        
     }
     return ret;
 }
@@ -288,6 +341,7 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
 STATIC mp_obj_t re_sub(uint n_args, const mp_obj_t *args) {
     return re_exec_sub(false, n_args, args);
 }
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 4, re_sub);
 
 STATIC const mp_map_elem_t re_locals_dict_table[] = {
