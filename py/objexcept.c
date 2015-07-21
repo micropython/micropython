@@ -444,7 +444,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line,
         self->traceback_len = 0;
     } else if (self->traceback_len + 3 > self->traceback_alloc) {
         // be conservative with growing traceback data
-        mp_uint_t *tb_data = m_renew_maybe(mp_uint_t, self->traceback_data, self->traceback_alloc, self->traceback_alloc + 3);
+        mp_uint_t *tb_data = m_renew_maybe(mp_uint_t, self->traceback_data, self->traceback_alloc, self->traceback_alloc + 3, true);
         if (tb_data == NULL) {
             return;
         }

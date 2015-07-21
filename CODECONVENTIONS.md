@@ -56,6 +56,10 @@ Comments:
 - Be concise and only write comments for things that are not obvious.
 - Use `// ` prefix, NOT `/* ... */`. No extra fluff.
 
+Memory allocation:
+- Use m_new, m_renew, m_del (and friends) to allocate and free heap memory.
+  These macros are defined in py/misc.h.
+
 Examples
 --------
 

@@ -19,6 +19,7 @@ BOOT_CPPDEFINES = -Dgcc -DBOOTLOADER -DTARGET_IS_CC3200 -DSL_TINY
 BOOT_HAL_SRC_C = $(addprefix hal/,\
 	cpu.c \
 	interrupt.c \
+	gpio.c \
 	pin.c \
 	prcm.c \
 	shamd5.c \

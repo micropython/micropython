@@ -43,22 +43,31 @@
 #endif
 
 // A qstr is an index into the qstr pool.
-// The data for a qstr contains (hash, length, data).
-// For now we use very simple encoding, just to get the framework correct:
-//  - hash is 2 bytes (see function below)
-//  - length is 2 bytes
-//  - data follows
-//  - \0 terminated (for now, so they can be printed using printf)
+// The data for a qstr contains (hash, length, data):
+//  - hash (configurable number of bytes)
+//  - length (configurable number of bytes)
+//  - data ("length" number of bytes)
+//  - \0 terminated (so they can be printed using printf)
 
-#define Q_GET_HASH(q)   ((mp_uint_t)(q)[0] | ((mp_uint_t)(q)[1] << 8))
-#define Q_GET_ALLOC(q)  (2 + MICROPY_QSTR_BYTES_IN_LEN + Q_GET_LENGTH(q) + 1)
-#define Q_GET_DATA(q)   ((q) + 2 + MICROPY_QSTR_BYTES_IN_LEN)
+#if MICROPY_QSTR_BYTES_IN_HASH == 1
+    #define Q_HASH_MASK (0xff)
+    #define Q_GET_HASH(q) ((mp_uint_t)(q)[0])
+    #define Q_SET_HASH(q, hash) do { (q)[0] = (hash); } while (0)
+#elif MICROPY_QSTR_BYTES_IN_HASH == 2
+    #define Q_HASH_MASK (0xffff)
+    #define Q_GET_HASH(q) ((mp_uint_t)(q)[0] | ((mp_uint_t)(q)[1] << 8))
+    #define Q_SET_HASH(q, hash) do { (q)[0] = (hash); (q)[1] = (hash) >> 8; } while (0)
+#else
+    #error unimplemented qstr hash decoding
+#endif
+#define Q_GET_ALLOC(q)  (MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + Q_GET_LENGTH(q) + 1)
+#define Q_GET_DATA(q)   ((q) + MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN)
 #if MICROPY_QSTR_BYTES_IN_LEN == 1
-    #define Q_GET_LENGTH(q) ((q)[2])
-    #define Q_SET_LENGTH(q, len) do { (q)[2] = (len); } while (0)
+    #define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH])
+    #define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); } while (0)
 #elif MICROPY_QSTR_BYTES_IN_LEN == 2
-    #define Q_GET_LENGTH(q) ((q)[2] | ((q)[3] << 8))
-    #define Q_SET_LENGTH(q, len) do { (q)[2] = (len); (q)[3] = (len) >> 8; } while (0)
+    #define Q_GET_LENGTH(q) ((q)[MICROPY_QSTR_BYTES_IN_HASH] | ((q)[MICROPY_QSTR_BYTES_IN_HASH + 1] << 8))
+    #define Q_SET_LENGTH(q, len) do { (q)[MICROPY_QSTR_BYTES_IN_HASH] = (len); (q)[MICROPY_QSTR_BYTES_IN_HASH + 1] = (len) >> 8; } while (0)
 #else
     #error unimplemented qstr length decoding
 #endif
@@ -70,7 +79,7 @@ mp_uint_t qstr_compute_hash(const byte *data, mp_uint_t len) {
     for (const byte *top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
-    hash &= 0xffff;
+    hash &= Q_HASH_MASK;
     // Make sure that valid hash is never zero, zero means "hash not computed"
     if (hash == 0) {
         hash++;
@@ -92,6 +101,7 @@ STATIC const qstr_pool_t const_pool = {
 
 void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
+    MP_STATE_VM(qstr_last_chunk) = NULL;
 }
 
 STATIC const byte *find_qstr(qstr q) {
@@ -152,13 +162,50 @@ qstr qstr_from_strn(const char *str, mp_uint_t len) {
     assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
+        // qstr does not exist in interned pool so need to add it
+
+        // compute number of bytes needed to intern this string
+        mp_uint_t n_bytes = MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1;
+
+        if (MP_STATE_VM(qstr_last_chunk) != NULL && MP_STATE_VM(qstr_last_used) + n_bytes > MP_STATE_VM(qstr_last_alloc)) {
+            // not enough room at end of previously interned string so try to grow
+            byte *new_p = m_renew_maybe(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_alloc) + n_bytes, false);
+            if (new_p == NULL) {
+                // could not grow existing memory; shrink it to fit previous
+                (void)m_renew(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_used));
+                MP_STATE_VM(qstr_last_chunk) = NULL;
+            } else {
+                // could grow existing memory
+                MP_STATE_VM(qstr_last_alloc) += n_bytes;
+            }
+        }
+
+        if (MP_STATE_VM(qstr_last_chunk) == NULL) {
+            // no existing memory for the interned string so allocate a new chunk
+            mp_uint_t al = n_bytes;
+            if (al < MICROPY_ALLOC_QSTR_CHUNK_INIT) {
+                al = MICROPY_ALLOC_QSTR_CHUNK_INIT;
+            }
+            MP_STATE_VM(qstr_last_chunk) = m_new_maybe(byte, al);
+            if (MP_STATE_VM(qstr_last_chunk) == NULL) {
+                // failed to allocate a large chunk so try with exact size
+                MP_STATE_VM(qstr_last_chunk) = m_new(byte, n_bytes);
+                al = n_bytes;
+            }
+            MP_STATE_VM(qstr_last_alloc) = al;
+            MP_STATE_VM(qstr_last_used) = 0;
+        }
+
+        // allocate memory from the chunk for this new interned string's data
+        byte *q_ptr = MP_STATE_VM(qstr_last_chunk) + MP_STATE_VM(qstr_last_used);
+        MP_STATE_VM(qstr_last_used) += n_bytes;
+
+        // store the interned strings' data
         mp_uint_t hash = qstr_compute_hash((const byte*)str, len);
-        byte *q_ptr = m_new(byte, 2 + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
-        q_ptr[0] = hash;
-        q_ptr[1] = hash >> 8;
+        Q_SET_HASH(q_ptr, hash);
         Q_SET_LENGTH(q_ptr, len);
-        memcpy(q_ptr + 2 + MICROPY_QSTR_BYTES_IN_LEN, str, len);
-        q_ptr[2 + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
+        memcpy(q_ptr + MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN, str, len);
+        q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
         q = qstr_add(q_ptr);
     }
     return q;
@@ -166,7 +213,7 @@ qstr qstr_from_strn(const char *str, mp_uint_t len) {
 
 byte *qstr_build_start(mp_uint_t len, byte **q_ptr) {
     assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
-    *q_ptr = m_new(byte, 2 + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
+    *q_ptr = m_new(byte, MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
     Q_SET_LENGTH(*q_ptr, len);
     return Q_GET_DATA(*q_ptr);
 }
@@ -176,9 +223,8 @@ qstr qstr_build_end(byte *q_ptr) {
     if (q == 0) {
         mp_uint_t len = Q_GET_LENGTH(q_ptr);
         mp_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
-        q_ptr[0] = hash;
-        q_ptr[1] = hash >> 8;
-        q_ptr[2 + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
+        Q_SET_HASH(q_ptr, hash);
+        q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
         q = qstr_add(q_ptr);
     } else {
         m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));

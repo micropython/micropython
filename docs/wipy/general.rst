@@ -32,15 +32,35 @@ Boot modes
 ----------
 
 If you power up normally, or press the reset button, the WiPy will boot
-into standard mode: the ``boot.py`` file will be executed first, then 
+into standard mode; the ``boot.py`` file will be executed first, then 
 ``main.py`` will run.
 
 You can override this boot sequence by pulling ``GPIO28`` **up** (connect
-it to the 3v3 output pin) during reset. The heart beat LED will flash slowly
-3 times to signal that safe boot is being requested, and then 4 more times
-quickly to let you know that safe boot is going to be performed. While safe
-booting, the WiPy runs the factory firmware and skips the execution of
-``boot.py`` and ``main.py``. This is useful to recover from any crash situation.
+it to the 3v3 output pin) during reset. This procedure also allows going
+back in time to old firmware versions. The WiPy can hold up to 3 different
+firmware versions, which are: the factory firmware plus 2 user updates.
+
+After reset, if ``GPIO28`` is held high, the heart beat LED will start flashing
+slowly, if after 3 seconds the pin is still being held high, the LED will start
+blinking a bit faster and the WiPy will select the previous user update to boot.
+If the previous user update is the desired firmware image, ``GPIO28`` must be
+released before 3 more seconds elapse. If 3 seconds later the pin is still high,
+the factory firmware will be selected, the LED will flash quickly for 1.5 seconds
+and the WiPy will proceed to boot. The firmware selection mechanism is as follows:
+
+
+**Safe Boot Pin** ``GPIO28`` **released during:**
+
++-------------------------+-------------------------+----------------------------+
+| 1st 3 secs window       | 2nd 3 secs window       | Final 1.5 secs window      |
++=========================+=========================+============================+
+| | Normal boot, *latest* | | Safe boot, *previous* | | Safe boot, the *factory* |
+| | firmware is selected  | | user update selected  | | firmware is selected     |
++-------------------------+-------------------------+----------------------------+
+
+When selecting a previous firmware version, safe boot mode is entered, meaning
+that the execution of both ``boot.py`` and ``main.py`` is skipped. This is 
+useful to recover from crash situations caused by the user scripts.
 
 The heart beat LED
 ------------------

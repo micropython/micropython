@@ -31,6 +31,7 @@
 
 // qstr configuration passed to makeqstrdata.py of the form QCFG(key, value)
 QCFG(BYTES_IN_LEN, MICROPY_QSTR_BYTES_IN_LEN)
+QCFG(BYTES_IN_HASH, MICROPY_QSTR_BYTES_IN_HASH)
 
 Q()
 Q(*)

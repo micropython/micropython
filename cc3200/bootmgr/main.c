@@ -64,11 +64,14 @@
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512
 
-#define BOOTMGR_WAIT_SAFE_MODE_MS           2400
-#define BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS    400
+#define BOOTMGR_WAIT_SAFE_MODE_0_MS         3000
+#define BOOTMGR_WAIT_SAFE_MODE_0_BLINK_MS   500
 
-#define BOOTMGR_SAFE_MODE_ENTER_MS          1600
-#define BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS   160
+#define BOOTMGR_WAIT_SAFE_MODE_1_MS         3000
+#define BOOTMGR_WAIT_SAFE_MODE_1_BLINK_MS   250
+
+#define BOOTMGR_WAIT_SAFE_MODE_2_MS         1500
+#define BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS   100
 
 //*****************************************************************************
 // Exported functions declarations
@@ -79,9 +82,10 @@ extern void bootmgr_run_app (_u32 base);
 // Local functions declarations
 //*****************************************************************************
 static void bootmgr_board_init (void);
-static bool bootmgr_verify (void);
+static bool bootmgr_verify (_u8 *image);
 static void bootmgr_load_and_execute (_u8 *image);
-static bool safe_mode_boot (void);
+static bool wait_while_blinking (uint32_t wait_time, uint32_t period, bool force_wait);
+static void wait_for_safe_boot (sBootInfo_t *psBootInfo);
 static void bootmgr_image_loader (sBootInfo_t *psBootInfo);
 
 //*****************************************************************************
@@ -140,14 +144,14 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
 //! Board Initialization & Configuration
 //*****************************************************************************
 static void bootmgr_board_init(void) {
-    // Set vector table base
+    // set the vector table base
     MAP_IntVTableBaseSet((unsigned long)&g_pfnVectors[0]);
 
-    // Enable Processor Interrupts
+    // enable processor interrupts
     MAP_IntMasterEnable();
     MAP_IntEnable(FAULT_SYSTICK);
 
-    // Mandatory MCU Initialization
+    // mandatory MCU initialization
     PRCMCC3200MCUInit();
 
     mperror_bootloader_check_reset_cause();
@@ -157,10 +161,10 @@ static void bootmgr_board_init(void) {
     antenna_init0();
 #endif
 
-    // Enable the Data Hashing Engine
+    // enable the data hashing engine
     CRYPTOHASH_Init();
 
-    // Init the system led and the system switch
+    // init the system led and the system switch
     mperror_init0();
 
     // clear the safe boot flag, since we can't trust its content after reset
@@ -170,15 +174,15 @@ static void bootmgr_board_init(void) {
 //*****************************************************************************
 //! Verifies the integrity of the new application binary
 //*****************************************************************************
-static bool bootmgr_verify (void) {
+static bool bootmgr_verify (_u8 *image) {
     SlFsFileInfo_t FsFileInfo;
     _u32 reqlen, offset = 0;
     _i32 fHandle;
 
     // open the file for reading
-    if (0 == sl_FsOpen((_u8 *)IMG_UPDATE, FS_MODE_OPEN_READ, NULL, &fHandle)) {
+    if (0 == sl_FsOpen(image, FS_MODE_OPEN_READ, NULL, &fHandle)) {
         // get the file size
-        sl_FsGetInfo((_u8 *)IMG_UPDATE, 0, &FsFileInfo);
+        sl_FsGetInfo(image, 0, &FsFileInfo);
 
         if (FsFileInfo.FileLen > BOOTMGR_HASH_SIZE) {
             FsFileInfo.FileLen -= BOOTMGR_HASH_SIZE;
@@ -242,47 +246,72 @@ static void bootmgr_load_and_execute (_u8 *image) {
 }
 
 //*****************************************************************************
-//! Check for the safe mode pin
+//! Wait while the safe mode pin is being held high and blink the system led
+//! with the specified period
 //*****************************************************************************
-static bool safe_mode_boot (void) {
-    _u32 count = 0;
-    while (MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) &&
-           ((BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS * count++) < BOOTMGR_WAIT_SAFE_MODE_MS)) {
+static bool wait_while_blinking (uint32_t wait_time, uint32_t period, bool force_wait) {
+    _u32 count;
+    for (count = 0; (force_wait || MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN)) &&
+         ((period * count) < wait_time); count++) {
         // toogle the led
         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
-        UtilsDelay(UTILS_DELAY_US_TO_COUNT(BOOTMGR_WAIT_SAFE_MODE_TOOGLE_MS * 1000));
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(period * 1000));
     }
-    mperror_deinit_sfe_pin();
     return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? true : false;
 }
 
 //*****************************************************************************
-//! Load the proper image based on information from boot info and executes it.
+//! Check for the safe mode pin
+//*****************************************************************************
+static void wait_for_safe_boot (sBootInfo_t *psBootInfo) {
+    if (wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_0_MS, BOOTMGR_WAIT_SAFE_MODE_0_BLINK_MS, false)) {
+        // go back one step in time
+        psBootInfo->ActiveImg = psBootInfo->PrevImg;
+        if (wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_1_MS, BOOTMGR_WAIT_SAFE_MODE_1_BLINK_MS, false)) {
+            // go back directly to the factory image
+            psBootInfo->ActiveImg = IMG_ACT_FACTORY;
+            wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_2_MS, BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS, true);
+        }
+        // turn off the system led
+        MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
+        // request a safe boot to the application
+        PRCMRequestSafeBoot();
+    }
+    // uninit the safe boot pin
+    mperror_deinit_sfe_pin();
+}
+
+//*****************************************************************************
+//! Load the proper image based on the information from the boot info
+//! and launch it.
 //*****************************************************************************
 static void bootmgr_image_loader(sBootInfo_t *psBootInfo) {
     _i32 fhandle;
-    if (safe_mode_boot()) {
-         _u32 count = 0;
-         while ((BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS * count++) < BOOTMGR_SAFE_MODE_ENTER_MS) {
-             // toogle the led
-             MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
-             UtilsDelay(UTILS_DELAY_US_TO_COUNT(BOOTMGR_SAFE_MODE_ENTER_TOOGLE_MS * 1000));
-         }
-         psBootInfo->ActiveImg = IMG_ACT_FACTORY;
-         // turn the led off
-         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
-         // request a safe boot to the application
-         PRCMRequestSafeBoot();
+    _u8 *image;
+
+    // search for the active image
+    switch (psBootInfo->ActiveImg) {
+    case IMG_ACT_UPDATE1:
+        image = (unsigned char *)IMG_UPDATE1;
+        break;
+    case IMG_ACT_UPDATE2:
+        image = (unsigned char *)IMG_UPDATE2;
+        break;
+    default:
+        image = (unsigned char *)IMG_FACTORY;
+        break;
     }
-    // do we have a new update image that needs to be verified?
-    else if ((psBootInfo->ActiveImg == IMG_ACT_UPDATE) && (psBootInfo->Status == IMG_STATUS_CHECK)) {
-        if (!bootmgr_verify()) {
-            // delete the corrupted file
-            sl_FsDel((_u8 *)IMG_UPDATE, 0);
-            // switch to the factory image
-            psBootInfo->ActiveImg = IMG_ACT_FACTORY;
+
+    // do we have a new image that needs to be verified?
+    if ((psBootInfo->ActiveImg != IMG_ACT_FACTORY) && (psBootInfo->Status == IMG_STATUS_CHECK)) {
+        if (!bootmgr_verify(image)) {
+            // verification failed, delete the broken file
+            sl_FsDel(image, 0);
+            // switch to the previous image
+            psBootInfo->ActiveImg = psBootInfo->PrevImg;
+            psBootInfo->PrevImg = IMG_ACT_FACTORY;
         }
-        // in any case, set the status as "READY"
+        // in any case, change the status to "READY"
         psBootInfo->Status = IMG_STATUS_READY;
         // write the new boot info
         if (!sl_FsOpen((unsigned char *)IMG_BOOT_INFO, FS_MODE_OPEN_WRITE, NULL, &fhandle)) {
@@ -292,24 +321,34 @@ static void bootmgr_image_loader(sBootInfo_t *psBootInfo) {
         }
     }
 
-    // now boot the active image
-    if (IMG_ACT_UPDATE == psBootInfo->ActiveImg) {
-        bootmgr_load_and_execute((unsigned char *)IMG_UPDATE);
+    // this one might modify the boot info hence it MUST be called after
+    // bootmgr_verify! (so that the changes are not saved to flash)
+    wait_for_safe_boot(psBootInfo);
+
+    // select the active image again, since it might have changed
+    switch (psBootInfo->ActiveImg) {
+    case IMG_ACT_UPDATE1:
+        image = (unsigned char *)IMG_UPDATE1;
+        break;
+    case IMG_ACT_UPDATE2:
+        image = (unsigned char *)IMG_UPDATE2;
+        break;
+    default:
+        image = (unsigned char *)IMG_FACTORY;
+        break;
     }
-    else {
-        bootmgr_load_and_execute((unsigned char *)IMG_FACTORY);
-    }
+    bootmgr_load_and_execute(image);
 }
 
 //*****************************************************************************
 //! Main function
 //*****************************************************************************
 int main (void) {
-    sBootInfo_t sBootInfo = { .ActiveImg = IMG_ACT_FACTORY, .Status = IMG_STATUS_READY };
+    sBootInfo_t sBootInfo = { .ActiveImg = IMG_ACT_FACTORY, .Status = IMG_STATUS_READY, .PrevImg = IMG_ACT_FACTORY };
     bool bootapp = false;
     _i32 fhandle;
 
-    // Board Initialization
+    // board setup
     bootmgr_board_init();
 
     // start simplelink since we need it to access the sflash
@@ -322,12 +361,13 @@ int main (void) {
         }
         sl_FsClose(fhandle, 0, 0, 0);
     }
+    // boot info file not present (or read failed)
     if (!bootapp) {
         // create a new boot info file
         _u32 BootInfoCreateFlag  = _FS_FILE_OPEN_FLAG_COMMIT | _FS_FILE_PUBLIC_WRITE | _FS_FILE_PUBLIC_READ;
         if (!sl_FsOpen ((unsigned char *)IMG_BOOT_INFO, FS_MODE_OPEN_CREATE((2 * sizeof(sBootInfo_t)),
                         BootInfoCreateFlag), NULL, &fhandle)) {
-            // Write the default boot info.
+            // write the default boot info.
             if (sizeof(sBootInfo_t) == sl_FsWrite(fhandle, 0, (unsigned char *)&sBootInfo, sizeof(sBootInfo_t))) {
                 bootapp = true;
             }
@@ -343,14 +383,14 @@ int main (void) {
     // stop simplelink
     sl_Stop(SL_STOP_TIMEOUT);
 
-    // if we've reached this point, then it means a fatal error occurred and the application
-    // could not be loaded, so, loop forever and signal the crash to the user
+    // if we've reached this point, then it means that a fatal error has occurred and the
+    // application could not be loaded, so, loop forever and signal the crash to the user
     while (true) {
         // keep the bld on
         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
-        __asm volatile("    dsb      \n"
-                       "    isb      \n"
-                       "    wfi      \n");
+        __asm volatile(" dsb \n"
+                       " isb \n"
+                       " wfi \n");
     }
 }
 

@@ -75,6 +75,14 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
 #endif
 
+// Number of bytes to allocate initially when creating new chunks to store
+// interned string data.  Smaller numbers lead to more chunks being needed
+// and more wastage at the end of the chunk.  Larger numbers lead to wasted
+// space at the end when no more strings need interning.
+#ifndef MICROPY_ALLOC_QSTR_CHUNK_INIT
+#define MICROPY_ALLOC_QSTR_CHUNK_INIT (128)
+#endif
+
 // Initial amount for lexer indentation level
 #ifndef MICROPY_ALLOC_LEXER_INDENT_INIT
 #define MICROPY_ALLOC_LEXER_INDENT_INIT (10)
@@ -142,6 +150,11 @@
 // (limit of 255 bytes in an identifier) should be enough for everyone
 #ifndef MICROPY_QSTR_BYTES_IN_LEN
 #define MICROPY_QSTR_BYTES_IN_LEN (1)
+#endif
+
+// Number of bytes used to store qstr hash
+#ifndef MICROPY_QSTR_BYTES_IN_HASH
+#define MICROPY_QSTR_BYTES_IN_HASH (2)
 #endif
 
 // Avoid using C stack when making Python function calls. C stack still

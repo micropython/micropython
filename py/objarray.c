@@ -373,15 +373,21 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 // Assign
                 mp_uint_t src_len;
                 void *src_items;
-                size_t item_sz = mp_binary_get_size('@', o->typecode, NULL);
-                if (MP_OBJ_IS_TYPE(value, &mp_type_array) || MP_OBJ_IS_TYPE(value, &mp_type_bytearray)) {
+                size_t item_sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
+                if (MP_OBJ_IS_OBJ(value) && ((mp_obj_base_t*)value)->type->subscr == array_subscr) {
+                    // value is array, bytearray or memoryview
                     mp_obj_array_t *src_slice = value;
-                    if (item_sz != mp_binary_get_size('@', src_slice->typecode, NULL)) {
+                    if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        mp_not_implemented("lhs and rhs should be compatible");
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "lhs and rhs should be compatible"));
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
+                    #if MICROPY_PY_BUILTINS_MEMORYVIEW
+                    if (MP_OBJ_IS_TYPE(value, &mp_type_memoryview)) {
+                        src_items = (uint8_t*)src_items + (src_slice->free * item_sz);
+                    }
+                    #endif
                 } else if (MP_OBJ_IS_TYPE(value, &mp_type_bytes)) {
                     if (item_sz != 1) {
                         goto compat_error;
@@ -396,20 +402,29 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
 
                 // TODO: check src/dst compat
                 mp_int_t len_adj = src_len - (slice.stop - slice.start);
+                uint8_t* dest_items = o->items;
+                #if MICROPY_PY_BUILTINS_MEMORYVIEW
+                if (o->base.type == &mp_type_memoryview) {
+                    if (len_adj != 0) {
+                        goto compat_error;
+                    }
+                    dest_items += o->free * item_sz;
+                }
+                #endif
                 if (len_adj > 0) {
                     if (len_adj > o->free) {
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
                         o->free = 0;
                     }
-                    mp_seq_replace_slice_grow_inplace(o->items, o->len,
+                    mp_seq_replace_slice_grow_inplace(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, len_adj, item_sz);
                 } else {
-                    mp_seq_replace_slice_no_grow(o->items, o->len,
+                    mp_seq_replace_slice_no_grow(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, item_sz);
                     // Clear "freed" elements at the end of list
                     // TODO: This is actually only needed for typecode=='O'
-                    mp_seq_clear(o->items, o->len + len_adj, o->len, item_sz);
+                    mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
                     // TODO: alloc policy after shrinking
                 }
                 o->len += len_adj;

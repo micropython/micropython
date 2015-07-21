@@ -151,13 +151,13 @@ STATIC void esp_socket_recv_callback(void *arg, char *pdata, unsigned short len)
         call_function_2_protected(s->cb_recv, s, mp_obj_new_bytes((byte *)pdata, len));
     } else {
         if (s->recvbuf == NULL) {
-            s->recvbuf = gc_alloc(len, false);
+            s->recvbuf = m_new(uint8_t, len);
             s->recvbuf_len = len;
             if (s->recvbuf != NULL) {
                 memcpy(s->recvbuf, pdata, len);
             }
         } else {
-            s->recvbuf = gc_realloc(s->recvbuf, s->recvbuf_len + len);
+            s->recvbuf = m_renew(uint8_t, s->recvbuf, s->recvbuf_len, s->recvbuf_len + len);
             if (s->recvbuf != NULL) {
                 memcpy(&s->recvbuf[s->recvbuf_len], pdata, len);
                 s->recvbuf_len += len;
@@ -323,14 +323,14 @@ STATIC mp_obj_t esp_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mp_uint_t mxl = mp_obj_get_int(len_in);
     if (mxl >= s->recvbuf_len) {
         mp_obj_t trt = mp_obj_new_bytes(s->recvbuf, s->recvbuf_len);
-        gc_free(s->recvbuf);
+        m_del(uint8_t, s->recvbuf, s->recvbuf_len);
         s->recvbuf = NULL;
         return trt;
     } else {
         mp_obj_t trt = mp_obj_new_bytes(s->recvbuf, mxl);
         memmove(s->recvbuf, &s->recvbuf[mxl], s->recvbuf_len - mxl);
+        s->recvbuf = m_renew(uint8_t, s->recvbuf, s->recvbuf_len, s->recvbuf_len - mxl);
         s->recvbuf_len -= mxl;
-        s->recvbuf = gc_realloc(s->recvbuf, s->recvbuf_len);
         return trt;
     }
 }

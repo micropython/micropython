@@ -446,6 +446,7 @@ Q(route)
 #if MICROPY_PY_WIZNET5K
 Q(WIZNET5K)
 Q(regs)
+Q(ifconfig)
 Q(ipaddr)
 #endif
 
