@@ -93,6 +93,43 @@ STATIC void TIM6_Config(uint freq) {
 }
 #endif
 
+STATIC uint32_t TIMx_Config(mp_obj_t timer) {
+    // make sure the given object is a timer
+    if (mp_obj_get_type(timer) != &pyb_timer_type) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a Timer object"));
+    }
+
+    // TRGO selection to trigger DAC
+    TIM_HandleTypeDef *tim = pyb_timer_get_handle(timer);
+    TIM_MasterConfigTypeDef config;
+    config.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    config.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    HAL_TIMEx_MasterConfigSynchronization(tim, &config);
+
+    // work out the trigger channel (only certain ones are supported)
+    if (tim->Instance == TIM2) {
+        return DAC_TRIGGER_T2_TRGO;
+    } else if (tim->Instance == TIM4) {
+        return DAC_TRIGGER_T4_TRGO;
+    } else if (tim->Instance == TIM5) {
+        return DAC_TRIGGER_T5_TRGO;
+    #if defined(TIM6)
+    } else if (tim->Instance == TIM6) {
+        return DAC_TRIGGER_T6_TRGO;
+    #endif
+    #if defined(TIM7)
+    } else if (tim->Instance == TIM7) {
+        return DAC_TRIGGER_T7_TRGO;
+    #endif
+    #if defined(TIM8)
+    } else if (tim->Instance == TIM8) {
+        return DAC_TRIGGER_T8_TRGO;
+    #endif
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Timer does not support DAC triggering"));
+    }
+}
+
 /******************************************************************************/
 // Micro Python bindings
 
@@ -100,7 +137,7 @@ typedef enum {
     DAC_STATE_RESET,
     DAC_STATE_WRITE_SINGLE,
     DAC_STATE_BUILTIN_WAVEFORM,
-    DAC_STATE_DMA_WAVEFORM,
+    DAC_STATE_DMA_WAVEFORM, // should be last enum since we use space beyond it
 } pyb_dac_state_t;
 
 typedef struct _pyb_dac_obj_t {
@@ -260,15 +297,25 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 /// Initiates a burst of RAM to DAC using a DMA transfer.
 /// The input data is treated as an array of bytes (8 bit data).
 ///
+/// `freq` can be an integer specifying the frequency to write the DAC
+/// samples at, using Timer(6).  Or it can be an already-initialised
+/// Timer object which is used to trigger the DAC sample.  Valid timers
+/// are 2, 4, 5, 6, 7 and 8.
+///
 /// `mode` can be `DAC.NORMAL` or `DAC.CIRCULAR`.
 ///
-/// TIM6 is used to control the frequency of the transfer.
 // TODO add callback argument, to call when transfer is finished
 // TODO add double buffer argument
+//
+// TODO reconsider API, eg: write_trig(data, *, trig=None, loop=False)
+// Then trigger can be timer (preinitialised with desired freq) or pin (extint9),
+// and we can reuse the same timer for both DACs (and maybe also ADC) without
+// setting the freq twice.
+// Can still do 1-liner: dac.write_trig(buf, trig=Timer(6, freq=100), loop=True)
 mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_NORMAL} },
     };
 
@@ -281,8 +328,15 @@ mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    // set TIM6 to trigger the DAC at the given frequency
-    TIM6_Config(args[1].u_int);
+    uint32_t dac_trigger;
+    if (mp_obj_is_integer(args[1].u_obj)) {
+        // set TIM6 to trigger the DAC at the given frequency
+        TIM6_Config(mp_obj_get_int(args[1].u_obj));
+        dac_trigger = DAC_TRIGGER_T6_TRGO;
+    } else {
+        // set the supplied timer to trigger the DAC (timer should be initialised)
+        dac_trigger = TIMx_Config(args[1].u_obj);
+    }
 
     __DMA1_CLK_ENABLE();
 
@@ -336,12 +390,12 @@ mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     DAC_Handle.State = HAL_DAC_STATE_RESET;
     HAL_DAC_Init(&DAC_Handle);
 
-    if (self->state != DAC_STATE_DMA_WAVEFORM) {
+    if (self->state != DAC_STATE_DMA_WAVEFORM + dac_trigger) {
         DAC_ChannelConfTypeDef config;
-        config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+        config.DAC_Trigger = dac_trigger;
         config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
-        self->state = DAC_STATE_DMA_WAVEFORM;
+        self->state = DAC_STATE_DMA_WAVEFORM + dac_trigger;
     }
 
     HAL_DAC_Start_DMA(&DAC_Handle, self->dac_channel, (uint32_t*)bufinfo.buf, bufinfo.len, DAC_ALIGN_8B_R);

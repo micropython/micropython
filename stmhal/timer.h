@@ -43,3 +43,5 @@ void timer_tim6_init(uint freq);
 void timer_deinit(void);
 
 void timer_irq_handler(uint tim_id);
+
+TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer);
