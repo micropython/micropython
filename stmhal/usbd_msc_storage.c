@@ -301,7 +301,11 @@ int8_t SDCARD_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
   * @retval Status
   */
 int8_t SDCARD_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+#if MICROPY_HW_HAS_SDCARD_DMA
+    if (sdcard_read_blocks_dma(buf, blk_addr, blk_len) != 0) {
+#else
     if (sdcard_read_blocks(buf, blk_addr, blk_len) != 0) {
+#endif
         return -1;
     }
     return 0;
@@ -316,7 +320,11 @@ int8_t SDCARD_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_
   * @retval Status
   */
 int8_t SDCARD_STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+#if MICROPY_HW_HAS_SDCARD_DMA
+    if (sdcard_write_blocks_dma(buf, blk_addr, blk_len) != 0) {
+#else
     if (sdcard_write_blocks(buf, blk_addr, blk_len) != 0) {
+#endif
         return -1;
     }
     return 0;

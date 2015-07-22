@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-// TODO make it work with DMA
-
 #include <stm32f4xx_hal.h>
 
 #include "py/nlr.h"
@@ -34,6 +32,7 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "bufhelper.h"
+#include "dma.h"
 
 #if MICROPY_HW_HAS_SDCARD
 
@@ -69,11 +68,45 @@ void sdcard_init(void) {
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
     // enable SDIO clock
     __SDIO_CLK_ENABLE();
+#if MICROPY_HW_HAS_SDCARD_DMA
+    static DMA_HandleTypeDef rx_dma, tx_dma;
+
+    // NVIC configuration for SDIO interrupts
+    HAL_NVIC_SetPriority(SDIO_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(SDIO_IRQn);
+
+    // Configure DMA Rx parameters
+    rx_dma.Init.PeriphInc           = DMA_PINC_DISABLE;
+    rx_dma.Init.MemInc              = DMA_MINC_ENABLE;
+    rx_dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    rx_dma.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+    rx_dma.Init.Mode                = DMA_PFCTRL;
+    rx_dma.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
+    rx_dma.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
+    rx_dma.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    rx_dma.Init.MemBurst            = DMA_MBURST_INC4;
+    rx_dma.Init.PeriphBurst         = DMA_PBURST_INC4;
+
+    dma_init(&rx_dma, DMA2_Stream3, &rx_dma.Init, DMA_CHANNEL_4, DMA_PERIPH_TO_MEMORY, &sd_handle);
+    sd_handle.hdmarx = &rx_dma;
+
+    // Configure DMA Tx parameters
+    tx_dma.Init.PeriphInc           = DMA_PINC_DISABLE;
+    tx_dma.Init.MemInc              = DMA_MINC_ENABLE;
+    tx_dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    tx_dma.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+    tx_dma.Init.Mode                = DMA_PFCTRL;
+    tx_dma.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
+    tx_dma.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
+    tx_dma.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    tx_dma.Init.MemBurst            = DMA_MBURST_INC4;
+    tx_dma.Init.PeriphBurst         = DMA_PBURST_INC4;
+
+    dma_init(&tx_dma, DMA2_Stream6, &tx_dma.Init, DMA_CHANNEL_4, DMA_MEMORY_TO_PERIPH, &sd_handle);
+    sd_handle.hdmatx = &tx_dma;
+#endif
 
     // GPIO have already been initialised by sdcard_init
-
-    // interrupts are not used at the moment
-    // they are needed only for DMA transfer (I think...)
 }
 
 void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd) {
@@ -140,6 +173,58 @@ uint64_t sdcard_get_capacity_in_bytes(void) {
     return cardinfo.CardCapacity;
 }
 
+#if MICROPY_HW_HAS_SDCARD_DMA
+void sdcard_irq_handler(void) {
+    HAL_SD_IRQHandler(&sd_handle);
+}
+
+bool sdcard_read_blocks_dma(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    // check that dest pointer is aligned on a 4-byte boundary
+    if (((uint32_t)dest & 3) != 0) {
+        return true;
+    }
+
+    // check that SD card is initialised
+    if (sd_handle.Instance == NULL) {
+        return true;
+    }
+
+    // do the read
+    if (HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks) != SD_OK) {
+        return true;
+    }
+
+    // wait for DMA transfer to finish, with a large timeout
+    if (HAL_SD_CheckReadOperation(&sd_handle, 100000000) != SD_OK) {
+        return true;
+    }
+
+    return false;
+}
+
+bool sdcard_write_blocks_dma(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+    // check that src pointer is aligned on a 4-byte boundary
+    if (((uint32_t)src & 3) != 0) {
+        return true;
+    }
+
+    // check that SD card is initialised
+    if (sd_handle.Instance == NULL) {
+        return true;
+    }
+
+    if (HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks) != SD_OK) {
+        return true;
+    }
+
+    // wait for DMA transfer to finish, with a large timeout
+    if (HAL_SD_CheckWriteOperation(&sd_handle, 100000000) != SD_OK) {
+        return true;
+    }
+
+    return false;
+}
+#else
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     // check that dest pointer is aligned on a 4-byte boundary
     if (((uint32_t)dest & 3) != 0) {
@@ -180,59 +265,6 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 
     return err;
-}
-
-#if 0
-DMA not implemented
-bool sdcard_read_blocks_dma(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
-    // check that dest pointer is aligned on a 4-byte boundary
-    if (((uint32_t)dest & 3) != 0) {
-        return false;
-    }
-
-    // check that SD card is initialised
-    if (sd_handle.Instance == NULL) {
-        return false;
-    }
-
-    // do the read
-    if (HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE) != SD_OK) {
-        return false;
-    }
-
-    // wait for DMA transfer to finish, with a large timeout
-    if (HAL_SD_CheckReadOperation(&sd_handle, 100000000) != SD_OK) {
-        return false;
-    }
-
-    return true;
-}
-
-bool sdcard_write_blocks_dma(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-    // check that src pointer is aligned on a 4-byte boundary
-    if (((uint32_t)src & 3) != 0) {
-        return false;
-    }
-
-    // check that SD card is initialised
-    if (sd_handle.Instance == NULL) {
-        return false;
-    }
-
-    SD_Error status;
-
-    status = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
-    if (status != SD_OK) {
-        return false;
-    }
-
-    // wait for DMA transfer to finish, with a large timeout
-    status = HAL_SD_CheckWriteOperation(&sd_handle, 100000000);
-    if (status != SD_OK) {
-        return false;
-    }
-
-    return true;
 }
 #endif
 
@@ -278,8 +310,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_info_obj, sd_info);
 
 STATIC mp_obj_t sd_read(mp_obj_t self, mp_obj_t block_num) {
     uint8_t *dest = m_new(uint8_t, SDCARD_BLOCK_SIZE);
+#if MICROPY_HW_HAS_SDCARD_DMA
+    bool ret = sdcard_read_blocks_dma(dest, mp_obj_get_int(block_num), 1);
+#else
     mp_uint_t ret = sdcard_read_blocks(dest, mp_obj_get_int(block_num), 1);
-
+#endif
     if (ret != 0) {
         m_del(uint8_t, dest, SDCARD_BLOCK_SIZE);
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "sdcard_read_blocks failed [%u]", ret));
@@ -295,9 +330,11 @@ STATIC mp_obj_t sd_write(mp_obj_t self, mp_obj_t block_num, mp_obj_t data) {
     if (bufinfo.len % SDCARD_BLOCK_SIZE != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "writes must be a multiple of %d bytes", SDCARD_BLOCK_SIZE));
     }
-
+#if MICROPY_HW_HAS_SDCARD_DMA
+    bool ret = sdcard_write_blocks_dma(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
+#else
     mp_uint_t ret = sdcard_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / SDCARD_BLOCK_SIZE);
-
+#endif
     if (ret != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_Exception, "sdcard_write_blocks failed [%u]", ret));
     }
