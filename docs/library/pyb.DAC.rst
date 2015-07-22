@@ -64,6 +64,16 @@ Methods
    Initiates a burst of RAM to DAC using a DMA transfer.
    The input data is treated as an array of bytes (8 bit data).
    
+   ``freq`` can be an integer specifying the frequency to write the DAC
+   samples at, using Timer(6).  Or it can be an already-initialised
+   Timer object which is used to trigger the DAC sample.  Valid timers
+   are 2, 4, 5, 6, 7 and 8.
+
    ``mode`` can be ``DAC.NORMAL`` or ``DAC.CIRCULAR``.
-   
-   TIM6 is used to control the frequency of the transfer.
+
+   Example using both DACs at the same time::
+
+     dac1 = DAC(1)
+     dac2 = DAC(2)
+     dac1.write_timed(buf1, pyb.Timer(6, freq=100), mode=DAC.CIRCULAR)
+     dac2.write_timed(buf2, pyb.Timer(7, freq=200), mode=DAC.CIRCULAR)

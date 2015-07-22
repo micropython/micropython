@@ -470,6 +470,11 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks) {
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
 }
 
+TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer) {
+    pyb_timer_obj_t *self = timer;
+    return &self->tim;
+}
+
 STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = self_in;
 
