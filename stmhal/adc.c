@@ -198,12 +198,31 @@ STATIC mp_obj_t adc_read(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
-/// \method read_timed(buf, freq)
-/// Read analog values into the given buffer at the given frequency. Buffer
-/// can be bytearray or array.array for example. If a buffer with 8-bit elements
-/// is used, sample resolution will be reduced to 8 bits.
+/// \method read_timed(buf, timer)
 ///
-/// Example:
+/// Read analog values into `buf` at a rate set by the `timer` object.
+///
+/// `buf` can be bytearray or array.array for example.  The ADC values have
+/// 12-bit resolution and are stored directly into `buf` if its element size is
+/// 16 bits or greater.  If `buf` has only 8-bit elements (eg a bytearray) then
+/// the sample resolution will be reduced to 8 bits.
+///
+/// `timer` should be a Timer object, and a sample is read each time the timer
+/// triggers.  The timer must already be initialised and running at the desired
+/// sampling frequency.
+///
+/// To support previous behaviour of this function, `timer` can also be an
+/// integer which specifies the frequency (in Hz) to sample at.  In this case
+/// Timer(6) will be automatically configured to run at the given frequency.
+///
+/// Example using a Timer object (preferred way):
+///
+///     adc = pyb.ADC(pyb.Pin.board.X19)    # create an ADC on pin X19
+///     tim = pyb.Timer(6, freq=10)         # create a timer running at 10Hz
+///     buf = bytearray(100)                # creat a buffer to store the samples
+///     adc.read_timed(buf, tim)            # sample 100 values, taking 10s
+///
+/// Example using an integer for the frequency:
 ///
 ///     adc = pyb.ADC(pyb.Pin.board.X19)    # create an ADC on pin X19
 ///     buf = bytearray(100)                # create a buffer of 100 bytes
@@ -213,7 +232,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 ///         print(val)                      # print the value out
 ///
 /// This function does not allocate any memory.
-#if defined(TIM6)
 STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_in) {
     pyb_obj_adc_t *self = self_in;
 
@@ -221,11 +239,18 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
     size_t typesize = mp_binary_get_size('@', bufinfo.typecode, NULL);
 
-    // Init TIM6 at the required frequency (in Hz)
-    timer_tim6_init(mp_obj_get_int(freq_in));
-
-    // Start timer
-    HAL_TIM_Base_Start(&TIM6_Handle);
+    TIM_HandleTypeDef *tim;
+    #if defined(TIM6)
+    if (mp_obj_is_integer(freq_in)) {
+        // freq in Hz given so init TIM6 (legacy behaviour)
+        tim = timer_tim6_init(mp_obj_get_int(freq_in));
+        HAL_TIM_Base_Start(tim);
+    } else
+    #endif
+    {
+        // use the supplied timer object as the sampling time base
+        tim = pyb_timer_get_handle(freq_in);
+    }
 
     // configure the ADC channel
     adc_config_channel(self);
@@ -236,9 +261,9 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     uint nelems = bufinfo.len / typesize;
     for (uint index = 0; index < nelems; index++) {
         // Wait for the timer to trigger so we sample at the correct frequency
-        while (__HAL_TIM_GET_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE) == RESET) {
+        while (__HAL_TIM_GET_FLAG(tim, TIM_FLAG_UPDATE) == RESET) {
         }
-        __HAL_TIM_CLEAR_FLAG(&TIM6_Handle, TIM_FLAG_UPDATE);
+        __HAL_TIM_CLEAR_FLAG(tim, TIM_FLAG_UPDATE);
 
         if (index == 0) {
             // for the first sample we need to turn the ADC on
@@ -270,19 +295,20 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     // turn the ADC off
     HAL_ADC_Stop(&self->handle);
 
-    // Stop timer
-    HAL_TIM_Base_Stop(&TIM6_Handle);
+    #if defined(TIM6)
+    if (mp_obj_is_integer(freq_in)) {
+        // stop timer if we initialised TIM6 in this function (legacy behaviour)
+        HAL_TIM_Base_Stop(tim);
+    }
+    #endif
 
     return mp_obj_new_int(bufinfo.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
-#endif
 
 STATIC const mp_map_elem_t adc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&adc_read_obj},
-    #if defined(TIM6)
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_timed), (mp_obj_t)&adc_read_timed_obj},
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);

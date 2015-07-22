@@ -80,25 +80,20 @@ void dac_init(void) {
 #if defined(TIM6)
 STATIC void TIM6_Config(uint freq) {
     // Init TIM6 at the required frequency (in Hz)
-    timer_tim6_init(freq);
+    TIM_HandleTypeDef *tim = timer_tim6_init(freq);
 
     // TIM6 TRGO selection
     TIM_MasterConfigTypeDef config;
     config.MasterOutputTrigger = TIM_TRGO_UPDATE;
     config.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&TIM6_Handle, &config);
+    HAL_TIMEx_MasterConfigSynchronization(tim, &config);
 
     // TIM6 start counter
-    HAL_TIM_Base_Start(&TIM6_Handle);
+    HAL_TIM_Base_Start(tim);
 }
 #endif
 
 STATIC uint32_t TIMx_Config(mp_obj_t timer) {
-    // make sure the given object is a timer
-    if (mp_obj_get_type(timer) != &pyb_timer_type) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a Timer object"));
-    }
-
     // TRGO selection to trigger DAC
     TIM_HandleTypeDef *tim = pyb_timer_get_handle(timer);
     TIM_MasterConfigTypeDef config;
