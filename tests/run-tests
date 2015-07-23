@@ -33,11 +33,11 @@ def run_micropython(pyb, args, test_file):
             # special handling for tests of the unix cmdline program
 
             # check for any cmdline options needed for this test
-            args = [MICROPYTHON]
+            pargs = [MICROPYTHON]
             with open(test_file, 'rb') as f:
                 line = f.readline()
                 if line.startswith(b'# cmdline:'):
-                    args += line[10:].strip().split()
+                    pargs += line[10:].strip().split()
 
             # run the test, possibly with redirected input
             try:
@@ -69,9 +69,9 @@ def run_micropython(pyb, args, test_file):
                         return rv
 
                     with open(test_file, 'rb') as f:
-                        #Instead of: output_mupy = subprocess.check_output(args, stdin=f)
+                        #Instead of: output_mupy = subprocess.check_output(pargs, stdin=f)
                         master, slave = pty.openpty()
-                        p = subprocess.Popen(args, stdin=slave, stdout=slave, \
+                        p = subprocess.Popen(pargs, stdin=slave, stdout=slave, \
                                              stderr=subprocess.STDOUT, bufsize=0)
                         banner = get(0.1)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
@@ -80,7 +80,7 @@ def run_micropython(pyb, args, test_file):
                         os.close(slave)
                         #print(output_mupy) # DEBUG
                 else:
-                    output_mupy = subprocess.check_output(args + [test_file])
+                    output_mupy = subprocess.check_output(pargs + [test_file])
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
 
@@ -137,8 +137,8 @@ def run_micropython(pyb, args, test_file):
                         #print("match") # DEBUG
                         lines_mupy[i_mupy] = lines_exp[i][0]
                     else:
-                        #print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
-                        pass
+                        if args.verbose:
+                            print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
                     i_mupy += 1
                 if i_mupy >= len(lines_mupy):
                     break
@@ -288,7 +288,7 @@ def run_tests(pyb, tests, args):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            #print(output_mupy)  # DEBUG
+            #print(output_mupy) # DEBUG
             with open(filename_expected, "wb") as f:
                 f.write(output_expected)
             with open(filename_mupy, "wb") as f:
@@ -318,6 +318,8 @@ def main():
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
+    cmd_parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                            help='Print more info on failures')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
