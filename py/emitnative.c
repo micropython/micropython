@@ -675,6 +675,12 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     if (emit->do_viper_types) {
 
+        // right now we have a restriction of maximum of 4 arguments
+        if (scope->num_pos_args >= 5) {
+            EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "Viper functions don't currently support more than 4 arguments (while compiling '%q')", scope->simple_name); return;
+            return;
+        }
+
         // entry to function
         int num_locals = 0;
         if (pass > MP_PASS_SCOPE) {
