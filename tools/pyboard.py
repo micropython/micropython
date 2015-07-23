@@ -10,6 +10,13 @@ Example usage:
 
     import pyboard
     pyb = pyboard.Pyboard('/dev/ttyACM0')
+
+Or:
+
+    pyb = pyboard.Pyboard('192.168.1.1')
+
+Then:
+
     pyb.enter_raw_repl()
     pyb.exec('pyb.LED(1).on()')
     pyb.exit_raw_repl()
@@ -31,7 +38,6 @@ Or:
 
 import sys
 import time
-import serial
 
 def stdout_write_bytes(b):
     sys.stdout.buffer.write(b)
@@ -40,27 +46,95 @@ def stdout_write_bytes(b):
 class PyboardError(BaseException):
     pass
 
-class Pyboard:
-    def __init__(self, serial_device, baudrate=115200):
-        self.serial = serial.Serial(serial_device, baudrate=baudrate, interCharTimeout=1)
+class TelnetToSerial:
+    def __init__(self, ip, user, password, read_timeout=None):
+        import telnetlib
+        self.tn = telnetlib.Telnet(ip, timeout=15)
+        self.read_timeout = read_timeout
+        if b'Login as:' in self.tn.read_until(b'Login as:', timeout=read_timeout):
+            self.tn.write(bytes(user, 'ascii') + b"\r\n")
+
+            if b'Password:' in self.tn.read_until(b'Password:', timeout=read_timeout):
+                # needed because of internal implementation details of the telnet server
+                time.sleep(0.2)
+                self.tn.write(bytes(password, 'ascii') + b"\r\n")
+
+                if b'for more information.' in self.tn.read_until(b'Type "help()" for more information.', timeout=read_timeout):
+                    # login succesful
+                    from collections import deque
+                    self.fifo = deque()
+                    return
+
+        raise PyboardError('Failed to establish a telnet connection with the board')
+
+    def __del__(self):
+        self.close()
 
     def close(self):
-        self.serial.close()
+        try:
+            self.tn.close()
+        except:
+            # the telnet object might not exist yet, so ignore this one
+            pass
+
+    def read(self, size=1):
+        while len(self.fifo) < size:
+            timeout_count = 0
+            data = self.tn.read_eager()
+            if len(data):
+                self.fifo.extend(data)
+                timeout_count = 0
+            else:
+                time.sleep(0.25)
+                if self.read_timeout is not None and timeout_count > 4 * self.read_timeout:
+                    break
+                timeout_count += 1
+
+        data = b''
+        while len(data) < size and len(self.fifo) > 0:
+            data += bytes([self.fifo.popleft()])
+        return data
+
+    def write(self, data):
+        self.tn.write(data)
+        return len(data)
+
+    def inWaiting(self):
+        n_waiting = len(self.fifo)
+        if not n_waiting:
+            data = self.tn.read_eager()
+            self.fifo.extend(data)
+            return len(data)
+        else:
+            return n_waiting
+
+class Pyboard:
+    def __init__(self, device, baudrate=115200, user='micro', password='python'):
+        try:
+            # check if the device is an IP address
+            import socket
+            socket.inet_aton(device)
+            self.conn = TelnetToSerial(device, user, password, read_timeout=10)
+        except socket.error:
+            import serial
+            self.conn = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+
+    def close(self):
+        self.conn.close()
 
     def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
-        data = self.serial.read(min_num_bytes)
+        data = self.conn.read(min_num_bytes)
         if data_consumer:
             data_consumer(data)
         timeout_count = 0
         while True:
             if data.endswith(ending):
                 break
-            elif self.serial.inWaiting() > 0:
-                new_data = self.serial.read(1)
+            elif self.conn.inWaiting() > 0:
+                new_data = self.conn.read(1)
                 data = data + new_data
                 if data_consumer:
                     data_consumer(new_data)
-                #time.sleep(0.01)
                 timeout_count = 0
             else:
                 timeout_count += 1
@@ -70,28 +144,28 @@ class Pyboard:
         return data
 
     def enter_raw_repl(self):
-        self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
+        self.conn.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
-        n = self.serial.inWaiting()
+        n = self.conn.inWaiting()
         while n > 0:
-            self.serial.read(n)
-            n = self.serial.inWaiting()
+            self.conn.read(n)
+            n = self.conn.inWaiting()
 
-        self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
+        self.conn.write(b'\r\x01') # ctrl-A: enter raw REPL
         data = self.read_until(1, b'to exit\r\n>')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
             raise PyboardError('could not enter raw repl')
 
-        self.serial.write(b'\x04') # ctrl-D: soft reset
+        self.conn.write(b'\x04') # ctrl-D: soft reset
         data = self.read_until(1, b'to exit\r\n')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n'):
             print(data)
             raise PyboardError('could not enter raw repl')
 
     def exit_raw_repl(self):
-        self.serial.write(b'\r\x02') # ctrl-B: enter friendly REPL
+        self.conn.write(b'\r\x02') # ctrl-B: enter friendly REPL
 
     def follow(self, timeout, data_consumer=None):
         # wait for normal output
@@ -122,12 +196,12 @@ class Pyboard:
 
         # write command
         for i in range(0, len(command_bytes), 256):
-            self.serial.write(command_bytes[i:min(i + 256, len(command_bytes))])
+            self.conn.write(command_bytes[i:min(i + 256, len(command_bytes))])
             time.sleep(0.01)
-        self.serial.write(b'\x04')
+        self.conn.write(b'\x04')
 
         # check if we could exec command
-        data = self.serial.read(2)
+        data = self.conn.read(2)
         if data != b'OK':
             raise PyboardError('could not exec command')
 
@@ -155,85 +229,28 @@ class Pyboard:
         t = str(self.eval('pyb.RTC().datetime()'), encoding='utf8')[1:-1].split(', ')
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
 
-def execfile(filename, device='/dev/ttyACM0'):
-    pyb = Pyboard(device)
+def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', password='python'):
+    pyb = Pyboard(device, baudrate, user, password)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
     stdout_write_bytes(output)
     pyb.exit_raw_repl()
     pyb.close()
 
-def run_test(device):
-    pyb = Pyboard(device)
-    pyb.enter_raw_repl()
-    print('opened device {}'.format(device))
-
-    pyb.exec('import pyb')  # module pyb no longer imported by default, required for pyboard tests
-    print('seconds since boot:', pyb.get_time())
-
-    pyb.exec('def apply(l, f):\r\n for item in l:\r\n  f(item)\r\n')
-
-    pyb.exec('leds=[pyb.LED(l) for l in range(1, 5)]')
-    pyb.exec('apply(leds, lambda l:l.off())')
-
-    ## USR switch test
-
-    pyb.exec('switch = pyb.Switch()')
-
-    for i in range(2):
-        print("press USR button")
-        pyb.exec('while switch(): pyb.delay(10)')
-        pyb.exec('while not switch(): pyb.delay(10)')
-
-    print('USR switch passed')
-
-    ## accel test
-
-    if True:
-        print("hold level")
-        pyb.exec('accel = pyb.Accel()')
-        pyb.exec('while abs(accel.x()) > 10 or abs(accel.y()) > 10: pyb.delay(10)')
-
-        print("tilt left")
-        pyb.exec('while accel.x() > -10: pyb.delay(10)')
-        pyb.exec('leds[0].on()')
-
-        print("tilt forward")
-        pyb.exec('while accel.y() < 10: pyb.delay(10)')
-        pyb.exec('leds[1].on()')
-
-        print("tilt right")
-        pyb.exec('while accel.x() < 10: pyb.delay(10)')
-        pyb.exec('leds[2].on()')
-
-        print("tilt backward")
-        pyb.exec('while accel.y() > -10: pyb.delay(10)')
-        pyb.exec('leds[3].on()')
-
-        print('accel passed')
-
-    print('seconds since boot:', pyb.get_time())
-
-    pyb.exec('apply(leds, lambda l:l.off())')
-
-    pyb.exit_raw_repl()
-    pyb.close()
-
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Run scripts on the pyboard.')
-    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the pyboard')
+    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')
+    cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
+    cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
+    cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
-    cmd_parser.add_argument('--test', action='store_true', help='run a small test suite on the pyboard')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
 
-    if args.test:
-        run_test(device=args.device)
-
     for filename in args.files:
         try:
-            pyb = Pyboard(args.device)
+            pyb = Pyboard(args.device, args.baudrate, args.user, args.password)
             pyb.enter_raw_repl()
             with open(filename, 'rb') as f:
                 pyfile = f.read()
@@ -251,7 +268,7 @@ def main():
 
     if args.follow or len(args.files) == 0:
         try:
-            pyb = Pyboard(args.device)
+            pyb = Pyboard(args.device, args.baudrate, args.user, args.password)
             ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
             pyb.close()
         except PyboardError as er:
