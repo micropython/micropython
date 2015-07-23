@@ -42,9 +42,43 @@ def run_micropython(pyb, args, test_file):
             # run the test, possibly with redirected input
             try:
                 if test_file.startswith('cmdline/repl_'):
-                    f = open(test_file, 'rb')
-                    output_mupy = subprocess.check_output(args, stdin=f)
-                    f.close()
+                    # Need to use a PTY to test command line editing
+                    import pty
+                    import select
+                    import time
+
+                    def get(timeout=None, maxlen=1024):
+                        if timeout is None:
+                            timeout = 0.1
+                        rv = b''
+                        while True:
+                            ready = select.select([master], [], [], timeout)
+                            if ready[0] == [master]:
+                                rv += os.read(master, maxlen)
+                            else:
+                                return rv
+
+                    def send_get(what, timeout=None):
+                        if timeout is None:
+                            timeout = 0.1
+                        ready = select.select([], [master], [], timeout)
+                        #print('sending %r' % what) # DEBUG
+                        os.write(master, what)
+                        rv = get(timeout)
+                        #print('got %r' % rv) # DEBUG
+                        return rv
+
+                    with open(test_file, 'rb') as f:
+                        #Instead of: output_mupy = subprocess.check_output(args, stdin=f)
+                        master, slave = pty.openpty()
+                        p = subprocess.Popen(args, stdin=slave, stdout=slave, \
+                                             stderr=subprocess.STDOUT, bufsize=0)
+                        banner = get(0.1)
+                        output_mupy = banner + b''.join(send_get(line) for line in f)
+                        p.kill()
+                        os.close(master)
+                        os.close(slave)
+                        #print(output_mupy) # DEBUG
                 else:
                     output_mupy = subprocess.check_output(args + [test_file])
             except subprocess.CalledProcessError:
@@ -64,6 +98,9 @@ def run_micropython(pyb, args, test_file):
                         cs.append('\\' + c)
                     else:
                         cs.append(c)
+                # accept carriage-return(s) before final newline
+                if cs[-1] == '\n':
+                    cs[-1] = '\r*\n'
                 return bytes(''.join(cs), 'utf8')
 
             # convert parts of the output that are not stable across runs
@@ -82,6 +119,7 @@ def run_micropython(pyb, args, test_file):
             for i in range(len(lines_exp)):
                 if lines_exp[i][0] == b'########\n':
                     # 8x #'s means match 0 or more whole lines
+                    #print(repr(lines_exp[i])) # DEBUG
                     line_exp = lines_exp[i + 1]
                     skip = 0
                     while i_mupy + skip < len(lines_mupy) and not line_exp[1].match(lines_mupy[i_mupy + skip]):
@@ -94,13 +132,18 @@ def run_micropython(pyb, args, test_file):
                     i_mupy += 1
                 else:
                     # a regex
+                    #print("Compare: %r %r" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
                     if lines_exp[i][1].match(lines_mupy[i_mupy]):
+                        #print("match") # DEBUG
                         lines_mupy[i_mupy] = lines_exp[i][0]
+                    else:
+                        #print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
+                        pass
                     i_mupy += 1
                 if i_mupy >= len(lines_mupy):
                     break
             output_mupy = b''.join(lines_mupy)
-
+            #print(output_mupy)  # DEBUG
         else:
             # a standard test
             try:
@@ -115,6 +158,7 @@ def run_micropython(pyb, args, test_file):
             output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
         except pyboard.PyboardError:
             output_mupy = b'CRASH'
+        #print("pyboard: %r" % output_mupy) # DEBUG
 
     return output_mupy
 
@@ -133,16 +177,16 @@ def run_tests(pyb, tests, args):
     if native == b'CRASH':
         skip_native = True
 
-    # These tests no longer work; TODO change them or remove them
-    skip_tests.add('cmdline/repl_basic.py')
-    skip_tests.add('cmdline/repl_cont.py')
-
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
 
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
+        # pyboard testing uses raw REPL, which prevents testing of the human REPL
+        skip_tests.add('cmdline/repl_basic.py')
+        skip_tests.add('cmdline/repl_cont.py')
+
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
         skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
@@ -225,6 +269,8 @@ def run_tests(pyb, tests, args):
             # It may be the case that we run Windows build under Linux
             # (using Wine).
             output_mupy = output_mupy.replace(b'\r\n', b'\n')
+            #output_mupy = output_mupy.replace(b'\r\n', b'\n') # DEBUG
+            #print(repr(output_mupy)) # DEBUG
 
         if output_mupy == b'SKIP\n' or output_mupy == b'SKIP\r\n':
             print("skip ", test_file)
@@ -242,6 +288,7 @@ def run_tests(pyb, tests, args):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
+            #print(output_mupy)  # DEBUG
             with open(filename_expected, "wb") as f:
                 f.write(output_expected)
             with open(filename_mupy, "wb") as f:

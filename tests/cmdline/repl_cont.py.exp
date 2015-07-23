@@ -1,6 +1,6 @@
 Micro Python \.\+ linux version
 >>> # check REPL allows to continue input
->>> 1 \
+>>> 1 \\\\
 ... + 2
 3
 >>> 'abc'
@@ -9,10 +9,10 @@ Micro Python \.\+ linux version
 'abc'
 >>> '''abc
 ... def'''
-'abc\ndef'
+'abc\\\\ndef'
 >>> """ABC
 ... DEF"""
-'ABC\nDEF'
+'ABC\\\\nDEF'
 >>> print(
 ... 1 + 2)
 3
