@@ -38,3 +38,21 @@ def a(x):
                if x:
                 print(x)
 a(1)
+
+# badly formed hex escape sequences
+try:
+    exec(r"'\x0'")
+except SyntaxError:
+    print("SyntaxError")
+try:
+    exec(r"b'\x0'")
+except SyntaxError:
+    print("SyntaxError")
+try:
+    exec(r"'\u000'")
+except SyntaxError:
+    print("SyntaxError")
+try:
+    exec(r"'\U0000000'")
+except SyntaxError:
+    print("SyntaxError")
