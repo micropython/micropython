@@ -150,28 +150,21 @@ int readline_process_char(int c) {
                 redraw_from_cursor = true;
             }
         #if MICROPY_ENABLE_EMACS_REPL
-        } else if (c == CHAR_CTRL_D) {
+        } else if (c == CHAR_CTRL_D && rl.cursor_pos >= rl.orig_line_len) {
             // delete at cursor
-            if (rl.cursor_pos >= rl.orig_line_len) {
-                vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
-                // set redraw parameters
-                redraw_from_cursor = true;
-            }
-        } else if (c == CHAR_CTRL_K) {
+	    vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
+	    redraw_from_cursor = true;
+        } else if (c == CHAR_CTRL_K && rl.cursor_pos >= rl.orig_line_len) {
             // kill from cursor to end-of-line, inclusive
-            if (rl.cursor_pos >= rl.orig_line_len) {
-                vstr_cut_tail_bytes(rl.line, last_line_len-rl.cursor_pos);
-                // set redraw parameters
-                redraw_from_cursor = true;
-            }
-        } else if (c == CHAR_CTRL_U) {
+	    vstr_cut_tail_bytes(rl.line, last_line_len-rl.cursor_pos);
+	    // set redraw parameters
+	    redraw_from_cursor = true;
+        } else if (c == CHAR_CTRL_U && rl.cursor_pos >= rl.orig_line_len) {
             // kill from beginning-of-line up to cursor
-            if (rl.cursor_pos >= rl.orig_line_len) {
-                vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos-rl.orig_line_len);
-		redraw_step_back = rl.cursor_pos - rl.orig_line_len;
-                // set redraw parameters
-                redraw_from_cursor = true;
-            }
+	    vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos-rl.orig_line_len);
+	    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+	    // set redraw parameters
+	    redraw_from_cursor = true;
         #endif
         #if MICROPY_HELPER_REPL
         } else if (c == 9) {
