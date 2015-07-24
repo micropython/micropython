@@ -720,6 +720,11 @@ memory_error:
         goto syntax_error;
     }
 
+    // check that parsing resulted in a parse node (can fail on empty input)
+    if (parser.result_stack_top == 0) {
+        goto syntax_error;
+    }
+
     //result_stack_show(parser);
     //printf("rule stack alloc: %d\n", parser.rule_stack_alloc);
     //printf("result stack alloc: %d\n", parser.result_stack_alloc);
