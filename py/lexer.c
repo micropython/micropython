@@ -454,8 +454,8 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                             {
                                 mp_uint_t num = 0;
                                 if (!get_hex(lex, (c == 'x' ? 2 : c == 'u' ? 4 : 8), &num)) {
-                                    // TODO error message
-                                    assert(0);
+                                    // not enough hex chars for escape sequence
+                                    lex->tok_kind = MP_TOKEN_INVALID;
                                 }
                                 c = num;
                                 break;

@@ -397,6 +397,7 @@ typedef mp_uint_t (*viper_fun_0_t)(void);
 typedef mp_uint_t (*viper_fun_1_t)(mp_uint_t);
 typedef mp_uint_t (*viper_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*viper_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
+typedef mp_uint_t (*viper_fun_4_t)(mp_uint_t, mp_uint_t, mp_uint_t, mp_uint_t);
 
 STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_viper_t *self = self_in;
@@ -414,7 +415,15 @@ STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_k
         ret = ((viper_fun_2_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4));
     } else if (n_args == 3) {
         ret = ((viper_fun_3_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4), mp_convert_obj_to_native(args[2], self->type_sig >> 6));
+    } else if (n_args == 4) {
+        ret = ((viper_fun_4_t)fun)(
+            mp_convert_obj_to_native(args[0], self->type_sig >> 2),
+            mp_convert_obj_to_native(args[1], self->type_sig >> 4),
+            mp_convert_obj_to_native(args[2], self->type_sig >> 6),
+            mp_convert_obj_to_native(args[3], self->type_sig >> 8)
+        );
     } else {
+        // TODO 5 or more arguments not supported for viper call
         assert(0);
         ret = 0;
     }
