@@ -1,5 +1,12 @@
 # parser tests
 
+try:
+    compile
+except NameError:
+    print("SKIP")
+    import sys
+    sys.exit()
+
 # completely empty string
 # uPy and CPy differ for this case
 #try:
