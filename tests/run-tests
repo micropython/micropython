@@ -62,10 +62,8 @@ def run_micropython(pyb, args, test_file):
                         if timeout is None:
                             timeout = 0.1
                         ready = select.select([], [master], [], timeout)
-                        #print('sending %r' % what) # DEBUG
                         os.write(master, what)
                         rv = get(timeout)
-                        #print('got %r' % rv) # DEBUG
                         return rv
 
                     with open(test_file, 'rb') as f:
@@ -78,7 +76,6 @@ def run_micropython(pyb, args, test_file):
                         p.kill()
                         os.close(master)
                         os.close(slave)
-                        #print(output_mupy) # DEBUG
                 else:
                     output_mupy = subprocess.check_output(pargs + [test_file])
             except subprocess.CalledProcessError:
@@ -119,7 +116,6 @@ def run_micropython(pyb, args, test_file):
             for i in range(len(lines_exp)):
                 if lines_exp[i][0] == b'########\n':
                     # 8x #'s means match 0 or more whole lines
-                    #print(repr(lines_exp[i])) # DEBUG
                     line_exp = lines_exp[i + 1]
                     skip = 0
                     while i_mupy + skip < len(lines_mupy) and not line_exp[1].match(lines_mupy[i_mupy + skip]):
@@ -132,18 +128,15 @@ def run_micropython(pyb, args, test_file):
                     i_mupy += 1
                 else:
                     # a regex
-                    #print("Compare: %r %r" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
                     if lines_exp[i][1].match(lines_mupy[i_mupy]):
-                        #print("match") # DEBUG
                         lines_mupy[i_mupy] = lines_exp[i][0]
                     else:
                         if args.verbose:
-                            print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
+                            print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy]))
                     i_mupy += 1
                 if i_mupy >= len(lines_mupy):
                     break
             output_mupy = b''.join(lines_mupy)
-            #print(output_mupy)  # DEBUG
         else:
             # a standard test
             try:
@@ -158,7 +151,6 @@ def run_micropython(pyb, args, test_file):
             output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
         except pyboard.PyboardError:
             output_mupy = b'CRASH'
-        #print("pyboard: %r" % output_mupy) # DEBUG
 
     return output_mupy
 
@@ -269,8 +261,6 @@ def run_tests(pyb, tests, args):
             # It may be the case that we run Windows build under Linux
             # (using Wine).
             output_mupy = output_mupy.replace(b'\r\n', b'\n')
-            #output_mupy = output_mupy.replace(b'\r\n', b'\n') # DEBUG
-            #print(repr(output_mupy)) # DEBUG
 
         if output_mupy == b'SKIP\n' or output_mupy == b'SKIP\r\n':
             print("skip ", test_file)
@@ -288,7 +278,6 @@ def run_tests(pyb, tests, args):
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
-            #print(output_mupy) # DEBUG
             with open(filename_expected, "wb") as f:
                 f.write(output_expected)
             with open(filename_mupy, "wb") as f:
@@ -318,8 +307,7 @@ def main():
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
-    cmd_parser.add_argument('-v', '--verbose', action='store_true', default=False,
-                            help='Print more info on failures')
+    cmd_parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print more info on failures')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
