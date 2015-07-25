@@ -59,6 +59,7 @@ Q(disconnect)
 Q(phy_mode)
 Q(sleep_type)
 Q(deepsleep)
+Q(opmode)
 Q(adc)
 Q(vdd33)
 Q(chip_id)
@@ -89,6 +90,10 @@ Q(MODE_11N)
 Q(SLEEP_NONE)
 Q(SLEEP_LIGHT)
 Q(SLEEP_MODEM)
+
+Q(STATION_MODE)
+Q(SOFTAP_MODE)
+Q(STATIONAP_MODE)
 
 // network module
 Q(network)
