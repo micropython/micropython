@@ -79,14 +79,14 @@ class Pyboard:
             n = self.serial.inWaiting()
 
         self.serial.write(b'\r\x01') # ctrl-A: enter raw REPL
-        data = self.read_until(1, b'to exit\r\n>')
+        data = self.read_until(1, b'raw REPL; CTRL-B to exit\r\n>')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
             raise PyboardError('could not enter raw repl')
 
         self.serial.write(b'\x04') # ctrl-D: soft reset
-        data = self.read_until(1, b'to exit\r\n')
-        if not data.endswith(b'raw REPL; CTRL-B to exit\r\n'):
+        data = self.read_until(1, b'soft reboot\r\nraw REPL; CTRL-B to exit\r\n')
+        if not data.endswith(b'soft reboot\r\nraw REPL; CTRL-B to exit\r\n'):
             print(data)
             raise PyboardError('could not enter raw repl')
 
