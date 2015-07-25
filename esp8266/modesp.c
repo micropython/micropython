@@ -555,6 +555,16 @@ STATIC mp_obj_t esp_deepsleep(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 1, esp_deepsleep);
 
+STATIC mp_obj_t esp_opmode(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_obj_new_int(wifi_get_opmode());
+    } else {
+        wifi_set_opmode(n_args > 0 ? mp_obj_get_int(args[0]) : 0);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_opmode_obj, 0, 1, esp_opmode);
+
 STATIC mp_obj_t esp_flash_id() {
     return mp_obj_new_int(spi_flash_get_id());
 }
@@ -568,6 +578,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_type), (mp_obj_t)&esp_sleep_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_opmode), (mp_obj_t)&esp_opmode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id), (mp_obj_t)&esp_flash_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
 
@@ -585,6 +596,13 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(LIGHT_SLEEP_T) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_MODEM),
         MP_OBJ_NEW_SMALL_INT(MODEM_SLEEP_T) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STATION_MODE),
+        MP_OBJ_NEW_SMALL_INT(STATION_MODE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFTAP_MODE),
+        MP_OBJ_NEW_SMALL_INT(SOFTAP_MODE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STATIONAP_MODE),
+        MP_OBJ_NEW_SMALL_INT(STATIONAP_MODE) },
 #endif
 };
 
