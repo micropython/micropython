@@ -104,7 +104,7 @@ class Pyboard:
         data_err = self.read_until(1, b'\x04', timeout=timeout)
         if not data_err.endswith(b'\x04'):
             raise PyboardError('timeout waiting for second EOF reception')
-        data_err = data_err[:-2]
+        data_err = data_err[:-1]
 
         # return normal and error output
         return data, data_err
