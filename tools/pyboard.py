@@ -66,7 +66,7 @@ class Pyboard:
                 timeout_count += 1
                 if timeout is not None and timeout_count >= 10 * timeout:
                     break
-                time.sleep(0.1)
+                time.sleep(0.01)
         return data
 
     def enter_raw_repl(self):
