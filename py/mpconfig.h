@@ -303,6 +303,11 @@
 #define MICROPY_HELPER_REPL (0)
 #endif
 
+// Whether to include emacs-style readline behavior in REPL
+#ifndef MICROPY_ENABLE_EMACS_REPL
+#define MICROPY_ENABLE_EMACS_REPL (1)
+#endif
+
 // Whether port requires event-driven REPL functions
 #ifndef MICROPY_REPL_EVENT_DRIVEN
 #define MICROPY_REPL_EVENT_DRIVEN (0)

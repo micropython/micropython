@@ -33,20 +33,51 @@ def run_micropython(pyb, args, test_file):
             # special handling for tests of the unix cmdline program
 
             # check for any cmdline options needed for this test
-            args = [MICROPYTHON]
+            pargs = [MICROPYTHON]
             with open(test_file, 'rb') as f:
                 line = f.readline()
                 if line.startswith(b'# cmdline:'):
-                    args += line[10:].strip().split()
+                    pargs += line[10:].strip().split()
 
             # run the test, possibly with redirected input
             try:
                 if test_file.startswith('cmdline/repl_'):
-                    f = open(test_file, 'rb')
-                    output_mupy = subprocess.check_output(args, stdin=f)
-                    f.close()
+                    # Need to use a PTY to test command line editing
+                    import pty
+                    import select
+                    import time
+
+                    def get(timeout=None, maxlen=1024):
+                        if timeout is None:
+                            timeout = 0.1
+                        rv = b''
+                        while True:
+                            ready = select.select([master], [], [], timeout)
+                            if ready[0] == [master]:
+                                rv += os.read(master, maxlen)
+                            else:
+                                return rv
+
+                    def send_get(what, timeout=None):
+                        if timeout is None:
+                            timeout = 0.1
+                        ready = select.select([], [master], [], timeout)
+                        os.write(master, what)
+                        rv = get(timeout)
+                        return rv
+
+                    with open(test_file, 'rb') as f:
+                        #Instead of: output_mupy = subprocess.check_output(pargs, stdin=f)
+                        master, slave = pty.openpty()
+                        p = subprocess.Popen(pargs, stdin=slave, stdout=slave, \
+                                             stderr=subprocess.STDOUT, bufsize=0)
+                        banner = get(0.1)
+                        output_mupy = banner + b''.join(send_get(line) for line in f)
+                        p.kill()
+                        os.close(master)
+                        os.close(slave)
                 else:
-                    output_mupy = subprocess.check_output(args + [test_file])
+                    output_mupy = subprocess.check_output(pargs + [test_file])
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
 
@@ -64,6 +95,9 @@ def run_micropython(pyb, args, test_file):
                         cs.append('\\' + c)
                     else:
                         cs.append(c)
+                # accept carriage-return(s) before final newline
+                if cs[-1] == '\n':
+                    cs[-1] = '\r*\n'
                 return bytes(''.join(cs), 'utf8')
 
             # convert parts of the output that are not stable across runs
@@ -96,11 +130,13 @@ def run_micropython(pyb, args, test_file):
                     # a regex
                     if lines_exp[i][1].match(lines_mupy[i_mupy]):
                         lines_mupy[i_mupy] = lines_exp[i][0]
+                    else:
+                        if args.verbose:
+                            print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy]))
                     i_mupy += 1
                 if i_mupy >= len(lines_mupy):
                     break
             output_mupy = b''.join(lines_mupy)
-
         else:
             # a standard test
             try:
@@ -133,16 +169,16 @@ def run_tests(pyb, tests, args):
     if native == b'CRASH':
         skip_native = True
 
-    # These tests no longer work; TODO change them or remove them
-    skip_tests.add('cmdline/repl_basic.py')
-    skip_tests.add('cmdline/repl_cont.py')
-
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
 
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
+        # pyboard testing uses raw REPL, which prevents testing of the human REPL
+        skip_tests.add('cmdline/repl_basic.py')
+        skip_tests.add('cmdline/repl_cont.py')
+
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
         skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
@@ -271,6 +307,7 @@ def main():
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
+    cmd_parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Print more info on failures')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
