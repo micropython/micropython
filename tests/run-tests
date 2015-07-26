@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import io
 import os
 import subprocess
 import sys
@@ -26,6 +27,46 @@ def rm_f(fname):
     if os.path.exists(fname):
         os.remove(fname)
 
+def run_micropython_pty_subprocess(args, pargs, test_file):
+    with open(test_file, 'rb') as f:
+        return run_micropython_pty_subprocess_with_input_stream(args, pargs, f)
+
+def run_micropython_pty_subprocess_with_input_stream(args, pargs, stream):
+    # run micropython as a subprocess over a pseudo-terminal
+    # Need to use a PTY to test command line editing
+    import pty
+    import select
+    import time
+
+    def get(timeout=None, maxlen=1024):
+        if timeout is None:
+            timeout = 0.1
+        rv = b''
+        while True:
+            ready = select.select([master], [], [], timeout)
+            if ready[0] == [master]:
+                rv += os.read(master, maxlen)
+            else:
+                return rv
+
+    def send_get(what, timeout=None):
+        if timeout is None:
+            timeout = 0.1
+        ready = select.select([], [master], [], timeout)
+        #FIXME: if not writeable
+        os.write(master, what)
+        rv = get(timeout)
+        return rv
+
+    master, slave = pty.openpty()
+    p = subprocess.Popen(pargs, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0)
+    banner = get(0.1)
+    output_mupy = banner + b''.join(send_get(line) for line in stream)
+    p.kill()
+    os.close(master)
+    os.close(slave)
+    return output_mupy
+
 def run_micropython(pyb, args, test_file):
     if pyb is None:
         # run on PC
@@ -41,41 +82,8 @@ def run_micropython(pyb, args, test_file):
 
             # run the test, possibly with redirected input
             try:
-                if test_file.startswith('cmdline/repl_'):
-                    # Need to use a PTY to test command line editing
-                    import pty
-                    import select
-                    import time
-
-                    def get(timeout=None, maxlen=1024):
-                        if timeout is None:
-                            timeout = 0.1
-                        rv = b''
-                        while True:
-                            ready = select.select([master], [], [], timeout)
-                            if ready[0] == [master]:
-                                rv += os.read(master, maxlen)
-                            else:
-                                return rv
-
-                    def send_get(what, timeout=None):
-                        if timeout is None:
-                            timeout = 0.1
-                        ready = select.select([], [master], [], timeout)
-                        os.write(master, what)
-                        rv = get(timeout)
-                        return rv
-
-                    with open(test_file, 'rb') as f:
-                        #Instead of: output_mupy = subprocess.check_output(pargs, stdin=f)
-                        master, slave = pty.openpty()
-                        p = subprocess.Popen(pargs, stdin=slave, stdout=slave, \
-                                             stderr=subprocess.STDOUT, bufsize=0)
-                        banner = get(0.1)
-                        output_mupy = banner + b''.join(send_get(line) for line in f)
-                        p.kill()
-                        os.close(master)
-                        os.close(slave)
+                if test_file.startswith('cmdline/repl_'): # FIXME: let test file indicate how it is to be run
+                    output_mupy = run_micropython_pty_subprocess(args, pargs, test_file)
                 else:
                     output_mupy = subprocess.check_output(pargs + [test_file])
             except subprocess.CalledProcessError:
@@ -168,6 +176,15 @@ def run_tests(pyb, tests, args):
     native = run_micropython(pyb, args, 'micropython/native_check.py')
     if native == b'CRASH':
         skip_native = True
+
+    # If the friendly REPL is not emacs-friendly, skip testing it
+    try:
+        t = run_micropython_pty_subprocess_with_input_stream(args, [MICROPYTHON], io.BytesIO(b'+1\x02\x021\n'))
+    except:
+        skip_tests.add('basics/repl_gnuish.py')
+    else:
+        if not re.match(b'(.|\n)*\n2\r*\n+(>>> )?$', t):
+            skip_tests.add('cmdline/repl_gnuish.py')
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
