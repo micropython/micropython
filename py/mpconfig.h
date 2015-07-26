@@ -305,7 +305,7 @@
 
 // Whether to include emacs-style readline behavior in REPL
 #ifndef MICROPY_REPL_EMACS_KEYS
-#define MICROPY_REPL_EMACS_KEYS (1)
+#define MICROPY_REPL_EMACS_KEYS (0)
 #endif
 
 // Whether port requires event-driven REPL functions
