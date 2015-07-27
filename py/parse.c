@@ -448,36 +448,24 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 } else {
                     backtrack = false;
                 }
-                for (; i < n - 1; ++i) {
-                    switch (rule->arg[i] & RULE_ARG_KIND_MASK) {
-                        case RULE_ARG_TOK:
-                            if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
-                                push_result_token(&parser);
-                                mp_lexer_to_next(lex);
-                                goto next_rule;
-                            }
-                            break;
-                        case RULE_ARG_RULE:
-                        rule_or_no_other_choice:
-                            push_rule(&parser, rule_src_line, rule, i + 1); // save this or-rule
-                            push_rule_from_arg(&parser, rule->arg[i]); // push child of or-rule
+                for (; i < n; ++i) {
+                    uint16_t kind = rule->arg[i] & RULE_ARG_KIND_MASK;
+                    if (kind == RULE_ARG_TOK) {
+                        if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
+                            push_result_token(&parser);
+                            mp_lexer_to_next(lex);
                             goto next_rule;
-                        default:
-                            assert(0);
-                            goto rule_or_no_other_choice; // to help flow control analysis
-                    }
-                }
-                if ((rule->arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
-                    if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
-                        push_result_token(&parser);
-                        mp_lexer_to_next(lex);
+                        }
                     } else {
-                        backtrack = true;
+                        assert(kind == RULE_ARG_RULE);
+                        if (i + 1 < n) {
+                            push_rule(&parser, rule_src_line, rule, i + 1); // save this or-rule
+                        }
+                        push_rule_from_arg(&parser, rule->arg[i]); // push child of or-rule
                         goto next_rule;
                     }
-                } else {
-                    push_rule_from_arg(&parser, rule->arg[i]);
                 }
+                backtrack = true;
                 break;
 
             case RULE_ACT_AND: {
@@ -729,6 +717,11 @@ memory_error:
 
     // check we are at the end of the token stream
     if (lex->tok_kind != MP_TOKEN_END) {
+        goto syntax_error;
+    }
+
+    // check that parsing resulted in a parse node (can fail on empty input)
+    if (parser.result_stack_top == 0) {
         goto syntax_error;
     }
 

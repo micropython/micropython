@@ -31,15 +31,16 @@
 
 extern TIM_HandleTypeDef TIM3_Handle;
 extern TIM_HandleTypeDef TIM5_Handle;
-extern TIM_HandleTypeDef TIM6_Handle;
 
 extern const mp_obj_type_t pyb_timer_type;
 
 void timer_init0(void);
 void timer_tim3_init(void);
 void timer_tim5_init(void);
-void timer_tim6_init(uint freq);
+TIM_HandleTypeDef *timer_tim6_init(uint freq);
 
 void timer_deinit(void);
 
 void timer_irq_handler(uint tim_id);
+
+TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer);

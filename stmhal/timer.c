@@ -227,7 +227,7 @@ void timer_tim5_init(void) {
 // Init TIM6 with a counter-overflow at the given frequency (given in Hz)
 // TIM6 is used by the DAC and ADC for auto sampling at a given frequency
 // This function inits but does not start the timer
-void timer_tim6_init(uint freq) {
+TIM_HandleTypeDef *timer_tim6_init(uint freq) {
     // TIM6 clock enable
     __TIM6_CLK_ENABLE();
 
@@ -247,6 +247,8 @@ void timer_tim6_init(uint freq) {
     TIM6_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1; // unused for TIM6
     TIM6_Handle.Init.CounterMode = TIM_COUNTERMODE_UP; // unused for TIM6
     HAL_TIM_Base_Init(&TIM6_Handle);
+
+    return &TIM6_Handle;
 }
 #endif
 
@@ -468,6 +470,14 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks) {
     deadTimeConfig.BreakPolarity    = TIM_BREAKPOLARITY_LOW;
     deadTimeConfig.AutomaticOutput  = TIM_AUTOMATICOUTPUT_DISABLE;
     HAL_TIMEx_ConfigBreakDeadTime(&self->tim, &deadTimeConfig);
+}
+
+TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer) {
+    if (mp_obj_get_type(timer) != &pyb_timer_type) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a Timer object"));
+    }
+    pyb_timer_obj_t *self = timer;
+    return &self->tim;
 }
 
 STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
