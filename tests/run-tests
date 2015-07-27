@@ -181,10 +181,10 @@ def run_tests(pyb, tests, args):
     try:
         t = run_micropython_pty_subprocess_with_input_stream(args, [MICROPYTHON], io.BytesIO(b'+1\x02\x021\n'))
     except:
-        skip_tests.add('basics/repl_gnuish.py')
+        skip_tests.add('cmdline/repl_emacs_keys.py')
     else:
         if not re.match(b'(.|\n)*\n2\r*\n+(>>> )?$', t):
-            skip_tests.add('cmdline/repl_gnuish.py')
+            skip_tests.add('cmdline/repl_emacs_keys.py')
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
