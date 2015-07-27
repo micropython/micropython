@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-#include "py/obj.h"
+#include "py/mpstate.h"
 #include "lib/fatfs/ff.h"
 #include "ffconf.h"
 #include "fsusermount.h"
@@ -63,7 +63,7 @@ int ff_get_ldnumber (const TCHAR **path) {
         return 0;
     } else if (check_path(path, "/sd", 3)) {
         return 1;
-    } else if (fs_user_mount != NULL && check_path(path, fs_user_mount->str, fs_user_mount->len)) {
+    } else if (MP_STATE_PORT(fs_user_mount) != NULL && check_path(path, MP_STATE_PORT(fs_user_mount)->str, MP_STATE_PORT(fs_user_mount)->len)) {
         return 2;
     } else {
         return -1;
@@ -78,7 +78,7 @@ void ff_get_volname(BYTE vol, TCHAR **dest) {
         memcpy(*dest, "/sd", 3);
         *dest += 3;
     } else {
-        memcpy(*dest, fs_user_mount->str, fs_user_mount->len);
-        *dest += fs_user_mount->len;
+        memcpy(*dest, MP_STATE_PORT(fs_user_mount)->str, MP_STATE_PORT(fs_user_mount)->len);
+        *dest += MP_STATE_PORT(fs_user_mount)->len;
     }
 }
