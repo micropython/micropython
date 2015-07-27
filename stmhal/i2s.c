@@ -221,8 +221,8 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
 	if (i2s_obj->pins[i] != MP_OBJ_NULL) {
 	    GPIO_InitStructure.Pin = i2s_obj->pins[i]->pin_mask;
 	    const pin_af_obj_t *af = pin_find_af(i2s_obj->pins[i], AF_FN_I2S, i2s_obj->i2s_id);
-	    // Here I just bypass the GPIO_AFx_I2Sx macros; they are just descriptive
-	    // names for the same integer stored in af->idx
+	    assert(af != NULL);
+	    // Alt function is set using af->idx instead of GPIO_AFx_I2Sx macros
 	    GPIO_InitStructure.Alternate = (uint8_t)af->idx;
 	    HAL_GPIO_Init(i2s_obj->pins[i]->gpio, &GPIO_InitStructure);
 	}
@@ -361,13 +361,13 @@ STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
 				    const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
 	{ MP_QSTR_mode,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 /* MASTER */} },
+	{ MP_QSTR_dataformat, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 	{ MP_QSTR_standard,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_STANDARD_PHILIPS} },
-	{ MP_QSTR_dataformat, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_DATAFORMAT_16B_EXTENDED} },
-	{ MP_QSTR_polarity,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_CPOL_LOW} },
-	// Include option for setting I2SPLL parameters directly?
+	{ MP_QSTR_polarity,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 	{ MP_QSTR_audiofreq,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_AUDIOFREQ_48K} },
 	{ MP_QSTR_clksrc,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_CLOCK_PLL} },
-	{ MP_QSTR_mclkout,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_MCLKOUTPUT_DISABLE} },
+	{ MP_QSTR_mclkout,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+	// Include option for setting I2SPLL parameters directly?
     };
 
     // parse args
@@ -386,11 +386,17 @@ STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
 	init->Mode = self->base_is_tx ? I2S_MODE_SLAVE_TX : I2S_MODE_SLAVE_RX;
     }
 
-    init->Standard   = args[1].u_int;
-    init->DataFormat = args[2].u_int;
-    init->CPOL       = args[3].u_int;
+    if (args[1].u_int = 0)  { init->DataFormat = I2S_DATAFORMAT_16B; }
+    else if (args[1].u_int = 16) { init->DataFormat = I2S_DATAFORMAT_16B_EXTENDED; }
+    else if (args[1].u_int = 24) { init->DataFormat = I2S_DATAFORMAT_24B; }
+    else if (args[1].u_int = 32) { init->DataFormat = I2S_DATAFORMAT_32B; }
+    else { nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+						   "%d not a valid data format", args[2].u_int)); }
+
+    init->Standard   = args[2].u_int;
+    init->CPOL       = args[3].u_int ? I2S_CPOL_HIGH : I2S_CPOL_LOW;
     init->AudioFreq  = args[4].u_int;
-    init->MCLKOutput = args[6].u_int;
+    init->MCLKOutput = args[6].u_int ? I2S_MCLKOUTPUT_ENABLE : I2S_MCLKOUTPUT_DISABLE;
     init->FullDuplexMode = self->is_duplex ?
 	I2S_FULLDUPLEXMODE_ENABLE : I2S_FULLDUPLEXMODE_DISABLE;
 
@@ -938,20 +944,9 @@ STATIC const mp_map_elem_t pyb_i2s_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PCM_SHORT), MP_OBJ_NEW_SMALL_INT(I2S_STANDARD_PCM_SHORT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PCM_LONG),  MP_OBJ_NEW_SMALL_INT(I2S_STANDARD_PCM_LONG) },
 
-    // set data and frame length
-    { MP_OBJ_NEW_QSTR(MP_QSTR__16B),          MP_OBJ_NEW_SMALL_INT(I2S_DATAFORMAT_16B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR__16B_EXTENDED), MP_OBJ_NEW_SMALL_INT(I2S_DATAFORMAT_16B_EXTENDED) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR__24B),          MP_OBJ_NEW_SMALL_INT(I2S_DATAFORMAT_24B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR__32B),          MP_OBJ_NEW_SMALL_INT(I2S_DATAFORMAT_32B) },
-
-    // set CLK and WS polarity, clock source, and Master Clock output (enable/disable)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HIGH),     MP_OBJ_NEW_SMALL_INT(I2S_CPOL_HIGH) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LOW),      MP_OBJ_NEW_SMALL_INT(I2S_CPOL_LOW) },
+    // set I2S clock source
     { MP_OBJ_NEW_QSTR(MP_QSTR_PLL),      MP_OBJ_NEW_SMALL_INT(I2S_CLOCK_PLL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_EXTERNAL), MP_OBJ_NEW_SMALL_INT(I2S_CLOCK_EXTERNAL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ENABLE),   MP_OBJ_NEW_SMALL_INT(I2S_MCLKOUTPUT_ENABLE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DISABLE),  MP_OBJ_NEW_SMALL_INT(I2S_MCLKOUTPUT_DISABLE) },
-
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2s_locals_dict, pyb_i2s_locals_dict_table);

@@ -368,16 +368,8 @@ Q(MSB)
 Q(LSB)
 Q(PCM_SHORT)
 Q(PCM_LONG)
-Q(_16B)
-Q(_16B_EXTENDED)
-Q(_24B)
-Q(_32B)
-Q(HIGH)
-Q(LOW)
 Q(PLL)
 Q(EXTERNAL)
-Q(ENABLE)
-Q(DISABLE)
 #endif
 
 // for Accel object
