@@ -108,16 +108,20 @@ typedef struct _compiler_t {
     #endif
 } compiler_t;
 
-STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
-    mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
-    // we don't have a 'block' name, so just pass the NULL qstr to indicate this
+STATIC void compile_error_add_traceback(compiler_t *comp, mp_parse_node_t pn) {
+    mp_uint_t line;
     if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        mp_obj_exception_add_traceback(exc, comp->source_file, (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line, comp->scope_cur->simple_name);
+        line = (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line;
     } else {
         // we don't have a line number, so just pass 0
-        mp_obj_exception_add_traceback(exc, comp->source_file, 0, comp->scope_cur->simple_name);
+        line = 0;
     }
-    comp->compile_error = exc;
+    mp_obj_exception_add_traceback(comp->compile_error, comp->source_file, line, comp->scope_cur->simple_name);
+}
+
+STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
+    comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
+    compile_error_add_traceback(comp, pn);
 }
 
 #if MICROPY_COMP_MODULE_CONST
@@ -3818,6 +3822,13 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
             if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope(comp, s, MP_PASS_EMIT);
             }
+
+            #if MICROPY_EMIT_NATIVE
+            // if viper had an error then add traceback
+            if (comp->compile_error != MP_OBJ_NULL && s->emit_options == MP_EMIT_OPT_VIPER) {
+                compile_error_add_traceback(comp, s->pn);
+            }
+            #endif
         }
     }
 
