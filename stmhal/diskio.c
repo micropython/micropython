@@ -151,6 +151,10 @@ DRESULT disk_read (
 #endif
 
         case PD_USER:
+            if (fs_user_mount == NULL) {
+                // nothing mounted
+                return RES_ERROR;
+            }
             fs_user_mount->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
             fs_user_mount->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
             mp_call_method_n_kw(2, 0, fs_user_mount->readblocks);
@@ -190,6 +194,10 @@ DRESULT disk_write (
 #endif
 
         case PD_USER:
+            if (fs_user_mount == NULL) {
+                // nothing mounted
+                return RES_ERROR;
+            }
             if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
                 // read-only block device
                 return RES_ERROR;
@@ -243,6 +251,10 @@ DRESULT disk_ioctl (
 #endif
 
         case PD_USER:
+            if (fs_user_mount == NULL) {
+                // nothing mounted
+                return RES_ERROR;
+            }
             switch (cmd) {
                 case CTRL_SYNC:
                     if (fs_user_mount->sync[0] != MP_OBJ_NULL) {
