@@ -239,6 +239,7 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
 	__HAL_RCC_PLLI2S_ENABLE();
     }
 
+    
     if (HAL_I2S_Init(&i2s_obj->i2s) != HAL_OK) {
 	// This message is redundant, exception will be raised by return value
 	printf("OSError: HAL_I2S_Init failed\n");
@@ -311,7 +312,7 @@ void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
 STATIC void pyb_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2s_obj_t *self = self_in;
 
-    mp_printf(print, "I2S(%u on [", self->i2s_id);
+    mp_printf(print, "I2S(%u, pins=[", self->i2s_id);
     for (int i = 0; i < 4; i++) {
 	if (self->pins[i] != MP_OBJ_NULL) {
 	    mp_printf(print, "%q ", self->pins[i]->name);
@@ -319,26 +320,36 @@ STATIC void pyb_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 	    mp_print_str(print, "None ");
 	}
     }
-    mp_print_str(print, "\b]");
+    mp_print_str(print, "\b], I2S.");
     if (self->is_enabled) {
 	if (self->i2s.Init.Mode == I2S_MODE_MASTER_TX ||
 	    self->i2s.Init.Mode == I2S_MODE_MASTER_RX) {
-	    mp_print_str(print, ", I2S.MASTER, MCLK ");
+	    mp_printf(print, "%q, %q ", MP_QSTR_MASTER, MP_QSTR_mclkout);
 	    if (self->i2s.Init.MCLKOutput == I2S_MCLKOUTPUT_ENABLE) {
 		mp_printf(print, "on %q", self->pins[4]->name);
 	    } else {
 		mp_print_str(print, "off");
 	    }
-	    mp_printf(print, ", freq=%u", self->i2s.Init.AudioFreq);
+	    mp_printf(print, ", %q=%u", MP_QSTR_audiofreq, self->i2s.Init.AudioFreq);
 	} else if (self->i2s.Init.Mode == I2S_MODE_SLAVE_TX ||
 		   self->i2s.Init.Mode == I2S_MODE_SLAVE_RX) {
-	    mp_print_str(print, ", I2S.SLAVE");
+	    mp_printf(print, "%q", MP_QSTR_SLAVE);
 	} else {
 	    // Shouldn't get here if self->is_enabled=true
 	}
-	mp_printf(print, ", standard=%u, format=%u, polarity=%u",
-	      self->i2s.Init.Standard, self->i2s.Init.DataFormat,
-	      self->i2s.Init.CPOL);
+
+	qstr standard = 0;
+	if (self->i2s.Init.Standard == I2S_STANDARD_PHILIPS) { standard = MP_QSTR_PHILIPS; }
+	else if (self->i2s.Init.Standard == I2S_STANDARD_MSB) { standard = MP_QSTR_MSB; }
+	else if (self->i2s.Init.Standard == I2S_STANDARD_LSB) { standard = MP_QSTR_LSB; }
+	else if (self->i2s.Init.Standard == I2S_STANDARD_PCM_SHORT) { standard = MP_QSTR_PCM_SHORT; }
+	else if (self->i2s.Init.Standard == I2S_STANDARD_PCM_LONG) { standard = MP_QSTR_PCM_LONG; }
+	else { /* shouldn't get here */ }
+	mp_printf(print, ", %q=%u, %q=%q, ",
+		  MP_QSTR_polarity, self->i2s.Init.CPOL, MP_QSTR_standard, standard);
+	int n_data_bits = ((self->i2s.Init.DataFormat >> 1) + 2) * 8;
+	mp_printf(print, "%q=%uB%s", MP_QSTR_dataformat, n_data_bits,
+		  self->i2s.Init.DataFormat == I2S_DATAFORMAT_16B_EXTENDED ? "_EXT" : ""); 
     }
     mp_print_str(print, ")");
 }
@@ -361,7 +372,7 @@ STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
 				    const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
 	{ MP_QSTR_mode,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 /* MASTER */} },
-	{ MP_QSTR_dataformat, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+	{ MP_QSTR_dataformat, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16} /* 16B EXTENDED*/},
 	{ MP_QSTR_standard,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_STANDARD_PHILIPS} },
 	{ MP_QSTR_polarity,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 	{ MP_QSTR_audiofreq,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_AUDIOFREQ_48K} },
@@ -386,10 +397,10 @@ STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
 	init->Mode = self->base_is_tx ? I2S_MODE_SLAVE_TX : I2S_MODE_SLAVE_RX;
     }
 
-    if (args[1].u_int = 0)  { init->DataFormat = I2S_DATAFORMAT_16B; }
-    else if (args[1].u_int = 16) { init->DataFormat = I2S_DATAFORMAT_16B_EXTENDED; }
-    else if (args[1].u_int = 24) { init->DataFormat = I2S_DATAFORMAT_24B; }
-    else if (args[1].u_int = 32) { init->DataFormat = I2S_DATAFORMAT_32B; }
+    if (args[1].u_int == 0)  { init->DataFormat = I2S_DATAFORMAT_16B; }
+    else if (args[1].u_int == 16) { init->DataFormat = I2S_DATAFORMAT_16B_EXTENDED; }
+    else if (args[1].u_int == 24) { init->DataFormat = I2S_DATAFORMAT_24B; }
+    else if (args[1].u_int == 32) { init->DataFormat = I2S_DATAFORMAT_32B; }
     else { nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
 						   "%d not a valid data format", args[2].u_int)); }
 
