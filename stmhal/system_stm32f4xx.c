@@ -92,7 +92,7 @@
   */
 
 #include "mpconfigboard.h"
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 void __fatal_error(const char *msg);
 

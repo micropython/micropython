@@ -200,7 +200,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 // value from disable_irq back to enable_irq.  If you really need
 // to know the machine-specific values, see irq.h.
 
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);
