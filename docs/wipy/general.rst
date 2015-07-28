@@ -5,11 +5,11 @@ WLAN default behaviour
 ----------------------
 
 When the WiPy boots with the default factory configuration starts in Access Point 
-mode with ``ssid: wipy-wlan`` and ``key: www.wipy.io``. 
+mode with ``ssid`` that starts with: ``wipy-wlan`` and ``key: www.wipy.io``. 
 Connect to this network and the WiPy will be reachable at ``192.168.1.1``. In order
 to gain access to the interactive prompt, open a telnet session to that IP address on
 the default port (23). You will be asked for credentials:
-``login: micro``  ``password: python``
+``login: micro`` and ``password: python``
 
 Local file system and SD card
 -----------------------------
@@ -26,7 +26,7 @@ that should be located in the SD card.
 The file system is accessible via the native FTP server running in the WiPy. 
 Open your FTP client of choice and connect to:
 
-``ftp://192.168.1.1`` ``user: micro``  ``password: python``
+``ftp://192.168.1.1``, ``user: micro``, ``password: python``
 
 Boot modes
 ----------
@@ -75,5 +75,5 @@ There are currently 2 kinds of errors that you might see:
 1. If the heart beat LED flashes quickly, then a Python script(eg ``main.py``) 
    has an error.  Use the REPL to debug it.
 2. If the heart beat LED stays on, then there was a hard fault, you cannot
-   recover from this, the only way out is by pressing the reset switch.
+   recover from this, the only way out is to press the reset switch.
 
