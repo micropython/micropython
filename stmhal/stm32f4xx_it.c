@@ -68,7 +68,7 @@
 #include <stdio.h>
 
 #include "stm32f4xx_it.h"
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 #include "py/obj.h"
 #include "pendsv.h"
