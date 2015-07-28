@@ -49,6 +49,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
 #define MICROPY_CPYTHON_COMPAT                      (1)
+#define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
 /* Enable FatFS LFNs
     0: Disable LFN feature.
