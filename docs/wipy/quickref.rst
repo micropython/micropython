@@ -188,7 +188,7 @@ See :ref:`network.WLAN <network.WLAN>` and ``pyb.Sleep``. ::
     # configure the WLAN subsystem in station mode (the default is AP)
     wifi = WLAN(WLAN.STA)
     # go for fixed IP settings
-    wifi.ifconfig('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8')
+    wifi.ifconfig(('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
     wifi.scan()     # scan for available netrworks
     wifi.connect(ssid='mynetwork', security=2, key='mynetworkkey')
     while not wifi.isconnected():
