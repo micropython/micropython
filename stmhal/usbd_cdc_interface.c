@@ -23,8 +23,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -120,13 +120,13 @@ static int8_t CDC_Itf_Init(void)
   UartHandle.Init.Parity     = UART_PARITY_NONE;
   UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
   UartHandle.Init.Mode       = UART_MODE_TX_RX;
-  
+
   if(HAL_UART_Init(&UartHandle) != HAL_OK)
   {
     /* Initialization Error */
     Error_Handler();
   }
-  
+
   /*##-2- Put UART peripheral in IT reception process ########################*/
   /* Any data received will be stored in "UserTxBuffer" buffer  */
   if(HAL_UART_Receive_IT(&UartHandle, (uint8_t *)UserTxBuffer, 1) != HAL_OK)
@@ -134,23 +134,23 @@ static int8_t CDC_Itf_Init(void)
     /* Transfer error in reception process */
     Error_Handler();
   }
-  
+
   /*##-3- Configure the TIM Base generation  #################################*/
   now done in HAL_MspInit
   TIM_Config();
 #endif
-  
+
     /*##-4- Start the TIM Base generation in interrupt mode ####################*/
     /* Start Channel1 */
     __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
-  
+
     /*##-5- Set Application Buffers ############################################*/
     USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
     USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
 
     UserRxBufCur = 0;
     UserRxBufLen = 0;
-  
+
     /* NOTE: we cannot reset these here, because USBD_CDC_SetInterrupt
      * may be called before this init function to set these values.
      * This can happen if the USB enumeration occurs after the call to
@@ -183,7 +183,7 @@ static int8_t CDC_Itf_DeInit(void)
 /**
   * @brief  CDC_Itf_Control
   *         Manage the CDC class requests
-  * @param  Cmd: Command code            
+  * @param  Cmd: Command code
   * @param  Buf: Buffer containing command data (request parameters)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL

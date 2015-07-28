@@ -20,8 +20,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -215,7 +215,7 @@ static const int8_t SDCARD_STORAGE_Inquirydata[] = { // 36 bytes
   */
 int8_t SDCARD_STORAGE_Init(uint8_t lun) {
     /*
-#ifndef USE_STM3210C_EVAL 
+#ifndef USE_STM3210C_EVAL
   NVIC_InitTypeDef NVIC_InitStructure;
   NVIC_InitStructure.NVIC_IRQChannel = SDIO_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =0;
@@ -245,14 +245,14 @@ int8_t SDCARD_STORAGE_Init(uint8_t lun) {
   */
 int8_t SDCARD_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
 /*
-#ifdef USE_STM3210C_EVAL   
+#ifdef USE_STM3210C_EVAL
   SD_CardInfo SDCardInfo;
-  SD_GetCardInfo(&SDCardInfo);  
+  SD_GetCardInfo(&SDCardInfo);
 #else
   if(SD_GetStatus() != 0 ) {
-    return (-1); 
-  }   
-#endif  
+    return (-1);
+  }
+#endif
   */
 
     *block_size = SDCARD_BLOCK_SIZE;
