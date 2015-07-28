@@ -5,8 +5,8 @@ class HeartBeat -- heart beat LED
 
 The HeartBeat class controls the heart beat led which by default
 flashes once every 5s. The user can disable the HeartBeat and then
-is free to control this LED manually through GPIO25 using the Pin
-class. The GPIO25 can also be remapped as a PWM output, an this
+is free to control this LED manually through GP25 using the Pin
+class. The GP25 can also be remapped as a PWM output, an this
 can be used to control the light intesity of the heart beat LED.
 
 Example usage::
@@ -39,8 +39,8 @@ Methods
    
       # disable the heart beat
       pyb.HeartBeat().disable()
-      # get the GPIO25 pin object
-      hbl = pyb.Pin('GPIO25')
+      # get the GP25 pin object
+      hbl = pyb.Pin('GP25')
       # toggle the led
       hbl.toggle()
       ...

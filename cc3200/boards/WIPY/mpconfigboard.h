@@ -39,9 +39,9 @@
 #define MICROPY_SAFE_BOOT_PRCM                      PRCM_GPIOA3
 #define MICROPY_SYS_LED_PORT                        GPIOA3_BASE
 #define MICROPY_SAFE_BOOT_PORT                      GPIOA3_BASE
-#define MICROPY_SYS_LED_GPIO                        pin_GPIO25
-#define MICROPY_SYS_LED_PIN_NUM                     PIN_21      // GPIO25   (SOP2)
-#define MICROPY_SAFE_BOOT_PIN_NUM                   PIN_18      // GPIO28
+#define MICROPY_SYS_LED_GPIO                        pin_GP25
+#define MICROPY_SYS_LED_PIN_NUM                     PIN_21      // GP25   (SOP2)
+#define MICROPY_SAFE_BOOT_PIN_NUM                   PIN_18      // GP28
 #define MICROPY_SYS_LED_PORT_PIN                    GPIO_PIN_1
 #define MICROPY_SAFE_BOOT_PORT_PIN                  GPIO_PIN_4
 

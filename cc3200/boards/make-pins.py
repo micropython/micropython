@@ -10,14 +10,14 @@ import csv
 
 def parse_port_pin(name_str):
     """Parses a string and returns a (port, gpio_bit) tuple."""
-    if len(name_str) < 5:
-        raise ValueError("Expecting pin name to be at least 5 characters")
-    if name_str[:4] != 'GPIO':
-        raise ValueError("Expecting pin name to start with GPIO")
-    if not name_str[4:].isdigit():
+    if len(name_str) < 3:
+        raise ValueError("Expecting pin name to be at least 3 characters")
+    if name_str[:2] != 'GP':
+        raise ValueError("Expecting pin name to start with GP")
+    if not name_str[2:].isdigit():
         raise ValueError("Expecting numeric GPIO number")
-    port = int(int(name_str[4:]) / 8)
-    gpio_bit = 1 << int(int(name_str[4:]) % 8)
+    port = int(int(name_str[2:]) / 8)
+    gpio_bit = 1 << int(int(name_str[2:]) % 8)
     return (port, gpio_bit)
 
 

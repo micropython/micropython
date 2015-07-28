@@ -38,8 +38,8 @@
 #define MICROPY_STDIO_UART                          1
 #define MICROPY_STDIO_UART_BAUD                     115200
 #define MICROPY_STDIO_UART_RX_BUF_SIZE              128
-#define MICROPY_STDIO_UART_TX_PIN                   (pin_GPIO1)
-#define MICROPY_STDIO_UART_RX_PIN                   (pin_GPIO2)
+#define MICROPY_STDIO_UART_TX_PIN                   (pin_GP1)
+#define MICROPY_STDIO_UART_RX_PIN                   (pin_GP2)
 #define MICROPY_STDIO_UART_TX_PIN_AF                PIN_MODE_3
 #define MICROPY_STDIO_UART_RX_PIN_AF                PIN_MODE_3
 
@@ -47,9 +47,9 @@
 #define MICROPY_SAFE_BOOT_PRCM                      PRCM_GPIOA2
 #define MICROPY_SYS_LED_PORT                        GPIOA1_BASE
 #define MICROPY_SAFE_BOOT_PORT                      GPIOA2_BASE
-#define MICROPY_SYS_LED_GPIO                        pin_GPIO9
-#define MICROPY_SYS_LED_PIN_NUM                     PIN_64      // GPIO9
-#define MICROPY_SAFE_BOOT_PIN_NUM                   PIN_15      // GPIO22
+#define MICROPY_SYS_LED_GPIO                        pin_GP9
+#define MICROPY_SYS_LED_PIN_NUM                     PIN_64      // GP9
+#define MICROPY_SAFE_BOOT_PIN_NUM                   PIN_15      // GP22
 #define MICROPY_SYS_LED_PORT_PIN                    GPIO_PIN_1
 #define MICROPY_SAFE_BOOT_PORT_PIN                  GPIO_PIN_6
 

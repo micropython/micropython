@@ -15,7 +15,7 @@ Example usage::
 
     # data, clk and cmd pins must be passed along with
     # their respective alternate functions
-    sd = pyb.SD('GPIO15', 8, 'GPIO10', 6, 'GPIO11', 6)
+    sd = pyb.SD('GP15', 8, 'GP10', 6, 'GP11', 6)
     sd.enable()      # enable and mount the SD card
     sd.disable()     # disable and unmount it
 

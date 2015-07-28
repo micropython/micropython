@@ -119,19 +119,19 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     switch (idx) {
     case 0:
         channel = ADC_CH_0;
-        pin = &pin_GPIO2;
+        pin = &pin_GP2;
         break;
     case 1:
         channel = ADC_CH_1;
-        pin = &pin_GPIO3;
+        pin = &pin_GP3;
         break;
     case 2:
         channel = ADC_CH_2;
-        pin = &pin_GPIO4;
+        pin = &pin_GP4;
         break;
     case 3:
         channel = ADC_CH_3;
-        pin = &pin_GPIO5;
+        pin = &pin_GP5;
         break;
     default:
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
