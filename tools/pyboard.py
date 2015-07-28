@@ -133,11 +133,10 @@ class Pyboard:
                 data = data + new_data
                 if data_consumer:
                     data_consumer(new_data)
-                #time.sleep(0.01)
                 timeout_count = 0
             else:
                 timeout_count += 1
-                if timeout is not None and timeout_count >= 10 * timeout:
+                if timeout is not None and timeout_count >= 100 * timeout:
                     break
                 time.sleep(0.01)
         return data
