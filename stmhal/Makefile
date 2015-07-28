@@ -101,8 +101,8 @@ SRC_LIB = $(addprefix lib/,\
 
 SRC_C = \
 	main.c \
-	system_stm32f4xx.c \
-	stm32f4xx_it.c \
+	system_stm32.c \
+	stm32_it.c \
 	usbd_conf.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
@@ -155,9 +155,9 @@ SRC_C = \
 	dac.c \
 	adc.c \
 
-SRC_S = \
-	startup_stm32f40xx.s \
-	gchelper.s \
+SRC_O = \
+	startup_stm32.o \
+	gchelper.o \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
@@ -240,7 +240,7 @@ OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
