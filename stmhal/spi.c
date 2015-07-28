@@ -37,6 +37,10 @@
 #include "spi.h"
 #include MICROPY_HAL_H
 
+#if !defined(STM32F7)
+// The STM32F7 has the SPI pins mapped differently. Need to figure this out
+// before enabling SPI for the F7
+
 /// \moduleref pyb
 /// \class SPI - a master-driven serial protocol
 ///
@@ -665,3 +669,5 @@ const mp_obj_type_t pyb_spi_type = {
     .make_new = pyb_spi_make_new,
     .locals_dict = (mp_obj_t)&pyb_spi_locals_dict,
 };
+
+#endif  // STM32F7

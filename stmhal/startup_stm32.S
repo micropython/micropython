@@ -1,17 +1,17 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32f407xx.s
+  * @file      startup_stm32.S
   * @author    MCD Application Team
   * @version   V2.0.0
   * @date      18-February-2014
-  * @brief     STM32F407xx Devices vector table for Atollic TrueSTUDIO toolchain.
+  * @brief     STM32Fxxxxx Devices vector table for Atollic TrueSTUDIO toolchain.
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
   *                - Set the vector table entries with the exceptions ISR address
   *                - Branches to main in the C library (which eventually
   *                  calls main()).
-  *            After Reset the Cortex-M4 processor is in Thread mode,
+  *            After Reset the Cortex-M4/M7 processor is in Thread mode,
   *            priority is Privileged, and the Stack is set to Main.
   ******************************************************************************
   * @attention
@@ -44,7 +44,11 @@
   */
 
   .syntax unified
+#if STM32F7
+  .cpu cortex-m7
+#else
   .cpu cortex-m4
+#endif
   .fpu softvfp
   .thumb
 
@@ -107,7 +111,7 @@ LoopFillZerobss:
   cmp  r2, r3
   bcc  FillZerobss
 
-/* Call the clock system intitialization function.*/
+/* Call the clock system initialization function.*/
   bl  SystemInit
 /* Call static constructors */
     /*bl __libc_init_array*/
@@ -130,7 +134,7 @@ Infinite_Loop:
   .size  Default_Handler, .-Default_Handler
 /******************************************************************************
 *
-* The minimal vector table for a Cortex M3. Note that the proper constructs
+* The minimal vector table for a Cortex M4/M7. Note that the proper constructs
 * must be placed on this to ensure that it ends up at physical address
 * 0x0000.0000.
 *
@@ -207,8 +211,13 @@ g_pfnVectors:
   .word     TIM8_TRG_COM_TIM14_IRQHandler     /* TIM8 Trigger and Commutation and TIM14 */
   .word     TIM8_CC_IRQHandler                /* TIM8 Capture Compare         */
   .word     DMA1_Stream7_IRQHandler           /* DMA1 Stream7                 */
+#if defined(STM32F7)
+  .word     FMC_IRQHandler                    /* FMC                          */
+  .word     SDMMC1_IRQHandler                 /* SDMMC1                       */
+#else
   .word     FSMC_IRQHandler                   /* FSMC                         */
   .word     SDIO_IRQHandler                   /* SDIO                         */
+#endif
   .word     TIM5_IRQHandler                   /* TIM5                         */
   .word     SPI3_IRQHandler                   /* SPI3                         */
   .word     UART4_IRQHandler                  /* UART4                        */
@@ -242,6 +251,24 @@ g_pfnVectors:
   .word     HASH_RNG_IRQHandler               /* Hash and Rng                 */
   .word     FPU_IRQHandler                    /* FPU                          */
 
+#if defined(STM32F7)
+  .word     UART7_IRQHandler                  /* UART7                        */
+  .word     UART8_IRQHandler                  /* UART8                        */
+  .word     SPI4_IRQHandler                   /* SPI4                         */
+  .word     SPI5_IRQHandler                   /* SPI5                         */
+  .word     SPI6_IRQHandler                   /* SPI6                         */
+  .word     SAI1_IRQHandler                   /* SAI1                         */
+  .word     0                                 /* Reserved                     */
+  .word     0                                 /* Reserved                     */
+  .word     DMA2D_IRQHandler                  /* DMA2D                        */
+  .word     SAI2_IRQHandler                   /* SAI2                         */
+  .word     QUADSPI_IRQHandler                /* QUADSPI                      */
+  .word     LPTIM1_IRQHandler                 /* LPTIM1                       */
+  .word     CEC_IRQHandler                    /* HDMI_CEC                     */
+  .word     I2C4_EV_IRQHandler                /* I2C4 Event                   */
+  .word     I2C4_ER_IRQHandler                /* I2C4 Error                   */
+  .word     SPDIF_RX_IRQHandler               /* SPDIF_RX                     */
+#endif
 
 /*******************************************************************************
 *
@@ -421,11 +448,19 @@ g_pfnVectors:
    .weak      DMA1_Stream7_IRQHandler
    .thumb_set DMA1_Stream7_IRQHandler,Default_Handler
 
+#if defined(STM32F7)
+   .weak      FMC_IRQHandler
+   .thumb_set FMC_IRQHandler,Default_Handler
+
+   .weak      SDMMC1_IRQHandler
+   .thumb_set SDMMC1_IRQHandler,Default_Handler
+#else
    .weak      FSMC_IRQHandler
    .thumb_set FSMC_IRQHandler,Default_Handler
 
    .weak      SDIO_IRQHandler
    .thumb_set SDIO_IRQHandler,Default_Handler
+#endif
 
    .weak      TIM5_IRQHandler
    .thumb_set TIM5_IRQHandler,Default_Handler
@@ -519,5 +554,48 @@ g_pfnVectors:
 
    .weak      FPU_IRQHandler
    .thumb_set FPU_IRQHandler,Default_Handler
+#if defined(STM32F7)
+   .weak      UART7_IRQHandler
+   .thumb_set UART7_IRQHandler,Default_Handler
+
+   .weak      UART8_IRQHandler
+   .thumb_set UART8_IRQHandler,Default_Handler
+
+   .weak      SPI4_IRQHandler
+   .thumb_set SPI4_IRQHandler,Default_Handler
+
+   .weak      SPI5_IRQHandler
+   .thumb_set SPI5_IRQHandler,Default_Handler
+
+   .weak      SPI6_IRQHandler
+   .thumb_set SPI6_IRQHandler,Default_Handler
+
+   .weak      SAI1_IRQHandler
+   .thumb_set SAI1_IRQHandler,Default_Handler
+
+   .weak      DMA2D_IRQHandler
+   .thumb_set DMA2D_IRQHandler,Default_Handler
+
+   .weak      SAI2_IRQHandler
+   .thumb_set SAI2_IRQHandler,Default_Handler
+
+   .weak      QUADSPI_IRQHandler
+   .thumb_set QUADSPI_IRQHandler,Default_Handler
+
+   .weak      LPTIM1_IRQHandler
+   .thumb_set LPTIM1_IRQHandler,Default_Handler
+
+   .weak      CEC_IRQHandler
+   .thumb_set CEC_IRQHandler,Default_Handler
+
+   .weak      I2C4_EV_IRQHandler
+   .thumb_set I2C4_EV_IRQHandler,Default_Handler
+
+   .weak      I2C4_ER_IRQHandler
+   .thumb_set I2C4_ER_IRQHandler,Default_Handler
+
+   .weak      SPDIF_RX_IRQHandler
+   .thumb_set SPDIF_RX_IRQHandler,Default_Handler
+#endif
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

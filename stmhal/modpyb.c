@@ -68,6 +68,9 @@
 /// \function bootloader()
 /// Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t pyb_bootloader(void) {
+#if defined(STM32F7)
+    printf("pyb.bootloader not supported yet\n");
+#else
     pyb_usb_dev_deinit();
     storage_flush();
 
@@ -82,7 +85,7 @@ STATIC NORETURN mp_obj_t pyb_bootloader(void) {
     __ASM volatile ("movs r3, #0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
 
     ((void (*)(void)) *((uint32_t*) 0x00000004))();
-
+#endif
     while (1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
@@ -453,6 +456,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
 
 /// \function standby()
 STATIC mp_obj_t pyb_standby(void) {
+#if defined(STM32F7)
+    printf("pyb.bootloader not supported yet\n");
+#else
     // We need to clear the PWR wake-up-flag before entering standby, since
     // the flag may have been set by a previous wake-up event.  Furthermore,
     // we need to disable the wake-up sources while clearing this flag, so
@@ -481,7 +487,7 @@ STATIC mp_obj_t pyb_standby(void) {
     // enter standby mode
     HAL_PWR_EnterSTANDBYMode();
     // we never return; MCU is reset on exit from standby
-
+#endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
@@ -577,8 +583,10 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if defined(MICROPY_HW_LED1)
     { MP_OBJ_NEW_QSTR(MP_QSTR_LED), (mp_obj_t)&pyb_led_type },
 #endif
+#if !defined(STM32F7) // Temp hack
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI), (mp_obj_t)&pyb_spi_type },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART), (mp_obj_t)&pyb_uart_type },
 #if MICROPY_HW_ENABLE_CAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_CAN), (mp_obj_t)&pyb_can_type },

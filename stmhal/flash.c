@@ -28,6 +28,12 @@
 
 #include "flash.h"
 
+#if defined(STM32F7)
+// FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
+// FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
+#define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
+#endif
+
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 16 Kbytes */
 #define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08004000) /* Base @ of Sector 1, 16 Kbytes */
@@ -92,7 +98,7 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
     // Clear pending flags (if any)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
-                           FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
+                           FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
 
     // erase the sector(s)
     FLASH_EraseInitTypeDef EraseInitStruct;

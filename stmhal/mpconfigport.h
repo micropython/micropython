@@ -134,7 +134,11 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
+#if defined(STM32F7)
+#define PYB_EXTI_NUM_VECTORS (24)
+#else
 #define PYB_EXTI_NUM_VECTORS (23)
+#endif
 
 #define MP_STATE_PORT MP_STATE_VM
 
