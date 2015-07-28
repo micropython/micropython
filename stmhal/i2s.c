@@ -354,25 +354,25 @@ STATIC void pyb_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_print_str(print, ")");
 }
 
-/// \method init(mode, standard=I2S.PHILIPS, dataformat=I2S._16B_EXTENDED,
-///              polarity=I2S.LOW, audiofreq=48000,
-///              clksrc=I2S.PLL, mclkout=I2S.DISABLE)
+/// \method init(mode, standard=I2S.PHILIPS, dataformat=0,
+///              polarity=0, audiofreq=48000,
+///              clksrc=I2S.PLL, mclkout=0)
 ///
 /// Initialise the I2S bus with the given parameters:
 ///
 ///   - `mode` must be either `I2S.MASTER` or `I2S.SLAVE`.
 ///   - `standard` can be `PHILIPS`, `MSB`, `LSB`, `PCM_SHORT`, or `PCM_LONG`.
-///   - `dataformat` can be `_16B`, `_16B_EXTENDED`, `_24B`, or `_32B`.
-///   - `polarity` can be `HIGH` or `LOW`.
+///   - `dataformat` can be 0 (16B_EXTENDED), 16, 24, or 32 (bits).
+///   - `polarity` can be 0 for clock steady state low, or 1 for steady state high.  
 ///   - Options only relevant to master mode:
 ///   - `audiofreq` can be any common audio sampling frequency, default is 48000.
 ///   - `clksrc` can be `PLL` or `EXTERNAL`.
-///   - `mclkout` can be `ENABLE` or `DISABLE`
+///   - `mclkout` can be 0 to disable or 1 to enable.
 STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
 				    const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-	{ MP_QSTR_mode,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 /* MASTER */} },
-	{ MP_QSTR_dataformat, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16} /* 16B EXTENDED*/},
+	{ MP_QSTR_mode,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 /* MASTER */ } },
+	{ MP_QSTR_dataformat, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 /* 16B EXTENDED */ } },
 	{ MP_QSTR_standard,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_STANDARD_PHILIPS} },
 	{ MP_QSTR_polarity,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 	{ MP_QSTR_audiofreq,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = I2S_AUDIOFREQ_48K} },
@@ -397,8 +397,8 @@ STATIC mp_obj_t pyb_i2s_init_helper(pyb_i2s_obj_t *self, mp_uint_t n_args,
 	init->Mode = self->base_is_tx ? I2S_MODE_SLAVE_TX : I2S_MODE_SLAVE_RX;
     }
 
-    if (args[1].u_int == 0)  { init->DataFormat = I2S_DATAFORMAT_16B; }
-    else if (args[1].u_int == 16) { init->DataFormat = I2S_DATAFORMAT_16B_EXTENDED; }
+    if (args[1].u_int == 0)  { init->DataFormat = I2S_DATAFORMAT_16B_EXTENDED; }
+    else if (args[1].u_int == 16) { init->DataFormat = I2S_DATAFORMAT_16B; }
     else if (args[1].u_int == 24) { init->DataFormat = I2S_DATAFORMAT_24B; }
     else if (args[1].u_int == 32) { init->DataFormat = I2S_DATAFORMAT_32B; }
     else { nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
