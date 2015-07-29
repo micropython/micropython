@@ -4,6 +4,8 @@ void STM32F7DISC_board_early_init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
 
+    __GPIOK_CLK_ENABLE();
+
     // Turn off the backlight. LCD_BL_CTRL = PK3
     GPIO_InitStructure.Pin = GPIO_PIN_3;
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;

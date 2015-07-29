@@ -267,28 +267,6 @@ int main(void) {
     __GPIOB_CLK_ENABLE();
     __GPIOC_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
-    #if defined(__GPIOE_CLK_ENABLE)
-    __GPIOE_CLK_ENABLE();
-    #endif
-    #if defined(__GPIOF_CLK_ENABLE)
-    __GPIOF_CLK_ENABLE();
-    #endif
-    #if defined(__GPIOG_CLK_ENABLE)
-    __GPIOG_CLK_ENABLE();
-    #endif
-    #if defined(__GPIOH_CLK_ENABLE)
-    __GPIOH_CLK_ENABLE();
-    #endif
-    #if defined(__GPIOI_CLK_ENABLE)
-    __GPIOI_CLK_ENABLE();
-    #endif
-    #if defined(__GPIOJ_CLK_ENABLE)
-    __GPIOJ_CLK_ENABLE();
-    #endif
-    #if defined(__GPIOK_CLK_ENABLE)
-    __GPIOK_CLK_ENABLE();
-    #endif
-
 
     #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
     // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
