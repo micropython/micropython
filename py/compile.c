@@ -81,8 +81,8 @@ typedef struct _compiler_t {
     uint8_t have_star;
 
     // try to keep compiler clean from nlr
-    // this is set to an exception object if we have a compile error
-    mp_obj_t compile_error;
+    mp_obj_t compile_error; // set to an exception object if there's an error
+    mp_uint_t compile_error_line; // set to best guess of line of error
 
     uint next_label;
 
@@ -108,20 +108,19 @@ typedef struct _compiler_t {
     #endif
 } compiler_t;
 
-STATIC void compile_error_add_traceback(compiler_t *comp, mp_parse_node_t pn) {
-    mp_uint_t line;
-    if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        line = (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line;
-    } else {
-        // we don't have a line number, so just pass 0
-        line = 0;
+STATIC void compile_error_set_line(compiler_t *comp, mp_parse_node_t pn) {
+    // if the line of the error is unknown then try to update it from the pn
+    if (comp->compile_error_line == 0 && MP_PARSE_NODE_IS_STRUCT(pn)) {
+        comp->compile_error_line = (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line;
     }
-    mp_obj_exception_add_traceback(comp->compile_error, comp->source_file, line, comp->scope_cur->simple_name);
 }
 
 STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const char *msg) {
-    comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
-    compile_error_add_traceback(comp, pn);
+    // only register the error if there has been no other error
+    if (comp->compile_error == MP_OBJ_NULL) {
+        comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
+        compile_error_set_line(comp, pn);
+    }
 }
 
 #if MICROPY_COMP_MODULE_CONST
@@ -421,6 +420,11 @@ STATIC void compile_generic_all_nodes(compiler_t *comp, mp_parse_node_struct_t *
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     for (int i = 0; i < num_nodes; i++) {
         compile_node(comp, pns->nodes[i]);
+        if (comp->compile_error != MP_OBJ_NULL) {
+            // add line info for the error in case it didn't have a line number
+            compile_error_set_line(comp, pns->nodes[i]);
+            return;
+        }
     }
 }
 
@@ -3535,9 +3539,9 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {
-        // inline assembler had an error; add traceback to its exception
+        // inline assembler had an error; set line for its exception
     inline_asm_error:
-        mp_obj_exception_add_traceback(comp->compile_error, comp->source_file, (mp_uint_t)pns->source_line, comp->scope_cur->simple_name);
+        comp->compile_error_line = pns->source_line;
     }
 }
 #endif
@@ -3822,14 +3826,16 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
             if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope(comp, s, MP_PASS_EMIT);
             }
-
-            #if MICROPY_EMIT_NATIVE
-            // if viper had an error then add traceback
-            if (comp->compile_error != MP_OBJ_NULL && s->emit_options == MP_EMIT_OPT_VIPER) {
-                compile_error_add_traceback(comp, s->pn);
-            }
-            #endif
         }
+    }
+
+    if (comp->compile_error != MP_OBJ_NULL) {
+        // if there is no line number for the error then use the line
+        // number for the start of this scope
+        compile_error_set_line(comp, comp->scope_cur->pn);
+        // add a traceback to the exception using relevant source info
+        mp_obj_exception_add_traceback(comp->compile_error, comp->source_file,
+            comp->compile_error_line, comp->scope_cur->simple_name);
     }
 
     // free the emitters
