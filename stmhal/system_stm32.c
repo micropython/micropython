@@ -28,25 +28,21 @@
 
 /**
   ******************************************************************************
-  * @file    system_stm32f4xx.c
+  * @file    system_stm32.c
   * @author  MCD Application Team
   * @version V1.0.1
   * @date    26-February-2014
-  * @brief   CMSIS Cortex-M4 Device Peripheral Access Layer System Source File.
+  * @brief   CMSIS Cortex-M4/M7 Device Peripheral Access Layer System Source File.
   *
   *   This file provides two functions and one global variable to be called from
   *   user application:
   *      - SystemInit(): This function is called at startup just after reset and
   *                      before branch to main program. This call is made inside
-  *                      the "startup_stm32f4xx.s" file.
+  *                      the "startup_stm32.s" file.
   *
   *      - SystemCoreClock variable: Contains the core clock (HCLK), it can be used
   *                                  by the user application to setup the SysTick
   *                                  timer or configure other parameters.
-  *
-  *      - SystemCoreClockUpdate(): Updates the variable SystemCoreClock and must
-  *                                 be called whenever the core clock is changed
-  *                                 during program execution.
   *
   *
   ******************************************************************************
@@ -83,16 +79,16 @@
   * @{
   */
 
-/** @addtogroup stm32f4xx_system
+/** @addtogroup stm32fxxx_system
   * @{
   */
 
-/** @addtogroup STM32F4xx_System_Private_Includes
+/** @addtogroup STM32Fxxx_System_Private_Includes
   * @{
   */
 
 #include "mpconfigboard.h"
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 void __fatal_error(const char *msg);
 
@@ -100,7 +96,7 @@ void __fatal_error(const char *msg);
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Private_TypesDefinitions
+/** @addtogroup STM32Fxxx_System_Private_TypesDefinitions
   * @{
   */
 
@@ -108,7 +104,7 @@ void __fatal_error(const char *msg);
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Private_Defines
+/** @addtogroup STM32Fxxx_System_Private_Defines
   * @{
   */
 
@@ -125,7 +121,7 @@ void __fatal_error(const char *msg);
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Private_Macros
+/** @addtogroup STM32Fxxx_System_Private_Macros
   * @{
   */
 
@@ -133,7 +129,7 @@ void __fatal_error(const char *msg);
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Private_Variables
+/** @addtogroup STM32Fxxx_System_Private_Variables
   * @{
   */
   /* This variable is updated in three ways:
@@ -150,7 +146,7 @@ void __fatal_error(const char *msg);
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Private_FunctionPrototypes
+/** @addtogroup STM32Fxxx_System_Private_FunctionPrototypes
   * @{
   */
 
@@ -158,7 +154,7 @@ void __fatal_error(const char *msg);
   * @}
   */
 
-/** @addtogroup STM32F4xx_System_Private_Functions
+/** @addtogroup STM32Fxxx_System_Private_Functions
   * @{
   */
 
@@ -196,7 +192,7 @@ void SystemInit(void)
 
   /* Configure the Vector Table location add offset address ------------------*/
 #ifdef VECT_TAB_SRAM
-  SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
+  SCB->VTOR = SRAM1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
 #endif
@@ -205,94 +201,6 @@ void SystemInit(void)
   SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 }
 
-/**
-   * @brief  Update SystemCoreClock variable according to Clock Register Values.
-  *         The SystemCoreClock variable contains the core clock (HCLK), it can
-  *         be used by the user application to setup the SysTick timer or configure
-  *         other parameters.
-  *
-  * @note   Each time the core clock (HCLK) changes, this function must be called
-  *         to update SystemCoreClock variable value. Otherwise, any configuration
-  *         based on this variable will be incorrect.
-  *
-  * @note   - The system frequency computed by this function is not the real
-  *           frequency in the chip. It is calculated based on the predefined
-  *           constant and the selected clock source:
-  *
-  *           - If SYSCLK source is HSI, SystemCoreClock will contain the HSI_VALUE(*)
-  *
-  *           - If SYSCLK source is HSE, SystemCoreClock will contain the HSE_VALUE(**)
-  *
-  *           - If SYSCLK source is PLL, SystemCoreClock will contain the HSE_VALUE(**)
-  *             or HSI_VALUE(*) multiplied/divided by the PLL factors.
-  *
-  *         (*) HSI_VALUE is a constant defined in stm32f4xx_hal_conf.h file (default value
-  *             16 MHz) but the real value may vary depending on the variations
-  *             in voltage and temperature.
-  *
-  *         (**) HSE_VALUE is a constant defined in stm32f4xx_hal_conf.h file (its value
-  *              depends on the application requirements), user has to ensure that HSE_VALUE
-  *              is same as the real frequency of the crystal used. Otherwise, this function
-  *              may have wrong result.
-  *
-  *         - The result of this function could be not correct when using fractional
-  *           value for HSE crystal.
-  *
-  * @param  None
-  * @retval None
-  */
-#if 0
-// dpgeorge: I think this function is obsolete now with the new HAL library.
-
-__I uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
-void SystemCoreClockUpdate(void)
-{
-  uint32_t tmp = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2;
-
-  /* Get SYSCLK source -------------------------------------------------------*/
-  tmp = RCC->CFGR & RCC_CFGR_SWS;
-
-  switch (tmp)
-  {
-    case 0x00:  /* HSI used as system clock source */
-      SystemCoreClock = HSI_VALUE;
-      break;
-    case 0x04:  /* HSE used as system clock source */
-      SystemCoreClock = HSE_VALUE;
-      break;
-    case 0x08:  /* PLL used as system clock source */
-
-      /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N
-         SYSCLK = PLL_VCO / PLL_P
-         */
-      pllsource = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) >> 22;
-      pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
-
-      if (pllsource != 0)
-      {
-        /* HSE used as PLL clock source */
-        pllvco = (HSE_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
-      }
-      else
-      {
-        /* HSI used as PLL clock source */
-        pllvco = (HSI_VALUE / pllm) * ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
-      }
-
-      pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >>16) + 1 ) *2;
-      SystemCoreClock = pllvco/pllp;
-      break;
-    default:
-      SystemCoreClock = HSI_VALUE;
-      break;
-  }
-  /* Compute HCLK frequency --------------------------------------------------*/
-  /* Get HCLK prescaler */
-  tmp = AHBPrescTable[((RCC->CFGR & RCC_CFGR_HPRE) >> 4)];
-  /* HCLK frequency */
-  SystemCoreClock >>= tmp;
-}
-#endif
 
 /**
   * @brief  System Clock Configuration
@@ -375,6 +283,14 @@ void SystemClock_Config(void)
     __fatal_error("HAL_RCC_OscConfig");
   }
 
+#if defined(STM32F7)
+  /* Activate the OverDrive to reach the 200 MHz Frequency */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+  {
+    __fatal_error("HAL_PWREx_EnableOverDrive");
+  }
+#endif
+
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
      clocks dividers */
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
@@ -382,7 +298,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+
+#if !defined(MICROPY_HW_FLASH_LATENCY)
+#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
+#endif
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK)
   {
     __fatal_error("HAL_RCC_ClockConfig");
   }

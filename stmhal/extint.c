@@ -187,21 +187,41 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
+    #if defined(STM32F7)
+    // The Cortex-M7 doesn't have bitband support.
+    mp_uint_t irq_state = disable_irq();
+    if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
+        EXTI->IMR |= (1 << line);
+    } else {
+        EXTI->EMR |= (1 << line);
+    }
+    enable_irq(irq_state);
+    #else
     // Since manipulating IMR/EMR is a read-modify-write, and we want this to
     // be atomic, we use the bit-band area to just affect the bit we're
     // interested in.
     EXTI_MODE_BB(pyb_extint_mode[line], line) = 1;
+    #endif
 }
 
 void extint_disable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
+
+    #if defined(STM32F7)
+    // The Cortex-M7 doesn't have bitband support.
+    mp_uint_t irq_state = disable_irq();
+    EXTI->IMR &= ~(1 << line);
+    EXTI->EMR &= ~(1 << line);
+    enable_irq(irq_state);
+    #else
     // Since manipulating IMR/EMR is a read-modify-write, and we want this to
     // be atomic, we use the bit-band area to just affect the bit we're
     // interested in.
     EXTI_MODE_BB(EXTI_Mode_Interrupt, line) = 0;
     EXTI_MODE_BB(EXTI_Mode_Event, line) = 0;
+    #endif
 }
 
 void extint_swint(uint line) {

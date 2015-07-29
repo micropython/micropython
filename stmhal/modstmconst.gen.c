@@ -113,7 +113,7 @@
 { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_OPTKEYR), MP_OBJ_NEW_SMALL_INT(0x8) }, // 32-bits, FLASH option key register
 { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_SR), MP_OBJ_NEW_SMALL_INT(0xc) }, // 32-bits, FLASH status register
 { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_CR), MP_OBJ_NEW_SMALL_INT(0x10) }, // 32-bits, FLASH control register
-{ MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_OPTCR), MP_OBJ_NEW_SMALL_INT(0x14) }, // 32-bits, FLASH option control register 
+{ MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_OPTCR), MP_OBJ_NEW_SMALL_INT(0x14) }, // 32-bits, FLASH option control register
 { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_OPTCR1), MP_OBJ_NEW_SMALL_INT(0x18) }, // 32-bits, FLASH option control register 1
 { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO_MODER), MP_OBJ_NEW_SMALL_INT(0x0) }, // 32-bits, GPIO port mode register
 { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO_OTYPER), MP_OBJ_NEW_SMALL_INT(0x4) }, // 32-bits, GPIO port output type register

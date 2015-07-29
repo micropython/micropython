@@ -1,10 +1,15 @@
 // We use the ST Cube HAL library for most hardware peripherals
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 // Basic GPIO functions
 #define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)
+#if defined(STM32F7)
+#define GPIO_set_pin(gpio, pin_mask)    (((gpio)->BSRR) = (pin_mask))
+#define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRR) = ((pin_mask) << 16))
+#else
 #define GPIO_set_pin(gpio, pin_mask)    (((gpio)->BSRRL) = (pin_mask))
 #define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRRH) = (pin_mask))
+#endif
 #define GPIO_read_output_pin(gpio, pin) (((gpio)->ODR >> (pin)) & 1)
 
 extern const byte mp_hal_status_to_errno_table[4];

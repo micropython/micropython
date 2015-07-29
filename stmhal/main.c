@@ -268,9 +268,20 @@ int main(void) {
     __GPIOC_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
 
+    #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+    // which behaves more or less like normal SRAM.
+    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+    #else
     // enable the CCM RAM
     __CCMDATARAMEN_CLK_ENABLE();
+    #endif
 
+    #if defined(MICROPY_BOARD_EARLY_INIT)
+    MICROPY_BOARD_EARLY_INIT();
+    #endif
+
+    //TODO - Move the following to a board_init.c file for the NETDUINO
 #if 0
 #if defined(NETDUINO_PLUS_2)
     {
@@ -388,13 +399,14 @@ soft_reset:
     timer_init0();
     uart_init0();
 
-    // Change #if 0 to #if 1 if you want REPL on UART_6 (or another uart)
-    // as well as on USB VCP
-#if 0
+    // Define MICROPY_HW_UART_REPL to be PYB_UART_6 and define
+    // MICROPY_HW_UART_REPL_BAUD in your mpconfigboard.h file if you want a
+    // REPL on a hardware UART as well as on USB VCP
+#if defined(MICROPY_HW_UART_REPL)
     {
         mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(PYB_UART_6),
-            MP_OBJ_NEW_SMALL_INT(115200),
+            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
+            MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL_BAUD),
         };
         MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
@@ -410,8 +422,10 @@ soft_reset:
     rng_init0();
 #endif
 
+#if !defined(STM32F7) // Temp hack
     i2c_init0();
     spi_init0();
+#endif
     pyb_usb_init0();
 
     // Initialise the local flash filesystem.

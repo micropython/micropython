@@ -135,7 +135,11 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
+#if defined(STM32F7)
+#define PYB_EXTI_NUM_VECTORS (24)
+#else
 #define PYB_EXTI_NUM_VECTORS (23)
+#endif
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -200,7 +204,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 // value from disable_irq back to enable_irq.  If you really need
 // to know the machine-specific values, see irq.h.
 
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);

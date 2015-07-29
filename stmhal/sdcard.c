@@ -26,7 +26,7 @@
 
 // TODO make it work with DMA
 
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -127,7 +127,7 @@ void sdcard_power_off(void) {
     if (!sd_handle.Instance) {
         return;
     }
-    HAL_SD_DeInit(&sd_handle); 
+    HAL_SD_DeInit(&sd_handle);
     sd_handle.Instance = NULL;
 }
 

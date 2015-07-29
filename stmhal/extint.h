@@ -36,6 +36,9 @@
 #define EXTI_USB_OTG_HS_WAKEUP  (20)
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)
+#if defined(STM32F7)
+#define EXTI_LPTIM1_ASYNC_EVENT (23)
+#endif
 
 #define EXTI_NUM_VECTORS        (PYB_EXTI_NUM_VECTORS)
 

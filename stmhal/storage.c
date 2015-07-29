@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 #include "py/obj.h"
 #include "systick.h"
@@ -54,6 +54,15 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_SECTOR_SIZE_MAX (0x4000) // 16k max due to size of cache buffer
 #define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
 #define FLASH_MEM_SEG1_NUM_BLOCKS (128) // sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k
+
+#elif defined(STM32F746xx)
+
+// The STM32F746 doesn't really have CCRAM, so we use the 64K DTCM for this.
+
+#define CACHE_MEM_START_ADDR (0x20000000) // DTCM data RAM, 64k
+#define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of DTCM
+#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
+#define FLASH_MEM_SEG1_NUM_BLOCKS (224) // sectors 1,2,3,4: 16k+16k+16k+64k=112k
 
 #else
 #error "no storage support for this MCU"
