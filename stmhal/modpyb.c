@@ -68,15 +68,20 @@
 /// \function bootloader()
 /// Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t pyb_bootloader(void) {
-#if defined(STM32F7)
-    printf("pyb.bootloader not supported yet\n");
-#else
     pyb_usb_dev_deinit();
     storage_flush();
 
     HAL_RCC_DeInit();
     HAL_DeInit();
 
+#if defined(STM32F7)
+    // arm-none-eabi-gcc 4.9.0 does not correctly inline this
+    // MSP function, so we write it out explicitly here.
+    //__set_MSP(*((uint32_t*) 0x1FF00000));
+    __ASM volatile ("movw r3, #0x0000\nmovt r3, #0x1FF0\nldr r3, [r3, #0]\nMSR msp, r3\n" : : : "r3", "sp");
+ 
+    ((void (*)(void)) *((uint32_t*) 0x1FF00004))();
+#else
     __HAL_REMAPMEMORY_SYSTEMFLASH();
 
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
