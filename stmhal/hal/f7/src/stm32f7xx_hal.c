@@ -89,7 +89,7 @@
 /** @addtogroup HAL_Private_Variables
   * @{
   */
-static __IO uint32_t uwTick;
+__IO uint32_t uwTick;
 /**
   * @}
   */
