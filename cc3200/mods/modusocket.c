@@ -422,9 +422,15 @@ STATIC mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *e
     mod_network_socket_obj_t *self = self_in;
     mp_int_t ret = wlan_socket_recv(self, buf, size, errcode);
     if (ret < 0) {
-        ret = MP_STREAM_ERROR;
-        // needed to convert simplelink's negative error codes to POSIX
-        (*errcode) *= -1;
+        // we need to ignore the socket closed error here because a readall() or read() without params
+        // only returns when the socket is closed by the other end
+        if (*errcode != SL_ESECCLOSED) {
+            ret = MP_STREAM_ERROR;
+            // needed to convert simplelink's negative error codes to POSIX
+            (*errcode) *= -1;
+        } else {
+            ret = 0;
+        }
     }
     return ret;
 }
