@@ -37,4 +37,10 @@ uint64_t sdcard_get_capacity_in_bytes(void);
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
+#if MICROPY_HW_HAS_SDCARD_DMA
+void sdcard_irq_handler(void);
+bool sdcard_read_blocks_dma(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
+bool sdcard_write_blocks_dma(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
+#endif
+
 extern const struct _mp_obj_base_t pyb_sdcard_obj;

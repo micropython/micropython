@@ -77,6 +77,7 @@
 #include "uart.h"
 #include "storage.h"
 #include "can.h"
+#include "sdcard.h"
 
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef pcd_handle;
@@ -438,3 +439,9 @@ void CAN2_RX1_IRQHandler(void) {
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
 }
 #endif // MICROPY_HW_ENABLE_CAN
+
+#if MICROPY_HW_HAS_SDCARD_DMA
+void SDIO_IRQHandler(void) {
+    sdcard_irq_handler();
+}
+#endif // MICROPY_HW_HAS_SDCARD_DMA

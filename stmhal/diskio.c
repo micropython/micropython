@@ -144,7 +144,11 @@ DRESULT disk_read (
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
+#if MICROPY_HW_HAS_SDCARD_DMA
+            if (sdcard_read_blocks_dma(buff, sector, count) != 0) {
+#else
             if (sdcard_read_blocks(buff, sector, count) != 0) {
+#endif
                 return RES_ERROR;
             }
             return RES_OK;
@@ -187,7 +191,11 @@ DRESULT disk_write (
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
+#if MICROPY_HW_HAS_SDCARD_DMA
+            if (sdcard_write_blocks_dma(buff, sector, count) != 0) {
+#else
             if (sdcard_write_blocks(buff, sector, count) != 0) {
+#endif
                 return RES_ERROR;
             }
             return RES_OK;
