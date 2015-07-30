@@ -168,85 +168,18 @@ STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
-STATIC char *replace_str(const char *str, const char *old, const char *new) {
-    if (str == NULL || old == NULL || new == NULL || !strlen(old))
-        return NULL;
-    size_t cache_sz_inc = 16;
-    const size_t cache_sz_inc_factor = 3;
-    const size_t cache_sz_inc_max = 1048576;
-
-    char *pret, *ret = NULL;
-    const char *pstr2, *pstr = str;
-    size_t i, count = 0;
-    ptrdiff_t *pos_cache = NULL;
-    size_t cache_sz = 0;
-    size_t cpylen, orglen, retlen, newlen, oldlen = strlen(old);
-
-    while ((pstr2 = strstr(pstr, old)) != NULL) {
-        count++;
-        if (cache_sz < count) {
-            cache_sz += cache_sz_inc;
-            pos_cache = m_renew(ptrdiff_t, pos_cache, oldlen, sizeof(*pos_cache) * cache_sz);
-            if (pos_cache == NULL) {
-                goto end_repl_str;
-            }
-            cache_sz_inc *= cache_sz_inc_factor;
-            if (cache_sz_inc > cache_sz_inc_max) {
-                cache_sz_inc = cache_sz_inc_max;
-            }
+// str_to_int ... from objstr.c
+STATIC int str_to_int(const char *str, int *num) {
+    const char *s = str;
+    if ('0' <= *s && *s <= '9') {
+        *num = 0;
+        do {
+            *num = *num * 10 + (*s - '0');
+            s++;
         }
-        pos_cache[count - 1] = pstr2 - str;
-        pstr = pstr2 + oldlen;
+        while ('0' <= *s && *s <= '9');
     }
-
-    orglen = pstr - str + strlen(pstr);
-    if (count > 0) {
-        newlen = strlen(new);
-        retlen = orglen + (newlen - oldlen) * count;
-    } else	
-        retlen = orglen;
-
-    ret = m_new(char, retlen + 1);
-    if (ret == NULL) {
-        goto end_repl_str;
-    }
-
-    if (count == 0) {
-        memcpy(ret, str, strlen(str));
-    } else {
-        pret = ret;
-        memcpy(pret, str, pos_cache[0]);
-        pret += pos_cache[0];
-        for (i = 0; i < count; i++) {
-            memcpy(pret, new, newlen);
-            pret += newlen;
-            pstr = str + pos_cache[i] + oldlen;
-            cpylen = (i == count - 1 ? orglen : pos_cache[i + 1]) - pos_cache[i] - oldlen;
-            memcpy(pret, pstr, cpylen);
-            pret += cpylen;
-        }
-        ret[retlen] = '\0';
-    }
-
-end_repl_str:
-	m_del(char, pos_cache, sizeof(*pos_cache) * cache_sz);
-    return ret;
-}
-
-
-STATIC int a_to_i(const char *s) {
-	int i, n, sign;
-	for (i = 0; unichar_isspace(s[i]); i++){
-		
-	}
-	sign = (s[i] == '-') ? -1 : 1;
-	if (s[i] == '+' || s[i] == '-') {
-		i++;
-	}
-	for (n = 0; unichar_isdigit(s[i]); i++){
-		n = 10 * n + (s[i] - '0');
-	}
-	return sign * n;
+    return s - str;
 }
 
 STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
@@ -255,117 +188,81 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
     mp_obj_match_t *match = re_exec(is_anchored, 2, (const mp_obj_t[]){ self, ret });
     if (!MP_OBJ_IS_TYPE(match, &mp_type_NoneType)) {
 
-        const char *str_repl = mp_obj_str_get_str(repl);
-        mp_uint_t str_repl_len = mp_obj_str_get_len(repl);
-        char *str_repl_cpy = m_new(char, str_repl_len + 1);
-        memcpy(str_repl_cpy, str_repl, str_repl_len);
-        str_repl_cpy[str_repl_len] = '\0';
-        mp_uint_t str_repl_cpy_len = str_repl_len;
-
-        char *pp = str_repl_cpy;
-        while (*pp != 0) {
-            if (*pp == 0x5C) {
-                int match_no = 0;
-                char *group = ++pp, *group_value = NULL, *match_group = NULL;
-                if(*group != 0 && *group == 0x67) {
-                    char *left_angle_bracket = ++group;
-                    if( left_angle_bracket != 0 && *left_angle_bracket == 0x3C ) {
-                        char *value = ++left_angle_bracket;
-                        int value_counter = 0;
-                        while( value != 0 && unichar_isdigit(*value) ) {
-                            ++value;
-                            value_counter++;
-                        }
-                        
-                        if ( !value_counter ) {
-                            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "missing group number"));
-                        }
-                        
-                        char *right_angle_bracket = value;
-                        if(right_angle_bracket != 0 && *right_angle_bracket == 0x3E) {
-							
-                            // creo la string contenente il group number "\g<#>"
-                            group_value = m_new(char, value_counter + 4);
-                            memcpy(group_value, (value - value_counter - 3), value_counter + 4);
-                            group_value[value_counter + 4] = '\0';
-
-                            match_no = a_to_i((value - value_counter));
-                            if (match_no < match->num_matches) {
-                                
-                                // recupero il valore da sostituire con il group number "#"
-                                const char *start_match = match->caps[match_no * 2];
-                                mp_uint_t start_match_len = (match->caps[match_no * 2 + 1] - start_match);
-                                match_group = m_new(char, start_match_len + 1);
-                                memcpy(match_group, start_match, start_match_len);
-                                match_group[start_match_len] = '\0';
-                                
-                            }    
-                        }
-                    }
-                } else if( group != 0 && unichar_isdigit(*group) ) {
-					char *value = group;
-                    int value_counter = 0;
-                    while( value != 0 && unichar_isdigit(*value) ) {
-                        ++value;
-                        value_counter++;
-                    }
-                    
-                    if ( !value_counter ) {
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "missing group number"));
-                    }
-                    
-                    // creo la string contenente il group number "\#"
-                    group_value = m_new(char, value_counter + 1);
-                    memcpy(group_value, (value - value_counter - 1), value_counter + 1);
-                    group_value[value_counter + 1] = '\0';
-                                                        
-                    match_no = a_to_i((value - value_counter));
-                    if (match_no < match->num_matches) {
-                        
-                        // recupero il valore da sostituire con il group number "#"
-                        const char *start_match = match->caps[match_no * 2];
-                        mp_uint_t start_match_len = (match->caps[match_no * 2 + 1] - start_match);
-                        match_group = m_new(char, start_match_len + 1);
-                        memcpy(match_group, start_match, start_match_len);
-                        match_group[start_match_len] = '\0';
-                        
-                    }    
-                    
-				}
-                
-                // sostituisco i group number trovati
-                if (match_group != NULL && group_value != NULL) {
-                    char *str_repl_new = NULL; 
-                    if ((str_repl_new = replace_str(str_repl_cpy, group_value, match_group)) != NULL) {
-                        
-                        mp_uint_t str_repl_new_len = strlen(str_repl_new);
-                        str_repl_cpy = m_renew(char, str_repl_cpy, str_repl_cpy_len, str_repl_new_len + 1);
-                        memcpy(str_repl_cpy, str_repl_new, str_repl_new_len);
-                        str_repl_cpy[str_repl_new_len] = '\0';
-                        str_repl_cpy_len = str_repl_new_len;
-                                                
-                        // punto alla testa della nuova string
-                        pp = str_repl_cpy;
-                                                            
-                        m_del(char, str_repl_new, str_repl_cpy_len + 1);
-                    }
-                    
-                    m_del(char, match_group, strlen(match_group) + 1);
-                    m_del(char, group_value, strlen(group_value) + 1);
-                }
-
-            }
-            
-            ++pp;
-        }
-               
-        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
-        
-        if(str_repl_cpy != NULL) {
-            ret = mp_obj_new_str(str_repl_cpy, str_repl_cpy_len, false);
-            m_del(char, str_repl_cpy, str_repl_cpy_len + 1);
-        } 
-        
+		vstr_t *vstr_repl = NULL;
+		if ( (vstr_repl = vstr_new() ) != NULL ) {
+			vstr_add_str(vstr_repl, mp_obj_str_get_str(repl));
+			const char *repl_p = vstr_null_terminated_str(vstr_repl);
+			while (*repl_p != 0) {
+				if (*repl_p == '\\') {
+					int match_no = -1, is_group_number = -1;
+					const char *group = ++repl_p;
+					if(*group != 0 && *group == 'g') {
+						const char *left_angle_bracket = ++group;
+						if( left_angle_bracket != 0 && *left_angle_bracket == '<' ) {
+							const char *value = ++left_angle_bracket;
+							if(value != 0 && unichar_isdigit(*value)) {
+								int value_l = str_to_int(value, &match_no);
+								if ( match_no == -1 ) {
+									nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "missing group number"));
+								}
+								const char *right_angle_bracket = value += value_l;
+								if(right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches) {
+									is_group_number = 1;
+								} 
+							}
+						}
+					} else if( group != 0 && unichar_isdigit(*group) ) {
+						const char *value = group;
+						str_to_int(value, &match_no);
+						if ( match_no > -1 && match_no < match->num_matches) {
+							is_group_number = 0;
+						}	
+					}
+					
+					if ( match_no > -1 && is_group_number > -1) {
+						
+						// recupero il valore da sostituire con il group number "#"
+						const char * match_str = match->caps[match_no * 2];
+						if ( match_str != NULL ) {
+												
+							vstr_t *vstr_group = NULL, *vstr_match = NULL;
+							if ( (vstr_group = vstr_new()) != NULL && (vstr_match = vstr_new()) != NULL ) {
+								
+								vstr_printf(vstr_group, ( is_group_number ? "\\g<%d>" : "\\%d" ), match_no);
+								vstr_add_strn(vstr_match, match_str, (match->caps[match_no * 2 + 1] - match_str));
+								
+								char *group_value = NULL, *match_group = NULL;
+								if ( (group_value = vstr_null_terminated_str(vstr_group)) != NULL && (match_group = vstr_null_terminated_str(vstr_match)) != NULL) {
+									
+									// sostituisco i group number trovati
+									const char * start_sub = repl_p - 1;
+									size_t gv_l = strlen(group_value), mg_l = strlen(match_group), diff_l = MAX(gv_l, mg_l) - MIN(gv_l, mg_l);
+									
+									if (gv_l < mg_l) {
+										vstr_add_len(vstr_repl, diff_l);
+										repl_p+=diff_l;
+									} else if (gv_l > mg_l) {										
+										vstr_cut_tail_bytes(vstr_repl, diff_l);									
+										repl_p-=diff_l;
+									}
+											
+									memmove((void *)(start_sub + mg_l), (void *)(start_sub + gv_l), strlen(start_sub) );
+									memcpy((void *)(start_sub), match_group, mg_l);
+					
+								}
+								
+								vstr_free(vstr_match);
+								vstr_free(vstr_group);
+							}
+						}
+					}
+				}	
+				++repl_p;
+			}
+				   
+			m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+			ret = mp_obj_new_str_from_vstr(&mp_type_str, vstr_repl); 
+		}      
     }
     return ret;
 }
