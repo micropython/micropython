@@ -163,6 +163,12 @@ def run_tests(pyb, tests, args):
     if native == b'CRASH':
         skip_native = True
 
+    # Check if emacs repl is supported, and skip such tests if it's not
+    t = run_micropython(pyb, args, 'cmdline/repl_emacs_check.py')
+    if not 'True' in str(t, 'ascii'):
+        skip_tests.add('cmdline/repl_emacs_check.py')
+        skip_tests.add('cmdline/repl_emacs_keys.py')
+
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
