@@ -2,18 +2,24 @@ try:
     import ure as re
 except ImportError:
     import re
+import string
 
-regex = r'def\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*\(\s*\):'
-replacement = 'static PyObject*\npy_\\1(void)\n{'
-where = 'def myfunc():'
+#regex = r'def\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*\(\s*\):'
+#replacement = 'static PyObject*\npy_\\1(void)\n{'
+#where = 'def myfunc():'
 
 #regex = r'.*(\ )(blu|bianco|rossa).*(blu|bianco|rossa)$'
 #replacement = r'\1 colore (\2) ma veramente tanto (\g<2>) colore \3 ma veramente tanto \g<3>'
 #where = 'calzino blu e scarpa rossa'
 
-#regex = '(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)'
-#replacement = '\\g<0>\n\\g<21>\\g<20>\\g<19>\\g<18>\\g<17>\\g<16>\\g<15>\\g<14>\\g<13>\\g<12>\\g<11>\\g<10>\\9\\8\\7\\6\\5\\4\\3\\2\\1'
-#where = 'utsrqponmlkjihgfedcba'
+where = string.ascii_lowercase + string.digits + string.ascii_uppercase
+replacement = "".join( [ 
+        (
+            "\\g<{0}>"#"\\g<{0}>" if r%2 else "\\{0}"
+        ).format(r) for r in range(1, len(where) + 1)
+    ][::-1] 
+) 
+regex = "([a-zA-Z0-9])" * len(where)
 
 s0 = re.sub(regex, replacement, where)
 print(s0, len(s0)) 
