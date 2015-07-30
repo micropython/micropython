@@ -34,6 +34,4 @@ typedef struct _fs_user_mount_t {
     FATFS fatfs;
 } fs_user_mount_t;
 
-extern fs_user_mount_t *fs_user_mount;
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_mount_obj);

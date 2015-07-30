@@ -135,11 +135,11 @@ STATIC pybpin_wake_pin_t pybpin_wake_pin[PYBPIN_NUM_WAKE_PINS] =
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void pin_init0(void) {
-    // assign GPIO10 and GPIO11 to the GPIO peripheral (the default is I2C), so that the I2C bus can
+    // assign GP10 and GP11 to the GPIO peripheral (the default is I2C), so that the I2C bus can
     // be assigned safely to any other pins (as recomended by the SDK release notes). Make them
     // inputs with pull-downs enabled to ensure they are not floating during LDPS and hibernate.
-    pin_config ((pin_obj_t *)&pin_GPIO10, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PD, PIN_STRENGTH_2MA);
-    pin_config ((pin_obj_t *)&pin_GPIO11, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PD, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&pin_GP10, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PD, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&pin_GP11, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD_PD, PIN_STRENGTH_2MA);
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
@@ -210,27 +210,27 @@ STATIC void pin_obj_configure (const pin_obj_t *self) {
 STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *hib_pin, uint *idx) {
     // pin_num is actually : (package_pin - 1)
     switch (self->pin_num) {
-    case 56:    // GPIO2
+    case 56:    // GP2
         *hib_pin = PRCM_HIB_GPIO2;
         *idx = 0;
         break;
-    case 58:    // GPIO4
+    case 58:    // GP4
         *hib_pin = PRCM_HIB_GPIO4;
         *idx = 1;
         break;
-    case 3:     // GPIO13
+    case 3:     // GP13
         *hib_pin = PRCM_HIB_GPIO13;
         *idx = 2;
         break;
-    case 7:     // GPIO17
+    case 7:     // GP17
         *hib_pin = PRCM_HIB_GPIO17;
         *idx = 3;
         break;
-    case 1:     // GPIO11
+    case 1:     // GP11
         *hib_pin = PRCM_HIB_GPIO11;
         *idx = 4;
         break;
-    case 16:    // GPIO24
+    case 16:    // GP24
         *hib_pin = PRCM_HIB_GPIO24;
         *idx = 5;
         break;

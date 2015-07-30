@@ -390,6 +390,9 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
         #ifdef __GPIOJ_CLK_ENABLE
         case PORT_J: __GPIOJ_CLK_ENABLE(); break;
         #endif
+        #ifdef __GPIOK_CLK_ENABLE
+        case PORT_K: __GPIOK_CLK_ENABLE(); break;
+        #endif
     }
 
     // configure the GPIO as requested

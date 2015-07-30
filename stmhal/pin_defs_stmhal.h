@@ -38,6 +38,7 @@ enum {
   PORT_H,
   PORT_I,
   PORT_J,
+  PORT_K,
 };
 
 enum {

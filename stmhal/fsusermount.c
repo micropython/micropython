@@ -29,9 +29,6 @@
 #include "lib/fatfs/ff.h"
 #include "fsusermount.h"
 
-// for user-mountable block device
-fs_user_mount_t *fs_user_mount;
-
 STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -51,46 +48,46 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (device == mp_const_none) {
         // umount
         FRESULT res = FR_NO_FILESYSTEM;
-        if (fs_user_mount != NULL) {
-            res = f_mount(NULL, fs_user_mount->str, 0);
-            m_del_obj(fs_user_mount_t, fs_user_mount);
-            fs_user_mount = NULL;
+        if (MP_STATE_PORT(fs_user_mount) != NULL) {
+            res = f_mount(NULL, MP_STATE_PORT(fs_user_mount)->str, 0);
+            m_del_obj(fs_user_mount_t, MP_STATE_PORT(fs_user_mount));
+            MP_STATE_PORT(fs_user_mount) = NULL;
         }
         if (res != FR_OK) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
         }
     } else {
         // mount
-        if (fs_user_mount != NULL) {
+        if (MP_STATE_PORT(fs_user_mount) != NULL) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "device already mounted"));
         }
 
         // create new object
-        fs_user_mount = m_new_obj(fs_user_mount_t);
-        fs_user_mount->str = mnt_str;
-        fs_user_mount->len = mnt_len;
+        MP_STATE_PORT(fs_user_mount) = m_new_obj(fs_user_mount_t);
+        MP_STATE_PORT(fs_user_mount)->str = mnt_str;
+        MP_STATE_PORT(fs_user_mount)->len = mnt_len;
 
         // load block protocol methods
-        mp_load_method(device, MP_QSTR_readblocks, fs_user_mount->readblocks);
-        mp_load_method_maybe(device, MP_QSTR_writeblocks, fs_user_mount->writeblocks);
-        mp_load_method_maybe(device, MP_QSTR_sync, fs_user_mount->sync);
-        mp_load_method(device, MP_QSTR_count, fs_user_mount->count);
+        mp_load_method(device, MP_QSTR_readblocks, MP_STATE_PORT(fs_user_mount)->readblocks);
+        mp_load_method_maybe(device, MP_QSTR_writeblocks, MP_STATE_PORT(fs_user_mount)->writeblocks);
+        mp_load_method_maybe(device, MP_QSTR_sync, MP_STATE_PORT(fs_user_mount)->sync);
+        mp_load_method(device, MP_QSTR_count, MP_STATE_PORT(fs_user_mount)->count);
 
         // Read-only device indicated by writeblocks[0] == MP_OBJ_NULL.
         // User can specify read-only device by:
         //  1. readonly=True keyword argument
         //  2. nonexistent writeblocks method (then writeblocks[0] == MP_OBJ_NULL already)
         if (args[0].u_bool) {
-            fs_user_mount->writeblocks[0] = MP_OBJ_NULL;
+            MP_STATE_PORT(fs_user_mount)->writeblocks[0] = MP_OBJ_NULL;
         }
 
         // mount the block device
-        FRESULT res = f_mount(&fs_user_mount->fatfs, fs_user_mount->str, 1);
+        FRESULT res = f_mount(&MP_STATE_PORT(fs_user_mount)->fatfs, MP_STATE_PORT(fs_user_mount)->str, 1);
 
         // check the result
         if (res == FR_OK) {
         } else if (res == FR_NO_FILESYSTEM && args[1].u_bool) {
-            res = f_mkfs(fs_user_mount->str, 1, 0);
+            res = f_mkfs(MP_STATE_PORT(fs_user_mount)->str, 1, 0);
             if (res != FR_OK) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mkfs"));
             }
@@ -99,15 +96,15 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
 
         /*
-        if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+        if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
             printf("mounted read-only");
         } else {
             printf("mounted read-write");
         }
         DWORD nclst;
         FATFS *fatfs;
-        f_getfree(fs_user_mount.str, &nclst, &fatfs);
-        printf(" on %s with %u bytes free\n", fs_user_mount.str, (uint)(nclst * fatfs->csize * 512));
+        f_getfree(MP_STATE_PORT(fs_user_mount)->str, &nclst, &fatfs);
+        printf(" on %s with %u bytes free\n", MP_STATE_PORT(fs_user_mount)->str, (uint)(nclst * fatfs->csize * 512));
         */
     }
     return mp_const_none;

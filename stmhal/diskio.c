@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"        /* FatFs lower layer API */
@@ -78,10 +78,10 @@ DSTATUS disk_initialize (
 #endif
 
         case PD_USER:
-            if (fs_user_mount == NULL) {
+            if (MP_STATE_PORT(fs_user_mount) == NULL) {
                 return STA_NODISK;
             }
-            if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+            if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
                 return STA_PROTECT;
             }
             return 0;
@@ -110,10 +110,10 @@ DSTATUS disk_status (
 #endif
 
         case PD_USER:
-            if (fs_user_mount == NULL) {
+            if (MP_STATE_PORT(fs_user_mount) == NULL) {
                 return STA_NODISK;
             }
-            if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+            if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
                 return STA_PROTECT;
             }
             return 0;
@@ -151,9 +151,13 @@ DRESULT disk_read (
 #endif
 
         case PD_USER:
-            fs_user_mount->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-            fs_user_mount->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
-            mp_call_method_n_kw(2, 0, fs_user_mount->readblocks);
+            if (MP_STATE_PORT(fs_user_mount) == NULL) {
+                // nothing mounted
+                return RES_ERROR;
+            }
+            MP_STATE_PORT(fs_user_mount)->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+            MP_STATE_PORT(fs_user_mount)->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
+            mp_call_method_n_kw(2, 0, MP_STATE_PORT(fs_user_mount)->readblocks);
             return RES_OK;
     }
 
@@ -190,13 +194,17 @@ DRESULT disk_write (
 #endif
 
         case PD_USER:
-            if (fs_user_mount->writeblocks[0] == MP_OBJ_NULL) {
+            if (MP_STATE_PORT(fs_user_mount) == NULL) {
+                // nothing mounted
+                return RES_ERROR;
+            }
+            if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
                 // read-only block device
                 return RES_ERROR;
             }
-            fs_user_mount->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-            fs_user_mount->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
-            mp_call_method_n_kw(2, 0, fs_user_mount->writeblocks);
+            MP_STATE_PORT(fs_user_mount)->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+            MP_STATE_PORT(fs_user_mount)->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
+            mp_call_method_n_kw(2, 0, MP_STATE_PORT(fs_user_mount)->writeblocks);
             return RES_OK;
     }
 
@@ -243,10 +251,14 @@ DRESULT disk_ioctl (
 #endif
 
         case PD_USER:
+            if (MP_STATE_PORT(fs_user_mount) == NULL) {
+                // nothing mounted
+                return RES_ERROR;
+            }
             switch (cmd) {
                 case CTRL_SYNC:
-                    if (fs_user_mount->sync[0] != MP_OBJ_NULL) {
-                        mp_call_method_n_kw(0, 0, fs_user_mount->sync);
+                    if (MP_STATE_PORT(fs_user_mount)->sync[0] != MP_OBJ_NULL) {
+                        mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->sync);
                     }
                     return RES_OK;
 
@@ -255,7 +267,7 @@ DRESULT disk_ioctl (
                     return RES_OK;
 
                 case GET_SECTOR_COUNT: {
-                    mp_obj_t ret = mp_call_method_n_kw(0, 0, fs_user_mount->count);
+                    mp_obj_t ret = mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->count);
                     *((DWORD*)buff) = mp_obj_get_int(ret);
                     return RES_OK;
                 }

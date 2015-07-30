@@ -39,6 +39,7 @@
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_EMACS_KEYS     (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
@@ -134,7 +135,11 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
+#if defined(STM32F7)
+#define PYB_EXTI_NUM_VECTORS (24)
+#else
 #define PYB_EXTI_NUM_VECTORS (23)
+#endif
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -164,6 +169,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     \
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[2]; \
+    \
+    /* for user-mountable block device */ \
+    struct _fs_user_mount_t *fs_user_mount; \
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
@@ -196,7 +204,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 // value from disable_irq back to enable_irq.  If you really need
 // to know the machine-specific values, see irq.h.
 
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);

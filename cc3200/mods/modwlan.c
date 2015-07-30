@@ -426,7 +426,7 @@ void wlan_first_start (void) {
 }
 
 modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ssid_len, uint8_t sec,
-                                 const char *key, uint8_t key_len, uint8_t channel) {
+                                 const char *key, uint8_t key_len, uint8_t channel, bool append_mac) {
 
     if (mode == ROLE_STA || mode == ROLE_AP || mode == ROLE_P2P) {
         // stop the servers
@@ -477,9 +477,14 @@ modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ss
             ASSERT (ssid != NULL && key != NULL);
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_AP_TX_POWER, sizeof(ucPower),
                                        (unsigned char *)&ucPower));
-            ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SSID, ssid_len, (unsigned char *)ssid));
             memcpy(wlan_obj.ssid, (unsigned char *)ssid, ssid_len);
-            wlan_obj.ssid[ssid_len] = '\0';
+            // append the last 2 bytes of the MAC address, since the use of this functionality is under our controll
+            // we can assume that the lenght of the ssid is less than (32 - 5)
+            if (append_mac) {
+                snprintf((char *)&wlan_obj.ssid[ssid_len], sizeof(wlan_obj.ssid) - ssid_len, "-%02x%02x", wlan_obj.mac[4], wlan_obj.mac[5]);
+                ssid_len += 5;
+            }
+            ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SSID, ssid_len, (unsigned char *)wlan_obj.ssid));
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SECURITY_TYPE, sizeof(uint8_t), &sec));
             ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_PASSWORD, key_len, (unsigned char *)key));
             _u8*  country = (_u8*)"EU";
@@ -687,24 +692,29 @@ STATIC mp_obj_t wlan_init_helper(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     // get the ssid
     mp_uint_t ssid_len;
     const char *ssid = mp_obj_str_get_data(args[1].u_obj, &ssid_len);
+    if (ssid_len > 32) {
+        goto arg_error;
+    }
 
     // get the key
     mp_uint_t key_len;
     const char *key = mp_obj_str_get_data(args[3].u_obj, &key_len);
-
     if (key_len < 8) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto arg_error;
     }
 
     // force the channel to be between 1-11
     uint8_t channel = args[4].u_int;
     channel = (channel > 0 && channel != 12) ? channel % 12 : 1;
 
-    if (MODWLAN_OK != wlan_sl_enable (args[0].u_int, ssid, ssid_len, args[2].u_int, key, key_len, channel)) {
+    if (MODWLAN_OK != wlan_sl_enable (args[0].u_int, ssid, ssid_len, args[2].u_int, key, key_len, channel, false)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 
     return mp_const_none;
+
+arg_error:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
 STATIC void wlan_lpds_callback_enable (mp_obj_t self_in) {
@@ -750,7 +760,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         }
         // TODO only STA mode supported for the moment. What if P2P?
         else if (n_args == 1) {
-            if (MODWLAN_OK != wlan_sl_enable (mode, NULL, 0, 0, NULL, 0, 0)) {
+            if (MODWLAN_OK != wlan_sl_enable (mode, NULL, 0, 0, NULL, 0, 0, false)) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
             }
         }

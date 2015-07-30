@@ -25,7 +25,7 @@
  */
 
 #include <stdio.h>
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 
 #include "py/nlr.h"
 #include "py/runtime.h"

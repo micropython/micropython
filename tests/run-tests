@@ -42,9 +42,33 @@ def run_micropython(pyb, args, test_file):
             # run the test, possibly with redirected input
             try:
                 if test_file.startswith('cmdline/repl_'):
-                    f = open(test_file, 'rb')
-                    output_mupy = subprocess.check_output(args, stdin=f)
-                    f.close()
+                    # Need to use a PTY to test command line editing
+                    import pty
+                    import select
+
+                    def get():
+                        rv = b''
+                        while True:
+                            ready = select.select([master], [], [], 0.02)
+                            if ready[0] == [master]:
+                                rv += os.read(master, 1024)
+                            else:
+                                return rv
+
+                    def send_get(what):
+                        os.write(master, what)
+                        return get()
+
+                    with open(test_file, 'rb') as f:
+                        # instead of: output_mupy = subprocess.check_output(args, stdin=f)
+                        master, slave = pty.openpty()
+                        p = subprocess.Popen(args, stdin=slave, stdout=slave,
+                                             stderr=subprocess.STDOUT, bufsize=0)
+                        banner = get()
+                        output_mupy = banner + b''.join(send_get(line) for line in f)
+                        p.kill()
+                        os.close(master)
+                        os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(args + [test_file])
             except subprocess.CalledProcessError:
@@ -64,6 +88,9 @@ def run_micropython(pyb, args, test_file):
                         cs.append('\\' + c)
                     else:
                         cs.append(c)
+                # accept carriage-return(s) before final newline
+                if cs[-1] == '\n':
+                    cs[-1] = '\r*\n'
                 return bytes(''.join(cs), 'utf8')
 
             # convert parts of the output that are not stable across runs
@@ -96,6 +123,9 @@ def run_micropython(pyb, args, test_file):
                     # a regex
                     if lines_exp[i][1].match(lines_mupy[i_mupy]):
                         lines_mupy[i_mupy] = lines_exp[i][0]
+                    else:
+                        #print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
+                        pass
                     i_mupy += 1
                 if i_mupy >= len(lines_mupy):
                     break
@@ -132,10 +162,6 @@ def run_tests(pyb, tests, args):
     native = run_micropython(pyb, args, 'micropython/native_check.py')
     if native == b'CRASH':
         skip_native = True
-
-    # These tests no longer work; TODO change them or remove them
-    skip_tests.add('cmdline/repl_basic.py')
-    skip_tests.add('cmdline/repl_cont.py')
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
@@ -266,17 +292,19 @@ def run_tests(pyb, tests, args):
 def main():
     cmd_parser = argparse.ArgumentParser(description='Run tests for Micro Python.')
     cmd_parser.add_argument('--target', default='unix', help='the target platform')
-    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device of the target board')
+    cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')
+    cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
+    cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
+    cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
-    cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
     if args.target == 'pyboard' or args.target == 'wipy':
         import pyboard
-        pyb = pyboard.Pyboard(args.device, args.baudrate)
+        pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
     elif args.target == 'unix':
         pyb = None

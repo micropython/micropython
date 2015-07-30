@@ -37,6 +37,10 @@
 #include "i2c.h"
 #include MICROPY_HAL_H
 
+#if !defined(STM32F7)
+// The STM32F7 has Timing, where the F4 has ClockSpeed and DutyCycle, so we
+// need to figure that out before we can enable i2c
+
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
 ///
@@ -748,3 +752,5 @@ const mp_obj_type_t pyb_i2c_type = {
     .make_new = pyb_i2c_make_new,
     .locals_dict = (mp_obj_t)&pyb_i2c_locals_dict,
 };
+
+#endif // STM32F7

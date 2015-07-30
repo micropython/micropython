@@ -25,7 +25,7 @@
  */
 
 #include <stdio.h>
-#include <stm32f4xx_hal.h>
+#include STM32_HAL_H
 #include <string.h>
 
 #include "py/nlr.h"
@@ -62,8 +62,11 @@
     defined(STM32F411xE)
 #define VBAT_DIV (2)
 #elif defined(STM32F427xx) || defined(STM32F429xx) || \
-      defined(STM32F437xx) || defined(STM32F439xx)
+      defined(STM32F437xx) || defined(STM32F439xx) || \
+      defined(STM32F746xx)
 #define VBAT_DIV (4)
+#else
+#error Unsupported processor
 #endif
 
 /* Core temperature sensor definitions */

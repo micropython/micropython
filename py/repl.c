@@ -59,38 +59,47 @@ bool mp_repl_continue_with_input(const char *input) {
         || str_startswith_word(input, "class")
         ;
 
-    // check for unmatched open bracket or triple quote
-    // TODO don't look at triple quotes inside single quotes
+    // check for unmatched open bracket or quote
+    #define Q_NONE (0)
+    #define Q_1_SINGLE (1)
+    #define Q_1_DOUBLE (2)
+    #define Q_3_SINGLE (3)
+    #define Q_3_DOUBLE (4)
     int n_paren = 0;
     int n_brack = 0;
     int n_brace = 0;
-    int in_triple_quote = 0;
+    int in_quote = Q_NONE;
     const char *i;
     for (i = input; *i; i++) {
-        switch (*i) {
-            case '(': n_paren += 1; break;
-            case ')': n_paren -= 1; break;
-            case '[': n_brack += 1; break;
-            case ']': n_brack -= 1; break;
-            case '{': n_brace += 1; break;
-            case '}': n_brace -= 1; break;
-            case '\'':
-                if (in_triple_quote != '"' && i[1] == '\'' && i[2] == '\'') {
-                    i += 2;
-                    in_triple_quote = '\'' - in_triple_quote;
-                }
-                break;
-            case '"':
-                if (in_triple_quote != '\'' && i[1] == '"' && i[2] == '"') {
-                    i += 2;
-                    in_triple_quote = '"' - in_triple_quote;
-                }
-                break;
+        if (*i == '\'') {
+            if ((in_quote == Q_NONE || in_quote == Q_3_SINGLE) && i[1] == '\'' && i[2] == '\'') {
+                i += 2;
+                in_quote = Q_3_SINGLE - in_quote;
+            } else if (in_quote == Q_NONE || in_quote == Q_1_SINGLE) {
+                in_quote = Q_1_SINGLE - in_quote;
+            }
+        } else if (*i == '"') {
+            if ((in_quote == Q_NONE || in_quote == Q_3_DOUBLE) && i[1] == '"' && i[2] == '"') {
+                i += 2;
+                in_quote = Q_3_DOUBLE - in_quote;
+            } else if (in_quote == Q_NONE || in_quote == Q_1_DOUBLE) {
+                in_quote = Q_1_DOUBLE - in_quote;
+            }
+        } else if (in_quote == Q_NONE) {
+            switch (*i) {
+                case '(': n_paren += 1; break;
+                case ')': n_paren -= 1; break;
+                case '[': n_brack += 1; break;
+                case ']': n_brack -= 1; break;
+                case '{': n_brace += 1; break;
+                case '}': n_brace -= 1; break;
+                default: break;
+            }
         }
     }
 
     // continue if unmatched brackets or quotes
-    if (n_paren > 0 || n_brack > 0 || n_brace > 0 || in_triple_quote != 0) {
+    if (n_paren > 0 || n_brack > 0 || n_brace > 0 || in_quote == Q_3_SINGLE || in_quote == Q_3_DOUBLE) {
         return true;
     }
 
