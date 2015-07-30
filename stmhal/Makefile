@@ -310,6 +310,10 @@ GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 # which source files might need it.
 $(OBJ): | $(HEADER_BUILD)/pins.h
 
+# With conditional pins, we may need to regenerate qstrdefs.h when config
+# options change.
+$(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
+
 $(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make

@@ -179,6 +179,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     }
 
     for (uint i = (enable_nss_pin ? 0 : 1); i < 4; i++) {
+        mp_hal_enable_gpio_clock(pins[i]->gpio);
         GPIO_InitStructure.Pin = pins[i]->pin_mask;
         HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
     }

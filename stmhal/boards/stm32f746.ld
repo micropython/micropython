@@ -6,9 +6,9 @@
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K     /* sector 0, 16K */
-    FLASH_FS (r)    : ORIGIN = 0x08004000, LENGTH = 112K    /* sectors 1, 2, 3 (16K each) sector 4 (64K) */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K    /* sectors 5-11 7*128KiB = 896K */
+    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 32K     /* sector 0, 32K */
+    FLASH_FS (r)    : ORIGIN = 0x08008000, LENGTH = 96K     /* sectors 1, 2, 3 (32K each) */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K    /* sectors 4-7 1*128Kib 3*256KiB = 896K */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 64K     /* Used for storage cache */
     RAM (xrw)       : ORIGIN = 0x20010000, LENGTH = 256K    /* SRAM1 = 240K, SRAM2 = 16K */
 }
