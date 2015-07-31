@@ -224,7 +224,7 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
 						// recupero il valore da sostituire con il group number "#"
 						const char * match_str = match->caps[match_no * 2];
 						if ( match_str != NULL ) {
-												
+									
 							vstr_t *vstr_group = NULL, *vstr_match = NULL;
 							if ( (vstr_group = vstr_new()) != NULL && (vstr_match = vstr_new()) != NULL ) {
 								
@@ -232,21 +232,25 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
 								vstr_add_strn(vstr_match, match_str, (match->caps[match_no * 2 + 1] - match_str));
 								
 								char *group_value = NULL, *match_group = NULL;
-								if ( (group_value = vstr_null_terminated_str(vstr_group)) != NULL && (match_group = vstr_null_terminated_str(vstr_match)) != NULL) {
+								if ( (group_value = vstr_null_terminated_str(vstr_group)) != NULL && 
+									 (match_group = vstr_null_terminated_str(vstr_match)) != NULL ) {
 									
 									// sostituisco i group number trovati
-									const char * start_sub = repl_p - 1;
-									size_t gv_l = strlen(group_value), mg_l = strlen(match_group), diff_l = MAX(gv_l, mg_l) - MIN(gv_l, mg_l);
+									size_t gv_l = strlen(group_value);
+									size_t mg_l = strlen(match_group);
+									
+									const char *repl_pp = --repl_p;
 									
 									if (gv_l < mg_l) {
-										vstr_add_len(vstr_repl, diff_l);
+										vstr_add_len(vstr_repl, (mg_l - gv_l));
+										repl_p+=gv_l;
 									} else if (gv_l > mg_l) {										
-										vstr_cut_tail_bytes(vstr_repl, diff_l);									
+										vstr_cut_tail_bytes(vstr_repl, (gv_l - mg_l));									
 										repl_p-=mg_l;
 									}
-											
-									memmove((void *)(start_sub + mg_l), (void *)(start_sub + gv_l), strlen(start_sub));
-									memcpy((void *)(start_sub), match_group, mg_l);
+									
+									memmove((void *)(repl_pp + mg_l), (void *)(repl_pp + gv_l), strlen(repl_pp));
+									memcpy((void *)(repl_pp), match_group, mg_l);
 					
 								}
 								

@@ -8,26 +8,26 @@ import string
 #replacement = 'static PyObject*\npy_\\1(void)\n{'
 #where = 'def myfunc():'
 
-regex = r'(calzino)(\ )(blu|bianco|rossa).*(scarpa).*(blu|bianco|rossa)$'
-replacement = r'\g<1> \2colore (\3) ma veramente tanto (\g<3>) \g<4> colore (\5) ma veramente tanto (\g<5>)'
-where = 'calzino blu e scarpa rossa'
+# regex = r'(calzino)(\ )(blu|bianco|rossa).*(scarpa).*(blu|bianco|rossa)$'
+# replacement = r'\g<1> \2colore (\3) ma veramente tanto (\g<3>) \g<4> colore (\5) ma veramente tanto (\g<5>)'
+# where = 'calzino blu e scarpa rossa'
 
-#where = string.ascii_lowercase + string.digits + string.ascii_uppercase
-#replacement = "".join( [ 
-#        (
-#            "\\g<{0}>" if r%2 else "\\{0}"
-#        ).format(r) for r in range(1, len(where) + 1)
-#    ][::-1] 
-#) 
-#regex = "([a-zA-Z0-9])" * len(where)
+where = string.ascii_lowercase + string.digits + string.ascii_uppercase
+replacement = "".join( [ 
+        (
+            "\\g<{0}>" if r%2 else "\\{0}"
+        ).format(r) for r in range(1, len(where) + 1)
+    ][::-1] 
+) 
+regex = "([a-zA-Z0-9])" * len(where)
 
 s0 = re.sub(regex, replacement, where)
 print(s0, len(s0)) 
 
-if False:
+if True:
 	
-	regex = r'(\ ).*(blu|bianco|rossa).*(blu|bianco|rossa)$'
-	replacement = r'\1 colore (\2) ma veramente tanto (\g<2>) colore \3 ma veramente tanto \g<3>'
+	regex = r'(calzino)(\ )(blu|bianco|rossa).*(scarpa).*(blu|bianco|rossa)$'
+	replacement = r'\g<1> \2colore (\3) ma veramente tanto (\g<3>) \g<4> colore (\5) ma veramente tanto (\g<5>)'
 	where = 'calzino blu e scarpa rossa'
 	
 	for index in range(1):
