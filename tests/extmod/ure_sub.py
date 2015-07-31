@@ -2,7 +2,6 @@ try:
     import ure as re
 except ImportError:
     import re
-import string
 
 #regex = r'def\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*\(\s*\):'
 #replacement = 'static PyObject*\npy_\\1(void)\n{'
@@ -12,7 +11,7 @@ import string
 # replacement = r'\g<1> \2colore (\3) ma veramente tanto (\g<3>) \g<4> colore (\5) ma veramente tanto (\g<5>)'
 # where = 'calzino blu e scarpa rossa'
 
-where = string.ascii_lowercase + string.digits + string.ascii_uppercase
+where = 'abcdefghijklmnopqrstuvwxyz' + '0123456789' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 replacement = "".join( [ 
         (
             "\\g<{0}>" if r%2 else "\\{0}"
