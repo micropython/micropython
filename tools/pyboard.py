@@ -253,17 +253,16 @@ def main():
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
     cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
+    cmd_parser.add_argument('-c', '--command', help='program passed in as string')
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
 
-    for filename in args.files:
+    def execbuffer(buf):
         try:
             pyb = Pyboard(args.device, args.baudrate, args.user, args.password)
             pyb.enter_raw_repl()
-            with open(filename, 'rb') as f:
-                pyfile = f.read()
-            ret, ret_err = pyb.exec_raw(pyfile, timeout=None, data_consumer=stdout_write_bytes)
+            ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
             pyb.exit_raw_repl()
             pyb.close()
         except PyboardError as er:
@@ -275,7 +274,15 @@ def main():
             stdout_write_bytes(ret_err)
             sys.exit(1)
 
-    if args.follow or len(args.files) == 0:
+    if args.command is not None:
+        execbuffer(bytes(args.command, 'utf-8'))
+
+    for filename in args.files:
+        with open(filename, 'rb') as f:
+            pyfile = f.read()
+            execbuffer(pyfile)
+
+    if args.follow or (args.command is None and len(args.files) == 0):
         try:
             pyb = Pyboard(args.device, args.baudrate, args.user, args.password)
             ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
