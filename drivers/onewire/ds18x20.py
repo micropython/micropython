@@ -7,14 +7,13 @@ temperature sensors.  It supports multiple devices on the same 1-wire bus.
 The following example assumes the ground of your DS18x20 is connected to
 Y11, vcc is connected to Y9 and the data pin is connected to Y10.
 
->>> gnd = Pin('Y11')
->>> gnd.init(Pin.OUT_PP)
+>>> from pyb import Pin
+>>> gnd = Pin('Y11', Pin.OUT_PP)
 >>> gnd.low()
-        
->>> vcc = Pin('Y9')
->>> vcc.init(Pin.OUT_PP)
+>>> vcc = Pin('Y9', Pin.OUT_PP)
 >>> vcc.high()
 
+>>> from ds18x20 import DS18X20
 >>> d = DS18X20(Pin('Y10'))
 
 Call read_temps to read all sensors:
@@ -47,27 +46,22 @@ class DS18X20(object):
         # correct # first byte in their rom for a DS18x20 device.
         self.roms = [rom for rom in self.ow.scan() if rom[0] == 0x10 or rom[0] == 0x28]
 
-    def _select_rom(self, rom):
-        if rom:
-            self.ow.select_rom(rom)
-        else:
-            self.ow.skip_rom()
-
     def read_temp(self, rom=None):
         """
         Read and return the temperature of one DS18x20 device.
         Pass the 8-byte bytes object with the ROM of the specific device you want to read.
         If only one DS18x20 device is attached to the bus you may omit the rom parameter.
         """
+        rom = rom or self.roms[0]
         ow = self.ow
         ow.reset()
-        self._select_rom(rom)
+        ow.select_rom(rom)
         ow.write_byte(0x44)  # Convert Temp
         while True:
             if ow.read_bit():
                 break
         ow.reset()
-        self._select_rom(rom)
+        ow.select_rom(rom)
         ow.write_byte(0xbe)  # Read scratch
         data = ow.read_bytes(9)
         return self.convert_temp(rom[0], data)
