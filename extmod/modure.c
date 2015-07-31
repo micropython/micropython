@@ -240,13 +240,12 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
 									
 									if (gv_l < mg_l) {
 										vstr_add_len(vstr_repl, diff_l);
-										repl_p+=mg_l;
 									} else if (gv_l > mg_l) {										
 										vstr_cut_tail_bytes(vstr_repl, diff_l);									
 										repl_p-=mg_l;
 									}
 											
-									memmove((void *)(start_sub + mg_l), (void *)(start_sub + gv_l), strlen(start_sub) );
+									memmove((void *)(start_sub + mg_l), (void *)(start_sub + gv_l), strlen(start_sub));
 									memcpy((void *)(start_sub), match_group, mg_l);
 					
 								}
