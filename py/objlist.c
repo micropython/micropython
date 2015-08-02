@@ -121,9 +121,6 @@ STATIC mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
             return MP_OBJ_UNCAST(s);
         }
         case MP_BINARY_OP_INPLACE_ADD: {
-            if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
-                return MP_OBJ_NULL; // op not supported
-            }
             list_extend(lhs, rhs);
             return lhs;
         }
