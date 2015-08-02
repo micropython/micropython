@@ -132,6 +132,22 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             break;
         #endif
 
+        #if defined(MICROPY_HW_UART1_TX_PORT) && \
+            defined(MICROPY_HW_UART1_TX_PIN) && \
+            defined(MICROPY_HW_UART1_RX_PORT) && \
+            defined(MICROPY_HW_UART1_RX_PIN)
+        case PYB_UART_1:
+            UARTx = USART1;
+            irqn = USART1_IRQn;
+            GPIO_AF_UARTx = GPIO_AF7_USART1;
+            GPIO_Port  = MICROPY_HW_UART1_TX_PORT;
+            GPIO_Pin   = MICROPY_HW_UART1_TX_PIN;
+            GPIO_Port2 = MICROPY_HW_UART1_RX_PORT;
+            GPIO_Pin2  = MICROPY_HW_UART1_RX_PIN;
+            __USART1_CLK_ENABLE();
+            break;
+        #endif
+
         #if defined(MICROPY_HW_UART2_PORT) && defined(MICROPY_HW_UART2_PINS)
         // USART2 is on PA2/PA3 (CTS,RTS,CK on PA0,PA1,PA4), PD5/PD6 (CK on PD7)
         case PYB_UART_2:
