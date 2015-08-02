@@ -307,4 +307,12 @@ void SystemClock_Config(void)
   {
     __fatal_error("HAL_RCC_ClockConfig");
   }
+
+#if defined(STM32F7)
+  // The DFU bootloader changes the clocksource register from its default power
+  // on reset value, so we set it back here, so the clocksources are the same
+  // whether we were started from DFU or from a power on reset.
+
+  RCC->DCKCFGR2 = 0;
+#endif
 }
