@@ -120,7 +120,7 @@ STATIC const mp_map_elem_t stm_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem16), (mp_obj_t)&stm_mem16_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mem32), (mp_obj_t)&stm_mem32_obj },
 
-#include "modstmconst.gen.c"
+#include "genhdr/modstm_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
