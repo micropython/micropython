@@ -114,9 +114,10 @@ void uart_deinit(void) {
 STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
-    uint32_t GPIO_Pin;
+    uint32_t GPIO_Pin, GPIO_Pin2;
     uint8_t GPIO_AF_UARTx = 0;
     GPIO_TypeDef* GPIO_Port = NULL;
+    GPIO_TypeDef* GPIO_Port2 = NULL;
 
     switch (uart_obj->uart_id) {
         #if defined(MICROPY_HW_UART1_PORT) && defined(MICROPY_HW_UART1_PINS)
@@ -197,18 +198,10 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART5_IRQn;
             GPIO_AF_UARTx = GPIO_AF8_UART5;
             GPIO_Port = MICROPY_HW_UART5_TX_PORT;
+            GPIO_Port2 = MICROPY_HW_UART5_RX_PORT;
             GPIO_Pin = MICROPY_HW_UART5_TX_PIN;
+            GPIO_Pin2 = MICROPY_HW_UART5_RX_PIN;
             __UART5_CLK_ENABLE();
-
-            // The code after the case only deals with the case where the TX & RX
-            // pins are on the same port. UART5 has them on different ports.
-            GPIO_InitTypeDef GPIO_InitStructure;
-            GPIO_InitStructure.Pin = MICROPY_HW_UART5_RX_PIN;
-            GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-            GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-            GPIO_InitStructure.Pull = GPIO_PULLUP;
-            GPIO_InitStructure.Alternate = GPIO_AF_UARTx;
-            HAL_GPIO_Init(MICROPY_HW_UART5_RX_PORT, &GPIO_InitStructure);
             break;
         #endif
 
@@ -241,6 +234,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     GPIO_InitStructure.Pull = GPIO_PULLUP;
     GPIO_InitStructure.Alternate = GPIO_AF_UARTx;
     HAL_GPIO_Init(GPIO_Port, &GPIO_InitStructure);
+
+    // init GPIO for second pin if needed
+    if (GPIO_Port2 != NULL) {
+        mp_hal_gpio_clock_enable(GPIO_Port2);
+        GPIO_InitStructure.Pin = GPIO_Pin2;
+        HAL_GPIO_Init(GPIO_Port2, &GPIO_InitStructure);
+    }
 
     // init UARTx
     HAL_UART_Init(&uart_obj->uart);
