@@ -116,6 +116,8 @@ uint32_t HAL_GetTick(void);
 void     HAL_Delay(uint32_t Delay);
 void mp_hal_set_interrupt_char(int c);
 
+void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
+
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len);

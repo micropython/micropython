@@ -233,6 +233,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     uart_obj->uart.Instance = UARTx;
 
     // init GPIO
+    mp_hal_gpio_clock_enable(GPIO_Port);
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Pin = GPIO_Pin;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
