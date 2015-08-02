@@ -7,6 +7,8 @@ expected to change.  After generating the file, some manual intervention is
 needed to copy the new qstr definitions to qstrdefsport.h.
 """
 
+from __future__ import print_function
+
 import argparse
 import re
 
@@ -34,7 +36,7 @@ class Lexer:
         ('typedef struct', re.compile(r'typedef struct$')),
         ('{', re.compile(r'{$')),
         ('}', re.compile(r'}$')),
-        ('} TypeDef', re.compile(r'} *(?P<id>[A-Z][A-Za-z0-9_]+)_(?P<global>(Global)?)TypeDef;$')),
+        ('} TypeDef', re.compile(r'} *(?P<id>[A-Z][A-Za-z0-9_]+)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$')),
         ('IO reg', re.compile(re_io_reg + r'; +/\*!< ' + re_comment + r', +' + re_addr_offset + r' *\*/')),
         ('IO reg array', re.compile(re_io_reg + r'\[(?P<array>[2-8])\]; +/\*!< ' + re_comment + r', +' + re_addr_offset + r'-(0x[0-9A-Z]{2,3}) *\*/')),
     )
@@ -157,6 +159,8 @@ const mp_obj_module_t stm_%s_obj = {
 def main():
     cmd_parser = argparse.ArgumentParser(description='Extract ST constants from a C header file.')
     cmd_parser.add_argument('file', nargs=1, help='input file')
+    cmd_parser.add_argument('-q', '--qstr', dest='qstr_filename', default='build/stmconst_qstr.h',
+                            help='Specified the name of the generated qstr header file')
     args = cmd_parser.parse_args()
 
     periphs, reg_defs = parse_file(args.file[0])
@@ -198,7 +202,8 @@ def main():
         'WWDG',
         'RNG',
         ):
-        print_regs(reg, reg_defs[reg], needed_qstrs)
+        if reg in reg_defs:
+            print_regs(reg, reg_defs[reg], needed_qstrs)
         #print_regs_as_submodules(reg, reg_defs[reg], modules, needed_qstrs)
 
     #print("#define MOD_STM_CONST_MODULES \\")
@@ -207,8 +212,9 @@ def main():
 
     print("")
 
-    for qstr in sorted(needed_qstrs):
-        print('Q({})'.format(qstr))
+    with open(args.qstr_filename, 'wt') as qstr_file:
+        for qstr in sorted(needed_qstrs):
+            print('Q({})'.format(qstr), file=qstr_file)
 
 if __name__ == "__main__":
     main()
