@@ -380,6 +380,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
 STATIC const mp_arg_t pyb_i2c_send_args[] = {
     { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
     { MP_QSTR_addr,                      MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
 #define PYB_I2C_SEND_NUM_ARGS MP_ARRAY_SIZE(pyb_i2c_send_args)
 
@@ -415,6 +416,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_send_obj, 1, pyb_i2c_send);
 STATIC const mp_arg_t pyb_i2c_recv_args[] = {
     { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
     { MP_QSTR_addr,                      MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
 };
 #define PYB_I2C_RECV_NUM_ARGS MP_ARRAY_SIZE(pyb_i2c_recv_args)
 
@@ -457,6 +459,7 @@ STATIC const mp_arg_t pyb_i2c_mem_read_args[] = {
     { MP_QSTR_data,      MP_ARG_REQUIRED  | MP_ARG_OBJ, },
     { MP_QSTR_addr,      MP_ARG_REQUIRED  | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_memaddr,   MP_ARG_REQUIRED  | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_timeout,   MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 5000} },
     { MP_QSTR_addr_size, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 8} },
 };
 #define PYB_I2C_MEM_READ_NUM_ARGS MP_ARRAY_SIZE(pyb_i2c_mem_read_args)

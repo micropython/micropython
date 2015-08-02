@@ -171,13 +171,12 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         mp_printf(print, "<SPI1, SPI.MASTER, baudrate=%u, bits=%u, polarity=%u, phase=%u, nss=%q>",
                   self->baudrate, (self->wlen * 8), self->polarity, self->phase,
                   (self->config & SPI_CS_ACTIVELOW) ? MP_QSTR_ACTIVE_LOW : MP_QSTR_ACTIVE_HIGH);
-    }
-    else {
+    } else {
         mp_print_str(print, "<SPI1>");
     }
 }
 
-/// \method init(mode, *, baudrate=1000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVELOW)
+/// \method init(mode, *, baudrate=1000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
 ///
 /// Initialise the SPI bus with the given parameters:
 ///
@@ -260,7 +259,6 @@ invalid_args:
 /// initialised (it has the settings from the last initialisation of
 /// the bus, if any).  If extra arguments are given, the bus is initialised.
 /// See `init` for parameters of initialisation.
-///
 STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -297,39 +295,59 @@ STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);
 
-/// \method send(send)
+/// \method send(send, *, timeout=5000)
 /// Send data on the bus:
 ///
 /// - `send` is the data to send (a byte to send, or a buffer object).
+/// - `timeout` is the timeout in milliseconds to wait for the send.
 ///
-STATIC mp_obj_t pyb_spi_send (mp_obj_t self_in, mp_obj_t send_o) {
-    pyb_spi_obj_t *self = self_in;
+STATIC mp_obj_t pyb_spi_send (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    pyb_spi_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     // get the buffer to send from
     mp_buffer_info_t bufinfo;
     uint8_t data[1];
-    pyb_buf_get_for_send(send_o, &bufinfo, data);
+    pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     // just send
     pybspi_transfer(self, (const char *)bufinfo.buf, NULL, bufinfo.len);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_send_obj, pyb_spi_send);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_obj, 1, pyb_spi_send);
 
-/// \method recv(recv)
+/// \method recv(recv, *, timeout=5000)
 ///
 /// Receive data on the bus:
 ///
 ///   - `recv` can be an integer, which is the number of bytes to receive,
 ///      or a mutable buffer, which will be filled with received bytes.
+///   - `timeout` is the timeout in milliseconds to wait for the receive.
 ///
 /// Return: if `recv` is an integer then a new buffer of the bytes received,
 /// otherwise the same buffer that was passed in to `recv`.
-STATIC mp_obj_t pyb_spi_recv(mp_obj_t self_in, mp_obj_t recv_o) {
-    pyb_spi_obj_t *self = self_in;
+STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    pyb_spi_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     // get the buffer to receive into
     vstr_t vstr;
-    mp_obj_t o_ret = pyb_buf_get_for_recv(recv_o, &vstr);
+    mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
 
     // just receive
     pybspi_transfer(self, NULL, vstr.buf, vstr.len);
@@ -341,9 +359,9 @@ STATIC mp_obj_t pyb_spi_recv(mp_obj_t self_in, mp_obj_t recv_o) {
         return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_recv_obj, pyb_spi_recv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_recv_obj, 1, pyb_spi_recv);
 
-/// \method send_recv(send, recv)
+/// \method send_recv(send, recv=None, *, timeout=5000)
 ///
 /// Send and receive data on the bus at the same time:
 ///
@@ -351,10 +369,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_recv_obj, pyb_spi_recv);
 ///   - `recv` is a mutable buffer which will be filled with received bytes.
 ///      It can be the same as `send`, or omitted.  If omitted, a new buffer will
 ///      be created.
+///   - `timeout` is the timeout in milliseconds to wait for the transaction to complete.
 ///
 /// Return: the buffer with the received bytes.
-STATIC mp_obj_t pyb_spi_send_recv (mp_uint_t n_args, const mp_obj_t *args) {
-    pyb_spi_obj_t *self = args[0];
+STATIC mp_obj_t pyb_spi_send_recv (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_recv,                      MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    pyb_spi_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get buffers to send from/receive to
     mp_buffer_info_t bufinfo_send;
@@ -363,35 +391,34 @@ STATIC mp_obj_t pyb_spi_send_recv (mp_uint_t n_args, const mp_obj_t *args) {
     vstr_t vstr_recv;
     mp_obj_t o_ret;
 
-    if (args[1] == args[2]) {
+    if (args[0].u_obj == args[1].u_obj) {
         // same object for sending and receiving, it must be a r/w buffer
-        mp_get_buffer_raise(args[1], &bufinfo_send, MP_BUFFER_RW);
+        mp_get_buffer_raise(args[0].u_obj, &bufinfo_send, MP_BUFFER_RW);
         bufinfo_recv = bufinfo_send;
-        o_ret = args[1];
+        o_ret = args[0].u_obj;
     } else {
         // get the buffer to send from
-        pyb_buf_get_for_send(args[1], &bufinfo_send, data_send);
+        pyb_buf_get_for_send(args[0].u_obj, &bufinfo_send, data_send);
 
         // get the buffer to receive into
-        if (n_args == 2) {
+        if (args[1].u_obj == mp_const_none) {
             // only the send was argument given, so create a fresh buffer of the send length
             vstr_init_len(&vstr_recv, bufinfo_send.len);
             bufinfo_recv.len = vstr_recv.len;
             bufinfo_recv.buf = vstr_recv.buf;
             o_ret = MP_OBJ_NULL;
-        }
-        else {
+        } else {
             // recv argument given
-            mp_get_buffer_raise(args[2], &bufinfo_recv, MP_BUFFER_WRITE);
+            mp_get_buffer_raise(args[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
             if (bufinfo_recv.len != bufinfo_send.len) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
             }
-            o_ret = args[2];
+            o_ret = args[1].u_obj;
         }
     }
 
     // send and receive
-    pybspi_transfer(self, (const char *)bufinfo_send.buf, vstr_recv.buf, bufinfo_send.len);
+    pybspi_transfer(self, (const char *)bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -400,7 +427,7 @@ STATIC mp_obj_t pyb_spi_send_recv (mp_uint_t n_args, const mp_obj_t *args) {
         return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr_recv);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_spi_send_recv_obj, 2, 3, pyb_spi_send_recv);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_recv_obj, 1, pyb_spi_send_recv);
 
 STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
