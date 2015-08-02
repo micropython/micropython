@@ -32,8 +32,8 @@ def parse_port_pin(name_str):
         raise ValueError("Expecting pin name to be at least 3 charcters.")
     if name_str[0] != 'P':
         raise ValueError("Expecting pin name to start with P")
-    if name_str[1] < 'A' or name_str[1] > 'J':
-        raise ValueError("Expecting pin port to be between A and J")
+    if name_str[1] < 'A' or name_str[1] > 'K':
+        raise ValueError("Expecting pin port to be between A and K")
     port = ord(name_str[1]) - ord('A')
     pin_str = name_str[2:]
     if not pin_str.isdigit():
