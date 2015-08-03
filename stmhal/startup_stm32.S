@@ -44,7 +44,7 @@
   */
 
   .syntax unified
-#if STM32F7
+#if defined(MCU_SERIES_M7)
   .cpu cortex-m7
 #else
   .cpu cortex-m4
@@ -211,7 +211,7 @@ g_pfnVectors:
   .word     TIM8_TRG_COM_TIM14_IRQHandler     /* TIM8 Trigger and Commutation and TIM14 */
   .word     TIM8_CC_IRQHandler                /* TIM8 Capture Compare         */
   .word     DMA1_Stream7_IRQHandler           /* DMA1 Stream7                 */
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
   .word     FMC_IRQHandler                    /* FMC                          */
   .word     SDMMC1_IRQHandler                 /* SDMMC1                       */
 #else
@@ -251,7 +251,7 @@ g_pfnVectors:
   .word     HASH_RNG_IRQHandler               /* Hash and Rng                 */
   .word     FPU_IRQHandler                    /* FPU                          */
 
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
   .word     UART7_IRQHandler                  /* UART7                        */
   .word     UART8_IRQHandler                  /* UART8                        */
   .word     SPI4_IRQHandler                   /* SPI4                         */
@@ -448,7 +448,7 @@ g_pfnVectors:
    .weak      DMA1_Stream7_IRQHandler
    .thumb_set DMA1_Stream7_IRQHandler,Default_Handler
 
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
    .weak      FMC_IRQHandler
    .thumb_set FMC_IRQHandler,Default_Handler
 
@@ -554,7 +554,7 @@ g_pfnVectors:
 
    .weak      FPU_IRQHandler
    .thumb_set FPU_IRQHandler,Default_Handler
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
    .weak      UART7_IRQHandler
    .thumb_set UART7_IRQHandler,Default_Handler
 

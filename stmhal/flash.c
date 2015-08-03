@@ -28,13 +28,11 @@
 
 #include "flash.h"
 
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
+
 // FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
 // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
 #define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
-#endif
-
-#if defined(STM32F7)
 
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 32 Kbytes */
@@ -68,7 +66,7 @@
 #define ADDR_FLASH_END          ((uint32_t)0x08100000) /* 1 Mbytes total */
 #endif
 
-#endif
+#endif // MCU_SERIES_F7
 
 static const uint32_t flash_info_table[26] = {
     ADDR_FLASH_SECTOR_0, FLASH_SECTOR_0,

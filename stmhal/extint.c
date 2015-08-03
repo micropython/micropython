@@ -188,7 +188,7 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(STM32F7)
+    #if defined(MCU_SERIES_F7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
@@ -210,7 +210,7 @@ void extint_disable(uint line) {
         return;
     }
 
-    #if defined(STM32F7)
+    #if defined(MCU_SERIES_F7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     EXTI->IMR &= ~(1 << line);
