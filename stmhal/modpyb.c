@@ -74,7 +74,7 @@ STATIC NORETURN mp_obj_t pyb_bootloader(void) {
     HAL_RCC_DeInit();
     HAL_DeInit();
 
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.
     //__set_MSP(*((uint32_t*) 0x1FF00000));
@@ -462,7 +462,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
 
 /// \function standby()
 STATIC mp_obj_t pyb_standby(void) {
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
     printf("pyb.standby not supported yet\n");
 #else
     // We need to clear the PWR wake-up-flag before entering standby, since
