@@ -471,8 +471,8 @@ soft_reset:
     rng_init0();
 #endif
 
-#if !defined(STM32F7) // Temp hack
     i2c_init0();
+#if !defined(STM32F7) // Temp hack
     spi_init0();
 #endif
     pyb_usb_init0();
