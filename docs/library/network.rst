@@ -272,7 +272,8 @@ class WLAN
          - ``security`` can be ``WLAN.OPEN``, ``WLAN.WEP``, ``WLAN.WPA`` or ``WLAN.WPA2``. 
            Only needed when mode is ``WLAN.AP``.
          - ``key`` is a string with the network password. Not needed when mode is ``WLAN.STA``
-           or security is ``WLAN.OPEN``.
+           or security is ``WLAN.OPEN``. If ``security`` is ``WLAN.WEP`` the key must be a
+           string representing hexadecimal values (e.g. 'ABC1DE45BF').
          - ``channel`` a number in the range 1-11. Only needed when mode is ``WLAN.AP``.
          - ``antenna`` selects between the internal and the external antenna. Can be either
            ``WLAN.INTERNAL`` or ``WLAN.EXTERNAL``.
@@ -295,6 +296,8 @@ class WLAN
        Connect to a wifi access point using the given SSID, and other security
        parameters.
           
+          - ``key`` is always a string, but if ``security`` is ``WLAN.WEP`` the key must be a string
+            representing hexadecimal values (e.g. 'ABC1DE45BF').
           - ``bssid`` is the MAC address of the AP to connect to. Useful when there are several APs
             with the same ssid.
           - ``timeout`` is the maximum time in milliseconds to wait for the connection to succeed.

@@ -196,6 +196,7 @@ STATIC void wlan_reenable (SlWlanMode_t mode);
 STATIC void wlan_servers_start (void);
 STATIC void wlan_servers_stop (void);
 STATIC void wlan_get_sl_mac (void);
+STATIC void wlan_wep_key_unhexlify(const char *key, char *key_out);
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len, uint32_t timeout);
 STATIC void wlan_lpds_callback_enable (mp_obj_t self_in);
@@ -479,6 +480,12 @@ void wlan_sl_enable (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t se
         wlan_obj.ssid[ssid_len] = '\0';
         ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SSID, ssid_len, (unsigned char *)wlan_obj.ssid));
         ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_SECURITY_TYPE, sizeof(uint8_t), &sec));
+        if (sec == SL_SEC_TYPE_WEP) {
+            _u8 wep_key[32];
+            wlan_wep_key_unhexlify(key, (char *)&wep_key);
+            key = (const char *)&wep_key;
+            key_len /= 2;
+        }
         ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_AP_ID, WLAN_AP_OPT_PASSWORD, key_len, (unsigned char *)key));
         _u8*  country = (_u8*)"EU";
         ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_COUNTRY_CODE, 2, country));
@@ -651,6 +658,25 @@ STATIC void wlan_get_sl_mac (void) {
     sl_NetCfgGet(SL_MAC_ADDRESS_GET, NULL, &macAddrLen, wlan_obj.mac);
 }
 
+STATIC void wlan_wep_key_unhexlify(const char *key, char *key_out) {
+    int len = strlen(key);
+    byte hex_byte = 0;
+    for (mp_uint_t i = len; i--;) {
+        byte hex_ch = *key++;
+        if (unichar_isxdigit(hex_ch)) {
+            hex_byte += unichar_xdigit_value(hex_ch);
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+        if (i & 1) {
+            hex_byte <<= 4;
+        } else {
+            *key_out++ = hex_byte;
+            hex_byte = 0;
+        }
+    }
+}
+
 /// \method iwconfig(*, mode, ssid, security, key, channel, antenna)
 ///
 /// Initialise the WLAN engine with the given parameters:
@@ -707,8 +733,9 @@ STATIC mp_obj_t wlan_iwconfig(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
     if (args[3].u_obj != MP_OBJ_NULL) {
         // get the key
         mp_uint_t key_len;
-        const char *key = mp_obj_str_get_data(args[3].u_obj, &key_len);
-        if (key_len < 5 || key_len > 64) {
+        const char *key;
+        key = mp_obj_str_get_data(args[3].u_obj, &key_len);
+        if ((wlan_obj.security == SL_SEC_TYPE_WEP && (key_len < 10 || key_len > 58)) || key_len < 8 || key_len > 64) {
             goto arg_error;
         }
         memcpy (wlan_obj.key, key, key_len);
@@ -806,8 +833,6 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
 }
 
 /// \method connect(ssid, *, security=OPEN, key=None, bssid=None, timeout=5000)
-//          if security is WPA/WPA2, the key must be a string
-///         if security is WEP, the key must be binary
 STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
@@ -836,17 +861,16 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     // get key and its len
     mp_uint_t key_len = 0;
     const char *key = NULL;
-    mp_buffer_info_t wepkey;
     mp_obj_t key_o = args[2].u_obj;
     if (key_o != mp_const_none) {
-        // wep key must be given as raw bytes
-        if (sec == SL_SEC_TYPE_WEP) {
-            mp_get_buffer_raise(key_o, &wepkey, MP_BUFFER_READ);
-            key = wepkey.buf;
-            key_len = wepkey.len;
-        } else {
-            key = mp_obj_str_get_data(key_o, &key_len);
-        }
+        key = mp_obj_str_get_data(key_o, &key_len);
+    }
+
+    if (sec == SL_SEC_TYPE_WEP) {
+        _u8 wep_key[32];
+        wlan_wep_key_unhexlify(key, (char *)&wep_key);
+        key = (const char *)&wep_key;
+        key_len /= 2;
     }
 
     // get bssid
