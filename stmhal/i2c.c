@@ -196,6 +196,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
 
     // init the GPIO lines
     for (uint i = 0; i < 2; i++) {
+        mp_hal_gpio_clock_enable(pins[i]->gpio);
         GPIO_InitStructure.Pin = pins[i]->pin_mask;
         HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
     }

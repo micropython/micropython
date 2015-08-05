@@ -30,6 +30,7 @@
 #include "extint.h"
 #include "pin.h"
 #include "genhdr/pins.h"
+#include "mphal.h"
 #include "usrsw.h"
 
 #if MICROPY_HW_HAS_SWITCH
@@ -53,6 +54,7 @@
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
+    mp_hal_gpio_clock_enable(MICROPY_HW_USRSW_PIN.gpio);
     GPIO_InitTypeDef init;
     init.Pin = MICROPY_HW_USRSW_PIN.pin_mask;
     init.Mode = GPIO_MODE_INPUT;

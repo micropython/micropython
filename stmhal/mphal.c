@@ -69,3 +69,52 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
         usb_vcp_send_strn_cooked(str, len);
     }
 }
+
+void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
+    if (0) {
+    #ifdef __GPIOA_CLK_ENABLE
+    } else if (gpio == GPIOA) {
+        __GPIOA_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOB_CLK_ENABLE
+    } else if (gpio == GPIOB) {
+        __GPIOB_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOC_CLK_ENABLE
+    } else if (gpio == GPIOC) {
+        __GPIOC_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOD_CLK_ENABLE
+    } else if (gpio == GPIOD) {
+        __GPIOD_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOE_CLK_ENABLE
+    } else if (gpio == GPIOE) {
+        __GPIOE_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOF_CLK_ENABLE
+    } else if (gpio == GPIOF) {
+        __GPIOF_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOG_CLK_ENABLE
+    } else if (gpio == GPIOG) {
+        __GPIOG_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOH_CLK_ENABLE
+    } else if (gpio == GPIOH) {
+        __GPIOH_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOI_CLK_ENABLE
+    } else if (gpio == GPIOI) {
+        __GPIOI_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOJ_CLK_ENABLE
+    } else if (gpio == GPIOJ) {
+        __GPIOJ_CLK_ENABLE();
+    #endif
+    #ifdef __GPIOK_CLK_ENABLE
+    } else if (gpio == GPIOK) {
+        __GPIOK_CLK_ENABLE();
+    #endif
+    }
+}

@@ -34,6 +34,7 @@
 #include "adc.h"
 #include "pin.h"
 #include "genhdr/pins.h"
+#include "mphal.h"
 #include "timer.h"
 
 /// \moduleref pyb
@@ -89,6 +90,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
       // Channels 0-16 correspond to real pins. Configure the GPIO pin in
       // ADC mode.
       const pin_obj_t *pin = pin_adc1[adc_obj->channel];
+      mp_hal_gpio_clock_enable(pin->gpio);
       GPIO_InitTypeDef GPIO_InitStructure;
       GPIO_InitStructure.Pin = pin->pin_mask;
       GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
@@ -348,6 +350,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
         // Channels 0-16 correspond to real pins. Configure the GPIO pin in
         // ADC mode.
         const pin_obj_t *pin = pin_adc1[channel];
+        mp_hal_gpio_clock_enable(pin->gpio);
         GPIO_InitTypeDef GPIO_InitStructure;
         GPIO_InitStructure.Pin = pin->pin_mask;
         GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;

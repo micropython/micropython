@@ -12,6 +12,8 @@
 #endif
 #define GPIO_read_output_pin(gpio, pin) (((gpio)->ODR >> (pin)) & 1)
 
+void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
+
 extern const byte mp_hal_status_to_errno_table[4];
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);

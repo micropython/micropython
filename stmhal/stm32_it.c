@@ -85,6 +85,40 @@ extern PCD_HandleTypeDef pcd_handle;
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
 
+// Set the following to 1 to get some more information on the Hard Fault
+// More information about decoding the fault registers can be found here:
+// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0646a/Cihdjcfc.html
+#define REPORT_HARD_FAULT_REGS  0
+
+#if REPORT_HARD_FAULT_REGS
+
+#include "mphal.h"
+
+char *fmt_hex(uint32_t val, char *buf) {
+    const char *hexDig = "0123456789abcdef";
+
+    buf[0] = hexDig[(val >> 28) & 0x0f];
+    buf[1] = hexDig[(val >> 24) & 0x0f];
+    buf[2] = hexDig[(val >> 20) & 0x0f];
+    buf[3] = hexDig[(val >> 16) & 0x0f];
+    buf[4] = hexDig[(val >> 12) & 0x0f];
+    buf[5] = hexDig[(val >>  8) & 0x0f];
+    buf[6] = hexDig[(val >>  4) & 0x0f];
+    buf[7] = hexDig[(val >>  0) & 0x0f];
+    buf[8] = '\0';
+
+    return buf;
+}
+
+void print_reg(const char *label, uint32_t val) {
+    char hexStr[9];
+
+    mp_hal_stdout_tx_str(label);
+    mp_hal_stdout_tx_str(fmt_hex(val, hexStr));
+    mp_hal_stdout_tx_str("\r\n");
+}
+#endif // REPORT_HARD_FAULT_REGS
+
 /**
   * @brief   This function handles NMI exception.
   * @param  None
@@ -99,6 +133,19 @@ void NMI_Handler(void) {
   * @retval None
   */
 void HardFault_Handler(void) {
+#if REPORT_HARD_FAULT_REGS
+    uint32_t cfsr = SCB->CFSR;
+
+    print_reg("HFSR  ", SCB->HFSR);
+    print_reg("CFSR  ", cfsr);
+    if (cfsr & 0x80) {
+        print_reg("MMFAR ", SCB->MMFAR);
+    }
+    if (cfsr & 0x8000) {
+        print_reg("BFAR  ", SCB->BFAR);
+    }
+#endif // REPORT_HARD_FAULT_REGS
+
     /* Go to infinite loop when Hard Fault exception occurs */
     while (1) {
         __fatal_error("HardFault");
