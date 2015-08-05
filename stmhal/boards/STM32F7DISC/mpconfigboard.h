@@ -13,7 +13,7 @@
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_SPI1      (1)
+#define MICROPY_HW_ENABLE_SPI1      (0)
 #define MICROPY_HW_ENABLE_SPI2      (1)
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
@@ -49,6 +49,12 @@ void STM32F7DISC_board_early_init(void);
 
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
+
+// SPI
+#define MICROPY_HW_SPI2_NSS         (pin_I0)
+#define MICROPY_HW_SPI2_SCK         (pin_I1)
+#define MICROPY_HW_SPI2_MISO        (pin_B14)
+#define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
 // The STM32F7 uses a TIMINGR register which is configured using an Excel
 // Spreadsheet from AN4235: http://www.st.com/web/en/catalog/tools/PF258335
