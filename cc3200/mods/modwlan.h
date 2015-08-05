@@ -43,7 +43,7 @@ typedef enum {
     MODWLAN_ERROR_INVALID_PARAMS = -1,
     MODWLAN_ERROR_TIMEOUT = -2,
     MODWLAN_ERROR_UNKNOWN = -3,
-}modwlan_Status_t;
+} modwlan_Status_t;
 
 /******************************************************************************
  DECLARE PUBLIC DATA
@@ -54,8 +54,8 @@ extern _SlLockObj_t wlan_LockObj;
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 extern void wlan_pre_init (void);
-extern modwlan_Status_t wlan_sl_enable (SlWlanMode_t mode, const char *ssid, uint8_t ssid_len, uint8_t sec,
-                                        const char *key, uint8_t key_len, uint8_t channel, bool append_mac);
+extern void wlan_sl_enable (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t sec,
+                            const char *key, uint8_t key_len, uint8_t channel, bool append_mac);
 extern void wlan_first_start (void);
 extern void wlan_update(void);
 extern void wlan_stop (uint32_t timeout);
