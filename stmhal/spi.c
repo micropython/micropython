@@ -546,7 +546,9 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         if (status == HAL_OK) {
             status = spi_wait_dma_finished(self->spi, args[1].u_int);
         }
-        dma_deinit(&tx_dma);
+        if (self->spi->hdmatx != NULL) {
+            dma_deinit(&tx_dma);
+        }
         dma_deinit(&rx_dma);
     }
 
