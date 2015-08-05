@@ -13,7 +13,7 @@
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_SPI1      (1)
+#define MICROPY_HW_ENABLE_SPI1      (0)
 #define MICROPY_HW_ENABLE_SPI2      (1)
 #define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
@@ -59,6 +59,12 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x40912732}}
 #define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
 #define MICROPY_HW_I2C_BAUDRATE_MAX     100000
+
+// SPI
+#define MICROPY_HW_SPI2_NSS         (pin_I0)
+#define MICROPY_HW_SPI2_SCK         (pin_I1)
+#define MICROPY_HW_SPI2_MISO        (pin_B14)
+#define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_I11)

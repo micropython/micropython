@@ -472,9 +472,7 @@ soft_reset:
 #endif
 
     i2c_init0();
-#if !defined(STM32F7) // Temp hack
     spi_init0();
-#endif
     pyb_usb_init0();
 
     // Initialise the local flash filesystem.
