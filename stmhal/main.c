@@ -471,10 +471,8 @@ soft_reset:
     rng_init0();
 #endif
 
-#if !defined(STM32F7) // Temp hack
     i2c_init0();
     spi_init0();
-#endif
     pyb_usb_init0();
 
     // Initialise the local flash filesystem.
