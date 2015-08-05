@@ -64,14 +64,16 @@
 #define BOOTMGR_HASH_SIZE                   32
 #define BOOTMGR_BUFF_SIZE                   512
 
-#define BOOTMGR_WAIT_SAFE_MODE_0_MS         3000
-#define BOOTMGR_WAIT_SAFE_MODE_0_BLINK_MS   500
+#define BOOTMGR_WAIT_SAFE_MODE_0_MS         500
 
 #define BOOTMGR_WAIT_SAFE_MODE_1_MS         3000
 #define BOOTMGR_WAIT_SAFE_MODE_1_BLINK_MS   250
 
-#define BOOTMGR_WAIT_SAFE_MODE_2_MS         1500
-#define BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS   100
+#define BOOTMGR_WAIT_SAFE_MODE_2_MS         3000
+#define BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS   250
+
+#define BOOTMGR_WAIT_SAFE_MODE_3_MS         1500
+#define BOOTMGR_WAIT_SAFE_MODE_3_BLINK_MS   100
 
 //*****************************************************************************
 // Exported functions declarations
@@ -85,6 +87,7 @@ static void bootmgr_board_init (void);
 static bool bootmgr_verify (_u8 *image);
 static void bootmgr_load_and_execute (_u8 *image);
 static bool wait_while_blinking (uint32_t wait_time, uint32_t period, bool force_wait);
+static bool safe_boot_request_start (uint32_t wait_time);
 static void wait_for_safe_boot (sBootInfo_t *psBootInfo);
 static void bootmgr_image_loader (sBootInfo_t *psBootInfo);
 
@@ -260,24 +263,33 @@ static bool wait_while_blinking (uint32_t wait_time, uint32_t period, bool force
     return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? true : false;
 }
 
+static bool safe_boot_request_start (uint32_t wait_time) {
+    if (MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN)) {
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(wait_time * 1000));
+    }
+    return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? true : false;
+}
+
 //*****************************************************************************
 //! Check for the safe mode pin
 //*****************************************************************************
 static void wait_for_safe_boot (sBootInfo_t *psBootInfo) {
-    if (wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_0_MS, BOOTMGR_WAIT_SAFE_MODE_0_BLINK_MS, false)) {
-        // go back one step in time
-        psBootInfo->ActiveImg = psBootInfo->PrevImg;
+    if (safe_boot_request_start(BOOTMGR_WAIT_SAFE_MODE_0_MS)) {
         if (wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_1_MS, BOOTMGR_WAIT_SAFE_MODE_1_BLINK_MS, false)) {
-            // go back directly to the factory image
-            psBootInfo->ActiveImg = IMG_ACT_FACTORY;
-            wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_2_MS, BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS, true);
+            // go back one step in time
+            psBootInfo->ActiveImg = psBootInfo->PrevImg;
+            if (wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_2_MS, BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS, false)) {
+                // go back directly to the factory image
+                psBootInfo->ActiveImg = IMG_ACT_FACTORY;
+                wait_while_blinking(BOOTMGR_WAIT_SAFE_MODE_3_MS, BOOTMGR_WAIT_SAFE_MODE_3_BLINK_MS, true);
+            }
         }
         // turn off the system led
         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
         // request a safe boot to the application
         PRCMRequestSafeBoot();
     }
-    // uninit the safe boot pin
+    // deinit the safe boot pin
     mperror_deinit_sfe_pin();
 }
 
