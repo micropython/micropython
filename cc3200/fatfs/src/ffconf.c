@@ -83,7 +83,7 @@ void ff_get_volname(BYTE vol, TCHAR **dest) {
 #endif
     {
         memcpy(*dest, "/flash", 6);
-        *dest += 7;
+        *dest += 6;
     }
 #if MICROPY_HW_HAS_SDCARD
     else
