@@ -37,13 +37,18 @@ def run_micropython(pyb, args, test_file):
             with open(test_file, 'rb') as f:
                 line = f.readline()
                 if line.startswith(b'# cmdline:'):
-                    args += line[10:].strip().split()
+                    # subprocess.check_output on Windows only accepts strings, not bytes
+                    args += [str(c, 'utf-8') for c in line[10:].strip().split()]
 
             # run the test, possibly with redirected input
             try:
                 if test_file.startswith('cmdline/repl_'):
                     # Need to use a PTY to test command line editing
-                    import pty
+                    try:
+                        import pty
+                    except ImportError:
+                        # in case pty module is not available, like on Windows
+                        return b'SKIP\n'
                     import select
 
                     def get():
