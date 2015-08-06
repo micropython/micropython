@@ -196,7 +196,7 @@ def run_tests(pyb, tests, args):
 
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
-        skip_tests.add('import\\import_file.py') #works but CPython prints forward slashes
+        skip_tests.add('import/import_file.py') # works but CPython prints forward slashes
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
@@ -221,6 +221,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
 
     for test_file in tests:
+        test_file = test_file.replace('\\', '/')
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
