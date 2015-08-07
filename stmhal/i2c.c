@@ -37,9 +37,21 @@
 #include "i2c.h"
 #include MICROPY_HAL_H
 
-#if !defined(STM32F7)
-// The STM32F7 has Timing, where the F4 has ClockSpeed and DutyCycle, so we
-// need to figure that out before we can enable i2c
+#if !defined(MICROPY_HW_I2C_BAUDRATE_DEFAULT)
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 400000
+#endif
+
+#if !defined(MICROPY_HW_I2C_BAUDRATE_MAX)
+#define MICROPY_HW_I2C_BAUDRATE_MAX 400000
+#endif
+
+#if !defined(I2C_NOSTRETCH_DISABLE)
+// Assumes that the F7 firmware is newer, so the F4 firmware will eventually
+// catchup. I2C_NOSTRETCH_DISABLED was renamed to I2C_NOSTRETCH_DISABLE
+// in the F7 so we use the F7 constant and provide a backwards compatabilty
+// #define here.
+#define I2C_NOSTRETCH_DISABLE I2C_NOSTRETCH_DISABLED
+#endif
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
@@ -138,6 +150,50 @@ STATIC const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #endif
 };
 
+#if defined(MICROPY_HW_I2C_BAUDRATE_TIMING)
+// The STM32F0, F3, and F7 use a TIMINGR register rather than ClockSpeed and
+// DutyCycle.
+
+STATIC const struct {
+    uint32_t    baudrate;
+    uint32_t    timing;
+} pyb_i2c_baudrate_timing[] = MICROPY_HW_I2C_BAUDRATE_TIMING;
+
+#define NUM_BAUDRATE_TIMINGS MP_ARRAY_SIZE(pyb_i2c_baudrate_timing)
+
+STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
+    for (int i = 0; i < NUM_BAUDRATE_TIMINGS; i++) {
+        if (pyb_i2c_baudrate_timing[i].baudrate == baudrate) {
+            init->Timing = pyb_i2c_baudrate_timing[i].timing;
+            return;
+        }
+    }
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                                            "Unsupported I2C baudrate: %lu", baudrate));
+}
+
+STATIC uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
+    for (int i = 0; i < NUM_BAUDRATE_TIMINGS; i++) {
+        if (pyb_i2c_baudrate_timing[i].timing == init->Timing) {
+            return pyb_i2c_baudrate_timing[i].baudrate;
+        }
+    }
+    return 0;
+}
+
+#else
+
+STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
+    init->ClockSpeed = baudrate;
+    init->DutyCycle = I2C_DUTYCYCLE_16_9;
+}
+
+STATIC uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
+    return init->ClockSpeed;
+}
+
+#endif // MICROPY_HW_I2C_BAUDRATE_TIMING
+
 void i2c_init0(void) {
     // reset the I2C1 handles
     #if defined(MICROPY_HW_I2C1_SCL)
@@ -196,6 +252,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
 
     // init the GPIO lines
     for (uint i = 0; i < 2; i++) {
+        mp_hal_gpio_clock_enable(pins[i]->gpio);
         GPIO_InitStructure.Pin = pins[i]->pin_mask;
         HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
     }
@@ -275,7 +332,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         mp_printf(print, "I2C(%u)", i2c_num);
     } else {
         if (in_master_mode(self)) {
-            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, self->i2c->Init.ClockSpeed);
+            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, i2c_get_baudrate(&self->i2c->Init));
         } else {
             mp_printf(print, "I2C(%u, I2C.SLAVE, addr=0x%02x)", i2c_num, (self->i2c->Instance->OAR1 >> 1) & 0x7f);
         }
@@ -294,7 +351,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, mp_uint_t n_args,
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_addr,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0x12} },
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_I2C_BAUDRATE_DEFAULT} },
         { MP_QSTR_gencall,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
@@ -312,13 +369,13 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, mp_uint_t n_args,
         init->OwnAddress1 = (args[1].u_int << 1) & 0xfe;
     }
 
+    i2c_set_baudrate(init, MIN(args[2].u_int, MICROPY_HW_I2C_BAUDRATE_MAX));
     init->AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-    init->ClockSpeed      = MIN(args[2].u_int, 400000);
     init->DualAddressMode = I2C_DUALADDRESS_DISABLED;
-    init->DutyCycle       = I2C_DUTYCYCLE_16_9;
     init->GeneralCallMode = args[3].u_bool ? I2C_GENERALCALL_ENABLED : I2C_GENERALCALL_DISABLED;
     init->NoStretchMode   = I2C_NOSTRETCH_DISABLED;
-    init->OwnAddress2     = 0xfe; // unused
+    init->OwnAddress2     = 0; // unused
+    init->NoStretchMode   = I2C_NOSTRETCH_DISABLE;
 
     // init the I2C bus
     i2c_init(self->i2c);
@@ -752,5 +809,3 @@ const mp_obj_type_t pyb_i2c_type = {
     .make_new = pyb_i2c_make_new,
     .locals_dict = (mp_obj_t)&pyb_i2c_locals_dict,
 };
-
-#endif // STM32F7

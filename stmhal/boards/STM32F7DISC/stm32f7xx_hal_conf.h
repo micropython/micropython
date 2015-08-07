@@ -46,7 +46,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-#define STM32F746xx
+#define USE_USB_FS
 
 /* ########################## Module Selection ############################## */
 /**
@@ -157,7 +157,7 @@
   * @brief This is the HAL system configuration section
   */
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            ((uint32_t)0x0F) /*!< tick interrupt priority */
+#define  TICK_INT_PRIORITY            ((uint32_t)0x00) /*!< tick interrupt priority */
 #define  USE_RTOS                     0
 #define  ART_ACCLERATOR_ENABLE        1 /* To enable instruction cache and prefetch */
 
@@ -414,14 +414,6 @@
 #else
   #define assert_param(expr) ((void)0)
 #endif /* USE_FULL_ASSERT */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
 
 #ifdef __cplusplus
 }

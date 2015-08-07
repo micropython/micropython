@@ -36,7 +36,7 @@
 #include "pybioctl.h"
 #include MICROPY_HAL_H
 
-//TODO: Add UART7/8 support for STM32F7
+//TODO: Add UART7/8 support for MCU_SERIES_F7
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -114,9 +114,10 @@ void uart_deinit(void) {
 STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
-    uint32_t GPIO_Pin;
+    uint32_t GPIO_Pin, GPIO_Pin2;
     uint8_t GPIO_AF_UARTx = 0;
     GPIO_TypeDef* GPIO_Port = NULL;
+    GPIO_TypeDef* GPIO_Port2 = NULL;
 
     switch (uart_obj->uart_id) {
         #if defined(MICROPY_HW_UART1_PORT) && defined(MICROPY_HW_UART1_PINS)
@@ -127,6 +128,22 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             GPIO_AF_UARTx = GPIO_AF7_USART1;
             GPIO_Port = MICROPY_HW_UART1_PORT;
             GPIO_Pin = MICROPY_HW_UART1_PINS;
+            __USART1_CLK_ENABLE();
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_UART1_TX_PORT) && \
+            defined(MICROPY_HW_UART1_TX_PIN) && \
+            defined(MICROPY_HW_UART1_RX_PORT) && \
+            defined(MICROPY_HW_UART1_RX_PIN)
+        case PYB_UART_1:
+            UARTx = USART1;
+            irqn = USART1_IRQn;
+            GPIO_AF_UARTx = GPIO_AF7_USART1;
+            GPIO_Port  = MICROPY_HW_UART1_TX_PORT;
+            GPIO_Pin   = MICROPY_HW_UART1_TX_PIN;
+            GPIO_Port2 = MICROPY_HW_UART1_RX_PORT;
+            GPIO_Pin2  = MICROPY_HW_UART1_RX_PIN;
             __USART1_CLK_ENABLE();
             break;
         #endif
@@ -197,18 +214,10 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART5_IRQn;
             GPIO_AF_UARTx = GPIO_AF8_UART5;
             GPIO_Port = MICROPY_HW_UART5_TX_PORT;
+            GPIO_Port2 = MICROPY_HW_UART5_RX_PORT;
             GPIO_Pin = MICROPY_HW_UART5_TX_PIN;
+            GPIO_Pin2 = MICROPY_HW_UART5_RX_PIN;
             __UART5_CLK_ENABLE();
-
-            // The code after the case only deals with the case where the TX & RX
-            // pins are on the same port. UART5 has them on different ports.
-            GPIO_InitTypeDef GPIO_InitStructure;
-            GPIO_InitStructure.Pin = MICROPY_HW_UART5_RX_PIN;
-            GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-            GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-            GPIO_InitStructure.Pull = GPIO_PULLUP;
-            GPIO_InitStructure.Alternate = GPIO_AF_UARTx;
-            HAL_GPIO_Init(MICROPY_HW_UART5_RX_PORT, &GPIO_InitStructure);
             break;
         #endif
 
@@ -233,6 +242,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     uart_obj->uart.Instance = UARTx;
 
     // init GPIO
+    mp_hal_gpio_clock_enable(GPIO_Port);
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Pin = GPIO_Pin;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
@@ -240,6 +250,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     GPIO_InitStructure.Pull = GPIO_PULLUP;
     GPIO_InitStructure.Alternate = GPIO_AF_UARTx;
     HAL_GPIO_Init(GPIO_Port, &GPIO_InitStructure);
+
+    // init GPIO for second pin if needed
+    if (GPIO_Port2 != NULL) {
+        mp_hal_gpio_clock_enable(GPIO_Port2);
+        GPIO_InitStructure.Pin = GPIO_Pin2;
+        HAL_GPIO_Init(GPIO_Port2, &GPIO_InitStructure);
+    }
 
     // init UARTx
     HAL_UART_Init(&uart_obj->uart);
@@ -299,7 +316,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F7)
+        #if defined(MCU_SERIES_F7)
         return self->uart.Instance->RDR & self->char_mask;
         #else
         return self->uart.Instance->DR & self->char_mask;
@@ -337,7 +354,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
-        #if defined(STM32F7)
+        #if defined(MCU_SERIES_F7)
         int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
         #else
         int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
@@ -697,7 +714,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    #if defined(STM32F7)
+    #if defined(MCU_SERIES_F7)
     self->uart.Instance->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uart.Instance->CR1 |= USART_CR1_SBK;

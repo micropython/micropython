@@ -13,7 +13,7 @@ include ../py/mkenv.mk
 include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
 # include py core make definitions
 include ../py/py.mk
@@ -45,10 +45,11 @@ INC += -I../lib/netutils
 INC += -I../lib/timeutils
 
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
-CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
+CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
@@ -310,6 +311,10 @@ GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 # which source files might need it.
 $(OBJ): | $(HEADER_BUILD)/pins.h
 
+# With conditional pins, we may need to regenerate qstrdefs.h when config
+# options change.
+$(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
+
 $(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
@@ -320,6 +325,18 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
+
+GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
+GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
+CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
+CMSIS_MCU_HDR = cmsis/devinc/$(CMSIS_MCU_LOWER).h
+
+$(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
+# Use a pattern rule here so that make will only call make-stmconst.py once to
+# make both modstm_const.h and modstm_qstr.h
+$(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py
+	$(ECHO) "Create stmconst $@"
+	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H)
 	$(ECHO) "Create $@"

@@ -74,7 +74,7 @@ STATIC NORETURN mp_obj_t pyb_bootloader(void) {
     HAL_RCC_DeInit();
     HAL_DeInit();
 
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.
     //__set_MSP(*((uint32_t*) 0x1FF00000));
@@ -462,7 +462,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
 
 /// \function standby()
 STATIC mp_obj_t pyb_standby(void) {
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
     printf("pyb.standby not supported yet\n");
 #else
     // We need to clear the PWR wake-up-flag before entering standby, since
@@ -589,10 +589,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if defined(MICROPY_HW_LED1)
     { MP_OBJ_NEW_QSTR(MP_QSTR_LED), (mp_obj_t)&pyb_led_type },
 #endif
-#if !defined(STM32F7) // Temp hack
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C), (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI), (mp_obj_t)&pyb_spi_type },
-#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART), (mp_obj_t)&pyb_uart_type },
 #if MICROPY_HW_ENABLE_CAN
     { MP_OBJ_NEW_QSTR(MP_QSTR_CAN), (mp_obj_t)&pyb_can_type },

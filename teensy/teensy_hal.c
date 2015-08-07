@@ -55,3 +55,6 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
         usb_vcp_send_strn_cooked(str, len);
     }
 }
+
+void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
+}

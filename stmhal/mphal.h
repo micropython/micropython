@@ -3,7 +3,7 @@
 
 // Basic GPIO functions
 #define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)
-#if defined(STM32F7)
+#if defined(MCU_SERIES_F7)
 #define GPIO_set_pin(gpio, pin_mask)    (((gpio)->BSRR) = (pin_mask))
 #define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRR) = ((pin_mask) << 16))
 #else
@@ -11,6 +11,8 @@
 #define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRRH) = (pin_mask))
 #endif
 #define GPIO_read_output_pin(gpio, pin) (((gpio)->ODR >> (pin)) & 1)
+
+void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 
 extern const byte mp_hal_status_to_errno_table[4];
 

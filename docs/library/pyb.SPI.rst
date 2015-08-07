@@ -25,7 +25,7 @@ there are 3 lines: SCK, MOSI, MISO.
     parameters to init the SPI bus::
     
         from pyb import SPI
-        spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0)
+        spi = SPI(1, SPI.MASTER, baudrate=1000000, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
 
     Only required parameter is mode, must be SPI.MASTER.  Polarity can be 0 or 
     1, and is the level the idle clock line sits at.  Phase can be 0 or 1 to 
@@ -105,7 +105,7 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: spi.init(mode, baudrate=328125, \*, polarity=1, phase=0, bits=8, nss=SPI.ACTIVE_LOW)
+    .. method:: spi.init(mode, baudrate=1000000, \*, polarity=0, phase=0, bits=8, nss=SPI.ACTIVE_LOW)
     
        Initialise the SPI bus with the given parameters:
        
@@ -122,78 +122,37 @@ Methods
        Printing the SPI object will show you the computed baudrate and the chosen
        prescaler.
 
-.. only:: port_pyboard
+.. method:: spi.recv(recv, \*, timeout=5000)
 
-    .. method:: spi.recv(recv, \*, timeout=5000)
-    
-       Receive data on the bus:
-       
-         - ``recv`` can be an integer, which is the number of bytes to receive,
-           or a mutable buffer, which will be filled with received bytes.
-         - ``timeout`` is the timeout in milliseconds to wait for the receive.
-       
-       Return value: if ``recv`` is an integer then a new buffer of the bytes received,
-       otherwise the same buffer that was passed in to ``recv``.
+   Receive data on the bus:
 
-.. only:: port_wipy
+     - ``recv`` can be an integer, which is the number of bytes to receive,
+       or a mutable buffer, which will be filled with received bytes.
+     - ``timeout`` is the timeout in milliseconds to wait for the receive.
 
-    .. method:: spi.recv(recv)
-    
-       Receive data on the bus:
-       
-         - ``recv`` can be an integer, which is the number of bytes to receive,
-           or a mutable buffer, which will be filled with received bytes.
-       
-       Return value: if ``recv`` is an integer then a new buffer of the bytes received,
-       otherwise the same buffer that was passed in to ``recv``.
+   Return value: if ``recv`` is an integer then a new buffer of the bytes received,
+   otherwise the same buffer that was passed in to ``recv``.
 
-.. only:: port_pyboard
+.. method:: spi.send(send, \*, timeout=5000)
 
-    .. method:: spi.send(send, \*, timeout=5000)
-    
-       Send data on the bus:
-       
-         - ``send`` is the data to send (an integer to send, or a buffer object).
-         - ``timeout`` is the timeout in milliseconds to wait for the send.
-       
-       Return value: ``None``.
+   Send data on the bus:
 
-.. only:: port_wipy
+     - ``send`` is the data to send (an integer to send, or a buffer object).
+     - ``timeout`` is the timeout in milliseconds to wait for the send.
 
-    .. method:: spi.send(send)
-    
-       Send data on the bus:
-       
-         - ``send`` is the data to send (an integer to send, or a buffer object).
-       
-       Return value: ``None``.
+   Return value: ``None``.
 
-.. only:: port_pyboard
+.. method:: spi.send_recv(send, recv=None, \*, timeout=5000)
 
-    .. method:: spi.send_recv(send, recv=None, \*, timeout=5000)
-    
-       Send and receive data on the bus at the same time:
-       
-         - ``send`` is the data to send (an integer to send, or a buffer object).
-         - ``recv`` is a mutable buffer which will be filled with received bytes.
-           It can be the same as ``send``, or omitted.  If omitted, a new buffer will
-           be created.
-         - ``timeout`` is the timeout in milliseconds to wait for the receive.
-       
-       Return value: the buffer with the received bytes.
+   Send and receive data on the bus at the same time:
 
-.. only:: port_wipy
+     - ``send`` is the data to send (an integer to send, or a buffer object).
+     - ``recv`` is a mutable buffer which will be filled with received bytes.
+       It can be the same as ``send``, or omitted.  If omitted, a new buffer will
+       be created.
+     - ``timeout`` is the timeout in milliseconds to wait for the receive.
 
-    .. method:: spi.send_recv(send, recv=None)
-    
-       Send and receive data on the bus at the same time:
-       
-         - ``send`` is the data to send (an integer to send, or a buffer object).
-         - ``recv`` is a mutable buffer which will be filled with received bytes.
-           It can be the same as ``send``, or omitted.  If omitted, a new buffer will
-           be created.
-
-       Return value: the buffer with the received bytes.
+   Return value: the buffer with the received bytes.
 
 Constants
 ---------
@@ -219,4 +178,4 @@ Constants
     .. data:: SPI.ACTIVE_LOW
     .. data:: SPI.ACTIVE_HIGH
     
-       decides the polarity of the NSS pin
+       selects the polarity of the NSS pin

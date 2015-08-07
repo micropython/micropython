@@ -167,6 +167,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
 
     if (*cb != mp_const_none) {
 
+        mp_hal_gpio_clock_enable(pin->gpio);
         GPIO_InitTypeDef exti;
         exti.Pin = pin->pin_mask;
         exti.Mode = mode;
@@ -187,7 +188,7 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(STM32F7)
+    #if defined(MCU_SERIES_F7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
@@ -209,7 +210,7 @@ void extint_disable(uint line) {
         return;
     }
 
-    #if defined(STM32F7)
+    #if defined(MCU_SERIES_F7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     EXTI->IMR &= ~(1 << line);

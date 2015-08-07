@@ -24,6 +24,7 @@ CONDITIONAL_VAR = {
     'UART'  : 'MICROPY_HW_UART{num}_PORT',
     'UART5' : 'MICROPY_HW_UART5_TX_PORT',
     'USART' : 'MICROPY_HW_UART{num}_PORT',
+    'USART1': 'MICROPY_HW_UART1_TX_PORT',
 }
 
 def parse_port_pin(name_str):
@@ -32,8 +33,8 @@ def parse_port_pin(name_str):
         raise ValueError("Expecting pin name to be at least 3 charcters.")
     if name_str[0] != 'P':
         raise ValueError("Expecting pin name to start with P")
-    if name_str[1] < 'A' or name_str[1] > 'J':
-        raise ValueError("Expecting pin port to be between A and J")
+    if name_str[1] < 'A' or name_str[1] > 'K':
+        raise ValueError("Expecting pin port to be between A and K")
     port = ord(name_str[1]) - ord('A')
     pin_str = name_str[2:]
     if not pin_str.isdigit():
@@ -55,20 +56,22 @@ def conditional_var(name_num):
     # Try the specific instance first. For example, if name_num is UART4_RX
     # then try UART4 first, and then try UART second.
     name, num = split_name_num(name_num)
-    var = None
+    var = []
+    if name in CONDITIONAL_VAR:
+        var.append(CONDITIONAL_VAR[name].format(num=num))
     if name_num in CONDITIONAL_VAR:
-        var = CONDITIONAL_VAR[name_num]
-    elif name in CONDITIONAL_VAR:
-        var = CONDITIONAL_VAR[name]
-    if var:
-        return var.format(num=num)
+        var.append(CONDITIONAL_VAR[name_num])
+    return var
 
 def print_conditional_if(cond_var, file=None):
     if cond_var:
-        if cond_var.find('ENABLE') >= 0:
-            print('#if defined({0}) && {0}'.format(cond_var), file=file)
-        else:
-            print('#if defined({0})'.format(cond_var), file=file)
+        cond_str = []
+        for var in cond_var:
+            if var.find('ENABLE') >= 0:
+                cond_str.append('(defined({0}) && {0})'.format(var))
+            else:
+                cond_str.append('defined({0})'.format(var))
+        print('#if ' + ' || '.join(cond_str), file=file)
 
 def print_conditional_endif(cond_var, file=None):
     if cond_var:
