@@ -36,7 +36,7 @@
 #include "pybioctl.h"
 #include MICROPY_HAL_H
 
-//TODO: Add UART7/8 support for STM32F7
+//TODO: Add UART7/8 support for MCU_SERIES_F7
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -316,7 +316,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F7)
+        #if defined(MCU_SERIES_F7)
         return self->uart.Instance->RDR & self->char_mask;
         #else
         return self->uart.Instance->DR & self->char_mask;
@@ -354,7 +354,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
-        #if defined(STM32F7)
+        #if defined(MCU_SERIES_F7)
         int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
         #else
         int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
@@ -714,7 +714,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    #if defined(STM32F7)
+    #if defined(MCU_SERIES_F7)
     self->uart.Instance->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uart.Instance->CR1 |= USART_CR1_SBK;
