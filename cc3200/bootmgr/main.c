@@ -157,6 +157,12 @@ static void bootmgr_board_init(void) {
     // mandatory MCU initialization
     PRCMCC3200MCUInit();
 
+    // clear all the special bits, since we can't trust their content after reset
+    PRCMClearSpecialBit(PRCM_SAFE_BOOT_BIT);
+    PRCMClearSpecialBit(PRCM_WDT_RESET_BIT);
+    PRCMClearSpecialBit(PRCM_FIRST_BOOT_BIT);
+
+    // check the reset after clearing the special bits
     mperror_bootloader_check_reset_cause();
 
 #if MICROPY_HW_ANTENNA_DIVERSITY
@@ -169,9 +175,6 @@ static void bootmgr_board_init(void) {
 
     // init the system led and the system switch
     mperror_init0();
-
-    // clear the safe boot flag, since we can't trust its content after reset
-    PRCMClearSpecialBit(PRCM_SAFE_BOOT_BIT);
 }
 
 //*****************************************************************************
@@ -373,7 +376,7 @@ int main (void) {
         }
         sl_FsClose(fhandle, 0, 0, 0);
     }
-    // boot info file not present (or read failed)
+    // boot info file not present, it means that this is the first boot after being programmed
     if (!bootapp) {
         // create a new boot info file
         _u32 BootInfoCreateFlag  = _FS_FILE_OPEN_FLAG_COMMIT | _FS_FILE_PUBLIC_WRITE | _FS_FILE_PUBLIC_READ;
@@ -385,6 +388,8 @@ int main (void) {
             }
             sl_FsClose(fhandle, 0, 0, 0);
         }
+        // signal the first boot to the application
+        PRCMSetSpecialBit(PRCM_FIRST_BOOT_BIT);
     }
 
     if (bootapp) {
