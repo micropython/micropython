@@ -105,7 +105,10 @@ void TASK_Micropython (void *pvParameters) {
     // initialize the garbage collector with the top of our stack
     uint32_t sp = gc_helper_get_sp();
     gc_collect_init (sp);
-    bool safeboot = false;
+
+#ifndef DEBUG
+    bool safeboot = PRCMGetSpecialBit(PRCM_SAFE_BOOT_BIT);
+#endif
 
     mptask_pre_init();
 
@@ -161,9 +164,6 @@ soft_reset:
         else {
             // only if not comming out of hibernate or a soft reset
             mptask_enter_ap_mode();
-        #ifndef DEBUG
-            safeboot = PRCMIsSafeBootRequested();
-        #endif
         }
 
         // enable telnet and ftp

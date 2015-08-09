@@ -129,11 +129,12 @@
 //*****************************************************************************
 //
 // Bit:  31 is used to indicate use of RTC. If set as '1', RTC feature is used.
-// Bit:  30 is used to indicate that a safe boot should be performed
-// bit:  29 is used to indicate that the last reset was caused by the WDT
-// Bits: 28 to 26 are unused
+// Bit:  30 is used to indicate that a safe boot should be performed.
+// bit:  29 is used to indicate that the last reset was caused by the WDT.
+// bit:  28 is used to indicate that the board is booting for the first time after being programmed in factory.
+// Bits: 27 and 26 are unused.
 // Bits: 25 to 16 are used to save millisecond part of RTC reference.
-// Bits: 15 to 0 are being used for HW Changes / ECO
+// Bits: 15 to 0 are being used for HW Changes / ECO.
 //
 //*****************************************************************************
 
@@ -254,94 +255,49 @@ static const PRCM_PeriphRegs_t PRCM_PeriphRegsList[] =
 
 //*****************************************************************************
 //
-//! Requests a safe boot
+//! Set a special bit
 //!
 //! \return None.
 //
 //*****************************************************************************
-void PRCMRequestSafeBoot(void)
+void PRCMSetSpecialBit(unsigned char bit)
 {
     unsigned int uiRegValue;
 
-    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 30);
+    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << bit);
 
     PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
 //
-//! Clear the safe boot request
+//! Clear a special bit
 //!
 //! \return None.
 //
 //*****************************************************************************
-void PRCMClearSafeBootRequest(void)
+void PRCMClearSpecialBit(unsigned char bit)
 {
     unsigned int uiRegValue;
 
-    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 30));
+    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << bit));
 
     PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
 }
 
 //*****************************************************************************
 //
-//! Read the safe boot request bit. This bit is cleared after reading.
+//! Read a special bit
 //!
-//! \return Value of the safe boot bit
+//! \return Value of the bit
 //
 //*****************************************************************************
-tBoolean PRCMIsSafeBootRequested(void)
+tBoolean PRCMGetSpecialBit(unsigned char bit)
 {
-    tBoolean safeboot = (MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (1 << 30)) ? true : false;
-
-    PRCMClearSafeBootRequest();
-
-    return safeboot;
-}
-
-//*****************************************************************************
-//
-//! Signals that a WDT reset has occurred
-//!
-//! \return None.
-//
-//*****************************************************************************
-void PRCMSignalWDTReset(void)
-{
-    unsigned int uiRegValue;
-
-    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) | (1 << 29);
-
-    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
-}
-
-//*****************************************************************************
-//
-//! Clear the WDT reset signal
-//!
-//! \return None.
-//
-//*****************************************************************************
-void PRCMClearWDTResetSignal(void)
-{
-    unsigned int uiRegValue;
-
-    uiRegValue = MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (~(1 << 29));
-
-    PRCMHIBRegWrite(RTC_MSEC_U32_REG_ADDR, uiRegValue);
-}
-
-//*****************************************************************************
-//
-//! Read the WDT reset signal bit
-//!
-//! \return Value of the WDT reset signal bit
-//
-//*****************************************************************************
-tBoolean PRCMWasResetBecauseOfWDT(void)
-{
-    return (MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (1 << 29)) ? true : false;
+    tBoolean value = (MAP_PRCMHIBRegRead(RTC_MSEC_U32_REG_ADDR) & (1 << bit)) ? true : false;
+    // special bits must be cleared immediatelly after reading
+    PRCMClearSpecialBit(bit);
+    return value;
 }
 
 //*****************************************************************************

@@ -171,7 +171,7 @@ static void bootmgr_board_init(void) {
     mperror_init0();
 
     // clear the safe boot flag, since we can't trust its content after reset
-    PRCMClearSafeBootRequest();
+    PRCMClearSpecialBit(PRCM_SAFE_BOOT_BIT);
 }
 
 //*****************************************************************************
@@ -287,7 +287,7 @@ static void wait_for_safe_boot (sBootInfo_t *psBootInfo) {
         // turn off the system led
         MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
         // request a safe boot to the application
-        PRCMRequestSafeBoot();
+        PRCMSetSpecialBit(PRCM_SAFE_BOOT_BIT);
     }
     // deinit the safe boot pin
     mperror_deinit_sfe_pin();
