@@ -21,6 +21,7 @@ Then:
     pyb.exec('pyb.LED(1).on()')
     pyb.exit_raw_repl()
 
+Note: if using Python2 then pyb.exec must be written as pyb.exec_.
 To run a script from the local machine on the board and print out the results:
 
     import pyboard
@@ -39,9 +40,15 @@ Or:
 import sys
 import time
 
+try:
+    stdout = sys.stdout.buffer
+except AttributeError:
+    # Python2 doesn't have buffer attr
+    stdout = sys.stdout
+
 def stdout_write_bytes(b):
-    sys.stdout.buffer.write(b)
-    sys.stdout.buffer.flush()
+    stdout.write(b)
+    stdout.flush()
 
 class PyboardError(BaseException):
     pass
@@ -208,11 +215,11 @@ class Pyboard:
         return self.follow(timeout, data_consumer)
 
     def eval(self, expression):
-        ret = self.exec('print({})'.format(expression))
+        ret = self.exec_('print({})'.format(expression))
         ret = ret.strip()
         return ret
 
-    def exec(self, command):
+    def exec_(self, command):
         ret, ret_err = self.exec_raw(command)
         if ret_err:
             raise PyboardError('exception', ret, ret_err)
@@ -221,11 +228,15 @@ class Pyboard:
     def execfile(self, filename):
         with open(filename, 'rb') as f:
             pyfile = f.read()
-        return self.exec(pyfile)
+        return self.exec_(pyfile)
 
     def get_time(self):
         t = str(self.eval('pyb.RTC().datetime()'), encoding='utf8')[1:-1].split(', ')
         return int(t[4]) * 3600 + int(t[5]) * 60 + int(t[6])
+
+# in Python2 exec is a keyword so one must use "exec_"
+# but for Python3 we want to provide the nicer version "exec"
+setattr(Pyboard, "exec", Pyboard.exec_)
 
 def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', password='python'):
     pyb = Pyboard(device, baudrate, user, password)
