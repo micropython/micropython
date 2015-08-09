@@ -211,7 +211,7 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                                 if(right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches) {
                                     is_group_number = 1;
                                     end_group = value + 1;
-                                } 
+                                }
                             }
                         }
                     } else if( group != 0 && unichar_isdigit(*group) ) {
@@ -220,9 +220,9 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                         if ( match_no > -1 && match_no < match->num_matches) {
                             is_group_number = 0;
                             end_group = value += value_l;
-                        }   
+                        }
                     }
-                    
+ 
                     if ( match_no > -1 && is_group_number > -1) {
                         
                         const char *start_match = match->caps[match_no * 2];
@@ -231,10 +231,10 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                             return ret;
                         }
                         size_t mg_l = (match->caps[match_no * 2 + 1] - start_match);
-                        size_t gv_l = (end_group - start_group);   
-                                
+                        size_t gv_l = (end_group - start_group);
+
                         const char *prev_repl_p = repl_p - 1;
-                        
+
                         if (gv_l < mg_l) {
                             vstr_add_len(vstr_repl, (mg_l - gv_l));
                             repl_p+=gv_l;
@@ -242,17 +242,17 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                             vstr_cut_tail_bytes(vstr_repl, (gv_l - mg_l));
                             repl_p-=mg_l;
                         }
-                        
+
                         memmove((void *)(prev_repl_p + mg_l), (void *)(prev_repl_p + gv_l), strlen(prev_repl_p));
                         memcpy((void *)(prev_repl_p), (void *)start_match, mg_l);
                     }
-                }   
+                }
                 ++repl_p;
             }
-                   
+            
             m_del_var(mp_obj_match_t, char*, match->num_matches, match);
             ret = mp_obj_new_str_from_vstr(&mp_type_str, vstr_repl); 
-        }      
+        }
     }
     return ret;
 }
