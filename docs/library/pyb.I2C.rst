@@ -125,7 +125,7 @@ Methods
 
    Check if an I2C device responds to the given address.  Only valid when in master mode.
 
-.. method:: i2c.mem_read(data, addr, memaddr, timeout=5000, addr_size=8)
+.. method:: i2c.mem_read(data, addr, memaddr, \*, timeout=5000, addr_size=8)
 
    Read from the memory of an I2C device:
 
@@ -138,7 +138,7 @@ Methods
    Returns the read data.
    This is only valid in master mode.
 
-.. method:: i2c.mem_write(data, addr, memaddr, timeout=5000, addr_size=8)
+.. method:: i2c.mem_write(data, addr, memaddr, \*, timeout=5000, addr_size=8)
 
    Write to the memory of an I2C device:
 
@@ -151,7 +151,7 @@ Methods
    Returns ``None``.
    This is only valid in master mode.
 
-.. method:: i2c.recv(recv, addr=0x00, timeout=5000)
+.. method:: i2c.recv(recv, addr=0x00, \*, timeout=5000)
 
    Receive data on the bus:
 
@@ -168,7 +168,7 @@ Methods
    Scan all I2C addresses from 0x01 to 0x7f and return a list of those that respond.
    Only valid when in master mode.
 
-.. method:: i2c.send(send, addr=0x00, timeout=5000)
+.. method:: i2c.send(send, addr=0x00, \*, timeout=5000)
 
    Send data on the bus:
 

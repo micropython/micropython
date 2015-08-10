@@ -115,7 +115,7 @@ void mperror_bootloader_check_reset_cause (void) {
 
         // since the reset cause will be changed, we must store the right reason
         // so that the application knows it when booting for the next time
-        PRCMSignalWDTReset();
+        PRCMSetSpecialBit(PRCM_WDT_RESET_BIT);
 
         MAP_PRCMHibernateWakeupSourceEnable(PRCM_HIB_SLOW_CLK_CTR);
         // set the sleep interval to 10ms

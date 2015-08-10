@@ -60,7 +60,7 @@ DRESULT sflash_disk_init (void) {
             print_block_name (i);
             sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
             // Create the block file if it doesn't exist
-            if (sl_FsGetInfo(sflash_block_name, 0, &FsFileInfo) < 0) {
+            if (sl_FsGetInfo(sflash_block_name, 0, &FsFileInfo) != 0) {
                 if (!sl_FsOpen(sflash_block_name, FS_MODE_OPEN_CREATE(SFLASH_BLOCK_SIZE, 0), NULL, &fileHandle)) {
                     sl_FsClose(fileHandle, NULL, NULL, 0);
                     sl_LockObjUnlock (&wlan_LockObj);
@@ -74,6 +74,10 @@ DRESULT sflash_disk_init (void) {
                     sl_LockObjUnlock (&wlan_LockObj);
                     return RES_ERROR;
                 }
+            } else {
+                // file system exists, break here to speed up booting
+                sl_LockObjUnlock (&wlan_LockObj);
+                break;
             }
             sl_LockObjUnlock (&wlan_LockObj);
         }
