@@ -57,10 +57,8 @@
 ///
 /// Usage:
 ///
-///     adc = pyb.ADC(channel)                # create an adc object on the given channel (1 to 4)
-///                                             this automatically configures the pin associated to
-///                                             that analog channel.
-///     adc.read()                            # read channel value
+///     adc = pyb.ADC('GP5')                # create an adc object on the given pin (GP2, GP3, GP4 o GP5)
+///     adc.read()                          # read channel value
 ///
 ///     The sample rate is fixed to 62.5KHz and the resolution to 12 bits.
 
@@ -75,14 +73,23 @@
  ******************************************************************************/
 typedef struct {
     mp_obj_base_t base;
+    pin_obj_t *pin;
     byte channel;
-    byte idx;
+    byte id;
 } pyb_adc_obj_t;
+
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC pyb_adc_obj_t pyb_adc_obj[PYB_ADC_NUM_CHANNELS] = { {.pin = &pin_GP2, .channel = ADC_CH_0, .id = 1}, {.pin = &pin_GP3, .channel = ADC_CH_1, .id = 2},
+                                                           {.pin = &pin_GP4, .channel = ADC_CH_2, .id = 2}, {.pin = &pin_GP5, .channel = ADC_CH_3, .id = 4} };
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 STATIC void pybadc_init (pyb_adc_obj_t *self) {
+    // configure the pin in analog mode
+    pin_config (self->pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PYBPIN_ANALOG_TYPE, PIN_STRENGTH_2MA);
     // enable the ADC channel
     MAP_ADCChannelEnable(ADC_BASE, self->channel);
     // enable and configure the timer
@@ -92,68 +99,34 @@ STATIC void pybadc_init (pyb_adc_obj_t *self) {
     MAP_ADCEnable(ADC_BASE);
 }
 
-/******************************************************************************
- DECLARE PRIVATE DATA
- ******************************************************************************/
-STATIC pyb_adc_obj_t pyb_adc_obj[PYB_ADC_NUM_CHANNELS];
-
 /******************************************************************************/
 /* Micro Python bindings : adc object                                         */
 
 STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_adc_obj_t *self = self_in;
-    mp_printf(print, "<ADC, channel=%u>", (self->idx + 1));
+    mp_printf(print, "<ADC1 channel=%u on %q>", self->id, self->pin->name);
 }
 
-/// \classmethod \constructor(channel)
-/// Create an ADC object associated with the given channel.
+/// \classmethod \constructor(pin)
+/// Create an ADC object associated with the given pin.
 /// This allows you to then read analog values on that pin.
 STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    // the first argument is the channel number
-    int32_t idx = mp_obj_get_int(args[0]) - 1;
-    const pin_obj_t *pin;
-    uint channel;
-    switch (idx) {
-    case 0:
-        channel = ADC_CH_0;
-        pin = &pin_GP2;
-        break;
-    case 1:
-        channel = ADC_CH_1;
-        pin = &pin_GP3;
-        break;
-    case 2:
-        channel = ADC_CH_2;
-        pin = &pin_GP4;
-        break;
-    case 3:
-        channel = ADC_CH_3;
-        pin = &pin_GP5;
-        break;
-    default:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-        break;
+    // the argument passed is the pin
+    const pin_obj_t *pin = (pin_obj_t *)pin_find(args[0]);
+    for (int32_t idx = 0; idx < PYB_ADC_NUM_CHANNELS; idx++) {
+        if (pin == pyb_adc_obj[idx].pin) {
+            pyb_adc_obj_t *self = &pyb_adc_obj[idx];
+            self->base.type = &pyb_adc_type;
+            pybadc_init (self);
+            // register it with the sleep module
+            pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pybadc_init);
+            return self;
+        }
     }
-
-    // disable the callback before re-configuring
-    pyb_adc_obj_t *self = &pyb_adc_obj[idx];
-    self->base.type = &pyb_adc_type;
-    self->channel = channel;
-    self->idx = idx;
-
-    // configure the pin in analog mode
-    pin_config ((pin_obj_t *)pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PYBPIN_ANALOG_TYPE, PIN_STRENGTH_2MA);
-
-    // initialize it
-    pybadc_init (self);
-
-    // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pybadc_init);
-
-    return self;
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
 /// \method read()
@@ -172,19 +145,19 @@ STATIC mp_obj_t adc_read(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
-/// \method enable()
+/// \method init()
 /// Enable the adc channel
-STATIC mp_obj_t adc_enable(mp_obj_t self_in) {
+STATIC mp_obj_t adc_init(mp_obj_t self_in) {
     pyb_adc_obj_t *self = self_in;
 
     pybadc_init(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_enable_obj, adc_enable);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_init_obj, adc_init);
 
-/// \method disable()
+/// \method deinit()
 /// Disable the adc channel
-STATIC mp_obj_t adc_disable(mp_obj_t self_in) {
+STATIC mp_obj_t adc_deinit(mp_obj_t self_in) {
     pyb_adc_obj_t *self = self_in;
 
     MAP_ADCChannelDisable(ADC_BASE, self->channel);
@@ -192,12 +165,12 @@ STATIC mp_obj_t adc_disable(mp_obj_t self_in) {
     pybsleep_remove ((const mp_obj_t)self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_disable_obj, adc_disable);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_deinit_obj, adc_deinit);
 
 STATIC const mp_map_elem_t adc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),                (mp_obj_t)&adc_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),              (mp_obj_t)&adc_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable),             (mp_obj_t)&adc_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&adc_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),              (mp_obj_t)&adc_deinit_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
