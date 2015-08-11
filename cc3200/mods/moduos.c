@@ -39,7 +39,7 @@
 #include "sflash_diskio.h"
 #include "file.h"
 #include "random.h"
-#include "sd_diskio.h"
+#include "pybsd.h"
 #include "mpexception.h"
 #include "version.h"
 #include "timeutils.h"
@@ -60,13 +60,6 @@
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC bool sd_in_root(void) {
-#if MICROPY_HW_HAS_SDCARD
-    return sd_disk_ready();
-#else
-    return false;
-#endif
-}
 
 /******************************************************************************/
 // Micro Python bindings
@@ -151,7 +144,7 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
         mp_obj_t dir_list = mp_obj_new_list(0, NULL);
         mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
 #if MICROPY_HW_HAS_SDCARD
-        if (sd_in_root()) {
+        if (pybsd_is_mounted()) {
             mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
         }
 #endif
@@ -280,7 +273,11 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
 
     if (path_equal(path, "/") || path_equal(path, "/flash") || path_equal(path, "/sd")) {
         // stat built-in directory
-        if (path[1] == 's' && !sd_in_root()) {
+#if MICROPY_HW_HAS_SDCARD
+        if (path[1] == 's' && !pybsd_is_mounted()) {
+#else
+        if (path[1] == 's') {
+#endif
             // no /sd directory
             res = FR_NO_PATH;
             goto error;
@@ -353,11 +350,21 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
-/// \function mkfs('path')
-/// Formats the selected drive, useful when the filesystem has been damaged beyond repair
+/// \function mkfs('drive')
+/// Formats the selected drive, useful when the filesystem has been damaged beyond repair.
+/// Path must be either '/sd' or '/flash'
 STATIC mp_obj_t os_mkfs(mp_obj_t path_o) {
     const char *path = mp_obj_str_get_str(path_o);
-    if (FR_OK != f_mkfs(path, 1, 0)) {
+    uint8_t sfd;
+
+    if (!strcmp(path, "/flash")) {
+        sfd = 1;
+    } else if (!strcmp(path, "/sd")) {
+        sfd = 0;
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    if (FR_OK != f_mkfs(path, sfd, 0)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
     return mp_const_none;

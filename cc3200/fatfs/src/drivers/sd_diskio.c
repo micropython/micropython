@@ -279,8 +279,6 @@ DSTATUS sd_disk_init (void) {
                 sd_disk_info.bStatus = 0;
             }
         }
-        // Set card rd/wr block len
-        MAP_SDHostBlockSizeSet(SDHOST_BASE, SD_SECTOR_SIZE);
     }
 
     return sd_disk_info.bStatus;
@@ -313,15 +311,6 @@ void sd_disk_deinit (void) {
 //*****************************************************************************
 DSTATUS sd_disk_status (void) {
     return sd_disk_info.bStatus;
-}
-
-//*****************************************************************************
-//
-//! Returns wether the sd card is ready to be accessed or not
-//
-//*****************************************************************************
-bool sd_disk_ready (void) {
-    return (!sd_disk_info.bStatus);
 }
 
 //*****************************************************************************

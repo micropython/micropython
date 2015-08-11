@@ -188,8 +188,10 @@ Q(deinit)
 #if MICROPY_HW_HAS_SDCARD
 // for SD class
 Q(SD)
-Q(enable)
-Q(disable)
+Q(init)
+Q(deinit)
+Q(mount)
+Q(unmount)
 #endif
 
 // for RTC class

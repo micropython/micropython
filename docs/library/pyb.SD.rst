@@ -15,25 +15,34 @@ Example usage::
 
     # data, clk and cmd pins must be passed along with
     # their respective alternate functions
-    sd = pyb.SD('GP15', 8, 'GP10', 6, 'GP11', 6)
-    sd.enable()      # enable and mount the SD card
-    sd.disable()     # disable and unmount it
+    sd = pyb.SD(('GP15', 8, 'GP10', 6, 'GP11', 6))
+    sd.mount()
+    # do normal file operations
 
 Constructors
 ------------
 
-.. class:: pyb.SD(dat_pin, dat_pin_af, clk_pin, clk_pin_af, cmd_pin, cmd_pin_af)
+.. class:: pyb.SD([pins_tuple])
 
-   Create a SD card object. Data, clock and cmd pins must be passed along with 
-   their respective alternate functions.
+   Create a SD card object. In order to initalize the card, give it a 6-tuple
+   ``(dat_pin, dat_af, clk_pin, clk_af, cmd_pin, cmd_af)`` with the data, clock
+   and cmd pins together their respective alternate functions.
 
 Methods
 -------
 
-.. method:: sd.enable()
+.. method:: sd.init([pins_tuple])
 
-   Enable the SD card and mount it on the file system. Accesible as ``/sd``.
+   Enable the SD card.
 
-.. method:: sd.disable()
+.. method:: sd.deinit()
 
-   Disable the SD card and remove it from the file system.
+   Disable the SD card (also unmounts it to avoid file system crashes).
+
+.. method:: sd.mount()
+
+   Mount the SD card on the file system. Accesible as ``/sd``.
+
+.. method:: sd.unmount()
+
+   Unmount the SD card from the file system.
