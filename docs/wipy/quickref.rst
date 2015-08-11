@@ -160,7 +160,7 @@ See :ref:`pyb.RTC <pyb.RTC>` and ``pyb.Sleep``. ::
         rtc_obj.callback(value=30000, handler=some_handler)
 
     # create a RTC alarm that expires in 30s
-    rtc.callback(value=30000, handler=some_handler, wakes=Sleep.SUSPENDED)
+    rtc.callback(value=30000, handler=some_handler, wake_from=Sleep.SUSPENDED)
 
     # go into suspended mode waiting for the RTC alarm to expire and wake us up
     Sleep.suspend()
@@ -195,7 +195,7 @@ See :ref:`network.WLAN <network.WLAN>` and ``pyb.Sleep``. ::
         pass
     print(wifi.ifconfig())
     # enable wake on WLAN
-    wifi.callback(wakes=Sleep.SUSPENDED)
+    wifi.callback(wake_from=Sleep.SUSPENDED)
     # go to sleep
     Sleep.suspend()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up

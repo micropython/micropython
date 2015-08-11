@@ -56,7 +56,6 @@
 #include "portable.h"
 #include "task.h"
 #include "mpexception.h"
-#include "mpcallback.h"
 #include "random.h"
 #include "pybadc.h"
 #include "pybi2c.h"

@@ -317,7 +317,7 @@ Q(handler)
 Q(mode)
 Q(value)
 Q(priority)
-Q(wakes)
+Q(wake_from)
 
 // for Sleep class
 Q(Sleep)

@@ -744,7 +744,7 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
 
     pyb_timer_channel_obj_t *ch = pos_args[0];
     mp_obj_t _callback = mpcallback_find(ch);
-    if (kw_args->used > 0 || !_callback) {
+    if (kw_args->used > 0) {
         // convert the priority to the correct value
         uint priority = mpcallback_translate_priority (args[2].u_int);
 
@@ -755,10 +755,10 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
         }
 
         uint32_t _config = (ch->channel == TIMER_B) ? ((ch->timer->config & TIMER_B) >> 8) : (ch->timer->config & TIMER_A);
+        uint32_t c_value = mp_obj_get_int(args[3].u_obj);
 
         // validate and set the value if we are in edge count mode
         if (_config == TIMER_CFG_A_CAP_COUNT) {
-            uint32_t c_value = args[3].u_int;
             if (!c_value || c_value > 0xFFFF) {
                 // zero or exceeds the maximum value of a 16-bit timer
                 goto invalid_args;
@@ -778,7 +778,7 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
         case TIMER_CFG_A_CAP_COUNT:
             ch->timer->intflags |= TIMER_CAPA_MATCH << shift;
             // set the match value and make 1 the minimum
-            MAP_TimerMatchSet(ch->timer->timer, ch->channel, MAX(1, args[3].u_int));
+            MAP_TimerMatchSet(ch->timer->timer, ch->channel, MAX(1, c_value));
             break;
         case TIMER_CFG_A_CAP_TIME:
             ch->timer->intflags |= TIMER_CAPA_EVENT << shift;
@@ -841,7 +841,7 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
         MAP_TimerIntRegister(ch->timer->timer, ch->channel, pfnHandler);
 
         // create the callback
-        _callback = mpcallback_new (ch, args[1].u_obj, &pyb_timer_channel_cb_methods);
+        _callback = mpcallback_new (ch, args[1].u_obj, &pyb_timer_channel_cb_methods, true);
 
         // reload the timer
         uint32_t period_c;
@@ -851,6 +851,8 @@ STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *po
 
         // enable the callback before returning
         pyb_timer_channel_callback_enable(ch);
+    } else if (!_callback) {
+        _callback = mpcallback_new (ch, mp_const_none, &pyb_timer_channel_cb_methods, false);
     }
     return _callback;
 

@@ -336,12 +336,12 @@ class WLAN
        Returns a list of the devices currently connected. Each item in the list is a
        tuple of ``(ssid, mac)``.
 
-    .. method:: wlan.callback(wakes)
+    .. method:: wlan.callback(wake_from)
 
         Create a callback to be triggered when a WLAN event occurs during ``pyb.Sleep.SUSPENDED``
         mode. Events are triggered by socket activity or by WLAN connection/disconnection.
 
-            - ``wakes`` can only be ``pyb.Sleep.SUSPENDED``.
+            - ``wake_from`` must be ``pyb.Sleep.SUSPENDED``.
 
         Returns a callback object.
 

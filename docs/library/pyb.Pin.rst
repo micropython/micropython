@@ -284,15 +284,15 @@ Methods
             - ``priority`` level of the interrupt. Can take values in the range 1-7.
               Higher values represent higher priorities.
             - ``handler`` is an optional function to be called when new characters arrive.
-            - ``wakes`` selects the power mode in which this interrupt can wake up the
+            - ``wake_from`` selects the power mode in which this interrupt can wake up the
               board. Please note:
 
-              - If ``wakes=pyb.Sleep.ACTIVE`` any pin can wake the board.
-              - If ``wakes=pyb.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``, 
+              - If ``wake_from=pyb.Sleep.ACTIVE`` any pin can wake the board.
+              - If ``wake_from=pyb.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
                 ``GP11``, GP17`` or ``GP24`` can wake the board. Note that only 1
                 of this pins can be enabled as a wake source at the same time, so, only
                 the last enabled pin as a ``pyb.Sleep.SUSPENDED`` wake source will have effect.
-              - If ``wakes=pyb.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``, 
+              - If ``wake_from=pyb.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
                 ``GP11``, ``GP17`` and ``GP24`` can wake the board. In this case all of the
                 6 pins can be enabled as a ``pyb.Sleep.HIBERNATE`` wake source at the same time.
               - Values can be ORed to make a pin generate interrupts in more than one power
