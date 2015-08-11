@@ -182,6 +182,7 @@ STATIC int str_to_int(const char *str, int *num) {
 }
 
 STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_re_t *self = args[0];
     mp_obj_t repl = args[1], ret = args[2];
     mp_obj_match_t *match = re_exec(is_anchored, 2, (const mp_obj_t[]){ self, ret });
