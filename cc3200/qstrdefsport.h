@@ -182,6 +182,8 @@ Q(MASTER)
 // for ADC class
 Q(ADC)
 Q(read)
+Q(init)
+Q(deinit)
 
 #if MICROPY_HW_HAS_SDCARD
 // for SD class
