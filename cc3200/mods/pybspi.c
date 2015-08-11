@@ -54,7 +54,7 @@
 /// parameters to init the SPI bus:
 ///
 ///     from pyb import SPI
-///     spi = SPI(1, SPI.MASTER, baudrate=2000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
+///     spi = SPI(1, SPI.MASTER, baudrate=2000000, bits=8, polarity=0, phase=0, cs_polarity=SPI.ACTIVE_LOW)
 ///
 /// Only required parameter is the baudrate, in Hz. polarity and phase may be 0 or 1.
 /// Bit accepts 8, 16, 32. Chip select values are ACTIVE_LOW and ACTIVE_HIGH
@@ -168,7 +168,7 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     pyb_spi_obj_t *self = self_in;
 
     if (self->baudrate > 0) {
-        mp_printf(print, "<SPI1, SPI.MASTER, baudrate=%u, bits=%u, polarity=%u, phase=%u, nss=%q>",
+        mp_printf(print, "<SPI1, SPI.MASTER, baudrate=%u, bits=%u, polarity=%u, phase=%u, cs_polarity=%q>",
                   self->baudrate, (self->wlen * 8), self->polarity, self->phase,
                   (self->config & SPI_CS_ACTIVELOW) ? MP_QSTR_ACTIVE_LOW : MP_QSTR_ACTIVE_HIGH);
     } else {
@@ -176,7 +176,7 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-/// \method init(mode, *, baudrate=1000000, bits=8, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
+/// \method init(mode, *, baudrate=1000000, bits=8, polarity=0, phase=0, cs_polarity=SPI.ACTIVE_LOW)
 ///
 /// Initialise the SPI bus with the given parameters:
 ///
@@ -185,14 +185,14 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 ///   - `bits` is the transfer width size (8, 16, 32).
 ///   - `polarity` (0, 1).
 ///   - `phase` (0, 1).
-///   - `nss` can be ACTIVE_LOW or ACTIVE_HIGH.
+///   - `cs_polarity` can be ACTIVE_LOW or ACTIVE_HIGH.
 static const mp_arg_t pybspi_init_args[] = {
     { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,  },
     { MP_QSTR_baudrate,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = PYBSPI_DEF_BAUDRATE} },
     { MP_QSTR_bits,         MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 8} },
     { MP_QSTR_polarity,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },
     { MP_QSTR_phase,        MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 0} },
-    { MP_QSTR_nss,          MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SPI_CS_ACTIVELOW} },
+    { MP_QSTR_cs_polarity,  MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SPI_CS_ACTIVELOW} },
 };
 
 STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -227,15 +227,15 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_uint_t n_args, const
         goto invalid_args;
     }
 
-    uint nss = args[5].u_int;
-    if (nss != SPI_CS_ACTIVELOW && nss != SPI_CS_ACTIVEHIGH) {
+    uint cs = args[5].u_int;
+    if (cs != SPI_CS_ACTIVELOW && cs != SPI_CS_ACTIVEHIGH) {
         goto invalid_args;
     }
 
     // build the configuration
     self->baudrate = args[1].u_int;
     self->wlen = args[2].u_int >> 3;
-    self->config = bits | nss | SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF;
+    self->config = bits | cs | SPI_SW_CTRL_CS | SPI_4PIN_MODE | SPI_TURBO_OFF;
     self->polarity = polarity;
     self->phase = phase;
     self->submode = (polarity << 1) | phase;
