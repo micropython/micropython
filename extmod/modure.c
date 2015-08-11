@@ -191,41 +191,52 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
         if ( (vstr_repl = vstr_new() ) != NULL ) {
             vstr_add_str(vstr_repl, mp_obj_str_get_str(repl));
             const char *repl_p = vstr_null_terminated_str(vstr_repl);
-            while (*repl_p != 0) {
-                const char *start_group = NULL, *end_group = NULL;
-                if (*repl_p == '\\') {
+            do {
+                const char *group = NULL, *start_group = NULL, *end_group = NULL;
+                int match_no = -1, is_group_number = -1;
+                if ( *repl_p == '\\' ) {
                     start_group = repl_p;
-                    int match_no = -1, is_group_number = -1;
-                    const char *group = ++repl_p;
-                    if(*group != 0 && *group == 'g') {
+                    group = ++repl_p;
+
+                    // search group with syntax "\g<number>"
+                    if( *group != 0 && *group == 'g' ) { 
+                        
                         const char *left_angle_bracket = ++group;
                         if( left_angle_bracket != 0 && *left_angle_bracket == '<' ) {
                             const char *value = ++left_angle_bracket;
-                            if(value != 0 && unichar_isdigit(*value)) {
+                            if ( value != 0 ) {
+
+                                if ( unichar_isalpha(*value) ) {
+                                    mp_not_implemented("group with syntax \"\\g<name>\"");
+                                }
+
                                 int value_l = str_to_int(value, &match_no);
                                 if ( match_no == -1 ) {
-                                    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "missing group number"));
+                                    nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "missing group number"));
                                 }
+
                                 const char *right_angle_bracket = value += value_l;
-                                if(right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches) {
+                                if( right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches ) {
                                     is_group_number = 1;
                                     end_group = value + 1;
                                 }
                             }
                         }
+
+                    // search group with syntax "\number"
                     } else if( group != 0 && unichar_isdigit(*group) ) {
                         const char *value = group;
                         int value_l = str_to_int(value, &match_no);
-                        if ( match_no > -1 && match_no < match->num_matches) {
+                        if ( match_no > -1 && match_no < match->num_matches ) {
                             is_group_number = 0;
                             end_group = value += value_l;
                         }
                     }
  
-                    if ( match_no > -1 && is_group_number > -1) {
+                    if ( match_no > -1 && is_group_number > -1 && start_group != NULL && end_group != NULL ) {
                         
                         const char *start_match = match->caps[match_no * 2];
-                        if (start_match == NULL) {
+                        if ( start_match == NULL ) {
                             // no match for this group
                             return ret;
                         }
@@ -234,20 +245,21 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
 
                         const char *prev_repl_p = repl_p - 1;
 
-                        if (gv_l < mg_l) {
+                        if ( gv_l < mg_l ) {
                             vstr_add_len(vstr_repl, (mg_l - gv_l));
                             repl_p+=gv_l;
-                        } else if (gv_l > mg_l) {
+                        } else if ( gv_l > mg_l ) {
                             vstr_cut_tail_bytes(vstr_repl, (gv_l - mg_l));
                             repl_p-=mg_l;
                         }
 
-                        memmove((void *)(prev_repl_p + mg_l), (void *)(prev_repl_p + gv_l), strlen(prev_repl_p));
-                        memcpy((void *)(prev_repl_p), (void *)start_match, mg_l);
+                        // replace the substring matched by group
+                        memmove((char *)(prev_repl_p + mg_l), (prev_repl_p + gv_l), strlen(prev_repl_p));
+                        memcpy((char *)(prev_repl_p), start_match, mg_l);
                     }
                 }
-                ++repl_p;
-            }
+
+            } while ( *(++repl_p) != 0 );
             
             m_del_var(mp_obj_match_t, char*, match->num_matches, match);
             ret = mp_obj_new_str_from_vstr(&mp_type_str, vstr_repl); 
