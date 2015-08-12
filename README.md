@@ -74,6 +74,7 @@ Then to give it a try:
     $ ./micropython
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
+Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
