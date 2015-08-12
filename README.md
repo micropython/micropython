@@ -75,6 +75,8 @@ Then to give it a try:
     $ ./micropython
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
+Use `Ctrl-D` (i.e. EOF) to exit the shell.
+
 Run complete testsuite:
 
     $ make test
