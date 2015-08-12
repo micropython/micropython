@@ -262,9 +262,10 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
 
             } while ( *(++repl_p) != 0 );
             
-            m_del_var(mp_obj_match_t, char*, match->num_matches, match);
             ret = mp_obj_new_str_from_vstr(&mp_type_str, vstr_repl); 
         }
+        
+        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
     }
     return ret;
 }
