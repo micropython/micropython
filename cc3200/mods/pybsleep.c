@@ -55,6 +55,7 @@
 #include "sleeprestore.h"
 #include "serverstask.h"
 #include "antenna.h"
+#include "cryptohash.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -211,10 +212,9 @@ void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
     sleep_obj->base.type = &pybsleep_type;
     sleep_obj->obj = obj;
     sleep_obj->wakeup = wakeup;
-    // only add objects once
-    if (!pybsleep_find(sleep_obj)) {
-        mp_obj_list_append(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
-    }
+    // remove it in case it was already registered
+    pybsleep_remove (sleep_obj);
+    mp_obj_list_append(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
 }
 
 void pybsleep_remove (const mp_obj_t obj) {
@@ -412,6 +412,9 @@ void pybsleep_suspend_exit (void) {
     // reconfigure all the previously enabled interrupts
     mpcallback_wake_all();
 
+    // we need to init the crypto hash engine again
+    CRYPTOHASH_Init();
+
     // trigger a sw interrupt
     MAP_IntPendSet(INT_PRCM);
 
@@ -460,7 +463,6 @@ STATIC void pybsleep_iopark (bool hibernate) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_cpu_pins_locals_dict);
     for (uint i = 0; i < named_map->used; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
-        // skip the sflash pins since these are shared with the network processor
         switch (pin->pin_num) {
 #ifdef DEBUG
         // skip the JTAG pins

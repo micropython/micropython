@@ -41,7 +41,6 @@
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
-__attribute__ ((section (".boot")))
 void CRYPTOHASH_Init (void) {
     // Enable the Data Hashing and Transform Engine
     MAP_PRCMPeripheralClkEnable(PRCM_DTHE, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
