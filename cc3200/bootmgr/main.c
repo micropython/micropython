@@ -158,8 +158,8 @@ static void bootmgr_board_init(void) {
     PRCMCC3200MCUInit();
 
     // clear all the special bits, since we can't trust their content after reset
+    // except for the WDT reset one!!
     PRCMClearSpecialBit(PRCM_SAFE_BOOT_BIT);
-    PRCMClearSpecialBit(PRCM_WDT_RESET_BIT);
     PRCMClearSpecialBit(PRCM_FIRST_BOOT_BIT);
 
     // check the reset after clearing the special bits
