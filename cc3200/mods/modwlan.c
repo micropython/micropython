@@ -822,12 +822,12 @@ STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
 /// Create a wlan object. See iwconfig for parameters of initialization.
 STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, MP_ARRAY_SIZE(wlan_iwconfig_args), true);
+    mp_arg_check_num(n_args, n_kw, 0, 0, true);
     wlan_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wlan;
     if (n_kw > 0) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args);
-        wlan_iwconfig(1, (const mp_obj_t *)&wlan_obj, &kw_args);
+        wlan_iwconfig(n_args + 1, (const mp_obj_t *)&wlan_obj, &kw_args);
     }
     return &wlan_obj;
 }
