@@ -399,7 +399,16 @@ STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: Could be uint64
     return mp_obj_new_int_from_uint(seek_s.offset);
 }
+
+STATIC mp_obj_t stream_tell(mp_obj_t self) {
+	mp_obj_t offset = mp_obj_new_int_from_uint(0);
+	mp_obj_t whence = mp_obj_new_int_from_uint(SEEK_CUR);
+	const mp_obj_t args[3] = {self, offset, whence};
+	return stream_seek(3, args);
+}
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
 STATIC mp_obj_t stream_tell(mp_obj_t self) {
     mp_obj_t offset = MP_OBJ_NEW_SMALL_INT(0);
