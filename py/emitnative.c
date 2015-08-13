@@ -693,6 +693,13 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
         ASM_ENTRY(emit->as, num_locals);
 
+        // TODO don't load r7 if we don't need it
+        #if N_THUMB
+        asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
+        #elif N_ARM
+        asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
+        #endif
+
         #if N_X86
         for (int i = 0; i < scope->num_pos_args; i++) {
             if (i == 0) {
@@ -729,6 +736,13 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         // allocate space on C-stack for code_state structure, which includes state
         ASM_ENTRY(emit->as, STATE_START + emit->n_state);
+
+        // TODO don't load r7 if we don't need it
+        #if N_THUMB
+        asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
+        #elif N_ARM
+        asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
+        #endif
 
         // prepare incoming arguments for call to mp_setup_code_state
         #if N_X86
@@ -796,15 +810,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         }
     }
 
-    #if N_THUMB
-    // TODO don't load r7 if we don't need it
-    asm_thumb_mov_reg_i32(emit->as, ASM_THUMB_REG_R7, (mp_uint_t)mp_fun_table);
-    #endif
-
-    #if N_ARM
-    // TODO don't load r7 if we don't need it
-    asm_arm_mov_reg_i32(emit->as, ASM_ARM_REG_R7, (mp_uint_t)mp_fun_table);
-    #endif
 }
 
 STATIC void emit_native_end_pass(emit_t *emit) {

@@ -23,7 +23,7 @@ def get_version_info_from_git():
     try:
         git_tag = subprocess.check_output(["git", "describe", "--dirty", "--always"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
     except subprocess.CalledProcessError as er:
-        if er.args[0] == 128:
+        if er.returncode == 128:
             # git exit code of 128 means no repository found
             return None
         git_tag = ""
