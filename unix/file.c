@@ -211,6 +211,7 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readlines), (mp_obj_t)&mp_stream_unbuffered_readlines_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_seek), (mp_obj_t)&mp_stream_seek_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tell), (mp_obj_t)&mp_stream_tell_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&fdfile_flush_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&fdfile_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },

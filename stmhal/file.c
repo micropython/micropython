@@ -148,12 +148,6 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, mp_uint_t arg,
     }
 }
 
-mp_obj_t file_obj_tell(mp_obj_t self_in) {
-    pyb_file_obj_t *self = self_in;
-    return mp_obj_new_int_from_uint(f_tell(&self->fp));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_tell_obj, file_obj_tell);
-
 // Note: encoding is ignored for now; it's also not a valid kwarg for CPython's FileIO,
 // but by adding it here we can use one single mp_arg_t array for open() and FileIO's constructor
 STATIC const mp_arg_t file_open_args[] = {
@@ -231,7 +225,7 @@ STATIC const mp_map_elem_t rawfile_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&file_obj_flush_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&file_obj_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_seek), (mp_obj_t)&mp_stream_seek_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_tell), (mp_obj_t)&file_obj_tell_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_tell), (mp_obj_t)&mp_stream_tell_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&file_obj_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&file_obj___exit___obj },
