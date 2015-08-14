@@ -26,3 +26,15 @@
 
 // There's no unistd.h, but this is the equivalent
 #include <io.h>
+
+#define F_OK 0
+#define W_OK 2
+#define R_OK 4
+
+#define STDIN_FILENO  0
+#define STDOUT_FILENO 1
+#define STDERR_FILENO 2
+
+#define SEEK_CUR 1
+#define SEEK_END 2
+#define SEEK_SET 0
