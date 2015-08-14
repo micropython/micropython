@@ -34,8 +34,6 @@
 #include "py/emit.h"
 #include "py/bc0.h"
 
-#if !MICROPY_EMIT_CPYTHON
-
 #define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
 #define DUMMY_DATA_SIZE (BYTES_FOR_INT)
 
@@ -1030,5 +1028,3 @@ const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops = {
     mp_emit_bc_delete_global,
 };
 #endif
-
-#endif // !MICROPY_EMIT_CPYTHON

@@ -548,7 +548,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     }
                 }
 
-#if !MICROPY_EMIT_CPYTHON && !MICROPY_ENABLE_DOC_STRING
+                #if !MICROPY_ENABLE_DOC_STRING
                 // this code discards lonely statements, such as doc strings
                 if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
                     mp_parse_node_t p = peek_result(&parser, 1);
@@ -559,7 +559,7 @@ mp_parse_node_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         break;
                     }
                 }
-#endif
+                #endif
 
                 // always emit these rules, even if they have only 1 argument
                 if (rule->rule_id == RULE_expr_stmt || rule->rule_id == RULE_yield_stmt) {

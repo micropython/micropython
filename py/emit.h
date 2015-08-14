@@ -145,14 +145,6 @@ typedef struct _emit_method_table_t {
     // they may or may not emit code
     void (*start_except_handler)(emit_t *emit);
     void (*end_except_handler)(emit_t *emit);
-
-#if MICROPY_EMIT_CPYTHON
-    // these methods are only needed for emitcpy
-    void (*load_const_verbatim_strn)(emit_t *emit, const char *str, mp_uint_t len);
-    void (*load_closure)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*setup_loop)(emit_t *emit, mp_uint_t label);
-#endif
-
 } emit_method_table_t;
 
 void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst);

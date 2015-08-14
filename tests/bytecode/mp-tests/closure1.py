@@ -1,2 +1,0 @@
-# basic closure
-# to write!

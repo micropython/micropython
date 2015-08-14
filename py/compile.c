@@ -49,7 +49,7 @@ typedef enum {
     PN_const_object, // special node for a constant, generic Python object
 } pn_kind_t;
 
-#define NEED_METHOD_TABLE (MICROPY_EMIT_CPYTHON || MICROPY_EMIT_NATIVE)
+#define NEED_METHOD_TABLE MICROPY_EMIT_NATIVE
 
 #if NEED_METHOD_TABLE
 
@@ -323,23 +323,6 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
 
             case PN_power:
                 if (0) {
-#if MICROPY_EMIT_CPYTHON
-                } else if (MP_PARSE_NODE_IS_SMALL_INT(pns->nodes[0]) && MP_PARSE_NODE_IS_NULL(pns->nodes[1]) && !MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
-                    // int ** x
-                    // can overflow; enabled only to compare with CPython
-                    mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[2];
-                    if (MP_PARSE_NODE_IS_SMALL_INT(pns2->nodes[0])) {
-                        int power = MP_PARSE_NODE_LEAF_SMALL_INT(pns2->nodes[0]);
-                        if (power >= 0) {
-                            int ans = 1;
-                            int base = MP_PARSE_NODE_LEAF_SMALL_INT(pns->nodes[0]);
-                            for (; power > 0; power--) {
-                                ans *= base;
-                            }
-                            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, ans);
-                        }
-                    }
-#endif
 #if MICROPY_COMP_MODULE_CONST
                 } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_trailer_period) && MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
                     // id.id
@@ -464,163 +447,7 @@ STATIC void compile_delete_id(compiler_t *comp, qstr qst) {
     }
 }
 
-#if MICROPY_EMIT_CPYTHON
-STATIC bool cpython_c_tuple_is_const(mp_parse_node_t pn) {
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string)) {
-        return true;
-    }
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes)) {
-        return true;
-    }
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_const_object)) {
-        return true;
-    }
-    if (!MP_PARSE_NODE_IS_LEAF(pn)) {
-        return false;
-    }
-    if (MP_PARSE_NODE_IS_ID(pn)) {
-        return false;
-    }
-    return true;
-}
-
-STATIC void cpython_c_print_quoted_str(vstr_t *vstr, const char *str, uint len, bool bytes) {
-    bool has_single_quote = false;
-    bool has_double_quote = false;
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\'') {
-            has_single_quote = true;
-        } else if (str[i] == '"') {
-            has_double_quote = true;
-        }
-    }
-    if (bytes) {
-        vstr_printf(vstr, "b");
-    }
-    bool quote_single = false;
-    if (has_single_quote && !has_double_quote) {
-        vstr_printf(vstr, "\"");
-    } else {
-        quote_single = true;
-        vstr_printf(vstr, "'");
-    }
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\n') {
-            vstr_printf(vstr, "\\n");
-        } else if (str[i] == '\\') {
-            vstr_printf(vstr, "\\\\");
-        } else if (str[i] == '\'' && quote_single) {
-            vstr_printf(vstr, "\\'");
-        } else {
-            vstr_printf(vstr, "%c", str[i]);
-        }
-    }
-    if (has_single_quote && !has_double_quote) {
-        vstr_printf(vstr, "\"");
-    } else {
-        vstr_printf(vstr, "'");
-    }
-}
-
-STATIC void cpython_c_tuple_emit_const(compiler_t *comp, mp_parse_node_t pn, vstr_t *vstr) {
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_string) || MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes)) {
-        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        cpython_c_print_quoted_str(vstr, (const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_bytes));
-        return;
-    }
-
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_const_object)) {
-        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        mp_obj_print((mp_obj_t)pns->nodes[0], PRINT_REPR);
-        return;
-    }
-
-    assert(MP_PARSE_NODE_IS_LEAF(pn));
-    if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
-        vstr_printf(vstr, INT_FMT, MP_PARSE_NODE_LEAF_SMALL_INT(pn));
-        return;
-    }
-
-    mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
-    switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
-        case MP_PARSE_NODE_ID: assert(0);
-        case MP_PARSE_NODE_STRING:
-        case MP_PARSE_NODE_BYTES: {
-            mp_uint_t len;
-            const byte *str = qstr_data(arg, &len);
-            cpython_c_print_quoted_str(vstr, (const char*)str, len, MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_BYTES);
-            break;
-        }
-        case MP_PARSE_NODE_TOKEN:
-            switch (arg) {
-                case MP_TOKEN_KW_FALSE: vstr_printf(vstr, "False"); break;
-                case MP_TOKEN_KW_NONE: vstr_printf(vstr, "None"); break;
-                case MP_TOKEN_KW_TRUE: vstr_printf(vstr, "True"); break;
-                default: assert(0); // shouldn't happen
-            }
-            break;
-        default: assert(0);
-    }
-}
-
-STATIC void cpython_c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
-    int n = 0;
-    if (pns_list != NULL) {
-        n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_list);
-    }
-    int total = n;
-    bool is_const = true;
-    if (!MP_PARSE_NODE_IS_NULL(pn)) {
-        total += 1;
-        if (!cpython_c_tuple_is_const(pn)) {
-            is_const = false;
-        }
-    }
-    for (int i = 0; i < n; i++) {
-        if (!cpython_c_tuple_is_const(pns_list->nodes[i])) {
-            is_const = false;
-            break;
-        }
-    }
-    if (total > 0 && is_const) {
-        bool need_comma = false;
-        vstr_t *vstr = vstr_new();
-        vstr_printf(vstr, "(");
-        if (!MP_PARSE_NODE_IS_NULL(pn)) {
-            cpython_c_tuple_emit_const(comp, pn, vstr);
-            need_comma = true;
-        }
-        for (int i = 0; i < n; i++) {
-            if (need_comma) {
-                vstr_printf(vstr, ", ");
-            }
-            cpython_c_tuple_emit_const(comp, pns_list->nodes[i], vstr);
-            need_comma = true;
-        }
-        if (total == 1) {
-            vstr_printf(vstr, ",)");
-        } else {
-            vstr_printf(vstr, ")");
-        }
-        EMIT_ARG(load_const_verbatim_strn, vstr_str(vstr), vstr_len(vstr));
-        vstr_free(vstr);
-    } else {
-        if (!MP_PARSE_NODE_IS_NULL(pn)) {
-            compile_node(comp, pn);
-        }
-        for (int i = 0; i < n; i++) {
-            compile_node(comp, pns_list->nodes[i]);
-        }
-        EMIT_ARG(build_tuple, total);
-    }
-}
-#endif
-
-// funnelling all tuple creations through this function is purely so we can optionally agree with CPython
 STATIC void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
-#if MICROPY_EMIT_CPYTHON
-    cpython_c_tuple(comp, pn, pns_list);
-#else
     int total = 0;
     if (!MP_PARSE_NODE_IS_NULL(pn)) {
         compile_node(comp, pn);
@@ -634,7 +461,6 @@ STATIC void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t
         total += n;
     }
     EMIT_ARG(build_tuple, total);
-#endif
 }
 
 STATIC void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -652,66 +478,7 @@ STATIC bool node_is_const_true(mp_parse_node_t pn) {
         || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) != 0);
 }
 
-#if MICROPY_EMIT_CPYTHON
-// the is_nested variable is purely to match with CPython, which doesn't fully optimise not's
-STATIC void cpython_c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label, bool is_nested) {
-    if (node_is_const_false(pn)) {
-        if (jump_if == false) {
-            EMIT_ARG(jump, label);
-        }
-        return;
-    } else if (node_is_const_true(pn)) {
-        if (jump_if == true) {
-            EMIT_ARG(jump, label);
-        }
-        return;
-    } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-        if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test) {
-            if (jump_if == false) {
-                uint label2 = comp_next_label(comp);
-                for (int i = 0; i < n - 1; i++) {
-                    cpython_c_if_cond(comp, pns->nodes[i], true, label2, true);
-                }
-                cpython_c_if_cond(comp, pns->nodes[n - 1], false, label, true);
-                EMIT_ARG(label_assign, label2);
-            } else {
-                for (int i = 0; i < n; i++) {
-                    cpython_c_if_cond(comp, pns->nodes[i], true, label, true);
-                }
-            }
-            return;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_and_test) {
-            if (jump_if == false) {
-                for (int i = 0; i < n; i++) {
-                    cpython_c_if_cond(comp, pns->nodes[i], false, label, true);
-                }
-            } else {
-                uint label2 = comp_next_label(comp);
-                for (int i = 0; i < n - 1; i++) {
-                    cpython_c_if_cond(comp, pns->nodes[i], false, label2, true);
-                }
-                cpython_c_if_cond(comp, pns->nodes[n - 1], true, label, true);
-                EMIT_ARG(label_assign, label2);
-            }
-            return;
-        } else if (!is_nested && MP_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
-            cpython_c_if_cond(comp, pns->nodes[0], !jump_if, label, true);
-            return;
-        }
-    }
-
-    // nothing special, fall back to default compiling for node and jump
-    compile_node(comp, pn);
-    EMIT_ARG(pop_jump_if, jump_if, label);
-}
-#endif
-
 STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label) {
-#if MICROPY_EMIT_CPYTHON
-    cpython_c_if_cond(comp, pn, jump_if, label, false);
-#else
     if (node_is_const_false(pn)) {
         if (jump_if == false) {
             EMIT_ARG(jump, label);
@@ -773,7 +540,6 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
     // nothing special, fall back to default compiling for node and jump
     compile_node(comp, pn);
     EMIT_ARG(pop_jump_if, jump_if, label);
-#endif
 }
 
 typedef enum { ASSIGN_STORE, ASSIGN_AUG_LOAD, ASSIGN_AUG_STORE } assign_kind_t;
@@ -992,8 +758,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
     compile_syntax_error(comp, pn, "illegal expression for augmented assignment");
 }
 
-// stuff for lambda and comprehensions and generators
-// if we are not in CPython compatibility mode then:
+// stuff for lambda and comprehensions and generators:
 //  if n_pos_defaults > 0 then there is a tuple on the stack with the positional defaults
 //  if n_kw_defaults > 0 then there is a dictionary on the stack with the keyword defaults
 //  if both exist, the tuple is above the dictionary (ie the first pop gets the tuple)
@@ -1011,12 +776,8 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
                 for (int j = 0; j < this_scope->id_info_len; j++) {
                     id_info_t *id2 = &this_scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
-#if MICROPY_EMIT_CPYTHON
-                        EMIT_ARG(load_closure, id->qst, id->local_num);
-#else
                         // in Micro Python we load closures using LOAD_FAST
                         EMIT_LOAD_FAST(id->qst, id->local_num);
-#endif
                         nfree += 1;
                     }
                 }
@@ -1085,10 +846,6 @@ STATIC void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
 
             if (comp->have_star) {
                 comp->num_dict_params += 1;
-#if MICROPY_EMIT_CPYTHON
-                EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id));
-                compile_node(comp, pn_equal);
-#else
                 // in Micro Python we put the default dict parameters into a dictionary using the bytecode
                 if (comp->num_dict_params == 1) {
                     // in Micro Python we put the default positional parameters into a tuple using the bytecode
@@ -1106,7 +863,6 @@ STATIC void compile_funcdef_param(compiler_t *comp, mp_parse_node_t pn) {
                 compile_node(comp, pn_equal);
                 EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pn_id));
                 EMIT(store_map);
-#endif
             } else {
                 comp->num_default_params += 1;
                 compile_node(comp, pn_equal);
@@ -1143,14 +899,12 @@ STATIC qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns
         return MP_QSTR_NULL;
     }
 
-#if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the default positional parameters into a tuple using the bytecode
     // the default keywords args may have already made the tuple; if not, do it now
     if (comp->num_default_params > 0 && comp->num_dict_params == 0) {
         EMIT_ARG(build_tuple, comp->num_default_params);
         EMIT(load_null); // sentinel indicating empty default keyword args
     }
-#endif
 
     // get the scope for this function
     scope_t *fscope = (scope_t*)pns->nodes[4];
@@ -1558,12 +1312,8 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(load_const_small_int, import_level);
 
         // build the "fromlist" tuple
-#if MICROPY_EMIT_CPYTHON
-        EMIT_ARG(load_const_verbatim_strn, "('*',)", 6);
-#else
         EMIT_ARG(load_const_str, MP_QSTR__star_);
         EMIT_ARG(build_tuple, 1);
-#endif
 
         // do the import
         qstr dummy_q;
@@ -1576,31 +1326,6 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // build the "fromlist" tuple
         mp_parse_node_t *pn_nodes;
         int n = mp_parse_node_extract_list(&pns->nodes[1], PN_import_as_names, &pn_nodes);
-#if MICROPY_EMIT_CPYTHON
-        {
-            vstr_t *vstr = vstr_new();
-            vstr_printf(vstr, "(");
-            for (int i = 0; i < n; i++) {
-                assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
-                mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
-                qstr id2 = MP_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
-                if (i > 0) {
-                    vstr_printf(vstr, ", ");
-                }
-                vstr_printf(vstr, "'");
-                mp_uint_t len;
-                const byte *str = qstr_data(id2, &len);
-                vstr_add_strn(vstr, (const char*)str, len);
-                vstr_printf(vstr, "'");
-            }
-            if (n == 1) {
-                vstr_printf(vstr, ",");
-            }
-            vstr_printf(vstr, ")");
-            EMIT_ARG(load_const_verbatim_strn, vstr_str(vstr), vstr_len(vstr));
-            vstr_free(vstr);
-        }
-#else
         for (int i = 0; i < n; i++) {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
             mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
@@ -1608,7 +1333,6 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
             EMIT_ARG(load_const_str, id2);
         }
         EMIT_ARG(build_tuple, n);
-#endif
 
         // do the import
         qstr dummy_q;
@@ -1704,21 +1428,21 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     uint l_end = comp_next_label(comp);
 
-    // optimisation: don't emit anything when "if False" (not in CPython)
-    if (MICROPY_EMIT_CPYTHON || !node_is_const_false(pns->nodes[0])) {
+    // optimisation: don't emit anything when "if False"
+    if (!node_is_const_false(pns->nodes[0])) {
         uint l_fail = comp_next_label(comp);
         c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
 
         compile_node(comp, pns->nodes[1]); // if block
 
-        // optimisation: skip everything else when "if True" (not in CPython)
-        if (!MICROPY_EMIT_CPYTHON && node_is_const_true(pns->nodes[0])) {
+        // optimisation: skip everything else when "if True"
+        if (node_is_const_true(pns->nodes[0])) {
             goto done;
         }
 
         if (
-            // optimisation: don't jump over non-existent elif/else blocks (not in CPython)
-            (MICROPY_EMIT_CPYTHON || !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3])))
+            // optimisation: don't jump over non-existent elif/else blocks
+            !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3]))
             // optimisation: don't jump if last instruction was return
             && !EMIT(last_emit_was_return_value)
             ) {
@@ -1736,15 +1460,15 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_elif[i], PN_if_stmt_elif)); // should be
         mp_parse_node_struct_t *pns_elif = (mp_parse_node_struct_t*)pn_elif[i];
 
-        // optimisation: don't emit anything when "if False" (not in CPython)
-        if (MICROPY_EMIT_CPYTHON || !node_is_const_false(pns_elif->nodes[0])) {
+        // optimisation: don't emit anything when "if False"
+        if (!node_is_const_false(pns_elif->nodes[0])) {
             uint l_fail = comp_next_label(comp);
             c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
 
             compile_node(comp, pns_elif->nodes[1]); // elif block
 
-            // optimisation: skip everything else when "elif True" (not in CPython)
-            if (!MICROPY_EMIT_CPYTHON && node_is_const_true(pns_elif->nodes[0])) {
+            // optimisation: skip everything else when "elif True"
+            if (node_is_const_true(pns_elif->nodes[0])) {
                 goto done;
             }
 
@@ -1781,23 +1505,6 @@ done:
 STATIC void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     START_BREAK_CONTINUE_BLOCK
 
-    // compared to CPython, we have an optimised version of while loops
-#if MICROPY_EMIT_CPYTHON
-    uint done_label = comp_next_label(comp);
-    EMIT_ARG(setup_loop, break_label);
-    EMIT_ARG(label_assign, continue_label);
-    c_if_cond(comp, pns->nodes[0], false, done_label); // condition
-    compile_node(comp, pns->nodes[1]); // body
-    if (!EMIT(last_emit_was_return_value)) {
-        EMIT_ARG(jump, continue_label);
-    }
-    EMIT_ARG(label_assign, done_label);
-    // CPython does not emit POP_BLOCK if the condition was a constant; don't undertand why
-    // this is a small hack to agree with CPython
-    if (!node_is_const_true(pns->nodes[0])) {
-        EMIT(pop_block);
-    }
-#else
     if (!node_is_const_false(pns->nodes[0])) { // optimisation: don't emit anything for "while False"
         uint top_label = comp_next_label(comp);
         if (!node_is_const_true(pns->nodes[0])) { // optimisation: don't jump to cond for "while True"
@@ -1808,7 +1515,6 @@ STATIC void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(label_assign, continue_label);
         c_if_cond(comp, pns->nodes[0], true, top_label); // condition
     }
-#endif
 
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
@@ -1818,7 +1524,6 @@ STATIC void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(label_assign, break_label);
 }
 
-#if !MICROPY_EMIT_CPYTHON
 // This function compiles an optimised for-loop of the form:
 //      for <var> in range(<start>, <end>, <step>):
 //          <body>
@@ -1899,10 +1604,8 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
         EMIT(pop_top);
     }
 }
-#endif
 
 STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-#if !MICROPY_EMIT_CPYTHON
     // this bit optimises: for <x> in range(...), turning it into an explicitly incremented variable
     // this is actually slower, but uses no heap memory
     // for viper it will be much, much faster
@@ -1945,18 +1648,12 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             }
         }
     }
-#endif
 
     START_BREAK_CONTINUE_BLOCK
     comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
 
     uint pop_label = comp_next_label(comp);
     uint end_label = comp_next_label(comp);
-
-    // I don't think our implementation needs SETUP_LOOP/POP_BLOCK for for-statements
-#if MICROPY_EMIT_CPYTHON
-    EMIT_ARG(setup_loop, end_label);
-#endif
 
     compile_node(comp, pns->nodes[1]); // iterator
     EMIT(get_iter);
@@ -1972,10 +1669,6 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
-
-#if MICROPY_EMIT_CPYTHON
-    EMIT(pop_block);
-#endif
 
     compile_node(comp, pns->nodes[3]); // else (not tested)
 
@@ -2233,7 +1926,7 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 2
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 2) {
-                // optimisation for a, b = c, d; to match CPython's optimisation
+                // optimisation for a, b = c, d
                 mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
                 mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
@@ -2251,7 +1944,7 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 3
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 3) {
-                // optimisation for a, b, c = d, e, f; to match CPython's optimisation
+                // optimisation for a, b, c = d, e, f
                 mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
                 mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
@@ -2485,7 +2178,6 @@ STATIC void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
     // function to call is on top of stack
 
-#if !MICROPY_EMIT_CPYTHON
     // this is to handle special super() call
     if (MP_PARSE_NODE_IS_NULL(pn_arglist) && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
         compile_load_id(comp, MP_QSTR___class__);
@@ -2501,7 +2193,6 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         compile_syntax_error(comp, MP_PARSE_NODE_NULL, "super() call cannot find self"); // really a TypeError
         return;
     }
-#endif
 
     // get the list of arguments
     mp_parse_node_t *args;
@@ -3184,7 +2875,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, m
 }
 
 STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
-#if MICROPY_EMIT_CPYTHON || MICROPY_ENABLE_DOC_STRING
+#if MICROPY_ENABLE_DOC_STRING
     // see http://www.python.org/dev/peps/pep-0257/
 
     // look for the first statement
@@ -3239,12 +2930,6 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         scope->stack_size = 0;
         scope->exc_stack_size = 0;
     }
-
-#if MICROPY_EMIT_CPYTHON
-    if (comp->pass == MP_PASS_EMIT) {
-        scope_print_info(scope);
-    }
-#endif
 
     // compile
     if (MP_PARSE_NODE_IS_STRUCT_KIND(scope->pn, PN_eval_input)) {
@@ -3331,11 +3016,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // CPython uses .0, but we should be able to use anything that won't
         // clash with a user defined variable.  Best to use an existing qstr,
         // so we use the blank qstr.
-#if MICROPY_EMIT_CPYTHON
-        qstr qstr_arg = QSTR_FROM_STR_STATIC(".0");
-#else
         qstr qstr_arg = MP_QSTR_;
-#endif
         if (comp->pass == MP_PASS_SCOPE) {
             bool added;
             id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qstr_arg, &added);
@@ -3395,11 +3076,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (id->kind == ID_INFO_KIND_LOCAL) {
             EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
         } else {
-#if MICROPY_EMIT_CPYTHON
-            EMIT_ARG(load_closure, MP_QSTR___class__, 0); // XXX check this is the correct local num
-#else
             EMIT_LOAD_FAST(MP_QSTR___class__, id->local_num);
-#endif
         }
         EMIT(return_value);
     }
@@ -3547,7 +3224,6 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 #endif
 
 STATIC void scope_compute_things(scope_t *scope) {
-#if !MICROPY_EMIT_CPYTHON
     // in Micro Python we put the *x parameter after all other parameters (except **y)
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
         id_info_t *id_param = NULL;
@@ -3564,7 +3240,6 @@ STATIC void scope_compute_things(scope_t *scope) {
             }
         }
     }
-#endif
 
     // in functions, turn implicit globals into explicit globals
     // compute the index of each local
@@ -3584,19 +3259,9 @@ STATIC void scope_compute_things(scope_t *scope) {
         }
     }
 
-    // compute the index of cell vars (freevars[idx] in CPython)
-#if MICROPY_EMIT_CPYTHON
-    int num_cell = 0;
-#endif
+    // compute the index of cell vars
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
-#if MICROPY_EMIT_CPYTHON
-        // in CPython the cells are numbered starting from 0
-        if (id->kind == ID_INFO_KIND_CELL) {
-            id->local_num = num_cell;
-            num_cell += 1;
-        }
-#else
         // in Micro Python the cells come right after the fast locals
         // parameters are not counted here, since they remain at the start
         // of the locals, even if they are cell vars
@@ -3604,10 +3269,9 @@ STATIC void scope_compute_things(scope_t *scope) {
             id->local_num = scope->num_locals;
             scope->num_locals += 1;
         }
-#endif
     }
 
-    // compute the index of free vars (freevars[idx] in CPython)
+    // compute the index of free vars
     // make sure they are in the order of the parent scope
     if (scope->parent != NULL) {
         int num_free = 0;
@@ -3618,19 +3282,13 @@ STATIC void scope_compute_things(scope_t *scope) {
                     id_info_t *id2 = &scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
                         assert(!(id2->flags & ID_FLAG_IS_PARAM)); // free vars should not be params
-#if MICROPY_EMIT_CPYTHON
-                        // in CPython the frees are numbered after the cells
-                        id2->local_num = num_cell + num_free;
-#else
                         // in Micro Python the frees come first, before the params
                         id2->local_num = num_free;
-#endif
                         num_free += 1;
                     }
                 }
             }
         }
-#if !MICROPY_EMIT_CPYTHON
         // in Micro Python shift all other locals after the free locals
         if (num_free > 0) {
             for (int i = 0; i < scope->id_info_len; i++) {
@@ -3642,23 +3300,9 @@ STATIC void scope_compute_things(scope_t *scope) {
             scope->num_pos_args += num_free; // free vars are counted as params for passing them into the function
             scope->num_locals += num_free;
         }
-#endif
     }
 
     // compute scope_flags
-
-#if MICROPY_EMIT_CPYTHON
-    // these flags computed here are for CPython compatibility only
-    if (scope->kind == SCOPE_FUNCTION || scope->kind == SCOPE_LAMBDA || scope->kind == SCOPE_LIST_COMP || scope->kind == SCOPE_DICT_COMP || scope->kind == SCOPE_SET_COMP || scope->kind == SCOPE_GEN_EXPR) {
-        assert(scope->parent != NULL);
-        scope->scope_flags |= MP_SCOPE_FLAG_NEWLOCALS;
-        scope->scope_flags |= MP_SCOPE_FLAG_OPTIMISED;
-        if ((SCOPE_FUNCTION <= scope->parent->kind && scope->parent->kind <= SCOPE_SET_COMP) || (scope->parent->kind == SCOPE_CLASS && scope->parent->parent->kind == SCOPE_FUNCTION)) {
-            scope->scope_flags |= MP_SCOPE_FLAG_NESTED;
-        }
-    }
-#endif
-
     int num_free = 0;
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
@@ -3688,21 +3332,12 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     mp_map_deinit(&consts);
 
     // create standard emitter; it's used at least for MP_PASS_SCOPE
-    #if MICROPY_EMIT_CPYTHON
-    emit_t *emit_cpython = emit_cpython_new();
-    #else
     emit_t *emit_bc = emit_bc_new();
-    #endif
 
     // compile pass 1
-    #if MICROPY_EMIT_CPYTHON
-    comp->emit = emit_cpython;
-    comp->emit_method_table = &emit_cpython_method_table;
-    #else
     comp->emit = emit_bc;
     #if MICROPY_EMIT_NATIVE
     comp->emit_method_table = &emit_bc_method_table;
-    #endif
     #endif
     #if MICROPY_EMIT_INLINE_THUMB
     comp->emit_inline_asm = NULL;
@@ -3731,21 +3366,15 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     }
 
     // set max number of labels now that it's calculated
-    #if MICROPY_EMIT_CPYTHON
-    emit_cpython_set_max_num_labels(emit_cpython, max_num_labels);
-    #else
     emit_bc_set_max_num_labels(emit_bc, max_num_labels);
-    #endif
 
     // compile pass 2 and 3
-#if !MICROPY_EMIT_CPYTHON
 #if MICROPY_EMIT_NATIVE
     emit_t *emit_native = NULL;
 #endif
 #if MICROPY_EMIT_INLINE_THUMB
     emit_inline_asm_t *emit_inline_thumb = NULL;
 #endif
-#endif // !MICROPY_EMIT_CPYTHON
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
         if (false) {
             // dummy
@@ -3770,10 +3399,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 
             // choose the emit type
 
-#if MICROPY_EMIT_CPYTHON
-            comp->emit = emit_cpython;
-            comp->emit_method_table = &emit_cpython_method_table;
-#else
             switch (s->emit_options) {
 
 #if MICROPY_EMIT_NATIVE
@@ -3812,7 +3437,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
                     #endif
                     break;
             }
-#endif // !MICROPY_EMIT_CPYTHON
 
             // need a pass to compute stack size
             compile_scope(comp, s, MP_PASS_STACK_SIZE);
@@ -3840,9 +3464,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 
     // free the emitters
 
-#if MICROPY_EMIT_CPYTHON
-    emit_cpython_free(emit_cpython);
-#else
     emit_bc_free(emit_bc);
 #if MICROPY_EMIT_NATIVE
     if (emit_native != NULL) {
@@ -3862,7 +3483,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
         emit_inline_thumb_free(emit_inline_thumb);
     }
 #endif
-#endif // MICROPY_EMIT_CPYTHON
 
     // free the parse tree
     mp_parse_node_free(module_scope->pn);
@@ -3882,13 +3502,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     if (compile_error != MP_OBJ_NULL) {
         nlr_raise(compile_error);
     } else {
-#if MICROPY_EMIT_CPYTHON
-        // can't create code, so just return true
-        (void)outer_raw_code; // to suppress warning that outer_raw_code is unused
-        return mp_const_true;
-#else
         // return function that executes the outer module
         return mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
-#endif
     }
 }

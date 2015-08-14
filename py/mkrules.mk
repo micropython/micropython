@@ -75,7 +75,7 @@ $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
 ifneq ($(PROG),)
-# Build a standalone executable (unix and unix-cpy do this)
+# Build a standalone executable (unix does this)
 
 all: $(PROG)
 
