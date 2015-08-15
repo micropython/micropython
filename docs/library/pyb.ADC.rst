@@ -24,8 +24,10 @@ class ADC -- analog to digital conversion: read analog values on a pin
     
        import pyb
 
-       adc = pyb.ADC(channel)          # create an analog object on one of the 4 ADC channels
+       adc = pyb.ADC(pin)              # create an analog object on one of the 4 ADC channels
        val = adc.read()                # read an analog value
+       adc.deinit()                    # disable the adc channel
+       adc.init()                      # enable the adc channel
 
 Constructors
 ------------
@@ -39,13 +41,13 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: pyb.ADC(channel)
+    .. class:: pyb.ADC(pin)
     
-       Create an ADC object on the given channel. Each channel is associated
-       to a specific pin. For more info check the `pinout and alternate functions
-       table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_ 
+       Create an ADC object associated with the given pin.
        This allows you to then read analog values on that pin.
-       
+       For more info check the `pinout and alternate functions
+       table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_ 
+
        .. warning:: 
        
           ADC pin input range is 0-1.4V (being 1.8V the absolute maximum that it 
@@ -100,10 +102,10 @@ Methods
 
 .. only:: port_wipy
 
-   .. method:: adc.enable()
+   .. method:: adc.init()
 
       Enable the ADC channel.
 
-   .. method:: adc.disable()
+   .. method:: adc.deinit()
 
       Disable the ADC channel.

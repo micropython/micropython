@@ -193,16 +193,20 @@ unsigned char ulRstReg;
 #define PRCM_ADC                  0x000000FF 
 
 //*****************************************************************************
+// User bits in the PRCM persistent registers
+//*****************************************************************************
+#define PRCM_SAFE_BOOT_BIT              30
+#define PRCM_WDT_RESET_BIT              29
+#define PRCM_FIRST_BOOT_BIT             28
+
+//*****************************************************************************
 //
 // API Function prototypes
 //
 //*****************************************************************************
-extern void PRCMRequestSafeBoot(void);
-extern void PRCMClearSafeBootRequest(void);
-extern tBoolean PRCMIsSafeBootRequested(void);
-extern void PRCMSignalWDTReset(void);
-extern void PRCMClearWDTResetSignal(void);
-extern tBoolean PRCMWasResetBecauseOfWDT(void);
+extern void PRCMSetSpecialBit(unsigned char bit);
+extern void PRCMClearSpecialBit(unsigned char bit);
+extern tBoolean PRCMGetSpecialBit(unsigned char bit);
 extern void PRCMSOCReset(void);
 extern void PRCMMCUReset(tBoolean bIncludeSubsystem);
 extern unsigned long PRCMSysResetCauseGet(void);

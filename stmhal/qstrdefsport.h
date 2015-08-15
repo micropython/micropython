@@ -88,10 +88,6 @@ Q(json)
 Q(heapq)
 Q(hashlib)
 
-// for file class
-Q(seek)
-Q(tell)
-
 // for USB configuration
 Q(usb_mode)
 Q(mode)

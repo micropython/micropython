@@ -182,6 +182,8 @@ Q(MASTER)
 // for ADC class
 Q(ADC)
 Q(read)
+Q(init)
+Q(deinit)
 
 #if MICROPY_HW_HAS_SDCARD
 // for SD class
@@ -264,6 +266,7 @@ Q(server_timeout)
 
 // for WLAN class
 Q(WLAN)
+Q(iwconfig)
 Q(key)
 Q(security)
 Q(ssid)
@@ -277,7 +280,9 @@ Q(rssi)
 Q(ifconfig)
 Q(info)
 Q(connections)
+#if MICROPY_PORT_WLAN_URN
 Q(urn)
+#endif
 Q(mode)
 Q(ip)
 Q(subnet)
@@ -287,15 +292,12 @@ Q(mac)
 Q(antenna)
 Q(STA)
 Q(AP)
-Q(P2P)
 Q(OPEN)
 Q(WEP)
-Q(WPA_WPA2)
-Q(WPA_ENT)
-Q(WPS_PBC)
-Q(WPS_PIN)
-Q(INT_ANTENNA)
-Q(EXT_ANTENNA)
+Q(WPA)
+Q(WPA2)
+Q(INTERNAL)
+Q(EXTERNAL)
 
 // for WDT class
 Q(WDT)

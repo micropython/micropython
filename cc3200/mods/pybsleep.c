@@ -178,7 +178,7 @@ void pybsleep_init0 (void) {
             pybsleep_reset_cause = PYB_SLP_WDT_RESET;
             break;
         case PRCM_HIB_EXIT:
-            if (PRCMWasResetBecauseOfWDT()) {
+            if (PRCMGetSpecialBit(PRCM_WDT_RESET_BIT)) {
                 pybsleep_reset_cause = PYB_SLP_WDT_RESET;
             }
             else {

@@ -105,9 +105,13 @@ void TASK_Micropython (void *pvParameters) {
     // initialize the garbage collector with the top of our stack
     uint32_t sp = gc_helper_get_sp();
     gc_collect_init (sp);
-    bool safeboot = false;
 
+    bool safeboot = false;
     mptask_pre_init();
+
+#ifndef DEBUG
+    safeboot = PRCMGetSpecialBit(PRCM_SAFE_BOOT_BIT);
+#endif
 
 soft_reset:
 
@@ -161,9 +165,6 @@ soft_reset:
         else {
             // only if not comming out of hibernate or a soft reset
             mptask_enter_ap_mode();
-        #ifndef DEBUG
-            safeboot = PRCMIsSafeBootRequested();
-        #endif
         }
 
         // enable telnet and ftp
@@ -372,9 +373,12 @@ STATIC void mptask_init_sflash_filesystem (void) {
 }
 
 STATIC void mptask_enter_ap_mode (void) {
+    // append the mac only if it's not the first boot
+    bool append_mac = !PRCMGetSpecialBit(PRCM_FIRST_BOOT_BIT);
+
     // enable simplelink in ap mode (use the MAC address to make the ssid unique)
     wlan_sl_enable (ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID), MICROPY_PORT_WLAN_AP_SECURITY,
-                    MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY), MICROPY_PORT_WLAN_AP_CHANNEL, true);
+                    MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY), MICROPY_PORT_WLAN_AP_CHANNEL, append_mac);
 }
 
 STATIC void mptask_create_main_py (void) {

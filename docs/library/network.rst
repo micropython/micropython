@@ -242,8 +242,8 @@ class WLAN
     
         import network
         # setup as a station
-        nic = network.WLAN(WLAN.STA)
-        nic.connect('your-ssid', security=WLAN.WPA_WPA2, key='your-key')
+        nic = network.WLAN(mode=WLAN.STA)
+        nic.connect('your-ssid', security=WLAN.WPA2, key='your-key')
         while not nic.isconnected():
             pyb.delay(50)
         print(nic.ifconfig())
@@ -254,38 +254,50 @@ class WLAN
     Constructors
     ------------
     
-    .. class:: WLAN(mode, ssid, \*, security=WLAN.OPEN, key=None, channel=5)
+    .. class:: WLAN(..)
+
+       Create a WLAN object, and optionally configure it. See ``iwconfig`` for params of configuration.
+
+    Methods
+    -------
+
+    .. method:: iwconfig(\*, mode, ssid, security, key, channel, antenna)
     
-       Create a WLAN driver object, initialise the WLAN engine in station or AP mode.
+       Set or get the WiFi network processor configuration.
     
        Arguments are:
     
          - ``mode`` can be either ``WLAN.STA`` or ``WLAN.AP``.
          - ``ssid`` is a string with the ssid name. Only needed when mode is ``WLAN.AP``.
-         - ``security`` can be ``WLAN.OPEN``, ``WLAN.WEP`` or ``WLAN.WPA_WPA2``. 
+         - ``security`` can be ``WLAN.OPEN``, ``WLAN.WEP``, ``WLAN.WPA`` or ``WLAN.WPA2``. 
            Only needed when mode is ``WLAN.AP``.
-         - ``key`` is a string with the ``WLAN.WPA_WPA2`` key or a byte array with the 
-           ``WLAN.WEP`` key. Not needed when mode is ``WLAN.STA`` or security is ``WLAN.OPEN``.
+         - ``key`` is a string with the network password. Not needed when mode is ``WLAN.STA``
+           or security is ``WLAN.OPEN``. If ``security`` is ``WLAN.WEP`` the key must be a
+           string representing hexadecimal values (e.g. 'ABC1DE45BF').
          - ``channel`` a number in the range 1-11. Only needed when mode is ``WLAN.AP``.
+         - ``antenna`` selects between the internal and the external antenna. Can be either
+           ``WLAN.INTERNAL`` or ``WLAN.EXTERNAL``.
     
-       For example, you can use::
+       For example, you can do::
 
-          # configure as an access point
-          nic = network.WLAN(WLAN.AP, 'wipy-wlan', security=WLAN.WPA_WPA2, key='www.wipy.io', channel=7)
+          # create and configure as an access point
+          nic.iwconfig(mode=WLAN.AP, ssid='wipy-wlan', security=WLAN.WPA2, key='www.wipy.io', channel=7, antenna=WLAN.INTERNAL)
 
        or::
 
           # configure as an station
-          nic = network.WLAN(WLAN.STA)
-    
-    Methods
-    -------
-    
+          nic.iwconfig(mode=WLAN.STA)
+
+       With no arguments given, the current configuration is returned as a namedtuple that looks like this:
+       ``(mode=2, ssid='wipy-wlan', security=2, key='www.wipy.io', channel=5, antenna=0)``
+
     .. method:: wlan.connect(ssid, \*, security=WLAN.OPEN, key=None, bssid=None, timeout=5000)
     
        Connect to a wifi access point using the given SSID, and other security
        parameters.
           
+          - ``key`` is always a string, but if ``security`` is ``WLAN.WEP`` the key must be a string
+            representing hexadecimal values (e.g. 'ABC1DE45BF').
           - ``bssid`` is the MAC address of the AP to connect to. Useful when there are several APs
             with the same ssid.
           - ``timeout`` is the maximum time in milliseconds to wait for the connection to succeed.
@@ -301,8 +313,8 @@ class WLAN
     
     .. method:: wlan.isconnected()
     
-       Returns True if connected to a wifi access point and has a valid IP address,
-       False otherwise.
+       In case of STA mode, returns ``True`` if connected to a wifi access point and has a valid IP address.
+       In AP mode returns ``True`` when a station is connected. Returns ``False`` otherwise.
     
     .. method:: wlan.ifconfig(['dhcp' or configtuple])
     
@@ -315,25 +327,14 @@ class WLAN
     
           nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
     
-    .. method:: wlan.info()
+    .. method:: wlan.mac()
     
-       Provides information about the current WLAN configuration. Returns a named tuple 
-       of (mode, ssid, security, mac)
-       
-       - ``mode`` can be either ``WLAN.STA`` or ``WLAN.AP``.
-       - ``ssid`` is a string with our ssid if in AP mode, ``None`` oterwise.
-       - ``security`` security type currently used.
-       - ``mac`` our MAC address.
-    
+       Returns a 6-byte long bytes object with the MAC address.
+
     .. method:: wlan.connections()
     
        Returns a list of the devices currently connected. Each item in the list is a
        tuple of ``(ssid, mac)``.
-    
-    .. method:: wlan.antenna(antenna_type)
-    
-       Selects the antenna type to be used. Must be either ``WLAN.INT_ANTENNA`` or
-       ``WLAN.EXT_ANTENNA``.
 
     .. method:: wlan.callback(wakes)
 
@@ -348,29 +349,21 @@ class WLAN
     ---------
     
     .. data:: WLAN.STA
-    
+
        WiFi station mode
-    
+
     .. data:: WLAN.AP
 
        WiFi access point mode
 
     .. data:: WLAN.OPEN
-    
-       open network (no security)
-    
     .. data:: WLAN.WEP
-    
-       WEP network security
-    
-    .. data:: WLAN.WPA_WPA2
-    
-       WPA/WPA2 network security
+    .. data:: WLAN.WPA
+    .. data:: WLAN.WPA2
 
-    .. data:: WLAN.INT_ANTENNA
-    
-       selects the internal antenna
-    
-    .. data:: WLAN.EXT_ANTENNA
+       selects the network security
 
-       selects the external antenna
+    .. data:: WLAN.INTERNAL
+    .. data:: WLAN.EXTERNAL
+
+       selects the antenna type
