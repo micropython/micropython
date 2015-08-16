@@ -92,4 +92,4 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#endif /* __INCLUDED_MPCONFIGPORT_H */
+#endif /*  __INCLUDED_MPCONFIGPORT_H  */
