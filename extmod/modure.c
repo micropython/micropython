@@ -190,7 +190,7 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
     subj.begin = mp_obj_str_get_data(where, &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
-    size_t pre_m_l = -1, post_m_l = -1;
+    int pre_m_l = -1, post_m_l = -1;
 
     const char* where_str = subj.begin;
 
