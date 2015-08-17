@@ -26,20 +26,10 @@
 #ifndef __MICROPY_INCLUDED_PY_RUNTIME0_H__
 #define __MICROPY_INCLUDED_PY_RUNTIME0_H__
 
-// taken from python source, Include/code.h
 // These must fit in 8 bits; see scope.h
-#define MP_SCOPE_FLAG_OPTIMISED    0x01
-#define MP_SCOPE_FLAG_NEWLOCALS    0x02
-#define MP_SCOPE_FLAG_VARARGS      0x04
-#define MP_SCOPE_FLAG_VARKEYWORDS  0x08
-#define MP_SCOPE_FLAG_NESTED       0x10
-#define MP_SCOPE_FLAG_GENERATOR    0x20
-/* The MP_SCOPE_FLAG_NOFREE flag is set if there are no free or cell variables.
-   This information is redundant, but it allows a single flag test
-   to determine whether there is any extra work to be done when the
-   call frame is setup.
-*/
-#define MP_SCOPE_FLAG_NOFREE       0x40
+#define MP_SCOPE_FLAG_VARARGS      (0x01)
+#define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
+#define MP_SCOPE_FLAG_GENERATOR    (0x04)
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)

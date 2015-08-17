@@ -3301,18 +3301,6 @@ STATIC void scope_compute_things(scope_t *scope) {
             scope->num_locals += num_free;
         }
     }
-
-    // compute scope_flags
-    int num_free = 0;
-    for (int i = 0; i < scope->id_info_len; i++) {
-        id_info_t *id = &scope->id_info[i];
-        if (id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE) {
-            num_free += 1;
-        }
-    }
-    if (num_free == 0) {
-        scope->scope_flags |= MP_SCOPE_FLAG_NOFREE;
-    }
 }
 
 mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl) {
