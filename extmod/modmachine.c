@@ -37,7 +37,9 @@
 
 #if MICROPY_PY_MACHINE
 
+#if !defined PAGE_SIZE
 #define PAGE_SIZE 4096
+#endif
 #define PAGE_MASK (PAGE_SIZE - 1)
 
 STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
