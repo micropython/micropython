@@ -173,12 +173,6 @@
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
-// Whether to emit CPython byte codes (for debugging/testing)
-// Enabling this overrides all other emitters
-#ifndef MICROPY_EMIT_CPYTHON
-#define MICROPY_EMIT_CPYTHON (0)
-#endif
-
 // Whether to emit x64 native code
 #ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64 (0)
