@@ -1,0 +1,2 @@
+MCU_SERIES = f4
+LD_FILE = boards/nRF52832.ld
