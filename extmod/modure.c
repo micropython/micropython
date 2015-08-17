@@ -182,92 +182,148 @@ STATIC int str_to_int(const char *str, int *num) {
 }
 
 STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
-    (void)n_args;
     mp_obj_re_t *self = args[0];
-    mp_obj_t repl = args[1], ret = args[2];
-    mp_obj_match_t *match = re_exec(is_anchored, 2, (const mp_obj_t[]){ self, ret });
-    if (!MP_OBJ_IS_TYPE(match, &mp_type_NoneType)) {
+    mp_obj_t replace = args[1];
+    mp_obj_t where = args[2];
+    int count = (n_args > 3 ? mp_obj_get_int(args[3]) : 0);
 
-        vstr_t *vstr_repl = NULL;
-        if ( (vstr_repl = vstr_new() ) != NULL ) {
-            vstr_add_str(vstr_repl, mp_obj_str_get_str(repl));
-            const char *repl_p = vstr_null_terminated_str(vstr_repl);
-            do {
-                const char *group = NULL, *start_group = NULL, *end_group = NULL;
-                int match_no = -1, is_group_number = -1;
-                if ( *repl_p == '\\' ) {
-                    start_group = repl_p;
-                    group = ++repl_p;
+    Subject subj;
+    mp_uint_t len;
+    subj.begin = mp_obj_str_get_data(where, &len);
+    subj.end = subj.begin + len;
+    int caps_num = (self->re.sub + 1) * 2;
+    size_t pre_m_l = -1, post_m_l = -1;
 
-                    // search group with syntax "\g<number>"
-                    if( *group != 0 && *group == 'g' ) { 
-                        
-                        const char *left_angle_bracket = ++group;
-                        if( left_angle_bracket != 0 && *left_angle_bracket == '<' ) {
-                            const char *value = ++left_angle_bracket;
-                            if ( value != 0 ) {
+    vstr_t *vstr_return = NULL;
+    if ((vstr_return = vstr_new()) != NULL) {
 
-                                if ( unichar_isalpha(*value) ) {
-                                    mp_not_implemented("group with syntax \"\\g<name>\"");
+        while (true) {
+
+            mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char*, caps_num);
+            // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
+            memset((char*)match->caps, 0, caps_num * sizeof(char*));
+            int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, is_anchored);
+
+            // if we didn't have a match, or had an empty match, it's time to stop
+            if (!res || match->caps[0] == match->caps[1]) {
+                break;
+            }
+            else {
+
+                // process match
+                match->base.type = &match_type;
+                match->num_matches = caps_num / 2; // caps_num counts start and end pointers
+                match->str = where;
+
+                // add pre-match string
+                pre_m_l = (match->caps[0] - subj.begin);
+                if (pre_m_l) {
+                    vstr_add_strn(vstr_return, subj.begin, pre_m_l);
+                }
+
+                vstr_t *vstr_repl = NULL;
+                if ((vstr_repl = vstr_new()) != NULL) {
+                    vstr_add_str(vstr_repl, mp_obj_str_get_str(replace));
+                    const char *repl_p = vstr_null_terminated_str(vstr_repl);
+                    do {
+                        const char *group = NULL, *start_group = NULL, *end_group = NULL;
+                        int match_no = -1, is_group_number = -1;
+                        if (*repl_p == '\\') {
+                            start_group = repl_p;
+                            group = ++repl_p;
+
+                            if (*group != 0 && *group == 'g') {
+                                // search group with syntax "\g<number>"
+                                const char *left_angle_bracket = ++group;
+                                if (left_angle_bracket != 0 && *left_angle_bracket == '<') {
+                                    const char *value = ++left_angle_bracket;
+                                    if (value != 0) {
+
+                                        if (unichar_isalpha(*value)) {
+                                            mp_not_implemented("group with syntax \"\\g<name>\"");
+                                        }
+
+                                        int value_l = str_to_int(value, &match_no);
+                                        if (match_no == -1) {
+                                            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "missing group number"));
+                                        }
+
+                                        const char *right_angle_bracket = value += value_l;
+                                        if (right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches) {
+                                            is_group_number = 1;
+                                            end_group = value + 1;
+                                        }
+                                    }
                                 }
 
+                            }
+                            else if (group != 0 && unichar_isdigit(*group)) {
+                                // search group with syntax "\number"
+                                const char *value = group;
                                 int value_l = str_to_int(value, &match_no);
-                                if ( match_no == -1 ) {
-                                    nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "missing group number"));
+                                if (match_no > -1 && match_no < match->num_matches) {
+                                    is_group_number = 0;
+                                    end_group = value += value_l;
+                                }
+                            }
+
+                            if (match_no > -1 && is_group_number > -1 && start_group != NULL && end_group != NULL) {
+
+                                const char *start_match = match->caps[match_no * 2];
+                                if (start_match == NULL) {
+                                    // no match for this group
+                                    return where;
+                                }
+                                size_t mg_l = (match->caps[match_no * 2 + 1] - start_match);
+                                size_t gv_l = (end_group - start_group);
+
+                                const char *prev_repl_p = repl_p - 1;
+
+                                if (gv_l < mg_l) {
+                                    vstr_add_len(vstr_repl, (mg_l - gv_l));
+                                    repl_p += gv_l;
+                                }
+                                else if (gv_l > mg_l) {
+                                    vstr_cut_tail_bytes(vstr_repl, (gv_l - mg_l));
+                                    repl_p -= mg_l;
                                 }
 
-                                const char *right_angle_bracket = value += value_l;
-                                if( right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches ) {
-                                    is_group_number = 1;
-                                    end_group = value + 1;
-                                }
+                                // replace the substring matched by group
+                                memmove((char *)(prev_repl_p + mg_l), (prev_repl_p + gv_l), strlen(prev_repl_p));
+                                memcpy((char *)(prev_repl_p), start_match, mg_l);
+
                             }
                         }
 
-                    // search group with syntax "\number"
-                    } else if( group != 0 && unichar_isdigit(*group) ) {
-                        const char *value = group;
-                        int value_l = str_to_int(value, &match_no);
-                        if ( match_no > -1 && match_no < match->num_matches ) {
-                            is_group_number = 0;
-                            end_group = value += value_l;
-                        }
-                    }
- 
-                    if ( match_no > -1 && is_group_number > -1 && start_group != NULL && end_group != NULL ) {
-                        
-                        const char *start_match = match->caps[match_no * 2];
-                        if ( start_match == NULL ) {
-                            // no match for this group
-                            return ret;
-                        }
-                        size_t mg_l = (match->caps[match_no * 2 + 1] - start_match);
-                        size_t gv_l = (end_group - start_group);
+                    } while (*(++repl_p) != 0);
 
-                        const char *prev_repl_p = repl_p - 1;
+                    // add replace
+                    vstr_add_str(vstr_return, vstr_str(vstr_repl));
 
-                        if ( gv_l < mg_l ) {
-                            vstr_add_len(vstr_repl, (mg_l - gv_l));
-                            repl_p+=gv_l;
-                        } else if ( gv_l > mg_l ) {
-                            vstr_cut_tail_bytes(vstr_repl, (gv_l - mg_l));
-                            repl_p-=mg_l;
-                        }
+                    // post-match string
+                    post_m_l = (match->caps[1] - mp_obj_str_get_str(where));
 
-                        // replace the substring matched by group
-                        memmove((char *)(prev_repl_p + mg_l), (prev_repl_p + gv_l), strlen(prev_repl_p));
-                        memcpy((char *)(prev_repl_p), start_match, mg_l);
-                    }
                 }
 
-            } while ( *(++repl_p) != 0 );
-            
-            ret = mp_obj_new_str_from_vstr(&mp_type_str, vstr_repl); 
+            }
+
+            subj.begin = match->caps[1];
+            if (count > 0 && --count == 0) {
+                break;
+            }
+
+            m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+
         }
-        
-        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+
     }
-    return ret;
+
+    // add post-match string
+    if (post_m_l){
+        vstr_add_str(vstr_return, &mp_obj_str_get_str(where)[post_m_l]);
+    }
+
+    return (!vstr_len(vstr_return) ? where : mp_obj_new_str_from_vstr(&mp_type_str, vstr_return));
 }
 
 STATIC mp_obj_t re_sub(uint n_args, const mp_obj_t *args) {
