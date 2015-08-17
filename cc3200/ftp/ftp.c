@@ -47,8 +47,7 @@
 #include "ff.h"
 #include "fifo.h"
 #include "socketfifo.h"
-#include "diskio.h"
-#include "sd_diskio.h"
+#include "pybsd.h"
 #include "updater.h"
 #include "timeutils.h"
 
@@ -193,7 +192,7 @@ static const ftp_month_t ftp_month[] = { { "Jan" }, { "Feb" }, { "Mar" }, { "Apr
                                          { "May" }, { "Jun" }, { "Jul" }, { "Ago" },
                                          { "Sep" }, { "Oct" }, { "Nov" }, { "Dec" } };
 
-static SocketFifoElement_t *ftp_fifoelements;
+static SocketFifoElement_t ftp_fifoelements[FTP_SOCKETFIFO_ELEMENTS_MAX];
 static FIFO_t ftp_socketfifo;
 
 /******************************************************************************
@@ -233,7 +232,6 @@ void ftp_init (void) {
     ASSERT ((ftp_path = mem_Malloc(FTP_MAX_PARAM_SIZE)) != NULL);
     ASSERT ((ftp_scratch_buffer = mem_Malloc(FTP_MAX_PARAM_SIZE)) != NULL);
     ASSERT ((ftp_cmd_buffer = mem_Malloc(FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX)) != NULL);
-    ASSERT ((ftp_fifoelements = mem_Malloc(FTP_SOCKETFIFO_ELEMENTS_MAX * sizeof(SocketFifoElement_t))) != NULL);
     SOCKETFIFO_Init (&ftp_socketfifo, (void *)ftp_fifoelements, FTP_SOCKETFIFO_ELEMENTS_MAX);
     ftp_data.c_sd  = -1;
     ftp_data.d_sd  = -1;
@@ -987,7 +985,7 @@ static ftp_result_t ftp_open_dir_for_listing (const char *path, char *list, uint
     if (path[0] == '/' && path[1] == '\0') {
         next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "flash");
 #if MICROPY_HW_HAS_SDCARD
-        if (sd_disk_ready()) {
+        if (pybsd_is_mounted()) {
             next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "sd");
         }
 #endif

@@ -188,8 +188,10 @@ Q(deinit)
 #if MICROPY_HW_HAS_SDCARD
 // for SD class
 Q(SD)
-Q(enable)
-Q(disable)
+Q(init)
+Q(deinit)
+Q(mount)
+Q(unmount)
 #endif
 
 // for RTC class
@@ -317,7 +319,7 @@ Q(handler)
 Q(mode)
 Q(value)
 Q(priority)
-Q(wakes)
+Q(wake_from)
 
 // for Sleep class
 Q(Sleep)
@@ -345,7 +347,7 @@ Q(baudrate)
 Q(bits)
 Q(polarity)
 Q(phase)
-Q(nss)
+Q(cs_polarity)
 Q(init)
 Q(deinit)
 Q(send)

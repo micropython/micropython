@@ -59,7 +59,7 @@
 #define MPERROR_TOOGLE_MS                           (40)
 #define MPERROR_SIGNAL_ERROR_MS                     (1000)
 #define MPERROR_HEARTBEAT_ON_MS                     (80)
-#define MPERROR_HEARTBEAT_OFF_MS                    (4920)
+#define MPERROR_HEARTBEAT_OFF_MS                    (3920)
 
 /******************************************************************************
  DECLARE PRIVATE DATA

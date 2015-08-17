@@ -127,9 +127,9 @@ STATIC mp_obj_t pyb_wdt_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     return (mp_obj_t)&pyb_wdt_obj;
 }
 
-/// \function wdt_kick()
+/// \function wdt.kick()
 /// Kicks the watchdog timer
-STATIC mp_obj_t pyb_kick_wdt(mp_obj_t self) {
+STATIC mp_obj_t pyb_wdt_kick(mp_obj_t self) {
     if ((pybwdt_data.servers || pybwdt_data.servers_sleeping) && pybwdt_data.simplelink && pybwdt_data.running) {
         pybwdt_data.servers = false;
         pybwdt_data.simplelink = false;
@@ -137,10 +137,10 @@ STATIC mp_obj_t pyb_kick_wdt(mp_obj_t self) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_kick_wdt_obj, pyb_kick_wdt);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wdt_kick_obj, pyb_wdt_kick);
 
 STATIC const mp_map_elem_t pybwdt_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_kick),   (mp_obj_t)&pyb_kick_wdt_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_kick),   (mp_obj_t)&pyb_wdt_kick_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(pybwdt_locals_dict, pybwdt_locals_dict_table);
 

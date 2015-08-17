@@ -88,7 +88,7 @@ the latest firmware will run again.
 The heart beat LED
 ------------------
 
-By default the heart beat LED flashes once every 5s to signal that the system is
+By default the heart beat LED flashes once every 4s to signal that the system is
 alive. This can be overridden through the HeartBeat class:
 
 ``pyb.HeartBeat().disable()``

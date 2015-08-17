@@ -822,12 +822,12 @@ STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
 /// Create a wlan object. See iwconfig for parameters of initialization.
 STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, MP_ARRAY_SIZE(wlan_iwconfig_args), true);
+    mp_arg_check_num(n_args, n_kw, 0, 0, true);
     wlan_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wlan;
     if (n_kw > 0) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args);
-        wlan_iwconfig(1, (const mp_obj_t *)&wlan_obj, &kw_args);
+        wlan_iwconfig(n_args + 1, (const mp_obj_t *)&wlan_obj, &kw_args);
     }
     return &wlan_obj;
 }
@@ -1087,8 +1087,8 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
 /// \method callback(handler, pwrmode)
-/// Create a callback object associated with WLAN
-/// min num of arguments is 1 (wakes)
+/// Create a callback object associated with the WLAN subsystem
+/// Only takes one argument (wake_from)
 STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
@@ -1096,7 +1096,7 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     wlan_obj_t *self = pos_args[0];
     mp_obj_t _callback = mpcallback_find(self);
     // check if any parameters were passed
-    if (kw_args->used > 0 || !_callback) {
+    if (kw_args->used > 0) {
         // check the power mode
         if (args[4].u_int != PYB_PWR_MODE_LPDS) {
             // throw an exception since WLAN only supports LPDS mode
@@ -1104,10 +1104,12 @@ STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         }
 
         // create the callback
-        _callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods);
+        _callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods, true);
 
         // enable network wakeup
         pybsleep_set_wlan_lpds_callback (_callback);
+    } else if (!_callback) {
+        _callback = mpcallback_new (self, mp_const_none, &wlan_cb_methods, false);
     }
     return _callback;
 }

@@ -88,16 +88,19 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     // chech if ca validation is required
     if (args[4].u_int != SSL_CERT_NONE && args[5].u_obj == mp_const_none) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        goto arg_error;
     }
-
-    // server side param is irrelevant for us (at least for the moment)
 
     // retrieve the file paths (with an 6 byte offset because to strip the '/flash' prefix)
     const char *keyfile  = (args[1].u_obj == mp_const_none) ? NULL : &(mp_obj_str_get_str(args[1].u_obj)[6]);
     const char *certfile = (args[2].u_obj == mp_const_none) ? NULL : &(mp_obj_str_get_str(args[2].u_obj)[6]);
     const char *cafile   = (args[5].u_obj == mp_const_none || args[4].u_int != SSL_CERT_REQUIRED) ?
                            NULL : &(mp_obj_str_get_str(args[5].u_obj)[6]);
+
+    // server side requires both certfile and keyfile
+    if (mp_obj_is_true(args[3].u_obj) && (!keyfile || !certfile)) {
+        goto arg_error;
+    }
 
     _i16 sd = ((mod_network_socket_obj_t *)args[0].u_obj)->sock_base.sd;
     _i16 _errno;
@@ -123,6 +126,9 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
 socket_error:
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
+
+arg_error:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 

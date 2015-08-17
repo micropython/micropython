@@ -46,8 +46,8 @@ const mp_arg_t mpcallback_init_args[] = {
     { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_handler,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_priority,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-    { MP_QSTR_value,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    { MP_QSTR_wakes,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PYB_PWR_MODE_ACTIVE} },
+    { MP_QSTR_value,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_wake_from,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PYB_PWR_MODE_ACTIVE} },
 };
 
 /******************************************************************************
@@ -58,14 +58,14 @@ void mpcallback_init0 (void) {
     mp_obj_list_init(&MP_STATE_PORT(mpcallback_obj_list), 0);
 }
 
-mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods) {
+mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods, bool enable) {
     mpcallback_obj_t *self = m_new_obj(mpcallback_obj_t);
     self->base.type = &pyb_callback_type;
     self->handler = handler;
     self->parent = parent;
     self->methods = (mp_cb_methods_t *)methods;
-    self->isenabled = true;
-    // remove any old callback if present
+    self->isenabled = enable;
+    // remove it in case it was already registered
     mpcallback_remove(self->parent);
     mp_obj_list_append(&MP_STATE_PORT(mpcallback_obj_list), self);
     return self;
@@ -138,11 +138,11 @@ void mpcallback_handler (mp_obj_t self_in) {
             // uncaught exception; disable the callback so that it doesn't run again
             self->methods->disable (self->parent);
             self->handler = mp_const_none;
-            // signal the error using the heart beat led and print an
-            // exception message as well
-            mperror_signal_error();
+            // signal the error using the heart beat led and
+            // by printing a message
             printf("Uncaught exception in callback handler\n");
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            mperror_signal_error();
         }
         gc_unlock();
     }

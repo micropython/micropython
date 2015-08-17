@@ -160,7 +160,7 @@ See :ref:`pyb.RTC <pyb.RTC>` and ``pyb.Sleep``. ::
         rtc_obj.callback(value=30000, handler=some_handler)
 
     # create a RTC alarm that expires in 30s
-    rtc.callback(value=30000, handler=some_handler, wakes=Sleep.SUSPENDED)
+    rtc.callback(value=30000, handler=some_handler, wake_from=Sleep.SUSPENDED)
 
     # go into suspended mode waiting for the RTC alarm to expire and wake us up
     Sleep.suspend()
@@ -172,10 +172,10 @@ See :ref:`pyb.SD <pyb.SD>`. ::
 
     from pyb import SD
 
-    # SD card pins need special configuration so we pass 'em to the constructor
+    # SD card pins need special configuration so we pass them to the constructor
     # data pin, data af, clock pin, clock af, cmd pin, cmd af
-    sd = pyb.SD('GP15', 8, 'GP10', 6, 'GP11', 6)
-    sd.enable()
+    sd = pyb.SD(('GP15', 8, 'GP10', 6, 'GP11', 6))
+    sd.mount()
 
 WLAN (WiFi) 
 -----------
@@ -195,7 +195,7 @@ See :ref:`network.WLAN <network.WLAN>` and ``pyb.Sleep``. ::
         pass
     print(wifi.ifconfig())
     # enable wake on WLAN
-    wifi.callback(wakes=Sleep.SUSPENDED)
+    wifi.callback(wake_from=Sleep.SUSPENDED)
     # go to sleep
     Sleep.suspend()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up

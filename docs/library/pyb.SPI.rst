@@ -25,7 +25,7 @@ there are 3 lines: SCK, MOSI, MISO.
     parameters to init the SPI bus::
     
         from pyb import SPI
-        spi = SPI(1, SPI.MASTER, baudrate=1000000, polarity=0, phase=0, nss=SPI.ACTIVE_LOW)
+        spi = SPI(1, SPI.MASTER, baudrate=1000000, polarity=0, phase=0, cs_polarity=SPI.ACTIVE_LOW)
 
     Only required parameter is mode, must be SPI.MASTER.  Polarity can be 0 or 
     1, and is the level the idle clock line sits at.  Phase can be 0 or 1 to 
@@ -115,8 +115,7 @@ Methods
          - ``phase`` can be 0 or 1 to sample data on the first or second clock edge
            respectively.
          - ``bits`` is the width of each transfer, accepted values are 8, 16 and 32.
-         - ``nss`` is the polarity of the slave select line. Can be ``SPI.ACTIVE_LOW``
-           or ``SPI.ACTIVE_HIGH``.
+         - ``cs_polarity`` can be ``SPI.ACTIVE_LOW`` or ``SPI.ACTIVE_HIGH``.
     
        Note that the SPI clock frequency will not always be the requested baudrate.
        Printing the SPI object will show you the computed baudrate and the chosen

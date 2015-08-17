@@ -215,8 +215,8 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
-    if (kw_args->used > 0 || !_callback) {
-        uint32_t f_mseconds = MAX(1, args[3].u_int);
+    if (kw_args->used > 0) {
+        uint32_t f_mseconds = MAX(1, mp_obj_get_int(args[3].u_obj));
         uint32_t seconds;
         uint16_t mseconds;
         // get the seconds and the milliseconds from the RTC
@@ -238,7 +238,7 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
         pybrtc_data.prwmode = args[4].u_int;
 
         // create the callback
-        _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods);
+        _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods, true);
 
         // set the lpds callback
         pybsleep_set_timer_lpds_callback(_callback);
@@ -248,6 +248,8 @@ STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
         // enable the interrupt (the object is not relevant here, the function already knows it)
         pyb_rtc_callback_enable(NULL);
+    } else if (!_callback) {
+        _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, mp_const_none, &pybrtc_cb_methods, false);
     }
     return _callback;
 }

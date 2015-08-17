@@ -599,7 +599,7 @@ STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
     pin_obj_t *self = pos_args[0];
     // check if any parameters were passed
     mp_obj_t _callback = mpcallback_find(self);
-    if (kw_args->used > 0 || !_callback) {
+    if (kw_args->used > 0) {
         // convert the priority to the correct value
         uint priority = mpcallback_translate_priority (args[2].u_int);
         // verify the interrupt mode
@@ -703,13 +703,15 @@ STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
         }
 
         // all checks have passed, now we can create the callback
-        _callback = mpcallback_new (self, args[1].u_obj, &pin_cb_methods);
+        _callback = mpcallback_new (self, args[1].u_obj, &pin_cb_methods, true);
         if (pwrmode & PYB_PWR_MODE_LPDS) {
             pybsleep_set_gpio_lpds_callback (_callback);
         }
 
         // enable the interrupt just before leaving
         pin_extint_enable(self);
+    } else if (!_callback) {
+        _callback = mpcallback_new (self, mp_const_none, &pin_cb_methods, false);
     }
     return _callback;
 

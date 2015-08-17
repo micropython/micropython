@@ -30,7 +30,8 @@
 extern const mp_obj_type_t pyb_sd_type;
 
 void pybsd_init0 (void);
-void pybsd_deinit (void);
+void pybsd_disable (void);
+bool pybsd_is_mounted (void);
 #endif
 
 #endif // PYBSD_H_

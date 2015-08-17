@@ -90,12 +90,12 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: rtc.callback(\*, value, handler=None, wakes=pyb.Sleep.ACTIVE)
+    .. method:: rtc.callback(\*, value, handler=None, wake_from=pyb.Sleep.ACTIVE)
     
        Create a callback object triggered by a real time clock alarm.
     
           - ``value`` is the alarm timeout in milliseconds. This parameter is required.
           - ``handler`` is the function to be called when the callback is triggered.
-          - ``wakes`` specifies the power mode from where this interrupt can wake
+          - ``wake_from`` specifies the power mode from where this interrupt can wake
             up the system.
 

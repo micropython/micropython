@@ -56,7 +56,6 @@
 #include "portable.h"
 #include "task.h"
 #include "mpexception.h"
-#include "mpcallback.h"
 #include "random.h"
 #include "pybadc.h"
 #include "pybi2c.h"
@@ -96,7 +95,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_reset_obj, pyb_reset);
 
 #ifdef DEBUG
 /// \function info([dump_alloc_table])
-/// Print out some run time info which is helpful duirng development.
+/// Print out some run time info which is helpful during development.
 STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
     // FreeRTOS info
     {

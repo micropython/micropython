@@ -251,7 +251,7 @@ soft_reset_exit:
     modusocket_close_all_user_sockets();
 
 #if MICROPY_HW_HAS_SDCARD
-    pybsd_deinit();
+    pybsd_disable();
 #endif
 
     // wait for pending transactions to complete
@@ -284,7 +284,7 @@ STATIC void mptask_pre_init (void) {
     // this one allocates memory for the updater semaphore
     updater_pre_init();
 
-    // this one allocates memory for the Socket semaphore
+    // this one allocates memory for the socket semaphore
     modusocket_pre_init();
 
 #if MICROPY_HW_HAS_SDCARD

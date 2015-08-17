@@ -203,7 +203,7 @@ mp_obj_t uart_callback_new (pyb_uart_obj_t *self, mp_obj_t handler, uint rxbuffe
     }
 
     // create the callback
-    mp_obj_t _callback = mpcallback_new ((mp_obj_t)self, handler, &uart_cb_methods);
+    mp_obj_t _callback = mpcallback_new ((mp_obj_t)self, handler, &uart_cb_methods, true);
 
     // enable the interrupts now
     uart_callback_enable (self);
@@ -520,7 +520,7 @@ STATIC mp_obj_t pyb_uart_callback (mp_uint_t n_args, const mp_obj_t *pos_args, m
     // check if any parameters were passed
     pyb_uart_obj_t *self = pos_args[0];
     mp_obj_t _callback = mpcallback_find((mp_obj_t)self);
-    if (kw_args->used > 0 || !_callback) {
+    if (kw_args->used > 0) {
 
         // convert the priority to the correct value
         uint priority = mpcallback_translate_priority (args[2].u_int);
@@ -531,7 +531,9 @@ STATIC mp_obj_t pyb_uart_callback (mp_uint_t n_args, const mp_obj_t *pos_args, m
         }
 
         // register a new callback
-        return uart_callback_new (self, args[1].u_obj, args[3].u_int, priority);
+        return uart_callback_new (self, args[1].u_obj, mp_obj_get_int(args[3].u_obj), priority);
+    } else if (!_callback) {
+        _callback = mpcallback_new (self, mp_const_none, &uart_cb_methods, false);
     }
     return _callback;
 }

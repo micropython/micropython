@@ -31,7 +31,7 @@
  DEFINE CONSTANTS
  ******************************************************************************/
 #define SERVERS_PRIORITY                        2
-#define SERVERS_STACK_SIZE                      1072
+#define SERVERS_STACK_SIZE                      1024
 
 #define SERVERS_SSID_LEN_MAX                    16
 #define SERVERS_KEY_LEN_MAX                     16
