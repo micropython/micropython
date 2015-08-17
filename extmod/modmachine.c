@@ -33,12 +33,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#define MICROPY_PAGE_SIZE 4096
+#define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
 #if MICROPY_PY_MACHINE
 
-#define PAGE_SIZE 4096
-#define PAGE_MASK (PAGE_SIZE - 1)
 
 STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
     mp_uint_t addr = mp_obj_int_get_truncated(addr_o);
@@ -58,12 +58,12 @@ STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
             }
         }
 
-        mp_uint_t cur_base = addr & ~PAGE_MASK;
+        mp_uint_t cur_base = addr & ~MICROPY_PAGE_MASK;
         if (cur_base != last_base) {
-            map_page = (mp_uint_t)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, cur_base);
+            map_page = (mp_uint_t)mmap(NULL, MICROPY_PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, cur_base);
             last_base = cur_base;
         }
-        addr = map_page + (addr & PAGE_MASK);
+        addr = map_page + (addr & MICROPY_PAGE_MASK);
     }
     #endif
 
