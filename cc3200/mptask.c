@@ -141,8 +141,8 @@ soft_reset:
 #ifdef LAUNCHXL
     // configure the stdio uart pins with the correct alternate functions
     // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
-    pin_config ((pin_obj_t *)&MICROPY_STDIO_UART_TX_PIN, MICROPY_STDIO_UART_TX_PIN_AF, 0, PIN_TYPE_STD_PU, PIN_STRENGTH_2MA);
-    pin_config ((pin_obj_t *)&MICROPY_STDIO_UART_RX_PIN, MICROPY_STDIO_UART_RX_PIN_AF, 0, PIN_TYPE_STD_PU, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&MICROPY_STDIO_UART_TX_PIN, MICROPY_STDIO_UART_TX_PIN_AF, 0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_2MA);
+    pin_config ((pin_obj_t *)&MICROPY_STDIO_UART_RX_PIN, MICROPY_STDIO_UART_RX_PIN_AF, 0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_2MA);
     // instantiate the stdio uart
     mp_obj_t args[2] = {
             mp_obj_new_int(MICROPY_STDIO_UART),

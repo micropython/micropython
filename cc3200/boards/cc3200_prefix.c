@@ -44,11 +44,12 @@
     { &pin_type }, \
     .name     = MP_QSTR_ ## p_pin_name, \
     .port     = PORT_A ## p_port, \
-    .type     = PIN_TYPE_STD, \
+    .pull     = PIN_TYPE_STD, \
     .bit      = (p_bit), \
     .pin_num  = (p_pin_num), \
     .af       = PIN_MODE_0, \
     .strength = PIN_STRENGTH_4MA, \
     .mode     = GPIO_DIR_MODE_IN, \
+    .value    = 0, \
     .isused   = false, \
 }

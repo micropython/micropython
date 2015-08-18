@@ -94,7 +94,7 @@ void mperror_init0 (void) {
     MAP_GPIODirModeSet(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, GPIO_DIR_MODE_OUT);
 #else
     // configure the system led
-    pin_config ((pin_obj_t *)&MICROPY_SYS_LED_GPIO, PIN_MODE_0, GPIO_DIR_MODE_OUT, PIN_TYPE_STD, PIN_STRENGTH_6MA);
+    pin_config ((pin_obj_t *)&MICROPY_SYS_LED_GPIO, PIN_MODE_0, GPIO_DIR_MODE_OUT, PIN_TYPE_STD, 0, PIN_STRENGTH_6MA);
 #endif
     mperror_heart_beat.enabled = true;
     mperror_heartbeat_switch_off();
