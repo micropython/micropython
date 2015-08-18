@@ -107,7 +107,7 @@ class Pins(object):
         for pin in self.cpu_pins:
             if pin.is_board_pin():
                 pin.print()
-        self.print_named('cpu', self.cpu_pins)
+        self.print_named('board', self.cpu_pins)
         print('')
 
     def print_header(self, hdr_filename):

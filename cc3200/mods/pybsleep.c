@@ -460,7 +460,7 @@ STATIC void pybsleep_obj_wakeup (void) {
 }
 
 STATIC void pybsleep_iopark (bool hibernate) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_cpu_pins_locals_dict);
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
     for (uint i = 0; i < named_map->used; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
         switch (pin->pin_num) {
