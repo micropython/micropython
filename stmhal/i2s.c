@@ -35,6 +35,8 @@
 
 #include "py/objstr.h"
 #include "py/objlist.h"
+#include "py/stream.h"
+#include "file.h" // for stream methods?
 #include "irq.h"
 #include "pin.h"
 #include "led.h" // For led_toggle(n) debugging
@@ -934,6 +936,105 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_send_recv_obj, 1, pyb_i2s_send_recv);
 /////////////
 
+///// Streaming methods:
+// Taken from stream.c:
+#if MICROPY_STREAMS_NON_BLOCK
+// TODO: This is POSIX-specific (but then POSIX is the only real thing,
+// and anything else just emulates it, right?)
+#include <errno.h>
+#define is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
+#else
+#define is_nonblocking_error(errno) (0)
+#endif
+
+#define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
+
+
+STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
+				  mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+	{ MP_QSTR_stream_out, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+	{ MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    // pyb_i2s_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
+					 MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+	struct _mp_obj_base_t *stream = (struct _mp_obj_base_t *)args[0].u_obj;
+	// Check that 'stream' provides an mp_stream_p_t and a read
+	// Note that 'read' will be present even if the stream opened in write-mode
+	if (stream->type->stream_p == NULL || stream->type->stream_p->read == NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+												"Object type %s not a readable stream",
+												mp_obj_get_type_str(stream)));
+    }
+
+	mp_int_t sz = 1024;
+    vstr_t vstr;
+    vstr_init_len(&vstr, sz);
+    int error;
+    mp_uint_t out_sz = stream->type->stream_p->read(stream, vstr.buf, sz, &error);
+
+	/* mp_obj_t buffer = stream_read(2, args[0].u_obj, 1024); */
+	/* // mp_obj_t buffer = file_obj_read(stream, 1024); */
+    /* // get the buffer to send from */
+    /* mp_buffer_info_t bufinfo; */
+    /* uint8_t data[1]; */
+    /* pyb_buf_get_for_send(buffer, &bufinfo, data); */
+    if (out_sz == MP_STREAM_ERROR) {
+        vstr_clear(&vstr);
+        if (is_nonblocking_error(error)) {
+            // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
+            // "If the object is in non-blocking mode and no bytes are available,
+            // None is returned."
+            // This is actually very weird, as naive truth check will treat
+            // this as EOF.
+            return mp_const_none;
+        }
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    } else {
+        vstr.len = out_sz;
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    }
+
+	//return stream;
+	/* vstr.len = out_sz; */
+	/* return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream->type->stream_p), &vstr); */
+	//return (mp_obj_t)out_sz;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_out_obj, 1, pyb_i2s_stream_out);
+
+STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
+				  mp_map_t *kw_args) {
+
+    static const mp_arg_t allowed_args[] = {
+	{ MP_QSTR_stream_in, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+	{ MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    // pyb_i2s_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
+		     MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+	mp_obj_t stream = args[0].u_obj;
+	// Got the file; the following check doesn't do anything.
+	// need to check if the handle has a 'write' method
+    if (stream == NULL /* || stream->type->stream_p->write == NULL */) {
+        // CPython: io.UnsupportedOperation, OSError subclass
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
+    }
+
+	return stream;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_in_obj, 1, pyb_i2s_stream_in);
+
+
 STATIC const mp_map_elem_t pyb_i2s_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_i2s_init_obj },
@@ -941,6 +1042,8 @@ STATIC const mp_map_elem_t pyb_i2s_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_i2s_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_i2s_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_i2s_send_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stream_out), (mp_obj_t)&pyb_i2s_stream_out_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stream_in), (mp_obj_t)&pyb_i2s_stream_in_obj },
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode

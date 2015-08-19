@@ -370,6 +370,8 @@ Q(PCM_SHORT)
 Q(PCM_LONG)
 Q(PLL)
 Q(EXTERNAL)
+Q(stream_out)
+Q(stream_in)
 #endif
 
 // for Accel object
