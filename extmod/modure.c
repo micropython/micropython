@@ -182,6 +182,7 @@ STATIC int str_to_int(const char *str, int *num) {
 
 STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = args[0];
+    mp_obj_t replace = args[1];
     mp_obj_t where = args[2];
     int count = (n_args > 3 ? mp_obj_get_int(args[3]) : 0);
 
@@ -191,7 +192,7 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
     int pre_m_l = -1, post_m_l = -1;
-
+    int num_sub = 0;
     const char* where_str = subj.begin;
 
     vstr_t *vstr_return = NULL;
@@ -214,7 +215,6 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                 match->num_matches = caps_num / 2; // caps_num counts start and end pointers
                 match->str = where;
 
-                mp_obj_t replace = args[1];
                 const char* replace_str = mp_obj_str_get_str((mp_obj_is_callable(replace) ? mp_call_function_1(replace, match) : replace));
 
                 // add pre-match string
@@ -276,23 +276,22 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                                     // no match for this group
                                     return where;
                                 }
+
                                 size_t mg_l = (match->caps[match_no * 2 + 1] - start_match);
                                 size_t gv_l = (end_group - start_group);
-
-                                const char *prev_repl_p = repl_p - 1;
 
                                 if (gv_l < mg_l) {
                                     vstr_add_len(vstr_repl, (mg_l - gv_l));
                                     repl_p += gv_l;
                                 }
                                 else if (gv_l > mg_l) {
-                                    vstr_cut_out_bytes(vstr_repl, (prev_repl_p - replace_str), (gv_l - mg_l));
+                                    vstr_cut_out_bytes(vstr_repl, (start_group - replace_str), (gv_l - mg_l));
                                     repl_p -= mg_l;
                                 }
 
                                 // replace the substring matched by group
-                                memmove((char *)(prev_repl_p + mg_l), (prev_repl_p + gv_l), strlen(prev_repl_p));
-                                memcpy((char *)(prev_repl_p), start_match, mg_l);
+                                memmove((char *)(start_group + mg_l), (start_group + gv_l), strlen(start_group));
+                                memcpy((char *)(start_group), start_match, mg_l);
 
                             }
                         }
@@ -306,6 +305,8 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
                     post_m_l = (match->caps[1] - where_str);
 
                     vstr_free(vstr_repl);
+
+                    num_sub++;
                 }
 
             }
@@ -328,7 +329,7 @@ STATIC mp_obj_t re_exec_sub(bool is_anchored, uint n_args, const mp_obj_t *args)
         vstr_add_str(vstr_return, &where_str[post_m_l]);
     }
 
-    return (!vstr_len(vstr_return) ? where : mp_obj_new_str_from_vstr(&mp_type_str, vstr_return));
+    return (!num_sub ? where : mp_obj_new_str_from_vstr(&mp_type_str, vstr_return));
 }
 
 STATIC mp_obj_t re_sub(uint n_args, const mp_obj_t *args) {
