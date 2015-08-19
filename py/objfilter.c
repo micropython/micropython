@@ -26,6 +26,8 @@
 
 #include "py/runtime.h"
 
+#if MICROPY_PY_BUILTINS_FILTER
+
 typedef struct _mp_obj_filter_t {
     mp_obj_base_t base;
     mp_obj_t fun;
@@ -66,3 +68,5 @@ const mp_obj_type_t mp_type_filter = {
     .getiter = mp_identity,
     .iternext = filter_iternext,
 };
+
+#endif // MICROPY_PY_BUILTINS_FILTER

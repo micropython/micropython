@@ -500,6 +500,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_EXECFILE (0)
 #endif
 
+// Whether to support filter function(type)
+#ifndef MICROPY_PY_BUILTINS_FILTER
+#define MICROPY_PY_BUILTINS_FILTER (1)
+#endif
+
 // Whether to support reversed function(type)
 #ifndef MICROPY_PY_BUILTINS_REVERSED
 #define MICROPY_PY_BUILTINS_REVERSED (1)
