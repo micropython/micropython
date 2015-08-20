@@ -568,6 +568,7 @@ typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
 } mp_obj_float_t;
+#define mp_obj_is_float(o) MP_OBJ_IS_TYPE((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 

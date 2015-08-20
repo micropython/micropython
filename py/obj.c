@@ -268,7 +268,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_as_float(arg);
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
+    } else if (mp_obj_is_float(arg)) {
         return mp_obj_float_get(arg);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -295,7 +295,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         *real = mp_obj_int_as_float(arg);
         *imag = 0;
-    } else if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
+    } else if (mp_obj_is_float(arg)) {
         *real = mp_obj_float_get(arg);
         *imag = 0;
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_complex)) {
