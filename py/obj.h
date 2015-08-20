@@ -564,10 +564,11 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, mp_uint_
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float
-typedef struct _mp_obj_float_t {
-    mp_obj_base_t base;
-    mp_float_t value;
-} mp_obj_float_t;
+#define mp_const_float_e ((mp_obj_t)&mp_const_float_e_obj)
+#define mp_const_float_pi ((mp_obj_t)&mp_const_float_pi_obj)
+extern const struct _mp_obj_float_t mp_const_float_e_obj;
+extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+
 #define mp_obj_is_float(o) MP_OBJ_IS_TYPE((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
