@@ -39,6 +39,14 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+typedef struct _mp_obj_float_t {
+    mp_obj_base_t base;
+    mp_float_t value;
+} mp_obj_float_t;
+
+const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, M_E};
+const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
+
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_float_t *o = o_in;
