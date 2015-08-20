@@ -827,15 +827,15 @@ STATIC bool arg_looks_integer(mp_obj_t arg) {
 STATIC bool arg_looks_numeric(mp_obj_t arg) {
     return arg_looks_integer(arg)
 #if MICROPY_PY_BUILTINS_FLOAT
-        || MP_OBJ_IS_TYPE(arg, &mp_type_float)
+        || mp_obj_is_float(arg)
 #endif
     ;
 }
 
 STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 #if MICROPY_PY_BUILTINS_FLOAT
-    if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
-        return mp_obj_new_int_from_float(mp_obj_get_float(arg));
+    if (mp_obj_is_float(arg)) {
+        return mp_obj_new_int_from_float(mp_obj_float_get(arg));
     }
 #endif
     return arg;

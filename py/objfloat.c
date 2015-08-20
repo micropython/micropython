@@ -72,7 +72,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
                 mp_uint_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, false, false, NULL);
-            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
+            } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
             } else {
@@ -121,7 +121,7 @@ mp_obj_t mp_obj_new_float(mp_float_t value) {
 }
 
 mp_float_t mp_obj_float_get(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_float));
+    assert(mp_obj_is_float(self_in));
     mp_obj_float_t *self = self_in;
     return self->value;
 }
