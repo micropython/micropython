@@ -134,6 +134,9 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
     }
 }
 
+#if MICROPY_USE_READLINE == 1
+#include "lib/mp-readline/readline.h"
+#else
 STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     int l1 = strlen(s1);
     int l2 = strlen(s2);
@@ -147,9 +150,62 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
     s[l1 + l2] = 0;
     return s;
 }
+#endif
 
 STATIC int do_repl(void) {
     mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
+
+    #if MICROPY_USE_READLINE == 1
+
+    // use MicroPython supplied readline
+
+    vstr_t line;
+    vstr_init(&line, 16);
+    for (;;) {
+    input_restart:
+        vstr_reset(&line);
+        mp_hal_stdio_mode_raw();
+        int ret = readline(&line, ">>> ");
+
+        if (ret == CHAR_CTRL_D) {
+            // EOF
+            printf("\n");
+            mp_hal_stdio_mode_orig();
+            vstr_clear(&line);
+            return 0;
+        } else if (line.len == 0) {
+            if (ret != 0) {
+                printf("\n");
+            }
+            mp_hal_stdio_mode_orig();
+            continue;
+        }
+
+        while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
+            vstr_add_byte(&line, '\n');
+            ret = readline(&line, "... ");
+            if (ret == CHAR_CTRL_C) {
+                // cancel everything
+                printf("\n");
+                mp_hal_stdio_mode_orig();
+                goto input_restart;
+            } else if (ret == CHAR_CTRL_D) {
+                // stop entering compound statement
+                break;
+            }
+        }
+        mp_hal_stdio_mode_orig();
+
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, false);
+        ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        if (ret & FORCED_EXIT) {
+            return ret;
+        }
+    }
+
+    #else
+
+    // use GNU or simple readline
 
     for (;;) {
         char *line = prompt(">>> ");
@@ -175,6 +231,8 @@ STATIC int do_repl(void) {
         }
         free(line);
     }
+
+    #endif
 }
 
 STATIC int do_file(const char *file) {
