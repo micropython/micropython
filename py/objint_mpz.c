@@ -178,7 +178,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t*)rhs_in)->mpz;
 #if MICROPY_PY_BUILTINS_FLOAT
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_float)) {
+    } else if (mp_obj_is_float(rhs_in)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
 #if MICROPY_PY_BUILTINS_COMPLEX
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
