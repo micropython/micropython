@@ -302,6 +302,11 @@
 #define MICROPY_REPL_EMACS_KEYS (0)
 #endif
 
+// Whether to implement auto-indent in REPL
+#ifndef MICROPY_REPL_AUTO_INDENT
+#define MICROPY_REPL_AUTO_INDENT (0)
+#endif
+
 // Whether port requires event-driven REPL functions
 #ifndef MICROPY_REPL_EVENT_DRIVEN
 #define MICROPY_REPL_EVENT_DRIVEN (0)
