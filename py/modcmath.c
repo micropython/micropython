@@ -35,12 +35,6 @@
 /// The `cmath` module provides some basic mathematical funtions for
 /// working with complex numbers.
 
-// These are defined in modmath.c
-/// \constant e - base of the natural logarithm
-extern const mp_obj_float_t mp_math_e_obj;
-/// \constant pi - the ratio of a circle's circumference to its diameter
-extern const mp_obj_float_t mp_math_pi_obj;
-
 /// \function phase(z)
 /// Returns the phase of the number `z`, in the range (-pi, +pi].
 STATIC mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {
@@ -132,8 +126,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sin_obj, mp_cmath_sin);
 
 STATIC const mp_map_elem_t mp_module_cmath_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_cmath) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_e), (mp_obj_t)&mp_math_e_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pi), (mp_obj_t)&mp_math_pi_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_e), mp_const_float_e },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pi), mp_const_float_pi },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phase), (mp_obj_t)&mp_cmath_phase_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polar), (mp_obj_t)&mp_cmath_polar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rect), (mp_obj_t)&mp_cmath_rect_obj },
