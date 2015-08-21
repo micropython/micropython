@@ -7,11 +7,23 @@ print("a b".rsplit())
 #print("   a   b  c  ".rsplit(None, 0))
 #print("   a   b  c  ".rsplit(None, -1))
 
-# empty separator should fail
+# empty separator should fail (this actually delegates to .split())
 try:
     "abc".rsplit('')
 except ValueError:
     print("ValueError")
+
+# empty separator should fail (error handled in .rsplit())
+try:
+    'a a a a'.rsplit('', 5)
+except ValueError:
+    print('ValueError')
+
+# bad separator type
+try:
+    'a a a a'.rsplit(1)
+except TypeError:
+    print('TypeError')
 
 # non-empty separator
 print("abc".rsplit("a"))

@@ -25,3 +25,8 @@ a.meth()
 # __new__ should automatically be a staticmethod, so this should work
 a = a.__new__(A)
 a.meth()
+
+class B:
+    def __new__(self, v1, v2):
+        None
+B(1, 2)

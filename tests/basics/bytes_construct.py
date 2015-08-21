@@ -14,3 +14,9 @@ print(bytes(array('I', [1, 2])))
 
 # long ints
 print(ord(bytes([14953042807679334000 & 0xff])))
+
+# error in construction
+try:
+    a = bytes([1, 2, 3], 1)
+except TypeError:
+    print('TypeError')

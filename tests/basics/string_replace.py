@@ -12,3 +12,13 @@ print("".replace("", "1"))
 print("A".replace("", "1"))
 print("AB".replace("", "1"))
 print("AB".replace("", "12"))
+
+try:
+    'abc'.replace(1, 2)
+except TypeError:
+    print('TypeError')
+
+try:
+    'abc'.replace('1', 2)
+except TypeError:
+    print('TypeError')

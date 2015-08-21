@@ -6,12 +6,14 @@ full_tests = False
 def test(fmt, *args):
     print('{:8s}'.format(fmt) + '>' +  fmt.format(*args) + '<')
 
+test("{:10.4}", 123.456)
 test("{:10.4e}", 123.456)
 test("{:10.4e}", -123.456)
 test("{:10.4f}", 123.456)
 test("{:10.4f}", -123.456)
 test("{:10.4g}", 123.456)
 test("{:10.4g}", -123.456)
+test("{:10.4n}", 123.456)
 test("{:e}", 100)
 test("{:f}", 200)
 test("{:g}", 300)
@@ -128,3 +130,10 @@ else:
 
 # We don't currently test a type of '' with floats (see the detailed comment
 # in  objstr.c)
+
+# tests for errors in format string
+
+try:
+    '{:10.1b}'.format(0.0)
+except ValueError:
+    print('ValueError')

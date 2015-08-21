@@ -15,3 +15,12 @@ class C2:
 c2 = C2(4)
 print(type(c2) == C2)
 print(c2.x)
+
+# __init__ should return None
+class C3:
+    def __init__(self):
+        return 10
+try:
+    C3()
+except TypeError:
+    print('TypeError')

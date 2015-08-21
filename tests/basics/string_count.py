@@ -46,3 +46,8 @@ def t():
     return True
 
 print("0000".count('0', t()))
+
+try:
+    'abc'.count(1)
+except TypeError:
+    print('TypeError')

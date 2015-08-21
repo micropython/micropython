@@ -1,3 +1,5 @@
+# test set binary operations
+
 sets = [set(), {1}, {1, 2}, {1, 2, 3}, {2, 3}, {2, 3, 5}, {5}, {7}]
 for s in sets:
     for t in sets:
@@ -24,3 +26,10 @@ for s in sets:
         print(sorted(s), '>=', sorted(t), '=', s >= t)
         print(sorted(s), '<', sorted(t), '=', s < t)
         print(sorted(s), '<=', sorted(t), '=', s <= t)
+
+print(set('abc') == 1)
+
+try:
+    set('abc') * 2
+except TypeError:
+    print('TypeError')

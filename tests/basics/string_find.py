@@ -21,3 +21,8 @@ print("0000".find('-1', 3))
 print("0000".find('1', 3))
 print("0000".find('1', 4))
 print("0000".find('1', 5))
+
+try:
+    'abc'.find(1)
+except TypeError:
+    print('TypeError')

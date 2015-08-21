@@ -14,3 +14,9 @@ class Sub(Base):
 
 a = Sub()
 a.meth()
+
+# printing super
+class A:
+    def p(self):
+        print(str(super())[:18])
+A().p()

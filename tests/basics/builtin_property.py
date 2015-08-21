@@ -76,3 +76,20 @@ print(c.x)
 c.x = 6
 print(c.x)
 del c.x
+
+# a property that has no get, set or del
+class D:
+    prop = property()
+d = D()
+try:
+    d.prop
+except AttributeError:
+    print('AttributeError')
+try:
+    d.prop = 1
+except AttributeError:
+    print('AttributeError')
+try:
+    del d.prop
+except AttributeError:
+    print('AttributeError')

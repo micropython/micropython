@@ -20,6 +20,10 @@ print(x)
 # binary ops
 print('123' + "456")
 print('123' * 5)
+try:
+    '123' * '1'
+except TypeError:
+    print('TypeError')
 
 # subscription
 print('abc'[1])
@@ -27,11 +31,11 @@ print('abc'[-1])
 try:
     'abc'[100]
 except IndexError:
-    print('caught')
+    print('IndexError')
 try:
     'abc'[-4]
 except IndexError:
-    print('caught2')
+    print('IndexError')
 
 # iter
 print(list('str'))

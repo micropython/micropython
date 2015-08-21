@@ -29,3 +29,10 @@ try:
         pass
 except TypeError:
     print("TypeError")
+
+# multiple bases with layout conflict
+try:
+    class A(type, tuple):
+        None
+except TypeError:
+    print('TypeError')

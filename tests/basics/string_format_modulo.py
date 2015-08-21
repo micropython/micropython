@@ -86,3 +86,28 @@ try:
     print("%(foo)*s" % {"foo": "bar"})
 except TypeError:
     print("TypeError")
+
+try:
+    '%(a' % {'a':1}
+except ValueError:
+    print('ValueError')
+
+try:
+    '%.*d %.*d' % (20, 5)
+except TypeError:
+    print('TypeError')
+
+try:
+    a = '%*' % 1
+except (ValueError):
+    print('ValueError')
+
+try:
+    '%c' % 'aa'
+except TypeError:
+    print('TypeError')
+
+try:
+    '%l' % 1
+except ValueError:
+    print('ValueError')
