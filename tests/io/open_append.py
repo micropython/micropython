@@ -8,6 +8,7 @@ if not hasattr(os, "unlink"):
     print("SKIP")
     sys.exit()
 
+# cleanup in case testfile exists
 try:
     os.unlink("testfile")
 except OSError:
@@ -29,3 +30,9 @@ f.close()
 f = open("testfile")
 print(f.read())
 f.close()
+
+# cleanup
+try:
+    os.unlink("testfile")
+except OSError:
+    pass
