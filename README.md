@@ -74,6 +74,11 @@ Then to give it a try:
     $ ./micropython
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
+Learn about command-line options (in particular, how to increase heap size
+which may be needed for larger applications):
+
+    $ ./micropython --help
+
 Run complete testsuite:
 
     $ make test
