@@ -56,7 +56,7 @@ mp_uint_t mp_verbose_flag = 0;
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
-long heap_size = 128*1024 * (sizeof(mp_uint_t) / 4);
+long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
