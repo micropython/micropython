@@ -106,17 +106,14 @@ STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
-STATIC mp_obj_t network_setmode(int mode) 
+STATIC mp_obj_t network_setmode(mp_obj_t pmode)
 {
-    // MP_STATE_PORT(scan_cb_obj) = cb_in;
-
-    printf("Hello %d\n", mode);
+    int mode = mp_obj_get_int(pmode);
     error_check(wifi_set_opmode_current(mode), "Failed setting WiFi mode.");
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(network_setmode_obj, 1, network_setmode);
-//STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_setmode_obj, network_setmode);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_setmode_obj, network_setmode);
 
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
