@@ -418,6 +418,7 @@ STATIC void EXTI_Handler(uint port) {
 ///     - `Pin.LOW_POWER`       - 2ma drive strength
 ///     - `Pin.MED_POWER`       - 4ma drive strength
 ///     - `Pin.HIGH_POWER`      - 6ma drive strength
+///   - `alt` selects the alternate function (a number from 0 to 15).
 ///
 /// Returns: `None`.
 STATIC const mp_arg_t pin_init_args[] = {
@@ -425,6 +426,7 @@ STATIC const mp_arg_t pin_init_args[] = {
     { MP_QSTR_pull,                        MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
     { MP_QSTR_value,    MP_ARG_KW_ONLY  |  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_drive,    MP_ARG_KW_ONLY  |  MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
+    { MP_QSTR_alt,      MP_ARG_KW_ONLY  |  MP_ARG_INT, {.u_int = -1} },
 };
 #define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
@@ -455,7 +457,10 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
     uint strength = args[3].u_int;
     pin_validate_drive(strength);
 
-    int af = (mode == GPIO_DIR_MODE_ALT || mode == GPIO_DIR_MODE_ALT_OD) ? -1 : PIN_MODE_0;
+    int af = args[4].u_int;
+    if ((af > 0 && (mode != GPIO_DIR_MODE_ALT || mode != GPIO_DIR_MODE_ALT_OD)) || af > 15) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
 
     // configure the pin as requested
     pin_config (self, af, mode, pull, value, strength);
