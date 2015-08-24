@@ -1,5 +1,5 @@
 # Per default everything gets normalized and gets LF line endings on checkout.
-* text eol=lf
+#* text eol=lf
 
 # These will always have CRLF line endings on checkout.
 *.vcxproj text eol=crlf

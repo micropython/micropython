@@ -93,6 +93,7 @@ Q(SLEEP_MODEM)
 // network module
 Q(network)
 Q(WLAN)
+Q(setmode)
 Q(scan)
 Q(status)
 Q(STAT_IDLE)
@@ -101,6 +102,10 @@ Q(STAT_WRONG_PASSWORD)
 Q(STAT_NO_AP_FOUND)
 Q(STAT_CONNECT_FAIL)
 Q(STAT_GOT_IP)
+Q(MOD_NULL_MODE)
+Q(MOD_STATION_MODE)
+Q(MOD_SOFTAP_MODE)
+Q(MOD_STATIONAP_MODE)
 
 // Pin class
 Q(Pin)

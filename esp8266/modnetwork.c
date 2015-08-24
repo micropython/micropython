@@ -96,6 +96,7 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
 
 STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
     MP_STATE_PORT(scan_cb_obj) = cb_in;
+
     if (wifi_get_opmode() == SOFTAP_MODE) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, 
             "Scan not supported in AP mode"));
@@ -105,6 +106,15 @@ STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
+STATIC mp_obj_t network_setmode(mp_obj_t pmode)
+{
+    int mode = mp_obj_get_int(pmode);
+    error_check(wifi_set_opmode_current(mode), "Failed setting WiFi mode.");
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_setmode_obj, network_setmode);
+
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     // MicroPython "network" module interface requires it to contains classes
@@ -112,6 +122,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     // use module as a "class", and just make all methods module-global
     // functions.
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_module_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setmode), (mp_obj_t)&network_setmode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
@@ -130,6 +141,15 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
         MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MOD_NULL_MODE),
+        MP_OBJ_NEW_SMALL_INT(NULL_MODE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MOD_STATION_MODE),
+        MP_OBJ_NEW_SMALL_INT(STATION_MODE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MOD_SOFTAP_MODE),
+        MP_OBJ_NEW_SMALL_INT(SOFTAP_MODE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MOD_STATIONAP_MODE),
+        MP_OBJ_NEW_SMALL_INT(STATIONAP_MODE)},
 #endif
 };
 
