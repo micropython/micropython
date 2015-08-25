@@ -26,7 +26,7 @@ strtod = libc.func("d", "strtod", "sp")
 print('%.6f' % strtod('1.23', None))
 
 # test passing double and float args
-libm = ffi_open(('libm.so', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
+libm = ffi_open(('libm.so', 'libm.so.6', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
 tgamma = libm.func('d', 'tgamma', 'd')
 tgammaf = libm.func('f', 'tgammaf', 'f')
 for fun in (tgamma, tgammaf):
