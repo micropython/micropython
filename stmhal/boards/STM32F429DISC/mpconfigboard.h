@@ -1,4 +1,4 @@
-#define STM32F4DISC
+#define STM32F427DISC
 
 #define MICROPY_HW_BOARD_NAME       "F429I-DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32F429"
@@ -60,5 +60,5 @@
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
 
 // USB config
-#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
-#define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_B13)
+#define MICROPY_HW_USB_OTG_ID_PIN      (pin_B12)
