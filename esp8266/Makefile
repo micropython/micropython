@@ -12,9 +12,10 @@ SCRIPTDIR = scripts
 PORT = /dev/ttyACM0
 BAUD = 115200
 CROSS_COMPILE = xtensa-lx106-elf-
-ESP_SDK = /home/CORPUSERS/23061151/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
+ESP_SDK = /home/pontus/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
 
 INC =  -I.
+INC += -I./hal
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
@@ -52,17 +53,17 @@ endif
 SRC_C = \
 	strtoll.c \
 	main.c \
-	esp_mphal.c \
 	gccollect.c \
-	uart.c \
-	modpyb.c \
-	modpybpin.c \
-	modpybrtc.c \
-	modpybadc.c \
-	modesp.c \
-	modnetwork.c \
-	modutime.c \
-	moduos.c \
+	hal/esp_mphal.c \
+	hal/uart.c \
+	mods/modpyb.c \
+	mods/modpybpin.c \
+	mods/modpybrtc.c \
+	mods/modpybadc.c \
+	mods/modesp.c \
+	mods/modnetwork.c \
+	mods/modutime.c \
+	mods/moduos.c \
 	utils.c \
 	mods/pybi2c.c \
 	misc/mpexception.c \
