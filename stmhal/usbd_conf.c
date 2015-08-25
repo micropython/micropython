@@ -56,17 +56,17 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   
   if(hpcd->Instance == USB_OTG_FS)
   {
-    /* Configure USB FS GPIOs */
-    __GPIOA_CLK_ENABLE();
-    
-    GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
     
 #if defined(PYBOARDV10)
+		/* Configure USB FS GPIOs */
+		__GPIOA_CLK_ENABLE();
+
+		GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     	/* Configure VBUS Pin */
 	#if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
 		// USB VBUS detect pin is always A9
@@ -85,7 +85,16 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	#endif
 #elif defined(STM32F427DISC)
-	/* Configure VBUS Pin */
+	/* Configure USB FS GPIOs */
+	__GPIOB_CLK_ENABLE();
+
+	GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+ 	/* Configure VBUS Pin */
 	// USB VBUS detect pin is PB13
 	GPIO_InitStruct.Pin  = GPIO_PIN_13;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
