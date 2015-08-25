@@ -78,6 +78,8 @@ typedef struct _pyb_i2s_obj_t {
     uint32_t tx_dma_channel;
     DMA_Stream_TypeDef *rx_dma_stream;
     uint32_t rx_dma_channel;
+    DMA_HandleTypeDef tx_dma;
+    DMA_HandleTypeDef rx_dma;
     mp_obj_base_t *dstream_tx;
     mp_obj_base_t *dstream_rx;
     const pin_obj_t *pins[5];
@@ -327,7 +329,7 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
 
     pyb_i2s_obj_t *self = MP_STATE_PORT(pyb_i2s_obj_all)[rp_index];
     stream_out_buffering(self);
-    
+
     //printf("I2S-TxCplt\n");
     led_state(1, 0);
 }
@@ -1019,13 +1021,15 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     self->dstream_tx = stream;
 
-
+    //INFO:
+    printf("pyb I2S object size = %d bytes\n", sizeof(pyb_i2s_obj_t));
+    printf("DMA Handle struct size = %d bytes\n", sizeof(DMA_HandleTypeDef));
+    printf("I2S Handle struct size = %d bytes\n", sizeof(I2S_HandleTypeDef));
 
     int buf_sz = AUDIOBUFFER_BYTES / 4;
     int error;
     self->pp_ptr = 0;
 
-    //mp_uint_t out_sz = stream->type->stream_p->read(stream, tx_buf, sz, &error);
     mp_uint_t out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
 
     if (out_sz == MP_STREAM_ERROR) {
@@ -1040,10 +1044,10 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     }
 
-    DMA_HandleTypeDef tx_dma;
-    dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
+    //DMA_HandleTypeDef tx_dma;
+    dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
              self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s);
-    self->i2s.hdmatx = &tx_dma;
+    self->i2s.hdmatx = &self->tx_dma;
     self->i2s.hdmarx = NULL;
 
     // A hack to make sure that slave-mode transfers don't start on the wrong clock:
@@ -1053,19 +1057,7 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
     }
 
     stream_out_buffering(self);
-    /////////////////////
-    /* HAL_StatusTypeDef status; */
-    /* status = HAL_I2S_Transmit_DMA(&self->i2s, self->audiobuf_tx[self->pp_ptr], buf_sz / 2); */
-    /* if (status != HAL_OK) { */
-    /*  mp_hal_raise(status); */
-    /* } */
 
-    /* self->pp_ptr = !(self->pp_ptr); */
-    /* out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error); */
-    /* if (out_sz == MP_STREAM_ERROR) { */
-    /*  nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error))); */
-    /* } */
-    //////////////////
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_out_obj, 1, pyb_i2s_stream_out);
@@ -1096,7 +1088,6 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
     return stream;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_in_obj, 1, pyb_i2s_stream_in);
-
 
 STATIC const mp_map_elem_t pyb_i2s_locals_dict_table[] = {
     // instance methods
