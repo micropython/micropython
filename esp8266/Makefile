@@ -17,6 +17,8 @@ ESP_SDK = /home/pontus/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
 INC =  -I.
 INC += -I./hal
 INC += -I./misc
+INC += -I./driver_lib/include
+
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
@@ -68,6 +70,7 @@ SRC_C = \
 	misc/mpexception.c \
 	misc/utils.c \
 	misc/gccollect.c \
+	driver_lib/driver/i2c_master.c \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\

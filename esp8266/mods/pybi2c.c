@@ -27,6 +27,11 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef unsigned char uint8;
+typedef unsigned char bool;
+
+#include "driver/i2c_master.h"
+
 #include "py/mpstate.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
@@ -111,20 +116,25 @@ STATIC pyb_i2c_obj_t pyb_i2c_obj = {.baudrate = 0};
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 STATIC void i2c_init (pyb_i2c_obj_t *self) {
+    printf("Init I2C\n");
+    i2c_master_gpio_init();
 }
 
 STATIC bool pyb_i2c_write(byte devAddr, byte *data, uint len, bool stop) {
 
+    printf("Write I2C Data: devAddr %d, data ptr %p, length %u, stop %d\n", devAddr, data, len, stop);
     return true;
 }
 
 STATIC bool pyb_i2c_read(byte devAddr, byte *data, uint len) {
 
+    printf("Read I2C Data: devAddr %d, data ptr %p, length %u\n", devAddr, data, len);
     return true;
 }
 
 STATIC bool pyb_i2c_scan_device(byte devAddr) {
 
+    printf("Scan I2C device !\n");
     return true;
 }
 
