@@ -31,10 +31,8 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "bufhelper.h"
-//#include "pybi2c.h"
+#include "pybi2c.h"
 #include "misc/mpexception.h"
-
-extern const mp_obj_module_t pyb_i2c_type;
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol

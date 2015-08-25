@@ -9,13 +9,14 @@ include ../py/py.mk
 MAKE_FROZEN = ../tools/make-frozen.py
 
 SCRIPTDIR = scripts
-PORT = /dev/ttyACM0
-BAUD = 115200
+PORT = /dev/ttyUSB0
+BAUD = 230400
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = /home/pontus/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
 
 INC =  -I.
 INC += -I./hal
+INC += -I./misc
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
@@ -53,7 +54,6 @@ endif
 SRC_C = \
 	strtoll.c \
 	main.c \
-	gccollect.c \
 	hal/esp_mphal.c \
 	hal/uart.c \
 	mods/modpyb.c \
@@ -64,9 +64,10 @@ SRC_C = \
 	mods/modnetwork.c \
 	mods/modutime.c \
 	mods/moduos.c \
-	utils.c \
 	mods/pybi2c.c \
 	misc/mpexception.c \
+	misc/utils.c \
+	misc/gccollect.c \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
