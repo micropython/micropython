@@ -12,7 +12,7 @@ SCRIPTDIR = scripts
 PORT = /dev/ttyACM0
 BAUD = 115200
 CROSS_COMPILE = xtensa-lx106-elf-
-ESP_SDK = $(shell $(CC) -print-sysroot)/usr
+ESP_SDK = /home/CORPUSERS/23061151/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
 
 INC =  -I.
 INC += -I..
@@ -30,7 +30,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-fno-inline-functions \
 	-Wl,-EL -mlongcalls -mtext-section-literals \
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(COPT)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
@@ -64,12 +64,15 @@ SRC_C = \
 	modutime.c \
 	moduos.c \
 	utils.c \
+	mods/pybi2c.c \
+	misc/mpexception.c \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	pyexec.c \
 	pybstdio.c \
+	bufhelper.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\

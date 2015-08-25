@@ -82,12 +82,12 @@ extern const struct _mp_obj_module_t uos_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    \
+#define MICROPY_PORT_ROOT_POINTERS         \
+    const char *readline_hist[8];          \
     /* Singleton instance of scan callback, meaning that there can
-       be only one concurrent AP scan. */ \
-    mp_obj_t scan_cb_obj; \
+       be only one concurrent AP scan. */  \
+    mp_obj_t scan_cb_obj;                  \
+    mp_obj_t mp_const_user_interrupt;      \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -95,6 +95,6 @@ extern const struct _mp_obj_module_t uos_module;
 // board specifics
 
 #define MICROPY_HAL_H "esp_mphal.h"
-#define MICROPY_HW_BOARD_NAME "ESP module"
+#define MICROPY_HW_BOARD_NAME "ESP210 module"
 #define MICROPY_HW_MCU_NAME "ESP8266"
-#define MICROPY_PY_SYS_PLATFORM "ESP8266"
+#define MICROPY_PY_SYS_PLATFORM "Node.IT"
