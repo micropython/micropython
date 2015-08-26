@@ -1089,6 +1089,39 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_in_obj, 1, pyb_i2s_stream_in);
 
+STATIC mp_obj_t pyb_i2s_pause(mp_obj_t self_in){
+    pyb_i2s_obj_t *self = self_in;
+    HAL_StatusTypeDef status;
+    status = HAL_I2S_DMAPause(&self->i2s);
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_pause_obj, pyb_i2s_pause);
+
+STATIC mp_obj_t pyb_i2s_resume(mp_obj_t self_in){
+    pyb_i2s_obj_t *self = self_in;
+    HAL_StatusTypeDef status;
+    status = HAL_I2S_DMAResume(&self->i2s);
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_resume_obj, pyb_i2s_resume);
+
+STATIC mp_obj_t pyb_i2s_stop(mp_obj_t self_in){
+    pyb_i2s_obj_t *self = self_in;
+    HAL_StatusTypeDef status;
+    status = HAL_I2S_DMAStop(&self->i2s);
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_stop_obj, pyb_i2s_stop);
+
 STATIC const mp_map_elem_t pyb_i2s_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_i2s_init_obj },
@@ -1098,6 +1131,9 @@ STATIC const mp_map_elem_t pyb_i2s_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_i2s_send_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stream_out), (mp_obj_t)&pyb_i2s_stream_out_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stream_in), (mp_obj_t)&pyb_i2s_stream_in_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pause), (mp_obj_t)&pyb_i2s_pause_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_resume), (mp_obj_t)&pyb_i2s_resume_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_i2s_stop_obj },
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode

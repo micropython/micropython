@@ -372,6 +372,9 @@ Q(PLL)
 Q(EXTERNAL)
 Q(stream_out)
 Q(stream_in)
+Q(pause)
+Q(resume)
+Q(stop)
 #endif
 
 // for Accel object
