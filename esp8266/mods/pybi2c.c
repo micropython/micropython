@@ -86,6 +86,8 @@ typedef unsigned char bool;
 typedef struct _pyb_i2c_obj_t {
     mp_obj_base_t base;
     uint baudrate;
+    uint8_t pinSDA;
+    uint8_t pinSCL;
 } pyb_i2c_obj_t;
 
 /******************************************************************************
@@ -110,14 +112,22 @@ typedef struct _pyb_i2c_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_i2c_obj_t pyb_i2c_obj = {.baudrate = 0};
+STATIC pyb_i2c_obj_t pyb_i2c_obj = {
+    .baudrate = 0,
+    .pinSDA = 0,
+    .pinSCL = 0
+};
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 STATIC void i2c_init (pyb_i2c_obj_t *self) {
     printf("Init I2C\n");
-    i2c_master_gpio_init();
+    printf("  Baudrate=%d\n", self->baudrate);
+    printf("  SCL Pin=%d\n", self->pinSCL);
+    printf("  SDA Pin=%d\n", self->pinSDA);
+
+    i2c_master_init(self->pinSCL, self->pinSDA);
 }
 
 STATIC bool pyb_i2c_write(byte devAddr, byte *data, uint len, bool stop) {
@@ -144,7 +154,8 @@ STATIC bool pyb_i2c_scan_device(byte devAddr) {
 STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
     if (self->baudrate > 0) {
-        mp_printf(print, "<I2C1, I2C.MASTER, baudrate=%u>)", self->baudrate);
+        mp_printf(print, "<I2C1, I2C.MASTER, baudrate=%u, SCL=%d, SDA=%d>)", 
+            self->baudrate, self->pinSCL, self->pinSDA);
     }
     else {
         mp_print_str(print, "<I2C1>");
@@ -160,6 +171,8 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 STATIC const mp_arg_t pyb_i2c_init_args[] = {
     { MP_QSTR_mode,     MP_ARG_REQUIRED  | MP_ARG_INT, },
     { MP_QSTR_baudrate, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 100000} },
+    { MP_QSTR_scl, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 14} },
+    { MP_QSTR_sda, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 2} },
 };
 #define PYB_I2C_INIT_NUM_ARGS   MP_ARRAY_SIZE(pyb_i2c_init_args)
 
@@ -175,6 +188,13 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_uint_t n_args, const
 
     // make sure the baudrate is between the valid range
     self->baudrate = MIN(MAX(vals[1].u_int, PYBI2C_MIN_BAUD_RATE_HZ), PYBI2C_MAX_BAUD_RATE_HZ);
+
+    // Validate pins and setup structure
+    printf("Number of arguments detected %d\n", n_args);
+    if (n_args > 2) {
+        self->pinSDA = vals[2].u_int;
+        self->pinSCL = vals[3].u_int;
+    }
 
     // init the I2C bus
     i2c_init(self);

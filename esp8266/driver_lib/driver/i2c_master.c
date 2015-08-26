@@ -17,9 +17,51 @@
 LOCAL uint8 m_nLastSDA;
 LOCAL uint8 m_nLastSCL;
 
+static uint8_t	pinSDA = 0;
+static uint8_t	pinSCL = 0;
+
 extern void ets_isr_unmask(uint32_t);
 extern void ets_delay_us(uint32_t);
 extern void ets_isr_mask(uint32_t);
+
+static uint32_t *pin_mux_tab[] = {
+    (uint32_t *)PERIPHS_IO_MUX_GPIO0_U, /* GPIO0 */
+    (uint32_t *)PERIPHS_IO_MUX_U0TXD_U, /* GPIO1 */
+    (uint32_t *)PERIPHS_IO_MUX_GPIO2_U, /* GPIO2 */
+    (uint32_t *)PERIPHS_IO_MUX_U0RXD_U, /* GPIO3 */
+    (uint32_t *)PERIPHS_IO_MUX_GPIO4_U, /* GPIO4 */
+    (uint32_t *)PERIPHS_IO_MUX_GPIO5_U, /* GPIO5 */
+    (uint32_t *)0, /* GPIO6 */
+    (uint32_t *)0, /* GPIO7 */
+    (uint32_t *)0, /* GPIO8 */
+    (uint32_t *)0, /* GPIO9 */
+    (uint32_t *)0, /* GPIO10 */
+    (uint32_t *)0, /* GPIO11 */
+    (uint32_t *)PERIPHS_IO_MUX_MTDI_U, /* GPIO12 */
+    (uint32_t *)PERIPHS_IO_MUX_MTCK_U, /* GPIO13 */
+    (uint32_t *)PERIPHS_IO_MUX_MTMS_U, /* GPIO14 */
+    (uint32_t *)PERIPHS_IO_MUX_MTDO_U, /* GPIO15 */
+};
+
+static uint8_t pin_func_tab[] = {
+    (uint8_t)FUNC_GPIO0,
+    (uint8_t)FUNC_GPIO1,
+    (uint8_t)FUNC_GPIO2,
+    (uint8_t)FUNC_GPIO3,
+    (uint8_t)FUNC_GPIO4,
+    (uint8_t)FUNC_GPIO5,
+    0, /* GPIO6 */
+    0, /* GPIO7 */
+    0, /* GPIO8 */
+    0, /* GPIO9 */
+    0, /* GPIO10 */
+    0, /* GPIO11 */
+    (uint8_t)FUNC_GPIO12,
+    (uint8_t)FUNC_GPIO13,
+    (uint8_t)FUNC_GPIO14,
+    (uint8_t)FUNC_GPIO15
+}; 
+
 /******************************************************************************
  * FunctionName : i2c_master_setDC
  * Description  : Internal used function -
@@ -58,8 +100,52 @@ LOCAL uint8 ICACHE_FLASH_ATTR
 i2c_master_getDC(void)
 {
     uint8 sda_out;
-    sda_out = GPIO_INPUT_GET(GPIO_ID_PIN(I2C_MASTER_SDA_GPIO));
+    sda_out = GPIO_INPUT_GET(GPIO_ID_PIN(pinSDA));
     return sda_out;
+}
+
+/******************************************************************************
+ * FunctionName : i2c_master_gpio_init
+ * Description  : config SDA and SCL gpio to open-drain output mode,
+ *                mux and gpio num defined in i2c_master.h
+ * Parameters   : NONE
+ * Returns      : NONE
+*******************************************************************************/
+static void ICACHE_FLASH_ATTR
+i2c_master_gpio_init(uint8_t pSCL, uint8_t pSDA)
+{
+    ETS_GPIO_INTR_DISABLE() ;
+//    ETS_INTR_LOCK();
+
+    pinSDA = pSDA;
+    pinSCL = pSCL;
+
+    PIN_FUNC_SELECT(pin_mux_tab[pinSDA], pin_func_tab[pinSDA]);
+    PIN_FUNC_SELECT(pin_mux_tab[pinSCL], pin_func_tab[pinSCL]);
+
+    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pinSDA)), 
+        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pinSDA))) | 
+        GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
+//    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SDA_GPIO)), 
+//        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SDA_GPIO))) | 
+//        GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
+
+    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pinSDA));
+
+    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pinSCL)),
+        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pinSCL))) | 
+        GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
+//    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SCL_GPIO)), 
+//        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SCL_GPIO))) | 
+//        GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
+
+    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pinSCL));
+
+    I2C_MASTER_SDA_HIGH_SCL_HIGH();
+
+    ETS_GPIO_INTR_ENABLE() ;
+//    ETS_INTR_UNLOCK();
+
 }
 
 /******************************************************************************
@@ -69,9 +155,11 @@ i2c_master_getDC(void)
  * Returns      : NONE
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
-i2c_master_init(void)
+i2c_master_init(uint8_t pSCL, uint8_t pSDA)
 {
     uint8 i;
+
+    i2c_master_gpio_init(pSCL, pSDA);
 
     i2c_master_setDC(1, 0);
     i2c_master_wait(5);
@@ -93,35 +181,6 @@ i2c_master_init(void)
     // reset all
     i2c_master_stop();
     return;
-}
-
-/******************************************************************************
- * FunctionName : i2c_master_gpio_init
- * Description  : config SDA and SCL gpio to open-drain output mode,
- *                mux and gpio num defined in i2c_master.h
- * Parameters   : NONE
- * Returns      : NONE
-*******************************************************************************/
-void ICACHE_FLASH_ATTR
-i2c_master_gpio_init(void)
-{
-    ETS_GPIO_INTR_DISABLE() ;
-//    ETS_INTR_LOCK();
-
-    PIN_FUNC_SELECT(I2C_MASTER_SDA_MUX, I2C_MASTER_SDA_FUNC);
-    PIN_FUNC_SELECT(I2C_MASTER_SCL_MUX, I2C_MASTER_SCL_FUNC);
-
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SDA_GPIO)), GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SDA_GPIO))) | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
-    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << I2C_MASTER_SDA_GPIO));
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SCL_GPIO)), GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(I2C_MASTER_SCL_GPIO))) | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); //open drain;
-    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << I2C_MASTER_SCL_GPIO));
-
-    I2C_MASTER_SDA_HIGH_SCL_HIGH();
-
-    ETS_GPIO_INTR_ENABLE() ;
-//    ETS_INTR_UNLOCK();
-
-    i2c_master_init();
 }
 
 /******************************************************************************

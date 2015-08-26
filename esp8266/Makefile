@@ -12,7 +12,8 @@ SCRIPTDIR = scripts
 PORT = /dev/ttyUSB0
 BAUD = 230400
 CROSS_COMPILE = xtensa-lx106-elf-
-ESP_SDK = /home/pontus/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
+#ESP_SDK = /home/pontus/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
+ESP_SDK = /home/CORPUSERS/23061151/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
 
 INC =  -I.
 INC += -I./hal
