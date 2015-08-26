@@ -194,3 +194,8 @@ try:
     '{0:s}'.format(1)
 except ValueError:
     print('ValueError')
+
+try:
+    '{:*"1"}'.format('zz')
+except ValueError:
+    print('ValueError')

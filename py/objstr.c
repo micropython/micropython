@@ -1065,7 +1065,12 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 type = *s++;
             }
             if (*s) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "Invalid conversion specification"));
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    terse_str_format_value_error();
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                        "invalid format specifier"));
+                }
             }
             vstr_free(format_spec);
             format_spec = NULL;
