@@ -1299,7 +1299,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
             continue;
         }
         if (++str >= top) {
-            break;
+            goto incomplete_format;
         }
         if (*str == '%') {
             vstr_add_byte(&vstr, '%');
@@ -1369,6 +1369,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
         }
 
         if (str >= top) {
+incomplete_format:
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 terse_str_format_value_error();
             } else {
