@@ -851,7 +851,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
         if (*str == '}') {
             str++;
             if (str < top && *str == '}') {
-                vstr_add_char(&vstr, '}');
+                vstr_add_byte(&vstr, '}');
                 continue;
             }
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -862,13 +862,13 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             }
         }
         if (*str != '{') {
-            vstr_add_char(&vstr, *str);
+            vstr_add_byte(&vstr, *str);
             continue;
         }
 
         str++;
         if (str < top && *str == '{') {
-            vstr_add_char(&vstr, '{');
+            vstr_add_byte(&vstr, '{');
             continue;
         }
 
@@ -881,7 +881,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
         if (str < top && *str != '}' && *str != '!' && *str != ':') {
             field_name = vstr_new();
             while (str < top && *str != '}' && *str != '!' && *str != ':') {
-                vstr_add_char(field_name, *str++);
+                vstr_add_byte(field_name, *str++);
             }
         }
 
@@ -911,7 +911,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             if (*str != '}') {
                 format_spec = vstr_new();
                 while (str < top && *str != '}') {
-                    vstr_add_char(format_spec, *str++);
+                    vstr_add_byte(format_spec, *str++);
                 }
             }
         }
@@ -1290,14 +1290,14 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
     for (const byte *top = str + len; str < top; str++) {
         mp_obj_t arg = MP_OBJ_NULL;
         if (*str != '%') {
-            vstr_add_char(&vstr, *str);
+            vstr_add_byte(&vstr, *str);
             continue;
         }
         if (++str >= top) {
             break;
         }
         if (*str == '%') {
-            vstr_add_char(&vstr, '%');
+            vstr_add_byte(&vstr, '%');
             continue;
         }
 
