@@ -774,17 +774,17 @@ STATIC mp_obj_t pyb_i2s_send(mp_uint_t n_args, const mp_obj_t *pos_args,
     if (query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_I2S_Transmit(&self->i2s, bufinfo.buf, bufinfo.len / 2, args[1].u_int);
     } else {
-        DMA_HandleTypeDef tx_dma;
-        dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
+        // DMA_HandleTypeDef tx_dma;
+        dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
                  self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s);
-        self->i2s.hdmatx = &tx_dma;
+        self->i2s.hdmatx = &self->tx_dma;
         self->i2s.hdmarx = NULL;
         status = HAL_I2S_Transmit_DMA(&self->i2s, bufinfo.buf, bufinfo.len / 2);
         if (status == HAL_OK) {
             //led_toggle(1);
             status = i2s_wait_dma_finished(&self->i2s, args[1].u_int);
         }
-        dma_deinit(&tx_dma);
+        dma_deinit(&self->tx_dma);
     }
 
     if (status != HAL_OK) {
@@ -846,16 +846,16 @@ STATIC mp_obj_t pyb_i2s_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
         status = HAL_I2S_Receive(&self->i2s, (uint16_t*)vstr.buf,
                                  vstr.len / 2, args[1].u_int);
     } else {
-        DMA_HandleTypeDef rx_dma;
-        dma_init(&rx_dma, self->rx_dma_stream, &dma_init_struct_i2s,
+        //DMA_HandleTypeDef rx_dma;
+        dma_init(&self->rx_dma, self->rx_dma_stream, &dma_init_struct_i2s,
                  self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, &self->i2s);
-        self->i2s.hdmarx = &rx_dma;
+        self->i2s.hdmarx = &self->rx_dma;
         self->i2s.hdmatx = NULL;
         status = HAL_I2S_Receive_DMA(&self->i2s, (uint16_t*)vstr.buf, vstr.len / 2);
         if (status == HAL_OK) {
             status = i2s_wait_dma_finished(&self->i2s, args[1].u_int);
         }
-        dma_deinit(&rx_dma);
+        dma_deinit(&self->rx_dma);
     }
 
     if (status != HAL_OK) {
@@ -948,20 +948,20 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
         status = HAL_I2SEx_TransmitReceive(&self->i2s, bufinfo_send.buf, bufinfo_recv.buf,
                                            bufinfo_send.len / 2, args[2].u_int);
     } else {
-        DMA_HandleTypeDef tx_dma, rx_dma;
-        dma_init(&tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
+        //DMA_HandleTypeDef tx_dma, rx_dma;
+        dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
                  self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s);
-        self->i2s.hdmatx = &tx_dma;
-        dma_init(&rx_dma, self->rx_dma_stream, &dma_init_struct_i2s,
+        self->i2s.hdmatx = &self->tx_dma;
+        dma_init(&self->rx_dma, self->rx_dma_stream, &dma_init_struct_i2s,
                  self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, &self->i2s);
-        self->i2s.hdmarx = &rx_dma;
+        self->i2s.hdmarx = &self->rx_dma;
         status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s, bufinfo_send.buf,
                                                bufinfo_recv.buf, bufinfo_send.len / 2);
         if (status == HAL_OK) {
             status = i2s_wait_dma_finished(&self->i2s, args[2].u_int);
         }
-        dma_deinit(&tx_dma);
-        dma_deinit(&rx_dma);
+        dma_deinit(&self->tx_dma);
+        dma_deinit(&self->rx_dma);
     }
 
     if (status != HAL_OK) {
