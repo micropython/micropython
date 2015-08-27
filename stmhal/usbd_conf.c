@@ -57,7 +57,30 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   if(hpcd->Instance == USB_OTG_FS)
   {
     
-#if defined(PYBOARDV10)
+#if defined(STM32F427DISC)
+	/* Configure USB FS GPIOs */
+	__GPIOB_CLK_ENABLE();
+
+	GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+ 	/* Configure VBUS Pin */
+	// USB VBUS detect pin is PB13
+	GPIO_InitStruct.Pin  = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// USB ID pin is always B12
+	GPIO_InitStruct.Pin = GPIO_PIN_12;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#else
 		/* Configure USB FS GPIOs */
 		__GPIOA_CLK_ENABLE();
 
@@ -84,29 +107,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
 		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	#endif
-#elif defined(STM32F427DISC)
-	/* Configure USB FS GPIOs */
-	__GPIOB_CLK_ENABLE();
-
-	GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
- 	/* Configure VBUS Pin */
-	// USB VBUS detect pin is PB13
-	GPIO_InitStruct.Pin  = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	// USB ID pin is always B12
-	GPIO_InitStruct.Pin = GPIO_PIN_12;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 #endif
 
     /* Enable USB FS Clocks */ 
