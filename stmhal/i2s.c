@@ -1006,25 +1006,19 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Re-work this to use the mp_obj_get_type idiom (more clarity):
-    struct _mp_obj_base_t *stream = (struct _mp_obj_base_t *)args[0].u_obj;
-    //mp_obj_t stream = args[0].u_obj;
-    //mp_obj_type_t *type = mp_obj_get_type(stream);
+    //struct _mp_obj_base_t *stream = (struct _mp_obj_base_t *)args[0].u_obj;
+    mp_obj_t stream = args[0].u_obj;
+    mp_obj_type_t *type = mp_obj_get_type(stream);
     // Check that 'stream' provides an mp_stream_p_t and a read
     // Note that 'read' will be present even if the stream opened in write-mode
-    //if (type->stream_p == NULL || type->stream_p->read == NULL) {
-    if (stream->type->stream_p == NULL || stream->type->stream_p->read == NULL) {
+    if (type->stream_p == NULL || type->stream_p->read == NULL) {
+        //if (stream->type->stream_p == NULL || stream->type->stream_p->read == NULL) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                                                 "Object type %s not a readable stream",
                                                 mp_obj_get_type_str(stream)));
     }
 
     self->dstream_tx = stream;
-
-    //INFO:
-    printf("pyb I2S object size = %d bytes\n", sizeof(pyb_i2s_obj_t));
-    printf("DMA Handle struct size = %d bytes\n", sizeof(DMA_HandleTypeDef));
-    printf("I2S Handle struct size = %d bytes\n", sizeof(I2S_HandleTypeDef));
 
     int buf_sz = AUDIOBUFFER_BYTES / 4;
     int error;
@@ -1052,6 +1046,7 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     // A hack to make sure that slave-mode transfers don't start on the wrong clock:
     if (!(self->is_master)) {
+        while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 0) {;}
         while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 1) {;}
         while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 0) {;}
     }
@@ -1112,6 +1107,11 @@ STATIC mp_obj_t pyb_i2s_resume(mp_obj_t self_in){
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_resume_obj, pyb_i2s_resume);
 
 STATIC mp_obj_t pyb_i2s_stop(mp_obj_t self_in){
+    // Currently this method always throws an error when called from REPL;
+    // can't even print 'status':
+    // Traceback (most recent call last):
+    //   File "<stdin>", line 1, in <module>
+    // OSError: 16
     pyb_i2s_obj_t *self = self_in;
     HAL_StatusTypeDef status;
     status = HAL_I2S_DMAStop(&self->i2s);
