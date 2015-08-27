@@ -14,11 +14,14 @@
 
 #include "driver/i2c_master.h"
 
+#define MAX_NUM_I2C_PINS	16
+#define INVALID_I2C_PIN		0xff
+
 LOCAL uint8 m_nLastSDA;
 LOCAL uint8 m_nLastSCL;
 
-static uint8_t	pinSDA = 0;
-static uint8_t	pinSCL = 0;
+LOCAL uint8_t	pinSDA = 0;
+LOCAL uint8_t	pinSCL = 0;
 
 extern void ets_isr_unmask(uint32_t);
 extern void ets_delay_us(uint32_t);
@@ -50,17 +53,33 @@ static uint8_t pin_func_tab[] = {
     (uint8_t)FUNC_GPIO3,
     (uint8_t)FUNC_GPIO4,
     (uint8_t)FUNC_GPIO5,
-    0, /* GPIO6 */
-    0, /* GPIO7 */
-    0, /* GPIO8 */
-    0, /* GPIO9 */
-    0, /* GPIO10 */
-    0, /* GPIO11 */
+	INVALID_I2C_PIN, /* GPIO6 */
+	INVALID_I2C_PIN, /* GPIO7 */
+	INVALID_I2C_PIN, /* GPIO8 */
+	INVALID_I2C_PIN, /* GPIO9 */
+	INVALID_I2C_PIN, /* GPIO10 */
+	INVALID_I2C_PIN, /* GPIO11 */
     (uint8_t)FUNC_GPIO12,
     (uint8_t)FUNC_GPIO13,
     (uint8_t)FUNC_GPIO14,
     (uint8_t)FUNC_GPIO15
 }; 
+
+/******************************************************************************
+ * FunctionName : is_i2c_pin_valid
+ * Description  : Check if the pin is a valid I2C pin
+ * Parameters   : uint8 SDA
+ *                uint8 SCL
+ * Returns      : NONE
+*******************************************************************************/
+bool ICACHE_FLASH_ATTR
+i2c_is_pin_valid(uint8_t i2c_pin)
+{
+	if (i2c_pin < MAX_NUM_I2C_PINS && pin_func_tab[i2c_pin] != INVALID_I2C_PIN)
+		return true;
+
+	return false;
+}
 
 /******************************************************************************
  * FunctionName : i2c_master_setDC
@@ -111,7 +130,7 @@ i2c_master_getDC(void)
  * Parameters   : NONE
  * Returns      : NONE
 *******************************************************************************/
-static void ICACHE_FLASH_ATTR
+LOCAL void ICACHE_FLASH_ATTR
 i2c_master_gpio_init(uint8_t pSCL, uint8_t pSDA)
 {
     ETS_GPIO_INTR_DISABLE() ;
@@ -155,7 +174,7 @@ i2c_master_gpio_init(uint8_t pSCL, uint8_t pSDA)
  * Returns      : NONE
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
-i2c_master_init(uint8_t pSCL, uint8_t pSDA)
+i2c_master_init(uint8_t pSCL, uint8_t pSDA, uint16_t baudrate)
 {
     uint8 i;
 

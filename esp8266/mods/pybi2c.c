@@ -122,17 +122,35 @@ STATIC pyb_i2c_obj_t pyb_i2c_obj = {
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 STATIC void i2c_init (pyb_i2c_obj_t *self) {
-    printf("Init I2C\n");
-    printf("  Baudrate=%d\n", self->baudrate);
-    printf("  SCL Pin=%d\n", self->pinSCL);
-    printf("  SDA Pin=%d\n", self->pinSDA);
 
-    i2c_master_init(self->pinSCL, self->pinSDA);
+    i2c_master_init(self->pinSCL, self->pinSDA, self->baudrate);
 }
 
 STATIC bool pyb_i2c_write(byte devAddr, byte *data, uint len, bool stop) {
+    uint8_t ack;
 
     printf("Write I2C Data: devAddr %d, data ptr %p, length %u, stop %d\n", devAddr, data, len, stop);
+
+    i2c_master_start();
+    i2c_master_writeByte(devAddr);
+    ack = i2c_master_getAck();
+    if (ack) {
+        printf("addr not ack when tx write cmd \n");
+        i2c_master_stop();
+        return false;
+    }
+
+    while(len--) {
+        i2c_master_writeByte(*data++);
+        if (i2c_master_getAck()) {
+            i2c_master_stop();
+            return false;
+        }
+    }
+
+    if (stop) {
+        i2c_master_stop();
+    }
     return true;
 }
 
@@ -144,7 +162,13 @@ STATIC bool pyb_i2c_read(byte devAddr, byte *data, uint len) {
 
 STATIC bool pyb_i2c_scan_device(byte devAddr) {
 
-    printf("Scan I2C device !\n");
+    i2c_master_start();
+    i2c_master_writeByte(devAddr);
+    if (i2c_master_getAck()) {
+        i2c_master_stop();
+        return false;
+    }
+    i2c_master_stop();
     return true;
 }
 
@@ -154,7 +178,7 @@ STATIC bool pyb_i2c_scan_device(byte devAddr) {
 STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
     if (self->baudrate > 0) {
-        mp_printf(print, "<I2C1, I2C.MASTER, baudrate=%u, SCL=%d, SDA=%d>)", 
+        mp_printf(print, "<I2C1, I2C.MASTER, baudrate=%u, SCL=%d, SDA=%d>",
             self->baudrate, self->pinSCL, self->pinSDA);
     }
     else {
@@ -162,12 +186,15 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-/// \method init(mode, *, baudrate=100000)
+/// \method init(mode, *, baudrate=100000, scl=x, sda=y)
 ///
 /// Initialise the I2C bus with the given parameters:
 ///
-///   - `mode` must be either `I2C.MASTER` or `I2C.SLAVE`
+///   - ESP8266 only supports master mode `I2C.MASTER`
 ///   - `baudrate` is the SCL clock rate (only sensible for a master)
+///   - `scl` is the clock pin of the I2C interface
+///   - `sda` is the data pin for the I2C interface
+///
 STATIC const mp_arg_t pyb_i2c_init_args[] = {
     { MP_QSTR_mode,     MP_ARG_REQUIRED  | MP_ARG_INT, },
     { MP_QSTR_baudrate, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 100000} },
@@ -190,11 +217,12 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_uint_t n_args, const
     self->baudrate = MIN(MAX(vals[1].u_int, PYBI2C_MIN_BAUD_RATE_HZ), PYBI2C_MAX_BAUD_RATE_HZ);
 
     // Validate pins and setup structure
-    printf("Number of arguments detected %d\n", n_args);
-    if (n_args > 2) {
-        self->pinSDA = vals[2].u_int;
-        self->pinSCL = vals[3].u_int;
-    }
+	if (!i2c_is_pin_valid(vals[2].u_int) ||
+			!i2c_is_pin_valid(vals[3].u_int)) {
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+	}
+	self->pinSCL = vals[2].u_int;
+	self->pinSDA = vals[3].u_int;
 
     // init the I2C bus
     i2c_init(self);
@@ -227,6 +255,8 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     return (mp_obj_t)self;
 }
 
+/// \method init()
+/// Initialize I2C bus.
 STATIC mp_obj_t pyb_i2c_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pyb_i2c_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
@@ -236,8 +266,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
 /// Turn off the I2C bus.
 STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     // disable the peripheral
-    // invalidate the baudrate
+    // invalidate the baudrate and pins
     pyb_i2c_obj.baudrate = 0;
+    pyb_i2c_obj.pinSCL = 0;
+    pyb_i2c_obj.pinSDA = 0;
 
     return mp_const_none;
 }
@@ -445,14 +477,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_write_obj, 1, pyb_i2c_mem_write);
 
 STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),            (mp_obj_t)&pyb_i2c_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),          (mp_obj_t)&pyb_i2c_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready),        (mp_obj_t)&pyb_i2c_is_ready_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan),            (mp_obj_t)&pyb_i2c_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send),            (mp_obj_t)&pyb_i2c_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv),            (mp_obj_t)&pyb_i2c_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read),        (mp_obj_t)&pyb_i2c_mem_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write),       (mp_obj_t)&pyb_i2c_mem_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&pyb_i2c_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),              (mp_obj_t)&pyb_i2c_deinit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready),            (mp_obj_t)&pyb_i2c_is_ready_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&pyb_i2c_scan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom),            (mp_obj_t)&pyb_i2c_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_into),       (mp_obj_t)&pyb_i2c_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto),             (mp_obj_t)&pyb_i2c_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem),        (mp_obj_t)&pyb_i2c_mem_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem_into),   (mp_obj_t)&pyb_i2c_mem_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto_mem),         (mp_obj_t)&pyb_i2c_mem_write_obj },
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode

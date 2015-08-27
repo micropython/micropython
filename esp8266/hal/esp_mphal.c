@@ -59,6 +59,7 @@ int mp_hal_stdin_rx_chr(void) {
         mp_hal_udelay(1);
         mp_hal_feed_watchdog();
     }
+    return 0;
 }
 
 void mp_hal_stdout_tx_str(const char *str) {
