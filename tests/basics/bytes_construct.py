@@ -9,8 +9,7 @@ print(bytes(bytearray(4)))
 
 # arrays
 print(bytes(array('b', [1, 2])))
-print(bytes(array('h', [1, 2])))
-print(bytes(array('I', [1, 2])))
+print(bytes(array('h', [0x101, 0x202])))
 
 # long ints
 print(ord(bytes([14953042807679334000 & 0xff])))
