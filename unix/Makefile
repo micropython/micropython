@@ -47,8 +47,6 @@ LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 ifeq ($(MICROPY_FORCE_32BIT),1)
 # Note: you may need to install i386 versions of dependency packages,
 # starting with linux-libc-dev:i386
-CFLAGS += -m32
-LDFLAGS += -m32
 ifeq ($(MICROPY_PY_FFI),1)
 ifeq ($(UNAME_S),Linux)
 CFLAGS_MOD += -I/usr/include/i686-linux-gnu
