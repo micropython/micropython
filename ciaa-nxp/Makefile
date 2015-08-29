@@ -54,7 +54,26 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
-PHONY: debug
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(CROSS_COMPILE)objcopy -v -O binary $< $@
+
+PHONY: debug openocd download erase
+
+download: $(BUILD)/firmware.bin
+	@openocd -f ciaa-nxp.cfg \
+		-c "init" \
+		-c "halt 0" \
+		-c "flash write_image erase unlock $^ 0x1A000000 bin" \
+		-c "reset run" \
+		-c "shutdown"
+
+erase:
+	@openocd -f ciaa-nxp.cfg \
+		-c "init" -c "halt 0" -c "flash erase_sector 0 0 last" -c "shutdown"
+
+openocd:
+	@openocd -f ciaa-nxp.cfg
+
 debug: $(BUILD)/firmware.elf
 	$(CROSS_COMPILE)gdb $(BUILD)/firmware.elf -ex "target remote :3333" -ex "mon reset halt" -ex "load"
 
