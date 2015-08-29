@@ -174,6 +174,10 @@ def run_tests(pyb, tests, args):
         skip_tests.add('cmdline/repl_emacs_check.py')
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
+    upy_byteorder = run_micropython(pyb, args, 'byteorder.py')
+    cpy_byteorder = subprocess.check_output([CPYTHON3, 'byteorder.py'])
+    skip_endian = (upy_byteorder != cpy_byteorder)
+
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
@@ -230,8 +234,9 @@ def run_tests(pyb, tests, args):
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
+        is_endian = test_name.endswith("_endian")
 
-        if test_file in skip_tests or (skip_native and is_native):
+        if test_file in skip_tests or (skip_native and is_native) or (skip_endian and is_endian):
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
