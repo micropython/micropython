@@ -2,5 +2,5 @@ TypeError
 NotImplementedError
 True
 True
-TypeError
+TypeError, ValueError
 NotImplementedError
