@@ -7,6 +7,11 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 
+#include "modpyb.h"
+
+#include "ProgramScript.c" // generar con py2c.py
+
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -28,9 +33,11 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 
 int main(int argc, char **argv) {
     Board_Init();
+    Board_Buttons_Init();
     mp_init();
-    do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
+    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
+    //do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
+    do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;
 }

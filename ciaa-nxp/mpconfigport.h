@@ -62,5 +62,13 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
+// extra builtin modules to add to the list of known ones
+extern const struct _mp_obj_module_t pyb_module;
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+
+
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+#define MICROPY_HAL_H "ciaanxp_mphal.h"
