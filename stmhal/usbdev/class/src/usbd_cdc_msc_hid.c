@@ -559,6 +559,11 @@ __ALIGN_BEGIN const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPOR
     0xC0            // End Collection
 };
 
+// return the saved usb mode
+uint8_t USBD_GetMode() {
+    return usbd_mode;
+}
+
 int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
     // save mode
     usbd_mode = mode;
