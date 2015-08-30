@@ -13,7 +13,7 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
-#define MICROPY_ENABLE_GC           (0)
+#define MICROPY_ENABLE_GC           (1)
 #define MICROPY_HELPER_REPL         (0)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
@@ -29,7 +29,7 @@
 #define MICROPY_PY_BUILTINS_SLICE   (0)
 #define MICROPY_PY_BUILTINS_PROPERTY (0)
 #define MICROPY_PY___FILE__         (0)
-#define MICROPY_PY_GC               (0)
+#define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_ATTRTUPLE        (0)
 #define MICROPY_PY_COLLECTIONS      (0)
@@ -70,5 +70,9 @@ extern const struct _mp_obj_module_t pyb_module;
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+// We need to provide a declaration/definition of alloca()
+//#define alloca(x) (void*)m_new(byte, (x))
+
 
 #define MICROPY_HAL_H "ciaanxp_mphal.h"

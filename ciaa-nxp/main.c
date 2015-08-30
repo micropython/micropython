@@ -6,10 +6,14 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
+#include "py/gc.h"
 
 #include "modpyb.h"
 
-#include "ProgramScript.c" // generar con py2c.py
+#include "ProgramScript.c" // generated with py2c.py
+
+// maximum heap for device with 8k RAM
+static char heap[4*1024];
 
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -34,6 +38,17 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 int main(int argc, char **argv) {
     Board_Init();
     Board_Buttons_Init();
+
+    mp_hal_stdout_tx_str("Inicio de main");
+
+    int i;
+    for(i=0;i<sizeof(heap);i++)
+   	heap[i]=0;
+
+    int stack_dummy=0;
+    MP_STATE_VM(stack_top) = (char*)&stack_dummy;
+    gc_init(heap, heap + sizeof(heap));
+
     mp_init();
     //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
     //do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
@@ -42,8 +57,40 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+
 void gc_collect(void) {
+    mp_hal_stdout_tx_str("Se ejecuta GC!!!!!!!!!!\n");
+
+    void* dummy = 0x10000000;
+    gc_collect_start();
+
+    mp_hal_stdout_tx_str("Se ejecuto start");
+    char aux[100];
+    sprintf(aux,"heap: 0x%x\n",heap);
+    mp_hal_stdout_tx_str(aux);
+
+
+    // Node: stack is ascending
+    //gc_collect_root(&dummy, ((mp_uint_t)&dummy - (mp_uint_t)MP_STATE_VM(stack_top)) / sizeof(mp_uint_t));
+    //gc_collect_root((void**)&_sbss, ((uint32_t)&_ebss - (uint32_t)&_sbss) / sizeof(uint32_t));
+
+    void* _ram_start = 0x10000000;
+    void* _heap_start = heap;
+
+    uint32_t len = ((uint32_t)_heap_start - (uint32_t)_ram_start) / sizeof(uint32_t);
+    sprintf(aux,"len: 0x%x\n",len);
+    mp_hal_stdout_tx_str(aux);
+
+    gc_collect_root((void**)_ram_start, len );
+
+    mp_hal_stdout_tx_str("Se ejecuto root\n");
+
+    gc_collect_end();
+
+    mp_hal_stdout_tx_str("Se ejecuto end\n");
+
 }
+
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return NULL;
