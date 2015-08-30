@@ -29,7 +29,7 @@ def rm_f(fname):
 def run_micropython(pyb, args, test_file):
     if pyb is None:
         # run on PC
-        if test_file.startswith('cmdline/') or test_file == 'micropython/meminfo.py':
+        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file == 'micropython/meminfo.py':
             # special handling for tests of the unix cmdline program
 
             # check for any cmdline options needed for this test
@@ -42,7 +42,7 @@ def run_micropython(pyb, args, test_file):
 
             # run the test, possibly with redirected input
             try:
-                if test_file.startswith('cmdline/repl_'):
+                if 'repl_' in test_file:
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
@@ -164,18 +164,17 @@ def run_tests(pyb, tests, args):
     skip_native = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'micropython/native_check.py')
+    native = run_micropython(pyb, args, 'feature_check/native_check.py')
     if native == b'CRASH':
         skip_native = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
-    t = run_micropython(pyb, args, 'cmdline/repl_emacs_check.py')
+    t = run_micropython(pyb, args, 'feature_check/repl_emacs_check.py')
     if not 'True' in str(t, 'ascii'):
-        skip_tests.add('cmdline/repl_emacs_check.py')
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
-    upy_byteorder = run_micropython(pyb, args, 'byteorder.py')
-    cpy_byteorder = subprocess.check_output([CPYTHON3, 'byteorder.py'])
+    upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
+    cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
 
     # Some tests shouldn't be run under Travis CI
