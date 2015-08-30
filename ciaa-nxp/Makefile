@@ -1,5 +1,8 @@
 include ../py/mkenv.mk
 
+# Generate python script binary data
+R:=$(shell python py2c.py)
+
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
