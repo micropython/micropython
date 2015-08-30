@@ -123,7 +123,17 @@ extern "C" {
 // #define CFG_SDCARD
 
 #define BUTTONS_BUTTON1_GPIO_PORT_NUM   0
-#define BUTTONS_BUTTON1_GPIO_BIT_NUM    7
+#define BUTTONS_BUTTON1_GPIO_BIT_NUM    4
+
+#define BUTTONS_BUTTON2_GPIO_PORT_NUM   0
+#define BUTTONS_BUTTON2_GPIO_BIT_NUM    8
+
+#define BUTTONS_BUTTON3_GPIO_PORT_NUM   0
+#define BUTTONS_BUTTON3_GPIO_BIT_NUM    9
+
+#define BUTTONS_BUTTON4_GPIO_PORT_NUM   1
+#define BUTTONS_BUTTON4_GPIO_BIT_NUM    9
+
 #define LED1_GPIO_PORT_NUM              1
 #define LED1_GPIO_BIT_NUM               11
 #define LED2_GPIO_PORT_NUM              1
@@ -281,6 +291,15 @@ void Board_LCD_Init(void);
  * @return	Nothing
  */
 void Board_LCD_WriteData(const uint8_t *data, uint16_t size);
+
+
+/**
+ * @brief       Returns Switch status
+ * @param       BUTTONNumber    : number of switch from 1 to 4
+ * @return      switch state - 1: pressed 0: no-pressed
+ */
+int Buttons_GetStatusByNumber(int BUTTONNumber);
+
 
 /**
  * @}
