@@ -140,6 +140,13 @@ try:
 except ValueError:
     print('ValueError')
 
+# end of format parsing conversion specifier
+try:
+    '{!'.format('a')
+except ValueError:
+    print('ValueError')
+
+# unknown conversion specifier
 try:
     'abc{!d}'.format('1')
 except ValueError:
@@ -150,6 +157,7 @@ try:
 except ValueError:
     print('ValueError')
 
+# expected ':' after specifier
 try:
     '{!s :}'.format(2)
 except ValueError:

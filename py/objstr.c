@@ -894,9 +894,17 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             } else {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
-                } else {
+                } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                        "end of format while looking for conversion specifier"));
+                        "bad conversion specifier"));
+                } else {
+                    if (str >= top) {
+                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                            "end of format while looking for conversion specifier"));
+                    } else {
+                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                            "unknown conversion specifier %c", *str));
+                    }
                 }
             }
         }
@@ -989,15 +997,9 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             mp_print_kind_t print_kind;
             if (conversion == 's') {
                 print_kind = PRINT_STR;
-            } else if (conversion == 'r') {
-                print_kind = PRINT_REPR;
             } else {
-                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                    terse_str_format_value_error();
-                } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                        "unknown conversion specifier %c", conversion));
-                }
+                assert(conversion == 'r');
+                print_kind = PRINT_REPR;
             }
             vstr_t arg_vstr;
             mp_print_t arg_print;
