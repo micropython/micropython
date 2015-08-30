@@ -1,7 +1,4 @@
-# user defined iterator used in something other than a for loop
-
-class MyStopIteration(StopIteration):
-    pass
+# iter from user defined sequence protocol object
 
 class mygettable():
     def __init__(self, iterable):
