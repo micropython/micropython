@@ -12,3 +12,5 @@ def test(a):
 
 test(array('f'))
 test(array('d'))
+
+print('{:.4f}'.format(array('f', b'\xcc\xcc\xcc=')[0]))
