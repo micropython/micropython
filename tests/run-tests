@@ -217,6 +217,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('basics/bool1.py') # seems to randomly fail
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
+        skip_tests.add('basics/exception_chain.py') # raise from is not supported
         skip_tests.add('basics/try_finally_loops.py') # requires proper try finally code
         skip_tests.add('basics/try_finally_return.py') # requires proper try finally code
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
