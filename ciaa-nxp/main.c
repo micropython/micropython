@@ -13,6 +13,7 @@
 #include "ProgramScript.c" // generated with py2c.py
 
 // maximum heap for device with 8k RAM
+static char *stack_top;
 static char heap[4*1024];
 
 
@@ -36,22 +37,20 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 
 int main(int argc, char **argv) {
+    int stack_dummy;
+    stack_top = (char*)&stack_dummy;
+
     Board_Init();
     Board_Buttons_Init();
 
-    mp_hal_stdout_tx_str("Inicio de main");
-
+    // Heap initialization
     int i;
     for(i=0;i<sizeof(heap);i++)
    	heap[i]=0;
-
-    int stack_dummy=0;
-    MP_STATE_VM(stack_top) = (char*)&stack_dummy;
     gc_init(heap, heap + sizeof(heap));
+    //____________________
 
     mp_init();
-    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    //do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
     do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;
@@ -59,36 +58,15 @@ int main(int argc, char **argv) {
 
 
 void gc_collect(void) {
-    mp_hal_stdout_tx_str("Se ejecuta GC!!!!!!!!!!\n");
-
-    void* dummy = 0x10000000;
+    void *dummy;
     gc_collect_start();
+    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
 
-    mp_hal_stdout_tx_str("Se ejecuto start");
-    char aux[100];
-    sprintf(aux,"heap: 0x%x\n",heap);
-    mp_hal_stdout_tx_str(aux);
-
-
-    // Node: stack is ascending
-    //gc_collect_root(&dummy, ((mp_uint_t)&dummy - (mp_uint_t)MP_STATE_VM(stack_top)) / sizeof(mp_uint_t));
-    //gc_collect_root((void**)&_sbss, ((uint32_t)&_ebss - (uint32_t)&_sbss) / sizeof(uint32_t));
-
-    void* _ram_start = 0x10000000;
-    void* _heap_start = heap;
-
-    uint32_t len = ((uint32_t)_heap_start - (uint32_t)_ram_start) / sizeof(uint32_t);
-    sprintf(aux,"len: 0x%x\n",len);
-    mp_hal_stdout_tx_str(aux);
-
-    gc_collect_root((void**)_ram_start, len );
-
-    mp_hal_stdout_tx_str("Se ejecuto root\n");
+    // run root_collect from registers is still missing
+    //...
 
     gc_collect_end();
-
-    mp_hal_stdout_tx_str("Se ejecuto end\n");
-
+    //gc_dump_info();
 }
 
 
