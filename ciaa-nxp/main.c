@@ -6,10 +6,15 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
+#include "py/gc.h"
 
 #include "modpyb.h"
 
-#include "ProgramScript.c" // generar con py2c.py
+#include "ProgramScript.c" // generated with py2c.py
+
+// maximum heap for device with 8k RAM
+static char *stack_top;
+static char heap[4*1024];
 
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -32,18 +37,38 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 
 int main(int argc, char **argv) {
+    int stack_dummy;
+    stack_top = (char*)&stack_dummy;
+
     Board_Init();
     Board_Buttons_Init();
+
+    // Heap initialization
+    int i;
+    for(i=0;i<sizeof(heap);i++)
+   	heap[i]=0;
+    gc_init(heap, heap + sizeof(heap));
+    //____________________
+
     mp_init();
-    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    //do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
     do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;
 }
 
+
 void gc_collect(void) {
+    void *dummy;
+    gc_collect_start();
+    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+
+    // run root_collect from registers is still missing
+    //...
+
+    gc_collect_end();
+    //gc_dump_info();
 }
+
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return NULL;
