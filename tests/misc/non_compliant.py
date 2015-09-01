@@ -39,3 +39,9 @@ try:
     print('{a[0]}'.format(a=[1, 2]))
 except NotImplementedError:
     print('NotImplementedError')
+
+# str.rsplit(None, n) not implemented
+try:
+    'a a a'.rsplit(None, 1)
+except NotImplementedError:
+    print('NotImplementedError')
