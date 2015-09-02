@@ -49,6 +49,11 @@ while(True):
 	# Test math
 	s = math.sqrt(2)
 	print("sqrt(2)="+str(s))
+
+	# Test array
+	from array import *
+	x=array('f',[0.0,1.0,2.0])
+	print(x)
 	break
 
 	counter=counter+1
