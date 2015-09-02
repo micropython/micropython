@@ -31,9 +31,22 @@ while(True):
         #print('sw4 vale:'+str(val))
 
 	c.miMetodo(56)
-	ba = bytearray()
-	ba.append(33)
-	
+
+	# Test bytearray
+	#ba = bytearray()
+	#ba.append(33)
+		
+	# Test slice
+	values = [100, 200, 300, 400, 500]
+	slice = values[2:-1]
+	print(slice)
+
+	values = "Hello World"
+	evens = values[:2]
+	print(evens)
+
+	break
+
 	counter=counter+1
 	print('Modificacion de leds:'+str(counter))
 	print('Enciendo')

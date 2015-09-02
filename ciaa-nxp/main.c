@@ -14,7 +14,7 @@
 
 // maximum heap for device with 8k RAM
 static char *stack_top;
-static char heap[4*1024];
+static char heap[16*1024];
 
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
