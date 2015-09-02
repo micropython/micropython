@@ -1,4 +1,5 @@
 import pyb
+import math
 
 class Clase:
 	def __init__(self):
@@ -45,6 +46,9 @@ while(True):
 	evens = values[:2]
 	print(evens)
 
+	# Test math
+	s = math.sqrt(2)
+	print("sqrt(2)="+str(s))
 	break
 
 	counter=counter+1
