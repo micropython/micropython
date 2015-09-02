@@ -1,5 +1,14 @@
 import pyb
 
+class Clase:
+	def __init__(self):
+		pass
+
+	def miMetodo(self,arg):
+		print("Mi metodo:"+str(arg))
+
+c = Clase()
+
 led1 = pyb.LED(1)
 led2 = pyb.LED(2)
 led3 = pyb.LED(3)
@@ -20,6 +29,10 @@ while(True):
         #print('sw3 vale:'+str(val))
         #val = switch4.value()
         #print('sw4 vale:'+str(val))
+
+	c.miMetodo(56)
+	ba = bytearray()
+	ba.append(33)
 	
 	counter=counter+1
 	print('Modificacion de leds:'+str(counter))

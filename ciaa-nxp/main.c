@@ -44,6 +44,14 @@ int main(int argc, char **argv) {
     Board_Buttons_Init();
 
     // Heap initialization
+    /*
+    uint32_t clockf = Chip_Clock_GetMainPLLHz();
+    char aux[48];
+    sprintf(aux,"f: %d Hz",clockf);
+    mp_hal_stdout_tx_str(aux);
+    while(1);
+    */
+
     int i;
     for(i=0;i<sizeof(heap);i++)
    	heap[i]=0;
