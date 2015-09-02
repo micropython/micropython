@@ -54,6 +54,17 @@ while(True):
 	from array import *
 	x=array('f',[0.0,1.0,2.0])
 	print(x)
+
+	# Test Set
+	print("Test de Sets")
+	x = [1, 1, 2, 2, 2, 2, 2, 3, 3]
+	s = set(x)
+	print(s)
+	#from sets import *
+	#engineers = set(['John', 'Jane', 'Jack', 'Janice'])
+	#engineers.add('Marvin')
+	#print engineers
+
 	break
 
 	counter=counter+1
