@@ -391,8 +391,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    "only slices with step=1 (aka None) are supported"));
+                mp_not_implemented("only slices with step=1 (aka None) are supported");
             }
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
@@ -975,7 +974,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
                 arg = key_elem->value;
             }
             if (*lookup) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, "attributes not supported yet"));
+                mp_not_implemented("attributes not supported yet");
             }
             vstr_free(field_name);
             field_name = NULL;

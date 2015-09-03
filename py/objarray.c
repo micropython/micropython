@@ -365,8 +365,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    "only slices with step=1 (aka None) are supported"));
+                mp_not_implemented("only slices with step=1 (aka None) are supported");
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
