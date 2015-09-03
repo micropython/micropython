@@ -213,7 +213,7 @@ void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
     sleep_obj->obj = obj;
     sleep_obj->wakeup = wakeup;
     // remove it in case it was already registered
-    pybsleep_remove (sleep_obj);
+    pybsleep_remove (obj);
     mp_obj_list_append(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
 }
 
