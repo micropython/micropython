@@ -1,0 +1,64 @@
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+Pin('GP23', mode=Pin.IN, pull=Pin.PULL_NONE, drive=Pin.MED_POWER, alt=-1)
+Pin('GP23', mode=Pin.IN, pull=Pin.PULL_DOWN, drive=Pin.MED_POWER, alt=-1)
+Pin('GP23', mode=Pin.OUT, pull=Pin.PULL_UP, drive=Pin.LOW_POWER, alt=-1)
+Pin('GP23', mode=Pin.OUT, pull=Pin.PULL_UP, drive=Pin.HIGH_POWER, alt=-1)
+Pin('GP23', mode=Pin.ALT, pull=Pin.PULL_NONE, drive=Pin.MED_POWER, alt=1)
+Pin('GP23', mode=Pin.ALT_OPEN_DRAIN, pull=Pin.PULL_NONE, drive=Pin.MED_POWER, alt=15)
+1
+1
+0
+0
+1
+0
+1
+0
+1
+0
+True
+True
+True
+True
+True
+True
+True
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception

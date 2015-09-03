@@ -128,9 +128,9 @@ soft_reset:
     mpexception_init0();
     mpcallback_init0();
     pybsleep_init0();
+    pin_init0();
     mperror_init0();
     uart_init0();
-    pin_init0();
     timer_init0();
     readline_init0();
     mod_network_init0();
@@ -266,7 +266,7 @@ soft_reset_exit:
 __attribute__ ((section (".boot")))
 STATIC void mptask_pre_init (void) {
 #if MICROPY_HW_ENABLE_RTC
-    pybrtc_init();
+    pybrtc_pre_init();
 #endif
 
     // Create the simple link spawn task
@@ -288,7 +288,8 @@ STATIC void mptask_pre_init (void) {
     modusocket_pre_init();
 
 #if MICROPY_HW_HAS_SDCARD
-    pybsd_init0();
+    // this one allocates memory for the SD file system
+    pybsd_pre_init();
 #endif
 
     CRYPTOHASH_Init();

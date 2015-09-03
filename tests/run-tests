@@ -335,7 +335,7 @@ def main():
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')
             elif args.target == 'wipy':
                 # run WiPy tests
-                test_dirs = ('basics', 'micropython', 'misc', 'extmod')
+                test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
             else:
                 # run PC tests
                 test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode', 'extmod', 'unix', 'cmdline')
