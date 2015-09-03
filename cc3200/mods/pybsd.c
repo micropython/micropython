@@ -80,7 +80,7 @@ STATIC mp_obj_t pybsd_unmount (mp_obj_t self_in);
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 __attribute__ ((section (".boot")))
-void pybsd_init0 (void) {
+void pybsd_pre_init (void) {
     // allocate memory for the sd file system
     ASSERT ((pybsd_obj.fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
 }

@@ -80,7 +80,7 @@ STATIC const mp_obj_base_t pyb_rtc_obj = {&pyb_rtc_type};
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 __attribute__ ((section (".boot")))
-void pybrtc_init(void) {
+void pybrtc_pre_init(void) {
     // if the RTC was previously set, leave it alone
     if (MAP_PRCMSysResetCauseGet() == PRCM_POWER_ON) {
         // fresh reset; configure the RTC Calendar

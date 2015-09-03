@@ -29,7 +29,7 @@
 #if MICROPY_HW_HAS_SDCARD
 extern const mp_obj_type_t pyb_sd_type;
 
-void pybsd_init0 (void);
+void pybsd_pre_init (void);
 void pybsd_disable (void);
 bool pybsd_is_mounted (void);
 #endif
