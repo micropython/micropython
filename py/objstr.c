@@ -116,8 +116,12 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         return;
     }
     #endif
+    #if !MICROPY_PY_BUILTINS_STR_UNICODE
     bool is_bytes = MP_OBJ_IS_TYPE(self_in, &mp_type_bytes);
-    if (kind == PRINT_STR && !is_bytes) {
+    #else
+    bool is_bytes = true;
+    #endif
+    if (!MICROPY_PY_BUILTINS_STR_UNICODE && kind == PRINT_STR && !is_bytes) {
         mp_printf(print, "%.*s", str_len, str_data);
     } else {
         if (is_bytes) {
