@@ -1996,16 +1996,6 @@ STATIC void bad_implicit_conversion(mp_obj_t self_in) {
     }
 }
 
-mp_uint_t mp_obj_str_get_len(mp_obj_t self_in) {
-    // TODO This has a double check for the type, one in obj.c and one here
-    if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
-        GET_STR_LEN(self_in, l);
-        return l;
-    } else {
-        bad_implicit_conversion(self_in);
-    }
-}
-
 // use this if you will anyway convert the string to a qstr
 // will be more efficient for the case where it's already a qstr
 qstr mp_obj_str_get_qstr(mp_obj_t self_in) {

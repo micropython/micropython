@@ -560,8 +560,6 @@ void mp_init_emergency_exception_buf(void);
 
 // str
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
-mp_uint_t mp_obj_str_get_hash(mp_obj_t self_in);
-mp_uint_t mp_obj_str_get_len(mp_obj_t self_in);
 qstr mp_obj_str_get_qstr(mp_obj_t self_in); // use this if you will anyway convert the string to a qstr
 const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need the string to be null terminated
 const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len);
