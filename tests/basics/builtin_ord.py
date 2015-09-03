@@ -20,3 +20,9 @@ try:
     ord(b'')
 except TypeError:
     print("TypeError")
+
+# argument must be a string
+try:
+    ord(1)
+except TypeError:
+    print('TypeError')

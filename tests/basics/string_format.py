@@ -207,3 +207,9 @@ try:
     '{:*"1"}'.format('zz')
 except ValueError:
     print('ValueError')
+
+# unknown format code for str arg
+try:
+    '{:X}'.format('zz')
+except ValueError:
+    print('ValueError')
