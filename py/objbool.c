@@ -88,10 +88,8 @@ STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
 }
 
 STATIC mp_obj_t bool_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    if (MP_BINARY_OP_OR <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
-        return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(mp_obj_is_true(lhs_in)), rhs_in);
-    }
-    return MP_OBJ_NULL; // op not supported
+    mp_obj_bool_t *self = lhs_in;
+    return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(self->value), rhs_in);
 }
 
 const mp_obj_type_t mp_type_bool = {
