@@ -55,8 +55,12 @@ mp_uint_t mp_decode_uint(const byte **ptr) {
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expected, mp_uint_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
+    (void)f;
+    (void)expected;
+    (void)given;
     mp_arg_error_terse_mismatch();
 #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
+    (void)f;
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "function takes %d positional arguments but %d were given", expected, given));
 #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED

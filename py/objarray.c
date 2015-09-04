@@ -488,6 +488,8 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
         }
         bufinfo->buf = (uint8_t*)bufinfo->buf + (mp_uint_t)o->free * sz;
     }
+    #else
+    (void)flags;
     #endif
     return 0;
 }
