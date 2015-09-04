@@ -9,6 +9,7 @@
 #include "py/gc.h"
 
 #include "modpyb.h"
+#include "ciaanxp_mphal.h"
 
 #include "ProgramScript.c" // generated with py2c.py
 
@@ -40,9 +41,6 @@ int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
-    Board_Init();
-    Board_Buttons_Init();
-
     // Heap initialization
     int i;
     for(i=0;i<sizeof(heap);i++)
@@ -51,6 +49,7 @@ int main(int argc, char **argv) {
     //____________________
 
     mp_init();
+    mp_hal_init();
     do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;

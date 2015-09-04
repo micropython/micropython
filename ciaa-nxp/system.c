@@ -127,8 +127,15 @@ _ssize_t _read_r(struct _reent *r, int fd, void *b, size_t n) {
 	case 0:
 	case 1:
 	case 2:
-		for (i = 0; i < n; i++)
-			((char*) b)[i] = Board_UARTGetChar();
+		for (i = 0; i < n; i++) {
+			int c;
+			do {
+				c = Board_UARTGetChar();
+				if (c == EOF)
+					__WFI();
+			} while (c == EOF);
+			((char*) b)[i] = c;
+		}
 		return n;
 	default:
 		SET_ERR(ENODEV);
@@ -144,6 +151,7 @@ int _rename_r(struct _reent *r, const char *oldf, const char *newf) {
 }
 
 void *_sbrk_r(struct _reent *r, ptrdiff_t incr) {
+	register void *sp __asm__("sp");
 	extern int _pvHeapStart;
 	static void *heap_end;
 	void *prev_heap_end;
@@ -152,6 +160,9 @@ void *_sbrk_r(struct _reent *r, ptrdiff_t incr) {
 	}
 	prev_heap_end = heap_end;
 	heap_end += incr;
+	if (heap_end >= sp) {
+		_exit(-1);
+	}
 	return prev_heap_end;
 }
 
@@ -186,8 +197,12 @@ _ssize_t _write_r(struct _reent *r, int fd, const void *b, size_t n) {
 	case 0:
 	case 1:
 	case 2:
-		for (i = 0; i < n; i++)
-			Board_UARTPutChar(((char*) b)[i]);
+		for (i = 0; i < n; i++) {
+			char c = ((char*) b)[i];
+			if (c == '\n')
+				Board_UARTPutChar('\r');
+			Board_UARTPutChar(c);
+		}
 		return n;
 	default:
 		SET_ERR(ENODEV);
