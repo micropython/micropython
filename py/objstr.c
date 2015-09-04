@@ -172,15 +172,15 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
 STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
-    if (n_args == 0) {
-        return mp_const_empty_bytes;
-    }
-
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();
     }
 #endif
+
+    if (n_args == 0) {
+        return mp_const_empty_bytes;
+    }
 
     if (MP_OBJ_IS_STR(args[0])) {
         if (n_args < 2 || n_args > 3) {
