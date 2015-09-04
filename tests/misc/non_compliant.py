@@ -52,6 +52,12 @@ try:
 except NotImplementedError:
     print('NotImplementedError')
 
+# str.endswith(s, start) not implemented
+try:
+    'abc'.endswith('c', 1)
+except NotImplementedError:
+    print('NotImplementedError')
+
 # bytes(...) with keywords not implemented
 try:
     bytes('abc', encoding='utf8')

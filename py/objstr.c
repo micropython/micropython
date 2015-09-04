@@ -699,7 +699,9 @@ STATIC mp_obj_t str_startswith(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC mp_obj_t str_endswith(mp_uint_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], suffix, suffix_len);
-    assert(n_args == 2);
+    if (n_args > 2) {
+        mp_not_implemented("start/end indices");
+    }
 
     if (suffix_len > str_len) {
         return mp_const_false;
