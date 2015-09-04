@@ -9,8 +9,19 @@ switch2 = pyb.Switch(2)
 switch3 = pyb.Switch(3)
 switch4 = pyb.Switch(4)
 
+def performanceTest():
+	d = 10000
+	print("start. Wait for %d milis" % d)
+	millis = pyb.millis
+	endTime = millis() + d
+	count = 0
+	while millis() < endTime:
+		count += 1
+	print("Count: ", count)
+
 counter=0
 while(True):
+	performanceTest()
 	#print('Estado de pulsadores:')
 	#val = switch1.value()
 	#print('sw1 vale:'+str(val))	
@@ -21,14 +32,14 @@ while(True):
         #val = switch4.value()
         #print('sw4 vale:'+str(val))
 	
-	counter=counter+1
-	print('Modificacion de leds:'+str(counter))
-	print('Enciendo')
-	led1.on()
-	pyb.delay(100);
-	print('Apago')
-	led1.off()
-	pyb.delay(100);
+	#counter=counter+1
+	#print('Modificacion de leds:'+str(counter))
+	#print('Enciendo')
+	#led1.on()
+	#pyb.delay(100);
+	#print('Apago')
+	#led1.off()
+	#pyb.delay(100);
 
         #print('Enciendo')
         #led2.on()
