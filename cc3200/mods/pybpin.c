@@ -779,8 +779,6 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),                    (mp_obj_t)&pin_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value),                   (mp_obj_t)&pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_low),                     (mp_obj_t)&pin_low_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_high),                    (mp_obj_t)&pin_high_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_toggle),                  (mp_obj_t)&pin_toggle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_id),                      (mp_obj_t)&pin_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mode),                    (mp_obj_t)&pin_mode_obj },

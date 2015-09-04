@@ -185,14 +185,6 @@ Methods
 
        Get the pin id.
 
-.. method:: pin.high()
-
-   Set the pin to a high logic level.
-
-.. method:: pin.low()
-
-   Set the pin to a low logic level.
-
 .. method:: pin.value([value])
 
    Get or set the digital logic level of the pin:

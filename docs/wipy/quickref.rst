@@ -29,8 +29,8 @@ See :ref:`pyb.Pin <pyb.Pin>`. ::
 
     # initialize GP2 in gpio mode (af=0) and make it an output
     p_out = Pin('GP2', mode=Pin.OUT)
-    p_out.high()
-    p_out.low()
+    p_out.value(1)
+    p_out.value(0)
     p_out.toggle()
     p_out(True)
 
