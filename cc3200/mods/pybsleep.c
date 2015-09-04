@@ -474,7 +474,7 @@ STATIC void pybsleep_iopark (bool hibernate) {
 #endif
         default:
             // enable a weak pull-down if the pin is unused
-            if (!pin->isused) {
+            if (!pin->used) {
                 MAP_PinConfigSet(pin->pin_num, pin->strength, PIN_TYPE_STD_PD);
             }
             if (hibernate) {

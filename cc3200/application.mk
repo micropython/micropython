@@ -77,7 +77,6 @@ APP_HAL_SRC_C = $(addprefix hal/,\
 APP_MISC_SRC_C = $(addprefix misc/,\
 	antenna.c \
 	FreeRTOSHooks.c \
-	pin_named_pins.c \
 	help.c \
 	mpcallback.c \
 	mperror.c \

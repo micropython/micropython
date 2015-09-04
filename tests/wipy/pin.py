@@ -75,12 +75,7 @@ print(pin)
 
 # test value in OUT mode
 pin = Pin(pin_map[0], mode=Pin.OUT)
-pin.high() # test high
-print(pin.value())
-print(pin())
-pin.low() # test low
-print(pin.value())
-print(pin())
+pin.value(0)
 pin.toggle() # test toggle
 print(pin())
 pin.toggle() # test toggle again
