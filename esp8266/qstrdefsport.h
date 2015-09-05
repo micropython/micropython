@@ -93,6 +93,10 @@ Q(SLEEP_MODEM)
 Q(STA_MODE)
 Q(AP_MODE)
 Q(STA_AP_MODE)
+Q(timer)
+Q(cancel)
+Q(arg)
+Q(repeat)
 
 // network module
 Q(network)

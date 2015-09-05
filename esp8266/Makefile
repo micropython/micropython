@@ -65,6 +65,7 @@ SRC_C = \
 	moduos.c \
 	utils.c \
 	$(BUILD)/frozen.c \
+	timer.c
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
