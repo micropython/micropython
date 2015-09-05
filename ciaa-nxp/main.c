@@ -7,6 +7,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "../stmhal/pyexec.h"
 
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
@@ -51,6 +52,7 @@ int main(int argc, char **argv) {
     mp_init();
     mp_hal_init();
     do_str(programScript, MP_PARSE_FILE_INPUT);
+    pyexec_friendly_repl();
     mp_deinit();
     return 0;
 }
