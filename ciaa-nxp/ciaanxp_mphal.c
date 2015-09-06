@@ -40,7 +40,6 @@ void mp_hal_init(void) {
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock/1000);
 	Board_Init();
-    	Board_Buttons_Init();
 }
 
 mp_uint_t mp_hal_get_milliseconds(void) {

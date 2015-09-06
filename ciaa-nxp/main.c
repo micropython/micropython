@@ -13,6 +13,10 @@
 
 #include "ProgramScript.c" // generated with py2c.py
 
+//prueba uart, sacar
+#include "chip.h"
+#include "board.h"
+
 // maximum heap for device with 8k RAM
 static char *stack_top;
 static char heap[16*1024];
@@ -61,6 +65,12 @@ int main(int argc, char **argv) {
 
     mp_init();
     mp_hal_init();
+
+    // prueba uart 485
+    while(1)
+        Board_UART_Write(LPC_USART3,"HOLA", 4);
+    //____________
+
     do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;

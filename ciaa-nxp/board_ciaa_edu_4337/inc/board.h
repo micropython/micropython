@@ -302,6 +302,16 @@ int Buttons_GetStatusByNumber(int BUTTONNumber);
 
 
 /**
+ * @brief       Write over UART device
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @param       buffer   : buffer to be written
+ * @param       size     : amount of bytes to be written
+ * @return      amount of bytes written
+ */
+uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint32_t const size);
+
+
+/**
  * @}
  */
 

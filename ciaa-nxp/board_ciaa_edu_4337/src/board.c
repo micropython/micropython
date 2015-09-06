@@ -51,9 +51,60 @@ static const io_port_t gpioLEDBits[] = {{0, 14}, {1, 11}, {1, 12}, {5, 0}, {5, 1
 
 void Board_UART_Init(LPC_USART_T *pUART)
 {
-	Chip_SCU_PinMuxSet(0x6, 4, (SCU_MODE_INACT | SCU_MODE_FUNC2));					/* P6,4 : UART0_TXD */
-	Chip_SCU_PinMuxSet(0x2, 1, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC1));/* P2.1 : UART0_RXD */
+	//Chip_SCU_PinMuxSet(0x6, 4, (SCU_MODE_INACT | SCU_MODE_FUNC2));					/* P6,4 : UART0_TXD */
+	//Chip_SCU_PinMuxSet(0x2, 1, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC1));/* P2.1 : UART0_RXD */
+	if(pUART==LPC_USART0)
+	{
+		/* UART0 (RS485/Profibus) */
+   		Chip_UART_Init(LPC_USART0);
+   		Chip_UART_SetBaud(LPC_USART0, 115200);
+
+   		Chip_UART_SetupFIFOS(LPC_USART0, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0);
+
+   		Chip_UART_TXEnable(LPC_USART0);
+
+   		Chip_SCU_PinMux(9, 5, MD_PDN, FUNC7);              /* P9_5: UART0_TXD */
+   		Chip_SCU_PinMux(9, 6, MD_PLN|MD_EZI|MD_ZI, FUNC7); /* P9_6: UART0_RXD */
+
+   		Chip_UART_SetRS485Flags(LPC_USART0, UART_RS485CTRL_DCTRL_EN | UART_RS485CTRL_OINV_1);
+
+   		Chip_SCU_PinMux(6, 2, MD_PDN, FUNC2);              /* P6_2: UART0_DIR */
+	}
+	else if(pUART==LPC_USART3)
+	{
+		/* UART3 (RS232) */
+   		Chip_UART_Init(LPC_USART3);
+   		Chip_UART_SetBaud(LPC_USART3, 115200);
+
+   		Chip_UART_SetupFIFOS(LPC_USART3, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0);
+
+   		Chip_UART_TXEnable(LPC_USART3);
+
+   		Chip_SCU_PinMux(2, 3, MD_PDN, FUNC2);              /* P2_3: UART3_TXD */
+   		Chip_SCU_PinMux(2, 4, MD_PLN|MD_EZI|MD_ZI, FUNC2); /* P2_4: UART3_RXD */
+	}
+	/* Restart FIFOS: set Enable, Reset content, set trigger level */
+   	Chip_UART_SetupFIFOS(pUART, UART_FCR_FIFO_EN | UART_FCR_TX_RS | UART_FCR_RX_RS | UART_FCR_TRG_LEV0);
+   	/* dummy read */
+   	Chip_UART_ReadByte(pUART);
+   	/* enable rx interrupt */
+   	Chip_UART_IntEnable(pUART, UART_IER_RBRINT);
 }
+
+uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint32_t const size)
+{
+   uint32_t ret = 0;
+
+   while((Chip_UART_ReadLineStatus(pUART) & UART_LSR_THRE) && (ret < size))
+   {
+      /* send first byte */
+      Chip_UART_SendByte(pUART, buffer[ret]);
+      /* bytes written */
+      ret++;
+   }
+   return ret;
+}
+
 
 /* Initialize debug output via UART for board */
 void Board_Debug_Init(void)
@@ -133,7 +184,6 @@ void Board_LED_Toggle(uint8_t LEDNumber)
 
 void Board_Buttons_Init(void)
 {
-	//Chip_SCU_PinMuxSet(0x2, 7, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));		// P2_7 as GPIO0[7]
 	Chip_SCU_PinMuxSet(0x1, 0, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));		// P1_0 as GPIO0[4]
 	Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON1_GPIO_PORT_NUM, BUTTONS_BUTTON1_GPIO_BIT_NUM);	// input
 
@@ -145,7 +195,6 @@ void Board_Buttons_Init(void)
 
         Chip_SCU_PinMuxSet(0x1, 6, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_6 as GPIO1[9]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON4_GPIO_PORT_NUM, BUTTONS_BUTTON4_GPIO_BIT_NUM);   // input
-
 }
 
 int Buttons_GetStatusByNumber(int BUTTONNumber)
@@ -179,6 +228,7 @@ int Buttons_GetStatusByNumber(int BUTTONNumber)
 	return -1;
 }
 
+/*
 uint32_t Buttons_GetStatus(void)
 {
 	uint8_t ret = NO_BUTTON_PRESSED;
@@ -186,7 +236,7 @@ uint32_t Buttons_GetStatus(void)
 		ret |= BUTTONS_BUTTON1;
 	}
 	return ret;
-}
+}*/
 
 void Board_Joystick_Init(void)
 {}
@@ -216,6 +266,14 @@ void Board_Init(void)
 
 	/* Initialize LEDs */
 	Board_LED_Init();
+
+	/* Initialize uarts */
+	Board_UART_Init(LPC_USART0); //RS 485
+	Board_UART_Init(LPC_USART3); // rs232
+
+	/* Initialize buttons */
+	Board_Buttons_Init();
+
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }
 
