@@ -14,7 +14,7 @@
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_HELPER_REPL         (0)
+#define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_ENABLE_DOC_STRING   (0)
@@ -83,5 +83,14 @@ extern const struct _mp_obj_module_t mp_module_collections;
 // We need to provide a declaration/definition of alloca()
 //#define alloca(x) (void*)m_new(byte, (x))
 
+//static inline void mp_hal_set_interrupt_char(char c) {}
+
+#define MICROPY_HW_BOARD_NAME "minimal"
+#define MICROPY_HW_MCU_NAME "unknown-cpu"
+
+#define MP_STATE_PORT MP_STATE_VM
+
+#define MICROPY_PORT_ROOT_POINTERS \
+    const char *readline_hist[8];
 
 #define MICROPY_HAL_H "ciaanxp_mphal.h"

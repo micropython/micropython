@@ -13,6 +13,8 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I..
+INC += -I../mphal
+INC += -I../lib/mp-readline
 INC += -Iboard_ciaa_edu_4337/inc/ -Ilpc_chip_43xx/inc/
 INC += -I$(BUILD)
 
@@ -40,6 +42,8 @@ SRC_C = \
 	modpyb.c \
 	ciaanxp_mphal.c \
 	modpybled.c \
+	stmhal/pyexec.c \
+	lib/mp-readline/readline.c \
 	modpybswitch.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
