@@ -12,12 +12,11 @@
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
-#include "ProgramScript.c" // generated with py2c.py
-
 // maximum heap for device with 8k RAM
 static char *stack_top;
 static char heap[16*1024];
 
+extern const char programScript[];
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);

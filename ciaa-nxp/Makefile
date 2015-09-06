@@ -1,7 +1,10 @@
 include ../py/mkenv.mk
 
 # Generate python script binary data
-R:=$(shell python py2c.py)
+#R:=$(shell python py2c.py)
+build/ProgramScript.c: py/Main.py
+	@echo "Generate program script"
+	@python py2c.py
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -36,6 +39,7 @@ LIBS =
 
 SRC_C = \
 	main.c \
+	build/ProgramScript.c \
 	sysinit.c \
 	system.c \
 	cr_startup_lpc43xx.c \

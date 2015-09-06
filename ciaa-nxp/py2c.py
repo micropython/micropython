@@ -13,7 +13,7 @@ output+="0x00};"
 
 
 print("Creating output file...")
-file = open("./ProgramScript.c", "w")
+file = open("./build/ProgramScript.c", "w")
 file.write(output)
 file.close()
 
