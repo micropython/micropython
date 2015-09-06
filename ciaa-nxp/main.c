@@ -67,8 +67,20 @@ int main(int argc, char **argv) {
     mp_hal_init();
 
     // prueba uart 485
-    while(1)
+    //while(1)
+	char rxBuffer[512];
         Board_UART_Write(LPC_USART3,"HOLA", 4);
+	Board_UART_setRxBuffer(LPC_USART3,rxBuffer,sizeof(rxBuffer),10000,'o');
+	while(1)
+	{
+		if(Board_UART_isNewPacket(LPC_USART3))
+		{
+			char aux[1024];
+			sprintf(aux,"llegaron %d bytes, contenido:%s",Board_UART_getRxSize(LPC_USART3),rxBuffer);
+			Board_UARTPutSTR(aux);
+			Board_UART_resetRx(LPC_USART3);
+		}
+	}
     //____________
 
     do_str(programScript, MP_PARSE_FILE_INPUT);

@@ -49,10 +49,22 @@ typedef struct {
 
 static const io_port_t gpioLEDBits[] = {{0, 14}, {1, 11}, {1, 12}, {5, 0}, {5, 1}, {5, 2}};
 
+typedef struct {
+	uint8_t* buffer;
+	uint32_t size;
+	uint32_t index;
+	uint32_t finalByte;
+	uint32_t timeout;
+	uint32_t timeoutCounter;
+	uint8_t flagNewPacket;
+} UartRxBufferData;
+
+static UartRxBufferData uart0RxBufferData;
+static UartRxBufferData uart3RxBufferData;
+
+//================================================[UART Management]==========================================================
 void Board_UART_Init(LPC_USART_T *pUART)
 {
-	//Chip_SCU_PinMuxSet(0x6, 4, (SCU_MODE_INACT | SCU_MODE_FUNC2));					/* P6,4 : UART0_TXD */
-	//Chip_SCU_PinMuxSet(0x2, 1, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC1));/* P2.1 : UART0_RXD */
 	if(pUART==LPC_USART0)
 	{
 		/* UART0 (RS485/Profibus) */
@@ -69,6 +81,14 @@ void Board_UART_Init(LPC_USART_T *pUART)
    		Chip_UART_SetRS485Flags(LPC_USART0, UART_RS485CTRL_DCTRL_EN | UART_RS485CTRL_OINV_1);
 
    		Chip_SCU_PinMux(6, 2, MD_PDN, FUNC2);              /* P6_2: UART0_DIR */
+		uart0RxBufferData.buffer = NULL;
+		uart0RxBufferData.size=0;
+		uart0RxBufferData.index=0;
+		uart0RxBufferData.flagNewPacket=0;
+		uart0RxBufferData.timeoutCounter=0;
+        	NVIC_SetPriority(USART0_IRQn, 1);
+        	NVIC_EnableIRQ(USART0_IRQn);
+
 	}
 	else if(pUART==LPC_USART3)
 	{
@@ -82,6 +102,14 @@ void Board_UART_Init(LPC_USART_T *pUART)
 
    		Chip_SCU_PinMux(2, 3, MD_PDN, FUNC2);              /* P2_3: UART3_TXD */
    		Chip_SCU_PinMux(2, 4, MD_PLN|MD_EZI|MD_ZI, FUNC2); /* P2_4: UART3_RXD */
+		uart3RxBufferData.buffer = NULL;
+                uart3RxBufferData.size=0;
+                uart3RxBufferData.index=0;
+		uart3RxBufferData.flagNewPacket=0;
+                uart3RxBufferData.timeoutCounter=0;
+
+                NVIC_SetPriority(USART3_IRQn, 1);
+                NVIC_EnableIRQ(USART3_IRQn);
 	}
 	/* Restart FIFOS: set Enable, Reset content, set trigger level */
    	Chip_UART_SetupFIFOS(pUART, UART_FCR_FIFO_EN | UART_FCR_TX_RS | UART_FCR_RX_RS | UART_FCR_TRG_LEV0);
@@ -95,15 +123,163 @@ uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint
 {
    uint32_t ret = 0;
 
-   while((Chip_UART_ReadLineStatus(pUART) & UART_LSR_THRE) && (ret < size))
+   while(ret<size)
    {
-      /* send first byte */
-      Chip_UART_SendByte(pUART, buffer[ret]);
-      /* bytes written */
-      ret++;
+       while((Chip_UART_ReadLineStatus(pUART) & UART_LSR_THRE) == 0){}
+
+       Chip_UART_SendByte(pUART, buffer[ret]);
+       /* bytes written */
+       ret++;
    }
    return ret;
 }
+
+void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte)
+{
+    if(pUART==LPC_USART0)
+    {
+	uart0RxBufferData.buffer = pBuffer;
+        uart0RxBufferData.size=size;
+	uart0RxBufferData.timeout=timeout;
+	uart0RxBufferData.finalByte=finalByte;
+    }else if(pUART==LPC_USART3)
+    {
+        uart3RxBufferData.buffer = pBuffer;
+        uart3RxBufferData.size=size;
+        uart3RxBufferData.timeout=timeout;
+        uart3RxBufferData.finalByte=finalByte;
+    }
+}
+
+uint32_t Board_UART_isNewPacket(LPC_USART_T *pUART)
+{
+    if(pUART==LPC_USART0)
+    {
+        return uart0RxBufferData.flagNewPacket;
+    }else if(pUART==LPC_USART3)
+    {
+        return uart3RxBufferData.flagNewPacket;
+    }
+    return 0;
+}
+
+uint32_t Board_UART_getRxSize(LPC_USART_T *pUART)
+{
+    if(pUART==LPC_USART0)
+    {
+        return uart0RxBufferData.index;
+    }else if(pUART==LPC_USART3)
+    {
+        return uart3RxBufferData.index;
+    }
+    return 0;
+}
+
+void Board_UART_resetRx(LPC_USART_T *pUART)
+{
+    if(pUART==LPC_USART0)
+    {
+        uart0RxBufferData.flagNewPacket=0;
+	uart0RxBufferData.timeoutCounter=0;
+	uart0RxBufferData.index=0;
+    }else if(pUART==LPC_USART3)
+    {
+        uart3RxBufferData.flagNewPacket=0;
+        uart3RxBufferData.timeoutCounter=0;
+        uart3RxBufferData.index=0;
+    }
+}
+
+void UART3_IRQHandler (void)
+{
+   uint8_t status = Chip_UART_ReadLineStatus(LPC_USART3);
+
+   if(status & UART_LSR_RDR)
+   {
+	if(uart3RxBufferData.index<uart3RxBufferData.size)
+	{
+  	 	uart3RxBufferData.buffer[uart3RxBufferData.index] = Chip_UART_ReadByte(LPC_USART3);
+		if(uart3RxBufferData.timeout==0)
+		{
+			if(uart3RxBufferData.buffer[uart3RxBufferData.index]==uart3RxBufferData.finalByte)
+			{
+				uart3RxBufferData.flagNewPacket=1;
+				//Board_UARTPutSTR("entro paquete por byte final!:");
+			        //Board_UARTPutSTR(uart3RxBufferData.buffer);
+			}
+		}
+		else
+		{
+			uart3RxBufferData.timeoutCounter=uart3RxBufferData.timeout;
+		}
+		uart3RxBufferData.index++;
+	}
+	else
+		uart3RxBufferData.flagNewPacket=1;
+   }
+}
+
+void UART0_IRQHandler (void)
+{
+   uint8_t status = Chip_UART_ReadLineStatus(LPC_USART0);
+
+   if(status & UART_LSR_RDR)
+   {
+        if(uart0RxBufferData.index<uart0RxBufferData.size)
+        {
+                uart0RxBufferData.buffer[uart0RxBufferData.index] = Chip_UART_ReadByte(LPC_USART0);
+                if(uart0RxBufferData.timeout==0)
+                {
+                        if(uart0RxBufferData.buffer[uart0RxBufferData.index]==uart0RxBufferData.finalByte)
+                        {
+                                uart0RxBufferData.flagNewPacket=1;
+                                //Board_UARTPutSTR("entro paquete por byte final!:");
+                                //Board_UARTPutSTR(uart0RxBufferData.buffer);
+                        }
+                }
+                else
+                {
+                        uart3RxBufferData.timeoutCounter=uart3RxBufferData.timeout;
+                }
+                uart3RxBufferData.index++;
+        }
+        else
+                uart3RxBufferData.flagNewPacket=1;
+   }
+}
+
+void Board_UART_tick_ms(void)
+{
+        if(uart0RxBufferData.flagNewPacket==0)
+        {
+                if(uart0RxBufferData.timeout!=0 && uart0RxBufferData.timeoutCounter>0)
+                {
+                        uart0RxBufferData.timeoutCounter--;
+                        if(uart0RxBufferData.timeoutCounter==0)
+                        {
+                                uart0RxBufferData.flagNewPacket=1;
+                                //Board_UARTPutSTR("entro paquete por timeout!:");
+                                //Board_UARTPutSTR(uart0RxBufferData.buffer);
+                        }
+                }
+        }
+
+	if(uart3RxBufferData.flagNewPacket==0)
+	{
+		if(uart3RxBufferData.timeout!=0 && uart3RxBufferData.timeoutCounter>0)
+		{
+			uart3RxBufferData.timeoutCounter--;
+			if(uart3RxBufferData.timeoutCounter==0)
+			{
+				uart3RxBufferData.flagNewPacket=1;
+				//Board_UARTPutSTR("entro paquete por timeout!:");
+                                //Board_UARTPutSTR(uart3RxBufferData.buffer);
+			}
+		}
+	}
+}
+//===================================================================================================================================
+
 
 
 /* Initialize debug output via UART for board */

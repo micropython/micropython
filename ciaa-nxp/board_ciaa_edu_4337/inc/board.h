@@ -312,6 +312,45 @@ uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint
 
 
 /**
+ * @brief       Sets RX buffer
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @param       pBuffer  : Pointer to RX buffer
+ * @param       size     : Size of RX buffer
+ * @param       timeout     : timeout in milliseconds before rx notification
+ * @param       finalByte     : final byte value for rx notification
+ * @return      void
+ */
+void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
+
+/**
+ * @brief       This function must be called each millisecond for uart rx timeout calculation
+ * @return      void
+ */
+void Board_UART_tick_ms(void);
+
+/**
+ * @brief       return 1 if new packet is available in rx buffer
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      return 1 if new packet is available in rx buffer
+ */
+uint32_t Board_UART_isNewPacket(LPC_USART_T *pUART);
+
+/**
+ * @brief       Prepare rx buffer for new reception
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      void
+ */
+void Board_UART_resetRx(LPC_USART_T *pUART);
+
+
+/**
+ * @brief       Returns packet size
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      Packet size
+ */
+uint32_t Board_UART_getRxSize(LPC_USART_T *pUART);
+
+/**
  * @}
  */
 
