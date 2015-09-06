@@ -42,17 +42,14 @@ void mp_hal_init(void) {
 	SysTick_Config(SystemCoreClock/1000);
     Board_Init();
     Board_Buttons_Init();
-    // ver que es esto
-    //MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 }
 
 mp_uint_t mp_hal_get_milliseconds(void) {
-    // TODO
+    return tick_ct;
     return tick_ct;
 }
 
 void mp_hal_milli_delay(mp_uint_t ms) {
-    // tuned for fixed CPU frequency
 	uint32_t end = tick_ct + ms;
 	while(tick_ct < end)
 		__WFI();
@@ -63,12 +60,6 @@ void mp_hal_set_interrupt_char(int c) {
 }
 
 int mp_hal_stdin_rx_chr(void) {
-   /*
-    for (;;) {
-        if (uart_rx_any()) {
-            return uart_rx_char();
-        }
-    } */
    for (;;) {
         int r = Board_UARTGetChar();
         if (r!= EOF) {
@@ -83,7 +74,6 @@ void mp_hal_stdout_tx_str(const char *str) {
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     for (; len > 0; --len) {
-        //uart_tx_char(*str++);
     	Board_UARTPutChar(*str++);
     }
 }
@@ -91,10 +81,8 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     for (; len > 0; --len) {
         if (*str == '\n') {
-            //uart_tx_char('\r');
         	Board_UARTPutChar('\r');
         }
-        //uart_tx_char(*str++);
         Board_UARTPutChar(*str++);
     }
 }

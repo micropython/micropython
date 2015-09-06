@@ -7,6 +7,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "ciaanxp_mphal.h"
 
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
@@ -15,7 +16,7 @@
 
 // maximum heap for device with 8k RAM
 static char *stack_top;
-static char heap[4*1024];
+static char heap[16*1024];
 
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -41,12 +42,10 @@ int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
-    // Heap initialization
     int i;
     for(i=0;i<sizeof(heap);i++)
    	heap[i]=0;
     gc_init(heap, heap + sizeof(heap));
-    //____________________
 
     mp_init();
     mp_hal_init();
@@ -60,10 +59,6 @@ void gc_collect(void) {
     void *dummy;
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
-
-    // run root_collect from registers is still missing
-    //...
-
     gc_collect_end();
     //gc_dump_info();
 }
