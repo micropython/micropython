@@ -30,6 +30,7 @@
 #include MICROPY_HAL_H
 #include "modpyb.h"
 
+
 STATIC mp_obj_t pyb_millis(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_milliseconds());
 }
@@ -42,6 +43,7 @@ STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
     return MP_OBJ_NEW_SMALL_INT((currMillis - startMillis) & 0x1fff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
+
 
 STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
     mp_int_t ms = mp_obj_get_int(ms_in);
