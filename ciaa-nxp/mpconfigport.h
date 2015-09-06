@@ -9,8 +9,8 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_CONST          (0)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
+#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
@@ -32,7 +32,7 @@
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_ATTRTUPLE        (0)
-#define MICROPY_PY_COLLECTIONS      (0)
+#define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
@@ -41,6 +41,11 @@
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+
+// Optimizations
+#define MICROPY_OPT_COMPUTED_GOTO (0)
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
+
 
 // type definitions for the specific machine
 
@@ -64,8 +69,12 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 // extra builtin modules to add to the list of known ones
 extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t mp_module_collections;
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_collections), (mp_obj_t)&mp_module_collections }, \
+
 
 
 // We need to provide a declaration/definition of alloca()

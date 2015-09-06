@@ -30,22 +30,27 @@
 
 static int interrupt_char;
 
+static volatile mp_uint_t tick_ct = 0;
+
+void SysTick_Handler(void) {
+	tick_ct++;
+}
+
 void mp_hal_init(void) {
-    // ver que es esto
-    //MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+	SystemCoreClockUpdate();
+	SysTick_Config(SystemCoreClock/1000);
+	Board_Init();
+    	Board_Buttons_Init();
 }
 
 mp_uint_t mp_hal_get_milliseconds(void) {
-    // TODO
-    return 0;
+    return tick_ct;
 }
 
 void mp_hal_milli_delay(mp_uint_t ms) {
-    // tuned for fixed CPU frequency
-    for (int i = ms; i > 0; i--) {
-        for (volatile int j = 0; j < 10000; j++) {
-        }
-    }
+	uint32_t end = tick_ct + ms;
+		while(tick_ct < end)
+			__WFI();
 }
 
 void mp_hal_set_interrupt_char(int c) {

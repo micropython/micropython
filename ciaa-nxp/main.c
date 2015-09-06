@@ -7,6 +7,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "ciaanxp_mphal.h"
 
 #include "modpyb.h"
 
@@ -40,8 +41,8 @@ int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
-    Board_Init();
-    Board_Buttons_Init();
+//    Board_Init();
+//    Board_Buttons_Init();
 
     // Heap initialization
     /*
@@ -59,6 +60,7 @@ int main(int argc, char **argv) {
     //____________________
 
     mp_init();
+    mp_hal_init();
     do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;

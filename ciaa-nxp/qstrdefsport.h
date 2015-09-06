@@ -13,6 +13,8 @@ Q(toggle)
 Q(Switch)
 Q(value)
 
+Q(collections)
+
 /*
 Q(readall)
 Q(readinto)
