@@ -1,15 +1,9 @@
 import pyb
 
-@micropython.native
-def performanceTest():
-	d = 10000
-	print("start. Wait for %d milis" % d)
-	millis = pyb.millis
-	endTime = millis() + d
-	count = 0
-	while millis() < endTime:
-		count += 1
-	print("Count: ", count)
+print("Abro uart 3")
+uart = pyb.UART(3)
+print("Abri uart 3")
 
-while(True):
-	performanceTest()
+uart.init(115200,bits=8, parity=None, stop=1,timeout=1000, timeout_char=0, read_buf_len=64)
+
+

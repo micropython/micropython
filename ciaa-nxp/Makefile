@@ -41,6 +41,7 @@ SRC_C = \
 	ciaanxp_mphal.c \
 	modpybled.c \
 	modpybswitch.c \
+	modpybuart.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 #	printf.c \
