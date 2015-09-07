@@ -28,12 +28,6 @@
 #ifndef PYBUART_H_
 #define PYBUART_H_
 
-// interrupt triggers
-#define E_UART_TRIGGER_RX_ANY                   (0x01)
-#define E_UART_TRIGGER_RX_HALF                  (0x02)
-#define E_UART_TRIGGER_RX_FULL                  (0x04)
-#define E_UART_TRIGGER_TX_DONE                  (0x08)
-
 typedef enum {
     PYB_UART_0      =  0,
     PYB_UART_1      =  1,

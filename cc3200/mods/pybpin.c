@@ -60,6 +60,8 @@ DECLARE PRIVATE FUNCTIONS
 ******************************************************************************/
 STATIC pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
 STATIC pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit);
+STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);
+STATIC void pin_deassign (pin_obj_t* pin);
 STATIC void pin_obj_configure (const pin_obj_t *self);
 STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *wake_pin, uint *idx);
 STATIC void pin_extint_enable (mp_obj_t self_in);
@@ -68,6 +70,7 @@ STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t prio
 STATIC void pin_validate_mode (uint mode);
 STATIC void pin_validate_pull (uint pull);
 STATIC void pin_validate_drive (uint strength);
+STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type);
 STATIC void GPIOA0IntHandler (void);
 STATIC void GPIOA1IntHandler (void);
 STATIC void GPIOA2IntHandler (void);
@@ -115,9 +118,7 @@ void pin_init0(void) {
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
     for (uint i = 0; i < named_map->used - 1; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
-        pin_config (pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD, -1, PIN_STRENGTH_2MA);
-        // mark it as unused again
-        pin->used = false;
+        pin_deassign (pin);
     }
 #endif
 }
@@ -147,10 +148,12 @@ void pin_config (pin_obj_t *self, int af, uint mode, uint pull, int value, uint 
     if (af != -1) {
         self->af = af;
     }
+
     // if value is -1, then we want to keep it as it is
     if (value != -1) {
         self->value = value;
     }
+
     // mark the pin as used
     self->used = true;
     pin_obj_configure ((const pin_obj_t *)self);
@@ -160,12 +163,27 @@ void pin_config (pin_obj_t *self, int af, uint mode, uint pull, int value, uint 
 }
 
 int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
-    for (int i = 0; i < pin->num_afs; i++) {
-        if (pin->af_list[i].fn == fn && pin->af_list[i].unit == unit && pin->af_list[i].type == type) {
-            return pin->af_list[i].idx;
+    int8_t af = pin_obj_find_af(pin, fn, unit, type);
+    if (af < 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    return af;
+}
+
+void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
+    for (uint i = 0; i < named_map->used - 1; i++) {
+        pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
+        // af is different than GPIO
+        if (pin->af > PIN_MODE_0) {
+            // check if the pin supports the target af
+            int af = pin_obj_find_af(pin, fn, unit, type);
+            if (af > 0 && af == pin->af) {
+                // the pin is assigned to the target af, de-assign it
+                pin_deassign (pin);
+            }
         }
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
 /******************************************************************************
@@ -189,6 +207,20 @@ STATIC pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uin
         }
     }
     return NULL;
+}
+
+STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
+    for (int i = 0; i < pin->num_afs; i++) {
+        if (pin->af_list[i].fn == fn && pin->af_list[i].unit == unit && pin->af_list[i].type == type) {
+            return pin->af_list[i].idx;
+        }
+    }
+    return -1;
+}
+
+STATIC void pin_deassign (pin_obj_t* pin) {
+    pin_config (pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD, -1, PIN_STRENGTH_4MA);
+    pin->used = false;
 }
 
 STATIC void pin_obj_configure (const pin_obj_t *self) {
@@ -370,6 +402,18 @@ STATIC void pin_validate_drive(uint strength) {
     }
 }
 
+STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type) {
+    for (int i = 0; i < pin->num_afs; i++) {
+        if (pin->af_list[i].idx == idx) {
+            *fn = pin->af_list[i].fn;
+            *unit = pin->af_list[i].unit;
+            *type = pin->af_list[i].type;
+            return;
+        }
+    }
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+}
+
 STATIC void GPIOA0IntHandler (void) {
     EXTI_Handler(GPIOA0_BASE);
 }
@@ -455,6 +499,12 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
         goto invalid_args;
     }
 
+    // check for a valid af and then free it from any other pins
+    if (af > PIN_MODE_0) {
+        uint8_t fn, unit, type;
+        pin_validate_af (self, af, &fn, &unit, &type);
+        pin_free_af_from_pins(fn, unit, type);
+    }
     pin_config (self, af, mode, pull, value, strength);
 
     return mp_const_none;
