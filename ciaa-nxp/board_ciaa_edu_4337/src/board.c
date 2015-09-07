@@ -151,6 +151,28 @@ void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,ui
     }
 }
 
+void Board_UART_setConfig(LPC_USART_T *pUART,int32_t baud,int32_t stopBits,int32_t parity)
+{
+	Chip_UART_SetBaud(pUART, baud);
+
+	uint32_t config=UART_LCR_WLEN8;
+	if(stopBits==2)
+		config|=UART_LCR_SBS_2BIT;
+	else
+		config|=UART_LCR_SBS_1BIT;
+
+	switch(parity)
+	{
+		case 1: config|=UART_LCR_PARITY_ODD; break;
+		case 2: config|=UART_LCR_PARITY_EVEN; break;
+		case 3: config|=UART_LCR_PARITY_F_0; break;
+		case 4: config|=UART_LCR_PARITY_F_1; break;
+		default: config|=UART_LCR_PARITY_DIS;
+	}
+	Chip_UART_ConfigData(pUART, config);
+
+}
+
 uint32_t Board_UART_isNewPacket(LPC_USART_T *pUART)
 {
     if(pUART==LPC_USART0)
@@ -188,6 +210,19 @@ void Board_UART_resetRx(LPC_USART_T *pUART)
         uart3RxBufferData.timeoutCounter=0;
         uart3RxBufferData.index=0;
     }
+}
+
+int32_t Board_UART_getChar(LPC_USART_T *pUART)
+{
+        if (Chip_UART_ReadLineStatus(pUART) & UART_LSR_RDR) {
+                return (int32_t)Chip_UART_ReadByte(pUART);
+        }
+	return -1;
+}
+
+int32_t Board_UART_charAvailable(LPC_USART_T *pUART)
+{
+	return Chip_UART_ReadLineStatus(pUART) & UART_LSR_RDR;
 }
 
 void UART3_IRQHandler (void)

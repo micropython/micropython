@@ -69,8 +69,9 @@ int main(int argc, char **argv) {
     // prueba uart 485
     //while(1)
 	char rxBuffer[512];
+	Board_UART_setRxBuffer(LPC_USART3,rxBuffer,sizeof(rxBuffer),10000,NULL);
+	Board_UART_setConfig(LPC_USART3,115200, 1,0);
         Board_UART_Write(LPC_USART3,"HOLA", 4);
-	Board_UART_setRxBuffer(LPC_USART3,rxBuffer,sizeof(rxBuffer),10000,'o');
 	while(1)
 	{
 		if(Board_UART_isNewPacket(LPC_USART3))

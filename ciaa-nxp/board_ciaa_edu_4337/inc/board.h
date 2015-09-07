@@ -351,6 +351,32 @@ void Board_UART_resetRx(LPC_USART_T *pUART);
 uint32_t Board_UART_getRxSize(LPC_USART_T *pUART);
 
 /**
+ * @brief       Configura UART
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @param       baud     : Baudrate
+ * @param       dataBits : Amount of bits of data
+ * @param       stopBits : Stop bits (1 or 2)
+ * @param       parity   : 0: disable - 1: odd - 2: even - 3: forced 0 - 4: forced 1
+ * @return      void
+ */
+void Board_UART_setConfig(LPC_USART_T *pUART,int32_t baud, int32_t stopBits,int32_t parity);
+
+/**
+ * @brief       Returns received char
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      Received char or -1
+ */
+int32_t Board_UART_getChar(LPC_USART_T *pUART);
+
+/**
+ * @brief       Returns if there is a char available for read
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      0: there is not a char available
+ */
+int32_t Board_UART_charAvailable(LPC_USART_T *pUART);
+
+
+/**
  * @}
  */
 
