@@ -26,3 +26,9 @@ try:
     eval('"\\U00110000"')
 except SyntaxError:
     print('SyntaxError')
+
+# test unicode string given to int
+try:
+    int('\u0200')
+except ValueError:
+    print('ValueError')
