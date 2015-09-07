@@ -76,6 +76,17 @@ print(uart1.read() == b'')
 print(uart1.write(b'123') == 3)
 print(uart0.read() == b'123')
 
+Pin('GP13', mode=Pin.IN)
+Pin('GP12', mode=Pin.IN)
+# no pin assignemnt
+uart0 = UART(0, 1000000, pins=None)
+print(uart0.write(b'123456789') == 9)
+print(uart1.read() == b'')
+print(uart1.write(b'123456789') == 9)
+print(uart0.read() == b'')
+print(Pin.board.GP12)
+print(Pin.board.GP13)
+
 # next ones must raise
 try:
     UART(0, 9600, parity=2, pins=('GP12', 'GP13', 'GP7'))
