@@ -105,8 +105,9 @@ STATIC bool is_following_digit(mp_lexer_t *lex) {
     return unichar_isdigit(lex->chr1);
 }
 
-STATIC bool is_following_letter(mp_lexer_t *lex) {
-    return unichar_isalpha(lex->chr1);
+STATIC bool is_following_base_char(mp_lexer_t *lex) {
+    const unichar chr1 = lex->chr1 | 0x20;
+    return chr1 == 'b' || chr1 == 'o' || chr1 == 'x';
 }
 
 STATIC bool is_following_odigit(mp_lexer_t *lex) {
@@ -541,7 +542,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
             lex->tok_kind = MP_TOKEN_FLOAT_OR_IMAG;
         } else {
             lex->tok_kind = MP_TOKEN_INTEGER;
-            if (is_char(lex, '0') && is_following_letter(lex)) {
+            if (is_char(lex, '0') && is_following_base_char(lex)) {
                 forced_integer = true;
             }
         }
