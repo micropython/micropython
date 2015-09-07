@@ -500,7 +500,9 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                         }
                         #endif
                         else {
-                            assert(!"TODO: Throw an error, invalid escape code probably");
+                            // unicode character out of range
+                            // this raises a generic SyntaxError; could provide more info
+                            lex->tok_kind = MP_TOKEN_INVALID;
                         }
                     }
                 } else {
