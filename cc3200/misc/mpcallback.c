@@ -91,6 +91,14 @@ void mpcallback_wake_all (void) {
     }
 }
 
+void mpcallback_disable_all (void) {
+    // re-enable all active callback objects one by one
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
+        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+        callback_obj->methods->disable(callback_obj->parent);
+    }
+}
+
 void mpcallback_remove (const mp_obj_t parent) {
     mpcallback_obj_t *callback_obj;
     if ((callback_obj = mpcallback_find(parent))) {

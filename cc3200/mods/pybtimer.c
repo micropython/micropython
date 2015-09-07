@@ -142,26 +142,6 @@ void timer_init0 (void) {
     mp_obj_list_init(&MP_STATE_PORT(pyb_timer_channel_obj_list), 0);
 }
 
-void timer_disable_all (void) {
-    pyb_timer_obj_t timer = {
-            .timer = TIMERA0_BASE,
-            .intflags = TIMER_CAPB_EVENT   | TIMER_CAPB_MATCH |
-                        TIMER_TIMB_TIMEOUT | TIMER_CAPA_EVENT |
-                        TIMER_CAPA_MATCH   | TIMER_TIMA_TIMEOUT,
-            .peripheral = PRCM_TIMERA0
-    };
-
-    for (uint32_t i = 0; i < PYBTIMER_NUM_TIMERS; i++) {
-        // in case it's not clocked
-        MAP_PRCMPeripheralClkEnable(timer.peripheral, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
-        timer_disable(&timer);
-        // timer base offset according to hw_memmap.h
-        timer.timer += 0x1000;
-        // peripheral offset according to prcm.h
-        timer.peripheral++;
-    }
-}
-
 void pyb_timer_channel_callback_enable (mp_obj_t self_in) {
     pyb_timer_channel_obj_t *self = self_in;
     MAP_TimerIntClear(self->timer->timer, self->timer->intflags & self->channel);

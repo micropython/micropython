@@ -5,7 +5,6 @@ from pyb import Pin
 import os
 
 machine = os.uname().machine
-
 if 'LaunchPad' in machine:
     pin_map = ['GP24', 'GP12', 'GP14', 'GP15', 'GP16', 'GP17', 'GP28', 'GP8', 'GP6', 'GP30', 'GP31', 'GP3', 'GP0', 'GP4', 'GP5']
     af_range = range(1, 16)
@@ -24,7 +23,7 @@ def test_pin_read(pull):
     # enable the pull resistor on all pins, then read the value
     for p in pin_map:
         pin = Pin(p, mode=Pin.IN, pull=pull)
-        # read the pin value
+    for p in pin_map:
         print(pin())
 
 def test_pin_af():

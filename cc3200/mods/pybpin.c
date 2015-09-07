@@ -110,9 +110,8 @@ STATIC pybpin_wake_pin_t pybpin_wake_pin[PYBPIN_NUM_WAKE_PINS] =
 void pin_init0(void) {
 // this initalization also reconfigures the JTAG/SWD pins
 #ifndef DEBUG
-    // GP10 and GP11 must be assigned to the GPIO peripheral (the default is I2C), so that the I2C bus
-    // can then be assigned safely to any other pins (as recomended by the SDK release notes).
-    // Anyway, we initialize all pins here, as inputs WITHOUT any pull resistor enabled
+    // assign all pins to the GPIO module so that peripherals can be connected to any
+    // pins without conflicts after a soft reset
     mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
     for (uint i = 0; i < named_map->used - 1; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
@@ -555,20 +554,6 @@ STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
-STATIC mp_obj_t pin_low(mp_obj_t self_in) {
-    pin_obj_t *self = self_in;
-    MAP_GPIOPinWrite(self->port, self->bit, 0);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
-
-STATIC mp_obj_t pin_high(mp_obj_t self_in) {
-    pin_obj_t *self = self_in;
-    MAP_GPIOPinWrite(self->port, self->bit, self->bit);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);
-
 STATIC mp_obj_t pin_toggle(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
     MAP_GPIOPinWrite(self->port, self->bit, ~MAP_GPIOPinRead(self->port, self->bit));
@@ -623,6 +608,26 @@ STATIC mp_obj_t pin_drive(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_drive_obj, 1, 2, pin_drive);
+
+STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_t _args[2] = {self_in, *args};
+    return pin_value (n_args + 1, _args);
+}
+
+STATIC mp_obj_t pin_alt_list(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    mp_obj_t af[2];
+    mp_obj_t afs = mp_obj_new_list(0, NULL);
+
+    for (int i = 0; i < self->num_afs; i++) {
+        af[0] = MP_OBJ_NEW_QSTR(self->af_list[i].name);
+        af[1] = mp_obj_new_int(self->af_list[i].idx);
+        mp_obj_list_append(afs, mp_obj_new_tuple(MP_ARRAY_SIZE(af), af));
+    }
+    return afs;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_alt_list_obj, pin_alt_list);
 
 STATIC mp_obj_t pin_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
@@ -754,26 +759,6 @@ invalid_args:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_callback_obj, 1, pin_callback);
-
-STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_t _args[2] = {self_in, *args};
-    return pin_value (n_args + 1, _args);
-}
-
-STATIC mp_obj_t pin_alt_list(mp_obj_t self_in) {
-    pin_obj_t *self = self_in;
-    mp_obj_t af[2];
-    mp_obj_t afs = mp_obj_new_list(0, NULL);
-
-    for (int i = 0; i < self->num_afs; i++) {
-        af[0] = MP_OBJ_NEW_QSTR(self->af_list[i].name);
-        af[1] = mp_obj_new_int(self->af_list[i].idx);
-        mp_obj_list_append(afs, mp_obj_new_tuple(MP_ARRAY_SIZE(af), af));
-    }
-    return afs;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_alt_list_obj, pin_alt_list);
 
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
