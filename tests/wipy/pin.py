@@ -7,10 +7,10 @@ import os
 machine = os.uname().machine
 if 'LaunchPad' in machine:
     pin_map = ['GP24', 'GP12', 'GP14', 'GP15', 'GP16', 'GP17', 'GP28', 'GP8', 'GP6', 'GP30', 'GP31', 'GP3', 'GP0', 'GP4', 'GP5']
-    af_range = range(1, 16)
+    max_af_idx = 15
 elif 'WiPy' in machine:
     pin_map = ['GP23', 'GP24', 'GP12', 'GP13', 'GP14', 'GP9', 'GP17', 'GP28', 'GP22', 'GP8', 'GP30', 'GP31', 'GP0', 'GP4', 'GP5']
-    af_range = range(1, 16)
+    max_af_idx = 15
 else:
     raise Exception('Board not supported!')
 
@@ -28,9 +28,10 @@ def test_pin_read(pull):
 
 def test_pin_af():
     for p in pin_map:
-        for n in af_range:
-            Pin(p, mode=Pin.ALT, alt=n)
-            Pin(p, mode=Pin.ALT_OPEN_DRAIN, alt=n)
+        for af in Pin(p).alt_list():
+            if af[1] <= max_af_idx:
+                Pin(p, mode=Pin.ALT, alt=af[1])
+                Pin(p, mode=Pin.ALT_OPEN_DRAIN, alt=af[1])
 
 # test un-initialized pins
 test_noinit()
@@ -66,10 +67,6 @@ print(pin)
 pin.init(mode=Pin.OUT, pull=Pin.PULL_UP, drive=pin.LOW_POWER)
 print(pin)
 pin.init(mode=Pin.OUT, pull=Pin.PULL_UP, drive=pin.HIGH_POWER)
-print(pin)
-pin = Pin(pin_map[0], Pin.ALT, Pin.PULL_NONE, alt=1)
-print(pin)
-pin = Pin(pin_map[0], Pin.ALT_OPEN_DRAIN, Pin.PULL_NONE, alt=15)
 print(pin)
 
 # test value in OUT mode

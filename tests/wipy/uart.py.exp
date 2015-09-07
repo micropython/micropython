@@ -28,7 +28,15 @@ True
 True
 True
 True
+True
+True
+True
+True
 Pin('GP12', mode=Pin.IN, pull=Pin.PULL_NONE, drive=Pin.MED_POWER, alt=-1)
 Pin('GP13', mode=Pin.IN, pull=Pin.PULL_NONE, drive=Pin.MED_POWER, alt=-1)
+Exception
+Exception
+Exception
+Exception
 Exception
 Exception

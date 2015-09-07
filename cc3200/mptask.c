@@ -145,7 +145,6 @@ soft_reset:
             mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
     };
     pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
-    uart_callback_new (pyb_stdio_uart, mp_const_none, INT_PRIORITY_LVL_3, E_UART_TRIGGER_RX_ANY);
 #else
     pyb_stdio_uart = MP_OBJ_NULL;
 #endif
