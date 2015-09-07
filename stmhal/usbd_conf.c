@@ -56,31 +56,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   
   if(hpcd->Instance == USB_OTG_FS)
   {
-    
-#if defined(STM32F427DISC)
-	/* Configure USB FS GPIOs */
-	__GPIOB_CLK_ENABLE();
-
-	GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
- 	/* Configure VBUS Pin */
-	// USB VBUS detect pin is PB13
-	GPIO_InitStruct.Pin  = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	// USB ID pin is always B12
-	GPIO_InitStruct.Pin = GPIO_PIN_12;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-#else
 		/* Configure USB FS GPIOs */
 		__GPIOA_CLK_ENABLE();
 
@@ -107,7 +82,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 		GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
 		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	#endif
-#endif
 
     /* Enable USB FS Clocks */ 
     __USB_OTG_FS_CLK_ENABLE();
@@ -119,9 +93,38 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
   } 
   
-  #if defined(USE_USB_HS)
+#if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {
+    
+#if defined(STM32F427DISC)
+    /* Configure USB FS GPIOs */
+    __GPIOB_CLK_ENABLE();
+    __GPIOC_CLK_ENABLE();
+
+    /* Configure DM DP Pins */
+    GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* Configure VBUS Pin */
+    GPIO_InitStruct.Pin = GPIO_PIN_13;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* Configure ID pin */
+    GPIO_InitStruct.Pin = GPIO_PIN_12;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#else
     /* Configure USB FS GPIOs */
     __GPIOA_CLK_ENABLE();
     __GPIOB_CLK_ENABLE();
@@ -173,7 +176,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
     HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
-    
+#endif    
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
     __USB_OTG_HS_ULPI_CLK_ENABLE();
@@ -389,6 +392,34 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
 
 #endif 
 #ifdef USE_USB_HS  
+#if defined(STM32F427DISC)
+  /*Set LL Driver parameters */
+  pcd_handle.Instance = USB_OTG_HS;
+  pcd_handle.Init.dev_endpoints = 4; 
+  pcd_handle.Init.use_dedicated_ep1 = 0;
+  pcd_handle.Init.ep0_mps = 0x40;  
+  pcd_handle.Init.dma_enable = 0;
+  pcd_handle.Init.low_power_enable = 0;
+  pcd_handle.Init.phy_itface = PCD_PHY_EMBEDDED; 
+  pcd_handle.Init.Sof_enable = 0;
+  pcd_handle.Init.speed = PCD_SPEED_FULL;
+#if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+  pcd_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
+#else
+  pcd_handle.Init.vbus_sensing_enable = 1;
+#endif
+  /* Link The driver to the stack */
+  pcd_handle.pData = pdev;
+  pdev->pData = &pcd_handle;
+  /*Initialize LL Driver */
+  HAL_PCD_Init(&pcd_handle);
+
+  HAL_PCD_SetRxFiFo(&pcd_handle, 0x80);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
+#else
   /*Set LL Driver parameters */
   pcd_handle.Instance = USB_OTG_HS;
   pcd_handle.Init.dev_endpoints = 6; 
@@ -416,7 +447,7 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetRxFiFo(&pcd_handle, 0x200);
   HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x80);
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x174); 
-
+#endif
   
 #endif 
   return USBD_OK;
