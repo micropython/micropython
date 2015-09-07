@@ -47,47 +47,6 @@
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
-///
-/// I2C is a two-wire protocol for communicating between devices.  At the physical
-/// level it consists of 2 wires: SCL and SDA, the clock and data lines respectively.
-///
-/// I2C objects are created attached to a specific bus.  They can be initialised
-/// when created, or initialised later on:
-///
-///     from pyb import I2C
-///
-///     i2c = I2C(1)                               # create
-///     i2c = I2C(1, I2C.MASTER, baudrate=50000)   # create and init with a 50KHz baudrate
-///     i2c.init(I2C.MASTER, baudrate=100000)      # init with a 100KHz baudrate
-///     i2c.deinit()                               # turn off the peripheral
-///
-/// Printing the i2c object gives you information about its configuration.
-///
-/// Basic methods for slave are send and recv:
-///
-///     i2c.send('abc')      # send 3 bytes
-///     i2c.send(0x42)       # send a single byte, given by the number
-///     data = i2c.recv(3)   # receive 3 bytes
-///
-/// To receive inplace, first create a bytearray:
-///
-///     data = bytearray(3)  # create a buffer
-///     i2c.recv(data)       # receive 3 bytes, writing them into data
-///
-/// A master must specify the recipient's address:
-///
-///     i2c.send('123', 0x42)        # send 3 bytes to slave with address 0x42
-///     i2c.send(b'456', addr=0x42)  # keyword for address
-///
-/// Master also has other methods:
-///
-///     i2c.is_ready(0x42)              # check if slave 0x42 is ready
-///     i2c.scan()                      # scan for slaves on the bus, returning
-///                                     #   a list of valid addresses
-///     i2c.mem_read(3, 0x42, 2)        # read 3 bytes from memory of slave 0x42,
-///                                     #   starting at address 2 in the slave
-///     i2c.mem_write('abc', 0x42, 2)   # write 3 bytes to memory of slave 0x42,
-///                                     #   starting at address 2 in the slave
 
 typedef struct _pyb_i2c_obj_t {
     mp_obj_base_t base;
@@ -262,12 +221,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-/// \method init(mode, *, baudrate=100000)
-///
-/// Initialise the I2C bus with the given parameters:
-///
-///   - `mode` must be either `I2C.MASTER` or `I2C.SLAVE`
-///   - `baudrate` is the SCL clock rate (only sensible for a master)
+/// \method init()
 STATIC const mp_arg_t pyb_i2c_init_args[] = {
     { MP_QSTR_mode,     MP_ARG_REQUIRED  | MP_ARG_INT, },
     { MP_QSTR_baudrate, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 100000} },
@@ -297,12 +251,6 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_uint_t n_args, const
 }
 
 /// \classmethod \constructor(bus, ...)
-///
-/// Construct an I2C object on the given bus.  `bus` can only be 1.
-/// With no additional parameters, the I2C object is created but not
-/// initialised (it has the settings from the last initialisation of
-/// the bus, if any).  If extra arguments are given, the bus is initialised.
-/// See `init` for parameters of initialisation.
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -310,6 +258,11 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     // setup the object
     pyb_i2c_obj_t *self = &pyb_i2c_obj;
     self->base.type = &pyb_i2c_type;
+
+    // check the peripheral id
+    if (mp_obj_get_int(args[0]) != 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+    }
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
@@ -327,7 +280,6 @@ STATIC mp_obj_t pyb_i2c_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
 
 /// \method deinit()
-/// Turn off the I2C bus.
 STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     // disable the peripheral
     MAP_I2CMasterDisable(I2CA0_BASE);
@@ -341,7 +293,6 @@ STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);
 
 /// \method is_ready(addr)
-/// Check if an I2C device responds to the given address.  Only valid when in master mode.
 STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
     mp_uint_t i2c_addr = mp_obj_get_int(i2c_addr_o);
     for (int i = 0; i < 7; i++) {
@@ -354,8 +305,6 @@ STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_i2c_is_ready_obj, pyb_i2c_is_ready);
 
 /// \method scan()
-/// Scan all I2C addresses from 0x01 to 0x7f and return a list of those that respond.
-/// Only valid when in master mode.
 STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (uint addr = 1; addr <= 127; addr++) {
@@ -366,17 +315,11 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
             }
         }
     }
-
     return list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_scan_obj, pyb_i2c_scan);
 
-/// \method send(send, addr=0x00)
-/// Send data on the bus:
-///
-///   - `send` is the data to send (an integer to send, or a buffer object)
-///   - `addr` is the address to send to (only required in master mode)
-/// Return value: `None`.
+/// \method send()
 STATIC const mp_arg_t pyb_i2c_send_args[] = {
     { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
     { MP_QSTR_addr,                      MP_ARG_INT, {.u_int = 0} },
@@ -403,16 +346,7 @@ STATIC mp_obj_t pyb_i2c_send(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_send_obj, 1, pyb_i2c_send);
 
-/// \method recv(recv, addr=0x00)
-///
-/// Receive data on the bus:
-///
-///   - `recv` can be an integer, which is the number of bytes to receive,
-///     or a mutable buffer, which will be filled with received bytes
-///   - `addr` is the address to receive from (only required in master mode)
-///
-/// Return value: if `recv` is an integer then a new buffer of the bytes received,
-/// otherwise the same buffer that was passed in to `recv`.
+/// \method recv()
 STATIC const mp_arg_t pyb_i2c_recv_args[] = {
     { MP_QSTR_recv,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
     { MP_QSTR_addr,                      MP_ARG_INT, {.u_int = 0} },
@@ -444,17 +378,7 @@ STATIC mp_obj_t pyb_i2c_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_recv_obj, 1, pyb_i2c_recv);
 
-/// \method mem_read(data, addr, memaddr, addr_size=8)
-///
-/// Read from the memory of an I2C device:
-///
-///   - `data` can be an integer or a buffer to read into
-///   - `addr` is the I2C device address
-///   - `memaddr` is the memory location within the I2C device
-///   - `addr_size` selects the width of memaddr: 8 or 16 bits
-///
-/// Returns the read data.
-/// This is only valid in master mode.
+/// \method mem_read()
 STATIC const mp_arg_t pyb_i2c_mem_read_args[] = {
     { MP_QSTR_data,      MP_ARG_REQUIRED  | MP_ARG_OBJ, },
     { MP_QSTR_addr,      MP_ARG_REQUIRED  | MP_ARG_INT, {.u_int = 0} },
@@ -498,17 +422,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(mp_uint_t n_args, const mp_obj_t *args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_read_obj, 1, pyb_i2c_mem_read);
 
-/// \method mem_write(data, addr, memaddr, addr_size=8)
-///
-/// Write to the memory of an I2C device:
-///
-///   - `data` can be an integer or a buffer to write from
-///   - `addr` is the I2C device address
-///   - `memaddr` is the memory location within the I2C device
-///   - `addr_size` selects the width of memaddr: 8 or 16 bits
-///
-/// Returns `None`.
-/// This is only valid in master mode.
+/// \method mem_write()
 STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // parse args (same as mem_read)
     mp_arg_val_t vals[PYB_I2C_MEM_READ_NUM_ARGS];
