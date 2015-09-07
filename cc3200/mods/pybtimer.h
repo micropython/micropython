@@ -34,5 +34,4 @@ extern const mp_obj_type_t pyb_timer_type;
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 void timer_init0 (void);
-void timer_disable_all (void);
 

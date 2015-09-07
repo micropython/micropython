@@ -115,6 +115,11 @@ typedef struct {
     uint8_t             used   : 1;
 } pin_obj_t;
 
+typedef struct {
+    pin_obj_t *pin;
+    uint8_t   af_idx;
+} pin_fn_t;
+
 extern const mp_obj_type_t pin_type;
 
 typedef struct {
