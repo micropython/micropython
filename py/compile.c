@@ -1355,9 +1355,8 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
-    if (!added) {
-        // TODO this is not compliant with CPython
-        compile_syntax_error(comp, pn, "identifier already used");
+    if (!added && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
+        compile_syntax_error(comp, pn, "identifier redefined as global");
         return;
     }
     id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
@@ -1382,9 +1381,8 @@ STATIC void compile_global_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
-    if (!added) {
-        // TODO this is not compliant with CPython
-        compile_syntax_error(comp, pn, "identifier already used");
+    if (!added && id_info->kind != ID_INFO_KIND_FREE) {
+        compile_syntax_error(comp, pn, "identifier redefined as nonlocal");
         return;
     }
     id_info_t *id_info2 = scope_find_local_in_parent(comp->scope_cur, qst);
