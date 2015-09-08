@@ -40,3 +40,7 @@ Exception
 Exception
 Exception
 Exception
+UART(0)
+UART(0, baudrate=115200, bits=8, parity=None, stop=1)
+UART(1)
+UART(1, baudrate=115200, bits=8, parity=None, stop=1)

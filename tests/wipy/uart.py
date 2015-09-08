@@ -1,5 +1,5 @@
 '''
-UART test fro the CC3200 based boards. 
+UART test for the CC3200 based boards. 
 UART0 and UART1 must be connected together for this test to pass.
 '''
 
@@ -109,23 +109,28 @@ try:
 except Exception:
     print('Exception')
 
-uart0 = UART(0, 1000000)
-uart0.deinit()
 try:
     uart0.read()
 except Exception:
     print('Exception')
 
-uart0 = UART(0, 1000000)
-uart0.deinit()
 try:
     uart0.write('abc')
 except Exception:
     print('Exception')
 
-uart0 = UART(0, 1000000)
-uart0.deinit()
 try:
     uart0.sendbreak('abc')
 except Exception:
     print('Exception')
+
+for uart_id in uart_id_range:
+    uart = UART(uart_id, 1000000)
+    uart.deinit()
+    # test printing an unitialized uart
+    print(uart)
+    # initialize it back and check that it works again
+    uart.init(115200)
+    print(uart)
+    uart.read()
+
