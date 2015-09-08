@@ -41,10 +41,11 @@ class STAccel:
     def __init__(self):
         self.cs_pin = Pin('PE3', Pin.OUT_PP, Pin.PULL_NONE)
         self.cs_pin.high()
-        self.spi = SPI(1, SPI.MASTER, baudrate=328125, polarity=0, phase=1, bits=8)
-
+        self.spi = SPI(1, SPI.MASTER, baudrate=2000000, polarity=1, phase=1, bits=8)
+        self.read_id()
+        # First SPI read always returns 255 --> discard and read ID again
         self.who_am_i = self.read_id()
-
+        # print( "id = 0x%X" % self.who_am_i ) # for debug
         if self.who_am_i == LIS302DL_WHO_AM_I_VAL:
             self.write_bytes(LIS302DL_CTRL_REG1_ADDR, bytearray([LIS302DL_CONF]))
             self.sensitivity = 18
