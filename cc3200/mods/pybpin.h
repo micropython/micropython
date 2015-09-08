@@ -115,11 +115,6 @@ typedef struct {
     uint8_t             used   : 1;
 } pin_obj_t;
 
-typedef struct {
-    pin_obj_t *pin;
-    uint8_t   af_idx;
-} pin_fn_t;
-
 extern const mp_obj_type_t pin_type;
 
 typedef struct {
@@ -139,7 +134,6 @@ extern const mp_obj_dict_t pin_board_pins_locals_dict;
 void pin_init0(void);
 void pin_config(pin_obj_t *self, int af, uint mode, uint type, int value, uint strength);
 pin_obj_t *pin_find(mp_obj_t user_obj);
-int8_t pin_find_af_index(const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);
-void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type);
+void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_t fn, uint32_t unit);
 
 #endif  // PYBPIN_H_

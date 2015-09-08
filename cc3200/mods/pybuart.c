@@ -115,8 +115,7 @@ STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS] = { {.reg = UARTA0_BASE, .baud
                                                       {.reg = UARTA1_BASE, .baudrate = 0, .read_buf = NULL, .peripheral = PRCM_UARTA1} };
 STATIC const mp_cb_methods_t uart_cb_methods;
 
-STATIC const pin_fn_t pyb_uart_def_pin[PYB_NUM_UARTS][2] = { {{.pin = &pin_GP1, .af_idx = 3}, {.pin = &pin_GP2, .af_idx = 3}},
-                                                             {{.pin = &pin_GP3, .af_idx = 6}, {.pin = &pin_GP4, .af_idx = 6}} };
+STATIC const mp_obj_t pyb_uart_def_pin[PYB_NUM_UARTS][2] = { {&pin_GP1, &pin_GP2}, {&pin_GP3, &pin_GP4} };
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -397,46 +396,36 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     // stop bits
     config |= (args[3].u_int == 1 ? UART_CONFIG_STOP_ONE : UART_CONFIG_STOP_TWO);
 
+    // assign the pins
     mp_obj_t pins_o = args[4].u_obj;
     uint flowcontrol = UART_FLOWCONTROL_NONE;
     if (pins_o != mp_const_none) {
+        mp_obj_t *pins;
+        mp_uint_t n_pins;
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
-            pin_config (pyb_uart_def_pin[self->uart_id][PIN_TYPE_UART_TX].pin, pyb_uart_def_pin[self->uart_id][PIN_TYPE_UART_TX].af_idx,
-                        0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_2MA);
-            pin_config (pyb_uart_def_pin[self->uart_id][PIN_TYPE_UART_RX].pin, pyb_uart_def_pin[self->uart_id][PIN_TYPE_UART_RX].af_idx,
-                        0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_2MA);
+            pins = (mp_obj_t *)pyb_uart_def_pin[self->uart_id];
         } else {
-            mp_obj_t *pins_t;
-            mp_uint_t n_pins;
-            mp_obj_get_array(pins_o, &n_pins, &pins_t);
+            mp_obj_get_array(pins_o, &n_pins, &pins);
             if (n_pins != 2 && n_pins != 4) {
                 goto error;
             }
             if (n_pins == 4) {
-                if (pins_t[PIN_TYPE_UART_RTS] != mp_const_none && pins_t[PIN_TYPE_UART_RX] == mp_const_none) {
+                if (pins[PIN_TYPE_UART_RTS] != mp_const_none && pins[PIN_TYPE_UART_RX] == mp_const_none) {
                     goto error;  // RTS pin given in TX only mode
-                } else if (pins_t[PIN_TYPE_UART_CTS] != mp_const_none && pins_t[PIN_TYPE_UART_TX] == mp_const_none) {
+                } else if (pins[PIN_TYPE_UART_CTS] != mp_const_none && pins[PIN_TYPE_UART_TX] == mp_const_none) {
                     goto error;  // CTS pin given in RX only mode
                 } else {
-                    if (pins_t[PIN_TYPE_UART_RTS] != mp_const_none) {
+                    if (pins[PIN_TYPE_UART_RTS] != mp_const_none) {
                         flowcontrol |= UART_FLOWCONTROL_RX;
                     }
-                    if (pins_t[PIN_TYPE_UART_CTS] != mp_const_none) {
+                    if (pins[PIN_TYPE_UART_CTS] != mp_const_none) {
                         flowcontrol |= UART_FLOWCONTROL_TX;
                     }
                 }
             }
-            // the pins tuple passed looks good so far
-            for (int i = 0; i < n_pins; i++) {
-                pin_free_af_from_pins(PIN_FN_UART, self->uart_id, i);
-                if (pins_t[i] != mp_const_none) {
-                    pin_obj_t *pin = pin_find(pins_t[i]);
-                    pin_config (pin, pin_find_af_index(pin, PIN_FN_UART, self->uart_id, i),
-                                0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_2MA);
-                }
-            }
         }
+        pin_assign_pins_af (pins, n_pins, PIN_TYPE_STD_PU, PIN_FN_UART, self->uart_id);
     }
 
     self->baudrate = baudrate;
