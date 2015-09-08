@@ -61,6 +61,8 @@ DECLARE PRIVATE FUNCTIONS
 STATIC pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
 STATIC pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit);
 STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);
+STATIC int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);
+STATIC void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type);
 STATIC void pin_deassign (pin_obj_t* pin);
 STATIC void pin_obj_configure (const pin_obj_t *self);
 STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *wake_pin, uint *idx);
@@ -162,26 +164,12 @@ void pin_config (pin_obj_t *self, int af, uint mode, uint pull, int value, uint 
     pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pin_obj_configure);
 }
 
-int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
-    int8_t af = pin_obj_find_af(pin, fn, unit, type);
-    if (af < 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
-    return af;
-}
-
-void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
-    for (uint i = 0; i < named_map->used - 1; i++) {
-        pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
-        // af is different than GPIO
-        if (pin->af > PIN_MODE_0) {
-            // check if the pin supports the target af
-            int af = pin_obj_find_af(pin, fn, unit, type);
-            if (af > 0 && af == pin->af) {
-                // the pin is assigned to the target af, de-assign it
-                pin_deassign (pin);
-            }
+void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_t fn, uint32_t unit) {
+    for (int i = 0; i < n_pins; i++) {
+        pin_free_af_from_pins(fn, unit, i);
+        if (pins[i] != mp_const_none) {
+            pin_obj_t *pin = pin_find(pins[i]);
+            pin_config (pin, pin_find_af_index(pin, fn, unit, i), 0, pull, -1, PIN_STRENGTH_2MA);
         }
     }
 }
@@ -216,6 +204,30 @@ STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, u
         }
     }
     return -1;
+}
+
+STATIC int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
+    int8_t af = pin_obj_find_af(pin, fn, unit, type);
+    if (af < 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    return af;
+}
+
+STATIC void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
+    for (uint i = 0; i < named_map->used - 1; i++) {
+        pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
+        // af is different than GPIO
+        if (pin->af > PIN_MODE_0) {
+            // check if the pin supports the target af
+            int af = pin_obj_find_af(pin, fn, unit, type);
+            if (af > 0 && af == pin->af) {
+                // the pin is assigned to the target af, de-assign it
+                pin_deassign (pin);
+            }
+        }
+    }
 }
 
 STATIC void pin_deassign (pin_obj_t* pin) {
