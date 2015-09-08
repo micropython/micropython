@@ -30,11 +30,16 @@
 #include "ciaanxp_mphal.h"
 
 #define RX_BUFFER_MAX_SIZE	2048
+#define RX_TIMEOUT_PACKET	10
 
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     uint32_t uartNumber;
     uint8_t bufferRx[RX_BUFFER_MAX_SIZE];
+    uint32_t timeoutFirstChar;
+    uint32_t bufferMaxSize;
+    uint32_t timeoutBtwChars;
+
 } pyb_uart_obj_t;
 
 STATIC pyb_uart_obj_t pyb_uart_obj[] = {
@@ -124,23 +129,27 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
 	// timeout
 	uint32_t timeout = args[5].u_int;
+	self->timeoutFirstChar = timeout;
+
+	// timeout char
+	self->timeoutBtwChars = args[5].u_int;
 
 	// buffer len
 	uint32_t size = args[7].u_int;
 	if(size > RX_BUFFER_MAX_SIZE)
 		nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "buffer size is too big"));
-
+	self->bufferMaxSize = size;
 
 	sprintf(aux,"baud:%d bits:%d par:%d stop:%d timeout:%d size:%d",baudrate,bits,parity,stopBits,timeout,size);
         Board_UARTPutSTR(aux);
 
 	if(self->uartNumber==0) {
 		mp_hal_rs485_setConfig(baudrate,stopBits,parity);
-		mp_hal_rs485_setRxBuffer(self->bufferRx,size,timeout, 0);
+		mp_hal_rs485_setRxBuffer(self->bufferRx,size,RX_TIMEOUT_PACKET, 0);
 	}
 	else {
 		mp_hal_rs232_setConfig(baudrate,stopBits,parity);
-		mp_hal_rs232_setRxBuffer(self->bufferRx,size,timeout, 0);
+		mp_hal_rs232_setRxBuffer(self->bufferRx,size,RX_TIMEOUT_PACKET, 0);
 	}
 
 	// prueba envio luego de configurar
@@ -155,6 +164,68 @@ STATIC mp_obj_t pyb_uart_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
 
+
+/// \method any()
+/// Return `True` if any characters waiting, else `False`.
+STATIC bool uart_rx_any(pyb_uart_obj_t *self)
+{
+    uint32_t any;
+    if(self->uartNumber==0)
+        any = mp_hal_rs485_charAvailable() || mp_hal_rs485_isNewPacketAvailable();
+    else
+        any = mp_hal_rs232_charAvailable() || mp_hal_rs232_isNewPacketAvailable();
+    return any;
+}
+STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+
+    uint32_t any = uart_rx_any(self);
+
+    if (any) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
+
+
+// Waits at most timeout milliseconds for at least 1 char to become ready for
+// reading (from buf or for direct reading).
+// Returns true if something available, false if not.
+STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
+    uint32_t start = mp_hal_get_milliseconds();
+    for (;;) {
+        if (uart_rx_any(self)) {
+            return true; // have at least 1 char ready for reading
+        }
+        if (mp_hal_get_milliseconds() - start >= timeout) {
+            return false; // timeout
+        }
+        __WFI();
+    }
+}
+STATIC int32_t uart_rx_char(pyb_uart_obj_t* self)
+{
+    if(self->uartNumber==0)
+        return mp_hal_rs485_getChar();
+    else
+        return mp_hal_rs232_getChar();
+}
+/// \method readchar()
+/// Receive a single character on the bus.
+/// Return value: The character read, as an integer.  Returns -1 on timeout.
+STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    if (uart_rx_wait(self, self->timeoutFirstChar)) {
+        return MP_OBJ_NEW_SMALL_INT(uart_rx_char(self));
+    } else {
+        // return -1 on timeout
+        return MP_OBJ_NEW_SMALL_INT(-1);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
+
 //_______________________________________________________________________________________________________________
 
 /*
@@ -166,6 +237,8 @@ mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_uart_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_uart_any_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
