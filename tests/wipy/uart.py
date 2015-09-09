@@ -18,6 +18,9 @@ elif 'WiPy' in machine:
 else:
     raise Exception('Board not supported!')
 
+# just in case we have stdio duplicated on any of the uarts
+pyb.repl_uart(None)
+
 for uart_id in uart_id_range:
     uart = UART(uart_id, 38400)
     print(uart)
