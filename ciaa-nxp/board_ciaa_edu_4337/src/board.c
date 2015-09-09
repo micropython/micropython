@@ -86,8 +86,8 @@ void Board_UART_Init(LPC_USART_T *pUART)
 		uart0RxBufferData.index=0;
 		uart0RxBufferData.flagNewPacket=0;
 		uart0RxBufferData.timeoutCounter=0;
-        	NVIC_SetPriority(USART0_IRQn, 1);
-        	NVIC_EnableIRQ(USART0_IRQn);
+        	//NVIC_SetPriority(USART0_IRQn, 1);
+        	//NVIC_EnableIRQ(USART0_IRQn);
 
 	}
 	else if(pUART==LPC_USART3)
@@ -108,8 +108,8 @@ void Board_UART_Init(LPC_USART_T *pUART)
 		uart3RxBufferData.flagNewPacket=0;
                 uart3RxBufferData.timeoutCounter=0;
 
-                NVIC_SetPriority(USART3_IRQn, 1);
-                NVIC_EnableIRQ(USART3_IRQn);
+                //NVIC_SetPriority(USART3_IRQn, 1);
+                //NVIC_EnableIRQ(USART3_IRQn);
 	}
 	/* Restart FIFOS: set Enable, Reset content, set trigger level */
    	Chip_UART_SetupFIFOS(pUART, UART_FCR_FIFO_EN | UART_FCR_TX_RS | UART_FCR_RX_RS | UART_FCR_TRG_LEV0);
@@ -142,12 +142,16 @@ void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,ui
         uart0RxBufferData.size=size;
 	uart0RxBufferData.timeout=timeout;
 	uart0RxBufferData.finalByte=finalByte;
+	NVIC_SetPriority(USART0_IRQn, 1);
+        NVIC_EnableIRQ(USART0_IRQn);
     }else if(pUART==LPC_USART3)
     {
         uart3RxBufferData.buffer = pBuffer;
         uart3RxBufferData.size=size;
         uart3RxBufferData.timeout=timeout;
         uart3RxBufferData.finalByte=finalByte;
+	NVIC_SetPriority(USART3_IRQn, 1);
+        NVIC_EnableIRQ(USART3_IRQn);
     }
 }
 

@@ -35,6 +35,8 @@ Q(readinto)
 Q(sendbreak)
 Q(RTS)
 Q(CTS)
+Q(readline)
+Q(readall)
 
 /*
 Q(readall)

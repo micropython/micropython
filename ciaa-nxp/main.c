@@ -67,6 +67,17 @@ int main(int argc, char **argv) {
     mp_hal_init();
 
     // prueba uart 485
+	/*
+    while(1)
+	{
+		if(mp_hal_rs232_charAvailable()==1)
+		{
+			int32_t data = mp_hal_rs232_getChar();
+			char aux[48];
+    			sprintf(aux,"llego: %d ",data);
+    			Board_UARTPutSTR(aux);
+		}
+	}*/
     //while(1)
 	//char rxBuffer[512];
 	//Board_UART_setRxBuffer(LPC_USART3,rxBuffer,sizeof(rxBuffer),10000,NULL);

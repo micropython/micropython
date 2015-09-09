@@ -29,6 +29,8 @@
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
+#include "py/stream.h"
+
 #define RX_BUFFER_MAX_SIZE	2048
 #define RX_TIMEOUT_PACKET	10
 
@@ -39,7 +41,7 @@ typedef struct _pyb_uart_obj_t {
     uint32_t timeoutFirstChar;
     uint32_t bufferMaxSize;
     uint32_t timeoutBtwChars;
-
+    uint8_t bufferEnabled;
 } pyb_uart_obj_t;
 
 STATIC pyb_uart_obj_t pyb_uart_obj[] = {
@@ -132,7 +134,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 	self->timeoutFirstChar = timeout;
 
 	// timeout char
-	self->timeoutBtwChars = args[5].u_int;
+	self->timeoutBtwChars = args[6].u_int;
 
 	// buffer len
 	uint32_t size = args[7].u_int;
@@ -145,12 +147,13 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
 	if(self->uartNumber==0) {
 		mp_hal_rs485_setConfig(baudrate,stopBits,parity);
-		mp_hal_rs485_setRxBuffer(self->bufferRx,size,RX_TIMEOUT_PACKET, 0);
+		//mp_hal_rs485_setRxBuffer(self->bufferRx,size,RX_TIMEOUT_PACKET, 0);
 	}
 	else {
 		mp_hal_rs232_setConfig(baudrate,stopBits,parity);
-		mp_hal_rs232_setRxBuffer(self->bufferRx,size,RX_TIMEOUT_PACKET, 0);
+		//mp_hal_rs232_setRxBuffer(self->bufferRx,size,RX_TIMEOUT_PACKET, 0);
 	}
+	self->bufferEnabled=0;
 
 	// prueba envio luego de configurar
 	//mp_hal_rs232_write("PRUEBA",6);
@@ -171,9 +174,19 @@ STATIC bool uart_rx_any(pyb_uart_obj_t *self)
 {
     uint32_t any;
     if(self->uartNumber==0)
-        any = mp_hal_rs485_charAvailable() || mp_hal_rs485_isNewPacketAvailable();
+    {
+ 	if(self->bufferEnabled==0)
+            any = mp_hal_rs485_charAvailable();
+	else
+	    any= mp_hal_rs485_isNewPacketAvailable();
+    }
     else
-        any = mp_hal_rs232_charAvailable() || mp_hal_rs232_isNewPacketAvailable();
+    {
+	if(self->bufferEnabled==0)
+            any = mp_hal_rs232_charAvailable();
+	else
+	    any = mp_hal_rs232_isNewPacketAvailable();
+    }
     return any;
 }
 STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
@@ -226,7 +239,72 @@ STATIC mp_obj_t pyb_uart_readchar(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 
+
+/// \method writechar(char)
+/// Write a single character on the bus.  `char` is an integer to write.
+/// Return value: `None`.
+STATIC mp_obj_t pyb_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
+    pyb_uart_obj_t *self = self_in;
+
+    // get the character to write (might be 9 bits)
+    uint16_t data = mp_obj_get_int(char_in);
+
+    // write the data
+    if(self->uartNumber==0)
+        mp_hal_rs485_write((uint8_t*)&data, 1);
+    else
+        mp_hal_rs232_write((uint8_t*)&data, 1);
+
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_uart_writechar_obj, pyb_uart_writechar);
+
+
+STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    pyb_uart_obj_t *self = self_in;
+    byte *buf = buf_in;
+
+    // make sure we want at least 1 char
+    if (size == 0) {
+        return 0;
+    }
+
+    // wait for first char to become available
+    if (!uart_rx_wait(self, self->timeoutFirstChar)) {
+        // we can either return 0 to indicate EOF (then read() method returns b'')
+        // or return EAGAIN error to indicate non-blocking (then read() method returns None)
+        return 0;
+    }
+
+    // read the data
+    byte *orig_buf = buf;
+    for (;;) {
+        int data = uart_rx_char(self);
+        *buf++ = data;
+        if (--size == 0 || !uart_rx_wait(self, self->timeoutBtwChars)) {
+            // return number of bytes read
+            return buf - orig_buf;
+        }
+    }
+}
+
+STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+    pyb_uart_obj_t *self = self_in;
+    const byte *buf = buf_in;
+
+    // write the data
+    if(self->uartNumber==0)
+    	mp_hal_rs485_write((uint8_t*)buf, size);
+    else
+    	mp_hal_rs232_write((uint8_t*)buf, size);
+
+    return size;
+}
 //_______________________________________________________________________________________________________________
+
+
+
 
 /*
 mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -239,15 +317,36 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_uart_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_uart_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_writechar), (mp_obj_t)&pyb_uart_writechar_obj },
+
+    /// \method read([nbytes])
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    /// \method readall()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+    /// \method readline()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    /// \method readinto(buf[, nbytes])
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
+
+    /// \method write(buf)
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
+
+STATIC const mp_stream_p_t uart_stream_p = {
+    .read = pyb_uart_read,
+    .write = pyb_uart_write,
+    //.ioctl = pyb_uart_ioctl,
+    .is_text = false,
+};
 
 const mp_obj_type_t pyb_uart_type = {
     { &mp_type_type },
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,
+    .stream_p = &uart_stream_p,
     //.call = pyb_switch_call,
     .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
 };
