@@ -401,7 +401,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     uint flowcontrol = UART_FLOWCONTROL_NONE;
     if (pins_o != mp_const_none) {
         mp_obj_t *pins;
-        mp_uint_t n_pins;
+        mp_uint_t n_pins = 2;
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
             pins = (mp_obj_t *)pyb_uart_def_pin[self->uart_id];
