@@ -101,6 +101,7 @@ extern const mp_obj_module_t mp_module_ure;
 extern const mp_obj_module_t mp_module_uheapq;
 extern const mp_obj_module_t mp_module_uhashlib;
 extern const mp_obj_module_t mp_module_ubinascii;
+extern const mp_obj_module_t mp_module_ussl;
 extern const mp_obj_module_t mp_module_machine;
 
 #endif // __MICROPY_INCLUDED_PY_BUILTIN_H__
