@@ -38,7 +38,7 @@
 
 #define SERVERS_USER_PASS_LEN_MAX               16
 
-#define SERVERS_CYCLE_TIME_MS                   5
+#define SERVERS_CYCLE_TIME_MS                   2
 
 /******************************************************************************
  DEFINE TYPES
