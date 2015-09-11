@@ -101,6 +101,11 @@ LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
 SRC_MOD += modffi.c
 endif
 
+ifeq ($(MICROPY_PY_JNI),1)
+# Path for 64-bit OpenJDK, should be adjusted for other JDKs
+CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
+SRC_MOD += modjni.c
+endif
 
 # source files
 SRC_C = \

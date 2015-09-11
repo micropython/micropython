@@ -20,3 +20,6 @@ MICROPY_PY_SOCKET = 1
 
 # ffi module requires libffi (libffi-dev Debian package)
 MICROPY_PY_FFI = 1
+
+# jni module requires JVM/JNI
+MICROPY_PY_JNI = 0
