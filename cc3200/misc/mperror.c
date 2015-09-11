@@ -56,8 +56,8 @@
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define MPERROR_TOOGLE_MS                           (40)
-#define MPERROR_SIGNAL_ERROR_MS                     (1000)
+#define MPERROR_TOOGLE_MS                           (50)
+#define MPERROR_SIGNAL_ERROR_MS                     (1200)
 #define MPERROR_HEARTBEAT_ON_MS                     (80)
 #define MPERROR_HEARTBEAT_OFF_MS                    (3920)
 
