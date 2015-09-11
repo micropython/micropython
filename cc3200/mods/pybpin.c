@@ -174,6 +174,16 @@ void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_
     }
 }
 
+uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type) {
+    pin_obj_t *pin_o = pin_find(pin);
+    for (int i = 0; i < pin_o->num_afs; i++) {
+        if (pin_o->af_list[i].fn == fn && pin_o->af_list[i].type == type) {
+            return pin_o->af_list[i].unit;
+        }
+    }
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+}
+
 /******************************************************************************
 DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
