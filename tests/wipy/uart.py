@@ -24,10 +24,22 @@ pyb.repl_uart(None)
 for uart_id in uart_id_range:
     uart = UART(uart_id, 38400)
     print(uart)
-    uart.init(baudrate=57600, stop=1, parity=None, pins=uart_pins[uart_id][0])
+    uart.init(57600, 8, None, 1, pins=uart_pins[uart_id][0])
     uart.init(baudrate=9600, stop=2, parity=0, pins=uart_pins[uart_id][1])
-    uart.init(baudrate=115200, parity=1, pins=uart_pins[uart_id][0])
+    uart.init(baudrate=115200, parity=1, stop=1, pins=uart_pins[uart_id][0])
+    uart = UART(baudrate=1000000)
     uart.sendbreak()
+
+uart = UART()
+print(uart)
+uart = UART(baudrate=38400, pins=('GP12', 'GP13'))
+print(uart)
+uart = UART(pins=('GP12', 'GP13'))
+print(uart)
+uart = UART(pins=(None, 'GP17'))
+print(uart)
+uart = UART(baudrate=57600, pins=('GP16', 'GP17'))
+print(uart)
 
 # now it's time for some loopback tests between the uarts
 uart0 = UART(0, 1000000, pins=uart_pins[0][0])
@@ -50,6 +62,8 @@ print(buf)
 print(uart1.readinto(buf) == 2)
 print(buf)
 
+# try initializing without the id
+uart0 = UART(baudrate=1000000, pins=uart_pins[0][0])
 uart0.write(b'1234567890')
 pyb.delay(2) # because of the fifo interrupt levels
 print(uart1.any() == 10)
@@ -126,6 +140,11 @@ try:
     uart0.sendbreak('abc')
 except Exception:
     print('Exception')
+
+try:
+    UART(2, 9600)
+except Exception:
+    print('Exception')    
 
 for uart_id in uart_id_range:
     uart = UART(uart_id, 1000000)

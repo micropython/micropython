@@ -352,18 +352,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 }
 
-STATIC const mp_arg_t pyb_uart_init_args[] = {
-    { MP_QSTR_baudrate,     MP_ARG_REQUIRED | MP_ARG_INT,  },
-    { MP_QSTR_bits,         MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 8} },
-    { MP_QSTR_parity,       MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-    { MP_QSTR_stop,         MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1} },
-    { MP_QSTR_pins,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
-};
-STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(pyb_uart_init_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(pyb_uart_init_args), pyb_uart_init_args, args);
-
+STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_arg_val_t *args) {
     // get the baudrate
     if (args[0].u_int <= 0) {
         goto error;
@@ -445,12 +434,41 @@ error:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
 
-STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 1, MP_ARRAY_SIZE(pyb_uart_init_args), true);
+STATIC const mp_arg_t pyb_uart_init_args[] = {
+    { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+    { MP_QSTR_baudrate,                       MP_ARG_INT,  {.u_int = 9600} },
+    { MP_QSTR_bits,                           MP_ARG_INT,  {.u_int = 8} },
+    { MP_QSTR_parity,                         MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+    { MP_QSTR_stop,                           MP_ARG_INT,  {.u_int = 1} },
+    { MP_QSTR_pins,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
+};
+STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+    // parse args
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
+    mp_arg_val_t args[MP_ARRAY_SIZE(pyb_uart_init_args)];
+    mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), pyb_uart_init_args, args);
 
     // work out the uart id
-    int32_t uart_id = mp_obj_get_int(args[0]);
+    uint8_t uart_id;
+    if (args[0].u_obj == mp_const_none) {
+        if (args[5].u_obj != MP_OBJ_NULL) {
+            mp_obj_t *pins;
+            mp_uint_t n_pins = 2;
+            mp_obj_get_array(args[5].u_obj, &n_pins, &pins);
+            // check the Tx pin (or the Rx if Tx is None)
+            if (pins[0] == mp_const_none) {
+                uart_id = pin_find_peripheral_unit(pins[1], PIN_FN_UART, PIN_TYPE_UART_RX);
+            } else {
+                uart_id = pin_find_peripheral_unit(pins[0], PIN_FN_UART, PIN_TYPE_UART_TX);
+            }
+        } else {
+            // default id
+            uart_id = 0;
+        }
+    } else {
+        uart_id = mp_obj_get_int(args[0].u_obj);
+    }
 
     if (uart_id < PYB_UART_0 || uart_id > PYB_UART_1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
@@ -461,18 +479,17 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
 
-    if (n_args > 1 || n_kw > 0) {
-        // start the peripheral
-        mp_map_t kw_args;
-        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
-    }
+    // start the peripheral
+    pyb_uart_init_helper(self, &args[1]);
 
     return self;
 }
 
-STATIC mp_obj_t pyb_uart_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return pyb_uart_init_helper(args[0], n_args - 1, args + 1, kw_args);
+STATIC mp_obj_t pyb_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(pyb_uart_init_args) - 1];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_uart_init_args[1], args);
+    return pyb_uart_init_helper(pos_args[0], args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 

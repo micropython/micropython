@@ -135,5 +135,6 @@ void pin_init0(void);
 void pin_config(pin_obj_t *self, int af, uint mode, uint type, int value, uint strength);
 pin_obj_t *pin_find(mp_obj_t user_obj);
 void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_t fn, uint32_t unit);
+uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type);
 
 #endif  // PYBPIN_H_
