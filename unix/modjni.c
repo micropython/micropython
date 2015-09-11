@@ -163,20 +163,40 @@ STATIC void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_printf(print, "<jmethod '%s'>", qstr_str(self->name));
 }
 
-#define MATCH(s, static) ((!strncmp(s, static, sizeof(static) - 1)) && (s += sizeof(static) - 1))
+#define IMATCH(s, static) ((!strncmp(s, static, sizeof(static) - 1)) && (s += sizeof(static) - 1))
 
 #define CHECK_TYPE(java_type_name) \
-                if (strncmp(arg_types, java_type_name, sizeof(java_type_name) - 1) != 0) { \
-                    found = false; \
-                    break; \
+                if (strncmp(arg_type, java_type_name, sizeof(java_type_name) - 1) != 0) { \
+                    return false; \
                 } \
-                arg_types += sizeof(java_type_name) - 1;
+                arg_type += sizeof(java_type_name) - 1;
 
 STATIC const char *strprev(const char *s, char c) {
     while (*s != c) {
         s--;
     }
     return s;
+}
+
+STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
+    const char *arg_type = *jtypesig;
+    mp_obj_type_t *type = mp_obj_get_type(arg);
+
+    if (type == &mp_type_str) {
+        if (IMATCH(arg_type, "java.lang.String") || IMATCH(arg_type, "java.lang.Object")) {
+            out->l = JJ(NewStringUTF, mp_obj_str_get_str(arg));
+        } else {
+            return false;
+        }
+    } else if (type == &mp_type_int) {
+        CHECK_TYPE("long");
+        out->j = mp_obj_get_int(arg);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
+    }
+
+    *jtypesig = arg_type;
+    return true;
 }
 
 STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, mp_uint_t n_args, const mp_obj_t *args) {
@@ -209,20 +229,8 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
 
         bool found = true;
         for (int i = 0; i < n_args; i++) {
-            mp_obj_t arg = args[i];
-            mp_obj_type_t *type = mp_obj_get_type(arg);
-            if (type == &mp_type_str) {
-//                CHECK_TYPE("java.lang.String");
-                if (MATCH(arg_types, "java.lang.String") || MATCH(arg_types, "java.lang.Object")) {
-                    jargs[i].l = JJ(NewStringUTF, mp_obj_str_get_str(arg));
-                } else {
-                    found = false;
-                }
-            } else if (type == &mp_type_int) {
-                CHECK_TYPE("long");
-                jargs[i].j = mp_obj_get_int(arg);
-            } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
+            if (!py2jvalue(&arg_types, args[i], &jargs[i])) {
+                goto next_method;
             }
 
             if (*arg_types == ',') {
@@ -269,6 +277,7 @@ ret_string:;
             }
         }
 
+next_method:
         JJ(ReleaseStringUTFChars, name_o, decl);
     }
 
