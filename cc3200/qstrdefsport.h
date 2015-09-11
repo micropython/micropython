@@ -153,6 +153,7 @@ Q(RX_ANY)
 
 // for I2C class
 Q(I2C)
+Q(id)
 Q(mode)
 Q(baudrate)
 Q(pins)
