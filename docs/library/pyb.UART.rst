@@ -82,10 +82,8 @@ Constructors
     .. class:: pyb.UART(bus, ...)
     
        Construct a UART object on the given bus.  ``bus`` can be 0 or 1.
-       With no additional parameters, the UART object is created but not
-       initialised (it has the settings from the last initialisation of
-       the bus, if any).  If extra arguments are given, the bus is initialised.
-       See ``init`` for parameters of initialisation.
+       If the bus is not given, the default one will be selected (0) or the selection
+       will be made based on the given pins.
 
 Methods
 -------
@@ -118,7 +116,7 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
+    .. method:: uart.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
     
        Initialise the UART bus with the given parameters:
     
@@ -141,6 +139,11 @@ Methods
     .. method:: uart.any()
 
        Return ``True`` if any characters waiting, else ``False``.
+
+    .. method:: uart.writechar(char)
+
+      Write a single character on the bus.  ``char`` is an integer to write.
+      Return value: ``None``.
 
 .. only:: port_wipy
 
@@ -200,11 +203,6 @@ Methods
       an even number of bytes.
 
       Return value: number of bytes written.
-
-    .. method:: uart.writechar(char)
-
-      Write a single character on the bus.  ``char`` is an integer to write.
-      Return value: ``None``.
 
    .. only:: port_wipy
 
