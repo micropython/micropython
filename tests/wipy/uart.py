@@ -30,6 +30,7 @@ for uart_id in uart_id_range:
     uart = UART(baudrate=1000000)
     uart.sendbreak()
 
+uart = UART(baudrate=1000000)
 uart = UART()
 print(uart)
 uart = UART(baudrate=38400, pins=('GP12', 'GP13'))

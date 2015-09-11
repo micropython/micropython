@@ -16,6 +16,13 @@ elif 'WiPy' in machine:
 else:
     raise Exception('Board not supported!')
 
+i2c = I2C(0, I2C.MASTER, baudrate=400000)
+# try initing without the peripheral id
+i2c = I2C()
+print(i2c)
+i2c = I2C(mode=I2C.MASTER, baudrate=50000, pins=i2c_pins)
+print(i2c)
+
 i2c = I2C(0, I2C.MASTER, baudrate=100000)
 print(i2c)
 i2c = I2C(0, mode=I2C.MASTER, baudrate=400000)

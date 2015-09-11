@@ -1,4 +1,6 @@
 I2C(0, I2C.MASTER, baudrate=100000)
+I2C(0, I2C.MASTER, baudrate=50000)
+I2C(0, I2C.MASTER, baudrate=100000)
 I2C(0, I2C.MASTER, baudrate=400000)
 I2C(0, I2C.MASTER, baudrate=400000)
 104
