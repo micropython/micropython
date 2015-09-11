@@ -123,11 +123,17 @@ extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_termios;
 extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
+extern const struct _mp_obj_module_t mp_module_jni;
 
 #if MICROPY_PY_FFI
 #define MICROPY_PY_FFI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_ffi), (mp_obj_t)&mp_module_ffi },
 #else
 #define MICROPY_PY_FFI_DEF
+#endif
+#if MICROPY_PY_JNI
+#define MICROPY_PY_JNI_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_jni), (mp_obj_t)&mp_module_jni },
+#else
+#define MICROPY_PY_JNI_DEF
 #endif
 #if MICROPY_PY_TIME
 #define MICROPY_PY_TIME_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_time },
@@ -147,6 +153,7 @@ extern const struct _mp_obj_module_t mp_module_ffi;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_PY_FFI_DEF \
+    MICROPY_PY_JNI_DEF \
     MICROPY_PY_TIME_DEF \
     MICROPY_PY_SOCKET_DEF \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
