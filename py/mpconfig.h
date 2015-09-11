@@ -463,6 +463,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_SLICE (1)
 #endif
 
+// Whether to support slice attribute read access,
+// i.e. slice.start, slice.stop, slice.step
+#ifndef MICROPY_PY_BUILTINS_SLICE_ATTRS
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
+#endif
+
 // Whether to support frozenset object
 #ifndef MICROPY_PY_BUILTINS_FROZENSET
 #define MICROPY_PY_BUILTINS_FROZENSET (0)
