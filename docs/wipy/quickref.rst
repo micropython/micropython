@@ -87,12 +87,7 @@ UART (serial bus)
 See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.UART <pyb.UART>`. ::
 
     from pyb import Pin, UART
-
-    # first assign TX and RX to the correct pins
-    Pin('GP1', af=3, mode=Pin.STD_PU)    # TX
-    Pin('GP2', af=3, mode=Pin.STD_PU)    # RX
-
-    uart = UART(1, 9600)
+    uart = UART(0, 9600)
     uart.write('hello')
     uart.read(5) # read up to 5 bytes
 
@@ -121,18 +116,13 @@ I2C bus
 See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.I2C <pyb.I2C>`. ::
 
     from pyb import Pin, I2C
-
-    # first assign SCL and SDA to the correct pins
-    Pin('GP23', af=9, mode=Pin.STD_PU)  # SCL
-    Pin('GP24', af=9, mode=Pin.STD_PU)  # SDA
-
     # configure the I2C bus
-    i2c = I2C(1, I2C.MASTER, baudrate=100000)
+    i2c = I2C(0, I2C.MASTER, baudrate=100000)
     i2c.scan() # returns list of slave addresses
-    i2c.send('hello', 0x42) # send 5 bytes to slave with address 0x42
-    i2c.recv(5, 0x42) # receive 5 bytes from slave
-    i2c.mem_read(2, 0x42, 0x10) # read 2 bytes from slave 0x42, slave memory 0x10
-    i2c.mem_write('xy', 0x42, 0x10) # write 2 bytes to slave 0x42, slave memory 0x10
+    i2c.writeto(0x42, 'hello') # send 5 bytes to slave with address 0x42
+    i2c.readfrom(0x42, 5) # receive 5 bytes from slave
+    i2c.readfrom_mem(0x42, 0x10, 2) # read 2 bytes from slave 0x42, slave memory 0x10
+    i2c.writeto_mem(0x42, 0x10, 'xy') # write 2 bytes to slave 0x42, slave memory 0x10
 
 Watchdog timer (WDT)
 --------------------
