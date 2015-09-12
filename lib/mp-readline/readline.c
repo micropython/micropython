@@ -160,9 +160,23 @@ int readline_process_char(int c) {
         } else if (c == 8 || c == 127) {
             // backspace/delete
             if (rl.cursor_pos > rl.orig_line_len) {
-                vstr_cut_out_bytes(rl.line, rl.cursor_pos - 1, 1);
+                int nspace = 0;
+                for (size_t i = rl.orig_line_len; i < rl.cursor_pos; i++) {
+                    if (rl.line->buf[i] != ' ') {
+                        nspace = 0;
+                        break;
+                    }
+                    nspace += 1;
+                }
+                if (nspace < 4) {
+                    nspace = 1;
+                } else {
+                    nspace = 4;
+                }
+
+                vstr_cut_out_bytes(rl.line, rl.cursor_pos - nspace, nspace);
                 // set redraw parameters
-                redraw_step_back = 1;
+                redraw_step_back = nspace;
                 redraw_from_cursor = true;
             }
         #if MICROPY_HELPER_REPL
@@ -355,6 +369,30 @@ void readline_init(vstr_t *line, const char *prompt) {
 
 int readline(vstr_t *line, const char *prompt) {
     readline_init(line, prompt);
+    if (line->len > 1 && line->buf[line->len - 1] == '\n') {
+        int i;
+        for (i = line->len - 1; i > 0; i--) {
+            if (line->buf[i - 1] == '\n') {
+                break;
+            }
+        }
+        size_t j;
+        for (j = i; j < line->len; j++) {
+            if (line->buf[j] != ' ') {
+                break;
+            }
+        }
+        // i=start of line; j=first non-space
+        int n = (j - i) / 4;
+        if (line->buf[line->len - 2] == ':') {
+            n += 1;
+        }
+        while (n-- > 0) {
+            vstr_add_strn(line, "    ", 4);
+            mp_hal_stdout_tx_strn("    ", 4);
+            rl.cursor_pos += 4;
+        }
+    }
     for (;;) {
         int c = mp_hal_stdin_rx_chr();
         int r = readline_process_char(c);
