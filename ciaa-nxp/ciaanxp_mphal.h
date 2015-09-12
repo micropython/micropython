@@ -42,21 +42,23 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 
 // RS232 Functions
-uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t const size);
+uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
 void mp_hal_rs232_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
 void mp_hal_rs232_setConfig(int32_t baud,int32_t stopBits,int32_t parity);
 int32_t mp_hal_rs232_isNewPacketAvailable(void);
 uint32_t mp_hal_rs232_getPacketSize(void);
 int32_t mp_hal_rs232_getChar(void);
 int32_t mp_hal_rs232_charAvailable(void);
+void mp_hal_rs232_resetRxPacket(void);
 
 // RS485 Functions
-uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t const size);
+uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
 void mp_hal_rs485_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
 void mp_hal_rs485_setConfig(int32_t baud,int32_t stopBits,int32_t parity);
 int32_t mp_hal_rs485_isNewPacketAvailable(void);
 uint32_t mp_hal_rs485_getPacketSize(void);
 int32_t mp_hal_rs485_getChar(void);
 int32_t mp_hal_rs485_charAvailable(void);
+void mp_hal_rs485_resetRxPacket(void);
 
 #endif

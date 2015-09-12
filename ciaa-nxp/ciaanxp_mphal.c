@@ -88,9 +88,20 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
 
 
 // RS232 Functions
-uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t const size)
+uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t size,uint32_t delay)
 {
-	return Board_UART_Write(LPC_USART3,buffer,size);
+	if(delay==0)
+		return Board_UART_Write(LPC_USART3,buffer,size);
+
+	uint32_t i=0;
+	while(size>0)
+	{
+		Board_UART_Write(LPC_USART3,&(buffer[i]),1);
+		mp_hal_milli_delay(delay);
+		size--;
+		i++;
+	}
+	return i;
 }
 
 void mp_hal_rs232_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte)
@@ -123,10 +134,26 @@ int32_t mp_hal_rs232_charAvailable(void)
 	return Board_UART_charAvailable(LPC_USART3);
 }
 
-// RS485 Functions
-uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t const size)
+void mp_hal_rs232_resetRxPacket(void)
 {
-        return Board_UART_Write(LPC_USART0,buffer,size);
+	Board_UART_resetRx(LPC_USART3);
+}
+
+// RS485 Functions
+uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t size, uint32_t delay)
+{
+        if(delay==0)
+                return Board_UART_Write(LPC_USART0,buffer,size);
+
+        uint32_t i=0;
+        while(size>0)
+        {
+                Board_UART_Write(LPC_USART0,&(buffer[i]),1);
+                mp_hal_milli_delay(delay);
+                size--;
+                i++;
+        }
+        return i;
 }
 
 void mp_hal_rs485_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte)
@@ -157,5 +184,10 @@ int32_t mp_hal_rs485_getChar(void)
 int32_t mp_hal_rs485_charAvailable(void)
 {
         return Board_UART_charAvailable(LPC_USART0);
+}
+
+void mp_hal_rs485_resetRxPacket(void)
+{
+        Board_UART_resetRx(LPC_USART0);
 }
 
