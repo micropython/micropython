@@ -154,6 +154,14 @@ STATIC const mp_obj_type_t jobject_type = {
 //    .locals_dict = (mp_obj_t)&jobject_locals_dict,
 };
 
+STATIC mp_obj_t new_jobject(jobject jo) {
+    mp_obj_jobject_t *o = m_new_obj(mp_obj_jobject_t);
+    o->base.type = &jobject_type;
+    o->obj = jo;
+    return o;
+}
+
+
 // jmethod
 
 STATIC void jmethod_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -197,6 +205,34 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
 
     *jtypesig = arg_type;
     return true;
+}
+
+// jvalue is known to be union of jobject and friends. And yet from C's
+// perspective, it's aggregate object which may require passing via stack
+// instead of registers. Work that around by passing jobject and typecasting
+// it.
+#define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
+STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
+    mp_obj_t ret;
+    if (MATCH(jtypesig, "void")) {
+        return mp_const_none;
+    } else if (MATCH(jtypesig, "int")) {
+        return mp_obj_new_int((mp_int_t)arg);
+    } else if (MATCH(jtypesig, "java.lang.String")) {
+ret_string:;
+        const char *s = JJ(GetStringUTFChars, arg, NULL);
+        ret = mp_obj_new_str(s, strlen(s), false);
+        JJ(ReleaseStringUTFChars, arg, s);
+        return ret;
+    } else if (MATCH(jtypesig, "java.lang.Object")) {
+        if (JJ(IsInstanceOf, arg, String_class)) {
+            goto ret_string;
+        } else {
+            return new_jobject(arg);
+        }
+    }
+
+    return MP_OBJ_NULL;
 }
 
 STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, mp_uint_t n_args, const mp_obj_t *args) {
@@ -244,31 +280,11 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             jobject res;
             if (is_constr) {
                 res = JJ(NewObjectA, obj, method_id, jargs);
-                mp_obj_jobject_t *o;
-ret_object:
-                o = m_new_obj(mp_obj_jobject_t);
-                o->base.type = &jobject_type;
-                o->obj = res;
-                return o;
+                JJ(ReleaseStringUTFChars, name_o, decl);
+                return new_jobject(res);
             } else {
                 res = JJ(CallObjectMethodA, obj, method_id, jargs);
-                mp_obj_t ret = MP_OBJ_NULL;
-                if (strncmp(ret_type, "void", 4) == 0) {
-                    ret = mp_const_none;
-                } else if (strncmp(ret_type, "int", sizeof("int") - 1) == 0) {
-                    ret = mp_obj_new_int((mp_int_t)res);
-                } else if (strncmp(ret_type, "java.lang.String", sizeof("java.lang.String") - 1) == 0) {
-ret_string:;
-                    const char *s = JJ(GetStringUTFChars, res, NULL);
-                    ret = mp_obj_new_str(s, strlen(s), false);
-                    JJ(ReleaseStringUTFChars, res, s);
-                } else if (strncmp(ret_type, "java.lang.Object", sizeof("java.lang.Object") - 1) == 0) {
-                    if (JJ(IsInstanceOf, res, String_class)) {
-                        goto ret_string;
-                    } else {
-                        goto ret_object;
-                    }
-                }
+                mp_obj_t ret = jvalue2py(ret_type, res);
                 JJ(ReleaseStringUTFChars, name_o, decl);
                 if (ret != MP_OBJ_NULL) {
                     return ret;
