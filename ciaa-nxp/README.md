@@ -21,25 +21,30 @@ Soporte de hardware
 Modulo pyb:
 - Soporte de los 4 LEDS de la placa mediante el modulo pyb.LED. Ejemplo:
 
+```python
 import pyb
 led1 = pyb.LED(1)
 led1.on()
 pyb.delay(100);
 led1.off()
+```
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
 - Soporte para los 4 pulsadores de la placa mediante el modulo pyb.Switch. Ejemplo:
 
+```python
 import pyb
 switch1 = pyb.Switch(1)
 val = switch1.value()
 print('sw1 vale:'+str(val))
+```
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
 - Soporte para la UART RS232 del conector P1 y la UART RS485 de la placa mediante el modulo pyb.UART. Ejemplo:
 
+```python
 import pyb
 uart = pyb.UART(3)
 uart.init(115200,bits=8, parity=None, stop=1,timeout=1000, timeout_char=1000, read_buf_len=64)
@@ -49,6 +54,7 @@ while True:
                 print("hay data:")
                 data = uart.readall()
                 print(data)
+```
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
 
