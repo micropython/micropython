@@ -299,7 +299,8 @@ Q(EXTERNAL)
 
 // for WDT class
 Q(WDT)
-Q(kick)
+Q(feed)
+Q(timeout)
 
 // for HeartBeat class
 Q(HeartBeat)
