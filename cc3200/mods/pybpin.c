@@ -475,7 +475,7 @@ STATIC void EXTI_Handler(uint port) {
 
 STATIC const mp_arg_t pin_init_args[] = {
     { MP_QSTR_mode,     MP_ARG_REQUIRED |  MP_ARG_INT  },
-    { MP_QSTR_pull,                        MP_ARG_INT, {.u_int = PIN_TYPE_STD} },
+    { MP_QSTR_pull,                        MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_value,    MP_ARG_KW_ONLY  |  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_drive,    MP_ARG_KW_ONLY  |  MP_ARG_INT, {.u_int = PIN_STRENGTH_4MA} },
     { MP_QSTR_alt,      MP_ARG_KW_ONLY  |  MP_ARG_INT, {.u_int = -1} },
@@ -492,8 +492,13 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
     pin_validate_mode(mode);
 
     // get the pull type
-    uint pull = args[1].u_int;
-    pin_validate_pull(pull);
+    uint pull;
+    if (args[1].u_obj == mp_const_none) {
+        pull = PIN_TYPE_STD;
+    } else {
+        pull = mp_obj_get_int(args[1].u_obj);
+        pin_validate_pull (pull);
+    }
 
     // get the value
     int value = -1;
@@ -562,13 +567,15 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     // pin pull
     qstr pull_qst;
     if (pull == PIN_TYPE_STD) {
-        pull_qst = MP_QSTR_PULL_NONE;
-    } else if (pull == PIN_TYPE_STD_PU) {
-        pull_qst = MP_QSTR_PULL_UP;
+        mp_printf(print, ", pull=%q", MP_QSTR_None);
     } else {
-        pull_qst = MP_QSTR_PULL_DOWN;
+        if (pull == PIN_TYPE_STD_PU) {
+            pull_qst = MP_QSTR_PULL_UP;
+        } else {
+            pull_qst = MP_QSTR_PULL_DOWN;
+        }
+        mp_printf(print, ", pull=Pin.%q", pull_qst);
     }
-    mp_printf(print, ", pull=Pin.%q", pull_qst);
 
     // pin drive
     qstr drv_qst;
@@ -656,10 +663,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mode_obj, 1, 2, pin_mode);
 STATIC mp_obj_t pin_pull(mp_uint_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
+        if (self->pull == PIN_TYPE_STD) {
+            return mp_const_none;
+        }
         return mp_obj_new_int(self->pull);
     } else {
-        uint32_t pull = mp_obj_get_int(args[1]);
-        pin_validate_pull (pull);
+        uint32_t pull;
+        if (args[1] == mp_const_none) {
+            pull = PIN_TYPE_STD;
+        } else {
+            pull = mp_obj_get_int(args[1]);
+            pin_validate_pull (pull);
+        }
         self->pull = pull;
         pin_obj_configure(self);
         return mp_const_none;
@@ -853,7 +868,6 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN),              MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ALT),                     MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_ALT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ALT_OPEN_DRAIN),          MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_ALT_OD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE),               MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),                 MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PU) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN),               MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LOW_POWER),               MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
