@@ -227,7 +227,7 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
 #define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
 STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
     mp_obj_t ret;
-    if (MATCH(jtypesig, "void")) {
+    if (arg == NULL || MATCH(jtypesig, "void")) {
         return mp_const_none;
     } else if (MATCH(jtypesig, "int")) {
         return mp_obj_new_int((mp_int_t)arg);
