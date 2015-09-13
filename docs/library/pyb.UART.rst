@@ -24,7 +24,7 @@ UART objects can be created and initialised using::
 
 .. only:: port_wipy
 
-    Bits can be 5, 6, 7, 8.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+    Bits can be 5, 6, 7, 8.  Parity can be ``None``, ``UART.EVEN`` or ``UART.ODD``.  Stop can be 1 or 2.
 
 
 A UART object acts like a stream object and reading and writing is done
@@ -122,7 +122,7 @@ Methods
     
          - ``baudrate`` is the clock rate.
          - ``bits`` is the number of bits per character, 7, 8 or 9.
-         - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
+         - ``parity`` is the parity, ``None``, ``UART.EVEN`` or ``UART.ODD``.
          - ``stop`` is the number of stop bits, 1 or 2.
          - ``pins`` is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
            Any of the pins can be None if one wants the UART to operate with limited functionality.

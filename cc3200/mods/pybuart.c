@@ -343,7 +343,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         if ((self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_NONE) {
             mp_print_str(print, ", parity=None");
         } else {
-            mp_printf(print, ", parity=%u", (self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_EVEN ? 0 : 1);
+            mp_printf(print, ", parity=UART.%q", (self->config & UART_CONFIG_PAR_MASK) == UART_CONFIG_PAR_EVEN ? MP_QSTR_EVEN : MP_QSTR_ODD);
         }
         mp_printf(print, ", stop=%u)", (self->config & UART_CONFIG_STOP_MASK) == UART_CONFIG_STOP_ONE ? 1 : 2);
     }
@@ -380,7 +380,11 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_arg_val_t *args) {
     if (args[2].u_obj == mp_const_none) {
         config |= UART_CONFIG_PAR_NONE;
     } else {
-        config |= ((mp_obj_get_int(args[2].u_obj) & 1) ? UART_CONFIG_PAR_ODD : UART_CONFIG_PAR_EVEN);
+        uint parity = mp_obj_get_int(args[2].u_obj);
+        if (parity != UART_CONFIG_PAR_ODD && parity != UART_CONFIG_PAR_EVEN) {
+            goto error;
+        }
+        config |= parity;
     }
     // stop bits
     config |= (args[3].u_int == 1 ? UART_CONFIG_STOP_ONE : UART_CONFIG_STOP_TWO);
@@ -575,6 +579,8 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),       (mp_obj_t)&mp_stream_write_obj },
 
     // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EVEN),        MP_OBJ_NEW_SMALL_INT(UART_CONFIG_PAR_EVEN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ODD),         MP_OBJ_NEW_SMALL_INT(UART_CONFIG_PAR_ODD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX_ANY),      MP_OBJ_NEW_SMALL_INT(E_UART_TRIGGER_RX_ANY) },
 };
 
