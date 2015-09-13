@@ -181,12 +181,13 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: i2c.init(mode, \*, baudrate=100000)
+    .. method:: i2c.init(mode, \*, baudrate=100000, pins=(SDA, SCL))
 
       Initialise the I2C bus with the given parameters:
 
          - ``mode`` must be ``I2C.MASTER``
          - ``baudrate`` is the SCL clock rate
+         - ``pins`` is an optional tuple with the pins to assign to the I2C bus.
 
     .. method:: i2c.readfrom(addr, nbytes)
 

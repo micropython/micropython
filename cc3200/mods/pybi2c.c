@@ -323,7 +323,6 @@ STATIC const mp_arg_t pyb_i2c_init_args[] = {
     { MP_QSTR_baudrate, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 100000} },
     { MP_QSTR_pins,     MP_ARG_KW_ONLY   | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-#define PYB_I2C_INIT_NUM_ARGS   MP_ARRAY_SIZE(pyb_i2c_init_args)
 STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
@@ -331,8 +330,8 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_init_args)];
     mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), pyb_i2c_init_args, args);
 
-    // work out the uart id
-    uint8_t i2c_id;
+    // work out the i2c id
+    uint i2c_id;
     if (args[0].u_obj == mp_const_none) {
         // default id
         i2c_id = 0;
