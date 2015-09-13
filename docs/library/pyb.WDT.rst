@@ -10,24 +10,23 @@ watchdog periodically to prevent it from expiring and resetting the system.
 
 Example usage::
 
-    wdt = pyb.WDT(5000) # enable with a timeout of 5s
-    wdt.kick()
+    wdt = pyb.WDT(timeout=2000) # enable with a timeout of 2s
+    wdt.feed()
 
 Constructors
 ------------
 
-.. class:: pyb.WDT([timeout])
+.. class:: pyb.WDT(id=0, timeout=5000)
 
-   Create a WDT object. If the timeout is specified the WDT is started.
-   The timeout must be given in seconds and 1s the minimum value that
-   is accepted. Once it is running the timeout cannot be changed and
-   the WDT cannot be stopped either.
+   Create a WDT object and start it. The timeout must be given in seconds and
+   the minimum value that is accepted is 1 second. Once it is running the timeout
+   cannot be changed and the WDT cannot be stopped either.
 
 Methods
 -------
 
-.. method:: wdt.kick()
+.. method:: wdt.feed()
 
-   Kick the WDT to prevent it from resetting the system. The application
+   Feed the WDT to prevent it from resetting the system. The application
    should place this call in a sensible place ensuring that the WDT is
-   only kicked after verifying that everything is functioning correctly.
+   only fed after verifying that everything is functioning correctly.
