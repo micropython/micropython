@@ -36,6 +36,7 @@
 #include <jni.h>
 
 #define JJ(call, ...) (*env)->call(env, __VA_ARGS__)
+#define JJ1(call) (*env)->call(env)
 
 static JavaVM *jvm;
 static JNIEnv *env;
@@ -49,6 +50,7 @@ static jmethodID Method_toString_mid;
 STATIC const mp_obj_type_t jobject_type;
 STATIC const mp_obj_type_t jmethod_type;
 
+STATIC mp_obj_t new_jobject(jobject jo);
 STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, mp_uint_t n_args, const mp_obj_t *args);
 
 typedef struct _mp_obj_jclass_t {
@@ -66,6 +68,7 @@ typedef struct _mp_obj_jmethod_t {
     jobject obj;
     jmethodID meth;
     qstr name;
+    bool is_static;
 } mp_obj_jmethod_t;
 
 // jclass
@@ -85,12 +88,21 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
 
         jstring field_name = JJ(NewStringUTF, attr);
         jobject field = JJ(CallObjectMethod, self->cls, Class_getField_mid, field_name);
-        jfieldID field_id = JJ(FromReflectedField, field);
-        jobject obj = JJ(GetStaticObjectField, self->cls, field_id);
+        if (!JJ1(ExceptionCheck)) {
+            jfieldID field_id = JJ(FromReflectedField, field);
+            jobject obj = JJ(GetStaticObjectField, self->cls, field_id);
+            dest[0] = new_jobject(obj);
+            return;
+        }
+        //JJ1(ExceptionDescribe);
+        JJ1(ExceptionClear);
 
-        mp_obj_jobject_t *o = m_new_obj(mp_obj_jobject_t);
-        o->base.type = &jobject_type;
-        o->obj = obj;
+        mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
+        o->base.type = &jmethod_type;
+        o->name = attr_in;
+        o->meth = NULL;
+        o->obj = self->cls;
+        o->is_static = true;
         dest[0] = o;
     }
 }
@@ -142,6 +154,7 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         o->name = attr_in;
         o->meth = NULL;
         o->obj = self->obj;
+        o->is_static = false;
         dest[0] = o;
     }
 }
@@ -310,7 +323,10 @@ STATIC mp_obj_t jmethod_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
     const char *name = qstr_str(self->name);
 //    jstring meth_name = JJ(NewStringUTF, name);
 
-    jclass obj_class = JJ(GetObjectClass, self->obj);
+    jclass obj_class = self->obj;
+    if (!self->is_static) {
+        obj_class = JJ(GetObjectClass, self->obj);
+    }
     jarray methods = JJ(CallObjectMethod, obj_class, Class_getMethods_mid);
 
     return call_method(self->obj, name, methods, false, n_args, args);
