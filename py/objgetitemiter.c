@@ -41,7 +41,12 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         // try to get next item
-        mp_obj_t value = mp_call_method_n_kw(1, 0, self->args);
+        mp_obj_t value;
+        if (self->args[1] == NULL) {
+            value = mp_obj_subscr(self->args[0], self->args[2], MP_OBJ_SENTINEL);
+        } else {
+            value = mp_call_method_n_kw(1, 0, self->args);
+        }
         self->args[2] = MP_OBJ_NEW_SMALL_INT(MP_OBJ_SMALL_INT_VALUE(self->args[2]) + 1);
         nlr_pop();
         return value;
