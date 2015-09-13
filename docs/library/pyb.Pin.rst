@@ -67,7 +67,7 @@ Usage Model:
 
     Board pins are identified by their string id::
 
-        g = pyb.Pin('GP9', mode=pyb.Pin.OUT, pull=pyb.Pin.PULL_NONE, drive=pyb.Pin.MED_POWER, alt=-1)
+        g = pyb.Pin('GP9', mode=pyb.Pin.OUT, pull=None, drive=pyb.Pin.MED_POWER, alt=-1)
 
     You can also configure the Pin to generate interrupts. For instance::
 
@@ -165,7 +165,7 @@ Methods
 
          - ``pull`` can be one of:
 
-            - ``Pin.PULL_NONE`` - no pull up or down resistor.
+            - ``None`` - no pull up or down resistor.
             - ``Pin.PULL_UP`` - pull up resistor enabled.
             - ``Pin.PULL_DOWN`` - pull down resitor enabled.
 
@@ -349,13 +349,11 @@ Constants
 
        Selects the pin mode.
 
-    .. data:: Pin.PULL_NONE
-
     .. data:: Pin.PULL_UP
 
     .. data:: Pin.PULL_DOWN
     
-       Selectes the wether there's pull up/down resistor, or none.
+       Selectes the wether there's pull up/down resistor.
 
     .. data:: Pin.LOW_POWER
 
