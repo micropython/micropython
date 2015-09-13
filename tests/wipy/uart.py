@@ -25,8 +25,8 @@ for uart_id in uart_id_range:
     uart = UART(uart_id, 38400)
     print(uart)
     uart.init(57600, 8, None, 1, pins=uart_pins[uart_id][0])
-    uart.init(baudrate=9600, stop=2, parity=0, pins=uart_pins[uart_id][1])
-    uart.init(baudrate=115200, parity=1, stop=1, pins=uart_pins[uart_id][0])
+    uart.init(baudrate=9600, stop=2, parity=UART.EVEN, pins=uart_pins[uart_id][1])
+    uart.init(baudrate=115200, parity=UART.ODD, stop=0, pins=uart_pins[uart_id][0])
     uart = UART(baudrate=1000000)
     uart.sendbreak()
 
@@ -111,12 +111,12 @@ for i in range (0, 1000):
 
 # next ones must raise
 try:
-    UART(0, 9600, parity=2, pins=('GP12', 'GP13', 'GP7'))
+    UART(0, 9600, parity=None, pins=('GP12', 'GP13', 'GP7'))
 except Exception:
     print('Exception')
 
 try:
-    UART(0, 9600, parity=2, pins=('GP12', 'GP7'))
+    UART(0, 9600, parity=UART.ODD, pins=('GP12', 'GP7'))
 except Exception:
     print('Exception')
 

@@ -148,6 +148,8 @@ Q(bits)
 Q(stop)
 Q(parity)
 Q(pins)
+Q(EVEN)
+Q(ODD)
 Q(RX_ANY)
 
 // for I2C class
