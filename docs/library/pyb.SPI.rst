@@ -10,7 +10,7 @@ there are 3 lines: SCK, MOSI, MISO.
 
     See usage model of I2C; SPI is very similar.  Main difference is
     parameters to init the SPI bus::
-    
+
         from pyb import SPI
         spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
 
@@ -19,25 +19,24 @@ there are 3 lines: SCK, MOSI, MISO.
     to sample data on the first or second clock edge respectively.  Crc can be
     None for no CRC, or a polynomial specifier.
 
+    Additional methods for SPI::
+
+        data = spi.send_recv(b'1234')        # send 4 bytes and receive 4 bytes
+        buf = bytearray(4)
+        spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
+        spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
+
 .. only:: port_wipy
 
     See usage model of I2C; SPI is very similar.  Main difference is
     parameters to init the SPI bus::
-    
+
         from pyb import SPI
-        spi = SPI(1, SPI.MASTER, baudrate=1000000, polarity=0, phase=0, cs_polarity=SPI.ACTIVE_LOW)
+        spi = SPI(1, SPI.MASTER, baudrate=1000000, polarity=0, phase=0, firstbit=SPI.MSB)
 
     Only required parameter is mode, must be SPI.MASTER.  Polarity can be 0 or 
     1, and is the level the idle clock line sits at.  Phase can be 0 or 1 to 
     sample data on the first or second clock edge respectively.
-
-Additional methods for SPI::
-
-    data = spi.send_recv(b'1234')        # send 4 bytes and receive 4 bytes
-    buf = bytearray(4)
-    spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
-    spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
-
 
 Constructors
 ------------
@@ -45,18 +44,18 @@ Constructors
 .. only:: port_pyboard
 
     .. class:: pyb.SPI(bus, ...)
-    
+
        Construct an SPI object on the given bus.  ``bus`` can be 1 or 2.
        With no additional parameters, the SPI object is created but not
        initialised (it has the settings from the last initialisation of
        the bus, if any).  If extra arguments are given, the bus is initialised.
        See ``init`` for parameters of initialisation.
-       
+
        The physical pins of the SPI busses are:
-       
+
          - ``SPI(1)`` is on the X position: ``(NSS, SCK, MISO, MOSI) = (X5, X6, X7, X8) = (PA4, PA5, PA6, PA7)``
          - ``SPI(2)`` is on the Y position: ``(NSS, SCK, MISO, MOSI) = (Y5, Y6, Y7, Y8) = (PB12, PB13, PB14, PB15)``
-       
+
        At the moment, the NSS pin is not used by the SPI driver and is free
        for other use.
 
@@ -76,13 +75,13 @@ Methods
 .. method:: spi.deinit()
 
    Turn off the SPI bus.
-   
+
 .. only:: port_pyboard
 
     .. method:: spi.init(mode, baudrate=328125, \*, prescaler, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
-    
+
        Initialise the SPI bus with the given parameters:
-       
+
          - ``mode`` must be either ``SPI.MASTER`` or ``SPI.SLAVE``.
          - ``baudrate`` is the SCK clock rate (only sensible for a master).
          - ``prescaler`` is the prescaler to use to derive SCK from the APB bus frequency;
@@ -92,66 +91,87 @@ Methods
            respectively.
          - ``firstbit`` can be ``SPI.MSB`` or ``SPI.LSB``.
          - ``crc`` can be None for no CRC, or a polynomial specifier.
-    
+
        Note that the SPI clock frequency will not always be the requested baudrate.
        The hardware only supports baudrates that are the APB bus frequency
        (see :meth:`pyb.freq`) divided by a prescaler, which can be 2, 4, 8, 16, 32,
        64, 128 or 256.  SPI(1) is on AHB2, and SPI(2) is on AHB1.  For precise
        control over the SPI clock frequency, specify ``prescaler`` instead of
        ``baudrate``.
-    
+
        Printing the SPI object will show you the computed baudrate and the chosen
        prescaler.
 
 .. only:: port_wipy
 
-    .. method:: spi.init(mode, baudrate=1000000, \*, polarity=0, phase=0, bits=8, nss=SPI.ACTIVE_LOW)
-    
+    .. method:: spi.init(mode, baudrate=1000000, \*, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, pins=(CLK, MOSI, MISO))
+
        Initialise the SPI bus with the given parameters:
-       
+
          - ``mode`` must be ``SPI.MASTER``.
          - ``baudrate`` is the SCK clock rate.
          - ``polarity`` can be 0 or 1, and is the level the idle clock line sits at.
          - ``phase`` can be 0 or 1 to sample data on the first or second clock edge
            respectively.
          - ``bits`` is the width of each transfer, accepted values are 8, 16 and 32.
-         - ``cs_polarity`` can be ``SPI.ACTIVE_LOW`` or ``SPI.ACTIVE_HIGH``.
+         - ``firstbit`` can be ``SPI.MSB`` only.
+         - ``pins`` is an optional tupple with the pins to assign to the SPI bus.
+
+    .. method:: spi.write(buf)
+
+        Write the data contained in ``buf``. 
+        Returns the number of bytes written.
+
+    .. method:: spi.read(nbytes, *, write=0x00)
+
+        Read the ``nbytes`` while writing the data specified by ``write``.
+        Return the number of bytes read.
+
+    .. method:: spi.readinto(buf, *, write=0x00)
+
+        Read into the buffer specified by ``buf`` while writing the data specified by
+        ``write``.
+        Return the number of bytes read.
+
+    .. method:: spi.write_readinto(write_buf, read_buf)
+
+        Write from ``write_buf`` and read into ``read_buf``. Both buffers must have the
+        same length.
+        Returns the number of bytes written
+
+.. only:: port_pyboard
+
+    .. method:: spi.recv(recv, \*, timeout=5000)
     
-       Note that the SPI clock frequency will not always be the requested baudrate.
-       Printing the SPI object will show you the computed baudrate and the chosen
-       prescaler.
+       Receive data on the bus:
 
-.. method:: spi.recv(recv, \*, timeout=5000)
+         - ``recv`` can be an integer, which is the number of bytes to receive,
+           or a mutable buffer, which will be filled with received bytes.
+         - ``timeout`` is the timeout in milliseconds to wait for the receive.
 
-   Receive data on the bus:
+       Return value: if ``recv`` is an integer then a new buffer of the bytes received,
+       otherwise the same buffer that was passed in to ``recv``.
+    
+    .. method:: spi.send(send, \*, timeout=5000)
 
-     - ``recv`` can be an integer, which is the number of bytes to receive,
-       or a mutable buffer, which will be filled with received bytes.
-     - ``timeout`` is the timeout in milliseconds to wait for the receive.
+       Send data on the bus:
 
-   Return value: if ``recv`` is an integer then a new buffer of the bytes received,
-   otherwise the same buffer that was passed in to ``recv``.
+         - ``send`` is the data to send (an integer to send, or a buffer object).
+         - ``timeout`` is the timeout in milliseconds to wait for the send.
 
-.. method:: spi.send(send, \*, timeout=5000)
+       Return value: ``None``.
 
-   Send data on the bus:
+    .. method:: spi.send_recv(send, recv=None, \*, timeout=5000)
+    
+       Send and receive data on the bus at the same time:
 
-     - ``send`` is the data to send (an integer to send, or a buffer object).
-     - ``timeout`` is the timeout in milliseconds to wait for the send.
+         - ``send`` is the data to send (an integer to send, or a buffer object).
+         - ``recv`` is a mutable buffer which will be filled with received bytes.
+           It can be the same as ``send``, or omitted.  If omitted, a new buffer will
+           be created.
+         - ``timeout`` is the timeout in milliseconds to wait for the receive.
 
-   Return value: ``None``.
-
-.. method:: spi.send_recv(send, recv=None, \*, timeout=5000)
-
-   Send and receive data on the bus at the same time:
-
-     - ``send`` is the data to send (an integer to send, or a buffer object).
-     - ``recv`` is a mutable buffer which will be filled with received bytes.
-       It can be the same as ``send``, or omitted.  If omitted, a new buffer will
-       be created.
-     - ``timeout`` is the timeout in milliseconds to wait for the receive.
-
-   Return value: the buffer with the received bytes.
+       Return value: the buffer with the received bytes.
 
 Constants
 ---------
@@ -174,7 +194,6 @@ Constants
 
        for initialising the SPI bus to master
     
-    .. data:: SPI.ACTIVE_LOW
-    .. data:: SPI.ACTIVE_HIGH
-    
-       selects the polarity of the NSS pin
+    .. data:: SPI.MSB
+
+    set the first bit to be the most significant bit

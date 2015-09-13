@@ -454,7 +454,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), pyb_uart_init_args, args);
 
     // work out the uart id
-    uint8_t uart_id;
+    uint uart_id;
     if (args[0].u_obj == mp_const_none) {
         if (args[5].u_obj != MP_OBJ_NULL) {
             mp_obj_t *pins;
@@ -474,7 +474,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
         uart_id = mp_obj_get_int(args[0].u_obj);
     }
 
-    if (uart_id < PYB_UART_0 || uart_id > PYB_UART_1) {
+    if (uart_id > PYB_UART_1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
 

@@ -1,0 +1,35 @@
+SPI(0, SPI.MASTER, baudrate=2000000, bits=8, polarity=0, phase=0, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=5000000, bits=8, polarity=0, phase=0, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=200000, bits=16, polarity=0, phase=0, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=10000000, bits=8, polarity=0, phase=1, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=5000000, bits=32, polarity=1, phase=0, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=10000000, bits=8, polarity=1, phase=1, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=20000000, bits=8, polarity=0, phase=0, firstbit=SPI.MSB)
+SPI(0, SPI.MASTER, baudrate=1000000, bits=8, polarity=0, phase=0, firstbit=SPI.MSB)
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+SPI(0)
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+SPI(0, SPI.MASTER, baudrate=500000, bits=8, polarity=0, phase=0, firstbit=SPI.MSB)
