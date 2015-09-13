@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Rob Fowler
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,4 @@
  * THE SOFTWARE.
  */
 
-extern const mp_obj_type_t esp_timer_type;
-
-//void timer_init0(void);
-//void timer_deinit(void);
+extern const mp_obj_type_t esp_os_timer_type;

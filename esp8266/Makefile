@@ -9,6 +9,7 @@ include ../py/py.mk
 MAKE_FROZEN = ../tools/make-frozen.py
 
 SCRIPTDIR = scripts
+#PORT = /dev/ttyUSB0
 PORT = /dev/ttyACM0
 BAUD = 115200
 CROSS_COMPILE = xtensa-lx106-elf-
@@ -64,8 +65,8 @@ SRC_C = \
 	modutime.c \
 	moduos.c \
 	utils.c \
-	$(BUILD)/frozen.c \
-	timer.c
+	os_timer.c \
+	$(BUILD)/frozen.c
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \

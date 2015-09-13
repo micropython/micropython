@@ -41,7 +41,7 @@
 #include "spi_flash.h"
 #include "utils.h"
 
-#include "timer.h"
+#include "os_timer.h"
 
 STATIC const mp_obj_type_t esp_socket_type;
 
@@ -583,7 +583,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id), (mp_obj_t)&esp_flash_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_timer), (mp_obj_t)&esp_timer_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os_timer), (mp_obj_t)&esp_os_timer_type },
 
 #if MODESP_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),

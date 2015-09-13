@@ -140,3 +140,10 @@ Q(localtime)
 Q(mktime)
 Q(sleep)
 Q(time)
+
+// Robs ESP timer
+Q(os_timer)
+Q(period)
+Q(callback)
+Q(repeat)
+Q(cancel)
