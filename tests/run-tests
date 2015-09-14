@@ -173,11 +173,6 @@ def run_tests(pyb, tests, args):
     if not 'True' in str(t, 'ascii'):
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
-    # Check if slice attributes access is supported, and skip testing it if not
-    t = run_micropython(pyb, args, 'feature_check/slice_attrs_check.py')
-    if not 'True' in str(t, 'ascii'):
-        skip_tests.add('basics/slice_attrs.py')
-
     upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
     cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
