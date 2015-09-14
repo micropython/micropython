@@ -166,6 +166,11 @@ try:
 except Exception:
     print("Exception")
 
+try:
+    I2C(1, I2C.MASTER, baudrate=100000)
+except Exception:
+    print("Exception")
+
 # reinitialization must work
 i2c.init(baudrate=400000)
 print(i2c)
