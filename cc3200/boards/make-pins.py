@@ -35,6 +35,8 @@ class AF:
     def __init__(self, name, idx, fn, unit, type):
         self.name = name
         self.idx = idx
+        if self.idx > 15:
+            self.idx = -1
         self.fn = fn
         self.unit = unit
         self.type = type
@@ -57,12 +59,16 @@ class Pin:
 
     def print(self):
         print('// {}'.format(self.name))
-        print('const pin_af_t pin_{}_af[] = {{'.format(self.name))
-        for af in self.afs:
-            af.print()
-        print('};')
-        print('pin_obj_t pin_{:4s} = PIN({:6s}, {:1d}, {:3d}, {:2d}, pin_{}_af, {});\n'.format(
-               self.name, self.name, self.port, self.gpio_bit, self.pin_num, self.name, len(self.afs)))
+        if len(self.afs):
+            print('const pin_af_t pin_{}_af[] = {{'.format(self.name))
+            for af in self.afs:
+                af.print()
+            print('};')
+            print('pin_obj_t pin_{:4s} = PIN({:6s}, {:1d}, {:3d}, {:2d}, pin_{}_af, {});\n'.format(
+                   self.name, self.name, self.port, self.gpio_bit, self.pin_num, self.name, len(self.afs)))
+        else:
+            print('pin_obj_t pin_{:4s} = PIN({:6s}, {:1d}, {:3d}, {:2d}, NULL, 0);\n'.format(
+                   self.name, self.name, self.port, self.gpio_bit, self.pin_num))
 
     def print_header(self, hdr_file):
         hdr_file.write('extern pin_obj_t pin_{:s};\n'.format(self.name))
