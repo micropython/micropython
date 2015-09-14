@@ -82,6 +82,7 @@ typedef struct _pyb_i2s_obj_t {
     DMA_HandleTypeDef rx_dma;
     mp_obj_base_t *dstream_tx;
     mp_obj_base_t *dstream_rx;
+    mp_uint_t out_sz;
     const pin_obj_t *pins[5];
     // audio buffers placed before smaller struct members to keep word-aligned
     uint16_t audiobuf_tx[2][AUDIOBUFFER_BYTES / 8];
@@ -92,6 +93,7 @@ typedef struct _pyb_i2s_obj_t {
     bool is_duplex : 1;
     bool base_is_tx : 1; // base instance SPIx is either tx or rx
     bool pp_ptr : 1; // ping-pong pointer for double buffers
+    bool stop_flag : 1;
 } pyb_i2s_obj_t;
 
 // pins are Bit Clock, Word Select, TX Data, RX Data, and Master Clock Out
@@ -242,6 +244,8 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
     // Configure and enable I2SPLL:
     // TODO: This may not be the correct method to initialize and activate
     // the I2SPLL, needs more testing
+    // For an idea how to do this, see lines 457-494 of
+    // STM32Cube_FW_F4_V1.5.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c
     __HAL_RCC_PLLI2S_DISABLE();
     if (i2s_obj->i2s.Init.Mode == I2S_MODE_MASTER_TX ||
         i2s_obj->i2s.Init.Mode == I2S_MODE_MASTER_RX ) {
@@ -258,6 +262,9 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
         dma_invalidate_channel(i2s_obj->tx_dma_stream, i2s_obj->tx_dma_channel);
         dma_invalidate_channel(i2s_obj->rx_dma_stream, i2s_obj->rx_dma_channel);
         i2s_obj->is_enabled = true;
+        // TODO - This may be redundant, as stop_flag should be reset whenever
+        // a transfer is initiated:
+        i2s_obj->stop_flag = false;
         return true;
     }
 }
@@ -290,12 +297,16 @@ STATIC HAL_StatusTypeDef i2s_wait_dma_finished(I2S_HandleTypeDef *i2s, uint32_t 
     return HAL_OK;
 }
 
-
-STATIC void stream_out_buffering(pyb_i2s_obj_t *self) {
+STATIC void stream_out_buffer_handler(pyb_i2s_obj_t *self) {
     int buf_sz = AUDIOBUFFER_BYTES / 4;
     int error;
     HAL_StatusTypeDef status;
-    status = HAL_I2S_Transmit_DMA(&self->i2s, self->audiobuf_tx[self->pp_ptr], buf_sz / 2);
+    if(self->stop_flag){
+        status = HAL_I2S_DMAStop(&self->i2s);
+        self->stop_flag = false;
+    } else {
+        status = HAL_I2S_Transmit_DMA(&self->i2s, self->audiobuf_tx[self->pp_ptr], self->out_sz / 2);
+    }
 
     if (status != HAL_OK) {
         mp_hal_raise(status);
@@ -303,17 +314,17 @@ STATIC void stream_out_buffering(pyb_i2s_obj_t *self) {
 
     self->pp_ptr = !(self->pp_ptr);
 
-    mp_uint_t out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
+    self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
 
-    if (out_sz == MP_STREAM_ERROR) {
+    // self->out_sz == 0 means dstream_tx is empty, so set stop_flag to end transmit
+    if (self->out_sz == 0) {
+        self->stop_flag = true;
+    } else if (self->out_sz == MP_STREAM_ERROR) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     }
 }
 
-// Debug placeholders for DMA callback methods
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
-    //printf("I2S-TxHalfCplt\n");
-    //led_toggle(2);
 }
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
@@ -328,18 +339,50 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
 #endif
 
     pyb_i2s_obj_t *self = MP_STATE_PORT(pyb_i2s_obj_all)[rp_index];
-    stream_out_buffering(self);
+    stream_out_buffer_handler(self);
 
     //printf("I2S-TxCplt\n");
     led_state(1, 0);
 }
 
+STATIC void stream_in_buffer_handler(pyb_i2s_obj_t *self) {
+    int buf_sz = AUDIOBUFFER_BYTES / 4;
+    int error;
+    HAL_StatusTypeDef status;
+    // We toggle the ping-pong pointer immediately to continue to receive data before
+    // writing out the buffer that was filled by the last receive call
+    self->pp_ptr = !(self->pp_ptr);
+    status = HAL_I2S_Receive_DMA(&self->i2s, self->audiobuf_rx[self->pp_ptr], buf_sz / 2);
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+
+    mp_uint_t out_sz = self->dstream_rx->type->stream_p->write(self->dstream_rx, &self->audiobuf_rx[!(self->pp_ptr)], buf_sz, &error);
+
+    if (out_sz == MP_STREAM_ERROR) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    }
+}
+
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
-    //printf("I2S-RxHalfCplt\n");
 }
 
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
+    led_state(2, 1);
+    int rp_index = 0;
+    // If both I2S instances are enabled, set root pointer index to 1 if I2S
+    // instance is SPI3/I2S3; otherwise index is 0
+#if MICROPY_HW_ENABLE_I2S2 && MICROPY_HW_ENABLE_I2S3
+    if (hi2s->Instance == SPI3) {
+        rp_index = 1;
+    }
+#endif
+
+    pyb_i2s_obj_t *self = MP_STATE_PORT(pyb_i2s_obj_all)[rp_index];
+    stream_in_buffer_handler(self);
     //printf("I2S-RxCplt\n");
+    led_state(2, 0);
 }
 
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
@@ -1018,15 +1061,15 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
                                                 mp_obj_get_type_str(stream)));
     }
 
-    self->dstream_tx = stream;
-
     int buf_sz = AUDIOBUFFER_BYTES / 4;
     int error;
+    self->dstream_tx = stream;
     self->pp_ptr = 0;
+    self->stop_flag = false;
 
-    mp_uint_t out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
+    self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
 
-    if (out_sz == MP_STREAM_ERROR) {
+    if (self->out_sz == MP_STREAM_ERROR) {
         if (is_nonblocking_error(error)) {
             // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
             // "If the object is in non-blocking mode and no bytes are available,
@@ -1038,25 +1081,33 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     }
 
-    //DMA_HandleTypeDef tx_dma;
-    dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
-             self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s);
-    self->i2s.hdmatx = &self->tx_dma;
-    self->i2s.hdmarx = NULL;
-
-    // A hack to make sure that slave-mode transfers don't start on the wrong clock:
+    // Busy-wait for a few word-select cycles to make sure that slave-mode
+    // transfers don't start on the wrong clock level when in slave mode -
+    // seems to work when placed before call to dma_init.
+    // TODO: this could get stuck permanently if there is no master clock
+    // signal present on the WS pin; need a timeout and error:
     if (!(self->is_master)) {
         while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 0) {;}
         while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 1) {;}
         while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 0) {;}
     }
 
-    stream_out_buffering(self);
+    //DMA_HandleTypeDef tx_dma;
+    dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s,
+             self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s);
+    self->i2s.hdmatx = &self->tx_dma;
+    self->i2s.hdmarx = NULL;
+
+    stream_out_buffer_handler(self);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_out_obj, 1, pyb_i2s_stream_out);
 
+
+// stream_in not working yet; committing initial code
+// note that stream_in and stream_out are currently monopolizing the
+// DMA callbacks; need to detect if stream or buffer methods are being used
 
 STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
                                    mp_map_t *kw_args) {
@@ -1067,20 +1118,53 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
     };
 
     // parse args
-    // pyb_i2s_obj_t *self = pos_args[0];
+    pyb_i2s_obj_t *self = pos_args[0];
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t stream = args[0].u_obj;
-    // Got the file; the following check doesn't do anything.
-    // need to check if the handle has a 'write' method
-    if (stream == NULL /* || stream->type->stream_p->write == NULL */) {
-        // CPython: io.UnsupportedOperation, OSError subclass
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
+    mp_obj_type_t *type = mp_obj_get_type(stream);
+    // Check that 'stream' provides 'mp_stream_p_t' and 'write'
+    // Note that 'write' will be present even if the stream opened in read-mode (?)
+    if (type->stream_p == NULL || type->stream_p->write == NULL) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                                                "Object type %s not a writeable stream",
+                                                mp_obj_get_type_str(stream)));
     }
 
-    return stream;
+    self->dstream_rx = stream;
+
+    // NOTE: stream_in is not the simple switching of rx/tx and read/write methods
+    // from stream_out: we also need to reverse order of operations; the receive must
+    // fill the buffer _before_ we write out to a writable stream, and data must be
+    // written out after the last receive
+
+    dma_init(&self->rx_dma, self->rx_dma_stream, &dma_init_struct_i2s,
+             self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, &self->i2s);
+    self->i2s.hdmatx = NULL;
+    self->i2s.hdmarx = &self->rx_dma;
+
+    // A hack to make sure that slave-mode transfers don't start on the wrong clock:
+    // NOTE- DOESN'T WORK YET!
+    if (!(self->is_master)) {
+        while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 0) {;}
+        while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 1) {;}
+        while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == 0) {;}
+    }
+
+    int buf_sz = AUDIOBUFFER_BYTES / 4;
+    self->pp_ptr = 0;
+    HAL_StatusTypeDef status;
+    status = HAL_I2S_Receive_DMA(&self->i2s, self->audiobuf_rx[self->pp_ptr], buf_sz / 2);
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+
+    //stream_in_buffer_handler(self);
+
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_in_obj, 1, pyb_i2s_stream_in);
 
@@ -1107,17 +1191,8 @@ STATIC mp_obj_t pyb_i2s_resume(mp_obj_t self_in){
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_resume_obj, pyb_i2s_resume);
 
 STATIC mp_obj_t pyb_i2s_stop(mp_obj_t self_in){
-    // Currently this method always throws an error when called from REPL;
-    // can't even print 'status':
-    // Traceback (most recent call last):
-    //   File "<stdin>", line 1, in <module>
-    // OSError: 16
     pyb_i2s_obj_t *self = self_in;
-    HAL_StatusTypeDef status;
-    status = HAL_I2S_DMAStop(&self->i2s);
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
-    }
+    self->stop_flag = true;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_stop_obj, pyb_i2s_stop);
