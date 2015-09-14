@@ -65,6 +65,7 @@ void mpcallback_init0 (void);
 mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods, bool enable);
 mpcallback_obj_t *mpcallback_find (mp_obj_t parent);
 void mpcallback_wake_all (void);
+void mpcallback_disable_all (void);
 void mpcallback_remove (const mp_obj_t parent);
 void mpcallback_handler (mp_obj_t self_in);
 uint mpcallback_translate_priority (uint priority);

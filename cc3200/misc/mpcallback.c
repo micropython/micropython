@@ -66,7 +66,7 @@ mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_
     self->methods = (mp_cb_methods_t *)methods;
     self->isenabled = enable;
     // remove it in case it was already registered
-    mpcallback_remove(self->parent);
+    mpcallback_remove(parent);
     mp_obj_list_append(&MP_STATE_PORT(mpcallback_obj_list), self);
     return self;
 }
@@ -88,6 +88,14 @@ void mpcallback_wake_all (void) {
         if (callback_obj->isenabled) {
             callback_obj->methods->enable(callback_obj->parent);
         }
+    }
+}
+
+void mpcallback_disable_all (void) {
+    // re-enable all active callback objects one by one
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
+        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+        callback_obj->methods->disable(callback_obj->parent);
     }
 }
 

@@ -9,3 +9,9 @@ print(False or True)
 # unary operators
 print(+True)
 print(-True)
+
+# unsupported unary op
+try:
+    len(False)
+except TypeError:
+    print('TypeError')

@@ -25,3 +25,5 @@ stderr          exc_info        print_exception
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
+# str
+1

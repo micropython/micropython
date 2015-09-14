@@ -142,7 +142,10 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
         char e_sign_char = '-';
         if (num.f < 1.0F && num.f >= 0.9999995F) {
             num.f = 1.0F;
-            first_dig = '1';
+            if (e > 1) {
+                // numbers less than 1.0 start with 0.xxx
+                first_dig = '1'; 
+            }
             if (e == 0) {
                 e_sign_char = '+';
             }

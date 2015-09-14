@@ -179,6 +179,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 
   We have:
 
+    pyb.usb_mode()          # return the current usb mode
     pyb.usb_mode(None)      # disable USB
     pyb.usb_mode('VCP')     # enable with VCP interface
     pyb.usb_mode('VCP+MSC') # enable with VCP and MSC interfaces
@@ -204,6 +205,31 @@ STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_hid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t)&pyb_usb_hid_mouse_obj} },
     };
+
+    // fetch the current usb mode -> pyb.usb_mode()
+    if (n_args == 0) {
+    #if defined(USE_HOST_MODE)
+        return MP_OBJ_NEW_QSTR(MP_QSTR_host);
+    #elif defined(USE_DEVICE_MODE)
+        uint8_t mode = USBD_GetMode();
+        switch (mode) {
+            case USBD_MODE_CDC:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_VCP);
+            case USBD_MODE_MSC:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_MSC);
+            case USBD_MODE_HID:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_HID);
+            case USBD_MODE_CDC_MSC:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_VCP_plus_MSC);
+            case USBD_MODE_CDC_HID:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_VCP_plus_HID);
+            case USBD_MODE_MSC_HID:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_MSC_plus_HID);
+            default:
+                return mp_const_none;
+        }
+    #endif
+    }
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -296,7 +322,7 @@ STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 bad_mode:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad USB mode"));
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj, 1, pyb_usb_mode);
+MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj, 0, pyb_usb_mode);
 
 /******************************************************************************/
 // Micro Python bindings for USB VCP

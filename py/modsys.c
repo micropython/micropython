@@ -114,6 +114,7 @@ STATIC mp_obj_t mp_sys_print_exception(mp_uint_t n_args, const mp_obj_t *args) {
     mp_print_t print = {stream_obj, (mp_print_strn_t)mp_stream_write};
     mp_obj_print_exception(&print, args[0]);
     #else
+    (void)n_args;
     mp_obj_print_exception(&mp_plat_print, args[0]);
     #endif
 

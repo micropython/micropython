@@ -41,6 +41,7 @@ Q(enable_irq)
 Q(stop)
 Q(standby)
 Q(main)
+Q(opt)
 Q(sync)
 Q(gc)
 Q(repl_info)
@@ -96,6 +97,19 @@ Q(pid)
 Q(hid)
 Q(hid_mouse)
 Q(hid_keyboard)
+
+// for usb modes
+Q(host)
+Q(VCP)
+Q(MSC)
+Q(HID)
+Q(MSC+HID)
+Q(VCP+MSC)
+Q(VCP+HID)
+// CDC is a synonym for VCP for backwards compatibility
+Q(CDC)
+Q(CDC+MSC)
+Q(CDC+HID)
 
 // for USB VCP class
 Q(USB_VCP)

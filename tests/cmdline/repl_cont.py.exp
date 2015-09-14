@@ -25,8 +25,8 @@ Micro Python \.\+ version
 >>> print(d[2])
 two
 >>> def f(x):
-...  print(x)
-... 
+...     print(x)
+...     [K
 >>> f(3)
 3
 >>> 

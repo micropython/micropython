@@ -28,14 +28,15 @@ See :ref:`pyb.Pin <pyb.Pin>`. ::
     from pyb import Pin
 
     # initialize GP2 in gpio mode (af=0) and make it an output
-    p_out = Pin('GP2', af=0, mode=Pin.OUT)
-    p_out.high()
-    p_out.low()
+    p_out = Pin('GP2', mode=Pin.OUT)
+    p_out.value(1)
+    p_out.value(0)
     p_out.toggle()
+    p_out(True)
 
     # make GP1 an input with the pull-up enabled
-    p_in = Pin('GP1', af = 0, mode=Pin.IN, type = Pin.STD_PU)
-    p_in.value() # get value, 0 or 1
+    p_in = Pin('GP1', mode=Pin.IN, pull = Pin.PULL_UP)
+    p_in() # get value, 0 or 1
 
 Timers
 ------

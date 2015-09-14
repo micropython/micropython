@@ -473,6 +473,22 @@ STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return MP_BOOL(self->set.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->set.used);
+#if MICROPY_PY_BUILTINS_FROZENSET
+        case MP_UNARY_OP_HASH:
+            if (MP_OBJ_IS_TYPE(self_in, &mp_type_frozenset)) {
+                // start hash with unique value
+                mp_int_t hash = (mp_int_t)&mp_type_frozenset;
+                mp_uint_t max = self->set.alloc;
+                mp_set_t *set = &self->set;
+
+                for (mp_uint_t i = 0; i < max; i++) {
+                    if (MP_SET_SLOT_IS_FILLED(set, i)) {
+                        hash += MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, set->table[i]));
+                    }
+                }
+                return MP_OBJ_NEW_SMALL_INT(hash);
+            }
+#endif
         default: return MP_OBJ_NULL; // op not supported
     }
 }

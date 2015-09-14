@@ -89,7 +89,7 @@ STATIC pyb_adc_obj_t pyb_adc_obj[PYB_ADC_NUM_CHANNELS] = { {.pin = &pin_GP2, .ch
  ******************************************************************************/
 STATIC void pybadc_init (pyb_adc_obj_t *self) {
     // configure the pin in analog mode
-    pin_config (self->pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PYBPIN_ANALOG_TYPE, PIN_STRENGTH_2MA);
+    pin_config (self->pin, -1, PIN_TYPE_ANALOG, PIN_TYPE_STD, -1, PIN_STRENGTH_2MA);
     // enable the ADC channel
     MAP_ADCChannelEnable(ADC_BASE, self->channel);
     // enable and configure the timer
