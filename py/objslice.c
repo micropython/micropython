@@ -65,11 +65,11 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
     mp_obj_slice_t *self = self_in;
     if (attr == MP_QSTR_start) {
-	    dest[0] = self->start;
+        dest[0] = self->start;
     } else if (attr == MP_QSTR_stop) {
-	    dest[0] = self->stop;
+        dest[0] = self->stop;
     } else if (attr == MP_QSTR_step) {
-	    dest[0] = self->step;
+        dest[0] = self->step;
     }
 }
 #endif
