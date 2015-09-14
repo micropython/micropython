@@ -85,15 +85,15 @@ enum {
 };
 
 enum {
-    PIN_TYPE_ADC_CH0 = -1,
-    PIN_TYPE_ADC_CH1 = -1,
-    PIN_TYPE_ADC_CH2 = -1,
-    PIN_TYPE_ADC_CH3 = -1,
+    PIN_TYPE_ADC_CH0 = 0,
+    PIN_TYPE_ADC_CH1,
+    PIN_TYPE_ADC_CH2,
+    PIN_TYPE_ADC_CH3,
 };
 
 typedef struct {
   qstr name;
-  uint8_t idx;
+  int8_t  idx;
   uint8_t fn;
   uint8_t unit;
   uint8_t type;
@@ -136,5 +136,6 @@ void pin_config(pin_obj_t *self, int af, uint mode, uint type, int value, uint s
 pin_obj_t *pin_find(mp_obj_t user_obj);
 void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_t fn, uint32_t unit);
 uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type);
+uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit);
 
 #endif  // PYBPIN_H_
