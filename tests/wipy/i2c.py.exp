@@ -47,4 +47,5 @@ Exception
 Exception
 Exception
 Exception
+Exception
 I2C(0, I2C.MASTER, baudrate=400000)

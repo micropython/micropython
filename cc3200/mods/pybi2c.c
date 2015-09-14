@@ -318,7 +318,7 @@ invalid_args:
 }
 
 STATIC const mp_arg_t pyb_i2c_init_args[] = {
-    { MP_QSTR_id,                          MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_id,                          MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_mode,                        MP_ARG_INT, {.u_int = PYBI2C_MASTER} },
     { MP_QSTR_baudrate, MP_ARG_KW_ONLY   | MP_ARG_INT, {.u_int = 100000} },
     { MP_QSTR_pins,     MP_ARG_KW_ONLY   | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -330,17 +330,8 @@ STATIC mp_obj_t pyb_i2c_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_init_args)];
     mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), pyb_i2c_init_args, args);
 
-    // work out the i2c id
-    uint i2c_id;
-    if (args[0].u_obj == mp_const_none) {
-        // default id
-        i2c_id = 0;
-    } else {
-        i2c_id = mp_obj_get_int(args[0].u_obj);
-    }
-
     // check the peripheral id
-    if (i2c_id != 0) {
+    if (args[0].u_int != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
 
@@ -362,7 +353,6 @@ STATIC mp_obj_t pyb_i2c_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
 
-/// \method deinit()
 STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     // disable the peripheral
     MAP_I2CMasterDisable(I2CA0_BASE);
@@ -375,7 +365,6 @@ STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);
 
-/// \method scan()
 STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     pyb_i2c_check_init(&pyb_i2c_obj);
     mp_obj_t list = mp_obj_new_list(0, NULL);
@@ -399,7 +388,7 @@ STATIC mp_obj_t pyb_i2c_readfrom(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_readfrom_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_readfrom_args), pyb_i2c_readfrom_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_i2c_readfrom_args, args);
 
     vstr_t vstr;
     pyb_i2c_read_into(args, &vstr);
@@ -417,7 +406,7 @@ STATIC mp_obj_t pyb_i2c_readfrom_into(mp_uint_t n_args, const mp_obj_t *pos_args
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_readfrom_into_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_readfrom_into_args), pyb_i2c_readfrom_into_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_i2c_readfrom_into_args, args);
 
     vstr_t vstr;
     pyb_i2c_read_into(args, &vstr);
@@ -436,7 +425,7 @@ STATIC mp_obj_t pyb_i2c_writeto(mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_writeto_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_writeto_args), pyb_i2c_writeto_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_i2c_writeto_args, args);
 
     pyb_i2c_check_init(&pyb_i2c_obj);
 
@@ -465,7 +454,7 @@ STATIC mp_obj_t pyb_i2c_readfrom_mem(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_args), pyb_i2c_readfrom_mem_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_i2c_readfrom_mem_args, args);
 
     vstr_t vstr;
     pyb_i2c_readmem_into (args, &vstr);
@@ -483,7 +472,7 @@ STATIC const mp_arg_t pyb_i2c_readfrom_mem_into_args[] = {
 STATIC mp_obj_t pyb_i2c_readfrom_mem_into(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_into_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_readfrom_mem_into_args), pyb_i2c_readfrom_mem_into_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_i2c_readfrom_mem_into_args, args);
 
     // get the buffer to read into
     vstr_t vstr;
