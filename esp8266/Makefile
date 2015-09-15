@@ -9,12 +9,17 @@ include ../py/py.mk
 MAKE_FROZEN = ../tools/make-frozen.py
 
 SCRIPTDIR = scripts
-PORT = /dev/ttyACM0
-BAUD = 115200
+PORT = /dev/ttyUSB0
+BAUD = 230400
 CROSS_COMPILE = xtensa-lx106-elf-
-ESP_SDK = $(shell $(CC) -print-sysroot)/usr
+#ESP_SDK = /home/pontus/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
+ESP_SDK = /home/CORPUSERS/23061151/projects/nodeit/esp-open-sdk/esp_iot_sdk_v1.3.0
 
 INC =  -I.
+INC += -I./hal
+INC += -I./misc
+INC += -I./driver_lib/include
+
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
@@ -30,7 +35,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-fno-inline-functions \
 	-Wl,-EL -mlongcalls -mtext-section-literals \
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(COPT)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
@@ -52,24 +57,28 @@ endif
 SRC_C = \
 	strtoll.c \
 	main.c \
-	esp_mphal.c \
-	gccollect.c \
-	uart.c \
-	modpyb.c \
-	modpybpin.c \
-	modpybrtc.c \
-	modpybadc.c \
-	modesp.c \
-	modnetwork.c \
-	modutime.c \
-	moduos.c \
-	utils.c \
+	hal/esp_mphal.c \
+	hal/uart.c \
+	mods/modpyb.c \
+	mods/modpybpin.c \
+	mods/modpybrtc.c \
+	mods/modpybadc.c \
+	mods/modesp.c \
+	mods/modnetwork.c \
+	mods/modutime.c \
+	mods/moduos.c \
+	mods/pybi2c.c \
+	misc/mpexception.c \
+	misc/utils.c \
+	misc/gccollect.c \
+	driver_lib/driver/i2c_master.c \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	pyexec.c \
 	pybstdio.c \
+	bufhelper.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\

@@ -37,3 +37,8 @@ __pycache__/
 ######################
 GNUmakefile
 user.props
+sync
+
+# Temporary Files
+######################
+*~
