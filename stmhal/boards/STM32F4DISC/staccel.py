@@ -13,7 +13,7 @@ See:
     STM32Cube_FW_F4_V1.1.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_accelerometer.h
     STM32Cube_FW_F4_V1.1.0/Projects/STM32F4-Discovery/Demonstrations/Src/main.c
 """
-
+import pyb
 from pyb import Pin
 from pyb import SPI
 
@@ -41,10 +41,9 @@ class STAccel:
     def __init__(self):
         self.cs_pin = Pin('PE3', Pin.OUT_PP, Pin.PULL_NONE)
         self.cs_pin.high()
-        self.spi = SPI(1, SPI.MASTER, baudrate=328125, polarity=0, phase=1, bits=8)
-
+        self.spi = SPI(1, SPI.MASTER, baudrate=2000000, polarity=1, phase=1, bits=8)
         self.who_am_i = self.read_id()
-
+        # print( "0x%X" % self.who_am_i )
         if self.who_am_i == LIS302DL_WHO_AM_I_VAL:
             self.write_bytes(LIS302DL_CTRL_REG1_ADDR, bytearray([LIS302DL_CONF]))
             self.sensitivity = 18
@@ -65,21 +64,25 @@ class STAccel:
             addr |= READWRITE_CMD | MULTIPLEBYTE_CMD
         else:
             addr |= READWRITE_CMD
+        pyb.disable_irq()
         self.cs_pin.low()
         self.spi.send(addr)
         #buf = self.spi.send_recv(bytearray(nbytes * [0])) # read data, MSB first
         buf = self.spi.recv(nbytes)
         self.cs_pin.high()
+        pyb.enable_irq()
         return buf
 
     def write_bytes(self, addr, buf):
         if len(buf) > 1:
             addr |= MULTIPLEBYTE_CMD
+        pyb.disable_irq()
         self.cs_pin.low()
         self.spi.send(addr)
         for b in buf:
             self.spi.send(b)
         self.cs_pin.high()
+        pyb.enable_irq()
 
     def read_id(self):
         return self.read_bytes(WHO_AM_I_ADDR, 1)[0]
