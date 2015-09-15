@@ -237,13 +237,21 @@ ret_string:;
         ret = mp_obj_new_str(s, strlen(s), false);
         JJ(ReleaseStringUTFChars, arg, s);
         return ret;
-    } else if (MATCH(jtypesig, "java.lang.Object")) {
-        if (JJ(IsInstanceOf, arg, String_class)) {
-            goto ret_string;
-        } else {
-            return new_jobject(arg);
+    } else {
+        while (*jtypesig != ' ' && *jtypesig) {
+            if (*jtypesig == '.') {
+                // Non-primitive, object type
+                if (JJ(IsInstanceOf, arg, String_class)) {
+                    goto ret_string;
+                } else {
+                    return new_jobject(arg);
+                }
+            }
+            jtypesig++;
         }
     }
+
+    printf("Unknown return type: %s\n", jtypesig);
 
     return MP_OBJ_NULL;
 }
