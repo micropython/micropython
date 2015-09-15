@@ -476,8 +476,11 @@ STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     // send the data
+    // Note: there seems to be a problem sending 1 byte using DMA the first
+    // time directly after the SPI/DMA is initialised.  The cause of this is
+    // unknown but we sidestep the issue by using polling for 1 byte transfer.
     HAL_StatusTypeDef status;
-    if (query_irq() == IRQ_STATE_DISABLED) {
+    if (bufinfo.len == 1 || query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, args[1].u_int);
     } else {
         DMA_HandleTypeDef tx_dma;
@@ -528,7 +531,7 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // receive the data
     HAL_StatusTypeDef status;
-    if (query_irq() == IRQ_STATE_DISABLED) {
+    if (vstr.len == 1 || query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_Receive(self->spi, (uint8_t*)vstr.buf, vstr.len, args[1].u_int);
     } else {
         DMA_HandleTypeDef tx_dma, rx_dma;
@@ -625,7 +628,7 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
     // send and receive the data
     HAL_StatusTypeDef status;
-    if (query_irq() == IRQ_STATE_DISABLED) {
+    if (bufinfo_send.len == 1 || query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_SPI_TransmitReceive(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len, args[2].u_int);
     } else {
         DMA_HandleTypeDef tx_dma, rx_dma;
