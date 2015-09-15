@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+make V=1 MAKELIB=0
+make V=1 MAKELIB=1
+
+exit 0
