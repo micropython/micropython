@@ -25,11 +25,15 @@
  */
 
 #include "py/runtime.h"
+#include "py/nlr.h"
+#include "py/gc.h"
+
 #include "board.h"
 #include "modpyb.h"
 
 typedef struct _pyb_switch_obj_t {
     mp_obj_base_t base;
+    mp_obj_t callback;
 } pyb_switch_obj_t;
 
 STATIC const pyb_switch_obj_t pyb_switch_obj[] = {
@@ -64,6 +68,47 @@ mp_obj_t pyb_switch_value(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
 
+
+void pyb_switch_exec_callback(pyb_switch_obj_t* self)
+{
+	    // execute callback if it's set
+            if (self->callback != mp_const_none) {
+                // When executing code within a handler we must lock the GC to prevent
+                // any memory allocations.  We must also catch any exceptions.
+                gc_lock();
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    mp_call_function_1(self->callback, self);
+                    nlr_pop();
+                } else {
+                    // Uncaught exception; disable the callback so it doesn't run again.
+                    self->callback = mp_const_none;
+                    printf("uncaught exception in switch(%u) interrupt handler\n",SWITCH_ID(self));
+                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                }
+                gc_unlock();
+            }
+}
+
+/// \method callback(fun)
+/// Set the function to be called when the switch changes.
+/// `fun` is passed 1 argument, the switch object.
+/// If `fun` is `None` then the callback will be disabled.
+STATIC mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
+    pyb_switch_obj_t *self = self_in;
+    if (callback == mp_const_none) {
+        // stop interrupt
+        self->callback = mp_const_none;
+    } else if (mp_obj_is_callable(callback)) {
+        self->callback = callback;
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
+
+
 mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     return pyb_switch_value(self_in);
@@ -71,6 +116,7 @@ mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
 
 STATIC const mp_map_elem_t pyb_switch_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&pyb_switch_value_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_switch_callback_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
