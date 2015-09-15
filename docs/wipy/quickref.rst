@@ -78,8 +78,9 @@ See :ref:`pyb.ADC <pyb.ADC>`. ::
 
     from pyb import ADC
 
-    adc = ADC(1)
-    adc.read() # read value, 0-4095
+    adc = ADC()
+    apin = adc.channel(pin='GP3')
+    apin() # read value, 0-4095
 
 UART (serial bus)
 -----------------
@@ -94,21 +95,16 @@ See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.UART <pyb.UART>`. ::
 SPI bus
 -------
 
-See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.SPI <pyb.SPI>`. ::
+See :ref:`pyb.SPI <pyb.SPI>`. ::
 
-    from pyb import Pin, SPI
-
-    # first assign CLK, MISO, MOSI, CS to the correct pins
-    Pin('GP14', af=7, mode=Pin.STD)    # CLK
-    Pin('GP15', af=7, mode=Pin.STD)    # MISO
-    Pin('GP16', af=7, mode=Pin.STD)    # MOSI
-    Pin('GP17', af=7, mode=Pin.STD)    # NSS/CS
+    from pyb SPI
 
     # configure the SPI master @ 2MHz
-    spi = SPI(1, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
-    spi.send('hello')
-    spi.recv(5) # receive 5 bytes on the bus
-    spi.send_recv('hello') # send a receive 5 bytes
+    spi = SPI(0, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
+    spi.write('hello')
+    spi.read(5) # receive 5 bytes on the bus
+    rbuf = bytearray(5)
+    spi.write_readinto('hello', rbuf) # send a receive 5 bytes
 
 I2C bus
 -------
@@ -132,9 +128,9 @@ See :ref:`pyb.WDT <pyb.WDT>`. ::
     from pyb import WDT
 
     # enable the WDT with a timeout of 5s (1s is the minimum)
-    wdt = WDT(5000)
-    wdt.kick()
-    
+    wdt = WDT(timeout=5000)
+    wdt.feed()
+
 Real time clock (RTC)
 ---------------------
 
