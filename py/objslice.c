@@ -79,7 +79,7 @@ const mp_obj_type_t mp_type_slice = {
     .name = MP_QSTR_slice,
     .print = slice_print,
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
-	.attr = slice_attr,
+    .attr = slice_attr,
 #endif
 };
 
