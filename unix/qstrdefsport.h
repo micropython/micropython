@@ -106,6 +106,7 @@ Q(B115200)
 #if MICROPY_PY_JNI
 Q(jni)
 Q(cls)
+Q(env)
 Q(jclass)
 Q(jobject)
 Q(jmethod)

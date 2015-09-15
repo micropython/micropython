@@ -409,9 +409,15 @@ STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_jni_cls_obj, mod_jni_cls);
 
+STATIC mp_obj_t mod_jni_env() {
+    return mp_obj_new_int((mp_int_t)env);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mod_jni_env_obj, mod_jni_env);
+
 STATIC const mp_map_elem_t mp_module_jni_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_jni) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_cls), (mp_obj_t)&mod_jni_cls_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_env), (mp_obj_t)&mod_jni_env_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
