@@ -28,5 +28,20 @@
 #ifndef MODUOS_H_
 #define MODUOS_H_
 
+typedef struct _os_fs_mount_t {
+    mp_obj_t device;
+    const char *path;
+    mp_uint_t pathlen;
+    mp_obj_t readblocks[4];
+    mp_obj_t writeblocks[4];
+    mp_obj_t sync[2];
+    mp_obj_t count[2];
+    FATFS fatfs;
+    uint8_t vol;
+} os_fs_mount_t;
+
+void moduos_init0 (void);
+os_fs_mount_t *osmount_find_by_path (const char *path);
+os_fs_mount_t *osmount_find_by_volume (uint8_t vol);
 
 #endif // MODUOS_H_

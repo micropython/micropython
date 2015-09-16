@@ -279,7 +279,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, mp_arg_val_t *args) {
+STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, const mp_arg_val_t *args) {
     // verify that mode is master
     if (args[0].u_int != PYBI2C_MASTER) {
         goto invalid_args;

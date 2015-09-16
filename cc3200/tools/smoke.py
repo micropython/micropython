@@ -63,12 +63,12 @@ print(ls)
 
 # test the real time clock
 rtc = pyb.RTC()
-while rtc.datetime()[7] > 800:
+while rtc.now()[6] > 800:
     pass
 
-time1 = rtc.datetime()
+time1 = rtc.now()
 pyb.delay(1000)
-time2 = rtc.datetime()
-print(time2[6] - time1[6] == 1)
-print(time2[7] - time1[7] < 50)
+time2 = rtc.now()
+print(time2[5] - time1[5] == 1)
+print(time2[6] - time1[6] < 5000) # microseconds
 

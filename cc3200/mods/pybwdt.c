@@ -53,17 +53,17 @@
  DECLARE TYPES
  ******************************************************************************/
 typedef struct {
+    mp_obj_base_t base;
     bool    servers;
     bool    servers_sleeping;
     bool    simplelink;
     bool    running;
-} pybwdt_data_t;
+} pyb_wdt_obj_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pybwdt_data_t   pybwdt_data = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
-STATIC const mp_obj_base_t pyb_wdt_obj = {&pyb_wdt_type};
+STATIC pyb_wdt_obj_t pyb_wdt_obj = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -74,15 +74,15 @@ void pybwdt_init0 (void) {
 }
 
 void pybwdt_srv_alive (void) {
-    pybwdt_data.servers = true;
+    pyb_wdt_obj.servers = true;
 }
 
 void pybwdt_srv_sleeping (bool state) {
-    pybwdt_data.servers_sleeping = state;
+    pyb_wdt_obj.servers_sleeping = state;
 }
 
 void pybwdt_sl_alive (void) {
-    pybwdt_data.simplelink = true;
+    pyb_wdt_obj.simplelink = true;
 }
 
 /******************************************************************************/
@@ -106,7 +106,7 @@ STATIC mp_obj_t pyb_wdt_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     if (timeout_ms < PYBWDT_MIN_TIMEOUT_MS) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
-    if (pybwdt_data.running) {
+    if (pyb_wdt_obj.running) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
     }
 
@@ -128,15 +128,17 @@ STATIC mp_obj_t pyb_wdt_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
 
     // start the timer. Once it's started, it cannot be disabled.
     MAP_WatchdogEnable(WDT_BASE);
-    pybwdt_data.running = true;
+    pyb_wdt_obj.base.type = &pyb_wdt_type;
+    pyb_wdt_obj.running = true;
 
     return (mp_obj_t)&pyb_wdt_obj;
 }
 
-STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self) {
-    if ((pybwdt_data.servers || pybwdt_data.servers_sleeping) && pybwdt_data.simplelink && pybwdt_data.running) {
-        pybwdt_data.servers = false;
-        pybwdt_data.simplelink = false;
+STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
+    pyb_wdt_obj_t *self = self_in;
+    if ((self->servers || self->servers_sleeping) && self->simplelink && self->running) {
+        self->servers = false;
+        self->simplelink = false;
         MAP_WatchdogIntClear(WDT_BASE);
     }
     return mp_const_none;

@@ -61,13 +61,13 @@
 #include "mpexception.h"
 #include "random.h"
 #include "pybi2c.h"
-#include "pybsd.h"
 #include "pins.h"
 #include "pybsleep.h"
 #include "pybtimer.h"
 #include "mpcallback.h"
 #include "cryptohash.h"
 #include "updater.h"
+#include "moduos.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -134,9 +134,8 @@ soft_reset:
     timer_init0();
     readline_init0();
     mod_network_init0();
-#if MICROPY_HW_ENABLE_RNG
+    moduos_init0();
     rng_init0();
-#endif
 
 #ifdef LAUNCHXL
     // instantiate the stdio uart on the default pins
@@ -243,10 +242,6 @@ soft_reset_exit:
     // clean-up the user socket space
     modusocket_close_all_user_sockets();
 
-#if MICROPY_HW_HAS_SDCARD
-    pybsd_disable();
-#endif
-
     // wait for pending transactions to complete
     HAL_Delay(20);
 
@@ -258,9 +253,8 @@ soft_reset_exit:
  ******************************************************************************/
 __attribute__ ((section (".boot")))
 STATIC void mptask_pre_init (void) {
-#if MICROPY_HW_ENABLE_RTC
-    pybrtc_pre_init();
-#endif
+    // this one only makes sense after a poweron reset
+    pyb_rtc_pre_init();
 
     // Create the simple link spawn task
     ASSERT (OSI_OK == VStartSimpleLinkSpawnTask(SIMPLELINK_SPAWN_TASK_PRIORITY));
@@ -279,11 +273,6 @@ STATIC void mptask_pre_init (void) {
 
     // this one allocates memory for the socket semaphore
     modusocket_pre_init();
-
-#if MICROPY_HW_HAS_SDCARD
-    // this one allocates memory for the SD file system
-    pybsd_pre_init();
-#endif
 
     CRYPTOHASH_Init();
 

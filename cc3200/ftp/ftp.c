@@ -28,7 +28,7 @@
 #include <ctype.h>
 #include "std.h"
 
-#include "py/mpconfig.h"
+#include "py/mpstate.h"
 #include MICROPY_HAL_H
 #include "py/obj.h"
 #include "inc/hw_types.h"
@@ -47,9 +47,9 @@
 #include "ff.h"
 #include "fifo.h"
 #include "socketfifo.h"
-#include "pybsd.h"
 #include "updater.h"
 #include "timeutils.h"
+#include "moduos.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
@@ -93,16 +93,12 @@ typedef enum {
     E_FTP_STE_SUB_DISCONNECTED = 0,
     E_FTP_STE_SUB_LISTEN_FOR_DATA,
     E_FTP_STE_SUB_DATA_CONNECTED
-} ftp_data_substate_t;
-
-typedef union {
-    ftp_data_substate_t data;
 } ftp_substate_t;
 
 typedef struct {
     bool            uservalid : 1;
     bool            passvalid : 1;
-}ftp_loggin_t;
+} ftp_loggin_t;
 
 typedef enum {
     E_FTP_NOTHING_OPEN = 0,
@@ -128,8 +124,9 @@ typedef struct {
     int16_t             c_sd;
     int16_t             d_sd;
     int16_t             dtimeout;
-    ftp_state_t         state;
-    ftp_substate_t      substate;
+    uint16_t            volcount;
+    uint8_t             state;
+    uint8_t             substate;
     uint8_t             txRetries;
     uint8_t             logginRetries;
     ftp_loggin_t        loggin;
@@ -137,6 +134,7 @@ typedef struct {
     bool                closechild;
     bool                enabled;
     bool                special_file;
+    bool                listroot;
 } ftp_data_t;
 
 typedef struct {
@@ -217,7 +215,7 @@ static int ftp_print_eplf_drive (char *dest, uint32_t destsize, char *name);
 static bool ftp_open_file (const char *path, int mode);
 static ftp_result_t ftp_read_file (char *filebuf, uint32_t desiredsize, uint32_t *actualsize);
 static ftp_result_t ftp_write_file (char *filebuf, uint32_t size);
-static ftp_result_t ftp_open_dir_for_listing (const char *path, char *list, uint32_t maxlistsize, uint32_t *listsize);
+static ftp_result_t ftp_open_dir_for_listing (const char *path);
 static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *listsize);
 static void ftp_open_child (char *pwd, char *dir);
 static void ftp_close_child (char *pwd);
@@ -239,8 +237,9 @@ void ftp_init (void) {
     ftp_data.ld_sd = -1;
     ftp_data.e_open = E_FTP_NOTHING_OPEN;
     ftp_data.state = E_FTP_STE_DISABLED;
-    ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+    ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
     ftp_data.special_file = false;
+    ftp_data.volcount = 0;
 }
 
 void ftp_run (void) {
@@ -254,7 +253,7 @@ void ftp_run (void) {
             }
             break;
         case E_FTP_STE_READY:
-            if (ftp_data.c_sd < 0 && ftp_data.substate.data == E_FTP_STE_SUB_DISCONNECTED) {
+            if (ftp_data.c_sd < 0 && ftp_data.substate == E_FTP_STE_SUB_DISCONNECTED) {
                 if (E_FTP_RESULT_OK == ftp_wait_for_connection(ftp_data.lc_sd, &ftp_data.c_sd)) {
                     ftp_data.txRetries = 0;
                     ftp_data.logginRetries = 0;
@@ -267,7 +266,7 @@ void ftp_run (void) {
                 }
             }
             if (SOCKETFIFO_IsEmpty()) {
-                if (ftp_data.c_sd > 0 && ftp_data.substate.data != E_FTP_STE_SUB_LISTEN_FOR_DATA) {
+                if (ftp_data.c_sd > 0 && ftp_data.substate != E_FTP_STE_SUB_LISTEN_FOR_DATA) {
                     ftp_process_cmd();
                     if (ftp_data.state != E_FTP_STE_READY) {
                         break;
@@ -284,8 +283,7 @@ void ftp_run (void) {
                 ftp_list_dir((char *)ftp_data.dBuffer, FTP_BUFFER_SIZE, &listsize);
                 if (listsize > 0) {
                     ftp_send_data(listsize);
-                }
-                else {
+                } else {
                     ftp_send_reply(226, NULL);
                     ftp_data.state = E_FTP_STE_END_TRANSFER;
                 }
@@ -356,19 +354,19 @@ void ftp_run (void) {
             break;
     }
 
-    switch (ftp_data.substate.data) {
+    switch (ftp_data.substate) {
     case E_FTP_STE_SUB_DISCONNECTED:
         break;
     case E_FTP_STE_SUB_LISTEN_FOR_DATA:
         if (E_FTP_RESULT_OK == ftp_wait_for_connection(ftp_data.ld_sd, &ftp_data.d_sd)) {
             ftp_data.dtimeout = 0;
-            ftp_data.substate.data = E_FTP_STE_SUB_DATA_CONNECTED;
+            ftp_data.substate = E_FTP_STE_SUB_DATA_CONNECTED;
         }
         else if (ftp_data.dtimeout++ > FTP_DATA_TIMEOUT_MS / FTP_CYCLE_TIME_MS) {
             ftp_data.dtimeout = 0;
             // close the listening socket
             servers_close_socket(&ftp_data.ld_sd);
-            ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+            ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
         }
         break;
     case E_FTP_STE_SUB_DATA_CONNECTED:
@@ -377,7 +375,7 @@ void ftp_run (void) {
             servers_close_socket(&ftp_data.ld_sd);
             servers_close_socket(&ftp_data.d_sd);
             ftp_close_filesystem_on_error ();
-            ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+            ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
         }
         break;
     default:
@@ -389,7 +387,7 @@ void ftp_run (void) {
 
     // check the state of the data sockets
     if (ftp_data.d_sd < 0 && (ftp_data.state > E_FTP_STE_READY)) {
-        ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+        ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
         ftp_data.state = E_FTP_STE_READY;
     }
 }
@@ -410,7 +408,8 @@ void ftp_reset (void) {
     servers_close_socket(&ftp_data.ld_sd);
     ftp_close_cmd_data();
     ftp_data.state = E_FTP_STE_START;
-    ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+    ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
+    ftp_data.volcount = 0;
     SOCKETFIFO_Flush();
 }
 
@@ -554,7 +553,7 @@ static void ftp_send_from_fifo (void) {
                         servers_close_socket(&ftp_data.ld_sd);
                         // this one is the command socket
                         servers_close_socket(fifoelement.sd);
-                        ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+                        ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
                     }
                     ftp_close_filesystem_on_error();
                 }
@@ -604,7 +603,6 @@ static void ftp_process_cmd (void) {
     _i32 len;
     char *bufptr = (char *)ftp_cmd_buffer;
     ftp_result_t result;
-    uint32_t listsize;
     FRESULT fres;
     FILINFO fno;
 #if _USE_LFN
@@ -706,7 +704,7 @@ static void ftp_process_cmd (void) {
             {
                 // some servers (e.g. google chrome) send PASV several times very quickly
                 servers_close_socket(&ftp_data.d_sd);
-                ftp_data.substate.data = E_FTP_STE_SUB_DISCONNECTED;
+                ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
                 bool socketcreated = true;
                 if (ftp_data.ld_sd < 0) {
                     socketcreated = ftp_create_listening_socket(&ftp_data.ld_sd, FTP_PASIVE_DATA_PORT, FTP_DATA_CLIENTS_MAX);
@@ -718,7 +716,7 @@ static void ftp_process_cmd (void) {
                     wlan_get_ip(&ip);
                     snprintf((char *)ftp_data.dBuffer, FTP_BUFFER_SIZE, "(%u,%u,%u,%u,%u,%u)",
                              pip[3], pip[2], pip[1], pip[0], (FTP_PASIVE_DATA_PORT >> 8), (FTP_PASIVE_DATA_PORT & 0xFF));
-                    ftp_data.substate.data = E_FTP_STE_SUB_LISTEN_FOR_DATA;
+                    ftp_data.substate = E_FTP_STE_SUB_LISTEN_FOR_DATA;
                     ftp_send_reply(227, (char *)ftp_data.dBuffer);
                 }
                 else {
@@ -727,13 +725,7 @@ static void ftp_process_cmd (void) {
             }
             break;
         case E_FTP_CMD_LIST:
-            if ((result = ftp_open_dir_for_listing(ftp_path, (char *)ftp_data.dBuffer, FTP_BUFFER_SIZE, &listsize)) == E_FTP_RESULT_OK) {
-                ftp_data.state = E_FTP_STE_END_TRANSFER;
-                ftp_send_reply(150, NULL);
-                ftp_send_data(listsize);
-                ftp_send_reply(226, NULL);
-            }
-            else if (result == E_FTP_RESULT_CONTINUE) {
+            if (ftp_open_dir_for_listing(ftp_path) == E_FTP_RESULT_CONTINUE) {
                 ftp_data.state = E_FTP_STE_CONTINUE_LISTING;
                 ftp_send_reply(150, NULL);
             }
@@ -903,7 +895,7 @@ static int ftp_print_eplf_item (char *dest, uint32_t destsize, FILINFO *fno) {
                                                         (fno->ftime >> 11) & 0x1f,
                                                         (fno->ftime >> 5) & 0x3f,
                                                         2 * (fno->ftime & 0x1f));
-    tseconds = pybrtc_get_seconds();
+    tseconds = pyb_rtc_get_seconds();
     if (FTP_UNIX_SECONDS_180_DAYS < tseconds - fseconds) {
         return snprintf(dest, destsize, "%srw-rw-r--   1 root  root %9u %s %2u %5u %s\r\n",
                         type, (_u32)fno->fsize, ftp_month[mindex].month, day,
@@ -931,7 +923,7 @@ static int ftp_print_eplf_drive (char *dest, uint32_t destsize, char *name) {
 
     timeutils_seconds_since_2000_to_struct_time((FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101), &tm);
 
-    tseconds = pybrtc_get_seconds();
+    tseconds = pyb_rtc_get_seconds();
     if (FTP_UNIX_SECONDS_180_DAYS < tseconds - (FTP_UNIX_TIME_20150101 - FTP_UNIX_TIME_20000101)) {
         return snprintf(dest, destsize, "%srw-rw-r--   1 root  root %9u %s %2u %5u %s\r\n",
                         type, 0, ftp_month[(tm.tm_mon - 1)].month, tm.tm_mday, tm.tm_year, name);
@@ -979,32 +971,25 @@ static ftp_result_t ftp_write_file (char *filebuf, uint32_t size) {
     return result;
 }
 
-static ftp_result_t ftp_open_dir_for_listing (const char *path, char *list, uint32_t maxlistsize, uint32_t *listsize) {
-    uint next = 0;
-    // "hack" to list root directory
+static ftp_result_t ftp_open_dir_for_listing (const char *path) {
+    // "hack" to detect the root directory
     if (path[0] == '/' && path[1] == '\0') {
-        next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "flash");
-#if MICROPY_HW_HAS_SDCARD
-        if (pybsd_is_mounted()) {
-            next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "sd");
+        ftp_data.listroot = true;
+    } else {
+        FRESULT res;
+        res = f_opendir(&ftp_data.dp, path);                       /* Open the directory */
+        if (res != FR_OK) {
+            return E_FTP_RESULT_FAILED;
         }
-#endif
-        *listsize = next;
-        return E_FTP_RESULT_OK;
+        ftp_data.e_open = E_FTP_DIR_OPEN;
+        ftp_data.listroot = false;
     }
-
-    FRESULT res;
-    res = f_opendir(&ftp_data.dp, path);                       /* Open the directory */
-    if (res != FR_OK) {
-        return E_FTP_RESULT_FAILED;
-    }
-    ftp_data.e_open = E_FTP_DIR_OPEN;
     return E_FTP_RESULT_CONTINUE;
 }
 
 static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *listsize) {
     uint next = 0;
-    uint count = 0;
+    uint listcount = 0;
     FRESULT res;
     ftp_result_t result = E_FTP_RESULT_CONTINUE;
     FILINFO fno;
@@ -1013,22 +998,40 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
     fno.lfsize = _MAX_LFN;
 
     // read up to 2 directory items
-    while (count < 2) {
+    while (listcount < 2) {
 #else
     // read up to 4 directory items
-    while (count < 4) {
+    while (listcount < 4) {
 #endif
-        res = f_readdir(&ftp_data.dp, &fno);                                                       /* Read a directory item */
-        if (res != FR_OK || fno.fname[0] == 0) {
-            result = E_FTP_RESULT_OK;
-            break;                                                                                 /* Break on error or end of dp */
-        }
-        if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;                                    /* Ignore . entry */
-        if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
+        if (ftp_data.listroot) {
+            // root directory "hack"
+            if (0 == ftp_data.volcount) {
+                next += ftp_print_eplf_drive((list + next), (maxlistsize - next), "flash");
+            } else if (ftp_data.volcount <= MP_STATE_PORT(mount_obj_list).len) {
+                os_fs_mount_t *mount_obj = ((os_fs_mount_t *)(MP_STATE_PORT(mount_obj_list).items[(ftp_data.volcount - 1)]));
+                next += ftp_print_eplf_drive((list + next), (maxlistsize - next), (char *)&mount_obj->path[1]);
+            } else {
+                if (!next) {
+                    // no volume found this time, we are done
+                    ftp_data.volcount = 0;
+                }
+                break;
+            }
+            ftp_data.volcount++;
+        } else {
+            // a "normal" directory
+            res = f_readdir(&ftp_data.dp, &fno);                                                       /* Read a directory item */
+            if (res != FR_OK || fno.fname[0] == 0) {
+                result = E_FTP_RESULT_OK;
+                break;                                                                                 /* Break on error or end of dp */
+            }
+            if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;                                    /* Ignore . entry */
+            if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
 
-        // add the entry to the list
-        next += ftp_print_eplf_item((list + next), (maxlistsize - next), &fno);
-        count++;
+            // add the entry to the list
+            next += ftp_print_eplf_item((list + next), (maxlistsize - next), &fno);
+        }
+        listcount++;
     }
     if (result == E_FTP_RESULT_OK) {
         ftp_close_files();
@@ -1043,8 +1046,7 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
 static void ftp_open_child (char *pwd, char *dir) {
     if (dir[0] == '/') {
         strcpy (pwd, dir);
-    }
-    else {
+    } else {
         if (strlen(pwd) > 1) {
             strcat (pwd, "/");
         }
@@ -1064,8 +1066,7 @@ static void ftp_close_child (char *pwd) {
     }
     if (len == 0) {
         strcpy (pwd, "/");
-    }
-    else {
+    } else {
         pwd[len] = '\0';
     }
 }
@@ -1078,8 +1079,7 @@ static void ftp_return_to_previous_path (char *pwd, char *dir) {
     else {
         if (newlen == 0) {
             strcpy (pwd, "/");
-        }
-        else {
+        } else {
             pwd[newlen] = '\0';
         }
     }

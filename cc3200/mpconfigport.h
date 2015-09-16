@@ -162,6 +162,7 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     mp_obj_list_t pybsleep_obj_list;                                      \
     mp_obj_list_t mpcallback_obj_list;                                    \
     mp_obj_list_t pyb_timer_channel_obj_list;                             \
+    mp_obj_list_t mount_obj_list;                                         \
     struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
 
 

@@ -3,6 +3,7 @@ WDT test for the CC3200 based boards
 '''
 
 from pyb import WDT
+import time
 
 # test the invalid cases first
 try:
@@ -28,10 +29,10 @@ try:
 except Exception:
     print("Exception")
 
-pyb.delay(500)
+time.sleep_ms(500)
 wdt.feed()
 print(wdt)
-pyb.delay(900)
+time.sleep_ms(900)
 wdt.feed()
 print(wdt)
-pyb.delay(950)
+time.sleep_ms(950)
