@@ -40,6 +40,9 @@
 #include "rom_map.h"
 #include "prcm.h"
 #include "pyexec.h"
+#include "ff.h"
+#include "diskio.h"
+#include "sflash_diskio.h"
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
@@ -49,9 +52,6 @@
 #include "modwlan.h"
 #include "moduos.h"
 #include "telnet.h"
-#include "ff.h"
-#include "diskio.h"
-#include "sflash_diskio.h"
 #include "FreeRTOS.h"
 #include "portable.h"
 #include "task.h"
@@ -141,90 +141,6 @@ STATIC mp_obj_t pyb_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
 
-/// \function millis()
-/// Returns the number of milliseconds since the board was last reset.
-///
-/// The result is always a micropython smallint (31-bit signed number), so
-/// after 2^30 milliseconds (about 12.4 days) this will start to return
-/// negative numbers.
-STATIC mp_obj_t pyb_millis(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(HAL_GetTick());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
-
-/// \function elapsed_millis(start)
-/// Returns the number of milliseconds which have elapsed since `start`.
-///
-/// This function takes care of counter wrap, and always returns a positive
-/// number. This means it can be used to measure periods upto about 12.4 days.
-///
-/// Example:
-///     start = pyb.millis()
-///     while pyb.elapsed_millis(start) < 1000:
-///         # Perform some operation
-STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
-    uint32_t startMillis = mp_obj_get_int(start);
-    uint32_t currMillis = HAL_GetTick();
-    return MP_OBJ_NEW_SMALL_INT((currMillis - startMillis) & 0x3fffffff);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
-
-/// \function micros()
-/// Returns the number of microseconds since the board was last reset.
-///
-/// The result is always a micropython smallint (31-bit signed number), so
-/// after 2^30 microseconds (about 17.8 minutes) this will start to return
-/// negative numbers.
-STATIC mp_obj_t pyb_micros(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
-
-/// \function elapsed_micros(start)
-/// Returns the number of microseconds which have elapsed since `start`.
-///
-/// This function takes care of counter wrap, and always returns a positive
-/// number. This means it can be used to measure periods upto about 17.8 minutes.
-///
-/// Example:
-///     start = pyb.micros()
-///     while pyb.elapsed_micros(start) < 1000:
-///         # Perform some operation
-STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
-    uint32_t startMicros = mp_obj_get_int(start);
-    uint32_t currMicros = sys_tick_get_microseconds();
-    return MP_OBJ_NEW_SMALL_INT((currMicros - startMicros) & 0x3fffffff);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
-
-/// \function delay(ms)
-/// Delay for the given number of milliseconds.
-STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
-    mp_int_t ms = mp_obj_get_int(ms_in);
-    if (ms > 0) {
-        HAL_Delay(ms);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
-
-/// \function udelay(us)
-/// Delay for the given number of microseconds.
-STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
-    mp_int_t usec = mp_obj_get_int(usec_in);
-    if (usec > 0) {
-        UtilsDelay(UTILS_DELAY_US_TO_COUNT(usec));
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
-
 /// \function repl_uart(uart)
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
@@ -258,29 +174,15 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&pyb_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&pyb_unique_id_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info),           (mp_obj_t)&pyb_set_repl_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart),           (mp_obj_t)&pyb_repl_uart_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_main),                (mp_obj_t)&pyb_main_obj },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_millis),              (mp_obj_t)&pyb_millis_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis),      (mp_obj_t)&pyb_elapsed_millis_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_micros),              (mp_obj_t)&pyb_micros_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros),      (mp_obj_t)&pyb_elapsed_micros_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_delay),               (mp_obj_t)&pyb_delay_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_udelay),              (mp_obj_t)&pyb_udelay_obj },
-
-#if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&pyb_rng_get_obj },
-#endif
 
-#if MICROPY_HW_ENABLE_RTC
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
-#endif
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
@@ -290,10 +192,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Sleep),               (mp_obj_t)&pyb_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_type },
-
-#if MICROPY_HW_HAS_SDCARD
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);

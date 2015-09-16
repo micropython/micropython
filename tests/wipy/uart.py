@@ -7,6 +7,7 @@ from pyb import UART
 from pyb import Pin
 import os
 import pyb
+import time
 
 machine = os.uname().machine
 if 'LaunchPad' in machine:
@@ -66,7 +67,7 @@ print(buf)
 # try initializing without the id
 uart0 = UART(baudrate=1000000, pins=uart_pins[0][0])
 uart0.write(b'1234567890')
-pyb.delay(2) # because of the fifo interrupt levels
+time.sleep_ms(2) # because of the fifo interrupt levels
 print(uart1.any() == 10)
 print(uart1.readline() == b'1234567890')
 print(uart1.any() == 0)

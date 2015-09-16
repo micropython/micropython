@@ -352,7 +352,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 }
 
-STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_arg_val_t *args) {
+STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *args) {
     // get the baudrate
     if (args[0].u_int <= 0) {
         goto error;

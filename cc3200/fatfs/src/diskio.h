@@ -38,6 +38,8 @@ DRESULT disk_read (BYTE pdrv, BYTE* buff, DWORD sector, UINT count);
 DRESULT disk_write (BYTE pdrv, const BYTE* buff, DWORD sector, UINT count);
 DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
 
+/* Definitions of physical drive number for each drive */
+#define FLASH           0   /* Map FLASH drive to drive number 0 */
 
 /* Disk Status Bits (DSTATUS) */
 

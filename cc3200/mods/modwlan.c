@@ -533,7 +533,7 @@ void wlan_sl_enable (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t se
     }
 
     // set current time and date (needed to validate certificates)
-    wlan_set_current_time (pybrtc_get_seconds());
+    wlan_set_current_time (pyb_rtc_get_seconds());
 
     // start the servers before returning
     wlan_servers_start();
@@ -993,7 +993,7 @@ STATIC mp_obj_t wlan_ifconfig (mp_uint_t n_args, const mp_obj_t *args) {
             }
         }
         // set current time and date (needed to validate certificates)
-        wlan_set_current_time (pybrtc_get_seconds());
+        wlan_set_current_time (pyb_rtc_get_seconds());
         return mp_const_none;
     }
 }

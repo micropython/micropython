@@ -158,11 +158,12 @@ SD card
 See :ref:`pyb.SD <pyb.SD>`. ::
 
     from pyb import SD
+    import os
 
     # SD card pins need special configuration so we pass them to the constructor
-    # data pin, data af, clock pin, clock af, cmd pin, cmd af
-    sd = pyb.SD(('GP15', 8, 'GP10', 6, 'GP11', 6))
-    sd.mount()
+    # clock pin, cmd pin, data0 pin
+    sd = SD(pins=('GP10', 'GP11', 'GP15'))
+    os.mount(sd, '/sd')
 
 WLAN (WiFi) 
 -----------

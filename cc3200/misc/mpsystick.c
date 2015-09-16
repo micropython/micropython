@@ -68,7 +68,7 @@ uint32_t sys_tick_get_microseconds(void) {
     enable_irq(irq_state);
 
     // It's still possible for the countflag bit to get set if the counter was
-    // reloaded between reading VAL and reading CTRL. With interrupts  disabled
+    // reloaded between reading VAL and reading CTRL. With interrupts disabled
     // it definitely takes less than 50 HCLK cycles between reading VAL and
     // reading CTRL, so the test (counter > 50) is to cover the case where VAL
     // is +ve and very close to zero, and the COUNTFLAG bit is also set.

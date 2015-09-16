@@ -156,7 +156,7 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_arg_val_t *args) {
+STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *args) {
     // verify that mode is master
     if (args[0].u_int != SPI_MODE_MASTER) {
         goto invalid_args;
