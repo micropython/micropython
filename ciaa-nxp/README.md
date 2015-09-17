@@ -1,26 +1,26 @@
-Soporte para EDU-CIAA
-========================
-<p align="center">
-  <img src="https://avatars0.githubusercontent.com/u/6998305?v=3&s=400" alt="CIAA Logo"/>
-</p>
+EDU-CIAA board support package
+===============================
 
-### Modo de uso:
-- Editar py/Main.py y escribir el programa en Python
-- Ejecutar make download para compilar y bajar el programa en la EDU-CIAA. En el makefile se lanzara la herramienta py2c.py que generara el archivo ProgramScript.c con el script de Python.
+![CIAA logo](https://avatars0.githubusercontent.com/u/6998305?v=3&s=128)
 
-### Archivos incluidos:
-- py/ -- Aqui se encuentra el archivo Main.py donde escribiremos nuestro programa Python.
+[Spanish Version](README_ES.md)
 
-- py2c.py -- Scripy en Python que convierte el script de Python Main.py en el archivo ProgramScript.c
+[TOC]
 
-- ProgramScript.c -- Archivo .C que se incluye en Main.c y contiene como array de bytes el script Python.
+## Usage mode
+- Open py/Main.py and write the Python script
+- Execute `make download` to compile and download the program to EDU-CIAA board. This embed the py/Main.py code into firmware.
+- Optionaly, a python REPL interpreter is available via USB UART (DEBUG connector) into SERIAL2
 
+## Included files
+- py/ -- Main.py place. This file contain the python code execute at startup.
+- py2c.py -- Python Scripy to embed the py/Main.py into firmware (via C array)
 
-## Soporte de hardware
+## Hardware support module
 
-Modulo pyb:
-- Soporte de los 4 LEDS de la placa mediante el modulo pyb.LED. Ejemplo:
+### Four LEDS board supported via pyb.LED module.
 
+Example:
 ```python
 import pyb
 led1 = pyb.LED(1)
@@ -28,10 +28,13 @@ led1.on()
 pyb.delay(100);
 led1.off()
 ```
-Numeros de leds disponibles: de 1 a 4
-Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
-- Soporte para los 4 pulsadores de la placa mediante el modulo pyb.Switch. Ejemplo:
+Available led numbers: 1 to 4
+More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
+
+### All board buttons via pyb.Switch.
+
+Example:
 
 ```python
 import pyb
@@ -39,36 +42,73 @@ switch1 = pyb.Switch(1)
 val = switch1.value()
 print('sw1 vale:'+str(val))
 ```
-Numeros de switch disponibles:  de 1 a 4
-Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
-- Soporte para la UART RS232 del conector P1 y la UART RS485 de la placa mediante el modulo pyb.UART. Ejemplo:
+Available switch numbers:  1 to 4
+More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
+### UART support
+
+RS232 UART is suported over P1 connector and RS485 UART over J1 via pyb.UART object.
+
+Example:
 ```python
 import pyb
 uart = pyb.UART(3)
-uart.init(115200,bits=8, parity=None, stop=1,timeout=1000, timeout_char=1000, read_buf_len=64)
-uart.write("Hola mundo")
+uart.init(115200,
+          bits=8,
+          parity=None,
+          stop=1,
+          timeout=1000,
+          timeout_char=1000,
+          read_buf_len=64)
+uart.write("Hello World")
 while True:
-        if uart.any():
-                print("hay data:")
-                data = uart.readall()
-                print(data)
+	if uart.any():
+        print("hay data:")
+        data = uart.readall()
+        print(data)
 ```
-Las UARTs disponibles son la "0" (RS485) y la "3" (RS232)
 
-Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
-Se respeto la compatibilidad del modulo original de la pyboard exceptuando el constructor que recibe el baudrate.
-Tambien se agrego un modo de recepcion por "paquete" en donde la trama que llega se almacena en un buffer interno y luego el metodo "any()" devuelve True.
-Utilizando el metodo "readall()" se obtiene la trama completa. Para habilitar la recepcion por paquete se deben agregar el argumento "packet_mode" en True al final del metodo "init()". Ejemplo:
-```python
-uart.init(115200,bits=8, parity=None, stop=1,timeout=0, timeout_char=1000, read_buf_len=64,packet_mode=True)
-```
-Se interpretara como un "paquete" cuando comiencen a llegar bytes y se detenga la recepcion durante mas tiempo del tiempo especificado en el argumento "timeout"
+Availabled UART are pyb.UART(0) (RS485) and pyb.UART(3) (RS232)
 
-Tambien es posible detectar el final del "paquete" mediante un caracter en particular en lugar de hacerlo por timeout, para ello se puede agregar dicho caracter como argumento en "init". Ejemplo:
+More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
+
+All interfaces of pyboard UART are preserver except the constructor on baudrate parameter.
+
+Also, a packet reception mode was added. In this mode, the packet frame is stored in a internal buffer.
+
+You check the buffer status with "any()" method and the method "readall()" return the complete frame.
+
+To enable the packet reception, you need to add "packet_mode" argument as "True" on "init()" call.
+
+Example:
 ```python
-art.init(115200,bits=8, parity=None, stop=1,timeout=0, timeout_char=1000, read_buf_len=64,packet_mode=True,packet_end_char=ord('o'))
+uart.init(115200,
+          bits=8,
+          parity=None,
+          stop=1,
+          timeout=0,
+          timeout_char=1000,
+          read_buf_len=64,
+          packet_mode=True)
 ```
-En este ejemplo, se detectara un fin de trama cuando llegue el caracter 'o'
+
+It is interpreted as a "package" when they begin to get bytes and the reception stops for longer time specified in the argument "timeout"
+
+It is also possible to detect the end of the "package" with a particular character rather also timeout, for do it, use this character as argument value of "init".
+
+Example:
+```python
+u0.init(115200,bits=8,
+        parity=None,
+        stop=1,
+        timeout=0,
+        timeout_char=1000,
+        read_buf_len=64,
+        packet_mode=True,
+        packet_end_char=ord('o'))
+```
+
+In this example, The frame end is detected when a character 'o' is arrived.
+
 
