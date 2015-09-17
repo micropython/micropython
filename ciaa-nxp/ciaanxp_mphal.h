@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
-#define __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
+#ifndef __MICROPY_INCLUDED_EDUCIAA_MPHAL_H__
+#define __MICROPY_INCLUDED_EDUCIAA_MPHAL_H__
 
 #define HAL_GetTick mp_hal_get_milliseconds
 
@@ -41,4 +41,24 @@ void mp_hal_stdout_tx_str(const char *str);
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 
-#endif // __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
+// RS232 Functions
+uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
+void mp_hal_rs232_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
+void mp_hal_rs232_setConfig(int32_t baud,int32_t stopBits,int32_t parity);
+int32_t mp_hal_rs232_isNewPacketAvailable(void);
+uint32_t mp_hal_rs232_getPacketSize(void);
+int32_t mp_hal_rs232_getChar(void);
+int32_t mp_hal_rs232_charAvailable(void);
+void mp_hal_rs232_resetRxPacket(void);
+
+// RS485 Functions
+uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
+void mp_hal_rs485_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
+void mp_hal_rs485_setConfig(int32_t baud,int32_t stopBits,int32_t parity);
+int32_t mp_hal_rs485_isNewPacketAvailable(void);
+uint32_t mp_hal_rs485_getPacketSize(void);
+int32_t mp_hal_rs485_getChar(void);
+int32_t mp_hal_rs485_charAvailable(void);
+void mp_hal_rs485_resetRxPacket(void);
+
+#endif

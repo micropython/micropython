@@ -48,6 +48,7 @@ SRC_C = \
 	stmhal/pyexec.c \
 	lib/mp-readline/readline.c \
 	modpybswitch.c \
+	modpybuart.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 #	printf.c \

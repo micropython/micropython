@@ -12,6 +12,10 @@
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
+//prueba uart, sacar
+#include "chip.h"
+#include "board.h"
+
 // maximum heap for device with 8k RAM
 static char *stack_top;
 static char heap[16*1024];
@@ -48,6 +52,37 @@ int main(int argc, char **argv) {
 
     mp_init();
     mp_hal_init();
+
+    // prueba uart 485
+	/*
+    while(1)
+	{
+		if(mp_hal_rs232_charAvailable()==1)
+		{
+			int32_t data = mp_hal_rs232_getChar();
+			char aux[48];
+    			sprintf(aux,"llego: %d ",data);
+    			Board_UARTPutSTR(aux);
+		}
+	}*/
+    //while(1)
+	//char rxBuffer[512];
+	//Board_UART_setRxBuffer(LPC_USART3,rxBuffer,sizeof(rxBuffer),10000,NULL);
+	//Board_UART_setConfig(LPC_USART3,115200, 1,0);
+        //Board_UART_Write(LPC_USART3,"HOLA", 4);
+	/*
+	while(1)
+	{
+		if(Board_UART_isNewPacket(LPC_USART3))
+		{
+			char aux[1024];
+			sprintf(aux,"llegaron %d bytes, contenido:%s",Board_UART_getRxSize(LPC_USART3),rxBuffer);
+			Board_UARTPutSTR(aux);
+			Board_UART_resetRx(LPC_USART3);
+		}
+	}*/
+    //____________
+
     do_str(programScript, MP_PARSE_FILE_INPUT);
     pyexec_friendly_repl();
     mp_deinit();

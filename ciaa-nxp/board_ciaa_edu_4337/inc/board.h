@@ -302,6 +302,81 @@ int Buttons_GetStatusByNumber(int BUTTONNumber);
 
 
 /**
+ * @brief       Write over UART device
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @param       buffer   : buffer to be written
+ * @param       size     : amount of bytes to be written
+ * @return      amount of bytes written
+ */
+uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint32_t const size);
+
+
+/**
+ * @brief       Sets RX buffer
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @param       pBuffer  : Pointer to RX buffer
+ * @param       size     : Size of RX buffer
+ * @param       timeout     : timeout in milliseconds before rx notification
+ * @param       finalByte     : final byte value for rx notification
+ * @return      void
+ */
+void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
+
+/**
+ * @brief       This function must be called each millisecond for uart rx timeout calculation
+ * @return      void
+ */
+void Board_UART_tick_ms(void);
+
+/**
+ * @brief       return 1 if new packet is available in rx buffer
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      return 1 if new packet is available in rx buffer
+ */
+uint32_t Board_UART_isNewPacket(LPC_USART_T *pUART);
+
+/**
+ * @brief       Prepare rx buffer for new reception
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      void
+ */
+void Board_UART_resetRx(LPC_USART_T *pUART);
+
+
+/**
+ * @brief       Returns packet size
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      Packet size
+ */
+uint32_t Board_UART_getRxSize(LPC_USART_T *pUART);
+
+/**
+ * @brief       Configura UART
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @param       baud     : Baudrate
+ * @param       dataBits : Amount of bits of data
+ * @param       stopBits : Stop bits (1 or 2)
+ * @param       parity   : 0: disable - 1: odd - 2: even - 3: forced 0 - 4: forced 1
+ * @return      void
+ */
+void Board_UART_setConfig(LPC_USART_T *pUART,int32_t baud, int32_t stopBits,int32_t parity);
+
+/**
+ * @brief       Returns received char
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      Received char or -1
+ */
+int32_t Board_UART_getChar(LPC_USART_T *pUART);
+
+/**
+ * @brief       Returns if there is a char available for read
+ * @param       pUART    : LPC_USART0 or LPC_USART3
+ * @return      0: there is not a char available
+ */
+int32_t Board_UART_charAvailable(LPC_USART_T *pUART);
+
+
+/**
  * @}
  */
 
