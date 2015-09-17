@@ -1,23 +1,13 @@
+import sys
+
 print("py2c 1.0")
 
-print("Reading python script...")
-file = open("./py/Main.py", "r")
-content = file.read()
-file.close()
-
-print("Generating data array...")
-output="const char programScript[] = {"
-for byte in content:
-	output+=hex(ord(byte))+"," 	
-output+="0x00};"
-
-
-print("Creating output file...")
-file = open("./build/ProgramScript.c", "w")
-file.write(output)
-file.close()
-
-print(output)
-
-print("Succesfull Operation.")
-
+if len(sys.argv) != 3:
+	print("Usage %s <infile.py> <outfile.c>" % sys.argv[0]);
+else:
+	with open(sys.argv[2], 'w') as fout:
+		fout.write("const char programScript[] = {")
+		with open(sys.argv[1], 'rb') as fin:
+			fout.write(','.join([hex(ord(x)) for x in fin.read()]));
+		fout.write(",0x00};")
+	print("%s created" % sys.argv[2]);

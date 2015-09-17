@@ -1,10 +1,9 @@
 include ../py/mkenv.mk
 
 # Generate python script binary data
-#R:=$(shell python py2c.py)
 build/ProgramScript.c: py/Main.py
 	@echo "Generate program script"
-	@python py2c.py
+	@python py2c.py $< $@
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
