@@ -57,10 +57,10 @@ typedef struct _esp_os_timer_obj_t {
 STATIC void esp_os_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp_os_timer_obj_t *self = self_in;
 
-    mp_printf(print, "timer(callback=%p, period=%u, repeat=%c)", 
+    mp_printf(print, "timer(callback=%p, period=%u, repeat=%s)", 
         (unsigned int)&self->callback,
         self->period,
-        self->repeat ? 'y' : 'n');
+        self->repeat ? "True" : "False");
 }
 
 STATIC void timer_common_callback(void *parg) {
