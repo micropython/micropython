@@ -59,12 +59,7 @@ bool mp_repl_continue_with_input(const char *input) {
         || str_startswith_word(input, "class")
         ;
 
-    // check for unmatched open bracket or quote
-    #define Q_NONE (0)
-    #define Q_1_SINGLE (1)
-    #define Q_1_DOUBLE (2)
-    #define Q_3_SINGLE (3)
-    #define Q_3_DOUBLE (4)
+    // check for unmatched open bracket, quote or escape quote
     int n_paren = 0;
     int n_brack = 0;
     int n_brace = 0;
@@ -84,6 +79,12 @@ bool mp_repl_continue_with_input(const char *input) {
                 in_quote = Q_3_DOUBLE - in_quote;
             } else if (in_quote == Q_NONE || in_quote == Q_1_DOUBLE) {
                 in_quote = Q_1_DOUBLE - in_quote;
+            }
+        } else if (*i == '\\' && (i[1] == '\'' || i[1] == '"')) {
+            if (in_quote != Q_NONE) {
+                i++;
+            } else {
+                return false;
             }
         } else if (in_quote == Q_NONE) {
             switch (*i) {
