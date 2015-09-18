@@ -218,8 +218,12 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
             return false;
         }
     } else if (type == &mp_type_int) {
-        CHECK_TYPE("long");
-        out->j = mp_obj_get_int(arg);
+        if (IMATCH(arg_type, "int") || IMATCH(arg_type, "long")) {
+            // TODO: Java long is 64-bit actually
+            out->j = mp_obj_get_int(arg);
+        } else {
+            return false;
+        }
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
     }
