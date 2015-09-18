@@ -1,6 +1,16 @@
 # check REPL allows to continue input
 1 \
 + 2
+'"'
+"'"
+'\''
+"\""
+'\'('
+"\"("
+print("\"(")
+print('\'(')
+print("\'(")
+print('\"(')
 'abc'
 "abc"
 '''abc
