@@ -10,6 +10,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include ../py/py.mk
+LD=$(CROSS_COMPILE)gcc
 
 CROSS_COMPILE = arm-none-eabi-
 
