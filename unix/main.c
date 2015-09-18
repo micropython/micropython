@@ -45,7 +45,7 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
-#include "unix_mphal.h"
+#include MICROPY_HAL_H
 #include "input.h"
 
 // Command line options, with their defaults
