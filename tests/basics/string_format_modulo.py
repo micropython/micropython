@@ -111,3 +111,8 @@ try:
     '%l' % 1
 except ValueError:
     print('ValueError')
+
+try:
+    'a%' % 1
+except ValueError:
+    print('ValueError')

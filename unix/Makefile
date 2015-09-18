@@ -47,8 +47,6 @@ LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 ifeq ($(MICROPY_FORCE_32BIT),1)
 # Note: you may need to install i386 versions of dependency packages,
 # starting with linux-libc-dev:i386
-CFLAGS += -m32
-LDFLAGS += -m32
 ifeq ($(MICROPY_PY_FFI),1)
 ifeq ($(UNAME_S),Linux)
 CFLAGS_MOD += -I/usr/include/i686-linux-gnu
@@ -79,17 +77,35 @@ ifeq ($(MICROPY_PY_SOCKET),1)
 CFLAGS_MOD += -DMICROPY_PY_SOCKET=1
 SRC_MOD += modsocket.c
 endif
+
 ifeq ($(MICROPY_PY_FFI),1)
-LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
+
+ifeq ($(MICROPY_STANDALONE),1)
+LIBFFI_CFLAGS_MOD := -I$(shell ls -1d ../lib/libffi/out/lib/libffi-*/include)
+ ifeq ($(MICROPY_FORCE_32BIT),1)
+  LIBFFI_LDFLAGS_MOD = ../lib/libffi/out/lib32/libffi.a
+ else
+  LIBFFI_LDFLAGS_MOD = ../lib/libffi/out/lib/libffi.a
+ endif
+else
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
-CFLAGS_MOD += $(LIBFFI_CFLAGS_MOD) -DMICROPY_PY_FFI=1
-ifeq ($(UNAME_S),Linux)
-LDFLAGS_MOD += -ldl
+LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
 endif
+
+ifeq ($(UNAME_S),Linux)
+LIBFFI_LDFLAGS_MOD += -ldl
+endif
+
+CFLAGS_MOD += $(LIBFFI_CFLAGS_MOD) -DMICROPY_PY_FFI=1
 LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
 SRC_MOD += modffi.c
 endif
 
+ifeq ($(MICROPY_PY_JNI),1)
+# Path for 64-bit OpenJDK, should be adjusted for other JDKs
+CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
+SRC_MOD += modjni.c
+endif
 
 # source files
 SRC_C = \
@@ -174,3 +190,19 @@ $(BUILD)/frozen_upip/upip.py: $(UPIP_TARBALL)
 	$(Q)rm -rf $(dir $@)
 	$(Q)mkdir -p $(dir $@)
 	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py $(dir $@)
+
+
+# Value of configure's --host= option (required for cross-compilation).
+# Deduce it from CROSS_COMPILE by default, but can be overriden.
+ifneq ($(CROSS_COMPILE),)
+CROSS_COMPILE_HOST = --host=$(patsubst %-,%,$(CROSS_COMPILE))
+else
+CROSS_COMPILE_HOST =
+endif
+
+deplibs: libffi
+
+libffi:
+	cd ../lib/libffi; git clean -d -x -f
+	cd ../lib/libffi; ./autogen.sh
+	cd ../lib/libffi; ./configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; make install

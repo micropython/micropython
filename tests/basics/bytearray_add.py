@@ -12,3 +12,7 @@ print(b)
 # extend
 b.extend(bytearray(4))
 print(b)
+
+# this inplace add tests the code when the buffer doesn't need to be increased
+b = bytearray()
+b += b''

@@ -57,10 +57,30 @@ STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     mp_print_str(print, ")");
 }
 
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
+    mp_obj_slice_t *self = self_in;
+    if (attr == MP_QSTR_start) {
+        dest[0] = self->start;
+    } else if (attr == MP_QSTR_stop) {
+        dest[0] = self->stop;
+    } else if (attr == MP_QSTR_step) {
+        dest[0] = self->step;
+    }
+}
+#endif
+
 const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+    .attr = slice_attr,
+#endif
 };
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {

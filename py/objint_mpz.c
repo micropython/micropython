@@ -44,23 +44,34 @@
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
 #define DIG_MASK ((MPZ_LONG_1 << MPZ_DIG_SIZE) - 1)
-STATIC const mpz_dig_t maxsize_dig[MPZ_NUM_DIG_FOR_INT] = {
+STATIC const mpz_dig_t maxsize_dig[] = {
+    #define NUM_DIG 1
     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
-    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
-    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 4) & DIG_MASK,
-//    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 5) & DIG_MASK,
-    #endif
+     #undef NUM_DIG
+     #define NUM_DIG 2
+     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
+     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
+      #undef NUM_DIG
+      #define NUM_DIG 3
+      (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
+      #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
+       #undef NUM_DIG
+       #define NUM_DIG 4
+       (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
+       #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
+        #error cannot encode MP_SSIZE_MAX as mpz
+       #endif
+      #endif
+     #endif
     #endif
 };
 const mp_obj_int_t mp_maxsize_obj = {
     {&mp_type_int},
-    {.fixed_dig = 1, .len = MPZ_NUM_DIG_FOR_INT, .alloc = MPZ_NUM_DIG_FOR_INT, .dig = (mpz_dig_t*)maxsize_dig}
+    {.fixed_dig = 1, .len = NUM_DIG, .alloc = NUM_DIG, .dig = (mpz_dig_t*)maxsize_dig}
 };
 #undef DIG_MASK
+#undef NUM_DIG
 #endif
 
 STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {

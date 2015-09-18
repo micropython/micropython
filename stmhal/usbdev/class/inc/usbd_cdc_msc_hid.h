@@ -94,6 +94,8 @@ extern USBD_ClassTypeDef USBD_CDC_MSC_HID;
 
 // returns 0 on success, -1 on failure
 int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+// returns the current usb mode
+uint8_t USBD_GetMode();
 
 uint8_t USBD_CDC_RegisterInterface  (USBD_HandleTypeDef   *pdev, USBD_CDC_ItfTypeDef *fops);
 uint8_t USBD_CDC_SetTxBuffer  (USBD_HandleTypeDef   *pdev, uint8_t  *pbuff, uint16_t length);

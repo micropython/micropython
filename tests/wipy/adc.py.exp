@@ -1,0 +1,28 @@
+ADC(0, bits=12)
+ADC(0, bits=12)
+ADC(0, bits=12)
+ADCChannel(1, pin=GP3)
+ADCChannel(1, pin=GP3)
+ADCChannel(1, pin=GP3)
+ADCChannel(1, pin=GP3)
+True
+True
+ADCChannel(1)
+ADC(0)
+ADCChannel(1)
+ADC(0, bits=12)
+ADCChannel(1)
+ADCChannel(1, pin=GP3)
+True
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+ADCChannel(1, pin=GP3)
+True

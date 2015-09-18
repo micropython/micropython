@@ -102,3 +102,12 @@ Q(B9600)
 Q(B57600)
 Q(B115200)
 #endif
+
+#if MICROPY_PY_JNI
+Q(jni)
+Q(cls)
+Q(env)
+Q(jclass)
+Q(jobject)
+Q(jmethod)
+#endif

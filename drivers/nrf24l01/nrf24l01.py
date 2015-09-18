@@ -53,7 +53,7 @@ class NRF24L01:
         assert payload_size <= 32
 
         # init the SPI bus and pins
-        spi.init(spi.MASTER, baudrate=4000000, polarity=0, phase=1, firstbit=spi.MSB)
+        spi.init(spi.MASTER, baudrate=4000000, polarity=0, phase=0, firstbit=spi.MSB)
         cs.init(cs.OUT_PP, cs.PULL_NONE)
         ce.init(ce.OUT_PP, ce.PULL_NONE)
 

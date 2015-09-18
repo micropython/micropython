@@ -75,6 +75,14 @@ STATIC mp_obj_t extra_coverage(void) {
         printf("\n");
     }
 
+    // str
+    {
+        printf("# str\n");
+
+        // intern string
+        printf("%d\n", MP_OBJ_IS_QSTR(mp_obj_str_intern(mp_obj_new_str("intern me", 9, false))));
+    }
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);

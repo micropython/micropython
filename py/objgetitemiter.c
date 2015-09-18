@@ -47,8 +47,9 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
         return value;
     } else {
         // an exception was raised
-        if (mp_obj_get_type(nlr.ret_val) == &mp_type_StopIteration) {
-            // return MP_OBJ_STOP_ITERATION instead of raising StopIteration
+        mp_obj_type_t *t = mp_obj_get_type(nlr.ret_val);
+        if (t == &mp_type_StopIteration || t == &mp_type_IndexError) {
+            // return MP_OBJ_STOP_ITERATION instead of raising
             return MP_OBJ_STOP_ITERATION;
         } else {
             // re-raise exception

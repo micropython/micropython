@@ -35,6 +35,7 @@ codepoint2name[ord('}')] = 'brace_close'
 codepoint2name[ord('*')] = 'star'
 codepoint2name[ord('!')] = 'bang'
 codepoint2name[ord('\\')] = 'backslash'
+codepoint2name[ord('+')] = 'plus'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):

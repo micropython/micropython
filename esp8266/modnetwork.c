@@ -105,6 +105,18 @@ STATIC mp_obj_t esp_scan(mp_obj_t cb_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
+/// \method isconnected()
+/// Return True if connected to an AP and an IP address has been assigned,
+///     false otherwise.
+STATIC mp_obj_t esp_isconnected() {
+    if (wifi_station_get_connect_status() == STATION_GOT_IP) {
+        return mp_const_true;
+    }
+    return mp_const_false;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_isconnected_obj, esp_isconnected);
+
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     // MicroPython "network" module interface requires it to contains classes
@@ -116,6 +128,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),

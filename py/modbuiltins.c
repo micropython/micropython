@@ -553,12 +553,12 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
     // built-in types
     { MP_OBJ_NEW_QSTR(MP_QSTR_bool), (mp_obj_t)&mp_type_bool },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bytes), (mp_obj_t)&mp_type_bytes },
-#if MICROPY_PY_BUILTINS_BYTEARRAY
+    #if MICROPY_PY_BUILTINS_BYTEARRAY
     { MP_OBJ_NEW_QSTR(MP_QSTR_bytearray), (mp_obj_t)&mp_type_bytearray },
-#endif
-#if MICROPY_PY_BUILTINS_COMPLEX
+    #endif
+    #if MICROPY_PY_BUILTINS_COMPLEX
     { MP_OBJ_NEW_QSTR(MP_QSTR_complex), (mp_obj_t)&mp_type_complex },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_dict), (mp_obj_t)&mp_type_dict },
     #if MICROPY_PY_BUILTINS_ENUMERATE
     { MP_OBJ_NEW_QSTR(MP_QSTR_enumerate), (mp_obj_t)&mp_type_enumerate },
@@ -566,29 +566,29 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
     #if MICROPY_PY_BUILTINS_FILTER
     { MP_OBJ_NEW_QSTR(MP_QSTR_filter), (mp_obj_t)&mp_type_filter },
     #endif
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_float), (mp_obj_t)&mp_type_float },
-#endif
-#if MICROPY_PY_BUILTINS_SET && MICROPY_PY_BUILTINS_FROZENSET
+    #endif
+    #if MICROPY_PY_BUILTINS_SET && MICROPY_PY_BUILTINS_FROZENSET
     { MP_OBJ_NEW_QSTR(MP_QSTR_frozenset), (mp_obj_t)&mp_type_frozenset },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_int), (mp_obj_t)&mp_type_int },
     { MP_OBJ_NEW_QSTR(MP_QSTR_list), (mp_obj_t)&mp_type_list },
     { MP_OBJ_NEW_QSTR(MP_QSTR_map), (mp_obj_t)&mp_type_map },
-#if MICROPY_PY_BUILTINS_MEMORYVIEW
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW
     { MP_OBJ_NEW_QSTR(MP_QSTR_memoryview), (mp_obj_t)&mp_type_memoryview },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_object), (mp_obj_t)&mp_type_object },
-#if MICROPY_PY_BUILTINS_PROPERTY
+    #if MICROPY_PY_BUILTINS_PROPERTY
     { MP_OBJ_NEW_QSTR(MP_QSTR_property), (mp_obj_t)&mp_type_property },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_range), (mp_obj_t)&mp_type_range },
     #if MICROPY_PY_BUILTINS_REVERSED
     { MP_OBJ_NEW_QSTR(MP_QSTR_reversed), (mp_obj_t)&mp_type_reversed },
     #endif
-#if MICROPY_PY_BUILTINS_SET
+    #if MICROPY_PY_BUILTINS_SET
     { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&mp_type_set },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_str), (mp_obj_t)&mp_type_str },
     { MP_OBJ_NEW_QSTR(MP_QSTR_super), (mp_obj_t)&mp_type_super },
     { MP_OBJ_NEW_QSTR(MP_QSTR_tuple), (mp_obj_t)&mp_type_tuple },
@@ -610,17 +610,17 @@ STATIC const mp_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&mp_builtin_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bin), (mp_obj_t)&mp_builtin_bin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callable), (mp_obj_t)&mp_builtin_callable_obj },
-#if MICROPY_PY_BUILTINS_COMPILE
+    #if MICROPY_PY_BUILTINS_COMPILE
     { MP_OBJ_NEW_QSTR(MP_QSTR_compile), (mp_obj_t)&mp_builtin_compile_obj },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_chr), (mp_obj_t)&mp_builtin_chr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_dir), (mp_obj_t)&mp_builtin_dir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_divmod), (mp_obj_t)&mp_builtin_divmod_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_eval), (mp_obj_t)&mp_builtin_eval_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exec), (mp_obj_t)&mp_builtin_exec_obj },
-#if MICROPY_PY_BUILTINS_EXECFILE
+    #if MICROPY_PY_BUILTINS_EXECFILE
     { MP_OBJ_NEW_QSTR(MP_QSTR_execfile), (mp_obj_t)&mp_builtin_execfile_obj },
-#endif
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_getattr), (mp_obj_t)&mp_builtin_getattr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setattr), (mp_obj_t)&mp_builtin_setattr_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_globals), (mp_obj_t)&mp_builtin_globals_obj },

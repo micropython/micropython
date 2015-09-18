@@ -24,7 +24,7 @@ UART objects can be created and initialised using::
 
 .. only:: port_wipy
 
-    Bits can be 5, 6, 7, 8.  Parity can be None, 0 (even) or 1 (odd).  Stop can be 1 or 2.
+    Bits can be 5, 6, 7, 8.  Parity can be ``None``, ``UART.EVEN`` or ``UART.ODD``.  Stop can be 1 or 2.
 
 
 A UART object acts like a stream object and reading and writing is done
@@ -36,17 +36,25 @@ using the standard stream methods::
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
 
-Individual characters can be read/written using::
+.. only:: port_pyboard
 
-    uart.readchar()     # read 1 character and returns it as an integer
-    uart.writechar(42)  # write 1 character
+    Individual characters can be read/written using::
 
-To check if there is anything to be read, use::
+        uart.readchar()     # read 1 character and returns it as an integer
+        uart.writechar(42)  # write 1 character
 
-    uart.any()               # returns True if any characters waiting
+    To check if there is anything to be read, use::
 
-*Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
-Earlier versions use ``uart.send`` and ``uart.recv``.
+        uart.any()               # returns True if any characters waiting
+
+    *Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
+    Earlier versions use ``uart.send`` and ``uart.recv``.
+
+.. only:: port_wipy
+
+    To check if there is anything to be read, use::
+
+        uart.any()               # returns the number of characters available for reading
 
 Constructors
 ------------
@@ -73,11 +81,9 @@ Constructors
 
     .. class:: pyb.UART(bus, ...)
     
-       Construct a UART object on the given bus.  ``bus`` can be 1 or 2.
-       With no additional parameters, the UART object is created but not
-       initialised (it has the settings from the last initialisation of
-       the bus, if any).  If extra arguments are given, the bus is initialised.
-       See ``init`` for parameters of initialisation.
+       Construct a UART object on the given bus.  ``bus`` can be 0 or 1.
+       If the bus is not given, the default one will be selected (0) or the selection
+       will be made based on the given pins.
 
 Methods
 -------
@@ -110,26 +116,40 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=None, timeout_char=0)
+    .. method:: uart.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
     
        Initialise the UART bus with the given parameters:
     
          - ``baudrate`` is the clock rate.
          - ``bits`` is the number of bits per character, 7, 8 or 9.
-         - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
+         - ``parity`` is the parity, ``None``, ``UART.EVEN`` or ``UART.ODD``.
          - ``stop`` is the number of stop bits, 1 or 2.
-         - ``flow`` sets the flow control type. Can be None, ``UART.RTS``, ``UART.CTS``
-           or ``UART.RTS | UART.CTS``.
-         - ``timeout`` is the timeout in milliseconds to wait for the first character.
-         - ``timeout_char`` is the timeout in milliseconds to wait between characters.
+         - ``pins`` is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
+           Any of the pins can be None if one wants the UART to operate with limited functionality.
+           If the RTS pin is given the the RX pin must be given as well. The same applies to CTS. 
+           When no pins are given, then the default set of TX and RX pins is taken, and hardware 
+           flow control will be disabled. If pins=None, no pin assignment will be made.
 
 .. method:: uart.deinit()
 
    Turn off the UART bus.
 
-.. method:: uart.any()
+.. only:: port_pyboard
 
-   Return ``True`` if any characters waiting, else ``False``.
+    .. method:: uart.any()
+
+       Return ``True`` if any characters waiting, else ``False``.
+
+    .. method:: uart.writechar(char)
+
+      Write a single character on the bus.  ``char`` is an integer to write.
+      Return value: ``None``.
+
+.. only:: port_wipy
+
+    .. method:: uart.any()
+
+       Return the number of characters available for reading.
 
 .. method:: uart.read([nbytes])
 
@@ -144,7 +164,7 @@ Methods
       on timeout.
 
    .. only:: port_wipy
-    
+
       Return value: a bytes object containing the bytes read in.  Returns ``b''``
       on timeout.
 
@@ -190,11 +210,6 @@ Methods
 
       Return value: number of bytes written.
 
-.. method:: uart.writechar(char)
-
-   Write a single character on the bus.  ``char`` is an integer to write.
-   Return value: ``None``.
-
 .. method:: uart.sendbreak()
 
    Send a break condition on the bus.  This drives the bus low for a duration
@@ -229,7 +244,15 @@ Methods
 Constants
 ---------
 
-.. data:: UART.RTS
-.. data:: UART.CTS
-   
-   to select the flow control type
+.. only:: port_pyboard
+
+    .. data:: UART.RTS
+    .. data:: UART.CTS
+
+       to select the flow control type
+
+.. only:: port_wipy
+
+   .. data:: UART.RX_ANY
+
+       IRQ trigger sources

@@ -16,6 +16,6 @@ d = {1:'one',
 2:'two'}
 print(d[2])
 def f(x):
- print(x)
-
+print(x)
+
 f(3)

@@ -1048,7 +1048,11 @@ unwind_return:
                     MARK_EXC_IP_SELECTIVE();
                     mp_uint_t unum = *ip++;
                     mp_obj_t obj;
-                    assert(unum <= 1);
+                    if (unum == 2) {
+                        mp_warning("exception chaining not supported");
+                        // ignore (pop) "from" argument
+                        sp--;
+                    }
                     if (unum == 0) {
                         // search for the inner-most previous exception, to reraise it
                         obj = MP_OBJ_NULL;

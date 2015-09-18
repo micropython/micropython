@@ -128,9 +128,9 @@ soft_reset:
     mpexception_init0();
     mpcallback_init0();
     pybsleep_init0();
+    pin_init0();
     mperror_init0();
     uart_init0();
-    pin_init0();
     timer_init0();
     readline_init0();
     mod_network_init0();
@@ -139,18 +139,12 @@ soft_reset:
 #endif
 
 #ifdef LAUNCHXL
-    // configure the stdio uart pins with the correct alternate functions
-    // param 3 ("mode") is DON'T CARE" for AFs others than GPIO
-    pin_config ((pin_obj_t *)&MICROPY_STDIO_UART_TX_PIN, MICROPY_STDIO_UART_TX_PIN_AF, 0, PIN_TYPE_STD_PU, PIN_STRENGTH_2MA);
-    pin_config ((pin_obj_t *)&MICROPY_STDIO_UART_RX_PIN, MICROPY_STDIO_UART_RX_PIN_AF, 0, PIN_TYPE_STD_PU, PIN_STRENGTH_2MA);
-    // instantiate the stdio uart
+    // instantiate the stdio uart on the default pins
     mp_obj_t args[2] = {
             mp_obj_new_int(MICROPY_STDIO_UART),
             mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
     };
     pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
-    // create a callback for the uart, in order to enable the rx interrupts
-    uart_callback_new (pyb_stdio_uart, mp_const_none, MICROPY_STDIO_UART_RX_BUF_SIZE, INT_PRIORITY_LVL_3);
 #else
     pyb_stdio_uart = MP_OBJ_NULL;
 #endif
@@ -239,10 +233,9 @@ soft_reset_exit:
     pybsleep_signal_soft_reset();
     mp_printf(&mp_plat_print, "PYB: soft reboot\n");
 
-    // disable all peripherals that could trigger a callback
-    pyb_rtc_callback_disable(NULL);
-    timer_disable_all();
-    uart_disable_all();
+    // disable all callbacks to avoid undefined behaviour
+    // when coming out of a soft reset
+    mpcallback_disable_all();
 
     // flush the serial flash buffer
     sflash_disk_flush();
@@ -266,7 +259,7 @@ soft_reset_exit:
 __attribute__ ((section (".boot")))
 STATIC void mptask_pre_init (void) {
 #if MICROPY_HW_ENABLE_RTC
-    pybrtc_init();
+    pybrtc_pre_init();
 #endif
 
     // Create the simple link spawn task
@@ -288,7 +281,8 @@ STATIC void mptask_pre_init (void) {
     modusocket_pre_init();
 
 #if MICROPY_HW_HAS_SDCARD
-    pybsd_init0();
+    // this one allocates memory for the SD file system
+    pybsd_pre_init();
 #endif
 
     CRYPTOHASH_Init();

@@ -80,7 +80,7 @@ STATIC mp_obj_t pybsd_unmount (mp_obj_t self_in);
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 __attribute__ ((section (".boot")))
-void pybsd_init0 (void) {
+void pybsd_pre_init (void) {
     // allocate memory for the sd file system
     ASSERT ((pybsd_obj.fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
 }
@@ -122,11 +122,11 @@ STATIC mp_obj_t pybsd_init_helper (pybsd_obj_t *self, uint n_args, const mp_obj_
             self->pin_clk = (pin_obj_t *)pin_find(items[2]);
 
             // configure the data pin with pull-up enabled
-            pin_config ((pin_obj_t *)pin_find(items[0]), mp_obj_get_int(items[1]), 0, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
+            pin_config ((pin_obj_t *)pin_find(items[0]), mp_obj_get_int(items[1]), 0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_4MA);
             // configure the clock pin
-            pin_config (self->pin_clk, mp_obj_get_int(items[3]), 0, PIN_TYPE_STD, PIN_STRENGTH_4MA);
+            pin_config (self->pin_clk, mp_obj_get_int(items[3]), 0, PIN_TYPE_STD, -1, PIN_STRENGTH_4MA);
             // configure the command pin with pull-up enabled
-            pin_config ((pin_obj_t *)pin_find(items[4]), mp_obj_get_int(items[5]), 0, PIN_TYPE_STD_PU, PIN_STRENGTH_4MA);
+            pin_config ((pin_obj_t *)pin_find(items[4]), mp_obj_get_int(items[5]), 0, PIN_TYPE_STD_PU, -1, PIN_STRENGTH_4MA);
             self->pinsset = true;
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));

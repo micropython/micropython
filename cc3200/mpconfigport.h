@@ -48,7 +48,11 @@
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
+#ifndef DEBUG // we need ram on the launchxl while debugging
 #define MICROPY_CPYTHON_COMPAT                      (1)
+#else
+#define MICROPY_CPYTHON_COMPAT                      (0)
+#endif
 #define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
 /* Enable FatFS LFNs
@@ -62,15 +66,25 @@
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
+#define MICROPY_PY_BUILTINS_TIMEOUTERROR            (1)
+#ifndef DEBUG
 #define MICROPY_PY_BUILTINS_STR_UNICODE             (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES          (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW              (1)
 #define MICROPY_PY_BUILTINS_FROZENSET               (1)
 #define MICROPY_PY_BUILTINS_EXECFILE                (1)
-#define MICROPY_PY_BUILTINS_TIMEOUTERROR            (1)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN               (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
+#else
+#define MICROPY_PY_BUILTINS_STR_UNICODE             (0)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES          (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW              (0)
+#define MICROPY_PY_BUILTINS_FROZENSET               (0)
+#define MICROPY_PY_BUILTINS_EXECFILE                (0)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN               (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
+#endif
+#define MICROPY_PY_MICROPYTHON_MEM_INFO             (0)
 #define MICROPY_PY_SYS_MAXSIZE                      (1)
 #define MICROPY_PY_SYS_EXIT                         (1)
 #define MICROPY_PY_SYS_STDFILES                     (1)
@@ -148,6 +162,7 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     mp_obj_list_t pybsleep_obj_list;                                      \
     mp_obj_list_t mpcallback_obj_list;                                    \
     mp_obj_list_t pyb_timer_channel_obj_list;                             \
+    struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
 
 
 // type definitions for the specific machine

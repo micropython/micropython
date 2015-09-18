@@ -24,6 +24,10 @@ try:
     '123' * '1'
 except TypeError:
     print('TypeError')
+try:
+    '123' + 1
+except TypeError:
+    print('TypeError')
 
 # subscription
 print('abc'[1])

@@ -1,0 +1,51 @@
+I2C(0, I2C.MASTER, baudrate=100000)
+I2C(0, I2C.MASTER, baudrate=50000)
+I2C(0, I2C.MASTER, baudrate=100000)
+I2C(0, I2C.MASTER, baudrate=400000)
+I2C(0, I2C.MASTER, baudrate=400000)
+104
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+True
+I2C(0)
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+Exception
+I2C(0, I2C.MASTER, baudrate=400000)

@@ -77,3 +77,7 @@ x = 4611686018427387903 # small
 x = -4611686018427387903 # small
 x = 4611686018427387904 # big
 x = -4611686018427387904 # big
+
+# sys.maxsize is a constant mpz, so test it's compatible with dynamic ones
+import sys
+print(sys.maxsize + 1 - 1 == sys.maxsize)
