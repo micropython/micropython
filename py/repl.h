@@ -31,14 +31,6 @@
 #include "py/mpprint.h"
 
 #if MICROPY_HELPER_REPL
-
-// quote count
-#define Q_NONE (0)
-#define Q_1_SINGLE (1)
-#define Q_1_DOUBLE (2)
-#define Q_3_SINGLE (3)
-#define Q_3_DOUBLE (4)
-
 bool mp_repl_continue_with_input(const char *input);
 mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t *print, const char **compl_str);
 #endif
