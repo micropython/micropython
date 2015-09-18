@@ -4,7 +4,6 @@ A MPU-9150 sensor must be connected to the I2C bus.
 '''
 
 from pyb import I2C
-from pyb import Pin
 import os
 import pyb
 

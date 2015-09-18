@@ -3,9 +3,7 @@ SPI test for the CC3200 based boards.
 '''
 
 from pyb import SPI
-from pyb import Pin
 import os
-import pyb
 
 machine = os.uname().machine
 if 'LaunchPad' in machine:
