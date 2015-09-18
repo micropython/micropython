@@ -224,6 +224,10 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         } else {
             return false;
         }
+    } else if (type == &jobject_type) {
+        printf("TODO: Check java arg type!!\n");
+        mp_obj_jobject_t *jo = arg;
+        out->l = jo->obj;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
     }
