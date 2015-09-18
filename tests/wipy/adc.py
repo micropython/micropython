@@ -3,7 +3,6 @@ ADC test for the CC3200 based boards.
 '''
 
 from pyb import ADC
-from pyb import Pin
 import os
 
 machine = os.uname().machine
