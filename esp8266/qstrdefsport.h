@@ -137,3 +137,10 @@ Q(localtime)
 Q(mktime)
 Q(sleep)
 Q(time)
+
+// ESP os_timer
+Q(os_timer)
+Q(period)
+Q(callback)
+Q(repeat)
+Q(cancel)
