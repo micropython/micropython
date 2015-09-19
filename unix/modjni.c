@@ -242,9 +242,12 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
 // it.
 #define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
 STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
+    const char *org_jtype = jtypesig;
     mp_obj_t ret;
     if (arg == NULL || MATCH(jtypesig, "void")) {
         return mp_const_none;
+    } else if (MATCH(jtypesig, "boolean")) {
+        return mp_obj_new_bool((bool)arg);
     } else if (MATCH(jtypesig, "int")) {
         return mp_obj_new_int((mp_int_t)arg);
     } else if (MATCH(jtypesig, "java.lang.String")) {
@@ -269,7 +272,7 @@ ret_string:;
         }
     }
 
-    printf("Unknown return type: %s\n", jtypesig);
+    printf("Unknown return type: %s\n", org_jtype);
 
     return MP_OBJ_NULL;
 }
