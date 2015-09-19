@@ -48,7 +48,6 @@ typedef struct _esp_os_timer_obj_t {
     mp_obj_t callback;
     uint32_t period;    // in milliseconds
     bool repeat;
-    // start_time; // to calculate elapsed, time to fire etc
 } esp_os_timer_obj_t;
 
 
@@ -88,7 +87,7 @@ STATIC mp_obj_t esp_os_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uin
     self->base.type = &esp_os_timer_type;
 
     self->callback = vals[0].u_obj;
-    self->period = vals[1].u_int; // mp_obj_get_int(args[1]);
+    self->period = vals[1].u_int;
     self->repeat = vals[2].u_bool;
 
     if (self->period == 0) {

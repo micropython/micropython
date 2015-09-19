@@ -24,4 +24,7 @@
  * THE SOFTWARE.
  */
 
+#ifndef _INCLUDED_OS_TIMER_H_
+#define _INCLUDED_OS_TIMER_H_
 extern const mp_obj_type_t esp_os_timer_type;
+#endif // _INCLUDED_OS_TIMER_H_
