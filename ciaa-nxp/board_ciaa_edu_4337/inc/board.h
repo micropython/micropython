@@ -79,8 +79,14 @@ extern "C" {
 
 
 
+/* GPIOs */
+#define BOARD_GPIO_MODE_INPUT		0
+#define BOARD_GPIO_MODE_OUTPUT_PP	1
+#define BOARD_GPIO_MODE_OUTPUT_OD	2
 
-
+#define BOARD_GPIO_NOPULL		0
+#define BOARD_GPIO_PULLUP		1
+#define BOARD_GPIO_PULLDOWN		2
 
 
 
@@ -384,6 +390,40 @@ int32_t Board_UART_getChar(LPC_USART_T *pUART);
  * @return      0: there is not a char available
  */
 int32_t Board_UART_charAvailable(LPC_USART_T *pUART);
+
+
+/**
+ * @brief       Initializes GPIOs as input.
+ * @return      void
+ */
+void Board_GPIOs_Init(void);
+
+/**
+ * @brief       Configures a specific gpio.
+ * @param       gpioNumber : 0 to 8
+ * @param       mode : BOARD_GPIO_MODE_INPUT, BOARD_GPIO_MODE_OUTPUT_PP, BOARD_GPIO_MODE_OUTPUT_OD
+ * @param       pullup : BOARD_GPIO_NOPULL, BOARD_GPIO_PULLUP, BOARD_GPIO_PULLDOWN
+ * @return      void
+ */
+void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup);
+
+
+/**
+ * @brief       Reads gpio's value.
+ * @param       gpioNumber : 0 to 8
+ * @return      0 or 1
+ */
+uint32_t Board_GPIOs_readValue(int32_t gpioNumber);
+
+
+/**
+ * @brief       Writes gpio's value.
+ * @param       gpioNumber : 0 to 8
+ * @param       value : 0 or 1
+ * @return      void
+ */
+void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
+
 
 
 /**

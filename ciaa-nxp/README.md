@@ -87,3 +87,24 @@ art.init(115200,bits=8, parity=None, stop=1,timeout=0, timeout_char=1000, read_b
 ```
 En este ejemplo, se detectara un fin de trama cuando llegue el caracter 'o'
 
+
+- Soporte para GPIOs mediante el modulo pyb.Pin. Ejemplo:
+```python
+import pyb
+
+p = pyb.Pin(0) #GPIO0
+p.init(pyb.Pin.OUT_PP,pyb.Pin.PULL_NONE)
+print(p)
+
+while True:
+        p.high()
+        print("value:"+str(p.value()))
+        pyb.delay(1000)
+        p.low()
+        print("value:"+str(p.value()))
+        pyb.delay(1000)
+```
+Las GPIOs disponibles van de 0 a 8
+
+Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
+

@@ -1,10 +1,19 @@
 import pyb
 
-def func(sw):
-        print("sw pressed!")
-        print(sw)
+p = pyb.Pin(8)
+p.init(pyb.Pin.OUT_PP,pyb.Pin.PULL_NONE)
+print(p)
 
-switch1 = pyb.Switch(1)
-switch1.callback(func)
 while True:
-        pyb.delay(1000)
+	#p.value(True)
+	p.high()
+	print("value:"+str(p.value()))
+
+	pyb.delay(1000)
+
+	#p.value(False)
+	p.low()
+	print("value:"+str(p.value()))
+
+	pyb.delay(1000)
+

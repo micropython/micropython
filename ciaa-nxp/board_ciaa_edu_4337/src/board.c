@@ -519,15 +519,76 @@ int Buttons_GetStatusByNumber(int BUTTONNumber)
 	return -1;
 }
 
-/*
-uint32_t Buttons_GetStatus(void)
+// GPIOs
+typedef struct
 {
-	uint8_t ret = NO_BUTTON_PRESSED;
-	if (Chip_GPIO_GetPinState(LPC_GPIO_PORT, BUTTONS_BUTTON1_GPIO_PORT_NUM, BUTTONS_BUTTON1_GPIO_BIT_NUM) == 0) {
-		ret |= BUTTONS_BUTTON1;
+    int8_t port;
+    int8_t portBit;
+    int8_t gpio;
+    int8_t gpioBit;
+    int8_t func;
+
+}GpioInfo;
+
+static GpioInfo gpiosInfo[]={
+	{6,1,3,0,SCU_MODE_FUNC0},{6,4,3,3,SCU_MODE_FUNC0},{6,5,3,4,SCU_MODE_FUNC0},{6,7,5,15,SCU_MODE_FUNC4},{6,8,5,16,SCU_MODE_FUNC4},{6,9,3,5,SCU_MODE_FUNC0},{6,10,3,6,SCU_MODE_FUNC0},{6,11,3,7,SCU_MODE_FUNC0},{6,12,2,8,SCU_MODE_FUNC0}
+};
+
+void Board_GPIOs_Init(void)
+{
+	// GPIOs default: input. pull up and pull down disabled.
+	for(int32_t i=0 ; i<9; i++)
+        {
+	    Chip_SCU_PinMuxSet(gpiosInfo[i].port, gpiosInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[i].func));
+  	    Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[i].gpio, gpiosInfo[i].gpioBit);
 	}
-	return ret;
-}*/
+}
+
+void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
+{
+	int32_t pullUpMode=SCU_MODE_INACT;
+	switch(pullup)
+	{
+		case BOARD_GPIO_NOPULL:
+			pullUpMode=SCU_MODE_INACT;
+			break;
+		case BOARD_GPIO_PULLUP:
+			pullUpMode=SCU_MODE_PULLUP;
+			break;
+		case BOARD_GPIO_PULLDOWN:
+			pullUpMode=SCU_MODE_PULLDOWN;
+			break;
+	}
+	Chip_SCU_PinMuxSet(gpiosInfo[gpioNumber].port, gpiosInfo[gpioNumber].portBit, (pullUpMode | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[gpioNumber].func));
+
+        switch(mode)
+        {
+                case BOARD_GPIO_MODE_INPUT:
+                        Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);   // Input
+                        break;
+                case BOARD_GPIO_MODE_OUTPUT_PP:
+                        Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit); // Output
+                        break;
+                case BOARD_GPIO_MODE_OUTPUT_OD:
+                        Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit); // Output
+                        break;
+        }
+}
+
+uint32_t Board_GPIOs_readValue(int32_t gpioNumber)
+{
+	return Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+}
+
+void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
+{
+	if(value)
+		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+	else
+		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+}
+//_____________________________________________________________________________________________________________________________________________
+
 
 void Board_Joystick_Init(void)
 {}
@@ -554,6 +615,7 @@ void Board_Init(void)
 
 	/* Initializes GPIO */
 	Chip_GPIO_Init(LPC_GPIO_PORT);
+	Board_GPIOs_Init();
 
 	/* Initialize LEDs */
 	Board_LED_Init();

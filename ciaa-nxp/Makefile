@@ -42,6 +42,7 @@ SRC_C = \
 	modpybled.c \
 	modpybswitch.c \
 	modpybuart.c \
+	modpybpin.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 #	printf.c \

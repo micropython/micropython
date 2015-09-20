@@ -41,6 +41,21 @@ Q(CTS)
 Q(readline)
 Q(readall)
 
+Q(Pin)
+Q(IN)
+Q(OUT_PP)
+Q(OUT_OD)
+Q(PULL_NONE)
+Q(PULL_UP)
+Q(PULL_DOWN)
+Q(mode)
+Q(pull)
+Q(af)
+Q(value)
+Q(low)
+Q(high)
+
+
 /*
 Q(readall)
 Q(readinto)
