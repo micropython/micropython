@@ -36,9 +36,24 @@ Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 ```python
 import pyb
 switch1 = pyb.Switch(1)
-val = switch1.value()
+val = switch1.switch()
 print('sw1 vale:'+str(val))
 ```
+
+```python
+import pyb
+
+def func(sw):
+	print("sw pressed!")
+	print(sw)
+
+switch1 = pyb.Switch(1)
+switch1.callback(func)
+while True:
+	pyb.delay(1000)
+```
+
+
 Numeros de switch disponibles:  de 1 a 4
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
