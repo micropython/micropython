@@ -2,8 +2,8 @@ import pyb
 
 print("Test switch con callbacks")
 
-def callB():
-	print("evetno en callback!")
+def callB(obj):
+	print("evetno en callback python!")
 
 
 sw1 = pyb.Switch(1)

@@ -191,3 +191,9 @@ void mp_hal_rs485_resetRxPacket(void)
         Board_UART_resetRx(LPC_USART0);
 }
 
+// Buttons
+void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void* arg)
+{
+	Board_Buttons_configureCallback(buttonNumber,function,arg);
+}
+

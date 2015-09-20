@@ -58,9 +58,17 @@ typedef struct {
 	uint32_t timeoutCounter;
 	uint8_t flagNewPacket;
 } UartRxBufferData;
-
 static UartRxBufferData uart0RxBufferData;
 static UartRxBufferData uart3RxBufferData;
+
+
+typedef struct {
+	void(*callbackSw)(void*);
+	void* callbackSwArg;
+} ButtonData;
+static ButtonData buttonsData[4];
+
+
 
 //================================================[UART Management]==========================================================
 void Board_UART_Init(LPC_USART_T *pUART)
@@ -397,19 +405,87 @@ void Board_LED_Toggle(uint8_t LEDNumber)
 	Board_LED_Set(LEDNumber, !Board_LED_Test(LEDNumber));
 }
 
+
+
+void GPIO0_IRQHandler(void)
+{
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0));
+	if(buttonsData[0].callbackSw!=NULL)
+		buttonsData[0].callbackSw( buttonsData[0].callbackSwArg);
+}
+
+void GPIO1_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1));
+	if(buttonsData[1].callbackSw!=NULL)
+		buttonsData[1].callbackSw( buttonsData[1].callbackSwArg);
+}
+
+void GPIO2_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+	if(buttonsData[2].callbackSw!=NULL)
+		buttonsData[2].callbackSw( buttonsData[2].callbackSwArg);
+}
+
+void GPIO3_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(3));
+	if(buttonsData[3].callbackSw!=NULL)
+		buttonsData[3].callbackSw( buttonsData[3].callbackSwArg);
+}
+
 void Board_Buttons_Init(void)
 {
+	 buttonsData[0].callbackSw=NULL;
+	 buttonsData[1].callbackSw=NULL;
+	 buttonsData[2].callbackSw=NULL;
+	 buttonsData[3].callbackSw=NULL;
+
 	Chip_SCU_PinMuxSet(0x1, 0, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));		// P1_0 as GPIO0[4]
 	Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON1_GPIO_PORT_NUM, BUTTONS_BUTTON1_GPIO_BIT_NUM);	// input
+	Chip_SCU_GPIOIntPinSel(0, 0, 4); // GPIO0[4] to INT0
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0)); // INT0
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(0)); // INT0
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(0));   // INT0
+	NVIC_ClearPendingIRQ(PIN_INT0_IRQn);
+        NVIC_EnableIRQ(PIN_INT0_IRQn);
+
 
         Chip_SCU_PinMuxSet(0x1, 1, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_1 as GPIO0[8]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON2_GPIO_PORT_NUM, BUTTONS_BUTTON2_GPIO_BIT_NUM);   // input
+	Chip_SCU_GPIOIntPinSel(1, 0, 8); // GPIO0[8] to INT1
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1)); // INT1
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(1)); // INT1
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(1));   // INT1
+	NVIC_ClearPendingIRQ(PIN_INT1_IRQn);
+        NVIC_EnableIRQ(PIN_INT1_IRQn);
+
 
         Chip_SCU_PinMuxSet(0x1, 2, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_2 as GPIO0[9]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON3_GPIO_PORT_NUM, BUTTONS_BUTTON3_GPIO_BIT_NUM);   // input
+	Chip_SCU_GPIOIntPinSel(2, 0, 9); // GPIO0[9] to INT2
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2)); // INT2
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(2)); // INT2
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(2));   // INT2
+        NVIC_ClearPendingIRQ(PIN_INT2_IRQn);
+        NVIC_EnableIRQ(PIN_INT2_IRQn);
+
 
         Chip_SCU_PinMuxSet(0x1, 6, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_6 as GPIO1[9]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON4_GPIO_PORT_NUM, BUTTONS_BUTTON4_GPIO_BIT_NUM);   // input
+	Chip_SCU_GPIOIntPinSel(3, 1, 9); // GPIO1[9] to INT3
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(3)); // INT3
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(3)); // INT3
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(3));   // INT3
+        NVIC_ClearPendingIRQ(PIN_INT3_IRQn);
+        NVIC_EnableIRQ(PIN_INT3_IRQn);
+}
+
+void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),void* arg)
+{
+	buttonsData[buttonNumber].callbackSw = function;
+	buttonsData[buttonNumber].callbackSwArg = arg;
 }
 
 int Buttons_GetStatusByNumber(int BUTTONNumber)

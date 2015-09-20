@@ -61,4 +61,7 @@ int32_t mp_hal_rs485_getChar(void);
 int32_t mp_hal_rs485_charAvailable(void);
 void mp_hal_rs485_resetRxPacket(void);
 
+// Buttons
+void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void* arg);
+
 #endif

@@ -258,6 +258,16 @@ uint8_t Joystick_GetStatus(void);
 uint32_t Buttons_GetStatus (void);
 
 /**
+ * @brief       Configure button's callback
+ * @param       buttonNumber : 0 to 3
+ * @param       function : calback to be called. prototype: void function(void* arg);
+ * @param       arg : argument passed to callback function when it is called
+ * @return      Nothing
+ */
+void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),void* arg);
+
+
+/**
  * @brief	Initialize I2S interface for the board and UDA1380
  * @param	pI2S	: Pointer to I2S register interface used on this board
  * @param	micIn	: If 1 MIC will be used as input, if 0 LINE_IN will be used

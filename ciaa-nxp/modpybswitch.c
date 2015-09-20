@@ -30,13 +30,14 @@
 
 #include "board.h"
 #include "modpyb.h"
+#include "ciaanxp_mphal.h"
 
 typedef struct _pyb_switch_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
 } pyb_switch_obj_t;
 
-STATIC const pyb_switch_obj_t pyb_switch_obj[] = {
+STATIC pyb_switch_obj_t pyb_switch_obj[] = {
     {{&pyb_switch_type}},
     {{&pyb_switch_type}},
     {{&pyb_switch_type}},
@@ -99,8 +100,10 @@ STATIC mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
     if (callback == mp_const_none) {
         // stop interrupt
         self->callback = mp_const_none;
+	mp_hal_configureButtonCallback(SWITCH_ID(self),NULL,NULL);
     } else if (mp_obj_is_callable(callback)) {
         self->callback = callback;
+	mp_hal_configureButtonCallback(SWITCH_ID(self),pyb_switch_exec_callback,self);
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
     }
@@ -129,3 +132,23 @@ const mp_obj_type_t pyb_switch_type = {
     .call = pyb_switch_call,
     .locals_dict = (mp_obj_t)&pyb_switch_locals_dict,
 };
+
+
+/*
+/NVIC_SetPriority(USART0_IRQn, 1);
+                //NVIC_EnableIRQ(USART0_IRQn);
+                
+                
+void UART3_IRQHandler (void)
+{
+
+
+
+
+Chip_SCU_GPIOIntPinSel(uint8_t PortSel, uint8_t PortNum, uint8_t PinNum)
+
+
+Chip_SCU_ClockPinMuxSet(uint8_t clknum, uint16_t modefunc)   
+
+*/
+
