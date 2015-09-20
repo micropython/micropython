@@ -183,8 +183,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    "only slices with step=1 (aka None) are supported"));
+                mp_not_implemented("only slices with step=1 (aka None) are supported");
             }
             mp_obj_tuple_t *res = mp_obj_new_tuple(slice.stop - slice.start, NULL);
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);

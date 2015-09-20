@@ -1355,9 +1355,8 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
-    if (!added) {
-        // TODO this is not compliant with CPython
-        compile_syntax_error(comp, pn, "identifier already used");
+    if (!added && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
+        compile_syntax_error(comp, pn, "identifier redefined as global");
         return;
     }
     id_info->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
@@ -1382,9 +1381,8 @@ STATIC void compile_global_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
-    if (!added) {
-        // TODO this is not compliant with CPython
-        compile_syntax_error(comp, pn, "identifier already used");
+    if (!added && id_info->kind != ID_INFO_KIND_FREE) {
+        compile_syntax_error(comp, pn, "identifier redefined as nonlocal");
         return;
     }
     id_info_t *id_info2 = scope_find_local_in_parent(comp->scope_cur, qst);
@@ -2786,6 +2784,7 @@ STATIC void compile_scope_lambda_param(compiler_t *comp, mp_parse_node_t pn) {
     compile_scope_func_lambda_param(comp, pn, PN_varargslist_name, PN_varargslist_star, PN_varargslist_dbl_star);
 }
 
+#if MICROPY_EMIT_NATIVE
 STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_STRUCT(pn)) {
         // no annotation
@@ -2816,22 +2815,19 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn)
     mp_parse_node_t pn_annotation = pns->nodes[1];
 
     if (!MP_PARSE_NODE_IS_NULL(pn_annotation)) {
-        #if MICROPY_EMIT_NATIVE
         qstr param_name = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
         id_info_t *id_info = scope_find(comp->scope_cur, param_name);
         assert(id_info != NULL);
 
-        if (comp->scope_cur->emit_options == MP_EMIT_OPT_VIPER) {
-            if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
-                qstr arg_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
-                EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ARG, id_info->local_num, arg_type);
-            } else {
-                compile_syntax_error(comp, pn_annotation, "parameter annotation must be an identifier");
-            }
+        if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
+            qstr arg_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
+            EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ARG, id_info->local_num, arg_type);
+        } else {
+            compile_syntax_error(comp, pn_annotation, "parameter annotation must be an identifier");
         }
-        #endif // MICROPY_EMIT_NATIVE
     }
 }
+#endif // MICROPY_EMIT_NATIVE
 
 STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_t pn_iter, mp_parse_node_t pn_inner_expr, int l_top, int for_depth) {
     tail_recursion:
@@ -2954,8 +2950,11 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (comp->pass == MP_PASS_SCOPE) {
             comp->have_star = false;
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_param);
-        } else {
+        }
+        #if MICROPY_EMIT_NATIVE
+        else if (scope->emit_options == MP_EMIT_OPT_VIPER) {
             // compile annotations; only needed on latter compiler passes
+            // only needed for viper emitter
 
             // argument annotations
             apply_to_single_or_list(comp, pns->nodes[1], PN_typedargslist, compile_scope_func_annotations);
@@ -2963,19 +2962,16 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             // pns->nodes[2] is return/whole function annotation
             mp_parse_node_t pn_annotation = pns->nodes[2];
             if (!MP_PARSE_NODE_IS_NULL(pn_annotation)) {
-                #if MICROPY_EMIT_NATIVE
-                if (scope->emit_options == MP_EMIT_OPT_VIPER) {
-                    // nodes[2] can be null or a test-expr
-                    if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
-                        qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
-                        EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_RETURN, 0, ret_type);
-                    } else {
-                        compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
-                    }
+                // nodes[2] can be null or a test-expr
+                if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
+                    qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
+                    EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_RETURN, 0, ret_type);
+                } else {
+                    compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
                 }
-                #endif // MICROPY_EMIT_NATIVE
             }
         }
+        #endif // MICROPY_EMIT_NATIVE
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
         // emit return if it wasn't the last opcode

@@ -4,6 +4,9 @@
 print(.12)
 print(1.)
 print(1.2)
+print(0e0)
+print(0e+0)
+print(0e-0)
 
 # float construction
 print(float(1.2))

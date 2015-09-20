@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include "unix_mphal.h"
+#include MICROPY_HAL_H
 
 #ifndef _WIN32
 #include <signal.h>

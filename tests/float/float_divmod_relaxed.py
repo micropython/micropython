@@ -25,3 +25,9 @@ for i in range(25):
     for j in range(25):
         y = (j - 12.5) / 6
         test(x, y)
+
+# test division by zero error
+try:
+    divmod(1.0, 0)
+except ZeroDivisionError:
+    print('ZeroDivisionError')

@@ -114,13 +114,22 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-STATIC mp_obj_t pyb_main(mp_obj_t main) {
-    if (MP_OBJ_IS_STR(main)) {
-        MP_STATE_PORT(pyb_config_main) = main;
+STATIC mp_obj_t pyb_main(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
+    };
+
+    if (MP_OBJ_IS_STR(pos_args[0])) {
+        MP_STATE_PORT(pyb_config_main) = pos_args[0];
+
+        // parse args
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        MP_STATE_VM(mp_optimise_value) = args[0].u_int;
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
+MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"

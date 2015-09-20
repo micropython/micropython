@@ -87,8 +87,9 @@ bool updater_check_path (void *path) {
         if (!sl_FsOpen((unsigned char *)IMG_BOOT_INFO, FS_MODE_OPEN_READ, NULL, &fhandle)) {
             ASSERT (sizeof(sBootInfo_t) == sl_FsRead(fhandle, 0, (unsigned char *)&sBootInfo, sizeof(sBootInfo_t)));
             sl_FsClose(fhandle, 0, 0, 0);
+            // if we still have an image pending for verification, keep overwriting it
             if ((sBootInfo.Status == IMG_STATUS_CHECK && sBootInfo.ActiveImg == IMG_ACT_UPDATE2) ||
-                 sBootInfo.ActiveImg == IMG_ACT_UPDATE1) {
+                 (sBootInfo.ActiveImg == IMG_ACT_UPDATE1 && sBootInfo.Status != IMG_STATUS_CHECK)) {
                 updater_data.path = IMG_UPDATE2;
             }
         }

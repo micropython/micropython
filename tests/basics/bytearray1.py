@@ -27,4 +27,7 @@ print(bytearray([1]) == b"1")
 print(b"1" == bytearray([1]))
 print(bytearray() == bytearray())
 
+# comparison with other type should return False
+print(bytearray() == 1)
+
 # TODO: other comparisons

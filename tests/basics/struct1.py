@@ -52,3 +52,9 @@ print(struct.unpack("<Q", b"\xff\xff\xff\xff\xff\xff\xff\xff"))
 
 # network byte order
 print(struct.pack('!i', 123))
+
+# first arg must be a string
+try:
+    struct.pack(1, 2)
+except TypeError:
+    print('TypeError')

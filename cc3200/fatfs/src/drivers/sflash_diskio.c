@@ -54,8 +54,20 @@ DRESULT sflash_disk_init (void) {
         // Allocate space for the block cache
         ASSERT ((sflash_block_cache = mem_Malloc(SFLASH_BLOCK_SIZE)) != NULL);
         sflash_init_done = true;
+        sflash_prblock = UINT32_MAX;
+        sflash_cache_is_dirty = false;
 
-        // Proceed to format the memory if not done yet
+        // In order too speed up booting, check the last block, if exists, then
+        // it means that the file system has been already created
+        print_block_name (SFLASH_BLOCK_COUNT - 1);
+        sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
+        if (!sl_FsGetInfo(sflash_block_name, 0, &FsFileInfo)) {
+            sl_LockObjUnlock (&wlan_LockObj);
+            return RES_OK;
+        }
+        sl_LockObjUnlock (&wlan_LockObj);
+
+        // Proceed to format the memory
         for (int i = 0; i < SFLASH_BLOCK_COUNT; i++) {
             print_block_name (i);
             sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
@@ -74,15 +86,9 @@ DRESULT sflash_disk_init (void) {
                     sl_LockObjUnlock (&wlan_LockObj);
                     return RES_ERROR;
                 }
-            } else {
-                // file system exists, break here to speed up booting
-                sl_LockObjUnlock (&wlan_LockObj);
-                break;
             }
             sl_LockObjUnlock (&wlan_LockObj);
         }
-        sflash_prblock = UINT32_MAX;
-        sflash_cache_is_dirty = false;
     }
     return RES_OK;
 }

@@ -302,6 +302,11 @@
 #define MICROPY_REPL_EMACS_KEYS (0)
 #endif
 
+// Whether to implement auto-indent in REPL
+#ifndef MICROPY_REPL_AUTO_INDENT
+#define MICROPY_REPL_AUTO_INDENT (0)
+#endif
+
 // Whether port requires event-driven REPL functions
 #ifndef MICROPY_REPL_EVENT_DRIVEN
 #define MICROPY_REPL_EVENT_DRIVEN (0)
@@ -456,6 +461,12 @@ typedef double mp_float_t;
 // Whether to support slice subscript operators and slice object
 #ifndef MICROPY_PY_BUILTINS_SLICE
 #define MICROPY_PY_BUILTINS_SLICE (1)
+#endif
+
+// Whether to support slice attribute read access,
+// i.e. slice.start, slice.stop, slice.step
+#ifndef MICROPY_PY_BUILTINS_SLICE_ATTRS
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #endif
 
 // Whether to support frozenset object

@@ -28,14 +28,15 @@ See :ref:`pyb.Pin <pyb.Pin>`. ::
     from pyb import Pin
 
     # initialize GP2 in gpio mode (af=0) and make it an output
-    p_out = Pin('GP2', af=0, mode=Pin.OUT)
-    p_out.high()
-    p_out.low()
+    p_out = Pin('GP2', mode=Pin.OUT)
+    p_out.value(1)
+    p_out.value(0)
     p_out.toggle()
+    p_out(True)
 
     # make GP1 an input with the pull-up enabled
-    p_in = Pin('GP1', af = 0, mode=Pin.IN, type = Pin.STD_PU)
-    p_in.value() # get value, 0 or 1
+    p_in = Pin('GP1', mode=Pin.IN, pull = Pin.PULL_UP)
+    p_in() # get value, 0 or 1
 
 Timers
 ------
@@ -77,8 +78,9 @@ See :ref:`pyb.ADC <pyb.ADC>`. ::
 
     from pyb import ADC
 
-    adc = ADC(1)
-    adc.read() # read value, 0-4095
+    adc = ADC()
+    apin = adc.channel(pin='GP3')
+    apin() # read value, 0-4095
 
 UART (serial bus)
 -----------------
@@ -86,33 +88,23 @@ UART (serial bus)
 See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.UART <pyb.UART>`. ::
 
     from pyb import Pin, UART
-
-    # first assign TX and RX to the correct pins
-    Pin('GP1', af=3, mode=Pin.STD_PU)    # TX
-    Pin('GP2', af=3, mode=Pin.STD_PU)    # RX
-
-    uart = UART(1, 9600)
+    uart = UART(0, 9600)
     uart.write('hello')
     uart.read(5) # read up to 5 bytes
 
 SPI bus
 -------
 
-See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.SPI <pyb.SPI>`. ::
+See :ref:`pyb.SPI <pyb.SPI>`. ::
 
-    from pyb import Pin, SPI
-
-    # first assign CLK, MISO, MOSI, CS to the correct pins
-    Pin('GP14', af=7, mode=Pin.STD)    # CLK
-    Pin('GP15', af=7, mode=Pin.STD)    # MISO
-    Pin('GP16', af=7, mode=Pin.STD)    # MOSI
-    Pin('GP17', af=7, mode=Pin.STD)    # NSS/CS
+    from pyb SPI
 
     # configure the SPI master @ 2MHz
-    spi = SPI(1, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
-    spi.send('hello')
-    spi.recv(5) # receive 5 bytes on the bus
-    spi.send_recv('hello') # send a receive 5 bytes
+    spi = SPI(0, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
+    spi.write('hello')
+    spi.read(5) # receive 5 bytes on the bus
+    rbuf = bytearray(5)
+    spi.write_readinto('hello', rbuf) # send a receive 5 bytes
 
 I2C bus
 -------
@@ -120,18 +112,13 @@ I2C bus
 See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.I2C <pyb.I2C>`. ::
 
     from pyb import Pin, I2C
-
-    # first assign SCL and SDA to the correct pins
-    Pin('GP23', af=9, mode=Pin.STD_PU)  # SCL
-    Pin('GP24', af=9, mode=Pin.STD_PU)  # SDA
-
     # configure the I2C bus
-    i2c = I2C(1, I2C.MASTER, baudrate=100000)
+    i2c = I2C(0, I2C.MASTER, baudrate=100000)
     i2c.scan() # returns list of slave addresses
-    i2c.send('hello', 0x42) # send 5 bytes to slave with address 0x42
-    i2c.recv(5, 0x42) # receive 5 bytes from slave
-    i2c.mem_read(2, 0x42, 0x10) # read 2 bytes from slave 0x42, slave memory 0x10
-    i2c.mem_write('xy', 0x42, 0x10) # write 2 bytes to slave 0x42, slave memory 0x10
+    i2c.writeto(0x42, 'hello') # send 5 bytes to slave with address 0x42
+    i2c.readfrom(0x42, 5) # receive 5 bytes from slave
+    i2c.readfrom_mem(0x42, 0x10, 2) # read 2 bytes from slave 0x42, slave memory 0x10
+    i2c.writeto_mem(0x42, 0x10, 'xy') # write 2 bytes to slave 0x42, slave memory 0x10
 
 Watchdog timer (WDT)
 --------------------
@@ -141,9 +128,9 @@ See :ref:`pyb.WDT <pyb.WDT>`. ::
     from pyb import WDT
 
     # enable the WDT with a timeout of 5s (1s is the minimum)
-    wdt = WDT(5000)
-    wdt.kick()
-    
+    wdt = WDT(timeout=5000)
+    wdt.feed()
+
 Real time clock (RTC)
 ---------------------
 

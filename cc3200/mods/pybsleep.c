@@ -213,7 +213,7 @@ void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
     sleep_obj->obj = obj;
     sleep_obj->wakeup = wakeup;
     // remove it in case it was already registered
-    pybsleep_remove (sleep_obj);
+    pybsleep_remove (obj);
     mp_obj_list_append(&MP_STATE_PORT(pybsleep_obj_list), sleep_obj);
 }
 
@@ -460,7 +460,7 @@ STATIC void pybsleep_obj_wakeup (void) {
 }
 
 STATIC void pybsleep_iopark (bool hibernate) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_cpu_pins_locals_dict);
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
     for (uint i = 0; i < named_map->used; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
         switch (pin->pin_num) {
@@ -474,7 +474,7 @@ STATIC void pybsleep_iopark (bool hibernate) {
 #endif
         default:
             // enable a weak pull-down if the pin is unused
-            if (!pin->isused) {
+            if (!pin->used) {
                 MAP_PinConfigSet(pin->pin_num, pin->strength, PIN_TYPE_STD_PD);
             }
             if (hibernate) {

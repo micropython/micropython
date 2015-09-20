@@ -416,6 +416,9 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
         emit->last_source_line_offset = emit->bytecode_offset;
         emit->last_source_line = source_line;
     }
+#else
+    (void)emit;
+    (void)source_line;
 #endif
 }
 
