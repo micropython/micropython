@@ -11,7 +11,7 @@ Q(off)
 Q(toggle)
 
 Q(Switch)
-Q(value)
+Q(switch)
 Q(callback)
 
 Q(collections)

@@ -100,10 +100,10 @@ STATIC mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
     if (callback == mp_const_none) {
         // stop interrupt
         self->callback = mp_const_none;
-	mp_hal_configureButtonCallback(SWITCH_ID(self),NULL,NULL);
+	mp_hal_configureButtonCallback(SWITCH_ID(self)-1,NULL,NULL);
     } else if (mp_obj_is_callable(callback)) {
         self->callback = callback;
-	mp_hal_configureButtonCallback(SWITCH_ID(self),pyb_switch_exec_callback,self);
+	mp_hal_configureButtonCallback(SWITCH_ID(self)-1,( void(*)(void*)  )pyb_switch_exec_callback,self);
     } else {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
     }
@@ -118,7 +118,7 @@ mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
 }
 
 STATIC const mp_map_elem_t pyb_switch_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&pyb_switch_value_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_switch), (mp_obj_t)&pyb_switch_value_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_switch_callback_obj },
 };
 
@@ -133,22 +133,4 @@ const mp_obj_type_t pyb_switch_type = {
     .locals_dict = (mp_obj_t)&pyb_switch_locals_dict,
 };
 
-
-/*
-/NVIC_SetPriority(USART0_IRQn, 1);
-                //NVIC_EnableIRQ(USART0_IRQn);
-                
-                
-void UART3_IRQHandler (void)
-{
-
-
-
-
-Chip_SCU_GPIOIntPinSel(uint8_t PortSel, uint8_t PortNum, uint8_t PinNum)
-
-
-Chip_SCU_ClockPinMuxSet(uint8_t clknum, uint16_t modefunc)   
-
-*/
 

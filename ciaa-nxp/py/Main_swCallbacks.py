@@ -34,7 +34,5 @@ sw4.callback(callD)
 
 while True:
 	pyb.delay(1000)
-	val = sw1.switch()
-	print("SW1 val:"+str(val))
 
 
