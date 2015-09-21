@@ -213,4 +213,12 @@ void mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value)
 	Board_GPIOs_writeValue(gpioNumber,value);
 }
 
+bool mp_hal_enableIntCallbackGPIO(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
+{
+	return Board_GPIOs_enableIntCallback(gpioNumber,function,arg,flagEdgeLevel,flagHighLow);
+}
 
+void mp_hal_disableIntCallbackGPIO(int gpioNumber)
+{
+	Board_GPIOs_disableIntCallback(gpioNumber);
+}

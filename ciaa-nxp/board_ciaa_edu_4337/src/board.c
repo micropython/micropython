@@ -68,6 +68,12 @@ typedef struct {
 } ButtonData;
 static ButtonData buttonsData[4];
 
+typedef struct {
+	void(*callback)(void*);
+        void* callbackArg;
+	uint8_t gpioNumber;
+} ExtIntData;
+static ExtIntData extIntData[4];
 
 
 //================================================[UART Management]==========================================================
@@ -542,7 +548,37 @@ void Board_GPIOs_Init(void)
 	    Chip_SCU_PinMuxSet(gpiosInfo[i].port, gpiosInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[i].func));
   	    Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[i].gpio, gpiosInfo[i].gpioBit);
 	}
+	extIntData[0].callback=NULL;
+	extIntData[1].callback=NULL;
+	extIntData[2].callback=NULL;
+	extIntData[3].callback=NULL;
 }
+
+void GPIO4_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(4));
+        if(extIntData[0].callback!=NULL)
+                extIntData[0].callback( extIntData[0].callbackArg);
+}
+void GPIO5_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(5));
+        if(extIntData[1].callback!=NULL)
+                extIntData[1].callback( extIntData[1].callbackArg);
+}
+void GPIO6_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(6));
+        if(extIntData[2].callback!=NULL)
+                extIntData[2].callback( extIntData[2].callbackArg);
+}
+void GPIO7_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(7));
+        if(extIntData[3].callback!=NULL)
+                extIntData[3].callback( extIntData[3].callbackArg);
+}
+
 
 void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
 {
@@ -587,6 +623,65 @@ void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
 	else
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
 }
+
+bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
+{
+	// check if gpio alerady has assigned int
+	for(uint8_t i=0; i<4 ; i++)
+        {
+                if(extIntData[i].callback!=NULL && extIntData[i].gpioNumber==gpioNumber)
+                    return 0;
+	}
+
+	// find free extInt callback
+	for(uint8_t i=0; i<4 ; i++)
+	{
+		if(extIntData[i].callback==NULL)
+		{
+        		extIntData[i].callback = function;
+        		extIntData[i].callbackArg = arg;
+			extIntData[i].gpioNumber=gpioNumber;
+			// Enable interrupt
+			uint8_t intNumber = i + 4; // starts from INT4
+			Chip_SCU_GPIOIntPinSel(intNumber, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+        		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+
+			if(flagEdgeLevel)
+        			Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+			else
+				Chip_PININT_SetPinModeLevel(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+
+			if(flagHighLow)
+				Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+			else
+        			Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+
+			switch(intNumber) {
+				case 4: NVIC_ClearPendingIRQ(PIN_INT4_IRQn); NVIC_EnableIRQ(PIN_INT4_IRQn); break;
+				case 5: NVIC_ClearPendingIRQ(PIN_INT5_IRQn); NVIC_EnableIRQ(PIN_INT5_IRQn); break;
+				case 6: NVIC_ClearPendingIRQ(PIN_INT6_IRQn); NVIC_EnableIRQ(PIN_INT6_IRQn); break;
+				case 7: NVIC_ClearPendingIRQ(PIN_INT7_IRQn); NVIC_EnableIRQ(PIN_INT7_IRQn); break;
+			}
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void Board_GPIOs_disableIntCallback(int gpioNumber)
+{
+	for(uint8_t i=0; i<4 ; i++)
+        {
+                if(extIntData[i].callback!=NULL && extIntData[i].gpioNumber==gpioNumber)
+                {
+			extIntData[i].callback=NULL;
+			uint8_t intNumber = i + 4; // starts from INT4
+			Chip_PININT_DisableIntHigh(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+			Chip_PININT_DisableIntLow(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+		}
+        }
+}
+
 //_____________________________________________________________________________________________________________________________________________
 
 

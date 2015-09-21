@@ -32,30 +32,26 @@
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
-typedef struct _pyb_gpio_obj_t {
+typedef struct _pyb_extint_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
-} pyb_gpio_obj_t;
+} pyb_extint_obj_t;
 
-STATIC pyb_gpio_obj_t pyb_gpio_obj[] = {
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
-    {{&pyb_gpio_type}},
+STATIC pyb_extint_obj_t pyb_extint_obj[] = {
+    {{&pyb_extint_type}},
+    {{&pyb_extint_type}},
+    {{&pyb_extint_type}},
 };
 
 #define GPIO_ID(obj) ((obj) - &pyb_gpio_obj[0])
 #define NUM_GPIO 8
 
+/*
 void pyb_gpio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_gpio_obj_t *self = self_in;
     mp_printf(print, "GPIO(%u)", GPIO_ID(self));
-}
+}*/
+
 
 STATIC mp_obj_t pyb_gpio_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -127,6 +123,7 @@ mp_obj_t pyb_gpio_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const
 }
 */
 
+/*
 /// \method init(mode, pull=Pin.PULL_NONE, af=-1)
 /// Initialise the pin:
 ///
@@ -222,6 +219,7 @@ STATIC mp_obj_t pin_high(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);
+*/
 
 
 STATIC const mp_map_elem_t pyb_gpio_locals_dict_table[] = {
@@ -253,7 +251,7 @@ STATIC MP_DEFINE_CONST_DICT(pyb_gpio_locals_dict, pyb_gpio_locals_dict_table);
 const mp_obj_type_t pyb_gpio_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
-    .print = pyb_gpio_print,
+    //.print = pyb_gpio_print,
     .make_new = pyb_gpio_make_new,
     //.call = pyb_gpio_call,
     .locals_dict = (mp_obj_t)&pyb_gpio_locals_dict,

@@ -425,6 +425,24 @@ uint32_t Board_GPIOs_readValue(int32_t gpioNumber);
 void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
 
 
+/**
+ * @brief       Enables interrupt channel available to GPIO. There are only 4 channels available.
+ * @param       gpioNumber : 0 to 8
+ * @param       function : calback to be called. prototype: void function(void* arg);
+ * @param       arg : argument passed to callback function when it is called
+ * @param       flagEdgeLevel : 1: edge mode - 0: level mode
+ * @param       flagHighLow : 1: high level/rise edge - 0: low level/fall edge
+ * @return      0 if int was enabled
+ */
+bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow);
+
+/**
+ * @brief       Disables interrupt from GPIO
+ * @param       gpioNumber : 0 to 8
+ * @return      void
+ */
+void Board_GPIOs_disableIntCallback(int gpioNumber);
+
 
 /**
  * @}
