@@ -48,6 +48,10 @@ static jmethodID Class_getConstructors_mid;
 static jmethodID Method_getName_mid;
 static jmethodID Method_toString_mid;
 
+static jclass List_class;
+static jmethodID List_get_mid;
+static jmethodID List_set_mid;
+
 STATIC const mp_obj_type_t jobject_type;
 STATIC const mp_obj_type_t jmethod_type;
 
@@ -167,11 +171,36 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
     }
 }
 
+STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+    mp_obj_jobject_t *self = self_in;
+    if (!JJ(IsInstanceOf, self->obj, List_class)) {
+        return MP_OBJ_NULL;
+    }
+
+    mp_uint_t idx = mp_obj_get_int(index);
+
+    if (value == MP_OBJ_NULL) {
+        // delete
+        assert(0);
+    } else if (value == MP_OBJ_SENTINEL) {
+        // load
+        jobject el = JJ(CallObjectMethod, self->obj, List_get_mid, idx);
+        return new_jobject(el);
+    } else {
+        // store
+        assert(0);
+    }
+
+
+return MP_OBJ_NULL;
+}
+
 STATIC const mp_obj_type_t jobject_type = {
     { &mp_type_type },
     .name = MP_QSTR_jobject,
     .print = jobject_print,
     .attr = jobject_attr,
+    .subscr = jobject_subscr,
 //    .locals_dict = (mp_obj_t)&jobject_locals_dict,
 };
 
@@ -414,6 +443,12 @@ STATIC void create_jvm() {
                                      "()Ljava/lang/String;");
     Method_toString_mid = (*env)->GetMethodID(env, method_class, "toString",
                                      "()Ljava/lang/String;");
+
+    List_class = JJ(FindClass, "java/util/List");
+    List_get_mid = JJ(GetMethodID, List_class, "get",
+                                     "(I)Ljava/lang/Object;");
+    List_set_mid = JJ(GetMethodID, List_class, "set",
+                                     "(ILjava/lang/Object;)Ljava/lang/Object;");
 }
 
 STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
