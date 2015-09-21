@@ -77,7 +77,7 @@ def run_micropython(pyb, args, test_file):
                 else:
                     output_mupy = subprocess.check_output(args + [test_file])
             except subprocess.CalledProcessError:
-                output_mupy = b'CRASH'
+                return b'CRASH'
 
             # unescape wanted regex chars and escape unwanted ones
             def convert_regex_escapes(line):
