@@ -56,7 +56,7 @@
 /// Convert a time expressed in seconds since Jan 1, 2000 into an 8-tuple which
 /// contains: (year, month, mday, hour, minute, second, weekday, yearday)
 /// If secs is not provided or None, then the current time from the RTC is used.
-/// year includes the century (for example 2014)
+/// year includes the century (for example 2015)
 /// month   is 1-12
 /// mday    is 1-31
 /// hour    is 0-23
@@ -67,14 +67,9 @@
 STATIC mp_obj_t time_localtime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         timeutils_struct_time_t tm;
-        uint32_t seconds;
-        uint16_t mseconds;
 
-        // get the seconds and the milliseconds from the RTC
-        MAP_PRCMRTCGet(&seconds, &mseconds);
-        mseconds = RTC_CYCLES_U16MS(mseconds);
-        timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
-
+        // get the seconds from the RTC
+        timeutils_seconds_since_2000_to_struct_time(pyb_rtc_get_seconds(), &tm);
         mp_obj_t tuple[8] = {
                 mp_obj_new_int(tm.tm_year),
                 mp_obj_new_int(tm.tm_mon),

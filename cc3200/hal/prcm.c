@@ -112,17 +112,17 @@
 // following wrapper can be used to convert the value from cycles to
 // millisecond:
 //
-// CYCLES_U16MS(cycles) ((cycles *1000)/ 1024),
+// CYCLES_U16MS(cycles) ((cycles * 1000) / 1024),
 //
 // Similarly, before setting the value, it must be first converted (from ms to
 // cycles).
 //
-// U16MS_CYCLES(msec)   ((msec *1024)/1000)
+// U16MS_CYCLES(msec)   ((msec * 1024) / 1000)
 //
 // Note: There is a precision loss of 1 ms with the above scheme.
 //
 //
-#define SCC_U64MSEC_GET()                (MAP_PRCMSlowClkCtrGet() >> 5)
+#define SCC_U64MSEC_GET()                (RTCFastDomainCounterGet() >> 5)
 #define SCC_U64MSEC_MATCH_SET(u64Msec)   (MAP_PRCMSlowClkCtrMatchSet(u64Msec << 5))
 #define SCC_U64MSEC_MATCH_GET()          (MAP_PRCMSlowClkCtrMatchGet() >> 5)
 
@@ -206,6 +206,39 @@ static unsigned long RTCU32SecRegRead(void)
 static void RTCU32SecRegWrite(unsigned long u32Msec)
 {
   MAP_PRCMHIBRegWrite(RTC_SECS_U32_REG_ADDR, u32Msec);
+}
+
+//*****************************************************************************
+// Fast function to get the most accurate RTC counter value
+//*****************************************************************************
+static unsigned long long RTCFastDomainCounterGet (void) {
+
+    #define BRK_IF_RTC_CTRS_ALIGN(c2, c1)       if (c2 - c1 <= 1) {     \
+                                                    itr++;              \
+                                                    break;              \
+                                                }
+
+    unsigned long long rtc_count1, rtc_count2, rtc_count3;
+    unsigned int itr;
+
+    do {
+        rtc_count1 = PRCMSlowClkCtrFastGet();
+        rtc_count2 = PRCMSlowClkCtrFastGet();
+        rtc_count3 = PRCMSlowClkCtrFastGet();
+        itr = 0;
+
+        BRK_IF_RTC_CTRS_ALIGN(rtc_count2, rtc_count1);
+        BRK_IF_RTC_CTRS_ALIGN(rtc_count3, rtc_count2);
+        BRK_IF_RTC_CTRS_ALIGN(rtc_count3, rtc_count1);
+
+        // Consistent values in two consecutive reads implies a correct
+        // value of the counter. Do note, the counter does not give the
+        // calendar time but a hardware that ticks upwards continuously.
+        // The 48-bit counter operates at 32,768 HZ.
+
+    } while (true);
+
+    return (1 == itr) ? rtc_count2 : rtc_count3;
 }
 
 //*****************************************************************************
@@ -1245,6 +1278,35 @@ unsigned long long PRCMSlowClkCtrGet(void)
   return ullRTCVal;
 }
 
+//*****************************************************************************
+//
+//! Gets the current value of the internal slow clock counter
+//!
+//! This function is similar to \sa PRCMSlowClkCtrGet() but reads the counter
+//! value from a relatively faster interface using an auto-latch mechainsm.
+//!
+//! \note Due to the nature of implemetation of auto latching, when using this
+//! API, the recommendation is to read the value thrice and identify the right
+//! value (as 2 out the 3 read values will always be correct and with a max. of
+//! 1 LSB change)
+//!
+//! \return 64-bit current counter vlaue.
+//
+//*****************************************************************************
+unsigned long long PRCMSlowClkCtrFastGet(void)
+{
+  unsigned long long ullRTCVal;
+
+  //
+  // Read as 2 32-bit values
+  //
+  ullRTCVal = HWREG(HIB1P2_BASE + HIB1P2_O_HIB_RTC_TIMER_MSW_1P2);
+  ullRTCVal = ullRTCVal << 32;
+  ullRTCVal |= HWREG(HIB1P2_BASE + HIB1P2_O_HIB_RTC_TIMER_LSW_1P2);
+
+  return ullRTCVal;
+
+}
 
 //*****************************************************************************
 //

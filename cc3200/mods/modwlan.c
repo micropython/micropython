@@ -51,7 +51,7 @@
 #include "serverstask.h"
 #endif
 #include "mpexception.h"
-#include "mpcallback.h"
+#include "mpirq.h"
 #include "pybsleep.h"
 #include "antenna.h"
 
@@ -87,31 +87,6 @@ typedef enum{
     STATUS_BIT_PING_DONE            // If this bit is set: the device has completed
                                     // the ping operation
 } e_StatusBits;
-
-typedef struct _wlan_obj_t {
-    mp_obj_base_t       base;
-    uint32_t            status;
-
-    uint32_t            ip;
-
-    int8_t              mode;
-    uint8_t             security;
-    uint8_t             channel;
-    uint8_t             antenna;
-
-    // my own ssid, key and mac
-    uint8_t             ssid[33];
-    uint8_t             key[65];
-    uint8_t             mac[SL_MAC_ADDR_LEN];
-
-    // the sssid (or name) and mac of the other device
-    uint8_t             ssid_o[33];
-    uint8_t             bssid[6];
-
-#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-    bool                servers_enabled;
-#endif
-} wlan_obj_t;
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -181,7 +156,7 @@ STATIC wlan_obj_t wlan_obj = {
     #endif
 };
 
-STATIC const mp_cb_methods_t wlan_cb_methods;
+STATIC const mp_irq_methods_t wlan_irq_methods;
 
 /******************************************************************************
  DECLARE PUBLIC DATA
@@ -199,8 +174,8 @@ STATIC void wlan_get_sl_mac (void);
 STATIC void wlan_wep_key_unhexlify(const char *key, char *key_out);
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
                                          const char* key, uint32_t key_len, uint32_t timeout);
-STATIC void wlan_lpds_callback_enable (mp_obj_t self_in);
-STATIC void wlan_lpds_callback_disable (mp_obj_t self_in);
+STATIC void wlan_lpds_irq_enable (mp_obj_t self_in);
+STATIC void wlan_lpds_irq_disable (mp_obj_t self_in);
 STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid);
 
 //*****************************************************************************
@@ -793,13 +768,19 @@ arg_error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_iwconfig_obj, 1, wlan_iwconfig);
 
-STATIC void wlan_lpds_callback_enable (mp_obj_t self_in) {
-    mp_obj_t _callback = mpcallback_find(self_in);
-    pybsleep_set_wlan_lpds_callback (_callback);
+STATIC void wlan_lpds_irq_enable (mp_obj_t self_in) {
+    wlan_obj_t *self = self_in;
+    self->irq_enabled = true;
 }
 
-STATIC void wlan_lpds_callback_disable (mp_obj_t self_in) {
-    pybsleep_set_wlan_lpds_callback (NULL);
+STATIC void wlan_lpds_irq_disable (mp_obj_t self_in) {
+    wlan_obj_t *self = self_in;
+    self->irq_enabled = false;
+}
+
+STATIC int wlan_irq_flags (mp_obj_t self_in) {
+    wlan_obj_t *self = self_in;
+    return self->irq_flags;
 }
 
 STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
@@ -829,6 +810,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         mp_map_init_fixed_table(&kw_args, n_kw, args);
         wlan_iwconfig(n_args + 1, (const mp_obj_t *)&wlan_obj, &kw_args);
     }
+    pybsleep_set_wlan_obj(&wlan_obj);
     return &wlan_obj;
 }
 
@@ -1086,34 +1068,34 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 
-/// \method callback(handler, pwrmode)
-/// Create a callback object associated with the WLAN subsystem
-/// Only takes one argument (wake_from)
-STATIC mp_obj_t wlan_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
+/// \method irq(trigger, priority, handler, wake)
+STATIC mp_obj_t wlan_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
 
     wlan_obj_t *self = pos_args[0];
-    mp_obj_t _callback = mpcallback_find(self);
-    // check if any parameters were passed
-    if (kw_args->used > 0) {
-        // check the power mode
-        if (args[4].u_int != PYB_PWR_MODE_LPDS) {
-            // throw an exception since WLAN only supports LPDS mode
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-        }
 
-        // create the callback
-        _callback = mpcallback_new (self, args[1].u_obj, &wlan_cb_methods, true);
-
-        // enable network wakeup
-        pybsleep_set_wlan_lpds_callback (_callback);
-    } else if (!_callback) {
-        _callback = mpcallback_new (self, mp_const_none, &wlan_cb_methods, false);
+    // check the trigger, only one type is supported
+    if (mp_obj_get_int(args[0].u_obj) != MODWLAN_WIFI_EVENT_ANY) {
+        goto invalid_args;
     }
-    return _callback;
+
+    // check the power mode
+    if (mp_obj_get_int(args[3].u_obj) != PYB_PWR_MODE_LPDS) {
+        goto invalid_args;
+    }
+
+    // create the callback
+    mp_obj_t _irq = mp_irq_new (self, args[2].u_obj, &wlan_irq_methods);
+    self->irq_obj = _irq;
+
+    return _irq;
+
+invalid_args:
+    // throw an exception since WLAN only supports LPDS mode
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_callback_obj, 1, wlan_callback);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 
 /// \method mac()
 /// returns the MAC address
@@ -1150,7 +1132,7 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
 #if MICROPY_PORT_WLAN_URN
     { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),            (mp_obj_t)&wlan_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                 (mp_obj_t)&wlan_irq_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_STA),                 MP_OBJ_NEW_SMALL_INT(ROLE_STA) },
@@ -1161,6 +1143,7 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INTERNAL),            MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_INTERNAL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_EXTERNAL),            MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_EXTERNAL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ANY_EVENT),           MP_OBJ_NEW_SMALL_INT(MODWLAN_WIFI_EVENT_ANY) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
@@ -1173,10 +1156,11 @@ const mod_network_nic_type_t mod_network_nic_type_wlan = {
     },
 };
 
-STATIC const mp_cb_methods_t wlan_cb_methods = {
-    .init = wlan_callback,
-    .enable = wlan_lpds_callback_enable,
-    .disable = wlan_lpds_callback_disable,
+STATIC const mp_irq_methods_t wlan_irq_methods = {
+    .init = wlan_irq,
+    .enable = wlan_lpds_irq_enable,
+    .disable = wlan_lpds_irq_disable,
+    .flags = wlan_irq_flags,
 };
 
 /******************************************************************************/
@@ -1373,7 +1357,7 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
         tv.tv_usec = 1;
         int32_t nfds = sl_Select(sd + 1, &rfds, &wfds, &xfds, &tv);
 
-        // check for error
+        // check for errors
         if (nfds == -1) {
             *_errno = nfds;
             return -1;

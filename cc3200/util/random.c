@@ -32,13 +32,12 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "rom_map.h"
-#include "prcm.h"
+#include "pybrtc.h"
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 #include "random.h"
 #include "debug.h"
-
 
 /******************************************************************************
 * LOCAL TYPES
@@ -57,15 +56,18 @@ static uint32_t s_seed;
 /******************************************************************************
 * LOCAL FUNCTION DECLARATIONS
 ******************************************************************************/
-static uint32_t lfsr (uint32_t input);
+STATIC uint32_t lfsr (uint32_t input);
 
 /******************************************************************************
 * PRIVATE FUNCTIONS
 ******************************************************************************/
-static uint32_t lfsr (uint32_t input) {
+STATIC uint32_t lfsr (uint32_t input) {
     assert( input != 0 );
     return (input >> 1) ^ (-(input & 0x01) & 0x00E10000);
 }
+
+/******************************************************************************/
+// Micro Python bindings;
 
 STATIC mp_obj_t pyb_rng_get(void) {
     return mp_obj_new_int(rng_get());
@@ -81,7 +83,7 @@ void rng_init0 (void) {
     uint16_t mseconds;
 
     // get the seconds and the milliseconds from the RTC
-    MAP_PRCMRTCGet(&seconds, &mseconds);
+    pyb_rtc_get_time(&seconds, &mseconds);
 
     wlan_get_mac (juggler.id8);
 

@@ -67,10 +67,9 @@ void pybsleep_init0 (void);
 void pybsleep_signal_soft_reset (void);
 void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup);
 void pybsleep_remove (const mp_obj_t obj);
-void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj);
 void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj);
-void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj);
-void pybsleep_configure_timer_wakeup (uint pwrmode);
+void pybsleep_set_wlan_obj (mp_obj_t wlan_obj);
+void pybsleep_set_rtc_obj (mp_obj_t rtc_obj);
 pybsleep_reset_cause_t pybsleep_get_reset_cause (void);
 
 #endif /* PYBSLEEP_H_ */

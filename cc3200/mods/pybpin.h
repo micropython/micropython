@@ -110,9 +110,11 @@ typedef struct {
     int8_t              af;
     uint8_t             strength;
     uint8_t             mode;        // this is now a combination of type and mode
-    uint8_t             num_afs: 6;  // up to 63 AFs
-    uint8_t             value  : 1;
-    uint8_t             used   : 1;
+    const uint8_t       num_afs;     // 255 AFs
+    uint8_t             value;
+    uint8_t             used;
+    uint8_t             irq_trigger;
+    uint8_t             irq_flags;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
