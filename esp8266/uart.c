@@ -9,15 +9,18 @@
  * Modification history:
  *     2014/3/12, v1.0 create this file.
 *******************************************************************************/
+
+// ESP SDK API
+#include "c_types.h"
 #include "ets_sys.h"
 #include "osapi.h"
-#include "uart.h"
-#include "osapi.h"
 #include "uart_register.h"
-#include "etshal.h"
-#include "c_types.h"
 #include "user_interface.h"
-#include "esp_mphal.h"
+
+#include "etshal.h"
+#include "mpconfigport.h"
+#include MICROPY_HAL_H
+#include "uart.h"
 
 #define RX_BUF_SIZE (256)
 #define UART_REPL UART0

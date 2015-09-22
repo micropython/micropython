@@ -25,11 +25,15 @@
  */
 
 #include <stdio.h>
+
+// ESP SDK API
 #include "ets_sys.h"
-#include "etshal.h"
-#include "uart.h"
-#include "esp_mphal.h"
 #include "user_interface.h"
+
+#include "etshal.h"
+#include "mpconfigport.h"
+#include MICROPY_HAL_H
+#include "uart.h"
 
 extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
