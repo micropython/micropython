@@ -37,6 +37,8 @@ typedef struct {
     mp_obj_base_t base;
     mp_int_t line;
     mp_obj_t callback;
+    uint8_t flagEdgeLevel;
+    uint8_t flagHighLow;
 } extint_obj_t;
 
 void extint_exec_callback(extint_obj_t* self)
@@ -106,16 +108,15 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     }
 
     // get interrupt mode
-    uint8_t flagHighLow;
-    uint8_t flagEdgeLevel = 1;
+    self->flagEdgeLevel = 1; // always edge for now
     if(vals[1].u_int!=GPIO_MODE_IT_RISING && vals[1].u_int!=GPIO_MODE_IT_FALLING && vals[1].u_int!=GPIO_MODE_IT_RISING_FALLING)
 	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid mode: %d", vals[1].u_int));
     if(vals[1].u_int==GPIO_MODE_IT_RISING_FALLING)
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "mode not supported"));
     if(vals[1].u_int==GPIO_MODE_IT_RISING)
-        flagHighLow = 1;
+        self->flagHighLow = 1;
     else
-	flagHighLow = 0;
+	self->flagHighLow = 0;
 
     // check callback value
     mp_obj_t callback = vals[3].u_obj;
@@ -134,7 +135,7 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     if(self->callback!= mp_const_none)
     {
         mp_hal_configureGPIOs(self->line,GPIO_MODE_INPUT,pull);
-    	if(mp_hal_enableIntCallbackGPIO(self->line,(void (*)(void *))extint_exec_callback,self,flagEdgeLevel,flagHighLow)!=1)
+    	if(mp_hal_enableIntCallbackGPIO(self->line,(void (*)(void *))extint_exec_callback,self,self->flagEdgeLevel,self->flagHighLow)!=1)
 		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Interrupt line not available"));
     }
     else
@@ -157,16 +158,24 @@ STATIC mp_obj_t extint_obj_line(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
 
-/*
+
 /// \method enable()
 /// Enable a disabled interrupt.
 STATIC mp_obj_t extint_obj_enable(mp_obj_t self_in) {
     extint_obj_t *self = self_in;
-    extint_enable(self->line);
+    if(self->callback!= mp_const_none)
+    {
+
+    	if(mp_hal_enableIntCallbackGPIO(self->line,(void (*)(void *))extint_exec_callback,self,self->flagEdgeLevel,self->flagHighLow)!=1)
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Interrupt line not available"));
+   }
+   else
+	nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid callback function"));
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_enable_obj, extint_obj_enable);
-*/
+
 
 
 /// \method disable()
@@ -192,7 +201,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 STATIC const mp_map_elem_t pyb_extint_locals_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_line),    (mp_obj_t)&extint_obj_line_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_enable),  (mp_obj_t)&extint_obj_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),  (mp_obj_t)&extint_obj_enable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&extint_obj_disable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_swint),   (mp_obj_t)&extint_obj_swint_obj },
 
