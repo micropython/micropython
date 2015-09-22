@@ -83,7 +83,7 @@ Se interpretara como un "paquete" cuando comiencen a llegar bytes y se detenga l
 
 Tambien es posible detectar el final del "paquete" mediante un caracter en particular en lugar de hacerlo por timeout, para ello se puede agregar dicho caracter como argumento en "init". Ejemplo:
 ```python
-art.init(115200,bits=8, parity=None, stop=1,timeout=0, timeout_char=1000, read_buf_len=64,packet_mode=True,packet_end_char=ord('o'))
+uart.init(115200,bits=8, parity=None, stop=1,timeout=0, timeout_char=1000, read_buf_len=64,packet_mode=True,packet_end_char=ord('o'))
 ```
 En este ejemplo, se detectara un fin de trama cuando llegue el caracter 'o'
 
@@ -129,6 +129,11 @@ while True:
         print("tick")
 ```
 Existen 4 interrupciones disponibles para asignar a cualquiera de las 9 GPIOs
+Se implementaron los metodos:
+- enable()
+- disable()
+- swint()
+- line()
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
