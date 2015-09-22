@@ -30,231 +30,189 @@
 
 #include "board.h"
 #include "modpyb.h"
+#include "modpybpin.h"
 #include "ciaanxp_mphal.h"
 
-typedef struct _pyb_extint_obj_t {
+typedef struct {
     mp_obj_base_t base;
+    mp_int_t line;
     mp_obj_t callback;
-} pyb_extint_obj_t;
+} extint_obj_t;
 
-STATIC pyb_extint_obj_t pyb_extint_obj[] = {
-    {{&pyb_extint_type}},
-    {{&pyb_extint_type}},
-    {{&pyb_extint_type}},
-};
-
-#define GPIO_ID(obj) ((obj) - &pyb_gpio_obj[0])
-#define NUM_GPIO 8
-
-/*
-void pyb_gpio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_gpio_obj_t *self = self_in;
-    mp_printf(print, "GPIO(%u)", GPIO_ID(self));
-}*/
-
-
-STATIC mp_obj_t pyb_gpio_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    mp_int_t sw_id = mp_obj_get_int(args[0]);
-    if (!(0 <= sw_id && sw_id <= NUM_GPIO)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "GPIO %d does not exist", sw_id));
-    }
-    return (mp_obj_t)&pyb_gpio_obj[sw_id];
-}
-
-/*
-mp_obj_t pyb_switch_value(mp_obj_t self_in) {
-    pyb_switch_obj_t *self = self_in;
-    //return switch_get(SWITCH_ID(self)) ? mp_const_true : mp_const_false;
-    return Buttons_GetStatusByNumber(SWITCH_ID(self)-1) ? mp_const_true : mp_const_false;
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
-*/
-
-/*
-void pyb_switch_exec_callback(pyb_switch_obj_t* self)
+void extint_exec_callback(extint_obj_t* self)
 {
-	    // execute callback if it's set
+            // execute callback if it's set
             if (self->callback != mp_const_none) {
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(self->callback, self);
+                    mp_call_function_1(self->callback, MP_OBJ_NEW_SMALL_INT(self->line));
                     nlr_pop();
                 } else {
                     // Uncaught exception; disable the callback so it doesn't run again.
                     self->callback = mp_const_none;
-                    printf("uncaught exception in switch(%u) interrupt handler\n",SWITCH_ID(self));
+                    printf("uncaught exception in ExtInt line (%d) interrupt handler\n",(int)self->line);
                     mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
             }
 }
 
-/// \method callback(fun)
-/// Set the function to be called when the switch changes.
-/// `fun` is passed 1 argument, the switch object.
-/// If `fun` is `None` then the callback will be disabled.
-STATIC mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
-    pyb_switch_obj_t *self = self_in;
-    if (callback == mp_const_none) {
-        // stop interrupt
-        self->callback = mp_const_none;
-	mp_hal_configureButtonCallback(SWITCH_ID(self)-1,NULL,NULL);
-    } else if (mp_obj_is_callable(callback)) {
-        self->callback = callback;
-	mp_hal_configureButtonCallback(SWITCH_ID(self)-1,( void(*)(void*)  )pyb_switch_exec_callback,self);
-    } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
-
-*/
-
-/*
-mp_obj_t pyb_gpio_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    return pyb_switch_value(self_in);
-}
-*/
-
-/*
-/// \method init(mode, pull=Pin.PULL_NONE, af=-1)
-/// Initialise the pin:
+/// \classmethod \constructor(pin, mode, pull, callback)
+/// Create an ExtInt object:
 ///
+///   - `pin` is the pin on which to enable the interrupt (can be a pin object or any valid pin name).
 ///   - `mode` can be one of:
-///     - `Pin.IN` - configure the pin for input;
-///     - `Pin.OUT_PP` - configure the pin for output, with push-pull control;
-///     - `Pin.OUT_OD` - configure the pin for output, with open-drain control;
+///     - `ExtInt.IRQ_RISING` - trigger on a rising edge;
+///     - `ExtInt.IRQ_FALLING` - trigger on a falling edge;
+///     - `ExtInt.IRQ_RISING_FALLING` - trigger on a rising or falling edge.
 ///   - `pull` can be one of:
-///     - `Pin.PULL_NONE` - no pull up or down resistors;
-///     - `Pin.PULL_UP` - enable the pull-up resistor;
-///     - `Pin.PULL_DOWN` - enable the pull-down resistor.
-///
-/// Returns: `None`.
-STATIC const mp_arg_t pin_init_args[] = {
-    { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-    { MP_QSTR_pull,                   MP_ARG_INT, {.u_int = GPIO_NOPULL}},
-    { MP_QSTR_af,                     MP_ARG_INT, {.u_int = -1}},
+///     - `pyb.Pin.PULL_NONE` - no pull up or down resistors;
+///     - `pyb.Pin.PULL_UP` - enable the pull-up resistor;
+///     - `pyb.Pin.PULL_DOWN` - enable the pull-down resistor.
+///   - `callback` is the function to call when the interrupt triggers.  The
+///   callback function must accept exactly 1 argument, which is the line that
+///   triggered the interrupt.
+STATIC const mp_arg_t pyb_extint_make_new_args[] = {
+    { MP_QSTR_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_pull,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-#define PIN_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
+#define PYB_EXTINT_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(pyb_extint_make_new_args)
 
-STATIC mp_obj_t pin_obj_init_helper(const pyb_gpio_obj_t *self, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t extint_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // parse args
-    mp_arg_val_t vals[PIN_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kw_args, PIN_INIT_NUM_ARGS, pin_init_args, vals);
+    mp_arg_val_t vals[PYB_EXTINT_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_args, vals);
 
-    // get io mode
-    uint mode = vals[0].u_int;
+    extint_obj_t *self = m_new_obj(extint_obj_t);
+    self->base.type = type_in;
+    //self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
+    if (MP_OBJ_IS_INT(vals[0].u_obj))
+	self->line = mp_obj_get_int(vals[0].u_obj);
+    else
+	self->line = getPinNumber(vals[0].u_obj);
 
-    if (mode!=GPIO_MODE_INPUT && mode!=GPIO_MODE_OUTPUT_PP && mode!=GPIO_MODE_OUTPUT_OD) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
-    }
-    if(mode==GPIO_MODE_OUTPUT_OD) {
- 	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Open Drain mode not supported"));
-    }
+    if(self->line > 8)
+	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ExtInt vector %d > 8", self->line));
 
     // get pull mode
-    uint pull = vals[1].u_int;
-
+    uint pull = vals[2].u_int;
     if (pull!=GPIO_NOPULL && pull!=GPIO_PULLUP && pull!=GPIO_PULLDOWN) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull));
     }
 
-    // configure the GPIO as requested
-    mp_hal_configureGPIOs(GPIO_ID(self),mode,pull);
+    // get interrupt mode
+    uint8_t flagHighLow;
+    uint8_t flagEdgeLevel = 1;
+    if(vals[1].u_int!=GPIO_MODE_IT_RISING && vals[1].u_int!=GPIO_MODE_IT_FALLING && vals[1].u_int!=GPIO_MODE_IT_RISING_FALLING)
+	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid mode: %d", vals[1].u_int));
+    if(vals[1].u_int==GPIO_MODE_IT_RISING_FALLING)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "mode not supported"));
+    if(vals[1].u_int==GPIO_MODE_IT_RISING)
+        flagHighLow = 1;
+    else
+	flagHighLow = 0;
 
-    return mp_const_none;
-}
-
-STATIC mp_obj_t pin_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
-
-
-/// \method value([value])
-/// Get or set the digital logic level of the pin:
-///
-///   - With no argument, return 0 or 1 depending on the logic level of the pin.
-///   - With `value` given, set the logic level of the pin.  `value` can be
-///   anything that converts to a boolean.  If it converts to `True`, the pin
-///   is set high, otherwise it is set low.
-STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
-    pyb_gpio_obj_t *self = args[0];
-    if (n_args == 1) {
-        // get pin
-        return MP_OBJ_NEW_SMALL_INT(mp_hal_readGPIO(GPIO_ID(self)));
+    // check callback value
+    mp_obj_t callback = vals[3].u_obj;
+    if (callback == mp_const_none) {
+        // stop interrupt
+        self->callback = mp_const_none;
+    } else if (mp_obj_is_callable(callback)) {
+        self->callback = callback;
     } else {
-        // set pin
-        if (mp_obj_is_true(args[1])) {
-	    mp_hal_writeGPIO(GPIO_ID(self),1);
-        } else {
-            mp_hal_writeGPIO(GPIO_ID(self),0);
-        }
-        return mp_const_none;
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
     }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
+    //_____________________
 
-/// \method low()
-/// Set the pin to a low logic level.
-STATIC mp_obj_t pin_low(mp_obj_t self_in) {
-    pyb_gpio_obj_t *self = self_in;
-    mp_hal_writeGPIO(GPIO_ID(self),0);
+
+    // configure GPIO as input and enable Interrupt if it is available
+    if(self->callback!= mp_const_none)
+    {
+        mp_hal_configureGPIOs(self->line,GPIO_MODE_INPUT,pull);
+    	if(mp_hal_enableIntCallbackGPIO(self->line,(void (*)(void *))extint_exec_callback,self,flagEdgeLevel,flagHighLow)!=1)
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Interrupt line not available"));
+    }
+    else
+	mp_hal_disableIntCallbackGPIO(self->line);
+    return self;
+}
+
+
+STATIC void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    extint_obj_t *self = self_in;
+    mp_printf(print, "<ExtInt line=%u>", self->line);
+}
+
+
+/// \method line()
+/// Return the line number that the pin is mapped to.
+STATIC mp_obj_t extint_obj_line(mp_obj_t self_in) {
+    extint_obj_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(self->line);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_line_obj, extint_obj_line);
+
+/*
+/// \method enable()
+/// Enable a disabled interrupt.
+STATIC mp_obj_t extint_obj_enable(mp_obj_t self_in) {
+    extint_obj_t *self = self_in;
+    extint_enable(self->line);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
-
-/// \method high()
-/// Set the pin to a high logic level.
-STATIC mp_obj_t pin_high(mp_obj_t self_in) {
-    pyb_gpio_obj_t *self = self_in;
-    mp_hal_writeGPIO(GPIO_ID(self),1);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_enable_obj, extint_obj_enable);
 */
 
 
-STATIC const mp_map_elem_t pyb_gpio_locals_dict_table[] = {
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_gpio_callback_obj },
+/// \method disable()
+/// Disable the interrupt associated with the ExtInt object.
+/// This could be useful for debouncing.
+STATIC mp_obj_t extint_obj_disable(mp_obj_t self_in) {
+    extint_obj_t *self = self_in;
+    mp_hal_disableIntCallbackGPIO(self->line);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_disable_obj, extint_obj_disable);
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pin_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value),   (mp_obj_t)&pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_low),     (mp_obj_t)&pin_low_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_high),    (mp_obj_t)&pin_high_obj },
+/// \method swint()
+/// Trigger the callback from software.
+STATIC mp_obj_t extint_obj_swint(mp_obj_t self_in) {
+    extint_obj_t *self = self_in;
+    extint_exec_callback(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
+
+
+STATIC const mp_map_elem_t pyb_extint_locals_dict_table[] = {
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_line),    (mp_obj_t)&extint_obj_line_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_enable),  (mp_obj_t)&extint_obj_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&extint_obj_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_swint),   (mp_obj_t)&extint_obj_swint_obj },
 
     // class constants
-    /// \constant IN - initialise the pin to input mode
-    /// \constant OUT_PP - initialise the pin to output mode with a push-pull drive
-    /// \constant OUT_OD - initialise the pin to output mode with an open-drain drive
-    /// \constant PULL_NONE - don't enable any pull up or down resistors on the pin
-    /// \constant PULL_UP - enable the pull-up resistor on the pin
-    /// \constant PULL_DOWN - enable the pull-down resistor on the pin
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IN),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_INPUT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OUT_PP),    MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_PP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OUT_OD),    MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT_OD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_NOPULL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULLUP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULLDOWN) },
-
+    /// \constant IRQ_RISING - interrupt on a rising edge
+    /// \constant IRQ_FALLING - interrupt on a falling edge
+    /// \constant IRQ_RISING_FALLING - interrupt on a rising or falling edge
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING),         MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_RISING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_FALLING),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_FALLING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_RISING_FALLING) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_gpio_locals_dict, pyb_gpio_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pyb_extint_locals_dict, pyb_extint_locals_dict_table);
 
-const mp_obj_type_t pyb_gpio_type = {
+const mp_obj_type_t pyb_extint_type = {
     { &mp_type_type },
-    .name = MP_QSTR_Pin,
-    //.print = pyb_gpio_print,
-    .make_new = pyb_gpio_make_new,
-    //.call = pyb_gpio_call,
-    .locals_dict = (mp_obj_t)&pyb_gpio_locals_dict,
+    .name = MP_QSTR_ExtInt,
+    .print = extint_obj_print,
+    .make_new = extint_make_new,
+    .locals_dict = (mp_obj_t)&pyb_extint_locals_dict,
 };
 
 

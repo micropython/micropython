@@ -55,6 +55,16 @@ Q(value)
 Q(low)
 Q(high)
 
+Q(ExtInt)
+Q(pin)
+Q(IRQ_RISING)
+Q(IRQ_FALLING)
+Q(IRQ_RISING_FALLING)
+Q(line)
+Q(enable)
+Q(disable)
+Q(swint)
+
 
 /*
 Q(readall)

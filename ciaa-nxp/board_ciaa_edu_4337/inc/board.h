@@ -432,7 +432,7 @@ void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
  * @param       arg : argument passed to callback function when it is called
  * @param       flagEdgeLevel : 1: edge mode - 0: level mode
  * @param       flagHighLow : 1: high level/rise edge - 0: low level/fall edge
- * @return      0 if int was enabled
+ * @return      1 if int was enabled
  */
 bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow);
 

@@ -260,3 +260,8 @@ const mp_obj_type_t pyb_gpio_type = {
 };
 
 
+uint32_t getPinNumber(void* pObj)
+{
+    pyb_gpio_obj_t* self = (pyb_gpio_obj_t*) pObj;
+    return GPIO_ID(self);
+}

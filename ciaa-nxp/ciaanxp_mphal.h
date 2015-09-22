@@ -71,6 +71,11 @@ void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void
 #define GPIO_NOPULL BOARD_GPIO_NOPULL
 #define GPIO_PULLUP BOARD_GPIO_PULLUP
 #define GPIO_PULLDOWN BOARD_GPIO_PULLDOWN
+
+#define GPIO_MODE_IT_RISING 0
+#define GPIO_MODE_IT_FALLING 1
+#define GPIO_MODE_IT_RISING_FALLING 2
+
 void mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup);
 int32_t mp_hal_readGPIO(int32_t gpioNumber);
 void mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value);

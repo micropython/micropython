@@ -108,3 +108,27 @@ Las GPIOs disponibles van de 0 a 8
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
 
+
+- Soporte para interrupciones en GPIOs mediante el modulo pyb.ExtInt. Ejemplo:
+```python
+import pyb
+
+def callBack(line):
+        print("Pin Interrupt!")
+        print("Line = ",line)
+
+p = pyb.Pin(8)
+p.init(pyb.Pin.OUT_PP,pyb.Pin.PULL_NONE)
+print(p)
+
+int = pyb.ExtInt(p,pyb.ExtInt.IRQ_RISING,pyb.Pin.PULL_NONE,callBack)
+print(int)
+
+while True:
+        pyb.delay(1000)
+        print("tick")
+```
+Existen 4 interrupciones disponibles para asignar a cualquiera de las 9 GPIOs
+
+Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
+
