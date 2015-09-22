@@ -179,10 +179,12 @@ Q(RTC)
 Q(init)
 Q(alarm)
 Q(alarm_left)
+Q(alarm_cancel)
 Q(now)
 Q(deinit)
 Q(datetime)
 Q(repeat)
+Q(ALARM0)
 
 // for time class
 Q(time)
@@ -292,6 +294,7 @@ Q(WPA)
 Q(WPA2)
 Q(INTERNAL)
 Q(EXTERNAL)
+Q(ANY_EVENT)
 
 // for WDT class
 Q(WDT)
@@ -303,16 +306,16 @@ Q(HeartBeat)
 Q(enable)
 Q(disable)
 
-// for callback class
+// for irq class
+Q(irq)
 Q(init)
 Q(enable)
 Q(disable)
-Q(callback)
+Q(flags)
+Q(trigger)
 Q(handler)
-Q(mode)
-Q(value)
 Q(priority)
-Q(wake_from)
+Q(wake)
 
 // for Sleep class
 Q(Sleep)

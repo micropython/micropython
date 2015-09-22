@@ -52,16 +52,18 @@
 #define PIN(p_pin_name, p_port, p_bit, p_pin_num, p_af_list, p_num_afs) \
 { \
     { &pin_type }, \
-    .name     = MP_QSTR_ ## p_pin_name, \
-    .port     = PORT_A ## p_port, \
-    .af_list  = (p_af_list), \
-    .pull     = PIN_TYPE_STD, \
-    .bit      = (p_bit), \
-    .pin_num  = (p_pin_num), \
-    .af       = PIN_MODE_0, \
-    .strength = PIN_STRENGTH_4MA, \
-    .mode     = GPIO_DIR_MODE_IN, \
-    .num_afs  = (p_num_afs), \
-    .value    = 0, \
-    .used     = false, \
+    .name           = MP_QSTR_ ## p_pin_name, \
+    .port           = PORT_A ## p_port, \
+    .af_list        = (p_af_list), \
+    .pull           = PIN_TYPE_STD, \
+    .bit            = (p_bit), \
+    .pin_num        = (p_pin_num), \
+    .af             = PIN_MODE_0, \
+    .strength       = PIN_STRENGTH_4MA, \
+    .mode           = GPIO_DIR_MODE_IN, \
+    .num_afs        = (p_num_afs), \
+    .value          = 0, \
+    .used           = false, \
+    .irq_trigger    = 0, \
+    .irq_flags      = 0, \
 }

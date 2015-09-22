@@ -35,6 +35,8 @@
 #define SL_STOP_TIMEOUT                             35
 #define SL_STOP_TIMEOUT_LONG                        575
 
+#define MODWLAN_WIFI_EVENT_ANY                      0x01
+
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/
@@ -44,6 +46,34 @@ typedef enum {
     MODWLAN_ERROR_TIMEOUT = -2,
     MODWLAN_ERROR_UNKNOWN = -3,
 } modwlan_Status_t;
+
+typedef struct _wlan_obj_t {
+    mp_obj_base_t       base;
+    mp_obj_t            irq_obj;
+    uint32_t            status;
+
+    uint32_t            ip;
+
+    int8_t              mode;
+    uint8_t             security;
+    uint8_t             channel;
+    uint8_t             antenna;
+
+    // my own ssid, key and mac
+    uint8_t             ssid[33];
+    uint8_t             key[65];
+    uint8_t             mac[SL_MAC_ADDR_LEN];
+
+    // the sssid (or name) and mac of the other device
+    uint8_t             ssid_o[33];
+    uint8_t             bssid[6];
+    uint8_t             irq_flags;
+    bool                irq_enabled;
+
+#if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
+    bool                servers_enabled;
+#endif
+} wlan_obj_t;
 
 /******************************************************************************
  DECLARE PUBLIC DATA

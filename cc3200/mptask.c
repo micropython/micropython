@@ -64,8 +64,8 @@
 #include "pins.h"
 #include "pybsleep.h"
 #include "pybtimer.h"
-#include "mpcallback.h"
 #include "cryptohash.h"
+#include "mpirq.h"
 #include "updater.h"
 #include "moduos.h"
 
@@ -126,7 +126,7 @@ soft_reset:
 
     // execute all basic initializations
     mpexception_init0();
-    mpcallback_init0();
+    mp_irq_init0();
     pybsleep_init0();
     pin_init0();
     mperror_init0();
@@ -234,7 +234,10 @@ soft_reset_exit:
 
     // disable all callbacks to avoid undefined behaviour
     // when coming out of a soft reset
-    mpcallback_disable_all();
+    mp_irq_disable_all();
+
+    // cancel the RTC alarm which might be running independent of the irq state
+    pyb_rtc_disable_alarm();
 
     // flush the serial flash buffer
     sflash_disk_flush();

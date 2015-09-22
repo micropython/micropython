@@ -37,8 +37,8 @@
 #include "rom_map.h"
 #include "prcm.h"
 #include "pybrtc.h"
+#include "mpirq.h"
 #include "pybsleep.h"
-#include "mpcallback.h"
 #include "timeutils.h"
 #include "simplelink.h"
 #include "modnetwork.h"
@@ -49,87 +49,147 @@
 /// \class RTC - real time clock
 
 /******************************************************************************
- DEFINE TYPES
- ******************************************************************************/
-typedef struct _pyb_rtc_obj_t {
-    mp_obj_base_t base;
-    byte prwmode;
-    bool alarmset;
-    bool repeat;
-} pyb_rtc_obj_t;
-
-/******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC const mp_cb_methods_t pybrtc_cb_methods;
-STATIC pyb_rtc_obj_t pyb_rtc_obj = {.prwmode = 0, .alarmset = false, .repeat = false};
+STATIC const mp_irq_methods_t pyb_rtc_irq_methods;
+STATIC pyb_rtc_obj_t pyb_rtc_obj;
+
+/******************************************************************************
+ FUNCTION-LIKE MACROS
+ ******************************************************************************/
+#define RTC_U16MS_CYCLES(msec)          ((msec   * 1024) / 1000)
+#define RTC_CYCLES_U16MS(cycles)        ((cycles * 1000) / 1024)
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC uint32_t pyb_rtc_reset (mp_obj_t self_in);
-STATIC void pyb_rtc_callback_enable (mp_obj_t self_in);
-STATIC void pyb_rtc_callback_disable (mp_obj_t self_in);
+STATIC void pyb_rtc_set_time (uint32_t secs, uint16_t msecs);
+STATIC uint32_t pyb_rtc_reset (void);
+STATIC void pyb_rtc_disable_interupt (void);
+STATIC void pyb_rtc_irq_enable (mp_obj_t self_in);
+STATIC void pyb_rtc_irq_disable (mp_obj_t self_in);
+STATIC int pyb_rtc_irq_flags (mp_obj_t self_in);
+STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds);
 STATIC mp_obj_t pyb_rtc_datetime(mp_obj_t self, const mp_obj_t datetime);
+STATIC void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t mseconds);
+STATIC void rtc_msec_add(uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2);
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 __attribute__ ((section (".boot")))
 void pyb_rtc_pre_init(void) {
-    // if the RTC was previously set, leave it alone
+    // only if comming out of a power-on reset
     if (MAP_PRCMSysResetCauseGet() == PRCM_POWER_ON) {
         // Mark the RTC in use first
         MAP_PRCMRTCInUseSet();
         // reset the time and date
-        pyb_rtc_reset((mp_obj_t)&pyb_rtc_obj);
+        pyb_rtc_reset();
     }
+}
+
+void pyb_rtc_get_time (uint32_t *secs, uint16_t *msecs) {
+    uint16_t cycles;
+    MAP_PRCMRTCGet (secs, &cycles);
+    *msecs = RTC_CYCLES_U16MS(cycles);
 }
 
 uint32_t pyb_rtc_get_seconds (void) {
     uint32_t seconds;
     uint16_t mseconds;
-    MAP_PRCMRTCGet(&seconds, &mseconds);
+    pyb_rtc_get_time(&seconds, &mseconds);
     return seconds;
+}
+
+void pyb_rtc_calc_future_time (uint32_t a_mseconds, uint32_t *f_seconds, uint16_t *f_mseconds) {
+    uint32_t c_seconds;
+    uint16_t c_mseconds;
+    // get the current time
+    pyb_rtc_get_time(&c_seconds, &c_mseconds);
+    // calculate the future seconds
+    *f_seconds = c_seconds + (a_mseconds / 1000);
+    // calculate the "remaining" future mseconds
+    *f_mseconds = a_mseconds % 1000;
+    // add the current milliseconds
+    rtc_msec_add (c_mseconds, f_seconds, f_mseconds);
+}
+
+void pyb_rtc_repeat_alarm (pyb_rtc_obj_t *self) {
+    if (self->repeat) {
+        uint32_t f_seconds, c_seconds;
+        uint16_t f_mseconds, c_mseconds;
+
+        pyb_rtc_get_time(&c_seconds, &c_mseconds);
+
+        // substract the time elapsed between waking up and setting up the alarm again
+        int32_t wake_ms = ((c_seconds * 1000) + c_mseconds) - ((self->alarm_time_s * 1000) + self->alarm_time_ms);
+        int32_t next_alarm = self->alarm_ms - wake_ms;
+        next_alarm = next_alarm > 0 ? next_alarm : PYB_RTC_MIN_ALARM_TIME_MS;
+        pyb_rtc_calc_future_time (next_alarm, &f_seconds, &f_mseconds);
+
+        // now configure the alarm
+        pyb_rtc_set_alarm (self, f_seconds, f_mseconds);
+    }
+}
+
+void pyb_rtc_disable_alarm (void) {
+    pyb_rtc_obj.alarmset = false;
+    pyb_rtc_disable_interupt();
 }
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC uint32_t pyb_rtc_reset (mp_obj_t self_in) {
+STATIC void pyb_rtc_set_time (uint32_t secs, uint16_t msecs) {
+    // add the RTC access time
+    rtc_msec_add(RTC_ACCESS_TIME_MSEC, &secs, &msecs);
+    // convert from mseconds to cycles
+    msecs = RTC_U16MS_CYCLES(msecs);
+    // now set the time
+    MAP_PRCMRTCSet(secs, msecs);
+}
+
+STATIC uint32_t pyb_rtc_reset (void) {
     // fresh reset; configure the RTC Calendar
     // set the date to 1st Jan 2015
     // set the time to 00:00:00
     uint32_t seconds = timeutils_seconds_since_2000(2015, 1, 1, 0, 0, 0);
-    // Now set the RTC calendar seconds
-    MAP_PRCMRTCSet(seconds, 0);
+    // disable any running alarm
+    pyb_rtc_disable_alarm();
+    // Now set the RTC calendar time
+    pyb_rtc_set_time(seconds, 0);
     return seconds;
 }
 
-STATIC void pyb_rtc_callback_enable (mp_obj_t self_in) {
-    pyb_rtc_obj_t *self = self_in;
-    // check the wake from param
-    if (self->prwmode & PYB_PWR_MODE_ACTIVE) {
-        // enable the slow clock interrupt
-        MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
-    } else {
-        // just in case it was already enabled before
-        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
-    }
-    pybsleep_configure_timer_wakeup (self->prwmode);
+STATIC void pyb_rtc_disable_interupt (void) {
+    uint primsk = disable_irq();
+    MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
+    (void)MAP_PRCMIntStatus();
+    enable_irq(primsk);
 }
 
-STATIC void pyb_rtc_callback_disable (mp_obj_t self_in) {
+STATIC void pyb_rtc_irq_enable (mp_obj_t self_in) {
     pyb_rtc_obj_t *self = self_in;
-    // check the wake from param
-    if (self->prwmode & PYB_PWR_MODE_ACTIVE) {
-        // disable the slow clock interrupt
+    // we always need interrupts if repeat is enabled
+    if ((self->pwrmode & PYB_PWR_MODE_ACTIVE) || self->repeat) {
+        MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
+    } else { // just in case it was already enabled before
         MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
     }
-    // disable wake from ldps and hibernate
-    pybsleep_configure_timer_wakeup (PYB_PWR_MODE_ACTIVE);
-    // read the interrupt status to clear any pending interrupt
-    (void)MAP_PRCMIntStatus();
+    self->irq_enabled = true;
+}
+
+STATIC void pyb_rtc_irq_disable (mp_obj_t self_in) {
+    pyb_rtc_obj_t *self = self_in;
+    self->irq_enabled = false;
+    if (!self->repeat) { // we always need interrupts if repeat is enabled
+        pyb_rtc_disable_interupt();
+    }
+}
+
+STATIC int pyb_rtc_irq_flags (mp_obj_t self_in) {
+    pyb_rtc_obj_t *self = self_in;
+    return self->irq_flags;
 }
 
 STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
@@ -177,20 +237,46 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 ///
 ///     (year, month, day, hours, minutes, seconds, milliseconds, tzinfo=None)
 ///
-STATIC mp_obj_t pyb_rtc_datetime(mp_obj_t self, const mp_obj_t datetime) {
+STATIC mp_obj_t pyb_rtc_datetime(mp_obj_t self_in, const mp_obj_t datetime) {
     uint32_t seconds;
     uint32_t useconds;
 
     if (datetime != MP_OBJ_NULL) {
         useconds = pyb_rtc_datetime_s_us(datetime, &seconds);
-        MAP_PRCMRTCSet(seconds, RTC_U16MS_CYCLES(useconds / 1000));
+        pyb_rtc_set_time (seconds, useconds / 1000);
     } else {
-        seconds = pyb_rtc_reset(self);
+        seconds = pyb_rtc_reset();
     }
 
     // set WLAN time and date, this is needed to verify certificates
     wlan_set_current_time(seconds);
     return mp_const_none;
+}
+
+STATIC void pyb_rtc_set_alarm (pyb_rtc_obj_t *self, uint32_t seconds, uint16_t mseconds) {
+    // disable the interrupt before updating anything
+    if (self->irq_enabled) {
+        MAP_PRCMIntDisable(PRCM_INT_SLOW_CLK_CTR);
+    }
+    // set the match value
+    MAP_PRCMRTCMatchSet(seconds, RTC_U16MS_CYCLES(mseconds));
+    self->alarmset = true;
+    self->alarm_time_s = seconds;
+    self->alarm_time_ms = mseconds;
+    // enabled the interrupts again if applicable
+    if (self->irq_enabled || self->repeat) {
+        MAP_PRCMIntEnable(PRCM_INT_SLOW_CLK_CTR);
+    }
+}
+
+STATIC void rtc_msec_add (uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2) {
+    if (msecs_1 + *msecs_2 >= 1000) { // larger than one second
+        *msecs_2 = (msecs_1 + *msecs_2) - 1000;
+        *secs += 1; // carry flag
+    } else {
+        // simply add the mseconds
+        *msecs_2 = msecs_1 + *msecs_2;
+    }
 }
 
 /******************************************************************************/
@@ -219,6 +305,9 @@ STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     // set the time and date
     pyb_rtc_datetime((mp_obj_t)&pyb_rtc_obj, args[1].u_obj);
 
+    // pass it to the sleep module
+    pybsleep_set_rtc_obj (self);
+
     // return constant object
     return (mp_obj_t)&pyb_rtc_obj;
 }
@@ -236,9 +325,8 @@ STATIC mp_obj_t pyb_rtc_now (mp_obj_t self_in) {
     uint32_t seconds;
     uint16_t mseconds;
 
-    // get the seconds and the milliseconds from the RTC
-    MAP_PRCMRTCGet(&seconds, &mseconds);
-    mseconds = RTC_CYCLES_U16MS(mseconds);
+    // get the time from the RTC
+    pyb_rtc_get_time(&seconds, &mseconds);
     timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
 
     mp_obj_t tuple[8] = {
@@ -256,7 +344,7 @@ STATIC mp_obj_t pyb_rtc_now (mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_now_obj, pyb_rtc_now);
 
 STATIC mp_obj_t pyb_rtc_deinit (mp_obj_t self_in) {
-    pyb_rtc_reset (self_in);
+    pyb_rtc_reset();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_deinit_obj, pyb_rtc_deinit);
@@ -264,7 +352,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_deinit_obj, pyb_rtc_deinit);
 STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,                            MP_ARG_INT,  {.u_int = 0} },
-        { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = mp_const_none} },
         { MP_QSTR_repeat,     MP_ARG_KW_ONLY   | MP_ARG_BOOL, {.u_bool = false} },
     };
 
@@ -278,114 +366,97 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
     }
 
-    uint32_t a_seconds;
-    uint16_t a_mseconds;
+    uint32_t f_seconds;
+    uint16_t f_mseconds;
+    bool repeat = args[2].u_bool;
     if (MP_OBJ_IS_TYPE(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
-        a_mseconds = pyb_rtc_datetime_s_us (args[1].u_obj, &a_seconds) / 1000;
-    } else { // then it must be an integer or MP_OBJ_NULL
-        uint32_t c_seconds;
-        uint16_t c_mseconds;
-        if (MP_OBJ_IS_INT(args[1].u_obj)) {
-            a_seconds = 0, a_mseconds = mp_obj_get_int(args[1].u_obj);
-        } else {
-            a_seconds = 1, a_mseconds = 0;
+        // repeat cannot be used with a datetime tuple
+        if (repeat) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
         }
-        // get the seconds and the milliseconds from the RTC
-        MAP_PRCMRTCGet(&c_seconds, &c_mseconds);
-        a_mseconds += RTC_CYCLES_U16MS(c_mseconds);
-        // calculate the future time
-        a_seconds += c_seconds + (a_mseconds / 1000);
-        a_mseconds -= ((a_mseconds / 1000) * 1000);
+        f_mseconds = pyb_rtc_datetime_s_us (args[1].u_obj, &f_seconds) / 1000;
+    } else { // then it must be an integer
+        self->alarm_ms = mp_obj_get_int(args[1].u_obj);
+        pyb_rtc_calc_future_time (self->alarm_ms, &f_seconds, &f_mseconds);
     }
 
-    // disable the interrupt before updating anything
-    pyb_rtc_callback_disable((mp_obj_t)self);
+    // store the repepat flag
+    self->repeat = repeat;
 
-    // set the match value
-    MAP_PRCMRTCMatchSet(a_seconds, a_mseconds);
-
-    // enabled it again (according to the power mode)
-    pyb_rtc_callback_enable((mp_obj_t)self);
-
-    // set the alarmset flag and store the repeat one
-    self->alarmset = true;
-    self->repeat = args[2].u_bool;
+    // now configure the alarm
+    pyb_rtc_set_alarm (self, f_seconds, f_mseconds);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_alarm_obj, 1, pyb_rtc_alarm);
 
-STATIC mp_obj_t pyb_rtc_alarm_left (mp_obj_t self_in) {
-    pyb_rtc_obj_t *self = self_in;
-    uint32_t a_seconds, c_seconds;
-    uint16_t a_mseconds, c_mseconds;
+STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_rtc_obj_t *self = args[0];
     int32_t ms_left;
+    uint32_t c_seconds;
+    uint16_t c_mseconds;
 
-    // get the alarm time
-    MAP_PRCMRTCMatchGet(&a_seconds, &a_mseconds);
-    a_mseconds = RTC_CYCLES_U16MS(a_mseconds);
+    // only alarm id 0 is available
+    if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+    }
+
     // get the current time
-    MAP_PRCMRTCGet(&c_seconds, &c_mseconds);
-    c_mseconds = RTC_CYCLES_U16MS(c_mseconds);
+    pyb_rtc_get_time(&c_seconds, &c_mseconds);
+
     // calculate the ms left
-    ms_left = ((a_seconds * 1000) + a_mseconds) - ((c_seconds * 1000) + c_mseconds);
+    ms_left = ((self->alarm_time_s * 1000) + self->alarm_time_ms) - ((c_seconds * 1000) + c_mseconds);
     if (!self->alarmset || ms_left < 0) {
         ms_left = 0;
     }
     return mp_obj_new_int(ms_left);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_alarm_left_obj, pyb_rtc_alarm_left);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
 
-/// \method callback(handler, value, pwrmode)
-/// Creates a callback object associated with the real time clock
-/// min num of arguments is 1 (value). The value is the alarm time
-/// in the future, in msec
-/// FIXME
-STATIC mp_obj_t pyb_rtc_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
+STATIC mp_obj_t pyb_rtc_alarm_cancel (mp_uint_t n_args, const mp_obj_t *args) {
+    // only alarm id 0 is available
+    if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+    }
+    // disable the alarm
+    pyb_rtc_disable_alarm();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_cancel_obj, 1, 2, pyb_rtc_alarm_cancel);
+
+/// \method irq(trigger, priority, handler, wake)
+STATIC mp_obj_t pyb_rtc_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
     pyb_rtc_obj_t *self = pos_args[0];
 
-    // check if any parameters were passed
-    mp_obj_t _callback = mpcallback_find((mp_obj_t)&pyb_rtc_obj);
-    if (kw_args->used > 0) {
-        uint32_t f_mseconds = MAX(1, mp_obj_get_int(args[3].u_obj));
-        uint32_t seconds;
-        uint16_t mseconds;
-        // get the seconds and the milliseconds from the RTC
-        MAP_PRCMRTCGet(&seconds, &mseconds);
-        mseconds = RTC_CYCLES_U16MS(mseconds);
-
-        // configure the rtc alarm accordingly
-        seconds += f_mseconds / 1000;
-        mseconds += f_mseconds - ((f_mseconds / 1000) * 1000);
-
-        // disable the interrupt before updating anything
-        pyb_rtc_callback_disable((mp_obj_t)&pyb_rtc_obj);
-
-        // set the match value
-        MAP_PRCMRTCMatchSet(seconds, mseconds);
-
-        // save the power mode data for later
-        self->prwmode = args[4].u_int;
-
-        // create the callback
-        _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, args[1].u_obj, &pybrtc_cb_methods, true);
-
-        // set the lpds callback
-        pybsleep_set_timer_lpds_callback(_callback);
-
-        // the interrupt priority is ignored since it's already set to to highest level by the sleep module
-        // to make sure that the wakeup callbacks are always called first when resuming from sleep
-
-        // enable the interrupt
-        pyb_rtc_callback_enable((mp_obj_t)&pyb_rtc_obj);
-    } else if (!_callback) {
-        _callback = mpcallback_new ((mp_obj_t)&pyb_rtc_obj, mp_const_none, &pybrtc_cb_methods, false);
+    // save the power mode data for later
+    uint8_t pwrmode = (args[3].u_obj == mp_const_none) ? PYB_PWR_MODE_ACTIVE : mp_obj_get_int(args[3].u_obj);
+    if (pwrmode > (PYB_PWR_MODE_ACTIVE | PYB_PWR_MODE_LPDS | PYB_PWR_MODE_HIBERNATE)) {
+        goto invalid_args;
     }
-    return _callback;
+
+    // check the trigger
+    if (mp_obj_get_int(args[0].u_obj) == PYB_RTC_ALARM0) {
+        self->pwrmode = pwrmode;
+        pyb_rtc_irq_enable((mp_obj_t)self);
+    } else {
+        goto invalid_args;
+    }
+
+    // the interrupt priority is ignored since it's already set to to highest level by the sleep module
+    // to make sure that the wakeup irqs are always called first when resuming from sleep
+
+    // create the callback
+    mp_obj_t _irq = mp_irq_new ((mp_obj_t)self, args[2].u_obj, &pyb_rtc_irq_methods);
+    self->irq_obj = _irq;
+
+    return _irq;
+
+invalid_args:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_callback_obj, 1, pyb_rtc_callback);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
 STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),            (mp_obj_t)&pyb_rtc_init_obj },
@@ -393,7 +464,11 @@ STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_now),             (mp_obj_t)&pyb_rtc_now_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_alarm),           (mp_obj_t)&pyb_rtc_alarm_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_left),      (mp_obj_t)&pyb_rtc_alarm_left_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),        (mp_obj_t)&pyb_rtc_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_cancel),    (mp_obj_t)&pyb_rtc_alarm_cancel_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),             (mp_obj_t)&pyb_rtc_irq_obj },
+
+    // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ALARM0),          MP_OBJ_NEW_SMALL_INT(PYB_RTC_ALARM0) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
@@ -404,8 +479,9 @@ const mp_obj_type_t pyb_rtc_type = {
     .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
 };
 
-STATIC const mp_cb_methods_t pybrtc_cb_methods = {
-    .init = pyb_rtc_callback,
-    .enable = pyb_rtc_callback_enable,
-    .disable = pyb_rtc_callback_disable,
+STATIC const mp_irq_methods_t pyb_rtc_irq_methods = {
+    .init = pyb_rtc_irq,
+    .enable = pyb_rtc_irq_enable,
+    .disable = pyb_rtc_irq_disable,
+    .flags = pyb_rtc_irq_flags
 };
