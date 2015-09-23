@@ -3317,7 +3317,7 @@ STATIC void scope_compute_things(scope_t *scope) {
     }
 }
 
-mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl) {
+mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
     // put compiler state on the stack, it's relatively small
     compiler_t comp_state = {0};
     compiler_t *comp = &comp_state;
@@ -3326,7 +3326,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->is_repl = is_repl;
 
     // create the module scope
-    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);
+    scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, parse_tree->root, emit_opt);
 
     // optimise constants (scope must be set for error messages to work)
     comp->scope_cur = module_scope;
@@ -3485,7 +3485,7 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
 #endif
 
     // free the parse tree
-    mp_parse_node_free(module_scope->pn);
+    mp_parse_tree_clear(parse_tree);
 
     // free the scopes
     mp_raw_code_t *outer_raw_code = module_scope->raw_code;
