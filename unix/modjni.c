@@ -205,10 +205,20 @@ STATIC const mp_obj_type_t jobject_type = {
 };
 
 STATIC mp_obj_t new_jobject(jobject jo) {
-    mp_obj_jobject_t *o = m_new_obj(mp_obj_jobject_t);
-    o->base.type = &jobject_type;
-    o->obj = jo;
-    return o;
+    if (JJ(IsInstanceOf, jo, String_class)) {
+        const char *s = JJ(GetStringUTFChars, jo, NULL);
+        mp_obj_t ret = mp_obj_new_str(s, strlen(s), false);
+        JJ(ReleaseStringUTFChars, jo, s);
+        return ret;
+    } else if (JJ(IsInstanceOf, jo, Class_class)) {
+        return new_jclass(jo);
+    } else {
+        mp_obj_jobject_t *o = m_new_obj(mp_obj_jobject_t);
+        o->base.type = &jobject_type;
+        o->obj = jo;
+        return o;
+    }
+
 }
 
 
@@ -272,30 +282,17 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
 #define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
 STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
     const char *org_jtype = jtypesig;
-    mp_obj_t ret;
     if (arg == NULL || MATCH(jtypesig, "void")) {
         return mp_const_none;
     } else if (MATCH(jtypesig, "boolean")) {
         return mp_obj_new_bool((bool)arg);
     } else if (MATCH(jtypesig, "int")) {
         return mp_obj_new_int((mp_int_t)arg);
-    } else if (MATCH(jtypesig, "java.lang.String")) {
-ret_string:;
-        const char *s = JJ(GetStringUTFChars, arg, NULL);
-        ret = mp_obj_new_str(s, strlen(s), false);
-        JJ(ReleaseStringUTFChars, arg, s);
-        return ret;
     } else {
         while (*jtypesig != ' ' && *jtypesig) {
             if (*jtypesig == '.') {
                 // Non-primitive, object type
-                if (JJ(IsInstanceOf, arg, String_class)) {
-                    goto ret_string;
-                } else if (JJ(IsInstanceOf, arg, Class_class)) {
-                    return new_jclass(arg);
-                } else {
-                    return new_jobject(arg);
-                }
+                return new_jobject(arg);
             }
             jtypesig++;
         }
