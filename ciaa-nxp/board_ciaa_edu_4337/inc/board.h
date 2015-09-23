@@ -281,12 +281,6 @@ void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),voi
  */
 void Board_Audio_Init(LPC_I2S_T *pI2S, int micIn);
 
-/**
- * @brief	Initialize DAC
- * @param	pDAC	: Pointer to DAC register interface used on this board
- * @return	Nothing
- */
-void Board_DAC_Init(LPC_DAC_T *pDAC);
 
 /**
  * @brief	Initialize ADC
@@ -442,6 +436,19 @@ bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* a
  * @return      void
  */
 void Board_GPIOs_disableIntCallback(int gpioNumber);
+
+
+/**
+ * @brief       Writes a 10-bit-value to DAC outpu
+ * @param       value
+ * @return      void
+ */
+void Board_DAC_writeValue(uint32_t value);
+
+void Board_DAC_setSampleRate(uint32_t freq);
+
+int32_t Board_DAC_writeDMA(uint8_t const * const buffer, uint32_t const size);
+
 
 
 /**

@@ -96,6 +96,15 @@ int main(int argc, char **argv) {
 	}*/
     //____________
 
+    // prueba dac
+	Board_DAC_writeValue(512);
+    uint8_t samples[256];
+    for(int i=0; i<256; i++)
+         samples[i]=i;
+    Board_DAC_writeDMA(samples, 256);
+
+
+
     do_str(programScript, MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;
