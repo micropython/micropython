@@ -118,6 +118,12 @@
 #define MICROPY_ALLOC_PARSE_INTERN_STRING_LEN (10)
 #endif
 
+// Number of bytes to allocate initially when creating new chunks to store
+// parse nodes.  Small leads to fragmentation, large leads to excess use.
+#ifndef MICROPY_ALLOC_PARSE_CHUNK_INIT
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT (128)
+#endif
+
 // Initial amount for ids in a scope
 #ifndef MICROPY_ALLOC_SCOPE_ID_INIT
 #define MICROPY_ALLOC_SCOPE_ID_INIT (4)
