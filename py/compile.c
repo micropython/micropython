@@ -2252,11 +2252,18 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
     }
 
     // compile the star/double-star arguments if we had them
-    if (star_args_node != NULL) {
-        compile_node(comp, star_args_node->nodes[0]);
-    }
-    if (dblstar_args_node != NULL) {
-        compile_node(comp, dblstar_args_node->nodes[0]);
+    // if we had one but not the other then we load "null" as a place holder
+    if (star_flags != 0) {
+        if (star_args_node == NULL) {
+            EMIT(load_null);
+        } else {
+            compile_node(comp, star_args_node->nodes[0]);
+        }
+        if (dblstar_args_node == NULL) {
+            EMIT(load_null);
+        } else {
+            compile_node(comp, dblstar_args_node->nodes[0]);
+        }
     }
 
     // emit the function/method call
