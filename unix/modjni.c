@@ -77,6 +77,18 @@ typedef struct _mp_obj_jmethod_t {
     bool is_static;
 } mp_obj_jmethod_t;
 
+// Utility functions
+
+STATIC bool is_object_type(const char *jtypesig) {
+    while (*jtypesig != ' ' && *jtypesig) {
+        if (*jtypesig == '.') {
+            return true;
+        }
+        jtypesig++;
+    }
+    return false;
+}
+
 // jclass
 
 STATIC void jclass_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -281,24 +293,18 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
 // it.
 #define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
 STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
-    const char *org_jtype = jtypesig;
     if (arg == NULL || MATCH(jtypesig, "void")) {
         return mp_const_none;
     } else if (MATCH(jtypesig, "boolean")) {
         return mp_obj_new_bool((bool)arg);
     } else if (MATCH(jtypesig, "int")) {
         return mp_obj_new_int((mp_int_t)arg);
-    } else {
-        while (*jtypesig != ' ' && *jtypesig) {
-            if (*jtypesig == '.') {
-                // Non-primitive, object type
-                return new_jobject(arg);
-            }
-            jtypesig++;
-        }
+    } else if (is_object_type(jtypesig)) {
+        // Non-primitive, object type
+        return new_jobject(arg);
     }
 
-    printf("Unknown return type: %s\n", org_jtype);
+    printf("Unknown return type: %s\n", jtypesig);
 
     return MP_OBJ_NULL;
 }
