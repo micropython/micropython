@@ -138,15 +138,13 @@ DRESULT disk_ioctl (
         case CTRL_SYNC:
             return sflash_disk_flush();
         case GET_SECTOR_COUNT:
-            // sector count for ESP8266
-            // *((DWORD*)buff) = SFLASH_SECTOR_COUNT;
+            *((DWORD*)buff) = SFLASH_SECTOR_COUNT;
             return RES_OK;
         case GET_SECTOR_SIZE:
-            // sector size for ESP8266
-            // *((WORD*)buff) = SFLASH_SECTOR_SIZE;
+            *((WORD*)buff) = SFLASH_SECTOR_SIZE;
             return RES_OK;
         case GET_BLOCK_SIZE:
-            // *((DWORD*)buff) = 1; // high-level sector erase size in units of the block size
+            *((DWORD*)buff) = 1; // high-level sector erase size in units of the block size
             return RES_OK;
         default:
             break;
@@ -163,7 +161,7 @@ DWORD get_fattime (
     void
 )
 {
-    // return timestamp
+    // need timeutils structures here if necessary
     return 0;
 }
 #endif

@@ -32,6 +32,16 @@
 
 #include "mpconfigport.h"
 
+
+/*---------------------------------------------------------------------------/
+/ ICACHE Attributes
+/---------------------------------------------------------------------------*/
+
+#define ICACHE_STORE_TYPEDEF_ATTR   __attribute__((aligned(4),packed))
+#define ICACHE_STORE_ATTR           __attribute__((aligned(4)))
+#define ICACHE_RAM_ATTR             __attribute__((section(".iram0.text")))
+
+
 /*---------------------------------------------------------------------------/
 / Functions and Buffer Configurations
 /---------------------------------------------------------------------------*/
@@ -223,7 +233,7 @@
 / System Configurations
 /---------------------------------------------------------------------------*/
 
-#define _FS_NORTC   0
+#define _FS_NORTC   1
 #define _NORTC_MON  2
 #define _NORTC_MDAY 1
 #define _NORTC_YEAR 2015
