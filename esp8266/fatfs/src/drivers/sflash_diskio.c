@@ -27,8 +27,7 @@
 #include <stdbool.h>
 
 // ESP SDK API
-#include "spi_flash.h"
-#include "c_types.h"
+//#include "spi_flash.h"
 
 #include "ffconf.h"
 #include "diskio.h"
@@ -72,9 +71,9 @@ DRESULT sflash_disk_init (void) {
 }
 
 // need to lock/unlock context for safe access
-static bool sflash_access(void) {
-    return true;
-}
+// static bool sflash_access(void) {
+//     return true;
+// }
 
 DRESULT sflash_disk_status(void) {
     if (!sflash_init_done) {
@@ -89,9 +88,9 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
-        return RES_PARERR;
-    }
+    // if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+    //     return RES_PARERR;
+    // }
 
     // spi_flash_read() can be called from the spi_flash.h
     // SpiFlashOpResult spi_flash_read(uint32 src_addr, uint32 *des_addr, uint32 size);
@@ -105,10 +104,10 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
-        sflash_disk_flush();
-        return RES_PARERR;
-    }
+    // if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+    //     sflash_disk_flush();
+    //     return RES_PARERR;
+    // }
 
     // spi_flash_write can be called from the spi_flash.h
     // SpiFlashOpResult spi_flash_write(uint32 des_addr, uint32 *src_addr, uint32 size);
