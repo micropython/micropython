@@ -217,7 +217,9 @@ STATIC const mp_obj_type_t jobject_type = {
 };
 
 STATIC mp_obj_t new_jobject(jobject jo) {
-    if (JJ(IsInstanceOf, jo, String_class)) {
+    if (jo == NULL) {
+        return mp_const_none;
+    } else if (JJ(IsInstanceOf, jo, String_class)) {
         const char *s = JJ(GetStringUTFChars, jo, NULL);
         mp_obj_t ret = mp_obj_new_str(s, strlen(s), false);
         JJ(ReleaseStringUTFChars, jo, s);
