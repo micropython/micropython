@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3316,10 +3316,12 @@ STATIC void scope_compute_things(scope_t *scope) {
 }
 
 mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is_repl) {
-    compiler_t *comp = m_new0(compiler_t, 1);
+    // put compiler state on the stack, it's relatively small
+    compiler_t comp_state = {0};
+    compiler_t *comp = &comp_state;
+
     comp->source_file = source_file;
     comp->is_repl = is_repl;
-    comp->compile_error = MP_OBJ_NULL;
 
     // create the module scope
     scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, pn, emit_opt);
@@ -3338,10 +3340,6 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
     comp->emit = emit_bc;
     #if MICROPY_EMIT_NATIVE
     comp->emit_method_table = &emit_bc_method_table;
-    #endif
-    #if MICROPY_EMIT_INLINE_THUMB
-    comp->emit_inline_asm = NULL;
-    comp->emit_inline_asm_method_table = NULL;
     #endif
     uint max_num_labels = 0;
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
@@ -3495,12 +3493,8 @@ mp_obj_t mp_compile(mp_parse_node_t pn, qstr source_file, uint emit_opt, bool is
         s = next;
     }
 
-    // free the compiler
-    mp_obj_t compile_error = comp->compile_error;
-    m_del_obj(compiler_t, comp);
-
-    if (compile_error != MP_OBJ_NULL) {
-        nlr_raise(compile_error);
+    if (comp->compile_error != MP_OBJ_NULL) {
+        nlr_raise(comp->compile_error);
     } else {
         // return function that executes the outer module
         return mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
