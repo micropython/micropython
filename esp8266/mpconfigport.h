@@ -39,6 +39,10 @@
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_MODULE_FROZEN       (1)
 
+// FatFS options
+// TODO: this depends on the FLASH size
+#define MICROPY_PORT_SFLASH_BLOCK_COUNT             8 // 512k FLASH
+
 /* Enable FatFS LFNs
     0: Disable LFN feature.
     1: Enable LFN with static working buffer on the BSS. Always NOT reentrant.
