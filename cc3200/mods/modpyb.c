@@ -141,28 +141,6 @@ STATIC mp_obj_t pyb_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
 
-/// \function repl_uart(uart)
-/// Get or set the UART object that the REPL is repeated on.
-STATIC mp_obj_t pyb_repl_uart(uint n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        if (pyb_stdio_uart == NULL) {
-            return mp_const_none;
-        } else {
-            return pyb_stdio_uart;
-        }
-    } else {
-        if (args[0] == mp_const_none) {
-            pyb_stdio_uart = NULL;
-        } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
-            pyb_stdio_uart = args[0];
-        } else {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, mpexception_num_type_invalid_arguments));
-        }
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uart);
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
@@ -174,7 +152,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&pyb_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&pyb_unique_id_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart),           (mp_obj_t)&pyb_repl_uart_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
