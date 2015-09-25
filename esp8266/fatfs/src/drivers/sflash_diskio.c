@@ -27,7 +27,8 @@
 #include <stdbool.h>
 
 // ESP SDK API
-//#include "spi_flash.h"
+#include "c_types.h"
+#include "spi_flash.h"
 
 #include "ffconf.h"
 #include "diskio.h"
@@ -36,6 +37,7 @@
 static bool sflash_init_done      = false;
 static bool sflash_cache_is_dirty = false;
 
+// default init data 1Kb
 static volatile const uint8_t
 sflash_init_data[128] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR =
 {
@@ -57,23 +59,66 @@ sflash_init_data[128] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR =
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-// init FS using ^ data
-// DRESULF sflash_disk_init_default(void)
-DRESULT sflash_disk_init (void) {
+DRESULT sflash_disk_init(void) {
+    uint32 data[2] ICACHE_STORE_ATTR;
 
     if (!sflash_init_done) {
         sflash_init_done      = true;
         sflash_cache_is_dirty = false;
 
-        // init
+        // check if the file system already exists by checking first 2 blocks
+        // TODO: shouldn't we read just 2 blocks instead of total - 4?
+        if (SPI_FLASH_RESULT_OK == spi_flash_read(
+            SFLASH_BLOCK_COUNT - SFLASH_PARAM_BLOCK_COUNT,
+            data, sizeof(data))) {
+
+            if (data[0] == 0xFFFFFFFF && data[1] == 0xFFFFFFFF) {
+                return RES_OK;
+            } else {
+                // init it if it doesn't
+                if (RES_OK == sflash_disk_init_default() &&
+                    RES_OK == sflash_disk_init_blank()) {
+
+                    return RES_OK;
+                }
+            }
+        }
     }
     return RES_OK;
 }
 
-// need to lock/unlock context for safe access
-// static bool sflash_access(void) {
-//     return true;
+// TODO: shouldn't default and blank inits be static?
+// flash total_blocks - 4
+DRESULT sflash_disk_init_default(void) {
+    if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(
+            SFLASH_BLOCK_COUNT - SFLASH_PARAM_BLOCK_COUNT)) {
+
+        if (SPI_FLASH_RESULT_OK == spi_flash_write(
+                SFLASH_BLOCK_COUNT - SFLASH_PARAM_BLOCK_COUNT * SFLASH_BLOCK_SIZE,
+                (uint32 *)sflash_init_data, 128)) {
+            return RES_OK;
+        }
+
+    }
+    return RES_ERROR;
+}
+
+// flash total_blocks - 2
+DRESULT sflash_disk_init_blank(void) {
+    if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(SFLASH_BLOCK_COUNT - 2) &&
+        SPI_FLASH_RESULT_OK == spi_flash_erase_sector(SFLASH_BLOCK_COUNT - 1)) {
+        return RES_OK;
+    }
+    return RES_ERROR;
+}
+
+// DRESULT sflash_disk_init_data_written(void) {
 // }
+
+// need to lock/unlock context for safe access
+static bool sflash_access(void) {
+    return true;
+}
 
 DRESULT sflash_disk_status(void) {
     if (!sflash_init_done) {
@@ -82,20 +127,25 @@ DRESULT sflash_disk_status(void) {
     return RES_OK;
 }
 
+// we can also set up a call back function for user read using
+// spi_flash_set_read_func() in spi_flash.h but also need a SpiFlashChip obj
 DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
 
     if (!sflash_init_done) {
         return STA_NOINIT;
     }
 
-    // if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
-    //     return RES_PARERR;
-    // }
+    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+        return RES_PARERR;
+    }
 
-    // spi_flash_read() can be called from the spi_flash.h
-    // SpiFlashOpResult spi_flash_read(uint32 src_addr, uint32 *des_addr, uint32 size);
-
-    return RES_OK;
+    // not catching the timeout
+    if (SPI_FLASH_RESULT_OK == spi_flash_read(
+        sector, (uint32 *) buff, count)) {
+        return RES_OK;
+    } else {
+        return RES_ERROR;
+    }
 }
 
 DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
@@ -104,28 +154,36 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    // if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
-    //     sflash_disk_flush();
-    //     return RES_PARERR;
-    // }
+    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+        sflash_disk_flush();
+        return RES_PARERR;
+    }
 
-    // spi_flash_write can be called from the spi_flash.h
-    // SpiFlashOpResult spi_flash_write(uint32 des_addr, uint32 *src_addr, uint32 size);
+    // not catching the timeout
+    if (SPI_FLASH_RESULT_OK == spi_flash_write(
+        sector, (uint32 *) buff, count)) {
 
-    sflash_cache_is_dirty = true;
+        sflash_cache_is_dirty = true;
+        return RES_OK;
+
+    } else {
+        return RES_ERROR;
+    }
+}
+
+DRESULT sflash_disk_flush(void) {
+    // write back the cache if it's dirty
+    if (sflash_cache_is_dirty) {
+        if (!sflash_access()) {
+            return RES_ERROR;
+        }
+        sflash_cache_is_dirty = false;
+    }
     return RES_OK;
 }
 
-DRESULT sflash_disk_flush (void) {
-    // write back the cache if it's dirty
-    if (sflash_cache_is_dirty) {
-        // check access
-        // if (!sflash_access()) {
-        //     return RES_ERROR;
-        // }
-    }
-    sflash_cache_is_dirty = false;
-    return RES_OK;
+uint32_t sflash_disk_get_id(void) {
+    return spi_flash_get_id();
 }
 
 // AUTOSIZE
