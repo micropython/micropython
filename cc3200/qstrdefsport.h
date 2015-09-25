@@ -25,25 +25,21 @@
  * THE SOFTWARE.
  */
 
-// qstrs specific to this port
-Q(__name__)
-Q(help)
+// for pyb module
 Q(pyb)
+Q(help)
+#ifdef DEBUG
 Q(info)
+#endif
 Q(reset)
 Q(main)
 Q(sync)
-Q(gc)
 Q(rng)
-Q(toggle)
-Q(write)
-Q(input)
 Q(freq)
 Q(unique_id)
 Q(disable_irq)
 Q(enable_irq)
-Q(flush)
-Q(repl_uart)
+
 // entries for sys.path
 Q(/flash)
 Q(/flash/lib)
@@ -90,6 +86,8 @@ Q(count)
 // for file class
 Q(seek)
 Q(tell)
+Q(input)
+Q(flush)
 
 // for Pin class
 Q(Pin)
@@ -349,7 +347,6 @@ Q(read)
 Q(readinto)
 Q(write_readinto)
 Q(nbytes)
-Q(write)
 Q(buf)
 Q(MASTER)
 Q(MSB)

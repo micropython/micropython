@@ -25,23 +25,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef PYBUART_H_
-#define PYBUART_H_
+#ifndef __MICROPY_INCLUDED_PY_MODSYS_H__
+#define __MICROPY_INCLUDED_PY_MODSYS_H__
 
-typedef enum {
-    PYB_UART_0      =  0,
-    PYB_UART_1      =  1,
-    PYB_NUM_UARTS
-} pyb_uart_id_t;
+#if MICROPY_PY_SYS_DUP_STDIO
+typedef struct _mp_sys_stdio_dup_obj_t {
+    mp_obj_t stream_o;
+    mp_obj_t read[3];
+    mp_obj_t write[3];
+} mp_sys_stdio_dup_obj_t;
+#endif
 
-typedef struct _pyb_uart_obj_t pyb_uart_obj_t;
-extern const mp_obj_type_t pyb_uart_type;
-
-void uart_init0(void);
-uint32_t uart_rx_any(pyb_uart_obj_t *uart_obj);
-int uart_rx_char(pyb_uart_obj_t *uart_obj);
-bool uart_tx_char(pyb_uart_obj_t *self, int c);
-bool uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
-mp_obj_t uart_callback_new (pyb_uart_obj_t *self, mp_obj_t handler, mp_int_t priority, byte trigger);
-
-#endif  // PYBUART_H_
+#endif // __MICROPY_INCLUDED_PY_MODSYS_H__

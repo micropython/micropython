@@ -249,26 +249,6 @@ void telnet_tx_strn (const char *str, int len) {
     }
 }
 
-void telnet_tx_strn_cooked (const char *str, uint len) {
-    int32_t nslen = 0;
-    const char *_str = str;
-
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\n') {
-            telnet_send_with_retries(telnet_data.n_sd, _str, nslen);
-            telnet_send_with_retries(telnet_data.n_sd, "\r\n", 2);
-            _str += nslen + 1;
-            nslen = 0;
-        }
-        else {
-            nslen++;
-        }
-    }
-    if (_str < str + len) {
-        telnet_send_with_retries(telnet_data.n_sd, _str, nslen);
-    }
-}
-
 bool telnet_rx_any (void) {
     return (telnet_data.n_sd > 0) ? ((telnet_data.rxRindex != telnet_data.rxWindex) &&
            (telnet_data.state == E_TELNET_STE_LOGGED_IN)) : false;
