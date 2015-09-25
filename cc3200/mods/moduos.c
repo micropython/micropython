@@ -34,7 +34,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "genhdr/mpversion.h"
-#include "ff.h"
+#include "moduos.h"
 #include "diskio.h"
 #include "sflash_diskio.h"
 #include "file.h"
@@ -42,8 +42,8 @@
 #include "mpexception.h"
 #include "version.h"
 #include "timeutils.h"
-#include "moduos.h"
 #include "pybsd.h"
+#include "pybuart.h"
 
 /// \module os - basic "operating system" services
 ///
@@ -60,6 +60,7 @@
  DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC uint32_t os_num_mounted_devices;
+STATIC os_term_dup_obj_t os_term_dup_obj;
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -536,6 +537,31 @@ STATIC mp_obj_t os_mkfs(mp_obj_t device) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkfs_obj, os_mkfs);
 
+STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        if (MP_STATE_PORT(os_term_dup_obj) == MP_OBJ_NULL) {
+            return mp_const_none;
+        } else {
+            return MP_STATE_PORT(os_term_dup_obj)->stream_o;
+        }
+    } else {
+        mp_obj_t stream_o = args[0];
+        if (stream_o == mp_const_none) {
+            MP_STATE_PORT(os_term_dup_obj) = MP_OBJ_NULL;
+        } else {
+            if (!MP_OBJ_IS_TYPE(stream_o, &pyb_uart_type)) {
+                // must be a stream-like object providing at least read and write methods
+                mp_load_method(stream_o, MP_QSTR_read, os_term_dup_obj.read);
+                mp_load_method(stream_o, MP_QSTR_write, os_term_dup_obj.write);
+            }
+            os_term_dup_obj.stream_o = stream_o;
+            MP_STATE_PORT(os_term_dup_obj) = &os_term_dup_obj;
+        }
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_dupterm_obj, 0, 1, os_dupterm);
+
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
@@ -554,6 +580,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mount),           (mp_obj_t)&os_mount_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unmount),         (mp_obj_t)&os_unmount_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkfs),            (mp_obj_t)&os_mkfs_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dupterm),         (mp_obj_t)&os_dupterm_obj },
 
     /// \constant sep - separation character used in paths
     { MP_OBJ_NEW_QSTR(MP_QSTR_sep),             MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },

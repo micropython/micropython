@@ -4,7 +4,6 @@ UART IRQ test for the CC3200 based boards.
 
 from pyb import UART
 import os
-import pyb
 import time
 
 machine = os.uname().machine
@@ -16,7 +15,7 @@ else:
     raise Exception('Board not supported!')
 
 # just in case we have stdio duplicated on any of the uarts
-pyb.repl_uart(None)
+os.dupterm(None)
 
 uart0 = UART(0, 1000000, pins=uart_pins[0][0])
 uart1 = UART(1, 1000000, pins=uart_pins[1][0])

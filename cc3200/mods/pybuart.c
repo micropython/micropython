@@ -55,6 +55,7 @@
 #include "pin.h"
 #include "pybpin.h"
 #include "pins.h"
+#include "moduos.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -168,15 +169,6 @@ bool uart_tx_strn(pyb_uart_obj_t *self, const char *str, uint len) {
     return true;
 }
 
-void uart_tx_strn_cooked(pyb_uart_obj_t *self, const char *str, uint len) {
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            uart_tx_char(self, '\r');
-        }
-        uart_tx_char(self, *str);
-    }
-}
-
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
@@ -261,12 +253,10 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         while (UARTCharsAvail(self->reg)) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (pyb_stdio_uart == self && data == user_interrupt_char) {
+            if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == user_interrupt_char) {
                 // raise an exception when interrupts are finished
                 mpexception_keyboard_nlr_jump();
-            }
-            // there's always a read buffer available
-            else {
+            } else { // there's always a read buffer available
                 uint16_t next_head = (self->read_buf_head + 1) % PYBUART_RX_BUFFER_LEN;
                 if (next_head != self->read_buf_tail) {
                     // only store data if room in buf

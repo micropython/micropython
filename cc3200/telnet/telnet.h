@@ -33,13 +33,10 @@
 extern void telnet_init (void);
 extern void telnet_run (void);
 extern void telnet_tx_strn (const char *str, int len);
-extern void telnet_tx_strn_cooked (const char *str, uint len);
 extern bool telnet_rx_any (void);
 extern int  telnet_rx_char (void);
 extern void telnet_enable (void);
 extern void telnet_disable (void);
 extern void telnet_reset (void);
-extern bool telnet_is_enabled (void);
-extern bool telnet_is_active (void);
 
 #endif /* TELNET_H_ */
