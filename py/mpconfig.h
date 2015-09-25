@@ -642,6 +642,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #endif
 
+// Wether to provide "sys.dup_stdio" function
+#ifndef MICROPY_PY_SYS_DUP_STDIO
+#define MICROPY_PY_SYS_DUP_STDIO (0)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_UCTYPES

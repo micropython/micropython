@@ -124,6 +124,10 @@ typedef struct _mp_state_vm_t {
     mp_obj_dict_t *mp_module_builtins_override_dict;
     #endif
 
+    #if MICROPY_PY_SYS_DUP_STDIO
+    struct _mp_sys_stdio_dup_obj_t *mp_stdio_dup_obj;
+    #endif
+
     // include any root pointers defined by a port
     MICROPY_PORT_ROOT_POINTERS
 

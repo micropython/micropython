@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +33,8 @@
 #include "py/objstr.h"
 #include "py/objint.h"
 #include "py/stream.h"
+#include "py/runtime.h"
+#include "py/modsys.h"
 
 #if MICROPY_PY_SYS
 
@@ -46,6 +49,11 @@ extern struct _mp_dummy_t mp_sys_stderr_obj;
 
 #if MICROPY_PY_IO
 const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, (mp_print_strn_t)mp_stream_write};
+#endif
+
+#if MICROPY_PY_SYS_DUP_STDIO
+extern const mp_obj_type_t pyb_uart_type;
+STATIC mp_sys_stdio_dup_obj_t mp_sys_stdio_dup_obj;
 #endif
 
 /// \constant version - Python language version that this implementation conforms to, as a string
@@ -142,6 +150,33 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
 #endif
 
+#if MICROPY_PY_SYS_DUP_STDIO
+STATIC mp_obj_t mp_sys_dup_stdio(uint n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        if (MP_STATE_PORT(mp_stdio_dup_obj) == MP_OBJ_NULL) {
+            return mp_const_none;
+        } else {
+            return MP_STATE_PORT(mp_stdio_dup_obj)->stream_o;
+        }
+    } else {
+        mp_obj_t stream_o = args[0];
+        if (stream_o == mp_const_none) {
+            MP_STATE_PORT(mp_stdio_dup_obj) = MP_OBJ_NULL;
+        } else {
+            if (!MP_OBJ_IS_TYPE(stream_o, &pyb_uart_type)) {
+                // must be a stream-like object providing at least read and write methods
+                mp_load_method(stream_o, MP_QSTR_read, mp_sys_stdio_dup_obj.read);
+                mp_load_method(stream_o, MP_QSTR_write, mp_sys_stdio_dup_obj.write);
+            }
+            MP_STATE_PORT(mp_stdio_dup_obj) = &mp_sys_stdio_dup_obj;
+            MP_STATE_PORT(mp_stdio_dup_obj)->stream_o = stream_o;
+        }
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_dup_stdio_obj, 0, 1, mp_sys_dup_stdio);
+#endif
+
 STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
 
@@ -193,6 +228,10 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
      */
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_print_exception), (mp_obj_t)&mp_sys_print_exception_obj },
+
+#if MICROPY_PY_SYS_DUP_STDIO
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dup_stdio), (mp_obj_t)&mp_sys_dup_stdio_obj },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);

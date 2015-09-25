@@ -473,6 +473,9 @@ Q(exc_info)
 #endif
 Q(print_exception)
 #endif
+#if MICROPY_PY_SYS_DUP_STDIO
+Q(dup_stdio)
+#endif
 
 #if MICROPY_PY_STRUCT
 Q(ustruct)
