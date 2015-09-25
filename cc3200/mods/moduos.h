@@ -28,6 +28,11 @@
 #ifndef MODUOS_H_
 #define MODUOS_H_
 
+#include "ff.h"
+
+/******************************************************************************
+ DEFINE PUBLIC TYPES
+ ******************************************************************************/
 typedef struct _os_fs_mount_t {
     mp_obj_t device;
     const char *path;
@@ -40,6 +45,15 @@ typedef struct _os_fs_mount_t {
     uint8_t vol;
 } os_fs_mount_t;
 
+typedef struct _os_term_dup_obj_t {
+    mp_obj_t stream_o;
+    mp_obj_t read[3];
+    mp_obj_t write[3];
+} os_term_dup_obj_t;
+
+/******************************************************************************
+ DECLARE PUBLIC FUNCTIONS
+ ******************************************************************************/
 void moduos_init0 (void);
 os_fs_mount_t *osmount_find_by_path (const char *path);
 os_fs_mount_t *osmount_find_by_volume (uint8_t vol);

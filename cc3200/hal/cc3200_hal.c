@@ -36,6 +36,7 @@
 #include "inc/hw_nvic.h"
 #include "hw_memmap.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include MICROPY_HAL_H
 #include "rom_map.h"
 #include "interrupt.h"
@@ -47,6 +48,7 @@
 #include "pybuart.h"
 #include "utils.h"
 #include "irq.h"
+#include "moduos.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"
@@ -66,11 +68,6 @@ static void hal_TickInit (void);
  DECLARE LOCAL DATA
  ******************************************************************************/
 static volatile uint32_t HAL_tickCount;
-
-/******************************************************************************
- DECLARE PUBLIC DATA
- ******************************************************************************/
-struct _pyb_uart_obj_t *pyb_stdio_uart;
 
 /******************************************************************************
  DECLARE IMPORTED DATA
@@ -141,34 +138,56 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    // send stdout to UART
-    if (pyb_stdio_uart != NULL) {
-        uart_tx_strn(pyb_stdio_uart, str, len);
+    if (MP_STATE_PORT(os_term_dup_obj)) {
+        if (MP_OBJ_IS_TYPE(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
+            uart_tx_strn(MP_STATE_PORT(os_term_dup_obj)->stream_o, str, len);
+        } else {
+            MP_STATE_PORT(os_term_dup_obj)->write[2] = mp_obj_new_bytes((const byte*)str, len);
+            mp_call_method_n_kw(1, 0, MP_STATE_PORT(os_term_dup_obj)->write);
+        }
     }
     // and also to telnet
-    if (telnet_is_active()) {
-        telnet_tx_strn(str, len);
-    }
+    telnet_tx_strn(str, len);
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
-    // send stdout to UART
-    if (pyb_stdio_uart != NULL) {
-        uart_tx_strn_cooked(pyb_stdio_uart, str, len);
+void mp_hal_stdout_tx_strn_cooked (const char *str, uint32_t len) {
+    int32_t nslen = 0;
+    const char *_str = str;
+
+    for (int i = 0; i < len; i++) {
+        if (str[i] == '\n') {
+            mp_hal_stdout_tx_strn(_str, nslen);
+            mp_hal_stdout_tx_strn("\r\n", 2);
+            _str += nslen + 1;
+            nslen = 0;
+        } else {
+            nslen++;
+        }
     }
-    // and also to telnet
-    if (telnet_is_active()) {
-        telnet_tx_strn_cooked(str, len);
+    if (_str < str + len) {
+        mp_hal_stdout_tx_strn(_str, nslen);
     }
 }
 
 int mp_hal_stdin_rx_chr(void) {
     for ( ;; ) {
+        // read telnet first
         if (telnet_rx_any()) {
             return telnet_rx_char();
-        }
-        else if (pyb_stdio_uart != NULL && uart_rx_any(pyb_stdio_uart)) {
-            return uart_rx_char(pyb_stdio_uart);
+        } else if (MP_STATE_PORT(os_term_dup_obj)) { // then the stdio_dup
+            if (MP_OBJ_IS_TYPE(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
+                if (uart_rx_any(MP_STATE_PORT(os_term_dup_obj)->stream_o)) {
+                    return uart_rx_char(MP_STATE_PORT(os_term_dup_obj)->stream_o);
+                }
+            } else {
+                MP_STATE_PORT(os_term_dup_obj)->read[2] = mp_obj_new_int(1);
+                mp_obj_t rbytes = mp_call_method_n_kw(1, 0, MP_STATE_PORT(os_term_dup_obj)->read);
+                if (rbytes != mp_const_none) {
+                    mp_buffer_info_t bufinfo;
+                    mp_get_buffer_raise(rbytes, &bufinfo, MP_BUFFER_READ);
+                    return ((int *)(bufinfo.buf))[0];
+                }
+            }
         }
         HAL_Delay(1);
     }

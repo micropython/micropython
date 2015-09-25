@@ -6,7 +6,6 @@ UART0 and UART1 must be connected together for this test to pass.
 from pyb import UART
 from pyb import Pin
 import os
-import pyb
 import time
 
 machine = os.uname().machine
@@ -19,8 +18,8 @@ elif 'WiPy' in machine:
 else:
     raise Exception('Board not supported!')
 
-# just in case we have stdio duplicated on any of the uarts
-pyb.repl_uart(None)
+# just in case we have the repl duplicated on any of the uarts
+os.dupterm(None)
 
 for uart_id in uart_id_range:
     uart = UART(uart_id, 38400)

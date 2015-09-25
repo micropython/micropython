@@ -138,17 +138,6 @@ soft_reset:
     moduos_init0();
     rng_init0();
 
-#ifdef LAUNCHXL
-    // instantiate the stdio uart on the default pins
-    mp_obj_t args[2] = {
-            mp_obj_new_int(MICROPY_STDIO_UART),
-            mp_obj_new_int(MICROPY_STDIO_UART_BAUD),
-    };
-    pyb_stdio_uart = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
-#else
-    pyb_stdio_uart = MP_OBJ_NULL;
-#endif
-
     pybsleep_reset_cause_t rstcause = pybsleep_get_reset_cause();
     if (rstcause < PYB_SLP_SOFT_RESET) {
         if (rstcause == PYB_SLP_HIB_RESET) {
