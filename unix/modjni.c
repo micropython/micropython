@@ -332,7 +332,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
 
             int name_len = strlen(name);
             if (strncmp(name, meth_name, name_len/*arg_types - meth_name - 1*/) || meth_name[name_len] != '('/*(*/) {
-                continue;
+                goto next_method;
             }
         }
 //        printf("method[%d]=%p %s\n", i, meth, decl);
