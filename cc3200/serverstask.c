@@ -144,7 +144,7 @@ void TASK_Servers (void *pvParameters) {
 
 void servers_start (void) {
     servers_data.do_enable = true;
-    HAL_Delay (SERVERS_CYCLE_TIME_MS * 5);
+    HAL_Delay (SERVERS_CYCLE_TIME_MS * 3);
 }
 
 void servers_stop (void) {
@@ -152,7 +152,7 @@ void servers_stop (void) {
     do {
         HAL_Delay (SERVERS_CYCLE_TIME_MS);
     } while (servers_are_enabled());
-    HAL_Delay (SERVERS_CYCLE_TIME_MS * 5);
+    HAL_Delay (SERVERS_CYCLE_TIME_MS * 3);
 }
 
 void servers_reset (void) {

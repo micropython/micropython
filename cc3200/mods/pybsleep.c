@@ -164,7 +164,7 @@ void pybsleep_init0 (void) {
     MAP_PRCMHibernateWakeupSourceDisable(PRCM_HIB_SLOW_CLK_CTR | PRCM_HIB_GPIO2  | PRCM_HIB_GPIO4  | PRCM_HIB_GPIO13 |
                                          PRCM_HIB_GPIO17       | PRCM_HIB_GPIO11 | PRCM_HIB_GPIO24 | PRCM_HIB_GPIO26);
 
-    // store the reset casue (if it's soft reset, leave it as it is)
+    // check the reset casue (if it's soft reset, leave it as it is)
     if (pybsleep_reset_cause != PYB_SLP_SOFT_RESET) {
         switch (MAP_PRCMSysResetCauseGet()) {
         case PRCM_POWER_ON:
@@ -188,6 +188,7 @@ void pybsleep_init0 (void) {
                 switch (MAP_PRCMHibernateWakeupCauseGet()) {
                 case PRCM_HIB_WAKEUP_CAUSE_SLOW_CLOCK:
                     pybsleep_wake_reason = PYB_SLP_WAKED_BY_RTC;
+                    // TODO repeat the alarm
                     break;
                 case PRCM_HIB_WAKEUP_CAUSE_GPIO:
                     pybsleep_wake_reason = PYB_SLP_WAKED_BY_GPIO;

@@ -68,6 +68,7 @@
 #include "mpirq.h"
 #include "updater.h"
 #include "moduos.h"
+#include "antenna.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -360,11 +361,11 @@ STATIC void mptask_init_sflash_filesystem (void) {
 
 STATIC void mptask_enter_ap_mode (void) {
     // append the mac only if it's not the first boot
-    bool append_mac = !PRCMGetSpecialBit(PRCM_FIRST_BOOT_BIT);
-
+    bool add_mac = !PRCMGetSpecialBit(PRCM_FIRST_BOOT_BIT);
     // enable simplelink in ap mode (use the MAC address to make the ssid unique)
-    wlan_sl_enable (ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID), MICROPY_PORT_WLAN_AP_SECURITY,
-                    MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY), MICROPY_PORT_WLAN_AP_CHANNEL, append_mac);
+    wlan_sl_init (ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID),
+                  MICROPY_PORT_WLAN_AP_SECURITY, MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY),
+                  MICROPY_PORT_WLAN_AP_CHANNEL, ANTENNA_TYPE_INTERNAL, add_mac);
 }
 
 STATIC void mptask_create_main_py (void) {
