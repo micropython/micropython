@@ -446,7 +446,7 @@ error:
 }
 
 STATIC const mp_arg_t pyb_uart_init_args[] = {
-    { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+    { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_baudrate,                       MP_ARG_INT,  {.u_int = 9600} },
     { MP_QSTR_bits,                           MP_ARG_INT,  {.u_int = 8} },
     { MP_QSTR_parity,                         MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -462,7 +462,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
 
     // work out the uart id
     uint uart_id;
-    if (args[0].u_obj == mp_const_none) {
+    if (args[0].u_obj == MP_OBJ_NULL) {
         if (args[5].u_obj != MP_OBJ_NULL) {
             mp_obj_t *pins;
             mp_uint_t n_pins = 2;

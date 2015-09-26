@@ -207,7 +207,6 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 #define MICROPY_HAL_H                               "cc3200_hal.h"
 #define MICROPY_PORT_HAS_TELNET                     (1)
 #define MICROPY_PORT_HAS_FTP                        (1)
-#define MICROPY_PORT_WLAN_URN                       (0)
 #define MICROPY_PY_SYS_PLATFORM                     "WiPy"
 
 #define MICROPY_PORT_WLAN_AP_SSID                   "wipy-wlan"
