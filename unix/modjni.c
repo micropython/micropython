@@ -359,11 +359,22 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
                 JJ(ReleaseStringUTFChars, name_o, decl);
                 return new_jobject(res);
             } else {
-                res = JJ(CallObjectMethodA, obj, method_id, jargs);
-                mp_obj_t ret = jvalue2py(ret_type, res);
-                JJ(ReleaseStringUTFChars, name_o, decl);
-                if (ret != MP_OBJ_NULL) {
-                    return ret;
+                if (MATCH(ret_type, "void")) {
+                    JJ(CallVoidMethodA, obj, method_id, jargs);
+                    return mp_const_none;
+                } else if (MATCH(ret_type, "int")) {
+                    jint res = JJ(CallIntMethodA, obj, method_id, jargs);
+                    return mp_obj_new_int(res);
+                } else if (MATCH(ret_type, "boolean")) {
+                    jboolean res = JJ(CallBooleanMethodA, obj, method_id, jargs);
+                    return mp_obj_new_bool(res);
+                } else if (is_object_type(ret_type)) {
+                    res = JJ(CallObjectMethodA, obj, method_id, jargs);
+                    mp_obj_t ret = jvalue2py(ret_type, res);
+                    JJ(ReleaseStringUTFChars, name_o, decl);
+                    if (ret != MP_OBJ_NULL) {
+                        return ret;
+                    }
                 }
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot handle return type"));
             }
