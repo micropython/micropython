@@ -97,7 +97,7 @@ print(wifi.isconnected() == False)
 # test init again
 wifi.init(WLAN.AP, ssid='www.wipy.io', auth=None, channel=5, antenna=WLAN.INT_ANT)
 
-print(len(wlan.mac()) == 6)
+print(len(wifi.mac()) == 6)
 
 # next ones MUST raise
 try:
