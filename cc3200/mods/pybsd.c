@@ -95,17 +95,13 @@ STATIC mp_obj_t pyb_sd_init_helper (pybsd_obj_t *self, const mp_arg_val_t *args)
     mp_obj_t pins_o = args[0].u_obj;
     if (pins_o != mp_const_none) {
         mp_obj_t *pins;
-        mp_uint_t n_pins = MP_ARRAY_SIZE(pyb_sd_def_pin);
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
             pins = (mp_obj_t *)pyb_sd_def_pin;
         } else {
-            mp_obj_get_array(pins_o, &n_pins, &pins);
-            if (n_pins != MP_ARRAY_SIZE(pyb_sd_def_pin)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-            }
+            mp_obj_get_array_fixed_n(pins_o, MP_ARRAY_SIZE(pyb_sd_def_pin), &pins);
         }
-        pin_assign_pins_af (pins, n_pins, PIN_TYPE_STD_PU, PIN_FN_SD, 0);
+        pin_assign_pins_af (pins, MP_ARRAY_SIZE(pyb_sd_def_pin), PIN_TYPE_STD_PU, PIN_FN_SD, 0);
         // save the pins clock
         self->pin_clk = pin_find(pins[0]);
     }

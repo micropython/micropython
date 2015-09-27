@@ -201,17 +201,13 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *arg
     mp_obj_t pins_o = args[6].u_obj;
     if (pins_o != mp_const_none) {
         mp_obj_t *pins;
-        mp_uint_t n_pins = 3;
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
             pins = (mp_obj_t *)pyb_spi_def_pin;
         } else {
-            mp_obj_get_array(pins_o, &n_pins, &pins);
-            if (n_pins != 3) {
-                goto invalid_args;
-            }
+            mp_obj_get_array_fixed_n(pins_o, 3, &pins);
         }
-        pin_assign_pins_af (pins, n_pins, PIN_TYPE_STD_PU, PIN_FN_SPI, 0);
+        pin_assign_pins_af (pins, 3, PIN_TYPE_STD_PU, PIN_FN_SPI, 0);
     }
 
     // init the bus
