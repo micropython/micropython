@@ -112,7 +112,7 @@ STATIC mp_obj_t pyb_sd_init_helper (pybsd_obj_t *self, const mp_arg_val_t *args)
     }
 
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pyb_sd_hw_init);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)pyb_sd_hw_init);
     return mp_const_none;
 }
 
@@ -159,7 +159,7 @@ STATIC mp_obj_t pyb_sd_deinit (mp_obj_t self_in) {
     // de-initialze the sd card at diskio level
     sd_disk_deinit();
     // unregister it from the sleep module
-    pybsleep_remove (self);
+    pyb_sleep_remove (self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_sd_deinit_obj, pyb_sd_deinit);

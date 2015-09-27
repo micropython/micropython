@@ -90,9 +90,9 @@ def reset_board(args):
                     time.sleep(1)
                     tn.write(b'\r\x02') # ctrl-B: enter friendly REPL
                     if b'Type "help()" for more information.' in tn.read_until(b'Type "help()" for more information.', timeout=5):
-                        tn.write(b"import pyb\r\n")
-                        tn.write(b"pyb.reset()\r\n")
-                        time.sleep(1)
+                        tn.write(b"import machine\r\n")
+                        tn.write(b"machine.reset()\r\n")
+                        time.sleep(2)
                         print("Reset performed")
                         success = True
                     else:

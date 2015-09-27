@@ -69,10 +69,10 @@ STATIC uint32_t lfsr (uint32_t input) {
 /******************************************************************************/
 // Micro Python bindings;
 
-STATIC mp_obj_t pyb_rng_get(void) {
+STATIC mp_obj_t machine_rng_get(void) {
     return mp_obj_new_int(rng_get());
 }
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
+MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_get_obj, machine_rng_get);
 
 /******************************************************************************
 * PUBLIC FUNCTIONS

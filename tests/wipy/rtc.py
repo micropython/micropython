@@ -2,12 +2,12 @@
 RTC test for the CC3200 based boards.
 '''
 
-from pyb import RTC
+from machine import RTC
 import os
 import time
 
-machine = os.uname().machine
-if not 'LaunchPad' in machine and not 'WiPy' in machine:
+mch = os.uname().machine
+if not 'LaunchPad' in mch and not 'WiPy' in mch:
     raise Exception('Board not supported!')
 
 rtc = RTC()

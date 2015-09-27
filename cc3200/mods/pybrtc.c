@@ -306,7 +306,7 @@ STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     pyb_rtc_datetime((mp_obj_t)&pyb_rtc_obj, args[1].u_obj);
 
     // pass it to the sleep module
-    pybsleep_set_rtc_obj (self);
+    pyb_sleep_set_rtc_obj (self);
 
     // return constant object
     return (mp_obj_t)&pyb_rtc_obj;

@@ -2,13 +2,13 @@
 SD card test for the CC3200 based boards.
 '''
 
-from pyb import SD
+from machine import SD
 import os
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     sd_pins = ('GP16', 'GP17', 'GP15')
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     sd_pins = ('GP10', 'GP11', 'GP15')
 else:
     raise Exception('Board not supported!')

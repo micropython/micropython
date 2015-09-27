@@ -166,7 +166,7 @@ void pin_config (pin_obj_t *self, int af, uint mode, uint pull, int value, uint 
     pin_obj_configure ((const pin_obj_t *)self);
 
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pin_obj_configure);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)pin_obj_configure);
 }
 
 void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_t fn, uint32_t unit) {
@@ -873,7 +873,7 @@ STATIC mp_obj_t pin_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     // all checks have passed, we can create the irq object
     mp_obj_t _irq = mp_irq_new (self, args[2].u_obj, &pin_irq_methods);
     if (pwrmode & PYB_PWR_MODE_LPDS) {
-        pybsleep_set_gpio_lpds_callback (_irq);
+        pyb_sleep_set_gpio_lpds_callback (_irq);
     }
 
     // save the mp_trigge for later

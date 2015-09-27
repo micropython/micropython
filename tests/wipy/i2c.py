@@ -3,14 +3,14 @@ I2C test for the CC3200 based boards.
 A MPU-9150 sensor must be connected to the I2C bus.
 '''
 
-from pyb import I2C
+from machine import I2C
 import os
 import time
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     i2c_pins = ('GP11', 'GP10')
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     i2c_pins = ('GP15', 'GP10')
 else:
     raise Exception('Board not supported!')

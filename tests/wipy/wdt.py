@@ -2,7 +2,7 @@
 WDT test for the CC3200 based boards
 '''
 
-from pyb import WDT
+from machine import WDT
 import time
 
 # test the invalid cases first

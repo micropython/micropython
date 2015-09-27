@@ -85,10 +85,10 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	)
 
 APP_MODS_SRC_C = $(addprefix mods/,\
+	modmachine.c \
 	modnetwork.c \
 	moduhashlib.c \
 	modubinascii.c \
-	modpyb.c \
 	moduos.c \
 	modusocket.c \
 	modussl.c \

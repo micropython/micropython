@@ -214,7 +214,7 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *arg
     pybspi_init((const pyb_spi_obj_t *)self);
 
     // register it with the sleep module
-    pybsleep_add((const mp_obj_t)self, (WakeUpCB_t)pybspi_init);
+    pyb_sleep_add((const mp_obj_t)self, (WakeUpCB_t)pybspi_init);
 
     return mp_const_none;
 
@@ -271,7 +271,7 @@ STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
     // invalidate the baudrate
     pyb_spi_obj.baudrate = 0;
     // unregister it with the sleep module
-    pybsleep_remove((const mp_obj_t)self_in);
+    pyb_sleep_remove((const mp_obj_t)self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);

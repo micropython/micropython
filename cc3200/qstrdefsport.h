@@ -25,9 +25,8 @@
  * THE SOFTWARE.
  */
 
-// for pyb module
-Q(pyb)
-Q(help)
+// for machine module
+Q(machine)
 #ifdef DEBUG
 Q(info)
 #endif
@@ -39,10 +38,29 @@ Q(freq)
 Q(unique_id)
 Q(disable_irq)
 Q(enable_irq)
+Q(idle)
+Q(sleep)
+Q(deepsleep)
+Q(reset_cause)
+Q(wake_reason)
+Q(IDLE)
+Q(SLEEP)
+Q(DEEPSLEEP)
+Q(POWER_ON)
+Q(HARD_RESET)
+Q(WDT_RESET)
+Q(DEEPSLEEP_RESET)
+Q(SOFT_RESET)
+Q(WLAN_WAKE)
+Q(PIN_WAKE)
+Q(RTC_WAKE)
 
 // entries for sys.path
 Q(/flash)
 Q(/flash/lib)
+
+// interactive help
+Q(help)
 
 // for module weak links
 Q(struct)
@@ -311,25 +329,6 @@ Q(trigger)
 Q(handler)
 Q(priority)
 Q(wake)
-
-// for Sleep class
-Q(Sleep)
-Q(idle)
-Q(suspend)
-Q(hibernate)
-Q(reset_cause)
-Q(wake_reason)
-Q(ACTIVE)
-Q(SUSPENDED)
-Q(HIBERNATING)
-Q(POWER_ON)
-Q(HARD_RESET)
-Q(WDT_RESET)
-Q(HIB_RESET)
-Q(SOFT_RESET)
-Q(WLAN_WAKE)
-Q(PIN_WAKE)
-Q(RTC_WAKE)
 
 // for SPI class
 Q(SPI)

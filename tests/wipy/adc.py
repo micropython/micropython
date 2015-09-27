@@ -2,14 +2,14 @@
 ADC test for the CC3200 based boards.
 '''
 
-from pyb import ADC
+from machine import ADC
 import os
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     adc_pin = 'GP5'
     adc_channel = 3
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     adc_pin = 'GP3'
     adc_channel = 1
 else:
