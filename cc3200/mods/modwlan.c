@@ -443,13 +443,16 @@ void wlan_sl_init (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t auth
     memset(RxFilterIdMask.FilterIdMask, 0xFF, 8);
     ASSERT_ON_ERROR(sl_WlanRxFilterSet(SL_REMOVE_RX_FILTER, (_u8 *)&RxFilterIdMask, sizeof(_WlanRxFilterOperationCommandBuff_t)));
 
-    // switch to the requested mode
-    wlan_set_mode(mode);
-
 #if MICROPY_HW_ANTENNA_DIVERSITY
     // set the antenna type
     wlan_set_antenna (antenna);
 #endif
+
+    // switch to the requested mode
+    wlan_set_mode(mode);
+
+    // stop and start again (we need to in the propper mode from now on)
+    wlan_reenable(mode);
 
     // Set Tx power level for station or AP mode
     // Number between 0-15, as dB offset from max power - 0 will set max power
@@ -457,9 +460,6 @@ void wlan_sl_init (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t auth
     if (mode == ROLE_AP) {
         ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_AP_TX_POWER, sizeof(ucPower),
                                    (unsigned char *)&ucPower));
-
-        // stop and start again (we need to be in AP mode in order to continue)
-        wlan_reenable(mode);
 
         // configure all parameters
         wlan_set_ssid (ssid, ssid_len, add_mac);
@@ -492,8 +492,6 @@ void wlan_sl_init (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t auth
     } else { // STA and P2P modes
         ASSERT_ON_ERROR(sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_STA_TX_POWER,
                                    sizeof(ucPower), (unsigned char *)&ucPower));
-        // stop and start again
-        wlan_reenable(mode);
         // set connection policy to Auto + Fast (tries to connect to the last connected AP)
         ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_CONNECTION, SL_CONNECTION_POLICY(1, 1, 0, 0, 0), NULL, 0));
     }
