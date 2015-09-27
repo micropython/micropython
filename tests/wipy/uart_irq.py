@@ -2,14 +2,14 @@
 UART IRQ test for the CC3200 based boards.
 '''
 
-from pyb import UART
+from machine import UART
 import os
 import time
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     uart_pins = [[('GP12', 'GP13'), ('GP12', 'GP13', 'GP7', 'GP6')], [('GP16', 'GP17'), ('GP16', 'GP17', 'GP7', 'GP6')]]
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     uart_pins = [[('GP12', 'GP13'), ('GP12', 'GP13', 'GP7', 'GP6')], [('GP16', 'GP17'), ('GP16', 'GP17', 'GP7', 'GP6')]]
 else:
     raise Exception('Board not supported!')

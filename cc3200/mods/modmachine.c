@@ -77,26 +77,23 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 #endif
 
 
-/// \module pyb - functions related to the pyboard
+/// \module machine - functions related to the SoC
 ///
-/// The `pyb` module contains specific functions related to the pyboard.
 
-/// \function reset()
-/// Resets the pyboard in a manner similar to pushing the external
-/// reset button.
-STATIC mp_obj_t pyb_reset(void) {
+/******************************************************************************/
+// Micro Python bindings;
+
+STATIC mp_obj_t machine_reset(void) {
     // disable wlan
     wlan_stop(SL_STOP_TIMEOUT_LONG);
     // reset the cpu and it's peripherals
     MAP_PRCMMCUReset(true);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_reset_obj, pyb_reset);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 #ifdef DEBUG
-/// \function info([dump_alloc_table])
-/// Print out some run time info which is helpful during development.
-STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t machine_info(uint n_args, const mp_obj_t *args) {
     // FreeRTOS info
     {
         printf("---------------------------------------------\n");
@@ -119,45 +116,73 @@ STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 #endif
 
-/// \function freq()
-/// Returns the CPU frequency: (F_CPU).
-STATIC mp_obj_t pyb_freq(void) {
+STATIC mp_obj_t machine_freq(void) {
     mp_obj_t tuple[1] = {
        mp_obj_new_int(HAL_FCPU_HZ),
     };
     return mp_obj_new_tuple(1, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
 
-/// \function unique_id()
-/// Returns a string of 6 bytes (48 bits), which is the unique ID for the MCU.
-STATIC mp_obj_t pyb_unique_id(void) {
+STATIC mp_obj_t machine_unique_id(void) {
     uint8_t mac[SL_BSSID_LENGTH];
     wlan_get_mac (mac);
     return mp_obj_new_bytes(mac, SL_BSSID_LENGTH);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
+STATIC mp_obj_t machine_idle(void) {
+    __WFI();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
-STATIC const mp_map_elem_t pyb_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
+STATIC mp_obj_t machine_sleep (void) {
+    pyb_sleep_sleep();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&pyb_reset_obj },
+STATIC mp_obj_t machine_deepsleep (void) {
+    pyb_sleep_deepsleep();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
+
+STATIC mp_obj_t machine_reset_cause (void) {
+    return mp_obj_new_int(pyb_sleep_get_reset_cause());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
+STATIC mp_obj_t machine_wake_reason (void) {
+    return mp_obj_new_int(pyb_sleep_get_wake_reason());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_reason_obj, machine_wake_reason);
+
+MP_DECLARE_CONST_FUN_OBJ(machine_main_obj); // defined in main.c
+
+STATIC const mp_map_elem_t machine_module_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_machine) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&machine_reset_obj },
 #ifdef DEBUG
-    { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&pyb_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&pyb_freq_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&pyb_unique_id_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&machine_freq_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&machine_unique_id_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_main),                (mp_obj_t)&machine_main_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&machine_rng_get_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_idle),                (mp_obj_t)&machine_idle_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),               (mp_obj_t)&machine_sleep_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep),           (mp_obj_t)&machine_deepsleep_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset_cause),         (mp_obj_t)&machine_reset_cause_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wake_reason),         (mp_obj_t)&machine_wake_reason_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_main),                (mp_obj_t)&pyb_main_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&pyb_rng_get_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
@@ -167,15 +192,27 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer),               (mp_obj_t)&pyb_timer_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Sleep),               (mp_obj_t)&pyb_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },
+
+    // class constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IDLE),                MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP),           MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_SLP_HARD_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),           MP_OBJ_NEW_SMALL_INT(PYB_SLP_WDT_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_OBJ_NEW_SMALL_INT(PYB_SLP_HIB_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_SLP_SOFT_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN_WAKE),           MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_WLAN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PIN_WAKE),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_GPIO) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC_WAKE),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_RTC) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
-const mp_obj_module_t pyb_module = {
+const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_pyb,
-    .globals = (mp_obj_dict_t*)&pyb_module_globals,
+    .name = MP_QSTR_machine,
+    .globals = (mp_obj_dict_t*)&machine_module_globals,
 };

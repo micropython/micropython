@@ -844,7 +844,7 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     wlan_init_helper(self, &args[1]);
 
     // pass it to the sleep module
-    pybsleep_set_wlan_obj(self);
+    pyb_sleep_set_wlan_obj(self);
 
     return (mp_obj_t)self;
 }

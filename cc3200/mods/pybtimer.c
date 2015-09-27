@@ -344,7 +344,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, co
 
     timer_init(tim);
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)tim, (WakeUpCB_t)timer_init);
+    pyb_sleep_add ((const mp_obj_t)tim, (WakeUpCB_t)timer_init);
 
     return mp_const_none;
 
@@ -479,7 +479,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     timer_channel_init(ch);
 
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)ch, (WakeUpCB_t)timer_channel_init);
+    pyb_sleep_add ((const mp_obj_t)ch, (WakeUpCB_t)timer_channel_init);
 
     // add the timer to the list
     pyb_timer_channel_add(ch);

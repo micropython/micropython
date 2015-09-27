@@ -6,10 +6,9 @@ from network import WLAN
 import os
 import time
 import testconfig
-import pyb
 
-machine = os.uname().machine
-if not 'LaunchPad' in machine and not 'WiPy' in machine:
+mch = os.uname().machine
+if not 'LaunchPad' in mch and not 'WiPy' in mch:
     raise Exception('Board not supported!')
 
 

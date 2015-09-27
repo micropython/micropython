@@ -128,7 +128,7 @@ soft_reset:
     // execute all basic initializations
     mpexception_init0();
     mp_irq_init0();
-    pybsleep_init0();
+    pyb_sleep_init0();
     pin_init0();
     mperror_init0();
     uart_init0();
@@ -138,7 +138,7 @@ soft_reset:
     moduos_init0();
     rng_init0();
 
-    pybsleep_reset_cause_t rstcause = pybsleep_get_reset_cause();
+    pybsleep_reset_cause_t rstcause = pyb_sleep_get_reset_cause();
     if (rstcause < PYB_SLP_SOFT_RESET) {
         if (rstcause == PYB_SLP_HIB_RESET) {
             // when waking up from hibernate we just want
@@ -162,7 +162,7 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
 
     // reset config variables; they should be set by boot.py
-    MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
+    MP_STATE_PORT(machine_config_main) = MP_OBJ_NULL;
 
     if (!safeboot) {
         // run boot.py
@@ -186,10 +186,10 @@ soft_reset:
         // run the main script from the current directory.
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
             const char *main_py;
-            if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
+            if (MP_STATE_PORT(machine_config_main) == MP_OBJ_NULL) {
                 main_py = "main.py";
             } else {
-                main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
+                main_py = mp_obj_str_get_str(MP_STATE_PORT(machine_config_main));
             }
             int ret = pyexec_file(main_py);
             if (ret & PYEXEC_FORCED_EXIT) {
@@ -219,7 +219,7 @@ soft_reset:
 soft_reset_exit:
 
     // soft reset
-    pybsleep_signal_soft_reset();
+    pyb_sleep_signal_soft_reset();
     mp_printf(&mp_plat_print, "PYB: soft reboot\n");
 
     // disable all callbacks to avoid undefined behaviour
@@ -256,7 +256,7 @@ STATIC void mptask_pre_init (void) {
     ASSERT ((sflash_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
 
     // this one allocates memory for the nvic vault
-    pybsleep_pre_init();
+    pyb_sleep_pre_init();
 
     // this one allocates memory for the WLAN semaphore
     wlan_pre_init();
@@ -366,10 +366,10 @@ STATIC void mptask_create_main_py (void) {
     f_close(&fp);
 }
 
-STATIC mp_obj_t pyb_main(mp_obj_t main) {
+STATIC mp_obj_t machine_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
-        MP_STATE_PORT(pyb_config_main) = main;
+        MP_STATE_PORT(machine_config_main) = main;
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_main_obj, machine_main);

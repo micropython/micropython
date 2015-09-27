@@ -305,7 +305,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(pyb_i2c_obj_t *self, const mp_arg_val_t *arg
     i2c_init(self);
 
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)i2c_init);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)i2c_init);
 
     return mp_const_none;
 
@@ -356,7 +356,7 @@ STATIC mp_obj_t pyb_i2c_deinit(mp_obj_t self_in) {
     // invalidate the baudrate
     pyb_i2c_obj.baudrate = 0;
     // unregister it with the sleep module
-    pybsleep_remove ((const mp_obj_t)self_in);
+    pyb_sleep_remove ((const mp_obj_t)self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);

@@ -2,15 +2,15 @@
 Pin IRQ test for the CC3200 based boards.
 '''
 
-from pyb import Pin
-from pyb import Sleep
+from machine import Pin
+import machine
 import os
 import time
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     pins = ['GP16', 'GP13']
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     pins = ['GP16', 'GP13']
 else:
     raise Exception('Board not supported!')
@@ -78,16 +78,16 @@ print(pin_irq_count_total == 0)
 # test waking up from suspended mode on low level
 pin0(0)
 t0 = time.ticks_ms()
-pin1_irq.init(trigger=Pin.IRQ_LOW_LEVEL, wake=Sleep.SUSPENDED)
-Sleep.suspend()
+pin1_irq.init(trigger=Pin.IRQ_LOW_LEVEL, wake=machine.SLEEP)
+machine.sleep()
 print(time.ticks_ms() - t0 < 10)
 print('Awake')
 
 # test waking up from suspended mode on high level
 pin0(1)
 t0 = time.ticks_ms()
-pin1_irq.init(trigger=Pin.IRQ_HIGH_LEVEL, wake=Sleep.SUSPENDED)
-Sleep.suspend()
+pin1_irq.init(trigger=Pin.IRQ_HIGH_LEVEL, wake=machine.SLEEP)
+machine.sleep()
 print(time.ticks_ms() - t0 < 10)
 print('Awake')
 
@@ -108,7 +108,7 @@ except:
     print('Exception')
 
 try:
-    pin0_irq = pin0.irq(trigger=Pin.IRQ_RISING, wake=Sleep.SUSPENDED)  # GP16 can't wake up from DEEPSLEEP
+    pin0_irq = pin0.irq(trigger=Pin.IRQ_RISING, wake=machine.SLEEP)  # GP16 can't wake up from DEEPSLEEP
 except:
     print('Exception')
 

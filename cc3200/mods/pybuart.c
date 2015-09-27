@@ -423,7 +423,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *a
     // initialize and enable the uart
     uart_init (self);
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)uart_init);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)uart_init);
     // enable the callback
     uart_irq_new (self, UART_TRIGGER_RX_ANY, INT_PRIORITY_LVL_3, mp_const_none);
     // disable the irq (from the user point of view)
@@ -498,7 +498,7 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
 
     // unregister it with the sleep module
-    pybsleep_remove (self);
+    pyb_sleep_remove (self);
     // invalidate the baudrate
     self->baudrate = 0;
     // free the read buffer

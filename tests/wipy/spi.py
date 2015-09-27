@@ -2,13 +2,13 @@
 SPI test for the CC3200 based boards.
 '''
 
-from pyb import SPI
+from machine import SPI
 import os
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     spi_pins = ('GP14', 'GP16', 'GP30')
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     spi_pins = ('GP14', 'GP16', 'GP30')
 else:
     raise Exception('Board not supported!')

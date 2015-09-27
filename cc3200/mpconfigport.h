@@ -112,7 +112,7 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
     { MP_OBJ_NEW_QSTR(MP_QSTR_open),  (mp_obj_t)&mp_builtin_open_obj },   \
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_ure;
 extern const struct _mp_obj_module_t mp_module_ujson;
 extern const struct _mp_obj_module_t mp_module_uheapq;
@@ -126,7 +126,7 @@ extern const struct _mp_obj_module_t mp_module_ubinascii;
 extern const struct _mp_obj_module_t mp_module_ussl;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb),         (mp_obj_t)&pyb_module },          \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine),     (mp_obj_t)&machine_module },      \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos),         (mp_obj_t)&mp_module_uos },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime),       (mp_obj_t)&mp_module_utime },     \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uselect),     (mp_obj_t)&mp_module_uselect },   \
@@ -151,15 +151,15 @@ extern const struct _mp_obj_module_t mp_module_ussl;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb),     (mp_obj_t)&pyb_module },          \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine),     (mp_obj_t)&machine_module },      \
 
 // vm state and root pointers for the gc
 #define MP_STATE_PORT MP_STATE_VM
 #define MICROPY_PORT_ROOT_POINTERS                                        \
     const char *readline_hist[8];                                         \
     mp_obj_t mp_const_user_interrupt;                                     \
-    mp_obj_t pyb_config_main;                                             \
-    mp_obj_list_t pybsleep_obj_list;                                      \
+    mp_obj_t machine_config_main;                                         \
+    mp_obj_list_t pyb_sleep_obj_list;                                     \
     mp_obj_list_t mp_irq_obj_list;                                        \
     mp_obj_list_t pyb_timer_channel_obj_list;                             \
     mp_obj_list_t mount_obj_list;                                         \
