@@ -911,8 +911,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wlan_scan_obj, wlan_scan);
 STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_auth,                       MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_bssid,    MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_auth,     MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout,  MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -930,19 +930,13 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
     wlan_validate_ssid_len(ssid_len);
 
-    // get the bssid
-    const char *bssid = NULL;
-    if (args[1].u_obj != mp_const_none) {
-        bssid = mp_obj_str_get_str(args[1].u_obj);
-    }
-
     // get the auth config
     uint8_t auth = SL_SEC_TYPE_OPEN;
     mp_uint_t key_len = 0;
     const char *key = NULL;
-    if (args[2].u_obj != mp_const_none) {
+    if (args[1].u_obj != mp_const_none) {
         mp_obj_t *sec;
-        mp_obj_get_array_fixed_n(args[2].u_obj, 2, &sec);
+        mp_obj_get_array_fixed_n(args[1].u_obj, 2, &sec);
         auth = mp_obj_get_int(sec[0]);
         key = mp_obj_str_get_data(sec[1], &key_len);
         wlan_validate_security(auth, key, key_len);
@@ -954,6 +948,12 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
             key = (const char *)&wep_key;
             key_len /= 2;
         }
+    }
+
+    // get the bssid
+    const char *bssid = NULL;
+    if (args[2].u_obj != mp_const_none) {
+        bssid = mp_obj_str_get_str(args[2].u_obj);
     }
 
     // get the timeout
