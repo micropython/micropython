@@ -69,13 +69,13 @@ print(abs(t1 - t0 - 500) < 20)
 # deep sleep repeated mode
 rtc.alarm_cancel()
 rtc_irq_count = 0
-rtc.alarm(time=250, repeat=True)
+rtc.alarm(time=500, repeat=True)
 t0 = rtc_ticks_ms(rtc)
 rtc_irq = rtc.irq(trigger=RTC.ALARM0, handler=alarm_handler, wake=Sleep.SUSPENDED)
-while rtc_irq_count < 10:
+while rtc_irq_count < 3:
     Sleep.suspend()
     t1 = rtc_ticks_ms(rtc)
-    print(abs(t1 - t0 - (250 * rtc_irq_count)) < 25) 
+    print(abs(t1 - t0 - (500 * rtc_irq_count)) < 25)
 
 # next ones must raise
 try:
