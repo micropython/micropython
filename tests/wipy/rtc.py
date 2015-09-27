@@ -82,6 +82,8 @@ rtc.alarm(time=(2015, 8, 29, 9, 0, 45))
 time.sleep_ms(1000)
 left = rtc.alarm_left()
 print(abs(left-44000) <= 90)
+rtc.alarm_cancel()
+rtc.deinit()
 
 # next ones must raise
 try:
