@@ -472,7 +472,7 @@ void pyb_sleep_suspend_exit (void) {
     mp_irq_wake_all();
 
     // we need to init the crypto hash engine again
-    CRYPTOHASH_Init();
+    //CRYPTOHASH_Init();
 
     // trigger a sw interrupt
     MAP_IntPendSet(INT_PRCM);
