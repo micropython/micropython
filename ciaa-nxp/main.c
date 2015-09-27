@@ -96,13 +96,43 @@ int main(int argc, char **argv) {
 	}*/
     //____________
 
-    // prueba dac
-	Board_DAC_writeValue(512);
-    uint8_t samples[256];
-    for(int i=0; i<256; i++)
-         samples[i]=i;
-    Board_DAC_writeDMA(samples, 256);
 
+    // prueba dac ***************************
+    //	Board_DAC_writeValue(512);
+    uint16_t samples[1000];
+    uint16_t samples2[1000];
+    for(int i=0; i<1000; i++)
+         //samples[i]= ((uint16_t)i)*10;
+	 if(i&0x01==0x01)
+             samples[i]=1023;
+	else
+             samples[i]=0;
+
+    for(int i=0; i<1000; i++)
+         samples2[i]= ((uint16_t)i)*10;
+
+    Board_DAC_setSampleRate(5000);
+    Board_DAC_writeDMA(samples, 1000,0);
+    bool f=0;
+    while (1)
+    {
+        //Board_DAC_setSampleRate(5000);
+        //Board_DAC_writeDMA(samples, 100);
+       mp_hal_milli_delay(2000);
+	if(f==0)
+	{
+		f=1;
+		Board_DAC_writeDMA(samples2, 1000,1);
+		Board_UARTPutSTR("sample 2 ");
+	}
+	else
+	{
+		f=0;
+		Board_DAC_writeDMA(samples, 1000,1);
+		Board_UARTPutSTR("sample 1 ");
+	}
+    }
+     //_____________________________________
 
 
     do_str(programScript, MP_PARSE_FILE_INPUT);

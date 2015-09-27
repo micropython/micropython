@@ -686,56 +686,77 @@ void Board_GPIOs_disableIntCallback(int gpioNumber)
 
 
 // DAC
-static uint8_t dmaChannelDAC;
 #define DMA_FIFO_SIZE	1024
+typedef struct
+{
+	uint32_t dmaBuffer[DMA_FIFO_SIZE];
+	uint32_t samples;
+	uint8_t flagEnableBias;
+	uint8_t dmaChannelDAC;
+	uint8_t flagCyclic;
+} DACInfo;
+
+static DACInfo dacInfo;
 
 void DMA_IRQHandler(void)
 {
-	NVIC_DisableIRQ(DMA_IRQn);
+    NVIC_DisableIRQ(DMA_IRQn);
 
-   if (Chip_GPDMA_Interrupt(LPC_GPDMA, dmaChannelDAC) == SUCCESS)
+   if (Chip_GPDMA_Interrupt(LPC_GPDMA, dacInfo.dmaChannelDAC) == SUCCESS)
    {
-      Chip_GPDMA_Stop(LPC_GPDMA, dmaChannelDAC);
+        Chip_GPDMA_Stop(LPC_GPDMA, dacInfo.dmaChannelDAC);
+	if(dacInfo.flagCyclic)
+	{
+		Chip_GPDMA_Transfer(LPC_GPDMA, dacInfo.dmaChannelDAC,
+                                                           (uint32_t) &dacInfo.dmaBuffer, GPDMA_CONN_DAC,
+                                                           GPDMA_TRANSFERTYPE_M2P_CONTROLLER_DMA, dacInfo.samples);
+		NVIC_EnableIRQ(DMA_IRQn);
+	}
    }
    else
    {
        NVIC_EnableIRQ(DMA_IRQn);
-   }	
+   }
 }
 
 void Board_DAC_Init(void)
 {
    Chip_SCU_DAC_Analog_Config();
    Chip_DAC_Init(LPC_DAC);
-   Chip_DAC_SetBias(LPC_DAC, DAC_MAX_UPDATE_RATE_400kHz);   
+   Chip_DAC_SetBias(LPC_DAC, DAC_MAX_UPDATE_RATE_400kHz);
    Chip_DAC_ConfigDAConverterControl(LPC_DAC, DAC_CNT_ENA | DAC_DMA_ENA);
-   
+
    // Enable DMA
    Chip_DAC_SetDMATimeOut(LPC_DAC, 0xffff);
    Chip_GPDMA_Init(LPC_GPDMA);
    NVIC_DisableIRQ(DMA_IRQn);
    NVIC_SetPriority(DMA_IRQn, ((0x01 << 3) | 0x01));
    NVIC_EnableIRQ(DMA_IRQn);
+
+   dacInfo.flagCyclic=0;
+   dacInfo.dmaChannelDAC=0xFF;
 }
 
 void Board_DAC_setSampleRate(uint32_t freq)
 {
-	uint32_t value;
-	if (freq < 7)
+	uint16_t value;
+
+	if(freq < 3112)
 	{
-		value = 0xffff;
-		Chip_DAC_SetBias(LPC_DAC, DAC_MAX_UPDATE_RATE_400kHz);
+	    value=0xFFFF;
+ 	    dacInfo.flagEnableBias=0;
 	}
-	else if ((freq >= 7) && (freq < 400000))
+	else if( freq >= 3112 && freq < 400000)
 	{
-		value = 400000 / freq;
-		Chip_DAC_SetBias(LPC_DAC, DAC_MAX_UPDATE_RATE_400kHz);
+		dacInfo.flagEnableBias=0;
+		value = 204000000l/freq;
 	}
 	else
 	{
-		value = 10000000 / freq;
-		Chip_DAC_SetBias(LPC_DAC, DAC_MAX_UPDATE_RATE_1MHz);
+		dacInfo.flagEnableBias=1;
+                value = 204000000l/freq;
 	}
+
 	Chip_DAC_SetDMATimeOut(LPC_DAC, value);
 }
 
@@ -744,45 +765,44 @@ void Board_DAC_writeValue(uint32_t value)
 	Chip_DAC_UpdateValue(LPC_DAC,value);
 }
 
-int32_t Board_DAC_writeDMA(uint8_t const * const buffer, uint32_t const size)
+
+int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic)
 {
-   uint16_t *ptr;
    int32_t ret = -1;
-   int32_t count;
-   uint32_t dmaBuffer[DMA_FIFO_SIZE];
-   uint8_t samples;
 
    if (size != 0)
    {
-	 /* pre-format the data to DACR register */
-	 samples = 0;
-	 count = size;
-	 ptr = (uint16_t *) buffer;
-	 while((count > 1) && (samples < DMA_FIFO_SIZE))
-	 {
-		dmaBuffer[samples] = (uint32_t) (DAC_VALUE(*ptr) | DAC_BIAS_EN);
-		count -= 2;
-		ptr ++;
-		samples ++;
-	 }
-	 if (samples)
-	 {
-		NVIC_DisableIRQ(DMA_IRQn);
+	 NVIC_DisableIRQ(DMA_IRQn);
+	 dacInfo.flagCyclic = flagCyclic;
 
+         for (dacInfo.samples=0; dacInfo.samples<size; dacInfo.samples++)
+  	 {
+		dacInfo.dmaBuffer[dacInfo.samples] = (uint32_t) (DAC_VALUE(buffer[dacInfo.samples]));
+		if(dacInfo.flagEnableBias)
+		    dacInfo.dmaBuffer[dacInfo.samples]|= DAC_BIAS_EN;
+
+		if(dacInfo.samples>= DMA_FIFO_SIZE)
+			break;
+	 }
+
+	if(dacInfo.dmaChannelDAC==0xFF)
+	{
 		/* Get the free channel for DMA transfer */
-		dmaChannelDAC = Chip_GPDMA_GetFreeChannel(LPC_GPDMA, GPDMA_CONN_DAC);
+		dacInfo.dmaChannelDAC = Chip_GPDMA_GetFreeChannel(LPC_GPDMA, GPDMA_CONN_DAC);
+	}
+	else
+	{
+		Chip_GPDMA_Stop(LPC_GPDMA, dacInfo.dmaChannelDAC);
+	}
 
-		/* Start DMA transfer */
-		Chip_GPDMA_Transfer(LPC_GPDMA, dmaChannelDAC,
-							   (uint32_t) &dmaBuffer, GPDMA_CONN_DAC,
-							   GPDMA_TRANSFERTYPE_M2P_CONTROLLER_DMA, samples);
-
-		/* Bytes transfered */
-		ret = size - count;
-	 }
-     
+	/* Start DMA transfer */
+	Chip_GPDMA_Transfer(LPC_GPDMA, dacInfo.dmaChannelDAC,
+							   (uint32_t) &dacInfo.dmaBuffer, GPDMA_CONN_DAC,
+							   GPDMA_TRANSFERTYPE_M2P_CONTROLLER_DMA, dacInfo.samples);
+	ret = dacInfo.samples*2;
+	NVIC_EnableIRQ(DMA_IRQn);
    }
-   return ret;	
+   return ret;
 }
 //_____________________________________________________________________________________________________________________________________________
 

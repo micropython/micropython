@@ -447,8 +447,8 @@ void Board_DAC_writeValue(uint32_t value);
 
 void Board_DAC_setSampleRate(uint32_t freq);
 
-int32_t Board_DAC_writeDMA(uint8_t const * const buffer, uint32_t const size);
-
+//int32_t Board_DAC_writeDMA(uint8_t const * const buffer, uint32_t const size);
+int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic);
 
 
 /**
