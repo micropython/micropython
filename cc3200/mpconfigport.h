@@ -96,7 +96,7 @@
 #define MICROPY_PY_UZLIB                            (0)
 #define MICROPY_PY_UJSON                            (1)
 #define MICROPY_PY_URE                              (1)
-#define MICROPY_PY_UHEAPQ                           (1)
+#define MICROPY_PY_UHEAPQ                           (0)
 #define MICROPY_PY_UHASHLIB                         (0)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
@@ -115,13 +115,11 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_ure;
 extern const struct _mp_obj_module_t mp_module_ujson;
-extern const struct _mp_obj_module_t mp_module_uheapq;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_uhashlib;
 extern const struct _mp_obj_module_t mp_module_ubinascii;
 extern const struct _mp_obj_module_t mp_module_ussl;
 
@@ -132,7 +130,6 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uselect),     (mp_obj_t)&mp_module_uselect },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket),     (mp_obj_t)&mp_module_usocket },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network),     (mp_obj_t)&mp_module_network },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib),    (mp_obj_t)&mp_module_uhashlib },  \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii),   (mp_obj_t)&mp_module_ubinascii }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ussl),        (mp_obj_t)&mp_module_ussl },      \
 
@@ -140,12 +137,10 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct),      (mp_obj_t)&mp_module_ustruct },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re),          (mp_obj_t)&mp_module_ure },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json),        (mp_obj_t)&mp_module_ujson },     \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heapq),       (mp_obj_t)&mp_module_uheapq },    \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os),          (mp_obj_t)&mp_module_uos },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time),        (mp_obj_t)&mp_module_utime },     \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select),      (mp_obj_t)&mp_module_uselect },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),      (mp_obj_t)&mp_module_usocket },   \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib),     (mp_obj_t)&mp_module_uhashlib },  \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii),    (mp_obj_t)&mp_module_ubinascii }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ssl),         (mp_obj_t)&mp_module_ussl },      \
 
