@@ -134,6 +134,16 @@ STATIC mp_obj_t machine_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
+STATIC mp_obj_t machine_main(mp_obj_t main) {
+    if (MP_OBJ_IS_STR(main)) {
+        MP_STATE_PORT(machine_config_main) = main;
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_main_obj, machine_main);
+
 STATIC mp_obj_t machine_idle(void) {
     __WFI();
     return mp_const_none;
@@ -161,8 +171,6 @@ STATIC mp_obj_t machine_wake_reason (void) {
     return mp_obj_new_int(pyb_sleep_get_wake_reason());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_reason_obj, machine_wake_reason);
-
-MP_DECLARE_CONST_FUN_OBJ(machine_main_obj); // defined in main.c
 
 STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_machine) },

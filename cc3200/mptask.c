@@ -366,10 +366,3 @@ STATIC void mptask_create_main_py (void) {
     f_close(&fp);
 }
 
-STATIC mp_obj_t machine_main(mp_obj_t main) {
-    if (MP_OBJ_IS_STR(main)) {
-        MP_STATE_PORT(machine_config_main) = main;
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_main_obj, machine_main);
