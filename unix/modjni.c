@@ -354,29 +354,31 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
 //            printf("found!\n");
             jmethodID method_id = JJ(FromReflectedMethod, meth);
             jobject res;
+            mp_obj_t ret;
             if (is_constr) {
-                res = JJ(NewObjectA, obj, method_id, jargs);
                 JJ(ReleaseStringUTFChars, name_o, decl);
+                res = JJ(NewObjectA, obj, method_id, jargs);
                 return new_jobject(res);
             } else {
                 if (MATCH(ret_type, "void")) {
                     JJ(CallVoidMethodA, obj, method_id, jargs);
-                    return mp_const_none;
+                    ret = mp_const_none;
                 } else if (MATCH(ret_type, "int")) {
                     jint res = JJ(CallIntMethodA, obj, method_id, jargs);
-                    return mp_obj_new_int(res);
+                    ret = mp_obj_new_int(res);
                 } else if (MATCH(ret_type, "boolean")) {
                     jboolean res = JJ(CallBooleanMethodA, obj, method_id, jargs);
-                    return mp_obj_new_bool(res);
+                    ret = mp_obj_new_bool(res);
                 } else if (is_object_type(ret_type)) {
                     res = JJ(CallObjectMethodA, obj, method_id, jargs);
-                    mp_obj_t ret = jvalue2py(ret_type, res);
+                    ret = new_jobject(res);
+                } else {
                     JJ(ReleaseStringUTFChars, name_o, decl);
-                    if (ret != MP_OBJ_NULL) {
-                        return ret;
-                    }
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot handle return type"));
                 }
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot handle return type"));
+
+                JJ(ReleaseStringUTFChars, name_o, decl);
+                return ret;
             }
         }
 
