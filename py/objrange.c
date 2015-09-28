@@ -148,9 +148,9 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_seq_get_fast_slice_indexes(len, index, &slice);
             mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
             o->base.type = &mp_type_range;
-            o->start = slice.start;
-            o->stop = slice.stop;
-            o->step = slice.step;
+            o->start = self->start + slice.start * self->step;
+            o->stop = self->start + slice.stop * self->step;
+            o->step = slice.step * self->step;
             return o;
         }
 #endif
