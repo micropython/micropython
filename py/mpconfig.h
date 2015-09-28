@@ -469,6 +469,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #endif
 
+// Whether to support slicing ranges correctly
+#ifndef MICROPY_PY_BUILTINS_SLICE_RANGES_CORRECTLY
+#define MICROPY_PY_BUILTINS_SLICE_RANGES_CORRECTLY (0)
+#endif
+
 // Whether to support frozenset object
 #ifndef MICROPY_PY_BUILTINS_FROZENSET
 #define MICROPY_PY_BUILTINS_FROZENSET (0)

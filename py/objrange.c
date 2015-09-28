@@ -145,7 +145,11 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
+#if MICROPY_PY_BUILTINS_SLICE_RANGES_CORRECTLY
+            mp_seq_get_slice_indices(len, index, &slice);
+#else
             mp_seq_get_fast_slice_indexes(len, index, &slice);
+#endif
             mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
             o->base.type = &mp_type_range;
             o->start = self->start + slice.start * self->step;
