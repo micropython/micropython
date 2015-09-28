@@ -191,3 +191,34 @@ void mp_hal_rs485_resetRxPacket(void)
         Board_UART_resetRx(LPC_USART0);
 }
 
+// Buttons
+void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void* arg)
+{
+	Board_Buttons_configureCallback(buttonNumber,function,arg);
+}
+
+// GPIOs
+void mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup)
+{
+	Board_GPIOs_configure(gpioNumber,mode,pullup);
+}
+
+int32_t mp_hal_readGPIO(int32_t gpioNumber)
+{
+	return Board_GPIOs_readValue(gpioNumber);
+}
+
+void mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value)
+{
+	Board_GPIOs_writeValue(gpioNumber,value);
+}
+
+bool mp_hal_enableIntCallbackGPIO(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
+{
+	return Board_GPIOs_enableIntCallback(gpioNumber,function,arg,flagEdgeLevel,flagHighLow);
+}
+
+void mp_hal_disableIntCallbackGPIO(int gpioNumber)
+{
+	Board_GPIOs_disableIntCallback(gpioNumber);
+}

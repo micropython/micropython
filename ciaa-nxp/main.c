@@ -16,9 +16,15 @@
 #include "chip.h"
 #include "board.h"
 
+#define __SECTION_EXT(type, bank, name) __attribute__ ((section("." #type ".$" #bank "." #name)))
+#define __SECTION(type, bank) __attribute__ ((section("." #type ".$" #bank)))
+
+#define __DATA_EXT(bank, name) __SECTION_EXT(data, bank, name)
+#define __DATA(bank) __SECTION(data, bank)
+
 // maximum heap for device with 8k RAM
 static char *stack_top;
-static char heap[16*1024];
+static __DATA(RAM2) char heap[16*1024];
 
 extern const char programScript[];
 

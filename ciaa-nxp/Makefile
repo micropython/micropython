@@ -50,6 +50,8 @@ SRC_C = \
 	lib/mp-readline/readline.c \
 	modpybswitch.c \
 	modpybuart.c \
+	modpybpin.c \
+	modpybextint.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 #	printf.c \
@@ -68,7 +70,7 @@ all: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
-	$(Q)$(SIZE) $@
+	$(Q)$(SIZE) -A -x $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(CROSS_COMPILE)objcopy -v -O binary $< $@

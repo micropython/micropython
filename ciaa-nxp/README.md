@@ -5,7 +5,9 @@ EDU-CIAA board support package
 
 [Spanish Version](README_ES.md)
 
+
 [TOC]
+
 
 ## Usage mode
 - Open py/Main.py and write the Python script
@@ -39,9 +41,24 @@ Example:
 ```python
 import pyb
 switch1 = pyb.Switch(1)
-val = switch1.value()
+val = switch1.switch()
 print('sw1 vale:'+str(val))
 ```
+
+```python
+import pyb
+
+def func(sw):
+	print("sw pressed!")
+	print(sw)
+
+switch1 = pyb.Switch(1)
+switch1.callback(func)
+while True:
+	pyb.delay(1000)
+```
+
+
 
 Available switch numbers:  1 to 4
 More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
@@ -111,4 +128,57 @@ u0.init(115200,bits=8,
 
 In this example, The frame end is detected when a character 'o' is arrived.
 
+## GPIO Support over pyb.Pin
+
+Example:
+```python
+import pyb
+
+p = pyb.Pin(0) #GPIO0
+p.init(pyb.Pin.OUT_PP,pyb.Pin.PULL_NONE)
+print(p)
+
+while True:
+        p.high()
+        print("value:"+str(p.value()))
+        pyb.delay(1000)
+        p.low()
+        print("value:"+str(p.value()))
+        pyb.delay(1000)
+```
+Availabled GPIO is 0 to 8
+
+More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
+
+
+## GPIO Interrupt support over pyb.ExtInt
+
+Example:
+```python
+import pyb
+
+def callBack(line):
+        print("Pin Interrupt!")
+        print("Line = ",line)
+
+p = pyb.Pin(8)
+p.init(pyb.Pin.OUT_PP,pyb.Pin.PULL_NONE)
+print(p)
+
+int = pyb.ExtInt(p,pyb.ExtInt.IRQ_RISING,pyb.Pin.PULL_NONE,callBack)
+print(int)
+
+while True:
+        pyb.delay(1000)
+        print("tick")
+```
+This implements four interrupts available to assign on any of 9 GPIO.
+
+Methods:
+  - enable()
+  - disable()
+  - swint()
+  - line()
+
+More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 

@@ -58,9 +58,23 @@ typedef struct {
 	uint32_t timeoutCounter;
 	uint8_t flagNewPacket;
 } UartRxBufferData;
-
 static UartRxBufferData uart0RxBufferData;
 static UartRxBufferData uart3RxBufferData;
+
+
+typedef struct {
+	void(*callbackSw)(void*);
+	void* callbackSwArg;
+} ButtonData;
+static ButtonData buttonsData[4];
+
+typedef struct {
+	void(*callback)(void*);
+        void* callbackArg;
+	uint8_t gpioNumber;
+} ExtIntData;
+static ExtIntData extIntData[4];
+
 
 //================================================[UART Management]==========================================================
 void Board_UART_Init(LPC_USART_T *pUART)
@@ -397,19 +411,87 @@ void Board_LED_Toggle(uint8_t LEDNumber)
 	Board_LED_Set(LEDNumber, !Board_LED_Test(LEDNumber));
 }
 
+
+
+void GPIO0_IRQHandler(void)
+{
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0));
+	if(buttonsData[0].callbackSw!=NULL)
+		buttonsData[0].callbackSw( buttonsData[0].callbackSwArg);
+}
+
+void GPIO1_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1));
+	if(buttonsData[1].callbackSw!=NULL)
+		buttonsData[1].callbackSw( buttonsData[1].callbackSwArg);
+}
+
+void GPIO2_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+	if(buttonsData[2].callbackSw!=NULL)
+		buttonsData[2].callbackSw( buttonsData[2].callbackSwArg);
+}
+
+void GPIO3_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(3));
+	if(buttonsData[3].callbackSw!=NULL)
+		buttonsData[3].callbackSw( buttonsData[3].callbackSwArg);
+}
+
 void Board_Buttons_Init(void)
 {
+	 buttonsData[0].callbackSw=NULL;
+	 buttonsData[1].callbackSw=NULL;
+	 buttonsData[2].callbackSw=NULL;
+	 buttonsData[3].callbackSw=NULL;
+
 	Chip_SCU_PinMuxSet(0x1, 0, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));		// P1_0 as GPIO0[4]
 	Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON1_GPIO_PORT_NUM, BUTTONS_BUTTON1_GPIO_BIT_NUM);	// input
+	Chip_SCU_GPIOIntPinSel(0, 0, 4); // GPIO0[4] to INT0
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0)); // INT0
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(0)); // INT0
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(0));   // INT0
+	NVIC_ClearPendingIRQ(PIN_INT0_IRQn);
+        NVIC_EnableIRQ(PIN_INT0_IRQn);
+
 
         Chip_SCU_PinMuxSet(0x1, 1, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_1 as GPIO0[8]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON2_GPIO_PORT_NUM, BUTTONS_BUTTON2_GPIO_BIT_NUM);   // input
+	Chip_SCU_GPIOIntPinSel(1, 0, 8); // GPIO0[8] to INT1
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1)); // INT1
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(1)); // INT1
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(1));   // INT1
+	NVIC_ClearPendingIRQ(PIN_INT1_IRQn);
+        NVIC_EnableIRQ(PIN_INT1_IRQn);
+
 
         Chip_SCU_PinMuxSet(0x1, 2, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_2 as GPIO0[9]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON3_GPIO_PORT_NUM, BUTTONS_BUTTON3_GPIO_BIT_NUM);   // input
+	Chip_SCU_GPIOIntPinSel(2, 0, 9); // GPIO0[9] to INT2
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2)); // INT2
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(2)); // INT2
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(2));   // INT2
+        NVIC_ClearPendingIRQ(PIN_INT2_IRQn);
+        NVIC_EnableIRQ(PIN_INT2_IRQn);
+
 
         Chip_SCU_PinMuxSet(0x1, 6, (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC0));         // P1_6 as GPIO1[9]
         Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, BUTTONS_BUTTON4_GPIO_PORT_NUM, BUTTONS_BUTTON4_GPIO_BIT_NUM);   // input
+	Chip_SCU_GPIOIntPinSel(3, 1, 9); // GPIO1[9] to INT3
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(3)); // INT3
+        Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(3)); // INT3
+        Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(3));   // INT3
+        NVIC_ClearPendingIRQ(PIN_INT3_IRQn);
+        NVIC_EnableIRQ(PIN_INT3_IRQn);
+}
+
+void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),void* arg)
+{
+	buttonsData[buttonNumber].callbackSw = function;
+	buttonsData[buttonNumber].callbackSwArg = arg;
 }
 
 int Buttons_GetStatusByNumber(int BUTTONNumber)
@@ -443,15 +525,165 @@ int Buttons_GetStatusByNumber(int BUTTONNumber)
 	return -1;
 }
 
-/*
-uint32_t Buttons_GetStatus(void)
+// GPIOs
+typedef struct
 {
-	uint8_t ret = NO_BUTTON_PRESSED;
-	if (Chip_GPIO_GetPinState(LPC_GPIO_PORT, BUTTONS_BUTTON1_GPIO_PORT_NUM, BUTTONS_BUTTON1_GPIO_BIT_NUM) == 0) {
-		ret |= BUTTONS_BUTTON1;
+    int8_t port;
+    int8_t portBit;
+    int8_t gpio;
+    int8_t gpioBit;
+    int8_t func;
+
+}GpioInfo;
+
+static GpioInfo gpiosInfo[]={
+	{6,1,3,0,SCU_MODE_FUNC0},{6,4,3,3,SCU_MODE_FUNC0},{6,5,3,4,SCU_MODE_FUNC0},{6,7,5,15,SCU_MODE_FUNC4},{6,8,5,16,SCU_MODE_FUNC4},{6,9,3,5,SCU_MODE_FUNC0},{6,10,3,6,SCU_MODE_FUNC0},{6,11,3,7,SCU_MODE_FUNC0},{6,12,2,8,SCU_MODE_FUNC0}
+};
+
+void Board_GPIOs_Init(void)
+{
+	// GPIOs default: input. pull up and pull down disabled.
+	for(int32_t i=0 ; i<9; i++)
+        {
+	    Chip_SCU_PinMuxSet(gpiosInfo[i].port, gpiosInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[i].func));
+  	    Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[i].gpio, gpiosInfo[i].gpioBit);
 	}
-	return ret;
-}*/
+	extIntData[0].callback=NULL;
+	extIntData[1].callback=NULL;
+	extIntData[2].callback=NULL;
+	extIntData[3].callback=NULL;
+}
+
+void GPIO4_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(4));
+        if(extIntData[0].callback!=NULL)
+                extIntData[0].callback( extIntData[0].callbackArg);
+}
+void GPIO5_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(5));
+        if(extIntData[1].callback!=NULL)
+                extIntData[1].callback( extIntData[1].callbackArg);
+}
+void GPIO6_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(6));
+        if(extIntData[2].callback!=NULL)
+                extIntData[2].callback( extIntData[2].callbackArg);
+}
+void GPIO7_IRQHandler(void)
+{
+        Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(7));
+        if(extIntData[3].callback!=NULL)
+                extIntData[3].callback( extIntData[3].callbackArg);
+}
+
+
+void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
+{
+	int32_t pullUpMode=SCU_MODE_INACT;
+	switch(pullup)
+	{
+		case BOARD_GPIO_NOPULL:
+			pullUpMode=SCU_MODE_INACT;
+			break;
+		case BOARD_GPIO_PULLUP:
+			pullUpMode=SCU_MODE_PULLUP;
+			break;
+		case BOARD_GPIO_PULLDOWN:
+			pullUpMode=SCU_MODE_PULLDOWN;
+			break;
+	}
+	Chip_SCU_PinMuxSet(gpiosInfo[gpioNumber].port, gpiosInfo[gpioNumber].portBit, (pullUpMode | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[gpioNumber].func));
+
+        switch(mode)
+        {
+                case BOARD_GPIO_MODE_INPUT:
+                        Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);   // Input
+                        break;
+                case BOARD_GPIO_MODE_OUTPUT_PP:
+                        Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit); // Output
+                        break;
+                case BOARD_GPIO_MODE_OUTPUT_OD:
+                        Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit); // Output
+                        break;
+        }
+}
+
+uint32_t Board_GPIOs_readValue(int32_t gpioNumber)
+{
+	return Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+}
+
+void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
+{
+	if(value)
+		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+	else
+		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+}
+
+bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
+{
+	// check if gpio alerady has assigned int
+	for(uint8_t i=0; i<4 ; i++)
+        {
+                if(extIntData[i].callback!=NULL && extIntData[i].gpioNumber==gpioNumber)
+                    return 0;
+	}
+
+	// find free extInt callback
+	for(uint8_t i=0; i<4 ; i++)
+	{
+		if(extIntData[i].callback==NULL)
+		{
+        		extIntData[i].callback = function;
+        		extIntData[i].callbackArg = arg;
+			extIntData[i].gpioNumber=gpioNumber;
+			// Enable interrupt
+			uint8_t intNumber = i + 4; // starts from INT4
+			Chip_SCU_GPIOIntPinSel(intNumber, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+        		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+
+			if(flagEdgeLevel)
+        			Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+			else
+				Chip_PININT_SetPinModeLevel(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+
+			if(flagHighLow)
+				Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+			else
+        			Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+
+			switch(intNumber) {
+				case 4: NVIC_ClearPendingIRQ(PIN_INT4_IRQn); NVIC_EnableIRQ(PIN_INT4_IRQn); break;
+				case 5: NVIC_ClearPendingIRQ(PIN_INT5_IRQn); NVIC_EnableIRQ(PIN_INT5_IRQn); break;
+				case 6: NVIC_ClearPendingIRQ(PIN_INT6_IRQn); NVIC_EnableIRQ(PIN_INT6_IRQn); break;
+				case 7: NVIC_ClearPendingIRQ(PIN_INT7_IRQn); NVIC_EnableIRQ(PIN_INT7_IRQn); break;
+			}
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void Board_GPIOs_disableIntCallback(int gpioNumber)
+{
+	for(uint8_t i=0; i<4 ; i++)
+        {
+                if(extIntData[i].callback!=NULL && extIntData[i].gpioNumber==gpioNumber)
+                {
+			extIntData[i].callback=NULL;
+			uint8_t intNumber = i + 4; // starts from INT4
+			Chip_PININT_DisableIntHigh(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+			Chip_PININT_DisableIntLow(LPC_GPIO_PIN_INT, PININTCH(intNumber));
+		}
+        }
+}
+
+//_____________________________________________________________________________________________________________________________________________
+
 
 void Board_Joystick_Init(void)
 {}
@@ -478,6 +710,7 @@ void Board_Init(void)
 
 	/* Initializes GPIO */
 	Chip_GPIO_Init(LPC_GPIO_PORT);
+	Board_GPIOs_Init();
 
 	/* Initialize LEDs */
 	Board_LED_Init();
