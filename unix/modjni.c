@@ -378,12 +378,16 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
                 }
 
                 JJ(ReleaseStringUTFChars, name_o, decl);
+                JJ(DeleteLocalRef, name_o);
+                JJ(DeleteLocalRef, meth);
                 return ret;
             }
         }
 
 next_method:
         JJ(ReleaseStringUTFChars, name_o, decl);
+        JJ(DeleteLocalRef, name_o);
+        JJ(DeleteLocalRef, meth);
     }
 
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "method not found"));
