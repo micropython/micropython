@@ -56,7 +56,6 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 
 
 mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t valObj) {
-    pyb_dac_obj_t *self = self_in;
     uint16_t value = (uint16_t) mp_obj_get_int(valObj);
     mp_hal_writeDAC(value);
     return mp_const_none;
@@ -107,7 +106,6 @@ STATIC mp_obj_t pyb_dac_write_timed_helper(const pyb_dac_obj_t *self, mp_uint_t 
 
     // Data
     mp_buffer_info_t bufinfo;
-    uint8_t data[1];
     mp_get_buffer_raise(vals[0].u_obj, &bufinfo, MP_BUFFER_READ);
 
     // freq
@@ -115,18 +113,6 @@ STATIC mp_obj_t pyb_dac_write_timed_helper(const pyb_dac_obj_t *self, mp_uint_t 
 
     // mode
     uint8_t mode = vals[2].u_int;
-
-    char aux[512];
-    sprintf(aux,"data len:%d freq:%d mode:%d",bufinfo.len,freq,mode);
-    Board_UARTPutSTR(aux);
-
-    uint16_t* pBuf = bufinfo.buf;
-
-    for(int i=0; i<bufinfo.len/2; i=i+1)
-    {
-	sprintf(aux,"0x%x ",pBuf[i]);
-	Board_UARTPutSTR(aux);
-    }
 
     mp_hal_setSampleRateDAC(freq);
     mp_hal_writeDMADAC((uint16_t*)bufinfo.buf, bufinfo.len/2, mode);
