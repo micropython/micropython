@@ -65,6 +65,16 @@ Q(enable)
 Q(disable)
 Q(swint)
 
+Q(DAC)
+Q(write)
+Q(noise)
+Q(triangle)
+Q(write_timed)
+Q(NORMAL)
+Q(CIRCULAR)
+Q(data)
+Q(freq)
+
 
 /*
 Q(readall)

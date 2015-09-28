@@ -222,3 +222,20 @@ void mp_hal_disableIntCallbackGPIO(int gpioNumber)
 {
 	Board_GPIOs_disableIntCallback(gpioNumber);
 }
+
+//DAC
+void mp_hal_writeDAC(uint32_t value)
+{
+	Board_DAC_writeValue(value);
+}
+
+void mp_hal_setSampleRateDAC(uint32_t freq)
+{
+	Board_DAC_setSampleRate(freq);
+}
+
+int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic)
+{
+	return Board_DAC_writeDMA(buffer,size,flagCyclic);
+}
+

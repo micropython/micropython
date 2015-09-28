@@ -686,7 +686,7 @@ void Board_GPIOs_disableIntCallback(int gpioNumber)
 
 
 // DAC
-#define DMA_FIFO_SIZE	1024
+#define DMA_FIFO_SIZE	256
 typedef struct
 {
 	uint32_t dmaBuffer[DMA_FIFO_SIZE];

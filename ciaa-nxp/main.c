@@ -98,6 +98,7 @@ int main(int argc, char **argv) {
 
 
     // prueba dac ***************************
+	/*
     //	Board_DAC_writeValue(512);
     uint16_t samples[1000];
     uint16_t samples2[1000];
@@ -132,6 +133,7 @@ int main(int argc, char **argv) {
 		Board_UARTPutSTR("sample 1 ");
 	}
     }
+	*/
      //_____________________________________
 
 
