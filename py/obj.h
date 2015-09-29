@@ -662,7 +662,7 @@ void mp_seq_multiply(const void *items, mp_uint_t item_sz, mp_uint_t len, mp_uin
 #if MICROPY_PY_BUILTINS_SLICE
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
 #if MICROPY_PY_BUILTINS_SLICE_RANGES_CORRECTLY
-bool mp_seq_get_slice_indices(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
+void mp_seq_get_slice_indices(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
 #endif
 #endif
 #define mp_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))

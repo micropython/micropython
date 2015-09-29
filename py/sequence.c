@@ -96,7 +96,7 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
 }
 
 #if MICROPY_PY_BUILTINS_SLICE_RANGES_CORRECTLY
-bool mp_seq_get_slice_indices(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
+void mp_seq_get_slice_indices(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
     // Used in slicing ranges. Slices and ranges are difficult to get
     // entirely right. This function is transliterated from Cpython's
     // _PySlice_GetLongIndices in sliceobject.c
@@ -160,11 +160,6 @@ bool mp_seq_get_slice_indices(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *i
     indexes->start = start;
     indexes->stop = stop;
     indexes->step = step;
-
-    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-        return false;
-    }
-    return true;
 }
 #endif
 #endif
