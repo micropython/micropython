@@ -281,12 +281,6 @@ void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),voi
  */
 void Board_Audio_Init(LPC_I2S_T *pI2S, int micIn);
 
-/**
- * @brief	Initialize DAC
- * @param	pDAC	: Pointer to DAC register interface used on this board
- * @return	Nothing
- */
-void Board_DAC_Init(LPC_DAC_T *pDAC);
 
 /**
  * @brief	Initialize ADC
@@ -442,6 +436,32 @@ bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* a
  * @return      void
  */
 void Board_GPIOs_disableIntCallback(int gpioNumber);
+
+
+
+/**
+ * @brief       Writes a 10-bit-value to DAC output
+ * @param       value
+ * @return      void
+ */
+void Board_DAC_writeValue(uint32_t value);
+
+/**
+ * @brief       Sets sampless' frecuency
+ * @param       value between 3112 and 1000000
+ * @return      void
+ */
+void Board_DAC_setSampleRate(uint32_t freq);
+
+/**
+ * @brief       Configure and start a DMA transfer from a buffer
+ * @param       buffer : Buffer with samples (10-bit value)
+ * @param       size : Number of samples
+ * @param       flagCyclic : 1: cyclic mode, 0: just one write
+ * @return      Amount of bytes transferred
+ */
+int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic);
+
 
 
 /**

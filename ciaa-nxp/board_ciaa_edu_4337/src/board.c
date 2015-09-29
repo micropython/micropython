@@ -685,6 +685,130 @@ void Board_GPIOs_disableIntCallback(int gpioNumber)
 //_____________________________________________________________________________________________________________________________________________
 
 
+// DAC
+#define DMA_FIFO_SIZE	256
+typedef struct
+{
+	uint32_t dmaBuffer[DMA_FIFO_SIZE];
+	uint32_t samples;
+	uint8_t flagEnableBias;
+	uint8_t dmaChannelDAC;
+	uint8_t flagCyclic;
+} DACInfo;
+
+static DACInfo dacInfo;
+
+void DMA_IRQHandler(void)
+{
+    NVIC_DisableIRQ(DMA_IRQn);
+
+   if (Chip_GPDMA_Interrupt(LPC_GPDMA, dacInfo.dmaChannelDAC) == SUCCESS)
+   {
+        Chip_GPDMA_Stop(LPC_GPDMA, dacInfo.dmaChannelDAC);
+	if(dacInfo.flagCyclic)
+	{
+		Chip_GPDMA_Transfer(LPC_GPDMA, dacInfo.dmaChannelDAC,
+                                                           (uint32_t) &dacInfo.dmaBuffer, GPDMA_CONN_DAC,
+                                                           GPDMA_TRANSFERTYPE_M2P_CONTROLLER_DMA, dacInfo.samples);
+		NVIC_EnableIRQ(DMA_IRQn);
+	}
+   }
+   else
+   {
+       NVIC_EnableIRQ(DMA_IRQn);
+   }
+}
+
+void Board_DAC_Init(void)
+{
+   Chip_SCU_DAC_Analog_Config();
+   Chip_DAC_Init(LPC_DAC);
+   Chip_DAC_SetBias(LPC_DAC, DAC_MAX_UPDATE_RATE_400kHz);
+   Chip_DAC_ConfigDAConverterControl(LPC_DAC, DAC_CNT_ENA | DAC_DMA_ENA);
+
+   // Enable DMA
+   Chip_DAC_SetDMATimeOut(LPC_DAC, 0xffff);
+   Chip_GPDMA_Init(LPC_GPDMA);
+   NVIC_DisableIRQ(DMA_IRQn);
+   NVIC_SetPriority(DMA_IRQn, ((0x01 << 3) | 0x01));
+   NVIC_EnableIRQ(DMA_IRQn);
+
+   dacInfo.flagCyclic=0;
+   dacInfo.dmaChannelDAC=0xFF;
+}
+
+void Board_DAC_setSampleRate(uint32_t freq)
+{
+	uint16_t value;
+
+	if(freq < 3112)
+	{
+	    value=0xFFFF;
+ 	    dacInfo.flagEnableBias=0;
+	}
+	else if( freq >= 3112 && freq < 400000)
+	{
+		dacInfo.flagEnableBias=0;
+		value = 204000000l/freq;
+	}
+	else
+	{
+		dacInfo.flagEnableBias=1;
+                value = 204000000l/freq;
+	}
+
+	Chip_DAC_SetDMATimeOut(LPC_DAC, value);
+}
+
+void Board_DAC_writeValue(uint32_t value)
+{
+	Chip_DAC_UpdateValue(LPC_DAC,value);
+}
+
+
+int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic)
+{
+   int32_t ret = -1;
+
+   if (size != 0)
+   {
+	 NVIC_DisableIRQ(DMA_IRQn);
+	 dacInfo.flagCyclic = flagCyclic;
+
+         for (dacInfo.samples=0; dacInfo.samples<size; dacInfo.samples++)
+  	 {
+		dacInfo.dmaBuffer[dacInfo.samples] = (uint32_t) (DAC_VALUE(buffer[dacInfo.samples]));
+		if(dacInfo.flagEnableBias)
+		    dacInfo.dmaBuffer[dacInfo.samples]|= DAC_BIAS_EN;
+
+		if(dacInfo.samples>= DMA_FIFO_SIZE)
+			break;
+	 }
+
+	if(dacInfo.dmaChannelDAC==0xFF)
+	{
+		/* Get the free channel for DMA transfer */
+		dacInfo.dmaChannelDAC = Chip_GPDMA_GetFreeChannel(LPC_GPDMA, GPDMA_CONN_DAC);
+	}
+	else
+	{
+		Chip_GPDMA_Stop(LPC_GPDMA, dacInfo.dmaChannelDAC);
+	}
+
+	/* Start DMA transfer */
+	Chip_GPDMA_Transfer(LPC_GPDMA, dacInfo.dmaChannelDAC,
+							   (uint32_t) &dacInfo.dmaBuffer, GPDMA_CONN_DAC,
+							   GPDMA_TRANSFERTYPE_M2P_CONTROLLER_DMA, dacInfo.samples);
+	ret = dacInfo.samples*2;
+	NVIC_EnableIRQ(DMA_IRQn);
+   }
+   return ret;
+}
+//_____________________________________________________________________________________________________________________________________________
+
+
+
+
 void Board_Joystick_Init(void)
 {}
 
@@ -721,6 +845,9 @@ void Board_Init(void)
 
 	/* Initialize buttons */
 	Board_Buttons_Init();
+
+	/* Initialize DAC */
+	Board_DAC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }
@@ -763,11 +890,6 @@ void Board_SSP_Init(LPC_SSP_T *pSSP)
 	}
 }
 
-/* Initialize DAC interface for the board */
-void Board_DAC_Init(LPC_DAC_T *pDAC)
-{
-	Chip_SCU_DAC_Analog_Config();
-}
 
 #if 0
 /* Initialize Audio Codec */
