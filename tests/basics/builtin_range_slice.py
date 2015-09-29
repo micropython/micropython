@@ -11,6 +11,7 @@ else:
     import sys
     sys.exit(0)
 
+print(range(1,4)[::-1])
 print(range(7,-2,-4)[2:-2:])
 print(range(7,-2,-4)[2:-2:-3])
 
