@@ -30,6 +30,7 @@
 #include <dlfcn.h>
 
 #include "py/nlr.h"
+#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/binary.h"
 
@@ -51,6 +52,7 @@ static jmethodID Method_toString_mid;
 static jclass List_class;
 static jmethodID List_get_mid;
 static jmethodID List_set_mid;
+static jmethodID List_size_mid;
 
 STATIC const mp_obj_type_t jobject_type;
 STATIC const mp_obj_type_t jmethod_type;
@@ -207,10 +209,27 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
 return MP_OBJ_NULL;
 }
 
+STATIC mp_obj_t jobject_unary_op(mp_uint_t op, mp_obj_t self_in) {
+    mp_obj_jobject_t *self = self_in;
+    switch (op) {
+        case MP_UNARY_OP_BOOL:
+        case MP_UNARY_OP_LEN: {
+            jint len = JJ(CallIntMethod, self->obj, List_size_mid);
+            if (op == MP_UNARY_OP_BOOL) {
+                return MP_BOOL(len != 0);
+            }
+            return MP_OBJ_NEW_SMALL_INT(len);
+        }
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC const mp_obj_type_t jobject_type = {
     { &mp_type_type },
     .name = MP_QSTR_jobject,
     .print = jobject_print,
+    .unary_op = jobject_unary_op,
     .attr = jobject_attr,
     .subscr = jobject_subscr,
 //    .locals_dict = (mp_obj_t)&jobject_locals_dict,
@@ -471,6 +490,8 @@ STATIC void create_jvm() {
                                      "(I)Ljava/lang/Object;");
     List_set_mid = JJ(GetMethodID, List_class, "set",
                                      "(ILjava/lang/Object;)Ljava/lang/Object;");
+    List_size_mid = JJ(GetMethodID, List_class, "size",
+                                     "()I");
 }
 
 STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
