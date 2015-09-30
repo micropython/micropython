@@ -28,6 +28,7 @@
 #include <string.h>
 #include <errno.h>
 #include <dlfcn.h>
+#include <ctype.h>
 
 #include "py/nlr.h"
 #include "py/runtime0.h"
@@ -298,6 +299,9 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         }
     } else if (type == &jobject_type) {
         printf("TODO: Check java arg type!!\n");
+        while (isalpha(*arg_type) || *arg_type == '.') {
+            arg_type++;
+        }
         mp_obj_jobject_t *jo = arg;
         out->l = jo->obj;
     } else {
@@ -359,7 +363,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
 //        printf("name=%p meth_name=%s\n", name, meth_name);
 
         bool found = true;
-        for (int i = 0; i < n_args; i++) {
+        for (int i = 0; i < n_args && *arg_types != ')'; i++) {
             if (!py2jvalue(&arg_types, args[i], &jargs[i])) {
                 goto next_method;
             }
@@ -367,6 +371,10 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             if (*arg_types == ',') {
                 arg_types++;
             }
+        }
+
+        if (*arg_types != ')') {
+            goto next_method;
         }
 
         if (found) {
