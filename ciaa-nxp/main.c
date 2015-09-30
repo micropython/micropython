@@ -7,6 +7,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "stmhal/pyexec.h"
 #include "ciaanxp_mphal.h"
 
 #include "modpyb.h"
@@ -26,7 +27,7 @@
 static char *stack_top;
 static __DATA(RAM2) char heap[16*1024];
 
-extern const char programScript[];
+//extern const char programScript[];
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -51,89 +52,21 @@ int main(int argc, char **argv) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
-    int i;
-    for(i=0;i<sizeof(heap);i++)
-   	heap[i]=0;
+	memset(heap, 0, sizeof(heap));
     gc_init(heap, heap + sizeof(heap));
 
     mp_init();
     mp_hal_init();
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    mp_obj_list_init(mp_sys_argv, 0);
 
-    // prueba uart 485
-	/*
-    while(1)
-	{
-		if(mp_hal_rs232_charAvailable()==1)
-		{
-			int32_t data = mp_hal_rs232_getChar();
-			char aux[48];
-    			sprintf(aux,"llego: %d ",data);
-    			Board_UARTPutSTR(aux);
-		}
-	}*/
-    //while(1)
-	//char rxBuffer[512];
-	//Board_UART_setRxBuffer(LPC_USART3,rxBuffer,sizeof(rxBuffer),10000,NULL);
-	//Board_UART_setConfig(LPC_USART3,115200, 1,0);
-        //Board_UART_Write(LPC_USART3,"HOLA", 4);
-	/*
-	while(1)
-	{
-		if(Board_UART_isNewPacket(LPC_USART3))
-		{
-			char aux[1024];
-			sprintf(aux,"llegaron %d bytes, contenido:%s",Board_UART_getRxSize(LPC_USART3),rxBuffer);
-			Board_UARTPutSTR(aux);
-			Board_UART_resetRx(LPC_USART3);
-		}
-	}*/
-    //____________
-
-
-    // prueba dac ***************************
-	/*
-    //	Board_DAC_writeValue(512);
-    uint16_t samples[1000];
-    uint16_t samples2[1000];
-    for(int i=0; i<1000; i++)
-         //samples[i]= ((uint16_t)i)*10;
-	 if(i&0x01==0x01)
-             samples[i]=1023;
-	else
-             samples[i]=0;
-
-    for(int i=0; i<1000; i++)
-         samples2[i]= ((uint16_t)i)*10;
-
-    Board_DAC_setSampleRate(5000);
-    Board_DAC_writeDMA(samples, 1000,0);
-    bool f=0;
-    while (1)
-    {
-        //Board_DAC_setSampleRate(5000);
-        //Board_DAC_writeDMA(samples, 100);
-       mp_hal_milli_delay(2000);
-	if(f==0)
-	{
-		f=1;
-		Board_DAC_writeDMA(samples2, 1000,1);
-		Board_UARTPutSTR("sample 2 ");
-	}
-	else
-	{
-		f=0;
-		Board_DAC_writeDMA(samples, 1000,1);
-		Board_UARTPutSTR("sample 1 ");
-	}
+    if (!pyexec_file("/Main.py")) {
+		mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }
-	*/
-     //_____________________________________
 
-
-    do_str(programScript, MP_PARSE_FILE_INPUT);
     pyexec_friendly_repl();
-    mp_deinit();
-    return 0;
+    mp_deinit();return 0;
 }
 
 
@@ -145,10 +78,11 @@ void gc_collect(void) {
     //gc_dump_info();
 }
 
-
+#if 0
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return NULL;
 }
+#endif
 
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;

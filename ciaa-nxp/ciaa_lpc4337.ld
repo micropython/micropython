@@ -101,6 +101,9 @@ SECTIONS
          *(.text*)
         *(.rodata .rodata.* .constdata .constdata.*)
         . = ALIGN(4);
+    	_staticfs = .;
+    	KEEP(build/fs.o)
+        . = ALIGN(4);
         
     } > MFlashA512
 

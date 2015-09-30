@@ -1,9 +1,9 @@
 include ../py/mkenv.mk
 
-# Generate python script binary data
-build/ProgramScript.c: py/Main.py
-	@echo "Generate program script"
-	@python py2c.py $< $@
+# Generate python script binary data (DEPRECATED)
+#build/ProgramScript.c: py/Main.py
+#	@echo "Generate program script"
+#	@python py2c.py $< $@
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -39,7 +39,6 @@ LIBS =
 
 SRC_C = \
 	main.c \
-	build/ProgramScript.c \
 	sysinit.c \
 	system.c \
 	cr_startup_lpc43xx.c \
@@ -47,6 +46,7 @@ SRC_C = \
 	ciaanxp_mphal.c \
 	modpybled.c \
 	stmhal/pyexec.c \
+	stmhal/pybstdio.c \
 	lib/mp-readline/readline.c \
 	modpybswitch.c \
 	modpybuart.c \
@@ -55,7 +55,10 @@ SRC_C = \
 	modpybdac.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
-#	printf.c \
+	teensy/memzip.c \
+	teensy/lexermemzip.c \
+#	build/ProgramScript.c \
+	printf.c \
 	string0.c \
 	malloc0.c \
 	gccollect.c \
@@ -68,9 +71,18 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 all: $(BUILD)/firmware.elf
 
-$(BUILD)/firmware.elf: $(OBJ)
+build/fs.zip: $(wildcard py/*)
+	$(ECHO) "Create ROMFS (phase 1)"
+	$(Q)(cd py && zip -0 -r -D ../$@ .)
+
+build/fs.o: build/fs.zip
+	$(ECHO) "Create ROMFS (phase 2)"
+	$(Q)$(CROSS_COMPILE)objcopy -v -B arm -I binary -O elf32-littlearm $^ $@
+
+
+$(BUILD)/firmware.elf: $(OBJ) build/fs.o
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) -A -x $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
