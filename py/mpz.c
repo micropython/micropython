@@ -239,12 +239,8 @@ STATIC mp_uint_t mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t j
         carry >>= DIG_SIZE;
     }
 
-    if (carry != 0) {
-        *idig = carry;
-    } else {
-        // remove trailing zeros
-        for (--idig; idig >= oidig && *idig == 0; --idig) {
-        }
+    // remove trailing zeros
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
     }
 
     return idig + 1 - oidig;
