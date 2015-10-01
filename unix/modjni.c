@@ -92,6 +92,16 @@ STATIC bool is_object_type(const char *jtypesig) {
     return false;
 }
 
+STATIC void check_exception(void) {
+    jobject exc = JJ1(ExceptionOccurred);
+    if (exc) {
+        //JJ1(ExceptionDescribe);
+        mp_obj_t py_e = new_jobject(exc);
+        JJ1(ExceptionClear);
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_Exception, py_e));
+    }
+}
+
 // jclass
 
 STATIC void jclass_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -200,6 +210,9 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         jobject el = JJ(CallObjectMethod, self->obj, List_get_mid, idx);
+        if (el == NULL) {
+            check_exception();
+        }
         return new_jobject(el);
     } else {
         // store
