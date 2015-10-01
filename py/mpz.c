@@ -992,11 +992,9 @@ void mpz_not_inpl(mpz_t *dest, const mpz_t *z) {
 /* computes dest = lhs << rhs
    can have dest, lhs the same
 */
-void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
+void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
-    } else if (rhs < 0) {
-        mpz_shr_inpl(dest, lhs, -rhs);
     } else {
         mpz_need_dig(dest, lhs->len + (rhs + DIG_SIZE - 1) / DIG_SIZE);
         dest->len = mpn_shl(dest->dig, lhs->dig, lhs->len, rhs);
@@ -1007,11 +1005,9 @@ void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
 /* computes dest = lhs >> rhs
    can have dest, lhs the same
 */
-void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
+void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
-    } else if (rhs < 0) {
-        mpz_shl_inpl(dest, lhs, -rhs);
     } else {
         mpz_need_dig(dest, lhs->len);
         dest->len = mpn_shr(dest->dig, lhs->dig, lhs->len, rhs);
