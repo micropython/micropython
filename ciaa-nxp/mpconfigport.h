@@ -31,16 +31,25 @@
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
-#define MICROPY_PY_ATTRTUPLE        (0)
+#define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
-#define MICROPY_PY_STRUCT           (0)
+#define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+
+#define MICROPY_PY_IO_FILEIO        (0)
+#define MICROPY_PY_UBINASCII        (1)
+#define MICROPY_PY_UCTYPES          (1)
+#define MICROPY_PY_UZLIB            (1)
+#define MICROPY_PY_UJSON            (1)
+#define MICROPY_PY_URE              (1)
+#define MICROPY_PY_UHEAPQ           (1)
+#define MICROPY_PY_UHASHLIB         (1)
 
 // Optimizations
 #define MICROPY_OPT_COMPUTED_GOTO (0)
@@ -70,10 +79,28 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 // extra builtin modules to add to the list of known ones
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t mp_module_collections;
+extern const struct _mp_obj_module_t mp_module_ustruct;
+extern const struct _mp_obj_module_t mp_module_ubinascii;
+extern const struct _mp_obj_module_t mp_module_ure;
+extern const struct _mp_obj_module_t mp_module_uzlib;
+extern const struct _mp_obj_module_t mp_module_ujson;
+extern const struct _mp_obj_module_t mp_module_uheapq;
+extern const struct _mp_obj_module_t mp_module_uhashlib;
+extern const struct _mp_obj_module_t mp_module_uos;
+extern const struct _mp_obj_module_t mp_module_utime;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_collections), (mp_obj_t)&mp_module_collections }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_ustruct }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_re), (mp_obj_t)&mp_module_ure }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_zlib), (mp_obj_t)&mp_module_uzlib }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_heapq), (mp_obj_t)&mp_module_uheapq }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib), (mp_obj_t)&mp_module_uhashlib }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
 
 
 // We need to provide a declaration/definition of alloca()
@@ -84,8 +111,8 @@ extern const struct _mp_obj_module_t mp_module_collections;
 
 //static inline void mp_hal_set_interrupt_char(char c) {}
 
-#define MICROPY_HW_BOARD_NAME "minimal"
-#define MICROPY_HW_MCU_NAME "unknown-cpu"
+#define MICROPY_HW_BOARD_NAME "EDU-CIAA-NXP"
+#define MICROPY_HW_MCU_NAME "LPC4337"
 
 #define MP_STATE_PORT MP_STATE_VM
 

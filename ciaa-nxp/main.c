@@ -23,9 +23,9 @@
 #define __DATA_EXT(bank, name) __SECTION_EXT(data, bank, name)
 #define __DATA(bank) __SECTION(data, bank)
 
-// maximum heap for device with 8k RAM
+// maximum heap for device with 32k RAM o RAM2 (40K block)
 static char *stack_top;
-static __DATA(RAM2) char heap[16*1024];
+static __DATA(RAM2) char heap[32*1024];
 
 //extern const char programScript[];
 

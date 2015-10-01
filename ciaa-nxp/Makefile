@@ -17,6 +17,7 @@ CROSS_COMPILE = arm-none-eabi-
 INC =  -I.
 INC += -I..
 INC += -I../mphal
+INC += -I../teensy
 INC += -I../lib/mp-readline
 INC += -Iboard_ciaa_edu_4337/inc/ -Ilpc_chip_43xx/inc/
 INC += -I$(BUILD)
@@ -48,6 +49,7 @@ SRC_C = \
 	stmhal/pyexec.c \
 	stmhal/pybstdio.c \
 	lib/mp-readline/readline.c \
+	moduos.c \
 	modpybswitch.c \
 	modpybuart.c \
 	modpybpin.c \
@@ -56,6 +58,7 @@ SRC_C = \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 	teensy/memzip.c \
+	memzip_extras.c \
 	teensy/lexermemzip.c \
 #	build/ProgramScript.c \
 	printf.c \
