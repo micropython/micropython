@@ -17,3 +17,8 @@ print("%.5g" % (i / 1.2))
 
 # this should delegate to complex
 print("%.5g" % (i * 1.2j).imag)
+
+try:
+    i / 0
+except ZeroDivisionError:
+    print("ZeroDivisionError")

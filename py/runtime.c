@@ -389,6 +389,9 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
 
                 case MP_BINARY_OP_MODULO:
                 case MP_BINARY_OP_INPLACE_MODULO: {
+                    if (rhs_val == 0) {
+                        goto zero_division;
+                    }
                     lhs_val = mp_small_int_modulo(lhs_val, rhs_val);
                     break;
                 }
