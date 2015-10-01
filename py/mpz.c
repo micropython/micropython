@@ -29,6 +29,9 @@
 
 #include "py/mpz.h"
 
+// this is only needed for mp_not_implemented, which should eventually be removed
+#include "py/runtime.h"
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 
 #define DIG_SIZE (MPZ_DIG_SIZE)
@@ -1108,7 +1111,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
             dest->neg = 0;
         } else {
             // TODO both args are negative
-            assert(0);
+            mp_not_implemented("bignum and with negative args");
         }
     } else {
         // args have different sign
@@ -1141,7 +1144,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         mpz_need_dig(dest, lhs->len);
         // TODO
-        assert(0);
+        mp_not_implemented("bignum or with negative args");
 //        dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     }
 
@@ -1164,7 +1167,7 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         mpz_need_dig(dest, lhs->len);
         // TODO
-        assert(0);
+        mp_not_implemented("bignum xor with negative args");
 //        dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     }
 
