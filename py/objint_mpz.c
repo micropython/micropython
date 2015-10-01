@@ -193,6 +193,9 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (0) {
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (op == MP_BINARY_OP_TRUE_DIVIDE || op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE) {
+        if (mpz_is_zero(zrhs)) {
+            goto zero_division_error;
+        }
         mp_float_t flhs = mpz_as_float(zlhs);
         mp_float_t frhs = mpz_as_float(zrhs);
         return mp_obj_new_float(flhs / frhs);
@@ -216,6 +219,11 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
             case MP_BINARY_OP_FLOOR_DIVIDE:
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
+                if (mpz_is_zero(zrhs)) {
+                    zero_division_error:
+                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError,
+                        "division by zero"));
+                }
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
                 if (zlhs->neg != zrhs->neg) {
@@ -229,6 +237,9 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             }
             case MP_BINARY_OP_MODULO:
             case MP_BINARY_OP_INPLACE_MODULO: {
+                if (mpz_is_zero(zrhs)) {
+                    goto zero_division_error;
+                }
                 mpz_t quo; mpz_init_zero(&quo);
                 mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
                 mpz_deinit(&quo);
@@ -274,6 +285,9 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 break;
 
             case MP_BINARY_OP_DIVMOD: {
+                if (mpz_is_zero(zrhs)) {
+                    goto zero_division_error;
+                }
                 mp_obj_int_t *quo = mp_obj_int_new_mpz();
                 mpz_divmod_inpl(&quo->mpz, &res->mpz, zlhs, zrhs);
                 // Check signs and do Python style modulo

@@ -29,3 +29,13 @@ try:
     i << (-(i >> 40))
 except ValueError:
     print('ValueError')
+
+try:
+    i // 0
+except ZeroDivisionError:
+    print('ZeroDivisionError')
+
+try:
+    i % 0
+except ZeroDivisionError:
+    print('ZeroDivisionError')
