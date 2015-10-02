@@ -55,6 +55,8 @@ static jmethodID List_get_mid;
 static jmethodID List_set_mid;
 static jmethodID List_size_mid;
 
+static jclass IndexException_class;
+
 STATIC const mp_obj_type_t jobject_type;
 STATIC const mp_obj_type_t jmethod_type;
 
@@ -98,6 +100,9 @@ STATIC void check_exception(void) {
         //JJ1(ExceptionDescribe);
         mp_obj_t py_e = new_jobject(exc);
         JJ1(ExceptionClear);
+        if (JJ(IsInstanceOf, exc, IndexException_class)) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, py_e));
+        }
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_Exception, py_e));
     }
 }
@@ -513,6 +518,7 @@ STATIC void create_jvm() {
                                      "(ILjava/lang/Object;)Ljava/lang/Object;");
     List_size_mid = JJ(GetMethodID, List_class, "size",
                                      "()I");
+    IndexException_class = JJ(FindClass, "java/lang/IndexOutOfBoundsException");
 }
 
 STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
