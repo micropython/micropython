@@ -83,10 +83,6 @@ test_syntax("nonlocal a")
 # default except must be last
 test_syntax("try:\n a\nexcept:\n pass\nexcept:\n pass")
 
-# can't have multiple * or **
-test_syntax("f(*a, *b)")
-test_syntax("f(**a, **b)")
-
 # LHS of keywords must be id's
 test_syntax("f(1=2)")
 
