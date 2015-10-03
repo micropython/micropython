@@ -43,7 +43,7 @@ DSTATUS disk_status (
 )
 {
     switch (pdrv) {
-    case SFLASH:
+    case FLASH:
         return sflash_disk_status();
     default:
         break;
@@ -63,7 +63,7 @@ DSTATUS disk_initialize (
     DSTATUS stat = 0;
 
     switch (pdrv) {
-    case SFLASH:
+    case FLASH:
         if (RES_OK != sflash_disk_init()) {
             stat = STA_NOINIT;
         }
@@ -87,7 +87,7 @@ DRESULT disk_read (
 )
 {
     switch (pdrv) {
-    case SFLASH:
+    case FLASH:
         return sflash_disk_read(buff, sector, count);
     default:
         break;
@@ -109,7 +109,7 @@ DRESULT disk_write (
 )
 {
     switch (pdrv) {
-    case SFLASH:
+    case FLASH:
         return sflash_disk_write(buff, sector, count);
     default:
         break;
@@ -130,7 +130,7 @@ DRESULT disk_ioctl (
 )
 {
     switch (pdrv) {
-    case SFLASH:
+    case FLASH:
         switch (cmd) {
         case CTRL_SYNC:
             return sflash_disk_flush();
