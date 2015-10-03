@@ -48,7 +48,7 @@ static jmethodID Class_getField_mid;
 static jmethodID Class_getMethods_mid;
 static jmethodID Class_getConstructors_mid;
 static jmethodID Method_getName_mid;
-static jmethodID Method_toString_mid;
+static jmethodID Object_toString_mid;
 
 static jclass List_class;
 static jmethodID List_get_mid;
@@ -180,10 +180,17 @@ STATIC mp_obj_t new_jclass(jclass jc) {
 // jobject
 
 STATIC void jobject_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    (void)kind;
     mp_obj_jobject_t *self = self_in;
-    // Variable value printed as cast to int
-    mp_printf(print, "<jobject @%p>", self->obj);
+    if (kind == PRINT_REPR) {
+        mp_printf(print, "<jobject @%p \"", self->obj);
+    }
+    jobject str_o = JJ(CallObjectMethod, self->obj, Object_toString_mid);
+    const char *str = JJ(GetStringUTFChars, str_o, NULL);
+    mp_printf(print, str);
+    JJ(ReleaseStringUTFChars, str_o, str);
+    if (kind == PRINT_REPR) {
+        mp_printf(print, "\">");
+    }
 }
 
 STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
@@ -358,7 +365,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
     jsize num_methods = JJ(GetArrayLength, methods);
     for (int i = 0; i < num_methods; i++) {
         jobject meth = JJ(GetObjectArrayElement, methods, i);
-        jobject name_o = JJ(CallObjectMethod, meth, Method_toString_mid);
+        jobject name_o = JJ(CallObjectMethod, meth, Object_toString_mid);
         const char *decl = JJ(GetStringUTFChars, name_o, NULL);
         const char *arg_types = strchr(decl, '(') + 1;
         //const char *arg_types_end = strchr(arg_types, ')');
@@ -500,6 +507,10 @@ STATIC void create_jvm() {
     jclass method_class = JJ(FindClass, "java/lang/reflect/Method");
     String_class = JJ(FindClass, "java/lang/String");
 
+    jclass Object_class = JJ(FindClass, "java/lang/Object");
+    Object_toString_mid = JJ(GetMethodID, Object_class, "toString",
+                                     "()Ljava/lang/String;");
+
     Class_getField_mid = (*env)->GetMethodID(env, Class_class, "getField",
                                      "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
     Class_getMethods_mid = (*env)->GetMethodID(env, Class_class, "getMethods",
@@ -507,8 +518,6 @@ STATIC void create_jvm() {
     Class_getConstructors_mid = (*env)->GetMethodID(env, Class_class, "getConstructors",
                                      "()[Ljava/lang/reflect/Constructor;");
     Method_getName_mid = (*env)->GetMethodID(env, method_class, "getName",
-                                     "()Ljava/lang/String;");
-    Method_toString_mid = (*env)->GetMethodID(env, method_class, "toString",
                                      "()Ljava/lang/String;");
 
     List_class = JJ(FindClass, "java/util/List");
