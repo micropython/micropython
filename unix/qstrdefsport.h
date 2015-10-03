@@ -57,6 +57,8 @@ Q(utime)
 Q(time)
 Q(clock)
 Q(sleep)
+Q(sleep_ms)
+Q(sleep_us)
 
 Q(socket)
 Q(sockaddr_in)
