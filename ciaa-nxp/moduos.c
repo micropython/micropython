@@ -31,7 +31,6 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "genhdr/mpversion.h"
-#include "stmhal/pyexec.h"
 #include "memzip_extras.h"
 #if 0
 #include "timeutils.h"
@@ -79,16 +78,6 @@ STATIC mp_obj_t os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
-
-
-/// \function execfile(filename)
-/// Execute script on filename
-STATIC mp_obj_t os_execfile(mp_obj_t filename) {
-    const char *path = mp_obj_str_get_str(filename);
-	pyexec_file(path);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_execfile_obj, os_execfile);
 
 /// \function chdir(path)
 /// Change current directory.
@@ -218,7 +207,6 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_uname), (mp_obj_t)&os_uname_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_execfile), (mp_obj_t)&os_execfile_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), (mp_obj_t)&os_chdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), (mp_obj_t)&os_getcwd_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir), (mp_obj_t)&os_listdir_obj },
