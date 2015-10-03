@@ -33,9 +33,6 @@
 #include "diskio.h"
 #include "sflash_diskio.h"      /* Serial flash disk IO API */
 
-/* Definitions of physical drive number for each drive */
-#define SFLASH      0           /* Map SFLASH drive to drive number 0 */
-
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */

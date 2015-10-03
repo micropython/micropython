@@ -31,6 +31,8 @@ typedef enum {
 /*---------------------------------------*/
 /* Prototypes for disk control functions */
 
+/* Definitions of physical drive number for each drive */
+#define SFLASH      0           /* Map SFLASH drive to drive number 0 */
 
 DSTATUS disk_initialize (BYTE pdrv);
 DSTATUS disk_status (BYTE pdrv);
