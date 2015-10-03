@@ -107,13 +107,24 @@ STATIC void check_exception(void) {
     }
 }
 
+STATIC void print_jobject(const mp_print_t *print, jobject obj) {
+    jobject str_o = JJ(CallObjectMethod, obj, Object_toString_mid);
+    const char *str = JJ(GetStringUTFChars, str_o, NULL);
+    mp_printf(print, str);
+    JJ(ReleaseStringUTFChars, str_o, str);
+}
+
 // jclass
 
 STATIC void jclass_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    (void)kind;
     mp_obj_jclass_t *self = self_in;
-    // Variable value printed as cast to int
-    mp_printf(print, "<jclass @%p>", self->cls);
+    if (kind == PRINT_REPR) {
+        mp_printf(print, "<jclass @%p \"", self->cls);
+    }
+    print_jobject(print, self->cls);
+    if (kind == PRINT_REPR) {
+        mp_printf(print, "\">");
+    }
 }
 
 STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
@@ -184,10 +195,7 @@ STATIC void jobject_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     if (kind == PRINT_REPR) {
         mp_printf(print, "<jobject @%p \"", self->obj);
     }
-    jobject str_o = JJ(CallObjectMethod, self->obj, Object_toString_mid);
-    const char *str = JJ(GetStringUTFChars, str_o, NULL);
-    mp_printf(print, str);
-    JJ(ReleaseStringUTFChars, str_o, str);
+    print_jobject(print, self->obj);
     if (kind == PRINT_REPR) {
         mp_printf(print, "\">");
     }
