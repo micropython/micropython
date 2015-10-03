@@ -81,7 +81,20 @@ __ALIGN_BEGIN static uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_EN
 __ALIGN_BEGIN static uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
 
 // set the VID, PID and device release number
-void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num) {
+void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num, int cdc_only) {
+    if (cdc_only) {
+        // Make it look like a Communications device if we're only
+        // using CDC. Otherwise, windows gets confused when we tell it that
+        // its a composite device with only a cdc serial interface.
+        hUSBDDeviceDesc[4] = 0x02;
+        hUSBDDeviceDesc[5] = 0x00;
+        hUSBDDeviceDesc[6] = 0x00;
+    } else {
+        // For the other modes, we make this look like a composite device.
+        hUSBDDeviceDesc[4] = 0xef;
+        hUSBDDeviceDesc[5] = 0x02;
+        hUSBDDeviceDesc[6] = 0x01;
+    }
     hUSBDDeviceDesc[8] = LOBYTE(vid);
     hUSBDDeviceDesc[9] = HIBYTE(vid);
     hUSBDDeviceDesc[10] = LOBYTE(pid);
