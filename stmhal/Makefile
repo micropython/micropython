@@ -299,7 +299,7 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 INSERT_USB_IDS = ../tools/insert-usb-ids.py
 FILE2H = ../tools/file2h.py
 
-USB_IDS_FILE = usbd_desc.c
+USB_IDS_FILE = usb.h
 CDCINF_TEMPLATE = pybcdc.inf_template
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
