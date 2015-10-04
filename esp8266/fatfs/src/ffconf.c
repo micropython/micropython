@@ -31,6 +31,7 @@
 #include "py/mpconfig.h"
 #include "mpconfigport.h"
 #include "ffconf.h"
+#include "diskio.h"
 
 #if _FS_RPATH
 extern BYTE ff_CurrVol;
@@ -65,7 +66,7 @@ int ff_get_ldnumber (const TCHAR **path) {
     }
 
     if (check_path(path, "/flash", 6)) {
-        return 0;
+        return FLASH;
     }
     else {
         return -1;
