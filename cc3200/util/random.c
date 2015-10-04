@@ -32,22 +32,21 @@
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
 #include "rom_map.h"
-#include "prcm.h"
+#include "pybrtc.h"
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 #include "random.h"
 #include "debug.h"
 
-
 /******************************************************************************
 * LOCAL TYPES
 ******************************************************************************/
-typedef union Id_t {
+typedef union _rng_id_t {
     uint32_t       id32;
     uint16_t       id16[3];
     uint8_t        id8[6];
-} Id_t;
+} rng_id_t;
 
 /******************************************************************************
 * LOCAL VARIABLES
@@ -57,45 +56,38 @@ static uint32_t s_seed;
 /******************************************************************************
 * LOCAL FUNCTION DECLARATIONS
 ******************************************************************************/
-static uint32_t lfsr (uint32_t input);
+STATIC uint32_t lfsr (uint32_t input);
 
 /******************************************************************************
 * PRIVATE FUNCTIONS
 ******************************************************************************/
-static uint32_t lfsr (uint32_t input) {
+STATIC uint32_t lfsr (uint32_t input) {
     assert( input != 0 );
-
-    /*lint -save -e501*/
     return (input >> 1) ^ (-(input & 0x01) & 0x00E10000);
-    /*lint -restore*/
 }
 
-#if MICROPY_HW_ENABLE_RNG
-/// \moduleref rng
+/******************************************************************************/
+// Micro Python bindings;
 
-/// \function rng()
-/// Return a 24-bit hardware generated random number.
-STATIC mp_obj_t pyb_rng_get(void) {
+STATIC mp_obj_t machine_rng_get(void) {
     return mp_obj_new_int(rng_get());
 }
-
-MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
-#endif
+MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_get_obj, machine_rng_get);
 
 /******************************************************************************
 * PUBLIC FUNCTIONS
 ******************************************************************************/
 void rng_init0 (void) {
-    Id_t juggler;
+    rng_id_t juggler;
     uint32_t seconds;
     uint16_t mseconds;
 
     // get the seconds and the milliseconds from the RTC
-    MAP_PRCMRTCGet(&seconds, &mseconds);
+    pyb_rtc_get_time(&seconds, &mseconds);
 
     wlan_get_mac (juggler.id8);
 
-    // Flatten the 48-bit board identification to 24 bits
+    // flatten the 48-bit board identification to 24 bits
     juggler.id16[0] ^= juggler.id16[2];
 
     juggler.id8[0]  ^= juggler.id8[3];
@@ -104,7 +96,8 @@ void rng_init0 (void) {
 
     s_seed = juggler.id32 & 0x00FFFFFF;
     s_seed += (seconds & 0x000FFFFF) + mseconds;
-    // The seed must not be zero
+
+    // the seed must not be zero
     if (s_seed == 0) {
         s_seed = 1;
     }

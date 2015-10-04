@@ -74,12 +74,12 @@ STATIC const mp_obj_type_t ssl_socket_type = {
 
 STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sock,             MP_ARG_REQUIRED | MP_ARG_OBJ, },
-        { MP_QSTR_keyfile,          MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_certfile,         MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_server_side,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_false} },
-        { MP_QSTR_cert_reqs,        MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = SSL_CERT_NONE} },
-        { MP_QSTR_ca_certs,         MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_sock,             MP_ARG_REQUIRED | MP_ARG_OBJ,  },
+        { MP_QSTR_keyfile,          MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_certfile,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_server_side,      MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_cert_reqs,        MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SSL_CERT_NONE} },
+        { MP_QSTR_ca_certs,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     };
 
     // parse arguments
@@ -98,7 +98,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
                            NULL : &(mp_obj_str_get_str(args[5].u_obj)[6]);
 
     // server side requires both certfile and keyfile
-    if (mp_obj_is_true(args[3].u_obj) && (!keyfile || !certfile)) {
+    if (args[3].u_bool && (!keyfile || !certfile)) {
         goto arg_error;
     }
 
@@ -130,7 +130,7 @@ socket_error:
 arg_error:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 
 STATIC const mp_map_elem_t mp_module_ussl_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_ussl) },

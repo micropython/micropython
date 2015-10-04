@@ -164,7 +164,7 @@ STATIC mp_obj_t adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
 
     // initialize and register with the sleep module
     pyb_adc_init(self);
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pyb_adc_init);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)pyb_adc_init);
     return self;
 }
 
@@ -188,7 +188,7 @@ STATIC mp_obj_t adc_deinit(mp_obj_t self_in) {
     MAP_ADCDisable(ADC_BASE);
     self->enabled = false;
     // unregister it with the sleep module
-    pybsleep_remove ((const mp_obj_t)self);
+    pyb_sleep_remove ((const mp_obj_t)self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_deinit_obj, adc_deinit);
@@ -224,7 +224,7 @@ STATIC mp_obj_t adc_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     self->base.type = &pyb_adc_channel_type;
     pyb_adc_channel_init (self);
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)pyb_adc_channel_init);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)pyb_adc_channel_init);
     return self;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adc_channel_obj, 1, adc_channel);
@@ -267,7 +267,7 @@ STATIC mp_obj_t adc_channel_deinit(mp_obj_t self_in) {
 
     MAP_ADCChannelDisable(ADC_BASE, self->channel);
     // unregister it with the sleep module
-    pybsleep_remove ((const mp_obj_t)self);
+    pyb_sleep_remove ((const mp_obj_t)self);
     self->enabled = false;
     return mp_const_none;
 }

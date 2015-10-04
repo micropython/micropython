@@ -77,7 +77,7 @@ def run_micropython(pyb, args, test_file):
                 else:
                     output_mupy = subprocess.check_output(args + [test_file])
             except subprocess.CalledProcessError:
-                output_mupy = b'CRASH'
+                return b'CRASH'
 
             # unescape wanted regex chars and escape unwanted ones
             def convert_regex_escapes(line):
@@ -197,6 +197,9 @@ def run_tests(pyb, tests, args):
             skip_tests.add('extmod/zlibd_decompress.py')    # requires zlib
             skip_tests.add('extmod/ujson_dumps_float.py')   # requires floating point
             skip_tests.add('extmod/ujson_loads_float.py')   # requires floating point
+            skip_tests.add('extmod/machine1.py')            # raw memory access not supported by WiPy
+            skip_tests.add('extmod/machine_mem.py')         # raw memory access not supported by WiPy
+            skip_tests.add('extmod/uheapq1.py')             # uheapq not supported by WiPy
             skip_tests.add('basics/exception_chain.py')     # warning is not printed
 
     # Some tests are known to fail on 64-bit machines

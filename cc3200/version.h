@@ -27,6 +27,6 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define WIPY_SW_VERSION_NUMBER                              "0.9.1"
+#define WIPY_SW_VERSION_NUMBER                              "1.0.0"
 
 #endif /* VERSION_H_ */

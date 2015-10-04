@@ -78,17 +78,16 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	antenna.c \
 	FreeRTOSHooks.c \
 	help.c \
-	mpcallback.c \
+	mpirq.c \
 	mperror.c \
 	mpexception.c \
 	mpsystick.c \
 	)
 
 APP_MODS_SRC_C = $(addprefix mods/,\
+	modmachine.c \
 	modnetwork.c \
-	moduhashlib.c \
 	modubinascii.c \
-	modpyb.c \
 	moduos.c \
 	modusocket.c \
 	modussl.c \

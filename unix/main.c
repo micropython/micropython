@@ -108,15 +108,15 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         }
         #endif
 
-        mp_parse_node_t pn = mp_parse(lex, input_kind);
+        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
 
         /*
         printf("----------------\n");
-        mp_parse_node_print(pn, 0);
+        mp_parse_node_print(parse_tree.root, 0);
         printf("----------------\n");
         */
 
-        mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
 
         if (!compile_only) {
             // execute it

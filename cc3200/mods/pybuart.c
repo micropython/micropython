@@ -45,9 +45,9 @@
 #include "prcm.h"
 #include "uart.h"
 #include "pybuart.h"
+#include "mpirq.h"
 #include "pybioctl.h"
 #include "pybsleep.h"
-#include "mpcallback.h"
 #include "mpexception.h"
 #include "py/mpstate.h"
 #include "osi.h"
@@ -55,6 +55,7 @@
 #include "pin.h"
 #include "pybpin.h"
 #include "pins.h"
+#include "moduos.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -69,13 +70,13 @@
 #define PYBUART_TX_WAIT_US(baud)                ((PYBUART_FRAME_TIME_US(baud)) + 1)
 #define PYBUART_TX_MAX_TIMEOUT_MS               (5)
 
-#define PYBUART_RX_BUFFER_LEN                   (128)
+#define PYBUART_RX_BUFFER_LEN                   (256)
 
 // interrupt triggers
-#define E_UART_TRIGGER_RX_ANY                   (0x01)
-#define E_UART_TRIGGER_RX_HALF                  (0x02)
-#define E_UART_TRIGGER_RX_FULL                  (0x04)
-#define E_UART_TRIGGER_TX_DONE                  (0x08)
+#define UART_TRIGGER_RX_ANY                   (0x01)
+#define UART_TRIGGER_RX_HALF                  (0x02)
+#define UART_TRIGGER_RX_FULL                  (0x04)
+#define UART_TRIGGER_TX_DONE                  (0x08)
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -83,12 +84,12 @@
 STATIC void uart_init (pyb_uart_obj_t *self);
 STATIC bool uart_rx_wait (pyb_uart_obj_t *self);
 STATIC void uart_check_init(pyb_uart_obj_t *self);
+STATIC mp_obj_t uart_irq_new (pyb_uart_obj_t *self, byte trigger, mp_int_t priority, mp_obj_t handler);
 STATIC void UARTGenericIntHandler(uint32_t uart_id);
 STATIC void UART0IntHandler(void);
 STATIC void UART1IntHandler(void);
-STATIC void uart_callback_enable (mp_obj_t self_in);
-STATIC void uart_callback_disable (mp_obj_t self_in);
-STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
+STATIC void uart_irq_enable (mp_obj_t self_in);
+STATIC void uart_irq_disable (mp_obj_t self_in);
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
@@ -105,7 +106,8 @@ struct _pyb_uart_obj_t {
     uint16_t read_buf_tail;             // indexes first full slot (not full if equals head)
     byte peripheral;
     byte irq_trigger;
-    bool callback_enabled;
+    bool irq_enabled;
+    byte irq_flags;
 };
 
 /******************************************************************************
@@ -113,7 +115,7 @@ struct _pyb_uart_obj_t {
  ******************************************************************************/
 STATIC pyb_uart_obj_t pyb_uart_obj[PYB_NUM_UARTS] = { {.reg = UARTA0_BASE, .baudrate = 0, .read_buf = NULL, .peripheral = PRCM_UARTA0},
                                                       {.reg = UARTA1_BASE, .baudrate = 0, .read_buf = NULL, .peripheral = PRCM_UARTA1} };
-STATIC const mp_cb_methods_t uart_cb_methods;
+STATIC const mp_irq_methods_t uart_irq_methods;
 
 STATIC const mp_obj_t pyb_uart_def_pin[PYB_NUM_UARTS][2] = { {&pin_GP1, &pin_GP2}, {&pin_GP3, &pin_GP4} };
 
@@ -167,37 +169,6 @@ bool uart_tx_strn(pyb_uart_obj_t *self, const char *str, uint len) {
     return true;
 }
 
-void uart_tx_strn_cooked(pyb_uart_obj_t *self, const char *str, uint len) {
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            uart_tx_char(self, '\r');
-        }
-        uart_tx_char(self, *str);
-    }
-}
-
-mp_obj_t uart_callback_new (pyb_uart_obj_t *self, mp_obj_t handler, mp_int_t priority, byte trigger) {
-    // disable the uart interrupts before updating anything
-    uart_callback_disable (self);
-
-    if (self->uart_id == PYB_UART_0) {
-        MAP_IntPrioritySet(INT_UARTA0, priority);
-        MAP_UARTIntRegister(self->reg, UART0IntHandler);
-    } else {
-        MAP_IntPrioritySet(INT_UARTA1, priority);
-        MAP_UARTIntRegister(self->reg, UART1IntHandler);
-    }
-
-    // create the callback
-    mp_obj_t _callback = mpcallback_new ((mp_obj_t)self, handler, &uart_cb_methods, true);
-
-    // enable the interrupts now
-    self->irq_trigger = trigger;
-    uart_callback_enable (self);
-
-    return _callback;
-}
-
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
@@ -248,24 +219,44 @@ STATIC bool uart_rx_wait (pyb_uart_obj_t *self) {
     }
 }
 
+STATIC mp_obj_t uart_irq_new (pyb_uart_obj_t *self, byte trigger, mp_int_t priority, mp_obj_t handler) {
+    // disable the uart interrupts before updating anything
+    uart_irq_disable (self);
+
+    if (self->uart_id == PYB_UART_0) {
+        MAP_IntPrioritySet(INT_UARTA0, priority);
+        MAP_UARTIntRegister(self->reg, UART0IntHandler);
+    } else {
+        MAP_IntPrioritySet(INT_UARTA1, priority);
+        MAP_UARTIntRegister(self->reg, UART1IntHandler);
+    }
+
+    // create the callback
+    mp_obj_t _irq = mp_irq_new ((mp_obj_t)self, handler, &uart_irq_methods);
+
+    // enable the interrupts now
+    self->irq_trigger = trigger;
+    uart_irq_enable (self);
+    return _irq;
+}
+
 STATIC void UARTGenericIntHandler(uint32_t uart_id) {
     pyb_uart_obj_t *self;
     uint32_t status;
-    bool exec_callback = false;
 
     self = &pyb_uart_obj[uart_id];
     status = MAP_UARTIntStatus(self->reg, true);
     // receive interrupt
     if (status & (UART_INT_RX | UART_INT_RT)) {
+        // set the flags
+        self->irq_flags = UART_TRIGGER_RX_ANY;
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         while (UARTCharsAvail(self->reg)) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (pyb_stdio_uart == self && data == user_interrupt_char) {
+            if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == user_interrupt_char) {
                 // raise an exception when interrupts are finished
                 mpexception_keyboard_nlr_jump();
-            }
-            // there's always a read buffer available
-            else {
+            } else { // there's always a read buffer available
                 uint16_t next_head = (self->read_buf_head + 1) % PYBUART_RX_BUFFER_LEN;
                 if (next_head != self->read_buf_tail) {
                     // only store data if room in buf
@@ -274,17 +265,16 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
                 }
             }
         }
-
-        if (self->irq_trigger & E_UART_TRIGGER_RX_ANY) {
-            exec_callback = true;
-        }
-
-        if (exec_callback && self->callback_enabled) {
-            // call the user defined handler
-            mp_obj_t _callback = mpcallback_find(self);
-            mpcallback_handler(_callback);
-        }
     }
+
+    // check the flags to see if the user handler should be called
+    if ((self->irq_trigger & self->irq_flags) && self->irq_enabled) {
+        // call the user defined handler
+        mp_irq_handler(mp_irq_find(self));
+    }
+
+    // clear the flags
+    self->irq_flags = 0;
 }
 
 STATIC void uart_check_init(pyb_uart_obj_t *self) {
@@ -302,19 +292,24 @@ STATIC void UART1IntHandler(void) {
     UARTGenericIntHandler(1);
 }
 
-STATIC void uart_callback_enable (mp_obj_t self_in) {
+STATIC void uart_irq_enable (mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
     // check for any of the rx interrupt types
-    if (self->irq_trigger & (E_UART_TRIGGER_RX_ANY | E_UART_TRIGGER_RX_HALF | E_UART_TRIGGER_RX_FULL)) {
+    if (self->irq_trigger & (UART_TRIGGER_RX_ANY | UART_TRIGGER_RX_HALF | UART_TRIGGER_RX_FULL)) {
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         MAP_UARTIntEnable(self->reg, UART_INT_RX | UART_INT_RT);
     }
-    self->callback_enabled = true;
+    self->irq_enabled = true;
 }
 
-STATIC void uart_callback_disable (mp_obj_t self_in) {
+STATIC void uart_irq_disable (mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    self->callback_enabled = false;
+    self->irq_enabled = false;
+}
+
+STATIC int uart_irq_flags (mp_obj_t self_in) {
+    pyb_uart_obj_t *self = self_in;
+    return self->irq_flags;
 }
 
 /******************************************************************************/
@@ -352,7 +347,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 }
 
-STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_arg_val_t *args) {
+STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *args) {
     // get the baudrate
     if (args[0].u_int <= 0) {
         goto error;
@@ -428,9 +423,11 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_arg_val_t *args) {
     // initialize and enable the uart
     uart_init (self);
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)self, (WakeUpCB_t)uart_init);
+    pyb_sleep_add ((const mp_obj_t)self, (WakeUpCB_t)uart_init);
     // enable the callback
-    uart_callback_new (self, mp_const_none, INT_PRIORITY_LVL_3, E_UART_TRIGGER_RX_ANY);
+    uart_irq_new (self, UART_TRIGGER_RX_ANY, INT_PRIORITY_LVL_3, mp_const_none);
+    // disable the irq (from the user point of view)
+    uart_irq_disable(self);
 
     return mp_const_none;
 
@@ -439,7 +436,7 @@ error:
 }
 
 STATIC const mp_arg_t pyb_uart_init_args[] = {
-    { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+    { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_baudrate,                       MP_ARG_INT,  {.u_int = 9600} },
     { MP_QSTR_bits,                           MP_ARG_INT,  {.u_int = 8} },
     { MP_QSTR_parity,                         MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -455,7 +452,7 @@ STATIC mp_obj_t pyb_uart_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
 
     // work out the uart id
     uint uart_id;
-    if (args[0].u_obj == mp_const_none) {
+    if (args[0].u_obj == MP_OBJ_NULL) {
         if (args[5].u_obj != MP_OBJ_NULL) {
             mp_obj_t *pins;
             mp_uint_t n_pins = 2;
@@ -501,7 +498,7 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
 
     // unregister it with the sleep module
-    pybsleep_remove (self);
+    pyb_sleep_remove (self);
     // invalidate the baudrate
     self->baudrate = 0;
     // free the read buffer
@@ -531,33 +528,37 @@ STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_sendbreak_obj, pyb_uart_sendbreak);
 
-STATIC mp_obj_t pyb_uart_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
+/// \method irq(trigger, priority, handler, wake)
+STATIC mp_obj_t pyb_uart_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
 
     // check if any parameters were passed
     pyb_uart_obj_t *self = pos_args[0];
     uart_check_init(self);
-    mp_obj_t _callback = mpcallback_find((mp_obj_t)self);
-    if (kw_args->used > 0) {
 
-        // convert the priority to the correct value
-        uint priority = mpcallback_translate_priority (args[2].u_int);
+    // convert the priority to the correct value
+    uint priority = mp_irq_translate_priority (args[1].u_int);
 
-        // check the power mode
-        if (PYB_PWR_MODE_ACTIVE != args[4].u_int) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-        }
-
-        // register a new callback
-        // FIXME triggers!!
-        return uart_callback_new (self, args[1].u_obj, mp_obj_get_int(args[3].u_obj), priority);
-    } else if (!_callback) {
-        _callback = mpcallback_new (self, mp_const_none, &uart_cb_methods, false);
+    // check the power mode
+    uint8_t pwrmode = (args[3].u_obj == mp_const_none) ? PYB_PWR_MODE_ACTIVE : mp_obj_get_int(args[3].u_obj);
+    if (PYB_PWR_MODE_ACTIVE != pwrmode) {
+        goto invalid_args;
     }
-    return _callback;
+
+    // check the trigger
+    uint trigger = mp_obj_get_int(args[0].u_obj);
+    if (!trigger || trigger > (UART_TRIGGER_RX_ANY | UART_TRIGGER_RX_HALF | UART_TRIGGER_RX_FULL | UART_TRIGGER_TX_DONE)) {
+        goto invalid_args;
+    }
+
+    // register a new callback
+    return uart_irq_new (self, trigger, priority, args[2].u_obj);
+
+invalid_args:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_callback_obj, 1, pyb_uart_callback);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_callback_obj, 1, pyb_uart_irq);
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
@@ -565,7 +566,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),      (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any),         (mp_obj_t)&pyb_uart_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendbreak),   (mp_obj_t)&pyb_uart_sendbreak_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),    (mp_obj_t)&pyb_uart_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),         (mp_obj_t)&pyb_uart_callback_obj },
 
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),        (mp_obj_t)&mp_stream_read_obj },
@@ -581,7 +582,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_EVEN),        MP_OBJ_NEW_SMALL_INT(UART_CONFIG_PAR_EVEN) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ODD),         MP_OBJ_NEW_SMALL_INT(UART_CONFIG_PAR_ODD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RX_ANY),      MP_OBJ_NEW_SMALL_INT(E_UART_TRIGGER_RX_ANY) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RX_ANY),      MP_OBJ_NEW_SMALL_INT(UART_TRIGGER_RX_ANY) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
@@ -654,10 +655,11 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .is_text = false,
 };
 
-STATIC const mp_cb_methods_t uart_cb_methods = {
-    .init = pyb_uart_callback,
-    .enable = uart_callback_enable,
-    .disable = uart_callback_disable,
+STATIC const mp_irq_methods_t uart_irq_methods = {
+    .init = pyb_uart_irq,
+    .enable = uart_irq_enable,
+    .disable = uart_irq_disable,
+    .flags = uart_irq_flags
 };
 
 const mp_obj_type_t pyb_uart_type = {

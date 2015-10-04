@@ -21,7 +21,6 @@ extern DiskInfo_t sd_disk_info;
 
 DSTATUS sd_disk_init (void);
 void sd_disk_deinit (void);
-DSTATUS sd_disk_status (void);
 DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT bSectorCount);
 DRESULT sd_disk_write (const BYTE* pBuffer, DWORD ulSectorNumber, UINT bSectorCount);
 

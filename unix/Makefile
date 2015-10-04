@@ -200,9 +200,15 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: libffi
+deplibs: libffi axtls
 
 libffi:
 	cd ../lib/libffi; git clean -d -x -f
 	cd ../lib/libffi; ./autogen.sh
 	cd ../lib/libffi; ./configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; make install
+
+axtls:
+	cd ../lib/axtls; cp config/upyconfig config/.config
+	cd ../lib/axtls; make oldconfig -B
+	cd ../lib/axtls; make clean
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"

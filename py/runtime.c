@@ -389,6 +389,9 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
 
                 case MP_BINARY_OP_MODULO:
                 case MP_BINARY_OP_INPLACE_MODULO: {
+                    if (rhs_val == 0) {
+                        goto zero_division;
+                    }
                     lhs_val = mp_small_int_modulo(lhs_val, rhs_val);
                     break;
                 }
@@ -1305,8 +1308,8 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
-        mp_parse_node_t pn = mp_parse(lex, parse_input_kind);
-        mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, false);
+        mp_parse_tree_t parse_tree = mp_parse(lex, parse_input_kind);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
 
         mp_obj_t ret;
         if (MICROPY_PY_BUILTINS_COMPILE && globals == NULL) {

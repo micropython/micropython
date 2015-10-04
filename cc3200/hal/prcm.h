@@ -247,6 +247,7 @@ extern void PRCMHibernateWakeupSourceDisable(unsigned long ulHIBWakupSrc);
 extern void PRCMHibernateIntervalSet(unsigned long long ullTicks);
 
 extern unsigned long long PRCMSlowClkCtrGet(void);
+extern unsigned long long PRCMSlowClkCtrFastGet(void);
 extern void PRCMSlowClkCtrMatchSet(unsigned long long ullTicks);
 extern unsigned long long PRCMSlowClkCtrMatchGet(void);
 

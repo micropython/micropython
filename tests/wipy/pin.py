@@ -1,14 +1,14 @@
 """ This test need a set of pins which can be set as inputs and have no external 
     pull up or pull down connected.
 """
-from pyb import Pin
+from machine import Pin
 import os
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     pin_map = ['GP24', 'GP12', 'GP14', 'GP15', 'GP16', 'GP17', 'GP28', 'GP8', 'GP6', 'GP30', 'GP31', 'GP3', 'GP0', 'GP4', 'GP5']
     max_af_idx = 15
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     pin_map = ['GP23', 'GP24', 'GP12', 'GP13', 'GP14', 'GP9', 'GP17', 'GP28', 'GP22', 'GP8', 'GP30', 'GP31', 'GP0', 'GP4', 'GP5']
     max_af_idx = 15
 else:

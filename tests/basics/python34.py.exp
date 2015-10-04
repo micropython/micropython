@@ -1,0 +1,7 @@
+None
+['a', 'b']
+('a', 'b') {'kw_arg': None}
+SyntaxError
+SyntaxError
+3.4
+3 4

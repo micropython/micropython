@@ -44,8 +44,8 @@
 #include "prcm.h"
 #include "timer.h"
 #include "pybtimer.h"
+#include "mpirq.h"
 #include "pybsleep.h"
-#include "mpcallback.h"
 #include "mpexception.h"
 
 
@@ -96,7 +96,8 @@ typedef struct _pyb_timer_obj_t {
     mp_obj_base_t base;
     uint32_t timer;
     uint32_t config;
-    uint16_t intflags;
+    uint16_t irq_trigger;
+    uint16_t irq_flags;
     uint8_t peripheral;
     uint8_t id;
 } pyb_timer_obj_t;
@@ -114,7 +115,7 @@ typedef struct _pyb_timer_channel_obj_t {
 /******************************************************************************
  DEFINE PRIVATE DATA
  ******************************************************************************/
-STATIC const mp_cb_methods_t pyb_timer_channel_cb_methods;
+STATIC const mp_irq_methods_t pyb_timer_channel_irq_methods;
 STATIC pyb_timer_obj_t pyb_timer_obj[PYBTIMER_NUM_TIMERS] = {{.timer = TIMERA0_BASE, .peripheral = PRCM_TIMERA0},
                                                              {.timer = TIMERA1_BASE, .peripheral = PRCM_TIMERA1},
                                                              {.timer = TIMERA2_BASE, .peripheral = PRCM_TIMERA2},
@@ -124,7 +125,7 @@ STATIC const mp_obj_type_t pyb_timer_channel_type;
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC mp_obj_t pyb_timer_channel_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC void timer_disable (pyb_timer_obj_t *tim);
 STATIC void TIMER0AIntHandler(void);
 STATIC void TIMER0BIntHandler(void);
@@ -142,18 +143,26 @@ void timer_init0 (void) {
     mp_obj_list_init(&MP_STATE_PORT(pyb_timer_channel_obj_list), 0);
 }
 
-void pyb_timer_channel_callback_enable (mp_obj_t self_in) {
+/******************************************************************************
+ DEFINE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC void pyb_timer_channel_irq_enable (mp_obj_t self_in) {
     pyb_timer_channel_obj_t *self = self_in;
-    MAP_TimerIntClear(self->timer->timer, self->timer->intflags & self->channel);
-    MAP_TimerIntEnable(self->timer->timer, self->timer->intflags & self->channel);
+    MAP_TimerIntClear(self->timer->timer, self->timer->irq_trigger & self->channel);
+    MAP_TimerIntEnable(self->timer->timer, self->timer->irq_trigger & self->channel);
 }
 
-void pyb_timer_channel_callback_disable (mp_obj_t self_in) {
+STATIC void pyb_timer_channel_irq_disable (mp_obj_t self_in) {
     pyb_timer_channel_obj_t *self = self_in;
-    MAP_TimerIntDisable(self->timer->timer, self->timer->intflags & self->channel);
+    MAP_TimerIntDisable(self->timer->timer, self->timer->irq_trigger & self->channel);
 }
 
-pyb_timer_channel_obj_t *pyb_timer_channel_find (uint32_t timer, uint16_t channel_n) {
+STATIC int pyb_timer_channel_irq_flags (mp_obj_t self_in) {
+    pyb_timer_channel_obj_t *self = self_in;
+    return self->timer->irq_flags;
+}
+
+STATIC pyb_timer_channel_obj_t *pyb_timer_channel_find (uint32_t timer, uint16_t channel_n) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_timer_channel_obj_list).len; i++) {
         pyb_timer_channel_obj_t *ch = ((pyb_timer_channel_obj_t *)(MP_STATE_PORT(pyb_timer_channel_obj_list).items[i]));
         // any 32-bit timer must be matched by any of its 16-bit versions
@@ -164,14 +173,14 @@ pyb_timer_channel_obj_t *pyb_timer_channel_find (uint32_t timer, uint16_t channe
     return MP_OBJ_NULL;
 }
 
-void pyb_timer_channel_remove (pyb_timer_channel_obj_t *ch) {
+STATIC void pyb_timer_channel_remove (pyb_timer_channel_obj_t *ch) {
     pyb_timer_channel_obj_t *channel;
     if ((channel = pyb_timer_channel_find(ch->timer->timer, ch->channel))) {
         mp_obj_list_remove(&MP_STATE_PORT(pyb_timer_channel_obj_list), channel);
     }
 }
 
-void pyb_timer_channel_add (pyb_timer_channel_obj_t *ch) {
+STATIC void pyb_timer_channel_add (pyb_timer_channel_obj_t *ch) {
     // remove it in case it already exists
     pyb_timer_channel_remove(ch);
     mp_obj_list_append(&MP_STATE_PORT(pyb_timer_channel_obj_list), ch);
@@ -180,8 +189,8 @@ void pyb_timer_channel_add (pyb_timer_channel_obj_t *ch) {
 STATIC void timer_disable (pyb_timer_obj_t *tim) {
     // disable all timers and it's interrupts
     MAP_TimerDisable(tim->timer, TIMER_A | TIMER_B);
-    MAP_TimerIntDisable(tim->timer, tim->intflags);
-    MAP_TimerIntClear(tim->timer, tim->intflags);
+    MAP_TimerIntDisable(tim->timer, tim->irq_trigger);
+    MAP_TimerIntClear(tim->timer, tim->irq_trigger);
     MAP_PRCMPeripheralClkDisable(tim->peripheral, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     memset(&pyb_timer_obj[tim->id], 0, sizeof(pyb_timer_obj_t));
 }
@@ -335,7 +344,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, co
 
     timer_init(tim);
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)tim, (WakeUpCB_t)timer_init);
+    pyb_sleep_add ((const mp_obj_t)tim, (WakeUpCB_t)timer_init);
 
     return mp_const_none;
 
@@ -470,7 +479,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     timer_channel_init(ch);
 
     // register it with the sleep module
-    pybsleep_add ((const mp_obj_t)ch, (WakeUpCB_t)timer_channel_init);
+    pyb_sleep_add ((const mp_obj_t)ch, (WakeUpCB_t)timer_channel_init);
 
     // add the timer to the list
     pyb_timer_channel_add(ch);
@@ -509,10 +518,11 @@ const mp_obj_type_t pyb_timer_type = {
     .locals_dict = (mp_obj_t)&pyb_timer_locals_dict,
 };
 
-STATIC const mp_cb_methods_t pyb_timer_channel_cb_methods = {
-    .init = pyb_timer_channel_callback,
-    .enable = pyb_timer_channel_callback_enable,
-    .disable = pyb_timer_channel_callback_disable,
+STATIC const mp_irq_methods_t pyb_timer_channel_irq_methods = {
+    .init = pyb_timer_channel_irq,
+    .enable = pyb_timer_channel_irq_enable,
+    .disable = pyb_timer_channel_irq_disable,
+    .flags = pyb_timer_channel_irq_flags,
 };
 
 STATIC void TIMERGenericIntHandler(uint32_t timer, uint16_t channel) {
@@ -522,8 +532,7 @@ STATIC void TIMERGenericIntHandler(uint32_t timer, uint16_t channel) {
     if ((self = pyb_timer_channel_find(timer, channel))) {
         status = MAP_TimerIntStatus(self->timer->timer, true) & self->channel;
         MAP_TimerIntClear(self->timer->timer, status);
-        mp_obj_t _callback = mpcallback_find(self);
-        mpcallback_handler(_callback);
+        mp_irq_handler(mp_irq_find(self));
     }
 }
 
@@ -716,130 +725,107 @@ STATIC mp_obj_t pyb_timer_channel_duty_cycle(mp_uint_t n_args, const mp_obj_t *a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_duty_cycle_obj, 1, 3, pyb_timer_channel_duty_cycle);
 
-/// \method callback(handler, priority, value)
-/// create a callback object associated with the timer channel
-STATIC mp_obj_t pyb_timer_channel_callback (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_val_t args[mpcallback_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mpcallback_INIT_NUM_ARGS, mpcallback_init_args, args);
-
+/// \method irq(trigger, priority, handler, wake)
+/// FIXME triggers!!
+STATIC mp_obj_t pyb_timer_channel_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
     pyb_timer_channel_obj_t *ch = pos_args[0];
-    mp_obj_t _callback = mpcallback_find(ch);
-    if (kw_args->used > 0) {
-        // convert the priority to the correct value
-        uint priority = mpcallback_translate_priority (args[2].u_int);
 
-        // validate the power mode
-        uint pwrmode = args[4].u_int;
-        if (pwrmode != PYB_PWR_MODE_ACTIVE) {
-            goto invalid_args;
-        }
+    // convert the priority to the correct value
+    uint priority = mp_irq_translate_priority (args[1].u_int);
 
-        uint32_t _config = (ch->channel == TIMER_B) ? ((ch->timer->config & TIMER_B) >> 8) : (ch->timer->config & TIMER_A);
-        uint32_t c_value = mp_obj_get_int(args[3].u_obj);
-
-        // validate and set the value if we are in edge count mode
-        if (_config == TIMER_CFG_A_CAP_COUNT) {
-            if (!c_value || c_value > 0xFFFF) {
-                // zero or exceeds the maximum value of a 16-bit timer
-                goto invalid_args;
-            }
-            MAP_TimerMatchSet(ch->timer->timer, ch->channel, c_value);
-        }
-
-        // disable the callback first
-        pyb_timer_channel_callback_disable(ch);
-
-        uint8_t shift = (ch->channel == TIMER_B) ? 8 : 0;
-        switch (_config) {
-        case TIMER_CFG_A_ONE_SHOT:
-        case TIMER_CFG_A_PERIODIC:
-            ch->timer->intflags |= TIMER_TIMA_TIMEOUT << shift;
-            break;
-        case TIMER_CFG_A_CAP_COUNT:
-            ch->timer->intflags |= TIMER_CAPA_MATCH << shift;
-            // set the match value and make 1 the minimum
-            MAP_TimerMatchSet(ch->timer->timer, ch->channel, MAX(1, c_value));
-            break;
-        case TIMER_CFG_A_CAP_TIME:
-            ch->timer->intflags |= TIMER_CAPA_EVENT << shift;
-            break;
-        case TIMER_CFG_A_PWM:
-            // special case for the PWM match interrupt
-            ch->timer->intflags |= ((ch->channel & TIMER_A) == TIMER_A) ? TIMER_TIMA_MATCH : TIMER_TIMB_MATCH;
-            break;
-        default:
-            break;
-        }
-        // special case for a 32-bit timer
-        if (ch->channel == (TIMER_A | TIMER_B)) {
-           ch->timer->intflags |= (ch->timer->intflags << 8);
-        }
-
-        void (*pfnHandler)(void);
-        uint32_t intregister;
-        switch (ch->timer->timer) {
-        case TIMERA0_BASE:
-            if (ch->channel == TIMER_B) {
-                pfnHandler = &TIMER0BIntHandler;
-                intregister = INT_TIMERA0B;
-            } else {
-                pfnHandler = &TIMER0AIntHandler;
-                intregister = INT_TIMERA0A;
-            }
-            break;
-        case TIMERA1_BASE:
-            if (ch->channel == TIMER_B) {
-                pfnHandler = &TIMER1BIntHandler;
-                intregister = INT_TIMERA1B;
-            } else {
-                pfnHandler = &TIMER1AIntHandler;
-                intregister = INT_TIMERA1A;
-            }
-            break;
-        case TIMERA2_BASE:
-            if (ch->channel == TIMER_B) {
-                pfnHandler = &TIMER2BIntHandler;
-                intregister = INT_TIMERA2B;
-            } else {
-                pfnHandler = &TIMER2AIntHandler;
-                intregister = INT_TIMERA2A;
-            }
-            break;
-        default:
-            if (ch->channel == TIMER_B) {
-                pfnHandler = &TIMER3BIntHandler;
-                intregister = INT_TIMERA3B;
-            } else {
-                pfnHandler = &TIMER3AIntHandler;
-                intregister = INT_TIMERA3A;
-            }
-            break;
-        }
-
-        // register the interrupt and configure the priority
-        MAP_IntPrioritySet(intregister, priority);
-        MAP_TimerIntRegister(ch->timer->timer, ch->channel, pfnHandler);
-
-        // create the callback
-        _callback = mpcallback_new (ch, args[1].u_obj, &pyb_timer_channel_cb_methods, true);
-
-        // reload the timer
-        uint32_t period_c;
-        uint32_t match;
-        compute_prescaler_period_and_match_value(ch, &period_c, &match);
-        MAP_TimerLoadSet(ch->timer->timer, ch->channel, period_c);
-
-        // enable the callback before returning
-        pyb_timer_channel_callback_enable(ch);
-    } else if (!_callback) {
-        _callback = mpcallback_new (ch, mp_const_none, &pyb_timer_channel_cb_methods, false);
+    // validate the power mode
+    uint8_t pwrmode = (args[3].u_obj == mp_const_none) ? PYB_PWR_MODE_ACTIVE : mp_obj_get_int(args[3].u_obj);
+    if (pwrmode != PYB_PWR_MODE_ACTIVE) {
+        goto invalid_args;
     }
-    return _callback;
+
+    // disable the callback first
+    pyb_timer_channel_irq_disable(ch);
+
+    uint8_t shift = (ch->channel == TIMER_B) ? 8 : 0;
+    uint32_t _config = (ch->channel == TIMER_B) ? ((ch->timer->config & TIMER_B) >> 8) : (ch->timer->config & TIMER_A);
+    switch (_config) {
+    case TIMER_CFG_A_ONE_SHOT:
+    case TIMER_CFG_A_PERIODIC:
+        ch->timer->irq_trigger |= TIMER_TIMA_TIMEOUT << shift;
+        break;
+    case TIMER_CFG_A_CAP_COUNT:
+        ch->timer->irq_trigger |= TIMER_CAPA_MATCH << shift;
+        break;
+    case TIMER_CFG_A_CAP_TIME:
+        ch->timer->irq_trigger |= TIMER_CAPA_EVENT << shift;
+        break;
+    case TIMER_CFG_A_PWM:
+        // special case for the PWM match interrupt
+        ch->timer->irq_trigger |= ((ch->channel & TIMER_A) == TIMER_A) ? TIMER_TIMA_MATCH : TIMER_TIMB_MATCH;
+        break;
+    default:
+        break;
+    }
+    // special case for a 32-bit timer
+    if (ch->channel == (TIMER_A | TIMER_B)) {
+       ch->timer->irq_trigger |= (ch->timer->irq_trigger << 8);
+    }
+
+    void (*pfnHandler)(void);
+    uint32_t intregister;
+    switch (ch->timer->timer) {
+    case TIMERA0_BASE:
+        if (ch->channel == TIMER_B) {
+            pfnHandler = &TIMER0BIntHandler;
+            intregister = INT_TIMERA0B;
+        } else {
+            pfnHandler = &TIMER0AIntHandler;
+            intregister = INT_TIMERA0A;
+        }
+        break;
+    case TIMERA1_BASE:
+        if (ch->channel == TIMER_B) {
+            pfnHandler = &TIMER1BIntHandler;
+            intregister = INT_TIMERA1B;
+        } else {
+            pfnHandler = &TIMER1AIntHandler;
+            intregister = INT_TIMERA1A;
+        }
+        break;
+    case TIMERA2_BASE:
+        if (ch->channel == TIMER_B) {
+            pfnHandler = &TIMER2BIntHandler;
+            intregister = INT_TIMERA2B;
+        } else {
+            pfnHandler = &TIMER2AIntHandler;
+            intregister = INT_TIMERA2A;
+        }
+        break;
+    default:
+        if (ch->channel == TIMER_B) {
+            pfnHandler = &TIMER3BIntHandler;
+            intregister = INT_TIMERA3B;
+        } else {
+            pfnHandler = &TIMER3AIntHandler;
+            intregister = INT_TIMERA3A;
+        }
+        break;
+    }
+
+    // register the interrupt and configure the priority
+    MAP_IntPrioritySet(intregister, priority);
+    MAP_TimerIntRegister(ch->timer->timer, ch->channel, pfnHandler);
+
+    // create the callback
+    mp_obj_t _irq = mp_irq_new (ch, args[2].u_obj, &pyb_timer_channel_irq_methods);
+
+    // enable the callback before returning
+    pyb_timer_channel_irq_enable(ch);
+
+    return _irq;
 
 invalid_args:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_callback_obj, 1, pyb_timer_channel_callback);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_irq_obj, 1, pyb_timer_channel_irq);
 
 STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
@@ -849,7 +835,7 @@ STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_event_count),          (mp_obj_t)&pyb_timer_channel_event_count_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_event_time),           (mp_obj_t)&pyb_timer_channel_event_time_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_duty_cycle),           (mp_obj_t)&pyb_timer_channel_duty_cycle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback),             (mp_obj_t)&pyb_timer_channel_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                  (mp_obj_t)&pyb_timer_channel_irq_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 

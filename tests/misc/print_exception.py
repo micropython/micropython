@@ -4,7 +4,7 @@ if hasattr(sys, 'print_exception'):
     print_exception = sys.print_exception
 else:
     import traceback
-    print_exception = lambda e, f: traceback.print_exception(None, e, None, file=f)
+    print_exception = lambda e, f: traceback.print_exception(None, e, sys.exc_info()[2], file=f)
 
 def print_exc(e):
     buf = io.StringIO()

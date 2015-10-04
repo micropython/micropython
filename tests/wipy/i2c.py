@@ -3,15 +3,14 @@ I2C test for the CC3200 based boards.
 A MPU-9150 sensor must be connected to the I2C bus.
 '''
 
-from pyb import I2C
-from pyb import Pin
+from machine import I2C
 import os
-import pyb
+import time
 
-machine = os.uname().machine
-if 'LaunchPad' in machine:
+mch = os.uname().machine
+if 'LaunchPad' in mch:
     i2c_pins = ('GP11', 'GP10')
-elif 'WiPy' in machine:
+elif 'WiPy' in mch:
     i2c_pins = ('GP15', 'GP10')
 else:
     raise Exception('Board not supported!')
@@ -40,7 +39,7 @@ reg2_r = bytearray(2)
 # reset the sensor
 reg[0] |= 0x80
 print(1 == i2c.writeto_mem(addr, 107, reg))
-pyb.delay(100)  # wait for the sensor to reset...
+time.sleep_ms(100)  # wait for the sensor to reset...
 
 print(1 == i2c.readfrom_mem_into(addr, 107, reg)) # read the power management register 1
 print(0x40 == reg[0])
@@ -80,7 +79,7 @@ print(0x40 == reg[0])
 # reset the sensor
 reg[0] |= 0x80
 print(1 == i2c.writeto_mem(addr, 107, reg))
-pyb.delay(100)  # wait for the sensor to reset...
+time.sleep_ms(100)  # wait for the sensor to reset...
 
 # now read and write two register at a time
 print(2 == i2c.readfrom_mem_into(addr, 107, reg2))
@@ -98,7 +97,7 @@ print(reg2 == reg2_r)
 # reset the sensor
 reg[0] = 0x80
 print(1 == i2c.writeto_mem(addr, 107, reg))
-pyb.delay(100)  # wait for the sensor to reset...
+time.sleep_ms(100)  # wait for the sensor to reset...
 
 # try some raw read and writes
 reg[0] = 117 # register address

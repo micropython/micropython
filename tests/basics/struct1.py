@@ -35,8 +35,11 @@ print(struct.pack("<I", 0xffffffff))
 
 # long long ints
 print(struct.pack("<Q", 2**64 - 1))
+print(struct.pack(">Q", 2**64 - 1))
 print(struct.pack("<Q", 0xffffffffffffffff))
+print(struct.pack(">Q", 0xffffffffffffffff))
 print(struct.pack("<q", -1))
+print(struct.pack(">q", -1))
 print(struct.pack("<Q", 1234567890123456789))
 print(struct.pack("<q", -1234567890123456789))
 print(struct.pack(">Q", 1234567890123456789))

@@ -17,3 +17,9 @@ f3(1)
 f3(1, 2)
 f3(1, b=2)
 f3(1, 2, b=3)
+
+def f4(*vargs, **kwargs):
+    print(vargs, kwargs)
+f4(*(1, 2))
+f4(kw_arg=3)
+f4(*(1, 2), kw_arg=3)
