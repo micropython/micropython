@@ -95,6 +95,73 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
     return true;
 }
 
+#if MICROPY_PY_BUILTINS_SLICE_RANGES_CORRECTLY
+void mp_seq_get_slice_indices(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
+    // Used in slicing ranges. Slices and ranges are difficult to get
+    // entirely right. This function is transliterated from Cpython's
+    // _PySlice_GetLongIndices in sliceobject.c
+    mp_obj_t ostart, ostop, ostep;
+    mp_int_t start, stop, step, upper, lower;
+    mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
+
+    // Convert step to an integer; raise for zero step
+    if (ostep == mp_const_none) {
+        step = 1;
+    } else {
+        step = MP_OBJ_SMALL_INT_VALUE(ostep);
+        if (step == 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "slice step cannot be zero"));
+        }
+    }
+
+    // Find lower and upper bounds for start and stop
+    if (step < 0) {
+        lower = -1;
+        upper = lower + len;
+    } else {
+        lower = 0;
+        upper = len;
+    }
+
+    // Compute start
+    if (ostart == mp_const_none) {
+        start = step < 0 ? upper : lower;
+    } else {
+        start = MP_OBJ_SMALL_INT_VALUE(ostart);
+        if (start < 0) {
+            start += len;
+            if (start < lower) {
+                start = lower;
+            }
+        } else {
+            if (start > upper) {
+                start = upper;
+            }
+        }
+    }
+
+    // Compute stop
+    if (ostop == mp_const_none) {
+        stop = step < 0 ? lower : upper;
+    } else {
+        stop = MP_OBJ_SMALL_INT_VALUE(ostop);
+        if (stop < 0) {
+            stop += len;
+            if (stop < lower) {
+                stop = lower;
+            }
+        } else {
+            if (stop > upper) {
+                stop = upper;
+            }
+        }
+    }
+
+    indexes->start = start;
+    indexes->stop = stop;
+    indexes->step = step;
+}
+#endif
 #endif
 
 mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes) {
