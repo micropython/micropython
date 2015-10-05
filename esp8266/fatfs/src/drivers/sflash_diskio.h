@@ -30,51 +30,46 @@
 // ESP SDK API
 #include "c_types.h"
 #include "spi_flash.h"
+
 #include "mpconfigport.h"
 
-// sector size according to flash memory
-#ifdef SFLASH_AUTOSIZE
-    #define _SECTOR_SIZE (sflash_get_sec_count())
-#elif defined(SFLASH_512K)
-    #define _SECTOR_SIZE 0x80
-#elif defined(SFLASH_1M)
-    #define _SECTOR_SIZE 0x100
-#elif defined(SFLASH_2M)
-    #define _SECTOR_SIZE 0x200
-#elif defined(SFLASH_4M)
-    #define _SECTOR_SIZE 0x400
-#elif defined(SFLASH_8M)
-    #define _SECTOR_SIZE 0x800
-#elif defined(SFLASH_16M)
-    #define _SECTOR_SIZE 0x1000
+// sectors according to flash memory
+#ifdef FLASH_AUTOSIZE
+    #define _SECTOR_COUNT (sflash_get_sector_count())
+#elif defined(FLASH_512K)
+    #define _SECTOR_COUNT 0x80
+#elif defined(FLASH_1M)
+    #define _SECTOR_COUNT 0x100
+#elif defined(FLASH_2M)
+    #define _SECTOR_COUNT 0x200
+#elif defined(FLASH_4M)
+    #define _SECTOR_COUNT 0x400
+#elif defined(FLASH_8M)
+    #define _SECTOR_COUNT 0x800
+#elif defined(FLASH_16M)
+    #define _SECTOR_COUNT 0x1000
 // default value 512K
 #else
-    #define _SECTOR_SIZE 0x80
-#endif // SFLASH_AUTOSIZE
+    #define _SECTOR_COUNT 0x80
+#endif // FLASH_AUTOSIZE
 
-// TODO: flash size definitions here, correct block size/count
-//       possibly the definition of BLOCK/SECTOR is vice versa in ESP SDK
-//       INTERNAL FLASH sizes or total sizes
-#define SFLASH_BLOCK_SIZE    SPI_FLASH_SEC_SIZE
-#define SFLASH_BLOCK_COUNT   MICROPY_PORT_SFLASH_BLOCK_COUNT // or block_size / sector size
-#define SFLASH_SECTOR_SIZE   _SECTOR_SIZE
-#define SFLASH_SECTOR_COUNT  ((SFLASH_BLOCK_SIZE * SFLASH_BLOCK_COUNT)) / SFLASH_SECTOR_SIZE
+// TODO: correct block size/count
+#define FLASH_START_ADDR  0x40200000
+#define FLASH_SECTOR_SIZE SPI_FLASH_SEC_SIZE
+#define FLASH_TOTAL_SIZE  ((_SECTOR_COUNT) * FLASH_SECTOR_SIZE)
+#define FLASH_WRITE_SIZE  4
+#define FLASH_READ_SIZE   4
 
-#define SFLASH_SECTORS_PER_BLOCK (SFLASH_BLOCK_SIZE / SFLASH_SECTOR_SIZE)
+#define FLASH_BLOCK_SIZE    65536
+#define FLASH_BLOCK_COUNT   MICROPY_PORT_SFLASH_BLOCK_COUNT
+#define FLASH_SECTOR_COUNT  ((_SECTOR_COUNT * FLASH_BLOCK_COUNT)) / FLASH_SECTOR_SIZE
 
-// last 4 blocks used by ESP libs
-#define SFLASH_PARAM_BLOCK_COUNT    4
-#define SFLASH_PARAM_BLOCK_START    (SFLASH_SECTOR_COUNT - SFLASH_PARAM_BLOCK_COUNT)
-
-#define SFLASH_START_ADDR  0x40200000
-#define SFLASH_TOTAL_SIZE  ((SFLASH_PARAM_SEC_START) * SFLASH_SECTOR_SIZE))
-#define SFLASH_WRITE_SIZE  4
-#define SFLASH_READ_SIZE   4
+// #define SFLASH_SECTORS_PER_BLOCK   (SFLASH_BLOCK_SIZE / SFLASH_SECTOR_SIZE)
+// #define FLASH_PARAM_SECTOR_COUNT   4
+// #define FLASH_PARAM_SECTOR_START   (FLASH_SECTOR_COUNT - FLASH_PARAM_SECTOR_COUNT)
 
 // flash disk operations
 DRESULT sflash_disk_init(void);
-DRESULT sflash_disk_init_default(void);
-DRESULT sflash_disk_init_blank(void);
 DRESULT sflash_disk_status(void);
 DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count);
 DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count);

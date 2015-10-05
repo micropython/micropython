@@ -37,85 +37,33 @@
 static bool sflash_init_done      = false;
 static bool sflash_cache_is_dirty = false;
 
-// default init data 1Kb
-static volatile const uint8_t
-sflash_init_data[128] ICACHE_STORE_ATTR ICACHE_RODATA_ATTR =
-{
-    0x05, 0x00, 0x04, 0x02, 0x05, 0x05, 0x05, 0x02,
-    0x05, 0x00, 0x04, 0x05, 0x05, 0x04, 0x05, 0x05,
-    0x04, 0xFE, 0xFD, 0xFF, 0xF0, 0xF0, 0xF0, 0xE0,
-    0xE0, 0xE0, 0xE1, 0x0A, 0xFF, 0xFF, 0xF8, 0x00,
-    0xF8, 0xF8, 0x52, 0x4E, 0x4A, 0x44, 0x40, 0x38,
-    0x00, 0x00, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05,
-    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0xE1, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x01, 0x93, 0x43, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
+// TODO: auto count different flash sizes
+static uint16_t sflash_get_sector_count(void) {
+    static uint32_t flash_total_size = 0;
+    if (0 == flash_total_size) {
+        flash_total_size = 4 * 1024 * 1024; // 4Mbit
+        flash_total_size /= 8;              // 512Kb
+    }
+    return flash_total_size / FLASH_SECTOR_SIZE;
+}
 
+// TODO: check if the file system already exists by checking first 2 blocks
 DRESULT sflash_disk_init(void) {
-    uint32 data[2] ICACHE_STORE_ATTR;
-
     if (!sflash_init_done) {
         sflash_init_done      = true;
         sflash_cache_is_dirty = false;
 
-        // check if the file system already exists by checking first 2 blocks
-        // TODO: shouldn't we read just 2 blocks instead of total - 4?
-        if (SPI_FLASH_RESULT_OK == spi_flash_read(
-            SFLASH_BLOCK_COUNT - SFLASH_PARAM_BLOCK_COUNT,
-            data, sizeof(data))) {
-
-            if (data[0] == 0xFFFFFFFF && data[1] == 0xFFFFFFFF) {
-                return RES_OK;
-            } else {
-                // init it if it doesn't
-                if (RES_OK == sflash_disk_init_default() &&
-                    RES_OK == sflash_disk_init_blank()) {
-
-                    return RES_OK;
-                }
-            }
+        if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(
+                sflash_get_sector_count() - 4)) {
+            return RES_OK;
+        } else {
+            return RES_ERROR;
         }
     }
     return RES_OK;
 }
 
-// TODO: shouldn't default and blank inits be static?
-// flash total_blocks - 4
-DRESULT sflash_disk_init_default(void) {
-    if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(
-            SFLASH_BLOCK_COUNT - SFLASH_PARAM_BLOCK_COUNT)) {
-
-        if (SPI_FLASH_RESULT_OK == spi_flash_write(
-                SFLASH_BLOCK_COUNT - SFLASH_PARAM_BLOCK_COUNT * SFLASH_BLOCK_SIZE,
-                (uint32 *)sflash_init_data, 128)) {
-            return RES_OK;
-        }
-
-    }
-    return RES_ERROR;
-}
-
-// flash total_blocks - 2
-DRESULT sflash_disk_init_blank(void) {
-    if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(SFLASH_BLOCK_COUNT - 2) &&
-        SPI_FLASH_RESULT_OK == spi_flash_erase_sector(SFLASH_BLOCK_COUNT - 1)) {
-        return RES_OK;
-    }
-    return RES_ERROR;
-}
-
-// DRESULT sflash_disk_init_data_written(void) {
-// }
-
-// need to lock/unlock context for safe access
+// TODO: need to lock/unlock context for safe access
 static bool sflash_access(void) {
     return true;
 }
@@ -135,7 +83,7 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+    if ((sector + count > FLASH_SECTOR_COUNT) || (count == 0)) {
         return RES_PARERR;
     }
 
@@ -154,7 +102,7 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > SFLASH_SECTOR_COUNT) || (count == 0)) {
+    if ((sector + count > FLASH_SECTOR_COUNT) || (count == 0)) {
         sflash_disk_flush();
         return RES_PARERR;
     }
@@ -184,10 +132,4 @@ DRESULT sflash_disk_flush(void) {
 
 uint32_t sflash_disk_get_id(void) {
     return spi_flash_get_id();
-}
-
-// AUTOSIZE
-uint16_t sflash_get_sec_count(void) {
-    // return (sflash_get_size_byte() / SPI_FLASH_SEC_SIZE)
-    return 0;
 }
