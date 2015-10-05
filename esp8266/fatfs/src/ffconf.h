@@ -34,15 +34,6 @@
 
 
 /*---------------------------------------------------------------------------/
-/ ICACHE Attributes
-/---------------------------------------------------------------------------*/
-
-#define ICACHE_STORE_TYPEDEF_ATTR   __attribute__((aligned(4),packed))
-#define ICACHE_STORE_ATTR           __attribute__((aligned(4)))
-#define ICACHE_RAM_ATTR             __attribute__((section(".iram0.text")))
-
-
-/*---------------------------------------------------------------------------/
 / Functions and Buffer Configurations
 /---------------------------------------------------------------------------*/
 
