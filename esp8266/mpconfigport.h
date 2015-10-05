@@ -66,8 +66,7 @@
 #define MICROPY_MODULE_FROZEN       (1)
 
 // FatFS options
-// TODO: this depends on the FLASH size
-#define MICROPY_PORT_SFLASH_BLOCK_COUNT             8 // 512k FLASH
+#define MICROPY_PORT_SFLASH_BLOCK_COUNT             1
 
 /* Enable FatFS LFNs
     0: Disable LFN feature.
@@ -75,8 +74,8 @@
     2: Enable LFN with dynamic working buffer on the STACK.
     3: Enable LFN with dynamic working buffer on the HEAP.
 */
-#define MICROPY_ENABLE_LFN                          (2)
-#define MICROPY_LFN_CODE_PAGE                       (437)       // 1=SFN/ANSI 437=LFN/U.S.(OEM)
+#define MICROPY_ENABLE_LFN                          (0)
+#define MICROPY_LFN_CODE_PAGE                       (437)
 
 // type definitions for the specific machine
 
@@ -123,7 +122,6 @@ extern const struct _mp_obj_module_t uos_module;
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
-    \
     /* Singleton instance of scan callback, meaning that there can
        be only one concurrent AP scan. */ \
     mp_obj_t scan_cb_obj; \
