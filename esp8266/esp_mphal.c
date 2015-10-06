@@ -25,10 +25,12 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 
 // ESP SDK API
 #include "ets_sys.h"
 #include "user_interface.h"
+#include "osapi.h"
 
 #include "etshal.h"
 #include "mpconfigport.h"
@@ -84,6 +86,13 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
         }
         uart_tx_one_char(UART0, *str++);
     }
+}
+
+void mp_hal_stdout_tx_printf(char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
 }
 
 uint32_t HAL_GetTick(void) {

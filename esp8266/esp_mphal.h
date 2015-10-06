@@ -37,6 +37,7 @@ int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len);
 void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
+void mp_hal_stdout_tx_printf(char *format, ...);
 
 uint32_t HAL_GetTick(void);
 void HAL_Delay(uint32_t Delay);
