@@ -204,7 +204,8 @@ class WLAN
 
     .. method:: wlan.connect(ssid, password)
 
-        Connect to the specified wireless network, using the specified password.
+        Connect to the specified wireless network, using the specified
+        password.
 
     .. method:: wlan.disconnect()
 
@@ -214,12 +215,13 @@ class WLAN
 
         Initiate scanning for the available wireless networks.
 
-        Scanning is only possible if the radio is in station or station+AP mode; if
-        called while in AP only mode, an OSError exception will be raised.
+        Scanning is only possible if the radio is in station or station+AP
+        mode; if called while in AP only mode, an OSError exception will be
+        raised.
 
-        Once the scanning is complete, the provided callback function ``cb`` will
-        be called once for each network found, and passed a tuple with information
-        about that network:
+        Once the scanning is complete, the provided callback function ``cb``
+        will be called once for each network found, and passed a tuple with
+        information about that network:
 
             (ssid, bssid, channel, RSSI, authmode, hidden)
 
@@ -235,6 +237,26 @@ class WLAN
 
             * 0 -- visible
             * 1 -- hidden
+
+    .. method:: status()
+
+        Return the current status of the wireless connection.
+
+        The possible statuses are defined as constants:
+
+            * ``STAT_IDLE`` -- no connection and no activity,
+            * ``STAT_CONNECTING`` -- connecting in progress,
+            * ``STAT_WRONG_PASSWORD`` -- failed due to incorrect password,
+            * ``STAT_NO_AP_FOUND`` -- failed because no access point replied,
+            * ``STAT_CONNECT_FAIL`` -- failed due to other problems,
+            * ``STAT_GOT_IP`` -- connection susccessful.
+
+    .. method:: wlan.isconnected()
+
+        In case of STA mode, returns ``True`` if connected to a wifi access
+        point and has a valid IP address.  In AP mode returns ``True`` when a
+        station is connected. Returns ``False`` otherwise.
+
 
 .. only:: port_wipy
 
