@@ -34,31 +34,22 @@
 #include "diskio.h"
 #include "sflash_diskio.h"
 
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ *****************************************************************************/
 static bool sflash_init_done      = false;
 static bool sflash_cache_is_dirty = false;
 
-// TODO: auto count different flash sizes
-static uint16_t sflash_get_sector_count(void) {
-    static uint32_t flash_total_size = 0;
-    if (0 == flash_total_size) {
-        flash_total_size = 4 * 1024 * 1024; // 4Mbit
-        flash_total_size /= 8;              // 512Kb
-    }
-    return flash_total_size / FLASH_SECTOR_SIZE;
-}
-
-// TODO: check if the file system already exists by checking first 2 blocks
+/******************************************************************************
+ DEFINE PUBLIC FUNCTIONS
+ *****************************************************************************/
 DRESULT sflash_disk_init(void) {
     if (!sflash_init_done) {
         sflash_init_done      = true;
         sflash_cache_is_dirty = false;
 
-        if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(
-                sflash_get_sector_count() - 4)) {
-            return RES_OK;
-        } else {
-            return RES_ERROR;
-        }
+        // TODO: check if the file system already exists by checking first 2
+        //       blocks, otherwise erase all sectors
     }
     return RES_OK;
 }
@@ -79,17 +70,19 @@ DRESULT sflash_disk_status(void) {
 // spi_flash_set_read_func() in spi_flash.h but also need a SpiFlashChip obj
 DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
 
+    DWORD addr = FLASH_START_ADDR + sector * FLASH_SECTOR_SIZE;
+    UINT size  = count * FLASH_SECTOR_SIZE;
+
     if (!sflash_init_done) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > FLASH_SECTOR_COUNT) || (count == 0)) {
+    if ((sector + count > sflash_disk_get_sector_count()) || (count == 0)) {
         return RES_PARERR;
     }
 
     // not catching the timeout
-    if (SPI_FLASH_RESULT_OK == spi_flash_read(
-        sector, (uint32 *) buff, count)) {
+    if (SPI_FLASH_RESULT_OK == spi_flash_read(addr, (uint32 *) buff, size)) {
         return RES_OK;
     } else {
         return RES_ERROR;
@@ -98,19 +91,20 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
 
 DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
 
+    DWORD addr = FLASH_START_ADDR + sector * FLASH_SECTOR_SIZE;
+    UINT size  = count * FLASH_SECTOR_SIZE;
+
     if (!sflash_init_done) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > FLASH_SECTOR_COUNT) || (count == 0)) {
+    if ((sector + count > sflash_disk_get_sector_count()) || (count == 0)) {
         sflash_disk_flush();
         return RES_PARERR;
     }
 
     // not catching the timeout
-    if (SPI_FLASH_RESULT_OK == spi_flash_write(
-        sector, (uint32 *) buff, count)) {
-
+    if (SPI_FLASH_RESULT_OK == spi_flash_write(addr, (uint32 *) buff, size)) {
         sflash_cache_is_dirty = true;
         return RES_OK;
 
@@ -132,4 +126,14 @@ DRESULT sflash_disk_flush(void) {
 
 uint32_t sflash_disk_get_id(void) {
     return spi_flash_get_id();
+}
+
+// TODO: auto count different flash sizes
+uint16_t sflash_disk_get_sector_count(void) {
+    static uint32_t flash_total_size = 0;
+    if (0 == flash_total_size) {
+        flash_total_size = 4 * 1024 * 1024; // 4Mbit
+        flash_total_size /= 8;              // 512Kb
+    }
+    return flash_total_size / FLASH_SECTOR_SIZE;
 }
