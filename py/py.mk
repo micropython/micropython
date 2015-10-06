@@ -10,6 +10,11 @@ PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
+ifeq ($(MICROPY_PY_USSL),1)
+CFLAGS_MOD += -DMICROPY_PY_USSL=1 -I../lib/axtls/ssl -I../lib/axtls/crypto -I../lib/axtls/config
+LDFLAGS_MOD += -L../lib/axtls/_stage -laxtls
+endif
+
 # py object files
 PY_O_BASENAME = \
 	mpstate.o \
@@ -119,6 +124,7 @@ PY_O_BASENAME = \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
 	../extmod/modmachine.o \
+	../extmod/modussl.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
