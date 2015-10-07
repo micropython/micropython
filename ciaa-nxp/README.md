@@ -31,7 +31,7 @@ pyb.delay(100);
 led1.off()
 ```
 
-Available led numbers: 1 to 4
+Available led numbers: 1 to 6 (4:Red, 5:Green, 6:Blue)
 More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
 ### All board buttons via pyb.Switch.

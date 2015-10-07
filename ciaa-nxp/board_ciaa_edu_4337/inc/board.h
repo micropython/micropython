@@ -465,6 +465,22 @@ int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic);
 
 
 /**
+ * @brief       This function must be called every 1ms for RGB PWM management
+ * @return      void
+ */
+void Board_LED_PWM_tick_ms(void);
+
+
+/**
+ * @brief       sets a PWM value between 0 and 99
+ * @param       pwmNumber : 0: red, 1: green, 2: blue
+ * @param       value : PWM duty cycle (0 to 99)
+ * @return      void
+ */
+void Board_LED_PWM_SetValue(uint8_t pwmNumber,uint8_t value);
+
+
+/**
  * @}
  */
 

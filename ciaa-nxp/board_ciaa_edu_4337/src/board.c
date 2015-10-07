@@ -48,6 +48,16 @@ typedef struct {
 } io_port_t;
 
 static const io_port_t gpioLEDBits[] = {{0, 14}, {1, 11}, {1, 12}, {5, 0}, {5, 1}, {5, 2}};
+typedef struct {
+	uint8_t redPwmValue;
+	uint8_t redPwmCounter;
+        uint8_t greenPwmValue;
+        uint8_t greenPwmCounter;
+        uint8_t bluePwmValue;
+        uint8_t bluePwmCounter;
+
+}RGBPWMInfo;
+static RGBPWMInfo rgbPwmInfo;
 
 typedef struct {
 	uint8_t* buffer;
@@ -381,6 +391,8 @@ void Board_UARTPutSTR(const char *str)
 #endif
 }
 
+
+//=============================[Leds management]===============================================================================
 static void Board_LED_Init()
 {
 	uint32_t idx;
@@ -390,6 +402,13 @@ static void Board_LED_Init()
 		Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin);
 		Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin, (bool) false);
 	}
+
+	rgbPwmInfo.redPwmValue=0;
+	rgbPwmInfo.redPwmCounter=0;
+        rgbPwmInfo.greenPwmValue=0;
+        rgbPwmInfo.greenPwmCounter=0;
+        rgbPwmInfo.bluePwmValue=0;
+        rgbPwmInfo.bluePwmCounter=0;
 }
 
 void Board_LED_Set(uint8_t LEDNumber, bool On)
@@ -410,6 +429,33 @@ void Board_LED_Toggle(uint8_t LEDNumber)
 {
 	Board_LED_Set(LEDNumber, !Board_LED_Test(LEDNumber));
 }
+
+void Board_LED_PWM_tick_ms(void)
+{
+	// Red PWM
+	if(rgbPwmInfo.redPwmCounter>=rgbPwmInfo.redPwmValue)
+		Board_LED_Set(3,0); // RED OFF
+	else
+		Board_LED_Set(3,1); // RED ON
+
+	rgbPwmInfo.redPwmCounter++;
+	if(rgbPwmInfo.redPwmCounter>=10)
+		rgbPwmInfo.redPwmCounter=0;
+	//__________________________________________________
+
+}
+
+void Board_LED_PWM_SetValue(uint8_t pwmNumber,uint8_t value)
+{
+	switch(pwmNumber)
+	{
+		case 0: rgbPwmInfo.redPwmValue=value; break;
+		case 1: rgbPwmInfo.greenPwmValue=value; break;
+		case 2: rgbPwmInfo.bluePwmValue=value; break;
+	}
+}
+//================================================================================================================================
+
 
 
 

@@ -35,6 +35,7 @@ static volatile mp_uint_t tick_ct = 0;
 void SysTick_Handler(void) {
 	tick_ct++;
 	Board_UART_tick_ms();
+	Board_LED_PWM_tick_ms();
 }
 
 
