@@ -230,9 +230,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         jobject el = JJ(CallObjectMethod, self->obj, List_get_mid, idx);
-        if (el == NULL) {
-            check_exception();
-        }
+        check_exception();
         return new_jobject(el);
     } else {
         // store
