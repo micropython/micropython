@@ -464,7 +464,7 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
         // set WUTIE to enable wakeup interrupts
         // set WUTE to enable wakeup
         // program WUCKSEL
-        RTC->CR |= (1 << 14) | (1 << 10) | (wucksel & 7);
+        RTC->CR = (RTC->CR & ~7) | (1 << 14) | (1 << 10) | (wucksel & 7);
 
         // enable register write protection
         RTC->WPR = 0xff;
