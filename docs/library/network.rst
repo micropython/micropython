@@ -236,6 +236,26 @@ class WLAN
             * 0 -- visible
             * 1 -- hidden
 
+    .. method:: status()
+
+        Return the current status of the wireless connection.
+
+        The possible statuses are defined as constants:
+
+            * ``STAT_IDLE`` -- no connection and no activity,
+            * ``STAT_CONNECTING`` -- connecting in progress,
+            * ``STAT_WRONG_PASSWORD`` -- failed due to incorrect password,
+            * ``STAT_NO_AP_FOUND`` -- failed because no access point replied,
+            * ``STAT_CONNECT_FAIL`` -- failed due to other problems,
+            * ``STAT_GOT_IP`` -- connection susccessful.
+
+    .. method:: wlan.isconnected()
+
+        In case of STA mode, returns ``True`` if connected to a wifi access
+        point and has a valid IP address.  In AP mode returns ``True`` when a
+        station is connected. Returns ``False`` otherwise.
+
+
 .. only:: port_wipy
 
     This class provides a driver for WiFi network processor in the WiPy.  Example usage::
