@@ -112,9 +112,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 
     /* Configure VBUS Pin */
     GPIO_InitStruct.Pin = GPIO_PIN_13;
-    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* Configure ID pin */
@@ -124,6 +125,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    /* Enable USB HS Clocks */
+    __USB_OTG_HS_CLK_ENABLE();
 #else
     /* Configure USB FS GPIOs */
     __GPIOA_CLK_ENABLE();
@@ -176,10 +179,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_HS;
     HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
-#endif    
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
     __USB_OTG_HS_ULPI_CLK_ENABLE();
+#endif
     
     /* Set USBHS Interrupt to the lowest priority */
     HAL_NVIC_SetPriority(OTG_HS_IRQn, 6, 0);
