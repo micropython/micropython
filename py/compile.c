@@ -156,14 +156,15 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
 #if MICROPY_COMP_CONST
             case PN_expr_stmt:
                 if (!MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
-                    mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
-                    if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_expr_stmt_assign) {
+                    if (!(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_expr_stmt_augassign)
+                        || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_expr_stmt_assign_list))) {
+                        // this node is of the form <x> = <y>
                         if (MP_PARSE_NODE_IS_ID(pns->nodes[0])
-                            && MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_power)
-                            && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0])
-                            && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[0]) == MP_QSTR_const
-                            && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1], PN_trailer_paren)
-                            && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[2])
+                            && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_power)
+                            && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pns->nodes[1])->nodes[0])
+                            && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pns->nodes[1])->nodes[0]) == MP_QSTR_const
+                            && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pns->nodes[1])->nodes[1], PN_trailer_paren)
+                            && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pns->nodes[1])->nodes[2])
                             ) {
                             // code to assign dynamic constants: id = const(value)
 
@@ -171,7 +172,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                             qstr id_qstr = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
 
                             // get the value
-                            mp_parse_node_t pn_value = ((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns1->nodes[0])->nodes[1])->nodes[0];
+                            mp_parse_node_t pn_value = ((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pns->nodes[1])->nodes[1])->nodes[0];
                             pn_value = fold_constants(comp, pn_value, consts);
                             if (!MP_PARSE_NODE_IS_SMALL_INT(pn_value)) {
                                 compile_syntax_error(comp, (mp_parse_node_t)pns, "constant must be an integer");
@@ -188,7 +189,7 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                             elem->value = MP_OBJ_NEW_SMALL_INT(value);
 
                             // replace const(value) with value
-                            pns1->nodes[0] = pn_value;
+                            pns->nodes[1] = pn_value;
 
                             // finished folding this assignment
                             return pn;
@@ -1885,7 +1886,7 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 EMIT(pop_top); // discard last result since this is a statement and leaves nothing on the stack
             }
         }
-    } else {
+    } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
         mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
         int kind = MP_PARSE_NODE_STRUCT_KIND(pns1);
         if (kind == PN_expr_stmt_augassign) {
@@ -1911,7 +1912,7 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_STORE); // lhs store for aug assign
         } else if (kind == PN_expr_stmt_assign_list) {
             int rhs = MP_PARSE_NODE_STRUCT_NUM_NODES(pns1) - 1;
-            compile_node(comp, ((mp_parse_node_struct_t*)pns1->nodes[rhs])->nodes[0]); // rhs
+            compile_node(comp, pns1->nodes[rhs]); // rhs
             // following CPython, we store left-most first
             if (rhs > 0) {
                 EMIT(dup_top);
@@ -1921,17 +1922,17 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 if (i + 1 < rhs) {
                     EMIT(dup_top);
                 }
-                c_assign(comp, ((mp_parse_node_struct_t*)pns1->nodes[i])->nodes[0], ASSIGN_STORE); // middle store
+                c_assign(comp, pns1->nodes[i], ASSIGN_STORE); // middle store
             }
         } else {
-            assert(kind == PN_expr_stmt_assign); // should be
+        plain_assign:
             if (MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_testlist_star_expr)
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
-                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 2
+                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[1]) == 2
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 2) {
                 // optimisation for a, b = c, d
-                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
+                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns->nodes[1];
                 mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
                     || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)) {
@@ -1944,12 +1945,12 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 c_assign(comp, pns0->nodes[0], ASSIGN_STORE); // lhs store
                 c_assign(comp, pns0->nodes[1], ASSIGN_STORE); // lhs store
             } else if (MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns1->nodes[0], PN_testlist_star_expr)
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_testlist_star_expr)
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
-                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns1->nodes[0]) == 3
+                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[1]) == 3
                 && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 3) {
                 // optimisation for a, b, c = d, e, f
-                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns1->nodes[0];
+                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns->nodes[1];
                 mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
                 if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
                     || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)
@@ -1967,10 +1968,12 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 c_assign(comp, pns0->nodes[2], ASSIGN_STORE); // lhs store
             } else {
                 no_optimisation:
-                compile_node(comp, pns1->nodes[0]); // rhs
+                compile_node(comp, pns->nodes[1]); // rhs
                 c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
             }
         }
+    } else {
+        goto plain_assign;
     }
 }
 
@@ -2228,18 +2231,15 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
                 dblstar_args_node = pns_arg;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
-                assert(MP_PARSE_NODE_IS_STRUCT(pns_arg->nodes[1])); // should always be
-                mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns_arg->nodes[1];
-                if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_argument_3) {
+                if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_comp_for)) {
                     if (!MP_PARSE_NODE_IS_ID(pns_arg->nodes[0])) {
                         compile_syntax_error(comp, (mp_parse_node_t)pns_arg, "LHS of keyword arg must be an id");
                         return;
                     }
                     EMIT_ARG(load_const_str, MP_PARSE_NODE_LEAF_ARG(pns_arg->nodes[0]));
-                    compile_node(comp, pns2->nodes[0]);
+                    compile_node(comp, pns_arg->nodes[1]);
                     n_keyword += 1;
                 } else {
-                    assert(MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for); // should always be
                     compile_comprehension(comp, pns_arg, SCOPE_GEN_EXPR);
                     n_positional++;
                 }
