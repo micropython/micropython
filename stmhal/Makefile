@@ -135,6 +135,7 @@ SRC_C = \
 	pyexec.c \
 	help.c \
 	input.c \
+	modmachine.c \
 	modpyb.c \
 	modstm.c \
 	moduos.c \
