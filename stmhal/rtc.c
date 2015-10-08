@@ -419,17 +419,23 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
             if (div <= 16) {
                 wut = 32768 / div * ms / 1000;
             } else {
+                // use 1Hz clock
                 wucksel = 4;
                 wut = ms / 1000;
-                if (ms > 0x10000) {
-                    wucksel = 5;
-                    ms -= 0x10000;
-                    if (ms > 0x10000) {
+                if (wut > 0x10000) {
+                    // wut too large for 16-bit register, try to offset by 0x10000
+                    wucksel = 6;
+                    wut -= 0x10000;
+                    if (wut > 0x10000) {
+                        // wut still too large
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "wakeup value too large"));
                     }
                 }
             }
-            wut -= 1;
+            // wut register should be 1 less than desired value, but guard against wut=0
+            if (wut > 0) {
+                wut -= 1;
+            }
             enable = true;
         }
         if (n_args == 3) {
