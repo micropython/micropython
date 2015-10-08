@@ -55,23 +55,18 @@
 
 // TODO: correct block size/count
 #define FLASH_START_ADDR   0x6c000
+#define FLASH_BLOCK_SIZE   0x10000
+#define FLASH_BLOCK_COUNT  MICROPY_PORT_SFLASH_BLOCK_COUNT
 #define FLASH_SECTOR_SIZE  SPI_FLASH_SEC_SIZE
-#define FLASH_SECTOR_COUNT (_SECTOR_COUNT * FLASH_BLOCK_COUNT)
-#define FLASH_TOTAL_SIZE   (_SECTOR_COUNT * FLASH_SECTOR_SIZE)
-// #define FLASH_WRITE_SIZE  4
-// #define FLASH_READ_SIZE   4
-
-#define FLASH_BLOCK_SIZE    65536
-#define FLASH_BLOCK_COUNT   MICROPY_PORT_SFLASH_BLOCK_COUNT
-// #define SFLASH_SECTORS_PER_BLOCK   (SFLASH_BLOCK_SIZE / SFLASH_SECTOR_SIZE)
-// #define FLASH_PARAM_SECTOR_COUNT   4
-// #define FLASH_PARAM_SECTOR_START   (FLASH_SECTOR_COUNT - FLASH_PARAM_SECTOR_COUNT)
+#define FLASH_SECTOR_COUNT (FLASH_BLOCK_SIZE / FLASH_SECTOR_SIZE)
+// #define FLASH_TOTAL_SIZE   (_SECTOR_COUNT * FLASH_SECTOR_SIZE)
 
 // flash disk operations
 DRESULT sflash_disk_init(void);
 DRESULT sflash_disk_status(void);
 DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count);
 DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count);
+DRESULT sflash_disk_erase(DWORD sector);
 DRESULT sflash_disk_flush(void);
 uint32_t sflash_disk_get_id(void);
 uint16_t sflash_disk_get_sector_count(void);

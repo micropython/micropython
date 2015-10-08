@@ -137,9 +137,11 @@ DRESULT disk_ioctl (
         case GET_SECTOR_COUNT:
             *((DWORD*)buff) = FLASH_SECTOR_COUNT;
             return RES_OK;
+#if _MAX_SS != _MIN_SS
         case GET_SECTOR_SIZE:
             *((WORD*)buff) = FLASH_SECTOR_SIZE;
             return RES_OK;
+#endif
         case GET_BLOCK_SIZE:
             *((DWORD*)buff) = FLASH_BLOCK_SIZE;
             return RES_OK;

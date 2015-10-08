@@ -41,8 +41,23 @@ static bool sflash_init_done      = false;
 static bool sflash_cache_is_dirty = false;
 
 /******************************************************************************
+ DECLARE PRIVATE FUNCTIONS
+ *****************************************************************************/
+// TODO: need to lock/unlock context for safe access
+static bool sflash_access(void) {
+    return true;
+}
+
+/******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  *****************************************************************************/
+DRESULT sflash_disk_status(void) {
+    if (!sflash_init_done) {
+        return STA_NOINIT;
+    }
+    return RES_OK;
+}
+
 DRESULT sflash_disk_init(void) {
     if (!sflash_init_done) {
         sflash_init_done      = true;
@@ -50,18 +65,6 @@ DRESULT sflash_disk_init(void) {
 
         // TODO: check if the file system already exists by checking first 2
         //       blocks, otherwise erase all sectors
-    }
-    return RES_OK;
-}
-
-// TODO: need to lock/unlock context for safe access
-static bool sflash_access(void) {
-    return true;
-}
-
-DRESULT sflash_disk_status(void) {
-    if (!sflash_init_done) {
-        return STA_NOINIT;
     }
     return RES_OK;
 }
@@ -77,18 +80,19 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > sflash_disk_get_sector_count()) || (count == 0)) {
+    if ((sector + count > FLASH_SECTOR_COUNT) || (count == 0)) {
         return RES_PARERR;
     }
 
     // not catching the timeout
-    if (SPI_FLASH_RESULT_OK == spi_flash_read(addr, (uint32 *) buff, size)) {
+    if (SPI_FLASH_RESULT_OK == spi_flash_read(addr, (uint32_t *) buff, size)) {
         return RES_OK;
     } else {
         return RES_ERROR;
     }
 }
 
+#if _USE_WRITE
 DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
 
     DWORD addr = FLASH_START_ADDR + sector * FLASH_SECTOR_SIZE;
@@ -98,19 +102,36 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         return STA_NOINIT;
     }
 
-    if ((sector + count > sflash_disk_get_sector_count()) || (count == 0)) {
+    if ((sector + count > FLASH_SECTOR_COUNT) || (count == 0)) {
         sflash_disk_flush();
         return RES_PARERR;
     }
 
     // not catching the timeout
-    if (SPI_FLASH_RESULT_OK == spi_flash_write(addr, (uint32 *) buff, size)) {
-        sflash_cache_is_dirty = true;
-        return RES_OK;
-
-    } else {
-        return RES_ERROR;
+    if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(addr / FLASH_SECTOR_SIZE)) {
+        if (SPI_FLASH_RESULT_OK == spi_flash_write(addr, (uint32_t *) buff, size)) {
+            sflash_cache_is_dirty = true;
+            return RES_OK;
+        }
     }
+    return RES_ERROR;
+}
+#endif
+
+DRESULT sflash_disk_erase(DWORD sector) {
+
+    if (!sflash_init_done) {
+        return STA_NOINIT;
+    }
+
+    if (sector > FLASH_SECTOR_COUNT || sector == 0) {
+        return RES_PARERR;
+    }
+
+    if (SPI_FLASH_RESULT_OK == spi_flash_erase_sector(sector)) {
+        return RES_OK;
+    }
+    return RES_ERROR;
 }
 
 DRESULT sflash_disk_flush(void) {
