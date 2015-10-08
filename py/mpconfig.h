@@ -215,6 +215,11 @@
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
+// Whether to enable constant folding; eg 1+2 rewritten as 3
+#ifndef MICROPY_COMP_CONST_FOLDING
+#define MICROPY_COMP_CONST_FOLDING (1)
+#endif
+
 // Whether to enable lookup of constants in modules; eg module.CONST
 #ifndef MICROPY_COMP_MODULE_CONST
 #define MICROPY_COMP_MODULE_CONST (0)
