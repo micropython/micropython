@@ -206,6 +206,22 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         // load attribute
         mp_obj_jobject_t *self = self_in;
 
+        const char *attr = qstr_str(attr_in);
+        jclass obj_class = JJ(GetObjectClass, self->obj);
+        jstring field_name = JJ(NewStringUTF, attr);
+        jobject field = JJ(CallObjectMethod, obj_class, Class_getField_mid, field_name);
+        JJ(DeleteLocalRef, field_name);
+        JJ(DeleteLocalRef, obj_class);
+        if (!JJ1(ExceptionCheck)) {
+            jfieldID field_id = JJ(FromReflectedField, field);
+            JJ(DeleteLocalRef, field);
+            jobject obj = JJ(GetObjectField, self->obj, field_id);
+            dest[0] = new_jobject(obj);
+            return;
+        }
+        //JJ1(ExceptionDescribe);
+        JJ1(ExceptionClear);
+
         mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
         o->base.type = &jmethod_type;
         o->name = attr_in;
