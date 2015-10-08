@@ -135,6 +135,7 @@ static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
 "\r\n"
+"import machine\r\n"
 "import pyb\r\n"
 "#pyb.main('main.py') # main script to run after this one\r\n"
 "#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
