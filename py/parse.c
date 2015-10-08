@@ -625,11 +625,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         num_not_nil += 1;
                     }
                 }
-                if (emit_rule) {
+                if (emit_rule || num_not_nil != 1) {
+                    // need to add rule when num_not_nil==0 for, eg, atom_paren, testlist_comp_3b
                     push_result_rule(&parser, rule_src_line, rule, i);
-                } else if (num_not_nil == 0) {
-                    push_result_rule(&parser, rule_src_line, rule, i); // needed for, eg, atom_paren, testlist_comp_3b
-                } else if (num_not_nil == 1) {
+                } else {
                     // single result, leave it on stack
                     mp_parse_node_t pn = MP_PARSE_NODE_NULL;
                     for (mp_uint_t x = 0; x < i; ++x) {
@@ -639,8 +638,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         }
                     }
                     push_result_node(&parser, pn);
-                } else {
-                    push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
             }
