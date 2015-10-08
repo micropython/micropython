@@ -9,6 +9,9 @@ def print_ret(x):
     return x
 f4(*print_ret(['a', 'b']), kw_arg=print_ret(None))
 
+# test evaluation order of dictionary key/value pair (in 3.4 it's backwards)
+{print_ret(1):print_ret(2)}
+
 # from basics/syntaxerror.py
 # can't have multiple * or ** (in 3.5 we can)
 def test_syntax(code):
