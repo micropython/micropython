@@ -315,7 +315,10 @@ STATIC mp_parse_node_t fold_constants(compiler_t *comp, mp_parse_node_t pn, mp_m
                         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg);
                     } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
                         // -int
-                        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, -arg);
+                        arg = -arg;
+                        if (MP_SMALL_INT_FITS(arg)) {
+                            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, arg);
+                        }
                     } else {
                         assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)); // should be
                         // ~int
