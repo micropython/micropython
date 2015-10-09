@@ -352,6 +352,18 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         }
         mp_obj_jobject_t *jo = arg;
         out->l = jo->obj;
+    } else if (type == &mp_type_bool) {
+        if (IMATCH(arg_type, "boolean")) {
+            out->z = arg == mp_const_true;
+        } else {
+            return false;
+        }
+    } else if (arg == mp_const_none) {
+        //printf("TODO: Check java arg type!!\n");
+        while (isalpha(*arg_type) || *arg_type == '.') {
+            arg_type++;
+        }
+        out->l = NULL;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
     }
