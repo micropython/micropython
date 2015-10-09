@@ -169,7 +169,8 @@ Power related functions
        Put the pyboard into a "deep sleep" state.
     
        This reduces power consumption to less than 50 uA.  To wake from this
-       sleep state requires an external interrupt or a real-time-clock event.
+       sleep state requires a real-time-clock event, or an external interrupt
+       on X1 (PA0=WKUP) or X18 (PC13=TAMP1).
        Upon waking the system undergoes a hard reset.
     
        See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
