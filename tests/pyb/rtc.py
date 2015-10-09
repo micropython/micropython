@@ -1,4 +1,4 @@
-import pyb
+import pyb, stm
 from pyb import RTC
 
 rtc = RTC()
@@ -49,3 +49,30 @@ set_and_print_calib(-511)
 
 # restore existing calibration value
 rtc.calibration(cal_tmp)
+
+# Check register settings for wakeup
+def set_and_print_wakeup(ms):
+    try:
+        rtc.wakeup(ms)
+        wucksel = stm.mem32[stm.RTC + stm.RTC_CR] & 7
+        wut = stm.mem32[stm.RTC + stm.RTC_WUTR] & 0xffff
+    except ValueError:
+        wucksel = -1
+        wut = -1
+    print((wucksel, wut))
+
+set_and_print_wakeup(0)
+set_and_print_wakeup(1)
+set_and_print_wakeup(4000)
+set_and_print_wakeup(4001)
+set_and_print_wakeup(8000)
+set_and_print_wakeup(8001)
+set_and_print_wakeup(16000)
+set_and_print_wakeup(16001)
+set_and_print_wakeup(32000)
+set_and_print_wakeup(32001)
+set_and_print_wakeup(0x10000*1000)
+set_and_print_wakeup(0x10001*1000)
+set_and_print_wakeup(0x1ffff*1000)
+set_and_print_wakeup(0x20000*1000)
+set_and_print_wakeup(0x20001*1000) # exception
