@@ -51,10 +51,12 @@ class SDCard:
         for i in range(16):
             self.spi.send(0xff)
 
-        # CMD0: init card; should return R1_IDLE_STATE (allow 2 attempts)
-        if self.cmd(0, 0, 0x95) != R1_IDLE_STATE:
-            if self.cmd(0, 0, 0x95) != R1_IDLE_STATE:
-                raise OSError("no SD card")
+        # CMD0: init card; should return R1_IDLE_STATE (allow 5 attempts)
+        for _ in range(5):
+            if self.cmd(0, 0, 0x95) == R1_IDLE_STATE:
+                break
+        else:
+            raise OSError("no SD card")
 
         # CMD8: determine card version
         r = self.cmd(8, 0x01aa, 0x87, 4)
