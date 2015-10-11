@@ -62,17 +62,6 @@ int main(int argc, char **argv) {
     mp_obj_list_init(mp_sys_argv, 0);
 
 
-	//debug
-	uint8_t val=0;
-	while(1)
-	{
-		Board_LED_PWM_SetValue(0,val);
-		mp_hal_milli_delay(500);
-		val++;
-		if(val>10)
-			val=0;
-	}
-
     if (!pyexec_file("/Main.py")) {
 		mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }

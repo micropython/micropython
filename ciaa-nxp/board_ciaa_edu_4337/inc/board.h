@@ -472,12 +472,20 @@ void Board_LED_PWM_tick_ms(void);
 
 
 /**
- * @brief       sets a PWM value between 0 and 99
+ * @brief       sets a PWM value between 0 and 15
  * @param       pwmNumber : 0: red, 1: green, 2: blue
- * @param       value : PWM duty cycle (0 to 99)
+ * @param       value : PWM duty cycle (0 to 15)
  * @return      void
  */
 void Board_LED_PWM_SetValue(uint8_t pwmNumber,uint8_t value);
+
+
+/**
+ * @brief       get pwm's value
+ * @param       pwmNumber : 0: red, 1: green, 2: blue
+ * @return      PWM duty cycle (0 to 15)
+ */
+uint8_t Board_LED_PWM_GetValue(uint8_t pwmNumber);
 
 
 /**

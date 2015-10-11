@@ -9,6 +9,7 @@ Q(LED)
 Q(on)
 Q(off)
 Q(toggle)
+Q(intensity)
 
 Q(Switch)
 Q(switch)

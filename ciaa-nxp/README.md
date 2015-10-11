@@ -183,7 +183,7 @@ Methods:
 More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
 
-- Soporte para DAC mediante el modulo pyb.DAC. Ejemplo:
+- DAC support over pyb.DAC module. Example:
 ```python
 import pyb
 import math
@@ -208,8 +208,9 @@ while True:
         pyb.delay(1000)
 
 ```
-Existe solo el DAC 1
+There is only available DAC 1
 
-A diferencia de la clase DAC de la pyboard (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html) se utilizaron valores de 10bit en vez de 8bits para aprovechar al maximo la resolucion del DAC.
+A difference between this class and pyboard's class is that in this class 10bit resolution was implemented while pyboard's DAC class uses an 8bit value.
+More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html
 
 

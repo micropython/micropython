@@ -433,15 +433,41 @@ void Board_LED_Toggle(uint8_t LEDNumber)
 void Board_LED_PWM_tick_ms(void)
 {
 	// Red PWM
-	if(rgbPwmInfo.redPwmCounter>=rgbPwmInfo.redPwmValue)
-		Board_LED_Set(3,0); // RED OFF
-	else
-		Board_LED_Set(3,1); // RED ON
+        if(rgbPwmInfo.redPwmCounter>=rgbPwmInfo.redPwmValue || rgbPwmInfo.redPwmValue==0 )
+                Board_LED_Set(3,1); // RED OFF
+        else
+                Board_LED_Set(3,0); // RED ON
 
-	rgbPwmInfo.redPwmCounter++;
-	if(rgbPwmInfo.redPwmCounter>=10)
-		rgbPwmInfo.redPwmCounter=0;
+        rgbPwmInfo.redPwmCounter++;
+        if(rgbPwmInfo.redPwmCounter>15)
+                rgbPwmInfo.redPwmCounter=0;
+
 	//__________________________________________________
+
+        // Green PWM
+        if(rgbPwmInfo.greenPwmCounter>=rgbPwmInfo.greenPwmValue || rgbPwmInfo.greenPwmValue==0 )
+                Board_LED_Set(4,1); // GREEN OFF
+        else
+                Board_LED_Set(4,0); // GREEN ON
+
+        rgbPwmInfo.greenPwmCounter++;
+        if(rgbPwmInfo.greenPwmCounter>15)
+                rgbPwmInfo.greenPwmCounter=0;
+
+        //__________________________________________________
+
+
+        // Blue PWM
+        if(rgbPwmInfo.bluePwmCounter>=rgbPwmInfo.bluePwmValue || rgbPwmInfo.bluePwmValue==0 )
+                Board_LED_Set(5,1); // BLUE OFF
+        else
+                Board_LED_Set(5,0); // BLUE ON
+
+        rgbPwmInfo.bluePwmCounter++;
+        if(rgbPwmInfo.bluePwmCounter>15)
+                rgbPwmInfo.bluePwmCounter=0;
+
+        //__________________________________________________
 
 }
 
@@ -453,6 +479,16 @@ void Board_LED_PWM_SetValue(uint8_t pwmNumber,uint8_t value)
 		case 1: rgbPwmInfo.greenPwmValue=value; break;
 		case 2: rgbPwmInfo.bluePwmValue=value; break;
 	}
+}
+uint8_t Board_LED_PWM_GetValue(uint8_t pwmNumber)
+{
+        switch(pwmNumber)
+        {
+                case 0: return rgbPwmInfo.redPwmValue;
+                case 1: return rgbPwmInfo.greenPwmValue;
+                case 2: return rgbPwmInfo.bluePwmValue;
+        }
+	return -1;
 }
 //================================================================================================================================
 

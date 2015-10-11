@@ -87,5 +87,9 @@ void mp_hal_writeDAC(uint32_t value);
 void mp_hal_setSampleRateDAC(uint32_t freq);
 int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic);
 
+//LEDs
+void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value);
+uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber);
+
 
 #endif

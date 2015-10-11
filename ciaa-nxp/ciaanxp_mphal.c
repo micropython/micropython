@@ -240,3 +240,15 @@ int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic)
 	return Board_DAC_writeDMA(buffer,size,flagCyclic);
 }
 
+// LEDS
+void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value)
+{
+	if(value<=15)
+		Board_LED_PWM_SetValue(pwmNumber,value);
+}
+
+uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
+{
+	return Board_LED_PWM_GetValue(pwmNumber);
+}
+
