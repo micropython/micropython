@@ -183,7 +183,9 @@ Methods:
 More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
 
-- DAC support over pyb.DAC module. Example:
+## DAC support over pyb.DAC module. 
+
+Example:
 ```python
 import pyb
 import math
