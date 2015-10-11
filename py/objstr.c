@@ -360,7 +360,7 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
         case MP_BINARY_OP_IN:
             /* NOTE `a in b` is `b.__contains__(a)` */
-            return MP_BOOL(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len, 1) != NULL);
+            return mp_obj_new_bool(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len, 1) != NULL);
 
         //case MP_BINARY_OP_NOT_EQUAL: // This is never passed here
         case MP_BINARY_OP_EQUAL: // This will be passed only for bytes, str is dealt with in mp_obj_equal()
@@ -368,7 +368,7 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_LESS_EQUAL:
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
-            return MP_BOOL(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
+            return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
     }
 
     return MP_OBJ_NULL; // op not supported
@@ -695,7 +695,7 @@ STATIC mp_obj_t str_startswith(mp_uint_t n_args, const mp_obj_t *args) {
     if (prefix_len + (start - str) > str_len) {
         return mp_const_false;
     }
-    return MP_BOOL(memcmp(start, prefix, prefix_len) == 0);
+    return mp_obj_new_bool(memcmp(start, prefix, prefix_len) == 0);
 }
 
 STATIC mp_obj_t str_endswith(mp_uint_t n_args, const mp_obj_t *args) {
@@ -708,7 +708,7 @@ STATIC mp_obj_t str_endswith(mp_uint_t n_args, const mp_obj_t *args) {
     if (suffix_len > str_len) {
         return mp_const_false;
     }
-    return MP_BOOL(memcmp(str + (str_len - suffix_len), suffix, suffix_len) == 0);
+    return mp_obj_new_bool(memcmp(str + (str_len - suffix_len), suffix, suffix_len) == 0);
 }
 
 enum { LSTRIP, RSTRIP, STRIP };

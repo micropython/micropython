@@ -103,7 +103,7 @@ STATIC mp_obj_t dict_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
 STATIC mp_obj_t dict_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_CAST(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(self->map.used != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
         default: return MP_OBJ_NULL; // op not supported
     }
@@ -114,7 +114,7 @@ STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_IN: {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
-            return MP_BOOL(elem != NULL);
+            return mp_obj_new_bool(elem != NULL);
         }
         case MP_BINARY_OP_EQUAL: {
             #if MICROPY_PY_COLLECTIONS_ORDEREDDICT

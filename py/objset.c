@@ -366,7 +366,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (cleanup_other) {
         set_clear(other);
     }
-    return MP_BOOL(out);
+    return mp_obj_new_bool(out);
 }
 STATIC mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(self_in, other_in, false);
@@ -471,7 +471,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_set_t *self = self_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(self->set.used != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->set.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->set.used);
 #if MICROPY_PY_BUILTINS_FROZENSET
         case MP_UNARY_OP_HASH:
@@ -525,7 +525,7 @@ STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_IN: {
             mp_obj_set_t *o = lhs;
             mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);
-            return MP_BOOL(elem != NULL);
+            return mp_obj_new_bool(elem != NULL);
         }
         default:
             return MP_OBJ_NULL; // op not supported

@@ -305,7 +305,7 @@ STATIC mp_obj_t pin_debug(mp_uint_t n_args, const mp_obj_t *args) {
         pin_class_debug = mp_obj_is_true(args[1]);
         return mp_const_none;
     }
-    return MP_BOOL(pin_class_debug);
+    return mp_obj_new_bool(pin_class_debug);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_obj);

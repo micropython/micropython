@@ -106,7 +106,7 @@ mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(o->val != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->val != 0);
 
         // truncate value to fit in mp_int_t, which gives the same hash as
         // small int if the value fits without truncation
@@ -191,15 +191,15 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         }
 
         case MP_BINARY_OP_LESS:
-            return MP_BOOL(lhs_val < rhs_val);
+            return mp_obj_new_bool(lhs_val < rhs_val);
         case MP_BINARY_OP_MORE:
-            return MP_BOOL(lhs_val > rhs_val);
+            return mp_obj_new_bool(lhs_val > rhs_val);
         case MP_BINARY_OP_LESS_EQUAL:
-            return MP_BOOL(lhs_val <= rhs_val);
+            return mp_obj_new_bool(lhs_val <= rhs_val);
         case MP_BINARY_OP_MORE_EQUAL:
-            return MP_BOOL(lhs_val >= rhs_val);
+            return mp_obj_new_bool(lhs_val >= rhs_val);
         case MP_BINARY_OP_EQUAL:
-            return MP_BOOL(lhs_val == rhs_val);
+            return mp_obj_new_bool(lhs_val == rhs_val);
 
         default:
             return MP_OBJ_NULL; // op not supported
