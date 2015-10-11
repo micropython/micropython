@@ -512,7 +512,7 @@ STATIC mp_obj_t cc3k_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_disconnect_obj, cc3k_disconnect);
 
 STATIC mp_obj_t cc3k_isconnected(mp_obj_t self_in) {
-    return MP_BOOL(wlan_connected && ip_obtained);
+    return mp_obj_new_bool(wlan_connected && ip_obtained);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3k_isconnected_obj, cc3k_isconnected);
 

@@ -246,7 +246,7 @@ STATIC mp_obj_t memoryview_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
 STATIC mp_obj_t array_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_array_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(o->len != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(o->len);
         default: return MP_OBJ_NULL; // op not supported
     }
@@ -290,7 +290,7 @@ STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
             if (!mp_get_buffer(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
                 return mp_const_false;
             }
-            return MP_BOOL(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
+            return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len));
         }
 
         default:

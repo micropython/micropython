@@ -534,7 +534,7 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
     // in nlr_push and handle exception.
     mp_load_method_maybe(object_in, MP_OBJ_QSTR_VALUE(attr_in), dest);
 
-    return MP_BOOL(dest[0] != MP_OBJ_NULL);
+    return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
 

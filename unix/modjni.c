@@ -265,7 +265,7 @@ STATIC mp_obj_t jobject_unary_op(mp_uint_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_LEN: {
             jint len = JJ(CallIntMethod, self->obj, List_size_mid);
             if (op == MP_UNARY_OP_BOOL) {
-                return MP_BOOL(len != 0);
+                return mp_obj_new_bool(len != 0);
             }
             return MP_OBJ_NEW_SMALL_INT(len);
         }

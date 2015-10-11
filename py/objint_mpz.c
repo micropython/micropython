@@ -145,7 +145,7 @@ mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(!mpz_is_zero(&o->mpz));
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(!mpz_is_zero(&o->mpz));
         case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mpz_hash(&o->mpz));
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
@@ -308,15 +308,15 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         int cmp = mpz_cmp(zlhs, zrhs);
         switch (op) {
             case MP_BINARY_OP_LESS:
-                return MP_BOOL(cmp < 0);
+                return mp_obj_new_bool(cmp < 0);
             case MP_BINARY_OP_MORE:
-                return MP_BOOL(cmp > 0);
+                return mp_obj_new_bool(cmp > 0);
             case MP_BINARY_OP_LESS_EQUAL:
-                return MP_BOOL(cmp <= 0);
+                return mp_obj_new_bool(cmp <= 0);
             case MP_BINARY_OP_MORE_EQUAL:
-                return MP_BOOL(cmp >= 0);
+                return mp_obj_new_bool(cmp >= 0);
             case MP_BINARY_OP_EQUAL:
-                return MP_BOOL(cmp == 0);
+                return mp_obj_new_bool(cmp == 0);
 
             default:
                 return MP_OBJ_NULL; // op not supported
