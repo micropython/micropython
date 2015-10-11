@@ -36,6 +36,10 @@
 #include "pybioctl.h"
 #include MICROPY_HAL_H
 
+#ifdef MICROPY_PY_LWIP_SLIP
+#include "lwip/sio.h"
+#endif
+
 //TODO: Add UART7/8 support for MCU_SERIES_F7
 
 /// \moduleref pyb
@@ -376,6 +380,40 @@ void uart_irq_handler(mp_uint_t uart_id) {
         }
     }
 }
+
+/******************************************************************************/
+/* Serial bindings for LWIP modules (SLIP/PPP), polling only for now          */
+
+#ifdef MICROPY_PY_LWIP_SLIP
+sio_fd_t sio_open(u8_t dvnum) {
+    if (dvnum >= 1 && dvnum <= MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
+        if (MP_STATE_PORT(pyb_uart_obj_all)[dvnum - 1] == NULL) {
+            return (sio_fd_t)NULL;
+        }
+        return (sio_fd_t)MP_STATE_PORT(pyb_uart_obj_all)[dvnum - 1];
+    }
+    return (sio_fd_t)NULL;
+}
+
+void sio_send(u8_t c, sio_fd_t fd) {
+    if ((pyb_uart_obj_t *)fd != NULL) {
+        uart_tx_strn((pyb_uart_obj_t *)fd, (const char *)&c, 1);
+    }
+}
+
+u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
+    u32_t count = 0;
+
+    if ((pyb_uart_obj_t *)fd != NULL) {
+            while (uart_rx_any((pyb_uart_obj_t *)fd) && (count < len)) {
+                *data++ = (u8_t)uart_rx_char((pyb_uart_obj_t *)fd);
+                count++;
+            }
+    }
+
+    return count;
+}
+#endif
 
 /******************************************************************************/
 /* Micro Python bindings                                                      */
