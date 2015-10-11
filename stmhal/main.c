@@ -150,7 +150,7 @@ static const char fresh_pybcdc_inf[] =
 ;
 
 static const char fresh_readme_txt[] =
-"This is a Micro Python board\r\n"
+"This is a MicroPython board\r\n"
 "\r\n"
 "You can get started right away by writing your Python code in 'main.py'.\r\n"
 "\r\n"

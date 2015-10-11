@@ -38,7 +38,7 @@
 #define USBD_VID                      0xf055
 #define USBD_PID                      0x9800
 #define USBD_LANGID_STRING            0x409
-#define USBD_MANUFACTURER_STRING      "Micro Python"
+#define USBD_MANUFACTURER_STRING      "MicroPython"
 #define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
 #define USBD_SERIALNUMBER_HS_STRING   "000000000010"
 #define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"

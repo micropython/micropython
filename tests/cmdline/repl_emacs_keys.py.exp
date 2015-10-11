@@ -1,4 +1,4 @@
-Micro Python \.\+ version
+MicroPython \.\+ version
 >>> # REPL tests of GNU-ish readline navigation
 >>> # history buffer navigation
 >>> 1

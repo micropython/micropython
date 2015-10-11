@@ -153,7 +153,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 STATIC int do_repl(void) {
-    mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
+    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
 
     #if MICROPY_USE_READLINE == 1
 

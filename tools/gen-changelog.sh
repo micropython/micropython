@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Micro Python change log"
+echo "MicroPython change log"
 
 for t in $(git tag | grep -v v1.0-rc1 | sort -rV); do
     echo ''

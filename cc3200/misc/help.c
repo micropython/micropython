@@ -30,7 +30,7 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 
-STATIC const char help_text[] = "Welcome to Micro Python!\n"
+STATIC const char help_text[] = "Welcome to MicroPython!\n"
                                 "For online help please visit http://micropython.org/help/.\n"
                                 "For further help on a specific object, type help(obj)\n";
 

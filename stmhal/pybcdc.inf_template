@@ -87,6 +87,6 @@ ServiceBinary=%12%\usbser.sys
 
 [Strings]
 MFGFILENAME="pybcdc"
-MFGNAME="Micro Python"
+MFGNAME="MicroPython"
 DESCRIPTION="Pyboard USB Comm Port"
 SERVICE="USB Serial Driver"

@@ -29,7 +29,7 @@
 #include "py/obj.h"
 
 STATIC const char *help_text =
-"Welcome to Micro Python!\n"
+"Welcome to MicroPython!\n"
 "\n"
 "For online help please visit http://micropython.org/help/.\n"
 "\n"

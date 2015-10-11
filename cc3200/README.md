@@ -1,6 +1,6 @@
 # Build Instructions for the CC3200
 
-Currently the CC3200 port of Micro Python builds under Linux and OSX **but not under Windows**.
+Currently the CC3200 port of MicroPython builds under Linux and OSX **but not under Windows**.
 
 The tool chain required for the build can be found at <https://launchpad.net/gcc-arm-embedded>.
 
@@ -25,7 +25,7 @@ make BTARGET=bootloader BTYPE=release BOARD=LAUNCHXL
 ```
 
 ## Regarding old revisions of the CC3200-LAUNCHXL
-First silicon (pre-release) revisions of the CC3200 had issues with the ram blocks, and Micro Python cannot run
+First silicon (pre-release) revisions of the CC3200 had issues with the ram blocks, and MicroPython cannot run
 there. Make sure to use a **v4.1 (or higer) LAUNCHXL board** when trying this port, otherwise it won't work.
 
 ## Flashing the CC3200
