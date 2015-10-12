@@ -87,6 +87,9 @@ ifndef DEBUG
 endif
 	$(Q)$(SIZE) $(PROG)
 
+lib: $(OBJ)
+	$(AR) rcs libmicropython.a $(OBJ)
+
 clean: clean-prog
 clean-prog:
 	$(RM) -f $(PROG)
