@@ -216,3 +216,34 @@ A difference between this class and pyboard's class is that in this class 10bit 
 More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html
 
 
+## Timer support over pyb.Timer 
+
+Example:
+```python
+import pyb
+
+def callb(timer):
+        print("Interval interrupt")
+        print(timer)
+
+def callbTimeout (timer):
+        print("Timeout interrupt")
+        print(timer)
+
+print("Test Timers")
+
+t1 = pyb.Timer(1)
+t2 = pyb.Timer(2)
+t1.interval(2000,callb)
+t2.timeout(5000,callbTimeout)
+
+while True:
+        pyb.delay(1000)
+```
+Available timers: 0,1,2 and 3
+
+Interval and timeout methods were added, these methods have two arguments: a time in miliseconds and the callback to be called.
+More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html
+TimerChannel class was not implemented. Input capture and Output compare functionality is not present.
+
+
