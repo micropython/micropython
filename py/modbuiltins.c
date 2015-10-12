@@ -416,6 +416,10 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
         mp_obj_print_helper(&mp_plat_print, o, PRINT_REPR);
         mp_print_str(&mp_plat_print, "\n");
         #endif
+        #if MICROPY_CAN_OVERRIDE_BUILTINS
+        mp_obj_t dest[2] = {MP_OBJ_SENTINEL, o};
+        mp_type_module.attr((mp_obj_t)&mp_module_builtins, MP_QSTR__, dest);
+        #endif
     }
     return mp_const_none;
 }

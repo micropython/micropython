@@ -35,6 +35,7 @@ QCFG(BYTES_IN_HASH, MICROPY_QSTR_BYTES_IN_HASH)
 
 Q()
 Q(*)
+Q(_)
 Q(__build_class__)
 Q(__class__)
 Q(__doc__)
