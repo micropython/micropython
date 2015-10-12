@@ -1,5 +1,5 @@
-Micro Python port to ESP8266
-============================
+MicroPython port to ESP8266
+===========================
 
 This is a highly experimental port of MicroPython for the WiFi modules based
 on Espressif ESP8266 chip.
@@ -31,7 +31,7 @@ The tool chain required for the build is the OpenSource ESP SDK, which can be
 found at <https://github.com/pfalcon/esp-open-sdk>.  Clone this repository and
 run `make` in its directory to build and install the SDK locally.
 
-Then, to build Micro Python for the ESP8266, just run:
+Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ make
 ```

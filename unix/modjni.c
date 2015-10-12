@@ -39,6 +39,7 @@
 
 #define JJ(call, ...) (*env)->call(env, __VA_ARGS__)
 #define JJ1(call) (*env)->call(env)
+#define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
 
 static JavaVM *jvm;
 static JNIEnv *env;
@@ -206,6 +207,22 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         // load attribute
         mp_obj_jobject_t *self = self_in;
 
+        const char *attr = qstr_str(attr_in);
+        jclass obj_class = JJ(GetObjectClass, self->obj);
+        jstring field_name = JJ(NewStringUTF, attr);
+        jobject field = JJ(CallObjectMethod, obj_class, Class_getField_mid, field_name);
+        JJ(DeleteLocalRef, field_name);
+        JJ(DeleteLocalRef, obj_class);
+        if (!JJ1(ExceptionCheck)) {
+            jfieldID field_id = JJ(FromReflectedField, field);
+            JJ(DeleteLocalRef, field);
+            jobject obj = JJ(GetObjectField, self->obj, field_id);
+            dest[0] = new_jobject(obj);
+            return;
+        }
+        //JJ1(ExceptionDescribe);
+        JJ1(ExceptionClear);
+
         mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
         o->base.type = &jmethod_type;
         o->name = attr_in;
@@ -248,7 +265,7 @@ STATIC mp_obj_t jobject_unary_op(mp_uint_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_LEN: {
             jint len = JJ(CallIntMethod, self->obj, List_size_mid);
             if (op == MP_UNARY_OP_BOOL) {
-                return MP_BOOL(len != 0);
+                return mp_obj_new_bool(len != 0);
             }
             return MP_OBJ_NEW_SMALL_INT(len);
         }
@@ -335,6 +352,18 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         }
         mp_obj_jobject_t *jo = arg;
         out->l = jo->obj;
+    } else if (type == &mp_type_bool) {
+        if (IMATCH(arg_type, "boolean")) {
+            out->z = arg == mp_const_true;
+        } else {
+            return false;
+        }
+    } else if (arg == mp_const_none) {
+        //printf("TODO: Check java arg type!!\n");
+        while (isalpha(*arg_type) || *arg_type == '.') {
+            arg_type++;
+        }
+        out->l = NULL;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
     }
@@ -343,11 +372,11 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
     return true;
 }
 
+#if 0
 // jvalue is known to be union of jobject and friends. And yet from C's
 // perspective, it's aggregate object which may require passing via stack
 // instead of registers. Work that around by passing jobject and typecasting
 // it.
-#define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
 STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
     if (arg == NULL || MATCH(jtypesig, "void")) {
         return mp_const_none;
@@ -364,6 +393,7 @@ STATIC mp_obj_t jvalue2py(const char *jtypesig, jobject arg) {
 
     return MP_OBJ_NULL;
 }
+#endif
 
 STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, mp_uint_t n_args, const mp_obj_t *args) {
     jvalue jargs[n_args];

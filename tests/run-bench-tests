@@ -58,7 +58,7 @@ def run_tests(pyb, test_dict):
     return True
 
 def main():
-    cmd_parser = argparse.ArgumentParser(description='Run tests for Micro Python.')
+    cmd_parser = argparse.ArgumentParser(description='Run tests for MicroPython.')
     cmd_parser.add_argument('--pyboard', action='store_true', help='run the tests on the pyboard')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()

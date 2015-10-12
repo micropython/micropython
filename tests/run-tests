@@ -311,7 +311,7 @@ def run_tests(pyb, tests, args):
     return True
 
 def main():
-    cmd_parser = argparse.ArgumentParser(description='Run tests for Micro Python.')
+    cmd_parser = argparse.ArgumentParser(description='Run tests for MicroPython.')
     cmd_parser.add_argument('--target', default='unix', help='the target platform')
     cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
@@ -319,7 +319,7 @@ def main():
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
-    cmd_parser.add_argument('--emit', default='bytecode', help='Micro Python emitter to use (bytecode or native)')
+    cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 

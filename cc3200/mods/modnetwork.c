@@ -54,7 +54,7 @@ STATIC mp_obj_t network_server_running(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     } else {
         // get
-        return MP_BOOL(servers_are_enabled());
+        return mp_obj_new_bool(servers_are_enabled());
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_server_running_obj, 0, 1, network_server_running);

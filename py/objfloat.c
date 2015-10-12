@@ -85,7 +85,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
 STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_float_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->value != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-o->value);
         default: return MP_OBJ_NULL; // op not supported
@@ -216,11 +216,11 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             };
             return mp_obj_new_tuple(2, tuple);
         }
-        case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
-        case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
-        case MP_BINARY_OP_EQUAL: return MP_BOOL(lhs_val == rhs_val);
-        case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);
-        case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
+        case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
+        case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);
+        case MP_BINARY_OP_EQUAL: return mp_obj_new_bool(lhs_val == rhs_val);
+        case MP_BINARY_OP_LESS_EQUAL: return mp_obj_new_bool(lhs_val <= rhs_val);
+        case MP_BINARY_OP_MORE_EQUAL: return mp_obj_new_bool(lhs_val >= rhs_val);
 
         default:
             return MP_OBJ_NULL; // op not supported

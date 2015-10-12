@@ -102,7 +102,7 @@ STATIC bool list_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in)
 STATIC mp_obj_t list_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_list_t *self = MP_OBJ_CAST(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
         default: return MP_OBJ_NULL; // op not supported
     }
@@ -141,7 +141,7 @@ STATIC mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_LESS_EQUAL:
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
-            return MP_BOOL(list_cmp_helper(op, lhs, rhs));
+            return mp_obj_new_bool(list_cmp_helper(op, lhs, rhs));
 
         default:
             return MP_OBJ_NULL; // op not supported

@@ -215,6 +215,17 @@ mp_obj_t mp_module_get(qstr module_name) {
         if (el == NULL) {
             return MP_OBJ_NULL;
         }
+
+        if (MICROPY_MODULE_BUILTIN_INIT) {
+            // look for __init__ and call it if it exists
+            mp_obj_t dest[2];
+            mp_load_method_maybe(el->value, MP_QSTR___init__, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                mp_call_method_n_kw(0, 0, dest);
+                // register module so __init__ is not called again
+                mp_module_register(module_name, el->value);
+            }
+        }
     }
 
     // module found, return it

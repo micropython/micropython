@@ -1,4 +1,5 @@
-Micro Python \.\+ version
+MicroPython \.\+ version
+Use \.\+
 >>> # check REPL allows to continue input
 >>> 1 \\\\
 ... + 2

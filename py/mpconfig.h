@@ -215,6 +215,11 @@
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
+// Whether to enable constant folding; eg 1+2 rewritten as 3
+#ifndef MICROPY_COMP_CONST_FOLDING
+#define MICROPY_COMP_CONST_FOLDING (1)
+#endif
+
 // Whether to enable lookup of constants in modules; eg module.CONST
 #ifndef MICROPY_COMP_MODULE_CONST
 #define MICROPY_COMP_MODULE_CONST (0)
@@ -399,6 +404,11 @@ typedef double mp_float_t;
 // Whether POSIX-semantics non-blocking streams are supported
 #ifndef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK (0)
+#endif
+
+// Whether to call __init__ when importing builtin modules for the first time
+#ifndef MICROPY_MODULE_BUILTIN_INIT
+#define MICROPY_MODULE_BUILTIN_INIT (0)
 #endif
 
 // Whether module weak links are supported

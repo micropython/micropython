@@ -116,7 +116,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 STATIC mp_obj_t complex_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_complex_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(o->real != 0 || o->imag != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->real != 0 || o->imag != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
         default: return MP_OBJ_NULL; // op not supported
@@ -240,7 +240,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
             break;
         }
 
-        case MP_BINARY_OP_EQUAL: return MP_BOOL(lhs_real == rhs_real && lhs_imag == rhs_imag);
+        case MP_BINARY_OP_EQUAL: return mp_obj_new_bool(lhs_real == rhs_real && lhs_imag == rhs_imag);
 
         default:
             return MP_OBJ_NULL; // op not supported

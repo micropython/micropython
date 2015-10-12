@@ -206,7 +206,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
-            mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+            mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
             mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
             goto input_restart;
         } else if (ret == CHAR_CTRL_C) {
@@ -350,7 +350,7 @@ int pyexec_friendly_repl(void) {
 #endif
 
 friendly_repl_reset:
-    mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
     mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     // to test ctrl-C
@@ -389,6 +389,7 @@ friendly_repl_reset:
 
         vstr_reset(&line);
         int ret = readline(&line, ">>> ");
+        mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_A) {
             // change to raw REPL
@@ -409,20 +410,46 @@ friendly_repl_reset:
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
             return PYEXEC_FORCED_EXIT;
+        } else if (ret == CHAR_CTRL_E) {
+            // paste mode
+            mp_hal_stdout_tx_str("\r\npaste mode; CTRL-C to cancel, CTRL-D to finish\r\n=== ");
+            vstr_reset(&line);
+            for (;;) {
+                char c = mp_hal_stdin_rx_chr();
+                if (c == CHAR_CTRL_C) {
+                    // cancel everything
+                    mp_hal_stdout_tx_str("\r\n");
+                    goto input_restart;
+                } else if (c == CHAR_CTRL_D) {
+                    // end of input
+                    mp_hal_stdout_tx_str("\r\n");
+                    break;
+                } else {
+                    // add char to buffer and echo
+                    vstr_add_byte(&line, c);
+                    if (c == '\r') {
+                        mp_hal_stdout_tx_str("\r\n=== ");
+                    } else {
+                        mp_hal_stdout_tx_strn(&c, 1);
+                    }
+                }
+            }
+            parse_input_kind = MP_PARSE_FILE_INPUT;
         } else if (vstr_len(&line) == 0) {
             continue;
-        }
-
-        while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
-            vstr_add_byte(&line, '\n');
-            ret = readline(&line, "... ");
-            if (ret == CHAR_CTRL_C) {
-                // cancel everything
-                mp_hal_stdout_tx_str("\r\n");
-                goto input_restart;
-            } else if (ret == CHAR_CTRL_D) {
-                // stop entering compound statement
-                break;
+        } else {
+            // got a line with non-zero length, see if it needs continuing
+            while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
+                vstr_add_byte(&line, '\n');
+                ret = readline(&line, "... ");
+                if (ret == CHAR_CTRL_C) {
+                    // cancel everything
+                    mp_hal_stdout_tx_str("\r\n");
+                    goto input_restart;
+                } else if (ret == CHAR_CTRL_D) {
+                    // stop entering compound statement
+                    break;
+                }
             }
         }
 
@@ -430,7 +457,7 @@ friendly_repl_reset:
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
+            ret = parse_compile_execute(lex, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
