@@ -391,9 +391,8 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
   HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
   HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
+#endif
 
-
-#endif 
 #ifdef USE_USB_HS  
 #if defined(STM32F427DISC)
   /*Set LL Driver parameters */
@@ -405,7 +404,7 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   pcd_handle.Init.low_power_enable = 0;
   pcd_handle.Init.phy_itface = PCD_PHY_EMBEDDED; 
   pcd_handle.Init.Sof_enable = 0;
-  pcd_handle.Init.speed = PCD_SPEED_FULL;
+  pcd_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
 #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
   pcd_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
 #else
