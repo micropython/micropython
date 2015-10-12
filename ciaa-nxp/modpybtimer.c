@@ -25,14 +25,19 @@
  */
 
 #include "py/runtime.h"
+#include "py/nlr.h"
+#include "py/gc.h"
+
+#include "board.h"
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
 typedef struct _pyb_timer_obj_t {
     mp_obj_base_t base;
+    mp_obj_t callback;
 } pyb_timer_obj_t;
 
-STATIC const pyb_timer_obj_t pyb_timer_obj[] = {
+STATIC pyb_timer_obj_t pyb_timer_obj[] = {
     {{&pyb_timer_type}},
     {{&pyb_timer_type}},
     {{&pyb_timer_type}},
@@ -63,16 +68,18 @@ STATIC void pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, const
     uint32_t presc = args[1].u_int;
     uint32_t period = args[2].u_int;
 
-    mp_hal_stdout_tx_str("Init");
-    char aux[100];
-    sprintf(aux,"f:%d presc:0x%x period:%d",freq,presc,period);
-    mp_hal_stdout_tx_str(aux);
-
-    if(freq!=-1)
+    if(freq>0 && freq<=1000000) // 1hz - 1Mhz range
     {
-
+		uint32_t f = mp_hal_getTimerClockFrequency();
+		period = f/freq;
+		presc = 0;
     }
-
+    
+    //char aux[100];
+    //sprintf(aux,"timer:%d f:%d presc:0x%x period:%d",TIMER_ID(self),freq,presc,period);
+    //mp_hal_stdout_tx_str(aux);
+    
+	mp_hal_enableTimerAsTimer(TIMER_ID(self), presc,period);
 }
 
 
@@ -100,12 +107,54 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
 
 
 
+void pyb_timer_exec_callback(pyb_timer_obj_t* self)
+{
+	    // execute callback if it's set
+            if (self->callback != mp_const_none) {
+                // When executing code within a handler we must lock the GC to prevent
+                // any memory allocations.  We must also catch any exceptions.
+                gc_lock();
+                nlr_buf_t nlr;
+                if (nlr_push(&nlr) == 0) {
+                    mp_call_function_1(self->callback, self);
+                    nlr_pop();
+                } else {
+                    // Uncaught exception; disable the callback so it doesn't run again.
+                    self->callback = mp_const_none;
+                    printf("uncaught exception in timer(%u) interrupt handler\n",TIMER_ID(self));
+                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                }
+                gc_unlock();
+            }
+}
+
+/// \method callback(fun)
+/// Set the function to be called in timer interrupt.
+/// `fun` is passed 1 argument, the timer object.
+/// If `fun` is `None` then the callback will be disabled.
+STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
+    pyb_timer_obj_t *self = self_in;
+
+    if (callback == mp_const_none) {
+        // stop interrupt
+        self->callback = mp_const_none;
+		mp_hal_setTimerCallback(TIMER_ID(self),NULL,NULL);	
+    } else if (mp_obj_is_callable(callback)) {
+        self->callback = callback;
+		mp_hal_setTimerCallback(TIMER_ID(self),( void(*)(void*)  )pyb_timer_exec_callback,self);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
 
 
 
 
 STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_timer_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_callback_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_off), (mp_obj_t)&pyb_led_off_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_toggle), (mp_obj_t)&pyb_led_toggle_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_intensity), (mp_obj_t)&pyb_led_intensity_obj },

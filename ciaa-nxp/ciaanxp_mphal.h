@@ -91,5 +91,16 @@ int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic);
 void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value);
 uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber);
 
+//TIMERs
+void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue);
+void mp_hal_disableTimer(uint8_t timerNum);
+void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg);
+uint32_t mp_hal_getTimerClockFrequency(void);
+void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value);
+uint32_t mp_hal_getTimerCounter(uint8_t timerNum);
+void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value);
+uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum);
+void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value);
+uint32_t mp_hal_getTimerMatch(uint8_t timerNum);
 
 #endif

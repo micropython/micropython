@@ -125,8 +125,13 @@ void TIMER1_IRQHandler(void){
 
 void TIMER2_IRQHandler(void){
 	LPC_TIMER2->IR = 1 << 0;
+	
+	Board_UARTPutSTR("entro a la int timer 2!");
+	
 	if(timersInfo[2].callback!=NULL)
 		timersInfo[2].callback(timersInfo[2].callbackArg);
+		
+	Board_UARTPutSTR("sale de la int timer 2!");	
 }
 
 void TIMER3_IRQHandler(void){
