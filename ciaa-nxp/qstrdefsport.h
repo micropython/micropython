@@ -112,6 +112,11 @@ Q(CIRCULAR)
 Q(data)
 Q(freq)
 
+Q(Timer)
+Q(prescaler)
+Q(period)
+Q(counter)
+
 
 /*
 Q(readall)

@@ -29,11 +29,6 @@ static __DATA(RAM2) char heap[32*1024];
 
 //extern const char programScript[];
 
-void callb(void* arg)
-{
-    mp_hal_stdout_tx_strn(arg, strlen(arg));
-}
-
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -65,24 +60,6 @@ int main(int argc, char **argv) {
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_init(mp_sys_argv, 0);
-
-	 Board_TIMER_Init();
-	 Board_TIMER_EnableTimerAsTimer(2, 0,404000000);
-	 Board_TIMER_SetCallback(2,callb,"tick desde callback t2\n");
-
-         Board_TIMER_EnableTimerAsTimer(0, 0,104000000);
-         Board_TIMER_SetCallback(0,callb,"tick desde callback t0\n");
-
-         Board_TIMER_EnableTimerAsTimer(1, 0,204000000);
-         Board_TIMER_SetCallback(1,callb,"tick desde callback t1\n");
-
-	while(1)
-	{
-		//char aux[100];
-		//sprintf(aux,"timer:0x%x\n\0",Chip_TIMER_ReadCount(LPC_TIMER2));
-		//mp_hal_stdout_tx_strn(aux, strlen(aux));
-		//mp_hal_milli_delay(500);
-	}
 
 
     if (!pyexec_file("/Main.py")) {
