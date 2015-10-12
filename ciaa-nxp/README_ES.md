@@ -181,7 +181,7 @@ while True:
 Los timers disponibles son el 0,1,2 y 3
 
 Ademas de las funciones definidas en http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html se agregaron los metodos interval y timeout. Ambos reciben
-el tiempo en milisegundos y una funcion callback. El primero ejecutara la funcion cada el tiempo prefijado, mientras que el segundo la ejecutara slo una vez luego
+el tiempo en milisegundos y una funcion callback. El primero ejecutara la funcion cada el tiempo prefijado, mientras que el segundo la ejecutara solo una vez luego
 del tiempo prefijado.
 
 No se implemento la clase TimerChannel, por lo que las funcionalidades de Output Compare e Input Capture no son accesibles.
