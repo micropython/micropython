@@ -154,3 +154,33 @@ Existe solo el DAC 1
 
 A diferencia de la clase DAC de la pyboard (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html) se utilizaron valores de 10bit en vez de 8bits para aprovechar al maximo la resolucion del DAC.
 
+- Soporte para Timers mediante el modulo pyb.Timer. Ejemplo:
+```python
+import pyb
+
+def callb(timer):
+        print("Interval interrupt")
+        print(timer)
+
+def callbTimeout (timer):
+        print("Timeout interrupt")
+        print(timer)
+
+print("Test Timers")
+
+t1 = pyb.Timer(1)
+t2 = pyb.Timer(2)
+t1.interval(2000,callb)
+t2.timeout(5000,callbTimeout)
+
+while True:
+        pyb.delay(1000)
+
+```
+Los timers disponibles son el 0,1,2 y 3
+
+Ademas de las funciones definidas en http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html se agregaron los metodo interval y timeout. Ambos reciben
+el tiempo en milisegundos y una funcion callback. El primero ejecutara la funcion cada el tiempo prefijado, mientras que el segundo la ejecutara slo una vez luego
+del tiempo prefijado.
+
+
