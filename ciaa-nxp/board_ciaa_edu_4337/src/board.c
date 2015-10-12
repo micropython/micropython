@@ -85,6 +85,132 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+//================================================[TIMERs Management]========================================================
+typedef struct {
+	uint8_t mode;
+}TimerChannelInfo;
+
+typedef struct {
+	void(*callback)(void*);
+	void* callbackArg;
+	uint8_t timerNumber;
+	TimerChannelInfo channels[4];
+}TimerInfo;
+
+static TimerInfo timersInfo[4];
+
+LPC_TIMER_T* getTimerFomIndex(uint8_t index)
+{
+        switch(index)
+        {
+                case 0: return LPC_TIMER0;
+                case 1: return LPC_TIMER1;
+                case 2: return LPC_TIMER2;
+                case 3: return LPC_TIMER3;
+        }
+        return NULL;
+}
+
+void TIMER0_IRQHandler(void){
+        LPC_TIMER0->IR = 1 << 0;
+        if(timersInfo[0].callback!=NULL)
+                timersInfo[0].callback(timersInfo[0].callbackArg);
+}
+
+void TIMER1_IRQHandler(void){
+        LPC_TIMER1->IR = 1 << 0;
+        if(timersInfo[1].callback!=NULL)
+                timersInfo[1].callback(timersInfo[1].callbackArg);
+}
+
+void TIMER2_IRQHandler(void){
+	LPC_TIMER2->IR = 1 << 0;
+	if(timersInfo[2].callback!=NULL)
+		timersInfo[2].callback(timersInfo[2].callbackArg);
+}
+
+void TIMER3_IRQHandler(void){
+        LPC_TIMER3->IR = 1 << 0;
+        if(timersInfo[3].callback!=NULL)
+                timersInfo[3].callback(timersInfo[3].callbackArg);
+}
+
+void Board_TIMER_Init(void)
+{
+	int i;
+	for(i=0; i<4;i++)
+	{
+        	Chip_TIMER_Init(getTimerFomIndex(i));
+        	Chip_TIMER_Disable(getTimerFomIndex(i));
+		timersInfo[i].callback = NULL;
+	}
+	NVIC_EnableIRQ(TIMER0_IRQn);
+	NVIC_EnableIRQ(TIMER1_IRQn);
+	NVIC_EnableIRQ(TIMER2_IRQn);
+	NVIC_EnableIRQ(TIMER3_IRQn);
+}
+
+void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue)
+{
+	// always using match0
+	int8_t match=0;
+	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+
+        Chip_TIMER_PrescaleSet(t, presc);
+        Chip_TIMER_SetMatch(t, match, matchValue);
+        Chip_TIMER_MatchEnableInt(t, match); // enable int for match 0
+        Chip_TIMER_ResetOnMatchEnable(t, match); // reset count on match0
+
+	Chip_TIMER_Enable(t);
+}
+
+void Board_TIMER_DisableTimer(uint8_t timerNum)
+{
+	Chip_TIMER_Disable(getTimerFomIndex(timerNum));
+}
+
+void Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+{
+	timersInfo[timerNum].callback = function;
+	timersInfo[timerNum].callbackArg = arg;
+}
+
+uint32_t Board_TIMER_getClockFrequency(void)
+{
+	return Chip_Clock_GetMainPLLHz();
+}
+
+void Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value)
+{
+	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+	t->TC = value;
+}
+uint32_t Board_TIMER_GetTimerCounter(uint8_t timerNum)
+{
+	return Chip_TIMER_ReadCount(getTimerFomIndex(timerNum));
+}
+
+void Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value)
+{
+	Chip_TIMER_PrescaleSet(getTimerFomIndex(timerNum), value);
+}
+uint32_t Board_TIMER_GetTimerPrescaler(uint8_t timerNum)
+{
+	return Chip_TIMER_ReadPrescale(getTimerFomIndex(timerNum));
+}
+
+void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value)
+{
+	Chip_TIMER_SetMatch(getTimerFomIndex(timerNum), 0, value); // always match 0
+}
+uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum)
+{
+	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+        return t->MR[0]; // always match 0
+}
+
+//============================================================================================================================
+
 
 //================================================[UART Management]==========================================================
 void Board_UART_Init(LPC_USART_T *pUART)
@@ -930,6 +1056,9 @@ void Board_Init(void)
 
 	/* Initialize DAC */
 	Board_DAC_Init();
+
+	/* Initialize Timers */
+	Board_TIMER_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

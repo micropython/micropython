@@ -488,6 +488,92 @@ void Board_LED_PWM_SetValue(uint8_t pwmNumber,uint8_t value);
 uint8_t Board_LED_PWM_GetValue(uint8_t pwmNumber);
 
 
+
+/**
+ * @brief       Initializes TIMERs modules.
+ * @return      void
+ */
+void Board_TIMER_Init(void);
+
+/**
+ * @brief       Init timer module working as timer.
+ * @param       timerNum : Number of timer (0 to 3)
+ * @param       presc : Prescaler value (0 to 0xFFFFFFFF)
+ * @param       matchValue : Match value (0 to 0xFFFFFFFF). Timer's interrupt will happen when timer counter equals this value.
+ * @return      void
+ */
+void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue);
+
+/**
+ * @brief       Disable timer module.
+ * @param       timerNum : Number of timer (0 to 3)
+ * @return      void
+ */
+void Board_TIMER_DisableTimer(uint8_t timerNum);
+
+/**
+ * @brief       Sets the functino that will be called by timer's interupt
+ * @param       timerNum : Number of timer (0 to 3)
+ * @param       function : calback to be called. prototype: void function(void* arg);
+ * @param       arg : argument passed to callback function when it is called
+ * @return      void
+ */
+void Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg);
+
+/**
+ * @brief       Returns Timer's base clock frequency in Hertz.
+ * @return      Frequency in Hertz
+ */
+uint32_t Board_TIMER_getClockFrequency(void);
+
+/**
+ * @brief       Load current timer's counter value
+ * @param       timerNum : Number of timer (0 to 3)
+ * @param       value : Value to be loaded in Counter register
+ * @return      void
+ */
+void Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value);
+
+
+/**
+ * @brief       Returns Timer's counter value.
+ * @param       timerNum : Number of timer (0 to 3)
+ * @return      Counter register
+ */
+uint32_t Board_TIMER_GetTimerCounter(uint8_t timerNum);
+
+/**
+ * @brief       Load current timer's prescaller value
+ * @param       timerNum : Number of timer (0 to 3)
+ * @param       value : Value to be loaded in Prescaler register
+ * @return      void
+ */
+void Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value);
+
+/**
+ * @brief       Returns Timer's prescaler value.
+ * @param       timerNum : Number of timer (0 to 3)
+ * @return      Prescaler register
+ */
+uint32_t Board_TIMER_GetTimerPrescaler(uint8_t timerNum);
+
+/**
+ * @brief       Load current timer's match value
+ * @param       timerNum : Number of timer (0 to 3)
+ * @param       value : Value to be loaded in Match register
+ * @return      void
+ */
+void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value);
+
+/**
+ * @brief       Returns Timer's match value.
+ * @param       timerNum : Number of timer (0 to 3)
+ * @return      Match register
+ */
+uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum);
+
+
+
 /**
  * @}
  */
