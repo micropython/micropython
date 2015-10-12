@@ -253,9 +253,9 @@ uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
 }
 
 //TIMERs
-void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue)
+void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
 {
-	Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue);
+	Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
 }
 
 void mp_hal_disableTimer(uint8_t timerNum)

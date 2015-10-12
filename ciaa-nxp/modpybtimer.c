@@ -35,6 +35,7 @@
 typedef struct _pyb_timer_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
+    mp_uint_t freq;
 } pyb_timer_obj_t;
 
 STATIC pyb_timer_obj_t pyb_timer_obj[] = {
@@ -52,6 +53,21 @@ void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t 
     mp_printf(print, "TIMER(%u)", TIMER_ID(self));
 }
 
+/// Constructor
+STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_int_t timer_id = mp_obj_get_int(args[0]);
+
+    if (timer_id >= NUM_TIMER) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "TIMER %d does not exist", timer_id));
+    }
+
+    if(n_args>2) {
+    	//mp_hal_enableTimerAsTimer();
+	//pyb_timer_init_helper(&pyb_timer_obj[timer_id], n_args-1, args+1, mp_map_t *kw_args);
+    }
+    return (mp_obj_t)&pyb_timer_obj[timer_id];
+}
 
 STATIC void pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -73,60 +89,42 @@ STATIC void pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, const
 		uint32_t f = mp_hal_getTimerClockFrequency();
 		period = f/freq;
 		presc = 0;
+		self->freq = freq;
     }
-    
-    //char aux[100];
-    //sprintf(aux,"timer:%d f:%d presc:0x%x period:%d",TIMER_ID(self),freq,presc,period);
-    //mp_hal_stdout_tx_str(aux);
-    
-	mp_hal_enableTimerAsTimer(TIMER_ID(self), presc,period);
+    else
+		self->freq = 0;
+		
+	mp_hal_enableTimerAsTimer(TIMER_ID(self), presc,period,0);
 }
 
+void pyb_timer_exec_callback(pyb_timer_obj_t* self)
+{
+	// execute callback if it's set
+	if (self->callback != mp_const_none) {
+		// When executing code within a handler we must lock the GC to prevent
+		// any memory allocations.  We must also catch any exceptions.
+		gc_lock();
+		nlr_buf_t nlr;
+		if (nlr_push(&nlr) == 0) {
+			mp_call_function_1(self->callback, self);
+			nlr_pop();
+		} else {
+			// Uncaught exception; disable the callback so it doesn't run again.
+			self->callback = mp_const_none;
+			printf("uncaught exception in timer(%u) interrupt handler\n",TIMER_ID(self));
+			mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+		}
+		gc_unlock();
+	}
+}
 
+/// \method init(freq)
+/// \method init(prescaler, period)
 STATIC mp_obj_t pyb_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     pyb_timer_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return  mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
-
-
-STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    mp_int_t timer_id = mp_obj_get_int(args[0]);
-
-    if (timer_id >= NUM_TIMER) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "TIMER %d does not exist", timer_id));
-    }
-
-    if(n_args>2) {
-    	//mp_hal_enableTimerAsTimer();
-	//pyb_timer_init_helper(&pyb_timer_obj[timer_id], n_args-1, args+1, mp_map_t *kw_args);
-    }
-    return (mp_obj_t)&pyb_timer_obj[timer_id];
-}
-
-
-
-void pyb_timer_exec_callback(pyb_timer_obj_t* self)
-{
-	    // execute callback if it's set
-            if (self->callback != mp_const_none) {
-                // When executing code within a handler we must lock the GC to prevent
-                // any memory allocations.  We must also catch any exceptions.
-                gc_lock();
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(self->callback, self);
-                    nlr_pop();
-                } else {
-                    // Uncaught exception; disable the callback so it doesn't run again.
-                    self->callback = mp_const_none;
-                    printf("uncaught exception in timer(%u) interrupt handler\n",TIMER_ID(self));
-                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-                }
-                gc_unlock();
-            }
-}
 
 /// \method callback(fun)
 /// Set the function to be called in timer interrupt.
@@ -149,16 +147,152 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_callback_obj, pyb_timer_callback);
 
+/// \method interval(period,fun)
+STATIC mp_obj_t pyb_timer_interval(mp_obj_t self_in, mp_obj_t periodMs, mp_obj_t callback) {
+    pyb_timer_obj_t *self = self_in;
 
+	uint32_t pms = (uint32_t)mp_obj_get_int(periodMs);
+	
+	mp_hal_enableTimerAsTimer(TIMER_ID(self), pms,mp_hal_getTimerClockFrequency()/1000,0);
+	
+	pyb_timer_callback(self,callback);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_timer_interval_obj, pyb_timer_interval);
+
+/// \method timeout(period,fun)
+STATIC mp_obj_t pyb_timer_timeout(mp_obj_t self_in, mp_obj_t periodMs, mp_obj_t callback) {
+    pyb_timer_obj_t *self = self_in;
+
+	uint32_t pms = (uint32_t)mp_obj_get_int(periodMs);
+	
+	mp_hal_enableTimerAsTimer(TIMER_ID(self), pms,mp_hal_getTimerClockFrequency()/1000,1);
+	
+	pyb_timer_callback(self,callback);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_timer_timeout_obj, pyb_timer_timeout);
+
+
+/// \method counter([value])
+/// Get or set the timer counter:
+///
+///   - With no argument, return current timer counter.
+///   - With `value` given, set the timer counter
+STATIC mp_obj_t pyb_timer_counter(mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_timer_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get counter
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_getTimerCounter(TIMER_ID(self)));
+    } else {
+        // set counter
+        mp_hal_setTimerCounter(TIMER_ID(self),mp_obj_get_int(args[1]));		
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_timer_counter);
+
+/// \method deinit()
+STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in, mp_obj_t callback) {
+    pyb_timer_obj_t *self = self_in;
+
+    mp_hal_disableTimer(TIMER_ID(self));
+    self->callback = mp_const_none;
+	mp_hal_setTimerCallback(TIMER_ID(self),NULL,NULL);	
+		
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
+
+/// \method freq([value])
+/// Get or set the timer frequency:
+///
+///   - With no argument, return current timer frequency.
+///   - With `value` given, set the timer frequency
+STATIC mp_obj_t pyb_timer_freq(mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_timer_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get freq
+        return MP_OBJ_NEW_SMALL_INT(self->freq);
+    } else {
+        // set freq
+        uint32_t freq = mp_obj_get_int(args[1]);
+        if(freq>0 && freq<=1000000) // 1hz - 1Mhz range
+		{
+			uint32_t f = mp_hal_getTimerClockFrequency();
+			uint32_t period = f/freq;
+			uint32_t presc = 0;
+			self->freq = freq;
+			mp_hal_enableTimerAsTimer(TIMER_ID(self), presc,period,0);
+		}
+		else
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Frequency out of range"));
+		
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_freq_obj, 1, 2, pyb_timer_freq);
+
+
+/// \method period([value])
+/// Get or set the timer period:
+///
+///   - With no argument, return current timer period.
+///   - With `value` given, set the timer period
+STATIC mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_timer_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get period
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_getTimerMatch(TIMER_ID(self)));
+    } else {
+        // set period
+        uint32_t p = mp_obj_get_int(args[1]);
+        mp_hal_setTimerMatch(TIMER_ID(self),p);		
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_period_obj, 1, 2, pyb_timer_period);
+
+
+/// \method prescaler([value])
+/// Get or set the timer prescaler:
+///
+///   - With no argument, return current timer prescaler.
+///   - With `value` given, set the timer prescaler
+STATIC mp_obj_t pyb_timer_prescaler(mp_uint_t n_args, const mp_obj_t *args) {
+    pyb_timer_obj_t *self = args[0];
+    if (n_args == 1) {
+        // get prescaler
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_getTimerPrescaler(TIMER_ID(self)));
+    } else {
+        // set prescaler
+        uint32_t p = mp_obj_get_int(args[1]);
+        mp_hal_setTimerPrescaler(TIMER_ID(self),p);		
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_timer_prescaler);
+
+
+/// \method source_freq()
+STATIC mp_obj_t pyb_timer_source_freq(mp_obj_t self_in, mp_obj_t callback) {
+  		
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_getTimerClockFrequency());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_source_freq_obj, pyb_timer_source_freq);
 
 
 STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_timer_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_callback_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_off), (mp_obj_t)&pyb_led_off_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_toggle), (mp_obj_t)&pyb_led_toggle_obj },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_intensity), (mp_obj_t)&pyb_led_intensity_obj },
-
+    { MP_OBJ_NEW_QSTR(MP_QSTR_interval), (mp_obj_t)&pyb_timer_interval_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_timeout), (mp_obj_t)&pyb_timer_timeout_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_counter), (mp_obj_t)&pyb_timer_counter_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_timer_deinit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&pyb_timer_freq_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_period), (mp_obj_t)&pyb_timer_period_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_prescaler), (mp_obj_t)&pyb_timer_prescaler_obj },    
+    { MP_OBJ_NEW_QSTR(MP_QSTR_source_freq), (mp_obj_t)&pyb_timer_source_freq_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);

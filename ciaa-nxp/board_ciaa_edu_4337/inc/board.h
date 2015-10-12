@@ -500,9 +500,10 @@ void Board_TIMER_Init(void);
  * @param       timerNum : Number of timer (0 to 3)
  * @param       presc : Prescaler value (0 to 0xFFFFFFFF)
  * @param       matchValue : Match value (0 to 0xFFFFFFFF). Timer's interrupt will happen when timer counter equals this value.
+ * @param       flagOnce : 1: when timer reaches the match value, it stops. 0: Timer keeps counting
  * @return      void
  */
-void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue);
+void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
 
 /**
  * @brief       Disable timer module.

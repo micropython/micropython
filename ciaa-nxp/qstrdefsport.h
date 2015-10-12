@@ -116,6 +116,8 @@ Q(Timer)
 Q(prescaler)
 Q(period)
 Q(counter)
+Q(interval)
+Q(source_freq)
 
 
 /*

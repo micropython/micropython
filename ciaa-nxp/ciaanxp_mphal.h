@@ -92,7 +92,7 @@ void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value);
 uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber);
 
 //TIMERs
-void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue);
+void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
 void mp_hal_disableTimer(uint8_t timerNum);
 void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg);
 uint32_t mp_hal_getTimerClockFrequency(void);

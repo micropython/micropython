@@ -125,13 +125,8 @@ void TIMER1_IRQHandler(void){
 
 void TIMER2_IRQHandler(void){
 	LPC_TIMER2->IR = 1 << 0;
-	
-	Board_UARTPutSTR("entro a la int timer 2!");
-	
 	if(timersInfo[2].callback!=NULL)
 		timersInfo[2].callback(timersInfo[2].callbackArg);
-		
-	Board_UARTPutSTR("sale de la int timer 2!");	
 }
 
 void TIMER3_IRQHandler(void){
@@ -155,7 +150,7 @@ void Board_TIMER_Init(void)
 	NVIC_EnableIRQ(TIMER3_IRQn);
 }
 
-void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue)
+void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
 {
 	// always using match0
 	int8_t match=0;
@@ -164,8 +159,14 @@ void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t ma
         Chip_TIMER_PrescaleSet(t, presc);
         Chip_TIMER_SetMatch(t, match, matchValue);
         Chip_TIMER_MatchEnableInt(t, match); // enable int for match 0
-        Chip_TIMER_ResetOnMatchEnable(t, match); // reset count on match0
-
+        if(flagOnce==1)
+        { 
+			Chip_TIMER_ResetOnMatchDisable(t, match); // reset count on match0
+		}
+		else 
+		{
+			Chip_TIMER_ResetOnMatchEnable(t, match); // reset count on match0
+		}
 	Chip_TIMER_Enable(t);
 }
 
