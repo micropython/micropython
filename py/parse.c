@@ -1013,30 +1013,36 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 "parser could not allocate enough memory");
         }
         parser.tree.root = MP_PARSE_NODE_NULL;
-        goto finished;
+    } else if (
+        lex->tok_kind != MP_TOKEN_END // check we are at the end of the token stream
+        || parser.result_stack_top == 0 // check that we got a node (can fail on empty input)
+        ) {
+    syntax_error:
+        if (lex->tok_kind == MP_TOKEN_INDENT) {
+            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                "unexpected indent");
+        } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
+            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                "unindent does not match any outer indentation level");
+        } else {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                "invalid syntax");
+        }
+        parser.tree.root = MP_PARSE_NODE_NULL;
+    } else {
+        // no errors
+
+        //result_stack_show(parser);
+        //printf("rule stack alloc: %d\n", parser.rule_stack_alloc);
+        //printf("result stack alloc: %d\n", parser.result_stack_alloc);
+        //printf("number of parse nodes allocated: %d\n", num_parse_nodes_allocated);
+
+        // get the root parse node that we created
+        assert(parser.result_stack_top == 1);
+        exc = MP_OBJ_NULL;
+        parser.tree.root = parser.result_stack[0];
     }
 
-    // check we are at the end of the token stream
-    if (lex->tok_kind != MP_TOKEN_END) {
-        goto syntax_error;
-    }
-
-    // check that parsing resulted in a parse node (can fail on empty input)
-    if (parser.result_stack_top == 0) {
-        goto syntax_error;
-    }
-
-    //result_stack_show(parser);
-    //printf("rule stack alloc: %d\n", parser.rule_stack_alloc);
-    //printf("result stack alloc: %d\n", parser.result_stack_alloc);
-    //printf("number of parse nodes allocated: %d\n", num_parse_nodes_allocated);
-
-    // get the root parse node that we created
-    assert(parser.result_stack_top == 1);
-    exc = MP_OBJ_NULL;
-    parser.tree.root = parser.result_stack[0];
-
-finished:
     // free the memory that we don't need anymore
     m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
@@ -1053,27 +1059,6 @@ finished:
         mp_lexer_free(lex);
         return parser.tree;
     }
-
-syntax_error:
-    if (lex->tok_kind == MP_TOKEN_INDENT) {
-        exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-            "unexpected indent");
-    } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
-        exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-            "unindent does not match any outer indentation level");
-    } else {
-        exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-            "invalid syntax");
-#ifdef USE_RULE_NAME
-        // debugging: print the rule name that failed and the token
-        printf("rule: %s\n", rule->rule_name);
-#if MICROPY_DEBUG_PRINTERS
-        mp_lexer_show_token(lex);
-#endif
-#endif
-    }
-    parser.tree.root = MP_PARSE_NODE_NULL;
-    goto finished;
 }
 
 void mp_parse_tree_clear(mp_parse_tree_t *tree) {
