@@ -1013,8 +1013,8 @@ void  USB_ClearInterrupts (USB_OTG_GlobalTypeDef *USBx, uint32_t interrupt)
   * @param  USBx : Selected device
   * @retval return core mode : Host or Device
   *          This parameter can be one of the these values:
-  *           0 : Host 
-  *           1 : Device
+  *           0 : Device
+  *           1 : Host
   */
 uint32_t USB_GetMode(USB_OTG_GlobalTypeDef *USBx)
 {
