@@ -450,15 +450,19 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             } else {
                 if (MATCH(ret_type, "void")) {
                     JJ(CallVoidMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = mp_const_none;
                 } else if (MATCH(ret_type, "int")) {
                     jint res = JJ(CallIntMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = mp_obj_new_int(res);
                 } else if (MATCH(ret_type, "boolean")) {
                     jboolean res = JJ(CallBooleanMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = mp_obj_new_bool(res);
                 } else if (is_object_type(ret_type)) {
                     res = JJ(CallObjectMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = new_jobject(res);
                 } else {
                     JJ(ReleaseStringUTFChars, name_o, decl);
