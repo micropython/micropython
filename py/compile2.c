@@ -2932,7 +2932,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     comp->next_label = 1;
 
     if (scope->kind != SCOPE_FUNCTION) {
-        compile_syntax_error(comp, MP_PARSE_NODE_NULL, "inline assembler must be a function");
+        compile_syntax_error(comp, NULL, "inline assembler must be a function");
         return;
     }
 
@@ -2941,109 +2941,123 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     // get the function definition parse node
-    assert(MP_PARSE_NODE_IS_STRUCT(scope->pn));
-    mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)scope->pn;
-    assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_funcdef);
+    const byte *p = scope->pn;
+    assert(pt_is_any_id(p));
+    p = pt_next(p); // skip the function name
 
-    //qstr f_id = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]); // function name
-
-    // parameters are in pns->nodes[1]
+    // parameters are in next node
     if (comp->pass == MP_PASS_CODE_SIZE) {
-        mp_parse_node_t *pn_params;
-        int n_params = mp_parse_node_extract_list(&pns->nodes[1], PN_typedargslist, &pn_params);
-        scope->num_pos_args = EMIT_INLINE_ASM_ARG(count_params, n_params, pn_params);
+        const byte *pp = p;
+        const byte *pptop = mp_parse_node_extract_list(&pp, PN_typedargslist);
+        scope->num_pos_args = EMIT_INLINE_ASM_ARG(count_params, pp, pptop);
         if (comp->compile_error != MP_OBJ_NULL) {
             goto inline_asm_error;
         }
     }
 
-    assert(MP_PARSE_NODE_IS_NULL(pns->nodes[2])); // type
+    p = pt_next(p); // skip the parameter list
+    p = pt_next(p); // skip the return type
 
-    mp_parse_node_t pn_body = pns->nodes[3]; // body
-    mp_parse_node_t *nodes;
-    int num = mp_parse_node_extract_list(&pn_body, PN_suite_block_stmts, &nodes);
+    // get the list of statements within the body of the function
+    const byte *ptop = mp_parse_node_extract_list(&p, PN_suite_block_stmts);
 
-    for (int i = 0; i < num; i++) {
-        assert(MP_PARSE_NODE_IS_STRUCT(nodes[i]));
-        mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)nodes[i];
-        if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_pass_stmt) {
+    for (const byte *p_instr = p; p_instr != ptop; p_instr = pt_next(p_instr)) {
+        p = p_instr;
+        if (pt_is_rule(p, PN_pass_stmt)) {
             // no instructions
             continue;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) != PN_expr_stmt) {
+        } else if (!pt_is_rule(p, PN_expr_stmt)) {
             // not an instruction; error
         not_an_instruction:
-            compile_syntax_error(comp, nodes[i], "expecting an assembler instruction");
+            compile_syntax_error(comp, p, "expecting an assembler instruction");
             return;
         }
 
         // check structure of parse node
-        assert(MP_PARSE_NODE_IS_STRUCT(pns2->nodes[0]));
-        if (!MP_PARSE_NODE_IS_NULL(pns2->nodes[1])) {
+        const byte *p_expr_top;
+        const byte *p_expr = pt_rule_extract_top(p, &p_expr_top);
+        if (!pt_is_rule(p_expr, PN_power)) {
             goto not_an_instruction;
         }
-        pns2 = (mp_parse_node_struct_t*)pns2->nodes[0];
-        if (MP_PARSE_NODE_STRUCT_KIND(pns2) != PN_power) {
+        if (pt_next(p_expr) != p_expr_top) {
             goto not_an_instruction;
         }
-        if (!MP_PARSE_NODE_IS_ID(pns2->nodes[0])) {
+        p_expr = pt_rule_extract_top(p_expr, &p_expr_top);
+        if (!pt_is_any_id(p_expr)) {
             goto not_an_instruction;
         }
-        if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns2->nodes[1], PN_trailer_paren)) {
+        const byte *p_expr_paren = pt_next(p_expr);
+        if (p_expr_paren == p_expr_top || !pt_is_rule(p_expr_paren, PN_trailer_paren)) {
             goto not_an_instruction;
         }
-        assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[2]));
+        if (pt_next(p_expr_paren) != p_expr_top) {
+            goto not_an_instruction;
+        }
 
         // parse node looks like an instruction
         // get instruction name and args
-        qstr op = MP_PARSE_NODE_LEAF_ARG(pns2->nodes[0]);
-        pns2 = (mp_parse_node_struct_t*)pns2->nodes[1]; // PN_trailer_paren
-        mp_parse_node_t *pn_arg;
-        int n_args = mp_parse_node_extract_list(&pns2->nodes[0], PN_arglist, &pn_arg);
+        qstr op;
+        pt_extract_id(p_expr, &op);
+
+        const byte *p_args = pt_rule_first(p_expr_paren);
+        const byte *p_args_top = mp_parse_node_extract_list(&p_args, PN_arglist);
+        uint n_args = pt_num_nodes(p_args, p_args_top);
 
         // emit instructions
         if (op == MP_QSTR_label) {
-            if (!(n_args == 1 && MP_PARSE_NODE_IS_ID(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "'label' requires 1 argument");
+            if (!(n_args == 1 && pt_is_any_id(p_args))) {
+                compile_syntax_error(comp, p, "'label' requires 1 argument");
                 return;
             }
             uint lab = comp_next_label(comp);
             if (pass > MP_PASS_SCOPE) {
-                if (!EMIT_INLINE_ASM_ARG(label, lab, MP_PARSE_NODE_LEAF_ARG(pn_arg[0]))) {
-                    compile_syntax_error(comp, nodes[i], "label redefined");
+                qstr id;
+                pt_extract_id(p_args, &id);
+                if (!EMIT_INLINE_ASM_ARG(label, lab, id)) {
+                    compile_syntax_error(comp, p, "label redefined");
                     return;
                 }
             }
         } else if (op == MP_QSTR_align) {
-            if (!(n_args == 1 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "'align' requires 1 argument");
+            if (!(n_args == 1 && pt_is_small_int(p_args))) {
+                compile_syntax_error(comp, p, "'align' requires 1 argument");
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
-                EMIT_INLINE_ASM_ARG(align, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]));
+                EMIT_INLINE_ASM_ARG(align, pt_small_int_value(p_args));
             }
         } else if (op == MP_QSTR_data) {
-            if (!(n_args >= 2 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
-                compile_syntax_error(comp, nodes[i], "'data' requires at least 2 arguments");
+            if (!(n_args >= 2 && pt_is_small_int(p_args))) {
+                compile_syntax_error(comp, p, "'data' requires at least 2 arguments");
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
-                mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
+                mp_int_t bytesize;
+                p_args = pt_get_small_int(p_args, &bytesize);
                 for (uint j = 1; j < n_args; j++) {
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
-                        compile_syntax_error(comp, nodes[i], "'data' requires integer arguments");
+                    if (!pt_is_small_int(p_args)) {
+                        compile_syntax_error(comp, p, "'data' requires integer arguments");
                         return;
                     }
-                    EMIT_INLINE_ASM_ARG(data, bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
+                    mp_int_t val;
+                    p_args = pt_get_small_int(p_args, &val);
+                    EMIT_INLINE_ASM_ARG(data, bytesize, val);
                 }
             }
         } else {
             if (pass > MP_PASS_SCOPE) {
+                if (n_args > 3) {
+                    goto not_an_instruction;
+                }
+                const byte *pn_arg[3];
+                pn_arg[0] = p_args;
+                pn_arg[1] = pt_next(pn_arg[0]);
+                pn_arg[2] = pt_next(pn_arg[1]);
                 EMIT_INLINE_ASM_ARG(op, op, n_args, pn_arg);
             }
         }
 
         if (comp->compile_error != MP_OBJ_NULL) {
-            pns = pns2; // this is the parse node that had the error
             goto inline_asm_error;
         }
     }
@@ -3055,7 +3069,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     if (comp->compile_error != MP_OBJ_NULL) {
         // inline assembler had an error; set line for its exception
     inline_asm_error:
-        comp->compile_error_line = pns->source_line;
+        compile_error_set_line(comp, p);
     }
 }
 #endif
