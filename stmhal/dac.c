@@ -50,7 +50,7 @@
 ///     from pyb import DAC
 ///
 ///     dac = DAC(1)            # create DAC 1 on pin X5
-///     dac.write(128)          # write a value to the DAC (makes X5 1.65V)
+///     dac.write(2048)         # write a value to the DAC (makes X5 1.65V)
 ///
 /// To output a continuous sine-wave:
 ///
@@ -268,7 +268,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
 #endif
 
 /// \method write(value)
-/// Direct access to the DAC output (8 bit only at the moment).
+/// Direct access to the DAC output (12 bit only at the moment).
 STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
     pyb_dac_obj_t *self = self_in;
 
@@ -280,7 +280,7 @@ STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
         self->state = DAC_STATE_WRITE_SINGLE;
     }
 
-    HAL_DAC_SetValue(&DAC_Handle, self->dac_channel, DAC_ALIGN_8B_R, mp_obj_get_int(val));
+    HAL_DAC_SetValue(&DAC_Handle, self->dac_channel, DAC_ALIGN_12B_R, mp_obj_get_int(val));
     HAL_DAC_Start(&DAC_Handle, self->dac_channel);
 
     return mp_const_none;
