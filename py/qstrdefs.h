@@ -103,6 +103,7 @@ Q(uint)
 Q(ptr)
 Q(ptr8)
 Q(ptr16)
+Q(ptr32)
 #endif
 
 #if MICROPY_EMIT_INLINE_THUMB

@@ -71,6 +71,14 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
     int when = mp_obj_get_int(when_in);
+    if (when == 0) {
+        // We don't export TCSANOW and friends to save on code space. Then
+        // common lazy sense says that passing 0 should be godo enough, and
+        // it is e.g. for glibc. But for other libc's it's not, so set just
+        // treat 0 as defauling to TCSANOW.
+        when = TCSANOW;
+    }
+
     assert(MP_OBJ_IS_TYPE(attrs_in, &mp_type_list));
     mp_obj_list_t *attrs = attrs_in;
 

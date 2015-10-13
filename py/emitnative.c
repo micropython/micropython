@@ -152,11 +152,13 @@
 #define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x64_mov_mem64_to_r64((as), (reg_base), 8 * (word_offset), (reg_dest))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem8_to_r64zx((as), (reg_base), 0, (reg_dest))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem16_to_r64zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem32_to_r64zx((as), (reg_base), 0, (reg_dest))
 
 #define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 0)
 #define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 8 * (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x64_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x64_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_x64_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
 
 #elif N_X86
 
@@ -295,11 +297,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x86_mov_mem32_to_r32((as), (reg_base), 4 * (word_offset), (reg_dest))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem8_to_r32zx((as), (reg_base), 0, (reg_dest))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem16_to_r32zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem32_to_r32((as), (reg_base), 0, (reg_dest))
 
 #define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
 #define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 4 * (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x86_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x86_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
 
 #elif N_THUMB
 
@@ -388,11 +392,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_thumb_ldr_rlo_rlo_i5((as), (reg_dest), (reg_base), (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_thumb_ldrb_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_thumb_ldrh_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_thumb_ldr_rlo_rlo_i5((as), (reg_dest), (reg_base), 0)
 
 #define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 #define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_thumb_strb_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 #define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_thumb_strh_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_thumb_str_rlo_rlo_i5((as), (reg_src), (reg_base), 0)
 
 #elif N_ARM
 
@@ -480,11 +486,13 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 #define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
 #define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_arm_ldrb_reg_reg((as), (reg_dest), (reg_base))
 #define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_arm_ldrh_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base))
 
 #define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
 #define ASM_STORE_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_str_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
 #define ASM_STORE8_REG_REG(as, reg_value, reg_base) asm_arm_strb_reg_reg((as), (reg_value), (reg_base))
 #define ASM_STORE16_REG_REG(as, reg_value, reg_base) asm_arm_strh_reg_reg((as), (reg_value), (reg_base))
+#define ASM_STORE32_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base))
 
 #else
 
@@ -513,10 +521,11 @@ typedef enum {
     VTYPE_PTR = 0x10 | MP_NATIVE_TYPE_UINT, // pointer to word sized entity
     VTYPE_PTR8 = 0x20 | MP_NATIVE_TYPE_UINT,
     VTYPE_PTR16 = 0x30 | MP_NATIVE_TYPE_UINT,
-    VTYPE_PTR_NONE = 0x40 | MP_NATIVE_TYPE_UINT,
+    VTYPE_PTR32 = 0x40 | MP_NATIVE_TYPE_UINT,
+    VTYPE_PTR_NONE = 0x50 | MP_NATIVE_TYPE_UINT,
 
-    VTYPE_UNBOUND = 0x50 | MP_NATIVE_TYPE_OBJ,
-    VTYPE_BUILTIN_CAST = 0x60 | MP_NATIVE_TYPE_OBJ,
+    VTYPE_UNBOUND = 0x60 | MP_NATIVE_TYPE_OBJ,
+    VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
 } vtype_kind_t;
 
 STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
@@ -528,6 +537,7 @@ STATIC qstr vtype_to_qstr(vtype_kind_t vtype) {
         case VTYPE_PTR: return MP_QSTR_ptr;
         case VTYPE_PTR8: return MP_QSTR_ptr8;
         case VTYPE_PTR16: return MP_QSTR_ptr16;
+        case VTYPE_PTR32: return MP_QSTR_ptr32;
         case VTYPE_PTR_NONE: default: return MP_QSTR_None;
     }
 }
@@ -600,6 +610,7 @@ STATIC void emit_native_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t ar
                 case MP_QSTR_ptr: type = VTYPE_PTR; break;
                 case MP_QSTR_ptr8: type = VTYPE_PTR8; break;
                 case MP_QSTR_ptr16: type = VTYPE_PTR16; break;
+                case MP_QSTR_ptr32: type = VTYPE_PTR32; break;
                 default: EMIT_NATIVE_VIPER_TYPE_ERROR(emit, "unknown type '%q'", arg2); return;
             }
             if (op == MP_EMIT_NATIVE_TYPE_RETURN) {
@@ -1391,6 +1402,8 @@ STATIC void emit_native_load_global(emit_t *emit, qstr qst) {
         emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR8);
     } else if (emit->do_viper_types && qst == MP_QSTR_ptr16) {
         emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR16);
+    } else if (emit->do_viper_types && qst == MP_QSTR_ptr32) {
+        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR32);
     } else {
         emit_call_with_imm_arg(emit, MP_F_LOAD_GLOBAL, qst, REG_ARG_1);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
@@ -1494,6 +1507,23 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, reg_base); // load from (base+2*index)
                     break;
                 }
+                case VTYPE_PTR32: {
+                    // pointer to 32-bit memory
+                    if (index_value != 0) {
+                        // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_ldr_rlo_rlo_i5(emit->as, REG_RET, reg_base, index_value);
+                            break;
+                        }
+                        #endif
+                        ASM_MOV_IMM_TO_REG(emit->as, index_value << 2, reg_index);
+                        ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
+                        reg_base = reg_index;
+                    }
+                    ASM_LOAD32_REG_REG(emit->as, REG_RET, reg_base); // load from (base+4*index)
+                    break;
+                }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                         "can't load from '%q'", vtype_to_qstr(vtype_base));
@@ -1519,6 +1549,16 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+2*index)
+                    break;
+                }
+                case VTYPE_PTR32: {
+                    // pointer to word-size memory
+                    assert(vtype_index == VTYPE_INT);
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_LOAD32_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+4*index)
                     break;
                 }
                 default:
@@ -1690,6 +1730,27 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                     ASM_STORE16_REG_REG(emit->as, reg_value, reg_base); // store value to (base+2*index)
                     break;
                 }
+                case VTYPE_PTR32: {
+                    // pointer to 32-bit memory
+                    if (index_value != 0) {
+                        // index is a non-zero immediate
+                        #if N_THUMB
+                        if (index_value > 0 && index_value < 32) {
+                            asm_thumb_str_rlo_rlo_i5(emit->as, reg_value, reg_base, index_value);
+                            break;
+                        }
+                        #endif
+                        ASM_MOV_IMM_TO_REG(emit->as, index_value << 2, reg_index);
+                        #if N_ARM
+                        asm_arm_str_reg_reg_reg(emit->as, reg_value, reg_base, reg_index);
+                        return;
+                        #endif
+                        ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
+                        reg_base = reg_index;
+                    }
+                    ASM_STORE32_REG_REG(emit->as, reg_value, reg_base); // store value to (base+4*index)
+                    break;
+                }
                 default:
                     EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                         "can't store to '%q'", vtype_to_qstr(vtype_base));
@@ -1730,6 +1791,20 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_STORE16_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+2*index)
+                    break;
+                }
+                case VTYPE_PTR32: {
+                    // pointer to 32-bit memory
+                    assert(vtype_index == VTYPE_INT);
+                    #if N_ARM
+                    asm_arm_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
+                    break;
+                    #endif
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
+                    ASM_STORE32_REG_REG(emit->as, reg_value, REG_ARG_1); // store value to (base+4*index)
                     break;
                 }
                 default:
@@ -2311,6 +2386,7 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
             case VTYPE_PTR:
             case VTYPE_PTR8:
             case VTYPE_PTR16:
+            case VTYPE_PTR32:
             case VTYPE_PTR_NONE:
                 emit_fold_stack_top(emit, REG_ARG_1);
                 emit_post_top_set_vtype(emit, vtype_cast);
