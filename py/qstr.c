@@ -262,11 +262,7 @@ void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_
         *n_pool += 1;
         *n_qstr += pool->len;
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-            #if MICROPY_ENABLE_GC
-            *n_str_data_bytes += gc_nbytes(*q); // this counts actual bytes used in heap
-            #else
             *n_str_data_bytes += Q_GET_ALLOC(*q);
-            #endif
         }
         #if MICROPY_ENABLE_GC
         *n_total_bytes += gc_nbytes(pool); // this counts actual bytes used in heap
