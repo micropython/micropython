@@ -270,10 +270,12 @@ typedef struct _emit_inline_asm_method_table_t {
     void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope, mp_obj_t *error_slot);
     void (*end_pass)(emit_inline_asm_t *emit, mp_uint_t type_sig);
     mp_uint_t (*count_params)(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params);
+    void (*end_pass)(emit_inline_asm_t *emit, mp_uint_t type_sig);
+    mp_uint_t (*count_params)(emit_inline_asm_t *emit, const byte *p, const byte *ptop);
     bool (*label)(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id);
     void (*align)(emit_inline_asm_t *emit, mp_uint_t align);
     void (*data)(emit_inline_asm_t *emit, mp_uint_t bytesize, mp_uint_t val);
-    void (*op)(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args);
+    void (*op)(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, const byte **pn_args);
 } emit_inline_asm_method_table_t;
 
 extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;

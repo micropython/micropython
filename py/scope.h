@@ -57,8 +57,7 @@ typedef enum { SCOPE_MODULE, SCOPE_FUNCTION, SCOPE_LAMBDA, SCOPE_LIST_COMP, SCOP
 typedef struct _scope_t {
     scope_kind_t kind;
     struct _scope_t *parent;
-    struct _scope_t *next;
-    mp_parse_node_t pn;
+    const byte *pn; // points to the node after the scope index node
     qstr source_file;
     qstr simple_name;
     mp_raw_code_t *raw_code;
@@ -75,7 +74,7 @@ typedef struct _scope_t {
     id_info_t *id_info;
 } scope_t;
 
-scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options);
+scope_t *scope_new(scope_kind_t kind, const byte *pn, qstr source_file, mp_uint_t emit_options);
 void scope_free(scope_t *scope);
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, bool *added);
 id_info_t *scope_find(scope_t *scope, qstr qstr);

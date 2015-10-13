@@ -30,7 +30,7 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options) {
+scope_t *scope_new(scope_kind_t kind, const byte *pn, qstr source_file, mp_uint_t emit_options) {
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
     scope->pn = pn;
@@ -41,8 +41,7 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_u
             break;
         case SCOPE_FUNCTION:
         case SCOPE_CLASS:
-            assert(MP_PARSE_NODE_IS_STRUCT(pn));
-            scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
+            pt_extract_id(pn, &scope->simple_name); // function name
             break;
         case SCOPE_LAMBDA:
             scope->simple_name = MP_QSTR__lt_lambda_gt_;
@@ -62,7 +61,6 @@ scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_u
         default:
             assert(0);
     }
-    scope->raw_code = mp_emit_glue_new_raw_code();
     scope->emit_options = emit_options;
     scope->id_info_alloc = MICROPY_ALLOC_SCOPE_ID_INIT;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);
