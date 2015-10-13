@@ -167,6 +167,7 @@ void vstr_add_byte(vstr_t *vstr, byte v);
 void vstr_add_char(vstr_t *vstr, unichar chr);
 void vstr_add_str(vstr_t *vstr, const char *str);
 void vstr_add_strn(vstr_t *vstr, const char *str, size_t len);
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len);
 void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b);
 void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr);
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut);

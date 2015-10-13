@@ -256,7 +256,7 @@ copy:
     vstr->len += len;
 }
 
-STATIC char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
+char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
     if (vstr->had_error) {
         return NULL;
     }
