@@ -1,3 +1,5 @@
 bytearray(b'\x00\x00\x00\x00')
 bytearray(b'BB\x00\x00')
-bytearray(b'CCCC')
+bytearray(b'BBCC')
+bytearray(b'DDDD')
+bytearray(b'EEEE')
