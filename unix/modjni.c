@@ -274,6 +274,20 @@ STATIC mp_obj_t jobject_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
+// TODO: subscr_load_adaptor & subscr_getiter convenience functions
+// should be moved to common location for reuse.
+STATIC mp_obj_t subscr_load_adaptor(mp_obj_t self_in, mp_obj_t index_in) {
+    return mp_obj_subscr(self_in, index_in, MP_OBJ_SENTINEL);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(subscr_load_adaptor_obj, subscr_load_adaptor);
+
+// .getiter special method which returns iterator which works in terms
+// of object subscription.
+STATIC mp_obj_t subscr_getiter(mp_obj_t self_in) {
+    mp_obj_t dest[2] = {(mp_obj_t)&subscr_load_adaptor_obj, self_in};
+    return mp_obj_new_getitem_iter(dest);
+}
+
 STATIC const mp_obj_type_t jobject_type = {
     { &mp_type_type },
     .name = MP_QSTR_jobject,
@@ -281,6 +295,7 @@ STATIC const mp_obj_type_t jobject_type = {
     .unary_op = jobject_unary_op,
     .attr = jobject_attr,
     .subscr = jobject_subscr,
+    .getiter = subscr_getiter,
 //    .locals_dict = (mp_obj_t)&jobject_locals_dict,
 };
 
@@ -450,15 +465,19 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
             } else {
                 if (MATCH(ret_type, "void")) {
                     JJ(CallVoidMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = mp_const_none;
                 } else if (MATCH(ret_type, "int")) {
                     jint res = JJ(CallIntMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = mp_obj_new_int(res);
                 } else if (MATCH(ret_type, "boolean")) {
                     jboolean res = JJ(CallBooleanMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = mp_obj_new_bool(res);
                 } else if (is_object_type(ret_type)) {
                     res = JJ(CallObjectMethodA, obj, method_id, jargs);
+                    check_exception();
                     ret = new_jobject(res);
                 } else {
                     JJ(ReleaseStringUTFChars, name_o, decl);
