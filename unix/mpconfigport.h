@@ -191,7 +191,8 @@ void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
 
-#define MP_PLAT_PRINT_STRN(str, len) fwrite(str, 1, len, stdout)
+#include <unistd.h>
+#define MP_PLAT_PRINT_STRN(str, len) write(1, str, len)
 
 #ifdef __linux__
 // Can access physical memory using /dev/mem
