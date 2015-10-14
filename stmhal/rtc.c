@@ -161,6 +161,7 @@ STATIC void RTC_CalendarConfig(void);
 
 void rtc_init(void) {
     RTCHandle.Instance = RTC;
+    RTC_DateTypeDef date;
 
     /* Configure RTC prescaler and RTC data registers */
     /* RTC configured as follow:
@@ -188,8 +189,8 @@ void rtc_init(void) {
     // record how long it took for the RTC to start up
     rtc_info = HAL_GetTick() - tick;
 
-    // check data stored in BackUp register0
-    if (HAL_RTCEx_BKUPRead(&RTCHandle, RTC_BKP_DR0) != 0x32f2) {
+    HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+    if (date.Year == 0 && date.Month ==0 && date.Date == 0) {
         // fresh reset; configure RTC Calendar
         RTC_CalendarConfig();
     } else {
@@ -233,9 +234,6 @@ STATIC void RTC_CalendarConfig(void) {
         // init error
         return;
     }
-
-    // write data to indicate the RTC has been set
-    HAL_RTCEx_BKUPWrite(&RTCHandle, RTC_BKP_DR0, 0x32f2);
 }
 
 /*
