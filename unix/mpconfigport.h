@@ -198,6 +198,16 @@ void mp_unix_mark_exec(void);
 #define MICROPY_PLAT_DEV_MEM  (1)
 #endif
 
+#ifdef __ANDROID__
+#include <android/api-level.h>
+#if __ANDROID_API__ < 4
+// Bionic libc in Android 1.5 misses these 2 functions
+// 1.442695040888963407354163704 is 1/_M_LN2
+#define log2(x) (log(x) * 1.442695040888963407354163704)
+#define nan(x) NAN
+#endif
+#endif
+
 extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
