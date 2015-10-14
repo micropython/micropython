@@ -55,6 +55,10 @@ Q(WLAN_WAKE)
 Q(PIN_WAKE)
 Q(RTC_WAKE)
 
+// for wipy module
+Q(wipy)
+Q(heartbeat)
+
 // entries for sys.path
 Q(/flash)
 Q(/flash/lib)
@@ -314,11 +318,6 @@ Q(ANY_EVENT)
 Q(WDT)
 Q(feed)
 Q(timeout)
-
-// for HeartBeat class
-Q(HeartBeat)
-Q(enable)
-Q(disable)
 
 // for irq class
 Q(irq)
