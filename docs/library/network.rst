@@ -259,14 +259,15 @@ class WLAN
 .. only:: port_wipy
 
     This class provides a driver for WiFi network processor in the WiPy.  Example usage::
-    
+
         import network
+        import time
         # setup as a station
-        nic = network.WLAN(mode=WLAN.STA)
-        nic.connect('your-ssid', security=WLAN.WPA2, key='your-key')
-        while not nic.isconnected():
-            pyb.delay(50)
-        print(nic.ifconfig())
+        wlan = network.WLAN(mode=WLAN.STA)
+        wlan.connect('your-ssid', auth=(WLAN.WPA2, 'your-key'))
+        while not wlan.isconnected():
+            time.sleep_ms(50)
+        print(wlan.ifconfig())
 
         # now use socket as usual
         ...
@@ -276,12 +277,12 @@ class WLAN
     
     .. class:: WLAN(..)
 
-       Create a WLAN object, and optionally configure it. See ``iwconfig`` for params of configuration.
+       Create a WLAN object, and optionally configure it. See ``init`` for params of configuration.
 
     Methods
     -------
 
-    .. method:: iwconfig(\*, mode, ssid, security, key, channel, antenna)
+    .. method:: init(mode, \*, ssid, security, key, channel, antenna)
     
        Set or get the WiFi network processor configuration.
     
@@ -289,14 +290,13 @@ class WLAN
     
          - ``mode`` can be either ``WLAN.STA`` or ``WLAN.AP``.
          - ``ssid`` is a string with the ssid name. Only needed when mode is ``WLAN.AP``.
-         - ``security`` can be ``WLAN.OPEN``, ``WLAN.WEP``, ``WLAN.WPA`` or ``WLAN.WPA2``. 
-           Only needed when mode is ``WLAN.AP``.
-         - ``key`` is a string with the network password. Not needed when mode is ``WLAN.STA``
-           or security is ``WLAN.OPEN``. If ``security`` is ``WLAN.WEP`` the key must be a
-           string representing hexadecimal values (e.g. 'ABC1DE45BF').
+         - ``auth`` is a tuple with (sec, key). Security can be ``None``, ``WLAN.WEP``,
+           ``WLAN.WPA`` or ``WLAN.WPA2``. The key is a string with the network password.
+           If ``security`` is ``WLAN.WEP`` the key must be a string representing hexadecimal
+           values (e.g. 'ABC1DE45BF'). Only needed when mode is ``WLAN.AP``.
          - ``channel`` a number in the range 1-11. Only needed when mode is ``WLAN.AP``.
          - ``antenna`` selects between the internal and the external antenna. Can be either
-           ``WLAN.INTERNAL`` or ``WLAN.EXTERNAL``.
+           ``WLAN.INT_ANT`` or ``WLAN.EXTERNAL``.
     
        For example, you can do::
 
@@ -311,57 +311,53 @@ class WLAN
        With no arguments given, the current configuration is returned as a namedtuple that looks like this:
        ``(mode=2, ssid='wipy-wlan', security=2, key='www.wipy.io', channel=5, antenna=0)``
 
-    .. method:: wlan.connect(ssid, \*, security=WLAN.OPEN, key=None, bssid=None, timeout=5000)
-    
+    .. method:: wlan.connect(ssid, \*, auth=None, key=None, bssid=None, timeout=5000)
+
        Connect to a wifi access point using the given SSID, and other security
        parameters.
-          
+
           - ``key`` is always a string, but if ``security`` is ``WLAN.WEP`` the key must be a string
             representing hexadecimal values (e.g. 'ABC1DE45BF').
           - ``bssid`` is the MAC address of the AP to connect to. Useful when there are several APs
             with the same ssid.
           - ``timeout`` is the maximum time in milliseconds to wait for the connection to succeed.
-    
+
     .. method:: wlan.scan()
-    
-       Performs a network scan and returns a list of named tuples with (ssid, bssid, security, channel, rssi).
+
+       Performs a network scan and returns a list of named tuples with (ssid, bssid, sec, channel, rssi).
        Note that channel is always ``None`` since this info is not provided by the WiPy.
-    
+
     .. method:: wlan.disconnect()
-    
+
        Disconnect from the wifi access point.
-    
+
     .. method:: wlan.isconnected()
-    
+
        In case of STA mode, returns ``True`` if connected to a wifi access point and has a valid IP address.
        In AP mode returns ``True`` when a station is connected. Returns ``False`` otherwise.
-    
-    .. method:: wlan.ifconfig(['dhcp' or configtuple])
-    
+
+    .. method:: wlan.ifconfig(if_id, config=['dhcp' or configtuple])
+
        With no parameters given eturns a 4-tuple of ``(ip, subnet mask, gateway, DNS server)``.
        
        if ``'dhcp'`` is passed as a parameter then the DHCP client is enabled and the IP params
        are negotiated with the AP.
        
        if the 4-tuple config is given then a static IP is configured. For example::
-    
-          nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
-    
-    .. method:: wlan.mac()
-    
-       Returns a 6-byte long bytes object with the MAC address.
 
-    .. method:: wlan.connections()
-    
-       Returns a list of the devices currently connected. Each item in the list is a
-       tuple of ``(ssid, mac)``.
+          nic.ifconfig(config=('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
-    .. method:: wlan.callback(wake_from)
+    .. method:: wlan.mac([mac_addr])
 
-        Create a callback to be triggered when a WLAN event occurs during ``pyb.Sleep.SUSPENDED``
+       Get or set a 6-byte long bytes object with the MAC address.
+
+    .. method:: wlan.irq(\*, handler, wake)
+
+        Create a callback to be triggered when a WLAN event occurs during ``machine.SLEEP``
         mode. Events are triggered by socket activity or by WLAN connection/disconnection.
 
-            - ``wake_from`` must be ``pyb.Sleep.SUSPENDED``.
+            - ``handler`` is the function that gets called when the irq is triggered.
+            - ``wake`` must be ``machine.SLEEP``.
 
         Returns a callback object.
 
@@ -376,14 +372,13 @@ class WLAN
 
        WiFi access point mode
 
-    .. data:: WLAN.OPEN
     .. data:: WLAN.WEP
     .. data:: WLAN.WPA
     .. data:: WLAN.WPA2
 
        selects the network security
 
-    .. data:: WLAN.INTERNAL
-    .. data:: WLAN.EXTERNAL
+    .. data:: WLAN.INT_ANT
+    .. data:: WLAN.EXT_ANT
 
        selects the antenna type

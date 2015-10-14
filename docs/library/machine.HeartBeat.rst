@@ -1,4 +1,4 @@
-.. _pyb.HeartBeat:
+.. _machine.HeartBeat:
 
 class HeartBeat -- heart beat LED
 =================================
@@ -11,14 +11,14 @@ can be used to control the light intesity of the heart beat LED.
 
 Example usage::
 
-    hb = pyb.HeartBeat()
+    hb = machine.HeartBeat()
     hb.disable()    # disable the heart beat
     hb.enable()     # enable the heart beat
 
 Constructors
 ------------
 
-.. class:: pyb.HeartBeat()
+.. class:: machine.HeartBeat()
 
    Create a HeartBeat object.
 
@@ -35,12 +35,13 @@ Methods
 
    Example::
    
-      import pyb
+      from machine import HeartBeat
+      from machine import Pin
    
       # disable the heart beat
-      pyb.HeartBeat().disable()
-      # get the GP25 pin object
-      hbl = pyb.Pin('GP25')
+      HeartBeat().disable()
+      # init GP25 as output
+      led = Pin('GP25', mode=Pin.OUT)
       # toggle the led
-      hbl.toggle()
+      led.toggle()
       ...

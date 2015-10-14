@@ -71,9 +71,27 @@ Functions
 
 .. only:: port_wipy
 
-    .. function:: mkfs(drive)
-    
-       Formats the specified drive, must be either ``/flash`` or ``/sd``.
+    .. function:: mount(block_device, mount_point, \*, readonly=False)
+
+       Mounts a block device (like an ``SD`` object) in the specified mount
+       point. Example::
+
+          os.mount(sd, '/sd')
+
+    .. function:: unmount(path)
+
+       Unmounts a prevoulsy mounted block device from the given path.
+
+    .. function:: mkfs(block_device or path)
+
+       Formats the specified path, must be either ``/flash`` or ``/sd``.
+       A block device can also be passed like an ``SD`` object before
+       being mounted.
+
+    .. function:: dupterm(stream_object)
+
+       Duplicate the terminal (the REPL) on the passed stream-like object.
+       The given object must at least implement the ``.read()`` and ``.write()`` methods.
 
 Constants
 ---------
