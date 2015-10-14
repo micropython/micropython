@@ -35,6 +35,7 @@ static volatile mp_uint_t tick_ct = 0;
 void SysTick_Handler(void) {
 	tick_ct++;
 	Board_UART_tick_ms();
+	Board_LED_PWM_tick_ms();
 }
 
 
@@ -238,4 +239,68 @@ int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic)
 {
 	return Board_DAC_writeDMA(buffer,size,flagCyclic);
 }
+
+// LEDS
+void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value)
+{
+	if(value<=15)
+		Board_LED_PWM_SetValue(pwmNumber,value);
+}
+
+uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
+{
+	return Board_LED_PWM_GetValue(pwmNumber);
+}
+
+//TIMERs
+void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+{
+	Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
+}
+
+void mp_hal_disableTimer(uint8_t timerNum)
+{
+	Board_TIMER_DisableTimer(timerNum);
+}
+
+void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+{
+	Board_TIMER_SetCallback(timerNum,function,arg);
+}
+
+uint32_t mp_hal_getTimerClockFrequency(void)
+{
+	return Board_TIMER_getClockFrequency();
+}
+
+void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value)
+{
+	Board_TIMER_SetTimerCounter(timerNum,value);
+}
+
+uint32_t mp_hal_getTimerCounter(uint8_t timerNum)
+{
+	return Board_TIMER_GetTimerCounter(timerNum);
+}
+
+void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value)
+{
+	Board_TIMER_SetTimerPrescaler(timerNum,value);
+}
+
+uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum)
+{
+	return Board_TIMER_GetTimerPrescaler(timerNum);
+}
+
+void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value)
+{
+	Board_TIMER_SetTimerMatch(timerNum,value);
+}
+
+uint32_t mp_hal_getTimerMatch(uint8_t timerNum)
+{
+	return Board_TIMER_GetTimerMatch(timerNum);
+}
+
 

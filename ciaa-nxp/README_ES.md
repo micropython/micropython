@@ -31,7 +31,7 @@ led1.on()
 pyb.delay(100);
 led1.off()
 ```
-Numeros de leds disponibles: de 1 a 4
+Numeros de leds disponibles: de 1 a 6 (4:Red, 5:Green, 6:Blue)
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
 - Soporte para los 4 pulsadores de la placa mediante el modulo pyb.Switch. Ejemplo:
@@ -125,3 +125,63 @@ Se implementaron los metodos:
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
+- Soporte para DAC mediante el modulo pyb.DAC. Ejemplo:
+```python
+import pyb
+import math
+
+dac = pyb.DAC(1)
+
+# sine
+buf = bytearray(200) #100 samples. 2 bytes per sample
+j=0
+for i in range (0,len(buf)/2):
+        v = 512 + int(511 * math.sin(2 * math.pi * i / (len(buf)/2) ) )
+        buf[j+1] = (v >>  8) & 0xff
+        buf[j] = v & 0xff
+        j=j+2
+
+# output the sine-wave at 400Hz
+print("sine created")
+
+dac.write_timed(buf, 400*(int(len(buf)/2)), mode=pyb.DAC.CIRCULAR)
+
+while True:
+        pyb.delay(1000)
+
+```
+Existe solo el DAC 1
+
+A diferencia de la clase DAC de la pyboard (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html) se utilizaron valores de 10bit en vez de 8bits para aprovechar al maximo la resolucion del DAC.
+
+
+- Soporte para Timers mediante el modulo pyb.Timer. Ejemplo:
+```python
+import pyb
+
+def callb(timer):
+        print("Interval interrupt")
+        print(timer)
+
+def callbTimeout (timer):
+        print("Timeout interrupt")
+        print(timer)
+
+print("Test Timers")
+
+t1 = pyb.Timer(1)
+t2 = pyb.Timer(2)
+t1.interval(2000,callb)
+t2.timeout(5000,callbTimeout)
+
+while True:
+        pyb.delay(1000)
+
+```
+Los timers disponibles son el 0,1,2 y 3
+
+Ademas de las funciones definidas en http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html se agregaron los metodos interval y timeout. Ambos reciben
+el tiempo en milisegundos y una funcion callback. El primero ejecutara la funcion cada el tiempo prefijado, mientras que el segundo la ejecutara solo una vez luego
+del tiempo prefijado.
+
+No se implemento la clase TimerChannel, por lo que las funcionalidades de Output Compare e Input Capture no son accesibles.

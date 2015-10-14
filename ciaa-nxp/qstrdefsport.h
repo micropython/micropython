@@ -9,6 +9,7 @@ Q(LED)
 Q(on)
 Q(off)
 Q(toggle)
+Q(intensity)
 
 Q(Switch)
 Q(switch)
@@ -110,6 +111,13 @@ Q(NORMAL)
 Q(CIRCULAR)
 Q(data)
 Q(freq)
+
+Q(Timer)
+Q(prescaler)
+Q(period)
+Q(counter)
+Q(interval)
+Q(source_freq)
 
 
 /*

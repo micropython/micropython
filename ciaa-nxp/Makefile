@@ -55,6 +55,7 @@ SRC_C = \
 	modpybpin.c \
 	modpybextint.c \
 	modpybdac.c \
+	modpybtimer.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 	teensy/memzip.c \
