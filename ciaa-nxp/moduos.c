@@ -31,15 +31,14 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "genhdr/mpversion.h"
-#include "memzip_extras.h"
-#if 0
+#include "lib/fatfs/ff.h"
+#include "lib/fatfs/diskio.h"
 #include "timeutils.h"
-#include "rng.h"
-#include "file.h"
-#include "sdcard.h"
-#include "fsusermount.h"
-#include "portmodules.h"
-#endif
+//#include "rng.h"
+#include "stmhal/file.h"
+//#include "sdcard.h"
+#include "stmhal/fsusermount.h"
+//#include "portmodules.h"
 
 /// \module os - basic "operating system" services
 ///
@@ -53,6 +52,19 @@
 ///
 /// On boot up, the current directory is `/flash` if no SD card is inserted,
 /// otherwise it is `/sd`.
+
+#if _USE_LFN
+static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
+#endif
+
+STATIC bool sd_in_root(void) {
+#if MICROPY_HW_HAS_SDCARD
+    // TODO this is not the correct logic to check for /sd
+    return sdcard_is_present();
+#else
+    return false;
+#endif
+}
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
@@ -82,9 +94,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 /// \function chdir(path)
 /// Change current directory.
 STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
-	// TODO Implement me
-	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unimplemented"));
-	
+    const char *path;
+    path = mp_obj_str_get_str(path_in);
+
+    FRESULT res = f_chdrive(path);
+
+    if (res == FR_OK) {
+        res = f_chdir(path);
+    }
+
+    if (res != FR_OK) {
+        // TODO should be mp_type_FileNotFoundError
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
+    }
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
@@ -92,97 +115,245 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
 /// \function getcwd()
 /// Get the current directory.
 STATIC mp_obj_t os_getcwd(void) {
-    char buf[] = "/";
-	// TODO Implement me
+    char buf[MICROPY_ALLOC_PATH_MAX + 1];
+    FRESULT res = f_getcwd(buf, sizeof buf);
+
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    }
 
     return mp_obj_new_str(buf, strlen(buf), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 
-typedef struct {
-	mp_obj_t list;
-	bool is_str_type;
-	const char *path;
-} os_listdir_data_t;
-
-STATIC int os_listdir_helper(const MEMZIP_FILE_HDR *h, const char *name, void *user) {
-	os_listdir_data_t *d = (os_listdir_data_t*) user;
-	mp_obj_t entry_o;
-	if (d->is_str_type) {
-		entry_o = mp_obj_new_str(name, h->filename_len, false);
-	} else {
-		entry_o = mp_obj_new_bytes((const byte*)name, h->filename_len);
-	}
-	// add the entry to the list
-	mp_obj_list_append(d->list, entry_o);
-
-	return 1;
-}
-
 /// \function listdir([dir])
 /// With no argument, list the current directory.  Otherwise list the given directory.
 STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
-	os_listdir_data_t d;
+    bool is_str_type = true;
+    const char *path;
     if (n_args == 1) {
         if (mp_obj_get_type(args[0]) == &mp_type_bytes) {
-            d.is_str_type = false;
+            is_str_type = false;
         }
-        d.path = mp_obj_str_get_str(args[0]);
+        path = mp_obj_str_get_str(args[0]);
     } else {
-        d.path = "";
+        path = "";
     }
-    d.list = mp_obj_new_list(0, NULL);
-	memzip_iterate(os_listdir_helper, &d);
-    return d.list;
+
+    // "hack" to list root directory
+    if (path[0] == '/' && path[1] == '\0') {
+        mp_obj_t dir_list = mp_obj_new_list(0, NULL);
+        mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_flash));
+        if (sd_in_root()) {
+            mp_obj_list_append(dir_list, MP_OBJ_NEW_QSTR(MP_QSTR_sd));
+        }
+        if (MP_STATE_PORT(fs_user_mount) != NULL) {
+            mp_obj_list_append(dir_list, mp_obj_new_str(MP_STATE_PORT(fs_user_mount)->str + 1, MP_STATE_PORT(fs_user_mount)->len - 1, false));
+        }
+        return dir_list;
+    }
+
+    FRESULT res;
+    FILINFO fno;
+    DIR dir;
+#if _USE_LFN
+    fno.lfname = lfn;
+    fno.lfsize = sizeof lfn;
+#endif
+
+    res = f_opendir(&dir, path);                       /* Open the directory */
+    if (res != FR_OK) {
+        // TODO should be mp_type_FileNotFoundError
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
+    }
+
+    mp_obj_t dir_list = mp_obj_new_list(0, NULL);
+
+    for (;;) {
+        res = f_readdir(&dir, &fno);                   /* Read a directory item */
+        if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
+        if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;             /* Ignore . entry */
+        if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
+
+#if _USE_LFN
+        char *fn = *fno.lfname ? fno.lfname : fno.fname;
+#else
+        char *fn = fno.fname;
+#endif
+
+        /*
+        if (fno.fattrib & AM_DIR) {
+            // dir
+        } else {
+            // file
+        }
+        */
+
+        // make a string object for this entry
+        mp_obj_t entry_o;
+        if (is_str_type) {
+            entry_o = mp_obj_new_str(fn, strlen(fn), false);
+        } else {
+            entry_o = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+        }
+
+        // add the entry to the list
+        mp_obj_list_append(dir_list, entry_o);
+    }
+
+    f_closedir(&dir);
+
+    return dir_list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 
 /// \function mkdir(path)
 /// Create a new directory.
 STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
-	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Read Only Filesystem"));
-    return mp_const_none;
+    const char *path = mp_obj_str_get_str(path_o);
+    FRESULT res = f_mkdir(path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        case FR_EXIST:
+            // TODO should be FileExistsError
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "File exists: '%s'", path));
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
 /// \function remove(path)
 /// Remove a file.
 STATIC mp_obj_t os_remove(mp_obj_t path_o) {
-	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Read Only Filesystem"));
-    return mp_const_none;
+    const char *path = mp_obj_str_get_str(path_o);
+    // TODO check that path is actually a file before trying to unlink it
+    FRESULT res = f_unlink(path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 
 /// \function rename(old_path, new_path)
 /// Rename a file
 STATIC mp_obj_t os_rename(mp_obj_t path_in, mp_obj_t path_out) {
-	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Read Only Filesystem"));
-    return mp_const_none;
+    const char *old_path = mp_obj_str_get_str(path_in);
+    const char *new_path = mp_obj_str_get_str(path_out);
+    FRESULT res = f_rename(old_path, new_path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error renaming file '%s' to '%s'", old_path, new_path));
+    }
+
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 
 /// \function rmdir(path)
 /// Remove a directory.
 STATIC mp_obj_t os_rmdir(mp_obj_t path_o) {
-	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Read Only Filesystem"));
-    return mp_const_none;
+    const char *path = mp_obj_str_get_str(path_o);
+    // TODO check that path is actually a directory before trying to unlink it
+    FRESULT res = f_unlink(path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing directory '%s'", path));
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
+
+// Checks for path equality, ignoring trailing slashes:
+//   path_equal(/, /) -> true
+//   path_equal(/flash//, /flash) -> true
+// second argument must be in canonical form (meaning no trailing slash, unless it's just /)
+STATIC bool path_equal(const char *path, const char *path_canonical) {
+    for (; *path_canonical != '\0' && *path == *path_canonical; ++path, ++path_canonical) {
+    }
+    if (*path_canonical != '\0') {
+        return false;
+    }
+    for (; *path == '/'; ++path) {
+    }
+    return *path == '\0';
+}
 
 /// \function stat(path)
 /// Get the status of a file or directory.
 STATIC mp_obj_t os_stat(mp_obj_t path_in) {
-	// TODO Implement me
-	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unimplemented"));
-    return mp_const_none;
+    const char *path = mp_obj_str_get_str(path_in);
+
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+
+    FRESULT res;
+    if (path_equal(path, "/") || path_equal(path, "/flash") || path_equal(path, "/sd")) {
+        // stat built-in directory
+        if (path[1] == 's' && !sd_in_root()) {
+            // no /sd directory
+            res = FR_NO_PATH;
+            goto error;
+        }
+	fno.fsize = 0;
+	fno.fdate = 0;
+	fno.ftime = 0;
+	fno.fattrib = AM_DIR;
+    } else {
+        res = f_stat(path, &fno);
+        if (res != FR_OK) {
+            goto error;
+        }
+    }
+
+    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+    mp_int_t mode = 0;
+    if (fno.fattrib & AM_DIR) {
+        mode |= 0x4000; // stat.S_IFDIR
+    } else {
+        mode |= 0x8000; // stat.S_IFREG
+    }
+    mp_int_t seconds = timeutils_seconds_since_2000(
+        1980 + ((fno.fdate >> 9) & 0x7f),
+        (fno.fdate >> 5) & 0x0f,
+        fno.fdate & 0x1f,
+        (fno.ftime >> 11) & 0x1f,
+        (fno.ftime >> 5) & 0x3f,
+        2 * (fno.ftime & 0x1f)
+    );
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(0); // st_nlink
+    t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(fno.fsize); // st_size
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(seconds); // st_atime
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(seconds); // st_mtime
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
+
+    return t;
+
+error:
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
-	// FIXME Add functionality
-	//nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Unimplemented"));
+    disk_ioctl(0, CTRL_SYNC, NULL);
+    disk_ioctl(1, CTRL_SYNC, NULL);
+    disk_ioctl(2, CTRL_SYNC, NULL);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
@@ -207,6 +378,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_uname), (mp_obj_t)&os_uname_obj },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), (mp_obj_t)&os_chdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), (mp_obj_t)&os_getcwd_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir), (mp_obj_t)&os_listdir_obj },

@@ -1,1 +1,1 @@
-print("Welcome to Micropython on EDU-CIAA-NXP")
+print("Bienvenido a Micropython en EDU-CIAA-NXP")

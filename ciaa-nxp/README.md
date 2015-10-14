@@ -6,6 +6,7 @@ EDU-CIAA board support package
 [Spanish Version](README_ES.md)
 
 
+
 [TOC]
 
 
@@ -32,7 +33,7 @@ led1.off()
 ```
 
 Available led numbers: 1 to 4
-More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
+> More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
 ### All board buttons via pyb.Switch.
 
@@ -61,7 +62,8 @@ while True:
 
 
 Available switch numbers:  1 to 4
-More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
+
+> More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
 ### UART support
 
@@ -88,7 +90,7 @@ while True:
 
 Availabled UART are pyb.UART(0) (RS485) and pyb.UART(3) (RS232)
 
-More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
+> More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
 
 All interfaces of pyboard UART are preserver except the constructor on baudrate parameter.
 
@@ -148,7 +150,7 @@ while True:
 ```
 Availabled GPIO is 0 to 8
 
-More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
+> More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
 
 
 ## GPIO Interrupt support over pyb.ExtInt
@@ -180,10 +182,12 @@ Methods:
   - swint()
   - line()
 
-More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
+> More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
 
-- Soporte para DAC mediante el modulo pyb.DAC. Ejemplo:
+## DAC support via pyb.DAC module.
+
+Example:
 ```python
 import pyb
 import math
@@ -208,8 +212,7 @@ while True:
         pyb.delay(1000)
 
 ```
-Existe solo el DAC 1
 
-A diferencia de la clase DAC de la pyboard (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html) se utilizaron valores de 10bit en vez de 8bits para aprovechar al maximo la resolucion del DAC.
+> Note: Board only have DAC 1
 
-
+The LPC43xx DAC have 10 bits accurancy instread of 8 bits accurancy of pyboard DAC (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html)

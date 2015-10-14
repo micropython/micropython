@@ -90,6 +90,11 @@ Q(urandom)
 Q(sync)
 Q(execfile)
 
+Q(readonly)
+Q(mkfs)
+Q(readblocks)
+Q(writeblocks)
+Q(flush)
 
 Q(ExtInt)
 Q(pin)
