@@ -44,6 +44,11 @@ scan_r = wifi.scan()
 print(len(scan_r) > 3)
 for net in scan_r:
     if net.ssid == testconfig.wlan_ssid:
+        # test that the scan results contains the desired params
+        print(len(net.bssid) == 6)
+        print(net.channel == None)
+        print(net.sec == testconfig.wlan_auth[0])
+        print(net.rssi < 0)
         print('Network found')
         break
 
