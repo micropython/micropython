@@ -40,18 +40,13 @@
 #include "rom_map.h"
 #include "prcm.h"
 #include "pyexec.h"
-#include "ff.h"
-#include "diskio.h"
-#include "sflash_diskio.h"
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
-#include "mpsystick.h"
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
 #include "moduos.h"
-#include "telnet.h"
 #include "FreeRTOS.h"
 #include "portable.h"
 #include "task.h"
@@ -67,7 +62,6 @@
 #include "utils.h"
 #include "gccollect.h"
 #include "mperror.h"
-#include "genhdr/mpversion.h"
 
 
 #ifdef DEBUG

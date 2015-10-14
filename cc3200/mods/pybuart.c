@@ -558,7 +558,7 @@ STATIC mp_obj_t pyb_uart_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map
 invalid_args:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_callback_obj, 1, pyb_uart_irq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
@@ -566,7 +566,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),      (mp_obj_t)&pyb_uart_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_any),         (mp_obj_t)&pyb_uart_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendbreak),   (mp_obj_t)&pyb_uart_sendbreak_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),         (mp_obj_t)&pyb_uart_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),         (mp_obj_t)&pyb_uart_irq_obj },
 
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),        (mp_obj_t)&mp_stream_read_obj },

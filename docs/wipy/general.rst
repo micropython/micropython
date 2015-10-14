@@ -1,6 +1,28 @@
 General information about the WiPy
 ==================================
 
+No floating point support
+-------------------------
+
+Due to space reasons, there's no floating point support, and no math module. This
+means that floating point numbers cannot be used anywhere in the code, and that
+all divisions must be performed using '//' instead of '/'. Example::
+
+    r = 4 // 2  # this will work
+    r = 4 / 2   # this WON'T
+
+Before applying power
+---------------------
+
+.. warning:: 
+
+   The GPIO pins of the WiPy are NOT 5V tolerant, connecting them to voltages higer
+   than 3.6V will cause irreparable damage to the board. ADC pins, when configured 
+   in analog mode cannot withstand volatges above 1.8V. Keep these considerations in
+   mind when wiring your electronics.
+
+
+
 WLAN default behaviour
 ----------------------
 
@@ -28,6 +50,14 @@ Open your FTP client of choice and connect to:
 
 ``ftp://192.168.1.1``, ``user: micro``, ``password: python``
 
+The FTP server on the WiPy doesn't support active mode, only passive, so for instance
+if using the native unix ftp client, just after logging in::
+
+    ftp> passive
+
+Besides that, the FTP server only supports onw data connection at a time. Check out
+the Filezilla settings section below for more info.
+
 FileZilla settings
 ------------------
 Do not use the quick connect button, instead, open the site manager and create a new
@@ -46,8 +76,8 @@ inside ``/flash/sys/`` because it's actually saved bypassing the user file syste
 assured that it was successfully transferred, and it has been signed with a MD5 checksum to
 verify its integrity. Now, reset the MCU by pressing the switch on the board, or by typing::
 
-    import pyb
-    pyb.reset()
+    import machine
+    machine.reset()
 
 Boot modes
 ----------
@@ -91,7 +121,7 @@ The heart beat LED
 By default the heart beat LED flashes once every 4s to signal that the system is
 alive. This can be overridden through the HeartBeat class:
 
-``pyb.HeartBeat().disable()``
+``machine.HeartBeat().disable()``
 
 There are currently 2 kinds of errors that you might see:
 
