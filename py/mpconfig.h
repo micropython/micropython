@@ -806,7 +806,7 @@ typedef double mp_float_t;
 
 // This macro is used to do all output (except when MICROPY_PY_IO is defined)
 #ifndef MP_PLAT_PRINT_STRN
-#define MP_PLAT_PRINT_STRN(str, len) printf("%.*s", (int)len, str)
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #endif
 
 #ifndef MP_SSIZE_MAX

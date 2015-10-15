@@ -1424,7 +1424,6 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
 
     uint pop_label = comp_next_label(comp);
-    uint end_label = comp_next_label(comp);
 
     compile_node(comp, pns->nodes[1]); // iterator
     EMIT(get_iter);
@@ -1444,7 +1443,6 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[3]); // else (not tested)
 
     EMIT_ARG(label_assign, break_label);
-    EMIT_ARG(label_assign, end_label);
 }
 
 STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_excepts, mp_parse_node_t pn_else) {
