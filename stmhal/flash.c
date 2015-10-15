@@ -115,10 +115,11 @@ static const uint32_t flash_info_table[] = {
 	#endif
     ADDR_FLASH_END, 0,
 };
+static const uint32_t flash_info_table_size = sizeof(flash_info_table)/sizeof(flash_info_table[0]);
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_info_table[0]) {
-        for (int i = 0; i < 24; i += 2) {
+        for (int i = 0; i < flash_info_table_size-2; i += 2) {
             if (addr < flash_info_table[i + 2]) {
                 if (start_addr != NULL) {
                     *start_addr = flash_info_table[i];
