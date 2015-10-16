@@ -637,10 +637,14 @@ unwind_jump:;
                         unum -= 1;
                         assert(exc_sp >= exc_stack);
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                            // Getting here the stack looks like:
+                            //     (..., X, dest_ip)
+                            // where X is pointed to by exc_sp->val_sp and in the case
+                            // of a "with" block contains the context manager info.
                             // We're going to run "finally" code as a coroutine
                             // (not calling it recursively). Set up a sentinel
                             // on a stack so it can return back to us when it is
-                            // done (when END_FINALLY reached).
+                            // done (when WITH_CLEANUP or END_FINALLY reached).
                             PUSH((void*)unum); // push number of exception handlers left to unwind
                             PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_JUMP)); // push sentinel
                             ip = exc_sp->handler; // get exception handler byte code address
@@ -1016,15 +1020,24 @@ unwind_jump:;
 unwind_return:
                     while (exc_sp >= exc_stack) {
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
+                            // Getting here the stack looks like:
+                            //     (..., X, [iter0, iter1, ...,] ret_val)
+                            // where X is pointed to by exc_sp->val_sp and in the case
+                            // of a "with" block contains the context manager info.
+                            // There may be 0 or more for-iterators between X and the
+                            // return value, and these must be removed before control can
+                            // pass to the finally code.  We simply copy the ret_value down
+                            // over these iterators, if they exist.  If they don't then the
+                            // following is a null operation.
+                            mp_obj_t *finally_sp = MP_TAGPTR_PTR(exc_sp->val_sp);
+                            finally_sp[1] = sp[0];
+                            sp = &finally_sp[1];
                             // We're going to run "finally" code as a coroutine
                             // (not calling it recursively). Set up a sentinel
                             // on a stack so it can return back to us when it is
-                            // done (when END_FINALLY reached).
+                            // done (when WITH_CLEANUP or END_FINALLY reached).
                             PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_RETURN));
                             ip = exc_sp->handler;
-                            // We don't need to do anything with sp, finally is just
-                            // syntactic sugar for sequential execution??
-                            // sp =
                             exc_sp--;
                             goto dispatch_loop;
                         }
