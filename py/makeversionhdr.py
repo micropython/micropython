@@ -57,7 +57,12 @@ def get_version_info_from_git():
     return git_tag, git_hash, ver
 
 def get_version_info_from_docs_conf():
-    with open("%s/docs/conf.py" % sys.argv[0].rsplit("/", 2)[0]) as f:
+    if sys.platform == "win32":
+        conf_path = "%s\\docs\\conf.py" % sys.argv[0].rsplit(os.path.sep,2)[0]
+    else:
+        conf_path = "%s/docs/conf.py" % sys.argv[0].rsplit(os.path.sep,2)[0]
+        
+    with open(conf_path) as f:
         for line in f:
             if line.startswith("release = '"):
                 ver = line.strip()[10:].strip("'")
