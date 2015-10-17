@@ -30,7 +30,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#if MICROPY_PY_OS_STATVFS
 #include <sys/statvfs.h>
+#endif
 
 #include "py/nlr.h"
 #include "py/runtime.h"
