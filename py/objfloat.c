@@ -39,6 +39,8 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C
+
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
@@ -46,6 +48,8 @@ typedef struct _mp_obj_float_t {
 
 const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, M_E};
 const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
+
+#endif
 
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
@@ -121,6 +125,8 @@ const mp_obj_type_t mp_type_float = {
     .binary_op = float_binary_op,
 };
 
+#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C
+
 mp_obj_t mp_obj_new_float(mp_float_t value) {
     mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
     o->base.type = &mp_type_float;
@@ -133,6 +139,8 @@ mp_float_t mp_obj_float_get(mp_obj_t self_in) {
     mp_obj_float_t *self = self_in;
     return self->value;
 }
+
+#endif
 
 STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
     // logic here follows that of CPython

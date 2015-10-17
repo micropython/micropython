@@ -63,6 +63,16 @@
 //  - xxxx...xxx0 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_B (1)
 
+// A MicroPython object is a machine word having the following form:
+//  - iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int with 31-bit signed value
+//  - x1111111 1qqqqqqq qqqqqqqq qqqqq110 str with 20-bit qstr value
+//  - s1111111 10000000 00000000 00000010 +/- inf
+//  - s1111111 1xxxxxxx xxxxxxxx xxxxx010 nan, x != 0
+//  - seeeeeee efffffff ffffffff ffffff10 30-bit fp, e != 0xff
+//  - pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
+// This scheme only works with 32-bit word size.
+#define MICROPY_OBJ_REPR_C (2)
+
 #ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_A)
 #endif
