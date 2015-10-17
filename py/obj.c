@@ -44,6 +44,10 @@ mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
         return (mp_obj_t)&mp_type_int;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
         return (mp_obj_t)&mp_type_str;
+    #if MICROPY_PY_BUILTINS_FLOAT
+    } else if (mp_obj_is_float(o_in)) {
+        return (mp_obj_t)&mp_type_float;
+    #endif
     } else {
         const mp_obj_base_t *o = o_in;
         return (mp_obj_t)o->type;
