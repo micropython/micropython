@@ -36,11 +36,15 @@
 
 #define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)WORD_MSBIT_HIGH) >> 1))
 #define MP_SMALL_INT_FITS(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)
+// Mask to truncate mp_int_t to positive value
+#define MP_SMALL_INT_POSITIVE_MASK ~(WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))
 
 #elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B
 
 #define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)WORD_MSBIT_HIGH) >> 2))
 #define MP_SMALL_INT_FITS(n) ((((n) & MP_SMALL_INT_MIN) == 0) || (((n) & MP_SMALL_INT_MIN) == MP_SMALL_INT_MIN))
+// Mask to truncate mp_int_t to positive value
+#define MP_SMALL_INT_POSITIVE_MASK ~(WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1) | (WORD_MSBIT_HIGH >> 2))
 
 #endif
 
