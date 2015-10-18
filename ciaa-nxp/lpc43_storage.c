@@ -75,7 +75,8 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_sector_size = FLASH_SECTOR_SIZE_MAX;
     }
     if (flash_cache_sector_id != flash_sector_id) {
-        flash_cache_flush();
+    	if (flash_cache_sector_size != 0)
+    		flash_cache_flush();
         memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
         flash_cache_sector_id = flash_sector_id;
         flash_cache_sector_start = flash_sector_start;
@@ -102,7 +103,7 @@ static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
 void storage_init(void) {
     if (!flash_is_initialised) {
         flash_flags = 0;
-        flash_cache_sector_id = 0;
+        flash_cache_sector_id = -1;
         flash_tick_counter_last_write = 0;
         flash_is_initialised = true;
     }
@@ -120,25 +121,6 @@ void storage_irq_handler(void) {
     if (!(flash_flags & FLASH_FLAG_DIRTY)) {
         return;
     }
-
-    // This code uses interrupts to erase the flash
-    /*
-    if (flash_erase_state == 0) {
-        flash_erase_it(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
-        flash_erase_state = 1;
-        return;
-    }
-
-    if (flash_erase_state == 1) {
-        // wait for erase
-        // TODO add timeout
-        #define flash_erase_done() (__HAL_FLASH_GET_FLAG(FLASH_FLAG_BSY) == RESET)
-        if (!flash_erase_done()) {
-            return;
-        }
-        flash_erase_state = 2;
-    }
-    */
 
     // This code erases the flash directly, waiting for it to finish
     if (!(flash_flags & FLASH_FLAG_ERASED)) {

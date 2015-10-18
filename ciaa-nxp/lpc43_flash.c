@@ -137,7 +137,7 @@ void flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint32_t End = flash_get_sector_info(f_dst + n_words * 4, NULL, NULL);
 	e = Chip_IAP_PreSectorForReadWrite(Start, End, BANK);
 	F_ASSERT(e != IAP_CMD_SUCCESS, "Prepare for erase FAIL");
-	e = Chip_IAP_CopyRamToFlash(f_dst, (uint32_t*) src, n_words);
+	e = Chip_IAP_CopyRamToFlash(f_dst, (uint32_t*) src, n_words * 4);
 	F_ASSERT(e != IAP_CMD_SUCCESS, "writing FAIL");
 	__enable_irq();
 }

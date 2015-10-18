@@ -67,7 +67,13 @@ Q(hashlib)
 
 Q(uos)
 Q(os)
+
 Q(/)
+Q(/flash)
+Q(/flash/lib)
+Q(/sd)
+Q(/sd/lib)
+
 Q(flash)
 Q(sd)
 Q(sysname)
