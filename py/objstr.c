@@ -2038,6 +2038,17 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len) {
     }
 }
 
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, mp_uint_t *len) {
+    if (MP_OBJ_IS_QSTR(self_in)) {
+        return qstr_data(MP_OBJ_QSTR_VALUE(self_in), len);
+    } else {
+        *len = ((mp_obj_str_t*)self_in)->len;
+        return ((mp_obj_str_t*)self_in)->data;
+    }
+}
+#endif
+
 /******************************************************************************/
 /* str iterator                                                               */
 
