@@ -158,15 +158,16 @@ static const int error_lookup_table[] = {
 typedef struct _lwip_socket_obj_t {
     mp_obj_base_t base;
 
+    void *pcb;
+    void *incoming;
+    byte peer[4];
+    mp_uint_t peer_port;
+    mp_uint_t timeout;
+    uint16_t leftover_count;
+
     uint8_t domain;
     uint8_t type;
 
-    void *pcb;
-    void *incoming;
-    byte source[4];
-    mp_uint_t source_port;
-    mp_uint_t timeout;
-    uint16_t leftover_count;
     // 0 = unconnected, 1 = connecting, 2 = connected, 3 = other side closed
     int8_t connected;
 } lwip_socket_obj_t;
@@ -177,53 +178,63 @@ typedef struct _lwip_socket_obj_t {
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
 STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port) {
-    if ( ((lwip_socket_obj_t *)arg)->incoming != NULL) {
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+
+    if (socket->incoming != NULL) {
         // That's why they call it "unreliable". No room in the inn, drop the packet.
         pbuf_free(p);
     } else {
-        ((lwip_socket_obj_t *)arg)->incoming = (void *)p;
-        ((lwip_socket_obj_t *)arg)->source_port = (mp_uint_t)port;
-        memcpy(&(((lwip_socket_obj_t *)arg)->source), addr, 4);
+        socket->incoming = (void *)p;
+        socket->peer_port = (mp_uint_t)port;
+        memcpy(&(socket->peer), addr, 4);
     }
 }
 
 // Callback for general tcp errors.
 STATIC void _lwip_tcp_error(void *arg, err_t err) {
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+
     // Pass the error code back via the connection variable.
-    ((lwip_socket_obj_t *)arg)->connected = err;
+    socket->connected = err;
     // If we got here, the lwIP stack either has deallocated or will deallocate the pcb.
-    ((lwip_socket_obj_t *)arg)->pcb = NULL;
+    socket->pcb = NULL;
 }
 
 // Callback for tcp connection requests. Error code err is unused. (See tcp.h)
 STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
-    ((lwip_socket_obj_t *)arg)->connected = 2;
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+
+    socket->connected = 2;
     return ERR_OK;
 }
 
 // Callback for incoming tcp connections.
 STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
-    if (((lwip_socket_obj_t *)arg)->incoming != NULL) {
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+
+    if (socket->incoming != NULL) {
         // We need to handle this better. This single-level structure makes the
         // backlog setting kind of pointless. FIXME
         return ERR_BUF;
     } else {
-        ((lwip_socket_obj_t *)arg)->incoming = (void *)newpcb;
+        socket->incoming = (void *)newpcb;
         return ERR_OK;
     }
 }
 
 // Callback for inbound tcp packets.
 STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err_t err) {
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+
     if (p == NULL) {
         // Other side has closed connection.
-        ((lwip_socket_obj_t *)arg)->connected = 3;
+        socket->connected = 3;
         return ERR_OK;
-    } else if (((lwip_socket_obj_t *)arg)->incoming != NULL) {
+    } else if (socket->incoming != NULL) {
         // No room in the inn, let LWIP know it's still responsible for delivery later
         return ERR_BUF;
     }
-    ((lwip_socket_obj_t *)arg)->incoming = (void *)p;
+    socket->incoming = (void *)p;
     return ERR_OK;
 }
 
@@ -300,8 +311,8 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     }
 
     if (ip != NULL) {
-        memcpy(ip, &(socket->source), 4);
-        *port = socket->source_port;
+        memcpy(ip, &(socket->peer), 4);
+        *port = socket->peer_port;
     }
 
     struct pbuf *p = (struct pbuf *)socket->incoming;
@@ -611,8 +622,8 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 socket->connected = 0;
                 nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_lookup_table[-err])));
             }
-            socket->source_port = (mp_uint_t)port;
-            memcpy(socket->source, &dest, 4);
+            socket->peer_port = (mp_uint_t)port;
+            memcpy(socket->peer, &dest, 4);
             // And now we wait...
             if (socket->timeout != -1) {
                 for (mp_uint_t retries = socket->timeout / 100; retries--;) {
@@ -775,8 +786,8 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_uint_t ret = 0;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            memcpy(ip, &(socket->source), 4);
-            port = (mp_uint_t) socket->source_port;
+            memcpy(ip, &(socket->peer), 4);
+            port = (mp_uint_t) socket->peer_port;
             ret = lwip_tcp_receive(socket, (byte*)vstr.buf, len, &_errno);
             break;
         }
