@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "py/mpconfig.h"
 #if MICROPY_PY_OS_STATVFS
 #include <sys/statvfs.h>
 #endif
