@@ -42,4 +42,12 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len);
 
+#if MICROPY_STREAMS_NON_BLOCK
+// TODO: This is POSIX-specific (but then POSIX is the only real thing,
+// and anything else just emulates it, right?)
+#define mp_is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
+#else
+#define mp_is_nonblocking_error(errno) (0)
+#endif
+
 #endif // __MICROPY_INCLUDED_PY_STREAM_H__
