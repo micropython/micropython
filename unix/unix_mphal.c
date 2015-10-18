@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "py/mpstate.h"
 #include MICROPY_HAL_H
@@ -116,4 +117,10 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
 
 void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
+}
+
+uint32_t HAL_GetTick(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
