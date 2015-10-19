@@ -202,11 +202,14 @@ endif
 
 deplibs: libffi axtls
 
+# install-exec-recursive & install-data-am targets are used to avoid building
+# docs and depending on makeinfo
 libffi:
 	cd ../lib/libffi; git clean -d -x -f
 	cd ../lib/libffi; ./autogen.sh
 	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
-	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; make install
+	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
+	make install-exec-recursive; make -C include install-data-am
 
 axtls:
 	cd ../lib/axtls; cp config/upyconfig config/.config
