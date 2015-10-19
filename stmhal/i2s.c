@@ -159,6 +159,19 @@ const DMA_InitTypeDef dma_init_struct_i2s = {
     .PeriphBurst         = DMA_PBURST_SINGLE
 };
 
+static inline bool i2s_has_tx(pyb_i2s_obj_t *i2s_obj) {
+    return (i2s_obj->is_duplex || i2s_obj->base_is_tx);
+}
+
+static inline bool i2s_has_rx(pyb_i2s_obj_t *i2s_obj) {
+    return (i2s_obj->is_duplex || !(i2s_obj->base_is_tx));
+}
+
+static inline bool i2s_is_master(pyb_i2s_obj_t *i2s_obj) {
+    return (i2s_obj->i2s.Init.Mode == I2S_MODE_MASTER_TX ||
+            i2s_obj->i2s.Init.Mode == I2S_MODE_MASTER_RX);
+}
+
 // i2s_init0 is direct crib from stmhal/can.c - can_init0()
 void i2s_init0(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_i2s_obj_all)); i++) {
@@ -287,8 +300,7 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
     // TODO: support more of the commonly-used frequencies and account for 16/32 bit frames
     // Also: Refactor to use macros as provided by stm32f4xx_hal_rcc_ex.h
     __HAL_RCC_PLLI2S_DISABLE();
-    if (i2s_obj->i2s.Init.Mode == I2S_MODE_MASTER_TX ||
-        i2s_obj->i2s.Init.Mode == I2S_MODE_MASTER_RX ) {
+    if (i2s_is_master(i2s_obj)) {
         if (i2s_obj->i2s.Init.MCLKOutput == I2S_MCLKOUTPUT_ENABLE) {
             if ((i2s_obj->i2s.Init.AudioFreq & 0x7) == 0) {
                 __HAL_RCC_PLLI2S_CONFIG(258, 3); // 8, 16, 24, 48kHz with mclkout; not 32 or 96
@@ -360,10 +372,7 @@ STATIC HAL_StatusTypeDef i2s_bus_sync(pyb_i2s_obj_t *self, uint32_t polarity, ui
     // cycle to sync with WS clock before initiating a transfer.
     bool pol = polarity & 1;
     uint32_t start = HAL_GetTick();
-    // TODO: This test for master is used frequently - make it an inline function?
-    if (self->i2s.Init.Mode != I2S_MODE_MASTER_TX &&
-        self->i2s.Init.Mode != I2S_MODE_MASTER_RX) {
-
+    if (!i2s_is_master(self)) {
         while(GPIO_read_pin(self->pins[WS]->gpio, self->pins[WS]->pin) == pol) {
             if (HAL_GetTick() - start >= timeout) { return HAL_TIMEOUT; }
         }
@@ -489,8 +498,7 @@ STATIC void pyb_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
     mp_print_str(print, "\b], I2S.");
     if (self->is_enabled) {
-        if (self->i2s.Init.Mode == I2S_MODE_MASTER_TX ||
-            self->i2s.Init.Mode == I2S_MODE_MASTER_RX) {
+        if (i2s_is_master(self)) {
             mp_printf(print, "%q, %q ", MP_QSTR_MASTER, MP_QSTR_mclkout);
             if (self->i2s.Init.MCLKOutput == I2S_MCLKOUTPUT_ENABLE) {
                 mp_printf(print, "on %q", self->pins[4]->name);
@@ -498,11 +506,8 @@ STATIC void pyb_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
                 mp_print_str(print, "off");
             }
             mp_printf(print, ", %q=%u", MP_QSTR_audiofreq, self->i2s.Init.AudioFreq);
-        } else if (self->i2s.Init.Mode == I2S_MODE_SLAVE_TX ||
-                   self->i2s.Init.Mode == I2S_MODE_SLAVE_RX) {
-            mp_printf(print, "%q", MP_QSTR_SLAVE);
         } else {
-            // Shouldn't get here if self->is_enabled=true
+            mp_printf(print, "%q", MP_QSTR_SLAVE);
         }
 
         qstr standard = 0;
@@ -1046,6 +1051,7 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     // TODO - invoke HAL_I2SEx_TransmitReceive_DMA to handle recv on I2Sx_EXT
     // interfaces when available instead of raising error?
+    // TODO - Coudl this test be wrapped in a simple inline function to replace the 'is_duplex' flag
     if (self->i2s.Init.FullDuplexMode != I2S_FULLDUPLEXMODE_ENABLE) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                                                 "I2S(%d) not in duplex mode", self->i2s_id));
@@ -1147,13 +1153,12 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!(self->is_duplex || self->base_is_tx)) {
+    // check configuration and current state of I2S bus
+    if (!i2s_has_tx(self)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                                "I2S(%d) not in tx or duplex mode",
+                                                "I2S(%d) not configured for tx",
                                                 self->i2s_id));
-    }
-
-    if (HAL_I2S_GetState(&self->i2s) != HAL_I2S_STATE_READY) {
+    } else if (HAL_I2S_GetState(&self->i2s) != HAL_I2S_STATE_READY) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                                                 "I2S(%d) not ready",
                                                 self->i2s_id));
@@ -1227,8 +1232,7 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!(self->is_duplex || !(self->base_is_tx))) {
-        
+    if (!i2s_has_rx(self)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                                                 "I2S(%d) not in rx or duplex mode",
                                                 self->i2s_id));
