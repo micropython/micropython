@@ -407,6 +407,12 @@ Q(time)
 Q(localtime)
 Q(mktime)
 Q(sleep)
+Q(sleep_ms)
+Q(sleep_us)
+Q(ticks_ms)
+Q(ticks_us)
+Q(ticks_cpu)
+Q(ticks_diff)
 
 // for select module
 Q(uselect)
