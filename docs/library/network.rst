@@ -37,7 +37,7 @@ For example::
     Constructors
     ------------
 
-    .. class:: server(id, ...)
+    .. class:: network.server(id, ...)
 
        Create a server instance, see ``init`` for parameters of initialization.
 
