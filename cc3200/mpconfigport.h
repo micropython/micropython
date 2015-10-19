@@ -43,6 +43,7 @@
 #define MICROPY_HELPER_REPL                         (1)
 #define MICROPY_ENABLE_SOURCE_LINE                  (1)
 #define MICROPY_ENABLE_DOC_STRING                   (0)
+#define MICROPY_REPL_AUTO_INDENT                    (1)
 #define MICROPY_ERROR_REPORTING                     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_LONGINT_IMPL                        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
