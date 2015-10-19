@@ -124,29 +124,6 @@ STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
 
-/// \function delay(ms)
-/// Delay for the given number of milliseconds.
-STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
-    mp_int_t ms = mp_obj_get_int(ms_in);
-    if (ms >= 0) {
-        HAL_Delay(ms);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
-
-/// \function udelay(us)
-/// Delay for the given number of microseconds.
-STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
-    mp_int_t usec = mp_obj_get_int(usec_in);
-    if (usec > 0) {
-        sys_tick_udelay(usec);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
-
-/// \function stop()
 /// \function repl_uart(uart)
 /// Get or set the UART object that the REPL is repeated on.
 STATIC mp_obj_t pyb_repl_uart(mp_uint_t n_args, const mp_obj_t *args) {
@@ -203,8 +180,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&pyb_micros_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros), (mp_obj_t)&pyb_elapsed_micros_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&time_sleep_ms_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&time_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&mod_os_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&pyb_mount_obj },
 
