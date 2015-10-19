@@ -105,6 +105,7 @@ it will fallback to loading the built-in ``ujson`` module.
 
       machine.rst
       network.rst
+      wipy.rst
 
 
 .. only:: port_esp8266

@@ -283,7 +283,7 @@ Q(init)
 Q(deinit)
 Q(login)
 Q(timeout)
-Q(running)
+Q(isrunning)
 
 // for WLAN class
 Q(WLAN)

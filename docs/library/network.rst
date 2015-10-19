@@ -27,6 +27,40 @@ For example::
     data = s.recv(1000)
     s.close()
 
+.. only:: port_wipy
+
+    .. _network.server:
+
+    class server
+    ============
+
+    Constructors
+    ------------
+
+    .. class:: server(id, ...)
+
+       Create a server instance, see ``init`` for parameters of initialization.
+
+    Methods
+    -------
+
+    .. method:: server.init(\*, login=('micro', 'python'), timeout=300)
+
+       Init (and effectively start the server). Optionally a new ``user``, ``password``
+       and ``timeout`` (in seconds) can be passed.
+
+    .. method:: server.deinit()
+
+       Stop the server
+
+    .. method:: server.timeout([timeout_in_seconds])
+
+       Get or set the server timeout.
+
+    .. method:: server.isrunning()
+
+       Returns ``True`` is the server is running, ``False`` otherwise.
+
 .. only:: port_pyboard
 
     class CC3K
@@ -178,12 +212,12 @@ For example::
     
        Dump the WIZnet5x00 registers.  Useful for debugging.
 
-class WLAN
-==========
-
 .. _network.WLAN:
 
 .. only:: port_esp8266
+
+    class WLAN
+    ==========
 
     This class provides a driver for WiFi network processor in the ESP8266.  Example usage::
 
@@ -258,6 +292,9 @@ class WLAN
 
 .. only:: port_wipy
 
+    class WLAN
+    ==========
+
     This class provides a driver for WiFi network processor in the WiPy.  Example usage::
 
         import network
@@ -282,7 +319,7 @@ class WLAN
     Methods
     -------
 
-    .. method:: init(mode, \*, ssid, security, key, channel, antenna)
+    .. method:: wlan.init(mode, \*, ssid, security, key, channel, antenna)
     
        Set or get the WiFi network processor configuration.
     
