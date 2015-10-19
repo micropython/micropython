@@ -15,6 +15,7 @@ before_script:
 
 script:
   - make -C minimal test
+  - make -C unix deplibs CC=gcc-4.7
   - make -C unix CC=gcc-4.7
   - make -C bare-arm
   - make -C qemu-arm test
