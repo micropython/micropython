@@ -10,6 +10,8 @@ PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
+INC += -I../lib/netutils
+
 ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1 -I../lib/axtls/ssl -I../lib/axtls/crypto -I../lib/axtls/config
 LDFLAGS_MOD += -L../lib/axtls/_stage -laxtls

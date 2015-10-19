@@ -12,7 +12,7 @@ ifeq ($(CROSS), 1)
 CROSS_COMPILE = arm-none-eabi-
 endif
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../stmhal
