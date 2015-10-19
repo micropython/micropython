@@ -22,7 +22,7 @@ def wait_for_connection(wifi, timeout=10):
         print('Connection failed!')
 
 
-wifi = WLAN()
+wifi = WLAN(0, WLAN.STA)
 print(wifi.mode() == WLAN.STA)
 print(wifi.antenna() == WLAN.INT_ANT)
 
@@ -103,7 +103,15 @@ print(wifi.isconnected() == False)
 
 # test init again
 wifi.init(WLAN.AP, ssid='www.wipy.io', auth=None, channel=5, antenna=WLAN.INT_ANT)
+print(wifi.mode() == WLAN.AP)
 
+# get the current instance without re-init
+wifi = WLAN()
+print(wifi.mode() == WLAN.AP)
+wifi = WLAN(0)
+print(wifi.mode() == WLAN.AP)
+
+# test the MAC address length
 print(len(wifi.mac()) == 6)
 
 # next ones MUST raise

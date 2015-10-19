@@ -829,20 +829,21 @@ STATIC mp_obj_t wlan_make_new (mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
     mp_arg_val_t args[MP_ARRAY_SIZE(wlan_init_args)];
     mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), wlan_init_args, args);
 
-    // check the peripheral id
-    if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
-    }
-
     // setup the object
     wlan_obj_t *self = &wlan_obj;
     self->base.type = (mp_obj_t)&mod_network_nic_type_wlan;
 
-    // start the peripheral
-    wlan_init_helper(self, &args[1]);
-
-    // pass it to the sleep module
+    // give it to the sleep module
     pyb_sleep_set_wlan_obj(self);
+
+    if (n_args > 1 || n_kw > 0) {
+        // check the peripheral id
+        if (args[0].u_int != 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        }
+        // start the peripheral
+        wlan_init_helper(self, &args[1]);
+    }
 
     return (mp_obj_t)self;
 }
