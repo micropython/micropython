@@ -91,7 +91,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
         goto arg_error;
     }
 
-    // retrieve the file paths (with an 6 byte offset because to strip the '/flash' prefix)
+    // retrieve the file paths (with an 6 byte offset in order to strip it from the '/flash' prefix)
     const char *keyfile  = (args[1].u_obj == mp_const_none) ? NULL : &(mp_obj_str_get_str(args[1].u_obj)[6]);
     const char *certfile = (args[2].u_obj == mp_const_none) ? NULL : &(mp_obj_str_get_str(args[2].u_obj)[6]);
     const char *cafile   = (args[5].u_obj == mp_const_none || args[4].u_int != SSL_CERT_REQUIRED) ?

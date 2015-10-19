@@ -44,6 +44,46 @@ Functions
     
        Sleep for the given number of seconds.
 
+.. only:: port_wipy
+
+    .. function::  sleep_ms(ms)
+
+       Delay for given number of milliseconds, should be positive or 0.
+
+    .. function::  sleep_us(us)
+
+       Delay for given number of microseconds, should be positive or 0
+
+    .. function::  ticks_ms()
+
+        Returns an increasing millisecond counter with arbitrary reference point, 
+        that wraps after some (unspecified) value. The value should be treated as 
+        opaque, suitable for use only with ticks_diff().
+
+    .. function::  ticks_us()
+
+       Just like ``ticks_ms`` above, but in microseconds.
+
+    .. function::  ticks_cpu()
+
+       Similar to ``ticks_ms`` and ``ticks_us``, but with higher resolution (usually CPU clocks).
+
+    .. function::  ticks_diff(old, new)
+
+       Measure period between consecutive calls to ticks_ms(), ticks_us(), or ticks_cpu(). 
+       The value returned by these functions may wrap around at any time, so directly 
+       subtracting them is not supported. ticks_diff() should be used instead. "old" value should 
+       actually precede "new" value in time, or result is undefined. This function should not be
+       used to measure arbitrarily long periods of time (because ticks_*() functions wrap around 
+       and usually would have short period). The expected usage pattern is implementing event 
+       polling with timeout::
+
+            # Wait for GPIO pin to be asserted, but at most 500us
+            start = time.ticks_us()
+            while pin.value() == 0:
+                if time.ticks_diff(start, time.ticks_us()) > 500:
+                    raise TimeoutError
+
 .. function:: time()
 
    Returns the number of seconds, as an integer, since 1/1/2000.

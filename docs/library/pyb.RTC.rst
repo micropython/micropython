@@ -41,14 +41,6 @@ Methods
        ``weekday`` is 1-7 for Monday through Sunday.
        
        ``subseconds`` counts down from 255 to 0
-       
-   .. only:: port_wipy
-   
-       The 8-tuple has the following format:
-       
-           ``(year, month, day, weekday, hours, minutes, seconds, milliseconds)``
-       
-       ``weekday`` is 0-6 for Monday through Sunday.
 
 .. only:: port_pyboard
 
@@ -87,15 +79,4 @@ Methods
        ppm; likewise the RTC clock it slowed by negative values. The
        usable calibration range is:
        (-511 * 0.954) ~= -487.5 ppm up to (512 * 0.954) ~= 488.5 ppm
-
-.. only:: port_wipy
-
-    .. method:: rtc.callback(\*, value, handler=None, wake_from=pyb.Sleep.ACTIVE)
-    
-       Create a callback object triggered by a real time clock alarm.
-    
-          - ``value`` is the alarm timeout in milliseconds. This parameter is required.
-          - ``handler`` is the function to be called when the callback is triggered.
-          - ``wake_from`` specifies the power mode from where this interrupt can wake
-            up the system.
 

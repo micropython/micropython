@@ -36,6 +36,9 @@ Q(flush)
 
 Q(_os)
 Q(stat)
+#if MICROPY_PY_OS_STATVFS
+Q(statvfs)
+#endif
 Q(system)
 Q(unlink)
 

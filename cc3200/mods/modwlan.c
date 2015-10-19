@@ -857,7 +857,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_init_obj, 1, wlan_init);
 
 STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
     STATIC const qstr wlan_scan_info_fields[] = {
-        MP_QSTR_ssid, MP_QSTR_bssid, MP_QSTR_auth, MP_QSTR_channel, MP_QSTR_rssi
+        MP_QSTR_ssid, MP_QSTR_bssid, MP_QSTR_sec, MP_QSTR_channel, MP_QSTR_rssi
     };
 
     // check for correct wlan mode
