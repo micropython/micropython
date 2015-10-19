@@ -312,14 +312,22 @@ For example::
     Constructors
     ------------
     
-    .. class:: WLAN(..)
+    .. class:: WLAN(id=0, ...)
 
        Create a WLAN object, and optionally configure it. See ``init`` for params of configuration.
+
+    .. note::
+
+       The ``WLAN`` constructor is special in the sense that if no arguments besides the id are given,
+       it will return the already exisiting ``WLAN`` instance without re-configuring it. This is
+       because ``WLAN`` is a system feature of the WiPy. If the already existing instance is not
+       initialized it will do the same as the other constructors an will initialize it with default
+       values.
 
     Methods
     -------
 
-    .. method:: wlan.init(mode, \*, ssid, security, key, channel, antenna)
+    .. method:: wlan.init(mode, \*, ssid, auth, channel, antenna)
     
        Set or get the WiFi network processor configuration.
     
@@ -329,34 +337,33 @@ For example::
          - ``ssid`` is a string with the ssid name. Only needed when mode is ``WLAN.AP``.
          - ``auth`` is a tuple with (sec, key). Security can be ``None``, ``WLAN.WEP``,
            ``WLAN.WPA`` or ``WLAN.WPA2``. The key is a string with the network password.
-           If ``security`` is ``WLAN.WEP`` the key must be a string representing hexadecimal
+           If ``sec`` is ``WLAN.WEP`` the key must be a string representing hexadecimal
            values (e.g. 'ABC1DE45BF'). Only needed when mode is ``WLAN.AP``.
          - ``channel`` a number in the range 1-11. Only needed when mode is ``WLAN.AP``.
          - ``antenna`` selects between the internal and the external antenna. Can be either
-           ``WLAN.INT_ANT`` or ``WLAN.EXTERNAL``.
+           ``WLAN.INT_ANT`` or ``WLAN.EXT_ANT``.
     
        For example, you can do::
 
           # create and configure as an access point
-          nic.iwconfig(mode=WLAN.AP, ssid='wipy-wlan', security=WLAN.WPA2, key='www.wipy.io', channel=7, antenna=WLAN.INTERNAL)
+          wlan.init(mode=WLAN.AP, ssid='wipy-wlan', auth=(WLAN.WPA2,'www.wipy.io'), channel=7, antenna=WLAN.INT_ANT)
 
        or::
 
           # configure as an station
-          nic.iwconfig(mode=WLAN.STA)
+          wlan.init(mode=WLAN.STA)
 
-       With no arguments given, the current configuration is returned as a namedtuple that looks like this:
-       ``(mode=2, ssid='wipy-wlan', security=2, key='www.wipy.io', channel=5, antenna=0)``
-
-    .. method:: wlan.connect(ssid, \*, auth=None, key=None, bssid=None, timeout=5000)
+    .. method:: wlan.connect(ssid, \*, auth=None, bssid=None, timeout=5000)
 
        Connect to a wifi access point using the given SSID, and other security
        parameters.
 
-          - ``key`` is always a string, but if ``security`` is ``WLAN.WEP`` the key must be a string
-            representing hexadecimal values (e.g. 'ABC1DE45BF').
-          - ``bssid`` is the MAC address of the AP to connect to. Useful when there are several APs
-            with the same ssid.
+          - ``auth`` is a tuple with (sec, key). Security can be ``None``, ``WLAN.WEP``,
+            ``WLAN.WPA`` or ``WLAN.WPA2``. The key is a string with the network password.
+            If ``sec`` is ``WLAN.WEP`` the key must be a string representing hexadecimal
+            values (e.g. 'ABC1DE45BF'). Only needed when mode is ``WLAN.AP``
+          - ``bssid`` is the MAC address of the AP to connect to. Useful when there are several
+            APs with the same ssid.
           - ``timeout`` is the maximum time in milliseconds to wait for the connection to succeed.
 
     .. method:: wlan.scan()
@@ -373,16 +380,36 @@ For example::
        In case of STA mode, returns ``True`` if connected to a wifi access point and has a valid IP address.
        In AP mode returns ``True`` when a station is connected. Returns ``False`` otherwise.
 
-    .. method:: wlan.ifconfig(if_id, config=['dhcp' or configtuple])
+    .. method:: wlan.ifconfig(if_id=0, config=['dhcp' or configtuple])
 
-       With no parameters given eturns a 4-tuple of ``(ip, subnet mask, gateway, DNS server)``.
+       With no parameters given eturns a 4-tuple of ``(ip, subnet_mask, gateway, DNS_server)``.
        
        if ``'dhcp'`` is passed as a parameter then the DHCP client is enabled and the IP params
        are negotiated with the AP.
        
        if the 4-tuple config is given then a static IP is configured. For example::
 
-          nic.ifconfig(config=('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+          wlan.ifconfig(config=('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+
+    .. method:: wlan.mode([mode])
+
+       Get or set the WLAN mode.
+
+    .. method:: wlan.ssid([ssid])
+
+       Get or set the SSID when in AP mode.
+
+    .. method:: wlan.auth([auth])
+
+       Get or set the authentication type when in AP mode.
+
+    .. method:: wlan.channel([channel])
+
+       Get or set the channel (only applicable in AP mode).
+
+    .. method:: wlan.antenna([antenna])
+
+       Get or set the antenna type (external or internal).
 
     .. method:: wlan.mac([mac_addr])
 
@@ -396,18 +423,15 @@ For example::
             - ``handler`` is the function that gets called when the irq is triggered.
             - ``wake`` must be ``machine.SLEEP``.
 
-        Returns a callback object.
+        Returns a irq object.
 
     Constants
     ---------
-    
+
     .. data:: WLAN.STA
-
-       WiFi station mode
-
     .. data:: WLAN.AP
 
-       WiFi access point mode
+       selects the WLAN mode
 
     .. data:: WLAN.WEP
     .. data:: WLAN.WPA
