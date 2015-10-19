@@ -67,6 +67,8 @@ to one, otherwise FileZilla will try to open a second command connection when re
 and saving files, and for simplicity and to reduce code size, only one command and one
 data connections are possible. Other FTP clients might behave in a similar way.
 
+.. _wipy_firmware_upgrade:
+
 Upgrading the firmware Over The Air
 -----------------------------------
 
@@ -78,6 +80,10 @@ verify its integrity. Now, reset the MCU by pressing the switch on the board, or
 
     import machine
     machine.reset()
+
+Software updates can be found in: https://github.com/wipy/wipy/releases
+It's always recommended to update to the latest software, but make sure to
+read the ``release notes`` before.
 
 Boot modes
 ----------
