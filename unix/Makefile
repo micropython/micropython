@@ -13,7 +13,7 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include ../py/py.mk
 
-INC =  -I.
+INC +=  -I.
 INC +=  -I..
 INC += -I$(BUILD)
 

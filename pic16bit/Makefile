@@ -12,7 +12,7 @@ CROSS_COMPILE = $(XC16)/bin/xc16-
 PARTFAMILY = dsPIC33F
 PART = 33FJ256GP506
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../stmhal

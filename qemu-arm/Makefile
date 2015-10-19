@@ -9,7 +9,7 @@ include ../py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I$(BUILD)
 INC += -I../tools/tinytest/
