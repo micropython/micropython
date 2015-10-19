@@ -27,6 +27,8 @@
 
 #include <stdio.h>
 #include <string.h>
+// used by mp_is_nonblocking_error:
+#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -1128,19 +1130,8 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_send_recv_obj, 1, pyb_i2s_send_recv);
 
 /**** I2S streaming methods: ****/
-
-// These defs are taken from stream.c, included here b/c
-// MICROPY_STREAMS_NON_BLOCK is defined for stmhal
-// TODO: maybe move these defs to py/stream.h?
-#if MICROPY_STREAMS_NON_BLOCK
-#include <errno.h>
-#define is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
-#else
-#define is_nonblocking_error(errno) (0)
-#endif
-
+// Taken from stream.c; not currently used:
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
-
 
 STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
                                    mp_map_t *kw_args) {
@@ -1192,7 +1183,7 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
     self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
 
     if (self->out_sz == MP_STREAM_ERROR) {
-        if (is_nonblocking_error(error)) {
+        if (mp_is_nonblocking_error(error)) {
             // nonblocking error behavior copied from py/stream.c: stream_read()
             // see https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
             return mp_const_none;
