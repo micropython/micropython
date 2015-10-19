@@ -40,6 +40,7 @@ print(wifi.antenna() == WLAN.INT_ANT)
 
 wifi = WLAN(mode=WLAN.STA)
 print(wifi.mode() == WLAN.STA)
+time.sleep(5) # this ensures a full network scan
 scan_r = wifi.scan()
 print(len(scan_r) > 3)
 for net in scan_r:
@@ -67,6 +68,7 @@ print(wifi.antenna() == WLAN.INT_ANT)
 
 wifi.antenna(WLAN.EXT_ANT)
 print(wifi.antenna() == WLAN.EXT_ANT)
+time.sleep(2) # this ensures a full network scan
 scan_r = wifi.scan()
 print(len(scan_r) > 3)
 for net in scan_r:
