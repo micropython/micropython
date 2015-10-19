@@ -124,28 +124,6 @@ STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
 
-/// \function repl_uart(uart)
-/// Get or set the UART object that the REPL is repeated on.
-STATIC mp_obj_t pyb_repl_uart(mp_uint_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
-            return mp_const_none;
-        } else {
-            return MP_STATE_PORT(pyb_stdio_uart);
-        }
-    } else {
-        if (args[0] == mp_const_none) {
-            MP_STATE_PORT(pyb_stdio_uart) = NULL;
-        } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
-            MP_STATE_PORT(pyb_stdio_uart) = args[0];
-        } else {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a UART object"));
-        }
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_repl_uart_obj, 0, 1, pyb_repl_uart);
-
 MP_DECLARE_CONST_FUN_OBJ(pyb_main_obj); // defined in main.c
 
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
@@ -165,7 +143,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&machine_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&machine_deepsleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main), (mp_obj_t)&pyb_main_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart), (mp_obj_t)&pyb_repl_uart_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_uart), (mp_obj_t)&mod_os_dupterm_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid_mouse), (mp_obj_t)&pyb_usb_hid_mouse_obj },

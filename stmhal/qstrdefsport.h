@@ -400,6 +400,7 @@ Q(unlink)
 Q(sep)
 Q(stat)
 Q(urandom)
+Q(dupterm)
 
 // for time module
 Q(utime)
