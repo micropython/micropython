@@ -149,6 +149,9 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+// To collect root pointers
+#include "extmod/modlwip.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     \
@@ -181,6 +184,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
+    MP_MODLWIP_ROOT_POINTERS
 
 // type definitions for the specific machine
 
