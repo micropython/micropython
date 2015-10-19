@@ -278,16 +278,18 @@ Q(CERT_REQUIRED)
 
 // for network class
 Q(network)
-Q(server_running)
-Q(server_login)
-Q(server_timeout)
+Q(server)
+Q(init)
+Q(deinit)
+Q(login)
+Q(timeout)
+Q(running)
 
 // for WLAN class
 Q(WLAN)
 Q(id)
 Q(init)
 Q(mode)
-Q(key)
 Q(auth)
 Q(ssid)
 Q(bssid)

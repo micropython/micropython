@@ -195,7 +195,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_deinit_obj, adc_deinit);
 
 STATIC mp_obj_t adc_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t pyb_adc_channel_args[] = {
-        { MP_QSTR_id,                          MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_id,                          MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_pin,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -204,12 +204,11 @@ STATIC mp_obj_t adc_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), pyb_adc_channel_args, args);
 
     uint ch_id;
-    if (args[0].u_obj != mp_const_none) {
+    if (args[0].u_obj != MP_OBJ_NULL) {
         ch_id = mp_obj_get_int(args[0].u_obj);
         if (ch_id >= PYB_ADC_NUM_CHANNELS) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_os_resource_not_avaliable));
-        }
-        else if (args[1].u_obj != mp_const_none) {
+        } else if (args[1].u_obj != mp_const_none) {
             uint pin_ch_id = pin_find_peripheral_type (args[1].u_obj, PIN_FN_ADC, 0);
             if (ch_id != pin_ch_id) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
