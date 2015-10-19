@@ -12,18 +12,18 @@ if not 'LaunchPad' in mch and not'WiPy' in mch:
 server = network.server()
 
 print(server.timeout() == 300)
-print(server.running() == True)
+print(server.isrunning() == True)
 server.deinit()
-print(server.running() == False)
+print(server.isrunning() == False)
 
 server.init(login=('test-user', 'test-password'), timeout=60)
-print(server.running() == True)
+print(server.isrunning() == True)
 print(server.timeout() == 60)
 
 server.deinit()
-print(server.running() == False)
+print(server.isrunning() == False)
 server.init()
-print(server.running() == True)
+print(server.isrunning() == True)
 
 try:
     server.init(1)

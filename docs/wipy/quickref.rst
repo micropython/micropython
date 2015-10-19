@@ -10,7 +10,7 @@ Quick reference for the WiPy
 General board control (including sleep modes)
 ---------------------------------------------
 
-See :mod:`machine`. ::
+See the :mod:`machine` module::
 
     import machine
 
@@ -198,14 +198,26 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
     machine.sleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
 
-Heart beat LED
---------------
+Telnet and FTP server
+---------------------
 
-See :ref:`machine.HeartBeat <machine.HeartBeat>`. ::
+See :ref:`network.server <network.server>` ::
 
-    from machine import HeartBeat
+    from network import network
 
-    # disable the heart beat indication (you are free to use this LED connected to GP25)
-    HeartBeat().disable()
-    # enable the heart beat again
-    HeartBeat().enable()
+    # init with new user, pass word and seconds timeout
+    server = server.init(login=('user', 'password'), timeout=60)
+    server.timeout(300) # change the timeout
+    server.timeout() # get the timeout
+    server.isrunning() # check wether the server is running or not
+
+HeartBeat LED
+-------------
+
+See :mod:`wipy`. ::
+
+    import wipy
+
+    wipy.heartbeat(False)  # disable the heartbeat LED
+    wipy.heartbeat(True)   # enable the heartbeat LED
+    wipy.heartbeat()       # get the heartbeat state

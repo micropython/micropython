@@ -119,9 +119,10 @@ The heart beat LED
 ------------------
 
 By default the heart beat LED flashes once every 4s to signal that the system is
-alive. This can be overridden through the HeartBeat class:
+alive. This can be overridden through the :mod:`wipy` module::
 
-``machine.HeartBeat().disable()``
+   import wipy
+   wipy.heartbeat(False)
 
 There are currently 2 kinds of errors that you might see:
 
