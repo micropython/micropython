@@ -121,7 +121,6 @@ Classes
    :maxdepth: 1
 
    machine.ADC.rst
-   machine.HeartBeat.rst
    machine.I2C.rst
    machine.Pin.rst
    machine.RTC.rst

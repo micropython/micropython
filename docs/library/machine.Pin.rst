@@ -13,15 +13,18 @@ Usage Model:
 
     Board pins are identified by their string id::
 
-        g = machine.Pin('GP9', mode=machine.Pin.OUT, pull=None, drive=machine.Pin.MED_POWER, alt=-1)
+        from machine import Pin
+        g = machine.Pin('GP9', mode=Pin.OUT, pull=None, drive=Pin.MED_POWER, alt=-1)
 
     You can also configure the Pin to generate interrupts. For instance::
+
+        from machine import Pin
 
         def pincb(pin):
             print(pin.id())
 
-        pin_int = machine.Pin('GP10', mode=Pin.IN, pull=machine.Pin.PULL_DOWN)
-        pin_int.irq(mode=machine.Pin.IRQ_RISING, handler=pincb)
+        pin_int = Pin('GP10', mode=Pin.IN, pull=Pin.PULL_DOWN)
+        pin_int.irq(mode=Pin.IRQ_RISING, handler=pincb)
         # the callback can be triggered manually
         pin_int.irq()()
         # to disable the callback

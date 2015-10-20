@@ -155,7 +155,7 @@ Methods
           This means that when the handler function is called there will be between 1 to 8 
           characters waiting.
 
-       Returns a irq object.
+       Returns an irq object.
 
 Constants
 ---------
