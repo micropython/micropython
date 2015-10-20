@@ -70,7 +70,7 @@
 //  - s1111111 1xxxxxxx xxxxxxxx xxxxx010 nan, x != 0
 //  - seeeeeee efffffff ffffffff ffffff10 30-bit fp, e != 0xff
 //  - pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
-// This scheme only works with 32-bit word size.
+// This scheme only works with 32-bit word size and with float enabled.
 #define MICROPY_OBJ_REPR_C (2)
 
 #ifndef MICROPY_OBJ_REPR
