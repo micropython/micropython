@@ -34,6 +34,10 @@ For example::
     class server
     ============
 
+    The server class controls the behaviour and the configuration of the FTP and telnet
+    services running on the WiPy. Any changes performed using this class' methods will
+    affect both.
+
     Constructors
     ------------
 

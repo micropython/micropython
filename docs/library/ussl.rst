@@ -31,6 +31,11 @@ Functions
    - The certificate to authenticate ourselves goes in: **'/flash/cert/cert.pem'**
    - The key for our own certificate goes in: **'/flash/cert/private.key'**
 
+   .. note::
+
+      When these files are stored, they are placed inside the internal **hidden** file system
+      (just like firmware updates), and therefore they are never visible.
+
    For instance to connect to the Blynk servers using certificates, take the file ``ca.pem`` located
    in the `blynk examples folder <https://github.com/wipy/wipy/tree/master/examples/blynk>`_ 
    and put it in '/flash/cert/'. Then do::

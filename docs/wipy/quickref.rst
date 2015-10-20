@@ -88,9 +88,9 @@ See :ref:`machine.ADC <machine.ADC>`. ::
 UART (serial bus)
 -----------------
 
-See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.UART <machine.UART>`. ::
+See :ref:`machine.UART <machine.UART>`. ::
 
-    from machine import Pin, UART
+    from machine import UART
     uart = UART(0, baudrate=9600)
     uart.write('hello')
     uart.read(5) # read up to 5 bytes
@@ -100,7 +100,7 @@ SPI bus
 
 See :ref:`machine.SPI <machine.SPI>`. ::
 
-    from machine SPI
+    from machine import SPI
 
     # configure the SPI master @ 2MHz
     spi = SPI(0, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
@@ -112,9 +112,9 @@ See :ref:`machine.SPI <machine.SPI>`. ::
 I2C bus
 -------
 
-See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.I2C <machine.I2C>`. ::
+See :ref:`machine.I2C <machine.I2C>`. ::
 
-    from machine import Pin, I2C
+    from machine import I2C
     # configure the I2C bus
     i2c = I2C(0, I2C.MASTER, baudrate=100000)
     i2c.scan() # returns list of slave addresses
@@ -203,7 +203,7 @@ Telnet and FTP server
 
 See :ref:`network.server <network.server>` ::
 
-    from network import network
+    from network import server
 
     # init with new user, pass word and seconds timeout
     server = server.init(login=('user', 'password'), timeout=60)
@@ -211,8 +211,8 @@ See :ref:`network.server <network.server>` ::
     server.timeout() # get the timeout
     server.isrunning() # check wether the server is running or not
 
-HeartBeat LED
--------------
+Heart beat LED
+--------------
 
 See :mod:`wipy`. ::
 

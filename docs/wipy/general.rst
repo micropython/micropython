@@ -18,10 +18,8 @@ Before applying power
 
    The GPIO pins of the WiPy are NOT 5V tolerant, connecting them to voltages higer
    than 3.6V will cause irreparable damage to the board. ADC pins, when configured 
-   in analog mode cannot withstand volatges above 1.8V. Keep these considerations in
+   in analog mode cannot withstand voltages above 1.8V. Keep these considerations in
    mind when wiring your electronics.
-
-
 
 WLAN default behaviour
 ----------------------
@@ -33,29 +31,43 @@ to gain access to the interactive prompt, open a telnet session to that IP addre
 the default port (23). You will be asked for credentials:
 ``login: micro`` and ``password: python``
 
-Local file system and SD card
------------------------------
+Telnet REPL
+-----------
+
+Linux stock telnet works like a charm (also on OSX), but other tools like putty
+work quite too. The default credentials are: **user:** ``micro``, **password:** ``python``.
+See :ref:`network.server <network.server>` for info on how to change the defaults.
+For instance, on a linux shell (when connected to the WiPy in AP mode)::
+
+   $ telnet 192.168.1.1
+
+Local file system and FTP access
+--------------------------------
 
 There is a small internal file system (a drive) on the WiPy, called ``/flash``,
 which is stored within the external serial flash memory.  If a micro SD card
-is hooked-up and enabled, it is available as ``/sd``.
+is hooked-up and mounted, it will be available as well.
 
-When the WiPy boots up, it always boots from the ``boot.py`` located in the
-``/flash`` file system.  If during the boot process the SD card is enabled and
-it's selected as the current drive then the WiPy will try to execute ``main.py``
-that should be located in the SD card.
+When the WiPy starts up, it always boots from the ``boot.py`` located in the
+``/flash`` file system.
 
 The file system is accessible via the native FTP server running in the WiPy. 
 Open your FTP client of choice and connect to:
 
-``ftp://192.168.1.1``, ``user: micro``, ``password: python``
+**url:** ``ftp://192.168.1.1``, **user:** ``micro``, **password:** ``python``
 
-The FTP server on the WiPy doesn't support active mode, only passive, so for instance
-if using the native unix ftp client, just after logging in::
+See :ref:`network.server <network.server>` for info on how to change the defaults.
+The recommended clients are: Linux stock FTP (also in OSX), Filezilla and FireFTP.
+For example, on a linux shell::
+
+   $ ftp 192.168.1.1
+
+The FTP server on the WiPy doesn't support active mode, only passive, therefore,
+if using the native unix ftp client, just after logging in do::
 
     ftp> passive
 
-Besides that, the FTP server only supports onw data connection at a time. Check out
+Besides that, the FTP server only supports one data connection at a time. Check out
 the Filezilla settings section below for more info.
 
 FileZilla settings
@@ -74,16 +86,17 @@ Upgrading the firmware Over The Air
 
 OTA software updates can be performed through the FTP server. Upload the ``mcuimg.bin`` file
 to: ``/flash/sys/mcuimg.bin`` it will take around 6s. You won't see the file being stored
-inside ``/flash/sys/`` because it's actually saved bypassing the user file system, but rest
-assured that it was successfully transferred, and it has been signed with a MD5 checksum to
-verify its integrity. Now, reset the MCU by pressing the switch on the board, or by typing::
+inside ``/flash/sys/`` because it's actually saved bypassing the user file system, so it
+ends up inside the internal **hidden** file system, but rest assured that it was successfully
+transferred, and it has been signed with a MD5 checksum to verify its integrity. Now, reset
+the WiPy by pressing the switch on the board, or by typing::
 
     import machine
     machine.reset()
 
 Software updates can be found in: https://github.com/wipy/wipy/releases
 It's always recommended to update to the latest software, but make sure to
-read the ``release notes`` before.
+read the **release notes** before.
 
 Boot modes
 ----------

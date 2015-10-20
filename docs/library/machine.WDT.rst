@@ -10,7 +10,8 @@ watchdog periodically to prevent it from expiring and resetting the system.
 
 Example usage::
 
-    wdt = machine.WDT(timeout=2000) # enable with a timeout of 2s
+    from machine import WDT
+    wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
     wdt.feed()
 
 Constructors
