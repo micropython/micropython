@@ -397,6 +397,21 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
+STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
+    // TODO: CPython explicitly says that closing the returned object doesn't
+    // close the original socket (Python2 at all says that fd is dup()ed). But
+    // we save on the bloat.
+    mod_network_socket_obj_t *self = args[0];
+    if (n_args > 1) {
+        const char *mode = mp_obj_str_get_str(args[1]);
+        if (strcmp(mode, "rb") && strcmp(mode, "wb")) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+    }
+    return self;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 6, socket_makefile);
+
 STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__),         (mp_obj_t)&socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close),           (mp_obj_t)&socket_close_obj },
@@ -412,7 +427,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt),      (mp_obj_t)&socket_setsockopt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settimeout),      (mp_obj_t)&socket_settimeout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking),     (mp_obj_t)&socket_setblocking_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile),        (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile),        (mp_obj_t)&socket_makefile_obj },
 
     // stream methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read_obj },

@@ -92,6 +92,7 @@ it will fallback to loading the built-in ``ujson`` module.
       ujson.rst
       ure.rst
       usocket.rst
+      ussl.rst
 
 .. only:: port_wipy
 
