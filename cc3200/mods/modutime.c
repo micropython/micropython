@@ -190,6 +190,8 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mktime),          (mp_obj_t)&time_mktime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_time),            (mp_obj_t)&time_time_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),           (mp_obj_t)&time_sleep_obj },
+
+    // MicroPython additions
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms),        (mp_obj_t)&time_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us),        (mp_obj_t)&time_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms),        (mp_obj_t)&time_ticks_ms_obj },
