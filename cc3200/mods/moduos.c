@@ -577,6 +577,8 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),          (mp_obj_t)&os_remove_obj },     // unlink aliases to remove
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync),            (mp_obj_t)&os_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_urandom),         (mp_obj_t)&os_urandom_obj },
+
+    // MicroPython additions
     { MP_OBJ_NEW_QSTR(MP_QSTR_mount),           (mp_obj_t)&os_mount_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unmount),         (mp_obj_t)&os_unmount_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkfs),            (mp_obj_t)&os_mkfs_obj },
