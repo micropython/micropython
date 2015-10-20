@@ -458,7 +458,7 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 return mp_obj_new_int(lhs_val);
             }
 #if MICROPY_PY_BUILTINS_FLOAT
-        } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_float)) {
+        } else if (mp_obj_is_float(rhs)) {
             mp_obj_t res = mp_obj_float_binary_op(op, lhs_val, rhs);
             if (res == MP_OBJ_NULL) {
                 goto unsupported_op;

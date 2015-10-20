@@ -32,7 +32,7 @@
 // Functions for small integer arithmetic
 
 // In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
-#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
 #define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)WORD_MSBIT_HIGH) >> 1))
 #define MP_SMALL_INT_FITS(n) ((((n) ^ ((n) << 1)) & WORD_MSBIT_HIGH) == 0)

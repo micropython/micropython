@@ -827,15 +827,15 @@ STATIC bool arg_looks_integer(mp_obj_t arg) {
 STATIC bool arg_looks_numeric(mp_obj_t arg) {
     return arg_looks_integer(arg)
 #if MICROPY_PY_BUILTINS_FLOAT
-        || MP_OBJ_IS_TYPE(arg, &mp_type_float)
+        || mp_obj_is_float(arg)
 #endif
     ;
 }
 
 STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 #if MICROPY_PY_BUILTINS_FLOAT
-    if (MP_OBJ_IS_TYPE(arg, &mp_type_float)) {
-        return mp_obj_new_int_from_float(mp_obj_get_float(arg));
+    if (mp_obj_is_float(arg)) {
+        return mp_obj_new_int_from_float(mp_obj_float_get(arg));
     }
 #endif
     return arg;
@@ -2037,6 +2037,17 @@ const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len) {
         bad_implicit_conversion(self_in);
     }
 }
+
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, mp_uint_t *len) {
+    if (MP_OBJ_IS_QSTR(self_in)) {
+        return qstr_data(MP_OBJ_QSTR_VALUE(self_in), len);
+    } else {
+        *len = ((mp_obj_str_t*)self_in)->len;
+        return ((mp_obj_str_t*)self_in)->data;
+    }
+}
+#endif
 
 /******************************************************************************/
 /* str iterator                                                               */
