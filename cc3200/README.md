@@ -53,8 +53,6 @@ If `WIPY_IP`, `WIPY_USER` or `WIPY_PWD` are omitted the default values (the ones
 
 Once the software is running, you have two options to access the MicroPython REPL:
 
-- Through the UART. 
-  **Connect to PORT 22, baud rate = 115200, parity = none, stop bits = 1**
 - Through telnet. 
   * Connect to the network created by the board (as boots up in AP mode), **ssid = "wipy-wlan", key = "www.wipy.io"**.
     * You can also reinitialize the WLAN in station mode and connect to another AP, or in AP mode but with a
