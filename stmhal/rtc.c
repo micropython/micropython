@@ -190,7 +190,7 @@ void rtc_init(void) {
     rtc_info = HAL_GetTick() - tick;
 
     HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
-    if (date.Year == 0) {
+    if (date.Year == 0 && date.Month ==0 && date.Date == 0) {
         // fresh reset; configure RTC Calendar
         RTC_CalendarConfig();
     } else {
@@ -507,23 +507,23 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_wakeup_obj, 2, 4, pyb_rtc_wakeup);
 mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t cal;
     if (n_args == 2) {
-    cal = mp_obj_get_int(args[1]);
-    mp_uint_t cal_p, cal_m;
-    if (cal < -511 || cal > 512) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                           "calibration value out of range"));
-    }
-    if (cal > 0) {
-        cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
-        cal_m = 512 - cal;
+        cal = mp_obj_get_int(args[1]);
+        mp_uint_t cal_p, cal_m;
+        if (cal < -511 || cal > 512) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                            "calibration value out of range"));
+        }
+        if (cal > 0) {
+            cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
+            cal_m = 512 - cal;
+        } else {
+            cal_p = RTC_SMOOTHCALIB_PLUSPULSES_RESET;
+            cal_m = -cal;
+        }
+        HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
+        return mp_const_none;
     } else {
-        cal_p = RTC_SMOOTHCALIB_PLUSPULSES_RESET;
-        cal_m = -cal;
-    }
-    HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
-    return mp_const_none;
-    } else {
-        // printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR); // DEBUG
+    // printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR); // DEBUG
     // Test if CALP bit is set in CALR:
     if (RTCHandle.Instance->CALR & 0x8000) {
         cal = 512 - (RTCHandle.Instance->CALR & 0x1ff);
