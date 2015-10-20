@@ -61,7 +61,7 @@ STATIC const mp_obj_type_t ssl_socket_type;
 /******************************************************************************/
 // Micro Python bindings; SSL class
 
-// ssl socket inherits from normal socket, so we take its
+// ssl sockets inherit from normal socket, so we take its
 // locals and stream methods
 STATIC const mp_obj_type_t ssl_socket_type = {
     { &mp_type_type },
@@ -116,7 +116,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     // create the ssl socket
     mp_obj_ssl_socket_t *ssl_sock = m_new_obj(mp_obj_ssl_socket_t);
-    // ssl socket inherits all properties from the original socket
+    // ssl sockets inherit all properties from the original socket
     memcpy (&ssl_sock->sock_base, &((mod_network_socket_obj_t *)args[0].u_obj)->sock_base, sizeof(mod_network_socket_base_t));
     ssl_sock->base.type = &ssl_socket_type;
     ssl_sock->sock_base.cert_req = (args[4].u_int == SSL_CERT_REQUIRED) ? true : false;

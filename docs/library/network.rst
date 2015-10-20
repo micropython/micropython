@@ -378,16 +378,16 @@ For example::
     .. method:: wlan.isconnected()
 
        In case of STA mode, returns ``True`` if connected to a wifi access point and has a valid IP address.
-       In AP mode returns ``True`` when a station is connected. Returns ``False`` otherwise.
+       In AP mode returns ``True`` when a station is connected, ``False`` otherwise.
 
     .. method:: wlan.ifconfig(if_id=0, config=['dhcp' or configtuple])
 
        With no parameters given eturns a 4-tuple of ``(ip, subnet_mask, gateway, DNS_server)``.
-       
+
        if ``'dhcp'`` is passed as a parameter then the DHCP client is enabled and the IP params
        are negotiated with the AP.
-       
-       if the 4-tuple config is given then a static IP is configured. For example::
+
+       If the 4-tuple config is given then a static IP is configured. For instance::
 
           wlan.ifconfig(config=('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
@@ -423,7 +423,7 @@ For example::
             - ``handler`` is the function that gets called when the irq is triggered.
             - ``wake`` must be ``machine.SLEEP``.
 
-        Returns a irq object.
+        Returns an irq object.
 
     Constants
     ---------

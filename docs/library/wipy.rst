@@ -1,5 +1,6 @@
+*************************************
 :mod:`wipy` -- WiPy specific features
-=====================================
+*************************************
 
 .. module:: wipy
    :synopsis: WiPy specific features
@@ -12,4 +13,5 @@ Functions
 
 .. function:: heartbeat([enable])
 
-   Get or set the state (enabled or disabled) of the heartbeat LED.
+   Get or set the state (enabled or disabled) of the heartbeat LED. Accepts and
+   returns boolean values (``True`` or ``False``).
