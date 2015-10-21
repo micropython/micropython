@@ -22,23 +22,9 @@ reset.
 Windows
 -------
 
-You need to install the pyboard driver to use the serial USB device.
-The driver is on the pyboard's USB flash drive, and is called ``pybcdc.inf``.
-
-To install this driver you need to go to Device Manager
-for your computer, find the pyboard in the list of devices (it should have
-a warning sign next to it because it's not working yet), right click on
-the pyboard device, select Properties, then Install Driver.  You need to
-then select the option to find the driver manually (don't use Windows auto update),
-navigate to the pyboard's USB drive, and select that.  It should then install.
-After installing, go back to the Device Manager to find the installed pyboard,
-and see which COM port it is (eg COM4).
-More comprehensive instructions can be found in the
-`Guide for pyboard on Windows (PDF) <http://micropython.org/resources/Micro-Python-Windows-setup.pdf>`_.
-Please consult this guide if you are having problems installing the driver.
-
-The best option is to download the free program PuTTY:
-`putty.exe <http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html>`_.
+First you need to install the FTDI drivers for the expansion board's USB to serial
+converter. Then you need a terminal software. The best option is to download the
+free program PuTTY: `putty.exe <http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html>`_.
 
 **In order to get to the telnet REPL:**
 
