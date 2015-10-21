@@ -68,6 +68,7 @@
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR            (1)
+#define MICROPY_PY_ALL_SPECIAL_METHODS              (1)
 #ifndef DEBUG
 #define MICROPY_PY_BUILTINS_STR_UNICODE             (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES          (1)
