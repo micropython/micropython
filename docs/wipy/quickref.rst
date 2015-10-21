@@ -30,7 +30,7 @@ See :ref:`machine.Pin <machine.Pin>`. ::
 
     from machine import Pin
 
-    # initialize GP2 in gpio mode (af=0) and make it an output
+    # initialize GP2 in gpio mode (alt=0) and make it an output
     p_out = Pin('GP2', mode=Pin.OUT)
     p_out.value(1)
     p_out.value(0)
@@ -54,7 +54,7 @@ See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. :
     tim_a.time() # get the value in microseconds
     tim_a.freq(1) # 1 Hz
     
-    p_out = Pin('GP2', af=0, mode=Pin.OUT)
+    p_out = Pin('GP2', mode=Pin.OUT)
     tim_a.irq(handler=lambda t: p_out.toggle())
 
 PWM (pulse width modulation)
@@ -66,7 +66,7 @@ See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. :
     from machine import Pin
 
     # assign GP25 to alternate function 9 (PWM)
-    p_out = Pin('GP25', mode=Pin.AF, af=9)
+    p_out = Pin('GP25', mode=Pin.AF, alt=9)
 
     # timer 2 in PWM mode and width must be 16 buts
     tim = Timer(2, mode=Timer.PWM, width=16)
