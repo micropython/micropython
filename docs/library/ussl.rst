@@ -46,6 +46,8 @@ Functions
       ss = ssl.wrap_socket(s, cert_reqs=ssl.CERT_REQUIRED, ca_certs='/flash/cert/ca.pem')
       ss.connect(socket.getaddrinfo('cloud.blynk.cc', 8441)[0][4])
 
+   SSL sockets inherit all methods and from the standard sockets, see the :mod:`usocket` module.
+
 Exceptions
 ----------
 
