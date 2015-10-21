@@ -7,8 +7,8 @@ There are soft resets and hard resets.
      but leaves hardware peripherals unaffected. To do a soft reset, simply press 
      **Ctrl+D** on the REPL, or within a script do::
 
-      import sys
-      sys.exit()
+        import sys
+        sys.exit()
 
    - A hard reset is the same as performing a power cycle to the board. In order to
      hard reset the WiPy, press the switch on the board or::
