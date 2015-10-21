@@ -85,6 +85,31 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+//================================================[PWM Management]========================================================
+
+typedef struct {
+    uint8_t port;
+    uint8_t pin;
+    uint8_t ctout;
+    uint8_t fnc;
+    uint32_t freq;
+    uint32_t indexCounter;
+}PwmData;
+
+static PwmData pwmsData[] = {{6,5,6,FUNC_1,0,0},{6,12,7,FUNC_1,0,0},{4,1,1,FUNC_1,0,0},{4,2,0,FUNC_1,0,0},{4,3,3,FUNC_1,0,0},{1,5,10,FUNC_1,0,0},{7,4,13,FUNC_1,0,0},{7,5,12,FUNC_1,0,0},{4,4,2,FUNC_1,0,0},{4,5,5,FUNC_1,0,0},{4,6,4,FUNC_1,0,0}}
+
+void Board_PWM_Init(void)
+{
+	   Chip_SCU_PinMux(port->port, port->pin, MD_PUP|MD_EZI, port->function);
+	   Chip_SCTPWM_Init(LPC_SCT);
+	   Chip_SCTPWM_SetRate(LPC_SCT, pwm->config.frequence);
+	   Chip_SCTPWM_SetOutPin(LPC_SCT, pwm->config.index_counter, port->ctout);
+	   Chip_SCTPWM_Start(LPC_SCT);
+
+}
+
+//===========================================================================================================================
+
 //================================================[TIMERs Management]========================================================
 typedef struct {
 	uint8_t mode;
