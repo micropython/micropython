@@ -65,7 +65,7 @@
  *******-***********************************************************************/
 #define PYBUART_FRAME_TIME_US(baud)             ((11 * 1000000) / baud)
 #define PYBUART_2_FRAMES_TIME_US(baud)          (PYBUART_FRAME_TIME_US(baud) * 2)
-#define PYBUART_RX_TIMEOUT_US(baud)             (PYBUART_2_FRAMES_TIME_US(baud))
+#define PYBUART_RX_TIMEOUT_US(baud)             (PYBUART_2_FRAMES_TIME_US(baud) * 8) // we need at least characters in the FIFO
 
 #define PYBUART_TX_WAIT_US(baud)                ((PYBUART_FRAME_TIME_US(baud)) + 1)
 #define PYBUART_TX_MAX_TIMEOUT_MS               (5)
@@ -73,10 +73,10 @@
 #define PYBUART_RX_BUFFER_LEN                   (256)
 
 // interrupt triggers
-#define UART_TRIGGER_RX_ANY                   (0x01)
-#define UART_TRIGGER_RX_HALF                  (0x02)
-#define UART_TRIGGER_RX_FULL                  (0x04)
-#define UART_TRIGGER_TX_DONE                  (0x08)
+#define UART_TRIGGER_RX_ANY                     (0x01)
+#define UART_TRIGGER_RX_HALF                    (0x02)
+#define UART_TRIGGER_RX_FULL                    (0x04)
+#define UART_TRIGGER_TX_DONE                    (0x08)
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
