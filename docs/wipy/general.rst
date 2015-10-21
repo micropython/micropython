@@ -8,8 +8,8 @@ Due to space reasons, there's no floating point support, and no math module. Thi
 means that floating point numbers cannot be used anywhere in the code, and that
 all divisions must be performed using '//' instead of '/'. Example::
 
-    r = 4 // 2  # this will work
-    r = 4 / 2   # this WON'T
+    >>> r = 4 // 2  # this will work
+    >>> r = 4 / 2   # this WON'T
 
 Before applying power
 ---------------------
@@ -31,6 +31,8 @@ to gain access to the interactive prompt, open a telnet session to that IP addre
 the default port (23). You will be asked for credentials:
 ``login: micro`` and ``password: python``
 
+.. _wipy_telnet:
+
 Telnet REPL
 -----------
 
@@ -51,7 +53,7 @@ is hooked-up and mounted, it will be available as well.
 When the WiPy starts up, it always boots from the ``boot.py`` located in the
 ``/flash`` file system.
 
-The file system is accessible via the native FTP server running in the WiPy. 
+The file system is accessible via the native FTP server running in the WiPy.
 Open your FTP client of choice and connect to:
 
 **url:** ``ftp://192.168.1.1``, **user:** ``micro``, **password:** ``python``
@@ -91,15 +93,25 @@ ends up inside the internal **hidden** file system, but rest assured that it was
 transferred, and it has been signed with a MD5 checksum to verify its integrity. Now, reset
 the WiPy by pressing the switch on the board, or by typing::
 
-    import machine
-    machine.reset()
+    >>> import machine
+    >>> machine.reset()
 
 Software updates can be found in: https://github.com/wipy/wipy/releases
 It's always recommended to update to the latest software, but make sure to
 read the **release notes** before.
 
-Boot modes
-----------
+In order to check your software version, do::
+
+   >>> import os
+   >>> os.uname().release
+
+If the version number is lower than the latest release found in
+`the releases <https://github.com/wipy/wipy/releases>`_, go ahead and update your WiPy!
+
+.. _wipy_boot_modes:
+
+Boot modes and safe boot
+------------------------
 
 If you power up normally, or press the reset button, the WiPy will boot
 into standard mode; the ``boot.py`` file will be executed first, then 
@@ -110,7 +122,7 @@ it to the 3v3 output pin) during reset. This procedure also allows going
 back in time to old firmware versions. The WiPy can hold up to 3 different
 firmware versions, which are: the factory firmware plus 2 user updates.
 
-After reset, if ``GP28`` is held high, the heart beat LED will start flashing
+After reset, if ``GP28`` is held high, the heartbeat LED will start flashing
 slowly, if after 3 seconds the pin is still being held high, the LED will start
 blinking a bit faster and the WiPy will select the previous user update to boot.
 If the previous user update is the desired firmware image, ``GP28`` must be
@@ -134,19 +146,19 @@ useful to recover from crash situations caused by the user scripts. The selectio
 made during safe boot is not persistent, meaning that after the next normal reset,
 the latest firmware will run again.
 
-The heart beat LED
+The heartbeat LED
 ------------------
 
-By default the heart beat LED flashes once every 4s to signal that the system is
+By default the heartbeat LED flashes once every 4s to signal that the system is
 alive. This can be overridden through the :mod:`wipy` module::
 
-   import wipy
-   wipy.heartbeat(False)
+   >>> import wipy
+   >>> wipy.heartbeat(False)
 
 There are currently 2 kinds of errors that you might see:
 
-1. If the heart beat LED flashes quickly, then a Python script(eg ``main.py``) 
+1. If the heartbeat LED flashes quickly, then a Python script(eg ``main.py``)
    has an error.  Use the REPL to debug it.
-2. If the heart beat LED stays on, then there was a hard fault, you cannot
+2. If the heartbeat LED stays on, then there was a hard fault, you cannot
    recover from this, the only way out is to press the reset switch.
 
