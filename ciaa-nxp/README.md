@@ -6,6 +6,7 @@ EDU-CIAA board support package
 [Spanish Version](README_ES.md)
 
 
+
 [TOC]
 
 
@@ -32,7 +33,7 @@ led1.off()
 ```
 
 Available led numbers: 1 to 6 (4:Red, 5:Green, 6:Blue)
-More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
+> More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
 ### All board buttons via pyb.Switch.
 
@@ -61,7 +62,8 @@ while True:
 
 
 Available switch numbers:  1 to 4
-More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
+
+> More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
 ### UART support
 
@@ -88,7 +90,7 @@ while True:
 
 Availabled UART are pyb.UART(0) (RS485) and pyb.UART(3) (RS232)
 
-More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
+> More info: http://test-ergun.readthedocs.org/en/latest/library/pyb.UART.html
 
 All interfaces of pyboard UART are preserver except the constructor on baudrate parameter.
 
@@ -148,7 +150,7 @@ while True:
 ```
 Availabled GPIO is 0 to 8
 
-More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
+> More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
 
 
 ## GPIO Interrupt support over pyb.ExtInt
@@ -180,7 +182,7 @@ Methods:
   - swint()
   - line()
 
-More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
+> More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
 
 ## DAC support over pyb.DAC 
@@ -246,4 +248,6 @@ Interval and timeout methods were added, these methods have two arguments: a tim
 More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html
 TimerChannel class was not implemented. Input capture and Output compare functionality is not present.
 
+> Note: Board only have DAC 1
 
+The LPC43xx DAC have 10 bits accurancy instread of 8 bits accurancy of pyboard DAC (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html)

@@ -68,7 +68,13 @@ Q(hashlib)
 
 Q(uos)
 Q(os)
+
 Q(/)
+Q(/flash)
+Q(/flash/lib)
+Q(/sd)
+Q(/sd/lib)
+
 Q(flash)
 Q(sd)
 Q(sysname)
@@ -91,6 +97,11 @@ Q(urandom)
 Q(sync)
 Q(execfile)
 
+Q(readonly)
+Q(mkfs)
+Q(readblocks)
+Q(writeblocks)
+Q(flush)
 
 Q(ExtInt)
 Q(pin)

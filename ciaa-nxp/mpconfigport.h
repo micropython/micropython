@@ -20,6 +20,8 @@
 #define MICROPY_ENABLE_DOC_STRING   (1)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+#define MICROPY_ENABLE_LFN          (1)
+#define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
 #define MICROPY_PY_BUILTINS_BYTEARRAY      (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW     (1)
@@ -108,6 +110,8 @@ extern const struct _mp_obj_module_t mp_module_utime;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
 
+#define MP_STATE_PORT MP_STATE_VM
+
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -123,6 +127,8 @@ extern const struct _mp_obj_module_t mp_module_utime;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+    const char *readline_hist[8]; \
+	/* for user-mountable block device */ \
+	struct _fs_user_mount_t *fs_user_mount; \
 
 #define MICROPY_HAL_H "ciaanxp_mphal.h"
