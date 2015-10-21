@@ -140,10 +140,10 @@ and the WiPy will proceed to boot. The firmware selection mechanism is as follow
 | | firmware is selected  | | user update selected  | | firmware is selected     |
 +-------------------------+-------------------------+----------------------------+
 
-In any if the above 3 scenarios, safe boot mode is entered, meaning that
+On all of the above 3 scenarios, safe boot mode is entered, meaning that
 the execution of both ``boot.py`` and ``main.py`` is skipped. This is
 useful to recover from crash situations caused by the user scripts. The selection
-made during safe boot is not persistent, meaning that after the next normal reset,
+made during safe boot is not persistent, therefore after the next normal reset
 the latest firmware will run again.
 
 The heartbeat LED
