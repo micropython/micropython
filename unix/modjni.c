@@ -362,8 +362,18 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         }
     } else if (type == &jobject_type) {
         printf("TODO: Check java arg type!!\n");
-        while (isalpha(*arg_type) || *arg_type == '.') {
+        bool is_object = false;
+        while (1) {
+            if (isalpha(*arg_type)) {
+            } else if (*arg_type == '.') {
+                is_object = true;
+            } else {
+                break;
+            }
             arg_type++;
+        }
+        if (!is_object) {
+            return false;
         }
         mp_obj_jobject_t *jo = arg;
         out->l = jo->obj;
