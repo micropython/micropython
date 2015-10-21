@@ -49,5 +49,6 @@ can format it very easily byt doing::
    >>> os.mkfs('/flash')
 
 Resetting the filesystem deletes all files on the internal WiPy storage
-(not the SD card), and restores the files ``boot.py``, ``main.py``, ``README.txt``
-and ``pybcdc.inf`` back to their original state after the next reset.
+(not the SD card), and restores the files ``boot.py`` and ``main.py`` back
+to their original state after the next reset.
+
