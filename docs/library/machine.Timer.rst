@@ -31,7 +31,7 @@ class Timer -- control internal timers
         tim = Timer(1, mode=Timer.PERIODIC)
         tim_a = tim.channel(Timer.A, freq=1000)
 
-        led = Pin('GPIO2', af=0, mode=Pin.OUT)
+        led = Pin('GPIO2', mode=Pin.OUT)
 
         def tick(timer):                # we will receive the timer object when being called
             print(timer.time())         # show current timer's time value (is microseconds)
