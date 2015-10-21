@@ -150,33 +150,25 @@ STATIC mp_obj_t time_sleep_us (mp_obj_t usec_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_us_obj, time_sleep_us);
 
 STATIC mp_obj_t time_ticks_ms(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
     return MP_OBJ_NEW_SMALL_INT(HAL_GetTick() & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_ms_obj, time_ticks_ms);
 
 STATIC mp_obj_t time_ticks_us(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
     return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds() & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_us_obj, time_ticks_us);
 
 STATIC mp_obj_t time_ticks_cpu(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(SysTickValueGet() & MP_SMALL_INT_POSITIVE_MASK);
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
+    return MP_OBJ_NEW_SMALL_INT((SysTickPeriodGet() - SysTickValueGet()) & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_cpu_obj, time_ticks_cpu);
 
 STATIC mp_obj_t time_ticks_diff(mp_obj_t t0, mp_obj_t t1) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
     uint32_t start = mp_obj_get_int(t0);
     uint32_t end = mp_obj_get_int(t1);
     return MP_OBJ_NEW_SMALL_INT((end - start) & MP_SMALL_INT_POSITIVE_MASK);
