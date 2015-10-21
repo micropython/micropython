@@ -71,8 +71,10 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr,
 }
 
 static void __fatal(volatile char *msg) {
-	while(1)
+	mp_hal_stdout_tx_strn(msg);
+	while(1) {
 		__BKPT(0);
+	}
 }
 
 #define F_ASSERT(exp, msg) do { \
@@ -134,7 +136,7 @@ void flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 void flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint8_t e;
 	uint32_t Start = flash_get_sector_info(f_dst, NULL, NULL);
-	uint32_t End = flash_get_sector_info(f_dst + n_words * 4, NULL, NULL);
+	uint32_t End = flash_get_sector_info(f_dst + (n_words - 1) * 4, NULL, NULL);
 	e = Chip_IAP_PreSectorForReadWrite(Start, End, BANK);
 	F_ASSERT(e != IAP_CMD_SUCCESS, "Prepare for erase FAIL");
 	e = Chip_IAP_CopyRamToFlash(f_dst, (uint32_t*) src, n_words * 4);
