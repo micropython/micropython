@@ -54,7 +54,7 @@ print(uart1.read() == b'123456')
 print(uart1.write(b'123') == 3)
 print(uart0.read(1) == b'1')
 print(uart0.read(2) == b'23')
-print(uart0.read() == b'')
+print(uart0.read() == None)
 
 uart0.write(b'123')
 buf = bytearray(3)
@@ -79,28 +79,28 @@ uart0 = UART(0, 1000000, pins=('GP12', None))
 print(uart0.write(b'123456') == 6)
 print(uart1.read() == b'123456')
 print(uart1.write(b'123') == 3)
-print(uart0.read() == b'')
+print(uart0.read() == None)
 
 # rx only mode
 uart0 = UART(0, 1000000, pins=(None, 'GP13'))
 print(uart0.write(b'123456') == 6)
-print(uart1.read() == b'')
+print(uart1.read() == None)
 print(uart1.write(b'123') == 3)
 print(uart0.read() == b'123')
 
 # leave pins as they were (rx only mode)
 uart0 = UART(0, 1000000, pins=None)
 print(uart0.write(b'123456') == 6)
-print(uart1.read() == b'')
+print(uart1.read() == None)
 print(uart1.write(b'123') == 3)
 print(uart0.read() == b'123')
 
 # no pin assignemnt
 uart0 = UART(0, 1000000, pins=(None, None))
 print(uart0.write(b'123456789') == 9)
-print(uart1.read() == b'')
+print(uart1.read() == None)
 print(uart1.write(b'123456789') == 9)
-print(uart0.read() == b'')
+print(uart0.read() == None)
 print(Pin.board.GP12)
 print(Pin.board.GP13)
 
@@ -156,4 +156,3 @@ for uart_id in uart_id_range:
     uart.init(115200)
     print(uart)
     uart.read()
-
