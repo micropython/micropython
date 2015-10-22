@@ -33,6 +33,10 @@
 //
 //  n_state         : var uint
 //  n_exc_stack     : var uint
+//  scope_flags     : byte
+//  n_pos_args      : byte          number of arguments this function takes
+//  n_kwonly_args   : byte          number of keyword-only arguments this function takes
+//  n_def_pos_args  : byte          number of default positional arguments
 //
 //  <word alignment padding>
 //
@@ -85,7 +89,7 @@ mp_uint_t mp_decode_uint(const byte **ptr);
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc);
 mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
-void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *code, mp_uint_t len);
+void mp_bytecode_print(const void *descr, const byte *code, mp_uint_t len);
 void mp_bytecode_print2(const byte *code, mp_uint_t len);
 const byte *mp_bytecode_print_str(const byte *ip);
 #define mp_bytecode_print_inst(code) mp_bytecode_print2(code, 1)

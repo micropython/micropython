@@ -824,6 +824,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
 
     if (!emit->do_viper_types) {
         emit->prelude_offset = ASM_GET_CODE_POS(emit->as);
+        ASM_DATA(emit->as, 1, emit->scope->scope_flags);
+        ASM_DATA(emit->as, 1, emit->scope->num_pos_args);
+        ASM_DATA(emit->as, 1, emit->scope->num_kwonly_args);
+        ASM_DATA(emit->as, 1, emit->scope->num_def_pos_args);
         ASM_ALIGN(emit->as, ASM_WORD_SIZE);
 
         // write argument names as qstr objects
@@ -874,8 +878,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
 
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
-            f, f_len, emit->scope->num_pos_args, emit->scope->num_kwonly_args,
-            emit->scope->scope_flags, type_sig);
+            f, f_len, emit->scope->num_pos_args, emit->scope->scope_flags, type_sig);
     }
 }
 

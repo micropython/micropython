@@ -66,6 +66,7 @@ typedef struct _scope_t {
     uint8_t emit_options; // see compile.h
     uint16_t num_pos_args;
     uint16_t num_kwonly_args;
+    uint16_t num_def_pos_args;
     uint16_t num_locals;
     uint16_t stack_size;     // maximum size of the locals stack
     uint16_t exc_stack_size; // maximum size of the exception stack
