@@ -1187,6 +1187,9 @@ STATIC mp_obj_t wlan_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_obj_t _irq = mp_irq_new (self, args[2].u_obj, &wlan_irq_methods);
     self->irq_obj = _irq;
 
+    // enable the irq just before leaving
+    wlan_lpds_irq_enable(self);
+
     return _irq;
 
 invalid_args:
