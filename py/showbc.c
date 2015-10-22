@@ -54,18 +54,22 @@
 
 const byte *mp_showbc_code_start;
 
-void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip, mp_uint_t len) {
+void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
     mp_showbc_code_start = ip;
 
-    // get state size and exception stack size
+    // get bytecode parameters
     mp_uint_t n_state = mp_decode_uint(&ip);
     mp_uint_t n_exc_stack = mp_decode_uint(&ip);
+    /*mp_uint_t scope_flags =*/ ip++;
+    mp_uint_t n_pos_args = *ip++;
+    mp_uint_t n_kwonly_args = *ip++;
+    /*mp_uint_t n_def_pos_args =*/ ip++;
 
     ip = MP_ALIGN(ip, sizeof(mp_uint_t));
 
     // get and skip arg names
     const mp_obj_t *arg_names = (const mp_obj_t*)ip;
-    ip += n_total_args * sizeof(mp_uint_t);
+    ip += (n_pos_args + n_kwonly_args) * sizeof(mp_uint_t);
 
     const byte *code_info = ip;
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
@@ -88,7 +92,7 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
 
     // bytecode prelude: arg names (as qstr objects)
     printf("arg names:");
-    for (mp_uint_t i = 0; i < n_total_args; i++) {
+    for (mp_uint_t i = 0; i < n_pos_args + n_kwonly_args; i++) {
         printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(arg_names[i])));
     }
     printf("\n");
