@@ -294,6 +294,13 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
         emit_write_code_info_uint(emit, scope->exc_stack_size);
     }
 
+    // Write scope flags and number of arguments.
+    // TODO check that num args all fit in a byte
+    emit_write_code_info_byte(emit, emit->scope->scope_flags);
+    emit_write_code_info_byte(emit, emit->scope->num_pos_args);
+    emit_write_code_info_byte(emit, emit->scope->num_kwonly_args);
+    emit_write_code_info_byte(emit, emit->scope->num_def_pos_args);
+
     // Align code-info so that following pointers are aligned on a machine word.
     emit_align_code_info_to_machine_word(emit);
 
@@ -372,9 +379,7 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
-            emit->code_info_size + emit->bytecode_size,
-            emit->scope->num_pos_args, emit->scope->num_kwonly_args,
-            emit->scope->scope_flags);
+            emit->code_info_size + emit->bytecode_size, emit->scope->scope_flags);
     }
 }
 

@@ -125,8 +125,12 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const byte *bc = fun->bytecode;
     mp_decode_uint(&bc); // skip n_state
     mp_decode_uint(&bc); // skip n_exc_stack
+    bc++; // skip scope_params
+    mp_uint_t n_pos_args = *bc++;
+    mp_uint_t n_kwonly_args = *bc++;
+    bc++; // skip n_def_pos_args
     bc = MP_ALIGN(bc, sizeof(mp_uint_t)); // align
-    bc += (fun->n_pos_args + fun->n_kwonly_args) * sizeof(mp_uint_t); // skip arg names
+    bc += (n_pos_args + n_kwonly_args) * sizeof(mp_uint_t); // skip arg names
     return mp_obj_code_get_name(bc);
 }
 
@@ -316,7 +320,7 @@ const mp_obj_type_t mp_type_fun_bc = {
 #endif
 };
 
-mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
+mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code) {
     mp_uint_t n_def_args = 0;
     mp_uint_t n_extra_args = 0;
     mp_obj_tuple_t *def_args = def_args_in;
@@ -331,12 +335,6 @@ mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_
     mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
     o->base.type = &mp_type_fun_bc;
     o->globals = mp_globals_get();
-    o->n_pos_args = n_pos_args;
-    o->n_kwonly_args = n_kwonly_args;
-    o->n_def_args = n_def_args;
-    o->has_def_kw_args = def_kw_args != MP_OBJ_NULL;
-    o->takes_var_args = (scope_flags & MP_SCOPE_FLAG_VARARGS) != 0;
-    o->takes_kw_args = (scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0;
     o->bytecode = code;
     if (def_args != MP_OBJ_NULL) {
         memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
@@ -366,8 +364,8 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
     .unary_op = mp_generic_unary_op,
 };
 
-mp_obj_t mp_obj_new_fun_native(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data) {
-    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(scope_flags, n_pos_args, n_kwonly_args, def_args_in, def_kw_args, (const byte*)fun_data);
+mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data) {
+    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte*)fun_data);
     o->base.type = &mp_type_fun_native;
     return o;
 }
