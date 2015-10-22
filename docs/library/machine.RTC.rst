@@ -9,8 +9,8 @@ and time.
 Example usage::
 
     rtc = machine.RTC()
-    rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
-    print(rtc.datetime())
+    rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
+    print(rtc.now())
 
 
 Constructors
@@ -23,7 +23,7 @@ Constructors
 Methods
 -------
 
-.. method:: rtc.init(id, datetime)
+.. method:: rtc.init(datetime)
 
    Initialise the RTC. Datetime is a tuple of the form:
    
