@@ -14,7 +14,7 @@ do::
    >>> from machine import UART
    >>> import os
    >>> uart = UART(0, 115200)
-   >>> o.dupterm(uart)
+   >>> os.dupterm(uart)
 
 Place this piece of code inside your `boot.py` so that it's done automatically after
 reset.

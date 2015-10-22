@@ -63,7 +63,7 @@ For example::
 
     .. method:: server.isrunning()
 
-       Returns ``True`` is the server is running, ``False`` otherwise.
+       Returns ``True`` if the server is running, ``False`` otherwise.
 
 .. only:: port_pyboard
 
@@ -299,7 +299,7 @@ For example::
     class WLAN
     ==========
 
-    This class provides a driver for WiFi network processor in the WiPy.  Example usage::
+    This class provides a driver for the WiFi network processor in the WiPy. Example usage::
 
         import network
         import time
