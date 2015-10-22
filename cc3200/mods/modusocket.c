@@ -157,6 +157,8 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     if (wlan_socket_socket(s, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
     }
+    // add the socket to the list
+    modusocket_socket_add(s->sock_base.sd, true);
     return s;
 }
 
