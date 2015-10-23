@@ -54,7 +54,7 @@
 
 const byte *mp_showbc_code_start;
 
-void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
+void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
 
     // get bytecode parameters
@@ -65,18 +65,12 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
     mp_uint_t n_kwonly_args = *ip++;
     /*mp_uint_t n_def_pos_args =*/ ip++;
 
-    ip = MP_ALIGN(ip, sizeof(mp_uint_t));
-
-    // get and skip arg names
-    const mp_obj_t *arg_names = (const mp_obj_t*)ip;
-    ip += (n_pos_args + n_kwonly_args) * sizeof(mp_uint_t);
-
     const byte *code_info = ip;
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
     ip += code_info_size;
 
-    qstr block_name = mp_decode_uint(&code_info);
-    qstr source_file = mp_decode_uint(&code_info);
+    qstr block_name = const_table[0];
+    qstr source_file = const_table[1];
     printf("File %s, code block '%s' (descriptor: %p, bytecode @%p " UINT_FMT " bytes)\n",
         qstr_str(source_file), qstr_str(block_name), descr, mp_showbc_code_start, len);
 
@@ -93,7 +87,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len) {
     // bytecode prelude: arg names (as qstr objects)
     printf("arg names:");
     for (mp_uint_t i = 0; i < n_pos_args + n_kwonly_args; i++) {
-        printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(arg_names[i])));
+        printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(const_table[2 + i])));
     }
     printf("\n");
 

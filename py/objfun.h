@@ -32,6 +32,7 @@ typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;         // the context within which this function was defined
     const byte *bytecode;           // bytecode for the function
+    const mp_uint_t *const_table;   // constant table
     // the following extra_args array is allocated space to take (in order):
     //  - values of positional default args (if any)
     //  - a single slot for default kw args dict (if it has them)

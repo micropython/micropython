@@ -97,6 +97,9 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
     // ip comes in as an offset into bytecode, so turn it into a true pointer
     code_state->ip = self->bytecode + (mp_uint_t)code_state->ip;
 
+    // store pointer to constant table
+    code_state->const_table = self->const_table;
+
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
     #endif
@@ -106,9 +109,6 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
     mp_uint_t n_pos_args = *code_state->ip++;
     mp_uint_t n_kwonly_args = *code_state->ip++;
     mp_uint_t n_def_pos_args = *code_state->ip++;
-
-    // align ip
-    code_state->ip = MP_ALIGN(code_state->ip, sizeof(mp_uint_t));
 
     code_state->sp = &code_state->state[0] - 1;
     code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
@@ -168,7 +168,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t 
         }
 
         // get pointer to arg_names array
-        const mp_obj_t *arg_names = (const mp_obj_t*)code_state->ip;
+        const mp_obj_t *arg_names = (const mp_obj_t*)code_state->const_table + 2;
 
         for (mp_uint_t i = 0; i < n_kw; i++) {
             mp_obj_t wanted_arg_name = kwargs[2 * i];
@@ -243,7 +243,6 @@ continue2:;
 
     // get the ip and skip argument names
     const byte *ip = code_state->ip;
-    ip += (n_pos_args + n_kwonly_args) * sizeof(mp_uint_t);
 
     // store pointer to code_info and jump over it
     {

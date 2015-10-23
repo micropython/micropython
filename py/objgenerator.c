@@ -68,7 +68,6 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
 
     o->globals = self_fun->globals;
     o->code_state.n_state = n_state;
-    o->code_state.code_info = 0; // offset to code-info
     o->code_state.ip = (byte*)(ip - self_fun->bytecode); // offset to prelude
     mp_setup_code_state(&o->code_state, self_fun, n_args, n_kw, args);
     return o;
@@ -93,7 +92,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = self_in;
-    mp_printf(print, "<generator object '%q' at %p>", mp_obj_code_get_name(self->code_state.code_info), self_in);
+    mp_printf(print, "<generator object '%q' at %p>", self->code_state.const_table[0], self_in);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
