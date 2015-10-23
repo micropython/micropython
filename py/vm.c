@@ -65,6 +65,18 @@ typedef enum {
     } while ((*ip++ & 0x80) != 0)
 #define DECODE_ULABEL mp_uint_t ulab = (ip[0] | (ip[1] << 8)); ip += 2
 #define DECODE_SLABEL mp_uint_t slab = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2
+
+#if MICROPY_PORTABLE_CODE
+
+#define DECODE_QSTR \
+    DECODE_UINT; \
+    qstr qst = code_state->const_table[unum]
+#define DECODE_PTR \
+    DECODE_UINT; \
+    void *ptr = (void*)code_state->const_table[unum]
+
+#else
+
 #define DECODE_QSTR qstr qst = 0; \
     do { \
         qst = (qst << 7) + (*ip & 0x7f); \
@@ -73,6 +85,9 @@ typedef enum {
     ip = (byte*)(((mp_uint_t)ip + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1))); /* align ip */ \
     void *ptr = (void*)*(mp_uint_t*)ip; \
     ip += sizeof(mp_uint_t)
+
+#endif
+
 #define PUSH(val) *++sp = (val)
 #define POP() (*sp--)
 #define TOP() (*sp)

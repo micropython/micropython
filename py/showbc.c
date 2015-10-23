@@ -40,6 +40,18 @@
 }
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+
+#if MICROPY_PORTABLE_CODE
+
+#define DECODE_QSTR \
+    DECODE_UINT; \
+    qst = mp_showbc_const_table[unum]
+#define DECODE_PTR \
+    DECODE_UINT; \
+    unum = mp_showbc_const_table[unum]
+
+#else
+
 #define DECODE_QSTR { \
     qst = 0; \
     do { \
@@ -52,10 +64,14 @@
     ip += sizeof(mp_uint_t); \
 } while (0)
 
+#endif
+
 const byte *mp_showbc_code_start;
+const mp_uint_t *mp_showbc_const_table;
 
 void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
+    mp_showbc_const_table = const_table;
 
     // get bytecode parameters
     mp_uint_t n_state = mp_decode_uint(&ip);
