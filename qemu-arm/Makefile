@@ -74,11 +74,11 @@ $(BUILD)/tinytest.o:
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(OBJ)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware-test.elf: $(OBJ_TEST)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_TEST) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 include ../py/mkrules.mk
