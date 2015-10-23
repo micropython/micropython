@@ -56,6 +56,7 @@ struct _emit_t {
     mp_uint_t bytecode_offset;
     mp_uint_t bytecode_size;
     byte *code_base; // stores both byte code and code info
+    mp_uint_t *const_table;
     // Accessed as mp_uint_t, so must be aligned as such
     byte dummy_data[DUMMY_DATA_SIZE];
 };
@@ -121,13 +122,6 @@ STATIC void emit_write_code_info_uint(emit_t* emit, mp_uint_t val) {
 
 STATIC void emit_write_code_info_qstr(emit_t *emit, qstr qst) {
     emit_write_uint(emit, emit_get_cur_to_write_code_info, qst);
-}
-
-STATIC void emit_write_code_info_prealigned_ptr(emit_t* emit, void *ptr) {
-    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_code_info(emit, sizeof(mp_uint_t));
-    // Verify thar c is already uint-aligned
-    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
-    *c = (mp_uint_t)ptr;
 }
 
 #if MICROPY_ENABLE_SOURCE_LINE
@@ -301,37 +295,6 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit_write_code_info_byte(emit, emit->scope->num_kwonly_args);
     emit_write_code_info_byte(emit, emit->scope->num_def_pos_args);
 
-    // Align code-info so that following pointers are aligned on a machine word.
-    emit_align_code_info_to_machine_word(emit);
-
-    // Write argument names (needed to resolve positional args passed as
-    // keywords).  We store them as full word-sized objects for efficient access
-    // in mp_setup_code_state this is the start of the prelude and is guaranteed
-    // to be aligned on a word boundary.
-    {
-        // For a given argument position (indexed by i) we need to find the
-        // corresponding id_info which is a parameter, as it has the correct
-        // qstr name to use as the argument name.  Note that it's not a simple
-        // 1-1 mapping (ie i!=j in general) because of possible closed-over
-        // variables.  In the case that the argument i has no corresponding
-        // parameter we use "*" as its name (since no argument can ever be named
-        // "*").  We could use a blank qstr but "*" is better for debugging.
-        // Note: there is some wasted RAM here for the case of storing a qstr
-        // for each closed-over variable, and maybe there is a better way to do
-        // it, but that would require changes to mp_setup_code_state.
-        for (int i = 0; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
-            qstr qst = MP_QSTR__star_;
-            for (int j = 0; j < scope->id_info_len; ++j) {
-                id_info_t *id = &scope->id_info[j];
-                if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
-                    qst = id->qst;
-                    break;
-                }
-            }
-            emit_write_code_info_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(qst));
-        }
-    }
-
     // Write size of the rest of the code info.  We don't know how big this
     // variable uint will be on the MP_PASS_CODE_SIZE pass so we reserve 2 bytes
     // for it and hope that is enough!  TODO assert this or something.
@@ -354,6 +317,35 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
         }
     }
     emit_write_bytecode_byte(emit, 255); // end of list sentinel
+
+    if (pass == MP_PASS_EMIT) {
+        // Write argument names (needed to resolve positional args passed as
+        // keywords).  We store them as full word-sized objects for efficient access
+        // in mp_setup_code_state this is the start of the prelude and is guaranteed
+        // to be aligned on a word boundary.
+
+        // For a given argument position (indexed by i) we need to find the
+        // corresponding id_info which is a parameter, as it has the correct
+        // qstr name to use as the argument name.  Note that it's not a simple
+        // 1-1 mapping (ie i!=j in general) because of possible closed-over
+        // variables.  In the case that the argument i has no corresponding
+        // parameter we use "*" as its name (since no argument can ever be named
+        // "*").  We could use a blank qstr but "*" is better for debugging.
+        // Note: there is some wasted RAM here for the case of storing a qstr
+        // for each closed-over variable, and maybe there is a better way to do
+        // it, but that would require changes to mp_setup_code_state.
+        for (int i = 0; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
+            qstr qst = MP_QSTR__star_;
+            for (int j = 0; j < scope->id_info_len; ++j) {
+                id_info_t *id = &scope->id_info[j];
+                if ((id->flags & ID_FLAG_IS_PARAM) && id->local_num == i) {
+                    qst = id->qst;
+                    break;
+                }
+            }
+            emit->const_table[i] = (mp_uint_t)MP_OBJ_NEW_QSTR(qst);
+        }
+    }
 }
 
 void mp_emit_bc_end_pass(emit_t *emit) {
@@ -377,9 +369,12 @@ void mp_emit_bc_end_pass(emit_t *emit) {
         emit->bytecode_size = emit->bytecode_offset;
         emit->code_base = m_new0(byte, emit->code_info_size + emit->bytecode_size);
 
+        emit->const_table = m_new0(mp_uint_t, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
-            emit->code_info_size + emit->bytecode_size, emit->scope->scope_flags);
+            emit->code_info_size + emit->bytecode_size,
+            emit->const_table, emit->scope->scope_flags);
     }
 }
 
