@@ -57,7 +57,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)size $@
 
 $(PY_BUILD)/gc.o: CFLAGS += -O1
