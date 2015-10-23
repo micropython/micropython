@@ -51,9 +51,11 @@ struct _mp_raw_code_t {
     union {
         struct {
             const byte *code;
+            const mp_uint_t *const_table;
         } u_byte;
         struct {
             void *fun_data;
+            const mp_uint_t *const_table;
             mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
         } u_native;
     } data;
@@ -65,28 +67,30 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     return rc;
 }
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, byte *code, mp_uint_t len, mp_uint_t scope_flags) {
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t len, const mp_uint_t *const_table, mp_uint_t scope_flags) {
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
     rc->data.u_byte.code = code;
+    rc->data.u_byte.const_table = const_table;
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
 #endif
 #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag >= 2) {
-        mp_bytecode_print(rc, code, len);
+        mp_bytecode_print(rc, code, len, const_table);
     }
 #endif
 }
 
 #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_THUMB
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
     rc->kind = kind;
     rc->scope_flags = scope_flags;
     rc->n_pos_args = n_pos_args;
     rc->data.u_native.fun_data = fun_data;
+    rc->data.u_native.const_table = const_table;
     rc->data.u_native.type_sig = type_sig;
 
 #ifdef DEBUG_PRINT
@@ -125,11 +129,11 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     switch (rc->kind) {
         case MP_CODE_BYTECODE:
         no_other_choice:
-            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.code);
+            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.code, rc->data.u_byte.const_table);
             break;
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-            fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data);
+            fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data, rc->data.u_native.const_table);
             break;
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);

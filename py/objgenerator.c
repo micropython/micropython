@@ -68,7 +68,6 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
 
     o->globals = self_fun->globals;
     o->code_state.n_state = n_state;
-    o->code_state.code_info = 0; // offset to code-info
     o->code_state.ip = (byte*)(ip - self_fun->bytecode); // offset to prelude
     mp_setup_code_state(&o->code_state, self_fun, n_args, n_kw, args);
     return o;
