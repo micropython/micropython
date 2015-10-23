@@ -156,7 +156,7 @@ deploy: post_compile reboot
 
 $(BUILD)/micropython.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $(OBJ) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 ifeq ($(MEMZIP_DIR),)
