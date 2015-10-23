@@ -72,7 +72,9 @@
 // I2S3_EXT RX: DMA1_Stream0.CHANNEL_3 or DMA1_Stream2.CHANNEL_2
 // I2S3_EXT TX: DMA1_Stream5.CHANNEL_2
 
-#define AUDIOBUFFER_BYTES 8192
+// Duplex streaming seems to require at least this much; there are hiccups at 8192
+// It may require some testing to determine the ideal value
+#define AUDIOBUFFER_BYTES 12288
 
 typedef enum {
     INACTIVE       = 0x00,
@@ -151,10 +153,10 @@ const DMA_InitTypeDef dma_init_struct_i2s = {
     .MemDataAlignment    = DMA_MDATAALIGN_HALFWORD,
     .Mode                = DMA_NORMAL,
     .Priority            = DMA_PRIORITY_VERY_HIGH,
-    //.FIFOMode            = DMA_FIFOMODE_DISABLE,
-    .FIFOMode            = DMA_FIFOMODE_ENABLE,
-    //.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
-    .FIFOThreshold       = DMA_FIFO_THRESHOLD_HALFFULL,
+    .FIFOMode            = DMA_FIFOMODE_DISABLE,
+    //.FIFOMode            = DMA_FIFOMODE_ENABLE,
+    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
+    //.FIFOThreshold       = DMA_FIFO_THRESHOLD_HALFFULL,
     .MemBurst            = DMA_MBURST_SINGLE,
     .PeriphBurst         = DMA_PBURST_SINGLE
 };
@@ -1201,7 +1203,8 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
                                                     "I2S(%d) bus busy",
                                                     self->i2s_id));
         } else {
-            // attach stream handle to i2s object and update state for stream_handler
+            // attach stream handle to i2s object and update state for
+            // stream_handler to add stream_out to ongoing stream transaction 
             self->xfer_signal = I2S_SIG_NONE;
             self->xfer_state |= STREAM_OUT;
             self->dstream_tx = stream;
@@ -1233,7 +1236,22 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "No I2S bus clock"));
         }
 
-        i2s_stream_handler(self);
+        if (self->is_duplex) {
+            status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s,
+                                                   self->audiobuf_tx[self->pp_ptr],
+                                                   self->audiobuf_rx[self->pp_ptr],
+                                                   buf_sz / 2);
+        } else {
+            status = HAL_I2S_Transmit_DMA(&self->i2s,
+                                          self->audiobuf_tx[self->pp_ptr],
+                                          buf_sz / 2);
+        }
+
+        if (status != HAL_OK) {
+            mp_hal_raise(status);
+        }
+
+        //i2s_stream_handler(self);
     }
 
     return mp_const_none;
@@ -1285,7 +1303,8 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
                                                     "I2S(%d) bus busy",
                                                     self->i2s_id));
         } else {
-            // attach stream handle to i2s object and update state for stream_handler
+            // attach stream handle to i2s object and update state for
+            // stream_handler to add stream_in to ongoing stream transaction 
             self->xfer_signal = I2S_SIG_NONE;
             self->xfer_state |= STREAM_IN;
             self->dstream_rx = stream;
@@ -1312,15 +1331,20 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "No I2S bus clock"));
         }
 
-        if (!self->is_duplex) {
-            status = HAL_I2S_Receive_DMA(&self->i2s, self->audiobuf_rx[self->pp_ptr], buf_sz / 2);
-        } else {
+        if (self->is_duplex) {
             // clear transmit buffers to use duplex function to begin simplex stream_in:
             memset(&self->audiobuf_tx[0], 0, buf_sz);
             memset(&self->audiobuf_tx[1], 0, buf_sz);
-            status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s, self->audiobuf_tx[self->pp_ptr],
-                                                   self->audiobuf_rx[self->pp_ptr], buf_sz / 2);
+            status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s,
+                                                   self->audiobuf_tx[self->pp_ptr],
+                                                   self->audiobuf_rx[self->pp_ptr],
+                                                   buf_sz / 2);
+        } else {
+            status = HAL_I2S_Receive_DMA(&self->i2s,
+                                         self->audiobuf_rx[self->pp_ptr],
+                                         buf_sz / 2);
         }
+
         if (status != HAL_OK) {
             mp_hal_raise(status);
         }
@@ -1340,6 +1364,7 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
     int buf_sz = AUDIOBUFFER_BYTES / 4;
     int error;
     HAL_StatusTypeDef status;
+    
 
     // Eventually this will stop rx and tx selectively as well, perhaps using a switch-case.
     // That will set xfer_state as required to be read by rest of function.
@@ -1355,33 +1380,70 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
         self->xfer_signal = I2S_SIG_NONE;
     }
 
-    if (self->xfer_state == STREAM_OUT) {
+    // DMA transfer:
+    if (self->xfer_state != INACTIVE) {
+        self->pp_ptr = !(self->pp_ptr);
         if (self->is_duplex) {
             status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s,
                                                    self->audiobuf_tx[self->pp_ptr],
                                                    self->audiobuf_rx[self->pp_ptr],
                                                    self->out_sz / 2);
-        } else {
+
+        } else if (self->xfer_state == STREAM_OUT) {
             status = HAL_I2S_Transmit_DMA(&self->i2s,
                                           self->audiobuf_tx[self->pp_ptr],
                                           self->out_sz / 2);
+
+        } else if (self->xfer_state == STREAM_IN) {
+            status = HAL_I2S_Receive_DMA(&self->i2s,
+                                         self->audiobuf_rx[self->pp_ptr],
+                                         self->out_sz / 2);
+
+        } else {
+            // TODO: clean up and raise an error?
+            // shouldn't get here in normal operation
+            status = HAL_ERROR;
         }
+
         if (status != HAL_OK) {
             mp_hal_raise(status);
         }
     }
+
+    /* if (self->xfer_state && STREAM_IN) { */
+    /*     tmp_len = 0; */
+    /* } */
     
-    self->pp_ptr = !(self->pp_ptr);
+    bool buf_ptr = !(self->pp_ptr);
 
-    self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
+    if ((self->xfer_state & STREAM_OUT) != 0) {
+        self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx,
+                                                              &self->audiobuf_tx[buf_ptr],
+                                                              buf_sz, &error);
 
-    // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to end
-    // transmit on next callback:
-    if (self->out_sz == 0) {
-        self->xfer_signal = I2S_SIG_STOP_ALL; // eventually I2S_SIG_STOP_TX
-    } else if (self->out_sz == MP_STREAM_ERROR) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to end
+        // transmit on next callback:
+        if (self->out_sz == 0) {
+            self->xfer_signal = I2S_SIG_STOP_TX; // eventually I2S_SIG_STOP_TX
+        } else if (self->out_sz == MP_STREAM_ERROR) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        }
     }
+    
+    if ((self->xfer_state & STREAM_IN) != 0) {
+        self->out_sz = self->dstream_rx->type->stream_p->write(self->dstream_rx,
+                                                               &self->audiobuf_rx[buf_ptr],
+                                                               buf_sz, &error);
+
+        // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to end
+        // transmit on next callback:
+        if (self->out_sz == 0) {
+            self->xfer_signal = I2S_SIG_STOP_RX; // eventually I2S_SIG_STOP_TX
+        } else if (self->out_sz == MP_STREAM_ERROR) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        }
+    }
+    
 }
 
 /* STATIC void stream_in_buffer_handler(pyb_i2s_obj_t *self) { */
