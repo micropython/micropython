@@ -193,7 +193,7 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
         pass
     print(wifi.ifconfig())
     # enable wake on WLAN
-    wifi.irq(wake=machine.SLEEP)
+    wifi.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep
     machine.sleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
