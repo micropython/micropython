@@ -7,7 +7,7 @@
 @ global variable with the backup registers
     .extern vault_arm_registers
 @ global function that performs the wake up actions
-    .extern pybsleep_suspend_exit
+    .extern pyb_sleep_suspend_exit
 
 @ uint sleep_store(void)
     .global sleep_store
@@ -58,4 +58,4 @@ sleep_restore:
     msr  basepri, r0
     dsb
     isb
-    bl   pybsleep_suspend_exit
+    bl   pyb_sleep_suspend_exit

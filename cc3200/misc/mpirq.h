@@ -24,50 +24,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef MPCALLBACK_H_
-#define MPCALLBACK_H_
+#ifndef MPIRQ_H_
+#define MPIRQ_H_
 
 /******************************************************************************
  DEFINE CONSTANTS
  ******************************************************************************/
-#define mpcallback_INIT_NUM_ARGS                  5
+#define mp_irq_INIT_NUM_ARGS                    4
 
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/
-typedef void (*mp_cb_method_t) (mp_obj_t self);
-typedef mp_obj_t (*mp_cb_init_t) (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+typedef mp_obj_t (*mp_irq_init_t) (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+typedef void (*mp_irq_void_method_t) (mp_obj_t self);
+typedef int (*mp_irq_int_method_t)  (mp_obj_t self);
 
 typedef struct {
-    mp_cb_init_t init;
-    mp_cb_method_t enable;
-    mp_cb_method_t disable;
-} mp_cb_methods_t;
+    mp_irq_init_t init;
+    mp_irq_void_method_t enable;
+    mp_irq_void_method_t disable;
+    mp_irq_int_method_t flags;
+} mp_irq_methods_t;
 
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t parent;
     mp_obj_t handler;
-    mp_cb_methods_t *methods;
+    mp_irq_methods_t *methods;
     bool isenabled;
-} mpcallback_obj_t;
+} mp_irq_obj_t;
 
 /******************************************************************************
  DECLARE EXPORTED DATA
  ******************************************************************************/
-extern const mp_arg_t mpcallback_init_args[];
-extern const mp_obj_type_t pyb_callback_type;
+extern const mp_arg_t mp_irq_init_args[];
+extern const mp_obj_type_t mp_irq_type;
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-void mpcallback_init0 (void);
-mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods, bool enable);
-mpcallback_obj_t *mpcallback_find (mp_obj_t parent);
-void mpcallback_wake_all (void);
-void mpcallback_disable_all (void);
-void mpcallback_remove (const mp_obj_t parent);
-void mpcallback_handler (mp_obj_t self_in);
-uint mpcallback_translate_priority (uint priority);
+void mp_irq_init0 (void);
+mp_obj_t mp_irq_new (mp_obj_t parent, mp_obj_t handler, const mp_irq_methods_t *methods);
+mp_irq_obj_t *mp_irq_find (mp_obj_t parent);
+void mp_irq_wake_all (void);
+void mp_irq_disable_all (void);
+void mp_irq_remove (const mp_obj_t parent);
+void mp_irq_handler (mp_obj_t self_in);
+uint mp_irq_translate_priority (uint priority);
 
-#endif /* MPCALLBACK_H_ */
+#endif /* MPIRQ_H_ */

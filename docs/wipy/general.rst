@@ -1,6 +1,26 @@
 General information about the WiPy
 ==================================
 
+No floating point support
+-------------------------
+
+Due to space reasons, there's no floating point support, and no math module. This
+means that floating point numbers cannot be used anywhere in the code, and that
+all divisions must be performed using '//' instead of '/'. Example::
+
+    >>> r = 4 // 2  # this will work
+    >>> r = 4 / 2   # this WON'T
+
+Before applying power
+---------------------
+
+.. warning:: 
+
+   The GPIO pins of the WiPy are NOT 5V tolerant, connecting them to voltages higer
+   than 3.6V will cause irreparable damage to the board. ADC pins, when configured 
+   in analog mode cannot withstand voltages above 1.8V. Keep these considerations in
+   mind when wiring your electronics.
+
 WLAN default behaviour
 ----------------------
 
@@ -11,22 +31,46 @@ to gain access to the interactive prompt, open a telnet session to that IP addre
 the default port (23). You will be asked for credentials:
 ``login: micro`` and ``password: python``
 
-Local file system and SD card
------------------------------
+.. _wipy_telnet:
+
+Telnet REPL
+-----------
+
+Linux stock telnet works like a charm (also on OSX), but other tools like putty
+work quite too. The default credentials are: **user:** ``micro``, **password:** ``python``.
+See :ref:`network.server <network.server>` for info on how to change the defaults.
+For instance, on a linux shell (when connected to the WiPy in AP mode)::
+
+   $ telnet 192.168.1.1
+
+Local file system and FTP access
+--------------------------------
 
 There is a small internal file system (a drive) on the WiPy, called ``/flash``,
 which is stored within the external serial flash memory.  If a micro SD card
-is hooked-up and enabled, it is available as ``/sd``.
+is hooked-up and mounted, it will be available as well.
 
-When the WiPy boots up, it always boots from the ``boot.py`` located in the
-``/flash`` file system.  If during the boot process the SD card is enabled and
-it's selected as the current drive then the WiPy will try to execute ``main.py``
-that should be located in the SD card.
+When the WiPy starts up, it always boots from the ``boot.py`` located in the
+``/flash`` file system.
 
-The file system is accessible via the native FTP server running in the WiPy. 
+The file system is accessible via the native FTP server running in the WiPy.
 Open your FTP client of choice and connect to:
 
-``ftp://192.168.1.1``, ``user: micro``, ``password: python``
+**url:** ``ftp://192.168.1.1``, **user:** ``micro``, **password:** ``python``
+
+See :ref:`network.server <network.server>` for info on how to change the defaults.
+The recommended clients are: Linux stock FTP (also in OSX), Filezilla and FireFTP.
+For example, on a linux shell::
+
+   $ ftp 192.168.1.1
+
+The FTP server on the WiPy doesn't support active mode, only passive, therefore,
+if using the native unix ftp client, just after logging in do::
+
+    ftp> passive
+
+Besides that, the FTP server only supports one data connection at a time. Check out
+the Filezilla settings section below for more info.
 
 FileZilla settings
 ------------------
@@ -37,20 +81,37 @@ to one, otherwise FileZilla will try to open a second command connection when re
 and saving files, and for simplicity and to reduce code size, only one command and one
 data connections are possible. Other FTP clients might behave in a similar way.
 
+.. _wipy_firmware_upgrade:
+
 Upgrading the firmware Over The Air
 -----------------------------------
 
 OTA software updates can be performed through the FTP server. Upload the ``mcuimg.bin`` file
 to: ``/flash/sys/mcuimg.bin`` it will take around 6s. You won't see the file being stored
-inside ``/flash/sys/`` because it's actually saved bypassing the user file system, but rest
-assured that it was successfully transferred, and it has been signed with a MD5 checksum to
-verify its integrity. Now, reset the MCU by pressing the switch on the board, or by typing::
+inside ``/flash/sys/`` because it's actually saved bypassing the user file system, so it
+ends up inside the internal **hidden** file system, but rest assured that it was successfully
+transferred, and it has been signed with a MD5 checksum to verify its integrity. Now, reset
+the WiPy by pressing the switch on the board, or by typing::
 
-    import pyb
-    pyb.reset()
+    >>> import machine
+    >>> machine.reset()
 
-Boot modes
-----------
+Software updates can be found in: https://github.com/wipy/wipy/releases
+It's always recommended to update to the latest software, but make sure to
+read the **release notes** before.
+
+In order to check your software version, do::
+
+   >>> import os
+   >>> os.uname().release
+
+If the version number is lower than the latest release found in
+`the releases <https://github.com/wipy/wipy/releases>`_, go ahead and update your WiPy!
+
+.. _wipy_boot_modes:
+
+Boot modes and safe boot
+------------------------
 
 If you power up normally, or press the reset button, the WiPy will boot
 into standard mode; the ``boot.py`` file will be executed first, then 
@@ -61,7 +122,7 @@ it to the 3v3 output pin) during reset. This procedure also allows going
 back in time to old firmware versions. The WiPy can hold up to 3 different
 firmware versions, which are: the factory firmware plus 2 user updates.
 
-After reset, if ``GP28`` is held high, the heart beat LED will start flashing
+After reset, if ``GP28`` is held high, the heartbeat LED will start flashing
 slowly, if after 3 seconds the pin is still being held high, the LED will start
 blinking a bit faster and the WiPy will select the previous user update to boot.
 If the previous user update is the desired firmware image, ``GP28`` must be
@@ -79,24 +140,25 @@ and the WiPy will proceed to boot. The firmware selection mechanism is as follow
 | | firmware is selected  | | user update selected  | | firmware is selected     |
 +-------------------------+-------------------------+----------------------------+
 
-In any if the above 3 scenarios, safe boot mode is entered, meaning that
+On all of the above 3 scenarios, safe boot mode is entered, meaning that
 the execution of both ``boot.py`` and ``main.py`` is skipped. This is
 useful to recover from crash situations caused by the user scripts. The selection
-made during safe boot is not persistent, meaning that after the next normal reset,
+made during safe boot is not persistent, therefore after the next normal reset
 the latest firmware will run again.
 
-The heart beat LED
+The heartbeat LED
 ------------------
 
-By default the heart beat LED flashes once every 4s to signal that the system is
-alive. This can be overridden through the HeartBeat class:
+By default the heartbeat LED flashes once every 4s to signal that the system is
+alive. This can be overridden through the :mod:`wipy` module::
 
-``pyb.HeartBeat().disable()``
+   >>> import wipy
+   >>> wipy.heartbeat(False)
 
 There are currently 2 kinds of errors that you might see:
 
-1. If the heart beat LED flashes quickly, then a Python script(eg ``main.py``) 
+1. If the heartbeat LED flashes quickly, then a Python script(eg ``main.py``)
    has an error.  Use the REPL to debug it.
-2. If the heart beat LED stays on, then there was a hard fault, you cannot
+2. If the heartbeat LED stays on, then there was a hard fault, you cannot
    recover from this, the only way out is to press the reset switch.
 

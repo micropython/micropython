@@ -244,7 +244,7 @@ bool sdcard_write_blocks_dma(const uint8_t *src, uint32_t block_num, uint32_t nu
 // consistent interface and methods to mount/unmount it.
 
 STATIC mp_obj_t sd_present(mp_obj_t self) {
-    return MP_BOOL(sdcard_is_present());
+    return mp_obj_new_bool(sdcard_is_present());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(sd_present_obj, sd_present);
 
@@ -256,7 +256,7 @@ STATIC mp_obj_t sd_power(mp_obj_t self, mp_obj_t state) {
         sdcard_power_off();
         result = true;
     }
-    return MP_BOOL(result);
+    return mp_obj_new_bool(result);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(sd_power_obj, sd_power);
 

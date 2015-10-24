@@ -74,12 +74,12 @@ it will fallback to loading the built-in ``ujson`` module.
 
    Libraries specific to the pyboard
    ---------------------------------
-    
+
    The following libraries are specific to the pyboard.
-    
+
    .. toctree::
       :maxdepth: 2
-    
+
       pyb.rst
       network.rst
 
@@ -87,13 +87,12 @@ it will fallback to loading the built-in ``ujson`` module.
 
    .. toctree::
       :maxdepth: 1
-    
+
       ubinascii.rst
-      uhashlib.rst
-      uheapq.rst
       ujson.rst
       ure.rst
       usocket.rst
+      ussl.rst
 
 .. only:: port_wipy
 
@@ -105,8 +104,9 @@ it will fallback to loading the built-in ``ujson`` module.
    .. toctree::
       :maxdepth: 2
 
-      pyb.rst
+      machine.rst
       network.rst
+      wipy.rst
 
 
 .. only:: port_esp8266

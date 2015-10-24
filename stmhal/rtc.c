@@ -161,6 +161,7 @@ STATIC void RTC_CalendarConfig(void);
 
 void rtc_init(void) {
     RTCHandle.Instance = RTC;
+    RTC_DateTypeDef date;
 
     /* Configure RTC prescaler and RTC data registers */
     /* RTC configured as follow:
@@ -188,8 +189,8 @@ void rtc_init(void) {
     // record how long it took for the RTC to start up
     rtc_info = HAL_GetTick() - tick;
 
-    // check data stored in BackUp register0
-    if (HAL_RTCEx_BKUPRead(&RTCHandle, RTC_BKP_DR0) != 0x32f2) {
+    HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+    if (date.Year == 0 && date.Month ==0 && date.Date == 0) {
         // fresh reset; configure RTC Calendar
         RTC_CalendarConfig();
     } else {
@@ -233,9 +234,6 @@ STATIC void RTC_CalendarConfig(void) {
         // init error
         return;
     }
-
-    // write data to indicate the RTC has been set
-    HAL_RTCEx_BKUPWrite(&RTCHandle, RTC_BKP_DR0, 0x32f2);
 }
 
 /*
@@ -419,17 +417,23 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
             if (div <= 16) {
                 wut = 32768 / div * ms / 1000;
             } else {
+                // use 1Hz clock
                 wucksel = 4;
                 wut = ms / 1000;
-                if (ms > 0x10000) {
-                    wucksel = 5;
-                    ms -= 0x10000;
-                    if (ms > 0x10000) {
+                if (wut > 0x10000) {
+                    // wut too large for 16-bit register, try to offset by 0x10000
+                    wucksel = 6;
+                    wut -= 0x10000;
+                    if (wut > 0x10000) {
+                        // wut still too large
                         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "wakeup value too large"));
                     }
                 }
             }
-            wut -= 1;
+            // wut register should be 1 less than desired value, but guard against wut=0
+            if (wut > 0) {
+                wut -= 1;
+            }
             enable = true;
         }
         if (n_args == 3) {
@@ -464,7 +468,7 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
         // set WUTIE to enable wakeup interrupts
         // set WUTE to enable wakeup
         // program WUCKSEL
-        RTC->CR |= (1 << 14) | (1 << 10) | (wucksel & 7);
+        RTC->CR = (RTC->CR & ~7) | (1 << 14) | (1 << 10) | (wucksel & 7);
 
         // enable register write protection
         RTC->WPR = 0xff;
@@ -503,34 +507,34 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_wakeup_obj, 2, 4, pyb_rtc_wakeup);
 mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t cal;
     if (n_args == 2) {
-	cal = mp_obj_get_int(args[1]);
-	mp_uint_t cal_p, cal_m;
-	if (cal < -511 || cal > 512) {
-	    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-					       "calibration value out of range"));
-	}
-	if (cal > 0) {
-	    cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
-	    cal_m = 512 - cal;
-	} else {
-	    cal_p = RTC_SMOOTHCALIB_PLUSPULSES_RESET;
-	    cal_m = -cal;
-	}
-	HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
-	return mp_const_none;
+        cal = mp_obj_get_int(args[1]);
+        mp_uint_t cal_p, cal_m;
+        if (cal < -511 || cal > 512) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "calibration value out of range"));
+        }
+        if (cal > 0) {
+            cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
+            cal_m = 512 - cal;
+        } else {
+            cal_p = RTC_SMOOTHCALIB_PLUSPULSES_RESET;
+            cal_m = -cal;
+        }
+        HAL_RTCEx_SetSmoothCalib(&RTCHandle, RTC_SMOOTHCALIB_PERIOD_32SEC, cal_p, cal_m);
+        return mp_const_none;
     } else {
         // printf("CALR = 0x%x\n", (mp_uint_t) RTCHandle.Instance->CALR); // DEBUG
-	// Test if CALP bit is set in CALR:
-	if (RTCHandle.Instance->CALR & 0x8000) {
-	    cal = 512 - (RTCHandle.Instance->CALR & 0x1ff);
-	} else {
-	    cal = -(RTCHandle.Instance->CALR & 0x1ff);
-	}
-	return mp_obj_new_int(cal);
+        // Test if CALP bit is set in CALR:
+        if (RTCHandle.Instance->CALR & 0x8000) {
+            cal = 512 - (RTCHandle.Instance->CALR & 0x1ff);
+        } else {
+            cal = -(RTCHandle.Instance->CALR & 0x1ff);
+        }
+        return mp_obj_new_int(cal);
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_calibration_obj, 1, 2, pyb_rtc_calibration);
-    
+
 STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_rtc_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },

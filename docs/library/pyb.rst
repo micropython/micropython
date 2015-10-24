@@ -63,25 +63,14 @@ Time related functions
 Reset related functions
 -----------------------
 
-.. only:: port_pyboard
+.. function:: hard_reset()
 
-    .. function:: hard_reset()
-    
-       Resets the pyboard in a manner similar to pushing the external RESET
-       button.
+   Resets the pyboard in a manner similar to pushing the external RESET
+   button.
 
-.. only:: port_wipy
+.. function:: bootloader()
 
-    .. function:: reset()
-    
-       Resets the WiPy in a manner similar to pushing the external RESET
-       button.
-
-.. only:: port_pyboard
-
-    .. function:: bootloader()
-    
-       Activate the bootloader without BOOT\* pins.
+   Activate the bootloader without BOOT\* pins.
 
 Interrupt related functions
 ---------------------------
@@ -169,19 +158,11 @@ Power related functions
        Put the pyboard into a "deep sleep" state.
     
        This reduces power consumption to less than 50 uA.  To wake from this
-       sleep state requires an external interrupt or a real-time-clock event.
+       sleep state requires a real-time-clock event, or an external interrupt
+       on X1 (PA0=WKUP) or X18 (PC13=TAMP1).
        Upon waking the system undergoes a hard reset.
     
        See :meth:`rtc.wakeup` to configure a real-time-clock wakeup event.
-
-.. only:: port_wipy
-
-    .. function:: freq([sysclk])
-
-       Returns a tuple of clock frequencies: ``(sysclk)``
-       These correspond to:
-
-          - sysclk: frequency of the CPU
 
 Miscellaneous functions
 -----------------------
@@ -255,12 +236,6 @@ Miscellaneous functions
     
        Return a 30-bit hardware generated random number.
 
-.. only:: port_wipy
-
-    .. function:: rng()
-    
-       Return a 24-bit software generated random number.
-
 .. function:: sync()
 
    Sync all file systems.
@@ -270,13 +245,6 @@ Miscellaneous functions
     .. function:: unique_id()
     
        Returns a string of 12 bytes (96 bits), which is the unique ID of the MCU.
-
-.. only:: port_wipy
-
-    .. function:: unique_id()
-    
-       Returns a string of 6 bytes (48 bits), which is the unique ID of the MCU.
-       This also corresponds to the ``MAC address`` of the WiPy.
 
 Classes
 -------
@@ -302,19 +270,3 @@ Classes
        pyb.Timer.rst
        pyb.UART.rst
        pyb.USB_VCP.rst
-
-.. only:: port_wipy
-
-    .. toctree::
-       :maxdepth: 1
-    
-       pyb.ADC.rst
-       pyb.HeartBeat.rst
-       pyb.I2C.rst
-       pyb.Pin.rst
-       pyb.RTC.rst
-       pyb.SD.rst
-       pyb.SPI.rst
-       pyb.Timer.rst
-       pyb.UART.rst
-       pyb.WDT.rst

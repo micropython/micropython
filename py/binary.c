@@ -145,6 +145,9 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
         // Extension to CPython: array of objects
         case 'O':
             return ((mp_obj_t*)p)[index];
+        // Extension to CPython: array of pointers
+        case 'P':
+            return mp_obj_new_int((mp_int_t)((void**)p)[index]);
     }
     return MP_OBJ_NEW_SMALL_INT(val);
 }
@@ -369,5 +372,8 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
             ((double*)p)[index] = val;
             break;
 #endif
+        // Extension to CPython: array of pointers
+        case 'P':
+            ((void**)p)[index] = (void*)val;
     }
 }

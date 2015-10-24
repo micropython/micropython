@@ -93,6 +93,7 @@
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
 
+#define MICROPY_PY_OS_STATVFS       (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_UJSON            (1)
@@ -191,11 +192,22 @@ void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
 
-#define MP_PLAT_PRINT_STRN(str, len) fwrite(str, 1, len, stdout)
+#include <unistd.h>
+#define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
 
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
+#endif
+
+#ifdef __ANDROID__
+#include <android/api-level.h>
+#if __ANDROID_API__ < 4
+// Bionic libc in Android 1.5 misses these 2 functions
+// 1.442695040888963407354163704 is 1/_M_LN2
+#define log2(x) (log(x) * 1.442695040888963407354163704)
+#define nan(x) NAN
+#endif
 #endif
 
 extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;

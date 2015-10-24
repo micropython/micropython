@@ -12,7 +12,7 @@ ifeq ($(CROSS), 1)
 CROSS_COMPILE = arm-none-eabi-
 endif
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../stmhal
@@ -59,7 +59,7 @@ all: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 # Run emulation build on a POSIX system with suitable terminal settings

@@ -9,7 +9,7 @@ include ../py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I$(BUILD)
 INC += -I../tools/tinytest/
@@ -74,11 +74,11 @@ $(BUILD)/tinytest.o:
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(OBJ)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware-test.elf: $(OBJ_TEST)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ_TEST) $(LIBS)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 include ../py/mkrules.mk

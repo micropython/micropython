@@ -33,7 +33,7 @@
 #ifndef _FFCONF
 #define _FFCONF 32020	/* Revision ID */
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 
 /*---------------------------------------------------------------------------/
 / Functions and Buffer Configurations

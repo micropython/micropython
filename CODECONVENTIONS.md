@@ -41,12 +41,12 @@ Names:
 - Use CAPS_WITH_UNDERSCORE for enums and macros.
 - When defining a type use underscore_case and put '_t' after it.
 
-Integer types: Micro Python runs on 16, 32, and 64 bit machines, so it's
+Integer types: MicroPython runs on 16, 32, and 64 bit machines, so it's
 important to use the correctly-sized (and signed) integer types.  The
 general guidelines are:
 - For most cases use mp_int_t for signed and mp_uint_t for unsigned
   integer values.  These are guaranteed to be machine-word sized and
-  therefore big enough to hold the value from a Micro Python small-int
+  therefore big enough to hold the value from a MicroPython small-int
   object.
 - Use size_t for things that count bytes / sizes of objects.
 - You can use int/uint, but remember that they may be 16-bits wide.

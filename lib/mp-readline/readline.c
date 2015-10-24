@@ -82,7 +82,8 @@ STATIC void mp_hal_move_cursor_back(uint pos) {
     }
 }
 
-STATIC void mp_hal_erase_line_from_cursor(void) {
+STATIC void mp_hal_erase_line_from_cursor(uint n_chars_to_erase) {
+    (void)n_chars_to_erase;
     mp_hal_stdout_tx_strn("\x1b[K", 3);
 }
 #endif
@@ -105,7 +106,7 @@ int readline_process_char(int c) {
     bool redraw_from_cursor = false;
     int redraw_step_forward = 0;
     if (rl.escape_seq == ESEQ_NONE) {
-        if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_D && vstr_len(rl.line) == rl.orig_line_len) {
+        if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_E && vstr_len(rl.line) == rl.orig_line_len) {
             // control character with empty line
             return c;
         } else if (c == CHAR_CTRL_A) {
@@ -338,8 +339,7 @@ delete_key:
     if (redraw_from_cursor) {
         if (rl.line->len < last_line_len) {
             // erase old chars
-            // (number of chars to erase: last_line_len - rl.cursor_pos)
-            mp_hal_erase_line_from_cursor();
+            mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);

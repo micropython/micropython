@@ -30,10 +30,15 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "py/mpconfig.h"
 
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
+
+#ifdef __ANDROID__
+#define USE_STATFS 1
+#endif
 
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
@@ -62,6 +67,50 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
+#if MICROPY_PY_OS_STATVFS
+
+#if MICROPY_PY_OS_STATVFS
+#if USE_STATFS
+#include <sys/vfs.h>
+#define STRUCT_STATVFS struct statfs
+#define STATVFS statfs
+#define F_FAVAIL sb.f_ffree
+#define F_NAMEMAX sb.f_namelen
+#define F_FLAG sb.f_flags
+#else
+#include <sys/statvfs.h>
+#define STRUCT_STATVFS struct statvfs
+#define STATVFS statvfs
+#define F_FAVAIL sb.f_favail
+#define F_NAMEMAX sb.f_namemax
+#define F_FLAG sb.f_flag
+#endif
+#endif
+
+STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
+    STRUCT_STATVFS sb;
+    mp_uint_t len;
+    const char *path = mp_obj_str_get_data(path_in, &len);
+
+    int res = STATVFS(path, &sb);
+    RAISE_ERRNO(res, errno);
+
+    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.f_bsize);
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.f_frsize);
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(sb.f_blocks);
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(sb.f_bfree);
+    t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.f_bavail);
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(sb.f_files);
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(sb.f_ffree);
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(F_FAVAIL);
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(F_FLAG);
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(F_NAMEMAX);
+    return t;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_statvfs_obj, mod_os_statvfs);
+#endif
+
 STATIC mp_obj_t mod_os_unlink(mp_obj_t path_in) {
     mp_uint_t len;
     const char *path = mp_obj_str_get_data(path_in, &len);
@@ -88,6 +137,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
 STATIC const mp_map_elem_t mp_module_os_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR__os) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&mod_os_stat_obj },
+    #if MICROPY_PY_OS_STATVFS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_statvfs), (mp_obj_t)&mod_os_statvfs_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_system), (mp_obj_t)&mod_os_system_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),(mp_obj_t)&mod_os_unlink_obj},
 };

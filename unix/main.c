@@ -45,7 +45,7 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
-#include "unix_mphal.h"
+#include MICROPY_HAL_H
 #include "input.h"
 
 // Command line options, with their defaults
@@ -108,15 +108,15 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         }
         #endif
 
-        mp_parse_node_t pn = mp_parse(lex, input_kind);
+        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
 
         /*
         printf("----------------\n");
-        mp_parse_node_print(pn, 0);
+        mp_parse_node_print(parse_tree.root, 0);
         printf("----------------\n");
         */
 
-        mp_obj_t module_fun = mp_compile(pn, source_name, emit_opt, is_repl);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
 
         if (!compile_only) {
             // execute it
@@ -153,7 +153,8 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 STATIC int do_repl(void) {
-    mp_hal_stdout_tx_str("Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\n");
+    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; "
+        MICROPY_PY_SYS_PLATFORM " version\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     #if MICROPY_USE_READLINE == 1
 
@@ -162,10 +163,12 @@ STATIC int do_repl(void) {
     vstr_t line;
     vstr_init(&line, 16);
     for (;;) {
+        mp_hal_stdio_mode_raw();
+
     input_restart:
         vstr_reset(&line);
-        mp_hal_stdio_mode_raw();
         int ret = readline(&line, ">>> ");
+        mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_D) {
             // EOF
@@ -173,31 +176,56 @@ STATIC int do_repl(void) {
             mp_hal_stdio_mode_orig();
             vstr_clear(&line);
             return 0;
+        } else if (ret == CHAR_CTRL_E) {
+            // paste mode
+            mp_hal_stdout_tx_str("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== ");
+            vstr_reset(&line);
+            for (;;) {
+                char c = mp_hal_stdin_rx_chr();
+                if (c == CHAR_CTRL_C) {
+                    // cancel everything
+                    mp_hal_stdout_tx_str("\n");
+                    goto input_restart;
+                } else if (c == CHAR_CTRL_D) {
+                    // end of input
+                    mp_hal_stdout_tx_str("\n");
+                    break;
+                } else {
+                    // add char to buffer and echo
+                    vstr_add_byte(&line, c);
+                    if (c == '\r') {
+                        mp_hal_stdout_tx_str("\n=== ");
+                    } else {
+                        mp_hal_stdout_tx_strn(&c, 1);
+                    }
+                }
+            }
+            parse_input_kind = MP_PARSE_FILE_INPUT;
         } else if (line.len == 0) {
             if (ret != 0) {
                 printf("\n");
             }
-            mp_hal_stdio_mode_orig();
-            continue;
-        }
-
-        while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
-            vstr_add_byte(&line, '\n');
-            ret = readline(&line, "... ");
-            if (ret == CHAR_CTRL_C) {
-                // cancel everything
-                printf("\n");
-                mp_hal_stdio_mode_orig();
-                goto input_restart;
-            } else if (ret == CHAR_CTRL_D) {
-                // stop entering compound statement
-                break;
+            goto input_restart;
+        } else {
+            // got a line with non-zero length, see if it needs continuing
+            while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
+                vstr_add_byte(&line, '\n');
+                ret = readline(&line, "... ");
+                if (ret == CHAR_CTRL_C) {
+                    // cancel everything
+                    printf("\n");
+                    goto input_restart;
+                } else if (ret == CHAR_CTRL_D) {
+                    // stop entering compound statement
+                    break;
+                }
             }
         }
+
         mp_hal_stdio_mode_orig();
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, false);
-        ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        ret = execute_from_lexer(lex, parse_input_kind, true);
         if (ret & FORCED_EXIT) {
             return ret;
         }

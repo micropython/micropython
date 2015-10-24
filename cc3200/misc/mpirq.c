@@ -34,46 +34,51 @@
 #include "inc/hw_types.h"
 #include "interrupt.h"
 #include "pybsleep.h"
-#include "mpcallback.h"
 #include "mpexception.h"
 #include "mperror.h"
+#include "mpirq.h"
 
 
 /******************************************************************************
- DEFINE PUBLIC DATA
+ DECLARE PUBLIC DATA
  ******************************************************************************/
-const mp_arg_t mpcallback_init_args[] = {
-    { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+const mp_arg_t mp_irq_init_args[] = {
+    { MP_QSTR_trigger,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    { MP_QSTR_priority,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} }, // the lowest priority
     { MP_QSTR_handler,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_priority,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-    { MP_QSTR_value,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-    { MP_QSTR_wake_from,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PYB_PWR_MODE_ACTIVE} },
+    { MP_QSTR_wake,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 };
+
+/******************************************************************************
+ DECLARE PRIVATE DATA
+ ******************************************************************************/
+STATIC uint8_t mp_irq_priorities[] = { INT_PRIORITY_LVL_7, INT_PRIORITY_LVL_6, INT_PRIORITY_LVL_5, INT_PRIORITY_LVL_4,
+                                       INT_PRIORITY_LVL_3, INT_PRIORITY_LVL_2, INT_PRIORITY_LVL_1 };
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
-void mpcallback_init0 (void) {
+void mp_irq_init0 (void) {
     // initialize the callback objects list
-    mp_obj_list_init(&MP_STATE_PORT(mpcallback_obj_list), 0);
+    mp_obj_list_init(&MP_STATE_PORT(mp_irq_obj_list), 0);
 }
 
-mp_obj_t mpcallback_new (mp_obj_t parent, mp_obj_t handler, const mp_cb_methods_t *methods, bool enable) {
-    mpcallback_obj_t *self = m_new_obj(mpcallback_obj_t);
-    self->base.type = &pyb_callback_type;
+mp_obj_t mp_irq_new (mp_obj_t parent, mp_obj_t handler, const mp_irq_methods_t *methods) {
+    mp_irq_obj_t *self = m_new_obj(mp_irq_obj_t);
+    self->base.type = &mp_irq_type;
     self->handler = handler;
     self->parent = parent;
-    self->methods = (mp_cb_methods_t *)methods;
-    self->isenabled = enable;
+    self->methods = (mp_irq_methods_t *)methods;
+    self->isenabled = true;
     // remove it in case it was already registered
-    mpcallback_remove(parent);
-    mp_obj_list_append(&MP_STATE_PORT(mpcallback_obj_list), self);
+    mp_irq_remove(parent);
+    mp_obj_list_append(&MP_STATE_PORT(mp_irq_obj_list), self);
     return self;
 }
 
-mpcallback_obj_t *mpcallback_find (mp_obj_t parent) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
-        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+mp_irq_obj_t *mp_irq_find (mp_obj_t parent) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_irq_obj_list).len; i++) {
+        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_STATE_PORT(mp_irq_obj_list).items[i]));
         if (callback_obj->parent == parent) {
             return callback_obj;
         }
@@ -81,58 +86,40 @@ mpcallback_obj_t *mpcallback_find (mp_obj_t parent) {
     return NULL;
 }
 
-void mpcallback_wake_all (void) {
+void mp_irq_wake_all (void) {
     // re-enable all active callback objects one by one
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
-        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_irq_obj_list).len; i++) {
+        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_STATE_PORT(mp_irq_obj_list).items[i]));
         if (callback_obj->isenabled) {
             callback_obj->methods->enable(callback_obj->parent);
         }
     }
 }
 
-void mpcallback_disable_all (void) {
+void mp_irq_disable_all (void) {
     // re-enable all active callback objects one by one
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mpcallback_obj_list).len; i++) {
-        mpcallback_obj_t *callback_obj = ((mpcallback_obj_t *)(MP_STATE_PORT(mpcallback_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_irq_obj_list).len; i++) {
+        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_STATE_PORT(mp_irq_obj_list).items[i]));
         callback_obj->methods->disable(callback_obj->parent);
     }
 }
 
-void mpcallback_remove (const mp_obj_t parent) {
-    mpcallback_obj_t *callback_obj;
-    if ((callback_obj = mpcallback_find(parent))) {
-        mp_obj_list_remove(&MP_STATE_PORT(mpcallback_obj_list), callback_obj);
+void mp_irq_remove (const mp_obj_t parent) {
+    mp_irq_obj_t *callback_obj;
+    if ((callback_obj = mp_irq_find(parent))) {
+        mp_obj_list_remove(&MP_STATE_PORT(mp_irq_obj_list), callback_obj);
     }
 }
 
-uint mpcallback_translate_priority (uint priority) {
-    if (priority < 1 || priority > 7) {
+uint mp_irq_translate_priority (uint priority) {
+    if (priority < 1 || priority > MP_ARRAY_SIZE(mp_irq_priorities)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
-
-   switch (priority) {
-   case 1:
-       return INT_PRIORITY_LVL_7;
-   case 2:
-       return INT_PRIORITY_LVL_6;
-   case 3:
-       return INT_PRIORITY_LVL_5;
-   case 4:
-       return INT_PRIORITY_LVL_4;
-   case 5:
-       return INT_PRIORITY_LVL_3;
-   case 6:
-       return INT_PRIORITY_LVL_2;
-   case 7:
-       return INT_PRIORITY_LVL_1;
-   default:
-       return INT_PRIORITY_LVL_7;
-   }
+    return mp_irq_priorities[priority - 1];
 }
 
-void mpcallback_handler (mp_obj_t self_in) {
-    mpcallback_obj_t *self = self_in;
+void mp_irq_handler (mp_obj_t self_in) {
+    mp_irq_obj_t *self = self_in;
     if (self && self->handler != mp_const_none) {
         // when executing code within a handler we must lock the GC to prevent
         // any memory allocations.
@@ -159,59 +146,57 @@ void mpcallback_handler (mp_obj_t self_in) {
 /******************************************************************************/
 // Micro Python bindings
 
-/// \method init()
-/// Initializes the interrupt callback. With no parameters passed, everything will default
-/// to the values assigned to mpcallback_init_args[].
-STATIC mp_obj_t callback_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mpcallback_obj_t *self = pos_args[0];
+STATIC mp_obj_t mp_irq_init (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_irq_obj_t *self = pos_args[0];
     // this is a bit of a hack, but it let us reuse the callback_create method from our parent
     ((mp_obj_t *)pos_args)[0] = self->parent;
     self->methods->init (n_args, pos_args, kw_args);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(callback_init_obj, 1, callback_init);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_irq_init_obj, 1, mp_irq_init);
 
-/// \method enable()
-/// Enables the interrupt callback
-STATIC mp_obj_t callback_enable (mp_obj_t self_in) {
-    mpcallback_obj_t *self = self_in;
+STATIC mp_obj_t mp_irq_enable (mp_obj_t self_in) {
+    mp_irq_obj_t *self = self_in;
     self->methods->enable(self->parent);
     self->isenabled = true;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_enable_obj, callback_enable);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_irq_enable_obj, mp_irq_enable);
 
-/// \method disable()
-/// Disables the interrupt callback
-STATIC mp_obj_t callback_disable (mp_obj_t self_in) {
-    mpcallback_obj_t *self = self_in;
+STATIC mp_obj_t mp_irq_disable (mp_obj_t self_in) {
+    mp_irq_obj_t *self = self_in;
     self->methods->disable(self->parent);
     self->isenabled = false;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(callback_disable_obj, callback_disable);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_irq_disable_obj, mp_irq_disable);
 
-/// \method \call()
-/// Triggers the interrupt callback
-STATIC mp_obj_t callback_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_irq_flags (mp_obj_t self_in) {
+    mp_irq_obj_t *self = self_in;
+    return mp_obj_new_int(self->methods->flags(self->parent));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_irq_flags_obj, mp_irq_flags);
+
+STATIC mp_obj_t mp_irq_call (mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    mpcallback_handler (self_in);
+    mp_irq_handler (self_in);
     return mp_const_none;
 }
 
-STATIC const mp_map_elem_t callback_locals_dict_table[] = {
+STATIC const mp_map_elem_t mp_irq_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&callback_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),              (mp_obj_t)&callback_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable),             (mp_obj_t)&callback_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&mp_irq_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),              (mp_obj_t)&mp_irq_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable),             (mp_obj_t)&mp_irq_disable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flags),               (mp_obj_t)&mp_irq_flags_obj },
 };
 
-STATIC MP_DEFINE_CONST_DICT(callback_locals_dict, callback_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(mp_irq_locals_dict, mp_irq_locals_dict_table);
 
-const mp_obj_type_t pyb_callback_type = {
+const mp_obj_type_t mp_irq_type = {
     { &mp_type_type },
-    .name = MP_QSTR_callback,
-    .call = callback_call,
-    .locals_dict = (mp_obj_t)&callback_locals_dict,
+    .name = MP_QSTR_irq,
+    .call = mp_irq_call,
+    .locals_dict = (mp_obj_t)&mp_irq_locals_dict,
 };
 

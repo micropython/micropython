@@ -6,12 +6,6 @@ for i in range(-2, 3):
         if j != 0:
             print(i, j, i // j, i % j, divmod(i, j))
 
-# this tests compiler constant folding
-print(123 // 7, 123 % 7)
-print(-123 // 7, -123 % 7)
-print(123 // -7, 123 % -7)
-print(-123 // -7, -123 % -7)
-
 # this tests bignum modulo
 a = 987654321987987987987987987987
 b = 19

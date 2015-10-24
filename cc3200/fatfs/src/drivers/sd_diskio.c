@@ -302,19 +302,6 @@ void sd_disk_deinit (void) {
 
 //*****************************************************************************
 //
-//! Gets the disk status.
-//!
-//! This function gets the current status of the drive.
-//!
-//! \return Returns the current status of the specified drive
-//
-//*****************************************************************************
-DSTATUS sd_disk_status (void) {
-    return sd_disk_info.bStatus;
-}
-
-//*****************************************************************************
-//
 //! Reads sector(s) from the disk drive.
 //!
 //!
@@ -365,6 +352,7 @@ DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCount) {
                     pBuffer += 4;
                 }
                 CardSendCmd(CMD_STOP_TRANS, 0);
+                while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
                 Res = RES_OK;
             }
         }
@@ -384,61 +372,62 @@ DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCount) {
 //
 //*****************************************************************************
 DRESULT sd_disk_write (const BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCount) {
-  DRESULT Res = RES_ERROR;
-  unsigned long ulSize;
+    DRESULT Res = RES_ERROR;
+    unsigned long ulSize;
 
-  if (SectorCount > 0) {
-      // Return if disk not initialized
-      if (sd_disk_info.bStatus & STA_NOINIT) {
-          return RES_NOTRDY;
-      }
+    if (SectorCount > 0) {
+        // Return if disk not initialized
+        if (sd_disk_info.bStatus & STA_NOINIT) {
+            return RES_NOTRDY;
+        }
 
-      // SDSC uses linear address, SDHC uses block address
-      if (sd_disk_info.ulCapClass == CARD_CAP_CLASS_SDSC) {
-          ulSectorNumber = ulSectorNumber * SD_SECTOR_SIZE;
-      }
+        // SDSC uses linear address, SDHC uses block address
+        if (sd_disk_info.ulCapClass == CARD_CAP_CLASS_SDSC) {
+            ulSectorNumber = ulSectorNumber * SD_SECTOR_SIZE;
+        }
 
-      // Set the block count
-      MAP_SDHostBlockCountSet(SDHOST_BASE, SectorCount);
+        // Set the block count
+        MAP_SDHostBlockCountSet(SDHOST_BASE, SectorCount);
 
-      // Compute the number of words
-      ulSize = (SD_SECTOR_SIZE * SectorCount) / 4;
+        // Compute the number of words
+        ulSize = (SD_SECTOR_SIZE * SectorCount) / 4;
 
-      // Check if 1 block or multi block transfer
-      if (SectorCount == 1) {
-          // Send single block write command
-          if (CardSendCmd(CMD_WRITE_SINGLE_BLK, ulSectorNumber) == 0) {
-              // Write the data
-              while (ulSize--) {
-                  MAP_SDHostDataWrite (SDHOST_BASE, (*(unsigned long *)pBuffer));
-                  pBuffer += 4;
-              }
-              // Wait for data transfer complete
-              while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
-              Res = RES_OK;
-          }
-      }
-      else {
-          // Set the card write block count
-          if (sd_disk_info.ucCardType == CARD_TYPE_SDCARD) {
-              CardSendCmd(CMD_APP_CMD,sd_disk_info.usRCA << 16);
-              CardSendCmd(CMD_SET_BLK_CNT, SectorCount);
-          }
+        // Check if 1 block or multi block transfer
+        if (SectorCount == 1) {
+            // Send single block write command
+            if (CardSendCmd(CMD_WRITE_SINGLE_BLK, ulSectorNumber) == 0) {
+                // Write the data
+                while (ulSize--) {
+                    MAP_SDHostDataWrite (SDHOST_BASE, (*(unsigned long *)pBuffer));
+                    pBuffer += 4;
+                }
+                // Wait for data transfer complete
+                while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
+                Res = RES_OK;
+            }
+        }
+        else {
+            // Set the card write block count
+            if (sd_disk_info.ucCardType == CARD_TYPE_SDCARD) {
+                CardSendCmd(CMD_APP_CMD,sd_disk_info.usRCA << 16);
+                CardSendCmd(CMD_SET_BLK_CNT, SectorCount);
+            }
 
-          // Send multi block write command
-          if (CardSendCmd(CMD_WRITE_MULTI_BLK, ulSectorNumber) == 0) {
-              // Write the data buffer
-              while (ulSize--) {
-                  MAP_SDHostDataWrite(SDHOST_BASE, (*(unsigned long *)pBuffer));
-                  pBuffer += 4;
-              }
-              // Wait for transfer complete
-              while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
-              CardSendCmd(CMD_STOP_TRANS, 0);
-              Res = RES_OK;
-          }
-      }
-  }
+            // Send multi block write command
+            if (CardSendCmd(CMD_WRITE_MULTI_BLK, ulSectorNumber) == 0) {
+                // Write the data buffer
+                while (ulSize--) {
+                    MAP_SDHostDataWrite(SDHOST_BASE, (*(unsigned long *)pBuffer));
+                    pBuffer += 4;
+                }
+                // Wait for transfer complete
+                while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
+                CardSendCmd(CMD_STOP_TRANS, 0);
+                while (!(MAP_SDHostIntStatus(SDHOST_BASE) & SDHOST_INT_TC));
+                Res = RES_OK;
+            }
+        }
+    }
 
-  return Res;
+    return Res;
 }

@@ -52,3 +52,8 @@ test("@micropython.viper\ndef f(): 1[x] = 1")
 
 # must raise an object
 test("@micropython.viper\ndef f(): raise 1")
+
+# unary ops not implemented
+test("@micropython.viper\ndef f(x:int): +x")
+test("@micropython.viper\ndef f(x:int): -x")
+test("@micropython.viper\ndef f(x:int): ~x")

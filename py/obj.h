@@ -83,6 +83,17 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 2))
 
+#if MICROPY_PY_BUILTINS_FLOAT
+#define mp_const_float_e ((mp_obj_t)&mp_const_float_e_obj)
+#define mp_const_float_pi ((mp_obj_t)&mp_const_float_pi_obj)
+extern const struct _mp_obj_float_t mp_const_float_e_obj;
+extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+
+#define mp_obj_is_float(o) MP_OBJ_IS_TYPE((o), &mp_type_float)
+mp_float_t mp_obj_float_get(mp_obj_t self_in);
+mp_obj_t mp_obj_new_float(mp_float_t value);
+#endif
+
 static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 3) == 0); }
 
@@ -98,8 +109,54 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 2)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 3))
 
+#if MICROPY_PY_BUILTINS_FLOAT
+#define mp_const_float_e ((mp_obj_t)&mp_const_float_e_obj)
+#define mp_const_float_pi ((mp_obj_t)&mp_const_float_pi_obj)
+extern const struct _mp_obj_float_t mp_const_float_e_obj;
+extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+
+#define mp_obj_is_float(o) MP_OBJ_IS_TYPE((o), &mp_type_float)
+mp_float_t mp_obj_float_get(mp_obj_t self_in);
+mp_obj_t mp_obj_new_float(mp_float_t value);
+#endif
+
 static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 1) == 0); }
+
+#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+
+static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 1) != 0); }
+#define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
+
+#define mp_const_float_e ((mp_obj_t)((0x402df854 & ~3) | 2))
+#define mp_const_float_pi ((mp_obj_t)((0x40490fdb & ~3) | 2))
+
+static inline bool mp_obj_is_float(mp_const_obj_t o)
+    { return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0x7f800004) != 0x7f800004; }
+static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
+    union {
+        mp_float_t f;
+        mp_uint_t u;
+    } num = {.u = (mp_uint_t)o & ~3};
+    return num.f;
+}
+static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
+    union {
+        mp_float_t f;
+        mp_uint_t u;
+    } num = {.f = f};
+    return (mp_obj_t)((num.u & ~0x3) | 2);
+}
+
+static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
+    { return (((mp_uint_t)(o)) & 0x7f800007) == 0x7f800006; }
+#define MP_OBJ_QSTR_VALUE(o) ((((mp_uint_t)(o)) >> 3) & 0xfffff)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 0x7f800006))
+
+static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
+    { return ((((mp_int_t)(o)) & 3) == 0); }
 
 #endif
 
@@ -459,7 +516,7 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 mp_obj_t mp_obj_new_none(void);
-mp_obj_t mp_obj_new_bool(bool value);
+static inline mp_obj_t mp_obj_new_bool(mp_int_t x) { return x ? mp_const_true : mp_const_false; }
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(mp_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
@@ -473,7 +530,6 @@ mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items);
 mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
-mp_obj_t mp_obj_new_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
@@ -528,10 +584,6 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); // may return MP_OBJ_NULL
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 mp_obj_t mp_generic_unary_op(mp_uint_t op, mp_obj_t o_in);
 
-// bool
-// TODO make lower case when it has proven itself
-static inline mp_obj_t MP_BOOL(mp_int_t x) { return x ? mp_const_true : mp_const_false; }
-
 // cell
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
 void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
@@ -568,11 +620,6 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, mp_uint_
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float
-typedef struct _mp_obj_float_t {
-    mp_obj_base_t base;
-    mp_float_t value;
-} mp_obj_float_t;
-mp_float_t mp_obj_float_get(mp_obj_t self_in);
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 
 // complex

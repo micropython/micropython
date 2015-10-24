@@ -92,7 +92,7 @@ void mp_hal_move_cursor_back(uint pos) {
     SetConsoleCursorPosition(con_out, info.dwCursorPosition);
 }
 
-void mp_hal_erase_line_from_cursor() {
+void mp_hal_erase_line_from_cursor(uint n_chars_to_erase) {
     assure_conout_handle();
     CONSOLE_SCREEN_BUFFER_INFO info;
     GetConsoleScreenBufferInfo(con_out, &info);

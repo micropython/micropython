@@ -1,4 +1,4 @@
-.. _pyb.SD:
+.. _machine.SD:
 
 class SD -- secure digital memory card
 ======================================
@@ -13,36 +13,29 @@ more info regarding the pins which can be remapped to be used with a SD card.
 
 Example usage::
 
-    # data, clk and cmd pins must be passed along with
+    from machine import SD
+    import os
+    # clk cmd and dat0 pins must be passed along with
     # their respective alternate functions
-    sd = pyb.SD(('GP15', 8, 'GP10', 6, 'GP11', 6))
-    sd.mount()
+    sd = machine.SD(pins=('GP10', 'GP11', 'GP15'))
+    os.mount(sd, '/sd')
     # do normal file operations
 
 Constructors
 ------------
 
-.. class:: pyb.SD([pins_tuple])
+.. class:: machine.SD(id,... )
 
-   Create a SD card object. In order to initalize the card, give it a 6-tuple
-   ``(dat_pin, dat_af, clk_pin, clk_af, cmd_pin, cmd_af)`` with the data, clock
-   and cmd pins together their respective alternate functions.
+   Create a SD card object. See ``init()`` for parameters if initialization. 
 
 Methods
 -------
 
-.. method:: sd.init([pins_tuple])
+.. method:: sd.init(id=0, pins=('GP10', 'GP11', 'GP15'))
 
-   Enable the SD card.
+   Enable the SD card. In order to initalize the card, give it a 3-tuple:
+   ``(clk_pin, cmd_pin, dat0_pin)``.
 
 .. method:: sd.deinit()
 
-   Disable the SD card (also unmounts it to avoid file system crashes).
-
-.. method:: sd.mount()
-
-   Mount the SD card on the file system. Accesible as ``/sd``.
-
-.. method:: sd.unmount()
-
-   Unmount the SD card from the file system.
+   Disable the SD card.

@@ -49,10 +49,16 @@ typedef struct _mp_obj_str_t {
     { str_len = qstr_len(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_len = ((mp_obj_str_t*)str_obj_in)->len; }
 
 // use this macro to extract the string data and length
+#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, mp_uint_t *len);
+#define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
+    mp_uint_t str_len; const byte *str_data = mp_obj_str_get_data_no_check(str_obj_in, &str_len);
+#else
 #define GET_STR_DATA_LEN(str_obj_in, str_data, str_len) \
     const byte *str_data; mp_uint_t str_len; if (MP_OBJ_IS_QSTR(str_obj_in)) \
     { str_data = qstr_data(MP_OBJ_QSTR_VALUE(str_obj_in), &str_len); } \
     else { str_len = ((mp_obj_str_t*)str_obj_in)->len; str_data = ((mp_obj_str_t*)str_obj_in)->data; }
+#endif
 
 mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, mp_uint_t str_len);

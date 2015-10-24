@@ -67,7 +67,7 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
     DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 3) {
         case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
-        case MP_NATIVE_TYPE_BOOL: return MP_BOOL(val);
+        case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
         case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
         case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
         default: assert(0); return mp_const_none;

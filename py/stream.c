@@ -47,14 +47,6 @@
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
-#if MICROPY_STREAMS_NON_BLOCK
-// TODO: This is POSIX-specific (but then POSIX is the only real thing,
-// and anything else just emulates it, right?)
-#define is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
-#else
-#define is_nonblocking_error(errno) (0)
-#endif
-
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
 STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
@@ -96,7 +88,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
             mp_uint_t out_sz = o->type->stream_p->read(o, p, more_bytes, &error);
             if (out_sz == MP_STREAM_ERROR) {
                 vstr_cut_tail_bytes(&vstr, more_bytes);
-                if (is_nonblocking_error(error)) {
+                if (mp_is_nonblocking_error(error)) {
                     // With non-blocking streams, we read as much as we can.
                     // If we read nothing, return None, just like read().
                     // Otherwise, return data read so far.
@@ -167,7 +159,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
     mp_uint_t out_sz = o->type->stream_p->read(o, vstr.buf, sz, &error);
     if (out_sz == MP_STREAM_ERROR) {
         vstr_clear(&vstr);
-        if (is_nonblocking_error(error)) {
+        if (mp_is_nonblocking_error(error)) {
             // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
             // "If the object is in non-blocking mode and no bytes are available,
             // None is returned."
@@ -192,7 +184,7 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
     int error;
     mp_uint_t out_sz = o->type->stream_p->write(self_in, buf, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
-        if (is_nonblocking_error(error)) {
+        if (mp_is_nonblocking_error(error)) {
             // http://docs.python.org/3/library/io.html#io.RawIOBase.write
             // "None is returned if the raw stream is set not to block and
             // no single byte could be readily written to it."
@@ -235,7 +227,7 @@ STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
     int error;
     mp_uint_t out_sz = o->type->stream_p->read(o, bufinfo.buf, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
-        if (is_nonblocking_error(error)) {
+        if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
         }
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
@@ -260,7 +252,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
         int error;
         mp_uint_t out_sz = o->type->stream_p->read(self_in, p, current_read, &error);
         if (out_sz == MP_STREAM_ERROR) {
-            if (is_nonblocking_error(error)) {
+            if (mp_is_nonblocking_error(error)) {
                 // With non-blocking streams, we read as much as we can.
                 // If we read nothing, return None, just like read().
                 // Otherwise, return data read so far.
@@ -321,7 +313,7 @@ STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *arg
         int error;
         mp_uint_t out_sz = o->type->stream_p->read(o, p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
-            if (is_nonblocking_error(error)) {
+            if (mp_is_nonblocking_error(error)) {
                 if (vstr.len == 1) {
                     // We just incremented it, but otherwise we read nothing
                     // and immediately got EAGAIN. This is case is not well

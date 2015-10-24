@@ -7,27 +7,30 @@ Quick reference for the WiPy
     :alt: WiPy pinout and alternate functions table
     :width: 800px
 
-General board control
----------------------
+General board control (including sleep modes)
+---------------------------------------------
 
-See :mod:`pyb`. ::
+See the :mod:`machine` module::
 
-    import pyb
+    import machine
 
-    help(pyb) # display all members from the pyb module
-    pyb.delay(50) # wait 50 milliseconds
-    pyb.millis() # number of milliseconds since boot-up
-    pyb.freq() # get the CPU frequency
-    pyb.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
+    help(machine) # display all members from the machine module
+    machine.freq() # get the CPU frequency
+    machine.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
+
+    machine.idle()        # average curernt decreases to (~12mA), any interrupts wakes it up
+    machine.sleep()       # everything except for WLAN is powered down (~950uA avg. current)
+                          # wakes from Pin, RTC or WLAN
+    machine.deepsleep()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
 
 Pins and GPIO
 -------------
 
-See :ref:`pyb.Pin <pyb.Pin>`. ::
+See :ref:`machine.Pin <machine.Pin>`. ::
 
-    from pyb import Pin
+    from machine import Pin
 
-    # initialize GP2 in gpio mode (af=0) and make it an output
+    # initialize GP2 in gpio mode (alt=0) and make it an output
     p_out = Pin('GP2', mode=Pin.OUT)
     p_out.value(1)
     p_out.value(0)
@@ -35,35 +38,35 @@ See :ref:`pyb.Pin <pyb.Pin>`. ::
     p_out(True)
 
     # make GP1 an input with the pull-up enabled
-    p_in = Pin('GP1', mode=Pin.IN, pull = Pin.PULL_UP)
+    p_in = Pin('GP1', mode=Pin.IN, pull=Pin.PULL_UP)
     p_in() # get value, 0 or 1
 
 Timers
 ------
 
-See :ref:`pyb.Timer <pyb.Timer>` and :ref:`pyb.Pin <pyb.Pin>`. ::
+See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. ::
 
-    from pyb import Timer
-    from pyb import Pin
+    from machine import Timer
+    from machine import Pin
 
     tim = Timer(1, mode=Timer.PERIODIC)
     tim_a = tim.channel(Timer.A, freq=1000)
     tim_a.time() # get the value in microseconds
     tim_a.freq(1) # 1 Hz
     
-    p_out = Pin('GP2', af=0, mode=Pin.OUT)
-    tim_a.callback(handler=lambda t: p_out.toggle())
+    p_out = Pin('GP2', mode=Pin.OUT)
+    tim_a.irq(handler=lambda t: p_out.toggle())
 
 PWM (pulse width modulation)
 ----------------------------
 
-See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.Timer <pyb.Timer>`. ::
+See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. ::
 
-    from pyb import Timer
-    from pyb import Pin
+    from machine import Timer
+    from machine import Pin
 
-    # assign GP25 to alternate function 5 (PWM)
-    p_out = Pin('GP25', af=9, type=Pin.STD)
+    # assign GP25 to alternate function 9 (PWM)
+    p_out = Pin('GP25', mode=Pin.AF, alt=9)
 
     # timer 2 in PWM mode and width must be 16 buts
     tim = Timer(2, mode=Timer.PWM, width=16)
@@ -74,9 +77,9 @@ See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.Timer <pyb.Timer>`. ::
 ADC (analog to digital conversion)
 ----------------------------------
 
-See :ref:`pyb.ADC <pyb.ADC>`. ::
+See :ref:`machine.ADC <machine.ADC>`. ::
 
-    from pyb import ADC
+    from machine import ADC
 
     adc = ADC()
     apin = adc.channel(pin='GP3')
@@ -85,19 +88,19 @@ See :ref:`pyb.ADC <pyb.ADC>`. ::
 UART (serial bus)
 -----------------
 
-See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.UART <pyb.UART>`. ::
+See :ref:`machine.UART <machine.UART>`. ::
 
-    from pyb import Pin, UART
-    uart = UART(0, 9600)
+    from machine import UART
+    uart = UART(0, baudrate=9600)
     uart.write('hello')
     uart.read(5) # read up to 5 bytes
 
 SPI bus
 -------
 
-See :ref:`pyb.SPI <pyb.SPI>`. ::
+See :ref:`machine.SPI <machine.SPI>`. ::
 
-    from pyb SPI
+    from machine import SPI
 
     # configure the SPI master @ 2MHz
     spi = SPI(0, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
@@ -109,9 +112,9 @@ See :ref:`pyb.SPI <pyb.SPI>`. ::
 I2C bus
 -------
 
-See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.I2C <pyb.I2C>`. ::
+See :ref:`machine.I2C <machine.I2C>`. ::
 
-    from pyb import Pin, I2C
+    from machine import I2C
     # configure the I2C bus
     i2c = I2C(0, I2C.MASTER, baudrate=100000)
     i2c.scan() # returns list of slave addresses
@@ -123,9 +126,9 @@ See :ref:`pyb.Pin <pyb.Pin>` and :ref:`pyb.I2C <pyb.I2C>`. ::
 Watchdog timer (WDT)
 --------------------
 
-See :ref:`pyb.WDT <pyb.WDT>`. ::
+See :ref:`machine.WDT <machine.WDT>`. ::
 
-    from pyb import WDT
+    from machine import WDT
 
     # enable the WDT with a timeout of 5s (1s is the minimum)
     wdt = WDT(timeout=5000)
@@ -134,80 +137,87 @@ See :ref:`pyb.WDT <pyb.WDT>`. ::
 Real time clock (RTC)
 ---------------------
 
-See :ref:`pyb.RTC <pyb.RTC>` and ``pyb.Sleep``. ::
+See :ref:`machine.RTC <machine.RTC>` ::
 
-    from pyb import RTC, Sleep
+    import machine
+    from machine import RTC
 
-    rtc = pyb.RTC()
-    rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
-    print(rtc.datetime())
+    rtc = machine.RTC() # init with default time and date
+    rtc = RTC(datetime=(2015, 8, 29, 9, 0, 0, 0, None)) # init with a specific time and date
+    print(rtc.now())
 
-    def some_handler (rtc_obj):
-        # trigger the callback again in 30s
-        rtc_obj.callback(value=30000, handler=some_handler)
+    def alarm_handler (rtc_o):
+        pass
+        # do some non blocking operations
+        # warning printing on an irq via telnet is not
+        # possible, only via UART 
 
-    # create a RTC alarm that expires in 30s
-    rtc.callback(value=30000, handler=some_handler, wake_from=Sleep.SUSPENDED)
+    # create a RTC alarm that expires after 5 seconds
+    rtc.alarm(time=5000, repeat=False)
+
+    # enable RTC interrupts
+    rtc_i = rtc.irq(trigger=RTC.ALARM0, handler=alarm_handler, wake=machine.SLEEP)
 
     # go into suspended mode waiting for the RTC alarm to expire and wake us up
-    Sleep.suspend()
+    machine.sleep()
 
 SD card
 -------
 
-See :ref:`pyb.SD <pyb.SD>`. ::
+See :ref:`machine.SD <machine.SD>`. ::
 
-    from pyb import SD
+    from machine import SD
+    import os
 
-    # SD card pins need special configuration so we pass them to the constructor
-    # data pin, data af, clock pin, clock af, cmd pin, cmd af
-    sd = pyb.SD(('GP15', 8, 'GP10', 6, 'GP11', 6))
-    sd.mount()
+    # clock pin, cmd pin, data0 pin
+    sd = SD(pins=('GP10', 'GP11', 'GP15'))
+    # or use default ones for the expansion board
+    sd = SD()
+    os.mount(sd, '/sd')
 
 WLAN (WiFi) 
 -----------
 
-See :ref:`network.WLAN <network.WLAN>` and ``pyb.Sleep``. ::
+See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
 
+    import machine
     from network import WLAN
-    from pyb import Sleep
 
     # configure the WLAN subsystem in station mode (the default is AP)
-    wifi = WLAN(WLAN.STA)
+    wifi = WLAN(mode=WLAN.STA)
     # go for fixed IP settings
-    wifi.ifconfig(('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+    wifi.ifconfig(config=('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
     wifi.scan()     # scan for available netrworks
-    wifi.connect(ssid='mynetwork', security=2, key='mynetworkkey')
+    wifi.connect(ssid='mynetwork', auth=(WLAN.WPA2, 'mynetworkkey'))
     while not wifi.isconnected():
         pass
     print(wifi.ifconfig())
     # enable wake on WLAN
-    wifi.callback(wake_from=Sleep.SUSPENDED)
+    wifi.irq(wake=machine.SLEEP)
     # go to sleep
-    Sleep.suspend()
+    machine.sleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
 
-Sleep and power modes control
------------------------------
+Telnet and FTP server
+---------------------
 
-See ``pyb.Sleep``. ::
+See :ref:`network.server <network.server>` ::
 
-    from pyb import Sleep
+    from network import server
 
-    Sleep.idle()        # lowest sleep mode (~12mA), any interrupts wakes it up
-    Sleep.suspend()     # everything except for WLAN is powered down (~950uA)
-                        # wakes from Pin, RTC or WLAN
-
-    Sleep.hibernate()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
+    # init with new user, pass word and seconds timeout
+    server = server.init(login=('user', 'password'), timeout=60)
+    server.timeout(300) # change the timeout
+    server.timeout() # get the timeout
+    server.isrunning() # check wether the server is running or not
 
 Heart beat LED
 --------------
 
-See :ref:`pyb.HeartBeat <pyb.HeartBeat>`. ::
+See :mod:`wipy`. ::
 
-    from pyb import HeartBeat
+    import wipy
 
-    # disable the heart beat indication (you are free to use this LED connected to GP25)
-    HeartBeat().disable()
-    # enable the heart beat again
-    HeartBeat().enable()
+    wipy.heartbeat(False)  # disable the heartbeat LED
+    wipy.heartbeat(True)   # enable the heartbeat LED
+    wipy.heartbeat()       # get the heartbeat state

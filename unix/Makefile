@@ -13,7 +13,7 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include ../py/py.mk
 
-INC =  -I.
+INC +=  -I.
 INC +=  -I..
 INC += -I$(BUILD)
 
@@ -81,11 +81,11 @@ endif
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d ../lib/libffi/out/lib/libffi-*/include)
+LIBFFI_CFLAGS_MOD := -I$(shell ls -1d ../lib/libffi/build_dir/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = ../lib/libffi/out/lib32/libffi.a
+  LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = ../lib/libffi/out/lib/libffi.a
+  LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib/libffi.a
  endif
 else
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
@@ -200,9 +200,19 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: libffi
+deplibs: libffi axtls
 
+# install-exec-recursive & install-data-am targets are used to avoid building
+# docs and depending on makeinfo
 libffi:
 	cd ../lib/libffi; git clean -d -x -f
 	cd ../lib/libffi; ./autogen.sh
-	cd ../lib/libffi; ./configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; make install
+	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
+	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
+	make install-exec-recursive; make -C include install-data-am
+
+axtls:
+	cd ../lib/axtls; cp config/upyconfig config/.config
+	cd ../lib/axtls; make oldconfig -B
+	cd ../lib/axtls; make clean
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"

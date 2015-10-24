@@ -90,6 +90,8 @@ SECTIONS
         *modpybpin.o(.literal*, .text*)
         *modpybrtc.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
+        *modnetwork.o(.literal* .text*)
+        *moduos.o(.literal* .text*)
         *modutime.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */

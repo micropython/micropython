@@ -266,8 +266,9 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
     const void *optval;
     socklen_t optlen;
+    int val;
     if (MP_OBJ_IS_INT(args[3])) {
-        int val = mp_obj_int_get_truncated(args[3]);
+        val = mp_obj_int_get_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
     } else {
@@ -428,12 +429,12 @@ STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
     const char *host = mp_obj_str_get_str(args[0]);
     const char *serv = NULL;
     struct addrinfo hints;
+    char buf[6];
     memset(&hints, 0, sizeof(hints));
     // getaddrinfo accepts port in string notation, so however
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
         unsigned port = (unsigned short)MP_OBJ_SMALL_INT_VALUE(args[1]);
-        char buf[6];
         sprintf(buf, "%u", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;

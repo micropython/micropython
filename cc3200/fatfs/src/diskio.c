@@ -10,12 +10,11 @@
 #include <stdbool.h>
 
 #include "py/mpconfig.h"
+#include "py/runtime.h"
 #include "py/obj.h"
-#include "diskio.h"		        /* FatFs lower layer API */
+#include "diskio.h"             /* FatFs lower layer API */
 #include "sflash_diskio.h"      /* Serial flash disk IO API */
-#if MICROPY_HW_HAS_SDCARD
-#include "sd_diskio.h"		    /* SDCARD disk IO API */
-#endif
+#include "sd_diskio.h"          /* SDCARD disk IO API */
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -23,10 +22,9 @@
 #include "prcm.h"
 #include "pybrtc.h"
 #include "timeutils.h"
-
-/* Definitions of physical drive number for each drive */
-#define SFLASH		0	/* Map SFLASH drive to drive number 0 */
-#define SDCARD	    1	/* Map SD card to drive number 1 */
+#include "ff.h"
+#include "pybsd.h"
+#include "moduos.h"
 
 
 /*-----------------------------------------------------------------------*/
@@ -37,20 +35,19 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-	switch (pdrv) {
-	case SFLASH :
-	    return sflash_disk_status();
-#if MICROPY_HW_HAS_SDCARD
-	case SDCARD :
-	    return sd_disk_status();
-#endif
-	default:
-	    break;
-	}
-	return STA_NODISK;
+    if (pdrv == FLASH) {
+        return sflash_disk_status();
+    } else {
+        os_fs_mount_t *mount_obj;
+        if ((mount_obj = osmount_find_by_volume(pdrv))) {
+            if (mount_obj->writeblocks[0] == MP_OBJ_NULL) {
+                return STA_PROTECT;
+            }
+            return 0;
+        }
+    }
+    return STA_NODISK;
 }
-
-
 
 /*-----------------------------------------------------------------------*/
 /* Inidialize a Drive                                                    */
@@ -60,28 +57,21 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat = 0;
-
-	switch (pdrv) {
-	case SFLASH :
-		if (RES_OK != sflash_disk_init()) {
-		    stat = STA_NOINIT;
-		}
-		return stat;
-#if MICROPY_HW_HAS_SDCARD
-    case SDCARD :
-        if (RES_OK != sd_disk_init()) {
-            stat = STA_NOINIT;
+    if (pdrv == FLASH) {
+        if (RES_OK != sflash_disk_init()) {
+            return STA_NOINIT;
         }
-        return stat;
-#endif
-    default:
-        break;
-	}
-	return STA_NOINIT;
+    } else {
+        os_fs_mount_t *mount_obj;
+        if ((mount_obj = osmount_find_by_volume(pdrv))) {
+            if (mount_obj->writeblocks[0] == MP_OBJ_NULL) {
+                return STA_PROTECT;
+            }
+            return 0;
+        }
+    }
+    return STA_NODISK;
 }
-
-
 
 /*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
@@ -94,21 +84,24 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	switch (pdrv) {
-	case SFLASH :
-	    return sflash_disk_read(buff, sector, count);
-#if MICROPY_HW_HAS_SDCARD
-    case SDCARD :
-        return sd_disk_read(buff, sector, count);
-#endif
-    default:
-        break;
-	}
-
-	return RES_PARERR;
+    if (pdrv == FLASH) {
+        return sflash_disk_read(buff, sector, count);
+    } else {
+        os_fs_mount_t *mount_obj;
+        if ((mount_obj = osmount_find_by_volume(pdrv))) {
+            // optimization for the built-in sd card device
+            if (mount_obj->device == (mp_obj_t)&pybsd_obj) {
+                return sd_disk_read(buff, sector, count);
+            }
+            mount_obj->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+            mount_obj->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
+            return mp_obj_get_int(mp_call_method_n_kw(2, 0, mount_obj->readblocks));
+        }
+        // nothing mounted
+        return RES_ERROR;
+    }
+    return RES_PARERR;
 }
-
-
 
 /*-----------------------------------------------------------------------*/
 /* Write Sector(s)                                                       */
@@ -122,18 +115,23 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	switch (pdrv) {
-	case SFLASH :
-		return sflash_disk_write(buff, sector, count);
-#if MICROPY_HW_HAS_SDCARD
-    case SDCARD :
-        return sd_disk_write(buff, sector, count);
-#endif
-    default:
-        break;
-	}
-
-	return RES_PARERR;
+    if (pdrv == FLASH) {
+        return sflash_disk_write(buff, sector, count);
+    } else {
+        os_fs_mount_t *mount_obj;
+        if ((mount_obj = osmount_find_by_volume(pdrv))) {
+            // optimization for the built-in sd card device
+            if (mount_obj->device == (mp_obj_t)&pybsd_obj) {
+                return sd_disk_write(buff, sector, count);
+            }
+            mount_obj->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+            mount_obj->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void *)buff);
+            return mp_obj_get_int(mp_call_method_n_kw(2, 0, mount_obj->writeblocks));
+        }
+        // nothing mounted
+        return RES_ERROR;
+    }
+    return RES_PARERR;
 }
 #endif
 
@@ -149,41 +147,47 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-    switch (pdrv) {
-    case SFLASH:
+    if (pdrv == FLASH) {
         switch (cmd) {
         case CTRL_SYNC:
             return sflash_disk_flush();
         case GET_SECTOR_COUNT:
             *((DWORD*)buff) = SFLASH_SECTOR_COUNT;
             return RES_OK;
-            break;
         case GET_SECTOR_SIZE:
-            *((WORD*)buff) = SFLASH_SECTOR_SIZE;
+            *((DWORD*)buff) = SFLASH_SECTOR_SIZE;
             return RES_OK;
-            break;
         case GET_BLOCK_SIZE:
             *((DWORD*)buff) = 1; // high-level sector erase size in units of the block size
             return RES_OK;
         }
-        break;
-#if MICROPY_HW_HAS_SDCARD
-    case SDCARD:
-        switch (cmd) {
-        case CTRL_SYNC:
-            return RES_OK;
-        case GET_SECTOR_COUNT:
-            *(WORD*)buff = sd_disk_info.ulNofBlock;
-            break;
-        case GET_SECTOR_SIZE :
-            *(WORD*)buff = SD_SECTOR_SIZE;
-            break;
-        case GET_BLOCK_SIZE:
-            *((DWORD*)buff) = 1; // high-level sector erase size in units of the block size
-            return RES_OK;
+    } else {
+        os_fs_mount_t *mount_obj;
+        if ((mount_obj = osmount_find_by_volume(pdrv))) {
+            switch (cmd) {
+            case CTRL_SYNC:
+                if (mount_obj->sync[0] != MP_OBJ_NULL) {
+                    mp_call_method_n_kw(0, 0, mount_obj->sync);
+                }
+                return RES_OK;
+            case GET_SECTOR_COUNT:
+                // optimization for the built-in sd card device
+                if (mount_obj->device == (mp_obj_t)&pybsd_obj) {
+                    *((DWORD*)buff) = sd_disk_info.ulNofBlock * (sd_disk_info.ulBlockSize / 512);
+                } else {
+                    *((DWORD*)buff) = mp_obj_get_int(mp_call_method_n_kw(0, 0, mount_obj->count));
+                }
+                return RES_OK;
+            case GET_SECTOR_SIZE:
+                *((DWORD*)buff) = SD_SECTOR_SIZE;  // Sector size is fixed to 512 bytes, as with SD cards
+                return RES_OK;
+            case GET_BLOCK_SIZE:
+                *((DWORD*)buff) = 1; // high-level sector erase size in units of the block size
+                return RES_OK;
+            }
         }
-        break;
-#endif
+        // nothing mounted
+        return RES_ERROR;
     }
     return RES_PARERR;
 }
@@ -195,7 +199,7 @@ DWORD get_fattime (
 )
 {
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_2000_to_struct_time(pybrtc_get_seconds(), &tm);
+    timeutils_seconds_since_2000_to_struct_time(pyb_rtc_get_seconds(), &tm);
 
     return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21)  |
             ((tm.tm_mday) << 16)       | ((tm.tm_hour) << 11) |

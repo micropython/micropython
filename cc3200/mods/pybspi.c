@@ -156,7 +156,7 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_arg_val_t *args) {
+STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *args) {
     // verify that mode is master
     if (args[0].u_int != SPI_MODE_MASTER) {
         goto invalid_args;
@@ -201,24 +201,20 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, mp_arg_val_t *args) {
     mp_obj_t pins_o = args[6].u_obj;
     if (pins_o != mp_const_none) {
         mp_obj_t *pins;
-        mp_uint_t n_pins = 3;
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
             pins = (mp_obj_t *)pyb_spi_def_pin;
         } else {
-            mp_obj_get_array(pins_o, &n_pins, &pins);
-            if (n_pins != 3) {
-                goto invalid_args;
-            }
+            mp_obj_get_array_fixed_n(pins_o, 3, &pins);
         }
-        pin_assign_pins_af (pins, n_pins, PIN_TYPE_STD_PU, PIN_FN_SPI, 0);
+        pin_assign_pins_af (pins, 3, PIN_TYPE_STD_PU, PIN_FN_SPI, 0);
     }
 
     // init the bus
     pybspi_init((const pyb_spi_obj_t *)self);
 
     // register it with the sleep module
-    pybsleep_add((const mp_obj_t)self, (WakeUpCB_t)pybspi_init);
+    pyb_sleep_add((const mp_obj_t)self, (WakeUpCB_t)pybspi_init);
 
     return mp_const_none;
 
@@ -275,7 +271,7 @@ STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
     // invalidate the baudrate
     pyb_spi_obj.baudrate = 0;
     // unregister it with the sleep module
-    pybsleep_remove((const mp_obj_t)self_in);
+    pyb_sleep_remove((const mp_obj_t)self_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);

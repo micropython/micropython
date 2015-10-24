@@ -1,6 +1,6 @@
 # Build Instructions for Teensy 3.1
 
-Currently the Teensy 3.1 port of Micro Python builds under Linux and not under Windows.
+Currently the Teensy 3.1 port of MicroPython builds under Linux and not under Windows.
 
 The tool chain required for the build can be found at <https://launchpad.net/gcc-arm-embedded>.
 

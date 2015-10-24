@@ -35,6 +35,7 @@ QCFG(BYTES_IN_HASH, MICROPY_QSTR_BYTES_IN_HASH)
 
 Q()
 Q(*)
+Q(_)
 Q(__build_class__)
 Q(__class__)
 Q(__doc__)
@@ -103,6 +104,7 @@ Q(uint)
 Q(ptr)
 Q(ptr8)
 Q(ptr16)
+Q(ptr32)
 #endif
 
 #if MICROPY_EMIT_INLINE_THUMB
@@ -606,4 +608,9 @@ Q(mem)
 Q(mem8)
 Q(mem16)
 Q(mem32)
+#endif
+
+#if MICROPY_PY_USSL
+Q(ussl)
+Q(wrap_socket)
 #endif

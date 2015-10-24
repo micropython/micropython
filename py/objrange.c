@@ -131,7 +131,7 @@ STATIC mp_obj_t range_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_range_t *self = self_in;
     mp_int_t len = range_len(self);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(len > 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len > 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
         default: return MP_OBJ_NULL; // op not supported
     }
@@ -148,9 +148,9 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_seq_get_fast_slice_indexes(len, index, &slice);
             mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
             o->base.type = &mp_type_range;
-            o->start = slice.start;
-            o->stop = slice.stop;
-            o->step = slice.step;
+            o->start = self->start + slice.start * self->step;
+            o->stop = self->start + slice.stop * self->step;
+            o->step = slice.step * self->step;
             return o;
         }
 #endif

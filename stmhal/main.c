@@ -135,6 +135,7 @@ static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
 "\r\n"
+"import machine\r\n"
 "import pyb\r\n"
 "#pyb.main('main.py') # main script to run after this one\r\n"
 "#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
@@ -150,7 +151,7 @@ static const char fresh_pybcdc_inf[] =
 ;
 
 static const char fresh_readme_txt[] =
-"This is a Micro Python board\r\n"
+"This is a MicroPython board\r\n"
 "\r\n"
 "You can get started right away by writing your Python code in 'main.py'.\r\n"
 "\r\n"
