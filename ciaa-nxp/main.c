@@ -138,8 +138,25 @@ int main(int argc, char **argv) {
 		mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }
 
-    pyexec_friendly_repl();
+    // Main script is finished, so now go into REPL mode.
+    // The REPL mode can change, or it can request a soft reset.
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
+
+    // pyexec_friendly_repl();
+    mp_hal_stdout_tx_strn("\nTerminated", 0);
     mp_deinit();
+    while (1)
+        __asm__ volatile("wfi");
     return 0;
 }
 
