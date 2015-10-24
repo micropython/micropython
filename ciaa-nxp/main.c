@@ -30,7 +30,7 @@ static char *stack_top;
 static __DATA(RAM2) char heap[32*1024];
 
 //extern const char programScript[];
-
+#if 0
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -49,6 +49,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
 }
+#endif
 
 static FATFS fatfs0;
 
