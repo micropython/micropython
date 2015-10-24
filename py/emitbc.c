@@ -345,7 +345,6 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit_write_bytecode_byte(emit, 255); // end of list sentinel
 
     #if MICROPY_PORTABLE_CODE
-    // initialise cur_const: table starts with block, source and arg names
     emit->ct_cur_qstr = 2 + scope->num_pos_args + scope->num_kwonly_args;
     emit->ct_cur_obj = 0;
     emit->ct_cur_raw_code = 0;
@@ -424,7 +423,11 @@ void mp_emit_bc_end_pass(emit_t *emit) {
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->bytecode_size,
-            emit->const_table, emit->scope->scope_flags);
+            emit->const_table,
+            #if MICROPY_PORTABLE_CODE_SAVE
+            emit->ct_cur_qstr, emit->ct_cur_obj, emit->ct_cur_raw_code,
+            #endif
+            emit->scope->scope_flags);
     }
 }
 

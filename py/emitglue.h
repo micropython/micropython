@@ -43,10 +43,34 @@ typedef struct _mp_raw_code_t mp_raw_code_t;
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t len, const mp_uint_t *const_table, mp_uint_t scope_flags);
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t len,
+    const mp_uint_t *const_table,
+    #if MICROPY_PORTABLE_CODE_SAVE
+    uint16_t n_qstr, uint16_t n_obj, uint16_t n_raw_code,
+    #endif
+    mp_uint_t scope_flags);
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
 
 mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
+
+#if MICROPY_PORTABLE_CODE
+typedef mp_uint_t (*mp_reader_byte_t)(void *data);
+typedef const byte *(*mp_reader_ptr_t)(void *data, size_t len);
+
+typedef struct _mp_reader_t {
+    void *data;
+    mp_reader_byte_t read_byte;
+    mp_reader_ptr_t get_ptr;
+} mp_reader_t;
+
+mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
+mp_raw_code_t *mp_raw_code_load_file(const char *filename);
+#endif
+
+#if MICROPY_PORTABLE_CODE_SAVE
+void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
+void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
+#endif
 
 #endif // __MICROPY_INCLUDED_PY_EMITGLUE_H__
