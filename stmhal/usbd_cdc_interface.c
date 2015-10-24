@@ -352,7 +352,7 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
         delta_len = *Len;
 
     } else {
-        // filter out sepcial interrupt character from the buffer
+        // filter out special interrupt character from the buffer
         bool char_found = false;
         uint8_t *dest = Buf;
         uint8_t *src = Buf;
