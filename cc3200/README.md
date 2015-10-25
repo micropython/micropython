@@ -80,8 +80,8 @@ the file was successfully transferred, and it has been signed with a MD5 checksu
 Now, reset the MCU by pressing the switch on the board, or by typing:
 
 ```python
-import pyb
-pyb.reset()
+import machine
+machine.reset()
 ```
 
 ### Note regarding FileZilla:
