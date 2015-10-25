@@ -11,7 +11,7 @@ the WiPy. Before anything else, make sure that your WiPy is running
 the latest software, check :ref:`OTA How-To <wipy_firmware_upgrade>` for instructions.
 
 1. Get the `Blynk library <https://github.com/wipy/wipy/blob/master/lib/blynk/BlynkLib.py>`_ and put it in ``/flash/lib/`` via FTP.
-2. Get the `Blynk examples <https://github.com/wipy/wipy/tree/master/examples/blynk>`_ edit the network settings, and afterwards
+2. Get the `Blynk examples <https://github.com/wipy/wipy/tree/master/examples/blynk>`_, edit the network settings, and afterwards
    upload them to ``/flash/lib/`` via FTP as well.
 3. Follow the instructions on each example to setup the Blynk dashboard on your smartphone or tablet.
 4. Give it a try, for instance::
