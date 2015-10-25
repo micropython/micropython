@@ -162,9 +162,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #include "realpath.h"
 #include "init.h"
-
-// sleep for given number of milliseconds
-void msec_sleep(double msec);
+#include "sleep.h"
 
 // MSVC specifics
 #ifdef _MSC_VER

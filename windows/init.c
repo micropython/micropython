@@ -26,12 +26,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <windows.h>
-
-HANDLE hSleepEvent = NULL;
+#include "sleep.h"
 
 void init() {
-    hSleepEvent = CreateEvent(NULL, TRUE, FALSE, FALSE);
+    init_sleep();
 #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");
 #else
@@ -40,7 +38,5 @@ void init() {
 }
 
 void deinit() {
-    if (hSleepEvent != NULL) {
-        CloseHandle(hSleepEvent);
-    }
+    deinit_sleep();
 }
