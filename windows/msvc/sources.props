@@ -3,11 +3,23 @@
   <Import Project="env.props" Condition="$(PyEnvIncluded)!=True"/>
   <ItemGroup>
     <ClCompile Include="$(PyBaseDir)py\*.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\*.c" />
-    <ClCompile Include="$(PyBaseDir)unix\*.c" Exclude="$(PyBaseDir)unix\alloc.c;$(PyBaseDir)unix\modffi.c;$(PyBaseDir)unix\modjni.c;$(PyBaseDir)unix\modsocket.c;$(PyBaseDir)unix\modtermios.c;$(PyBaseDir)unix\seg_helpers.c;$(PyBaseDir)unix\unix_mphal.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
+    <ClCompile Include="$(PyBaseDir)unix\file.c"/>
+    <ClCompile Include="$(PyBaseDir)unix\gccollect.c"/>
+    <ClCompile Include="$(PyBaseDir)unix\input.c"/>
+    <ClCompile Include="$(PyBaseDir)unix\main.c"/>
+    <ClCompile Include="$(PyBaseDir)unix\modos.c"/>
+    <ClCompile Include="$(PyBaseDir)unix\modtime.c"/>
+    <ClCompile Include="$(PyBaseDir)extmod\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\modubinascii.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\moductypes.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\moduhashlib.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\moduheapq.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\modujson.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\modure.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\moduzlib.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(PyBaseDir)py\*.h" />
