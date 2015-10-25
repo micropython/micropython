@@ -29,8 +29,8 @@ Plugging into the expansion board and powering on
 -------------------------------------------------
 
 The expansion board can power the WiPy via USB. The WiPy comes with a sticker
-on top of the RF shield tha labels all pins, and this should match the label
-numbers on the expansion board headers. When pluggin it in, the WiPy antenna
+on top of the RF shield that labels all pins, and this should match the label
+numbers on the expansion board headers. When plugging it in, the WiPy antenna
 will end up on top of the SD card connector of the expansion board. A video
 showing how to do this can be found `here <https://www.youtube.com/watch?v=47D9MZ9zFQw>`_.
 
@@ -55,10 +55,10 @@ must be careful when connecting anything to VIN.**
 
 - When powering via ``3V3``:
 
-   **The input volatge must be exactly 3V3, ripple free and from a supply capable
+   **The input voltage must be exactly 3V3, ripple free and from a supply capable
    of sourcing at least 300mA of current**
 
 Performing firmware upgrades
 ----------------------------
 
-For detalied instructions see :ref:`OTA How-To <wipy_firmware_upgrade>`.
+For detailed instructions see :ref:`OTA How-To <wipy_firmware_upgrade>`.

@@ -43,7 +43,7 @@ Factory reset the filesystem
 ----------------------------
 
 If you WiPy's filesystem gets corrupted (very unlikely, but possible), you
-can format it very easily byt doing::
+can format it very easily by doing::
 
    >>> import os
    >>> os.mkfs('/flash')
