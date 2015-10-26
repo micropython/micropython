@@ -47,6 +47,7 @@
 /* Exported constants --------------------------------------------------------*/
 
 #define USE_USB_HS
+#define USE_USB_HS_IN_FS
 
 /* ########################## Module Selection ############################## */
 /**
