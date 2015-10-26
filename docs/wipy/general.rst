@@ -96,9 +96,14 @@ the WiPy by pressing the switch on the board, or by typing::
     >>> import machine
     >>> machine.reset()
 
-Software updates can be found in: https://github.com/wipy/wipy/releases
+Software updates can be found in: https://github.com/wipy/wipy/releases (**Binaries.zip**). 
 It's always recommended to update to the latest software, but make sure to
 read the **release notes** before.
+
+.. note::
+
+   The ``bootloader.bin`` found inside ``Binaries.zip`` is there only for reference, it's not
+   needed for the Over The Air update.
 
 In order to check your software version, do::
 
@@ -107,6 +112,7 @@ In order to check your software version, do::
 
 If the version number is lower than the latest release found in
 `the releases <https://github.com/wipy/wipy/releases>`_, go ahead and update your WiPy!
+
 
 .. _wipy_boot_modes:
 

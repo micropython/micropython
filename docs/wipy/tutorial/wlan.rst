@@ -50,10 +50,10 @@ IP address so that you can access it via telnet or FTP, use the following script
        wlan.ifconfig(config=('192.168.178.107', '255.255.255.0', '192.168.178.1', '8.8.8.8'))
 
    if not wlan.isconnected():
-       wlan.connect(net.ssid, auth=(net.sec, 'mywifikey'), timeout=5000)
+       # change the line below to match your network ssid, security and password
+       wlan.connect('mywifi', auth=(WLAN.WPA2, 'mywifikey'), timeout=5000)
        while not wlan.isconnected():
            machine.idle() # save power while waiting
-       break
 
 .. note::
 
