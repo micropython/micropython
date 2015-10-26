@@ -218,10 +218,14 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+// To collect root pointers
+#include "extmod/modlwip.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
     void *mmap_region_head; \
+    MP_MODLWIP_ROOT_POINTERS
 
 #define MICROPY_HAL_H "unix_mphal.h"
 
