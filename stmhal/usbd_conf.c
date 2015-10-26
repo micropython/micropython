@@ -97,7 +97,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   else if(hpcd->Instance == USB_OTG_HS)
   {
     
-#if defined(STM32F427DISC)
+#if defined(STM32F429DISC)
     /* Configure USB FS GPIOs */
     __GPIOB_CLK_ENABLE();
     __GPIOC_CLK_ENABLE();
@@ -394,7 +394,7 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
 #endif
 
 #ifdef USE_USB_HS  
-#if defined(STM32F427DISC)
+#if defined(STM32F429DISC)
   /*Set LL Driver parameters */
   pcd_handle.Instance = USB_OTG_HS;
   pcd_handle.Init.dev_endpoints = 4; 
