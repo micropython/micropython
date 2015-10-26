@@ -92,21 +92,46 @@ typedef struct {
     uint8_t pin;
     uint8_t ctout;
     uint8_t fnc;
-    uint32_t freq;
-    uint32_t indexCounter;
 }PwmData;
 
-static PwmData pwmsData[] = {{6,5,6,FUNC_1,0,0},{6,12,7,FUNC_1,0,0},{4,1,1,FUNC_1,0,0},{4,2,0,FUNC_1,0,0},{4,3,3,FUNC_1,0,0},{1,5,10,FUNC_1,0,0},{7,4,13,FUNC_1,0,0},{7,5,12,FUNC_1,0,0},{4,4,2,FUNC_1,0,0},{4,5,5,FUNC_1,0,0},{4,6,4,FUNC_1,0,0}}
+static PwmData pwmsData[] = {{6,5,6,FUNC1},{6,12,7,FUNC1},{4,1,1,FUNC1},{4,2,0,FUNC1},{4,3,3,FUNC1},{1,5,10,FUNC1},{7,4,13,FUNC2},{7,5,12,FUNC2},{4,4,2,FUNC1},{4,5,5,FUNC1},{4,6,4,FUNC1}};
 
 void Board_PWM_Init(void)
 {
-	   Chip_SCU_PinMux(port->port, port->pin, MD_PUP|MD_EZI, port->function);
-	   Chip_SCTPWM_Init(LPC_SCT);
-	   Chip_SCTPWM_SetRate(LPC_SCT, pwm->config.frequence);
-	   Chip_SCTPWM_SetOutPin(LPC_SCT, pwm->config.index_counter, port->ctout);
-	   Chip_SCTPWM_Start(LPC_SCT);
+        Chip_SCTPWM_Init(LPC_SCT);
+        //Chip_SCTPWM_SetRate(LPC_SCT, 1000); // 1khz
+        Chip_SCTPWM_Start(LPC_SCT);
+/*
+	uint8_t i=0;
+	uint32_t indexCounter=i+1;
 
+	Chip_SCU_PinMux(pwmsData[i].port, pwmsData[i].pin, MD_PUP|MD_EZI, pwmsData[i].fnc);
+	Chip_SCTPWM_SetOutPin(LPC_SCT, indexCounter, pwmsData[i].ctout);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, pwmsData[i].indexCounter,Chip_SCTPWM_PercentageToTicks(LPC_SCT, pwmsData[i].duty));
+*/
 }
+
+void Board_PWM_SetFrequency(uint32_t freq)
+{
+	Chip_SCTPWM_SetRate(LPC_SCT, freq);
+}
+
+uint32_t calculatePwmIndexCounterByOutNumber(uint8_t outNumber)
+{
+	return  outNumber + 1;
+}
+void Board_PWM_ConfigureOut(uint8_t outNumber)
+{
+	uint32_t indexCounter = calculatePwmIndexCounterByOutNumber(outNumber);
+	Chip_SCU_PinMux(pwmsData[outNumber].port, pwmsData[outNumber].pin, MD_PUP|MD_EZI, pwmsData[outNumber].fnc);
+        Chip_SCTPWM_SetOutPin(LPC_SCT, indexCounter, pwmsData[outNumber].ctout);
+}
+void Board_PWM_SetDutyCycle(uint8_t outNumber, uint8_t duty)
+{
+	uint32_t indexCounter = calculatePwmIndexCounterByOutNumber(outNumber);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, indexCounter,Chip_SCTPWM_PercentageToTicks(LPC_SCT, duty));
+}
+
 
 //===========================================================================================================================
 
