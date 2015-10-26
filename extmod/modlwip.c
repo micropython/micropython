@@ -116,7 +116,7 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "not a valid remote IP"));
     }
 
-    struct netif *n = &(lwip_slip_obj.lwip_netif);
+    struct netif *n = &lwip_slip_obj.lwip_netif;
     if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, NULL, slipif_init, ip_input) == NULL) {
        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "out of memory"));
     }
@@ -214,7 +214,7 @@ STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, 
     } else {
         socket->incoming = (void*)p;
         socket->peer_port = (mp_uint_t)port;
-        memcpy(&(socket->peer), addr, 4);
+        memcpy(&socket->peer, addr, 4);
     }
 }
 
@@ -339,7 +339,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     }
 
     if (ip != NULL) {
-        memcpy(ip, &(socket->peer), 4);
+        memcpy(ip, &socket->peer, 4);
         *port = socket->peer_port;
     }
 
@@ -815,7 +815,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_uint_t ret = 0;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            memcpy(ip, &(socket->peer), 4);
+            memcpy(ip, &socket->peer, 4);
             port = (mp_uint_t) socket->peer_port;
             ret = lwip_tcp_receive(socket, (byte*)vstr.buf, len, &_errno);
             break;
