@@ -31,6 +31,8 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/stream.h"
+#include MICROPY_HAL_H
 
 #include "netutils.h"
 
@@ -43,6 +45,7 @@
 
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
+#include "lwip/sio.h"
 #endif
 
 // FIXME FIXME FIXME
@@ -55,7 +58,6 @@
 
 typedef struct _lwip_slip_obj_t {
     mp_obj_base_t base;
-    u8_t uart_id;
     struct netif lwip_netif;
 } lwip_slip_obj_t;
 
@@ -72,13 +74,39 @@ STATIC void slip_lwip_poll(void *netif) {
 
 STATIC const mp_obj_type_t lwip_slip_type;
 
+// lwIP SLIP callback functions
+sio_fd_t sio_open(u8_t dvnum) {
+    // We support singleton SLIP interface, so just return any truish value.
+    return (sio_fd_t)1;
+}
+
+void sio_send(u8_t c, sio_fd_t fd) {
+    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    int error;
+    type->stream_p->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
+}
+
+u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
+    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    int error;
+    mp_uint_t out_sz = type->stream_p->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
+    if (out_sz == MP_STREAM_ERROR) {
+        if (mp_is_nonblocking_error(error)) {
+            return 0;
+        }
+        // Can't do much else, can we?
+        return 0;
+    }
+    return out_sz;
+}
+
 // constructor lwip.slip(device=integer, iplocal=string, ipremote=string)
 STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
     lwip_slip_obj.base.type = &lwip_slip_type;
 
-    lwip_slip_obj.uart_id = (u8_t)mp_obj_get_int(args[0]);
+    MP_STATE_VM(lwip_slip_stream) = args[0];
 
     ip_addr_t iplocal, ipremote;
     if (!ipaddr_aton(mp_obj_str_get_str(args[1]), &iplocal)) {
@@ -89,7 +117,7 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
     }
 
     struct netif *n = &(lwip_slip_obj.lwip_netif);
-    if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, (void *)&lwip_slip_obj.uart_id, slipif_init, ip_input) == NULL) {
+    if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, NULL, slipif_init, ip_input) == NULL) {
        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "out of memory"));
     }
     netif_set_up(n);
