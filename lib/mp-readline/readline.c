@@ -134,9 +134,9 @@ int readline_process_char(int c) {
             goto right_arrow_key;
         } else if (c == CHAR_CTRL_K) {
             // CTRL-K is kill from cursor to end-of-line, inclusive
-	    vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
-	    // set redraw parameters
-	    redraw_from_cursor = true;
+            vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
+            // set redraw parameters
+            redraw_from_cursor = true;
         } else if (c == CHAR_CTRL_N) {
             // CTRL-N is go to next line in history
             goto down_arrow_key;
@@ -145,10 +145,10 @@ int readline_process_char(int c) {
             goto up_arrow_key;
         } else if (c == CHAR_CTRL_U) {
             // CTRL-U is kill from beginning-of-line up to cursor
-	    vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
-	    // set redraw parameters
-	    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
-	    redraw_from_cursor = true;
+            vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+            // set redraw parameters
+            redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+            redraw_from_cursor = true;
         #endif
         } else if (c == '\r') {
             // newline
