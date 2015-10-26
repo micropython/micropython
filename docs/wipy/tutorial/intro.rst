@@ -17,7 +17,7 @@ Because the WiPy/expansion board does not have a housing it needs a bit of care:
     If you experience a lot of static electricity in your area (eg dry and cold
     climates), take extra care not to shock the WiPy.  If your WiPy came
     in a ESD bag, then this bag is the best way to store and carry the
-    pyboard as it will protect it agains static discharges.
+    WiPy as it will protect it agains static discharges.
 
 As long as you take care of the hardware, you should be okay.  It's almost
 impossible to break the software on the WiPy, so feel free to play around
@@ -46,7 +46,7 @@ Powering by an external power source
 The WiPy can be powered by a battery or other external power source.
 
 **Be sure to connect the positive lead of the power supply to VIN, and
-ground to GND.  There is no polarity protection on the pyboard so you
+ground to GND.  There is no polarity protection on the WiPy so you
 must be careful when connecting anything to VIN.**
 
 - When powering via ``VIN``:

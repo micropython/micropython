@@ -37,7 +37,7 @@ Telnet REPL
 -----------
 
 Linux stock telnet works like a charm (also on OSX), but other tools like putty
-work quite too. The default credentials are: **user:** ``micro``, **password:** ``python``.
+work quite well too. The default credentials are: **user:** ``micro``, **password:** ``python``.
 See :ref:`network.server <network.server>` for info on how to change the defaults.
 For instance, on a linux shell (when connected to the WiPy in AP mode)::
 
@@ -157,7 +157,7 @@ alive. This can be overridden through the :mod:`wipy` module::
 
 There are currently 2 kinds of errors that you might see:
 
-1. If the heartbeat LED flashes quickly, then a Python script(eg ``main.py``)
+1. If the heartbeat LED flashes quickly, then a Python script (eg ``main.py``)
    has an error.  Use the REPL to debug it.
 2. If the heartbeat LED stays on, then there was a hard fault, you cannot
    recover from this, the only way out is to press the reset switch.
