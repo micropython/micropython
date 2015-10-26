@@ -290,16 +290,14 @@ STATIC void pin_obj_configure (const pin_obj_t *self) {
             default:
                 break;
             }
-
+            // configure the direction
+            MAP_GPIODirModeSet(self->port, self->bit, direction);
             // set the pin value
             if (self->value) {
                 MAP_GPIOPinWrite(self->port, self->bit, self->bit);
             } else {
                 MAP_GPIOPinWrite(self->port, self->bit, 0);
             }
-
-            // configure the direction
-            MAP_GPIODirModeSet(self->port, self->bit, direction);
         }
         // now set the alternate function
         MAP_PinModeSet (self->pin_num, self->af);
