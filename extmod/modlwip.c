@@ -353,18 +353,19 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 }
 
 // Helper function for send/sendto to handle TCP packets
-STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t
- len, int *_errno) {
-    u16_t available = tcp_sndbuf((struct tcp_pcb *)socket->pcb);
+STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    struct tcp_pcb *pcb = (struct tcp_pcb *)socket->pcb;
+    u16_t available = tcp_sndbuf(pcb);
+    u16_t write_len = MIN(available, len);
 
-    err_t err = tcp_write((struct tcp_pcb *)socket->pcb, buf, (available > len ? len : available), TCP_WRITE_FLAG_COPY);
+    err_t err = tcp_write(pcb, buf, write_len, TCP_WRITE_FLAG_COPY);
 
     if (err != ERR_OK) {
         *_errno = error_lookup_table[-err];
         return -1;
     }
 
-    return available > len ? len : available;
+    return write_len;
 }
 
 // Helper function for recv/recvfrom to handle TCP packets
