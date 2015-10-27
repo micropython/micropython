@@ -27,9 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
-// used by mp_is_nonblocking_error:
-#include <errno.h>
-
+#include <errno.h> // used by mp_is_nonblocking_error
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -39,10 +37,10 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 #include "py/stream.h"
-#include "file.h" // for stream methods?
+#include "file.h"
 #include "irq.h"
 #include "pin.h"
-#include "led.h" // For led_toggle(n) debugging
+#include "led.h" // For debugging using led_toggle(n)
 #include "genhdr/pins.h"
 #include "dma.h"
 #include "bufhelper.h"
@@ -58,9 +56,6 @@
 /// Master Clock (MCLK) signal to drive an external codec, or accept an I2S
 /// clock input signal (I2S_CLKIN) from an external source to drive I2SPLL.
 ///
-/// TODO: Provide detailed synopsis of I2S
-/// - Usage example
-/// - Methods list
 
 // Possible DMA configurations for I2S busses:
 // SPI2 RX:     DMA1_Stream3.CHANNEL_0
@@ -87,20 +82,23 @@ typedef enum {
     STREAM_IN_OUT  = 0x0C,
 } xfer_state_t;
 
-// For buffer transfers, we want to be able to use the buffer methods write, read, and write_readinto
-// as the transfer initiation function as well as the callback function
-// When a transfer is initiated, the state will be INACTIVE, so the full initialization occurs.
-// after that, when the functions are incorporated into callbacks, the mode will be active, and the
-// initialization can be skipped. The mode provides information as to the last function called, so if
-// the callback is changed on the fly, (to go from a pure write to start recording as well) the
-// functions can respond accordingly.
+// For buffer transfers, we want to be able to use the buffer methods write,
+// read, and write_readinto as the transfer initiation function as well as the
+// callback function.
+// When a transfer is initiated, the state will be INACTIVE, so the full
+// initialization occurs. After that, when the functions are incorporated into
+// callbacks, the mode will be active, and the initialization can be skipped.
+// The mode provides information as to the last function called, so if
+// the callback is changed on the fly, (to go from a pure write to start
+// recording as well) the functions can respond accordingly.
 
-// Also, each function (read, write, write_readinto, and stream_out and stream_in) will check to
-// make sure that any ongoing transfer is of the same type (buffer or stream) and will throw an
-// exception without interrupting the ongoing transfer if called.
+// Also, each function (read, write, write_readinto, and stream_out and stream_in)
+// will check to make sure that any ongoing transfer is of the same type (buffer
+// or stream) and will throw an exception without interrupting the ongoing transfer
+// if called.
 
-// If the stop() function is passed an argument, it can set flags to stop part of a transfer (read or write)
-// while allowing the other part to continue uninterrupted
+// If the stop() function is passed an argument, it can set flags to stop part of
+// a transfer (read or write) while allowing the other part to continue uninterrupted
 
 typedef enum {
     I2S_SIG_NONE,
@@ -125,15 +123,14 @@ typedef struct _pyb_i2s_obj_t {
     xfer_state_t xfer_state;
     xfer_signal_t xfer_signal;
     const pin_obj_t *pins[5];
-    // audio buffers placed before smaller struct members to keep word-alignment
+    // audio buffers placed before smaller struct members to keep word-alignment:
     uint16_t audiobuf_tx[2][AUDIOBUFFER_BYTES / 8];
     uint16_t audiobuf_rx[2][AUDIOBUFFER_BYTES / 8];
     mp_int_t i2s_id : 8;
     bool is_enabled : 1;
-    // bool is_master : 1;
     bool is_duplex : 1;
     bool base_is_tx : 1; // base instance SPIx is either tx or rx
-    bool pp_ptr : 1; // ping-pong pointer for double buffers
+    bool pp_ptr : 1;     // ping-pong pointer for double buffers
 } pyb_i2s_obj_t;
 
 // pins are Bit Clock, Word Select, TX Data, RX Data, and Master Clock Out
@@ -275,10 +272,7 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
         return false;
     }
 
-    // New GPIO initialization section, supercedes the separate I2S2/3 sections
-    // Seems to work! Check with logic analyzer and some more pin combinations
-    // TODO - needs better description
-
+    // GPIO Pin initialization
     // If master clock is not enabled, its pin will not get initialized
     int num_pins = (i2s_obj->i2s.Init.MCLKOutput ==
                     I2S_MCLKOUTPUT_ENABLE) ? NUM_PINS : NUM_PINS - 1;
@@ -299,6 +293,7 @@ STATIC bool i2s_init(pyb_i2s_obj_t *i2s_obj) {
     // STM32Cube_FW_F4_V1.5.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c
     // 48kHz family is accurate for 8, 16, 24, and 48kHz but not 32 or 96
     // 44.1kHz family is accurate for 11.025, 22.05 and 44.1kHz but not 88.2
+
     // TODO: support more of the commonly-used frequencies and account for 16/32 bit frames
     // Also: Refactor to use macros as provided by stm32f4xx_hal_rcc_ex.h
     __HAL_RCC_PLLI2S_DISABLE();
@@ -354,8 +349,9 @@ void i2s_deinit(void) {
     }
 }
 
-// TODO: This is currently enabled, but eventually I2S should be entirely
-// non-blocking, using DMA with callbacks
+// TODO: This is currently enabled to support the buffer-oriented methods send,
+// recv, and send_recv. Eventually I2S should be entirely  non-blocking, using
+// DMA with callbacks
 STATIC HAL_StatusTypeDef i2s_wait_dma_finished(I2S_HandleTypeDef *i2s, uint32_t timeout) {
     uint32_t start = HAL_GetTick();
     while (HAL_I2S_GetState(i2s) != HAL_I2S_STATE_READY) {
@@ -440,8 +436,6 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
             gc_unlock();
         }
     }
-
-    //printf("I2S-TxCplt\n");
     led_state(1, 0); //DEBUG
 }
 
@@ -489,7 +483,7 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     led_state(2, 0); //DEBUG
 }
 
-// Unused I2S callback stubs
+// I2S HalfCplt and Error callback stubs, currently unused
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {}
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {}
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
@@ -910,7 +904,7 @@ STATIC mp_obj_t pyb_i2s_send(mp_uint_t n_args, const mp_obj_t *pos_args,
     // must transmit using send_recv
 
     // TODO - invoke HAL_I2SEx_TransmitReceive_DMA to handle send on I2Sx_EXT
-    // interfaces when available instead of raising error?
+    // interfaces when available instead of raising error
     if (!self->base_is_tx) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                                                 "I2S(%d) base instance not in transmit mode",
@@ -937,16 +931,10 @@ STATIC mp_obj_t pyb_i2s_send(mp_uint_t n_args, const mp_obj_t *pos_args,
     if (query_irq() == IRQ_STATE_DISABLED) {
         status = HAL_I2S_Transmit(&self->i2s, bufinfo.buf, bufinfo.len / 2, args[1].u_int);
     } else {
-        /* dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s, */
-        /*          self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s); */
-        /* self->i2s.hdmatx = &self->tx_dma; */
-        /* self->i2s.hdmarx = NULL; */
         status = HAL_I2S_Transmit_DMA(&self->i2s, bufinfo.buf, bufinfo.len / 2);
         if (status == HAL_OK) {
-            //led_toggle(1);
             status = i2s_wait_dma_finished(&self->i2s, args[1].u_int);
         }
-        /* dma_deinit(&self->tx_dma); */
     }
 
     if (status != HAL_OK) {
@@ -1016,15 +1004,10 @@ STATIC mp_obj_t pyb_i2s_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
         status = HAL_I2S_Receive(&self->i2s, (uint16_t*)vstr.buf,
                                  vstr.len / 2, args[1].u_int);
     } else {
-        /* dma_init(&self->rx_dma, self->rx_dma_stream, &dma_init_struct_i2s, */
-        /*          self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, &self->i2s); */
-        /* self->i2s.hdmarx = &self->rx_dma; */
-        /* self->i2s.hdmatx = NULL; */
         status = HAL_I2S_Receive_DMA(&self->i2s, (uint16_t*)vstr.buf, vstr.len / 2);
         if (status == HAL_OK) {
             status = i2s_wait_dma_finished(&self->i2s, args[1].u_int);
         }
-        /* dma_deinit(&self->rx_dma); */
     }
 
     if (status != HAL_OK) {
@@ -1070,7 +1053,8 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     // TODO - invoke HAL_I2SEx_TransmitReceive_DMA to handle recv on I2Sx_EXT
     // interfaces when available instead of raising error?
-    // TODO - Coudl this test be wrapped in a simple inline function to replace the 'is_duplex' flag
+    // TODO - Could this test be wrapped in a simple inline function to replace
+    // the pyb_i2s_obj->is_duplex flag?
     if (self->i2s.Init.FullDuplexMode != I2S_FULLDUPLEXMODE_ENABLE) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                                                 "I2S(%d) not in duplex mode", self->i2s_id));
@@ -1126,19 +1110,11 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
         status = HAL_I2SEx_TransmitReceive(&self->i2s, bufinfo_send.buf, bufinfo_recv.buf,
                                            bufinfo_send.len / 2, args[2].u_int);
     } else {
-        /* dma_init(&self->tx_dma, self->tx_dma_stream, &dma_init_struct_i2s, */
-        /*          self->tx_dma_channel, DMA_MEMORY_TO_PERIPH, &self->i2s); */
-        /* self->i2s.hdmatx = &self->tx_dma; */
-        /* dma_init(&self->rx_dma, self->rx_dma_stream, &dma_init_struct_i2s, */
-        /*          self->rx_dma_channel, DMA_PERIPH_TO_MEMORY, &self->i2s); */
-        /* self->i2s.hdmarx = &self->rx_dma; */
         status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s, bufinfo_send.buf,
                                                bufinfo_recv.buf, bufinfo_send.len / 2);
         if (status == HAL_OK) {
             status = i2s_wait_dma_finished(&self->i2s, args[2].u_int);
         }
-        /* dma_deinit(&self->tx_dma); */
-        /* dma_deinit(&self->rx_dma); */
     }
 
     if (status != HAL_OK) {
@@ -1153,6 +1129,7 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_send_recv_obj, 1, pyb_i2s_send_recv);
+
 
 /**** I2S streaming methods: ****/
 // Taken from stream.c; could use to make sure stream is opened in binary mode?
@@ -1188,15 +1165,9 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
                                                 "I2S(%d) not configured for tx",
                                                 self->i2s_id));
     }
-    // If I2S state is not 'ready', raise an error _unless_ the current transaction is a
-    // simplex stream_in(); in that case set signals and stream handle to begin duplex
-    // stream_in + stream_out with next callback:
 
-    /* if ((self->xfer_state != INACTIVE) && (self->xfer_state < BUF_STR_DIV)) { */
-    /*     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, */
-    /*                                        "Stream op not allowed during buffer xfer")); */
-    /* } */
-
+    // TODO: Change this check to determine the I2S state from the HAL state,
+    // not pyb_i2s_obj->xfer_state
     if (HAL_I2S_GetState(&self->i2s) != HAL_I2S_STATE_READY) {
         if (self->xfer_state != STREAM_IN) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -1250,18 +1221,11 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
         if (status != HAL_OK) {
             mp_hal_raise(status);
         }
-
-        //i2s_stream_handler(self);
     }
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_out_obj, 1, pyb_i2s_stream_out);
-
-
-// stream_in not working yet; committing initial code
-// note that stream_in and stream_out are currently monopolizing the
-// DMA callbacks; need to detect if stream or buffer methods are being used
 
 STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
                                    mp_map_t *kw_args) {
@@ -1317,6 +1281,13 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
         self->dstream_rx = stream;
         self->pp_ptr = 0;
 
+        // TODO: This code is copied in HAL callback function, it should probably be
+        // factored out as a more sophisticated state check:
+        if (HAL_I2S_GetState(&self->i2s) != HAL_I2S_STATE_READY) {
+            HAL_I2S_DMAStop(&self->i2s);
+            //printf("I2S transfer stop and restart\n"); // DEBUG
+        }
+
         // NOTE: stream_in is not the simple switching of rx/tx and read/write methods
         // from stream_out - the order of operations also must be reversed; the receive
         // must fill the buffer _before_ the buffer is written out a stream, and data
@@ -1355,33 +1326,35 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_stream_in_obj, 1, pyb_i2s_stream_in);
 
 STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
-    // TODO: Move the complexity for streaming - in, out, both - to this function.
-    // The stream functions validate the streams and pass them to the objects
-    // also set flags so that the callback handler knows if it is streaming in, out, or both
-    // stop can also take arguments; it can stop a stream in and a stream out separately
-    // with no args, stop will stop everything but leave the file handles open.
-
+    // i2s_stream_handler manages HAL_I2S_*_DMA functions and data transfers
+    // between streams and buffers:
     int buf_sz = AUDIOBUFFER_BYTES / 4;
     int error;
     HAL_StatusTypeDef status;
-    
 
-    // Eventually this will stop rx and tx selectively as well, perhaps using a switch-case.
-    // That will set xfer_state as required to be read by rest of function.
+    // Set xfer_state as indicated by xfer_signal:
     if (self->xfer_signal == I2S_SIG_STOP_ALL) {
-        status = HAL_I2S_DMAStop(&self->i2s);
         self->xfer_state = INACTIVE;
         self->xfer_signal = I2S_SIG_NONE;
     } else if (self->xfer_signal == I2S_SIG_STOP_RX) {
-        self->xfer_state &= !STREAM_IN;
+        if (self->xfer_state == STREAM_OUT || self->xfer_state == STREAM_IN_OUT) {
+            self->xfer_state = STREAM_OUT;
+        } else {
+            self->xfer_state = INACTIVE;
+        }
         self->xfer_signal = I2S_SIG_NONE;
     } else if (self->xfer_signal == I2S_SIG_STOP_TX) {
-        self->xfer_state &= !STREAM_OUT;
+        if (self->xfer_state == STREAM_IN || self->xfer_state == STREAM_IN_OUT) {
+            self->xfer_state = STREAM_IN;
+        } else {
+            self->xfer_state = INACTIVE;
+        }
         self->xfer_signal = I2S_SIG_NONE;
     }
 
     // DMA transfer:
-    if (self->xfer_state != INACTIVE) {
+    if (self->xfer_state >= BUF_STR_DIV) {
+        // xfer_state indicates active stream transfer
         self->pp_ptr = !(self->pp_ptr);
         if (self->is_duplex) {
             status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s,
@@ -1404,16 +1377,16 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
             // shouldn't get here in normal operation
             status = HAL_ERROR;
         }
-
-        if (status != HAL_OK) {
-            mp_hal_raise(status);
-        }
+    } else {
+        // If xfer_state indicates active buffer transfer (it shouldn't get here
+        // in that case) or INACTIVE, all stream transfers are stopped.
+        status = HAL_I2S_DMAStop(&self->i2s);
     }
 
-    /* if (self->xfer_state && STREAM_IN) { */
-    /*     tmp_len = 0; */
-    /* } */
-    
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+
     bool buf_ptr = !(self->pp_ptr);
 
     if ((self->xfer_state & STREAM_OUT) != 0) {
@@ -1429,44 +1402,19 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
             nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
         }
     }
-    
+
     if ((self->xfer_state & STREAM_IN) != 0) {
-        self->out_sz = self->dstream_rx->type->stream_p->write(self->dstream_rx,
-                                                               &self->audiobuf_rx[buf_ptr],
-                                                               buf_sz, &error);
-
-        // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to end
-        // transmit on next callback:
-        if (self->out_sz == 0) {
-            self->xfer_signal = I2S_SIG_STOP_RX; // eventually I2S_SIG_STOP_TX
-        } else if (self->out_sz == MP_STREAM_ERROR) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        // TODO: mp_stream_write is an available public function, but there is no
+        // mp_stream_read - is there something equivalent that I can use?
+        // Also need to figure out correct way to handle errors and end transfer for stream_in
+        mp_obj_t ret = mp_stream_write(self->dstream_rx, &self->audiobuf_rx[buf_ptr], buf_sz);
+        if ((int) ret < buf_sz) {
+            // A write less than buf_sz is probably because the filesystem is full;
+            // stop the stream_in
+            self->xfer_signal = I2S_SIG_STOP_RX;
         }
-    }
-    
+    }   
 }
-
-/* STATIC void stream_in_buffer_handler(pyb_i2s_obj_t *self) { */
-/*     int buf_sz = AUDIOBUFFER_BYTES / 4; */
-/*     int error; */
-/*     HAL_StatusTypeDef status; */
-/*     // We toggle the ping-pong pointer immediately to continue to receive data before */
-/*     // writing out the buffer that was filled by the last receive call */
-/*     self->pp_ptr = !(self->pp_ptr); */
-/*     status = HAL_I2S_Receive_DMA(&self->i2s, self->audiobuf_rx[self->pp_ptr], buf_sz / 2); */
-
-/*     if (status != HAL_OK) { */
-/*         mp_hal_raise(status); */
-/*     } */
-
-/*     mp_uint_t out_sz = self->dstream_rx->type->stream_p->write(self->dstream_rx, &self->audiobuf_rx[!(self->pp_ptr)], buf_sz, &error); */
-
-/*     printf("stream in buffer handler: out_sz = %d", out_sz); */
-
-/*     if (out_sz == MP_STREAM_ERROR) { */
-/*         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error))); */
-/*     } */
-/* } */
 
 STATIC mp_obj_t pyb_i2s_pause(mp_obj_t self_in){
     pyb_i2s_obj_t *self = self_in;
@@ -1490,16 +1438,30 @@ STATIC mp_obj_t pyb_i2s_resume(mp_obj_t self_in){
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_resume_obj, pyb_i2s_resume);
 
-STATIC mp_obj_t pyb_i2s_stop(mp_obj_t self_in){
-    pyb_i2s_obj_t *self = self_in;
-    self->xfer_signal = I2S_SIG_STOP_ALL;
+STATIC mp_obj_t pyb_i2s_stop(mp_uint_t n_args, const mp_obj_t *args){
+    pyb_i2s_obj_t *self = args[0];
+    if (n_args > 1) {
+        const char *p = mp_obj_str_get_str(args[1]);
+        qstr signal = qstr_from_str(p); 
+        if (signal == MP_QSTR_stream_in) {
+            self->xfer_signal |= I2S_SIG_STOP_RX;
+        } else if (signal == MP_QSTR_stream_out) {
+            self->xfer_signal |= I2S_SIG_STOP_TX;
+        } else {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                                                    "%s not a valid stop argument", p));
+        }
+    } else {
+        self->xfer_signal = I2S_SIG_STOP_ALL;
+    }
+    printf("stp %d,%d", self->xfer_signal, self->xfer_state);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_stop_obj, pyb_i2s_stop);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2s_stop_obj, 1, 2, pyb_i2s_stop);
 
 STATIC mp_obj_t pyb_i2s_callback(mp_obj_t self_in, mp_obj_t callback) {
     // Stub method to set a Python callback
-    // TODO: determine whether any interrupts need to be disabled; maybe not,
+    // TODO: determine whether interrupts need to be disabled; maybe not,
     // since I anticipate that I2S callbacks may be changed on the fly to
     // manage the behavior of long buffer transfers
     pyb_i2s_obj_t *self = self_in;
