@@ -180,6 +180,17 @@ void rtc_init(void) {
 
     mp_uint_t tick = HAL_GetTick();
 
+    // if LTE enabled & ready --> no need to (re-)init RTC
+    if ((RCC->BDCR & 3) == 3) {
+        // remove Backup Domain write protection
+        PWR->CR |= PWR_CR_DBP;
+        // Clear source Reset Flag
+        __HAL_RCC_CLEAR_RESET_FLAGS();
+        // provide some status information
+        rtc_info |= 0x400000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+        return;
+    }
+
     if (HAL_RTC_Init(&RTCHandle) != HAL_OK) {
         // init error
         rtc_info = 0xffff; // indicate error
