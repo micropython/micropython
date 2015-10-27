@@ -329,6 +329,7 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
         case INT32:
             return mp_obj_new_int(((int32_t*)p)[index]);
         case UINT64:
+            return mp_obj_new_int_from_ull(((uint64_t*)p)[index]);
         case INT64:
             return mp_obj_new_int_from_ll(((int64_t*)p)[index]);
         #if MICROPY_PY_BUILTINS_FLOAT
