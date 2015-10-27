@@ -1,6 +1,10 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
+#include <py/mpconfig.h>
+#include <py/misc.h>
+#include MICROPY_HAL_H
+
 // We're running without an OS for this port. We don't provide any services except light protection.
 #define NO_SYS 1
 
@@ -26,7 +30,7 @@ typedef uint32_t sys_prot_t;
 // For now, we can simply define this as a macro for the timer code. But this function isn't
 // universal and other ports will need to do something else. It may be necessary to move
 // things like this into a port-provided header file.
-#define sys_now HAL_GetTick
+#define sys_now mp_hal_ticks_ms
 
 #endif
 
