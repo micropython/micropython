@@ -178,6 +178,17 @@ void rtc_init(void) {
     RTCHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
     RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
 
+    // if LTE enabled & ready --> no need to (re-)init RTC
+    if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
+        // remove Backup Domain write protection
+        PWR->CR |= PWR_CR_DBP;
+        // Clear source Reset Flag
+        __HAL_RCC_CLEAR_RESET_FLAGS();
+        // provide some status information
+        rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+        return;
+    }
+
     mp_uint_t tick = HAL_GetTick();
 
     if (HAL_RTC_Init(&RTCHandle) != HAL_OK) {
