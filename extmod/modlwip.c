@@ -48,9 +48,6 @@
 #include "lwip/sio.h"
 #endif
 
-// FIXME FIXME FIXME
-#define LWIP_DELAY HAL_Delay
-
 #ifdef MICROPY_PY_LWIP_SLIP
 /******************************************************************************/
 // Slip object for modlwip. Requires a serial driver for the port that supports
@@ -324,7 +321,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     if (socket->incoming == NULL) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
                 if (socket->incoming != NULL) break;
             }
             if (socket->incoming == NULL) {
@@ -333,7 +330,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
         } else {
             while (socket->incoming == NULL) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
         }
     }
@@ -378,7 +375,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     if (socket->incoming == NULL) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
                 if (socket->incoming != NULL) break;
             }
             if (socket->incoming == NULL) {
@@ -387,7 +384,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
         } else {
             while (socket->incoming == NULL) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
         }
     }
@@ -572,7 +569,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     if (socket->incoming == NULL) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
                 if (socket->incoming != NULL) break;
             }
             if (socket->incoming == NULL) {
@@ -580,7 +577,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
             }
         } else {
             while (socket->incoming == NULL) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
         }
     }
@@ -656,7 +653,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             // And now we wait...
             if (socket->timeout != -1) {
                 for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                    LWIP_DELAY(100);
+                    mp_hal_delay_ms(100);
                     if (socket->connected != 1) break;
                 }
                 if (socket->connected == 1) {
@@ -664,7 +661,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 }
             } else {
                 while (socket->connected == 1) {
-                    LWIP_DELAY(100);
+                    mp_hal_delay_ms(100);
                 }
             }
             if (socket->connected == 2) {
@@ -946,7 +943,7 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
         }
         case ERR_INPROGRESS: {
             while(!lwip_dns_returned) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
             if (lwip_dns_returned == 2) {
                 nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
