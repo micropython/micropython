@@ -247,3 +247,43 @@ More info on: http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html
 TimerChannel class was not implemented. Input capture and Output compare functionality is not present.
 
 
+## PWM support over pyb.PWM
+
+Example:
+```python
+import pyb
+
+pyb.PWM.set_frequency(1000)
+
+out0 = pyb.PWM(0)
+out0.duty_cycle(50) # 50%
+print("Duty cycle :"+str(out0.duty_cycle()))
+
+out1= pyb.PWM(1)
+out1.duty_cycle(25)
+
+out10= pyb.PWM(10)
+out10.duty_cycle(75)
+
+while True:
+        pyb.delay(1000)
+```
+Available PWM outs: 0 to 10
+
+- 0: GPIO_2
+- 1: GPIO_8
+- 2: T_FIL1
+- 3: T_FIL2
+- 4: T_FIL3
+- 5: T_COL0
+- 6: T_COL1
+- 7: T_COL2
+- 8: LCD_1
+- 9: LCD_2
+- 10: LCD_3
+
+The board has only 1 PWM module with 11 outs associated. There is only one frequency value and 11 duty cycle values (one per out). All PWM outs share the same frequency value.
+
+
+
+

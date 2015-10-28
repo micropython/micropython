@@ -185,3 +185,42 @@ el tiempo en milisegundos y una funcion callback. El primero ejecutara la funcio
 del tiempo prefijado.
 
 No se implemento la clase TimerChannel, por lo que las funcionalidades de Output Compare e Input Capture no son accesibles.
+
+
+## Soporte para PWM mediante el modulo pyb.PWM
+
+Ejemplo:
+```python
+import pyb
+
+pyb.PWM.set_frequency(1000)
+
+out0 = pyb.PWM(0)
+out0.duty_cycle(50) # 50%
+print("Duty cycle :"+str(out0.duty_cycle()))
+
+out1= pyb.PWM(1)
+out1.duty_cycle(25)
+
+out10= pyb.PWM(10)
+out10.duty_cycle(75)
+
+while True:
+        pyb.delay(1000)
+```
+Salidas de PWM disponibles: 0 a 10
+
+- 0: GPIO_2
+- 1: GPIO_8
+- 2: T_FIL1
+- 3: T_FIL2
+- 4: T_FIL3
+- 5: T_COL0
+- 6: T_COL1
+- 7: T_COL2
+- 8: LCD_1
+- 9: LCD_2
+- 10: LCD_3
+
+La placa posee un solo modulo PWM con 11 salidas asociadas, por esta razon todas las salidas comparten la misma frecuencia, pero tienen un valor de ciclo de actividad independiente.
+
