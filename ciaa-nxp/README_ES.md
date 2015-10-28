@@ -187,7 +187,7 @@ del tiempo prefijado.
 No se implemento la clase TimerChannel, por lo que las funcionalidades de Output Compare e Input Capture no son accesibles.
 
 
-## Soporte para PWM mediante el modulo pyb.PWM
+- Soporte para PWM mediante el modulo pyb.PWM
 
 Ejemplo:
 ```python
