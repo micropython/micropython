@@ -137,7 +137,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
 STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
     mp_int_t usec = mp_obj_get_int(usec_in);
     if (usec >= 0) {
-        mp_hal_udelay(usec);
+        mp_hal_delay_us(usec);
     }
     return mp_const_none;
 }
