@@ -282,7 +282,7 @@ Available PWM outs: 0 to 10
 - 9: LCD_2
 - 10: LCD_3
 
-The board has only 1 PWM module with 11 outs associated. There is only one frequency value and 11 duty cycle values (one per out). All PWM outs share the same frequency value.
+The board has only 1 PWM module with 11 outs. There is only one frequency value and 11 duty cycle values (one per out). All PWM outs share the same frequency value.
 
 
 
