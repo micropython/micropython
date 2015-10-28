@@ -103,4 +103,10 @@ uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum);
 void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value);
 uint32_t mp_hal_getTimerMatch(uint8_t timerNum);
 
+//PWM
+void mp_hal_setPWMFequency(uint32_t freq);
+void mp_hal_configurePWMOut(uint8_t outNumber);
+void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty);
+
+
 #endif

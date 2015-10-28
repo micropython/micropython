@@ -94,26 +94,13 @@ typedef struct {
     uint8_t fnc;
 }PwmData;
 
-static PwmData pwmsData[] = {{6,5,6,FUNC1},{6,12,7,FUNC1},{4,1,1,FUNC1},{4,2,0,FUNC1},{4,3,3,FUNC1},{1,5,10,FUNC1},{7,4,13,FUNC2},{7,5,12,FUNC2},{4,4,2,FUNC1},{4,5,5,FUNC1},{4,6,4,FUNC1}};
-
-void Board_PWM_Init(void)
-{
-        Chip_SCTPWM_Init(LPC_SCT);
-        //Chip_SCTPWM_SetRate(LPC_SCT, 1000); // 1khz
-        Chip_SCTPWM_Start(LPC_SCT);
-/*
-	uint8_t i=0;
-	uint32_t indexCounter=i+1;
-
-	Chip_SCU_PinMux(pwmsData[i].port, pwmsData[i].pin, MD_PUP|MD_EZI, pwmsData[i].fnc);
-	Chip_SCTPWM_SetOutPin(LPC_SCT, indexCounter, pwmsData[i].ctout);
-	Chip_SCTPWM_SetDutyCycle(LPC_SCT, pwmsData[i].indexCounter,Chip_SCTPWM_PercentageToTicks(LPC_SCT, pwmsData[i].duty));
-*/
-}
+static PwmData pwmsData[] = {{6,5,6,FUNC1},{6,12,7,FUNC1},{4,1,1,FUNC1},{4,2,0,FUNC1},{4,3,3,FUNC1},{1,5,10,FUNC1},{7,4,13,FUNC1},{7,5,12,FUNC1},{4,4,2,FUNC1},{4,5,5,FUNC1},{4,6,4,FUNC1}};
 
 void Board_PWM_SetFrequency(uint32_t freq)
 {
+        Chip_SCTPWM_Init(LPC_SCT);
 	Chip_SCTPWM_SetRate(LPC_SCT, freq);
+        Chip_SCTPWM_Start(LPC_SCT);
 }
 
 uint32_t calculatePwmIndexCounterByOutNumber(uint8_t outNumber)

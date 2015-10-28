@@ -574,6 +574,30 @@ void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value);
 uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum);
 
 
+/**
+ * @brief       Configure the global frequency for all pwm outs
+ * @param       freq : Frequency in Hz
+ * @return      void
+ */
+void Board_PWM_SetFrequency(uint32_t freq);
+
+/**
+ * @brief       Enable PWM out (11 available)
+ * @param       outNumber : Number of PWM out enabled (0 to 10)
+ * @return      void
+ */
+void Board_PWM_ConfigureOut(uint8_t outNumber);
+
+/**
+ * @brief       Set duty cycle for the specified PWM outs
+ * @param       outNumber : Number of PWM out (0 to 10)
+ * @param       duty : Duty cycle (0 to 100)
+ * @return      void
+ */
+void Board_PWM_SetDutyCycle(uint8_t outNumber, uint8_t duty);
+
+
+
 
 /**
  * @}

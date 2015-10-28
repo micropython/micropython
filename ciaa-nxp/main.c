@@ -62,14 +62,6 @@ int main(int argc, char **argv) {
     mp_obj_list_init(mp_sys_argv, 0);
 
 
-	//debug
-	Board_PWM_Init();
-	Board_PWM_SetFrequency(1000);
-	Board_PWM_ConfigureOut(0);
-	Board_PWM_SetDutyCycle(0, 50);
-	while(1);
-
-
     if (!pyexec_file("/Main.py")) {
 		mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }
