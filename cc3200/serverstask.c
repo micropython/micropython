@@ -131,21 +131,21 @@ void TASK_Servers (void *pvParameters) {
 
         // move to the next cycle
         cycle = cycle ? false : true;
-        HAL_Delay(SERVERS_CYCLE_TIME_MS);
+        mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS);
     }
 }
 
 void servers_start (void) {
     servers_data.do_enable = true;
-    HAL_Delay (SERVERS_CYCLE_TIME_MS * 3);
+    mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 3);
 }
 
 void servers_stop (void) {
     servers_data.do_disable = true;
     do {
-        HAL_Delay (SERVERS_CYCLE_TIME_MS);
+        mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS);
     } while (servers_are_enabled());
-    HAL_Delay (SERVERS_CYCLE_TIME_MS * 3);
+    mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 3);
 }
 
 void servers_reset (void) {
@@ -158,7 +158,7 @@ bool servers_are_enabled (void) {
 
 void server_sleep_sockets (void) {
     sleep_sockets = true;
-    HAL_Delay (SERVERS_CYCLE_TIME_MS + 1);
+    mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS + 1);
 }
 
 void servers_close_socket (int16_t *sd) {
