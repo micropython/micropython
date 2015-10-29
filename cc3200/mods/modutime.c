@@ -125,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     int32_t sleep_s = mp_obj_get_int(seconds_o);
     if (sleep_s > 0) {
-        HAL_Delay(sleep_s * 1000);
+        mp_hal_delay_ms(sleep_s * 1000);
     }
     return mp_const_none;
 }
@@ -134,7 +134,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 STATIC mp_obj_t time_sleep_ms (mp_obj_t ms_in) {
     mp_int_t ms = mp_obj_get_int(ms_in);
     if (ms > 0) {
-        HAL_Delay(ms);
+        mp_hal_delay_ms(ms);
     }
     return mp_const_none;
 }

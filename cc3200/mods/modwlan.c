@@ -691,7 +691,7 @@ STATIC void wlan_sl_disconnect (void) {
     // other return-codes
     if (0 == sl_WlanDisconnect()) {
         while (IS_CONNECTED(wlan_obj.status)) {
-            HAL_Delay(MODWLAN_CONNECTION_WAIT_MS);
+            mp_hal_delay_ms(MODWLAN_CONNECTION_WAIT_MS);
             wlan_update();
         }
     }
@@ -711,7 +711,7 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
         // wait for the WLAN Event
         uint32_t waitForConnectionMs = 0;
         while (timeout && !IS_CONNECTED(wlan_obj.status)) {
-            HAL_Delay(MODWLAN_CONNECTION_WAIT_MS);
+            mp_hal_delay_ms(MODWLAN_CONNECTION_WAIT_MS);
             waitForConnectionMs += MODWLAN_CONNECTION_WAIT_MS;
             if (timeout > 0 && waitForConnectionMs > timeout) {
                 return MODWLAN_ERROR_TIMEOUT;
@@ -875,7 +875,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
     ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_SCAN , MODWLAN_SL_SCAN_ENABLE, (_u8 *)&scanSeconds, sizeof(scanSeconds)));
 
     // wait for the scan to complete
-    HAL_Delay (MODWLAN_WAIT_FOR_SCAN_MS);
+    mp_hal_delay_ms(MODWLAN_WAIT_FOR_SCAN_MS);
 
     do {
         if (sl_WlanGetNetworkList(_index++, 1, &wlanEntry) <= 0) {
