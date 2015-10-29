@@ -7,12 +7,12 @@
 #include "Arduino.h"
 #include MICROPY_HAL_H
 
-uint32_t HAL_GetTick(void) {
+uint32_t mp_hal_ticks_ms(void) {
   return millis();
 }
 
-void HAL_Delay(uint32_t Delay) {
-  delay(Delay);
+void mp_hal_delay_ms(uint32_t ms) {
+  delay(ms);
 }
 
 void mp_hal_set_interrupt_char(int c) {
