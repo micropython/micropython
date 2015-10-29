@@ -128,7 +128,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
 STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
     mp_int_t ms = mp_obj_get_int(ms_in);
     if (ms >= 0) {
-        HAL_Delay(ms);
+        mp_hal_delay_ms(ms);
     }
     return mp_const_none;
 }
