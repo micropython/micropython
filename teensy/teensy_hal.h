@@ -112,8 +112,8 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
   __asm volatile ("wfi");
 }
 
-uint32_t HAL_GetTick(void);
-void     HAL_Delay(uint32_t Delay);
+uint32_t mp_hal_ticks_ms(void);
+void mp_hal_delay_ms(uint32_t delay);
 void mp_hal_set_interrupt_char(int c);
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
