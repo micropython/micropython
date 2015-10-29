@@ -104,7 +104,7 @@ void HAL_IncrementTick(void) {
     HAL_tickCount++;
 }
 
-uint32_t HAL_GetTick(void) {
+uint32_t mp_hal_ticks_ms(void) {
     return HAL_tickCount;
 }
 
