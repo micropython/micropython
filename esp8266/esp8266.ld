@@ -82,6 +82,7 @@ SECTIONS
         /* we put some specific text in this section */
         *py/*.o*(.literal* .text*)
         *pyexec.o(.literal*, .text*)
+        *ff.o(.literal*, .text*)
         *readline.o(.literal*, .text*)
         *pybstdio.o(.literal*, .text*)
         *gccollect.o(.literal* .text*)

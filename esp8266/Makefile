@@ -16,10 +16,13 @@ ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 
 INC =  -I.
 INC += -I..
+INC += -Ifatfs/src
+INC += -Ifatfs/src/drivers
 INC += -I../stmhal
 INC += -I../lib/mp-readline
 INC += -I../lib/netutils
 INC += -I../lib/timeutils
+INC += -I../lib/fatfs
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
@@ -66,6 +69,12 @@ SRC_C = \
 	utils.c \
 	$(BUILD)/frozen.c \
 
+FATFS_SRC_C = $(addprefix fatfs/src/,\
+	drivers/sflash_diskio.c \
+	diskio.c \
+	ffconf.c \
+	)
+
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
 	pyexec.c \
@@ -73,6 +82,7 @@ STM_SRC_C = $(addprefix stmhal/,\
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
+	fatfs/ff.c \
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
@@ -86,6 +96,7 @@ OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(FATFS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
