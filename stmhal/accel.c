@@ -31,6 +31,8 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "pin.h"
+#include "genhdr/pins.h"
 #include "i2c.h"
 #include "accel.h"
 
@@ -59,12 +61,12 @@ void accel_init(void) {
     GPIO_InitTypeDef GPIO_InitStructure;
 
     // PB5 is connected to AVDD; pull high to enable MMA accel device
-    GPIOB->BSRRH = GPIO_PIN_5; // turn off AVDD
-    GPIO_InitStructure.Pin = GPIO_PIN_5;
+    MICROPY_HW_MMA_AVDD_PIN.gpio->BSRRH = MICROPY_HW_MMA_AVDD_PIN.pin_mask; // turn off AVDD
+    GPIO_InitStructure.Pin = MICROPY_HW_MMA_AVDD_PIN.pin_mask;
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+    HAL_GPIO_Init(MICROPY_HW_MMA_AVDD_PIN.gpio, &GPIO_InitStructure);
 }
 
 STATIC void accel_start(void) {
@@ -80,9 +82,9 @@ STATIC void accel_start(void) {
     i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
-    GPIOB->BSRRH = GPIO_PIN_5; // turn off
+    MICROPY_HW_MMA_AVDD_PIN.gpio->BSRRH = MICROPY_HW_MMA_AVDD_PIN.pin_mask; // turn off
     HAL_Delay(30);
-    GPIOB->BSRRL = GPIO_PIN_5; // turn on
+    MICROPY_HW_MMA_AVDD_PIN.gpio->BSRRL = MICROPY_HW_MMA_AVDD_PIN.pin_mask; // turn on
     HAL_Delay(30);
 
     HAL_StatusTypeDef status;
