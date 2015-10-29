@@ -38,13 +38,14 @@
 #include "pin.h"
 #include "timer.h"
 #include "usb.h"
+#include MICROPY_HAL_H
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
 STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
-        byte *id = (byte*)0x1fff7a10;
+        byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
         printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
     }
 
