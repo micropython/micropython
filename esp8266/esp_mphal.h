@@ -37,7 +37,7 @@ void mp_hal_stdout_tx_str(const char *str);
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len);
 void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 
-uint32_t HAL_GetTick(void);
+uint32_t mp_hal_ticks_ms(void);
 void mp_hal_delay_ms(uint32_t delay);
 void mp_hal_delay_us(uint32_t);
 void mp_hal_set_interrupt_char(int c);

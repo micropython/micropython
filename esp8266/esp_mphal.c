@@ -82,7 +82,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
     }
 }
 
-uint32_t HAL_GetTick(void) {
+uint32_t mp_hal_ticks_ms(void) {
     return system_get_time() / 1000;
 }
 
