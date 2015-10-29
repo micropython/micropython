@@ -86,8 +86,8 @@ uint32_t HAL_GetTick(void) {
     return system_get_time() / 1000;
 }
 
-void HAL_Delay(uint32_t Delay) {
-    mp_hal_delay_us(Delay * 1000);
+void mp_hal_delay_ms(uint32_t delay) {
+    mp_hal_delay_us(delay * 1000);
 }
 
 void mp_hal_set_interrupt_char(int c) {
