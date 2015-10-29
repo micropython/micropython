@@ -151,12 +151,12 @@ void mperror_heartbeat_signal (void) {
         mperror_heart_beat.do_disable = false;
     } else if (mperror_heart_beat.enabled) {
         if (!mperror_heart_beat.beating) {
-            if ((mperror_heart_beat.on_time = HAL_GetTick()) - mperror_heart_beat.off_time > MPERROR_HEARTBEAT_OFF_MS) {
+            if ((mperror_heart_beat.on_time = mp_hal_ticks_ms()) - mperror_heart_beat.off_time > MPERROR_HEARTBEAT_OFF_MS) {
                 MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, MICROPY_SYS_LED_PORT_PIN);
                 mperror_heart_beat.beating = true;
             }
         } else {
-            if ((mperror_heart_beat.off_time = HAL_GetTick()) - mperror_heart_beat.on_time > MPERROR_HEARTBEAT_ON_MS) {
+            if ((mperror_heart_beat.off_time = mp_hal_ticks_ms()) - mperror_heart_beat.on_time > MPERROR_HEARTBEAT_ON_MS) {
                 MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, 0);
                 mperror_heart_beat.beating = false;
             }

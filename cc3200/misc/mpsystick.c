@@ -40,12 +40,12 @@
 
 
 bool sys_tick_has_passed(uint32_t start_tick, uint32_t delay_ms) {
-    return HAL_GetTick() - start_tick >= delay_ms;
+    return mp_hal_ticks_ms() - start_tick >= delay_ms;
 }
 
 // waits until at least delay_ms milliseconds have passed from the sampling of
 // startTick. Handles overflow properly. Assumes stc was taken from
-// HAL_GetTick() some time before calling this function.
+// mp_hal_ticks_ms() some time before calling this function.
 void sys_tick_wait_at_least(uint32_t start_tick, uint32_t delay_ms) {
 #ifdef USE_FREERTOS
     vTaskDelay (delay_ms / portTICK_PERIOD_MS);
@@ -58,11 +58,11 @@ void sys_tick_wait_at_least(uint32_t start_tick, uint32_t delay_ms) {
 
 // The SysTick timer counts down at HAL_FCPU_HZ, so we can use that knowledge
 // to grab a microsecond counter.
-// We assume that HAL_GetTick returns milliseconds.
+// We assume that mp_hal_ticks_ms returns milliseconds.
 uint32_t sys_tick_get_microseconds(void) {
     mp_uint_t irq_state = disable_irq();
     uint32_t counter = SysTickValueGet();
-    uint32_t milliseconds = HAL_GetTick();
+    uint32_t milliseconds = mp_hal_ticks_ms();
     enable_irq(irq_state);
 
     uint32_t load = SysTickPeriodGet();

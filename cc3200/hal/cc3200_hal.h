@@ -62,7 +62,7 @@
 extern void HAL_SystemInit (void);
 extern void HAL_SystemDeInit (void);
 extern void HAL_IncrementTick(void);
-extern uint32_t HAL_GetTick(void);
+extern uint32_t mp_hal_ticks_ms(void);
 extern void mp_hal_delay_ms(uint32_t delay);
 extern NORETURN void mp_hal_raise(int errno);
 extern void mp_hal_set_interrupt_char (int c);

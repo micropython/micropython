@@ -151,7 +151,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_us_obj, time_sleep_us);
 
 STATIC mp_obj_t time_ticks_ms(void) {
     // We want to "cast" the 32 bit unsigned into a 30-bit small-int
-    return MP_OBJ_NEW_SMALL_INT(HAL_GetTick() & MP_SMALL_INT_POSITIVE_MASK);
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_ms_obj, time_ticks_ms);
 
