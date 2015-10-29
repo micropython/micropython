@@ -52,6 +52,10 @@ Methods
 .. method:: poll.poll([timeout])
 
    Wait for at least one of the registered objects to become ready. Returns
-   list of ready objects, or empty list on timeout.
+   list of (``obj``, ``event``, ...) tuples, ``event`` element specifying
+   whether ``obj`` is ready for reading, writing, or both (see ``register``
+   method above). There may be other elements in tuple, depending on platform
+   and version, so don't assume that its size is 2. In case of timeout, an
+   empty list is returned.
 
    Timeout is in milliseconds.
