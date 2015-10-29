@@ -69,7 +69,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
 
         // execute code
         mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
-        start = HAL_GetTick();
+        start = mp_hal_ticks_ms();
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
         nlr_pop();
@@ -97,7 +97,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
 
     // display debugging info if wanted
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
-        mp_uint_t ticks = HAL_GetTick() - start; // TODO implement a function that does this properly
+        mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
         printf("took " UINT_FMT " ms\n", ticks);
         gc_collect();
         // qstr info
