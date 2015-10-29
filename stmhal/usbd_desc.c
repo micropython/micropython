@@ -32,6 +32,8 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_conf.h"
+#include "py/misc.h"
+#include "mphal.h"
 
 // So we don't clash with existing ST boards, we use the unofficial FOSS VID.
 // This needs a proper solution.
@@ -169,7 +171,7 @@ STATIC uint8_t *USBD_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *leng
     //
     // See: https://my.st.com/52d187b7 for the algorithim used.
 
-    uint8_t *id = (uint8_t *)0x1fff7a10;
+    uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
     char serial_buf[16];
     snprintf(serial_buf, sizeof(serial_buf),
         "%02X%02X%02X%02X%02X%02X",

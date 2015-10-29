@@ -1,6 +1,15 @@
 // We use the ST Cube HAL library for most hardware peripherals
 #include STM32_HAL_H
 
+#if defined(MCU_SERIES_F4)
+#define MP_HAL_UNIQUE_ID_ADDRESS    0x1fff7a10
+#elif defined(MCU_SERIES_F7)
+#define MP_HAL_UNIQUE_ID_ADDRESS    0x1ff0f420
+#else
+#error mphal.h: Unrecognized MCU_SERIES
+#endif
+
+
 // Basic GPIO functions
 #define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)
 #if defined(MCU_SERIES_F7)
