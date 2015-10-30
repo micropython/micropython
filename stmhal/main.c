@@ -143,6 +143,8 @@ static const char fresh_boot_py[] =
 
 static const char fresh_main_py[] =
 "# main.py -- put your code here!\r\n"
+"while True:\r\n"
+"    pass\r\n"
 ;
 
 static const char fresh_pybcdc_inf[] =
@@ -564,7 +566,8 @@ soft_reset:
 #if defined(USE_DEVICE_MODE)
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
-        pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL);
+        pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC, NULL);
+        //pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL);
     }
 #endif
 
