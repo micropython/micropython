@@ -32,7 +32,9 @@ void init() {
     init_sleep();
 #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");
-#else
+#elif _MSC_VER < 1900
+    // This is only necessary for Visual Studio versions 2013 and below:
+    // https://msdn.microsoft.com/en-us/library/bb531344(v=vs.140).aspx
     _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 }
