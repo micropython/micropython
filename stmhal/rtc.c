@@ -181,7 +181,11 @@ void rtc_init(void) {
     // if LTE enabled & ready --> no need to (re-)init RTC
     if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
         // remove Backup Domain write protection
+        #if defined(MCU_SERIES_F7)
+        PWR->CR1 |= PWR_CR1_DBP;
+        #else
         PWR->CR |= PWR_CR_DBP;
+        #endif
         // Clear source Reset Flag
         __HAL_RCC_CLEAR_RESET_FLAGS();
         // provide some status information
