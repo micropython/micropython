@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "sleep.h"
 #include "unix/unix_mphal.h"
 
 #define MICROPY_HAL_HAS_VT100 (0)
