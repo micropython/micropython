@@ -155,7 +155,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #define MP_STATE_PORT               MP_STATE_VM
 
-#define MICROPY_HAL_H               "windows_mphal.h"
+#define MICROPY_MPHALPORT_H         "windows_mphal.h"
 
 // We need to provide a declaration/definition of alloca()
 #include <malloc.h>

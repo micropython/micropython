@@ -29,10 +29,10 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/smallint.h"
+#include "py/mphal.h"
 #include "timeutils.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"

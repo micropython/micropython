@@ -29,10 +29,10 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/mphal.h"
 #include "input.h"
 
 #if MICROPY_USE_READLINE == 1
-#include MICROPY_HAL_H
 #include "lib/mp-readline/readline.h"
 #elif MICROPY_USE_READLINE == 2
 #include <readline/readline.h>

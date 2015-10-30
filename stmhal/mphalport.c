@@ -2,9 +2,9 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
-#include "mphal.h"
 
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {

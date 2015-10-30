@@ -35,7 +35,6 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include MICROPY_HAL_H
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"

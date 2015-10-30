@@ -33,10 +33,10 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/frozenmod.h"
+#include "py/mphal.h"
 #include "py/gc.h"
 #include "pyexec.h"
 #include "gccollect.h"
-#include MICROPY_HAL_H
 #include "user_interface.h"
 
 STATIC char heap[16384];

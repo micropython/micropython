@@ -29,13 +29,13 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "irq.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "dma.h"
 #include "i2c.h"
-#include MICROPY_HAL_H
 
 #if !defined(MICROPY_HW_I2C_BAUDRATE_DEFAULT)
 #define MICROPY_HW_I2C_BAUDRATE_DEFAULT 400000

@@ -25,15 +25,14 @@
  */
 
 #include <stdio.h>
-#include STM32_HAL_H
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "mphal.h"
 
 #if defined(MICROPY_HW_LED1)
 

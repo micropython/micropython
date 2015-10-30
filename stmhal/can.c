@@ -33,10 +33,10 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "bufhelper.h"
 #include "can.h"
 #include "pybioctl.h"
-#include MICROPY_HAL_H
 
 #if MICROPY_HW_ENABLE_CAN
 

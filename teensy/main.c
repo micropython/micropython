@@ -9,13 +9,13 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "gccollect.h"
 #include "pyexec.h"
 #include "readline.h"
 #include "lexermemzip.h"
 
 #include "Arduino.h"
-#include MICROPY_HAL_H
 
 #include "servo.h"
 #include "led.h"

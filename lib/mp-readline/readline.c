@@ -30,10 +30,8 @@
 
 #include "py/mpstate.h"
 #include "py/repl.h"
+#include "py/mphal.h"
 #include "readline.h"
-#ifdef MICROPY_HAL_H
-#include MICROPY_HAL_H
-#endif
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include <stdio.h>
-#include <stdint.h>
+#ifndef __MICROPY_INCLUDED_PY_MPHAL_H__
+#define __MICROPY_INCLUDED_PY_MPHAL_H__
 
 #include "py/mpconfig.h"
-#include "py/gc.h"
-#include "gccollect.h"
-#include "gchelper.h"
 
-/******************************************************************************
-DECLARE PRIVATE DATA
- ******************************************************************************/
-static uint32_t stackend;
+#ifdef MICROPY_MPHALPORT_H
+#include MICROPY_MPHALPORT_H
+#else
+#include <mphalport.h>
+#endif
 
+int mp_hal_stdin_rx_chr(void);
+void mp_hal_stdout_tx_str(const char *str);
+void mp_hal_stdout_tx_strn(const char *str, size_t len);
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
 
-/******************************************************************************
-DECLARE PUBLIC FUNCTIONS
- ******************************************************************************/
-void gc_collect_init (uint32_t sp) {
-    stackend = sp;
-}
+// what should be the integer types here? I'd say word size
+void mp_hal_delay_ms(mp_uint_t ms);
+mp_uint_t mp_hal_ticks_ms(void);
 
-void gc_collect(void) {
-    // start the GC
-    gc_collect_start();
-
-    // get the registers and the sp
-    mp_uint_t regs[10];
-    mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
-
-    // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, (stackend - sp) / sizeof(uint32_t));
-
-    // end the GC
-    gc_collect_end();
-}
+#endif // __MICROPY_INCLUDED_PY_MPHAL_H__

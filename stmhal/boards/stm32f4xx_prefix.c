@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "pin.h"
-#include MICROPY_HAL_H
 
 #define AF(af_idx, af_fn, af_unit, af_type, af_ptr) \
 { \
