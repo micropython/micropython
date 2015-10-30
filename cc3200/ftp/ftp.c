@@ -29,7 +29,6 @@
 #include "std.h"
 
 #include "py/mpstate.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"

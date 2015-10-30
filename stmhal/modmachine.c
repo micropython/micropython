@@ -29,6 +29,7 @@
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "gccollect.h"
@@ -38,7 +39,6 @@
 #include "pin.h"
 #include "timer.h"
 #include "usb.h"
-#include MICROPY_HAL_H
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.

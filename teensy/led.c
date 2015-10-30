@@ -4,8 +4,8 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "led.h"
-#include MICROPY_HAL_H
 #include "pin.h"
 #include "genhdr/pins.h"
 

@@ -32,9 +32,9 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/mphal.h"
 #include "uart.h"
 #include "pybioctl.h"
-#include MICROPY_HAL_H
 
 //TODO: Add UART7/8 support for MCU_SERIES_F7
 

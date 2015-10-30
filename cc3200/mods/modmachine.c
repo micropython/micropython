@@ -30,7 +30,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "irq.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"

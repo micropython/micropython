@@ -33,9 +33,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
-#ifdef MICROPY_HAL_H
-#include MICROPY_HAL_H
-#endif
+#include "py/mphal.h"
 #if defined(USE_DEVICE_MODE)
 #include "irq.h"
 #include "usb.h"

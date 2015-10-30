@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +23,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include <stdio.h>
-#include <stdint.h>
+#ifndef __MICROPY_INCLUDED_PY_MPHAL_H__
+#define __MICROPY_INCLUDED_PY_MPHAL_H__
 
 #include "py/mpconfig.h"
-#include "py/gc.h"
-#include "gccollect.h"
-#include "gchelper.h"
 
-/******************************************************************************
-DECLARE PRIVATE DATA
- ******************************************************************************/
-static uint32_t stackend;
+#ifdef MICROPY_MPHALPORT_H
+#include MICROPY_MPHALPORT_H
+#else
+#include <mphalport.h>
+#endif
 
+#ifndef mp_hal_stdin_rx_chr
+int mp_hal_stdin_rx_chr(void);
+#endif
 
-/******************************************************************************
-DECLARE PUBLIC FUNCTIONS
- ******************************************************************************/
-void gc_collect_init (uint32_t sp) {
-    stackend = sp;
-}
+#ifndef mp_hal_stdout_tx_str
+void mp_hal_stdout_tx_str(const char *str);
+#endif
 
-void gc_collect(void) {
-    // start the GC
-    gc_collect_start();
+#ifndef mp_hal_stdout_tx_strn
+void mp_hal_stdout_tx_strn(const char *str, size_t len);
+#endif
 
-    // get the registers and the sp
-    mp_uint_t regs[10];
-    mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
+#ifndef mp_hal_stdout_tx_strn_cooked
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
+#endif
 
-    // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, (stackend - sp) / sizeof(uint32_t));
+#ifndef mp_hal_delay_ms
+void mp_hal_delay_ms(mp_uint_t ms);
+#endif
 
-    // end the GC
-    gc_collect_end();
-}
+#ifndef mp_hal_ticks_ms
+mp_uint_t mp_hal_ticks_ms(void);
+#endif
+
+#endif // __MICROPY_INCLUDED_PY_MPHAL_H__

@@ -113,7 +113,7 @@ SRC_C = \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_msc_storage.c \
-	mphal.c \
+	mphalport.c \
 	irq.c \
 	pendsv.c \
 	systick.c  \

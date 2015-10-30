@@ -32,7 +32,6 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
 #include "netutils.h"
 #include "queue.h"
 #include "user_interface.h"

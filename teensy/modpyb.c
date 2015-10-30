@@ -31,8 +31,7 @@
 
 #include "py/obj.h"
 #include "py/gc.h"
-
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 
 #include "gccollect.h"
 #include "irq.h"
