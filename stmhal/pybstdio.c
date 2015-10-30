@@ -30,7 +30,7 @@
 
 #include "py/obj.h"
 #include "py/stream.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 
 // TODO make stdin, stdout and stderr writable objects so they can
 // be changed by Python code.  This requires some changes, as these

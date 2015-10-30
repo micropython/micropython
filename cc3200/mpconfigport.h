@@ -180,7 +180,6 @@ typedef void            *machine_ptr_t;             // must be of pointer size
 typedef const void      *machine_const_ptr_t;       // must be of pointer size
 typedef long            mp_off_t;
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
@@ -204,7 +203,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len);
 // Include board specific configuration
 #include "mpconfigboard.h"
 
-#define MICROPY_HAL_H                               "cc3200_hal.h"
+#define MICROPY_MPHALPORT_H                         "cc3200_hal.h"
 #define MICROPY_PORT_HAS_TELNET                     (1)
 #define MICROPY_PORT_HAS_FTP                        (1)
 #define MICROPY_PY_SYS_PLATFORM                     "WiPy"

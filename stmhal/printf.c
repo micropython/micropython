@@ -29,9 +29,7 @@
 #include <stdarg.h>
 
 #include "py/obj.h"
-#ifdef MICROPY_HAL_H
-#include MICROPY_HAL_H
-#endif
+#include "py/mphal.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include "py/formatfloat.h"

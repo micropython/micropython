@@ -32,7 +32,7 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "modpyb.h"
 #include "modpybrtc.h"
 #include "timeutils.h"

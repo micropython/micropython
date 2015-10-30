@@ -2,9 +2,9 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
-#include "mphal.h"
 
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
@@ -48,7 +48,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
@@ -60,7 +60,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     }
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // send stdout to UART and USB CDC VCP
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);

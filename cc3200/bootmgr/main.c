@@ -30,7 +30,6 @@
 #include "std.h"
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "hw_ints.h"
 #include "hw_types.h"
 #include "hw_gpio.h"

@@ -28,8 +28,8 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include MICROPY_HAL_H
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_nvic.h"

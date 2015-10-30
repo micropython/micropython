@@ -32,7 +32,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "pin.h"
 #include "reg.h"
 #include "timer.h"

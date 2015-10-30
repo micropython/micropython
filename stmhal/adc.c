@@ -25,16 +25,15 @@
  */
 
 #include <stdio.h>
-#include STM32_HAL_H
 #include <string.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/mphal.h"
 #include "adc.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "mphal.h"
 #include "timer.h"
 
 /// \moduleref pyb

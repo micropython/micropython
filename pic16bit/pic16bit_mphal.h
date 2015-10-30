@@ -26,19 +26,10 @@
 #ifndef __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
 #define __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
 
-#define HAL_GetTick mp_hal_get_milliseconds
-
 #include "py/mpstate.h"
 
 void mp_hal_init(void);
 
-mp_uint_t mp_hal_get_milliseconds(void);
-void mp_hal_milli_delay(mp_uint_t ms);
-
 void mp_hal_set_interrupt_char(int c);
-int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_str(const char *str);
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 
 #endif // __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__

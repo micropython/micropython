@@ -30,8 +30,8 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/objlist.h"
+#include "py/mphal.h"
 #include "pybioctl.h"
-#include MICROPY_HAL_H
 
 /// \module select - Provides select function to wait for events on a stream
 ///

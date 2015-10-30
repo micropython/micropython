@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <mk20dx128.h>
 #include "py/runtime.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "pin.h"
 
 // Returns the pin mode. This value returned by this macro should be one of:

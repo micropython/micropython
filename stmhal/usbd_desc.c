@@ -35,7 +35,7 @@
 
 // need these headers just for MP_HAL_UNIQUE_ID_ADDRESS
 #include "py/misc.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 
 // So we don't clash with existing ST boards, we use the unofficial FOSS VID.
 // This needs a proper solution.

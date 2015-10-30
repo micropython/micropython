@@ -26,9 +26,8 @@
 
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "irq.h"
-
-#include MICROPY_HAL_H
 
 /// \moduleref pyb
 

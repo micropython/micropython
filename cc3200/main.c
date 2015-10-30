@@ -29,7 +29,7 @@
 #include <ctype.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "mptask.h"
 #include "simplelink.h"
 #include "pybwdt.h"

@@ -34,7 +34,7 @@
 
 
 #include "py/mpstate.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "inc/hw_types.h"
@@ -104,11 +104,11 @@ void HAL_IncrementTick(void) {
     HAL_tickCount++;
 }
 
-uint32_t mp_hal_ticks_ms(void) {
+mp_uint_t mp_hal_ticks_ms(void) {
     return HAL_tickCount;
 }
 
-void mp_hal_delay_ms(uint32_t delay) {
+void mp_hal_delay_ms(mp_uint_t delay) {
     // only if we are not within interrupt context and interrupts are enabled
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
         #ifdef USE_FREERTOS
@@ -140,7 +140,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(os_term_dup_obj)) {
         if (MP_OBJ_IS_TYPE(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
             uart_tx_strn(MP_STATE_PORT(os_term_dup_obj)->stream_o, str, len);
@@ -153,7 +153,7 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     telnet_tx_strn(str, len);
 }
 
-void mp_hal_stdout_tx_strn_cooked (const char *str, uint32_t len) {
+void mp_hal_stdout_tx_strn_cooked (const char *str, size_t len) {
     int32_t nslen = 0;
     const char *_str = str;
 
