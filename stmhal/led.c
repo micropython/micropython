@@ -33,7 +33,7 @@
 #include "led.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "mphal.h"
+#include MICROPY_HAL_H
 
 #if defined(MICROPY_HW_LED1)
 

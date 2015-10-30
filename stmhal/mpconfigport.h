@@ -242,7 +242,7 @@ static inline mp_uint_t disable_irq(void) {
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#define MICROPY_HAL_H           "mphal.h"
+#define MICROPY_HAL_H           "stmhal_mphal.h"
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
 
 #endif // __INCLUDED_MPCONFIGPORT_H
