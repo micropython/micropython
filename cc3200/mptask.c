@@ -236,7 +236,7 @@ soft_reset_exit:
     modusocket_close_all_user_sockets();
 
     // wait for pending transactions to complete
-    HAL_Delay(20);
+    mp_hal_delay_ms(20);
 
     goto soft_reset;
 }

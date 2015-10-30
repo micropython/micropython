@@ -76,7 +76,7 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#define HAL_GetTick() 0
+#define mp_hal_ticks_ms() 0
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);

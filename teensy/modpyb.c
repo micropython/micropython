@@ -32,7 +32,7 @@
 #include "py/obj.h"
 #include "py/gc.h"
 
-#include "teensy_hal.h"
+#include MICROPY_HAL_H
 
 #include "gccollect.h"
 #include "irq.h"
@@ -161,7 +161,7 @@ STATIC mp_obj_t pyb_millis(void) {
     // We want to "cast" the 32 bit unsigned into a small-int.  This means
     // copying the MSB down 1 bit (extending the sign down), which is
     // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(HAL_GetTick());
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 
@@ -177,7 +177,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 ///         # Perform some operation
 STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
     uint32_t startMillis = mp_obj_get_int(start);
-    uint32_t currMillis = HAL_GetTick();
+    uint32_t currMillis = mp_hal_ticks_ms();
     return MP_OBJ_NEW_SMALL_INT((currMillis - startMillis) & 0x3fffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
@@ -218,7 +218,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
 STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
     mp_int_t ms = mp_obj_get_int(ms_in);
     if (ms >= 0) {
-        HAL_Delay(ms);
+        mp_hal_delay_ms(ms);
     }
     return mp_const_none;
 }

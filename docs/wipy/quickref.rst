@@ -10,7 +10,7 @@ Quick reference for the WiPy
 General board control (including sleep modes)
 ---------------------------------------------
 
-See :mod:`machine`. ::
+See the :mod:`machine` module::
 
     import machine
 
@@ -18,7 +18,7 @@ See :mod:`machine`. ::
     machine.freq() # get the CPU frequency
     machine.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
 
-    machine.idle()        # average curernt decreases to (~12mA), any interrupts wakes it up
+    machine.idle()        # average current decreases to (~12mA), any interrupts wake it up
     machine.sleep()       # everything except for WLAN is powered down (~950uA avg. current)
                           # wakes from Pin, RTC or WLAN
     machine.deepsleep()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
@@ -30,7 +30,7 @@ See :ref:`machine.Pin <machine.Pin>`. ::
 
     from machine import Pin
 
-    # initialize GP2 in gpio mode (af=0) and make it an output
+    # initialize GP2 in gpio mode (alt=0) and make it an output
     p_out = Pin('GP2', mode=Pin.OUT)
     p_out.value(1)
     p_out.value(0)
@@ -54,7 +54,7 @@ See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. :
     tim_a.time() # get the value in microseconds
     tim_a.freq(1) # 1 Hz
     
-    p_out = Pin('GP2', af=0, mode=Pin.OUT)
+    p_out = Pin('GP2', mode=Pin.OUT)
     tim_a.irq(handler=lambda t: p_out.toggle())
 
 PWM (pulse width modulation)
@@ -66,7 +66,7 @@ See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. :
     from machine import Pin
 
     # assign GP25 to alternate function 9 (PWM)
-    p_out = Pin('GP25', mode=Pin.AF, af=9)
+    p_out = Pin('GP25', mode=Pin.AF, alt=9)
 
     # timer 2 in PWM mode and width must be 16 buts
     tim = Timer(2, mode=Timer.PWM, width=16)
@@ -88,9 +88,9 @@ See :ref:`machine.ADC <machine.ADC>`. ::
 UART (serial bus)
 -----------------
 
-See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.UART <machine.UART>`. ::
+See :ref:`machine.UART <machine.UART>`. ::
 
-    from machine import Pin, UART
+    from machine import UART
     uart = UART(0, baudrate=9600)
     uart.write('hello')
     uart.read(5) # read up to 5 bytes
@@ -100,7 +100,7 @@ SPI bus
 
 See :ref:`machine.SPI <machine.SPI>`. ::
 
-    from machine SPI
+    from machine import SPI
 
     # configure the SPI master @ 2MHz
     spi = SPI(0, SPI.MASTER, baudrate=200000, polarity=0, phase=0)
@@ -112,9 +112,9 @@ See :ref:`machine.SPI <machine.SPI>`. ::
 I2C bus
 -------
 
-See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.I2C <machine.I2C>`. ::
+See :ref:`machine.I2C <machine.I2C>`. ::
 
-    from machine import Pin, I2C
+    from machine import I2C
     # configure the I2C bus
     i2c = I2C(0, I2C.MASTER, baudrate=100000)
     i2c.scan() # returns list of slave addresses
@@ -187,25 +187,37 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
     wifi = WLAN(mode=WLAN.STA)
     # go for fixed IP settings
     wifi.ifconfig(config=('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
-    wifi.scan()     # scan for available netrworks
+    wifi.scan()     # scan for available networks
     wifi.connect(ssid='mynetwork', auth=(WLAN.WPA2, 'mynetworkkey'))
     while not wifi.isconnected():
         pass
     print(wifi.ifconfig())
     # enable wake on WLAN
-    wifi.irq(wake=machine.SLEEP)
+    wifi.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep
     machine.sleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
 
+Telnet and FTP server
+---------------------
+
+See :ref:`network.server <network.server>` ::
+
+    from network import server
+
+    # init with new user, password and seconds timeout
+    server = server.init(login=('user', 'password'), timeout=60)
+    server.timeout(300) # change the timeout
+    server.timeout() # get the timeout
+    server.isrunning() # check wether the server is running or not
+
 Heart beat LED
 --------------
 
-See :ref:`machine.HeartBeat <machine.HeartBeat>`. ::
+See :mod:`wipy`. ::
 
-    from machine import HeartBeat
+    import wipy
 
-    # disable the heart beat indication (you are free to use this LED connected to GP25)
-    HeartBeat().disable()
-    # enable the heart beat again
-    HeartBeat().enable()
+    wipy.heartbeat(False)  # disable the heartbeat LED
+    wipy.heartbeat(True)   # enable the heartbeat LED
+    wipy.heartbeat()       # get the heartbeat state

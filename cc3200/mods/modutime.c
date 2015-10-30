@@ -32,6 +32,7 @@
 #include MICROPY_HAL_H
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/smallint.h"
 #include "timeutils.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -124,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     int32_t sleep_s = mp_obj_get_int(seconds_o);
     if (sleep_s > 0) {
-        HAL_Delay(sleep_s * 1000);
+        mp_hal_delay_ms(sleep_s * 1000);
     }
     return mp_const_none;
 }
@@ -133,7 +134,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 STATIC mp_obj_t time_sleep_ms (mp_obj_t ms_in) {
     mp_int_t ms = mp_obj_get_int(ms_in);
     if (ms > 0) {
-        HAL_Delay(ms);
+        mp_hal_delay_ms(ms);
     }
     return mp_const_none;
 }
@@ -149,36 +150,28 @@ STATIC mp_obj_t time_sleep_us (mp_obj_t usec_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_us_obj, time_sleep_us);
 
 STATIC mp_obj_t time_ticks_ms(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(HAL_GetTick());
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_ms_obj, time_ticks_ms);
 
 STATIC mp_obj_t time_ticks_us(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds());
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
+    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds() & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_us_obj, time_ticks_us);
 
 STATIC mp_obj_t time_ticks_cpu(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(SysTickValueGet());
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
+    return MP_OBJ_NEW_SMALL_INT((SysTickPeriodGet() - SysTickValueGet()) & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_cpu_obj, time_ticks_cpu);
 
 STATIC mp_obj_t time_ticks_diff(mp_obj_t t0, mp_obj_t t1) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
+    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
     uint32_t start = mp_obj_get_int(t0);
     uint32_t end = mp_obj_get_int(t1);
-    return MP_OBJ_NEW_SMALL_INT((end > start) ? (end - start) : (start - end));
+    return MP_OBJ_NEW_SMALL_INT((end - start) & MP_SMALL_INT_POSITIVE_MASK);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(time_ticks_diff_obj, time_ticks_diff);
 
@@ -189,6 +182,8 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mktime),          (mp_obj_t)&time_mktime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_time),            (mp_obj_t)&time_time_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),           (mp_obj_t)&time_sleep_obj },
+
+    // MicroPython additions
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms),        (mp_obj_t)&time_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us),        (mp_obj_t)&time_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms),        (mp_obj_t)&time_ticks_ms_obj },

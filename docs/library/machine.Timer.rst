@@ -19,17 +19,19 @@ class Timer -- control internal timers
 
     Example usage to toggle an LED at a fixed frequency::
 
-        tim = machine.Timer(4)                                              # create a timer object using timer 4
-        tim.init(mode=Timer.PERIODIC)                                   # initialize it in periodic mode
-        tim_ch = tim.channel(Timer.A, freq=2)                           # configure channel A at a frequency of 2Hz
-        tim_ch.callback(handler=lambda t:led.toggle())                  # toggle a LED on every cycle of the timer
+        from machine import Timer
+        tim = Timer(4)                                   # create a timer object using timer 4
+        tim.init(mode=Timer.PERIODIC)                    # initialize it in periodic mode
+        tim_ch = tim.channel(Timer.A, freq=2)            # configure channel A at a frequency of 2Hz
+        tim_ch.callback(handler=lambda t:led.toggle())   # toggle a LED on every cycle of the timer
 
     Example using named function for the callback::
 
+        from machine import Timer
         tim = Timer(1, mode=Timer.PERIODIC)
         tim_a = tim.channel(Timer.A, freq=1000)
 
-        led = Pin('GPIO2', af=0, mode=Pin.OUT)
+        led = Pin('GPIO2', mode=Pin.OUT)
 
         def tick(timer):                # we will receive the timer object when being called
             print(timer.time())         # show current timer's time value (is microseconds)
@@ -39,8 +41,9 @@ class Timer -- control internal timers
 
     Further examples::
 
-        tim1 = machine.Timer(2, mode=Timer.EVENT_COUNT)                     # initialize it capture mode
-        tim2 = machine.Timer(1, mode=Timer.PWM)                             # initialize it in PWM mode
+        from machine import Timer
+        tim1 = Timer(2, mode=Timer.EVENT_COUNT)                         # initialize it capture mode
+        tim2 = Timer(1, mode=Timer.PWM)                                 # initialize it in PWM mode
         tim_ch = tim1.channel(Timer.A, freq=1, polarity=Timer.POSITIVE) # start the event counter with a frequency of 1Hz and triggered by positive edges
         tim_ch = tim2.channel(Timer.B, freq=10000, duty_cycle=50)       # start the PWM on channel B with a 50% duty cycle
         tim_ch.time()                                                   # get the current time in usec (can also be set)
@@ -54,8 +57,8 @@ class Timer -- control internal timers
 
 .. note::
 
-    Memory can't be allocated during a callback (an interrupt) and so
-    exceptions raised within a callback don't give much information.  See
+    Memory can't be allocated inside irq handlers (an interrupt) and so
+    exceptions raised within a handler don't give much information.  See
     :func:`micropython.alloc_emergency_exception_buf` for how to get around this
     limitation.
 

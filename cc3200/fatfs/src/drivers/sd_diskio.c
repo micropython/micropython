@@ -187,7 +187,7 @@ static unsigned int CardSelect (DiskInfo_t *sDiskInfo) {
     }
 
     // Delay 250ms for the card to become ready
-    HAL_Delay (250);
+    mp_hal_delay_ms(250);
 
     return ulRet;
 }

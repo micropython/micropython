@@ -772,9 +772,9 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
 
     // wait for first char to become available
     if (!uart_rx_wait(self, self->timeout)) {
-        // we can either return 0 to indicate EOF (then read() method returns b'')
-        // or return EAGAIN error to indicate non-blocking (then read() method returns None)
-        return 0;
+        // return EAGAIN error to indicate non-blocking (then read() method returns None)
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
     }
 
     // read the data

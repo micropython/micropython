@@ -71,3 +71,6 @@
 
 // USB VBUS detect pin
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
+
+// MMA accelerometer config
+#define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)

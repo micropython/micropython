@@ -43,7 +43,6 @@ def spot_test(seconds, expected_time):
             return
     print("time.localtime(", seconds, ") returned", actual_time, "(pass)")
 
-
 test()
 spot_test(          0,  (2000,  1,  1,  0,  0,  0, 5,   1))
 spot_test(          1,  (2000,  1,  1,  0,  0,  1, 5,   1))
@@ -71,8 +70,6 @@ print(abs(time.ticks_diff(t1, t2)- 50) <= 1)
 t1 = time.ticks_us()
 time.sleep_us(1000)
 t2 = time.ticks_us()
-print(time.ticks_diff(t1, t2) < 2000)
+print(time.ticks_diff(t1, t2) < 1500)
 
-t1 = time.ticks_cpu()
-t2 = time.ticks_cpu()
-print(time.ticks_diff(t1, t2) < 16384)
+print(time.ticks_diff(time.ticks_cpu(), time.ticks_cpu()) < 16384)

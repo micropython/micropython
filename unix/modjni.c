@@ -361,11 +361,29 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
             return false;
         }
     } else if (type == &jobject_type) {
-        printf("TODO: Check java arg type!!\n");
-        while (isalpha(*arg_type) || *arg_type == '.') {
+        bool is_object = false;
+        const char *expected_type = arg_type;
+        while (1) {
+            if (isalpha(*arg_type)) {
+            } else if (*arg_type == '.') {
+                is_object = true;
+            } else {
+                break;
+            }
             arg_type++;
         }
+        if (!is_object) {
+            return false;
+        }
         mp_obj_jobject_t *jo = arg;
+        if (!MATCH(expected_type, "java.lang.Object")) {
+            char class_name[64];
+            get_jclass_name(jo->obj, class_name);
+            //printf("Arg class: %s\n", class_name);
+            if (strcmp(class_name, expected_type) != 0) {
+                return false;
+            }
+        }
         out->l = jo->obj;
     } else if (type == &mp_type_bool) {
         if (IMATCH(arg_type, "boolean")) {

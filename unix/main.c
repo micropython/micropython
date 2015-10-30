@@ -154,7 +154,7 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 
 STATIC int do_repl(void) {
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; "
-        MICROPY_PY_SYS_PLATFORM " version\nUse CTRL-D to exit, CTRL-E for paste mode\n");
+        MICROPY_PY_SYS_PLATFORM " version\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     #if MICROPY_USE_READLINE == 1
 
@@ -178,7 +178,7 @@ STATIC int do_repl(void) {
             return 0;
         } else if (ret == CHAR_CTRL_E) {
             // paste mode
-            mp_hal_stdout_tx_str("\npaste mode; CTRL-C to cancel, CTRL-D to finish\n=== ");
+            mp_hal_stdout_tx_str("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== ");
             vstr_reset(&line);
             for (;;) {
                 char c = mp_hal_stdin_rx_chr();

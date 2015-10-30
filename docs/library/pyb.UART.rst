@@ -119,14 +119,14 @@ Methods
       *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
       be even, and the number of characters is ``nbytes/2``.
 
-      Return value: a bytes object containing the bytes read in.  Returns ``b''``
+      Return value: a bytes object containing the bytes read in.  Returns ``None``
       on timeout.
 
 .. method:: uart.readall()
 
    Read as much data as possible.
 
-   Return value: a bytes object.
+   Return value: a bytes object or ``None`` on timeout.
 
 .. method:: uart.readchar()
 
@@ -139,13 +139,14 @@ Methods
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
    that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
 
-   Return value: number of bytes read and stored into ``buf``.
+   Return value: number of bytes read and stored into ``buf`` or ``None`` on
+   timeout.
 
 .. method:: uart.readline()
 
    Read a line, ending in a newline character.
 
-   Return value: the line read.
+   Return value: the line read or ``None`` on timeout.
 
 .. method:: uart.write(buf)
 
@@ -156,7 +157,7 @@ Methods
       bytes are used for each character (little endian), and ``buf`` must contain
       an even number of bytes.
 
-      Return value: number of bytes written.
+      Return value: number of bytes written or ``None`` on timeout.
 
 .. method:: uart.sendbreak()
 

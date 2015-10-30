@@ -614,3 +614,32 @@ Q(mem32)
 Q(ussl)
 Q(wrap_socket)
 #endif
+
+#if MICROPY_PY_LWIP
+// for lwip module
+Q(lwip)
+Q(reset)
+Q(callback)
+Q(socket)
+Q(AF_INET)
+Q(AF_INET6)
+Q(SOCK_STREAM)
+Q(SOCK_DGRAM)
+Q(SOCK_RAW)
+// for lwip.socket
+Q(close)
+Q(bind)
+Q(listen)
+Q(accept)
+Q(connect)
+Q(send)
+Q(recv)
+Q(sendto)
+Q(recvfrom)
+Q(settimeout)
+#if MICROPY_PY_LWIP_SLIP
+// for lwip.slip
+Q(slip)
+Q(status)
+#endif
+#endif

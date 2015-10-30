@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,16 +51,32 @@
 #endif
     .type   nlr_push, %function
 nlr_push:
-    str     lr, [r0, #8]            @ store lr into nlr_buf
     str     r4, [r0, #12]           @ store r4 into nlr_buf
     str     r5, [r0, #16]           @ store r5 into nlr_buf
     str     r6, [r0, #20]           @ store r6 into nlr_buf
     str     r7, [r0, #24]           @ store r7 into nlr_buf
+
+#if defined(__ARM_ARCH_6M__)
+    mov     r1, r8
+    str     r1, [r0, #28]           @ store r8 into nlr_buf
+    mov     r1, r9
+    str     r1, [r0, #32]           @ store r9 into nlr_buf
+    mov     r1, r10
+    str     r1, [r0, #36]           @ store r10 into nlr_buf
+    mov     r1, r11
+    str     r1, [r0, #40]           @ store r11 into nlr_buf
+    mov     r1, r13
+    str     r1, [r0, #44]           @ store r13=sp into nlr_buf
+    mov     r1, lr
+    str     r1, [r0, #8]            @ store lr into nlr_buf
+#else
     str     r8, [r0, #28]           @ store r8 into nlr_buf
     str     r9, [r0, #32]           @ store r9 into nlr_buf
     str     r10, [r0, #36]          @ store r10 into nlr_buf
     str     r11, [r0, #40]          @ store r11 into nlr_buf
     str     r13, [r0, #44]          @ store r13=sp into nlr_buf
+    str     lr, [r0, #8]            @ store lr into nlr_buf
+#endif
 
     ldr     r3, nlr_top_addr        @ load addr of nlr_top
     ldr     r2, [r3]                @ load nlr_top
@@ -69,9 +85,6 @@ nlr_push:
 
     movs    r0, #0                  @ return 0, normal return
     bx      lr                      @ return
-    .align  2
-nlr_top_addr:
-    .word   mp_state_ctx + NLR_TOP_OFFSET
     .size   nlr_push, .-nlr_push
 
 /**************************************/
@@ -104,24 +117,49 @@ nlr_jump:
     ldr     r3, nlr_top_addr        @ load addr of nlr_top
     ldr     r2, [r3]                @ load nlr_top
     cmp     r2, #0                  @ test if nlr_top is NULL
+#if defined(__ARM_ARCH_6M__)
+    bne     nlr_jump_non_null       @ if nlr_top is NULL, transfer control to nlr_jump_fail
+    bl      nlr_jump_fail
+nlr_jump_non_null:
+#else
     beq     nlr_jump_fail           @ if nlr_top is NULL, transfer control to nlr_jump_fail
+#endif
     str     r0, [r2, #4]            @ store return value
     ldr     r0, [r2]                @ load prev nlr_buf
     str     r0, [r3]                @ store prev nol_buf into nlr_top (to unlink list)
 
-    ldr     lr, [r2, #8]            @ load lr from nlr_buf
     ldr     r4, [r2, #12]           @ load r4 from nlr_buf
     ldr     r5, [r2, #16]           @ load r5 from nlr_buf
     ldr     r6, [r2, #20]           @ load r6 from nlr_buf
     ldr     r7, [r2, #24]           @ load r7 from nlr_buf
+#if defined(__ARM_ARCH_6M__)
+    ldr     r1, [r2, #28]           @ load r8 from nlr_buf
+    mov     r8, r1
+    ldr     r1, [r2, #32]           @ load r9 from nlr_buf
+    mov     r9, r1
+    ldr     r1, [r2, #36]           @ load r10 from nlr_buf
+    mov     r10, r1
+    ldr     r1, [r2, #40]           @ load r11 from nlr_buf
+    mov     r11, r1
+    ldr     r1, [r2, #44]           @ load r13=sp from nlr_buf
+    mov     r13, r1
+    ldr     r1, [r2, #8]            @ load lr from nlr_buf
+    mov     lr, r1
+#else
     ldr     r8, [r2, #28]           @ load r8 from nlr_buf
     ldr     r9, [r2, #32]           @ load r9 from nlr_buf
     ldr     r10, [r2, #36]          @ load r10 from nlr_buf
     ldr     r11, [r2, #40]          @ load r11 from nlr_buf
     ldr     r13, [r2, #44]          @ load r13=sp from nlr_buf
+    ldr     lr, [r2, #8]            @ load lr from nlr_buf
+#endif
 
     movs    r0, #1                  @ return 1, non-local return
     bx      lr                      @ return
     .size   nlr_jump, .-nlr_jump
+
+    .align  2
+nlr_top_addr:
+    .word   mp_state_ctx + NLR_TOP_OFFSET
 
 #endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))

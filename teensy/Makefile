@@ -29,7 +29,7 @@ endif
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
@@ -156,7 +156,7 @@ deploy: post_compile reboot
 
 $(BUILD)/micropython.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $(OBJ) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 ifeq ($(MEMZIP_DIR),)

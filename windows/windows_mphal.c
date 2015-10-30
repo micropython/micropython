@@ -92,14 +92,13 @@ void mp_hal_move_cursor_back(uint pos) {
     SetConsoleCursorPosition(con_out, info.dwCursorPosition);
 }
 
-void mp_hal_erase_line_from_cursor() {
+void mp_hal_erase_line_from_cursor(uint n_chars_to_erase) {
     assure_conout_handle();
     CONSOLE_SCREEN_BUFFER_INFO info;
     GetConsoleScreenBufferInfo(con_out, &info);
-    const short len = info.dwSize.X - info.dwCursorPosition.X;
     DWORD written;
-    FillConsoleOutputCharacter(con_out, ' ', len, info.dwCursorPosition, &written);
-    FillConsoleOutputAttribute(con_out, info.wAttributes, len, info.dwCursorPosition, &written);
+    FillConsoleOutputCharacter(con_out, ' ', n_chars_to_erase, info.dwCursorPosition, &written);
+    FillConsoleOutputAttribute(con_out, info.wAttributes, n_chars_to_erase, info.dwCursorPosition, &written);
 }
 
 typedef struct item_t {

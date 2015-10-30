@@ -127,6 +127,11 @@ typedef struct _mp_state_vm_t {
     // include any root pointers defined by a port
     MICROPY_PORT_ROOT_POINTERS
 
+    // root pointers for extmod
+    #if MICROPY_PY_LWIP_SLIP
+    mp_obj_t lwip_slip_stream;
+    #endif
+
     //
     // END ROOT POINTER SECTION
     ////////////////////////////////////////////////////////////

@@ -35,6 +35,7 @@
 #include "lib/fatfs/diskio.h"
 #include "timeutils.h"
 #include "rng.h"
+#include "uart.h"
 #include "file.h"
 #include "sdcard.h"
 #include "fsusermount.h"
@@ -374,6 +375,28 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
+// Get or set the UART object that the REPL is repeated on.
+// TODO should accept any object with read/write methods.
+STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
+            return mp_const_none;
+        } else {
+            return MP_STATE_PORT(pyb_stdio_uart);
+        }
+    } else {
+        if (args[0] == mp_const_none) {
+            MP_STATE_PORT(pyb_stdio_uart) = NULL;
+        } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+            MP_STATE_PORT(pyb_stdio_uart) = args[0];
+        } else {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a UART object"));
+        }
+        return mp_const_none;
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_dupterm_obj, 0, 1, os_dupterm);
+
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
 
@@ -397,6 +420,9 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
 #if MICROPY_HW_ENABLE_RNG
     { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), (mp_obj_t)&os_urandom_obj },
 #endif
+
+    // these are MicroPython extensions
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dupterm), (mp_obj_t)&mod_os_dupterm_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

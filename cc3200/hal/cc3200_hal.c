@@ -104,11 +104,11 @@ void HAL_IncrementTick(void) {
     HAL_tickCount++;
 }
 
-uint32_t HAL_GetTick(void) {
+uint32_t mp_hal_ticks_ms(void) {
     return HAL_tickCount;
 }
 
-void HAL_Delay(uint32_t delay) {
+void mp_hal_delay_ms(uint32_t delay) {
     // only if we are not within interrupt context and interrupts are enabled
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
         #ifdef USE_FREERTOS
@@ -193,7 +193,7 @@ int mp_hal_stdin_rx_chr(void) {
                 }
             }
         }
-        HAL_Delay(1);
+        mp_hal_delay_ms(1);
     }
 }
 

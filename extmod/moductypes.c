@@ -329,6 +329,7 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
         case INT32:
             return mp_obj_new_int(((int32_t*)p)[index]);
         case UINT64:
+            return mp_obj_new_int_from_ull(((uint64_t*)p)[index]);
         case INT64:
             return mp_obj_new_int_from_ll(((int64_t*)p)[index]);
         #if MICROPY_PY_BUILTINS_FLOAT
@@ -556,6 +557,18 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     }
 }
 
+STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    (void)flags;
+    mp_obj_uctypes_struct_t *self = self_in;
+    mp_uint_t max_field_size = 0;
+    mp_uint_t size = uctypes_struct_size(self->desc, &max_field_size);
+
+    bufinfo->buf = self->addr;
+    bufinfo->len = size;
+    bufinfo->typecode = BYTEARRAY_TYPECODE;
+    return 0;
+}
+
 /// \function addressof()
 /// Return address of object's data (applies to object providing buffer
 /// interface).
@@ -592,6 +605,7 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .make_new = uctypes_struct_make_new,
     .attr = uctypes_struct_attr,
     .subscr = uctypes_struct_subscr,
+    .buffer_p = { .get_buffer = uctypes_get_buffer },
 };
 
 STATIC const mp_map_elem_t mp_module_uctypes_globals_table[] = {

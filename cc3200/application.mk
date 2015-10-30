@@ -92,6 +92,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	modusocket.c \
 	modussl.c \
 	modutime.c \
+	modwipy.c \
 	modwlan.c \
 	pybadc.c \
 	pybpin.c \
@@ -238,7 +239,7 @@ $(BUILD)/application.bin: $(BUILD)/application.axf
 
 $(BUILD)/mcuimg.bin: $(BUILD)/application.bin
 	$(ECHO) "Create $@"
-	$(Q)$(SHELL) $(APP_SIGN) $(BOARD) $(BTYPE)
+	$(Q)$(SHELL) $(APP_SIGN) $(BUILD)
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv

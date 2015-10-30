@@ -719,7 +719,21 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
 
     } else if (n_args == 3) {
         mp_uint_t op_code;
-        if (strcmp(op_str, "add") == 0) {
+        if (strcmp(op_str, "lsl") == 0) {
+            op_code = ASM_THUMB_FORMAT_1_LSL;
+            mp_uint_t rlo_dest, rlo_src, i5;
+            op_format_1:
+            rlo_dest = get_arg_reg(emit, op_str, pn_args[0], 7);
+            rlo_src = get_arg_reg(emit, op_str, pn_args[1], 7);
+            i5 = get_arg_i(emit, op_str, pn_args[2], 0x1f);
+            asm_thumb_format_1(emit->as, op_code, rlo_dest, rlo_src, i5);
+        } else if (strcmp(op_str, "lsr") == 0) {
+            op_code = ASM_THUMB_FORMAT_1_LSR;
+            goto op_format_1;
+        } else if (strcmp(op_str, "asr") == 0) {
+            op_code = ASM_THUMB_FORMAT_1_ASR;
+            goto op_format_1;
+        } else if (strcmp(op_str, "add") == 0) {
             op_code = ASM_THUMB_FORMAT_2_ADD;
             mp_uint_t rlo_dest, rlo_src;
             op_format_2:

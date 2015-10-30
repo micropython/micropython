@@ -31,13 +31,14 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "py/mpconfig.h"
-#if MICROPY_PY_OS_STATVFS
-#include <sys/statvfs.h>
-#endif
 
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
+
+#ifdef __ANDROID__
+#define USE_STATFS 1
+#endif
 
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
@@ -67,12 +68,31 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
 #if MICROPY_PY_OS_STATVFS
+
+#if MICROPY_PY_OS_STATVFS
+#if USE_STATFS
+#include <sys/vfs.h>
+#define STRUCT_STATVFS struct statfs
+#define STATVFS statfs
+#define F_FAVAIL sb.f_ffree
+#define F_NAMEMAX sb.f_namelen
+#define F_FLAG sb.f_flags
+#else
+#include <sys/statvfs.h>
+#define STRUCT_STATVFS struct statvfs
+#define STATVFS statvfs
+#define F_FAVAIL sb.f_favail
+#define F_NAMEMAX sb.f_namemax
+#define F_FLAG sb.f_flag
+#endif
+#endif
+
 STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
-    struct statvfs sb;
+    STRUCT_STATVFS sb;
     mp_uint_t len;
     const char *path = mp_obj_str_get_data(path_in, &len);
 
-    int res = statvfs(path, &sb);
+    int res = STATVFS(path, &sb);
     RAISE_ERRNO(res, errno);
 
     mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
@@ -83,9 +103,9 @@ STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.f_bavail);
     t->items[5] = MP_OBJ_NEW_SMALL_INT(sb.f_files);
     t->items[6] = MP_OBJ_NEW_SMALL_INT(sb.f_ffree);
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(sb.f_favail);
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(sb.f_flag);
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(sb.f_namemax);
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(F_FAVAIL);
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(F_FLAG);
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(F_NAMEMAX);
     return t;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_statvfs_obj, mod_os_statvfs);

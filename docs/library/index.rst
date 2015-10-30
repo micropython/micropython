@@ -92,6 +92,7 @@ it will fallback to loading the built-in ``ujson`` module.
       ujson.rst
       ure.rst
       usocket.rst
+      ussl.rst
 
 .. only:: port_wipy
 
@@ -105,6 +106,7 @@ it will fallback to loading the built-in ``ujson`` module.
 
       machine.rst
       network.rst
+      wipy.rst
 
 
 .. only:: port_esp8266
