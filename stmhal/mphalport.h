@@ -29,5 +29,5 @@ extern const unsigned char mp_hal_status_to_errno_table[4];
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
-static inline void mp_hal_delay_ms(mp_uint_t ms) { HAL_Delay(ms); }
-static inline mp_uint_t mp_hal_ticks_ms(void) { return HAL_GetTick(); }
+#define mp_hal_delay_ms HAL_Delay
+#define mp_hal_ticks_ms HAL_GetTick

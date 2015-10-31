@@ -34,13 +34,28 @@
 #include <mphalport.h>
 #endif
 
+#ifndef mp_hal_stdin_rx_chr
 int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_str(const char *str);
-void mp_hal_stdout_tx_strn(const char *str, size_t len);
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
+#endif
 
-// what should be the integer types here? I'd say word size
+#ifndef mp_hal_stdout_tx_str
+void mp_hal_stdout_tx_str(const char *str);
+#endif
+
+#ifndef mp_hal_stdout_tx_strn
+void mp_hal_stdout_tx_strn(const char *str, size_t len);
+#endif
+
+#ifndef mp_hal_stdout_tx_strn_cooked
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
+#endif
+
+#ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms);
+#endif
+
+#ifndef mp_hal_ticks_ms
 mp_uint_t mp_hal_ticks_ms(void);
+#endif
 
 #endif // __MICROPY_INCLUDED_PY_MPHAL_H__
