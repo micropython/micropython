@@ -185,6 +185,9 @@ STATIC const mp_obj_type_t re_type = {
 STATIC mp_obj_t mod_re_compile(uint n_args, const mp_obj_t *args) {
     const char *re_str = mp_obj_str_get_str(args[0]);
     int size = re1_5_sizecode(re_str);
+    if (size == -1) {
+        goto error;
+    }
     mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);
     o->base.type = &re_type;
     int flags = 0;
@@ -193,6 +196,7 @@ STATIC mp_obj_t mod_re_compile(uint n_args, const mp_obj_t *args) {
     }
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
+error:
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error in regex"));
     }
     if (flags & FLAG_DEBUG) {

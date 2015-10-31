@@ -62,3 +62,8 @@ m = re.match('a*?', 'ab');  print(m.group(0))
 m = re.match('^ab$', 'ab'); print(m.group(0))
 m = re.match('a|b', 'b');   print(m.group(0))
 m = re.match('a|b|c', 'c'); print(m.group(0))
+
+try:
+    re.compile("*")
+except:
+    print("Caught invalid regex")
