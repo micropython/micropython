@@ -482,5 +482,9 @@ mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
     repl_display_debugging_info = mp_obj_get_int(o_value);
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj, pyb_set_repl_info);
+
+mp_obj_t pyb_repl_mode() {
+    return MP_OBJ_NEW_SMALL_INT(pyexec_mode_kind);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_repl_mode_obj, pyb_repl_mode);

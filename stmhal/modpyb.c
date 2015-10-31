@@ -135,6 +135,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&machine_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&machine_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_mode), (mp_obj_t)&pyb_repl_mode_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_wfi), (mp_obj_t)&pyb_wfi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq), (mp_obj_t)&pyb_disable_irq_obj },
