@@ -35,6 +35,7 @@
 #include "bufhelper.h"
 #include "dma.h"
 #include "spi.h"
+#include "py/gc.h"
 #include MICROPY_HAL_H
 
 // The following defines are for compatability with the '405
@@ -129,6 +130,9 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif
 };
+
+
+static mp_obj_t callbackArray[3] = {NULL, NULL, NULL};
 
 void spi_init0(void) {
     // reset the SPI handles
@@ -656,6 +660,113 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_recv_obj, 1, pyb_spi_send_recv);
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    mp_obj_t cb;
+    if(hspi->Instance == SPI1 || hspi->Instance == SPI2 || hspi->Instance == SPI3){
+        if(hspi->Instance == SPI1){
+            cb = callbackArray[0];
+        }
+        else if(hspi->Instance == SPI2){
+            cb = callbackArray[1];
+        }
+        if(hspi->Instance == SPI3){
+            cb = callbackArray[2];
+        }
+        if(cb == NULL)
+            return;
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_0(cb);
+            nlr_pop();
+        }
+        gc_unlock();
+    }
+}
+
+/// \method listen(recv, callback, *, timeout=5000)
+///
+/// listen spi data on the bus:
+///
+///   - `recv` is a mutable buffer, which will be filled with received bytes.
+///   - 'callback' is an callback block, which will be called when received enough data on SPI bus
+///   - `timeout` is the timeout in milliseconds to wait for the receive.
+///
+/// Return value: the result of registering callback function on SPI interrupt.
+/// 
+
+STATIC mp_obj_t pyb_spi_listen(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // TODO assumes transmission size is 8-bits wide
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_recv,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    pyb_spi_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // get the buffer to receive into
+    vstr_t vstr;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
+
+    // receive the data
+    HAL_StatusTypeDef status;
+    if (query_irq() == IRQ_STATE_DISABLED) {
+        status = HAL_SPI_Receive(self->spi, (uint8_t*)vstr.buf, vstr.len, args[2].u_int);
+    } else {
+        self->spi->hdmarx->Instance->CR |= DMA_SxCR_CIRC;
+        if(self->spi->Instance == SPI1){
+            callbackArray[0] = args[1].u_obj;
+        }
+        if(self->spi->Instance == SPI2){
+            callbackArray[1] = args[1].u_obj;
+        }
+        if(self->spi->Instance == SPI3){
+            callbackArray[2] = args[1].u_obj;
+        }
+        status = HAL_SPI_Receive_DMA(self->spi, (uint8_t*)vstr.buf, vstr.len);
+        if (status == HAL_OK) {
+            o_ret = mp_const_none;
+        }
+    }
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+
+    // return the received data
+    return o_ret;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_listen_obj, 1, pyb_spi_listen);
+STATIC mp_obj_t pyb_spi_stoplisten(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // TODO assumes transmission size is 8-bits wide
+
+    // parse args
+    pyb_spi_obj_t *self = pos_args[0];
+
+
+    self->spi->hdmarx->Instance->CR &= (~DMA_SxCR_CIRC);
+    if(self->spi->Instance == SPI1){
+        callbackArray[0] = NULL;
+    }
+    if(self->spi->Instance == SPI2){
+        callbackArray[1] = NULL;
+    }
+    if(self->spi->Instance == SPI3){
+        callbackArray[2] = NULL;
+    }
+
+
+    // return the received data
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_stop_obj, 1, pyb_spi_stoplisten);
+
 
 STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
@@ -664,6 +775,8 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_spi_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_spi_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_spi_send_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&pyb_spi_listen_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_spi_stop_obj},
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode
