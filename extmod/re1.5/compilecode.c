@@ -65,7 +65,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         }
         case '(': {
             term = PC;
-            int sub;
+            int sub = 0;
             int capture = re[1] != '?' || re[2] != ':';
 
             if (capture) {
