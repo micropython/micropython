@@ -85,6 +85,43 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+//================================================[PWM Management]========================================================
+
+typedef struct {
+    uint8_t port;
+    uint8_t pin;
+    uint8_t ctout;
+    uint8_t fnc;
+}PwmData;
+
+static PwmData pwmsData[] = {{6,5,6,FUNC1},{6,12,7,FUNC1},{4,1,1,FUNC1},{4,2,0,FUNC1},{4,3,3,FUNC1},{1,5,10,FUNC1},{7,4,13,FUNC1},{7,5,12,FUNC1},{4,4,2,FUNC1},{4,5,5,FUNC1},{4,6,4,FUNC1}};
+
+void Board_PWM_SetFrequency(uint32_t freq)
+{
+        Chip_SCTPWM_Init(LPC_SCT);
+	Chip_SCTPWM_SetRate(LPC_SCT, freq);
+        Chip_SCTPWM_Start(LPC_SCT);
+}
+
+uint32_t calculatePwmIndexCounterByOutNumber(uint8_t outNumber)
+{
+	return  outNumber + 1;
+}
+void Board_PWM_ConfigureOut(uint8_t outNumber)
+{
+	uint32_t indexCounter = calculatePwmIndexCounterByOutNumber(outNumber);
+	Chip_SCU_PinMux(pwmsData[outNumber].port, pwmsData[outNumber].pin, MD_PUP|MD_EZI, pwmsData[outNumber].fnc);
+        Chip_SCTPWM_SetOutPin(LPC_SCT, indexCounter, pwmsData[outNumber].ctout);
+}
+void Board_PWM_SetDutyCycle(uint8_t outNumber, uint8_t duty)
+{
+	uint32_t indexCounter = calculatePwmIndexCounterByOutNumber(outNumber);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, indexCounter,Chip_SCTPWM_PercentageToTicks(LPC_SCT, duty));
+}
+
+
+//===========================================================================================================================
+
 //================================================[TIMERs Management]========================================================
 typedef struct {
 	uint8_t mode;

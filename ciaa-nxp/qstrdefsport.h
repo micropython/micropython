@@ -130,6 +130,10 @@ Q(counter)
 Q(interval)
 Q(source_freq)
 
+Q(PWM)
+Q(duty_cycle)
+Q(set_frequency)
+
 
 /*
 Q(readall)
