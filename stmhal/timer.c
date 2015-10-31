@@ -38,6 +38,7 @@
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"
+#include "irq.h"
 
 /// \moduleref pyb
 /// \class Timer - periodically call a function
@@ -186,7 +187,7 @@ void timer_tim3_init(void) {
     TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
     HAL_TIM_Base_Init(&TIM3_Handle);
 
-    HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(TIM3_IRQn, IRQ_PRI_TIM3, IRQ_SUBPRI_TIM3);
     HAL_NVIC_EnableIRQ(TIM3_IRQn);
 
     if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
@@ -209,7 +210,7 @@ void timer_tim5_init(void) {
     __TIM5_CLK_ENABLE();
 
     // set up and enable interrupt
-    HAL_NVIC_SetPriority(TIM5_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5, IRQ_SUBPRI_TIM5);
     HAL_NVIC_EnableIRQ(TIM5_IRQn);
 
     // PWM clock configuration
@@ -623,7 +624,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, c
 
     // set IRQ priority (if not a special timer)
     if (self->tim_id != 3 && self->tim_id != 5) {
-        HAL_NVIC_SetPriority(self->irqn, 0xe, 0xe); // next-to lowest priority
+        HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
     }
 
     // init TIM

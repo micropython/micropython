@@ -30,6 +30,8 @@
 #include STM32_HAL_H
 
 #include "dma.h"
+#include "py/obj.h"
+#include "irq.h"
 
 #define NSTREAM (16)
 
@@ -134,7 +136,7 @@ void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, const DMA_
     // reset and configure DMA peripheral
     HAL_DMA_DeInit(dma);
     HAL_DMA_Init(dma);
-    HAL_NVIC_SetPriority(dma_irqn[dma_id], 6, 0);
+    HAL_NVIC_SetPriority(dma_irqn[dma_id], IRQ_PRI_DMA, IRQ_SUBPRI_DMA);
 
 same_channel:
     HAL_NVIC_EnableIRQ(dma_irqn[dma_id]);
