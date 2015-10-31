@@ -103,6 +103,7 @@ SRC_LIB = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/pyexec.c \
 	)
 
 SRC_C = \
@@ -132,7 +133,6 @@ SRC_C = \
 	printf.c \
 	gccollect.c \
 	pybstdio.c \
-	pyexec.c \
 	help.c \
 	input.c \
 	modmachine.c \

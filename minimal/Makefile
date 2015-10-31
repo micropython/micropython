@@ -45,7 +45,7 @@ SRC_C = \
 	uart_core.c \
 	uart_extra.c \
 	stmhal/printf.c \
-	stmhal/pyexec.c \
+	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 

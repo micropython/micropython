@@ -68,7 +68,6 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
-	pyexec.c \
 	pybstdio.c \
 	)
 
@@ -77,6 +76,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/pyexec.c \
 	)
 
 SRC_S = \
