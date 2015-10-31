@@ -473,7 +473,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
                     mp_uint_t rlo_base = get_arg_reg(emit, op_str, pn_base, 7);
                     mp_uint_t i8;
-                    i8 = get_arg_i(emit, op_str, pn_offset, 0xff);
+                    i8 = get_arg_i(emit, op_str, pn_offset, 0x3fc) >> 2;
                     asm_thumb_op32(emit->as,
                         op_code_hi | rlo_base | ((vd & 1) << 6),
                         0x0a00 | ((vd & 0x1e) << 11) | i8);
