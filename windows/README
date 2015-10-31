@@ -6,6 +6,13 @@ consider to contribute.
 
 To cross-compile under Debian/Ubuntu Linux system:
 
+sudo apt-get install gcc-mingw-w64
+make CROSS_COMPILE=i686-w64-mingw32-
+
+If for some reason mingw64 crosscompiler is not available, you can try
+mingw32 instead, but it come with really old gcc which may produce some
+spurious errors (you may need to disable -Werror):
+
 sudo apt-get install mingw32 mingw32-binutils mingw32-runtime
 make CROSS_COMPILE=i586-mingw32msvc-
 
