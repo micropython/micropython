@@ -34,7 +34,7 @@
 #include "adc.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "mphal.h"
+#include MICROPY_HAL_H
 #include "timer.h"
 
 /// \moduleref pyb

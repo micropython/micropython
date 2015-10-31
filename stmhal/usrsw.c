@@ -30,7 +30,7 @@
 #include "extint.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "mphal.h"
+#include MICROPY_HAL_H
 #include "usrsw.h"
 
 #if MICROPY_HW_HAS_SWITCH
