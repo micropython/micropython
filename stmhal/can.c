@@ -37,6 +37,7 @@
 #include "bufhelper.h"
 #include "can.h"
 #include "pybioctl.h"
+#include "irq.h"
 
 #if MICROPY_HW_ENABLE_CAN
 
@@ -747,7 +748,7 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         } else {
             irq = (fifo == 0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
         }
-        HAL_NVIC_SetPriority(irq, 7, 0);
+        HAL_NVIC_SetPriority(irq, IRQ_PRI_CAN, IRQ_SUBPRI_CAN);
         HAL_NVIC_EnableIRQ(irq);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FF0  : CAN_IT_FF1);

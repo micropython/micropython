@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "rtc.h"
+#include "irq.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -496,7 +497,7 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
         RTC->ISR &= ~(1 << 10);
         EXTI->PR = 1 << 22;
 
-        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 0x0f, 0x0f);
+        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP, IRQ_SUBPRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
         //printf("wut=%d wucksel=%d\n", wut, wucksel);
