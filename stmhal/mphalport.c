@@ -48,7 +48,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
@@ -60,7 +60,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     }
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // send stdout to UART and USB CDC VCP
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
