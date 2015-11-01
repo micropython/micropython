@@ -304,3 +304,19 @@ uint32_t mp_hal_getTimerMatch(uint8_t timerNum)
 }
 
 
+// PWM
+void mp_hal_setPWMFequency(uint32_t freq)
+{
+	Board_PWM_SetFrequency(freq);
+}
+
+void mp_hal_configurePWMOut(uint8_t outNumber)
+{
+	Board_PWM_ConfigureOut(outNumber);
+}
+
+void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty)
+{
+	Board_PWM_SetDutyCycle(outNumber, duty);
+}
+
