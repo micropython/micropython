@@ -58,6 +58,25 @@ else:
     else:
         print('failed, wrong data received')
 
+for n in [0, 8, 16, 24]:
+    filter_id = 0x08 << n   #0000 1000
+    filter_mask = 0x1c << n #0001 1100
+    id_ok = 0x0a << n       #0000 1010
+    id_fail = 0x1a << n     #0001 1010
+
+    can.clearfilter( 0 )
+    can.setfilter( 0, pyb.CAN.MASK32, 0, ( filter_id, filter_mask) )
+
+    can.send( 'ok', id_ok, timeout=3 )
+    if( can.any( 0 ) ):
+        msg = can.recv( 0 )
+        print( (hex(filter_id), hex(filter_mask), hex(msg[0]), msg[3]) )
+
+    can.send( "fail", id_fail, timeout=3 )
+    if( can.any( 0 ) ):
+        msg = can.recv( 0 )
+        print( (hex(filter_id), hex(filter_mask), hex(msg[0]), msg[3]) )
+
 del can
 
 # Test RxCallbacks

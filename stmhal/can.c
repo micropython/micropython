@@ -687,10 +687,10 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
                 rtr_masks[1] = mp_obj_get_int(rtr_flags[1]) ? 0x02 : 0;
             }
         }
-        filter.FilterIdHigh     = (mp_obj_get_int(params[0]) & 0xFF00)  >> 13;
-        filter.FilterIdLow      = (((mp_obj_get_int(params[0]) & 0x00FF) << 3) | 4) | rtr_masks[0];
-        filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0xFF00 ) >> 13;
-        filter.FilterMaskIdLow  = (((mp_obj_get_int(params[1]) & 0x00FF) << 3) | 4) | rtr_masks[1];
+        filter.FilterIdHigh     = (mp_obj_get_int(params[0]) & 0x1FFFE000)  >> 13;
+        filter.FilterIdLow      = (((mp_obj_get_int(params[0]) & 0x00001FFF) << 3) | 4) | rtr_masks[0];
+        filter.FilterMaskIdHigh = (mp_obj_get_int(params[1]) & 0x1FFFE000 ) >> 13;
+        filter.FilterMaskIdLow  = (((mp_obj_get_int(params[1]) & 0x00001FFF) << 3) | 4) | rtr_masks[1];
         if (args[1].u_int == MASK32) {
             filter.FilterMode  = CAN_FILTERMODE_IDMASK;
         }
