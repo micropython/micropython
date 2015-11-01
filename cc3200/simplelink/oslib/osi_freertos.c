@@ -44,9 +44,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "portmacro.h"
-#include <osi.h>
-
-#include "rom.h"
+#include "osi.h"
 #include "rom_map.h"
 #include "inc/hw_types.h"
 #include "interrupt.h"

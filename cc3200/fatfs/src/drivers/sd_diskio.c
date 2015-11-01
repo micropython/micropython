@@ -42,7 +42,6 @@
 #include "hw_types.h"
 #include "hw_memmap.h"
 #include "hw_ints.h"
-#include "rom.h"
 #include "rom_map.h"
 #include "diskio.h"
 #include "sd_diskio.h"

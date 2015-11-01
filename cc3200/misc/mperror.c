@@ -45,7 +45,6 @@
 #include "pybpin.h"
 #include "pins.h"
 #endif
-#include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
 #include "pybuart.h"
