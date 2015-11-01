@@ -16,6 +16,10 @@ True
 passed
 CAN(1, CAN.LOOPBACK, extframe=True)
 passed
+('0x8', '0x1c', '0xa', b'ok')
+('0x800', '0x1c00', '0xa00', b'ok')
+('0x80000', '0x1c0000', '0xa0000', b'ok')
+('0x8000000', '0x1c000000', '0xa000000', b'ok')
 cb0
 pending
 cb0
