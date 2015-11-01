@@ -151,19 +151,9 @@ correct permissions.  Try then:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV10/firmware.dfu
 
-Building the documentation locally
-----------------------------------
+Documentation
+-------------
 
-Install Sphinx, and optionally (for the RTD-styling), sphinx_rtd_theme,
-preferably in a virtualenv:
+You can find information about the documentation in the
+[docs/README.md](https://github.com/micropython/micropython/blob/master/docs/README.md) file.
 
-     pip install sphinx
-     pip install sphinx_rtd_theme
-
-In `micropython/docs`, build the docs:
-
-    make MICROPY_PORT=<port_name> BUILDDIR=build/<port_name> html
-
-Where `<port_name>` can be `unix`, `pyboard`, `wipy` or `esp8266`.
-
-You'll find the index page at `micropython/docs/<port_name>/build/html/index.html`.
