@@ -159,9 +159,14 @@ void rtc_init(void) {
 
 STATIC void RTC_CalendarConfig(void);
 
+#if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
+static int useLSE = 1;
+#else
+static int useLSE = 0;
+#endif
+
 void rtc_init(void) {
     RTCHandle.Instance = RTC;
-    RTC_DateTypeDef date;
 
     /* Configure RTC prescaler and RTC data registers */
     /* RTC configured as follow:
@@ -178,49 +183,61 @@ void rtc_init(void) {
     RTCHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
     RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
 
-    // if LTE enabled & ready --> no need to (re-)init RTC
+    // if LSE enabled & ready --> no need to (re-)init RTC
     if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
         // remove Backup Domain write protection
-        #if defined(MCU_SERIES_F7)
-        PWR->CR1 |= PWR_CR1_DBP;
-        #else
-        PWR->CR |= PWR_CR_DBP;
-        #endif
+        HAL_PWR_EnableBkUpAccess();
         // Clear source Reset Flag
         __HAL_RCC_CLEAR_RESET_FLAGS();
         // provide some status information
         rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+        return;
+    } else if ((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) {
+        // remove Backup Domain write protection
+        HAL_PWR_EnableBkUpAccess();
+        // Clear source Reset Flag
+        __HAL_RCC_CLEAR_RESET_FLAGS();
+        RCC->CSR |= 1;
+        // provide some status information
+        rtc_info |= 0x80000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
         return;
     }
 
     mp_uint_t tick = HAL_GetTick();
 
     if (HAL_RTC_Init(&RTCHandle) != HAL_OK) {
-        // init error
-        rtc_info = 0xffff; // indicate error
-        return;
+        if (useLSE) {
+            // fall back to LSI...
+            useLSE = 0;
+            PWR->CR |= PWR_CR_DBP;
+            RTCHandle.State = HAL_RTC_STATE_RESET;
+            if (HAL_RTC_Init(&RTCHandle) != HAL_OK) {
+                rtc_info = 0x0100ffff; // indicate error
+                return;
+            }
+        } else {
+            // init error
+            rtc_info = 0xffff; // indicate error
+            return;
+        }
     }
 
     // record how long it took for the RTC to start up
     rtc_info = HAL_GetTick() - tick;
 
-    HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
-    if (date.Year == 0 && date.Month ==0 && date.Date == 0) {
-        // fresh reset; configure RTC Calendar
-        RTC_CalendarConfig();
-    } else {
-        // RTC was previously set, so leave it alone
-        if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
-            // power on reset occurred
-            rtc_info |= 0x10000;
-        }
-        if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
-            // external reset occurred
-            rtc_info |= 0x20000;
-        }
-        // Clear source Reset Flag
-        __HAL_RCC_CLEAR_RESET_FLAGS();
+    // fresh reset; configure RTC Calendar
+    RTC_CalendarConfig();
+    // RTC was previously set, so leave it alone
+    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
+        // power on reset occurred
+        rtc_info |= 0x10000;
     }
+    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
+        // external reset occurred
+        rtc_info |= 0x20000;
+    }
+    // Clear source Reset Flag
+    __HAL_RCC_CLEAR_RESET_FLAGS();
 }
 
 STATIC void RTC_CalendarConfig(void) {
@@ -274,24 +291,24 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc) {
 
     RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-    #if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-    RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
-    #else
-    RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-    #endif
+    if (useLSE) {
+        RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+        RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+    } else {
+        RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+        RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+    }
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         //Error_Handler();
         return;
     }
 
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-    #if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
-    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-    #else
-    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-    #endif
+    if (useLSE) {
+        PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+    } else {
+        PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+    }
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         //Error_Handler();
         return;
