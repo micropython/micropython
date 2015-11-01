@@ -74,6 +74,9 @@ endif
 CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -Wl,--gc-sections
 
+USE_FROZEN = 1
+USE_MEMZIP = 0
+
 SRC_C = \
 	hal_ftm.c \
 	hal_gpio.c \
@@ -81,9 +84,6 @@ SRC_C = \
 	main.c \
 	lcd.c \
 	led.c \
-	lib/memzip/import.c \
-	lib/memzip/lexermemzip.c \
-	lib/memzip/memzip.c \
 	modpyb.c \
 	pin_defs_teensy.c \
 	reg.c \
@@ -91,7 +91,6 @@ SRC_C = \
 	timer.c \
 	uart.c \
 	usb.c \
-
 
 STM_SRC_C = $(addprefix stmhal/,\
 	gccollect.c \
@@ -127,10 +126,54 @@ SRC_TEENSY = $(addprefix core/,\
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
-OBJ += $(BUILD)/memzip-files.o
 
 all: hex
 hex: $(BUILD)/micropython.hex
+
+ifeq ($(USE_MEMZIP),1)
+SRC_C += \
+	lib/memzip/import.c \
+	lib/memzip/lexermemzip.c \
+	lib/memzip/memzip.c \
+
+OBJ += $(BUILD)/memzip-files.o
+
+MAKE_MEMZIP = ../lib/memzip/make-memzip.py
+ifeq ($(MEMZIP_DIR),)
+MEMZIP_DIR = memzip_files
+endif
+
+$(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
+	$(call compile_c)
+
+$(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
+
+endif # USE_MEMZIP
+
+ifeq ($(USE_FROZEN),1)
+
+CFLAGS += -DMICROPY_MODULE_FROZEN
+
+SRC_C += \
+	lexerfrozen.c
+
+OBJ += $(BUILD)/frozen-files.o
+
+MAKE_FROZEN = ../tools/make-frozen.py
+ifeq ($(FROZEN_DIR),)
+FROZEN_DIR = memzip_files
+endif
+
+$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
+	$(call compile_c)
+
+$(BUILD)/frozen-files.c: $(shell find ${FROZEN_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+
+endif # USE_FROZEN
 
 ifeq ($(ARDUINO),)
 post_compile: $(BUILD)/micropython.hex
@@ -161,16 +204,11 @@ $(BUILD)/micropython.elf: $(OBJ)
 	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-ifeq ($(MEMZIP_DIR),)
-MEMZIP_DIR = memzip_files
-endif
-
 $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
 MAKE_PINS = make-pins.py
-MAKE_MEMZIP = ../lib/memzip/make-memzip.py
 BOARD_PINS = teensy_pins.csv
 AF_FILE = mk20dx256_af.csv
 PREFIX_FILE = mk20dx256_prefix.c
@@ -195,13 +233,6 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
 	$(call compile_c)
-
-$(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
-	$(call compile_c)
-
-$(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
 
 $(BUILD)/%.pp: $(BUILD)/%.c
 	$(ECHO) "PreProcess $<"
