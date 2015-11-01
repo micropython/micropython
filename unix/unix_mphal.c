@@ -110,7 +110,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     (void)ret; // to suppress compiler warning
 }
 
-// cooked is same as uncooked because they terminal does some postprocessing
+// cooked is same as uncooked because the terminal does some postprocessing
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     mp_hal_stdout_tx_strn(str, len);
 }
