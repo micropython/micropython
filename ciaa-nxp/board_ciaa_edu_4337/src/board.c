@@ -85,6 +85,75 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+
+//================================================[ADC Management]========================================================
+typedef struct {
+	ADC_CLOCK_SETUP_T setup;
+	int32_t interrupt;
+	LPC_ADC_T* adc;
+	int32_t chn;
+}ADCData;
+
+static ADCData adcsData[3];
+
+uint32_t getAdcIndexFromChannel(uint8_t channelNumber)
+{
+    return channelNumber-1;
+}
+void Board_ADC_Init(void)
+{
+	// ADC0
+	Chip_ADC_Init(LPC_ADC0, &(adcsData[0].setup));
+	adcsData[0].interrupt = ADC0_IRQn;
+	adcsData[0].adc = LPC_ADC0;
+	adcsData[0].chn = ADC_CH1;
+	Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
+
+
+}
+void Board_ADC_EnableChannel(uint8_t channelNumber)
+{
+	uint32_t index = getAdcIndexFromChannel(channelNumber);
+
+	NVIC_EnableIRQ(adcsData[index].interrupt);
+        Chip_ADC_EnableChannel(adcsData[index].adc, adcsData[0].chn, ENABLE);
+        Chip_ADC_Int_SetChannelCmd(adcsData[index].adc, adcsData[0].chn, ENABLE);
+
+	Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+}
+
+void Board_ADC_DisableChannel(uint8_t channelNumber)
+{
+//	NVIC_DisableIRQ(pAioControl->adc_dac.adc.interrupt);
+//	Chip_ADC_Int_SetChannelCmd(pAioControl->adc_dac.adc.handler, pAioControl->channel, DISABLE);
+}
+
+void Board_ADC_SetSampleRate(uint8_t channelNumber, uint32_t sampleRate)
+{
+//	NVIC_DisableIRQ(pAioControl->adc_dac.adc.interrupt);
+//        Chip_ADC_SetSampleRate(pAioControl->adc_dac.adc.handler, &(pAioControl->adc_dac.adc.setup), (uint32_t)param);
+//        NVIC_EnableIRQ(pAioControl->adc_dac.adc.interrupt);
+}
+
+
+void ADC0_IRQHandler (void)
+{
+   uint16_t value;
+   NVIC_DisableIRQ(adcsData[0].interrupt);
+   Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, 1, DISABLE);
+
+   Chip_ADC_ReadValue(adcsData[0].adc, 1, &value);
+
+   Board_UARTPutSTR("entro int adc:");
+    char aux[64];
+    sprintf(aux,"valor:%d",value);
+   Board_UARTPutSTR(aux);
+
+   NVIC_EnableIRQ(adcsData[0].interrupt);
+   Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, 1, ENABLE);
+}
+//===========================================================================================================================
+
 //================================================[PWM Management]========================================================
 
 typedef struct {
@@ -1102,6 +1171,9 @@ void Board_Init(void)
 
 	/* Initialize Timers */
 	Board_TIMER_Init();
+
+	/* Initialize ADCs */
+	Board_ADC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

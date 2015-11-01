@@ -283,12 +283,6 @@ void Board_Audio_Init(LPC_I2S_T *pI2S, int micIn);
 
 
 /**
- * @brief	Initialize ADC
- * @return	Nothing
- */
-STATIC INLINE void Board_ADC_Init(void){}
-
-/**
  * @brief	Initialize Pinmuxing for the LCD interface
  * @return	Nothing
  */
