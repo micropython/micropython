@@ -151,9 +151,3 @@ correct permissions.  Try then:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV10/firmware.dfu
 
-Documentation
--------------
-
-You can find information about the documentation in the
-[docs/README.md](https://github.com/micropython/micropython/blob/master/docs/README.md) file.
-

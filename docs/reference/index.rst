@@ -15,3 +15,8 @@ MicroPython are described in the sections here.
       :maxdepth: 1
 
       asm_thumb2_index.rst
+
+.. toctree::
+   :maxdepth: 1
+
+   repl.rst
