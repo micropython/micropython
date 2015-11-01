@@ -78,12 +78,12 @@ SRC_C = \
 	hal_ftm.c \
 	hal_gpio.c \
 	help.c \
-	import.c \
 	main.c \
 	lcd.c \
 	led.c \
-	lexermemzip.c \
-	memzip.c \
+	lib/memzip/import.c \
+	lib/memzip/lexermemzip.c \
+	lib/memzip/memzip.c \
 	modpyb.c \
 	pin_defs_teensy.c \
 	reg.c \
@@ -91,6 +91,7 @@ SRC_C = \
 	timer.c \
 	uart.c \
 	usb.c \
+
 
 STM_SRC_C = $(addprefix stmhal/,\
 	gccollect.c \
@@ -126,12 +127,13 @@ SRC_TEENSY = $(addprefix core/,\
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
+OBJ += $(BUILD)/memzip-files.o
 
 all: hex
-hex: $(BUILD)/micropython-mz.hex
+hex: $(BUILD)/micropython.hex
 
 ifeq ($(ARDUINO),)
-post_compile: $(BUILD)/micropython-mz.hex
+post_compile: $(BUILD)/micropython.hex
 	$(ECHO) "Please define ARDUINO (where TeensyDuino is installed)"
 	exit 1
 
@@ -142,7 +144,7 @@ reboot:
 else
 TOOLS_PATH = $(ARDUINO)/hardware/tools
 
-post_compile: $(BUILD)/micropython-mz.hex
+post_compile: $(BUILD)/micropython.hex
 	$(ECHO) "Preparing $@ for upload"
 	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $(<F))" -path="$(abspath $(<D))" -tools="$(TOOLS_PATH)"
 
@@ -163,15 +165,12 @@ ifeq ($(MEMZIP_DIR),)
 MEMZIP_DIR = memzip_files
 endif
 
-$(BUILD)/micropython-mz.hex: $(BUILD)/micropython.hex $(shell find ${MEMZIP_DIR} -type f)
-	@$(ECHO) "Creating $@"
-	$(Q)./add-memzip.sh $< $@ ${MEMZIP_DIR}
-
 $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
 MAKE_PINS = make-pins.py
+MAKE_MEMZIP = ../lib/memzip/make-memzip.py
 BOARD_PINS = teensy_pins.csv
 AF_FILE = mk20dx256_af.csv
 PREFIX_FILE = mk20dx256_prefix.c
@@ -196,6 +195,13 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
 	$(call compile_c)
+
+$(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
+	$(call compile_c)
+
+$(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
 
 $(BUILD)/%.pp: $(BUILD)/%.c
 	$(ECHO) "PreProcess $<"

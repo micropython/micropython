@@ -5,11 +5,11 @@
 #include "py/misc.h"
 #include "memzip.h"
 
-extern uint8_t _staticfs[];
+extern uint8_t memzip_data[];
 
 const MEMZIP_FILE_HDR *memzip_find_file_header(const char *filename) {
 
-    const MEMZIP_FILE_HDR *file_hdr = (const MEMZIP_FILE_HDR *)_staticfs;
+    const MEMZIP_FILE_HDR *file_hdr = (const MEMZIP_FILE_HDR *)memzip_data;
     uint8_t *mem_data;
 
     /* Zip file filenames don't have a leading /, so we strip it off */
@@ -33,7 +33,7 @@ const MEMZIP_FILE_HDR *memzip_find_file_header(const char *filename) {
 }
 
 bool memzip_is_dir(const char *filename) {
-    const MEMZIP_FILE_HDR *file_hdr = (const MEMZIP_FILE_HDR *)_staticfs;
+    const MEMZIP_FILE_HDR *file_hdr = (const MEMZIP_FILE_HDR *)memzip_data;
     uint8_t *mem_data;
 
     if (strcmp(filename, "/") == 0) {
