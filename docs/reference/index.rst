@@ -9,6 +9,11 @@ documentation at
 Differences to standard Python as well as additional features of
 MicroPython are described in the sections here.
 
+.. toctree::
+   :maxdepth: 1
+
+   repl.rst
+
 .. only:: port_pyboard
 
    .. toctree::
