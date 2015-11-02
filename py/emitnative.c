@@ -830,10 +830,16 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         ASM_DATA(emit->as, 1, emit->scope->num_kwonly_args);
         ASM_DATA(emit->as, 1, emit->scope->num_def_pos_args);
 
-        // write code info (just contains block name and source file)
+        // write code info
+        #if MICROPY_PORTABLE_CODE
         ASM_DATA(emit->as, 1, 5);
-        ASM_DATA(emit->as, 2, emit->scope->simple_name);
-        ASM_DATA(emit->as, 2, emit->scope->source_file);
+        ASM_DATA(emit->as, 1, emit->scope->simple_name);
+        ASM_DATA(emit->as, 1, emit->scope->simple_name >> 8);
+        ASM_DATA(emit->as, 1, emit->scope->source_file);
+        ASM_DATA(emit->as, 1, emit->scope->source_file >> 8);
+        #else
+        ASM_DATA(emit->as, 1, 1);
+        #endif
 
         // bytecode prelude: initialise closed over variables
         for (int i = 0; i < emit->scope->id_info_len; i++) {

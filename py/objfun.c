@@ -106,7 +106,11 @@ const mp_obj_type_t mp_type_fun_builtin = {
 
 qstr mp_obj_code_get_name(const byte *code_info) {
     mp_decode_uint(&code_info); // skip code_info_size entry
+    #if MICROPY_PORTABLE_CODE
+    return code_info[0] | (code_info[1] << 8);
+    #else
     return mp_decode_uint(&code_info);
+    #endif
 }
 
 #if MICROPY_EMIT_NATIVE
