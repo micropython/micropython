@@ -192,6 +192,11 @@
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
+// Whether generated code can persist independently of the VM/runtime instance
+#ifndef MICROPY_PERSISTENT_CODE
+#define MICROPY_PERSISTENT_CODE (0)
+#endif
+
 // Whether to emit x64 native code
 #ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64 (0)

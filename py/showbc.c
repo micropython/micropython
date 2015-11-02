@@ -40,6 +40,18 @@
 }
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+
+#if MICROPY_PERSISTENT_CODE
+
+#define DECODE_QSTR \
+    qst = ip[0] | ip[1] << 8; \
+    ip += 2;
+#define DECODE_PTR \
+    DECODE_UINT; \
+    unum = mp_showbc_const_table[unum]
+
+#else
+
 #define DECODE_QSTR { \
     qst = 0; \
     do { \
@@ -52,10 +64,14 @@
     ip += sizeof(mp_uint_t); \
 } while (0)
 
+#endif
+
 const byte *mp_showbc_code_start;
+const mp_uint_t *mp_showbc_const_table;
 
 void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
+    mp_showbc_const_table = const_table;
 
     // get bytecode parameters
     mp_uint_t n_state = mp_decode_uint(&ip);
@@ -69,8 +85,13 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
     ip += code_info_size;
 
+    #if MICROPY_PERSISTENT_CODE
+    qstr block_name = code_info[0] | (code_info[1] << 8);
+    qstr source_file = code_info[2] | (code_info[3] << 8);
+    #else
     qstr block_name = mp_decode_uint(&code_info);
     qstr source_file = mp_decode_uint(&code_info);
+    #endif
     printf("File %s, code block '%s' (descriptor: %p, bytecode @%p " UINT_FMT " bytes)\n",
         qstr_str(source_file), qstr_str(block_name), descr, mp_showbc_code_start, len);
 
