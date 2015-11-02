@@ -134,6 +134,7 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
     }
 }
 
+#if MICROPY_PORTABLE_CODE
 STATIC int execute_from_mpc(const char *filename) {
     mp_hal_set_interrupt_char(CHAR_CTRL_C);
 
@@ -161,6 +162,7 @@ STATIC int execute_from_mpc(const char *filename) {
         return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
     }
 }
+#endif
 
 #if MICROPY_USE_READLINE == 1
 #include "lib/mp-readline/readline.h"
@@ -292,9 +294,12 @@ STATIC int do_repl(void) {
 }
 
 STATIC int do_file(const char *file) {
+    #if MICROPY_PORTABLE_CODE
     if (file[strlen(file) - 1] == 'c') {
         return execute_from_mpc(file);
-    } else {
+    } else
+    #endif
+    {
         mp_lexer_t *lex = mp_lexer_new_from_file(file);
         return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
     }
