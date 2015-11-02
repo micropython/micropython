@@ -103,4 +103,15 @@ const byte *mp_bytecode_print_str(const byte *ip);
 #define MP_TAGPTR_TAG1(x) ((mp_uint_t)(x) & 2)
 #define MP_TAGPTR_MAKE(ptr, tag) ((void*)((mp_uint_t)(ptr) | (tag)))
 
+#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+
+#define MP_OPCODE_BYTE (0)
+#define MP_OPCODE_QSTR (1)
+#define MP_OPCODE_VAR_UINT (2)
+#define MP_OPCODE_OFFSET (3)
+
+uint mp_opcode_format(const byte *ip, size_t *opcode_size);
+
+#endif
+
 #endif // __MICROPY_INCLUDED_PY_BC_H__

@@ -192,9 +192,20 @@
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
+// Whether to support loading of persistent code
+#ifndef MICROPY_PERSISTENT_CODE_LOAD
+#define MICROPY_PERSISTENT_CODE_LOAD (0)
+#endif
+
+// Whether to support saving of persistent code
+#ifndef MICROPY_PERSISTENT_CODE_SAVE
+#define MICROPY_PERSISTENT_CODE_SAVE (0)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
+// This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
-#define MICROPY_PERSISTENT_CODE (0)
+#define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE)
 #endif
 
 // Whether to emit x64 native code
