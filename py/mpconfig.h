@@ -194,6 +194,11 @@
 #define MICROPY_PORTABLE_CODE (0)
 #endif
 
+// Whether to support saving of portable code
+#ifndef MICROPY_PORTABLE_CODE_SAVE
+#define MICROPY_PORTABLE_CODE_SAVE (0)
+#endif
+
 // Whether to emit x64 native code
 #ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64 (0)

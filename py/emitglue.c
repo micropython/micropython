@@ -50,8 +50,13 @@ struct _mp_raw_code_t {
     mp_uint_t n_pos_args : 11;
     union {
         struct {
-            const byte *code;
+            const byte *bytecode;
             const mp_uint_t *const_table;
+            #if MICROPY_PORTABLE_CODE_SAVE
+            mp_uint_t bc_len;
+            uint16_t n_obj;
+            uint16_t n_raw_code;
+            #endif
         } u_byte;
         struct {
             void *fun_data;
@@ -67,11 +72,22 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     return rc;
 }
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t len, const mp_uint_t *const_table, mp_uint_t scope_flags) {
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t len,
+    const mp_uint_t *const_table,
+    #if MICROPY_PORTABLE_CODE_SAVE
+    uint16_t n_obj, uint16_t n_raw_code,
+    #endif
+    mp_uint_t scope_flags) {
+
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
-    rc->data.u_byte.code = code;
+    rc->data.u_byte.bytecode = code;
     rc->data.u_byte.const_table = const_table;
+    #if MICROPY_PORTABLE_CODE_SAVE
+    rc->data.u_byte.bc_len = len;
+    rc->data.u_byte.n_obj = n_obj;
+    rc->data.u_byte.n_raw_code = n_raw_code;
+    #endif
 
 #ifdef DEBUG_PRINT
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
@@ -129,7 +145,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     switch (rc->kind) {
         case MP_CODE_BYTECODE:
         no_other_choice:
-            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.code, rc->data.u_byte.const_table);
+            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.bytecode, rc->data.u_byte.const_table);
             break;
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
@@ -172,3 +188,496 @@ mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_ove
     // wrap function in closure object
     return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
 }
+
+#if MICROPY_PORTABLE_CODE
+
+#include "py/bc0.h"
+
+// The following table encodes the number of bytes that a specific opcode
+// takes up.  There are 3 special opcodes that have an extra byte:
+//     MP_BC_MAKE_CLOSURE
+//     MP_BC_MAKE_CLOSURE_DEFARGS
+//     MP_BC_RAISE_VARARGS
+#define OC4(a, b, c, d) (a | (b << 2) | (c << 4) | (d << 6))
+#define U (0) // undefined opcode
+#define B (0) // single byte
+#define Q (1) // single byte plus 2-byte qstr
+#define V (2) // single byte plus variable encoded unsigned int
+#define O (3) // single byte plus 2-byte bytecode offset
+STATIC const byte opcode_format[64] = {
+    OC4(U, U, U, U), // 0x00-0x03
+    OC4(U, U, U, U), // 0x04-0x07
+    OC4(U, U, U, U), // 0x08-0x0b
+    OC4(U, U, U, U), // 0x0c-0x0f
+    OC4(B, B, B, U), // 0x10-0x13
+    OC4(V, U, Q, V), // 0x14-0x17
+    OC4(B, U, V, V), // 0x18-0x1b
+    OC4(Q, Q, Q, Q), // 0x1c-0x1f
+    OC4(B, B, V, V), // 0x20-0x23
+    OC4(Q, Q, Q, B), // 0x24-0x27
+    OC4(V, V, Q, Q), // 0x28-0x2b
+    OC4(U, U, U, U), // 0x2c-0x2f
+    OC4(B, B, B, B), // 0x30-0x33
+    OC4(B, O, O, O), // 0x34-0x37
+    OC4(O, O, U, U), // 0x38-0x3b
+    OC4(U, O, B, O), // 0x3c-0x3f
+    OC4(O, B, B, O), // 0x40-0x43
+    OC4(B, B, O, B), // 0x44-0x47
+    OC4(U, U, U, U), // 0x48-0x4b
+    OC4(U, U, U, U), // 0x4c-0x4f
+    OC4(V, V, V, V), // 0x50-0x53
+    OC4(B, V, V, V), // 0x54-0x57
+    OC4(V, V, V, B), // 0x58-0x5b
+    OC4(B, B, B, U), // 0x5c-0x5f
+    OC4(V, V, V, V), // 0x60-0x63
+    OC4(V, V, V, V), // 0x64-0x67
+    OC4(Q, Q, B, U), // 0x68-0x6b
+    OC4(U, U, U, U), // 0x6c-0x6f
+
+    OC4(B, B, B, B), // 0x70-0x73
+    OC4(B, B, B, B), // 0x74-0x77
+    OC4(B, B, B, B), // 0x78-0x7b
+    OC4(B, B, B, B), // 0x7c-0x7f
+    OC4(B, B, B, B), // 0x80-0x83
+    OC4(B, B, B, B), // 0x84-0x87
+    OC4(B, B, B, B), // 0x88-0x8b
+    OC4(B, B, B, B), // 0x8c-0x8f
+    OC4(B, B, B, B), // 0x90-0x93
+    OC4(B, B, B, B), // 0x94-0x97
+    OC4(B, B, B, B), // 0x98-0x9b
+    OC4(B, B, B, B), // 0x9c-0x9f
+    OC4(B, B, B, B), // 0xa0-0xa3
+    OC4(B, B, B, B), // 0xa4-0xa7
+    OC4(B, B, B, B), // 0xa8-0xab
+    OC4(B, B, B, B), // 0xac-0xaf
+
+    OC4(B, B, B, B), // 0xb0-0xb3
+    OC4(B, B, B, B), // 0xb4-0xb7
+    OC4(B, B, B, B), // 0xb8-0xbb
+    OC4(B, B, B, B), // 0xbc-0xbf
+
+    OC4(B, B, B, B), // 0xc0-0xc3
+    OC4(B, B, B, B), // 0xc4-0xc7
+    OC4(B, B, B, B), // 0xc8-0xcb
+    OC4(B, B, B, B), // 0xcc-0xcf
+
+    OC4(B, B, B, B), // 0xd0-0xd3
+    OC4(B, B, B, B), // 0xd4-0xd7
+    OC4(B, B, B, B), // 0xd8-0xdb
+    OC4(B, B, B, B), // 0xdc-0xdf
+
+    OC4(B, B, B, B), // 0xe0-0xe3
+    OC4(B, B, B, B), // 0xe4-0xe7
+    OC4(B, B, B, B), // 0xe8-0xeb
+    OC4(B, B, B, B), // 0xec-0xef
+
+    OC4(B, B, B, B), // 0xf0-0xf3
+    OC4(B, B, B, B), // 0xf4-0xf7
+    OC4(B, B, U, U), // 0xf8-0xfb
+    OC4(U, U, U, U), // 0xfc-0xff
+};
+#undef OC4
+#undef U
+#undef B
+#undef Q
+#undef V
+#undef O
+
+STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
+    while (len-- > 0) {
+        *buf++ = reader->read_byte(reader->data);
+    }
+}
+
+STATIC mp_uint_t read_uint(mp_reader_t *reader) {
+    mp_uint_t unum = 0;
+    for (;;) {
+        byte b = reader->read_byte(reader->data);
+        unum = (unum << 7) | (b & 0x7f);
+        if ((b & 0x80) == 0) {
+            break;
+        }
+    }
+    return unum;
+}
+
+STATIC qstr load_qstr(mp_reader_t *reader) {
+    mp_uint_t len = read_uint(reader);
+    char *str = m_new(char, len);
+    read_bytes(reader, (byte*)str, len);
+    qstr qst = qstr_from_strn(str, len);
+    m_del(char, str, len);
+    return qst;
+}
+
+STATIC mp_obj_t load_obj(mp_reader_t *reader) {
+    assert(0);
+    return MP_OBJ_NULL;
+}
+
+STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
+    while (ip < ip_top) {
+        int f = (opcode_format[*ip >> 2] >> (2 * (*ip & 3))) & 3;
+        if (f == 1) {
+            // qstr
+            qstr qst = load_qstr(reader);
+            ip[1] = qst;
+            ip[2] = qst >> 8;
+            ip += 3;
+        } else {
+            int extra_byte = (*ip == MP_BC_RAISE_VARARGS
+                || *ip == MP_BC_MAKE_CLOSURE
+                || *ip == MP_BC_MAKE_CLOSURE_DEFARGS);
+            ip += 1;
+            if (f == 2) {
+                // var-uint
+                while ((*ip++ & 0x80) != 0) {
+                }
+            } else if (f == 3) {
+                // bc offset
+                ip += 2;
+            }
+            ip += extra_byte;
+        }
+    }
+}
+
+typedef struct _bytecode_prelude_t {
+    uint n_state;
+    uint n_exc_stack;
+    uint scope_flags;
+    uint n_pos_args;
+    uint n_kwonly_args;
+    uint n_def_pos_args;
+    uint code_info_size;
+} bytecode_prelude_t;
+
+// ip will point to start of opcodes
+// ip2 will point to simple_name, source_file qstrs
+STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_t *prelude) {
+    prelude->n_state = mp_decode_uint(ip);
+    prelude->n_exc_stack = mp_decode_uint(ip);
+    prelude->scope_flags = *(*ip)++;
+    prelude->n_pos_args = *(*ip)++;
+    prelude->n_kwonly_args = *(*ip)++;
+    prelude->n_def_pos_args = *(*ip)++;
+    *ip2 = *ip;
+    prelude->code_info_size = mp_decode_uint(ip2);
+    *ip += prelude->code_info_size;
+    while (*(*ip)++ != 255) {
+    }
+}
+
+STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
+    // load bytecode
+    mp_uint_t bc_len = read_uint(reader);
+    byte *bytecode = m_new(byte, bc_len);
+    read_bytes(reader, bytecode, bc_len);
+
+    // extract prelude
+    const byte *ip = bytecode;
+    const byte *ip2;
+    bytecode_prelude_t prelude;
+    extract_prelude(&ip, &ip2, &prelude);
+
+    // load qstrs and link global qstr ids into bytecode
+    qstr simple_name = load_qstr(reader);
+    qstr source_file = load_qstr(reader);
+    ((byte*)ip2)[0] = simple_name; ((byte*)ip2)[1] = simple_name >> 8;
+    ((byte*)ip2)[2] = source_file; ((byte*)ip2)[3] = source_file >> 8;
+    load_bytecode_qstrs(reader, (byte*)ip, bytecode + bc_len);
+
+    // load constant table
+    mp_uint_t n_obj = read_uint(reader);
+    mp_uint_t n_raw_code = read_uint(reader);
+    mp_uint_t *const_table = m_new(mp_uint_t, prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code);
+    mp_uint_t *ct = const_table;
+    for (mp_uint_t i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
+        *ct++ = (mp_uint_t)MP_OBJ_NEW_QSTR(load_qstr(reader));
+    }
+    for (mp_uint_t i = 0; i < n_obj; ++i) {
+        *ct++ = (mp_uint_t)load_obj(reader);
+    }
+    for (mp_uint_t i = 0; i < n_raw_code; ++i) {
+        *ct++ = (mp_uint_t)load_raw_code(reader);
+    }
+
+    // create raw_code and return it
+    mp_raw_code_t *rc = mp_emit_glue_new_raw_code();
+    mp_emit_glue_assign_bytecode(rc, bytecode, bc_len, const_table,
+        #if MICROPY_PORTABLE_CODE_SAVE
+        n_obj, n_raw_code,
+        #endif
+        prelude.scope_flags);
+    return rc;
+}
+
+mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
+    byte header[6];
+    read_bytes(reader, header, 6);
+    if (strncmp((char*)header, "MPC001", 6) != 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "invalid bytecode file"));
+    }
+    return load_raw_code(reader);
+}
+
+// here we define mp_raw_code_load_file depending on the port
+// TODO abstract this away properly
+
+#if defined(__i386__) || defined(__x86_64__)
+// unix file reader
+
+#include <sys/stat.h>
+#include <fcntl.h>
+
+typedef struct _mp_lexer_file_buf_t {
+    int fd;
+    byte buf[20];
+    mp_uint_t len;
+    mp_uint_t pos;
+} mp_lexer_file_buf_t;
+
+STATIC mp_uint_t file_buf_next_byte(void *fb_in) {
+    mp_lexer_file_buf_t *fb = fb_in;
+    if (fb->pos >= fb->len) {
+        if (fb->len == 0) {
+            return (mp_uint_t)-1;
+        } else {
+            int n = read(fb->fd, fb->buf, sizeof(fb->buf));
+            if (n <= 0) {
+                fb->len = 0;
+                return (mp_uint_t)-1;
+            }
+            fb->len = n;
+            fb->pos = 0;
+        }
+    }
+    return fb->buf[fb->pos++];
+}
+
+STATIC const byte* file_buf_get_ptr(void *fb, size_t len) {
+    (void)fb;
+    (void)len;
+    return NULL;
+}
+
+mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
+    mp_lexer_file_buf_t fb;
+    fb.fd = open(filename, O_RDONLY, 0644);
+    int n = read(fb.fd, fb.buf, sizeof(fb.buf));
+    fb.len = n;
+    fb.pos = 0;
+    mp_reader_t reader;
+    reader.data = &fb;
+    reader.read_byte = file_buf_next_byte;
+    reader.get_ptr = file_buf_get_ptr;
+    mp_raw_code_t *rc = mp_raw_code_load(&reader);
+    close(fb.fd);
+    return rc;
+}
+
+#else
+// fatfs file reader
+
+#include "lib/fatfs/ff.h"
+
+typedef struct _mp_lexer_file_buf_t {
+    FIL fp;
+    byte buf[20];
+    uint16_t len;
+    uint16_t pos;
+} mp_lexer_file_buf_t;
+
+STATIC mp_uint_t file_buf_next_byte(void *fb_in) {
+    mp_lexer_file_buf_t *fb = fb_in;
+    if (fb->pos >= fb->len) {
+        if (fb->len < sizeof(fb->buf)) {
+            return (mp_uint_t)-1;
+        } else {
+            UINT n;
+            f_read(&fb->fp, fb->buf, sizeof(fb->buf), &n);
+            if (n == 0) {
+                return (mp_uint_t)-1;
+            }
+            fb->len = n;
+            fb->pos = 0;
+        }
+    }
+    return fb->buf[fb->pos++];
+}
+
+STATIC const byte* file_buf_get_ptr(void *fb, size_t len) {
+    (void)fb;
+    (void)len;
+    return NULL;
+}
+
+mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
+    mp_lexer_file_buf_t fb;
+    /*FRESULT res =*/ f_open(&fb.fp, filename, FA_READ);
+    UINT n;
+    f_read(&fb.fp, fb.buf, sizeof(fb.buf), &n);
+    fb.len = n;
+    fb.pos = 0;
+
+    mp_reader_t reader;
+    reader.data = &fb;
+    reader.read_byte = file_buf_next_byte;
+    reader.get_ptr = file_buf_get_ptr;
+    mp_raw_code_t *rc = mp_raw_code_load(&reader);
+
+    f_close(&fb.fp);
+
+    return rc;
+}
+
+#endif
+
+#endif // MICROPY_PORTABLE_CODE
+
+#if MICROPY_PORTABLE_CODE_SAVE
+STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
+    print->print_strn(print->data, (const char*)data, len);
+}
+
+#define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
+STATIC void mp_print_uint(mp_print_t *print, mp_uint_t n) {
+    byte buf[BYTES_FOR_INT];
+    byte *p = buf + sizeof(buf);
+    for (;;) {
+        *--p = n & 0x7f;
+        n >>= 7;
+        if (n == 0) {
+            break;
+        }
+        *p |= 0x80;
+    }
+    print->print_strn(print->data, (char*)p, buf + sizeof(buf) - p);
+}
+
+STATIC void save_qstr(mp_print_t *print, qstr qst) {
+    mp_uint_t len;
+    const byte *str = qstr_data(qst, &len);
+    mp_print_uint(print, len);
+    mp_print_bytes(print, str, len);
+}
+
+STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
+    if (MP_OBJ_IS_STR(o)) {
+        byte buf[] = {'s'};
+        mp_print_bytes(print, buf, 1);
+        mp_uint_t len;
+        const char *str = mp_obj_str_get_data(o, &len);
+        mp_print_uint(print, len);
+        mp_print_bytes(print, (const byte*)str, len);
+    } else if (MP_OBJ_IS_TYPE(o, &mp_type_bytes)) {
+        byte buf[] = {'b'};
+        mp_print_bytes(print, buf, 1);
+        mp_uint_t len;
+        const char *str = mp_obj_str_get_data(o, &len);
+        mp_print_uint(print, len);
+        mp_print_bytes(print, (const byte*)str, len);
+    } else if (MP_OBJ_IS_TYPE(o, &mp_type_int)) {
+        byte buf[] = {'i'};
+        mp_print_bytes(print, buf, 1);
+        // TODO
+    } else if (MP_OBJ_IS_TYPE(o, &mp_type_float)) {
+        byte buf[] = {'f'};
+        mp_print_bytes(print, buf, 1);
+        // TODO
+    } else if (MP_OBJ_IS_TYPE(o, &mp_type_complex)) {
+        byte buf[] = {'c'};
+        mp_print_bytes(print, buf, 1);
+        // TODO
+    } else if (o == &mp_const_ellipsis_obj) {
+        byte buf[] = {'e'};
+        mp_print_bytes(print, buf, 1);
+    } else {
+        mp_obj_print(o, PRINT_STR);
+        assert(0);
+    }
+}
+
+STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *ip_top) {
+    while (ip < ip_top) {
+        int f = (opcode_format[*ip >> 2] >> (2 * (*ip & 3))) & 3;
+        if (f == 1) {
+            // qstr opcode
+            qstr qst = ip[1] | (ip[2] << 8);
+            save_qstr(print, qst);
+            ip += 3;
+        } else {
+            // non-qstr opcode
+            int extra_byte = (ip[0] == MP_BC_RAISE_VARARGS
+                || ip[0] == MP_BC_MAKE_CLOSURE
+                || ip[0] == MP_BC_MAKE_CLOSURE_DEFARGS);
+            ip += 1;
+            if (f == 2) {
+                // var-uint
+                while ((*ip++ & 0x80) != 0) {
+                }
+            } else if (f == 3) {
+                // bc offset
+                ip += 2;
+            }
+            ip += extra_byte;
+        }
+    }
+}
+
+void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
+    if (rc->kind != MP_CODE_BYTECODE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "can only save bytecode"));
+    }
+
+    // save bytecode
+    mp_print_uint(print, rc->data.u_byte.bc_len);
+    mp_print_bytes(print, rc->data.u_byte.bytecode, rc->data.u_byte.bc_len);
+
+    // extract prelude
+    const byte *ip = rc->data.u_byte.bytecode;
+    const byte *ip2;
+    bytecode_prelude_t prelude;
+    extract_prelude(&ip, &ip2, &prelude);
+
+    // save qstrs
+    save_qstr(print, ip2[0] | (ip2[1] << 8)); // simple_name
+    save_qstr(print, ip2[2] | (ip2[3] << 8)); // source_file
+    save_bytecode_qstrs(print, ip, rc->data.u_byte.bytecode + rc->data.u_byte.bc_len);
+
+    // save constant table
+    mp_print_uint(print, rc->data.u_byte.n_obj);
+    mp_print_uint(print, rc->data.u_byte.n_raw_code);
+    const mp_uint_t *const_table = rc->data.u_byte.const_table;
+    for (uint i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
+        mp_obj_t o = (mp_obj_t)*const_table++;
+        save_qstr(print, MP_OBJ_QSTR_VALUE(o));
+    }
+    for (uint i = 0; i < rc->data.u_byte.n_obj; ++i) {
+        save_obj(print, (mp_obj_t)*const_table++);
+    }
+    for (uint i = 0; i < rc->data.u_byte.n_raw_code; ++i) {
+        save_raw_code(print, (mp_raw_code_t*)*const_table++);
+    }
+}
+
+void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
+    mp_print_bytes(print, (const byte*)"MPC001", 6);
+    save_raw_code(print, rc);
+}
+
+STATIC void fd_print_strn(void *env, const char *str, mp_uint_t len) {
+    int fd = (mp_int_t)env;
+    write(fd, str, len);
+}
+
+void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    mp_print_t fd_print = {(void*)(mp_int_t)fd, fd_print_strn};
+    mp_raw_code_save(rc, &fd_print);
+    close(fd);
+}
+
+#endif
