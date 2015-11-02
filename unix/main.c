@@ -134,6 +134,34 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
     }
 }
 
+STATIC int execute_from_mpc(const char *filename) {
+    mp_hal_set_interrupt_char(CHAR_CTRL_C);
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_raw_code_t *outer_raw_code = mp_raw_code_load_file(filename);
+        #if MICROPY_PY___FILE__
+        //if (input_kind == MP_PARSE_FILE_INPUT) {
+            //mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name)); TODO
+        //}
+        #endif
+        mp_obj_t module_fun = mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
+        if (!compile_only) {
+            // execute it
+            mp_call_function_0(module_fun);
+        }
+
+        mp_hal_set_interrupt_char(-1);
+        nlr_pop();
+        return 0;
+
+    } else {
+        // uncaught exception
+        mp_hal_set_interrupt_char(-1);
+        return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
+    }
+}
+
 #if MICROPY_USE_READLINE == 1
 #include "lib/mp-readline/readline.h"
 #else
@@ -264,8 +292,12 @@ STATIC int do_repl(void) {
 }
 
 STATIC int do_file(const char *file) {
-    mp_lexer_t *lex = mp_lexer_new_from_file(file);
-    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+    if (file[strlen(file) - 1] == 'c') {
+        return execute_from_mpc(file);
+    } else {
+        mp_lexer_t *lex = mp_lexer_new_from_file(file);
+        return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+    }
 }
 
 STATIC int do_str(const char *str) {
