@@ -311,6 +311,7 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
 }
 
 STATIC mp_obj_t load_obj(mp_reader_t *reader) {
+    (void)reader;
     assert(0);
     return MP_OBJ_NULL;
 }
@@ -626,7 +627,7 @@ STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *i
     }
 }
 
-void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
+STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     if (rc->kind != MP_CODE_BYTECODE) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "can only save bytecode"));
@@ -670,7 +671,8 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 
 STATIC void fd_print_strn(void *env, const char *str, mp_uint_t len) {
     int fd = (mp_int_t)env;
-    write(fd, str, len);
+    ssize_t ret = write(fd, str, len);
+    (void)ret;
 }
 
 void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
