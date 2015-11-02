@@ -66,11 +66,21 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
+
     vstr_add_str(path, ".py");
     stat = mp_import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
+
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    vstr_ins_byte(path, path->len - 2, 'm');
+    stat = mp_import_stat(vstr_null_terminated_str(path));
+    if (stat == MP_IMPORT_STAT_FILE) {
+        return stat;
+    }
+    #endif
+
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
@@ -132,11 +142,56 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char 
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
 
+#if MICROPY_PERSISTENT_CODE_LOAD
+STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
+    #if MICROPY_PY___FILE__
+    // TODO
+    //qstr source_name = lex->source_name;
+    //mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    #endif
+
+    // execute the module in its context
+    mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
+
+    // save context
+    mp_obj_dict_t *volatile old_globals = mp_globals_get();
+    mp_obj_dict_t *volatile old_locals = mp_locals_get();
+
+    // set new context
+    mp_globals_set(mod_globals);
+    mp_locals_set(mod_globals);
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t module_fun = mp_make_function_from_raw_code(raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
+        mp_call_function_0(module_fun);
+
+        // finish nlr block, restore context
+        nlr_pop();
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+    } else {
+        // exception; restore context and re-raise same exception
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        nlr_raise(nlr.ret_val);
+    }
+}
+#endif
+
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // create the lexer
     char *file_str = vstr_null_terminated_str(file);
-    mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
-    do_load_from_lexer(module_obj, lex, file_str);
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    if (file_str[file->len - 3] == 'm') {
+        mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
+        do_execute_raw_code(module_obj, raw_code);
+    } else
+    #endif
+    {
+        mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
+        do_load_from_lexer(module_obj, lex, file_str);
+    }
 }
 
 STATIC void chop_component(const char *start, const char **end) {
