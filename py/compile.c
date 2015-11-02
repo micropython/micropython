@@ -3265,6 +3265,17 @@ mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt
         nlr_raise(comp->compile_error);
     } else {
         // return function that executes the outer module
+        #if MICROPY_PORTABLE_CODE_SAVE
+        if (!is_repl) {
+            vstr_t vstr;
+            vstr_init(&vstr, 16);
+            vstr_add_str(&vstr, qstr_str(source_file));
+            vstr_cut_tail_bytes(&vstr, 2);
+            vstr_add_str(&vstr, "mpc");
+            mp_raw_code_save_file(outer_raw_code, vstr_null_terminated_str(&vstr));
+            vstr_clear(&vstr);
+        }
+        #endif
         return mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
     }
 }
