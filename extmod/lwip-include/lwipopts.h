@@ -3,7 +3,7 @@
 
 #include <py/mpconfig.h>
 #include <py/misc.h>
-#include MICROPY_HAL_H
+#include <py/mphal.h>
 
 // We're running without an OS for this port. We don't provide any services except light protection.
 #define NO_SYS 1
