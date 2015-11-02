@@ -66,6 +66,16 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
+
+    #if MICROPY_PORTABLE_CODE
+    vstr_add_str(path, ".mpc");
+    stat = mp_import_stat(vstr_null_terminated_str(path));
+    if (stat == MP_IMPORT_STAT_FILE) {
+        return stat;
+    }
+    vstr_cut_tail_bytes(path, 4);
+    #endif
+
     vstr_add_str(path, ".py");
     stat = mp_import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
@@ -132,11 +142,56 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char 
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
 
+#if MICROPY_PORTABLE_CODE
+STATIC void do_load_from_mpc(mp_obj_t module_obj, const char *fname) {
+    #if MICROPY_PY___FILE__
+    //TODO
+    //qstr source_name = lex->source_name;
+    //mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+    #endif
+
+    // execute the module in its context
+    mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
+
+    // save context
+    mp_obj_dict_t *volatile old_globals = mp_globals_get();
+    mp_obj_dict_t *volatile old_locals = mp_locals_get();
+
+    // set new context
+    mp_globals_set(mod_globals);
+    mp_locals_set(mod_globals);
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_raw_code_t *outer_raw_code = mp_raw_code_load_file(fname);
+        mp_obj_t module_fun = mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
+        mp_call_function_0(module_fun);
+
+        // finish nlr block, restore context
+        nlr_pop();
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+    } else {
+        // exception; restore context and re-raise same exception
+        mp_globals_set(old_globals);
+        mp_locals_set(old_locals);
+        nlr_raise(nlr.ret_val);
+    }
+}
+#endif
+
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // create the lexer
     char *file_str = vstr_null_terminated_str(file);
-    mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
-    do_load_from_lexer(module_obj, lex, file_str);
+    #if MICROPY_PORTABLE_CODE
+    if (file_str[file->len - 1] == 'c') {
+        do_load_from_mpc(module_obj, file_str);
+    } else
+    #endif
+    {
+        mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
+        do_load_from_lexer(module_obj, lex, file_str);
+    }
 }
 
 STATIC void chop_component(const char *start, const char **end) {

@@ -539,6 +539,12 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
     assert(n_pos_defaults >= 0);
     assert(n_kw_defaults >= 0);
 
+    // set flags
+    if (n_kw_defaults > 0) {
+        this_scope->scope_flags |= MP_SCOPE_FLAG_DEFKWARGS;
+    }
+    this_scope->num_def_pos_args = n_pos_defaults;
+
     // make closed over variables, if any
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
@@ -3259,6 +3265,17 @@ mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt
         nlr_raise(comp->compile_error);
     } else {
         // return function that executes the outer module
+        #if MICROPY_PORTABLE_CODE_SAVE
+        if (!is_repl) {
+            vstr_t vstr;
+            vstr_init(&vstr, 16);
+            vstr_add_str(&vstr, qstr_str(source_file));
+            vstr_cut_tail_bytes(&vstr, 2);
+            vstr_add_str(&vstr, "mpc");
+            mp_raw_code_save_file(outer_raw_code, vstr_null_terminated_str(&vstr));
+            vstr_clear(&vstr);
+        }
+        #endif
         return mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
     }
 }
