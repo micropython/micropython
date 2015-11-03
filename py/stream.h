@@ -40,6 +40,14 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
 // Iterator which uses mp_stream_unbuffered_readline_obj
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
+typedef enum {
+    STREAM_READ,
+    STREAM_WRITE,
+    STREAM_IOCTL,
+} supported_stream_op_t;
+
+mp_obj_t mp_stream_op_supported(mp_obj_t self_in, supported_stream_op_t op);
+
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len);
 
 #if MICROPY_STREAMS_NON_BLOCK
