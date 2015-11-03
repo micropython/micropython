@@ -37,6 +37,7 @@
 #include "py/objstr.h"
 #include "py/objlist.h"
 #include "py/stream.h"
+#include "py/mphal.h"
 #include "file.h"
 #include "irq.h"
 #include "pin.h"
@@ -45,7 +46,6 @@
 #include "dma.h"
 #include "bufhelper.h"
 #include "i2s.h"
-#include MICROPY_HAL_H
 
 /// \moduleref pyb
 /// \class I2S - Inter-IC-Sound, a protocol to transfer isochronous audio data
