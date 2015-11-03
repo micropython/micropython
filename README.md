@@ -98,7 +98,7 @@ External dependencies
 ---------------------
 
 Building Unix version requires some dependencies installed. For
-Debian/Ubuntu/Mint derivative Linux distros, install `build-essentials`
+Debian/Ubuntu/Mint derivative Linux distros, install `build-essential`
 (includes toolchain and make), `libffi-dev`, and `pkg-config` packages.
 
 Other dependencies can be built together with MicroPython. Oftentimes,
