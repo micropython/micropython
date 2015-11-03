@@ -105,6 +105,10 @@ typedef enum {
     I2S_SIG_STOP_RX,
     I2S_SIG_STOP_TX,
     I2S_SIG_STOP_ALL,
+    I2S_SIG_STOP_EOF_DIV,
+    I2S_SIG_EOF_RX,
+    I2S_SIG_EOF_TX,
+    I2S_SIG_EOF_ALL,
 } xfer_signal_t;
 
 typedef struct _pyb_i2s_obj_t {
@@ -118,6 +122,8 @@ typedef struct _pyb_i2s_obj_t {
     DMA_HandleTypeDef rx_dma;
     mp_obj_base_t *dstream_tx;
     mp_obj_base_t *dstream_rx;
+    mp_int_t stream_tx_len;
+    mp_int_t stream_rx_len;
     mp_uint_t out_sz;
     mp_obj_t callback;
     xfer_state_t xfer_state;
@@ -385,6 +391,25 @@ STATIC HAL_StatusTypeDef i2s_bus_sync(pyb_i2s_obj_t *self, uint32_t polarity, ui
 STATIC void i2s_stream_handler(pyb_i2s_obj_t *self);
 STATIC mp_obj_t pyb_i2s_callback(mp_obj_t self_in, mp_obj_t callback);
 
+STATIC void i2s_handle_mp_callback(pyb_i2s_obj_t *self) {
+    if (self->callback != mp_const_none) {
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_1(self->callback, self);
+            nlr_pop();
+        } else {
+            // Uncaught exception; disable the callback so it doesn't run again.
+            self->callback = mp_const_none;
+            // DMA_HandleTypeDef dma = self->tx_dma;
+            // __HAL_DMA_DISABLE(&dma);
+            printf("uncaught exception in I2S(%u) DMA interrupt handler\n", self->i2s_id);
+            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+        }
+        gc_unlock();
+    }
+}
+
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     led_state(1, 1); //DEBUG
     // I2S root pointer index is 1 if both I2S instances are enabled and I2S
@@ -417,24 +442,7 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
         i2s_stream_handler(self);
     } else if (self->xfer_state != INACTIVE) {
         // buffer transfer, call user-defined callback
-        if (self->callback != mp_const_none) {
-            gc_lock();
-            nlr_buf_t nlr;
-            if (nlr_push(&nlr) == 0) {
-                // mp_call_function_1 wasn't working -- need to investigate
-                // mp_call_function_1(self->callback, self)
-                mp_call_function_0(self->callback);
-                nlr_pop();
-            } else {
-                // Uncaught exception; disable the callback so it doesn't run again.
-                self->callback = mp_const_none;
-                // DMA_HandleTypeDef dma = self->tx_dma;
-                // __HAL_DMA_DISABLE(&dma);
-                printf("uncaught exception in I2S(%u) DMA interrupt handler\n", self->i2s_id);
-                mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-            }
-            gc_unlock();
-        }
+        i2s_handle_mp_callback(self);
     }
     led_state(1, 0); //DEBUG
 }
@@ -460,24 +468,7 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
         if (self->xfer_state == STREAM_IN) {
             i2s_stream_handler(self);
         } else if (self->xfer_state > INACTIVE && self->xfer_state < BUF_STR_DIV) {
-            if (self->callback != mp_const_none) {
-                gc_lock();
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    // mp_call_function_1 wasn't working -- need to investigate
-                    // mp_call_function_1(self->callback, self)
-                    mp_call_function_0(self->callback);
-                    nlr_pop();
-                } else {
-                    // Uncaught exception; disable the callback so it doesn't run again.
-                    self->callback = mp_const_none;
-                    // DMA_HandleTypeDef dma = self->rx_dma;
-                    // __HAL_DMA_DISABLE(&dma);
-                    printf("uncaught exception in I2S(%u) DMA interrupt handler\n", self->i2s_id);
-                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-                }
-                gc_unlock();
-            }
+            i2s_handle_mp_callback(self);
         }
     }
     led_state(2, 0); //DEBUG
@@ -878,7 +869,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2s_deinit_obj, pyb_i2s_deinit);
 
 // TODO - adapt docstrings copied from spi.c for i2s
 
-/// \method send(send, *, timeout=5000)
+/// \method send(send, *, timeout=100)
 /// Send data on the bus:
 ///
 ///   - `send` is the data to send (an integer to send, or a buffer object).
@@ -947,7 +938,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_send_obj, 1, pyb_i2s_send);
 
 // TODO - adapt docstrings copied from spi.c for i2s
 
-/// \method recv(recv, *, timeout=5000)
+/// \method recv(recv, *, timeout=100)
 ///
 /// Receive data on the bus:
 ///
@@ -1025,7 +1016,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_recv_obj, 1, pyb_i2s_recv);
 
 // TODO - adapt docstrings copied from spi.c for i2s
 
-/// \method send_recv(send, recv=None, *, timeout=5000)
+/// \method send_recv(send, recv=None, *, timeout=100)
 ///
 /// Send and receive data on the bus at the same time:
 ///
@@ -1042,7 +1033,7 @@ STATIC mp_obj_t pyb_i2s_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args,
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_send,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_recv,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
     // parse args
@@ -1140,7 +1131,9 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_stream_out, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100} },
+        { MP_QSTR_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        // TODO: Allow length to have units other than n_samples
     };
 
     // parse args
@@ -1178,12 +1171,14 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
             // stream_handler to add stream_out to ongoing stream transaction 
             self->xfer_signal = I2S_SIG_NONE;
             self->xfer_state |= STREAM_OUT;
+            self->stream_tx_len = args[2].u_int * 4; // n_samples -> n_bytes
             self->dstream_tx = stream;
         }
     } else {
         // set up for simplex stream_out
         self->xfer_signal = I2S_SIG_NONE;
         self->xfer_state = STREAM_OUT;
+        self->stream_tx_len = args[2].u_int * 4; // n_samples -> n_bytes
         int buf_sz = AUDIOBUFFER_BYTES / 4;
         int error;
         self->dstream_tx = stream;
@@ -1232,7 +1227,9 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_stream_in, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100} },
+        { MP_QSTR_len, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        // TODO: Allow length to have units other than n_samples
     };
 
     // parse args
@@ -1271,12 +1268,14 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
             // stream_handler to add stream_in to ongoing stream transaction 
             self->xfer_signal = I2S_SIG_NONE;
             self->xfer_state |= STREAM_IN;
+            self->stream_rx_len = args[2].u_int * 4; // n_samples -> n_bytes
             self->dstream_rx = stream;
         }
     } else {
         // set up for simplex stream_in
         self->xfer_signal = I2S_SIG_NONE;
         self->xfer_state = STREAM_IN;
+        self->stream_rx_len = args[2].u_int * 4; // n_samples -> n_bytes
         int buf_sz = AUDIOBUFFER_BYTES / 4;
         self->dstream_rx = stream;
         self->pp_ptr = 0;
@@ -1333,23 +1332,29 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
     HAL_StatusTypeDef status;
 
     // Set xfer_state as indicated by xfer_signal:
-    if (self->xfer_signal == I2S_SIG_STOP_ALL) {
+    int sig = self->xfer_signal;
+    int state = self->xfer_state;
+    if (sig == I2S_SIG_STOP_ALL || sig == I2S_SIG_EOF_ALL) {
         self->xfer_state = INACTIVE;
         self->xfer_signal = I2S_SIG_NONE;
-    } else if (self->xfer_signal == I2S_SIG_STOP_RX) {
-        if (self->xfer_state == STREAM_OUT || self->xfer_state == STREAM_IN_OUT) {
+    } else if (sig == I2S_SIG_STOP_RX || sig == I2S_SIG_EOF_RX) {
+        if (state == STREAM_OUT || state == STREAM_IN_OUT) {
             self->xfer_state = STREAM_OUT;
         } else {
             self->xfer_state = INACTIVE;
         }
         self->xfer_signal = I2S_SIG_NONE;
-    } else if (self->xfer_signal == I2S_SIG_STOP_TX) {
-        if (self->xfer_state == STREAM_IN || self->xfer_state == STREAM_IN_OUT) {
+    } else if (sig == I2S_SIG_STOP_TX || sig == I2S_SIG_EOF_TX) {
+        if (state == STREAM_IN || state == STREAM_IN_OUT) {
             self->xfer_state = STREAM_IN;
         } else {
             self->xfer_state = INACTIVE;
         }
         self->xfer_signal = I2S_SIG_NONE;
+    }
+    // If I2S_SIG_EOF_* then invoke user-defined callback
+    if (sig > I2S_SIG_STOP_EOF_DIV) {
+        i2s_handle_mp_callback(self);
     }
 
     // DMA transfer:
@@ -1394,26 +1399,46 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
                                                               &self->audiobuf_tx[buf_ptr],
                                                               buf_sz, &error);
 
-        // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to end
-        // transmit on next callback:
-        if (self->out_sz == 0) {
-            self->xfer_signal = I2S_SIG_STOP_TX; // eventually I2S_SIG_STOP_TX
+        if (self->stream_tx_len > -1) {
+            if (self->stream_tx_len >= self->out_sz) {
+                self->stream_tx_len -= self->out_sz;
+            } else {
+                self->stream_tx_len = 0;
+            }
+        }
+        // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to
+        // indicate end of file
+        if (self->out_sz == 0 || self->stream_tx_len == 0) {
+            self->xfer_signal = I2S_SIG_EOF_TX;
         } else if (self->out_sz == MP_STREAM_ERROR) {
             nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
         }
     }
-
     if ((self->xfer_state & STREAM_IN) != 0) {
         // TODO: mp_stream_write is an available public function, but there is no
         // mp_stream_read - is there something equivalent that I can use?
         // Also need to figure out correct way to handle errors and end transfer for stream_in
         mp_obj_t ret = mp_stream_write(self->dstream_rx, &self->audiobuf_rx[buf_ptr], buf_sz);
-        if ((int) ret < buf_sz) {
-            // A write less than buf_sz is probably because the filesystem is full;
-            // stop the stream_in
-            self->xfer_signal = I2S_SIG_STOP_RX;
+        if (mp_obj_is_integer(ret)) {
+            // stream_in is half as long as stream_out, possibly b/c of mixup b/t uPy ints
+            // and machine ints?
+            mp_int_t r = (mp_int_t) ret;
+            if (self->stream_rx_len > -1) {
+                if (self->stream_rx_len >= r) {
+                    self->stream_rx_len -= r;
+                } else {
+                    self->stream_rx_len = 0;
+                }
+            }
+            if (r < buf_sz || self->stream_rx_len == 0) {
+                // A write smaller than buf_sz is probably because the filesystem is full:
+                self->xfer_signal = I2S_SIG_EOF_RX;
+            }
+        } else {
+            // If ret isn't an integer it indicates a stream write error, stop rx:
+            self->xfer_signal = I2S_SIG_EOF_RX;
         }
-    }   
+    }
 }
 
 STATIC mp_obj_t pyb_i2s_pause(mp_obj_t self_in){
@@ -1454,7 +1479,7 @@ STATIC mp_obj_t pyb_i2s_stop(mp_uint_t n_args, const mp_obj_t *args){
     } else {
         self->xfer_signal = I2S_SIG_STOP_ALL;
     }
-    printf("stp %d,%d", self->xfer_signal, self->xfer_state);
+    //printf("stp %d,%d", self->xfer_signal, self->xfer_state);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_i2s_stop_obj, 1, 2, pyb_i2s_stop);
