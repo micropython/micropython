@@ -49,6 +49,7 @@ typedef enum {
 mp_obj_t mp_stream_op_supported(mp_obj_t self_in, supported_stream_op_t op);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len);
+mp_obj_t mp_stream_read(mp_obj_t self_in, void *buf, mp_uint_t len);
 
 #if MICROPY_STREAMS_NON_BLOCK
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,

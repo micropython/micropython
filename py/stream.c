@@ -195,6 +195,22 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 
+mp_obj_t mp_stream_read(mp_obj_t self_in, void *buf, mp_uint_t len) {
+    // Supported op check included here for protability and to be equivalent to
+    // mp_stream_write; some stream read methods will now have redundant checks:
+    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, STREAM_READ);
+    int error;
+    mp_uint_t out_sz = o->type->stream_p->read(self_in, buf, len, &error);
+    if (out_sz == MP_STREAM_ERROR) {
+        if (mp_is_nonblocking_error(error)) {
+            return mp_const_none;
+        }
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(out_sz);
+    }
+}
+
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
     struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, STREAM_WRITE);
     int error;
@@ -236,16 +252,7 @@ STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
         }
     }
 
-    int error;
-    mp_uint_t out_sz = o->type->stream_p->read(o, bufinfo.buf, len, &error);
-    if (out_sz == MP_STREAM_ERROR) {
-        if (mp_is_nonblocking_error(error)) {
-            return mp_const_none;
-        }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
-    } else {
-        return MP_OBJ_NEW_SMALL_INT(out_sz);
-    }
+    return mp_stream_read(o, bufinfo.buf, len);
 }
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
