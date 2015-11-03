@@ -50,8 +50,9 @@ SRC_C = \
 	lib/mp-readline/readline.c \
 
 SRC_S = \
+
 #	startup_stm32f40xx.s \
-	gchelper.s \
+#	gchelper.s \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
