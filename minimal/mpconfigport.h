@@ -65,7 +65,6 @@ typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // extra built in names to add to the global namespace
@@ -75,14 +74,6 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
-
-#define HAL_GetTick() 0
-int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_str(const char *str);
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
-
-static inline void mp_hal_set_interrupt_char(char c) {}
 
 #define MICROPY_HW_BOARD_NAME "minimal"
 #define MICROPY_HW_MCU_NAME "unknown-cpu"

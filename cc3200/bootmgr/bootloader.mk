@@ -124,7 +124,7 @@ $(BUILD)/bootmgr.bin: $(BUILD)/bootmgr.axf
 
 $(BUILD)/bootloader.bin: $(BUILD)/bootmgr.bin
 	$(ECHO) "Create $@"
-	$(Q)$(SHELL) $(BOOT_GEN) $(BOARD) $(BTYPE)
+	$(Q)$(SHELL) $(BOOT_GEN) $(BUILD)
 
 # Create an empty "qstrdefs.generated.h" needed by py/mkrules.mk
 $(HEADER_BUILD)/qstrdefs.generated.h: | $(HEADER_BUILD)

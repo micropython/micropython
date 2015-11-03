@@ -31,6 +31,8 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/stream.h"
+#include MICROPY_HAL_H
 
 #include "netutils.h"
 
@@ -43,10 +45,8 @@
 
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
+#include "lwip/sio.h"
 #endif
-
-// FIXME FIXME FIXME
-#define LWIP_DELAY HAL_Delay
 
 #ifdef MICROPY_PY_LWIP_SLIP
 /******************************************************************************/
@@ -55,7 +55,6 @@
 
 typedef struct _lwip_slip_obj_t {
     mp_obj_base_t base;
-    u8_t uart_id;
     struct netif lwip_netif;
 } lwip_slip_obj_t;
 
@@ -63,14 +62,40 @@ typedef struct _lwip_slip_obj_t {
 STATIC lwip_slip_obj_t lwip_slip_obj;
 
 // Declare these early.
-void mod_lwip_register_poll(void (* poll)(void *arg), void *poll_arg);
-void mod_lwip_deregister_poll(void (* poll)(void *arg), void *poll_arg);
+void mod_lwip_register_poll(void (*poll)(void *arg), void *poll_arg);
+void mod_lwip_deregister_poll(void (*poll)(void *arg), void *poll_arg);
 
 STATIC void slip_lwip_poll(void *netif) {
-    slipif_poll((struct netif *)netif);
+    slipif_poll((struct netif*)netif);
 }
 
 STATIC const mp_obj_type_t lwip_slip_type;
+
+// lwIP SLIP callback functions
+sio_fd_t sio_open(u8_t dvnum) {
+    // We support singleton SLIP interface, so just return any truish value.
+    return (sio_fd_t)1;
+}
+
+void sio_send(u8_t c, sio_fd_t fd) {
+    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    int error;
+    type->stream_p->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
+}
+
+u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
+    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    int error;
+    mp_uint_t out_sz = type->stream_p->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
+    if (out_sz == MP_STREAM_ERROR) {
+        if (mp_is_nonblocking_error(error)) {
+            return 0;
+        }
+        // Can't do much else, can we?
+        return 0;
+    }
+    return out_sz;
+}
 
 // constructor lwip.slip(device=integer, iplocal=string, ipremote=string)
 STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -78,7 +103,7 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
 
     lwip_slip_obj.base.type = &lwip_slip_type;
 
-    lwip_slip_obj.uart_id = (u8_t)mp_obj_get_int(args[0]);
+    MP_STATE_VM(lwip_slip_stream) = args[0];
 
     ip_addr_t iplocal, ipremote;
     if (!ipaddr_aton(mp_obj_str_get_str(args[1]), &iplocal)) {
@@ -88,8 +113,8 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "not a valid remote IP"));
     }
 
-    struct netif *n = &(lwip_slip_obj.lwip_netif);
-    if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, (void *)&lwip_slip_obj.uart_id, slipif_init, ip_input) == NULL) {
+    struct netif *n = &lwip_slip_obj.lwip_netif;
+    if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, NULL, slipif_init, ip_input) == NULL) {
        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "out of memory"));
     }
     netif_set_up(n);
@@ -159,7 +184,7 @@ typedef struct _lwip_socket_obj_t {
     mp_obj_base_t base;
 
     void *pcb;
-    void *incoming;
+    void *volatile incoming;
     byte peer[4];
     mp_uint_t peer_port;
     mp_uint_t timeout;
@@ -178,21 +203,21 @@ typedef struct _lwip_socket_obj_t {
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
 STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port) {
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
     if (socket->incoming != NULL) {
         // That's why they call it "unreliable". No room in the inn, drop the packet.
         pbuf_free(p);
     } else {
-        socket->incoming = (void *)p;
+        socket->incoming = (void*)p;
         socket->peer_port = (mp_uint_t)port;
-        memcpy(&(socket->peer), addr, 4);
+        memcpy(&socket->peer, addr, 4);
     }
 }
 
 // Callback for general tcp errors.
 STATIC void _lwip_tcp_error(void *arg, err_t err) {
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
     // Pass the error code back via the connection variable.
     socket->connected = err;
@@ -202,7 +227,7 @@ STATIC void _lwip_tcp_error(void *arg, err_t err) {
 
 // Callback for tcp connection requests. Error code err is unused. (See tcp.h)
 STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
     socket->connected = 2;
     return ERR_OK;
@@ -210,21 +235,21 @@ STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
 
 // Callback for incoming tcp connections.
 STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
     if (socket->incoming != NULL) {
         // We need to handle this better. This single-level structure makes the
         // backlog setting kind of pointless. FIXME
         return ERR_BUF;
     } else {
-        socket->incoming = (void *)newpcb;
+        socket->incoming = (void*)newpcb;
         return ERR_OK;
     }
 }
 
 // Callback for inbound tcp packets.
 STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err_t err) {
-    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
     if (p == NULL) {
         // Other side has closed connection.
@@ -234,7 +259,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
         // No room in the inn, let LWIP know it's still responsible for delivery later
         return ERR_BUF;
     }
-    socket->incoming = (void *)p;
+    socket->incoming = (void*)p;
     return ERR_OK;
 }
 
@@ -273,11 +298,11 @@ STATIC mp_uint_t lwip_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     err_t err;
     if (ip == NULL) {
-        err = udp_send((struct udp_pcb *)socket->pcb, p);
+        err = udp_send((struct udp_pcb*)socket->pcb, p);
     } else {
         ip_addr_t dest;
         IP4_ADDR(&dest, ip[0], ip[1], ip[2], ip[3]);
-        err = udp_sendto((struct udp_pcb *)socket->pcb, p, &dest, port);
+        err = udp_sendto((struct udp_pcb*)socket->pcb, p, &dest, port);
     }
 
     pbuf_free(p);
@@ -296,7 +321,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     if (socket->incoming == NULL) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
                 if (socket->incoming != NULL) break;
             }
             if (socket->incoming == NULL) {
@@ -305,17 +330,17 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
         } else {
             while (socket->incoming == NULL) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
         }
     }
 
     if (ip != NULL) {
-        memcpy(ip, &(socket->peer), 4);
+        memcpy(ip, &socket->peer, 4);
         *port = socket->peer_port;
     }
 
-    struct pbuf *p = (struct pbuf *)socket->incoming;
+    struct pbuf *p = (struct pbuf*)socket->incoming;
 
     u16_t result = pbuf_copy_partial(p, buf, ((p->tot_len > len) ? len : p->tot_len), 0);
     pbuf_free(p);
@@ -325,18 +350,19 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 }
 
 // Helper function for send/sendto to handle TCP packets
-STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t
- len, int *_errno) {
-    u16_t available = tcp_sndbuf((struct tcp_pcb *)socket->pcb);
+STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    struct tcp_pcb *pcb = (struct tcp_pcb *)socket->pcb;
+    u16_t available = tcp_sndbuf(pcb);
+    u16_t write_len = MIN(available, len);
 
-    err_t err = tcp_write((struct tcp_pcb *)socket->pcb, buf, (available > len ? len : available), TCP_WRITE_FLAG_COPY);
+    err_t err = tcp_write(pcb, buf, write_len, TCP_WRITE_FLAG_COPY);
 
     if (err != ERR_OK) {
         *_errno = error_lookup_table[-err];
         return -1;
     }
 
-    return available > len ? len : available;
+    return write_len;
 }
 
 // Helper function for recv/recvfrom to handle TCP packets
@@ -349,7 +375,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     if (socket->incoming == NULL) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
                 if (socket->incoming != NULL) break;
             }
             if (socket->incoming == NULL) {
@@ -358,7 +384,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
         } else {
             while (socket->incoming == NULL) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
         }
     }
@@ -405,9 +431,9 @@ STATIC mp_obj_t lwip_socket_make_new(mp_obj_t type_in, mp_uint_t n_args,
     }
 
     switch (socket->type) {
-        case MOD_NETWORK_SOCK_STREAM: socket->pcb = (void *)tcp_new(); break;
-        case MOD_NETWORK_SOCK_DGRAM: socket->pcb = (void *)udp_new(); break;
-        //case MOD_NETWORK_SOCK_RAW: socket->pcb = (void *)raw_new(); break;
+        case MOD_NETWORK_SOCK_STREAM: socket->pcb = (void*)tcp_new(); break;
+        case MOD_NETWORK_SOCK_DGRAM: socket->pcb = (void*)udp_new(); break;
+        //case MOD_NETWORK_SOCK_RAW: socket->pcb = (void*)raw_new(); break;
         default: nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
     }
 
@@ -418,15 +444,15 @@ STATIC mp_obj_t lwip_socket_make_new(mp_obj_t type_in, mp_uint_t n_args,
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
             // Register the socket object as our callback argument.
-            tcp_arg((struct tcp_pcb *)socket->pcb, (void *)socket);
+            tcp_arg((struct tcp_pcb*)socket->pcb, (void*)socket);
             // Register our error callback.
-            tcp_err((struct tcp_pcb *)socket->pcb, _lwip_tcp_error);
+            tcp_err((struct tcp_pcb*)socket->pcb, _lwip_tcp_error);
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
             // Register our receive callback now. Since UDP sockets don't require binding or connection
             // before use, there's no other good time to do it.
-            udp_recv((struct udp_pcb *)socket->pcb, _lwip_udp_incoming, (void *)socket);
+            udp_recv((struct udp_pcb*)socket->pcb, _lwip_udp_incoming, (void*)socket);
             break;
         }
     }
@@ -447,24 +473,24 @@ STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
     }
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            if (((struct tcp_pcb *)socket->pcb)->state == LISTEN) {
+            if (((struct tcp_pcb*)socket->pcb)->state == LISTEN) {
                 socket_is_listener = true;
             }
-            if (tcp_close((struct tcp_pcb *)socket->pcb) != ERR_OK) {
-                tcp_abort((struct tcp_pcb *)socket->pcb);
+            if (tcp_close((struct tcp_pcb*)socket->pcb) != ERR_OK) {
+                tcp_abort((struct tcp_pcb*)socket->pcb);
             }
             break;
         }
-        case MOD_NETWORK_SOCK_DGRAM: udp_remove((struct udp_pcb *)socket->pcb); break;
-        //case MOD_NETWORK_SOCK_RAW: raw_remove((struct raw_pcb *)socket->pcb); break;
+        case MOD_NETWORK_SOCK_DGRAM: udp_remove((struct udp_pcb*)socket->pcb); break;
+        //case MOD_NETWORK_SOCK_RAW: raw_remove((struct raw_pcb*)socket->pcb); break;
     }
     socket->pcb = NULL;
     socket->connected = -16; // EBADF
     if (socket->incoming != NULL) {
         if (!socket_is_listener) {
-            pbuf_free((struct pbuf *)socket->incoming);
+            pbuf_free((struct pbuf*)socket->incoming);
         } else {
-            tcp_abort((struct tcp_pcb *)socket->incoming);
+            tcp_abort((struct tcp_pcb*)socket->incoming);
         }
         socket->incoming = NULL;
     }
@@ -485,11 +511,11 @@ STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     err_t err = ERR_ARG;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            err = tcp_bind((struct tcp_pcb *)socket->pcb, &bind_addr, port);
+            err = tcp_bind((struct tcp_pcb*)socket->pcb, &bind_addr, port);
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
-            err = udp_bind((struct udp_pcb *)socket->pcb, &bind_addr, port);
+            err = udp_bind((struct udp_pcb*)socket->pcb, &bind_addr, port);
             break;
         }
     }
@@ -513,11 +539,11 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EOPNOTSUPP)));
     }
 
-    struct tcp_pcb *new_pcb = tcp_listen_with_backlog((struct tcp_pcb *)socket->pcb, (u8_t)backlog);
+    struct tcp_pcb *new_pcb = tcp_listen_with_backlog((struct tcp_pcb*)socket->pcb, (u8_t)backlog);
     if (new_pcb == NULL) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOMEM)));
     }
-    socket->pcb = (void *)new_pcb;
+    socket->pcb = (void*)new_pcb;
     tcp_accept(new_pcb, _lwip_tcp_accept);
 
     return mp_const_none;
@@ -534,7 +560,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EOPNOTSUPP)));
     }
     // I need to do this because "tcp_accepted", later, is a macro.
-    struct tcp_pcb *listener = (struct tcp_pcb *)socket->pcb;
+    struct tcp_pcb *listener = (struct tcp_pcb*)socket->pcb;
     if (listener->state != LISTEN) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
     }
@@ -543,7 +569,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     if (socket->incoming == NULL) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
                 if (socket->incoming != NULL) break;
             }
             if (socket->incoming == NULL) {
@@ -551,7 +577,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
             }
         } else {
             while (socket->incoming == NULL) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
         }
     }
@@ -571,16 +597,16 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     socket2->timeout = socket->timeout;
     socket2->connected = 2;
     socket2->leftover_count = 0;
-    tcp_arg((struct tcp_pcb *)socket2->pcb, (void *)socket2);
-    tcp_err((struct tcp_pcb *)socket2->pcb, _lwip_tcp_error);
-    tcp_recv((struct tcp_pcb *)socket2->pcb, _lwip_tcp_recv);
+    tcp_arg((struct tcp_pcb*)socket2->pcb, (void*)socket2);
+    tcp_err((struct tcp_pcb*)socket2->pcb, _lwip_tcp_error);
+    tcp_recv((struct tcp_pcb*)socket2->pcb, _lwip_tcp_recv);
 
     tcp_accepted(listener);
 
     // make the return value
     uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    memcpy(ip, &(((struct tcp_pcb *)socket2->pcb)->remote_ip), 4);
-    mp_uint_t port = (mp_uint_t) ((struct tcp_pcb *)socket2->pcb)->remote_port;
+    memcpy(ip, &(((struct tcp_pcb*)socket2->pcb)->remote_ip), 4);
+    mp_uint_t port = (mp_uint_t)((struct tcp_pcb*)socket2->pcb)->remote_port;
     mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
     client->items[0] = socket2;
     client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
@@ -614,10 +640,10 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 }
             }
             // Register our recieve callback.
-            tcp_recv((struct tcp_pcb *)socket->pcb, _lwip_tcp_recv);
+            tcp_recv((struct tcp_pcb*)socket->pcb, _lwip_tcp_recv);
             // Mark us as "connecting"
             socket->connected = 1;
-            err = tcp_connect((struct tcp_pcb *)socket->pcb, &dest, port, _lwip_tcp_connected);
+            err = tcp_connect((struct tcp_pcb*)socket->pcb, &dest, port, _lwip_tcp_connected);
             if (err != ERR_OK) {
                 socket->connected = 0;
                 nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_lookup_table[-err])));
@@ -627,7 +653,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             // And now we wait...
             if (socket->timeout != -1) {
                 for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                    LWIP_DELAY(100);
+                    mp_hal_delay_ms(100);
                     if (socket->connected != 1) break;
                 }
                 if (socket->connected == 1) {
@@ -635,7 +661,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 }
             } else {
                 while (socket->connected == 1) {
-                    LWIP_DELAY(100);
+                    mp_hal_delay_ms(100);
                 }
             }
             if (socket->connected == 2) {
@@ -646,7 +672,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
-            err = udp_connect((struct udp_pcb *)socket->pcb, &dest, port);
+            err = udp_connect((struct udp_pcb*)socket->pcb, &dest, port);
             break;
         }
     }
@@ -786,7 +812,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_uint_t ret = 0;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            memcpy(ip, &(socket->peer), 4);
+            memcpy(ip, &socket->peer, 4);
             port = (mp_uint_t) socket->peer_port;
             ret = lwip_tcp_receive(socket, (byte*)vstr.buf, len, &_errno);
             break;
@@ -917,7 +943,7 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
         }
         case ERR_INPROGRESS: {
             while(!lwip_dns_returned) {
-                LWIP_DELAY(100);
+                mp_hal_delay_ms(100);
             }
             if (lwip_dns_returned == 2) {
                 nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));

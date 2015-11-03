@@ -17,7 +17,7 @@ Because the WiPy/expansion board does not have a housing it needs a bit of care:
     If you experience a lot of static electricity in your area (eg dry and cold
     climates), take extra care not to shock the WiPy.  If your WiPy came
     in a ESD bag, then this bag is the best way to store and carry the
-    pyboard as it will protect it agains static discharges.
+    WiPy as it will protect it agains static discharges.
 
 As long as you take care of the hardware, you should be okay.  It's almost
 impossible to break the software on the WiPy, so feel free to play around
@@ -29,8 +29,8 @@ Plugging into the expansion board and powering on
 -------------------------------------------------
 
 The expansion board can power the WiPy via USB. The WiPy comes with a sticker
-on top of the RF shield tha labels all pins, and this should match the label
-numbers on the expansion board headers. When pluggin it in, the WiPy antenna
+on top of the RF shield that labels all pins, and this should match the label
+numbers on the expansion board headers. When plugging it in, the WiPy antenna
 will end up on top of the SD card connector of the expansion board. A video
 showing how to do this can be found `here <https://www.youtube.com/watch?v=47D9MZ9zFQw>`_.
 
@@ -46,7 +46,7 @@ Powering by an external power source
 The WiPy can be powered by a battery or other external power source.
 
 **Be sure to connect the positive lead of the power supply to VIN, and
-ground to GND.  There is no polarity protection on the pyboard so you
+ground to GND.  There is no polarity protection on the WiPy so you
 must be careful when connecting anything to VIN.**
 
 - When powering via ``VIN``:
@@ -55,10 +55,10 @@ must be careful when connecting anything to VIN.**
 
 - When powering via ``3V3``:
 
-   **The input volatge must be exactly 3V3, ripple free and from a supply capable
+   **The input voltage must be exactly 3V3, ripple free and from a supply capable
    of sourcing at least 300mA of current**
 
 Performing firmware upgrades
 ----------------------------
 
-For detalied instructions see :ref:`OTA How-To <wipy_firmware_upgrade>`.
+For detailed instructions see :ref:`OTA How-To <wipy_firmware_upgrade>`.

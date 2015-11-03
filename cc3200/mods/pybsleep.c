@@ -28,8 +28,8 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include MICROPY_HAL_H
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_nvic.h"
@@ -247,7 +247,7 @@ void pyb_sleep_sleep (void) {
     if (pybsleep_data.rtc_obj->irq_enabled && (pybsleep_data.rtc_obj->pwrmode & PYB_PWR_MODE_LPDS)) {
         if (!setup_timer_lpds_wake()) {
             // lpds entering is not possible, wait for the forced interrupt and return
-            HAL_Delay (FAILED_SLEEP_DELAY_MS);
+            mp_hal_delay_ms(FAILED_SLEEP_DELAY_MS);
             return;
         }
     } else {
@@ -280,7 +280,7 @@ void pyb_sleep_deepsleep (void) {
     if (pybsleep_data.rtc_obj->irq_enabled && (pybsleep_data.rtc_obj->pwrmode & PYB_PWR_MODE_HIBERNATE)) {
         if (!setup_timer_hibernate_wake()) {
             // hibernating is not possible, wait for the forced interrupt and return
-            HAL_Delay (FAILED_SLEEP_DELAY_MS);
+            mp_hal_delay_ms(FAILED_SLEEP_DELAY_MS);
             return;
         }
     } else {

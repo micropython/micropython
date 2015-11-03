@@ -1,5 +1,4 @@
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "mperror.h"

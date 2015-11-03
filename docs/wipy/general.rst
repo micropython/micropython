@@ -37,7 +37,7 @@ Telnet REPL
 -----------
 
 Linux stock telnet works like a charm (also on OSX), but other tools like putty
-work quite too. The default credentials are: **user:** ``micro``, **password:** ``python``.
+work quite well too. The default credentials are: **user:** ``micro``, **password:** ``python``.
 See :ref:`network.server <network.server>` for info on how to change the defaults.
 For instance, on a linux shell (when connected to the WiPy in AP mode)::
 
@@ -96,9 +96,14 @@ the WiPy by pressing the switch on the board, or by typing::
     >>> import machine
     >>> machine.reset()
 
-Software updates can be found in: https://github.com/wipy/wipy/releases
+Software updates can be found in: https://github.com/wipy/wipy/releases (**Binaries.zip**). 
 It's always recommended to update to the latest software, but make sure to
 read the **release notes** before.
+
+.. note::
+
+   The ``bootloader.bin`` found inside ``Binaries.zip`` is there only for reference, it's not
+   needed for the Over The Air update.
 
 In order to check your software version, do::
 
@@ -107,6 +112,7 @@ In order to check your software version, do::
 
 If the version number is lower than the latest release found in
 `the releases <https://github.com/wipy/wipy/releases>`_, go ahead and update your WiPy!
+
 
 .. _wipy_boot_modes:
 
@@ -157,7 +163,7 @@ alive. This can be overridden through the :mod:`wipy` module::
 
 There are currently 2 kinds of errors that you might see:
 
-1. If the heartbeat LED flashes quickly, then a Python script(eg ``main.py``)
+1. If the heartbeat LED flashes quickly, then a Python script (eg ``main.py``)
    has an error.  Use the REPL to debug it.
 2. If the heartbeat LED stays on, then there was a hard fault, you cannot
    recover from this, the only way out is to press the reset switch.

@@ -41,7 +41,7 @@ SRC_C = \
 	modpybled.c \
 	modpybswitch.c \
 	stmhal/pybstdio.c \
-	stmhal/pyexec.c \
+	lib/utils/pyexec.c \
 	lib/mp-readline/readline.c \
 
 SRC_S = \

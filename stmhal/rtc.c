@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "rtc.h"
+#include "irq.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock
@@ -177,6 +178,21 @@ void rtc_init(void) {
     RTCHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
     RTCHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
     RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+
+    // if LTE enabled & ready --> no need to (re-)init RTC
+    if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
+        // remove Backup Domain write protection
+        #if defined(MCU_SERIES_F7)
+        PWR->CR1 |= PWR_CR1_DBP;
+        #else
+        PWR->CR |= PWR_CR_DBP;
+        #endif
+        // Clear source Reset Flag
+        __HAL_RCC_CLEAR_RESET_FLAGS();
+        // provide some status information
+        rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+        return;
+    }
 
     mp_uint_t tick = HAL_GetTick();
 
@@ -481,7 +497,7 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
         RTC->ISR &= ~(1 << 10);
         EXTI->PR = 1 << 22;
 
-        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 0x0f, 0x0f);
+        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP, IRQ_SUBPRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
         //printf("wut=%d wucksel=%d\n", wut, wucksel);

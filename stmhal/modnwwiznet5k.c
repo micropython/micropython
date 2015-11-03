@@ -32,12 +32,12 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
-#include MICROPY_HAL_H
 
 #include "ethernet/wizchip_conf.h"
 #include "ethernet/socket.h"

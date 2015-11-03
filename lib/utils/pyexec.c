@@ -33,9 +33,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
-#ifdef MICROPY_HAL_H
-#include MICROPY_HAL_H
-#endif
+#include "py/mphal.h"
 #if defined(USE_DEVICE_MODE)
 #include "irq.h"
 #include "usb.h"
@@ -69,7 +67,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
 
         // execute code
         mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
-        start = HAL_GetTick();
+        start = mp_hal_ticks_ms();
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
         nlr_pop();
@@ -97,7 +95,7 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
 
     // display debugging info if wanted
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
-        mp_uint_t ticks = HAL_GetTick() - start; // TODO implement a function that does this properly
+        mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
         printf("took " UINT_FMT " ms\n", ticks);
         gc_collect();
         // qstr info
@@ -412,7 +410,7 @@ friendly_repl_reset:
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
             // paste mode
-            mp_hal_stdout_tx_str("\r\npaste mode; CTRL-C to cancel, CTRL-D to finish\r\n=== ");
+            mp_hal_stdout_tx_str("\r\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\r\n=== ");
             vstr_reset(&line);
             for (;;) {
                 char c = mp_hal_stdin_rx_chr();

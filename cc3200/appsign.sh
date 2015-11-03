@@ -1,16 +1,12 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: appsign.sh *board type* *build type*"
+if [ "$#" -ne 1 ]; then
+    echo "Usage: appsign.sh *build dir*"
     exit 1
 fi
 
-BOARD=$1
-BTYPE=$2
-
 # Build location
-# Based on build type and board type
-BUILD=build/${BOARD}/${BTYPE}
+BUILD=$1
 
 # Generate the MD5 hash
 echo -n `md5sum --binary $BUILD/application.bin | awk '{ print $1 }'` > __md5hash.bin

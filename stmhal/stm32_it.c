@@ -92,7 +92,7 @@ extern PCD_HandleTypeDef pcd_handle;
 
 #if REPORT_HARD_FAULT_REGS
 
-#include "mphal.h"
+#include "py/mphal.h"
 
 char *fmt_hex(uint32_t val, char *buf) {
     const char *hexDig = "0123456789abcdef";

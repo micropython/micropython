@@ -33,10 +33,10 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/frozenmod.h"
+#include "py/mphal.h"
 #include "py/gc.h"
 #include "pyexec.h"
 #include "gccollect.h"
-#include MICROPY_HAL_H
 #include "user_interface.h"
 
 STATIC char heap[16384];
@@ -56,7 +56,7 @@ STATIC void mp_reset(void) {
 
 void soft_reset(void) {
     mp_hal_stdout_tx_str("PYB: soft reset\r\n");
-    mp_hal_udelay(10000); // allow UART to flush output
+    mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
     pyexec_event_repl_init();
 }

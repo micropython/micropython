@@ -1,6 +1,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "py/mpconfig.h"
+#include "py/mphal.h"
 
 /*
  * Extra UART functions

@@ -26,21 +26,19 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <windows.h>
-
-HANDLE hSleepEvent = NULL;
+#include "sleep.h"
 
 void init() {
-    hSleepEvent = CreateEvent(NULL, TRUE, FALSE, FALSE);
+    init_sleep();
 #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");
-#else
+#elif _MSC_VER < 1900
+    // This is only necessary for Visual Studio versions 2013 and below:
+    // https://msdn.microsoft.com/en-us/library/bb531344(v=vs.140).aspx
     _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 }
 
 void deinit() {
-    if (hSleepEvent != NULL) {
-        CloseHandle(hSleepEvent);
-    }
+    deinit_sleep();
 }

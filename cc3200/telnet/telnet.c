@@ -27,8 +27,8 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "telnet.h"
 #include "simplelink.h"
 #include "modnetwork.h"
@@ -477,7 +477,7 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
                 return false;
             }
             // start with the default delay and increment it on each retry
-            HAL_Delay (delay++);
+            mp_hal_delay_ms(delay++);
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
     return false;

@@ -38,11 +38,10 @@
 #include <stdbool.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "hw_types.h"
 #include "hw_memmap.h"
 #include "hw_ints.h"
-#include "rom.h"
 #include "rom_map.h"
 #include "diskio.h"
 #include "sd_diskio.h"
@@ -187,7 +186,7 @@ static unsigned int CardSelect (DiskInfo_t *sDiskInfo) {
     }
 
     // Delay 250ms for the card to become ready
-    HAL_Delay (250);
+    mp_hal_delay_ms(250);
 
     return ulRet;
 }

@@ -37,3 +37,48 @@ static inline mp_uint_t query_irq(void) {
 MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
+
+// IRQ priority definitions.
+// Lower number implies higher interrupt priority.
+
+#define IRQ_PRI_CAN 0x7
+#define IRQ_SUBPRI_CAN 0x0
+
+#define IRQ_PRI_DMA 0x6
+#define IRQ_SUBPRI_DMA 0x0
+
+#define IRQ_PRI_EXTINT 0xf
+#define IRQ_SUBPRI_EXTINT 0xf
+
+// Flash IRQ must be higher priority than interrupts of all those components
+// that rely on the flash storage.
+#define IRQ_PRI_FLASH 0x1
+#define IRQ_SUBPRI_FLASH 0x1
+
+#define IRQ_PRI_OTG_FS 0x6
+#define IRQ_SUBPRI_OTG_FS 0x0
+
+#define IRQ_PRI_OTG_HS 0x6
+#define IRQ_SUBPRI_OTG_HS 0x0
+
+// PENDSV should be at the lowst priority so that other interrupts complete
+// before exception is raised.
+#define IRQ_PRI_PENDSV 0xf
+#define IRQ_SUBPRI_PENDSV 0xf
+
+#define IRQ_PRI_RTC_WKUP 0xf
+#define IRQ_SUBPRI_RTC_WKUP 0xf
+
+#define IRQ_PRI_TIM3 0x6
+#define IRQ_SUBPRI_TIM3 0x0
+
+#define IRQ_PRI_TIM5 0x6
+#define IRQ_SUBPRI_TIM5 0x0
+
+// Interrupt priority for non-special timers.
+#define IRQ_PRI_TIMX 0xe
+#define IRQ_SUBPRI_TIMX 0xe
+
+#define IRQ_PRI_UART 0xd
+#define IRQ_SUBPRI_UART 0xd
+

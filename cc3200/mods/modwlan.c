@@ -30,10 +30,10 @@
 
 #include "simplelink.h"
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -691,7 +691,7 @@ STATIC void wlan_sl_disconnect (void) {
     // other return-codes
     if (0 == sl_WlanDisconnect()) {
         while (IS_CONNECTED(wlan_obj.status)) {
-            HAL_Delay(MODWLAN_CONNECTION_WAIT_MS);
+            mp_hal_delay_ms(MODWLAN_CONNECTION_WAIT_MS);
             wlan_update();
         }
     }
@@ -711,7 +711,7 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
         // wait for the WLAN Event
         uint32_t waitForConnectionMs = 0;
         while (timeout && !IS_CONNECTED(wlan_obj.status)) {
-            HAL_Delay(MODWLAN_CONNECTION_WAIT_MS);
+            mp_hal_delay_ms(MODWLAN_CONNECTION_WAIT_MS);
             waitForConnectionMs += MODWLAN_CONNECTION_WAIT_MS;
             if (timeout > 0 && waitForConnectionMs > timeout) {
                 return MODWLAN_ERROR_TIMEOUT;
@@ -875,7 +875,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
     ASSERT_ON_ERROR(sl_WlanPolicySet(SL_POLICY_SCAN , MODWLAN_SL_SCAN_ENABLE, (_u8 *)&scanSeconds, sizeof(scanSeconds)));
 
     // wait for the scan to complete
-    HAL_Delay (MODWLAN_WAIT_FOR_SCAN_MS);
+    mp_hal_delay_ms(MODWLAN_WAIT_FOR_SCAN_MS);
 
     do {
         if (sl_WlanGetNetworkList(_index++, 1, &wlanEntry) <= 0) {
@@ -1186,6 +1186,9 @@ STATIC mp_obj_t wlan_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // create the callback
     mp_obj_t _irq = mp_irq_new (self, args[2].u_obj, &wlan_irq_methods);
     self->irq_obj = _irq;
+
+    // enable the irq just before leaving
+    wlan_lpds_irq_enable(self);
 
     return _irq;
 

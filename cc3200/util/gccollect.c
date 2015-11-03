@@ -32,7 +32,6 @@
 #include "py/gc.h"
 #include "gccollect.h"
 #include "gchelper.h"
-#include MICROPY_HAL_H
 
 /******************************************************************************
 DECLARE PRIVATE DATA

@@ -32,7 +32,7 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "modpyb.h"
 #include "modpybrtc.h"
 #include "timeutils.h"
@@ -101,7 +101,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 /// \function sleep(seconds)
 /// Sleep for the given number of seconds.
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
-    HAL_Delay(1000 * mp_obj_get_int(seconds_o));
+    mp_hal_delay_ms(1000 * mp_obj_get_int(seconds_o));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);

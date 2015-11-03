@@ -98,33 +98,34 @@ Methods
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
 
-   Return value: a bytes object containing the bytes read in.  Returns ``b''``
+   Return value: a bytes object containing the bytes read in.  Returns ``None``
    on timeout.
 
 .. method:: uart.readall()
 
    Read as much data as possible.
 
-   Return value: a bytes object.
+   Return value: a bytes object or ``None`` on timeout.
 
 .. method:: uart.readinto(buf[, nbytes])
 
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
    that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
 
-   Return value: number of bytes read and stored into ``buf``.
+   Return value: number of bytes read and stored into ``buf`` or ``None`` on
+   timeout.
 
 .. method:: uart.readline()
 
    Read a line, ending in a newline character.
 
-   Return value: the line read.
+   Return value: the line read or ``None`` on timeout.
 
 .. method:: uart.write(buf)
 
    Write the buffer of bytes to the bus.
 
-   Return value: number of bytes written.
+   Return value: number of bytes written or ``None`` on timeout.
 
 .. method:: uart.sendbreak()
 

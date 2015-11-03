@@ -30,7 +30,6 @@
 #include "std.h"
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "hw_ints.h"
 #include "hw_types.h"
 #include "hw_gpio.h"
@@ -39,7 +38,6 @@
 #include "hw_common_reg.h"
 #include "pin.h"
 #include "gpio.h"
-#include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
 #include "simplelink.h"

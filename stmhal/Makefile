@@ -103,6 +103,7 @@ SRC_LIB = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/pyexec.c \
 	)
 
 SRC_C = \
@@ -113,7 +114,7 @@ SRC_C = \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_msc_storage.c \
-	mphal.c \
+	mphalport.c \
 	irq.c \
 	pendsv.c \
 	systick.c  \
@@ -132,7 +133,6 @@ SRC_C = \
 	printf.c \
 	gccollect.c \
 	pybstdio.c \
-	pyexec.c \
 	help.c \
 	input.c \
 	modmachine.c \

@@ -18,7 +18,7 @@ See the :mod:`machine` module::
     machine.freq() # get the CPU frequency
     machine.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
 
-    machine.idle()        # average curernt decreases to (~12mA), any interrupts wakes it up
+    machine.idle()        # average current decreases to (~12mA), any interrupts wake it up
     machine.sleep()       # everything except for WLAN is powered down (~950uA avg. current)
                           # wakes from Pin, RTC or WLAN
     machine.deepsleep()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
@@ -187,13 +187,13 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
     wifi = WLAN(mode=WLAN.STA)
     # go for fixed IP settings
     wifi.ifconfig(config=('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
-    wifi.scan()     # scan for available netrworks
+    wifi.scan()     # scan for available networks
     wifi.connect(ssid='mynetwork', auth=(WLAN.WPA2, 'mynetworkkey'))
     while not wifi.isconnected():
         pass
     print(wifi.ifconfig())
     # enable wake on WLAN
-    wifi.irq(wake=machine.SLEEP)
+    wifi.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep
     machine.sleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
@@ -205,7 +205,7 @@ See :ref:`network.server <network.server>` ::
 
     from network import server
 
-    # init with new user, pass word and seconds timeout
+    # init with new user, password and seconds timeout
     server = server.init(login=('user', 'password'), timeout=60)
     server.timeout(300) # change the timeout
     server.timeout() # get the timeout

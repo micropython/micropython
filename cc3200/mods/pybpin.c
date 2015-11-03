@@ -30,7 +30,6 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -73,6 +72,7 @@ STATIC void pin_validate_mode (uint mode);
 STATIC void pin_validate_pull (uint pull);
 STATIC void pin_validate_drive (uint strength);
 STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type);
+STATIC uint8_t pin_get_value(const pin_obj_t* self);
 STATIC void GPIOA0IntHandler (void);
 STATIC void GPIOA1IntHandler (void);
 STATIC void GPIOA2IntHandler (void);
@@ -289,16 +289,14 @@ STATIC void pin_obj_configure (const pin_obj_t *self) {
             default:
                 break;
             }
-
+            // configure the direction
+            MAP_GPIODirModeSet(self->port, self->bit, direction);
             // set the pin value
             if (self->value) {
                 MAP_GPIOPinWrite(self->port, self->bit, self->bit);
             } else {
                 MAP_GPIOPinWrite(self->port, self->bit, 0);
             }
-
-            // configure the direction
-            MAP_GPIODirModeSet(self->port, self->bit, direction);
         }
         // now set the alternate function
         MAP_PinModeSet (self->pin_num, self->af);
@@ -454,6 +452,29 @@ STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8
         }
     }
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+}
+
+STATIC uint8_t pin_get_value (const pin_obj_t* self) {
+    uint32_t value;
+    bool setdir = false;
+    if (self->mode == PIN_TYPE_OD || self->mode == GPIO_DIR_MODE_ALT_OD) {
+        setdir = true;
+        // configure the direction to IN for a moment in order to read the pin value
+        MAP_GPIODirModeSet(self->port, self->bit, GPIO_DIR_MODE_IN);
+    }
+    // now get the value
+    value = MAP_GPIOPinRead(self->port, self->bit);
+    if (setdir) {
+        // set the direction back to output
+        MAP_GPIODirModeSet(self->port, self->bit, GPIO_DIR_MODE_OUT);
+        if (self->value) {
+            MAP_GPIOPinWrite(self->port, self->bit, self->bit);
+        } else {
+            MAP_GPIOPinWrite(self->port, self->bit, 0);
+        }
+    }
+    // return it
+    return value ? 1 : 0;
 }
 
 STATIC void GPIOA0IntHandler (void) {
@@ -648,8 +669,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
-        // get the pin value
-        return MP_OBJ_NEW_SMALL_INT(MAP_GPIOPinRead(self->port, self->bit) ? 1 : 0);
+        // get the value
+        return MP_OBJ_NEW_SMALL_INT(pin_get_value(self));
     } else {
         // set the pin value
         if (mp_obj_is_true(args[1])) {

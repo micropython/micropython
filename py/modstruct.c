@@ -85,10 +85,15 @@ STATIC mp_uint_t get_fmt_num(const char **p) {
 STATIC uint calcsize_items(const char *fmt) {
     uint cnt = 0;
     while (*fmt) {
-        // TODO supports size spec only for "s"
-        if (!unichar_isdigit(*fmt++)) {
-            cnt++;
+        int num = 1;
+        if (unichar_isdigit(*fmt)) {
+            num = get_fmt_num(&fmt);
+            if (*fmt == 's') {
+                num = 1;
+            }
         }
+        cnt += num;
+        fmt++;
     }
     return cnt;
 }
@@ -103,24 +108,25 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
-        if (cnt > 1) {
-            // TODO: count spec support only for string len
-            if (*fmt != 's') {
-                mp_not_implemented("count>1");
-            }
-        }
 
-        mp_uint_t sz;
+        mp_uint_t sz = 0;
         if (*fmt == 's') {
             sz = cnt;
-        } else {
-            sz = (mp_uint_t)mp_binary_get_size(fmt_type, *fmt, &align);
+            cnt = 1;
         }
-        // TODO
-        assert(sz != (mp_uint_t)-1);
-        // Apply alignment
-        size = (size + align - 1) & ~(align - 1);
-        size += sz;
+
+        while (cnt--) {
+            // If we already have size for 's' case, don't set it again
+            if (sz == 0) {
+                sz = (mp_uint_t)mp_binary_get_size(fmt_type, *fmt, &align);
+            }
+            // TODO
+            assert(sz != (mp_uint_t)-1);
+            // Apply alignment
+            size = (size + align - 1) & ~(align - 1);
+            size += sz;
+            sz = 0;
+        }
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
@@ -136,26 +142,24 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
     byte *p = bufinfo.buf;
 
-    for (uint i = 0; i < size; i++) {
+    for (uint i = 0; i < size;) {
         mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
         }
-        if (sz > 1) {
-            // TODO: size spec support only for string len
-            if (*fmt != 's') {
-                mp_not_implemented("count>1");
-            }
-        }
+
         mp_obj_t item;
         if (*fmt == 's') {
             item = mp_obj_new_bytes(p, sz);
             p += sz;
-            fmt++;
+            res->items[i++] = item;
         } else {
-            item = mp_binary_get_val(fmt_type, *fmt++, &p);
+            while (sz--) {
+                item = mp_binary_get_val(fmt_type, *fmt, &p);
+                res->items[i++] = item;
+            }
         }
-        res->items[i] = item;
+        fmt++;
     }
     return res;
 }
@@ -171,21 +175,15 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
     byte *p = (byte*)vstr.buf;
     memset(p, 0, size);
 
-    for (mp_uint_t i = 1; i < n_args; i++) {
+    for (mp_uint_t i = 1; i < n_args;) {
         mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
         }
-        if (sz > 1) {
-            // TODO: size spec support only for string len
-            if (*fmt != 's') {
-                mp_not_implemented("count>1");
-            }
-        }
 
         if (*fmt == 's') {
             mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(args[i], &bufinfo, MP_BUFFER_READ);
+            mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
             mp_uint_t to_copy = sz;
             if (bufinfo.len < to_copy) {
                 to_copy = bufinfo.len;
@@ -193,10 +191,12 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
             memcpy(p, bufinfo.buf, to_copy);
             memset(p + to_copy, 0, sz - to_copy);
             p += sz;
-            fmt++;
         } else {
-            mp_binary_set_val(fmt_type, *fmt++, args[i], &p);
+            while (sz--) {
+                mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
+            }
         }
+        fmt++;
     }
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);

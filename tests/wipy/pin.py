@@ -1,5 +1,7 @@
-""" This test need a set of pins which can be set as inputs and have no external 
-    pull up or pull down connected.
+""" 
+This test need a set of pins which can be set as inputs and have no external 
+pull up or pull down connected.
+GP12 and GP17 must be connected together 
 """
 from machine import Pin
 import os
@@ -13,6 +15,13 @@ elif 'WiPy' in mch:
     max_af_idx = 15
 else:
     raise Exception('Board not supported!')
+
+# test initial value
+p = Pin('GP12', Pin.IN)
+Pin('GP17', Pin.OUT, value=1)
+print(p() == 1)
+Pin('GP17', Pin.OUT, value=0)
+print(p() == 0)
 
 def test_noinit():
     for p in pin_map:

@@ -29,7 +29,6 @@
 #include "std.h"
 
 #include "py/mpstate.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -248,7 +247,7 @@ void ftp_run (void) {
             ftp_wait_for_enabled();
             break;
         case E_FTP_STE_START:
-            if (wlan_is_connected() && ftp_create_listening_socket(&ftp_data.lc_sd, FTP_CMD_PORT, FTP_CMD_CLIENTS_MAX)) {
+            if (wlan_is_connected() && ftp_create_listening_socket(&ftp_data.lc_sd, FTP_CMD_PORT, FTP_CMD_CLIENTS_MAX - 1)) {
                 ftp_data.state = E_FTP_STE_READY;
             }
             break;
@@ -612,7 +611,7 @@ static void ftp_process_cmd (void) {
 
     ftp_data.closechild = false;
     // also use the reply buffer to receive new commands
-    if (E_FTP_RESULT_OK == (result = ftp_recv_non_blocking(ftp_data.c_sd, ftp_cmd_buffer, FTP_BUFFER_SIZE, &len))) {
+    if (E_FTP_RESULT_OK == (result = ftp_recv_non_blocking(ftp_data.c_sd, ftp_cmd_buffer, FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX, &len))) {
         // bufptr is moved as commands are being popped
         ftp_cmd_index_t cmd = ftp_pop_command(&bufptr);
         if (!ftp_data.loggin.passvalid && (cmd != E_FTP_CMD_USER && cmd != E_FTP_CMD_PASS && cmd != E_FTP_CMD_QUIT)) {
@@ -707,7 +706,7 @@ static void ftp_process_cmd (void) {
                 ftp_data.substate = E_FTP_STE_SUB_DISCONNECTED;
                 bool socketcreated = true;
                 if (ftp_data.ld_sd < 0) {
-                    socketcreated = ftp_create_listening_socket(&ftp_data.ld_sd, FTP_PASIVE_DATA_PORT, FTP_DATA_CLIENTS_MAX);
+                    socketcreated = ftp_create_listening_socket(&ftp_data.ld_sd, FTP_PASIVE_DATA_PORT, FTP_DATA_CLIENTS_MAX - 1);
                 }
                 if (socketcreated) {
                     uint32_t ip;
