@@ -91,14 +91,31 @@ typedef struct {
 	ADC_CLOCK_SETUP_T setup;
 	int32_t interrupt;
 	LPC_ADC_T* adc;
-	int32_t chn;
 }ADCData;
 
-static ADCData adcsData[3];
+static ADCData adcsData[2];
+volatile static uint8_t flagWaitingADCConv;
+volatile static uint16_t ADCValues[3];
 
-uint32_t getAdcIndexFromChannel(uint8_t channelNumber)
+uint32_t getChannelFromNumber(uint8_t channelNumber)
 {
-    return channelNumber-1;
+    switch(channelNumber)
+    {
+	case 1: return ADC_CH1;
+	case 2: return ADC_CH2;
+	case 3: return ADC_CH3;
+    }
+    return ADC_CH1;
+}
+uint8_t getAdcValueIndexFromNumber(uint8_t channelNumber)
+{
+    switch(channelNumber)
+    {
+        case 1: return 0;
+        case 2: return 1;
+        case 3: return 2;
+    }
+    return 0;
 }
 void Board_ADC_Init(void)
 {
@@ -106,20 +123,40 @@ void Board_ADC_Init(void)
 	Chip_ADC_Init(LPC_ADC0, &(adcsData[0].setup));
 	adcsData[0].interrupt = ADC0_IRQn;
 	adcsData[0].adc = LPC_ADC0;
-	adcsData[0].chn = ADC_CH1;
 	Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
 
+        // ADC1
+        Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
+        adcsData[1].interrupt = ADC1_IRQn;
+        adcsData[1].adc = LPC_ADC1;
+        Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
 
+	flagWaitingADCConv=0;
+	//ADCValue=0;
 }
 void Board_ADC_EnableChannel(uint8_t channelNumber)
 {
-	uint32_t index = getAdcIndexFromChannel(channelNumber);
+	uint32_t index = 0; // always using ADC0
 
 	NVIC_EnableIRQ(adcsData[index].interrupt);
-        Chip_ADC_EnableChannel(adcsData[index].adc, adcsData[0].chn, ENABLE);
-        Chip_ADC_Int_SetChannelCmd(adcsData[index].adc, adcsData[0].chn, ENABLE);
+        Chip_ADC_EnableChannel(adcsData[index].adc, getChannelFromNumber(channelNumber), ENABLE);
+        Chip_ADC_Int_SetChannelCmd(adcsData[index].adc, getChannelFromNumber(channelNumber), ENABLE);
 
-	Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+	//Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+}
+
+uint16_t Board_ADC_readValue(uint8_t channelNumber)
+{
+	uint8_t index = getAdcValueIndexFromNumber(channelNumber);
+	return ADCValues[index];
+}
+
+void Board_ADC_StartConversion(void)
+{
+        uint32_t index = 0; // always using ADC0
+        flagWaitingADCConv=1;
+        Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+        while(flagWaitingADCConv==1);
 }
 
 void Board_ADC_DisableChannel(uint8_t channelNumber)
@@ -139,19 +176,19 @@ void Board_ADC_SetSampleRate(uint8_t channelNumber, uint32_t sampleRate)
 void ADC0_IRQHandler (void)
 {
    uint16_t value;
-   NVIC_DisableIRQ(adcsData[0].interrupt);
-   Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, 1, DISABLE);
 
-   Chip_ADC_ReadValue(adcsData[0].adc, 1, &value);
+   uint8_t i;
+   for(i=0; i<3; i++)
+   {
+       Chip_ADC_ReadValue(adcsData[i].adc, getChannelFromNumber(i+1), &value);
+	ADCValues[i] = value;
+   }
 
-   Board_UARTPutSTR("entro int adc:");
-    char aux[64];
-    sprintf(aux,"valor:%d",value);
-   Board_UARTPutSTR(aux);
+   flagWaitingADCConv=0;
 
-   NVIC_EnableIRQ(adcsData[0].interrupt);
-   Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, 1, ENABLE);
+ Board_UARTPutSTR("salgo de int");
 }
+
 //===========================================================================================================================
 
 //================================================[PWM Management]========================================================

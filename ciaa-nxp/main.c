@@ -65,7 +65,17 @@ int main(int argc, char **argv) {
 	Board_UARTPutSTR("inicio main adc");
 	Board_ADC_EnableChannel(1);
 	Board_UARTPutSTR("fin main adc");
-	while(1);
+	while(1)
+	{
+		Board_UARTPutSTR(" inicio conversion ");
+		Board_ADC_StartConversion();
+
+		uint16_t val = Board_ADC_readValue(1);
+		char aux[64];
+		sprintf(aux," valor leido:%d\n",val);
+		Board_UARTPutSTR(aux);
+		mp_hal_milli_delay(1000);
+	}
 
 
 
