@@ -94,6 +94,51 @@
 #define FTB_CLEAR(block) do { MP_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
 #endif
 
+// Memory Functions
+#define MEM_BLOCK_ERROR     (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB)
+#define MEM_VALID(block)    ( \
+    (((block) < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB)) \
+    && (((ATB_GET_KIND(block) == AT_HEAD) || (ATB_GET_KIND(block) == AT_MARK))) )
+
+mp_uint_t mem_first(){
+    for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+        if(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD){return block;}
+    }
+    return MEM_BLOCK_ERROR;
+}
+
+mp_uint_t mem_next(mp_uint_t block){
+    block++;
+    for (; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+        switch (ATB_GET_KIND(block)) {
+            case AT_HEAD:
+            case AT_MARK:
+                return block;
+        }
+    }
+    return MEM_BLOCK_ERROR;
+}
+
+void mem_free(mp_uint_t block) {
+    if(MEM_VALID(block)){
+        if (ATB_GET_KIND(block) == AT_HEAD) {
+            // set the last_free pointer to this block if it's earlier in the heap
+           if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+                MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
+            }
+            // free head and all of its tail blocks
+            do {
+                ATB_ANY_TO_FREE(block);
+                block += 1;
+            } while (ATB_GET_KIND(block) == AT_TAIL);
+        } else {
+            assert(!"bad free, ptr not at head");
+        }
+    } else {
+        assert(!"bad free, ptr not valid");
+    }
+}
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
@@ -227,43 +272,33 @@ STATIC void gc_sweep(void) {
     MP_STATE_MEM(gc_collected) = 0;
     #endif
     // free unmarked heads and their tails
-    int free_tail = 0;
-    for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
-        switch (ATB_GET_KIND(block)) {
-            case AT_HEAD:
+    for (mp_uint_t block = mem_first(); block != MEM_BLOCK_ERROR; block = mem_next(block)) {
+        if (ATB_GET_KIND(block) == AT_MARK){
+            ATB_MARK_TO_HEAD(block);
+        } else {
+            // TODO: bad indentation kept intentionally for git diff (will move back next commit)
 #if MICROPY_ENABLE_FINALISER
-                if (FTB_GET(block)) {
-                    mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
-                    if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
-                        // if the object has a type then see if it has a __del__ method
-                        mp_obj_t dest[2];
-                        mp_load_method_maybe(obj, MP_QSTR___del__, dest);
-                        if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
-                        }
+            if (FTB_GET(block)) {
+                mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
+                if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
+                    // if the object has a type then see if it has a __del__ method
+                    mp_obj_t dest[2];
+                    mp_load_method_maybe(obj, MP_QSTR___del__, dest);
+                    if (dest[0] != MP_OBJ_NULL) {
+                        // load_method returned a method
+                        mp_call_method_n_kw(0, 0, dest);
                     }
-                    // clear finaliser flag
-                    FTB_CLEAR(block);
                 }
+                // clear finaliser flag
+                FTB_CLEAR(block);
+            }
 #endif
-                free_tail = 1;
-                #if MICROPY_PY_GC_COLLECT_RETVAL
-                MP_STATE_MEM(gc_collected)++;
-                #endif
-                // fall through to free the head
-
-            case AT_TAIL:
-                if (free_tail) {
-                    DEBUG_printf("gc_sweep(%p)\n",PTR_FROM_BLOCK(block));
-                    ATB_ANY_TO_FREE(block);
-                }
-                break;
-
-            case AT_MARK:
-                ATB_MARK_TO_HEAD(block);
-                free_tail = 0;
-                break;
+            #if MICROPY_PY_GC_COLLECT_RETVAL
+            MP_STATE_MEM(gc_collected)++;
+            #endif
+            assert(ATB_GET_KIND(block) != AT_MARK);
+            assert(ATB_GET_KIND(BLOCK_FROM_PTR((mp_uint_t)PTR_FROM_BLOCK(block))) != AT_MARK);
+            mem_free(block);
         }
     }
 }
