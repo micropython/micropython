@@ -186,7 +186,8 @@ STATIC void wlan_set_antenna (uint8_t antenna);
 #endif
 STATIC void wlan_sl_disconnect (void);
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
-                                         const char* key, uint32_t key_len, int32_t timeout);
+                                         const char* key, uint32_t key_len, SlSecParamsExt_t *pEapParams,
+                                         int32_t timeout);
 STATIC void wlan_get_sl_mac (void);
 STATIC void wlan_wep_key_unhexlify (const char *key, char *key_out);
 STATIC void wlan_lpds_irq_enable (mp_obj_t self_in);
@@ -626,7 +627,7 @@ STATIC void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac) {
 }
 
 STATIC void wlan_validate_security (uint8_t auth, const char *key, uint8_t len) {
-    if (auth != SL_SEC_TYPE_WEP && auth != SL_SEC_TYPE_WPA_WPA2) {
+    if (auth != SL_SEC_TYPE_WEP && auth != SL_SEC_TYPE_WPA_WPA2 && auth != SL_SEC_TYPE_WPA_ENT) {
         goto invalid_args;
     }
     if (auth == SL_SEC_TYPE_WEP) {
@@ -698,7 +699,8 @@ STATIC void wlan_sl_disconnect (void) {
 }
 
 STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, const char* bssid, uint8_t sec,
-                                         const char* key, uint32_t key_len, int32_t timeout) {
+                                         const char* key, uint32_t key_len, SlSecParamsExt_t *pEapParams,
+                                         int32_t timeout) {
     SlSecParams_t secParams;
     secParams.Key = (_i8*)key;
     secParams.KeyLen = ((key != NULL) ? key_len : 0);
@@ -707,7 +709,7 @@ STATIC modwlan_Status_t wlan_do_connect (const char* ssid, uint32_t ssid_len, co
     // first close any active connections
     wlan_sl_disconnect();
 
-    if (!sl_WlanConnect((_i8*)ssid, ssid_len, (_u8*)bssid, &secParams, NULL)) {
+    if (!sl_WlanConnect((_i8*)ssid, ssid_len, (_u8*)bssid, &secParams, pEapParams)) {
         // wait for the WLAN Event
         uint32_t waitForConnectionMs = 0;
         while (timeout && !IS_CONNECTED(wlan_obj.status)) {
@@ -933,20 +935,47 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     uint8_t auth = SL_SEC_TYPE_OPEN;
     mp_uint_t key_len = 0;
     const char *key = NULL;
+    mp_uint_t nitems, anon_user_len, user_len;
+    const char *anon_user, *user;
+    SlSecParamsExt_t eapParams;
+    eapParams.EapMethod = 0;
+    eapParams.UserLen = 0;
+    eapParams.AnonUserLen = 0;
+
     if (args[1].u_obj != mp_const_none) {
         mp_obj_t *sec;
-        mp_obj_get_array_fixed_n(args[1].u_obj, 2, &sec);
-        auth = mp_obj_get_int(sec[0]);
-        key = mp_obj_str_get_data(sec[1], &key_len);
-        wlan_validate_security(auth, key, key_len);
 
-        // convert the wep key if needed
-        if (auth == SL_SEC_TYPE_WEP) {
+        mp_obj_get_array(args[1].u_obj, &nitems, &sec);
+        auth = mp_obj_get_int(sec[0]);
+        if (auth == SL_SEC_TYPE_WEP && nitems == 2) {
+            key = mp_obj_str_get_data(sec[1], &key_len);
+            // convert the wep key
             _u8 wep_key[32];
             wlan_wep_key_unhexlify(key, (char *)&wep_key);
             key = (const char *)&wep_key;
             key_len /= 2;
+        } else if (auth == SL_SEC_TYPE_WPA_WPA2 && nitems == 2) {
+            key = mp_obj_str_get_data(sec[1], &key_len);
+        } else if (auth == SL_SEC_TYPE_WPA_ENT && nitems == 5) {
+            // TODO: Messy. Consider separate kwarg(s) for EAP, identity and anon user?
+            // Also see http://linux.die.net/man/5/wpa_supplicant.conf
+            user = mp_obj_str_get_data(sec[1], &user_len);
+            eapParams.User = (_i8 *)user;
+            eapParams.UserLen = (_u8)user_len;
+            key = mp_obj_str_get_data(sec[2], &key_len);
+            if (sec[3] != mp_const_none) {
+                anon_user = mp_obj_str_get_data(sec[3], &anon_user_len);
+                eapParams.AnonUser = (_i8 *)anon_user;
+                eapParams.AnonUserLen = (_u8)anon_user_len;
+            }
+            mp_int_t method = mp_obj_get_int(sec[4]);
+            eapParams.EapMethod = (_u32)method;
+        } else {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "tuple/list has wrong length"));
         }
+
+        wlan_validate_security(auth, key, key_len);
     }
 
     // get the bssid
@@ -963,7 +992,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // connect to the requested access point
     modwlan_Status_t status;
-    status = wlan_do_connect (ssid, ssid_len, bssid, auth, key, key_len, timeout);
+    status = wlan_do_connect (ssid, ssid_len, bssid, auth, key, key_len, (eapParams.EapMethod) ? &eapParams : NULL, timeout);
     if (status == MODWLAN_ERROR_TIMEOUT) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     } else if (status == MODWLAN_ERROR_INVALID_PARAMS) {
@@ -1265,9 +1294,23 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP),                 MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA),                 MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA_ENT),             MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_ENT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_ANT),             MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_INTERNAL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_EXT_ANT),             MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_EXTERNAL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ANY_EVENT),           MP_OBJ_NEW_SMALL_INT(MODWLAN_WIFI_EVENT_ANY) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_TLS),             MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_TTLS_TLS),        MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_TTLS_MSCHAPv2),   MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_TTLS_PSK),        MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_PEAP0_TLS),       MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_PEAP0_MSCHAPv2),  MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_PEAP0_PSK),       MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_PEAP1_TLS),       MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_PEAP1_MSCHAPv2),  MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_PEAP1_PSK),       MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_FAST_AUTH_PROVISIONING),    MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_AUTH_PROVISIONING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_FAST_UNAUTH_PROVISIONING),  MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_UNAUTH_PROVISIONING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_FAST_NO_PROVISIONING),      MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_NO_PROVISIONING) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
