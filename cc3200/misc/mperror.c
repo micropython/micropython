@@ -30,9 +30,9 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "hw_ints.h"
 #include "hw_types.h"
 #include "hw_gpio.h"
@@ -45,7 +45,6 @@
 #include "pybpin.h"
 #include "pins.h"
 #endif
-#include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
 #include "pybuart.h"

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 
 #include "lib/fatfs/ff.h"
 
@@ -60,7 +61,6 @@
 #include "dac.h"
 #include "can.h"
 #include "modnetwork.h"
-#include MICROPY_HAL_H
 
 void SystemClock_Config(void);
 

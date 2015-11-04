@@ -37,6 +37,34 @@
 
 #if MICROPY_HW_HAS_SDCARD
 
+#if defined(MCU_SERIES_F7)
+
+// The F7 series calls the peripheral SDMMC rather than SDIO, so provide some
+// #defines for backwards compatability.
+
+#define SDIO    SDMMC1
+
+#define SDIO_CLOCK_EDGE_RISING              SDMMC_CLOCK_EDGE_RISING
+#define SDIO_CLOCK_EDGE_FALLING             SDMMC_CLOCK_EDGE_FALLING
+
+#define SDIO_CLOCK_BYPASS_DISABLE           SDMMC_CLOCK_BYPASS_DISABLE
+#define SDIO_CLOCK_BYPASS_ENABLE            SDMMC_CLOCK_BYPASS_ENABLE
+
+#define SDIO_CLOCK_POWER_SAVE_DISABLE       SDMMC_CLOCK_POWER_SAVE_DISABLE
+#define SDIO_CLOCK_POWER_SAVE_ENABLE        SDMMC_CLOCK_POWER_SAVE_ENABLE
+
+#define SDIO_BUS_WIDE_1B                    SDMMC_BUS_WIDE_1B
+#define SDIO_BUS_WIDE_4B                    SDMMC_BUS_WIDE_4B
+#define SDIO_BUS_WIDE_8B                    SDMMC_BUS_WIDE_8B
+
+#define SDIO_HARDWARE_FLOW_CONTROL_DISABLE  SDMMC_HARDWARE_FLOW_CONTROL_DISABLE
+#define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
+
+#define SDIO_TRANSFER_CLK_DIV               SDMMC_TRANSFER_CLK_DIV
+
+#endif
+
+
 static SD_HandleTypeDef sd_handle;
 
 void sdcard_init(void) {

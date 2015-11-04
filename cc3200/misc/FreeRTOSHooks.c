@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "inc/hw_memmap.h"
 #include "pybuart.h"

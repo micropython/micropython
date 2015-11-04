@@ -30,7 +30,6 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
 #include "timeutils.h"
 #include "user_interface.h"
 #include "modpyb.h"

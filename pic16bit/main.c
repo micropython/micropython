@@ -32,9 +32,9 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "pyexec.h"
 #include "readline.h"
-#include MICROPY_HAL_H
 #include "board.h"
 #include "modpyb.h"
 
@@ -59,7 +59,7 @@ soft_reset:
     led_state(1, 0);
     led_state(2, 0);
     led_state(3, 1);
-    mp_hal_milli_delay(150);
+    mp_hal_delay_ms(150);
     led_state(3, 0);
 
     // init MicroPython runtime

@@ -33,9 +33,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
-#ifdef MICROPY_HAL_H
-#include MICROPY_HAL_H
-#endif
+#include "py/mphal.h"
 #if defined(USE_DEVICE_MODE)
 #include "irq.h"
 #include "usb.h"
@@ -412,7 +410,7 @@ friendly_repl_reset:
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
             // paste mode
-            mp_hal_stdout_tx_str("\r\npaste mode; CTRL-C to cancel, CTRL-D to finish\r\n=== ");
+            mp_hal_stdout_tx_str("\r\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\r\n=== ");
             vstr_reset(&line);
             for (;;) {
                 char c = mp_hal_stdin_rx_chr();

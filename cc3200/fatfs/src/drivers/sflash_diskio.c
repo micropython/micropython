@@ -3,7 +3,6 @@
 #include "std.h"
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "simplelink.h"
 #include "diskio.h"

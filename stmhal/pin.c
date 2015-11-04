@@ -30,7 +30,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "pin.h"
 
 /// \moduleref pyb

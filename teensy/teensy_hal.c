@@ -2,16 +2,16 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
 #include "Arduino.h"
-#include MICROPY_HAL_H
 
-uint32_t mp_hal_ticks_ms(void) {
+mp_uint_t mp_hal_ticks_ms(void) {
   return millis();
 }
 
-void mp_hal_delay_ms(uint32_t ms) {
+void mp_hal_delay_ms(mp_uint_t ms) {
   delay(ms);
 }
 
@@ -37,7 +37,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
@@ -46,7 +46,7 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     }
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // send stdout to UART and USB CDC VCP
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);

@@ -30,7 +30,6 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
 #include "user_interface.h"
 
 const mp_obj_type_t pyb_adc_type;

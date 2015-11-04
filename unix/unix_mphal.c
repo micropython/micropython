@@ -30,7 +30,7 @@
 #include <sys/time.h>
 
 #include "py/mpstate.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 
 #ifndef _WIN32
 #include <signal.h>
@@ -110,7 +110,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     (void)ret; // to suppress compiler warning
 }
 
-// cooked is same as uncooked because they terminal does some postprocessing
+// cooked is same as uncooked because the terminal does some postprocessing
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     mp_hal_stdout_tx_strn(str, len);
 }
@@ -119,7 +119,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-uint32_t mp_hal_ticks_ms(void) {
+mp_uint_t mp_hal_ticks_ms(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;

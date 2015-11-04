@@ -551,6 +551,9 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx , USB_OTG_EPTypeDe
 {
   uint16_t pktcnt = 0;
   
+  USB_OTG_INEndpointTypeDef * epIn  = USBx_INEP(ep->num);
+  USB_OTG_INEndpointTypeDef * epOut = USBx_INEP(ep->num);
+  
   /* IN endpoint */
   if (ep->is_in == 1)
   {

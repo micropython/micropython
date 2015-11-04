@@ -28,7 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include MICROPY_HAL_H
+#include "py/mphal.h"
 #include "pin.h"
 
 STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {

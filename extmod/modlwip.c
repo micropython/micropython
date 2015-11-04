@@ -184,7 +184,7 @@ typedef struct _lwip_socket_obj_t {
     mp_obj_base_t base;
 
     void *pcb;
-    void *incoming;
+    void *volatile incoming;
     byte peer[4];
     mp_uint_t peer_port;
     mp_uint_t timeout;

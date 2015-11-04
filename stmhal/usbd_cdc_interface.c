@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "stm32f4xx.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
@@ -263,6 +264,9 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
   * @retval None
   */
 void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
+	PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+    USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
+    USB_OTG_INEndpointTypeDef * epIn  = USBx_INEP(CDC_IN_EP & 0x7f);
     if (!dev_is_connected) {
         // CDC device is not connected to a host, so we are unable to send any data
         return;
@@ -278,7 +282,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
         // finish sending it over the USB in-endpoint.
         // We have a 15 * 10ms = 150ms timeout
         if (UserTxBufPtrWaitCount < 15) {
-            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+        	PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
             if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data

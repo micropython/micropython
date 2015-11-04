@@ -28,9 +28,9 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/misc.h"
 #include "py/nlr.h"
+#include "py/mphal.h"
 #include "serverstask.h"
 #include "simplelink.h"
 #include "debug.h"

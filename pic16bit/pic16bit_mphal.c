@@ -25,7 +25,7 @@
  */
 
 #include <string.h>
-#include "pic16bit_mphal.h"
+#include "py/mphal.h"
 #include "board.h"
 
 static int interrupt_char;
@@ -34,12 +34,12 @@ void mp_hal_init(void) {
     MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 }
 
-mp_uint_t mp_hal_get_milliseconds(void) {
+mp_uint_t mp_hal_ticks_ms(void) {
     // TODO
     return 0;
 }
 
-void mp_hal_milli_delay(mp_uint_t ms) {
+void mp_hal_delay_ms(mp_uint_t ms) {
     // tuned for fixed CPU frequency
     for (int i = ms; i > 0; i--) {
         for (volatile int j = 0; j < 5000; j++) {
@@ -63,13 +63,13 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     for (; len > 0; --len) {
         uart_tx_char(*str++);
     }
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     for (; len > 0; --len) {
         if (*str == '\n') {
             uart_tx_char('\r');

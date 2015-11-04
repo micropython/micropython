@@ -48,7 +48,8 @@ CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+#CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -103,6 +104,7 @@ SRC_LIB = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/pyexec.c \
 	)
 
 SRC_C = \
@@ -113,7 +115,7 @@ SRC_C = \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
 	usbd_msc_storage.c \
-	mphal.c \
+	mphalport.c \
 	irq.c \
 	pendsv.c \
 	systick.c  \
@@ -132,7 +134,6 @@ SRC_C = \
 	printf.c \
 	gccollect.c \
 	pybstdio.c \
-	pyexec.c \
 	help.c \
 	input.c \
 	modmachine.c \
@@ -277,7 +278,6 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
-	$(Q)$(OBJCOPY) -O binary $^ $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b 0x08020000:$(BUILD)/firmware1.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
