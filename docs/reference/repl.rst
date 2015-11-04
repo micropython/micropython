@@ -49,6 +49,10 @@ Finally type ``print(i)``, press RETURN, press BACKSPACE and press RETURN again:
     3
     >>>
 
+Auto-indent won't be applied if the previous two lines were all spaces.  This
+means that you can finish entering a compound statment by pressing RETURN
+twice, and then a third press will finish and execute.
+
 Auto-completion
 ---------------
 
