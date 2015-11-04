@@ -47,35 +47,25 @@
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
-mp_obj_t mp_stream_op_supported(mp_obj_t self_in, supported_stream_op_t op) {
-    bool error = false;
+mp_obj_t mp_stream_op_supported(mp_obj_t self_in, mp_stream_op_t op) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
-
-    if (op == STREAM_READ) {
-        if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
-            error = true;
-        }
-    } else if (op == STREAM_WRITE) {
-        if (o->type->stream_p == NULL || o->type->stream_p->write == NULL) {
-            error = true;
-        }
-    } else if (op == STREAM_IOCTL) {
-        if (o->type->stream_p == NULL || o->type->stream_p->ioctl == NULL) {
-            error = true;
-        }
-    }    
-    if (error) {
+    if (o->type->stream_p == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
-    } else {
-        return o;
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "stream object required"));
+    } else if (op == MP_STREAM_OP_READ && o->type->stream_p->read == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "object with stream.read required"));
+    } else if (op == MP_STREAM_OP_WRITE && o->type->stream_p->write == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "object with stream.write required"));
+    } else if (op == MP_STREAM_OP_IOCTL && o->type->stream_p->ioctl == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "object with stream.ioctl required"));
     }
+    return o;
 }
 
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
 STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], STREAM_READ);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], MP_STREAM_OP_READ);
 
     // What to do if sz < -1?  Python docs don't specify this case.
     // CPython does a readall, but here we silently let negatives through,
@@ -198,7 +188,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
 mp_obj_t mp_stream_read(mp_obj_t self_in, void *buf, mp_uint_t len) {
     // Supported op check included here for protability and to be equivalent to
     // mp_stream_write; some stream read methods will now have redundant checks:
-    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, STREAM_READ);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, MP_STREAM_OP_READ);
     int error;
     mp_uint_t out_sz = o->type->stream_p->read(self_in, buf, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
@@ -212,7 +202,7 @@ mp_obj_t mp_stream_read(mp_obj_t self_in, void *buf, mp_uint_t len) {
 }
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
-    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, STREAM_WRITE);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, MP_STREAM_OP_WRITE);
     int error;
     mp_uint_t out_sz = o->type->stream_p->write(self_in, buf, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
@@ -237,7 +227,7 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
 }
 
 STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], STREAM_READ);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], MP_STREAM_OP_READ);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
 
@@ -256,7 +246,7 @@ STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
-    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, STREAM_READ);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, MP_STREAM_OP_READ);
     mp_uint_t total_size = 0;
     vstr_t vstr;
     vstr_init(&vstr, DEFAULT_BUFFER_SIZE);
@@ -300,7 +290,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], STREAM_READ);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], MP_STREAM_OP_READ);
     mp_int_t max_size = -1;
     if (n_args > 1) {
         max_size = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -377,7 +367,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
 }
 
 STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], STREAM_IOCTL);
+    struct _mp_obj_base_t *o = mp_stream_op_supported(args[0], MP_STREAM_OP_IOCTL);
     struct mp_stream_seek_t seek_s;
     // TODO: Could be uint64
     seek_s.offset = mp_obj_get_int(args[1]);

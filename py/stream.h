@@ -41,12 +41,12 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
 typedef enum {
-    STREAM_READ,
-    STREAM_WRITE,
-    STREAM_IOCTL,
-} supported_stream_op_t;
+    MP_STREAM_OP_READ,
+    MP_STREAM_OP_WRITE,
+    MP_STREAM_OP_IOCTL,
+} mp_stream_op_t;
 
-mp_obj_t mp_stream_op_supported(mp_obj_t self_in, supported_stream_op_t op);
+mp_obj_t mp_stream_op_supported(mp_obj_t self_in, mp_stream_op_t op);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len);
 mp_obj_t mp_stream_read(mp_obj_t self_in, void *buf, mp_uint_t len);
