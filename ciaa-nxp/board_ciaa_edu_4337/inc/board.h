@@ -592,6 +592,35 @@ void Board_PWM_SetDutyCycle(uint8_t outNumber, uint8_t duty);
 
 
 
+/**
+ * @brief       Initializes ADC Module
+ * @return      void
+ */
+void Board_ADC_Init(void);
+
+/**
+ * @brief       Enable ADC channel mapped to ADC0 module
+ * @param       channelNumber : Number of input channel (1, 2 or 3)
+ * @return      void
+ */
+void Board_ADC_EnableChannel(uint8_t channelNumber);
+
+
+/**
+ * @brief       Start a ADC conversion and wait until is finished
+ * @return      void
+ */
+void Board_ADC_StartConversion(void);
+
+/**
+ * @brief       Read an ADC channel after a conversion
+ * @param       channelNumber : Number of input channel (1, 2 or 3)
+ * @return      A 10bit analog value from the specified channel
+ */
+uint16_t Board_ADC_readValue(uint8_t channelNumber);
+
+
+
 
 /**
  * @}

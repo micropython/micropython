@@ -89,7 +89,6 @@ static ExtIntData extIntData[4];
 //================================================[ADC Management]========================================================
 typedef struct {
 	ADC_CLOCK_SETUP_T setup;
-	int32_t interrupt;
 	LPC_ADC_T* adc;
 }ADCData;
 
@@ -121,28 +120,27 @@ void Board_ADC_Init(void)
 {
 	// ADC0
 	Chip_ADC_Init(LPC_ADC0, &(adcsData[0].setup));
-	adcsData[0].interrupt = ADC0_IRQn;
 	adcsData[0].adc = LPC_ADC0;
 	Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
+	NVIC_EnableIRQ(ADC0_IRQn);
 
         // ADC1
-        Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
-        adcsData[1].interrupt = ADC1_IRQn;
-        adcsData[1].adc = LPC_ADC1;
-        Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
+        //Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
+        //adcsData[1].adc = LPC_ADC1;
+        //Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
+	//NVIC_EnableIRQ(ADC1_IRQn);
 
 	flagWaitingADCConv=0;
-	//ADCValue=0;
+	ADCValues[0]=0;
+	ADCValues[1]=0;
+	ADCValues[2]=0;
 }
 void Board_ADC_EnableChannel(uint8_t channelNumber)
 {
 	uint32_t index = 0; // always using ADC0
 
-	NVIC_EnableIRQ(adcsData[index].interrupt);
         Chip_ADC_EnableChannel(adcsData[index].adc, getChannelFromNumber(channelNumber), ENABLE);
         Chip_ADC_Int_SetChannelCmd(adcsData[index].adc, getChannelFromNumber(channelNumber), ENABLE);
-
-	//Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
 }
 
 uint16_t Board_ADC_readValue(uint8_t channelNumber)
@@ -156,37 +154,27 @@ void Board_ADC_StartConversion(void)
         uint32_t index = 0; // always using ADC0
         flagWaitingADCConv=1;
         Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
-        while(flagWaitingADCConv==1);
+        while(flagWaitingADCConv==1); // wait until conversion is finished
 }
-
-void Board_ADC_DisableChannel(uint8_t channelNumber)
+/*
+void Board_ADC_SetSampleRate(uint32_t sampleRate)
 {
-//	NVIC_DisableIRQ(pAioControl->adc_dac.adc.interrupt);
-//	Chip_ADC_Int_SetChannelCmd(pAioControl->adc_dac.adc.handler, pAioControl->channel, DISABLE);
-}
-
-void Board_ADC_SetSampleRate(uint8_t channelNumber, uint32_t sampleRate)
-{
-//	NVIC_DisableIRQ(pAioControl->adc_dac.adc.interrupt);
-//        Chip_ADC_SetSampleRate(pAioControl->adc_dac.adc.handler, &(pAioControl->adc_dac.adc.setup), (uint32_t)param);
-//        NVIC_EnableIRQ(pAioControl->adc_dac.adc.interrupt);
-}
+    uint32_t index = 0; // always using ADC0
+    Chip_ADC_SetSampleRate(adcsData[index].adc, &(adcsData[index].setup), sampleRate);
+}*/
 
 
 void ADC0_IRQHandler (void)
 {
    uint16_t value;
-
+   uint32_t index = 0; // always using ADC0
    uint8_t i;
    for(i=0; i<3; i++)
    {
-       Chip_ADC_ReadValue(adcsData[i].adc, getChannelFromNumber(i+1), &value);
-	ADCValues[i] = value;
+       Chip_ADC_ReadValue(adcsData[index].adc, getChannelFromNumber(i+1), &value);
+       ADCValues[i] = value;
    }
-
    flagWaitingADCConv=0;
-
- Board_UARTPutSTR("salgo de int");
 }
 
 //===========================================================================================================================

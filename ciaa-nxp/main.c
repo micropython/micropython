@@ -67,13 +67,23 @@ int main(int argc, char **argv) {
 	Board_UARTPutSTR("fin main adc");
 	while(1)
 	{
+		uint16_t val;
+		char aux[64];
 		Board_UARTPutSTR(" inicio conversion ");
 		Board_ADC_StartConversion();
 
-		uint16_t val = Board_ADC_readValue(1);
-		char aux[64];
-		sprintf(aux," valor leido:%d\n",val);
+		val = Board_ADC_readValue(1);
+		sprintf(aux," valor leido ch1 :%d\n",val);
 		Board_UARTPutSTR(aux);
+
+                val = Board_ADC_readValue(2);
+                sprintf(aux," valor leido ch2 :%d\n",val);
+                Board_UARTPutSTR(aux);
+
+                val = Board_ADC_readValue(3);
+                sprintf(aux," valor leido ch3 :%d\n",val);
+                Board_UARTPutSTR(aux);
+
 		mp_hal_milli_delay(1000);
 	}
 
