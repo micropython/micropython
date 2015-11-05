@@ -32,9 +32,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include STM32_HAL_H
 #include "usbd_core.h"
+#ifndef MINIMAL
 #include "py/obj.h"
+#endif
 #include "irq.h"
-
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -112,6 +113,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+#if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
     /* Configure VBUS Pin */
     GPIO_InitStruct.Pin = GPIO_PIN_13;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -119,7 +121,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#endif
 
+#if defined(MICROPY_HW_USB_OTG_ID_PIN)
     /* Configure ID pin */
     GPIO_InitStruct.Pin = GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -127,6 +131,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#endif
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
 #else

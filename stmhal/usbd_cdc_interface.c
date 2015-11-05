@@ -40,13 +40,25 @@
 #include "stm32f4xx.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
+#ifndef MINIMAL
 #include "pendsv.h"
 
 #include "py/obj.h"
 #include "irq.h"
 #include "timer.h"
 #include "usb.h"
+#else
+extern TIM_HandleTypeDef TIM3_Handle;
+extern USBD_HandleTypeDef hUSBDDevice;
+// these states correspond to values from query_irq, enable_irq and disable_irq
+#define IRQ_STATE_DISABLED (0x00000001)
+#define IRQ_STATE_ENABLED  (0x00000000)
 
+static inline mp_uint_t query_irq(void) {
+    return __get_PRIMASK();
+}
+
+#endif
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
 #define CDC_GET_ENCAPSULATED_RESPONSE               0x01
@@ -365,7 +377,9 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
             if (*src == user_interrupt_char) {
                 char_found = true;
                 // raise exception when interrupts are finished
+#ifndef MINIMAL
                 pendsv_nlr_jump(user_interrupt_data);
+#endif
             } else {
                 if (char_found) {
                     *dest = *src;
@@ -489,7 +503,7 @@ int USBD_CDC_RxNum(void) {
     return UserRxBufLen - UserRxBufCur;
 }
 
-// timout in milliseconds.
+// timeout in milliseconds.
 // Returns number of bytes read from the device.
 int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     // loop to read bytes
