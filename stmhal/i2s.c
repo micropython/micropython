@@ -124,7 +124,8 @@ typedef struct _pyb_i2s_obj_t {
     mp_obj_base_t *dstream_rx;
     mp_int_t stream_tx_len;
     mp_int_t stream_rx_len;
-    mp_uint_t out_sz;
+    mp_uint_t last_stream_read_sz;
+    mp_uint_t last_stream_write_sz;
     mp_obj_t callback;
     xfer_state_t xfer_state;
     xfer_signal_t xfer_signal;
@@ -1126,6 +1127,49 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2s_send_recv_obj, 1, pyb_i2s_send_recv);
 // Taken from stream.c; could use to make sure stream is opened in binary mode?
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
+// helper functions for stream operations; to be removed if similar functions get
+// incorporated into stream.[ch]
+typedef enum {
+    MP_STREAM_OP_READ,
+    MP_STREAM_OP_WRITE,
+    MP_STREAM_OP_IOCTL,
+} mp_stream_op_t;
+
+mp_obj_t mp_stream_op_supported(mp_obj_t self_in, mp_stream_op_t op) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
+    if (o->type->stream_p == NULL) {
+        // CPython: io.UnsupportedOperation, OSError subclass
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+                                           "stream object required"));
+    } else if (op == MP_STREAM_OP_READ && o->type->stream_p->read == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+                                           "object with stream.read required"));
+    } else if (op == MP_STREAM_OP_WRITE && o->type->stream_p->write == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+                                           "object with stream.write required"));
+    } else if (op == MP_STREAM_OP_IOCTL && o->type->stream_p->ioctl == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+                                           "object with stream.ioctl required"));
+    }
+    return o;
+}
+
+mp_obj_t mp_stream_read(mp_obj_t self_in, void *buf, mp_uint_t len) {
+    // Supported op check included here for protability and to be equivalent to
+    // mp_stream_write; some stream read methods will now have redundant checks:
+    struct _mp_obj_base_t *o = mp_stream_op_supported(self_in, MP_STREAM_OP_READ);
+    int error;
+    mp_uint_t out_sz = o->type->stream_p->read(self_in, buf, len, &error);
+    if (out_sz == MP_STREAM_ERROR) {
+        if (mp_is_nonblocking_error(error)) {
+            return mp_const_none;
+        }
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(out_sz);
+    }
+}
+
 STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
                                    mp_map_t *kw_args) {
 
@@ -1142,15 +1186,7 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t stream = args[0].u_obj;
-    mp_obj_type_t *type = mp_obj_get_type(stream);
-    // Check that 'stream' provides an mp_stream_p_t and a read
-    // Note that 'read' will be present even if the stream opened in write-mode
-    if (type->stream_p == NULL || type->stream_p->read == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                                "Object type %s not a readable stream",
-                                                mp_obj_get_type_str(stream)));
-    }
+    mp_obj_t stream = mp_stream_op_supported(args[0].u_obj, MP_STREAM_OP_READ);
 
     // make sure that I2S bus is configured for transmit:
     if (!i2s_has_tx(self)) {
@@ -1184,10 +1220,10 @@ STATIC mp_obj_t pyb_i2s_stream_out(mp_uint_t n_args, const mp_obj_t *pos_args,
         self->dstream_tx = stream;
         self->pp_ptr = 0;
 
-        self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx,
+        self->last_stream_read_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx,
                              &self->audiobuf_tx[self->pp_ptr], buf_sz, &error);
 
-        if (self->out_sz == MP_STREAM_ERROR) {
+        if (self->last_stream_read_sz == MP_STREAM_ERROR) {
             if (mp_is_nonblocking_error(error)) {
                 // nonblocking error behavior copied from py/stream.c: stream_read()
                 // see https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
@@ -1238,15 +1274,18 @@ STATIC mp_obj_t pyb_i2s_stream_in (mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
                      MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t stream = args[0].u_obj;
-    mp_obj_type_t *type = mp_obj_get_type(stream);
-    // Check that 'stream' provides 'mp_stream_p_t' and 'write'
-    // Note that 'write' will be present even if the stream opened in read-mode (?)
-    if (type->stream_p == NULL || type->stream_p->write == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                                "Object type %s not a writeable stream",
-                                                mp_obj_get_type_str(stream)));
-    }
+
+    mp_obj_t stream = mp_stream_op_supported(args[0].u_obj, MP_STREAM_OP_WRITE);
+
+    /* mp_obj_t stream = args[0].u_obj; */
+    /* mp_obj_type_t *type = mp_obj_get_type(stream); */
+    /* // Check that 'stream' provides 'mp_stream_p_t' and 'write' */
+    /* // Note that 'write' will be present even if the stream opened in read-mode (?) */
+    /* if (type->stream_p == NULL || type->stream_p->write == NULL) { */
+    /*     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, */
+    /*                                             "Object type %s not a writeable stream", */
+    /*                                             mp_obj_get_type_str(stream))); */
+    /* } */
 
     // make sure that I2S bus is configured for receive:
     if (!i2s_has_rx(self)) {
@@ -1328,7 +1367,7 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
     // i2s_stream_handler manages HAL_I2S_*_DMA functions and data transfers
     // between streams and buffers:
     int buf_sz = AUDIOBUFFER_BYTES / 4;
-    int error;
+    // int error;
     HAL_StatusTypeDef status;
 
     // Set xfer_state as indicated by xfer_signal:
@@ -1365,17 +1404,18 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
             status = HAL_I2SEx_TransmitReceive_DMA(&self->i2s,
                                                    self->audiobuf_tx[self->pp_ptr],
                                                    self->audiobuf_rx[self->pp_ptr],
-                                                   self->out_sz / 2);
+                                                   self->last_stream_read_sz / 2);
 
         } else if (self->xfer_state == STREAM_OUT) {
             status = HAL_I2S_Transmit_DMA(&self->i2s,
                                           self->audiobuf_tx[self->pp_ptr],
-                                          self->out_sz / 2);
+                                          self->last_stream_read_sz / 2);
 
         } else if (self->xfer_state == STREAM_IN) {
+            // TODO - Simplex receive should not use last read or write size!
             status = HAL_I2S_Receive_DMA(&self->i2s,
                                          self->audiobuf_rx[self->pp_ptr],
-                                         self->out_sz / 2);
+                                         self->last_stream_read_sz / 2);
 
         } else {
             // TODO: clean up and raise an error?
@@ -1395,42 +1435,59 @@ STATIC void i2s_stream_handler(pyb_i2s_obj_t *self) {
     bool buf_ptr = !(self->pp_ptr);
 
     if ((self->xfer_state & STREAM_OUT) != 0) {
-        self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx,
-                                                              &self->audiobuf_tx[buf_ptr],
-                                                              buf_sz, &error);
+        /* self->out_sz = self->dstream_tx->type->stream_p->read(self->dstream_tx, */
+        /*                                                       &self->audiobuf_tx[buf_ptr], */
+        /*                                                       buf_sz, &error); */
 
-        if (self->stream_tx_len > -1) {
-            if (self->stream_tx_len >= self->out_sz) {
-                self->stream_tx_len -= self->out_sz;
-            } else {
-                self->stream_tx_len = 0;
+        /* if (self->stream_tx_len > -1) { */
+        /*     if (self->stream_tx_len >= self->out_sz) { */
+        /*         self->stream_tx_len -= self->out_sz; */
+        /*     } else { */
+        /*         self->stream_tx_len = 0; */
+        /*     } */
+        /* } */
+        /* // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to */
+        /* // indicate end of file */
+        /* if (self->out_sz == 0 || self->stream_tx_len == 0) { */
+        /*     self->xfer_signal = I2S_SIG_EOF_TX; */
+        /* } else if (self->out_sz == MP_STREAM_ERROR) { */
+        /*     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error))); */
+        /* } */
+        mp_obj_t ret = mp_stream_read(self->dstream_tx, &self->audiobuf_tx[buf_ptr], buf_sz);
+        if (mp_obj_is_integer(ret)) {
+            // maybe now this should be self->out_sz = mp_obj_get_int(ret)
+            // or maybe need a last_read_sz and last_write_sz?
+            self->last_stream_read_sz = mp_obj_get_int(ret);
+            if (self->stream_tx_len > -1) {
+                if (self->stream_tx_len >= self->last_stream_read_sz) {
+                    self->stream_tx_len -= self->last_stream_read_sz;
+                } else {
+                    self->stream_tx_len = 0;
+                }
             }
-        }
-        // self->out_sz == 0 means dstream_tx is empty, so set xfer_signal to
-        // indicate end of file
-        if (self->out_sz == 0 || self->stream_tx_len == 0) {
+            if (self->last_stream_read_sz < buf_sz || self->stream_tx_len == 0) {
+                // A read smaller than buf_sz is because we are at EOF:
+                self->xfer_signal = I2S_SIG_EOF_TX;
+            }
+        } else {
+            // If ret isn't an integer it indicates a stream read error, stop tx:
             self->xfer_signal = I2S_SIG_EOF_TX;
-        } else if (self->out_sz == MP_STREAM_ERROR) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
         }
+
     }
     if ((self->xfer_state & STREAM_IN) != 0) {
-        // TODO: mp_stream_write is an available public function, but there is no
-        // mp_stream_read - is there something equivalent that I can use?
-        // Also need to figure out correct way to handle errors and end transfer for stream_in
+        // Need to figure out correct way to handle errors and end transfer for stream_in
         mp_obj_t ret = mp_stream_write(self->dstream_rx, &self->audiobuf_rx[buf_ptr], buf_sz);
         if (mp_obj_is_integer(ret)) {
-            // stream_in is half as long as stream_out, possibly b/c of mixup b/t uPy ints
-            // and machine ints?
-            mp_int_t r = (mp_int_t) ret;
+            self->last_stream_write_sz = mp_obj_get_int(ret);
             if (self->stream_rx_len > -1) {
-                if (self->stream_rx_len >= r) {
-                    self->stream_rx_len -= r;
+                if (self->stream_rx_len >= self->last_stream_write_sz) {
+                    self->stream_rx_len -= self->last_stream_write_sz;
                 } else {
                     self->stream_rx_len = 0;
                 }
             }
-            if (r < buf_sz || self->stream_rx_len == 0) {
+            if (self->last_stream_write_sz < buf_sz || self->stream_rx_len == 0) {
                 // A write smaller than buf_sz is probably because the filesystem is full:
                 self->xfer_signal = I2S_SIG_EOF_RX;
             }
