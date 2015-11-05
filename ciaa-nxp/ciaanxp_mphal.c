@@ -321,11 +321,6 @@ void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty)
 }
 
 //ADC
-void mp_hal_initADC(void)
-{
-	Board_ADC_Init();
-}
-
 void mp_hal_enableADCchannel(uint8_t channelNumber)
 {
 	Board_ADC_EnableChannel(channelNumber);

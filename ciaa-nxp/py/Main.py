@@ -1,26 +1,20 @@
 import pyb
 
-print("Test PWM")
+print("Test ADC")
 
-print("Setting frequency...")
-pyb.PWM.set_frequency(1000)
-
-print("Creating pwm for out0")
-out0 = pyb.PWM(0)
-
-print("Setting duty cycle to 50%")
-out0.duty_cycle(50)
-print("Duty cycle :"+str(out0.duty_cycle()))
-
-out1= pyb.PWM(1)
-out1.duty_cycle(25)
-
-out10= pyb.PWM(10)
-out10.duty_cycle(75)
-
+channel1 = pyb.ADC(1)
+channel2 = pyb.ADC(2)
+channel3 = pyb.ADC(3)
 
 print("Main loop")
 while True:
-	pyb.delay(100)
+	pyb.ADC.start_conversion()
+	v1 = channel1.read()
+	v2 = channel2.read()
+	v3 = channel3.read()
+	print("value ch1:"+v1)
+	print("value ch2:"+v2)
+	print("value ch3:"+v3)
+	pyb.delay(1000)
 
 
