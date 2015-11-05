@@ -110,7 +110,6 @@ typedef enum{
 #define MODWLAN_SL_SCAN_DISABLE         0
 #define MODWLAN_SL_MAX_NETWORKS         20
 
-#define MODWLAN_TIMEOUT_MS              5000
 #define MODWLAN_MAX_NETWORKS            20
 #define MODWLAN_SCAN_PERIOD_S           3600     // 1 hour
 #define MODWLAN_WAIT_FOR_SCAN_MS        1050

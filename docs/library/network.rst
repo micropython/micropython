@@ -357,7 +357,7 @@ For example::
           # configure as an station
           wlan.init(mode=WLAN.STA)
 
-    .. method:: wlan.connect(ssid, \*, auth=None, bssid=None, timeout=5000)
+    .. method:: wlan.connect(ssid, \*, auth=None, bssid=None, timeout=None)
 
        Connect to a wifi access point using the given SSID, and other security
        parameters.
@@ -365,7 +365,7 @@ For example::
           - ``auth`` is a tuple with (sec, key). Security can be ``None``, ``WLAN.WEP``,
             ``WLAN.WPA`` or ``WLAN.WPA2``. The key is a string with the network password.
             If ``sec`` is ``WLAN.WEP`` the key must be a string representing hexadecimal
-            values (e.g. 'ABC1DE45BF'). Only needed when mode is ``WLAN.AP``
+            values (e.g. 'ABC1DE45BF').
           - ``bssid`` is the MAC address of the AP to connect to. Useful when there are several
             APs with the same ssid.
           - ``timeout`` is the maximum time in milliseconds to wait for the connection to succeed.
