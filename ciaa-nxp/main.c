@@ -7,13 +7,12 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "stmhal/pyexec.h"
-#include "ciaanxp_mphal.h"
 
 #include "lib/fatfs/ff.h"
 
 #include "modpyb.h"
-#include "ciaanxp_mphal.h"
 
 //prueba uart, sacar
 #include "chip.h"

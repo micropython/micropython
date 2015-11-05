@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the Micro Python project, http:// micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -36,13 +36,13 @@
 
 STATIC byte flash_cache_mem[8 * 1024] __attribute__((aligned(4)));
 #define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_SECTOR_SIZE_MAX (8 * 1024) // 16k max due to size of cache buffer
-#define FLASH_MEM_SEG1_START_ADDR (0x1B000000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (128) // sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k
+#define FLASH_SECTOR_SIZE_MAX (8 * 1024) /*  16k max due to size of cache buffer */
+#define FLASH_MEM_SEG1_START_ADDR (0x1B000000) /*  sector 1 */
+#define FLASH_MEM_SEG1_NUM_BLOCKS (128) /*  sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k */
 
 #if !defined(FLASH_MEM_SEG2_START_ADDR)
-#define FLASH_MEM_SEG2_START_ADDR (0) // no second segment
-#define FLASH_MEM_SEG2_NUM_BLOCKS (0) // no second segment
+#define FLASH_MEM_SEG2_START_ADDR (0) /*  no second segment */
+#define FLASH_MEM_SEG2_NUM_BLOCKS (0) /*  no second segment */
 #endif
 
 #define FLASH_PART1_START_BLOCK (0x100)
@@ -83,7 +83,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_cache_sector_size = flash_sector_size;
     }
     flash_flags |= FLASH_FLAG_DIRTY;
-    //led_state(PYB_LED_R1, 1); // indicate a dirty cache with LED on
+    /* led_state(PYB_LED_R1, 1); indicate a dirty cache with LED on */
     flash_tick_counter_last_write = mp_hal_get_milliseconds();
     return ((uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start);
 }
@@ -93,10 +93,10 @@ static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
     uint32_t flash_sector_size;
     uint32_t flash_sector_id = flash_get_sector_info(flash_addr, &flash_sector_start, &flash_sector_size);
     if (flash_cache_sector_id == flash_sector_id) {
-        // in cache, copy from there
+        /*  in cache, copy from there */
         return ((uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start);
     }
-    // not in cache, copy straight from flash
+    /*  not in cache, copy straight from flash */
     return ((uint8_t*)flash_addr);
 }
 
@@ -122,22 +122,22 @@ void storage_irq_handler(void) {
         return;
     }
 
-    // This code erases the flash directly, waiting for it to finish
+    /*  This code erases the flash directly, waiting for it to finish */
     if (!(flash_flags & FLASH_FLAG_ERASED)) {
         flash_erase(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
         flash_flags |= FLASH_FLAG_ERASED;
         return;
     }
 
-    // If not a forced write, wait at least 5 seconds after last write to flush
-    // On file close and flash unmount we get a forced write, so we can afford to wait a while
-    if ((flash_flags & FLASH_FLAG_FORCE_WRITE)) { // || sys_tick_has_passed(flash_tick_counter_last_write, 5000)) {
-        // sync the cache RAM buffer by writing it to the flash page
+    /*  If not a forced write, wait at least 5 seconds after last write to flush */
+    /*  On file close and flash unmount we get a forced write, so we can afford to wait a while */
+    if ((flash_flags & FLASH_FLAG_FORCE_WRITE)) { /*  || sys_tick_has_passed(flash_tick_counter_last_write, 5000)) { */
+        /*  sync the cache RAM buffer by writing it to the flash page */
         flash_write(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
-        // clear the flash flags now that we have a clean cache
+        /*  clear the flash flags now that we have a clean cache */
         flash_flags = 0;
-        // indicate a clean cache with LED off
-        //led_state(PYB_LED_R1, 0);
+        /*  indicate a clean cache with LED off */
+        /* led_state(PYB_LED_R1, 0); */
     }
 }
 
@@ -183,23 +183,23 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
 
 static uint32_t convert_block_to_flash_addr(uint32_t block) {
     if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + FLASH_PART1_NUM_BLOCKS) {
-        // a block in partition 1
+        /*  a block in partition 1 */
         block -= FLASH_PART1_START_BLOCK;
         if (block < FLASH_MEM_SEG1_NUM_BLOCKS) {
             return (FLASH_MEM_SEG1_START_ADDR + block * FLASH_BLOCK_SIZE);
         } else if (block < FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS) {
             return (FLASH_MEM_SEG2_START_ADDR + (block - FLASH_MEM_SEG1_NUM_BLOCKS) * FLASH_BLOCK_SIZE);
         }
-        // can add more flash segments here if needed, following above pattern
+        /*  can add more flash segments here if needed, following above pattern */
     }
-    // bad block
+    /*  bad block */
     return (-1);
 }
 
 bool storage_read_block(uint8_t *dest, uint32_t block) {
-    //printf("RD %u\n", block);
+    /* printf("RD %u\n", block); */
     if (block == 0) {
-        // fake the MBR so we can decide on our own partition table
+        /*  fake the MBR so we can decide on our own partition table */
 
         for (int i = 0; i < 446; i++) {
             dest[i] = 0;
@@ -216,10 +216,10 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
         return true;
 
     } else {
-        // non-MBR block, get data from flash memory, possibly via cache
+        /*  non-MBR block, get data from flash memory, possibly via cache */
         uint32_t flash_addr = convert_block_to_flash_addr(block);
         if (flash_addr == -1) {
-            // bad block number
+            /*  bad block number */
             return false;
         }
         uint8_t *src = flash_cache_get_addr_for_read(flash_addr);
@@ -229,16 +229,16 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 }
 
 bool storage_write_block(const uint8_t *src, uint32_t block) {
-    //printf("WR %u\n", block);
+    /* printf("WR %u\n", block); */
     if (block == 0) {
-        // can't write MBR, but pretend we did
+        /*  can't write MBR, but pretend we did */
         return true;
 
     } else {
-        // non-MBR block, copy to cache
+        /*  non-MBR block, copy to cache */
         uint32_t flash_addr = convert_block_to_flash_addr(block);
         if (flash_addr == -1) {
-            // bad block number
+            /*  bad block number */
             return false;
         }
         uint8_t *dest = flash_cache_get_addr_for_write(flash_addr);

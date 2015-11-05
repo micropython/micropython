@@ -16,7 +16,7 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I..
-INC += -I../mphal
+INC += -I../stmhal
 INC += -I../teensy
 INC += -I../lib/mp-readline
 INC += -I../lib/timeutils
@@ -47,12 +47,12 @@ SRC_C = \
 	modpyb.c \
 	ciaanxp_mphal.c \
 	modpybled.c \
-	stmhal/pyexec.c \
 	stmhal/pybstdio.c \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/mp-readline/readline.c \
 	lib/timeutils/timeutils.c \
+	lib/utils/pyexec.c \
 	ffconf.c \
 	moduos.c \
 	modpybswitch.c \

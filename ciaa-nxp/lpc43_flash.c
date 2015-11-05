@@ -71,7 +71,6 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr,
 }
 
 static void __fatal(volatile char *msg) {
-	mp_hal_stdout_tx_strn(msg);
 	while(1) {
 		__BKPT(0);
 	}
