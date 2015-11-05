@@ -26,7 +26,7 @@ class LexerError(Exception):
 
 class Lexer:
     re_io_reg = r'__IO uint(?P<bits>8|16|32)_t +(?P<reg>[A-Z0-9]+)'
-    re_comment = r'(?P<comment>[A-Za-z0-9 \-/_()]+)'
+    re_comment = r'(?P<comment>[A-Za-z0-9 \-/_()&]+)'
     re_addr_offset = r'Address offset: (?P<offset>0x[0-9A-Z]{2,3})'
     regexs = (
         ('#define hex', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +\(\(uint32_t\)(?P<hex>0x[0-9A-F]+)\)($| +/\*)')),
