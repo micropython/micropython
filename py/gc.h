@@ -46,7 +46,7 @@ void gc_collect_root(void **ptrs, mp_uint_t len);
 void gc_collect_end(void);
 
 void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser);
-void gc_free(void *ptr);
+void gc_free(void *ptr); // does not call finaliser
 mp_uint_t gc_nbytes(const void *ptr);
 void *gc_realloc(void *ptr, mp_uint_t n_bytes, bool allow_move);
 

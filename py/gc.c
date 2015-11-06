@@ -442,6 +442,7 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 */
 
 // force the freeing of a piece of memory
+// TODO: freeing here does not call finaliser
 void gc_free(void *ptr_in) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         // TODO how to deal with this error?
@@ -454,6 +455,9 @@ void gc_free(void *ptr_in) {
     if (VERIFY_PTR(ptr)) {
         mp_uint_t block = BLOCK_FROM_PTR(ptr);
         if (ATB_GET_KIND(block) == AT_HEAD) {
+            #if MICROPY_ENABLE_FINALISER
+            FTB_CLEAR(block);
+            #endif
             // set the last_free pointer to this block if it's earlier in the heap
             if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
                 MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
