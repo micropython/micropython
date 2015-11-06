@@ -68,7 +68,7 @@ PY_O_BASENAME = \
 	malloc.o \
 	gc.o \
 	gc_basic.o \
-	mem.o \
+	heap_basic.o \
 	qstr.o \
 	vstr.o \
 	mpprint.o \

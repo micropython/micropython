@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include "py/mem.h"
+#include "py/heap_basic.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 
@@ -20,7 +20,7 @@ mem_state_mem_t mem_state_mem;
 
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
-void mem_init(void *start, void *end) {
+void heap_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((mp_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
     DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
@@ -60,14 +60,14 @@ void mem_init(void *start, void *end) {
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MEM_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
-mp_uint_t mem_first(){
+mp_uint_t heap_first(){
     for (mp_uint_t block = 0; block < MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB; block++) {
         if(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD){return block;}
     }
     return MEM_BLOCK_ERROR;
 }
 
-mp_uint_t mem_sizeof(mp_uint_t block){
+mp_uint_t heap_sizeof(mp_uint_t block){
     mp_uint_t n_blocks = 0;
     do {
         n_blocks += 1;
@@ -79,7 +79,7 @@ mp_uint_t mem_sizeof(mp_uint_t block){
 /**
  *  get void pointer from block
  */
-inline void *mem_void_p(mp_uint_t block){
+inline void *heap_void_p(mp_uint_t block){
     assert(VERIFY_PTR(PTR_FROM_BLOCK(block)));
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
     return (void *)PTR_FROM_BLOCK(block);
@@ -89,7 +89,7 @@ inline void *mem_void_p(mp_uint_t block){
 /**
  *  get the next allocated block of memory
  */
-mp_uint_t mem_next(mp_uint_t block){
+mp_uint_t heap_next(mp_uint_t block){
     block++;
     for (; block < MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
@@ -101,7 +101,7 @@ mp_uint_t mem_next(mp_uint_t block){
     return MEM_BLOCK_ERROR;
 }
 
-inline bool mem_valid(mp_uint_t block){
+inline bool heap_valid(mp_uint_t block){
     if(block >= MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB){return 0;}
     if((ATB_GET_KIND(block) != AT_HEAD) && (ATB_GET_KIND(block) != AT_MARK)){return 0;}
     return 1;
@@ -112,23 +112,23 @@ inline bool mem_valid(mp_uint_t block){
  *  The following three functions are for setting, clearing and getting the
  *  "mark" used during garbage collection
  */
-inline void mem_set_mark(mp_uint_t block){
+inline void heap_set_mark(mp_uint_t block){
     assert(ATB_GET_KIND(block) == AT_HEAD);
     ATB_HEAD_TO_MARK(block);
 }
 
-inline void mem_clear_mark(mp_uint_t block){
+inline void heap_clear_mark(mp_uint_t block){
     assert(ATB_GET_KIND(block) == AT_MARK);
     ATB_MARK_TO_HEAD(block);
 }
 
-inline int8_t mem_get_mark(mp_uint_t block){
+inline int8_t heap_get_mark(mp_uint_t block){
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
     return ATB_GET_KIND(block) == AT_MARK;
 }
 
-void mem_free(mp_uint_t block) {
-    if(mem_valid(block)){
+void heap_free(mp_uint_t block) {
+    if(heap_valid(block)){
         if (ATB_GET_KIND(block) == AT_HEAD) {
             // set the last_free pointer to this block if it's earlier in the heap
            if (block / MEM_BLOCKS_PER_ATB < MEM_STATE_MEM(gc_last_free_atb_index)) {
@@ -147,7 +147,7 @@ void mem_free(mp_uint_t block) {
     }
 }
 
-mp_uint_t mem_alloc(mp_uint_t n_bytes) {
+mp_uint_t heap_alloc(mp_uint_t n_bytes) {
     mp_uint_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
 
@@ -198,19 +198,19 @@ found:
 }
 
 
-mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
+mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
     // check for pure allocation
     if (block == MEM_BLOCK_ERROR) {
-        return mem_alloc(n_bytes);
+        return heap_alloc(n_bytes);
     }
 
     // check for pure free
     if (n_bytes == 0) {
-        mem_free(block);
+        heap_free(block);
         return MEM_BLOCK_ERROR;
     }
 
-    if (!mem_valid(block)){return MEM_BLOCK_ERROR;}
+    if (!heap_valid(block)){return MEM_BLOCK_ERROR;}
 
     // compute number of new blocks that are requested
     mp_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
@@ -273,18 +273,18 @@ mp_uint_t mem_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
 
     // can't resize inplace; try to find a new contiguous chain
     //
-    mp_uint_t block_out = mem_alloc(n_bytes);
+    mp_uint_t block_out = heap_alloc(n_bytes);
 
     // check that the alloc succeeded
     if (block_out == MEM_BLOCK_ERROR) {return MEM_BLOCK_ERROR;}
 
     DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
-    memcpy(mem_void_p(block_out), mem_void_p(block), n_blocks * BYTES_PER_BLOCK);
-    mem_free(block);
+    memcpy(heap_void_p(block_out), heap_void_p(block), n_blocks * BYTES_PER_BLOCK);
+    heap_free(block);
     return block_out;
 }
 
-void mem_info(mem_info_t *info) {
+void heap_info(heap_info_t *info) {
     info->total = (MEM_STATE_MEM(gc_pool_end) - MEM_STATE_MEM(gc_pool_start)) * sizeof(mp_uint_t);
     info->used = 0;
     info->free = 0;
@@ -329,7 +329,7 @@ void mem_info(mem_info_t *info) {
     info->free *= BYTES_PER_BLOCK;
 }
 
-void mem_dump_alloc_table(void) {
+void heap_dump_alloc_table(void) {
     static const mp_uint_t DUMP_BYTES_PER_LINE = 64;
     #if !EXTENSIVE_HEAP_PROFILING
     // When comparing heap output we don't want to print the starting

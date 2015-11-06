@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,7 +33,7 @@
 #include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "py/mem.h"
+#include "py/heap_basic.h"
 
 #if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_BASIC
 
@@ -47,7 +48,7 @@
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // initialize the underlying memory manager
-    mem_init(start, end);
+    heap_init(start, end);
 
 #if MICROPY_ENABLE_FINALISER
     mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
@@ -84,9 +85,9 @@ bool gc_is_locked(void) {
 
 
 #define VERIFY_MARK_AND_PUSH(ptr) \
-    if(mem_valid(block)){ \
-        if(!mem_get_mark(block)){ \
-            mem_set_mark(block); \
+    if(heap_valid(block)){ \
+        if(!heap_get_mark(block)){ \
+            heap_set_mark(block); \
             if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
                 *MP_STATE_MEM(gc_sp)++ = block; \
             } else { \
@@ -99,10 +100,10 @@ STATIC void gc_drain_stack(void) {
     while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
         // pop the next block off the stack
         mp_uint_t block = *--MP_STATE_MEM(gc_sp);
-        mp_uint_t size_ints = mem_sizeof(block) / sizeof(mp_uint_t);
+        mp_uint_t size_ints = heap_sizeof(block) / sizeof(mp_uint_t);
 
     /*    // check this block's children*/
-        mp_uint_t *scan = (mp_uint_t*)mem_void_p(block);
+        mp_uint_t *scan = (mp_uint_t*)heap_void_p(block);
         for (mp_uint_t i = size_ints; i > 0; i--, scan++) {
             block = BLOCK_FROM_PTR(*scan);
             VERIFY_MARK_AND_PUSH(block);
@@ -116,7 +117,7 @@ STATIC void gc_deal_with_stack_overflow(void) {
         MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
         // scan entire memory looking for blocks which have been marked but not their children
-        for (mp_uint_t block = mem_first(); block != MEM_BLOCK_ERROR; block = mem_next(block)) {
+        for (mp_uint_t block = heap_first(); block != MEM_BLOCK_ERROR; block = heap_next(block)) {
             // trace (again) if mark bit set
             *MP_STATE_MEM(gc_sp)++ = block;
             gc_drain_stack();
@@ -129,13 +130,13 @@ STATIC void gc_sweep(void) {
     MP_STATE_MEM(gc_collected) = 0;
     #endif
     // free unmarked heads and their tails
-    for (mp_uint_t block = mem_first(); block != MEM_BLOCK_ERROR; block = mem_next(block)) {
-        if(mem_get_mark(block)) {
-            mem_clear_mark(block);
+    for (mp_uint_t block = heap_first(); block != MEM_BLOCK_ERROR; block = heap_next(block)) {
+        if(heap_get_mark(block)) {
+            heap_clear_mark(block);
         } else {
 #if MICROPY_ENABLE_FINALISER        // python __del__ method
             if (FTB_GET(block)) {
-                mp_obj_t obj = (mp_obj_t)mem_void_p(block);
+                mp_obj_t obj = (mp_obj_t)heap_void_p(block);
                 if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
                     // if the object has a type then see if it has a __del__ method
                     mp_obj_t dest[2];
@@ -152,9 +153,9 @@ STATIC void gc_sweep(void) {
             #if MICROPY_PY_GC_COLLECT_RETVAL
             MP_STATE_MEM(gc_collected)++;
             #endif
-            assert(!mem_get_mark(block));
-            assert(!mem_get_mark(BLOCK_FROM_PTR((mp_uint_t)mem_void_p(block))));
-            mem_free(block);  // don't use gc free, as it clears the gc_collected
+            assert(!heap_get_mark(block));
+            assert(!heap_get_mark(BLOCK_FROM_PTR((mp_uint_t)heap_void_p(block))));
+            heap_free(block);  // don't use gc free, as it clears the gc_collected
         }
     }
 }
@@ -185,7 +186,7 @@ void gc_collect_end(void) {
 }
 
 void gc_info(gc_info_t *info) {
-    mem_info((mem_info_t *)info);
+    heap_info((heap_info_t *)info);
 }
 
 void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
@@ -193,11 +194,11 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
         return NULL;
     }
     if(!n_bytes){return NULL;}
-    mp_uint_t block = mem_alloc(n_bytes);
+    mp_uint_t block = heap_alloc(n_bytes);
     if(block == MEM_BLOCK_ERROR){
         if(!MP_STATE_MEM(gc_auto_collect_enabled)){return NULL;}
         gc_collect();
-        block = mem_alloc(n_bytes);
+        block = heap_alloc(n_bytes);
     }
     if(block == MEM_BLOCK_ERROR){return NULL;}  // failed after garbage collect
 
@@ -206,11 +207,11 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
-    memset((byte*)mem_void_p(block) + n_bytes, 0, mem_sizeof(block) - n_bytes);
+    memset((byte*)heap_void_p(block) + n_bytes, 0, heap_sizeof(block) - n_bytes);
 #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
         // clear type pointer in case it is never set
-        ((mp_obj_base_t*)mem_void_p(block))->type = MP_OBJ_NULL;
+        ((mp_obj_base_t*)heap_void_p(block))->type = MP_OBJ_NULL;
         // set mp_obj flag only if it has a finaliser
         FTB_SET(block);
     }
@@ -219,7 +220,7 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
 #if EXTENSIVE_HEAP_PROFILING
     gc_dump_alloc_table();
 #endif
-    return mem_void_p(block);
+    return heap_void_p(block);
 }
 
 
@@ -234,18 +235,18 @@ void gc_free(void *ptr_in) {
     /*DEBUG_printf("gc_free(%p)\n", ptr);*/
 
     mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
-    if (mem_valid(block)) {
+    if (heap_valid(block)) {
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
         #endif
-        mem_free(block);
+        heap_free(block);
     } else {
         /*assert(!"bad free");*/
     }
 }
 
 mp_uint_t gc_nbytes(const void *ptr_in) {
-    return mem_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
+    return heap_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
 }
 
 #if 0
@@ -415,7 +416,7 @@ void gc_dump_info(void) {
 }
 
 void gc_dump_alloc_table(void) {
-    mem_dump_alloc_table();
+    heap_dump_alloc_table();
 }
 
 #if DEBUG_PRINT
