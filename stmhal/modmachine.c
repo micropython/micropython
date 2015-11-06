@@ -391,6 +391,12 @@ STATIC mp_obj_t machine_reset_cause(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 #endif
 
+STATIC mp_obj_t machine_repl_setinterrupt(mp_obj_t interrupt_char) {
+    mp_hal_set_interrupt_char(mp_obj_get_int(interrupt_char));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_repl_setinterrupt_obj, machine_repl_setinterrupt);
+
 STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_machine) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
@@ -411,6 +417,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_repl_setinterrupt),   (mp_obj_t)&machine_repl_setinterrupt_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
 
