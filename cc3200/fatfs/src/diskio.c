@@ -12,7 +12,8 @@
 #include "py/mpconfig.h"
 #include "py/runtime.h"
 #include "py/obj.h"
-#include "diskio.h"             /* FatFs lower layer API */
+#include "lib/fatfs/ff.h"
+#include "lib/fatfs/diskio.h"   /* FatFs lower layer API */
 #include "sflash_diskio.h"      /* Serial flash disk IO API */
 #include "sd_diskio.h"          /* SDCARD disk IO API */
 #include "inc/hw_types.h"
@@ -22,7 +23,6 @@
 #include "prcm.h"
 #include "pybrtc.h"
 #include "timeutils.h"
-#include "ff.h"
 #include "pybsd.h"
 #include "moduos.h"
 
@@ -35,7 +35,7 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-    if (pdrv == FLASH) {
+    if (pdrv == PD_FLASH) {
         return sflash_disk_status();
     } else {
         os_fs_mount_t *mount_obj;
@@ -57,7 +57,7 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-    if (pdrv == FLASH) {
+    if (pdrv == PD_FLASH) {
         if (RES_OK != sflash_disk_init()) {
             return STA_NOINIT;
         }
@@ -84,7 +84,7 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-    if (pdrv == FLASH) {
+    if (pdrv == PD_FLASH) {
         return sflash_disk_read(buff, sector, count);
     } else {
         os_fs_mount_t *mount_obj;
@@ -115,7 +115,7 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-    if (pdrv == FLASH) {
+    if (pdrv == PD_FLASH) {
         return sflash_disk_write(buff, sector, count);
     } else {
         os_fs_mount_t *mount_obj;
@@ -147,7 +147,7 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-    if (pdrv == FLASH) {
+    if (pdrv == PD_FLASH) {
         switch (cmd) {
         case CTRL_SYNC:
             return sflash_disk_flush();
