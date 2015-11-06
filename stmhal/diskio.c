@@ -34,7 +34,7 @@
 
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"        /* FatFs lower layer API */
-#include "lib/fatfs/diskio.h"        /* FatFs lower layer API */
+#include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
@@ -50,10 +50,6 @@ const PARTITION VolToPart[] = {
     */
 };
 
-/* Definitions of physical drive number for each media */
-#define PD_FLASH (0)
-#define PD_SDCARD (1)
-#define PD_USER (2)
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
