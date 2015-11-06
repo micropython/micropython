@@ -76,6 +76,19 @@
 
 #define MICROPY_OBJ_REPR_C (2)
 
+// A MicroPython object is a 64-bit word having the following form (called R):
+//  - seeeeeee eeeeffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff 64-bit fp, e != 0x7ff
+//  - s1111111 11110000 00000000 00000000 00000000 00000000 00000000 00000000 +/- inf
+//  - 01111111 11111000 00000000 00000000 00000000 00000000 00000000 00000000 normalised nan
+//  - 01111111 11111101 00000000 00000000 iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int
+//  - 01111111 11111110 00000000 00000000 qqqqqqqq qqqqqqqq qqqqqqqq qqqqqqq1 str
+//  - 01111111 11111100 00000000 00000000 pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
+// Stored as O = R + 0x8004000000000000, retrieved as R = O - 0x8004000000000000.
+// This makes pointers have all zeros in the top 32 bits.
+// Small-ints and strs have 1 as LSB to make sure they don't look like pointers
+// to the garbage collector.
+#define MICROPY_OBJ_REPR_D (3)
+
 #ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_A)
 #endif

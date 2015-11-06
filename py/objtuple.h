@@ -34,6 +34,12 @@ typedef struct _mp_obj_tuple_t {
     mp_obj_t items[];
 } mp_obj_tuple_t;
 
+typedef struct _mp_rom_obj_tuple_t {
+    mp_obj_base_t base;
+    mp_uint_t len;
+    mp_rom_obj_t items[];
+} mp_rom_obj_tuple_t;
+
 void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in);
 mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
@@ -43,10 +49,10 @@ mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in);
 extern const mp_obj_type_t mp_type_attrtuple;
 
 #define MP_DEFINE_ATTRTUPLE(tuple_obj_name, fields, nitems, ...) \
-    const mp_obj_tuple_t tuple_obj_name = { \
+    const mp_rom_obj_tuple_t tuple_obj_name = { \
         .base = {&mp_type_attrtuple}, \
         .len = nitems, \
-        .items = { __VA_ARGS__ , (void*)fields } \
+        .items = { __VA_ARGS__ , MP_ROM_PTR((void*)fields) } \
     }
 
 #if MICROPY_PY_COLLECTIONS
