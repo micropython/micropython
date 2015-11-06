@@ -38,6 +38,10 @@ DRESULT disk_read (BYTE pdrv, BYTE* buff, DWORD sector, UINT count);
 DRESULT disk_write (BYTE pdrv, const BYTE* buff, DWORD sector, UINT count);
 DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
 
+/* Definitions of physical drive number for each media */
+#define PD_FLASH  (0)   /* Map FLASH drive to drive number 0 */
+#define PD_SDCARD (1)   /* Map SDCARD drive to drive number 1 */
+#define PD_USER   (2)   /* Map USER mounts to drive number 2 */
 
 /* Disk Status Bits (DSTATUS) */
 
