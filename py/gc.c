@@ -454,6 +454,9 @@ void gc_free(void *ptr_in) {
     if (VERIFY_PTR(ptr)) {
         mp_uint_t block = BLOCK_FROM_PTR(ptr);
         if (ATB_GET_KIND(block) == AT_HEAD) {
+            #if MICROPY_ENABLE_FINALISER
+            FTB_CLEAR(block);
+            #endif
             // set the last_free pointer to this block if it's earlier in the heap
             if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
                 MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
