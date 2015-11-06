@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/mem.h"
 
-#if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_BASIC
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

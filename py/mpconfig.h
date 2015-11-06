@@ -297,6 +297,17 @@
 #define MICROPY_ENABLE_GC (0)
 #endif
 
+// garbage collector types
+// - original lightest weight garbage collector
+#define MICROPY_GC_ORIG (0)
+// - experimental pluggable garbage collector
+#define MICROPY_GC_BASIC (1)
+
+// Which default garbage collector to use
+#ifndef MICROPY_GC
+#define MICROPY_GC (MICROPY_GC_ORIG)
+#endif
+
 // Whether to enable finalisers in the garbage collector (ie call __del__)
 #ifndef MICROPY_ENABLE_FINALISER
 #define MICROPY_ENABLE_FINALISER (0)

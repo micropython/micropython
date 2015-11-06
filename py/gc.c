@@ -33,7 +33,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#if MICROPY_ENABLE_GC
+#if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_ORIG
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

@@ -103,6 +103,8 @@
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_MACHINE          (1)
 
+#define MICROPY_GC (MICROPY_GC_BASIC)
+
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
