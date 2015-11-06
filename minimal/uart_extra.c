@@ -5,11 +5,11 @@
 
 /*
  * Extra UART functions
- * These can be either optimized for a particular port, or reference,
- * not very optimal implementation below can be used.
+ * These can be either optimized for a particular port, or reference
+ * implementation below can be used.
  */
 
-// Send "cooked" string of length, where every occurance of
+// Send "cooked" string of given length, where every occurance of
 // LF character is replaced with CR LF.
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     while (len--) {
