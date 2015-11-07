@@ -118,8 +118,8 @@ void init_flash_fs(uint reset_mode) {
 
 int main(int argc, char **argv) {
     int stack_dummy;
+soft_reset:
     stack_top = (char*)&stack_dummy;
-
 	memset(heap, 0, sizeof(heap));
     gc_init(heap, heap + sizeof(heap));
 
@@ -152,10 +152,8 @@ int main(int argc, char **argv) {
     }
 
     // pyexec_friendly_repl();
-    mp_hal_stdout_tx_strn("\nTerminated", 0);
-    mp_deinit();
-    while (1)
-        __asm__ volatile("wfi");
+    printf("soft reboot\n");
+    goto soft_reset;
     return 0;
 }
 
