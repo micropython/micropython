@@ -1,0 +1,23 @@
+# google style = if-else on formatted line
+style=google
+indent=spaces=4
+convert-tabs
+# brackets
+attach-inlines
+attach-classes
+## no non-bracketed else-ifs
+add-brackets
+
+# indents
+indent-classes
+indent-switches
+# indent-cases -- we don't do this
+indent-preproc-define
+indent-preproc-cond
+indent-col1-comments
+# whitespace
+pad-oper
+pad-header
+unpad-paren
+align-pointer=type
+align-reference=name

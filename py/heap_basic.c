@@ -71,14 +71,14 @@
 #endif
 
 #define VERIFY_PTR(ptr) ( \
-        (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-        && ptr >= (mp_uint_t)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-    )
+                          (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
+                          && ptr >= (mp_uint_t)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
+                          && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
+                        )
 
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
-void heap_init(void *start, void *end) {
+void heap_init(void* start, void* end) {
     // align end pointer on block boundary
     end = (void*)((mp_uint_t)end & (~(BYTES_PER_BLOCK - 1)));
     DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
@@ -90,11 +90,11 @@ void heap_init(void *start, void *end) {
     // => T = A * (1 + HEAP_BLOCKS_PER_ATB / BLOCKS_PER_FTB + HEAP_BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     mp_uint_t total_byte_len = (byte*)end - (byte*)start;
     // TODO: this should be completely separated from the finalizer
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * HEAP_BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * HEAP_BLOCKS_PER_ATB * BYTES_PER_BLOCK);
-#else
+    #else
     MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
-#endif
+    #endif
 
     MP_STATE_MEM(gc_alloc_table_start) = (byte*)start;
 
@@ -112,24 +112,24 @@ void heap_init(void *start, void *end) {
 
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB);
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
-#endif
+    #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     mp_uint_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
     MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len);
-#endif
+    #endif
 
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     assert((byte*)MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
-#endif
+    #endif
 
-#if MICROPY_ENABLE_FINALISER
+    #if MICROPY_ENABLE_FINALISER
     // clear FTBs
     memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-#endif
+    #endif
 
     // unlock the GC
     MP_STATE_MEM(gc_lock_depth) = 0;
@@ -138,14 +138,16 @@ void heap_init(void *start, void *end) {
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 }
 
-mp_uint_t heap_first(){
+mp_uint_t heap_first() {
     for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB; block++) {
-        if(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD){return block;}
+        if (ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD) {
+            return block;
+        }
     }
     return MEM_BLOCK_ERROR;
 }
 
-mp_uint_t heap_sizeof(mp_uint_t block){
+mp_uint_t heap_sizeof(mp_uint_t block) {
     mp_uint_t n_blocks = 0;
     do {
         n_blocks += 1;
@@ -157,13 +159,13 @@ mp_uint_t heap_sizeof(mp_uint_t block){
 /**
  *  get void pointer from block
  */
-inline void *heap_void_p(mp_uint_t block){
+inline void* heap_void_p(mp_uint_t block) {
     assert(VERIFY_PTR(PTR_FROM_BLOCK(block)));
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
-    return (void *)PTR_FROM_BLOCK(block);
+    return (void*)PTR_FROM_BLOCK(block);
 }
 
-inline mp_uint_t heap_block(const void *ptr){
+inline mp_uint_t heap_block(const void* ptr) {
     return BLOCK_FROM_PTR((mp_uint_t) ptr);
 }
 
@@ -171,7 +173,7 @@ inline mp_uint_t heap_block(const void *ptr){
 /**
  *  get the next allocated block of memory
  */
-mp_uint_t heap_next(mp_uint_t block){
+mp_uint_t heap_next(mp_uint_t block) {
     block++;
     for (; block < MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
@@ -183,48 +185,52 @@ mp_uint_t heap_next(mp_uint_t block){
     return MEM_BLOCK_ERROR;
 }
 
-inline bool heap_valid(mp_uint_t block){
-    if(block >= MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB){return 0;}
-    if((ATB_GET_KIND(block) != AT_HEAD) && (ATB_GET_KIND(block) != AT_MARK)){return 0;}
+inline bool heap_valid(mp_uint_t block) {
+    if (block >= MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB) {
+        return 0;
+    }
+    if ((ATB_GET_KIND(block) != AT_HEAD) && (ATB_GET_KIND(block) != AT_MARK)) {
+        return 0;
+    }
     return 1;
 }
 
 // GC mark support
-inline void heap_set_mark(mp_uint_t block){
+inline void heap_set_mark(mp_uint_t block) {
     assert(ATB_GET_KIND(block) == AT_HEAD);
     ATB_HEAD_TO_MARK(block);
 }
 
-inline void heap_clear_mark(mp_uint_t block){
+inline void heap_clear_mark(mp_uint_t block) {
     assert(ATB_GET_KIND(block) == AT_MARK);
     ATB_MARK_TO_HEAD(block);
 }
 
-inline int8_t heap_get_mark(mp_uint_t block){
+inline int8_t heap_get_mark(mp_uint_t block) {
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
     return ATB_GET_KIND(block) == AT_MARK;
 }
 
 
 #if MICROPY_ENABLE_FINALISER
-inline bool heap_finalizer_get(const mp_uint_t block){
+inline bool heap_finalizer_get(const mp_uint_t block) {
     return FTB_GET(block);
 }
 
-inline void heap_finalizer_set(const mp_uint_t block){
+inline void heap_finalizer_set(const mp_uint_t block) {
     FTB_SET(block);
 }
 
-inline void heap_finalizer_clear(const mp_uint_t block){
+inline void heap_finalizer_clear(const mp_uint_t block) {
     FTB_CLEAR(block);
 }
 #endif
 
 void heap_free(mp_uint_t block) {
-    if(heap_valid(block)){
+    if (heap_valid(block)) {
         if (ATB_GET_KIND(block) == AT_HEAD) {
             // set the last_free pointer to this block if it's earlier in the heap
-           if (block / HEAP_BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+            if (block / HEAP_BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
                 MP_STATE_MEM(gc_last_free_atb_index) = block / HEAP_BLOCKS_PER_ATB;
             }
             // free head and all of its tail blocks
@@ -256,10 +262,38 @@ mp_uint_t heap_alloc(mp_uint_t n_bytes) {
     // look for a run of n_blocks available blocks
     for (i = MP_STATE_MEM(gc_last_free_atb_index); i < MP_STATE_MEM(gc_alloc_table_byte_len); i++) {
         byte a = MP_STATE_MEM(gc_alloc_table_start)[i];
-        if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * HEAP_BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
-        if (ATB_1_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * HEAP_BLOCKS_PER_ATB + 1; goto found; } } else { n_free = 0; }
-        if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * HEAP_BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
-        if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * HEAP_BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
+        if (ATB_0_IS_FREE(a)) {
+            if (++n_free >= n_blocks) {
+                i = i * HEAP_BLOCKS_PER_ATB + 0;
+                goto found;
+            }
+        } else {
+            n_free = 0;
+        }
+        if (ATB_1_IS_FREE(a)) {
+            if (++n_free >= n_blocks) {
+                i = i * HEAP_BLOCKS_PER_ATB + 1;
+                goto found;
+            }
+        } else {
+            n_free = 0;
+        }
+        if (ATB_2_IS_FREE(a)) {
+            if (++n_free >= n_blocks) {
+                i = i * HEAP_BLOCKS_PER_ATB + 2;
+                goto found;
+            }
+        } else {
+            n_free = 0;
+        }
+        if (ATB_3_IS_FREE(a)) {
+            if (++n_free >= n_blocks) {
+                i = i * HEAP_BLOCKS_PER_ATB + 3;
+                goto found;
+            }
+        } else {
+            n_free = 0;
+        }
     }
     return MEM_BLOCK_ERROR; // nothing found!
 
@@ -303,7 +337,9 @@ mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const boo
         return MEM_BLOCK_ERROR;
     }
 
-    if (!heap_valid(block)){return MEM_BLOCK_ERROR;}
+    if (!heap_valid(block)) {
+        return MEM_BLOCK_ERROR;
+    }
 
     // compute number of new blocks that are requested
     mp_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
@@ -364,7 +400,7 @@ mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const boo
         return block;
     }
 
-    if(!allow_move){
+    if (!allow_move) {
         return MEM_BLOCK_ERROR;
     }
 
@@ -373,7 +409,9 @@ mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const boo
     mp_uint_t block_out = heap_alloc(n_bytes);
 
     // check that the alloc succeeded
-    if (block_out == MEM_BLOCK_ERROR) {return MEM_BLOCK_ERROR;}
+    if (block_out == MEM_BLOCK_ERROR) {
+        return MEM_BLOCK_ERROR;
+    }
 
     DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
     memcpy(heap_void_p(block_out), heap_void_p(block), n_blocks * BYTES_PER_BLOCK);
@@ -381,7 +419,7 @@ mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const boo
     return block_out;
 }
 
-void heap_info(heap_info_t *info) {
+void heap_info(heap_info_t* info) {
     info->total = (MP_STATE_MEM(gc_pool_end) - MP_STATE_MEM(gc_pool_start)) * sizeof(mp_uint_t);
     info->used = 0;
     info->free = 0;
@@ -462,7 +500,9 @@ void heap_dump_alloc_table(void) {
         }
         int c = ' ';
         switch (ATB_GET_KIND(bl)) {
-            case AT_FREE: c = '.'; break;
+            case AT_FREE:
+                c = '.';
+                break;
             /* this prints out if the object is reachable from BSS or STACK (for unix only)
             case AT_HEAD: {
                 c = 'h';
@@ -491,27 +531,35 @@ void heap_dump_alloc_table(void) {
             */
             /* this prints the uPy object type of the head block */
             case AT_HEAD: {
-                mp_uint_t *ptr = MP_STATE_MEM(gc_pool_start) + bl * WORDS_PER_BLOCK;
-                if (*ptr == (mp_uint_t)&mp_type_tuple) { c = 'T'; }
-                else if (*ptr == (mp_uint_t)&mp_type_list) { c = 'L'; }
-                else if (*ptr == (mp_uint_t)&mp_type_dict) { c = 'D'; }
+                mp_uint_t* ptr = MP_STATE_MEM(gc_pool_start) + bl * WORDS_PER_BLOCK;
+                if (*ptr == (mp_uint_t)&mp_type_tuple) {
+                    c = 'T';
+                } else if (*ptr == (mp_uint_t)&mp_type_list) {
+                    c = 'L';
+                } else if (*ptr == (mp_uint_t)&mp_type_dict) {
+                    c = 'D';
+                }
                 #if MICROPY_PY_BUILTINS_FLOAT
-                else if (*ptr == (mp_uint_t)&mp_type_float) { c = 'F'; }
+                else if (*ptr == (mp_uint_t)&mp_type_float) {
+                    c = 'F';
+                }
                 #endif
-                else if (*ptr == (mp_uint_t)&mp_type_fun_bc) { c = 'B'; }
-                else if (*ptr == (mp_uint_t)&mp_type_module) { c = 'M'; }
-                else {
+                else if (*ptr == (mp_uint_t)&mp_type_fun_bc) {
+                    c = 'B';
+                } else if (*ptr == (mp_uint_t)&mp_type_module) {
+                    c = 'M';
+                } else {
                     c = 'h';
                     #if 0
                     // This code prints "Q" for qstr-pool data, and "q" for qstr-str
                     // data.  It can be useful to see how qstrs are being allocated,
                     // but is disabled by default because it is very slow.
-                    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
+                    for (qstr_pool_t* pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
                         if ((qstr_pool_t*)ptr == pool) {
                             c = 'Q';
                             break;
                         }
-                        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+                        for (const byte** q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
                             if ((const byte*)ptr == *q) {
                                 c = 'q';
                                 break;
@@ -522,8 +570,12 @@ void heap_dump_alloc_table(void) {
                 }
                 break;
             }
-            case AT_TAIL: c = 't'; break;
-            case AT_MARK: c = 'm'; break;
+            case AT_TAIL:
+                c = 't';
+                break;
+            case AT_MARK:
+                c = 'm';
+                break;
         }
         mp_printf(&mp_plat_print, "%c", c);
     }
