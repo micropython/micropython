@@ -31,22 +31,15 @@
 
 #if MICROPY_ENABLE_GC
 
-#if MICROPY_GCREGS_SETJMP
-#include <setjmp.h>
-
-typedef jmp_buf regs_t;
-
-STATIC void gc_helper_get_regs(regs_t arr) {
-    setjmp(arr);
-}
-
-#else // !MICROPY_GCREGS_SETJMP
+// Even if we have specific support for an architecture, it is
+// possible to force use of setjmp-based implementation.
+#if !MICROPY_GCREGS_SETJMP
 
 // We capture here callee-save registers, i.e. ones which may contain
 // interesting values held there by our callers. It doesn't make sense
 // to capture caller-saved registers, because they, well, put on the
 // stack already by the caller.
-#ifdef __x86_64__
+#if defined(__x86_64__)
 typedef mp_uint_t regs_t[6];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
@@ -77,9 +70,9 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     arr[4] = r14;
     arr[5] = r15;
 }
-#endif
 
-#ifdef __i386__
+#elif defined(__i386__)
+
 typedef mp_uint_t regs_t[4];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
@@ -92,9 +85,9 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     arr[2] = edi;
     arr[3] = ebp;
 }
-#endif
 
-#if defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
+#elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
+
 typedef mp_uint_t regs_t[10];
 
 STATIC void gc_helper_get_regs(regs_t arr) {
@@ -119,8 +112,29 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     arr[8] = r12;
     arr[9] = r13;
 }
-#endif
+
+#else
+
+// If we don't have architecture-specific optimized support,
+// just fall back to setjmp-based implementation.
+#undef MICROPY_GCREGS_SETJMP
+#define MICROPY_GCREGS_SETJMP (1)
+
+#endif // Arch-specific selection
 #endif // !MICROPY_GCREGS_SETJMP
+
+// If MICROPY_GCREGS_SETJMP was requested explicitly, or if
+// we enabled it as a fallback above.
+#if MICROPY_GCREGS_SETJMP
+#include <setjmp.h>
+
+typedef jmp_buf regs_t;
+
+STATIC void gc_helper_get_regs(regs_t arr) {
+    setjmp(arr);
+}
+
+#endif // MICROPY_GCREGS_SETJMP
 
 void gc_collect(void) {
     //gc_dump_info();
