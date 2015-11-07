@@ -269,15 +269,66 @@ void SystemClock_Config(void)
      regarding system frequency refer to product datasheet.  */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /* Enable HSE Oscillator and activate PLL with HSE as source */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
-  RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
-  RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
-  RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
+    /* Enable HSE Oscillator and activate PLL with HSE as source */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+     clocks dividers */
+    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+
+#if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
+    #if defined(MCU_SERIES_F7)
+    #define FREQ_BKP BKP31R
+    #else
+    #define FREQ_BKP BKP19R
+    #endif
+    uint32_t m = RTC->FREQ_BKP;
+    uint32_t n;
+    uint32_t p;
+    uint32_t q;
+
+    // 222111HH HHQQQQPP nNNNNNNN NNMMMMMM
+    uint32_t h = (m >> 22) & 0xf;
+    uint32_t b1 = (m >> 26) & 0x7;
+    uint32_t b2 = (m >> 29) & 0x7;
+    q = (m >> 18) & 0xf;
+    p = (((m >> 16) & 0x03)+1)*2;
+    n = (m >> 6) & 0x3ff;
+    m &= 0x3f;
+    if ((q < 2) || (q > 15) || (p > 8) || (p < 2) || (n < 192) || (n >= 433) || (m < 2)) {
+        m = MICROPY_HW_CLK_PLLM;
+        n = MICROPY_HW_CLK_PLLN;
+        p = MICROPY_HW_CLK_PLLP;
+        q = MICROPY_HW_CLK_PLLQ;
+        h = RCC_SYSCLK_DIV1;
+        b1 = RCC_HCLK_DIV4;
+        b2 = RCC_HCLK_DIV2;
+    } else {
+        h <<= 4;
+        b1 <<= 10;
+        b2 <<= 10;
+    }
+    RCC_OscInitStruct.PLL.PLLM = m; //MICROPY_HW_CLK_PLLM;
+    RCC_OscInitStruct.PLL.PLLN = n; //MICROPY_HW_CLK_PLLN;
+    RCC_OscInitStruct.PLL.PLLP = p; //MICROPY_HW_CLK_PLLP;
+    RCC_OscInitStruct.PLL.PLLQ = q; //MICROPY_HW_CLK_PLLQ;
+
+    RCC_ClkInitStruct.AHBCLKDivider = h;  //RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = b1; //RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = b2; //RCC_HCLK_DIV2;
+#else
+    RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
+    RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
+    RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
+    RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
+
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+#endif
   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     __fatal_error("HAL_RCC_OscConfig");
@@ -290,14 +341,6 @@ void SystemClock_Config(void)
     __fatal_error("HAL_PWREx_EnableOverDrive");
   }
 #endif
-
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
-     clocks dividers */
-  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
 #if !defined(MICROPY_HW_FLASH_LATENCY)
 #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
