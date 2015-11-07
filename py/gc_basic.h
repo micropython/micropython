@@ -30,6 +30,9 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
+#include "py/heap_basic.h"
+
+#define gc_info_t heap_info_t
 
 void gc_init(void *start, void *end);
 
@@ -49,15 +52,6 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser);
 void gc_free(void *ptr);
 mp_uint_t gc_nbytes(const void *ptr);
 void *gc_realloc(void *ptr, mp_uint_t n_bytes, bool allow_move);
-
-typedef struct _gc_info_t {
-    mp_uint_t total;
-    mp_uint_t used;
-    mp_uint_t free;
-    mp_uint_t num_1block;
-    mp_uint_t num_2block;
-    mp_uint_t max_block;
-} gc_info_t;
 
 void gc_info(gc_info_t *info);
 void gc_dump_info(void);

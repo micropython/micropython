@@ -7,27 +7,10 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
-// TODO: items
-#define MEM_STATE_MEM(a)    MP_STATE_MEM(a)
-#define BLOCKS_PER_ATB      MEM_BLOCKS_PER_ATB
 
-
-#define MEM_BLOCKS_PER_ATB  (4)
-#define MEM_BLOCK_ERROR     (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB)
-#define MEM_ERROR           (NULL)
-
-typedef struct _mem_state_mem_t {
-    byte *gc_alloc_table_start;
-    mp_uint_t gc_alloc_table_byte_len;
-    mp_uint_t *gc_pool_start;
-    mp_uint_t *gc_pool_end;
-    mp_uint_t gc_last_free_atb_index;
-} mem_state_mem_t;
-
-extern mem_state_mem_t mem_state_mem;
-
-// TODO: uncomment
-//#define MEM_STATE_MEM(x) (mem_state_mem.x)
+#define HEAP_BLOCKS_PER_ATB     (4)
+#define MEM_BLOCK_ERROR         (MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB)
+#define HEAP_ERROR              (NULL)
 
 
 typedef struct _heap_info_t {
