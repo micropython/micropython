@@ -198,7 +198,7 @@ found:
 }
 
 
-mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
+mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const bool allow_move) {
     // check for pure allocation
     if (block == MEM_BLOCK_ERROR) {
         return heap_alloc(n_bytes);
@@ -269,6 +269,10 @@ mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes) {
             ATB_FREE_TO_TAIL(bl);
         }
         return block;
+    }
+
+    if(!allow_move){
+        return MEM_BLOCK_ERROR;
     }
 
     // can't resize inplace; try to find a new contiguous chain

@@ -249,35 +249,6 @@ mp_uint_t gc_nbytes(const void *ptr_in) {
     return heap_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
 }
 
-#if 0
-// old, simple realloc that didn't expand memory in place
-void *gc_realloc(void *ptr, mp_uint_t n_bytes) {
-    mp_uint_t n_existing = gc_nbytes(ptr);
-    if (n_bytes <= n_existing) {
-        return ptr;
-    } else {
-        bool has_finaliser;
-        if (ptr == NULL) {
-            has_finaliser = false;
-        } else {
-#if MICROPY_ENABLE_FINALISER
-            has_finaliser = FTB_GET(BLOCK_FROM_PTR((mp_uint_t)ptr));
-#else
-            has_finaliser = false;
-#endif
-        }
-        void *ptr2 = gc_alloc(n_bytes, has_finaliser);
-        if (ptr2 == NULL) {
-            return ptr2;
-        }
-        memcpy(ptr2, ptr, n_existing);
-        gc_free(ptr);
-        return ptr2;
-    }
-}
-
-#else // Alternative gc_realloc impl
-
 void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         return NULL;
@@ -293,118 +264,55 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
         gc_free(ptr_in);
         return NULL;
     }
+    mp_uint_t block_in = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
 
-    mp_uint_t ptr = (mp_uint_t)ptr_in;
-
-    // sanity check the ptr
-    if (!VERIFY_PTR(ptr)) {
-        return NULL;
+    if(!heap_valid(block_in)){return NULL;}
+    #if MICROPY_ENABLE_FINALISER
+    int8_t has_finaliser = FTB_GET(block_in);
+    #endif
+    mp_uint_t original_bytes = heap_sizeof(block_in);
+    mp_uint_t block = heap_realloc(block_in, n_bytes, allow_move);
+    if(block == MEM_BLOCK_ERROR){  // failed to allocate, no change in ptr
+        if(n_bytes <= original_bytes){return NULL;}  // garbage collection will not solve issue
+        if(!MP_STATE_MEM(gc_auto_collect_enabled)){return NULL;}
+        gc_collect();
+        block = heap_realloc(block_in, n_bytes, allow_move);
     }
+    if(block == MEM_BLOCK_ERROR){return NULL;}  // failed after garbage collect
 
-    // get first block
-    mp_uint_t block = BLOCK_FROM_PTR(ptr);
-
-    // sanity check the ptr is pointing to the head of a block
-    if (ATB_GET_KIND(block) != AT_HEAD) {
-        return NULL;
-    }
-
-    // compute number of new blocks that are requested
-    mp_uint_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
-
-    // Get the total number of consecutive blocks that are already allocated to
-    // this chunk of memory, and then count the number of free blocks following
-    // it.  Stop if we reach the end of the heap, or if we find enough extra
-    // free blocks to satisfy the realloc.  Note that we need to compute the
-    // total size of the existing memory chunk so we can correctly and
-    // efficiently shrink it (see below for shrinking code).
-    mp_uint_t n_free   = 0;
-    mp_uint_t n_blocks = 1; // counting HEAD block
-    mp_uint_t max_block = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
-    for (mp_uint_t bl = block + n_blocks; bl < max_block; bl++) {
-        byte block_type = ATB_GET_KIND(bl);
-        if (block_type == AT_TAIL) {
-            n_blocks++;
-            continue;
-        }
-        if (block_type == AT_FREE) {
-            n_free++;
-            if (n_blocks + n_free >= new_blocks) {
-                // stop as soon as we find enough blocks for n_bytes
-                break;
-            }
-            continue;
-        }
-        break;
-    }
-
-    // return original ptr if it already has the requested number of blocks
-    if (new_blocks == n_blocks) {
+    if(heap_sizeof(block) == original_bytes){  // block stayed the same size
+        assert(heap_void_p(block) == ptr_in);
         return ptr_in;
     }
-
-    // check if we can shrink the allocated area
-    if (new_blocks < n_blocks) {
-        // free unneeded tail blocks
-        for (mp_uint_t bl = block + new_blocks, count = n_blocks - new_blocks; count > 0; bl++, count--) {
-            ATB_ANY_TO_FREE(bl);
-        }
-
-        // set the last_free pointer to end of this block if it's earlier in the heap
-        if ((block + new_blocks) / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
-            MP_STATE_MEM(gc_last_free_atb_index) = (block + new_blocks) / BLOCKS_PER_ATB;
-        }
-
-        #if EXTENSIVE_HEAP_PROFILING
+    if(heap_sizeof(block) < original_bytes){  // block shrank
+        assert(heap_void_p(block) == ptr_in);
+#if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
-        #endif
-
-        return ptr_in;
-    }
-
-    // check if we can expand in place
-    if (new_blocks <= n_blocks + n_free) {
-        // mark few more blocks as used tail
-        for (mp_uint_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
-            assert(ATB_GET_KIND(bl) == AT_FREE);
-            ATB_FREE_TO_TAIL(bl);
-        }
-
-        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
-        memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
-
-        #if EXTENSIVE_HEAP_PROFILING
-        gc_dump_alloc_table();
-        #endif
-
-        return ptr_in;
-    }
-
-    if (!allow_move) {
-        // not allowed to move memory block so return failure
-        return NULL;
-    }
-
-    // can't resize inplace; try to find a new contiguous chain
-    void *ptr_out = gc_alloc(n_bytes,
-#if MICROPY_ENABLE_FINALISER
-        FTB_GET(block)
-#else
-        false
 #endif
-    );
-
-    // check that the alloc succeeded
-    if (ptr_out == NULL) {
-        return NULL;
+        return ptr_in;
     }
-
-    DEBUG_printf("gc_realloc(%p -> %p)\n", ptr_in, ptr_out);
-    memcpy(ptr_out, ptr_in, n_blocks * BYTES_PER_BLOCK);
-    gc_free(ptr_in);
-    return ptr_out;
+    // block grew
+    // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
+    memset((byte*)heap_void_p(block) + n_bytes, 0, heap_sizeof(block) - n_bytes);
+    if(block_in == block) {  // grew in place
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
+    } else {  // data moved, deal with finalizer
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table(); // dump because a pointer has been freed
+        #endif
+#if MICROPY_ENABLE_FINALISER
+        if (has_finaliser) { // deal with finalsier
+            // clear type pointer in case it is never set
+            ((mp_obj_base_t*)heap_void_p(block))->type = MP_OBJ_NULL;
+            // set mp_obj flag only if it has a finaliser
+            FTB_SET(block);
+        }
+#endif
+    }
+    return heap_void_p(block);
 }
-#endif // Alternative gc_realloc impl
 
 void gc_dump_info(void) {
     gc_info_t info;

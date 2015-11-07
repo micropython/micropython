@@ -125,7 +125,7 @@ extern int8_t       heap_get_mark(mp_uint_t block);
 
 void                heap_free(mp_uint_t block);
 mp_uint_t           heap_alloc(mp_uint_t n_bytes);
-mp_uint_t           heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes);
+mp_uint_t           heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const bool allow_move);
 
 void                heap_dump_alloc_table(void);
 void                heap_info(heap_info_t *info);
