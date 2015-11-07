@@ -1,3 +1,32 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Garrett Berg (vitiral@gmail.com)
+ * - Based on 2013, 2014 work by Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "py/mpconfig.h"
+#if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_BASIC
 
 #include <assert.h>
 #include <stdio.h>
@@ -7,7 +36,6 @@
 #include "py/heap_basic.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -33,19 +61,17 @@
 #define ATB_MASK_2 (0x30)
 #define ATB_MASK_3 (0xc0)
 
+// ATB = allocation table byte
+// 0b00 = FREE -- free block
+// 0b01 = HEAD -- head of a chain of blocks
+// 0b10 = TAIL -- in the tail of a chain of blocks
+// 0b11 = MARK -- marked head block
+
 #define ATB_0_IS_FREE(a) (((a) & ATB_MASK_0) == 0)
 #define ATB_1_IS_FREE(a) (((a) & ATB_MASK_1) == 0)
 #define ATB_2_IS_FREE(a) (((a) & ATB_MASK_2) == 0)
 #define ATB_3_IS_FREE(a) (((a) & ATB_MASK_3) == 0)
 
-/**
- *  /brief      ATB Access Macros
- *
- *              These macros are designed to mark "blocks" in the allocation table
- *              as used, free or marked (during garbage collection).
- *
- *              See the documentation for the Allocation Table for more information.
- */
 #define BLOCK_SHIFT(block) (2 * ((block) & (HEAP_BLOCKS_PER_ATB - 1)))
 #define ATB_GET_KIND(block) ((MP_STATE_MEM(gc_alloc_table_start)[(block) / HEAP_BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
 #define ATB_ANY_TO_FREE(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / HEAP_BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
@@ -71,10 +97,10 @@
 #endif
 
 #define VERIFY_PTR(ptr) ( \
-                          (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-                          && ptr >= (mp_uint_t)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-                          && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-                        )
+      (ptr & (BYTES_PER_BLOCK - 1)) == 0                   /* must be aligned on a block  */ \
+      && ptr >= (mp_uint_t)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
+      && ptr < (mp_uint_t)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool   */ \
+    )
 
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
@@ -138,7 +164,7 @@ void heap_init(void* start, void* end) {
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 }
 
-mp_uint_t heap_first() {
+mp_uint_t heap_first(void) {
     for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB; block++) {
         if (ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD) {
             return block;
@@ -155,10 +181,6 @@ mp_uint_t heap_sizeof(mp_uint_t block) {
     return n_blocks * BYTES_PER_BLOCK;
 }
 
-/*----------------------------------------------------------------------------*/
-/**
- *  get void pointer from block
- */
 inline void* heap_void_p(mp_uint_t block) {
     assert(VERIFY_PTR(PTR_FROM_BLOCK(block)));
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
@@ -169,10 +191,7 @@ inline mp_uint_t heap_block(const void* ptr) {
     return BLOCK_FROM_PTR((mp_uint_t) ptr);
 }
 
-/*----------------------------------------------------------------------------*/
-/**
- *  get the next allocated block of memory
- */
+// retrieve the next allocated block of memory. Used so gc can loop over memory
 mp_uint_t heap_next(mp_uint_t block) {
     block++;
     for (; block < MP_STATE_MEM(gc_alloc_table_byte_len) * HEAP_BLOCKS_PER_ATB; block++) {
@@ -212,6 +231,7 @@ inline int8_t heap_get_mark(mp_uint_t block) {
 }
 
 
+// uPy finaliser (__del__) support
 #if MICROPY_ENABLE_FINALISER
 inline bool heap_finalizer_get(const mp_uint_t block) {
     return FTB_GET(block);
@@ -405,7 +425,6 @@ mp_uint_t heap_realloc(const mp_uint_t block, const mp_uint_t n_bytes, const boo
     }
 
     // can't resize inplace; try to find a new contiguous chain
-    //
     mp_uint_t block_out = heap_alloc(n_bytes);
 
     // check that the alloc succeeded
@@ -443,17 +462,14 @@ void heap_info(heap_info_t* info) {
                 info->free += 1;
                 len = 0;
                 break;
-
             case AT_HEAD:
                 info->used += 1;
                 len = 1;
                 break;
-
             case AT_TAIL:
                 info->used += 1;
                 len += 1;
                 break;
-
             case AT_MARK:
                 // shouldn't happen
                 break;
@@ -503,32 +519,6 @@ void heap_dump_alloc_table(void) {
             case AT_FREE:
                 c = '.';
                 break;
-            /* this prints out if the object is reachable from BSS or STACK (for unix only)
-            case AT_HEAD: {
-                c = 'h';
-                void **ptrs = (void**)(void*)&mp_state_ctx;
-                mp_uint_t len = offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t);
-                for (mp_uint_t i = 0; i < len; i++) {
-                    mp_uint_t ptr = (mp_uint_t)ptrs[i];
-                    if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
-                        c = 'B';
-                        break;
-                    }
-                }
-                if (c == 'h') {
-                    ptrs = (void**)&c;
-                    len = ((mp_uint_t)MP_STATE_VM(stack_top) - (mp_uint_t)&c) / sizeof(mp_uint_t);
-                    for (mp_uint_t i = 0; i < len; i++) {
-                        mp_uint_t ptr = (mp_uint_t)ptrs[i];
-                        if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
-                            c = 'S';
-                            break;
-                        }
-                    }
-                }
-                break;
-            }
-            */
             /* this prints the uPy object type of the head block */
             case AT_HEAD: {
                 mp_uint_t* ptr = MP_STATE_MEM(gc_pool_start) + bl * WORDS_PER_BLOCK;
@@ -550,23 +540,6 @@ void heap_dump_alloc_table(void) {
                     c = 'M';
                 } else {
                     c = 'h';
-                    #if 0
-                    // This code prints "Q" for qstr-pool data, and "q" for qstr-str
-                    // data.  It can be useful to see how qstrs are being allocated,
-                    // but is disabled by default because it is very slow.
-                    for (qstr_pool_t* pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
-                        if ((qstr_pool_t*)ptr == pool) {
-                            c = 'Q';
-                            break;
-                        }
-                        for (const byte** q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-                            if ((const byte*)ptr == *q) {
-                                c = 'q';
-                                break;
-                            }
-                        }
-                    }
-                    #endif
                 }
                 break;
             }
@@ -581,3 +554,5 @@ void heap_dump_alloc_table(void) {
     }
     mp_print_str(&mp_plat_print, "\n");
 }
+
+#endif // GC_BASIC

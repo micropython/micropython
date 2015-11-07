@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Garrett Berg (vitiral@gmail.com)
+ * - Based on 2013, 2014 work by Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +25,18 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpstate.h"
+#if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_BASIC
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "py/mpstate.h"
-#include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "py/heap_basic.h"
 
-#if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_BASIC
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

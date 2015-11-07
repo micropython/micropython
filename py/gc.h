@@ -50,6 +50,10 @@ void gc_free(void *ptr);
 mp_uint_t gc_nbytes(const void *ptr);
 void *gc_realloc(void *ptr, mp_uint_t n_bytes, bool allow_move);
 
+#if MICROPY_ENABLE_GC && MICROPY_GC == MICROPY_GC_BASIC
+#include "py/heap_basic.h"
+#define gc_info_t heap_info_t
+#else
 typedef struct _gc_info_t {
     mp_uint_t total;
     mp_uint_t used;
@@ -58,6 +62,7 @@ typedef struct _gc_info_t {
     mp_uint_t num_2block;
     mp_uint_t max_block;
 } gc_info_t;
+#endif
 
 void gc_info(gc_info_t *info);
 void gc_dump_info(void);
