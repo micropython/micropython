@@ -211,7 +211,7 @@ void rtc_init(void) {
         if (rtc_use_lse) {
             // fall back to LSI...
             rtc_use_lse = false;
-            PWR->CR |= PWR_CR_DBP;
+            HAL_PWR_EnableBkUpAccess();
             RTCHandle.State = HAL_RTC_STATE_RESET;
             if (HAL_RTC_Init(&RTCHandle) != HAL_OK) {
                 rtc_info = 0x0100ffff; // indicate error
