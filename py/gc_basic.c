@@ -45,6 +45,18 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#define BLOCK_SHIFT(block) (2 * ((block) & (MEM_BLOCKS_PER_ATB - 1)))
+#define ATB_GET_KIND(block) ((MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
+#define ATB_ANY_TO_FREE(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
+#define ATB_FREE_TO_HEAD(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] |= (AT_HEAD << BLOCK_SHIFT(block)); } while (0)
+#define ATB_FREE_TO_TAIL(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] |= (AT_TAIL << BLOCK_SHIFT(block)); } while (0)
+#define ATB_HEAD_TO_MARK(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
+#define ATB_MARK_TO_HEAD(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
+
+#define BLOCK_FROM_PTR(ptr) (((ptr) - (mp_uint_t)MEM_STATE_MEM(gc_pool_start)) / BYTES_PER_BLOCK)
+#define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (mp_uint_t)MEM_STATE_MEM(gc_pool_start)))
+#define ATB_FROM_BLOCK(bl) ((bl) / MEM_BLOCKS_PER_ATB)
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // initialize the underlying memory manager
@@ -105,7 +117,7 @@ STATIC void gc_drain_stack(void) {
     /*    // check this block's children*/
         mp_uint_t *scan = (mp_uint_t*)heap_void_p(block);
         for (mp_uint_t i = size_ints; i > 0; i--, scan++) {
-            block = BLOCK_FROM_PTR(*scan);
+            block = heap_block((void *) *scan);
             VERIFY_MARK_AND_PUSH(block);
         }
     }
@@ -154,7 +166,7 @@ STATIC void gc_sweep(void) {
             MP_STATE_MEM(gc_collected)++;
             #endif
             assert(!heap_get_mark(block));
-            assert(!heap_get_mark(BLOCK_FROM_PTR((mp_uint_t)heap_void_p(block))));
+            assert(!heap_get_mark(heap_block(heap_void_p(block))));
             heap_free(block);  // don't use gc free, as it clears the gc_collected
         }
     }
@@ -173,7 +185,7 @@ void gc_collect_start(void) {
 
 void gc_collect_root(void **ptrs, mp_uint_t len) {
     for (mp_uint_t i = 0; i < len; i++) {
-        mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptrs[i]);
+        mp_uint_t block = heap_block(ptrs[i]);
         VERIFY_MARK_AND_PUSH(block);
         gc_drain_stack();
     }
@@ -234,7 +246,7 @@ void gc_free(void *ptr_in) {
     /*mp_uint_t ptr = (mp_uint_t)ptr_in;*/
     /*DEBUG_printf("gc_free(%p)\n", ptr);*/
 
-    mp_uint_t block = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
+    mp_uint_t block = heap_block(ptr_in);
     if (heap_valid(block)) {
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
@@ -246,7 +258,7 @@ void gc_free(void *ptr_in) {
 }
 
 mp_uint_t gc_nbytes(const void *ptr_in) {
-    return heap_sizeof(BLOCK_FROM_PTR((mp_uint_t) ptr_in));
+    return heap_sizeof(heap_block(ptr_in));
 }
 
 void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
@@ -264,7 +276,7 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
         gc_free(ptr_in);
         return NULL;
     }
-    mp_uint_t block_in = BLOCK_FROM_PTR((mp_uint_t) ptr_in);
+    mp_uint_t block_in = heap_block(ptr_in);
 
     if(!heap_valid(block_in)){return NULL;}
     #if MICROPY_ENABLE_FINALISER
