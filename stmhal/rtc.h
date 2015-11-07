@@ -26,5 +26,11 @@
 
 extern RTC_HandleTypeDef RTCHandle;
 extern const mp_obj_type_t pyb_rtc_type;
+extern bool rtc_need_cleanup;
 
 void rtc_init(void);
+void rtc_cleanup(void);
+
+inline void do_rtc_cleanup(void) {
+    if (rtc_need_cleanup) rtc_cleanup();
+}
