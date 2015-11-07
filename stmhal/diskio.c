@@ -283,6 +283,7 @@ DWORD get_fattime (
     void
 )
 {
+    do_rtc_cleanup();
     RTC_TimeTypeDef time;
     RTC_DateTypeDef date;
     HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);

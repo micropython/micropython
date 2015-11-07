@@ -39,6 +39,7 @@
 #include "pin.h"
 #include "timer.h"
 #include "usb.h"
+#include "rtc.h"
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
@@ -279,6 +280,9 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         } else {
             RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
         }
+        uint32_t h = RCC_ClkInitStruct.AHBCLKDivider >> 4;
+        uint32_t b1 = RCC_ClkInitStruct.APB1CLKDivider >> 10;
+        uint32_t b2 = RCC_ClkInitStruct.APB2CLKDivider >> 10;
         if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
             goto fail;
         }
@@ -310,6 +314,19 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         // re-init TIM3 for USB CDC rate
         timer_tim3_init();
 
+        // qqqqqqqq pppppppp nnnnnnnn nnmmmmmm
+        // qqqqQQQQ ppppppPP nNNNNNNN NNMMMMMM
+        // 222111HH HHQQQQPP nNNNNNNN NNMMMMMM
+        p = (p/2)-1;
+#if defined(MCU_SERIES_F7)
+#define FREQ_BKP BKP31R
+#else
+#define FREQ_BKP BKP19R
+#endif
+        RTC->FREQ_BKP = m | (n << 6) | (p << 16) | (q << 18)
+                    | (h << 22)
+                    | (b1 << 26)
+                    | (b2 << 29);      // TSP_20151030
         return mp_const_none;
 
     fail:;
@@ -347,6 +364,7 @@ STATIC mp_obj_t machine_sleep(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 
 STATIC mp_obj_t machine_deepsleep(void) {
+    do_rtc_cleanup();    // TSP_20151103
 #if defined(MCU_SERIES_F7)
     printf("machine.deepsleep not supported yet\n");
 #else
