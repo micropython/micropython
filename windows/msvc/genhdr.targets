@@ -10,6 +10,7 @@
   <PropertyGroup>
     <DestDir>$(PyBuildDir)genhdr\</DestDir>
     <PySrcDir>$(PyBaseDir)py\</PySrcDir>
+    <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
   </PropertyGroup>
 
   <Target Name="MakeDestDir">
@@ -27,7 +28,7 @@
       <PyIncDirs Include="$(PyIncDirs)"/>
     </ItemGroup>
     <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /Fi$(PreProc) /P $(PySrcDir)qstrdefs.h"/>
-    <Exec Command="python $(PySrcDir)makeqstrdata.py $(PreProc) $(QstrDefs) > $(TmpFile)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(PreProc) $(QstrDefs) > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
@@ -36,7 +37,7 @@
       <DestFile>$(DestDir)mpversion.h</DestFile>
       <TmpFile>$(DestFile).tmp</TmpFile>
     </PropertyGroup>
-    <Exec Command="python $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
