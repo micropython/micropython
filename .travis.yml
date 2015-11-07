@@ -7,38 +7,12 @@ before_script:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
   - sudo apt-get update -qq
-  - sudo apt-get install -y python3.4 python3 gcc-4.7 gcc-multilib gcc-arm-none-eabi qemu-system mingw32
+  - sudo apt-get install -y python3.4 python3 gcc-4.7 gcc-multilib gcc-arm-none-eabi
   # For teensy build
   - sudo apt-get install realpath
-  # For coverage testing
-  - sudo pip install cpp-coveralls
 
 script:
-  - make -C minimal test
-  - make -C unix deplibs CC=gcc-4.7
-  - make -C unix CC=gcc-4.7
-  - make -C bare-arm
-  - make -C qemu-arm test
-  - make -C stmhal
-  - make -C stmhal -B MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
-  - make -C stmhal BOARD=STM32F4DISC
-  - make -C teensy
-  - make -C cc3200 BTARGET=application BTYPE=release
-  - make -C cc3200 BTARGET=bootloader  BTYPE=release
-  - make -C windows CROSS_COMPILE=i586-mingw32msvc-
-
-  # run tests without coverage info
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
-
-  # run tests with coverage info
-  - make -C unix CC=gcc-4.7 coverage
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
-
-after_success:
-  - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov-4.7) --gcov-options '\-o build-coverage/' --include py --include extmod)
-
-after_failure:
-  - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
-  - (grep "FAIL" qemu-arm/build/console.out)
+  - make -C stmhal BOARD=ESPRUINO_PICO
+  - make -C stmhal BOARD=CERB40
+  - make -C stmhal BOARD=NETDUINO_PLUS_2
+  - make -C stmhal BOARD=STM32F7DISC
