@@ -60,16 +60,25 @@ mem_state_mem_t mem_state_mem;
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (mp_uint_t)MEM_STATE_MEM(gc_pool_start)))
 #define ATB_FROM_BLOCK(bl) ((bl) / MEM_BLOCKS_PER_ATB)
 
+// upy finalizer support (__del__)
+#if MICROPY_ENABLE_FINALISER
+// FTB = finaliser table byte
+// if set, then the corresponding block may have a finaliser
 
-/*----------------------------------------------------------------------------*/
-/* return 1 if the pointer falls within the memory pool                       */
+#define BLOCKS_PER_FTB (8)
+
+#define FTB_GET(block) ((MEM_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] >> ((block) & 7)) & 1)
+#define FTB_SET(block) do { MEM_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] |= (1 << ((block) & 7)); } while (0)
+#define FTB_CLEAR(block) do { MEM_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
+#endif
+
 #define VERIFY_PTR(ptr) ( \
         (ptr & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
         && ptr >= (mp_uint_t)MEM_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
         && ptr < (mp_uint_t)MEM_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
     )
 
-
+#define MEM_STATE_MEM(a)    MP_STATE_MEM(a)
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void heap_init(void *start, void *end) {
@@ -110,6 +119,26 @@ void heap_init(void *start, void *end) {
     DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MEM_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
 #endif
     DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MEM_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+
+#if MICROPY_ENABLE_FINALISER
+    mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    MP_STATE_MEM(gc_finaliser_table_start) = MEM_STATE_MEM(gc_alloc_table_start) + MEM_STATE_MEM(gc_alloc_table_byte_len);
+#endif
+
+#if MICROPY_ENABLE_FINALISER
+    assert((byte*)MEM_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
+#endif
+
+#if MICROPY_ENABLE_FINALISER
+    // clear FTBs
+    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
+#endif
+
+    // unlock the GC
+    MP_STATE_MEM(gc_lock_depth) = 0;
+
+    // allow auto collection
+    MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 }
 
 mp_uint_t heap_first(){
@@ -163,11 +192,7 @@ inline bool heap_valid(mp_uint_t block){
     return 1;
 }
 
-/*----------------------------------------------------------------------------*/
-/**
- *  The following three functions are for setting, clearing and getting the
- *  "mark" used during garbage collection
- */
+// GC mark support
 inline void heap_set_mark(mp_uint_t block){
     assert(ATB_GET_KIND(block) == AT_HEAD);
     ATB_HEAD_TO_MARK(block);
@@ -182,6 +207,21 @@ inline int8_t heap_get_mark(mp_uint_t block){
     assert(ATB_GET_KIND(block) == AT_MARK || ATB_GET_KIND(block) == AT_HEAD);
     return ATB_GET_KIND(block) == AT_MARK;
 }
+
+
+#if MICROPY_ENABLE_FINALISER
+inline bool heap_finalizer_get(const mp_uint_t block){
+    return FTB_GET(block);
+}
+
+inline void heap_finalizer_set(const mp_uint_t block){
+    FTB_SET(block);
+}
+
+inline void heap_finalizer_clear(const mp_uint_t block){
+    FTB_CLEAR(block);
+}
+#endif
 
 void heap_free(mp_uint_t block) {
     if(heap_valid(block)){

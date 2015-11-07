@@ -12,25 +12,6 @@
 #define BLOCKS_PER_ATB      MEM_BLOCKS_PER_ATB
 
 
-// MOVE ,,,,
-#if MICROPY_ENABLE_FINALISER
-/**
- * /brief           The "finalizer" is the method that is called when an object is
- *                  freed/deleted. In python, it is created by creating the __del__
- *                  method.
- */
-// FTB = finaliser table byte
-// if set, then the corresponding block may have a finaliser
-
-#define BLOCKS_PER_FTB (8)
-
-#define FTB_GET(block) ((MEM_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] >> ((block) & 7)) & 1)
-#define FTB_SET(block) do { MEM_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] |= (1 << ((block) & 7)); } while (0)
-#define FTB_CLEAR(block) do { MEM_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
-#endif
-// ## Move ^^^^
-
-
 #define MEM_BLOCKS_PER_ATB  (4)
 #define MEM_BLOCK_ERROR     (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB)
 #define MEM_ERROR           (NULL)
@@ -71,6 +52,10 @@ int8_t              heap_ptr_valid(void *ptr);
 extern void         heap_set_mark(mp_uint_t block);
 extern void         heap_clear_mark(mp_uint_t block);
 extern int8_t       heap_get_mark(mp_uint_t block);
+
+bool heap_finalizer_get(const mp_uint_t block);
+void heap_finalizer_set(const mp_uint_t block);
+void heap_finalizer_clear(const mp_uint_t block);
 
 void                heap_free(mp_uint_t block);
 mp_uint_t           heap_alloc(mp_uint_t n_bytes);

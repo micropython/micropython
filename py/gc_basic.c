@@ -45,42 +45,11 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#define BLOCK_SHIFT(block) (2 * ((block) & (MEM_BLOCKS_PER_ATB - 1)))
-#define ATB_GET_KIND(block) ((MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
-#define ATB_ANY_TO_FREE(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
-#define ATB_FREE_TO_HEAD(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] |= (AT_HEAD << BLOCK_SHIFT(block)); } while (0)
-#define ATB_FREE_TO_TAIL(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] |= (AT_TAIL << BLOCK_SHIFT(block)); } while (0)
-#define ATB_HEAD_TO_MARK(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
-#define ATB_MARK_TO_HEAD(block) do { MEM_STATE_MEM(gc_alloc_table_start)[(block) / MEM_BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
-
-#define BLOCK_FROM_PTR(ptr) (((ptr) - (mp_uint_t)MEM_STATE_MEM(gc_pool_start)) / BYTES_PER_BLOCK)
-#define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (mp_uint_t)MEM_STATE_MEM(gc_pool_start)))
-#define ATB_FROM_BLOCK(bl) ((bl) / MEM_BLOCKS_PER_ATB)
-
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // initialize the underlying memory manager
     heap_init(start, end);
 
-#if MICROPY_ENABLE_FINALISER
-    mp_uint_t gc_finaliser_table_byte_len = (MEM_STATE_MEM(gc_alloc_table_byte_len) * MEM_BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
-    MP_STATE_MEM(gc_finaliser_table_start) = MEM_STATE_MEM(gc_alloc_table_start) + MEM_STATE_MEM(gc_alloc_table_byte_len);
-#endif
-
-#if MICROPY_ENABLE_FINALISER
-    assert((byte*)MEM_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
-#endif
-
-#if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-#endif
-
-    // unlock the GC
-    MP_STATE_MEM(gc_lock_depth) = 0;
-
-    // allow auto collection
-    MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 }
 
 void gc_lock(void) {
@@ -147,7 +116,7 @@ STATIC void gc_sweep(void) {
             heap_clear_mark(block);
         } else {
 #if MICROPY_ENABLE_FINALISER        // python __del__ method
-            if (FTB_GET(block)) {
+            if (heap_finalizer_get(block)) {
                 mp_obj_t obj = (mp_obj_t)heap_void_p(block);
                 if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
                     // if the object has a type then see if it has a __del__ method
@@ -159,7 +128,7 @@ STATIC void gc_sweep(void) {
                     }
                 }
                 // clear finaliser flag
-                FTB_CLEAR(block);
+                heap_finalizer_clear(block);
             }
 #endif
             #if MICROPY_PY_GC_COLLECT_RETVAL
@@ -225,7 +194,7 @@ void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser) {
         // clear type pointer in case it is never set
         ((mp_obj_base_t*)heap_void_p(block))->type = MP_OBJ_NULL;
         // set mp_obj flag only if it has a finaliser
-        FTB_SET(block);
+        heap_finalizer_set(block);
     }
 #endif
 
@@ -280,7 +249,7 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
 
     if(!heap_valid(block_in)){return NULL;}
     #if MICROPY_ENABLE_FINALISER
-    int8_t has_finaliser = FTB_GET(block_in);
+    int8_t has_finaliser = heap_finalizer_get(block_in);
     #endif
     mp_uint_t original_bytes = heap_sizeof(block_in);
     mp_uint_t block = heap_realloc(block_in, n_bytes, allow_move);
@@ -319,7 +288,7 @@ void *gc_realloc(void *ptr_in, mp_uint_t n_bytes, bool allow_move) {
             // clear type pointer in case it is never set
             ((mp_obj_base_t*)heap_void_p(block))->type = MP_OBJ_NULL;
             // set mp_obj flag only if it has a finaliser
-            FTB_SET(block);
+            heap_finalizer_set(block);
         }
 #endif
     }
