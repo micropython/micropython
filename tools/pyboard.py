@@ -47,6 +47,7 @@ except AttributeError:
     stdout = sys.stdout
 
 def stdout_write_bytes(b):
+    b = b.replace(b"\x04", b"")
     stdout.write(b)
     stdout.flush()
 
