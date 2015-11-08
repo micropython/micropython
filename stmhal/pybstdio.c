@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/stream.h"
 #include "py/mphal.h"
+#include "pybioctl.h"
 
 // TODO make stdin, stdout and stderr writable objects so they can
 // be changed by Python code.  This requires some changes, as these
@@ -85,6 +86,23 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
     }
 }
 
+STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    pyb_stdio_obj_t *self = self_in;
+
+    if (request == MP_IOCTL_SET_INTERRUPT_CHAR) {
+        if (self->fd == STDIO_FD_IN) {
+            mp_hal_set_interrupt_char((int)arg);
+            return 0;
+        } else {
+            *errcode = EPERM;
+            return MP_STREAM_ERROR;
+        }
+    } else {
+        *errcode = EINVAL;
+        return MP_STREAM_ERROR;
+    }
+}
+
 STATIC mp_obj_t stdio_obj___exit__(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
@@ -102,10 +120,13 @@ STATIC const mp_map_elem_t stdio_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_readlines), (mp_obj_t)&mp_stream_unbuffered_readlines_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ioctl), (mp_obj_t)&mp_stream_ioctl_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&mp_identity_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&mp_identity_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&stdio_obj___exit___obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IOCTL_SET_INTERRUPT_CHAR), MP_OBJ_NEW_SMALL_INT(MP_IOCTL_SET_INTERRUPT_CHAR) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
@@ -113,6 +134,7 @@ STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
 STATIC const mp_stream_p_t stdio_obj_stream_p = {
     .read = stdio_read,
     .write = stdio_write,
+    .ioctl = stdio_ioctl,
     .is_text = true,
 };
 

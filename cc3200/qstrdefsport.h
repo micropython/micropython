@@ -55,6 +55,10 @@ Q(WLAN_WAKE)
 Q(PIN_WAKE)
 Q(RTC_WAKE)
 
+// for pybstdio
+Q(ioctl)
+Q(IOCTL_SET_INTERRUPT_CHAR)
+
 // for wipy module
 Q(wipy)
 Q(heartbeat)

@@ -401,6 +401,25 @@ STATIC mp_obj_t stream_tell(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
+STATIC mp_obj_t stream_ioctl(mp_obj_t self, mp_obj_t request_in, mp_obj_t arg_in) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self;
+    if (o->type->stream_p == NULL || o->type->stream_p->ioctl == NULL) {
+        // CPython: io.UnsupportedOperation, OSError subclass
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
+    }
+
+    mp_uint_t request = (mp_uint_t)mp_obj_get_int(request_in);
+    // TODO: What to do about non-int args?
+    mp_uint_t arg = (mp_uint_t)mp_obj_get_int(arg_in);
+    int error;
+    mp_uint_t res = o->type->stream_p->ioctl(self, request, arg, &error);
+    if (res == MP_STREAM_ERROR) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    }
+    return mp_obj_new_int_from_uint(res);
+}
+MP_DEFINE_CONST_FUN_OBJ_3(mp_stream_ioctl_obj, stream_ioctl);
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);

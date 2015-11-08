@@ -452,6 +452,8 @@ soft_reset:
     // we can run Python scripts (eg boot.py), but anything that is configurable
     // by boot.py must be set after boot.py is run.
 
+    MP_STATE_PORT(mp_const_kbd_interrupt) = NULL;
+
     readline_init0();
     pin_init0();
     extint_init0();
