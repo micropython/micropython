@@ -63,8 +63,13 @@ Q(deepsleep)
 Q(adc)
 Q(vdd33)
 Q(chip_id)
+
+// spi flash
 Q(flash_id)
 Q(flash_read)
+Q(flash_write)
+Q(flash_erase)
+
 Q(sdk_version)
 Q(getaddrinfo)
 Q(send)

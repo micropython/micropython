@@ -39,6 +39,11 @@
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_MODULE_FROZEN       (1)
 
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN        (0)
+#define MICROPY_FATFS_LFN_CODE_PAGE     (1)
+#define MICROPY_FATFS_MAX_LFN           (MICROPY_ALLOC_PATH_MAX)
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)

@@ -50,6 +50,7 @@ LDFLAGS += --gc-sections
 endif
 
 SRC_C = \
+	diskio.c \
 	strtoll.c \
 	main.c \
 	esp_mphal.c \
@@ -67,10 +68,12 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
+	ffconf.c \
 	pybstdio.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
+	fatfs/ff.c \
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \

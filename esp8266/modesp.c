@@ -548,10 +548,38 @@ STATIC mp_obj_t esp_deepsleep(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 1, esp_deepsleep);
 
-STATIC mp_obj_t esp_flash_id() {
+STATIC mp_obj_t esp_flash_id(void) {
     return mp_obj_new_int(spi_flash_get_id());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
+
+STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
+    mp_int_t offset = mp_obj_get_int(offset_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+
+    SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
+    if (SPI_FLASH_RESULT_OK == res) {
+        return mp_const_none;
+    }
+    nlr_raise(mp_obj_new_exception_arg1(
+        &mp_type_OSError,
+        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
+
+STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
+    mp_int_t sector = mp_obj_get_int(sector_in);
+
+    SpiFlashOpResult res = spi_flash_erase_sector(sector);
+    if (SPI_FLASH_RESULT_OK == res) {
+        return mp_const_none;
+    }
+    nlr_raise(mp_obj_new_exception_arg1(
+        &mp_type_OSError,
+        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
 STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
@@ -574,8 +602,10 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_type), (mp_obj_t)&esp_sleep_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id), (mp_obj_t)&esp_flash_id_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_read), (mp_obj_t)&esp_flash_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id),     (mp_obj_t)&esp_flash_id_obj     },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_read),   (mp_obj_t)&esp_flash_read_obj   },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_write),  (mp_obj_t)&esp_flash_write_obj  },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_erase),  (mp_obj_t)&esp_flash_erase_obj  },
     #if MODESP_ESPCONN
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
