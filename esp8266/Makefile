@@ -80,6 +80,11 @@ STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
 	)
 
+FATFS_SRC_C = $(addprefix fatfs/,\
+	diskio.c \
+	flash.c \
+	)
+
 LIB_SRC_C = $(addprefix lib/,\
 	fatfs/ff.c \
 	libc/string0.c \
@@ -98,6 +103,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(FATFS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(FATFS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
