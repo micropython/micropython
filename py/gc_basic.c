@@ -224,6 +224,9 @@ void gc_free(void* ptr_in) {
 
     mp_uint_t block = heap_block(ptr_in);
     if (heap_valid(block)) {
+        #if MICROPY_ENABLE_FINALISER
+        heap_finalizer_clear(block);
+        #endif
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
         #endif
