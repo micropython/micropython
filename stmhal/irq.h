@@ -82,3 +82,5 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 #define IRQ_PRI_UART 0xd
 #define IRQ_SUBPRI_UART 0xd
 
+#define IRQ_PRI_SDIO    5
+#define IRQ_SUBPRI_SDIO 0
