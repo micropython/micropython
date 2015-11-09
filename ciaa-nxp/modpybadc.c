@@ -75,7 +75,7 @@ STATIC mp_obj_t pyb_adc_start_conversion(void) {
 	mp_hal_startADCconversion();
 	return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_adc_start_conversion_obj, pyb_adc_start_conversion);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_adc_start_conversion_obj, pyb_adc_start_conversion);
 
 
 

@@ -134,13 +134,44 @@ void Board_ADC_Init(void)
 	ADCValues[0]=0;
 	ADCValues[1]=0;
 	ADCValues[2]=0;
+
+
+        Chip_ADC_EnableChannel(LPC_ADC0, ADC_CH1, ENABLE);
+        Chip_ADC_EnableChannel(LPC_ADC0, ADC_CH2, ENABLE);
+        Chip_ADC_EnableChannel(LPC_ADC0, ADC_CH3, ENABLE);
+
+        Chip_ADC_Int_SetChannelCmd(LPC_ADC0, ADC_CH1, ENABLE);
+        Chip_ADC_Int_SetChannelCmd(LPC_ADC0, ADC_CH2, ENABLE);
+        Chip_ADC_Int_SetChannelCmd(LPC_ADC0, ADC_CH3, ENABLE);
+
+	//debug
+	/*
+        Chip_ADC_Init(LPC_ADC0, &(adcsData[0].setup));
+        adcsData[0].adc = LPC_ADC0;
+        Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
+
+	Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, ENABLE);
+	Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, ENABLE);
+
+
+        Board_UARTPutSTR("espero que termine chn 1");
+        while (Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH1, ADC_DR_DONE_STAT) != SET);
+
+        Board_UARTPutSTR("espero que termine chn 2");
+        while (Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH2, ADC_DR_DONE_STAT) != SET);
+
+
+
+	while(1);
+	*/
+
 }
 void Board_ADC_EnableChannel(uint8_t channelNumber)
 {
 	uint32_t index = 0; // always using ADC0
 
-        Chip_ADC_EnableChannel(adcsData[index].adc, getChannelFromNumber(channelNumber), ENABLE);
-        Chip_ADC_Int_SetChannelCmd(adcsData[index].adc, getChannelFromNumber(channelNumber), ENABLE);
+        Chip_ADC_EnableChannel(adcsData[index].adc, channelNumber, ENABLE);
+        Chip_ADC_Int_SetChannelCmd(adcsData[index].adc, channelNumber, ENABLE);
 }
 
 uint16_t Board_ADC_readValue(uint8_t channelNumber)
@@ -155,6 +186,7 @@ void Board_ADC_StartConversion(void)
         flagWaitingADCConv=1;
         Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
         while(flagWaitingADCConv==1); // wait until conversion is finished
+
 }
 /*
 void Board_ADC_SetSampleRate(uint32_t sampleRate)
@@ -169,11 +201,38 @@ void ADC0_IRQHandler (void)
    uint16_t value;
    uint32_t index = 0; // always using ADC0
    uint8_t i;
+/* 
    for(i=0; i<3; i++)
    {
        Chip_ADC_ReadValue(adcsData[index].adc, getChannelFromNumber(i+1), &value);
        ADCValues[i] = value;
+	char aux[200];
+	sprintf(aux,"chn:%d - lei: %d   ",i+1,value);
+	Board_UARTPutSTR(aux);
    }
+*/
+
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH1, ADC_DR_ADINT_STAT) == SET)
+	{
+		Board_UARTPutSTR("leo elvalor del ch1 ");
+	    Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH1, &value);
+	    ADCValues[0] = value;
+        }
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH2, ADC_DR_ADINT_STAT) == SET) {
+		Board_UARTPutSTR("leo elvalor del ch2 ");
+        Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH2, &value);
+        ADCValues[1] = value;
+	}
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH3, ADC_DR_ADINT_STAT) == SET) {
+		Board_UARTPutSTR("leo elvalor del ch3 ");
+        Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH3, &value);
+        ADCValues[2] = value;
+	}
+
+
    flagWaitingADCConv=0;
 }
 
