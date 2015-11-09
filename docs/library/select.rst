@@ -38,8 +38,14 @@ Methods
 
 .. method:: poll.register(obj[, eventmask])
 
-   Register ``obj`` for polling.  ``eventmask`` is 1 for read, 2 for
-   write, 3 for read-write.
+   Register ``obj`` for polling. ``eventmask`` is logical OR of:
+
+   * ``select.POLLIN``  - data available for reading
+   * ``select.POLLOUT`` - more data can be written
+   * ``select.POLLERR`` - error occurred
+   * ``select.POLLHUP`` - end of stream/connection termination detected
+
+   ``eventmask`` defaults to ``select.POLLIN | select.POLLOUT``.
 
 .. method:: poll.unregister(obj)
 
@@ -52,10 +58,10 @@ Methods
 .. method:: poll.poll([timeout])
 
    Wait for at least one of the registered objects to become ready. Returns
-   list of (``obj``, ``event``, ...) tuples, ``event`` element specifying
-   whether ``obj`` is ready for reading, writing, or both (see ``register``
-   method above). There may be other elements in tuple, depending on platform
-   and version, so don't assume that its size is 2. In case of timeout, an
-   empty list is returned.
+   list of (``obj``, ``event``, ...) tuples, ``event`` element specifies
+   which events happened with a stream and is a combination of `select.POLL*`
+   constants described above. There may be other elements in tuple, depending
+   on platform and version, so don't assume that its size is 2. In case of
+   timeout, an empty list is returned.
 
    Timeout is in milliseconds.
