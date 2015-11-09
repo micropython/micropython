@@ -117,7 +117,7 @@ STATIC bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num
     assert(label_num < emit->max_num_labels);
     if (emit->pass == MP_PASS_CODE_SIZE) {
         // check for duplicate label on first pass
-        for (int i = 0; i < emit->max_num_labels; i++) {
+        for (uint i = 0; i < emit->max_num_labels; i++) {
             if (emit->label_lookup[i] == label_id) {
                 return false;
             }
@@ -318,7 +318,7 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
         return 0;
     }
     qstr label_qstr = MP_PARSE_NODE_LEAF_ARG(pn);
-    for (int i = 0; i < emit->max_num_labels; i++) {
+    for (uint i = 0; i < emit->max_num_labels; i++) {
         if (emit->label_lookup[i] == label_qstr) {
             return i;
         }
@@ -537,7 +537,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     cc = cc_name_table[i].cc;
                 }
             }
-            if (cc == -1) {
+            if (cc == (mp_uint_t)-1) {
                 goto unknown_op;
             }
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
@@ -555,7 +555,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     break;
                 }
             }
-            if (cc == -1) {
+            if (cc == (mp_uint_t)-1) {
                 goto unknown_op;
             }
             const char *os = op_str + 2;
