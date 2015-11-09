@@ -39,7 +39,7 @@
 #include "usb.h"
 #endif
 #include "readline.h"
-#include "pyexec.h"
+#include "lib/utils/pyexec.h"
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;

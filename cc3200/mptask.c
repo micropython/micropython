@@ -43,7 +43,7 @@
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"
-#include "pyexec.h"
+#include "lib/utils/pyexec.h"
 #include "gccollect.h"
 #include "gchelper.h"
 #include "readline.h"

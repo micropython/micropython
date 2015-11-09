@@ -11,7 +11,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "gccollect.h"
-#include "pyexec.h"
+#include "lib/utils/pyexec.h"
 #include "readline.h"
 #include "lexermemzip.h"
 
