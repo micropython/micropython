@@ -65,16 +65,13 @@ BOOT_PY_SRC_C = $(addprefix py/,\
 	mpprint.c \
 	)
 
-BOOT_STM_SRC_C = $(addprefix stmhal/,\
-	printf.c \
-	)
-
 BOOT_LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
+	utils/printf.c \
 	)
 
 OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o) $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o) $(BOOT_MISC_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_C:.c=.o) $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o) $(BOOT_STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(BOOT_MAIN_SRC_C:.c=.o) $(BOOT_MAIN_SRC_S:.s=.o) $(BOOT_PY_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(BOOT_LIB_SRC_C:.c=.o))
 
 # Add the linker script

@@ -152,6 +152,7 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/printf.c \
 	)
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\
@@ -162,7 +163,6 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	irq.c \
 	lexerfatfs.c \
 	moduselect.c \
-	printf.c \
 	pybstdio.c \
 	)
 
