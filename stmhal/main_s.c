@@ -34,6 +34,7 @@
 #include "usbd_desc.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
+#include "usbd_msc_storage.h"
 
 
 #include "systick.h"
@@ -67,26 +68,6 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
 }
 
 
-// TIM3 is set-up for the USB CDC interface
-void timer_tim3_init(void) {
-    // set up the timer for USBD CDC
-    __TIM3_CLK_ENABLE();
-
-    TIM3_Handle.Instance = TIM3;
-    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
-    TIM3_Handle.Init.Prescaler = timer_get_source_freq(3) / 1000000 - 1; // TIM3 runs at 1MHz
-    TIM3_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    HAL_TIM_Base_Init(&TIM3_Handle);
-
-    HAL_NVIC_SetPriority(TIM3_IRQn, IRQ_PRI_TIM3, IRQ_SUBPRI_TIM3);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
-
-    if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
-        /* Starting Error */
-    }
-}
-
 // Get the frequency (in Hz) of the source clock for the given timer.
 // On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
 // If the APB prescaler is 1, then the timer clock is equal to its respective
@@ -108,6 +89,26 @@ static uint32_t timer_get_source_freq(uint32_t tim_id) {
         }
     }
     return source;
+}
+
+// TIM3 is set-up for the USB CDC interface
+void timer_tim3_init(void) {
+    // set up the timer for USBD CDC
+    __TIM3_CLK_ENABLE();
+
+    TIM3_Handle.Instance = TIM3;
+    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
+    TIM3_Handle.Init.Prescaler = timer_get_source_freq(3) / 1000000 - 1; // TIM3 runs at 1MHz
+    TIM3_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    HAL_TIM_Base_Init(&TIM3_Handle);
+
+    HAL_NVIC_SetPriority(TIM3_IRQn, IRQ_PRI_TIM3, IRQ_SUBPRI_TIM3);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+
+    if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
+        /* Starting Error */
+    }
 }
 
 void __attribute__((noreturn)) __fatal_error(const char *msg) {
@@ -167,6 +168,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 	USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&USBD_Descriptors, 0);
 	USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
 	USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
+	USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
 	USBD_Start(&hUSBDDevice);
 
     return true;
@@ -185,15 +187,12 @@ int main(void) {
     // set the system clock to be HSE
     SystemClock_Config();
 
-
     timer_tim3_init();
 
     // init USB device to default setting if it was not already configured
 	pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC, NULL);
-#include "diagnostic.h"
     while (1)
     {
-    	getPendingIrq();
     	HAL_Delay(250);
     }
 }

@@ -72,12 +72,12 @@
 
 #ifndef MINIMAL
 #include "py/obj.h"
-#include "pendsv.h"
-#include "extint.h"
+//#include "pendsv.h"
+//#include "extint.h"
 #include "timer.h"
-#include "uart.h"
-#include "storage.h"
-#include "can.h"
+//#include "uart.h"
+//#include "storage.h"
+//#include "can.h"
 #else
 extern TIM_HandleTypeDef TIM3_Handle;
 #endif
@@ -214,9 +214,7 @@ void DebugMon_Handler(void) {
   * @retval None
   */
 void PendSV_Handler(void) {
-#ifndef MINIMAL
-    pendsv_isr_handler();
-#endif
+    //pendsv_isr_handler();
 }
 
 /**
