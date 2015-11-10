@@ -110,7 +110,7 @@ SRC_LIB = $(addprefix lib/,\
 SRC_C = \
 	main.c \
 	system_stm32.c \
-	stm32_it.c \
+	stm32_it_m.c \
 	usbd_conf.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
