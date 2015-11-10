@@ -289,7 +289,7 @@ The board has only 1 PWM module with 11 outs. There is only one frequency value 
 
 ## ADC support over pyb.ADC
 
-Ejemplo:
+Example:
 ```python
 import pyb
 
