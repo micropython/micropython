@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
     mp_obj_list_init(mp_sys_argv, 0);
 
 	//debug
-
+	/*
 	Board_UARTPutSTR("inicio main adc");
 	//Board_ADC_EnableChannel(1);
 	//Board_ADC_EnableChannel(2);
@@ -74,30 +74,29 @@ int main(int argc, char **argv) {
 		uint16_t val;
 		char aux[64];
 		Board_UARTPutSTR(" inicio conversion ");
+
+		Board_ADC_EnableChannel(1);
 		Board_ADC_StartConversion();
 		mp_hal_milli_delay(100);
-
 		val = Board_ADC_readValue(1);
-		sprintf(aux," valor leido ch1 :%d\n",val);
+		sprintf(aux,"m valor leido ch1 :%d\n",val);
 		Board_UARTPutSTR(aux);
 
-Board_ADC_StartConversion();
-                mp_hal_milli_delay(100);
-
+		Board_ADC_EnableChannel(2);
+		Board_ADC_StartConversion();
                 val = Board_ADC_readValue(2);
-                sprintf(aux," valor leido ch2 :%d\n",val);
+                sprintf(aux,"m valor leido ch2 :%d\n",val);
                 Board_UARTPutSTR(aux);
 
-Board_ADC_StartConversion();
-                mp_hal_milli_delay(100);
-
+		Board_ADC_EnableChannel(3);
+		Board_ADC_StartConversion();
                 val = Board_ADC_readValue(3);
-                sprintf(aux," valor leido ch3 :%d\n",val);
+                sprintf(aux,"m valor leido ch3 :%d\n",val);
                 Board_UARTPutSTR(aux);
 
 		mp_hal_milli_delay(1000);
 	}
-
+	*/
 
 
     if (!pyexec_file("/Main.py")) {

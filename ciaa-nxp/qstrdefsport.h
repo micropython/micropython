@@ -125,7 +125,6 @@ Q(set_frequency)
 
 Q(ADC)
 Q(read)
-Q(start_conversion)
 
 /*
 Q(readall)

@@ -54,8 +54,6 @@ STATIC mp_obj_t pyb_adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     if (adc_id<=0 || adc_id>NUM_ADC_CHN) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ADC channel %d does not exist", adc_id));
     }
-    // enable ADC channel
-    mp_hal_enableADCchannel(adc_id);
 
     return (mp_obj_t)&pyb_adc_obj[adc_id-1];
 }
@@ -63,25 +61,17 @@ STATIC mp_obj_t pyb_adc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 // read method : read an ADC channel value after a conversion
 mp_obj_t pyb_adc_read(mp_obj_t self_in) {
     pyb_adc_obj_t *self = self_in;
+
+    mp_hal_enableADCchannel(ADC_ID(self));
+    mp_hal_startADCconversion();
     uint16_t val =  mp_hal_readADCchannel(ADC_ID(self));
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_adc_read_obj, pyb_adc_read);
 
 
-
-/// \static method start_conversion()
-STATIC mp_obj_t pyb_adc_start_conversion(void) {
-	mp_hal_startADCconversion();
-	return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_adc_start_conversion_obj, pyb_adc_start_conversion);
-
-
-
 STATIC const mp_map_elem_t pyb_adc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&pyb_adc_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_start_conversion), (mp_obj_t)&pyb_adc_start_conversion_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_adc_locals_dict, pyb_adc_locals_dict_table);
