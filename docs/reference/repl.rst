@@ -3,7 +3,7 @@ The MicroPython Interactive Interpreter Mode (aka REPL)
 
 This section covers some characteristics of the MicroPython Interactive
 Interpreter Mode. A commonly used term for this is REPL (read-eval-print-loop)
-which will used to refer to this interactive prompt.
+which will be used to refer to this interactive prompt.
 
 Auto-indent
 -----------
