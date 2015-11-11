@@ -6,7 +6,7 @@ $(error Invalid BOARD specified)
 endif
 
 # If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
+BUILD ?= build-$(BOARD)-min
 
 include ../py/mkenv.mk
 -include mpconfigport.mk
