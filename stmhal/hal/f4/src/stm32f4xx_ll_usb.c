@@ -317,20 +317,19 @@ HAL_StatusTypeDef USB_DevInit (USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
   return HAL_OK;
 }
 
-
 /**
   * @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
   * @param  USBx : Selected device
   * @param  num : FIFO number
-  *         This parameter can be a value from 1 to 15
-            15 means Flush all Tx FIFOs
+  *         This parameter can be a value from 1 to 16
+            16 means Flush all Tx FIFOs
   * @retval HAL status
   */
 HAL_StatusTypeDef USB_FlushTxFifo (USB_OTG_GlobalTypeDef *USBx, uint32_t num )
 {
   uint32_t count = 0;
  
-  USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( num << 5 )); 
+  USBx->GRSTCTL = ( USB_OTG_GRSTCTL_TXFFLSH |(uint32_t)( num << 6));
  
   do
   {
