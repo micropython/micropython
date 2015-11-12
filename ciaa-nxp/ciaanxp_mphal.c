@@ -64,6 +64,8 @@ void mp_hal_milli_delay(mp_uint_t ms) {
 		__WFI();
 }
 
+void mp_hal_delay_ms(mp_uint_t ms) { mp_hal_milli_delay(ms); }
+
 // STD Functions
 void mp_hal_set_interrupt_char(int c) {
     interrupt_char = c;

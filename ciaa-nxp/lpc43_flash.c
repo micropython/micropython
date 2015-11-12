@@ -28,6 +28,7 @@
 #include <iap.h>
 
 #include <ciaa-nxp/lpc43_flash.h>
+#include <py/mphal.h>
 
 /* Base address of the Flash sectors */
 #define BANK					IAP_FLASH_BANK_B
@@ -71,6 +72,7 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr,
 }
 
 static void __fatal(volatile char *msg) {
+    mp_hal_stdout_tx_str(msg);
 	while(1) {
 		__BKPT(0);
 	}
@@ -132,7 +134,9 @@ void flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
  }
  */
 
-void flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
+#define __RAM_FUNC __attribute__ ((section(".ramfunc")))
+
+void __RAM_FUNC flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint8_t e;
 	uint32_t Start = flash_get_sector_info(f_dst, NULL, NULL);
 	uint32_t End = flash_get_sector_info(f_dst + (n_words - 1) * 4, NULL, NULL);
@@ -141,6 +145,8 @@ void flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	e = Chip_IAP_CopyRamToFlash(f_dst, (uint32_t*) src, n_words * 4);
 	F_ASSERT(e != IAP_CMD_SUCCESS, "writing FAIL");
 	__enable_irq();
+    __asm__ volatile("DSB");
+    __asm__ volatile ("ISB");
 }
 
 /*
