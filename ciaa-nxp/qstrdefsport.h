@@ -134,6 +134,8 @@ Q(PWM)
 Q(duty_cycle)
 Q(set_frequency)
 
+Q(ADC)
+Q(read)
 
 /*
 Q(readall)

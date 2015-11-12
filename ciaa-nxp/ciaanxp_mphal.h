@@ -108,5 +108,9 @@ void mp_hal_setPWMFequency(uint32_t freq);
 void mp_hal_configurePWMOut(uint8_t outNumber);
 void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty);
 
+//ADC
+void mp_hal_enableADCchannel(uint8_t channelNumber);
+void mp_hal_startADCconversion(void);
+uint16_t mp_hal_readADCchannel(uint8_t channelNumber);
 
 #endif

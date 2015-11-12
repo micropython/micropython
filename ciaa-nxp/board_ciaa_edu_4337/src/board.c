@@ -85,6 +85,118 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+
+//================================================[ADC Management]========================================================
+typedef struct {
+	ADC_CLOCK_SETUP_T setup;
+	LPC_ADC_T* adc;
+}ADCData;
+
+static ADCData adcsData[2];
+volatile static uint8_t flagWaitingADCConv;
+volatile static uint16_t ADCValues[3];
+
+uint8_t getAdcValueIndexFromNumber(uint8_t channelNumber)
+{
+    switch(channelNumber)
+    {
+        case 1: return 0;
+        case 2: return 1;
+        case 3: return 2;
+    }
+    return 0;
+}
+void Board_ADC_Init(void)
+{
+	// ADC0
+	Chip_ADC_Init(LPC_ADC0, &(adcsData[0].setup));
+	adcsData[0].adc = LPC_ADC0;
+	Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
+	NVIC_EnableIRQ(ADC0_IRQn);
+
+        // ADC1
+        //Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
+        //adcsData[1].adc = LPC_ADC1;
+        //Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
+	//NVIC_EnableIRQ(ADC1_IRQn);
+
+	flagWaitingADCConv=0;
+	ADCValues[0]=0;
+	ADCValues[1]=0;
+	ADCValues[2]=0;
+
+	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH1, ENABLE);
+	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH2, ENABLE);
+	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH3, ENABLE);
+
+}
+void Board_ADC_EnableChannel(uint8_t channelNumber)
+{
+	uint32_t index = 0; // always using ADC0
+	switch(channelNumber)
+	{
+        	case 1:
+			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, ENABLE);
+			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
+			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
+			break;
+                case 2:
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, ENABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
+                        break;
+                case 3:
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, ENABLE);
+                        break;
+	}
+}
+
+uint16_t Board_ADC_readValue(uint8_t channelNumber)
+{
+	uint8_t index = getAdcValueIndexFromNumber(channelNumber);
+	return ADCValues[index];
+}
+
+void Board_ADC_StartConversion(void)
+{
+        uint32_t index = 0; // always using ADC0
+        flagWaitingADCConv=1;
+        Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+        while(flagWaitingADCConv==1); // wait until conversion is finished
+
+}
+
+
+void ADC0_IRQHandler (void)
+{
+   uint16_t value;
+   uint32_t index = 0; // always using ADC0
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH1, ADC_DR_ADINT_STAT) == SET)
+	{
+	    Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH1, &value);
+	    ADCValues[0] = value;
+        }
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH2, ADC_DR_ADINT_STAT) == SET)
+	{
+            Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH2, &value);
+            ADCValues[1] = value;
+	}
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH3, ADC_DR_ADINT_STAT) == SET) 
+	{
+            Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH3, &value);
+            ADCValues[2] = value;
+	}
+
+   flagWaitingADCConv=0;
+}
+
+//===========================================================================================================================
+
 //================================================[PWM Management]========================================================
 
 typedef struct {
@@ -1102,6 +1214,9 @@ void Board_Init(void)
 
 	/* Initialize Timers */
 	Board_TIMER_Init();
+
+	/* Initialize ADCs */
+	Board_ADC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }
