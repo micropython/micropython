@@ -30,6 +30,8 @@
 #include <ciaa-nxp/lpc43_flash.h>
 #include <py/mphal.h>
 
+#define __RAM_FUNC __attribute__ ((section(".ramfunc")))
+
 /* Base address of the Flash sectors */
 #define BANK					IAP_FLASH_BANK_B
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x1B000000) /* Base @ of Sector 0, 32 Kbytes */
@@ -85,7 +87,7 @@ static void __fatal(volatile char *msg) {
 	} \
 } while(0)
 
-void flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
+void __RAM_FUNC flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint8_t e;
 	// check there is something to write
 	if (n_words == 0) {
@@ -132,8 +134,6 @@ void flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
  }
  }
  */
-
-#define __RAM_FUNC __attribute__ ((section(".ramfunc")))
 
 void __RAM_FUNC flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint8_t e;
