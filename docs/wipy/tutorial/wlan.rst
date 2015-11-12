@@ -13,6 +13,15 @@ You can check the current mode (which is always ``WLAN.AP`` after power up)::
 
    >>> wlan.mode()
 
+.. warning:: 
+    When you change the WLAN mode following the instructions below, your WLAN 
+    connection to the WiPy will be broken. This means you will not be able 
+    to run these commands interactively over the WLAN.
+
+    There are two ways around this::
+     1. put this setup code into your :ref:`boot.py file<wipy_filesystem>` so that it gets executed automatically after reset.
+     2. :ref:`duplicate the REPL on UART <wipy_uart>`, so that you can run commands via USB.
+
 Connecting to your home router
 ------------------------------
 
@@ -21,6 +30,7 @@ it as a station::
 
    from network import WLAN
    wlan = WLAN(mode=WLAN.STA)
+
 
 Now you can proceed to scan for networks::
 

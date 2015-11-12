@@ -43,6 +43,8 @@ For instance, on a linux shell (when connected to the WiPy in AP mode)::
 
    $ telnet 192.168.1.1
 
+.. _wipy_filesystem:
+
 Local file system and FTP access
 --------------------------------
 
