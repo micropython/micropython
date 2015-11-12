@@ -6,9 +6,11 @@ interactive MicroPython prompt that you can access on the WiPy.  Using
 the REPL is by far the easiest way to test out your code and run commands.
 You can use the REPL in addition to writing scripts in ``main.py``.
 
+.. _wipy_uart:
+
 To use the REPL, you must connect to the WiPy either via :ref:`telnet <wipy_telnet>`,
-or with a USB to serial converter wired to the one the two UARTs on the
-WiPy. To enable REPL duplication on UART0 (the one accesible via the expansion board)
+or with a USB to serial converter wired to one of the two UARTs on the
+WiPy. To enable REPL duplication on UART0 (the one accessible via the expansion board)
 do::
 
    >>> from machine import UART
