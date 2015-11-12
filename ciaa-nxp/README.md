@@ -10,14 +10,30 @@ EDU-CIAA board support package
 [TOC]
 
 
-## Usage mode
-- Open py/Main.py and write the Python script
-- Execute `make download` to compile and download the program to EDU-CIAA board. This embed the py/Main.py code into firmware.
-- Optionaly, a python REPL interpreter is available via USB UART (DEBUG connector) into SERIAL2
+## Requeriments
+- gnu arm embedded (gcc+binutils+gdb)
+- gnu make
+- python3 with pyserial (`pip install pyserial` or `pip3 install pyserial `)
+- openocd
 
-## Included files
-- py/ -- Main.py place. This file contain the python code execute at startup.
-- py2c.py -- Python Scripy to embed the py/Main.py into firmware (via C array)
+## Usage mode
+- Execute `make clean all download` to compile and download the program to EDU-CIAA board.
+- Open a terminal on serial USB converter 2 (/dev/ttyUSB1 usualy)
+- A python REPL interpreter is available via USB UART (DEBUG connector) into SERIAL2
+
+##### Keybindings
+###### Fancy REPL (aka `>>>` promt)
+- CTRL+D restart interpreter (not board) aka soft reset
+- CTRL+C cancel actual command
+- CTRL+E enter paste mode (for paste code to editor)
+- CTRL+A enter RAW REPL (for code sending)
+
+###### RAW REPL (aka `>` promt)
+- CTRL+B exit RAW REPL
+
+###### PASTE MODE (aka `===` promt)
+- CTRL+D finish and process paste mode
+- CTRL+C cancel paste mode
 
 ## Hardware support module
 

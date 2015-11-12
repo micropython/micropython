@@ -9,14 +9,10 @@ Table of context
 </p>
 
 ### Modo de uso:
-- Editar py/Main.py y escribir el programa en Python
-- Ejecutar make download para compilar y bajar el programa en la EDU-CIAA. En el makefile se lanzara la herramienta py2c.py que generara el archivo ProgramScript.c con el script de Python.
-- Adicionalmente, se puede usar una linea de comandos python REPL en la UART del puerto USB de DEBUG.
 
-### Archivos incluidos:
-
-- py/ -- Aqui se encuentra el archivo Main.py donde escribiremos nuestro programa Python.
-- py2c.py -- Scripy en Python que convierte el script de Python Main.py en el archivo ProgramScript.c
+- Ejecutar `make clean all download` para compilar y bajar el programa en la EDU-CIAA.
+- Ejecute una terminal serial a 115200 en el segundo puerton serial del USB (usualmente /dev/ttyUSB1 en Linux)
+- Puede usar una linea de comandos python REPL en la UART del puerto USB de DEBUG.
 
 
 #### Soporte de hardware
