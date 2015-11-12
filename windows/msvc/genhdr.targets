@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="GenerateHeaders">
 
-  <Import Project="env.props" Condition="$(PyEnvIncluded)!=True"/>
+  <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
 
   <!--Generate qstrdefs.h and mpversion.h similar to what is done in py/py.mk-->
   <Target Name="GenerateHeaders" DependsOnTargets="MakeQstrData;MakeVersionHdr">
