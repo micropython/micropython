@@ -62,6 +62,7 @@ SRC_C = \
 	modpybdac.c \
 	modpybtimer.c \
 	modpybpwm.c \
+	modpybadc.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 	stmhal/fsusermount.c \

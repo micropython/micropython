@@ -224,3 +224,25 @@ Salidas de PWM disponibles: 0 a 10
 
 La placa posee un solo modulo PWM con 11 salidas asociadas, por esta razon todas las salidas comparten la misma frecuencia, pero tienen un valor de ciclo de actividad independiente.
 
+
+- Soporte para ADC mediante el modulo pyb.ADC
+
+Ejemplo:
+```python
+import pyb
+
+channel1 = pyb.ADC(1)
+channel2 = pyb.ADC(2)
+channel3 = pyb.ADC(3)
+
+while True:
+        v1 = channel1.read()
+        v2 = channel2.read()
+        v3 = channel3.read()
+        print("value ch1:"+str(v1))
+        print("value ch2:"+str(v2))
+        print("value ch3:"+str(v3))
+        pyb.delay(1000)
+```
+Entradas AD disponibles: 1,2 y 3. El resultado del metodo read es el valor de conversion (10 bit de resolucion en 3.3V)
+

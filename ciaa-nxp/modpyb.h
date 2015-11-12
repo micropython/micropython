@@ -34,6 +34,7 @@ extern const mp_obj_type_t pyb_extint_type;
 extern const mp_obj_type_t pyb_dac_type;
 extern const mp_obj_type_t pyb_timer_type;
 extern const mp_obj_type_t pyb_pwm_type;
+extern const mp_obj_type_t pyb_adc_type;
 
 extern const mp_obj_module_t pyb_module;
 
