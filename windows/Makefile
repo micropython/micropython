@@ -10,7 +10,7 @@ QSTR_DEFS = ../unix/qstrdefsport.h
 # include py core make definitions
 include ../py/py.mk
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I$(BUILD)
 

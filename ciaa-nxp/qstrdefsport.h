@@ -9,6 +9,7 @@ Q(LED)
 Q(on)
 Q(off)
 Q(toggle)
+Q(intensity)
 
 Q(Switch)
 Q(switch)
@@ -67,7 +68,13 @@ Q(hashlib)
 
 Q(uos)
 Q(os)
+
 Q(/)
+Q(/flash)
+Q(/flash/lib)
+Q(/sd)
+Q(/sd/lib)
+
 Q(flash)
 Q(sd)
 Q(sysname)
@@ -90,6 +97,11 @@ Q(urandom)
 Q(sync)
 Q(execfile)
 
+Q(readonly)
+Q(mkfs)
+Q(readblocks)
+Q(writeblocks)
+Q(flush)
 
 Q(ExtInt)
 Q(pin)
@@ -111,6 +123,19 @@ Q(CIRCULAR)
 Q(data)
 Q(freq)
 
+Q(Timer)
+Q(prescaler)
+Q(period)
+Q(counter)
+Q(interval)
+Q(source_freq)
+
+Q(PWM)
+Q(duty_cycle)
+Q(set_frequency)
+
+Q(ADC)
+Q(read)
 
 /*
 Q(readall)

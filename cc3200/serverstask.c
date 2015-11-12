@@ -28,8 +28,9 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/misc.h"
+#include "py/nlr.h"
+#include "py/mphal.h"
 #include "serverstask.h"
 #include "simplelink.h"
 #include "debug.h"
@@ -37,16 +38,8 @@
 #include "ftp.h"
 #include "pybwdt.h"
 #include "modusocket.h"
+#include "mpexception.h"
 
-
-/******************************************************************************
- DECLARE PRIVATE DEFINITIONS
- ******************************************************************************/
-
-#define SERVERS_DEF_USER                "micro"
-#define SERVERS_DEF_PASS                "python"
-#define SERVERS_DEF_TIMEOUT_MS          300000        // 5 minutes
-#define SERVERS_MIN_TIMEOUT_MS          5000          // 5 seconds
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
@@ -138,21 +131,21 @@ void TASK_Servers (void *pvParameters) {
 
         // move to the next cycle
         cycle = cycle ? false : true;
-        HAL_Delay(SERVERS_CYCLE_TIME_MS);
+        mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS);
     }
 }
 
 void servers_start (void) {
     servers_data.do_enable = true;
-    HAL_Delay (SERVERS_CYCLE_TIME_MS * 5);
+    mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 3);
 }
 
 void servers_stop (void) {
     servers_data.do_disable = true;
     do {
-        HAL_Delay (SERVERS_CYCLE_TIME_MS);
+        mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS);
     } while (servers_are_enabled());
-    HAL_Delay (SERVERS_CYCLE_TIME_MS * 5);
+    mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 3);
 }
 
 void servers_reset (void) {
@@ -165,7 +158,7 @@ bool servers_are_enabled (void) {
 
 void server_sleep_sockets (void) {
     sleep_sockets = true;
-    HAL_Delay (SERVERS_CYCLE_TIME_MS + 1);
+    mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS + 1);
 }
 
 void servers_close_socket (int16_t *sd) {
@@ -177,16 +170,19 @@ void servers_close_socket (int16_t *sd) {
 }
 
 void servers_set_login (char *user, char *pass) {
+    if (strlen(user) > SERVERS_USER_PASS_LEN_MAX || strlen(pass) > SERVERS_USER_PASS_LEN_MAX) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
     memcpy(servers_user, user, SERVERS_USER_PASS_LEN_MAX);
     memcpy(servers_pass, pass, SERVERS_USER_PASS_LEN_MAX);
 }
 
-bool servers_set_timeout (uint32_t timeout) {
+void servers_set_timeout (uint32_t timeout) {
     if (timeout < SERVERS_MIN_TIMEOUT_MS) {
-        return false;
+        // timeout is too low
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
     servers_data.timeout = timeout;
-    return true;
 }
 
 uint32_t servers_get_timeout (void) {

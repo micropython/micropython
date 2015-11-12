@@ -63,24 +63,6 @@ Usage Model:
     that pin has an effective 40k Ohm resistor pulling it to 3V3 or GND
     respectively (except pin Y5 which has 11k Ohm resistors).
 
-.. only:: port_wipy
-
-    Board pins are identified by their string id::
-
-        g = pyb.Pin('GP9', mode=pyb.Pin.OUT, pull=None, drive=pyb.Pin.MED_POWER, alt=-1)
-
-    You can also configure the Pin to generate interrupts. For instance::
-
-        def pincb(pin):
-            print(pin.id())
-
-        pin_int = pyb.Pin('GP10', mode=Pin.IN, pull=pyb.Pin.PULL_DOWN)
-        pin_int.irq(mode=pyb.Pin.IRQ_RISING, handler=pincb)
-        # the callback can be triggered manually
-        pin_int.irq()()
-        # to disable the callback
-        pin_int.irq().disable()
-
     Now every time a falling edge is seen on the gpio pin, the callback will be
     executed. Caution: mechanical push buttons have "bounce" and pushing or
     releasing a switch will often generate multiple edges.
@@ -149,42 +131,6 @@ Methods
        
        Returns: ``None``.
 
-.. only:: port_wipy
-
-    .. method:: pin.init(mode, pull, \*, drive, alt)
-    
-       Initialise the pin:
-
-         - ``mode`` can be one of:
-
-            - ``Pin.IN``  - input pin.
-            - ``Pin.OUT`` - output pin in push-pull mode.
-            - ``Pin.OPEN_DRAIN`` - output pin in open-drain mode.
-            - ``Pin.ALT`` - pin mapped to an alternate function.
-            - ``Pin.ALT_OPEN_DRAIN`` - pin mapped to an alternate function in open-drain mode.
-
-         - ``pull`` can be one of:
-
-            - ``None`` - no pull up or down resistor.
-            - ``Pin.PULL_UP`` - pull up resistor enabled.
-            - ``Pin.PULL_DOWN`` - pull down resitor enabled.
-
-         - ``drive`` can be one of:
-
-            - ``Pin.LOW_POWER`` - 2mA drive capability.
-            - ``Pin.MED_POWER`` - 4mA drive capability.
-            - ``Pin.HIGH_POWER`` - 6mA drive capability.
-
-         - ``alt`` is the number of the alternate function. Please refer to the
-           `pinout and alternate functions table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_
-           for the specific alternate functions that each pin supports.
-
-       Returns: ``None``.
-
-    .. method:: pin.id()
-
-       Get the pin id.
-
 .. method:: pin.value([value])
 
    Get or set the digital logic level of the pin:
@@ -238,62 +184,6 @@ Methods
     will match one of the allowed constants for the pull argument to the init
     function.
 
-.. only:: port_wipy
-
-    .. method:: pin([value])
-
-       Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
-       See **pin.value** for more details.
-
-    .. method:: pin.toggle()
-
-        Toggle the value of the pin.
-
-    .. method:: pin.mode([mode])
-
-        Get or set the pin mode.
-
-    .. method:: pin.pull([pull])
-
-        Get or set the pin pull.
-
-    .. method:: pin.drive([drive])
-
-        Get or set the pin drive strength.
-
-    .. method:: pin.irq(\*, trigger, priority=1, handler=None, wake=None)
-
-        Create a callback to be triggered when the input level at the pin changes.
-
-            - ``trigger`` configures the pin level which can generate an interrupt. Possible values are:
-
-                - ``Pin.IRQ_FALLING`` interrupt on falling edge.
-                - ``Pin.IRQ_RISING`` interrupt on rising edge.
-                - ``Pin.IRQ_LOW_LEVEL`` interrupt on low level.
-                - ``Pin.IRQ_HIGH_LEVEL`` interrupt on high level.
-              
-              The values can be *ORed* together, for instance mode=Pin.IRQ_FALLING | Pin.IRQ_RISING
-
-            - ``priority`` level of the interrupt. Can take values in the range 1-7.
-              Higher values represent higher priorities.
-            - ``handler`` is an optional function to be called when new characters arrive.
-            - ``wakes`` selects the power mode in which this interrupt can wake up the
-              board. Please note:
-
-              - If ``wake_from=pyb.Sleep.ACTIVE`` any pin can wake the board.
-              - If ``wake_from=pyb.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
-                ``GP11``, GP17`` or ``GP24`` can wake the board. Note that only 1
-                of this pins can be enabled as a wake source at the same time, so, only
-                the last enabled pin as a ``pyb.Sleep.SUSPENDED`` wake source will have effect.
-              - If ``wake_from=pyb.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
-                ``GP11``, ``GP17`` and ``GP24`` can wake the board. In this case all of the
-                6 pins can be enabled as a ``pyb.Sleep.HIBERNATE`` wake source at the same time.
-              - Values can be ORed to make a pin generate interrupts in more than one power
-                mode.
-
-            Returns a callback object.
-
-
 Constants
 ---------
 
@@ -334,44 +224,6 @@ Constants
     .. data:: Pin.PULL_UP
     
        enable the pull-up resistor on the pin
-
-.. only:: port_wipy
-
-    .. data:: Pin.IN
-
-    .. data:: Pin.OUT
-    
-    .. data:: Pin.OPEN_DRAIN
-
-    .. data:: Pin.ALT
-
-    .. data:: Pin.ALT_OPEN_DRAIN
-
-       Selects the pin mode.
-
-    .. data:: Pin.PULL_UP
-
-    .. data:: Pin.PULL_DOWN
-    
-       Selectes the wether there's pull up/down resistor.
-
-    .. data:: Pin.LOW_POWER
-
-    .. data:: Pin.MED_POWER
-
-    .. data:: Pin.HIGH_POWER
-
-        Selects the drive strength.
-
-    .. data:: Pin.IRQ_FALLING
-
-    .. data:: Pin.IRQ_RISING
-
-    .. data:: Pin.IRQ_LOW_LEVEL
-
-    .. data:: Pin.IRQ_HIGH_LEVEL
-
-        Selects the IRQ trigger type.
 
 .. only:: port_pyboard
 

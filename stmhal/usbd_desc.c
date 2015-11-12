@@ -33,16 +33,18 @@
 #include "usbd_desc.h"
 #include "usbd_conf.h"
 
+// need these headers just for MP_HAL_UNIQUE_ID_ADDRESS
+#include "py/misc.h"
+#include "py/mphal.h"
+
 // So we don't clash with existing ST boards, we use the unofficial FOSS VID.
 // This needs a proper solution.
 #define USBD_VID                      0xf055
 #define USBD_PID                      0x9800
 #define USBD_LANGID_STRING            0x409
-#define USBD_MANUFACTURER_STRING      "Micro Python"
+#define USBD_MANUFACTURER_STRING      "MicroPython"
 #define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
-#define USBD_SERIALNUMBER_HS_STRING   "000000000010"
 #define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
-#define USBD_SERIALNUMBER_FS_STRING   "000000000011"
 #define USBD_CONFIGURATION_HS_STRING  "Pyboard Config"
 #define USBD_INTERFACE_HS_STRING      "Pyboard Interface"
 #define USBD_CONFIGURATION_FS_STRING  "Pyboard Config"
@@ -81,7 +83,20 @@ __ALIGN_BEGIN static uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_EN
 __ALIGN_BEGIN static uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
 
 // set the VID, PID and device release number
-void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num) {
+void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num, int cdc_only) {
+    if (cdc_only) {
+        // Make it look like a Communications device if we're only
+        // using CDC. Otherwise, windows gets confused when we tell it that
+        // its a composite device with only a cdc serial interface.
+        hUSBDDeviceDesc[4] = 0x02;
+        hUSBDDeviceDesc[5] = 0x00;
+        hUSBDDeviceDesc[6] = 0x00;
+    } else {
+        // For the other modes, we make this look like a composite device.
+        hUSBDDeviceDesc[4] = 0xef;
+        hUSBDDeviceDesc[5] = 0x02;
+        hUSBDDeviceDesc[6] = 0x01;
+    }
     hUSBDDeviceDesc[8] = LOBYTE(vid);
     hUSBDDeviceDesc[9] = HIBYTE(vid);
     hUSBDDeviceDesc[10] = LOBYTE(pid);
@@ -145,11 +160,26 @@ STATIC uint8_t *USBD_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length) {
-    if(speed == USBD_SPEED_HIGH) {
-        USBD_GetString((uint8_t *)USBD_SERIALNUMBER_HS_STRING, USBD_StrDesc, length);
-    } else {
-        USBD_GetString((uint8_t *)USBD_SERIALNUMBER_FS_STRING, USBD_StrDesc, length);
-    }
+    // This document: http://www.usb.org/developers/docs/devclass_docs/usbmassbulk_10.pdf
+    // says that the serial number has to be at least 12 digits long and that
+    // the last 12 digits need to be unique. It also stipulates that the valid
+    // character set is that of upper-case hexadecimal digits.
+    //
+    // The onboard DFU bootloader produces a 12-digit serial number based on
+    // the 96-bit unique ID, so for consistency we go with this algorithm.
+    // You can see the serial number if you do:
+    //
+    //     dfu-util -l
+    //
+    // See: https://my.st.com/52d187b7 for the algorithim used.
+
+    uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
+    char serial_buf[16];
+    snprintf(serial_buf, sizeof(serial_buf),
+        "%02X%02X%02X%02X%02X%02X",
+        id[11], id[10] + id[2], id[9], id[8] + id[0], id[7], id[6]);
+
+    USBD_GetString((uint8_t *)serial_buf, USBD_StrDesc, length);
     return USBD_StrDesc;
 }
 

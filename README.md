@@ -8,19 +8,19 @@
 [istats-issue-img]: http://issuestats.com/github/micropython/micropython/badge/issue
 [istats-issue-repo]: http://issuestats.com/github/micropython/micropython
 
-The Micro Python project
-========================
+The MicroPython project
+=======================
 <p align="center">
   <img src="https://raw.githubusercontent.com/micropython/micropython/master/logo/upython-with-micro.jpg" alt="MicroPython Logo"/>
 </p>
 
-This is the Micro Python project, which aims to put an implementation
+This is the MicroPython project, which aims to put an implementation
 of Python 3.x on microcontrollers and small embedded systems.
 
 WARNING: this project is in beta stage and is subject to changes of the
 code-base, including project-wide name changes and API changes.
 
-Micro Python implements the entire Python 3.4 syntax (including exceptions,
+MicroPython implements the entire Python 3.4 syntax (including exceptions,
 "with", "yield from", etc.).  The following core datatypes are provided:
 str (including basic Unicode support), bytes, bytearray, tuple, list, dict,
 set, frozenset, array.array, collections.namedtuple, classes and instances.
@@ -33,19 +33,19 @@ Python board, the officially supported reference electronic circuit board.
 Major components in this repository:
 - py/ -- the core Python implementation, including compiler, runtime, and
   core library.
-- unix/ -- a version of Micro Python that runs on Unix.
-- stmhal/ -- a version of Micro Python that runs on the Micro Python board
+- unix/ -- a version of MicroPython that runs on Unix.
+- stmhal/ -- a version of MicroPython that runs on the MicroPython board
   with an STM32F405RG (using ST's Cube HAL drivers).
-- minimal/ -- a minimal Micro Python port. Start with this if you want
-  to port Micro Python to another microcontroller.
+- minimal/ -- a minimal MicroPython port. Start with this if you want
+  to port MicroPython to another microcontroller.
 
 Additional components:
-- bare-arm/ -- a bare minimum version of Micro Python for ARM MCUs. Used
+- bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
   mostly to control code size.
-- teensy/ -- a version of Micro Python that runs on the Teensy 3.1
+- teensy/ -- a version of MicroPython that runs on the Teensy 3.1
   (preliminary but functional).
-- pic16bit/ -- a version of Micro Python for 16-bit PIC microcontrollers.
-- cc3200/ -- a version of Micro Python that runs on the CC3200 from TI.
+- pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
+- cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
 - esp8266/ -- an experimental port for ESP8266 WiFi modules.
 - tests/ -- test framework and test scripts.
 - tools/ -- various tools, including the pyboard.py module.
@@ -74,6 +74,7 @@ Then to give it a try:
     $ ./micropython
     >>> list(5 * x + y for x in range(10) for y in [4, 2, 1])
 
+Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
@@ -93,9 +94,35 @@ Browse available modules on
 Standard library modules come from
 [micropython-lib](https://github.com/micropython/micropython-lib) project.
 
-(*) Debian/Ubuntu/Mint derivative Linux distros will require build-essentials,
-libffi-dev and pkg-config packages installed. If you have problems with some
-dependencies, they can be disabled in unix/mpconfigport.mk .
+External dependencies
+---------------------
+
+Building Unix version requires some dependencies installed. For
+Debian/Ubuntu/Mint derivative Linux distros, install `build-essential`
+(includes toolchain and make), `libffi-dev`, and `pkg-config` packages.
+
+Other dependencies can be built together with MicroPython. Oftentimes,
+you need to do this to enable extra features or capabilities. To build
+these additional dependencies, first fetch git submodules for them:
+
+    $ git submodule update --init
+
+Use this same command to get the latest versions of dependencies, as
+they are updated from time to time. After that, in `unix/` dir, execute:
+
+    $ make deplibs
+
+This will build all available dependencies (regardless whether they
+are used or not). If you intend to build MicroPython with additional
+options (like cross-compiling), the same set of options should be passed
+to `make deplibs`. To actually enabled use of dependencies, edit
+`unix/mpconfigport.mk` file, which has inline descriptions of the options.
+For example, to build SSL module (required for `upip` tool described above),
+set `MICROPY_PY_USSL` to 1.
+
+In `unix/mpconfigport.mk`, you can also disable some dependencies enabled
+by default, like FFI support, which requires libffi development files to
+be installed.
 
 The STM version
 ---------------
@@ -124,19 +151,3 @@ correct permissions.  Try then:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV10/firmware.dfu
 
-Building the documentation locally
-----------------------------------
-
-Install Sphinx, and optionally (for the RTD-styling), sphinx_rtd_theme,
-preferably in a virtualenv:
-
-     pip install sphinx
-     pip install sphinx_rtd_theme
-
-In `micropython/docs`, build the docs:
-
-    make MICROPY_PORT=<port_name> BUILDDIR=<port_name>/build html
-
-Where `<port_name>` can be `unix`, `pyboard`, `wipy` or `esp8266`.
-
-You'll find the index page at `micropython/docs/<port_name>/build/html/index.html`.

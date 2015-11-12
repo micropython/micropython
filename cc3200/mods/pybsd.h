@@ -26,12 +26,19 @@
 #ifndef PYBSD_H_
 #define PYBSD_H_
 
-#if MICROPY_HW_HAS_SDCARD
-extern const mp_obj_type_t pyb_sd_type;
+/******************************************************************************
+ DEFINE PUBLIC TYPES
+ ******************************************************************************/
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_t      pin_clk;
+    bool          enabled;
+} pybsd_obj_t;
 
-void pybsd_pre_init (void);
-void pybsd_disable (void);
-bool pybsd_is_mounted (void);
-#endif
+/******************************************************************************
+ DECLARE EXPORTED DATA
+ ******************************************************************************/
+extern pybsd_obj_t pybsd_obj;
+extern const mp_obj_type_t pyb_sd_type;
 
 #endif // PYBSD_H_

@@ -77,16 +77,16 @@ ServiceBinary=%12%\usbser.sys
 [SourceDisksFiles]
 [SourceDisksNames]
 [DeviceList]
-%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID}&MI_01
+%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC}
 
 [DeviceList.NTamd64]
-%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID}&MI_01
+%DESCRIPTION%=DriverInstall, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_MSC}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_00, USB\VID_${USB_VID}&PID_${USB_PID_CDC_HID}&MI_01, USB\VID_${USB_VID}&PID_${USB_PID_CDC}
 
 ;---------------------------------------------------------------------
 ;  String Definitions
 
 [Strings]
 MFGFILENAME="pybcdc"
-MFGNAME="Micro Python"
+MFGNAME="MicroPython"
 DESCRIPTION="Pyboard USB Comm Port"
 SERVICE="USB Serial Driver"

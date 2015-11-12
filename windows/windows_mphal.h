@@ -24,9 +24,10 @@
  * THE SOFTWARE.
  */
 
+#include "sleep.h"
 #include "unix/unix_mphal.h"
 
 #define MICROPY_HAL_HAS_VT100 (0)
 
 void mp_hal_move_cursor_back(unsigned int pos);
-void mp_hal_erase_line_from_cursor();
+void mp_hal_erase_line_from_cursor(unsigned int n_chars_to_erase);

@@ -29,6 +29,9 @@
 
 #include "py/mpz.h"
 
+// this is only needed for mp_not_implemented, which should eventually be removed
+#include "py/runtime.h"
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 
 #define DIG_SIZE (MPZ_DIG_SIZE)
@@ -236,12 +239,8 @@ STATIC mp_uint_t mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t j
         carry >>= DIG_SIZE;
     }
 
-    if (carry != 0) {
-        *idig = carry;
-    } else {
-        // remove trailing zeros
-        for (--idig; idig >= oidig && *idig == 0; --idig) {
-        }
+    // remove trailing zeros
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
     }
 
     return idig + 1 - oidig;
@@ -989,11 +988,9 @@ void mpz_not_inpl(mpz_t *dest, const mpz_t *z) {
 /* computes dest = lhs << rhs
    can have dest, lhs the same
 */
-void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
+void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
-    } else if (rhs < 0) {
-        mpz_shr_inpl(dest, lhs, -rhs);
     } else {
         mpz_need_dig(dest, lhs->len + (rhs + DIG_SIZE - 1) / DIG_SIZE);
         dest->len = mpn_shl(dest->dig, lhs->dig, lhs->len, rhs);
@@ -1004,11 +1001,9 @@ void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
 /* computes dest = lhs >> rhs
    can have dest, lhs the same
 */
-void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_int_t rhs) {
+void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
-    } else if (rhs < 0) {
-        mpz_shl_inpl(dest, lhs, -rhs);
     } else {
         mpz_need_dig(dest, lhs->len);
         dest->len = mpn_shr(dest->dig, lhs->dig, lhs->len, rhs);
@@ -1108,7 +1103,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
             dest->neg = 0;
         } else {
             // TODO both args are negative
-            assert(0);
+            mp_not_implemented("bignum and with negative args");
         }
     } else {
         // args have different sign
@@ -1141,7 +1136,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         mpz_need_dig(dest, lhs->len);
         // TODO
-        assert(0);
+        mp_not_implemented("bignum or with negative args");
 //        dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     }
 
@@ -1164,7 +1159,7 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     } else {
         mpz_need_dig(dest, lhs->len);
         // TODO
-        assert(0);
+        mp_not_implemented("bignum xor with negative args");
 //        dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     }
 

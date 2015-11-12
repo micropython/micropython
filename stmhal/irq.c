@@ -26,9 +26,8 @@
 
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "irq.h"
-
-#include MICROPY_HAL_H
 
 /// \moduleref pyb
 
@@ -48,7 +47,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
 /// respectively.  This return value can be passed to enable_irq to restore
 /// the IRQ to its original state.
 STATIC mp_obj_t pyb_disable_irq(void) {
-    return MP_BOOL(disable_irq() == IRQ_STATE_ENABLED);
+    return mp_obj_new_bool(disable_irq() == IRQ_STATE_ENABLED);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_disable_irq_obj, pyb_disable_irq);
 

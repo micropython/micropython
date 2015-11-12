@@ -18,6 +18,12 @@ def viper_ret_none() -> int:
     return None
 print(viper_ret_none())
 
+# return Ellipsis as object
+@micropython.viper
+def viper_ret_ellipsis() -> object:
+    return ...
+print(viper_ret_ellipsis())
+
 # 3 args
 @micropython.viper
 def viper_3args(a:int, b:int, c:int) -> int:

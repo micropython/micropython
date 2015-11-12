@@ -44,9 +44,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "portmacro.h"
-#include <osi.h>
-
-#include "rom.h"
+#include "osi.h"
 #include "rom_map.h"
 #include "inc/hw_types.h"
 #include "interrupt.h"
@@ -457,7 +455,7 @@ OsiReturnVal_e VStartSimpleLinkSpawnTask(unsigned portBASE_TYPE uxPriority)
     ASSERT (xSimpleLinkSpawnQueue != NULL);
 
     ASSERT (pdPASS == xTaskCreate( vSimpleLinkSpawnTask, ( portCHAR * ) "SLSPAWN",\
-    					           736 / sizeof(portSTACK_TYPE), NULL, uxPriority, &xSimpleLinkSpawnTaskHndl ));
+                                   896 / sizeof(portSTACK_TYPE), NULL, uxPriority, &xSimpleLinkSpawnTaskHndl ));
 
     return OSI_OK;
 }

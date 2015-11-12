@@ -22,11 +22,6 @@ UART objects can be created and initialised using::
     *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
     only 7 and 8 bits are supported.
 
-.. only:: port_wipy
-
-    Bits can be 5, 6, 7, 8.  Parity can be ``None``, ``UART.EVEN`` or ``UART.ODD``.  Stop can be 1 or 2.
-
-
 A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
 
@@ -50,12 +45,6 @@ using the standard stream methods::
     *Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
     Earlier versions use ``uart.send`` and ``uart.recv``.
 
-.. only:: port_wipy
-
-    To check if there is anything to be read, use::
-
-        uart.any()               # returns the number of characters available for reading
-
 Constructors
 ------------
 
@@ -76,14 +65,6 @@ Constructors
          - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
          - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
          - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
-
-.. only:: port_wipy
-
-    .. class:: pyb.UART(bus, ...)
-    
-       Construct a UART object on the given bus.  ``bus`` can be 0 or 1.
-       If the bus is not given, the default one will be selected (0) or the selection
-       will be made based on the given pins.
 
 Methods
 -------
@@ -114,22 +95,6 @@ Methods
        *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
        only 7 and 8 bits are supported.
 
-.. only:: port_wipy
-
-    .. method:: uart.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
-    
-       Initialise the UART bus with the given parameters:
-    
-         - ``baudrate`` is the clock rate.
-         - ``bits`` is the number of bits per character, 7, 8 or 9.
-         - ``parity`` is the parity, ``None``, ``UART.EVEN`` or ``UART.ODD``.
-         - ``stop`` is the number of stop bits, 1 or 2.
-         - ``pins`` is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).
-           Any of the pins can be None if one wants the UART to operate with limited functionality.
-           If the RTS pin is given the the RX pin must be given as well. The same applies to CTS. 
-           When no pins are given, then the default set of TX and RX pins is taken, and hardware 
-           flow control will be disabled. If pins=None, no pin assignment will be made.
-
 .. method:: uart.deinit()
 
    Turn off the UART bus.
@@ -145,12 +110,6 @@ Methods
       Write a single character on the bus.  ``char`` is an integer to write.
       Return value: ``None``.
 
-.. only:: port_wipy
-
-    .. method:: uart.any()
-
-       Return the number of characters available for reading.
-
 .. method:: uart.read([nbytes])
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
@@ -160,19 +119,14 @@ Methods
       *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
       be even, and the number of characters is ``nbytes/2``.
 
-      Return value: a bytes object containing the bytes read in.  Returns ``b''``
-      on timeout.
-
-   .. only:: port_wipy
-
-      Return value: a bytes object containing the bytes read in.  Returns ``b''``
+      Return value: a bytes object containing the bytes read in.  Returns ``None``
       on timeout.
 
 .. method:: uart.readall()
 
    Read as much data as possible.
 
-   Return value: a bytes object.
+   Return value: a bytes object or ``None`` on timeout.
 
 .. method:: uart.readchar()
 
@@ -185,13 +139,14 @@ Methods
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
    that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
 
-   Return value: number of bytes read and stored into ``buf``.
+   Return value: number of bytes read and stored into ``buf`` or ``None`` on
+   timeout.
 
 .. method:: uart.readline()
 
    Read a line, ending in a newline character.
 
-   Return value: the line read.
+   Return value: the line read or ``None`` on timeout.
 
 .. method:: uart.write(buf)
 
@@ -202,44 +157,13 @@ Methods
       bytes are used for each character (little endian), and ``buf`` must contain
       an even number of bytes.
 
-      Return value: number of bytes written.
-
-   .. only:: port_wipy
-
-      Write the buffer of bytes to the bus.
-
-      Return value: number of bytes written.
+      Return value: number of bytes written or ``None`` on timeout.
 
 .. method:: uart.sendbreak()
 
    Send a break condition on the bus.  This drives the bus low for a duration
    of 13 bits.
    Return value: ``None``.
-
-.. only:: port_wipy
-
-    .. method:: uart.callback(value, priority=1, handler=None)
-
-       Create a callback to be triggered when data is received on the UART.
-
-           - ``value`` sets the size in bytes of the Rx buffer. Every character
-             received is put into this buffer as long as there's space free.
-           - ``priority`` level of the interrupt. Can take values in the range 1-7.
-             Higher values represent higher priorities.
-           - ``handler`` an optional function to be called when new characters arrive.
-
-       .. note::
-
-          The handler will be called whenever any of the following two conditions are met:
-          
-              - 4 new characters have been received.
-              - At least 1 new character is waiting in the Rx buffer and the Rx line has been
-                silent for the duration of 1 complete frame.
-
-          This means that when the handler function is called there might be 1, 2, 3 or 4
-          characters waiting.
-
-       Return a callback object.
 
 Constants
 ---------
@@ -250,9 +174,3 @@ Constants
     .. data:: UART.CTS
 
        to select the flow control type
-
-.. only:: port_wipy
-
-   .. data:: UART.RX_ANY
-
-       IRQ trigger sources

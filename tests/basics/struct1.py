@@ -35,8 +35,11 @@ print(struct.pack("<I", 0xffffffff))
 
 # long long ints
 print(struct.pack("<Q", 2**64 - 1))
+print(struct.pack(">Q", 2**64 - 1))
 print(struct.pack("<Q", 0xffffffffffffffff))
+print(struct.pack(">Q", 0xffffffffffffffff))
 print(struct.pack("<q", -1))
+print(struct.pack(">q", -1))
 print(struct.pack("<Q", 1234567890123456789))
 print(struct.pack("<q", -1234567890123456789))
 print(struct.pack(">Q", 1234567890123456789))
@@ -58,3 +61,8 @@ try:
     struct.pack(1, 2)
 except TypeError:
     print('TypeError')
+
+# Initially repitition counters were supported only for strings,
+# but later were implemented for all.
+print(struct.unpack("<3B2h", b"foo\x12\x34\xff\xff"))
+print(struct.pack("<3B", 1, 2, 3))

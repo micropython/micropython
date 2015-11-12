@@ -40,6 +40,7 @@
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
+#define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
@@ -62,6 +63,7 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_EXECFILE (1)
+#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
@@ -95,6 +97,7 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
+extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t mp_module_ubinascii;
@@ -110,6 +113,7 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
@@ -133,6 +137,7 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
@@ -194,7 +199,6 @@ typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // We have inlined IRQ functions for efficiency (they are generally
@@ -237,7 +241,6 @@ static inline mp_uint_t disable_irq(void) {
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#define MICROPY_HAL_H           "mphal.h"
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
 
 #endif // __INCLUDED_MPCONFIGPORT_H

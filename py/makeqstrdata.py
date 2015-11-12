@@ -80,6 +80,10 @@ def do_work(infiles):
                 # add the qstr to the list, with order number to retain original order in file
                 qstrs[ident] = (len(qstrs), ident, qstr)
 
+    if not qcfgs:
+        sys.stderr.write("ERROR: Empty preprocessor output - check for errors above\n")
+        sys.exit(1)
+
     # get config variables
     cfg_bytes_len = int(qcfgs['BYTES_IN_LEN'])
     cfg_bytes_hash = int(qcfgs['BYTES_IN_HASH'])

@@ -36,6 +36,9 @@ Q(flush)
 
 Q(_os)
 Q(stat)
+#if MICROPY_PY_OS_STATVFS
+Q(statvfs)
+#endif
 Q(system)
 Q(unlink)
 
@@ -57,6 +60,11 @@ Q(utime)
 Q(time)
 Q(clock)
 Q(sleep)
+Q(sleep_ms)
+Q(sleep_us)
+Q(ticks_ms)
+Q(ticks_us)
+Q(ticks_diff)
 
 Q(socket)
 Q(sockaddr_in)

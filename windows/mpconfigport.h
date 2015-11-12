@@ -45,6 +45,8 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_EMACS_KEYS     (1)
+#define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
@@ -64,6 +66,7 @@
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_PLATFORM     "win32"
 #define MICROPY_PY_SYS_MAXSIZE      (1)
@@ -74,6 +77,10 @@
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
+#define MICROPY_MODULE_FROZEN       (0)
+
+#define MICROPY_STACKLESS           (0)
+#define MICROPY_STACKLESS_STRICT    (0)
 
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)
@@ -85,6 +92,7 @@
 #define MICROPY_PY_MACHINE          (1)
 
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
+#define MICROPY_WARNINGS            (1)
 #ifdef _MSC_VER
 #define MICROPY_GCREGS_SETJMP       (1)
 #endif
@@ -126,7 +134,8 @@ typedef long mp_off_t;
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
-#define MP_PLAT_PRINT_STRN(str, len) fwrite(str, 1, len, stdout)
+#include <unistd.h>
+#define MP_PLAT_PRINT_STRN(str, len) do { int ret = write(1, str, len); (void)ret; } while (0)
 
 extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
@@ -137,7 +146,7 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_time }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_time }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&mp_module_os }, \
 
 #if MICROPY_USE_READLINE == 1
@@ -147,16 +156,14 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #define MP_STATE_PORT               MP_STATE_VM
 
-#define MICROPY_HAL_H               "windows_mphal.h"
+#define MICROPY_MPHALPORT_H         "windows_mphal.h"
 
 // We need to provide a declaration/definition of alloca()
 #include <malloc.h>
 
 #include "realpath.h"
 #include "init.h"
-
-// sleep for given number of milliseconds
-void msec_sleep(double msec);
+#include "sleep.h"
 
 // MSVC specifics
 #ifdef _MSC_VER

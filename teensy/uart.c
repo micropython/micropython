@@ -29,7 +29,6 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include MICROPY_HAL_H
 #include "bufhelper.h"
 #include "uart.h"
 

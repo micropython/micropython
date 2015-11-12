@@ -48,6 +48,16 @@ typedef struct {
 } io_port_t;
 
 static const io_port_t gpioLEDBits[] = {{0, 14}, {1, 11}, {1, 12}, {5, 0}, {5, 1}, {5, 2}};
+typedef struct {
+	uint8_t redPwmValue;
+	uint8_t redPwmCounter;
+        uint8_t greenPwmValue;
+        uint8_t greenPwmCounter;
+        uint8_t bluePwmValue;
+        uint8_t bluePwmCounter;
+
+}RGBPWMInfo;
+static RGBPWMInfo rgbPwmInfo;
 
 typedef struct {
 	uint8_t* buffer;
@@ -74,6 +84,287 @@ typedef struct {
 	uint8_t gpioNumber;
 } ExtIntData;
 static ExtIntData extIntData[4];
+
+
+//================================================[ADC Management]========================================================
+typedef struct {
+	ADC_CLOCK_SETUP_T setup;
+	LPC_ADC_T* adc;
+}ADCData;
+
+static ADCData adcsData[2];
+volatile static uint8_t flagWaitingADCConv;
+volatile static uint16_t ADCValues[3];
+
+uint8_t getAdcValueIndexFromNumber(uint8_t channelNumber)
+{
+    switch(channelNumber)
+    {
+        case 1: return 0;
+        case 2: return 1;
+        case 3: return 2;
+    }
+    return 0;
+}
+void Board_ADC_Init(void)
+{
+	// ADC0
+	Chip_ADC_Init(LPC_ADC0, &(adcsData[0].setup));
+	adcsData[0].adc = LPC_ADC0;
+	Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
+	NVIC_EnableIRQ(ADC0_IRQn);
+
+        // ADC1
+        //Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
+        //adcsData[1].adc = LPC_ADC1;
+        //Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
+	//NVIC_EnableIRQ(ADC1_IRQn);
+
+	flagWaitingADCConv=0;
+	ADCValues[0]=0;
+	ADCValues[1]=0;
+	ADCValues[2]=0;
+
+	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH1, ENABLE);
+	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH2, ENABLE);
+	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH3, ENABLE);
+
+}
+void Board_ADC_EnableChannel(uint8_t channelNumber)
+{
+	uint32_t index = 0; // always using ADC0
+	switch(channelNumber)
+	{
+        	case 1:
+			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, ENABLE);
+			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
+			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
+			break;
+                case 2:
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, ENABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
+                        break;
+                case 3:
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
+                        Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, ENABLE);
+                        break;
+	}
+}
+
+uint16_t Board_ADC_readValue(uint8_t channelNumber)
+{
+	uint8_t index = getAdcValueIndexFromNumber(channelNumber);
+	return ADCValues[index];
+}
+
+void Board_ADC_StartConversion(void)
+{
+        uint32_t index = 0; // always using ADC0
+        flagWaitingADCConv=1;
+        Chip_ADC_SetStartMode(adcsData[index].adc, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+        while(flagWaitingADCConv==1); // wait until conversion is finished
+
+}
+
+
+void ADC0_IRQHandler (void)
+{
+   uint16_t value;
+   uint32_t index = 0; // always using ADC0
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH1, ADC_DR_ADINT_STAT) == SET)
+	{
+	    Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH1, &value);
+	    ADCValues[0] = value;
+        }
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH2, ADC_DR_ADINT_STAT) == SET)
+	{
+            Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH2, &value);
+            ADCValues[1] = value;
+	}
+
+	if(Chip_ADC_ReadStatus(adcsData[index].adc, ADC_CH3, ADC_DR_ADINT_STAT) == SET) 
+	{
+            Chip_ADC_ReadValue(adcsData[index].adc, ADC_CH3, &value);
+            ADCValues[2] = value;
+	}
+
+   flagWaitingADCConv=0;
+}
+
+//===========================================================================================================================
+
+//================================================[PWM Management]========================================================
+
+typedef struct {
+    uint8_t port;
+    uint8_t pin;
+    uint8_t ctout;
+    uint8_t fnc;
+}PwmData;
+
+static PwmData pwmsData[] = {{6,5,6,FUNC1},{6,12,7,FUNC1},{4,1,1,FUNC1},{4,2,0,FUNC1},{4,3,3,FUNC1},{1,5,10,FUNC1},{7,4,13,FUNC1},{7,5,12,FUNC1},{4,4,2,FUNC1},{4,5,5,FUNC1},{4,6,4,FUNC1}};
+
+void Board_PWM_SetFrequency(uint32_t freq)
+{
+        Chip_SCTPWM_Init(LPC_SCT);
+	Chip_SCTPWM_SetRate(LPC_SCT, freq);
+        Chip_SCTPWM_Start(LPC_SCT);
+}
+
+uint32_t calculatePwmIndexCounterByOutNumber(uint8_t outNumber)
+{
+	return  outNumber + 1;
+}
+void Board_PWM_ConfigureOut(uint8_t outNumber)
+{
+	uint32_t indexCounter = calculatePwmIndexCounterByOutNumber(outNumber);
+	Chip_SCU_PinMux(pwmsData[outNumber].port, pwmsData[outNumber].pin, MD_PUP|MD_EZI, pwmsData[outNumber].fnc);
+        Chip_SCTPWM_SetOutPin(LPC_SCT, indexCounter, pwmsData[outNumber].ctout);
+}
+void Board_PWM_SetDutyCycle(uint8_t outNumber, uint8_t duty)
+{
+	uint32_t indexCounter = calculatePwmIndexCounterByOutNumber(outNumber);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, indexCounter,Chip_SCTPWM_PercentageToTicks(LPC_SCT, duty));
+}
+
+
+//===========================================================================================================================
+
+//================================================[TIMERs Management]========================================================
+typedef struct {
+	uint8_t mode;
+}TimerChannelInfo;
+
+typedef struct {
+	void(*callback)(void*);
+	void* callbackArg;
+	uint8_t timerNumber;
+	TimerChannelInfo channels[4];
+}TimerInfo;
+
+static TimerInfo timersInfo[4];
+
+LPC_TIMER_T* getTimerFomIndex(uint8_t index)
+{
+        switch(index)
+        {
+                case 0: return LPC_TIMER0;
+                case 1: return LPC_TIMER1;
+                case 2: return LPC_TIMER2;
+                case 3: return LPC_TIMER3;
+        }
+        return NULL;
+}
+
+void TIMER0_IRQHandler(void){
+        LPC_TIMER0->IR = 1 << 0;
+        if(timersInfo[0].callback!=NULL)
+                timersInfo[0].callback(timersInfo[0].callbackArg);
+}
+
+void TIMER1_IRQHandler(void){
+        LPC_TIMER1->IR = 1 << 0;
+        if(timersInfo[1].callback!=NULL)
+                timersInfo[1].callback(timersInfo[1].callbackArg);
+}
+
+void TIMER2_IRQHandler(void){
+	LPC_TIMER2->IR = 1 << 0;
+	if(timersInfo[2].callback!=NULL)
+		timersInfo[2].callback(timersInfo[2].callbackArg);
+}
+
+void TIMER3_IRQHandler(void){
+        LPC_TIMER3->IR = 1 << 0;
+        if(timersInfo[3].callback!=NULL)
+                timersInfo[3].callback(timersInfo[3].callbackArg);
+}
+
+void Board_TIMER_Init(void)
+{
+	int i;
+	for(i=0; i<4;i++)
+	{
+        	Chip_TIMER_Init(getTimerFomIndex(i));
+        	Chip_TIMER_Disable(getTimerFomIndex(i));
+		timersInfo[i].callback = NULL;
+	}
+	NVIC_EnableIRQ(TIMER0_IRQn);
+	NVIC_EnableIRQ(TIMER1_IRQn);
+	NVIC_EnableIRQ(TIMER2_IRQn);
+	NVIC_EnableIRQ(TIMER3_IRQn);
+}
+
+void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+{
+	// always using match0
+	int8_t match=0;
+	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+
+        Chip_TIMER_PrescaleSet(t, presc);
+        Chip_TIMER_SetMatch(t, match, matchValue);
+        Chip_TIMER_MatchEnableInt(t, match); // enable int for match 0
+        if(flagOnce==1)
+        { 
+			Chip_TIMER_ResetOnMatchDisable(t, match); // reset count on match0
+		}
+		else 
+		{
+			Chip_TIMER_ResetOnMatchEnable(t, match); // reset count on match0
+		}
+	Chip_TIMER_Enable(t);
+}
+
+void Board_TIMER_DisableTimer(uint8_t timerNum)
+{
+	Chip_TIMER_Disable(getTimerFomIndex(timerNum));
+}
+
+void Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+{
+	timersInfo[timerNum].callback = function;
+	timersInfo[timerNum].callbackArg = arg;
+}
+
+uint32_t Board_TIMER_getClockFrequency(void)
+{
+	return Chip_Clock_GetMainPLLHz();
+}
+
+void Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value)
+{
+	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+	t->TC = value;
+}
+uint32_t Board_TIMER_GetTimerCounter(uint8_t timerNum)
+{
+	return Chip_TIMER_ReadCount(getTimerFomIndex(timerNum));
+}
+
+void Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value)
+{
+	Chip_TIMER_PrescaleSet(getTimerFomIndex(timerNum), value);
+}
+uint32_t Board_TIMER_GetTimerPrescaler(uint8_t timerNum)
+{
+	return Chip_TIMER_ReadPrescale(getTimerFomIndex(timerNum));
+}
+
+void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value)
+{
+	Chip_TIMER_SetMatch(getTimerFomIndex(timerNum), 0, value); // always match 0
+}
+uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum)
+{
+	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+        return t->MR[0]; // always match 0
+}
+
+//============================================================================================================================
 
 
 //================================================[UART Management]==========================================================
@@ -381,6 +672,8 @@ void Board_UARTPutSTR(const char *str)
 #endif
 }
 
+
+//=============================[Leds management]===============================================================================
 static void Board_LED_Init()
 {
 	uint32_t idx;
@@ -390,6 +683,13 @@ static void Board_LED_Init()
 		Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin);
 		Chip_GPIO_SetPinState(LPC_GPIO_PORT, gpioLEDBits[idx].port, gpioLEDBits[idx].pin, (bool) false);
 	}
+
+	rgbPwmInfo.redPwmValue=0;
+	rgbPwmInfo.redPwmCounter=0;
+        rgbPwmInfo.greenPwmValue=0;
+        rgbPwmInfo.greenPwmCounter=0;
+        rgbPwmInfo.bluePwmValue=0;
+        rgbPwmInfo.bluePwmCounter=0;
 }
 
 void Board_LED_Set(uint8_t LEDNumber, bool On)
@@ -410,6 +710,69 @@ void Board_LED_Toggle(uint8_t LEDNumber)
 {
 	Board_LED_Set(LEDNumber, !Board_LED_Test(LEDNumber));
 }
+
+void Board_LED_PWM_tick_ms(void)
+{
+	// Red PWM
+        if(rgbPwmInfo.redPwmCounter>=rgbPwmInfo.redPwmValue || rgbPwmInfo.redPwmValue==0 )
+                Board_LED_Set(3,1); // RED OFF
+        else
+                Board_LED_Set(3,0); // RED ON
+
+        rgbPwmInfo.redPwmCounter++;
+        if(rgbPwmInfo.redPwmCounter>15)
+                rgbPwmInfo.redPwmCounter=0;
+
+	//__________________________________________________
+
+        // Green PWM
+        if(rgbPwmInfo.greenPwmCounter>=rgbPwmInfo.greenPwmValue || rgbPwmInfo.greenPwmValue==0 )
+                Board_LED_Set(4,1); // GREEN OFF
+        else
+                Board_LED_Set(4,0); // GREEN ON
+
+        rgbPwmInfo.greenPwmCounter++;
+        if(rgbPwmInfo.greenPwmCounter>15)
+                rgbPwmInfo.greenPwmCounter=0;
+
+        //__________________________________________________
+
+
+        // Blue PWM
+        if(rgbPwmInfo.bluePwmCounter>=rgbPwmInfo.bluePwmValue || rgbPwmInfo.bluePwmValue==0 )
+                Board_LED_Set(5,1); // BLUE OFF
+        else
+                Board_LED_Set(5,0); // BLUE ON
+
+        rgbPwmInfo.bluePwmCounter++;
+        if(rgbPwmInfo.bluePwmCounter>15)
+                rgbPwmInfo.bluePwmCounter=0;
+
+        //__________________________________________________
+
+}
+
+void Board_LED_PWM_SetValue(uint8_t pwmNumber,uint8_t value)
+{
+	switch(pwmNumber)
+	{
+		case 0: rgbPwmInfo.redPwmValue=value; break;
+		case 1: rgbPwmInfo.greenPwmValue=value; break;
+		case 2: rgbPwmInfo.bluePwmValue=value; break;
+	}
+}
+uint8_t Board_LED_PWM_GetValue(uint8_t pwmNumber)
+{
+        switch(pwmNumber)
+        {
+                case 0: return rgbPwmInfo.redPwmValue;
+                case 1: return rgbPwmInfo.greenPwmValue;
+                case 2: return rgbPwmInfo.bluePwmValue;
+        }
+	return -1;
+}
+//================================================================================================================================
+
 
 
 
@@ -848,6 +1211,12 @@ void Board_Init(void)
 
 	/* Initialize DAC */
 	Board_DAC_Init();
+
+	/* Initialize Timers */
+	Board_TIMER_Init();
+
+	/* Initialize ADCs */
+	Board_ADC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

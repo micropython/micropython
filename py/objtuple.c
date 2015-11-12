@@ -125,7 +125,7 @@ STATIC bool tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in
 mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = self_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(self->len != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_HASH: {
             // start hash with pointer to empty tuple, to make it fairly unique
             mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
@@ -168,7 +168,7 @@ mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_LESS_EQUAL:
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
-            return MP_BOOL(tuple_cmp_helper(op, lhs, rhs));
+            return mp_obj_new_bool(tuple_cmp_helper(op, lhs, rhs));
 
         default:
             return MP_OBJ_NULL; // op not supported

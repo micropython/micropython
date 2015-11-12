@@ -43,12 +43,14 @@ Methods
 
    Read at most ``nbytes`` from the serial device and return them as a
    bytes object.  If ``nbytes`` is not specified then the method acts as
-   ``readall()``.
+   ``readall()``. USB_VCP stream implicitly works in non-blocking mode,
+   so if no pending data available, this method will return immediately
+   with ``None`` value.
 
 .. method:: usb_vcp.readall()
 
    Read all available bytes from the serial device and return them as
-   a bytes object.
+   a bytes object, or ``None`` if no pending data available.
 
 .. method:: usb_vcp.readinto(buf, [maxlen])
 
@@ -57,14 +59,15 @@ Methods
    If ``maxlen`` is given and then at most ``min(maxlen, len(buf))`` bytes
    are read.
 
-   Returns the number of bytes read and stored into ``buf``.
+   Returns the number of bytes read and stored into ``buf`` or ``None``
+   if no pending data available.
 
 .. method:: usb_vcp.readline()
 
    Read a whole line from the serial device.
 
    Returns a bytes object containing the data, including the trailing
-   newline character.
+   newline character or ``None`` if no pending data available.
 
 .. method:: usb_vcp.readlines()
 

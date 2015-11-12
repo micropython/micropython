@@ -55,22 +55,19 @@ typedef enum {
 typedef void (*WakeUpCB_t)(const mp_obj_t self);
 
 /******************************************************************************
- DECLARE EXPORTED VARIABLES
- ******************************************************************************/
-extern const mp_obj_base_t pyb_sleep_obj;
-
-/******************************************************************************
  DECLARE FUNCTIONS
  ******************************************************************************/
-void pybsleep_pre_init (void);
-void pybsleep_init0 (void);
-void pybsleep_signal_soft_reset (void);
-void pybsleep_add (const mp_obj_t obj, WakeUpCB_t wakeup);
-void pybsleep_remove (const mp_obj_t obj);
-void pybsleep_set_wlan_lpds_callback (mp_obj_t cb_obj);
-void pybsleep_set_gpio_lpds_callback (mp_obj_t cb_obj);
-void pybsleep_set_timer_lpds_callback (mp_obj_t cb_obj);
-void pybsleep_configure_timer_wakeup (uint pwrmode);
-pybsleep_reset_cause_t pybsleep_get_reset_cause (void);
+void pyb_sleep_pre_init (void);
+void pyb_sleep_init0 (void);
+void pyb_sleep_signal_soft_reset (void);
+void pyb_sleep_add (const mp_obj_t obj, WakeUpCB_t wakeup);
+void pyb_sleep_remove (const mp_obj_t obj);
+void pyb_sleep_set_gpio_lpds_callback (mp_obj_t cb_obj);
+void pyb_sleep_set_wlan_obj (mp_obj_t wlan_obj);
+void pyb_sleep_set_rtc_obj (mp_obj_t rtc_obj);
+void pyb_sleep_sleep (void);
+void pyb_sleep_deepsleep (void);
+pybsleep_reset_cause_t pyb_sleep_get_reset_cause (void);
+pybsleep_wake_reason_t pyb_sleep_get_wake_reason (void);
 
 #endif /* PYBSLEEP_H_ */

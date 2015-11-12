@@ -9,14 +9,10 @@ Table of context
 </p>
 
 ### Modo de uso:
-- Editar py/Main.py y escribir el programa en Python
-- Ejecutar make download para compilar y bajar el programa en la EDU-CIAA. En el makefile se lanzara la herramienta py2c.py que generara el archivo ProgramScript.c con el script de Python.
-- Adicionalmente, se puede usar una linea de comandos python REPL en la UART del puerto USB de DEBUG.
 
-### Archivos incluidos:
-
-- py/ -- Aqui se encuentra el archivo Main.py donde escribiremos nuestro programa Python.
-- py2c.py -- Scripy en Python que convierte el script de Python Main.py en el archivo ProgramScript.c
+- Ejecutar `make clean all download` para compilar y bajar el programa en la EDU-CIAA.
+- Ejecute una terminal serial a 115200 en el segundo puerton serial del USB (usualmente /dev/ttyUSB1 en Linux)
+- Puede usar una linea de comandos python REPL en la UART del puerto USB de DEBUG.
 
 
 #### Soporte de hardware
@@ -31,7 +27,7 @@ led1.on()
 pyb.delay(100);
 led1.off()
 ```
-Numeros de leds disponibles: de 1 a 4
+Numeros de leds disponibles: de 1 a 6 (4:Red, 5:Green, 6:Blue)
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
 - Soporte para los 4 pulsadores de la placa mediante el modulo pyb.Switch. Ejemplo:
@@ -124,4 +120,125 @@ Se implementaron los metodos:
 - line()
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
+
+- Soporte para DAC mediante el modulo pyb.DAC. Ejemplo:
+```python
+import pyb
+import math
+
+dac = pyb.DAC(1)
+
+# sine
+buf = bytearray(200) #100 samples. 2 bytes per sample
+j=0
+for i in range (0,len(buf)/2):
+        v = 512 + int(511 * math.sin(2 * math.pi * i / (len(buf)/2) ) )
+        buf[j+1] = (v >>  8) & 0xff
+        buf[j] = v & 0xff
+        j=j+2
+
+# output the sine-wave at 400Hz
+print("sine created")
+
+dac.write_timed(buf, 400*(int(len(buf)/2)), mode=pyb.DAC.CIRCULAR)
+
+while True:
+        pyb.delay(1000)
+
+```
+Existe solo el DAC 1
+
+A diferencia de la clase DAC de la pyboard (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html) se utilizaron valores de 10bit en vez de 8bits para aprovechar al maximo la resolucion del DAC.
+
+
+- Soporte para Timers mediante el modulo pyb.Timer. Ejemplo:
+```python
+import pyb
+
+def callb(timer):
+        print("Interval interrupt")
+        print(timer)
+
+def callbTimeout (timer):
+        print("Timeout interrupt")
+        print(timer)
+
+print("Test Timers")
+
+t1 = pyb.Timer(1)
+t2 = pyb.Timer(2)
+t1.interval(2000,callb)
+t2.timeout(5000,callbTimeout)
+
+while True:
+        pyb.delay(1000)
+
+```
+Los timers disponibles son el 0,1,2 y 3
+
+Ademas de las funciones definidas en http://test-ergun.readthedocs.org/en/latest/library/pyb.Timer.html se agregaron los metodos interval y timeout. Ambos reciben
+el tiempo en milisegundos y una funcion callback. El primero ejecutara la funcion cada el tiempo prefijado, mientras que el segundo la ejecutara solo una vez luego
+del tiempo prefijado.
+
+No se implemento la clase TimerChannel, por lo que las funcionalidades de Output Compare e Input Capture no son accesibles.
+
+
+- Soporte para PWM mediante el modulo pyb.PWM
+
+Ejemplo:
+```python
+import pyb
+
+pyb.PWM.set_frequency(1000)
+
+out0 = pyb.PWM(0)
+out0.duty_cycle(50) # 50%
+print("Duty cycle :"+str(out0.duty_cycle()))
+
+out1= pyb.PWM(1)
+out1.duty_cycle(25)
+
+out10= pyb.PWM(10)
+out10.duty_cycle(75)
+
+while True:
+        pyb.delay(1000)
+```
+Salidas de PWM disponibles: 0 a 10
+
+- 0: GPIO_2
+- 1: GPIO_8
+- 2: T_FIL1
+- 3: T_FIL2
+- 4: T_FIL3
+- 5: T_COL0
+- 6: T_COL1
+- 7: T_COL2
+- 8: LCD_1
+- 9: LCD_2
+- 10: LCD_3
+
+La placa posee un solo modulo PWM con 11 salidas asociadas, por esta razon todas las salidas comparten la misma frecuencia, pero tienen un valor de ciclo de actividad independiente.
+
+
+- Soporte para ADC mediante el modulo pyb.ADC
+
+Ejemplo:
+```python
+import pyb
+
+channel1 = pyb.ADC(1)
+channel2 = pyb.ADC(2)
+channel3 = pyb.ADC(3)
+
+while True:
+        v1 = channel1.read()
+        v2 = channel2.read()
+        v3 = channel3.read()
+        print("value ch1:"+str(v1))
+        print("value ch2:"+str(v2))
+        print("value ch3:"+str(v3))
+        pyb.delay(1000)
+```
+Entradas AD disponibles: 1,2 y 3. El resultado del metodo read es el valor de conversion (10 bit de resolucion en 3.3V)
 

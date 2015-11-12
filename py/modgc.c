@@ -63,7 +63,7 @@ STATIC mp_obj_t gc_enable(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(gc_enable_obj, gc_enable);
 
 STATIC mp_obj_t gc_isenabled(void) {
-    return MP_BOOL(MP_STATE_MEM(gc_auto_collect_enabled));
+    return mp_obj_new_bool(MP_STATE_MEM(gc_auto_collect_enabled));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_isenabled_obj, gc_isenabled);
 

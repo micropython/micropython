@@ -1,0 +1,12 @@
+Running "jni" module tests (as well as just using this module) requires
+being able to load libjvm.so, which requires path to it set via
+LD_LIBRARY_PATH environment variable. This path is not set automatically
+and there is no easy way to guess it, because there can be installed
+different implementations of JVM, for one implementation, there can be
+different versions, and single version may include different variants
+of JVM.
+
+For example, for OpenJDK 7 on x86_64, following may work:
+
+LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server ./run-tests jni/*.py
+

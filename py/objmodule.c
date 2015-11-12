@@ -186,6 +186,12 @@ STATIC const mp_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_MACHINE
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine },
 #endif
+#if MICROPY_PY_USSL
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ussl), (mp_obj_t)&mp_module_ussl },
+#endif
+#if MICROPY_PY_LWIP
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
@@ -211,6 +217,17 @@ mp_obj_t mp_module_get(qstr module_name) {
         el = mp_map_lookup((mp_map_t*)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
         if (el == NULL) {
             return MP_OBJ_NULL;
+        }
+
+        if (MICROPY_MODULE_BUILTIN_INIT) {
+            // look for __init__ and call it if it exists
+            mp_obj_t dest[2];
+            mp_load_method_maybe(el->value, MP_QSTR___init__, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                mp_call_method_n_kw(0, 0, dest);
+                // register module so __init__ is not called again
+                mp_module_register(module_name, el->value);
+            }
         }
     }
 

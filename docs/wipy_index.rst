@@ -5,6 +5,7 @@ MicroPython documentation and references
 
     wipy/quickref.rst
     wipy/general.rst
+    wipy/tutorial/index.rst
     library/index.rst
     license.rst
     wipy_contents.rst

@@ -1,8 +1,29 @@
-Micro Python \.\+ version
+MicroPython \.\+ version
+Use \.\+
 >>> # check REPL allows to continue input
 >>> 1 \\\\
 ... + 2
 3
+>>> '"'
+'"'
+>>> "'"
+"'"
+>>> '\\\\''
+"'"
+>>> "\\\\""
+'"'
+>>> '\\\\'('
+"'("
+>>> "\\\\"("
+'"('
+>>> print("\\\\"(")
+"(
+>>> print('\\\\'(')
+'(
+>>> print("\\\\'(")
+'(
+>>> print('\\\\"(')
+"(
 >>> 'abc'
 'abc'
 >>> "abc"

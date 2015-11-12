@@ -29,13 +29,13 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "irq.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "dma.h"
 #include "spi.h"
-#include MICROPY_HAL_H
 
 // The following defines are for compatability with the '405
 #if !defined(MICROPY_HW_SPI1_NSS)

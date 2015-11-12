@@ -17,6 +17,7 @@ Or:
 import sys
 import argparse
 import time
+import socket
 from ftplib import FTP
 from telnetlib import Telnet
 
@@ -89,9 +90,9 @@ def reset_board(args):
                     time.sleep(1)
                     tn.write(b'\r\x02') # ctrl-B: enter friendly REPL
                     if b'Type "help()" for more information.' in tn.read_until(b'Type "help()" for more information.', timeout=5):
-                        tn.write(b"import pyb\r\n")
-                        tn.write(b"pyb.reset()\r\n")
-                        time.sleep(1)
+                        tn.write(b"import machine\r\n")
+                        tn.write(b"machine.reset()\r\n")
+                        time.sleep(2)
                         print("Reset performed")
                         success = True
                     else:
@@ -121,12 +122,23 @@ def verify_update(args):
             print("Error: verification failed, the git tag doesn't match")
             return False
 
-    try:
-        # Specify a longer time out value here because the board has just been
-        # reset and the wireless connection might not be fully established yet
-        tn = Telnet(args.ip, timeout=15)
-        print("Connected via telnet again, lets check the git tag")
+    retries = 0
+    while True:
+        try:
+            # Specify a longer time out value here because the board has just been
+            # reset and the wireless connection might not be fully established yet
+            tn = Telnet(args.ip, timeout=10)
+            print("Connected via telnet again, lets check the git tag")
+            break
+        except socket.timeout:
+            if retries < 5:
+                print("Timeout while connecting via telnet, retrying...")
+                retries += 1
+            else:
+                print('Error: Telnet connection timed out!')
+                return False
 
+    try:
         firmware_tag = tn.read_until (b'with CC3200')
         tag_file_path = args.file.rstrip('mcuimg.bin') + 'genhdr/mpversion.h'
         
@@ -170,10 +182,9 @@ def main():
             if reset_board(args):
                 if args.verify:
                     print ('Waiting for the WiFi connection to come up again...')
-                    # this time is to allow the system's wireless network card to connect to the
-                    # WiPy again. Sometimes it might only take a couple of seconds, but let's
-                    # leave 15s to be on the safe side
-                    time.sleep(15)
+                    # this time is to allow the system's wireless network card to
+                    # connect to the WiPy again.
+                    time.sleep(5)
                     if verify_update(args):
                         result = 0
                 else:

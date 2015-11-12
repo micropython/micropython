@@ -35,6 +35,7 @@ QCFG(BYTES_IN_HASH, MICROPY_QSTR_BYTES_IN_HASH)
 
 Q()
 Q(*)
+Q(_)
 Q(__build_class__)
 Q(__class__)
 Q(__doc__)
@@ -103,6 +104,7 @@ Q(uint)
 Q(ptr)
 Q(ptr8)
 Q(ptr16)
+Q(ptr32)
 #endif
 
 #if MICROPY_EMIT_INLINE_THUMB
@@ -606,4 +608,38 @@ Q(mem)
 Q(mem8)
 Q(mem16)
 Q(mem32)
+#endif
+
+#if MICROPY_PY_USSL
+Q(ussl)
+Q(wrap_socket)
+#endif
+
+#if MICROPY_PY_LWIP
+// for lwip module
+Q(lwip)
+Q(reset)
+Q(callback)
+Q(socket)
+Q(AF_INET)
+Q(AF_INET6)
+Q(SOCK_STREAM)
+Q(SOCK_DGRAM)
+Q(SOCK_RAW)
+// for lwip.socket
+Q(close)
+Q(bind)
+Q(listen)
+Q(accept)
+Q(connect)
+Q(send)
+Q(recv)
+Q(sendto)
+Q(recvfrom)
+Q(settimeout)
+#if MICROPY_PY_LWIP_SLIP
+// for lwip.slip
+Q(slip)
+Q(status)
+#endif
 #endif

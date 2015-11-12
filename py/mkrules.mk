@@ -81,11 +81,14 @@ all: $(PROG)
 
 $(PROG): $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(COPT) -o $@ $(OBJ) $(LIB) $(LDFLAGS)
+	$(Q)$(CC) $(COPT) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
 	$(Q)$(SIZE) $(PROG)
+
+lib: $(OBJ)
+	$(AR) rcs libmicropython.a $^
 
 clean: clean-prog
 clean-prog:

@@ -30,7 +30,6 @@
 
 #include "simplelink.h"
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
@@ -157,6 +156,8 @@ STATIC mp_obj_t socket_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     if (wlan_socket_socket(s, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
     }
+    // add the socket to the list
+    modusocket_socket_add(s->sock_base.sd, true);
     return s;
 }
 
@@ -185,17 +186,23 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-// method socket.listen(backlog)
-STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
-    mod_network_socket_obj_t *self = self_in;
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(mp_uint_t n_args, const mp_obj_t *args) {
+    mod_network_socket_obj_t *self = args[0];
+
+    int32_t backlog = 0;
+    if (n_args > 1) {
+        backlog = mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
 
     int _errno;
-    if (wlan_socket_listen(self, mp_obj_get_int(backlog), &_errno) != 0) {
+    if (wlan_socket_listen(self, backlog, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 // method socket.accept()
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
@@ -391,6 +398,21 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
+STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
+    // TODO: CPython explicitly says that closing the returned object doesn't
+    // close the original socket (Python2 at all says that fd is dup()ed). But
+    // we save on the bloat.
+    mod_network_socket_obj_t *self = args[0];
+    if (n_args > 1) {
+        const char *mode = mp_obj_str_get_str(args[1]);
+        if (strcmp(mode, "rb") && strcmp(mode, "wb")) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        }
+    }
+    return self;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 6, socket_makefile);
+
 STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__),         (mp_obj_t)&socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close),           (mp_obj_t)&socket_close_obj },
@@ -406,7 +428,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt),      (mp_obj_t)&socket_setsockopt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settimeout),      (mp_obj_t)&socket_settimeout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking),     (mp_obj_t)&socket_setblocking_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile),        (mp_obj_t)&mp_identity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile),        (mp_obj_t)&socket_makefile_obj },
 
     // stream methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read_obj },
@@ -504,16 +526,13 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET),         MP_OBJ_NEW_SMALL_INT(AF_INET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET6),        MP_OBJ_NEW_SMALL_INT(AF_INET6) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM),     MP_OBJ_NEW_SMALL_INT(SOCK_STREAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM),      MP_OBJ_NEW_SMALL_INT(SOCK_DGRAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW),        MP_OBJ_NEW_SMALL_INT(SOCK_RAW) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_SEC),     MP_OBJ_NEW_SMALL_INT(SL_SEC_SOCKET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP),     MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP),     MP_OBJ_NEW_SMALL_INT(IPPROTO_UDP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_RAW),     MP_OBJ_NEW_SMALL_INT(IPPROTO_RAW) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);

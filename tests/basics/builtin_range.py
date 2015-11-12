@@ -28,6 +28,11 @@ print(range(4)[1:2])
 print(range(4)[1:3])
 print(range(4)[1::2])
 print(range(4)[1:-2:2])
+print(range(1, 4)[:])
+print(range(1, 4)[0:])
+print(range(1, 4)[1:])
+print(range(1, 4)[:-1])
+print(range(7, -2, -4)[:])
 
 # attrs
 print(range(1, 2, 3).start)

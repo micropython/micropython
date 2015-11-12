@@ -39,9 +39,21 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C
+
+typedef struct _mp_obj_float_t {
+    mp_obj_base_t base;
+    mp_float_t value;
+} mp_obj_float_t;
+
+const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, M_E};
+const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, M_PI};
+
+#endif
+
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_float_t *o = o_in;
+    mp_float_t o_val = mp_obj_float_get(o_in);
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     const int precision = 7;
@@ -49,7 +61,7 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     char buf[32];
     const int precision = 16;
 #endif
-    mp_format_float(o->value, buf, sizeof(buf), 'g', precision, '\0');
+    mp_format_float(o_val, buf, sizeof(buf), 'g', precision, '\0');
     mp_print_str(print, buf);
     if (strchr(buf, '.') == NULL && strchr(buf, 'e') == NULL && strchr(buf, 'n') == NULL) {
         // Python floats always have decimal point (unless inf or nan)
@@ -72,7 +84,7 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
                 mp_uint_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, false, false, NULL);
-            } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_float)) {
+            } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
             } else {
@@ -83,24 +95,24 @@ STATIC mp_obj_t float_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
 }
 
 STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
-    mp_obj_float_t *o = o_in;
+    mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return MP_BOOL(o->value != 0);
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-o->value);
+        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
         default: return MP_OBJ_NULL; // op not supported
     }
 }
 
 STATIC mp_obj_t float_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mp_obj_float_t *lhs = lhs_in;
+    mp_float_t lhs_val = mp_obj_float_get(lhs_in);
 #if MICROPY_PY_BUILTINS_COMPLEX
     if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
-        return mp_obj_complex_binary_op(op, lhs->value, 0, rhs_in);
+        return mp_obj_complex_binary_op(op, lhs_val, 0, rhs_in);
     } else
 #endif
     {
-        return mp_obj_float_binary_op(op, lhs->value, rhs_in);
+        return mp_obj_float_binary_op(op, lhs_val, rhs_in);
     }
 }
 
@@ -113,6 +125,8 @@ const mp_obj_type_t mp_type_float = {
     .binary_op = float_binary_op,
 };
 
+#if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C
+
 mp_obj_t mp_obj_new_float(mp_float_t value) {
     mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
     o->base.type = &mp_type_float;
@@ -121,10 +135,12 @@ mp_obj_t mp_obj_new_float(mp_float_t value) {
 }
 
 mp_float_t mp_obj_float_get(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_float));
+    assert(mp_obj_is_float(self_in));
     mp_obj_float_t *self = self_in;
     return self->value;
 }
+
+#endif
 
 STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
     // logic here follows that of CPython
@@ -216,11 +232,11 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             };
             return mp_obj_new_tuple(2, tuple);
         }
-        case MP_BINARY_OP_LESS: return MP_BOOL(lhs_val < rhs_val);
-        case MP_BINARY_OP_MORE: return MP_BOOL(lhs_val > rhs_val);
-        case MP_BINARY_OP_EQUAL: return MP_BOOL(lhs_val == rhs_val);
-        case MP_BINARY_OP_LESS_EQUAL: return MP_BOOL(lhs_val <= rhs_val);
-        case MP_BINARY_OP_MORE_EQUAL: return MP_BOOL(lhs_val >= rhs_val);
+        case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val);
+        case MP_BINARY_OP_MORE: return mp_obj_new_bool(lhs_val > rhs_val);
+        case MP_BINARY_OP_EQUAL: return mp_obj_new_bool(lhs_val == rhs_val);
+        case MP_BINARY_OP_LESS_EQUAL: return mp_obj_new_bool(lhs_val <= rhs_val);
+        case MP_BINARY_OP_MORE_EQUAL: return mp_obj_new_bool(lhs_val >= rhs_val);
 
         default:
             return MP_OBJ_NULL; // op not supported

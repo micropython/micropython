@@ -44,6 +44,9 @@ void re1_5_dumpcode(ByteProg *prog)
                         printf("\n");
                         break;
                 }
+                case NamedClass:
+                        printf("namedclass %c\n", code[pc++]);
+                        break;
                 case Match:
                         printf("match\n");
                         break;

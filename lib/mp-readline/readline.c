@@ -30,10 +30,8 @@
 
 #include "py/mpstate.h"
 #include "py/repl.h"
+#include "py/mphal.h"
 #include "readline.h"
-#ifdef MICROPY_HAL_H
-#include MICROPY_HAL_H
-#endif
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -82,7 +80,8 @@ STATIC void mp_hal_move_cursor_back(uint pos) {
     }
 }
 
-STATIC void mp_hal_erase_line_from_cursor(void) {
+STATIC void mp_hal_erase_line_from_cursor(uint n_chars_to_erase) {
+    (void)n_chars_to_erase;
     mp_hal_stdout_tx_strn("\x1b[K", 3);
 }
 #endif
@@ -105,7 +104,7 @@ int readline_process_char(int c) {
     bool redraw_from_cursor = false;
     int redraw_step_forward = 0;
     if (rl.escape_seq == ESEQ_NONE) {
-        if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_D && vstr_len(rl.line) == rl.orig_line_len) {
+        if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_E && vstr_len(rl.line) == rl.orig_line_len) {
             // control character with empty line
             return c;
         } else if (c == CHAR_CTRL_A) {
@@ -133,9 +132,9 @@ int readline_process_char(int c) {
             goto right_arrow_key;
         } else if (c == CHAR_CTRL_K) {
             // CTRL-K is kill from cursor to end-of-line, inclusive
-	    vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
-	    // set redraw parameters
-	    redraw_from_cursor = true;
+            vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
+            // set redraw parameters
+            redraw_from_cursor = true;
         } else if (c == CHAR_CTRL_N) {
             // CTRL-N is go to next line in history
             goto down_arrow_key;
@@ -144,10 +143,10 @@ int readline_process_char(int c) {
             goto up_arrow_key;
         } else if (c == CHAR_CTRL_U) {
             // CTRL-U is kill from beginning-of-line up to cursor
-	    vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
-	    // set redraw parameters
-	    redraw_step_back = rl.cursor_pos - rl.orig_line_len;
-	    redraw_from_cursor = true;
+            vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
+            // set redraw parameters
+            redraw_step_back = rl.cursor_pos - rl.orig_line_len;
+            redraw_from_cursor = true;
         #endif
         } else if (c == '\r') {
             // newline
@@ -338,8 +337,7 @@ delete_key:
     if (redraw_from_cursor) {
         if (rl.line->len < last_line_len) {
             // erase old chars
-            // (number of chars to erase: last_line_len - rl.cursor_pos)
-            mp_hal_erase_line_from_cursor();
+            mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);

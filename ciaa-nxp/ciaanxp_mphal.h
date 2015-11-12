@@ -35,11 +35,11 @@ void mp_hal_init(void);
 mp_uint_t mp_hal_get_milliseconds(void);
 void mp_hal_milli_delay(mp_uint_t ms);
 
-void mp_hal_set_interrupt_char(int c);
-int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_str(const char *str);
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
+//void mp_hal_set_interrupt_char(int c);
+//int mp_hal_stdin_rx_chr(void);
+//void mp_hal_stdout_tx_str(const char *str);
+//void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
+//void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len);
 
 // RS232 Functions
 uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
@@ -87,5 +87,30 @@ void mp_hal_writeDAC(uint32_t value);
 void mp_hal_setSampleRateDAC(uint32_t freq);
 int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic);
 
+//LEDs
+void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value);
+uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber);
+
+//TIMERs
+void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
+void mp_hal_disableTimer(uint8_t timerNum);
+void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg);
+uint32_t mp_hal_getTimerClockFrequency(void);
+void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value);
+uint32_t mp_hal_getTimerCounter(uint8_t timerNum);
+void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value);
+uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum);
+void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value);
+uint32_t mp_hal_getTimerMatch(uint8_t timerNum);
+
+//PWM
+void mp_hal_setPWMFequency(uint32_t freq);
+void mp_hal_configurePWMOut(uint8_t outNumber);
+void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty);
+
+//ADC
+void mp_hal_enableADCchannel(uint8_t channelNumber);
+void mp_hal_startADCconversion(void);
+uint16_t mp_hal_readADCchannel(uint8_t channelNumber);
 
 #endif

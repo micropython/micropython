@@ -29,7 +29,6 @@
 
 #include "simplelink.h"
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
@@ -61,7 +60,7 @@ STATIC const mp_obj_type_t ssl_socket_type;
 /******************************************************************************/
 // Micro Python bindings; SSL class
 
-// ssl socket inherits from normal socket, so we take its
+// ssl sockets inherit from normal socket, so we take its
 // locals and stream methods
 STATIC const mp_obj_type_t ssl_socket_type = {
     { &mp_type_type },
@@ -74,12 +73,12 @@ STATIC const mp_obj_type_t ssl_socket_type = {
 
 STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sock,             MP_ARG_REQUIRED | MP_ARG_OBJ, },
-        { MP_QSTR_keyfile,          MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_certfile,         MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_server_side,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_false} },
-        { MP_QSTR_cert_reqs,        MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = SSL_CERT_NONE} },
-        { MP_QSTR_ca_certs,         MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_sock,             MP_ARG_REQUIRED | MP_ARG_OBJ,  },
+        { MP_QSTR_keyfile,          MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_certfile,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_server_side,      MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_cert_reqs,        MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = SSL_CERT_NONE} },
+        { MP_QSTR_ca_certs,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     };
 
     // parse arguments
@@ -91,14 +90,14 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
         goto arg_error;
     }
 
-    // retrieve the file paths (with an 6 byte offset because to strip the '/flash' prefix)
+    // retrieve the file paths (with an 6 byte offset in order to strip it from the '/flash' prefix)
     const char *keyfile  = (args[1].u_obj == mp_const_none) ? NULL : &(mp_obj_str_get_str(args[1].u_obj)[6]);
     const char *certfile = (args[2].u_obj == mp_const_none) ? NULL : &(mp_obj_str_get_str(args[2].u_obj)[6]);
     const char *cafile   = (args[5].u_obj == mp_const_none || args[4].u_int != SSL_CERT_REQUIRED) ?
                            NULL : &(mp_obj_str_get_str(args[5].u_obj)[6]);
 
     // server side requires both certfile and keyfile
-    if (mp_obj_is_true(args[3].u_obj) && (!keyfile || !certfile)) {
+    if (args[3].u_bool && (!keyfile || !certfile)) {
         goto arg_error;
     }
 
@@ -116,7 +115,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     // create the ssl socket
     mp_obj_ssl_socket_t *ssl_sock = m_new_obj(mp_obj_ssl_socket_t);
-    // ssl socket inherits all properties from the original socket
+    // ssl sockets inherit all properties from the original socket
     memcpy (&ssl_sock->sock_base, &((mod_network_socket_obj_t *)args[0].u_obj)->sock_base, sizeof(mod_network_socket_base_t));
     ssl_sock->base.type = &ssl_socket_type;
     ssl_sock->sock_base.cert_req = (args[4].u_int == SSL_CERT_REQUIRED) ? true : false;
@@ -130,7 +129,7 @@ socket_error:
 arg_error:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 
 STATIC const mp_map_elem_t mp_module_ussl_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_ussl) },

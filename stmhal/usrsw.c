@@ -27,10 +27,10 @@
 #include <stdio.h>
 
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "extint.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "mphal.h"
 #include "usrsw.h"
 
 #if MICROPY_HW_HAS_SWITCH

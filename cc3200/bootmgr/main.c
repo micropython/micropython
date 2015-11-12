@@ -30,7 +30,6 @@
 #include "std.h"
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "hw_ints.h"
 #include "hw_types.h"
 #include "hw_gpio.h"
@@ -39,7 +38,6 @@
 #include "hw_common_reg.h"
 #include "pin.h"
 #include "gpio.h"
-#include "rom.h"
 #include "rom_map.h"
 #include "prcm.h"
 #include "simplelink.h"
@@ -67,7 +65,7 @@
 #define BOOTMGR_WAIT_SAFE_MODE_0_MS         500
 
 #define BOOTMGR_WAIT_SAFE_MODE_1_MS         3000
-#define BOOTMGR_WAIT_SAFE_MODE_1_BLINK_MS   250
+#define BOOTMGR_WAIT_SAFE_MODE_1_BLINK_MS   500
 
 #define BOOTMGR_WAIT_SAFE_MODE_2_MS         3000
 #define BOOTMGR_WAIT_SAFE_MODE_2_BLINK_MS   250

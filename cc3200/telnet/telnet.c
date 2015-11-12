@@ -27,8 +27,8 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
-#include MICROPY_HAL_H
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "telnet.h"
 #include "simplelink.h"
 #include "modnetwork.h"
@@ -108,7 +108,7 @@ typedef struct {
  DECLARE PRIVATE DATA
  ******************************************************************************/
 static telnet_data_t telnet_data;
-static const char* telnet_welcome_msg       = "Micro Python " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n";
+static const char* telnet_welcome_msg       = "MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n";
 static const char* telnet_request_user      = "Login as: ";
 static const char* telnet_request_password  = "Password: ";
 static const char* telnet_invalid_loggin    = "\r\nInvalid credentials, try again.\r\n";
@@ -244,34 +244,14 @@ void telnet_run (void) {
 }
 
 void telnet_tx_strn (const char *str, int len) {
-    if (len > 0 && telnet_data.n_sd > 0) {
+    if (telnet_data.n_sd > 0 && telnet_data.state == E_TELNET_STE_LOGGED_IN && len > 0) {
         telnet_send_with_retries(telnet_data.n_sd, str, len);
     }
 }
 
-void telnet_tx_strn_cooked (const char *str, uint len) {
-    int32_t nslen = 0;
-    const char *_str = str;
-
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\n') {
-            telnet_send_with_retries(telnet_data.n_sd, _str, nslen);
-            telnet_send_with_retries(telnet_data.n_sd, "\r\n", 2);
-            _str += nslen + 1;
-            nslen = 0;
-        }
-        else {
-            nslen++;
-        }
-    }
-    if (_str < str + len) {
-        telnet_send_with_retries(telnet_data.n_sd, _str, nslen);
-    }
-}
-
 bool telnet_rx_any (void) {
-    return (telnet_data.n_sd > 0) ? ((telnet_data.rxRindex != telnet_data.rxWindex) &&
-           (telnet_data.state == E_TELNET_STE_LOGGED_IN)) : false;
+    return (telnet_data.n_sd > 0) ? (telnet_data.rxRindex != telnet_data.rxWindex &&
+            telnet_data.state == E_TELNET_STE_LOGGED_IN) : false;
 }
 
 int telnet_rx_char (void) {
@@ -298,14 +278,6 @@ void telnet_reset (void) {
     servers_close_socket(&telnet_data.n_sd);
     servers_close_socket(&telnet_data.sd);
     telnet_data.state = E_TELNET_STE_START;
-}
-
-bool telnet_is_enabled (void) {
-    return telnet_data.enabled;
-}
-
-bool telnet_is_active (void) {
-    return (telnet_data.state == E_TELNET_STE_LOGGED_IN);
 }
 
 /******************************************************************************
@@ -505,7 +477,7 @@ static bool telnet_send_with_retries (int16_t sd, const void *pBuf, int16_t len)
                 return false;
             }
             // start with the default delay and increment it on each retry
-            HAL_Delay (delay++);
+            mp_hal_delay_ms(delay++);
         } while (++retries <= TELNET_TX_RETRIES_MAX);
     }
     return false;

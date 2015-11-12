@@ -105,6 +105,21 @@ void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2);
 static inline void asm_thumb_it_cc(asm_thumb_t *as, uint cc, uint mask)
     { asm_thumb_op16(as, ASM_THUMB_OP_IT | (cc << 4) | mask); }
 
+// FORMAT 1: move shifted register
+
+#define ASM_THUMB_FORMAT_1_LSL (0x0000)
+#define ASM_THUMB_FORMAT_1_LSR (0x0800)
+#define ASM_THUMB_FORMAT_1_ASR (0x1000)
+
+#define ASM_THUMB_FORMAT_1_ENCODE(op, rlo_dest, rlo_src, offset) \
+    ((op) | ((offset) << 6) | ((rlo_src) << 3) | (rlo_dest))
+
+static inline void asm_thumb_format_1(asm_thumb_t *as, uint op, uint rlo_dest, uint rlo_src, uint offset) {
+    assert(rlo_dest < ASM_THUMB_REG_R8);
+    assert(rlo_src < ASM_THUMB_REG_R8);
+    asm_thumb_op16(as, ASM_THUMB_FORMAT_1_ENCODE(op, rlo_dest, rlo_src, offset));
+}
+
 // FORMAT 2: add/subtract
 
 #define ASM_THUMB_FORMAT_2_ADD (0x1800)

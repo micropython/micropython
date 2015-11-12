@@ -12,7 +12,7 @@ CROSS_COMPILE = $(XC16)/bin/xc16-
 PARTFAMILY = dsPIC33F
 PART = 33FJ256GP506
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../stmhal
@@ -41,7 +41,7 @@ SRC_C = \
 	modpybled.c \
 	modpybswitch.c \
 	stmhal/pybstdio.c \
-	stmhal/pyexec.c \
+	lib/utils/pyexec.c \
 	lib/mp-readline/readline.c \
 
 SRC_S = \
@@ -57,7 +57,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)size $@
 
 $(PY_BUILD)/gc.o: CFLAGS += -O1

@@ -98,7 +98,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 #ifdef USE_DEVICE_MODE
     if (!(pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED)) {
         // only init USB once in the device's power-lifetime
-        USBD_SetVIDPIDRelease(vid, pid, 0x0200);
+        USBD_SetVIDPIDRelease(vid, pid, 0x0200, mode == USBD_MODE_CDC);
         if (USBD_SelectMode(mode, hid_info) != 0) {
             return false;
         }
@@ -363,7 +363,7 @@ STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
 
 STATIC mp_obj_t pyb_usb_vcp_isconnected(mp_obj_t self_in) {
-    return MP_BOOL(USBD_CDC_IsConnected());
+    return mp_obj_new_bool(USBD_CDC_IsConnected());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_isconnected_obj, pyb_usb_vcp_isconnected);
 
@@ -440,6 +440,7 @@ STATIC mp_obj_t pyb_usb_vcp_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     if (o_ret != MP_OBJ_NULL) {
         return mp_obj_new_int(ret); // number of bytes read into given buffer
     } else {
+        vstr.len = ret; // set actual number of bytes read
         return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr); // create a new buffer
     }
 }

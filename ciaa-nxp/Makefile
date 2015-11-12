@@ -16,9 +16,10 @@ CROSS_COMPILE = arm-none-eabi-
 
 INC =  -I.
 INC += -I..
-INC += -I../mphal
+INC += -I../stmhal
 INC += -I../teensy
 INC += -I../lib/mp-readline
+INC += -I../lib/timeutils
 INC += -Iboard_ciaa_edu_4337/inc/ -Ilpc_chip_43xx/inc/
 INC += -I$(BUILD)
 
@@ -46,21 +47,34 @@ SRC_C = \
 	modpyb.c \
 	ciaanxp_mphal.c \
 	modpybled.c \
-	stmhal/pyexec.c \
 	stmhal/pybstdio.c \
+	lib/fatfs/ff.c \
+	lib/fatfs/option/ccsbcs.c \
 	lib/mp-readline/readline.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/pyexec.c \
+	ffconf.c \
 	moduos.c \
 	modpybswitch.c \
 	modpybuart.c \
 	modpybpin.c \
 	modpybextint.c \
 	modpybdac.c \
+	modpybtimer.c \
+	modpybpwm.c \
+	modpybadc.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
-	teensy/memzip.c \
+	stmhal/fsusermount.c \
+	stmhal/file.c \
+	lpc43_diskio.c \
+	lpc43_flash.c \
+	lpc43_storage.c \
+	stmhal/lexerfatfs.c \
+#	teensy/memzip.c \
 	memzip_extras.c \
 	teensy/lexermemzip.c \
-#	build/ProgramScript.c \
+	build/ProgramScript.c \
 	printf.c \
 	string0.c \
 	malloc0.c \
@@ -74,18 +88,17 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 all: $(BUILD)/firmware.elf
 
-build/fs.zip: $(wildcard py/*)
-	$(ECHO) "Create ROMFS (phase 1)"
-	$(Q)(cd py && zip -0 -r -D ../$@ .)
+#build/fs.zip: $(wildcard py/*)
+#	$(ECHO) "Create ROMFS (phase 1)"
+#	$(Q)(cd py && zip -0 -r -D ../$@ .)
+#
+#build/fs.o: build/fs.zip
+#	$(ECHO) "Create ROMFS (phase 2)"
+#	$(Q)$(CROSS_COMPILE)objcopy -v -B arm -I binary -O elf32-littlearm $^ $@
 
-build/fs.o: build/fs.zip
-	$(ECHO) "Create ROMFS (phase 2)"
-	$(Q)$(CROSS_COMPILE)objcopy -v -B arm -I binary -O elf32-littlearm $^ $@
-
-
-$(BUILD)/firmware.elf: $(OBJ) build/fs.o
+$(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) -A -x $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf

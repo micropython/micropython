@@ -1,6 +1,6 @@
 # Build Instructions for the CC3200
 
-Currently the CC3200 port of Micro Python builds under Linux and OSX **but not under Windows**.
+Currently the CC3200 port of MicroPython builds under Linux and OSX **but not under Windows**.
 
 The tool chain required for the build can be found at <https://launchpad.net/gcc-arm-embedded>.
 
@@ -25,7 +25,7 @@ make BTARGET=bootloader BTYPE=release BOARD=LAUNCHXL
 ```
 
 ## Regarding old revisions of the CC3200-LAUNCHXL
-First silicon (pre-release) revisions of the CC3200 had issues with the ram blocks, and Micro Python cannot run
+First silicon (pre-release) revisions of the CC3200 had issues with the ram blocks, and MicroPython cannot run
 there. Make sure to use a **v4.1 (or higer) LAUNCHXL board** when trying this port, otherwise it won't work.
 
 ## Flashing the CC3200
@@ -53,8 +53,6 @@ If `WIPY_IP`, `WIPY_USER` or `WIPY_PWD` are omitted the default values (the ones
 
 Once the software is running, you have two options to access the MicroPython REPL:
 
-- Through the UART. 
-  **Connect to PORT 22, baud rate = 115200, parity = none, stop bits = 1**
 - Through telnet. 
   * Connect to the network created by the board (as boots up in AP mode), **ssid = "wipy-wlan", key = "www.wipy.io"**.
     * You can also reinitialize the WLAN in station mode and connect to another AP, or in AP mode but with a
@@ -82,8 +80,8 @@ the file was successfully transferred, and it has been signed with a MD5 checksu
 Now, reset the MCU by pressing the switch on the board, or by typing:
 
 ```python
-import pyb
-pyb.reset()
+import machine
+machine.reset()
 ```
 
 ### Note regarding FileZilla:

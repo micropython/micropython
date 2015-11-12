@@ -35,6 +35,7 @@ static volatile mp_uint_t tick_ct = 0;
 void SysTick_Handler(void) {
 	tick_ct++;
 	Board_UART_tick_ms();
+	Board_LED_PWM_tick_ms();
 }
 
 
@@ -45,10 +46,16 @@ void mp_hal_init(void) {
     	Board_Buttons_Init();
 }
 
+
+
 // Time funcions
 mp_uint_t mp_hal_get_milliseconds(void) {
     return tick_ct;
-    return tick_ct;
+}
+
+// Time funcions
+mp_uint_t mp_hal_ticks_ms(void) {
+    return mp_hal_get_milliseconds();
 }
 
 void mp_hal_milli_delay(mp_uint_t ms) {
@@ -57,10 +64,13 @@ void mp_hal_milli_delay(mp_uint_t ms) {
 		__WFI();
 }
 
+void mp_hal_delay_ms(mp_uint_t ms) { mp_hal_milli_delay(ms); }
+
 // STD Functions
 void mp_hal_set_interrupt_char(int c) {
     interrupt_char = c;
 }
+
 int mp_hal_stdin_rx_chr(void) {
    for (;;) {
         int r = Board_UARTGetChar();
@@ -69,14 +79,17 @@ int mp_hal_stdin_rx_chr(void) {
         }
     }
 }
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     for (; len > 0; --len) {
     	Board_UARTPutChar(*str++);
     }
 }
+
+void mp_hal_stdout_tx_str(const char *str) {
+    mp_hal_stdout_tx_strn(str, strlen(str));
+}
+
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     for (; len > 0; --len) {
         if (*str == '\n') {
@@ -238,4 +251,101 @@ int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic)
 {
 	return Board_DAC_writeDMA(buffer,size,flagCyclic);
 }
+
+// LEDS
+void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value)
+{
+	if(value<=15)
+		Board_LED_PWM_SetValue(pwmNumber,value);
+}
+
+uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
+{
+	return Board_LED_PWM_GetValue(pwmNumber);
+}
+
+//TIMERs
+void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+{
+	Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
+}
+
+void mp_hal_disableTimer(uint8_t timerNum)
+{
+	Board_TIMER_DisableTimer(timerNum);
+}
+
+void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+{
+	Board_TIMER_SetCallback(timerNum,function,arg);
+}
+
+uint32_t mp_hal_getTimerClockFrequency(void)
+{
+	return Board_TIMER_getClockFrequency();
+}
+
+void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value)
+{
+	Board_TIMER_SetTimerCounter(timerNum,value);
+}
+
+uint32_t mp_hal_getTimerCounter(uint8_t timerNum)
+{
+	return Board_TIMER_GetTimerCounter(timerNum);
+}
+
+void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value)
+{
+	Board_TIMER_SetTimerPrescaler(timerNum,value);
+}
+
+uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum)
+{
+	return Board_TIMER_GetTimerPrescaler(timerNum);
+}
+
+void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value)
+{
+	Board_TIMER_SetTimerMatch(timerNum,value);
+}
+
+uint32_t mp_hal_getTimerMatch(uint8_t timerNum)
+{
+	return Board_TIMER_GetTimerMatch(timerNum);
+}
+
+
+// PWM
+void mp_hal_setPWMFequency(uint32_t freq)
+{
+	Board_PWM_SetFrequency(freq);
+}
+
+void mp_hal_configurePWMOut(uint8_t outNumber)
+{
+	Board_PWM_ConfigureOut(outNumber);
+}
+
+void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty)
+{
+	Board_PWM_SetDutyCycle(outNumber, duty);
+}
+
+//ADC
+void mp_hal_enableADCchannel(uint8_t channelNumber)
+{
+	Board_ADC_EnableChannel(channelNumber);
+}
+
+void mp_hal_startADCconversion(void)
+{
+	Board_ADC_StartConversion();
+}
+
+uint16_t mp_hal_readADCchannel(uint8_t channelNumber)
+{
+	return Board_ADC_readValue(channelNumber);
+}
+
 

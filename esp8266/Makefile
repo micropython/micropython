@@ -14,7 +14,7 @@ BAUD = 115200
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I../stmhal
 INC += -I../lib/mp-readline
@@ -68,7 +68,6 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	printf.c \
-	pyexec.c \
 	pybstdio.c \
 	)
 
@@ -77,6 +76,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/pyexec.c \
 	)
 
 SRC_S = \
@@ -124,7 +124,7 @@ $(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 #MAKE_PINS = boards/make-pins.py

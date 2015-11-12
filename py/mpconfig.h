@@ -63,6 +63,16 @@
 //  - xxxx...xxx0 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_B (1)
 
+// A MicroPython object is a machine word having the following form:
+//  - iiiiiiii iiiiiiii iiiiiiii iiiiiii1 small int with 31-bit signed value
+//  - x1111111 1qqqqqqq qqqqqqqq qqqqq110 str with 20-bit qstr value
+//  - s1111111 10000000 00000000 00000010 +/- inf
+//  - s1111111 1xxxxxxx xxxxxxxx xxxxx010 nan, x != 0
+//  - seeeeeee efffffff ffffffff ffffff10 30-bit fp, e != 0xff
+//  - pppppppp pppppppp pppppppp pppppp00 ptr (4 byte alignment)
+// This scheme only works with 32-bit word size and float enabled.
+#define MICROPY_OBJ_REPR_C (2)
+
 #ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_A)
 #endif
@@ -116,6 +126,12 @@
 // Strings this length or less will be interned by the parser
 #ifndef MICROPY_ALLOC_PARSE_INTERN_STRING_LEN
 #define MICROPY_ALLOC_PARSE_INTERN_STRING_LEN (10)
+#endif
+
+// Number of bytes to allocate initially when creating new chunks to store
+// parse nodes.  Small leads to fragmentation, large leads to excess use.
+#ifndef MICROPY_ALLOC_PARSE_CHUNK_INIT
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT (128)
 #endif
 
 // Initial amount for ids in a scope
@@ -193,6 +209,11 @@
 #define MICROPY_EMIT_INLINE_THUMB (0)
 #endif
 
+// Whether to enable ARMv7-M instruction support in the Thumb2 inline assembler
+#ifndef MICROPY_EMIT_INLINE_THUMB_ARMV7M
+#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
+#endif
+
 // Whether to enable float support in the Thumb2 inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB_FLOAT
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
@@ -208,6 +229,11 @@
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */
+
+// Whether to enable constant folding; eg 1+2 rewritten as 3
+#ifndef MICROPY_COMP_CONST_FOLDING
+#define MICROPY_COMP_CONST_FOLDING (1)
+#endif
 
 // Whether to enable lookup of constants in modules; eg module.CONST
 #ifndef MICROPY_COMP_MODULE_CONST
@@ -393,6 +419,11 @@ typedef double mp_float_t;
 // Whether POSIX-semantics non-blocking streams are supported
 #ifndef MICROPY_STREAMS_NON_BLOCK
 #define MICROPY_STREAMS_NON_BLOCK (0)
+#endif
+
+// Whether to call __init__ when importing builtin modules for the first time
+#ifndef MICROPY_MODULE_BUILTIN_INIT
+#define MICROPY_MODULE_BUILTIN_INIT (0)
 #endif
 
 // Whether module weak links are supported
@@ -676,6 +707,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE (0)
 #endif
 
+#ifndef MICROPY_PY_USSL
+#define MICROPY_PY_USSL (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
@@ -786,7 +821,7 @@ typedef double mp_float_t;
 
 // This macro is used to do all output (except when MICROPY_PY_IO is defined)
 #ifndef MP_PLAT_PRINT_STRN
-#define MP_PLAT_PRINT_STRN(str, len) printf("%.*s", (int)len, str)
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #endif
 
 #ifndef MP_SSIZE_MAX

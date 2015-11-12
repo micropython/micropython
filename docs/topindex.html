@@ -34,8 +34,6 @@
           <a class="biglink" href="{{ pathto(port + "/general") }}">General information about {{ port_name }}</a><br/>
           <span class="linkdescr">read this first for a quick overview</span>
         </p>
-      {% endif %}
-      {% if port == "pyboard" %}
         <p class="biglink">
           <a class="biglink" href="{{ pathto(port + "/tutorial/index") }}">Tutorials and code examples</a><br/>
           <span class="linkdescr">start here</span>
@@ -43,7 +41,11 @@
       {% endif %}
       <p class="biglink">
         <a class="biglink" href="{{ pathto("library/index") }}">Library Reference</a><br/>
-        <span class="linkdescr">MicroPython libraries, including the <a href="{{ pathto("library/pyb") }}">pyb module</a></span>
+        {% if port == "wipy" %}
+          <span class="linkdescr">MicroPython libraries, including the <a href="{{ pathto("library/machine") }}">machine module</a></span>
+        {% else %}
+          <span class="linkdescr">MicroPython libraries, including the <a href="{{ pathto("library/pyb") }}">pyb module</a></span>
+        {% endif %}
       </p>
     </td>
     <td width="40%" style="padding-left:2em;">

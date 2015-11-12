@@ -86,3 +86,6 @@
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+
+// MMA accelerometer config
+#define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)

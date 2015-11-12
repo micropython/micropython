@@ -30,7 +30,7 @@
 #include "py/obj.h"
 
 STATIC const char *help_text =
-"Welcome to Micro Python!\n"
+"Welcome to MicroPython!\n"
 "\n"
 "For online help please visit http://micropython.org/help/.\n"
 "\n"
@@ -67,6 +67,7 @@ STATIC const char *help_text =
 "  CTRL-B        -- on a blank line, enter normal REPL mode\n"
 "  CTRL-C        -- interrupt a running program\n"
 "  CTRL-D        -- on a blank line, do a soft reset of the board\n"
+"  CTRL-E        -- on a blank line, enter paste mode\n"
 "\n"
 "For further help on a specific object, type help(obj)\n"
 ;
