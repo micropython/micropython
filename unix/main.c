@@ -502,7 +502,7 @@ int main(int argc, char **argv) {
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
-                if (isdigit(argv[a][2])) {
+                if (unichar_isdigit(argv[a][2])) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
                 } else {
                     MP_STATE_VM(mp_optimise_value) = 0;
