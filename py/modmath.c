@@ -65,8 +65,10 @@ MATH_FUN_1(sqrt, sqrt)
 MATH_FUN_2(pow, pow)
 /// \function exp(x)
 MATH_FUN_1(exp, exp)
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 /// \function expm1(x)
 MATH_FUN_1(expm1, expm1)
+#endif
 /// \function log2(x)
 MATH_FUN_1(log2, log2)
 /// \function log10(x)
