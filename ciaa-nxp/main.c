@@ -8,7 +8,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "stmhal/pyexec.h"
+#include "lib/utils/pyexec.h"
 
 #include "lib/fatfs/ff.h"
 
