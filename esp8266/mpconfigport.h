@@ -43,6 +43,7 @@
 #define MICROPY_FATFS_ENABLE_LFN        (0)
 #define MICROPY_FATFS_LFN_CODE_PAGE     (1)
 #define MICROPY_FATFS_MAX_LFN           (MICROPY_ALLOC_PATH_MAX)
+#define MICROPY_FSUSERMOUNT             (1)
 
 // type definitions for the specific machine
 
@@ -92,6 +93,9 @@ extern const struct _mp_obj_module_t uos_module;
     /* Singleton instance of scan callback, meaning that there can
        be only one concurrent AP scan. */ \
     mp_obj_t scan_cb_obj; \
+    \
+    /* for user-mountable block device */ \
+    struct _fs_user_mount_t *fs_user_mount; \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

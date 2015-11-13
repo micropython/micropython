@@ -42,6 +42,15 @@ Q(sync)
 Q(hard_reset)
 Q(unique_id)
 
+// for user-mountable block devices
+Q(mount)
+Q(readonly)
+Q(mkfs)
+Q(readblocks)
+Q(writeblocks)
+Q(sync)
+Q(count)
+
 // uos module
 Q(uos)
 Q(os)

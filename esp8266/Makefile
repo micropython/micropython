@@ -82,6 +82,10 @@ LIB_SRC_C = $(addprefix lib/,\
 	utils/printf.c \
 	)
 
+EXTMOD_SRC_C = $(addprefix extmod/,\
+	fsusermount.c \
+	)
+
 SRC_S = \
 	gchelper.s \
 
