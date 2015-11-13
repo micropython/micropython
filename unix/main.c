@@ -85,7 +85,6 @@ STATIC int handle_uncaught_exception(mp_obj_t exc) {
 
     // Report all other exceptions
     mp_obj_print_exception(&mp_stderr_print, exc);
-    mp_printf(&mp_stderr_print, exc);
     return 1;
 }
 
