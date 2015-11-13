@@ -42,7 +42,15 @@ ECHO = @echo
 CP = cp
 MKDIR = mkdir
 SED = sed
+ifneq (,$(shell which python3))
+PYTHON = python3
+else
+ifneq (,$(shell which python))
 PYTHON = python
+else
+PYTHON = python2
+endif
+endif
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
