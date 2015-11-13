@@ -207,7 +207,7 @@ void ICACHE_FLASH_ATTR uart_reattach() {
 // Task-based UART interface
 
 #include "py/obj.h"
-#include "stmhal/pyexec.h"
+#include "lib/utils/pyexec.h"
 
 void soft_reset(void);
 

@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__
+#define __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__
 
 typedef enum {
     PYEXEC_MODE_RAW_REPL,
@@ -41,3 +43,5 @@ void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);
+
+#endif // __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__

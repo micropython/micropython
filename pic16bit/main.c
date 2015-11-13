@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "pyexec.h"
+#include "lib/utils/pyexec.h"
 #include "readline.h"
 #include "board.h"
 #include "modpyb.h"

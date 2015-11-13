@@ -56,6 +56,14 @@ struct _emit_t {
     mp_uint_t bytecode_offset;
     mp_uint_t bytecode_size;
     byte *code_base; // stores both byte code and code info
+
+    #if MICROPY_PERSISTENT_CODE
+    uint16_t ct_cur_obj;
+    uint16_t ct_num_obj;
+    uint16_t ct_cur_raw_code;
+    #endif
+    mp_uint_t *const_table;
+
     // Accessed as mp_uint_t, so must be aligned as such
     byte dummy_data[DUMMY_DATA_SIZE];
 };
@@ -107,16 +115,23 @@ STATIC byte *emit_get_cur_to_write_code_info(emit_t *emit, int num_bytes_to_writ
     }
 }
 
-STATIC void emit_align_code_info_to_machine_word(emit_t *emit) {
-    emit->code_info_offset = (emit->code_info_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
+STATIC void emit_write_code_info_byte(emit_t* emit, byte val) {
+    *emit_get_cur_to_write_code_info(emit, 1) = val;
 }
 
-STATIC void emit_write_code_info_uint(emit_t *emit, mp_uint_t val) {
+STATIC void emit_write_code_info_uint(emit_t* emit, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_code_info, val);
 }
 
 STATIC void emit_write_code_info_qstr(emit_t *emit, qstr qst) {
+    #if MICROPY_PERSISTENT_CODE
+    assert((qst >> 16) == 0);
+    byte *c = emit_get_cur_to_write_code_info(emit, 2);
+    c[0] = qst;
+    c[1] = qst >> 8;
+    #else
     emit_write_uint(emit, emit_get_cur_to_write_code_info, qst);
+    #endif
 }
 
 #if MICROPY_ENABLE_SOURCE_LINE
@@ -158,20 +173,12 @@ STATIC byte *emit_get_cur_to_write_bytecode(emit_t *emit, int num_bytes_to_write
     }
 }
 
-STATIC void emit_align_bytecode_to_machine_word(emit_t *emit) {
-    emit->bytecode_offset = (emit->bytecode_offset + sizeof(mp_uint_t) - 1) & (~(sizeof(mp_uint_t) - 1));
-}
-
 STATIC void emit_write_bytecode_byte(emit_t *emit, byte b1) {
     byte *c = emit_get_cur_to_write_bytecode(emit, 1);
     c[0] = b1;
 }
 
-STATIC void emit_write_bytecode_uint(emit_t *emit, mp_uint_t val) {
-    emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
-}
-
-STATIC void emit_write_bytecode_byte_byte(emit_t *emit, byte b1, byte b2) {
+STATIC void emit_write_bytecode_byte_byte(emit_t* emit, byte b1, byte b2) {
     assert((b2 & (~0xff)) == 0);
     byte *c = emit_get_cur_to_write_bytecode(emit, 2);
     c[0] = b1;
@@ -210,33 +217,55 @@ STATIC void emit_write_bytecode_byte_uint(emit_t *emit, byte b, mp_uint_t val) {
     emit_write_uint(emit, emit_get_cur_to_write_bytecode, val);
 }
 
-STATIC void emit_write_bytecode_prealigned_ptr(emit_t *emit, void *ptr) {
-    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
-    // Verify thar c is already uint-aligned
-    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
-    *c = (mp_uint_t)ptr;
+#if MICROPY_PERSISTENT_CODE
+STATIC void emit_write_bytecode_byte_const(emit_t *emit, byte b, mp_uint_t n, mp_uint_t c) {
+    if (emit->pass == MP_PASS_EMIT) {
+        emit->const_table[n] = c;
+    }
+    emit_write_bytecode_byte_uint(emit, b, n);
 }
-
-// aligns the pointer so it is friendly to GC
+#else
 STATIC void emit_write_bytecode_byte_ptr(emit_t *emit, byte b, void *ptr) {
+    // aligns the pointer so it is friendly to GC
     emit_write_bytecode_byte(emit, b);
-    emit_align_bytecode_to_machine_word(emit);
+    emit->bytecode_offset = (mp_uint_t)MP_ALIGN(emit->bytecode_offset, sizeof(mp_uint_t));
     mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
     // Verify thar c is already uint-aligned
     assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
     *c = (mp_uint_t)ptr;
 }
+#endif
 
-/* currently unused
-STATIC void emit_write_bytecode_byte_uint_uint(emit_t *emit, byte b, mp_uint_t num1, mp_uint_t num2) {
-    emit_write_bytecode_byte(emit, b);
-    emit_write_bytecode_byte_uint(emit, num1);
-    emit_write_bytecode_byte_uint(emit, num2);
-}
-*/
-
-STATIC void emit_write_bytecode_byte_qstr(emit_t *emit, byte b, qstr qst) {
+STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, byte b, qstr qst) {
+    #if MICROPY_PERSISTENT_CODE
+    assert((qst >> 16) == 0);
+    byte *c = emit_get_cur_to_write_bytecode(emit, 3);
+    c[0] = b;
+    c[1] = qst;
+    c[2] = qst >> 8;
+    #else
     emit_write_bytecode_byte_uint(emit, b, qst);
+    #endif
+}
+
+STATIC void emit_write_bytecode_byte_obj(emit_t *emit, byte b, void *ptr) {
+    #if MICROPY_PERSISTENT_CODE
+    emit_write_bytecode_byte_const(emit, b,
+        emit->scope->num_pos_args + emit->scope->num_kwonly_args
+        + emit->ct_cur_obj++, (mp_uint_t)ptr);
+    #else
+    emit_write_bytecode_byte_ptr(emit, b, ptr);
+    #endif
+}
+
+STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, byte b, mp_raw_code_t *rc) {
+    #if MICROPY_PERSISTENT_CODE
+    emit_write_bytecode_byte_const(emit, b,
+        emit->scope->num_pos_args + emit->scope->num_kwonly_args
+        + emit->ct_num_obj + emit->ct_cur_raw_code++, (mp_uint_t)rc);
+    #else
+    emit_write_bytecode_byte_ptr(emit, b, rc);
+    #endif
 }
 
 // unsigned labels are relative to ip following this instruction, stored as 16 bits
@@ -289,20 +318,60 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->bytecode_offset = 0;
     emit->code_info_offset = 0;
 
-    // Write code info size as compressed uint.  If we are not in the final pass
-    // then space for this uint is reserved in emit_bc_end_pass.
-    if (pass == MP_PASS_EMIT) {
-        emit_write_code_info_uint(emit, emit->code_info_size);
+    // Write local state size and exception stack size.
+    {
+        mp_uint_t n_state = scope->num_locals + scope->stack_size;
+        if (n_state == 0) {
+            // Need at least 1 entry in the state, in the case an exception is
+            // propagated through this function, the exception is returned in
+            // the highest slot in the state (fastn[0], see vm.c).
+            n_state = 1;
+        }
+        emit_write_code_info_uint(emit, n_state);
+        emit_write_code_info_uint(emit, scope->exc_stack_size);
     }
 
-    // write the name and source file of this function
+    // Write scope flags and number of arguments.
+    // TODO check that num args all fit in a byte
+    emit_write_code_info_byte(emit, emit->scope->scope_flags);
+    emit_write_code_info_byte(emit, emit->scope->num_pos_args);
+    emit_write_code_info_byte(emit, emit->scope->num_kwonly_args);
+    emit_write_code_info_byte(emit, emit->scope->num_def_pos_args);
+
+    // Write size of the rest of the code info.  We don't know how big this
+    // variable uint will be on the MP_PASS_CODE_SIZE pass so we reserve 2 bytes
+    // for it and hope that is enough!  TODO assert this or something.
+    if (pass == MP_PASS_EMIT) {
+        emit_write_code_info_uint(emit, emit->code_info_size - emit->code_info_offset);
+    } else  {
+        emit_get_cur_to_write_code_info(emit, 2);
+    }
+
+    // Write the name and source file of this function.
     emit_write_code_info_qstr(emit, scope->simple_name);
     emit_write_code_info_qstr(emit, scope->source_file);
 
-    // bytecode prelude: argument names (needed to resolve positional args passed as keywords)
-    // we store them as full word-sized objects for efficient access in mp_setup_code_state
-    // this is the start of the prelude and is guaranteed to be aligned on a word boundary
-    {
+    // bytecode prelude: initialise closed over variables
+    for (int i = 0; i < scope->id_info_len; i++) {
+        id_info_t *id = &scope->id_info[i];
+        if (id->kind == ID_INFO_KIND_CELL) {
+            assert(id->local_num < 255);
+            emit_write_bytecode_byte(emit, id->local_num); // write the local which should be converted to a cell
+        }
+    }
+    emit_write_bytecode_byte(emit, 255); // end of list sentinel
+
+    #if MICROPY_PERSISTENT_CODE
+    emit->ct_cur_obj = 0;
+    emit->ct_cur_raw_code = 0;
+    #endif
+
+    if (pass == MP_PASS_EMIT) {
+        // Write argument names (needed to resolve positional args passed as
+        // keywords).  We store them as full word-sized objects for efficient access
+        // in mp_setup_code_state this is the start of the prelude and is guaranteed
+        // to be aligned on a word boundary.
+
         // For a given argument position (indexed by i) we need to find the
         // corresponding id_info which is a parameter, as it has the correct
         // qstr name to use as the argument name.  Note that it's not a simple
@@ -322,32 +391,9 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
                     break;
                 }
             }
-            emit_write_bytecode_prealigned_ptr(emit, MP_OBJ_NEW_QSTR(qst));
+            emit->const_table[i] = (mp_uint_t)MP_OBJ_NEW_QSTR(qst);
         }
     }
-
-    // bytecode prelude: local state size and exception stack size
-    {
-        mp_uint_t n_state = scope->num_locals + scope->stack_size;
-        if (n_state == 0) {
-            // Need at least 1 entry in the state, in the case an exception is
-            // propagated through this function, the exception is returned in
-            // the highest slot in the state (fastn[0], see vm.c).
-            n_state = 1;
-        }
-        emit_write_bytecode_uint(emit, n_state);
-        emit_write_bytecode_uint(emit, scope->exc_stack_size);
-    }
-
-    // bytecode prelude: initialise closed over variables
-    for (int i = 0; i < scope->id_info_len; i++) {
-        id_info_t *id = &scope->id_info[i];
-        if (id->kind == ID_INFO_KIND_CELL) {
-            assert(id->local_num < 255);
-            emit_write_bytecode_byte(emit, id->local_num); // write the local which should be converted to a cell
-        }
-    }
-    emit_write_bytecode_byte(emit, 255); // end of list sentinel
 }
 
 void mp_emit_bc_end_pass(emit_t *emit) {
@@ -360,36 +406,40 @@ void mp_emit_bc_end_pass(emit_t *emit) {
         mp_printf(&mp_plat_print, "ERROR: stack size not back to zero; got %d\n", emit->stack_size);
     }
 
-    *emit_get_cur_to_write_code_info(emit, 1) = 0; // end of line number info
+    emit_write_code_info_byte(emit, 0); // end of line number info
+
+    #if MICROPY_PERSISTENT_CODE
+    assert(emit->pass <= MP_PASS_STACK_SIZE || (emit->ct_num_obj == emit->ct_cur_obj));
+    emit->ct_num_obj = emit->ct_cur_obj;
+    #endif
 
     if (emit->pass == MP_PASS_CODE_SIZE) {
-        // Need to make sure we have enough room in the code-info block to write
-        // the size of the code-info block.  Since the size is written as a
-        // compressed uint, we don't know its size until we write it!  Thus, we
-        // take the biggest possible value it could be and write that here.
-        // Then there will be enough room to write the value, and any leftover
-        // space will be absorbed in the alignment at the end of the code-info
-        // block.
-        mp_uint_t max_code_info_size =
-            emit->code_info_offset  // current code-info size
-            + BYTES_FOR_INT         // maximum space for compressed uint
-            + BYTES_PER_WORD - 1;   // maximum space for alignment padding
-        emit_write_code_info_uint(emit, max_code_info_size);
-
-        // Align code-info so that following bytecode is aligned on a machine word.
-        // We don't need to write anything here, it's just dead space between the
-        // code-info block and the bytecode block that follows it.
-        emit_align_code_info_to_machine_word(emit);
+        #if !MICROPY_PERSISTENT_CODE
+        // so bytecode is aligned
+        emit->code_info_offset = (mp_uint_t)MP_ALIGN(emit->code_info_offset, sizeof(mp_uint_t));
+        #endif
 
         // calculate size of total code-info + bytecode, in bytes
         emit->code_info_size = emit->code_info_offset;
         emit->bytecode_size = emit->bytecode_offset;
         emit->code_base = m_new0(byte, emit->code_info_size + emit->bytecode_size);
 
+        #if MICROPY_PERSISTENT_CODE
+        emit->const_table = m_new0(mp_uint_t,
+            emit->scope->num_pos_args + emit->scope->num_kwonly_args
+            + emit->ct_cur_obj + emit->ct_cur_raw_code);
+        #else
+        emit->const_table = m_new0(mp_uint_t,
+            emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+        #endif
+
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
             emit->code_info_size + emit->bytecode_size,
-            emit->scope->num_pos_args, emit->scope->num_kwonly_args,
+            emit->const_table,
+            #if MICROPY_PERSISTENT_CODE_SAVE
+            emit->ct_cur_obj, emit->ct_cur_raw_code,
+            #endif
             emit->scope->scope_flags);
     }
 }
@@ -473,7 +523,7 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
         case MP_TOKEN_KW_NONE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_NONE); break;
         case MP_TOKEN_KW_TRUE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_TRUE); break;
         no_other_choice:
-        case MP_TOKEN_ELLIPSIS: emit_write_bytecode_byte_ptr(emit, MP_BC_LOAD_CONST_OBJ, (void*)&mp_const_ellipsis_obj); break;
+        case MP_TOKEN_ELLIPSIS: emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, (void*)&mp_const_ellipsis_obj); break;
         default: assert(0); goto no_other_choice; // to help flow control analysis
     }
 }
@@ -494,7 +544,7 @@ void mp_emit_bc_load_const_str(emit_t *emit, qstr qst) {
 
 void mp_emit_bc_load_const_obj(emit_t *emit, void *obj) {
     emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_ptr(emit, MP_BC_LOAD_CONST_OBJ, obj);
+    emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, obj);
 }
 
 void mp_emit_bc_load_null(emit_t *emit) {
@@ -837,22 +887,22 @@ void mp_emit_bc_unpack_ex(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right) {
 void mp_emit_bc_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, 1);
-        emit_write_bytecode_byte_ptr(emit, MP_BC_MAKE_FUNCTION, scope->raw_code);
+        emit_write_bytecode_byte_raw_code(emit, MP_BC_MAKE_FUNCTION, scope->raw_code);
     } else {
         emit_bc_pre(emit, -1);
-        emit_write_bytecode_byte_ptr(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->raw_code);
+        emit_write_bytecode_byte_raw_code(emit, MP_BC_MAKE_FUNCTION_DEFARGS, scope->raw_code);
     }
 }
 
 void mp_emit_bc_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_over, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults) {
     if (n_pos_defaults == 0 && n_kw_defaults == 0) {
         emit_bc_pre(emit, -n_closed_over + 1);
-        emit_write_bytecode_byte_ptr(emit, MP_BC_MAKE_CLOSURE, scope->raw_code);
+        emit_write_bytecode_byte_raw_code(emit, MP_BC_MAKE_CLOSURE, scope->raw_code);
         emit_write_bytecode_byte(emit, n_closed_over);
     } else {
         assert(n_closed_over <= 255);
         emit_bc_pre(emit, -2 - n_closed_over + 1);
-        emit_write_bytecode_byte_ptr(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->raw_code);
+        emit_write_bytecode_byte_raw_code(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->raw_code);
         emit_write_bytecode_byte(emit, n_closed_over);
     }
 }

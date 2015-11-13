@@ -28,7 +28,8 @@
 
 #include "py/mpstate.h"
 #include "lib/fatfs/ff.h"
-#include "ffconf.h"
+#include "lib/fatfs/ffconf.h"
+#include "lib/fatfs/diskio.h"
 #include "fsusermount.h"
 
 STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_t mount_point_len) {
@@ -60,21 +61,21 @@ int ff_get_ldnumber (const TCHAR **path) {
     }
 
     if (check_path(path, "/flash", 6)) {
-        return 0;
+        return PD_FLASH;
     } else if (check_path(path, "/sd", 3)) {
-        return 1;
+        return PD_SDCARD;
     } else if (MP_STATE_PORT(fs_user_mount) != NULL && check_path(path, MP_STATE_PORT(fs_user_mount)->str, MP_STATE_PORT(fs_user_mount)->len)) {
-        return 2;
+        return PD_USER;
     } else {
         return -1;
     }
 }
 
 void ff_get_volname(BYTE vol, TCHAR **dest) {
-    if (vol == 0) {
+    if (vol == PD_FLASH) {
         memcpy(*dest, "/flash", 6);
         *dest += 6;
-    } else if (vol == 1) {
+    } else if (vol == PD_SDCARD) {
         memcpy(*dest, "/sd", 3);
         *dest += 3;
     } else {

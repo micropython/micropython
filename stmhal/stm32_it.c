@@ -94,7 +94,7 @@ extern PCD_HandleTypeDef pcd_handle;
 
 #include "py/mphal.h"
 
-char *fmt_hex(uint32_t val, char *buf) {
+STATIC char *fmt_hex(uint32_t val, char *buf) {
     const char *hexDig = "0123456789abcdef";
 
     buf[0] = hexDig[(val >> 28) & 0x0f];
@@ -110,30 +110,32 @@ char *fmt_hex(uint32_t val, char *buf) {
     return buf;
 }
 
-void print_reg(const char *label, uint32_t val) {
+STATIC void print_reg(const char *label, uint32_t val) {
     char hexStr[9];
 
     mp_hal_stdout_tx_str(label);
     mp_hal_stdout_tx_str(fmt_hex(val, hexStr));
     mp_hal_stdout_tx_str("\r\n");
 }
-#endif // REPORT_HARD_FAULT_REGS
 
-/**
-  * @brief   This function handles NMI exception.
-  * @param  None
-  * @retval None
-  */
-void NMI_Handler(void) {
-}
+// The ARMv7M Architecture manual (section B.1.5.6) says that upon entry
+// to an exception, that the registers will be in the following order on the
+// // stack: R0, R1, R2, R3, R12, LR, PC, XPSR
 
-/**
-  * @brief  This function handles Hard Fault exception.
-  * @param  None
-  * @retval None
-  */
-void HardFault_Handler(void) {
-#if REPORT_HARD_FAULT_REGS
+typedef struct {
+    uint32_t    r0, r1, r2, r3, r12, lr, pc, xpsr;
+} ExceptionRegisters_t;
+
+void HardFault_C_Handler(ExceptionRegisters_t *regs) {
+    print_reg("R0    ", regs->r0);
+    print_reg("R1    ", regs->r1);
+    print_reg("R2    ", regs->r2);
+    print_reg("R3    ", regs->r3);
+    print_reg("R12   ", regs->r12);
+    print_reg("LR    ", regs->lr);
+    print_reg("PC    ", regs->pc);
+    print_reg("XPSR  ", regs->xpsr);
+
     uint32_t cfsr = SCB->CFSR;
 
     print_reg("HFSR  ", SCB->HFSR);
@@ -144,12 +146,48 @@ void HardFault_Handler(void) {
     if (cfsr & 0x8000) {
         print_reg("BFAR  ", SCB->BFAR);
     }
-#endif // REPORT_HARD_FAULT_REGS
-
     /* Go to infinite loop when Hard Fault exception occurs */
     while (1) {
         __fatal_error("HardFault");
     }
+}
+
+// Naked functions have no compiler generated gunk, so are the best thing to
+// use for asm functions.
+__attribute__((naked))
+void HardFault_Handler(void) {
+
+    // From the ARMv7M Architecture Reference Manual, section B.1.5.6
+    // on entry to the Exception, the LR register contains, amongst other
+    // things, the value of CONTROL.SPSEL. This can be found in bit 3.
+    //
+    // If CONTROL.SPSEL is 0, then the exception was stacked up using the
+    // main stack pointer (aka MSP). If CONTROL.SPSEL is 1, then the exception
+    // was stacked up using the process stack pointer (aka PSP).
+
+    __asm volatile(
+    " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
+    " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
+    " mrseq r0, msp \n"         // Make R0 point to main stack pointer
+    " mrsne r0, psp \n"         // Make R0 point to process stack pointer
+    " b HardFault_C_Handler \n" // Off to C land
+    );
+}
+#else
+void HardFault_Handler(void) {
+    /* Go to infinite loop when Hard Fault exception occurs */
+    while (1) {
+        __fatal_error("HardFault");
+    }
+}
+#endif // REPORT_HARD_FAULT_REGS
+
+/**
+  * @brief   This function handles NMI exception.
+  * @param  None
+  * @retval None
+  */
+void NMI_Handler(void) {
 }
 
 /**

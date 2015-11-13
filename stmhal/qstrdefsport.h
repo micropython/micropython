@@ -427,6 +427,10 @@ Q(poll)
 Q(register)
 Q(unregister)
 Q(modify)
+Q(POLLIN)
+Q(POLLOUT)
+Q(POLLERR)
+Q(POLLHUP)
 
 // for input
 Q(input)

@@ -285,6 +285,10 @@ STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uselect) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_select_select_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLIN), MP_OBJ_NEW_SMALL_INT(MP_IOCTL_POLL_RD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLOUT), MP_OBJ_NEW_SMALL_INT(MP_IOCTL_POLL_WR) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLERR), MP_OBJ_NEW_SMALL_INT(MP_IOCTL_POLL_ERR) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLHUP), MP_OBJ_NEW_SMALL_INT(MP_IOCTL_POLL_HUP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);

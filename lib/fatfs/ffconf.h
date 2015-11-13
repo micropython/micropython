@@ -85,8 +85,11 @@
 #define	_USE_FASTSEEK	0
 /* This option switches fast seek feature. (0:Disable or 1:Enable) */
 
-
-#define _USE_LABEL		1
+#ifdef MICROPY_FATFS_USE_LABEL
+#define _USE_LABEL		(MICROPY_FATFS_USE_LABEL)
+#else
+#define _USE_LABEL		0
+#endif
 /* This option switches volume label functions, f_getlabel() and f_setlabel().
 /  (0:Disable or 1:Enable) */
 
@@ -99,8 +102,11 @@
 /*---------------------------------------------------------------------------/
 / Locale and Namespace Configurations
 /---------------------------------------------------------------------------*/
-
-#define _CODE_PAGE	(MICROPY_LFN_CODE_PAGE)
+#ifdef MICROPY_FATFS_LFN_CODE_PAGE
+#define _CODE_PAGE	(MICROPY_FATFS_LFN_CODE_PAGE)
+#else
+#define _CODE_PAGE	1
+#endif
 /* This option specifies the OEM code page to be used on the target system.
 /  Incorrect setting of the code page can cause a file open failure.
 /
@@ -123,9 +129,16 @@
 /   950  - Traditional Chinese Big5 (DBCS)
 */
 
-
-#define	_USE_LFN	(MICROPY_ENABLE_LFN)
+#ifdef MICROPY_FATFS_ENABLE_LFN
+#define	_USE_LFN	(MICROPY_FATFS_ENABLE_LFN)
+#else
+#define	_USE_LFN	0
+#endif
+#ifdef MICROPY_FATFS_MAX_LFN
+#define	_MAX_LFN	(MICROPY_FATFS_MAX_LFN)
+#else
 #define	_MAX_LFN	255
+#endif
 /* The _USE_LFN option switches the LFN feature.
 /
 /   0: Disable LFN feature. _MAX_LFN has no effect.
@@ -157,8 +170,11 @@
 /
 /  When _LFN_UNICODE is 0, this option has no effect. */
 
-
-#define _FS_RPATH	2
+#ifdef MICROPY_FATFS_RPATH
+#define _FS_RPATH	(MICROPY_FATFS_RPATH)
+#else
+#define _FS_RPATH	0
+#endif
 /* This option configures relative path feature.
 /
 /   0: Disable relative path feature and remove related functions.
@@ -172,7 +188,11 @@
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
-#define _VOLUMES	3
+#ifdef MICROPY_FATFS_VOLUMES
+#define _VOLUMES	(MICROPY_FATFS_VOLUMES)
+#else
+#define _VOLUMES	1
+#endif
 /* Number of volumes (logical drives) to be used. */
 
 
@@ -184,8 +204,11 @@
 /  logical drives. Number of items must be equal to _VOLUMES. Valid characters for
 /  the drive ID strings are: A-Z and 0-9. */
 
-
-#define	_MULTI_PARTITION	1
+#ifdef MICROPY_FATFS_MULTI_PARTITION
+#define	_MULTI_PARTITION	(MICROPY_FATFS_MULTI_PARTITION)
+#else
+#define	_MULTI_PARTITION	0
+#endif
 /* This option switches multi-partition feature. By default (0), each logical drive
 /  number is bound to the same physical drive number and only an FAT volume found on
 /  the physical drive will be mounted. When multi-partition feature is enabled (1),
@@ -236,7 +259,7 @@
 /  defined by _NORTC_MON, _NORTC_MDAY and _NORTC_YEAR.
 /  When timestamp feature is enabled (_FS_NORTC	== 0), get_fattime() function need
 /  to be added to the project to read current time form RTC. _NORTC_MON,
-/  _NORTC_MDAY and _NORTC_YEAR have no effect. 
+/  _NORTC_MDAY and _NORTC_YEAR have no effect.
 /  These options have no effect at read-only configuration (_FS_READONLY == 1). */
 
 
@@ -251,10 +274,24 @@
 /      can be opened simultaneously under file lock control. Note that the file
 /      lock feature is independent of re-entrancy. */
 
-
+#ifdef MICROPY_FATFS_REENTRANT
+#define _FS_REENTRANT	(MICROPY_FATFS_REENTRANT)
+#else
 #define _FS_REENTRANT	0
+#endif
+
+// milliseconds
+#ifdef MICROPY_FATFS_TIMEOUT
+#define _FS_TIMEOUT		(MICROPY_FATFS_TIMEOUT)
+#else
 #define _FS_TIMEOUT		1000
+#endif
+
+#ifdef MICROPY_FATFS_SYNC_T
+#define	_SYNC_t			MICROPY_FATFS_SYNC_T
+#else
 #define	_SYNC_t			HANDLE
+#endif
 /* The _FS_REENTRANT option switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different
 /  volume is always re-entrant and volume control functions, f_mount(), f_mkfs()

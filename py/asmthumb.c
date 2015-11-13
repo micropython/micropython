@@ -88,6 +88,7 @@ void asm_thumb_start_pass(asm_thumb_t *as, uint pass) {
 }
 
 void asm_thumb_end_pass(asm_thumb_t *as) {
+    (void)as;
     // could check labels are resolved...
 }
 
@@ -402,7 +403,7 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (dest != -1 && rel <= -4) {
+    if (dest != (mp_uint_t)-1 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 12 bit relative jump
         if (SIGNED_FIT12(rel)) {
@@ -421,7 +422,7 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
-    if (dest != -1 && rel <= -4) {
+    if (dest != (mp_uint_t)-1 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 9 bit relative jump
         if (SIGNED_FIT9(rel)) {

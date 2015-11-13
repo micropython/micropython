@@ -566,9 +566,8 @@ struct _emit_t {
     stack_info_t *stack_info;
     vtype_kind_t saved_stack_vtype;
 
-    int code_info_size;
-    int code_info_offset;
     int prelude_offset;
+    int const_table_offset;
     int n_state;
     int stack_start;
     int stack_size;
@@ -774,10 +773,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_ARG_1);
         #endif
 
-        // set code_state.code_info (offset from start of this function to code_info data)
-        // XXX this encoding may change size
-        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->code_info_offset, offsetof(mp_code_state, code_info) / sizeof(mp_uint_t), REG_ARG_1);
-
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
         ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state, ip) / sizeof(mp_uint_t), REG_ARG_1);
@@ -829,11 +824,37 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     }
 
     if (!emit->do_viper_types) {
-        // write dummy code info (for mp_setup_code_state to parse) and arg names
-        emit->code_info_offset = ASM_GET_CODE_POS(emit->as);
-        ASM_DATA(emit->as, 1, emit->code_info_size);
+        emit->prelude_offset = ASM_GET_CODE_POS(emit->as);
+        ASM_DATA(emit->as, 1, emit->scope->scope_flags);
+        ASM_DATA(emit->as, 1, emit->scope->num_pos_args);
+        ASM_DATA(emit->as, 1, emit->scope->num_kwonly_args);
+        ASM_DATA(emit->as, 1, emit->scope->num_def_pos_args);
+
+        // write code info
+        #if MICROPY_PERSISTENT_CODE
+        ASM_DATA(emit->as, 1, 5);
+        ASM_DATA(emit->as, 1, emit->scope->simple_name);
+        ASM_DATA(emit->as, 1, emit->scope->simple_name >> 8);
+        ASM_DATA(emit->as, 1, emit->scope->source_file);
+        ASM_DATA(emit->as, 1, emit->scope->source_file >> 8);
+        #else
+        ASM_DATA(emit->as, 1, 1);
+        #endif
+
+        // bytecode prelude: initialise closed over variables
+        for (int i = 0; i < emit->scope->id_info_len; i++) {
+            id_info_t *id = &emit->scope->id_info[i];
+            if (id->kind == ID_INFO_KIND_CELL) {
+                assert(id->local_num < 255);
+                ASM_DATA(emit->as, 1, id->local_num); // write the local which should be converted to a cell
+            }
+        }
+        ASM_DATA(emit->as, 1, 255); // end of list sentinel
+
         ASM_ALIGN(emit->as, ASM_WORD_SIZE);
-        emit->code_info_size = ASM_GET_CODE_POS(emit->as) - emit->code_info_offset;
+        emit->const_table_offset = ASM_GET_CODE_POS(emit->as);
+
+        // write argument names as qstr objects
         // see comment in corresponding part of emitbc.c about the logic here
         for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
             qstr qst = MP_QSTR__star_;
@@ -847,16 +868,6 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             ASM_DATA(emit->as, ASM_WORD_SIZE, (mp_uint_t)MP_OBJ_NEW_QSTR(qst));
         }
 
-        // bytecode prelude: initialise closed over variables
-        emit->prelude_offset = ASM_GET_CODE_POS(emit->as);
-        for (int i = 0; i < emit->scope->id_info_len; i++) {
-            id_info_t *id = &emit->scope->id_info[i];
-            if (id->kind == ID_INFO_KIND_CELL) {
-                assert(id->local_num < 255);
-                ASM_DATA(emit->as, 1, id->local_num); // write the local which should be converted to a cell
-            }
-        }
-        ASM_DATA(emit->as, 1, 255); // end of list sentinel
     }
 
     ASM_END_PASS(emit->as);
@@ -879,8 +890,8 @@ STATIC void emit_native_end_pass(emit_t *emit) {
 
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
-            f, f_len, emit->scope->num_pos_args, emit->scope->num_kwonly_args,
-            emit->scope->scope_flags, type_sig);
+            f, f_len, (mp_uint_t*)((byte*)f + emit->const_table_offset),
+            emit->scope->num_pos_args, emit->scope->scope_flags, type_sig);
     }
 }
 

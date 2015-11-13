@@ -30,6 +30,11 @@
 
 #include <stdint.h>
 
+#ifndef BOOTLOADER
+#include "FreeRTOS.h"
+#include "semphr.h"
+#endif
+
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX                      (128)
@@ -56,14 +61,16 @@
 #endif
 #define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
-/* Enable FatFS LFNs
-    0: Disable LFN feature.
-    1: Enable LFN with static working buffer on the BSS. Always NOT reentrant.
-    2: Enable LFN with dynamic working buffer on the STACK.
-    3: Enable LFN with dynamic working buffer on the HEAP.
-*/
-#define MICROPY_ENABLE_LFN                          (2)
-#define MICROPY_LFN_CODE_PAGE                       (437)       // 1=SFN/ANSI 437=LFN/U.S.(OEM)
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN                    (2)
+#define MICROPY_FATFS_MAX_LFN                       (MICROPY_ALLOC_PATH_MAX)
+#define MICROPY_FATFS_LFN_CODE_PAGE                 (437) // 1=SFN/ANSI 437=LFN/U.S.(OEM)
+#define MICROPY_FATFS_RPATH                         (2)
+#define MICROPY_FATFS_VOLUMES                       (2)
+#define MICROPY_FATFS_REENTRANT                     (1)
+#define MICROPY_FATFS_TIMEOUT                       (2500)
+#define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
+
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)

@@ -103,6 +103,10 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     _i16 sd = ((mod_network_socket_obj_t *)args[0].u_obj)->sock_base.sd;
     _i16 _errno;
+    _u8 method = SL_SO_SEC_METHOD_TLSV1;
+    if ((_errno = sl_SetSockOpt(sd, SL_SOL_SOCKET, SL_SO_SECMETHOD, &method, sizeof(method))) < 0) {
+        goto socket_error;
+    }
     if (keyfile && (_errno = sl_SetSockOpt(sd, SL_SOL_SOCKET, SL_SO_SECURE_FILES_PRIVATE_KEY_FILE_NAME, keyfile, strlen(keyfile))) < 0) {
         goto socket_error;
     }

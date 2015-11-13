@@ -539,6 +539,12 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
     assert(n_pos_defaults >= 0);
     assert(n_kw_defaults >= 0);
 
+    // set flags
+    if (n_kw_defaults > 0) {
+        this_scope->scope_flags |= MP_SCOPE_FLAG_DEFKWARGS;
+    }
+    this_scope->num_def_pos_args = n_pos_defaults;
+
     // make closed over variables, if any
     // ensure they are closed over in the order defined in the outer scope (mainly to agree with CPython)
     int nfree = 0;
