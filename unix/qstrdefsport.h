@@ -42,6 +42,7 @@ Q(statvfs)
 Q(system)
 Q(unlink)
 Q(getenv)
+Q(mkdir)
 
 Q(ffi)
 Q(ffimod)
