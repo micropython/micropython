@@ -31,6 +31,7 @@
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (128)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
 #define MICROPY_COMP_MODULE_CONST   (1)
