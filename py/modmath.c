@@ -194,7 +194,9 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&mp_math_sqrt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pow), (mp_obj_t)&mp_math_pow_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&mp_math_exp_obj },
+    #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR_expm1), (mp_obj_t)&mp_math_expm1_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&mp_math_log_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&mp_math_log2_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&mp_math_log10_obj },
