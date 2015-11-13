@@ -196,6 +196,13 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define PATH_MAX                    MICROPY_ALLOC_PATH_MAX
 #define S_ISREG(m)                  (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
+#ifdef _WIN64
+#define SSIZE_MAX                   _I64_MAX
+typedef __int64                     ssize_t;
+#else
+#define SSIZE_MAX                   _I32_MAX
+typedef int                         ssize_t;
+#endif
 
 
 // Put static/global variables in sections with a known name
