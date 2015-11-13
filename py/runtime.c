@@ -1222,6 +1222,8 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
     }
 }
 
+#if MICROPY_ENABLE_RUNTIME
+
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     DEBUG_printf("import name '%s' level=%d\n", qstr_str(name), MP_OBJ_SMALL_INT_VALUE(level));
 
@@ -1295,6 +1297,8 @@ void mp_import_all(mp_obj_t module) {
         }
     }
 }
+
+#endif // MICROPY_ENABLE_RUNTIME
 
 // this is implemented in this file so it can optimise access to locals/globals
 mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_input_kind, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
