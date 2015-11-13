@@ -32,6 +32,8 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 
+#if MICROPY_ENABLE_RUNTIME
+
 #ifndef _WIN32
 #include <signal.h>
 
@@ -105,6 +107,8 @@ int mp_hal_stdin_rx_chr(void) {
     return c;
 }
 
+#endif // MICROPY_ENABLE_RUNTIME
+
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     int ret = write(1, str, len);
     (void)ret; // to suppress compiler warning
@@ -119,8 +123,12 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
+#if MICROPY_ENABLE_RUNTIME
+
 mp_uint_t mp_hal_ticks_ms(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
+
+#endif // MICROPY_ENABLE_RUNTIME
