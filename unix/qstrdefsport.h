@@ -41,6 +41,7 @@ Q(statvfs)
 #endif
 Q(system)
 Q(unlink)
+Q(getenv)
 
 Q(ffi)
 Q(ffimod)
