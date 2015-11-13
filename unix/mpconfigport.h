@@ -204,8 +204,7 @@ void mp_unix_mark_exec(void);
 #include <android/api-level.h>
 #if __ANDROID_API__ < 4
 // Bionic libc in Android 1.5 misses these 2 functions
-// 1.442695040888963407354163704 is 1/_M_LN2
-#define log2(x) (log(x) * 1.442695040888963407354163704)
+#define MP_NEED_LOG2 (1)
 #define nan(x) NAN
 #endif
 #endif

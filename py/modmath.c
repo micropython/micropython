@@ -52,6 +52,11 @@
     STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { mp_int_t x = MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj)); return mp_obj_new_int(x); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
+#if MP_NEED_LOG2
+// 1.442695040888963407354163704 is 1/_M_LN2
+#define log2(x) (log(x) * 1.442695040888963407354163704)
+#endif
+
 /// \function sqrt(x)
 /// Returns the square root of `x`.
 MATH_FUN_1(sqrt, sqrt)
