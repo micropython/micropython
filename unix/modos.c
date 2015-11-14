@@ -144,7 +144,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
 STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
     // TODO: Accept mode param
     const char *path = mp_obj_str_get_str(path_in);
+    #ifdef _WIN32
+    int r = mkdir(path);
+    #else
     int r = mkdir(path, 0777);
+    #endif
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
