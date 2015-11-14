@@ -24,6 +24,13 @@
  * THE SOFTWARE.
  */
 
+//TODO: Put stream/channel defs for i2c/spi/can, etc here
+#define DMA_STREAM_SDIO_RX      DMA2_Stream3
+#define DMA_CHANNEL_SDIO_RX     DMA_CHANNEL_4
+
+#define DMA_STREAM_SDIO_TX      DMA2_Stream6
+#define DMA_CHANNEL_SDIO_TX     DMA_CHANNEL_4
+
 extern const DMA_InitTypeDef dma_init_struct_spi_i2c;
 
 void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, const DMA_InitTypeDef *dma_init, uint32_t dma_channel, uint32_t direction, void *data);

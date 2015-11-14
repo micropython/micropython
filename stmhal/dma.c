@@ -103,7 +103,9 @@ void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, const DMA_
     int dma_id = get_dma_id(dma_stream);
     //printf("dma_init(%p, %p(%d), 0x%x, 0x%x, %p)\n", dma, dma_stream, dma_id, (uint)dma_channel, (uint)direction, data);
 
-    // TODO possibly don't need to clear the entire structure
+    // Some drivers allocate the DMA_HandleTypeDef from the stack
+    // (i.e. dac, i2c, spi) and for those cases we need to clear the
+    // structure so we don't get random values from the stack)
     memset(dma, 0, sizeof(*dma));
 
     // set global pointer for IRQ handler
