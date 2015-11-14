@@ -137,6 +137,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
 
 STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
     const char *s = getenv(mp_obj_str_get_str(var_in));
+    if (s == NULL) {
+        return mp_const_none;
+    }
     return mp_obj_new_str(s, strlen(s), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
