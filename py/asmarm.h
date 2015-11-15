@@ -120,7 +120,7 @@ void asm_arm_pop(asm_arm_t *as, uint reglist);
 // control flow
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);
 void asm_arm_b_label(asm_arm_t *as, uint label);
-void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
+void asm_arm_bl_ind(asm_arm_t *as, const void *fun_ptr, uint fun_id, uint reg_temp);
 
 #if GENERIC_ASM_API
 

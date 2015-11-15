@@ -612,7 +612,7 @@ void asm_x64_call_i1(asm_x64_t *as, void* func, int i1) {
 }
 */
 
-void asm_x64_call_ind(asm_x64_t *as, void *ptr, int temp_r64) {
+void asm_x64_call_ind(asm_x64_t *as, const void *ptr, int temp_r64) {
     assert(temp_r64 < 8);
 #ifdef __LP64__
     asm_x64_mov_i64_to_r64_optimised(as, (int64_t)ptr, temp_r64);

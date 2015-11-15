@@ -110,7 +110,7 @@ void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32);
 void asm_x86_mov_local_to_r32(asm_x86_t* as, int src_local_num, int dest_r32);
 void asm_x86_mov_r32_to_local(asm_x86_t* as, int src_r32, int dest_local_num);
 void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
-void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
+void asm_x86_call_ind(asm_x86_t* as, const void* ptr, mp_uint_t n_args, int temp_r32);
 
 #if GENERIC_ASM_API
 

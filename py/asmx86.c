@@ -469,7 +469,7 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 }
 #endif
 
-void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) {
+void asm_x86_call_ind(asm_x86_t *as, const void *ptr, mp_uint_t n_args, int temp_r32) {
     // TODO align stack on 16-byte boundary before the call
     assert(n_args <= 5);
     if (n_args > 4) {

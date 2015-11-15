@@ -174,6 +174,6 @@ typedef enum {
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 
-extern void *const mp_fun_table[MP_F_NUMBER_OF];
+extern const void *const mp_fun_table[MP_F_NUMBER_OF];
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME0_H

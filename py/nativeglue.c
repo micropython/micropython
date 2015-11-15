@@ -125,7 +125,7 @@ STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
 }
 
 // these must correspond to the respective enum in runtime0.h
-void *const mp_fun_table[MP_F_NUMBER_OF] = {
+const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_convert_obj_to_native,
     mp_convert_native_to_obj,
     mp_load_name,

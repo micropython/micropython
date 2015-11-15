@@ -112,7 +112,7 @@ void asm_x64_exit(asm_x64_t* as);
 void asm_x64_mov_local_to_r64(asm_x64_t* as, int src_local_num, int dest_r64);
 void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
-void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
+void asm_x64_call_ind(asm_x64_t* as, const void* ptr, int temp_r32);
 
 #if GENERIC_ASM_API
 

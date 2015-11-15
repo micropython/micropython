@@ -356,7 +356,7 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
 #define OP_BLX(reg) (0x4780 | ((reg) << 3))
 #define OP_SVC(arg) (0xdf00 | (arg))
 
-void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp) {
+void asm_thumb_bl_ind(asm_thumb_t *as, const void *fun_ptr, uint fun_id, uint reg_temp) {
     /* TODO make this use less bytes
     uint rlo_base = ASM_THUMB_REG_R3;
     uint rlo_dest = ASM_THUMB_REG_R7;

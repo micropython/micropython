@@ -235,7 +235,7 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
-void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp); // convenience
+void asm_thumb_bl_ind(asm_thumb_t *as, const void *fun_ptr, uint fun_id, uint reg_temp); // convenience
 
 #if GENERIC_ASM_API
 
