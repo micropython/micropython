@@ -77,6 +77,7 @@
 #include "uart.h"
 #include "storage.h"
 #include "can.h"
+#include "dma.h"
 
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef pcd_handle;
@@ -267,6 +268,10 @@ void SysTick_Handler(void) {
     // the COUNTFLAG bit, which makes the logic in sys_tick_get_microseconds
     // work properly.
     SysTick->CTRL;
+
+    if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
+        dma_idle_handler(); 
+    }
 }
 
 /******************************************************************************/
