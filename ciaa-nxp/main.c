@@ -18,6 +18,8 @@
 #include "chip.h"
 #include "board.h"
 
+#include "bootSys.h"
+
 #define __SECTION_EXT(type, bank, name) __attribute__ ((section("." #type ".$" #bank "." #name)))
 #define __SECTION(type, bank) __attribute__ ((section("." #type ".$" #bank)))
 
@@ -132,41 +134,12 @@ soft_reset:
     mp_obj_list_init(mp_sys_argv, 0);
 
     init_flash_fs(0);
-	/*
-	Board_UARTPutSTR("inicio main adc");
-	//Board_ADC_EnableChannel(1);
-	//Board_ADC_EnableChannel(2);
-	//Board_ADC_EnableChannel(3);
-	//Board_ADC_EnableChannelInt();
-	Board_UARTPutSTR("fin main adc");
-	while(1)
-	{
-		uint16_t val;
-		char aux[64];
-		Board_UARTPutSTR(" inicio conversion ");
 
-		Board_ADC_EnableChannel(1);
-		Board_ADC_StartConversion();
-		mp_hal_milli_delay(100);
-		val = Board_ADC_readValue(1);
-		sprintf(aux,"m valor leido ch1 :%d\n",val);
-		Board_UARTPutSTR(aux);
 
-		Board_ADC_EnableChannel(2);
-		Board_ADC_StartConversion();
-                val = Board_ADC_readValue(2);
-                sprintf(aux,"m valor leido ch2 :%d\n",val);
-                Board_UARTPutSTR(aux);
+	// check new script from IDE
+	boot();
+	//__________________________
 
-		Board_ADC_EnableChannel(3);
-		Board_ADC_StartConversion();
-                val = Board_ADC_readValue(3);
-                sprintf(aux,"m valor leido ch3 :%d\n",val);
-                Board_UARTPutSTR(aux);
-
-		mp_hal_milli_delay(1000);
-	}
-	*/
 
 
     if (!pyexec_file("/flash/Main.py")) {
@@ -271,3 +244,6 @@ int puts(const char *s) {return 0;}
 
 void _start(void) {main(0, NULL);}
 #endif
+
+
+
