@@ -113,6 +113,17 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 }
 #endif
 
+#if MICROPY_PERSISTENT_NATIVE
+void mp_emit_glue_assign_persistent_native(mp_raw_code_t *rc, const void *fun_data,
+    mp_persistent_native_data_t *per_nat_data, size_t n_pos_args) {
+    rc->kind = MP_CODE_PERSISTENT_NATIVE;
+    rc->scope_flags = 0;
+    rc->n_pos_args = n_pos_args;
+    rc->data.u_persistent_native.fun_data = fun_data;
+    rc->data.u_persistent_native.per_nat_data = per_nat_data;
+}
+#endif
+
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_function_from_raw_code %p\n", rc);
     assert(rc != NULL);
@@ -137,6 +148,12 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
         #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
             fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
+            break;
+        #endif
+        #if MICROPY_PERSISTENT_NATIVE
+        case MP_CODE_PERSISTENT_NATIVE:
+            fun = mp_obj_new_fun_persistent_native(false, rc->n_pos_args, rc->n_pos_args,
+                rc->data.u_persistent_native.fun_data, rc->data.u_persistent_native.per_nat_data);
             break;
         #endif
         default:

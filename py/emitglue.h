@@ -37,7 +37,18 @@ typedef enum {
     MP_CODE_NATIVE_PY,
     MP_CODE_NATIVE_VIPER,
     MP_CODE_NATIVE_ASM,
+    MP_CODE_PERSISTENT_NATIVE,
 } mp_raw_code_kind_t;
+
+#if MICROPY_PERSISTENT_NATIVE
+typedef struct _mp_persistent_native_data_t {
+    const void *fun_table;
+    qstr *qstr_table;
+    void *data;
+} mp_persistent_native_data_t;
+
+mp_persistent_native_data_t *mp_new_persistent_native_data(size_t num_qstrs);
+#endif
 
 typedef struct _mp_raw_code_t {
     mp_raw_code_kind_t kind : 3;
@@ -58,6 +69,12 @@ typedef struct _mp_raw_code_t {
             const mp_uint_t *const_table;
             mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
         } u_native;
+        #if MICROPY_PERSISTENT_NATIVE
+        struct {
+            const void *fun_data;
+            mp_persistent_native_data_t *per_nat_data;
+        } u_persistent_native;
+        #endif
     } data;
 } mp_raw_code_t;
 
@@ -70,8 +87,32 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t
     #endif
     mp_uint_t scope_flags);
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig);
+#if MICROPY_PERSISTENT_NATIVE
+void mp_emit_glue_assign_persistent_native(mp_raw_code_t *rc, const void *fun_data, mp_persistent_native_data_t *per_nat_data, size_t n_pos_args);
+#endif
 
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
+
+#if MICROPY_PERSISTENT_CODE
+
+#define MP_PERSISTENT_ARCH_X86          (1)
+#define MP_PERSISTENT_ARCH_X64          (2)
+#define MP_PERSISTENT_ARCH_THUMB2       (3)
+#define MP_PERSISTENT_ARCH_ARM          (4)
+
+#if defined(__i386__)
+#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_X86)
+#elif defined(__x86_64__)
+#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_X64)
+#elif defined(__thumb2__)
+#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_THUMB2)
+#elif defined(__arm__)
+#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_ARM)
+#else
+#error unknown machine architecture
+#endif
+
+#endif // MICROPY_PERSISTENT_CODE
 
 #endif // MICROPY_INCLUDED_PY_EMITGLUE_H

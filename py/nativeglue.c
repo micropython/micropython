@@ -40,7 +40,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE || MICROPY_PERSISTENT_NATIVE
 
 // convert a MicroPython object to a valid native value based on type
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
@@ -172,7 +172,26 @@ const void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_obj_new_cell,
     mp_make_closure_from_raw_code,
     mp_setup_code_state,
+#if MICROPY_PERSISTENT_NATIVE
+    qstr_from_str,
+    qstr_from_strn,
+    mp_obj_new_fun_persistent_native,
+    &mp_const_none_obj,
+    &mp_const_false_obj,
+    &mp_const_true_obj,
+    &mp_const_ellipsis_obj,
+#endif
 };
+
+#if MICROPY_PERSISTENT_NATIVE
+mp_persistent_native_data_t *mp_new_persistent_native_data(size_t num_qstrs) {
+    mp_persistent_native_data_t *data = m_new_obj(mp_persistent_native_data_t);
+    data->fun_table = mp_fun_table;
+    data->qstr_table = m_new0(qstr, num_qstrs);
+    data->data = NULL;
+    return data;
+}
+#endif
 
 /*
 void mp_f_vector(mp_fun_kind_t fun_kind) {
@@ -180,4 +199,4 @@ void mp_f_vector(mp_fun_kind_t fun_kind) {
 }
 */
 
-#endif // MICROPY_EMIT_NATIVE
+#endif // MICROPY_EMIT_NATIVE || MICROPY_PERSISTENT_NATIVE

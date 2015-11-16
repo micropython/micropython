@@ -165,7 +165,9 @@ STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
     }
 }
 
-STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
+STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader);
+
+STATIC mp_raw_code_t *load_raw_code_bytecode(mp_reader_t *reader) {
     // load bytecode
     size_t bc_len = read_uint(reader);
     byte *bytecode = m_new(byte, bc_len);
@@ -207,6 +209,46 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
         #endif
         prelude.scope_flags);
     return rc;
+}
+
+#if MICROPY_PERSISTENT_NATIVE
+mp_raw_code_t *load_raw_code_native(mp_reader_t *reader) {
+    byte header[11];
+    read_bytes(reader, header, 11);
+    if (header[0] != MP_PERSISTENT_ARCH_CURRENT) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, ".mpy has wrong arch"));
+    }
+    uint num_qstrs = header[1] | (header[2] << 8);
+
+    // load machine code
+    mp_uint_t len = header[3] | (header[4] << 8);
+    void *data;
+    size_t alloc;
+    MP_PLAT_ALLOC_EXEC(len, &data, &alloc);
+    read_bytes(reader, data, len);
+
+    mp_persistent_native_data_t *per_nat_data = mp_new_persistent_native_data(num_qstrs);
+
+    // create raw_code and return it
+    mp_raw_code_t *rc = mp_emit_glue_new_raw_code();
+    mp_emit_glue_assign_persistent_native(rc, data, per_nat_data, 0);
+    return rc;
+}
+#endif
+
+STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
+    uint code_type = read_byte(reader);
+
+    if (code_type == MP_CODE_BYTECODE) {
+        return load_raw_code_bytecode(reader);
+    #if MICROPY_PERSISTENT_NATIVE
+    } else if (code_type == MP_CODE_PERSISTENT_NATIVE) {
+        return load_raw_code_native(reader);
+    #endif
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "unsupported .mpy feature"));
+    }
 }
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
@@ -321,6 +363,9 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     if (rc->kind != MP_CODE_BYTECODE) {
         mp_raise_ValueError("can only save bytecode");
     }
+
+    byte code_type = MP_CODE_BYTECODE;
+    mp_print_bytes(print, &code_type, 1);
 
     // save bytecode
     mp_print_uint(print, rc->data.u_byte.bc_len);

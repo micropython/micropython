@@ -249,7 +249,12 @@
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
-#define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY)
+#define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY || MICROPY_PERSISTENT_NATIVE)
+#endif
+
+// Whether to support persistent native code
+#ifndef MICROPY_PERSISTENT_NATIVE
+#define MICROPY_PERSISTENT_NATIVE (0)
 #endif
 
 // Whether to emit x64 native code
