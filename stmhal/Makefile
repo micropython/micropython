@@ -83,7 +83,7 @@ endif
 ifeq ($(MINIMAL), 1)
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
- 	)
+	)
 else
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
@@ -131,6 +131,7 @@ SRC_C = \
 	usbd_cdc_interface.c \
 	usb.c \
 	timer.c \
+	min/snprintf.c \
 	$(wildcard boards/$(BOARD)/*.c)
 else
 SRC_C = \
