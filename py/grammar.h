@@ -72,10 +72,10 @@ DEF_RULE(tfpdef, nc, and(2), tok(NAME), opt_rule(typedargslist_colon))
 // TODO varargslist lets through more than is allowed
 DEF_RULE(varargslist, nc, list_with_end, rule(varargslist_item), tok(DEL_COMMA))
 DEF_RULE(varargslist_item, nc, or(3), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star))
-DEF_RULE(varargslist_name, nc, and(2), tok(NAME), opt_rule(varargslist_equal))
+DEF_RULE(varargslist_name, nc, ident | and(2), tok(NAME), opt_rule(varargslist_equal))
 DEF_RULE(varargslist_star, nc, and(2), tok(OP_STAR), opt_rule(vfpdef))
 DEF_RULE(varargslist_dbl_star, nc, and(2), tok(OP_DBL_STAR), tok(NAME))
-DEF_RULE(varargslist_equal, nc, and(2), tok(DEL_EQUAL), rule(test))
+DEF_RULE(varargslist_equal, nc, ident | and(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE(vfpdef, nc, ident | and(1), tok(NAME))
 
 // stmt: compound_stmt | simple_stmt
