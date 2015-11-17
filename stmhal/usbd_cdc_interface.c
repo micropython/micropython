@@ -37,28 +37,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "stm32f4xx.h"
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 #ifndef MINIMAL
 #include "pendsv.h"
 
 #include "py/obj.h"
+#endif
 #include "irq.h"
 #include "timer.h"
 #include "usb.h"
-#else
-extern TIM_HandleTypeDef TIM3_Handle;
-extern USBD_HandleTypeDef hUSBDDevice;
-// these states correspond to values from query_irq, enable_irq and disable_irq
-#define IRQ_STATE_DISABLED (0x00000001)
-#define IRQ_STATE_ENABLED  (0x00000000)
-
-static inline mp_uint_t query_irq(void) {
-    return __get_PRIMASK();
-}
-
-#endif
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
 #define CDC_GET_ENCAPSULATED_RESPONSE               0x01
@@ -276,9 +264,6 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
   * @retval None
   */
 void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
-	PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
-    USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-    USB_OTG_INEndpointTypeDef * epIn  = USBx_INEP(CDC_IN_EP & 0x7f);
     if (!dev_is_connected) {
         // CDC device is not connected to a host, so we are unable to send any data
         return;
@@ -294,7 +279,7 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
         // finish sending it over the USB in-endpoint.
         // We have a 15 * 10ms = 150ms timeout
         if (UserTxBufPtrWaitCount < 15) {
-        	PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
             if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data

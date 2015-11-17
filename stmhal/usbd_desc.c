@@ -36,7 +36,21 @@
 // need these headers just for MP_HAL_UNIQUE_ID_ADDRESS
 #include "py/misc.h"
 #include "py/mphal.h"
+#ifdef MINIMAL
+#include <stdarg.h>
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
+    return 0;
+}
 
+int snprintf(char *str, size_t size, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vsnprintf(str, size, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+#endif
 // So we don't clash with existing ST boards, we use the unofficial FOSS VID.
 // This needs a proper solution.
 #define USBD_VID                      0xf055

@@ -26,7 +26,14 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#ifdef MINIMAL
+#include <stdbool.h>
+#include "stm32f4xx_hal_conf.h"
+#include "usb.h"
+#include "systick.h"
+#include "timer.h"
+#include "../py/mpconfig.h"
+#else
 #include "py/nlr.h"
 #include "py/lexer.h"
 #include "py/parse.h"
@@ -61,9 +68,10 @@
 #include "dac.h"
 #include "can.h"
 #include "modnetwork.h"
-
+#endif
 void SystemClock_Config(void);
 
+#ifndef MINIMAL
 static FATFS fatfs0;
 #if MICROPY_HW_HAS_SDCARD
 static FATFS fatfs1;
@@ -80,10 +88,12 @@ void flash_error(int n) {
     }
     led_state(PYB_LED_R2, 0);
 }
+#endif
 
 void NORETURN __fatal_error(const char *msg) {
     for (volatile uint delay = 0; delay < 10000000; delay++) {
     }
+#ifndef MINIMAL
     led_state(1, 1);
     led_state(2, 1);
     led_state(3, 1);
@@ -99,21 +109,28 @@ void NORETURN __fatal_error(const char *msg) {
             __WFI();
         }
     }
+#else
+    while(1){};
+#endif
 }
 
 void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught exception %p\n", val);
+#ifndef MINIMAL
+	printf("FATAL: uncaught exception %p\n", val);
+#endif
     __fatal_error("");
 }
 
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
+#ifndef MINIMAL
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+#endif
     __fatal_error("");
 }
 #endif
-
+#ifndef MINIMAL
 STATIC mp_obj_t pyb_main(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_opt, MP_ARG_INT, {.u_int = 0} }
@@ -330,58 +347,14 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
     return reset_mode;
 }
-#include "irq.h"
-
-// Get the frequency (in Hz) of the source clock for the given timer.
-// On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
-// If the APB prescaler is 1, then the timer clock is equal to its respective
-// APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
-// respective APB clock.  See DM00031020 Rev 4, page 115.
-static uint32_t my_timer_get_source_freq(uint32_t tim_id) {
-    uint32_t source;
-    if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
-        // TIM{1,8,9,10,11} are on APB2
-        source = HAL_RCC_GetPCLK2Freq();
-        if ((uint32_t)((RCC->CFGR & RCC_CFGR_PPRE2) >> 3) != RCC_HCLK_DIV1) {
-            source *= 2;
-        }
-    } else {
-        // TIM{2,3,4,5,6,7,12,13,14} are on APB1
-        source = HAL_RCC_GetPCLK1Freq();
-        if ((uint32_t)(RCC->CFGR & RCC_CFGR_PPRE1) != RCC_HCLK_DIV1) {
-            source *= 2;
-        }
-    }
-    return source;
-}
-
-// TIM3 is set-up for the USB CDC interface
-void my_timer_tim3_init(void) {
-    // set up the timer for USBD CDC
-    __TIM3_CLK_ENABLE();
-
-    TIM3_Handle.Instance = TIM3;
-    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
-    TIM3_Handle.Init.Prescaler = my_timer_get_source_freq(3) / 1000000 - 1; // TIM3 runs at 1MHz
-    TIM3_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    HAL_TIM_Base_Init(&TIM3_Handle);
-
-    HAL_NVIC_SetPriority(TIM3_IRQn, IRQ_PRI_TIM3, IRQ_SUBPRI_TIM3);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
-
-    if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
-        /* Starting Error */
-    }
-}
+#endif
 
 
 int main(void) {
     // TODO disable JTAG
 
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    //mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
+    // set the system clock to be HSE
+    SystemClock_Config();
 
     /* STM32F4xx HAL library initialization:
          - Configure the Flash prefetch, instruction and Data caches
@@ -391,11 +364,8 @@ int main(void) {
        */
     HAL_Init();
 
-    // set the system clock to be HSE
-    SystemClock_Config();
 
-
-    my_timer_tim3_init();
+    timer_tim3_init();
 
     // Initialise low-level sub-systems.  Here we need to very basic things like
     // zeroing out memory and resetting any of the sub-systems.  Following this

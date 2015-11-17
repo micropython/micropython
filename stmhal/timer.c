@@ -31,6 +31,7 @@
 #include STM32_HAL_H
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
+#ifndef MINIMAL
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -39,7 +40,10 @@
 #include "servo.h"
 #include "pin.h"
 #include "irq.h"
-
+#else
+#include "timer.h"
+#include "irq.h"
+#endif
 /// \moduleref pyb
 /// \class Timer - periodically call a function
 ///
@@ -101,6 +105,7 @@ typedef enum {
     CHANNEL_MODE_ENC_AB,
 } pyb_channel_mode;
 
+#ifndef MINIMAL
 STATIC const struct {
     qstr        name;
     uint32_t    oc_mode;
@@ -143,6 +148,7 @@ typedef struct _pyb_timer_obj_t {
 #define TIMER_IRQ_MASK(channel) (1 << (channel))
 #define TIMER_CNT_MASK(self)    ((self)->is_32bit ? 0xffffffff : 0xffff)
 #define TIMER_CHANNEL(self)     ((((self)->channel) - 1) << 2)
+#endif
 
 TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
@@ -150,10 +156,12 @@ TIM_HandleTypeDef TIM6_Handle;
 
 // Used to divide down TIM3 and periodically call the flash storage IRQ
 STATIC uint32_t tim3_counter = 0;
+#ifndef MINIMAL
 
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
-
+#endif
 STATIC uint32_t timer_get_source_freq(uint32_t tim_id);
+#ifndef MINIMAL
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
 STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
@@ -174,7 +182,7 @@ void timer_deinit(void) {
         }
     }
 }
-
+#endif
 // TIM3 is set-up for the USB CDC interface
 void timer_tim3_init(void) {
     // set up the timer for USBD CDC
@@ -264,7 +272,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
         }
 
     } else if (htim == &TIM5_Handle) {
-        servo_timer_irq_callback();
+#ifndef MINIMAL
+    	servo_timer_irq_callback();
+#endif
     }
 }
 
@@ -290,7 +300,7 @@ STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
     }
     return source;
 }
-
+#ifndef MINIMAL
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
@@ -1398,3 +1408,4 @@ void timer_irq_handler(uint tim_id) {
         }
     }
 }
+#endif

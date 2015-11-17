@@ -106,16 +106,17 @@ SRC_LIB = $(addprefix lib/,\
 #	netutils/netutils.c \
 #	timeutils/timeutils.c \
 #	utils/pyexec.c \
- 	)
+# 	)
 
 SRC_C = \
-	main_s.c \
+	main.c \
 	system_stm32.c \
 	stm32_it_m.c \
 	usbd_conf.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
-	usbd_msc_storage.c \
+	usb.c \
+	timer.c \
 #	mphalport.c \
 #	irq.c \
 #	pendsv.c \
@@ -288,6 +289,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
+	$(ECHO) "$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
@@ -319,16 +321,16 @@ GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
-$(BUILD)/main.o: $(GEN_CDCINF_HEADER)
+#$(BUILD)/main.o: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-#$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
-#	$(ECHO) "Create $@"
-#	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 #
-#$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
-#	$(call compile_c)
+$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
+	$(call compile_c)
 
 GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
@@ -351,4 +353,5 @@ $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE)
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
 include mymkrules.mk
+#include ../py/mkrules.mk
 
