@@ -41,24 +41,19 @@ typedef enum {
     PYB_USB_STORAGE_MEDIUM_SDCARD,
 } pyb_usb_storage_medium_t;
 
-#ifndef MINIMAL
 extern mp_uint_t pyb_usb_flags;
-#endif
 extern struct _USBD_HandleTypeDef hUSBDDevice;
-#ifndef MINIMAL
-extern const mp_obj_type_t pyb_usb_vcp_type;
 extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
 extern const struct _mp_obj_tuple_t pyb_usb_hid_mouse_obj;
 extern const struct _mp_obj_tuple_t pyb_usb_hid_keyboard_obj;
+extern const mp_obj_type_t pyb_usb_vcp_type;
 extern const mp_obj_type_t pyb_usb_hid_type;
 MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_have_cdc_obj); // deprecated
 MP_DECLARE_CONST_FUN_OBJ(pyb_hid_send_report_obj); // deprecated
 
 void pyb_usb_init0(void);
-#endif
 bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
-#ifndef MINIMAL
 void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 void usb_vcp_set_interrupt_char(int c);
@@ -69,4 +64,3 @@ void usb_vcp_send_strn_cooked(const char *str, int len);
 void pyb_usb_host_init(void);
 void pyb_usb_host_process(void);
 uint pyb_usb_host_get_keyboard(void);
-#endif

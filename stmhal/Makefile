@@ -6,11 +6,8 @@ $(error Invalid BOARD specified)
 endif
 
 # If the build directory is not given, make it reflect the board name.
-ifeq ($(MINIMAL), 1)
-BUILD ?= build-$(BOARD)-min
-else
 BUILD ?= build-$(BOARD)
-endif
+
 include ../py/mkenv.mk
 -include mpconfigport.mk
 include boards/$(BOARD)/mpconfigboard.mk
@@ -18,10 +15,8 @@ include boards/$(BOARD)/mpconfigboard.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
-ifneq ($(MINIMAL), 1)
 # include py core make definitions
 include ../py/py.mk
-endif
 
 CMSIS_DIR=cmsis
 HAL_DIR=hal/$(MCU_SERIES)
@@ -53,8 +48,7 @@ CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 
-#CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
-CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -74,17 +68,9 @@ COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
-ifeq ($(MINIMAL), 1)
-CFLAGS += -DMINIMAL
-endif
-
 # uncomment this if you want libgcc
 #LIBS += $(shell $(CC) -print-libgcc-file-name)
-ifeq ($(MINIMAL), 1)
-SRC_LIB = $(addprefix lib/,\
-	libc/string0.c \
-	)
-else
+
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	libm/math.c \
@@ -120,24 +106,11 @@ SRC_LIB = $(addprefix lib/,\
 	utils/pyexec.c \
 	utils/printf.c \
 	)
-endif
-ifeq ($(MINIMAL), 1)
+
 SRC_C = \
 	main.c \
 	system_stm32.c \
-	stm32_it_m.c \
-	usbd_conf.c \
-	usbd_desc.c \
-	usbd_cdc_interface.c \
-	usb.c \
-	timer.c \
-	min/snprintf.c \
-	$(wildcard boards/$(BOARD)/*.c)
-else
-SRC_C = \
-	main.c \
-	system_stm32.c \
-	stm32_it_m.c \
+	stm32_it.c \
 	usbd_conf.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
@@ -189,7 +162,7 @@ SRC_C = \
 	dac.c \
 	adc.c \
 	$(wildcard boards/$(BOARD)/*.c)
-endif
+
 SRC_O = \
 	startup_stm32.o \
 	gchelper.o \
@@ -279,9 +252,8 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
-ifneq ($(MINIMAL), 1)
 OBJ += $(BUILD)/pins_$(BOARD).o
-endif
+
 # We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
 # to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
@@ -338,16 +310,14 @@ GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-ifneq ($(MINIMAL), 1)
 $(OBJ): | $(HEADER_BUILD)/pins.h
-endif
+
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
-ifneq ($(MINIMAL), 1)
 $(BUILD)/main.o: $(GEN_CDCINF_HEADER)
-endif
+
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
 $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
@@ -377,8 +347,4 @@ $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
-ifeq ($(MINIMAL), 1)
-include mymkrules.mk
-else
 include ../py/mkrules.mk
-endif

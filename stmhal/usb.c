@@ -33,17 +33,14 @@
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 #include "usbd_msc_storage.h"
-#ifndef MINIMAL
+
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "bufhelper.h"
 #include "usb.h"
 #include "pybioctl.h"
-#else
-#include <stdbool.h>
-#include "usb.h"
-#endif
+
 // this will be persistent across a soft-reset
 mp_uint_t pyb_usb_flags = 0;
 
@@ -52,7 +49,6 @@ USBD_HandleTypeDef hUSBDDevice;
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 #endif
 
-#ifndef MINIMAL
 // predefined hid mouse data
 STATIC const mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
     {&mp_type_bytes},
@@ -97,7 +93,7 @@ void pyb_usb_init0(void) {
     USBD_CDC_SetInterrupt(-1, MP_STATE_PORT(mp_const_vcp_interrupt));
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
-#endif
+
 bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
 #ifdef USE_DEVICE_MODE
     if (!(pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED)) {
@@ -116,9 +112,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
                 break;
 #endif
             default:
-#ifndef MINIMAL
                 USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
-#endif
                 break;
         }
         USBD_Start(&hUSBDDevice);
@@ -128,7 +122,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 
     return true;
 }
-#ifndef MINIMAL
+
 void pyb_usb_dev_deinit(void) {
     if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
         USBD_Stop(&hUSBDDevice);
@@ -680,4 +674,3 @@ void USR_KEYBRD_ProcessData(uint8_t pbuf) {
 }
 
 #endif // USE_HOST_MODE
-#endif

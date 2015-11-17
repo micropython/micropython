@@ -39,14 +39,13 @@
 
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
-#ifndef MINIMAL
 #include "pendsv.h"
 
 #include "py/obj.h"
-#endif
 #include "irq.h"
 #include "timer.h"
 #include "usb.h"
+
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
 #define CDC_GET_ENCAPSULATED_RESPONSE               0x01
@@ -362,9 +361,7 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
             if (*src == user_interrupt_char) {
                 char_found = true;
                 // raise exception when interrupts are finished
-#ifndef MINIMAL
                 pendsv_nlr_jump(user_interrupt_data);
-#endif
             } else {
                 if (char_found) {
                     *dest = *src;
@@ -488,7 +485,7 @@ int USBD_CDC_RxNum(void) {
     return UserRxBufLen - UserRxBufCur;
 }
 
-// timeout in milliseconds.
+// timout in milliseconds.
 // Returns number of bytes read from the device.
 int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     // loop to read bytes
