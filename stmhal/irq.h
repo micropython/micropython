@@ -32,12 +32,12 @@ static inline mp_uint_t query_irq(void) {
     return __get_PRIMASK();
 }
 
-#ifndef MINIMAL
 // enable_irq and disable_irq are defined inline in mpconfigport.h
+
 MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
-#endif
+
 // IRQ priority definitions.
 // Lower number implies higher interrupt priority.
 
@@ -61,7 +61,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 #define IRQ_PRI_OTG_HS 0x6
 #define IRQ_SUBPRI_OTG_HS 0x0
 
-// PENDSV should be at the lowest priority so that other interrupts complete
+// PENDSV should be at the lowst priority so that other interrupts complete
 // before exception is raised.
 #define IRQ_PRI_PENDSV 0xf
 #define IRQ_SUBPRI_PENDSV 0xf

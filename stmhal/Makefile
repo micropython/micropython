@@ -68,6 +68,11 @@ COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
+ifeq ($(MINIMAL), 1)
+CFLAGS += -DMINIMAL
+endif
+
+
 # uncomment this if you want libgcc
 #LIBS += $(shell $(CC) -print-libgcc-file-name)
 

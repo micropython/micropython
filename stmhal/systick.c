@@ -32,7 +32,11 @@
 
 // We provide our own version of HAL_Delay that calls __WFI while waiting, in
 // order to reduce power consumption.
+#ifdef MINIMAL
+void HAL_DelayNotReplaced(uint32_t Delay) {
+#else
 void HAL_Delay(uint32_t Delay) {
+#endif
     if (query_irq() == IRQ_STATE_ENABLED) {
         // IRQs enabled, so can use systick counter to do the delay
         extern __IO uint32_t uwTick;
