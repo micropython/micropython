@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include "py/mpconfig.h"
 
 #include "py/nlr.h"
@@ -134,6 +135,28 @@ STATIC mp_obj_t mod_os_system(mp_obj_t cmd_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
 
+STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
+    const char *s = getenv(mp_obj_str_get_str(var_in));
+    if (s == NULL) {
+        return mp_const_none;
+    }
+    return mp_obj_new_str(s, strlen(s), false);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
+
+STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
+    // TODO: Accept mode param
+    const char *path = mp_obj_str_get_str(path_in);
+    #ifdef _WIN32
+    int r = mkdir(path);
+    #else
+    int r = mkdir(path, 0777);
+    #endif
+    RAISE_ERRNO(r, errno);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_mkdir_obj, mod_os_mkdir);
+
 STATIC const mp_map_elem_t mp_module_os_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR__os) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&mod_os_stat_obj },
@@ -142,6 +165,8 @@ STATIC const mp_map_elem_t mp_module_os_globals_table[] = {
     #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_system), (mp_obj_t)&mod_os_system_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),(mp_obj_t)&mod_os_unlink_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getenv),(mp_obj_t)&mod_os_getenv_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir),(mp_obj_t)&mod_os_mkdir_obj},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);

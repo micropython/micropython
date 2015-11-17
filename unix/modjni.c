@@ -45,6 +45,7 @@ static JavaVM *jvm;
 static JNIEnv *env;
 static jclass Class_class;
 static jclass String_class;
+static jmethodID Class_getName_mid;
 static jmethodID Class_getField_mid;
 static jmethodID Class_getMethods_mid;
 static jmethodID Class_getConstructors_mid;
@@ -231,6 +232,14 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         o->is_static = false;
         dest[0] = o;
     }
+}
+
+STATIC void get_jclass_name(jobject obj, char *buf) {
+    jclass obj_class = JJ(GetObjectClass, obj);
+    jstring name = JJ(CallObjectMethod, obj_class, Class_getName_mid);
+    jint len = JJ(GetStringLength, name);
+    JJ(GetStringUTFRegion, name, 0, len, buf);
+    check_exception();
 }
 
 STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
@@ -584,6 +593,8 @@ STATIC void create_jvm() {
     Object_toString_mid = JJ(GetMethodID, Object_class, "toString",
                                      "()Ljava/lang/String;");
 
+    Class_getName_mid = (*env)->GetMethodID(env, Class_class, "getName",
+                                     "()Ljava/lang/String;");
     Class_getField_mid = (*env)->GetMethodID(env, Class_class, "getField",
                                      "(Ljava/lang/String;)Ljava/lang/reflect/Field;");
     Class_getMethods_mid = (*env)->GetMethodID(env, Class_class, "getMethods",

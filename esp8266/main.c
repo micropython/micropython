@@ -35,7 +35,7 @@
 #include "py/frozenmod.h"
 #include "py/mphal.h"
 #include "py/gc.h"
-#include "pyexec.h"
+#include "lib/utils/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
 

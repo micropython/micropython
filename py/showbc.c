@@ -40,6 +40,18 @@
 }
 #define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
 #define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+
+#if MICROPY_PERSISTENT_CODE
+
+#define DECODE_QSTR \
+    qst = ip[0] | ip[1] << 8; \
+    ip += 2;
+#define DECODE_PTR \
+    DECODE_UINT; \
+    unum = mp_showbc_const_table[unum]
+
+#else
+
 #define DECODE_QSTR { \
     qst = 0; \
     do { \
@@ -52,20 +64,36 @@
     ip += sizeof(mp_uint_t); \
 } while (0)
 
+#endif
+
 const byte *mp_showbc_code_start;
+const mp_uint_t *mp_showbc_const_table;
 
-void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip, mp_uint_t len) {
+void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
+    mp_showbc_const_table = const_table;
 
-    // get code info size
+    // get bytecode parameters
+    mp_uint_t n_state = mp_decode_uint(&ip);
+    mp_uint_t n_exc_stack = mp_decode_uint(&ip);
+    /*mp_uint_t scope_flags =*/ ip++;
+    mp_uint_t n_pos_args = *ip++;
+    mp_uint_t n_kwonly_args = *ip++;
+    /*mp_uint_t n_def_pos_args =*/ ip++;
+
     const byte *code_info = ip;
     mp_uint_t code_info_size = mp_decode_uint(&code_info);
     ip += code_info_size;
 
+    #if MICROPY_PERSISTENT_CODE
+    qstr block_name = code_info[0] | (code_info[1] << 8);
+    qstr source_file = code_info[2] | (code_info[3] << 8);
+    #else
     qstr block_name = mp_decode_uint(&code_info);
     qstr source_file = mp_decode_uint(&code_info);
+    #endif
     printf("File %s, code block '%s' (descriptor: %p, bytecode @%p " UINT_FMT " bytes)\n",
-        qstr_str(source_file), qstr_str(block_name), descr, code_info, len);
+        qstr_str(source_file), qstr_str(block_name), descr, mp_showbc_code_start, len);
 
     // raw bytecode dump
     printf("Raw bytecode (code_info_size=" UINT_FMT ", bytecode_size=" UINT_FMT "):\n", code_info_size, len - code_info_size);
@@ -79,19 +107,16 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
 
     // bytecode prelude: arg names (as qstr objects)
     printf("arg names:");
-    for (mp_uint_t i = 0; i < n_total_args; i++) {
-        printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(*(mp_obj_t*)ip)));
-        ip += sizeof(mp_obj_t);
+    for (mp_uint_t i = 0; i < n_pos_args + n_kwonly_args; i++) {
+        printf(" %s", qstr_str(MP_OBJ_QSTR_VALUE(const_table[i])));
     }
     printf("\n");
 
-    // bytecode prelude: state size and exception stack size; 16 bit uints
-    {
-        uint n_state = mp_decode_uint(&ip);
-        uint n_exc_stack = mp_decode_uint(&ip);
-        printf("(N_STATE %u)\n", n_state);
-        printf("(N_EXC_STACK %u)\n", n_exc_stack);
-    }
+    printf("(N_STATE " UINT_FMT ")\n", n_state);
+    printf("(N_EXC_STACK " UINT_FMT ")\n", n_exc_stack);
+
+    // for printing line number info
+    const byte *bytecode_start = ip;
 
     // bytecode prelude: initialise closed over variables
     {
@@ -104,7 +129,7 @@ void mp_bytecode_print(const void *descr, mp_uint_t n_total_args, const byte *ip
 
     // print out line number info
     {
-        mp_int_t bc = (mp_showbc_code_start + code_info_size) - ip; // start counting from the prelude
+        mp_int_t bc = bytecode_start - ip;
         mp_uint_t source_line = 1;
         printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         for (const byte* ci = code_info; *ci;) {

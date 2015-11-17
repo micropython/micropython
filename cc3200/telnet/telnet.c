@@ -451,8 +451,12 @@ static void telnet_parse_input (uint8_t *str, int16_t *len) {
                 (*len)--;
                 _str++;
             }
-            else {
+            else if (*_str > 0) {
                 *str++ = *_str++;
+            }
+            else {
+                _str++;
+                *len -= 1;
             }
         }
         else {

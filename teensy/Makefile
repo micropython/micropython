@@ -74,16 +74,16 @@ endif
 CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -Wl,--gc-sections
 
+USE_FROZEN = 1
+USE_MEMZIP = 0
+
 SRC_C = \
 	hal_ftm.c \
 	hal_gpio.c \
 	help.c \
-	import.c \
 	main.c \
 	lcd.c \
 	led.c \
-	lexermemzip.c \
-	memzip.c \
 	modpyb.c \
 	pin_defs_teensy.c \
 	reg.c \
@@ -98,7 +98,6 @@ STM_SRC_C = $(addprefix stmhal/,\
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
-	printf.c \
 	pybstdio.c \
 	)
 
@@ -110,6 +109,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
+	utils/printf.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\
@@ -128,10 +128,55 @@ OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
 all: hex
-hex: $(BUILD)/micropython-mz.hex
+hex: $(BUILD)/micropython.hex
+
+ifeq ($(USE_MEMZIP),1)
+SRC_C += \
+	lib/memzip/import.c \
+	lib/memzip/lexermemzip.c \
+	lib/memzip/memzip.c \
+
+OBJ += $(BUILD)/memzip-files.o
+
+MAKE_MEMZIP = ../lib/memzip/make-memzip.py
+ifeq ($(MEMZIP_DIR),)
+MEMZIP_DIR = memzip_files
+endif
+
+$(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
+	$(call compile_c)
+
+$(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
+
+endif # USE_MEMZIP
+
+ifeq ($(USE_FROZEN),1)
+
+CFLAGS += -DMICROPY_MODULE_FROZEN
+
+SRC_C += \
+	lexerfrozen.c
+
+OBJ += $(BUILD)/frozen-files.o
+
+MAKE_FROZEN = ../tools/make-frozen.py
+ifeq ($(FROZEN_DIR),)
+FROZEN_DIR = memzip_files
+endif
+
+$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
+	$(call compile_c)
+
+$(BUILD)/frozen-files.c: $(shell find ${FROZEN_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+
+endif # USE_FROZEN
 
 ifeq ($(ARDUINO),)
-post_compile: $(BUILD)/micropython-mz.hex
+post_compile: $(BUILD)/micropython.hex
 	$(ECHO) "Please define ARDUINO (where TeensyDuino is installed)"
 	exit 1
 
@@ -142,7 +187,7 @@ reboot:
 else
 TOOLS_PATH = $(ARDUINO)/hardware/tools
 
-post_compile: $(BUILD)/micropython-mz.hex
+post_compile: $(BUILD)/micropython.hex
 	$(ECHO) "Preparing $@ for upload"
 	$(Q)$(TOOLS_PATH)/teensy_post_compile -file="$(basename $(<F))" -path="$(abspath $(<D))" -tools="$(TOOLS_PATH)"
 
@@ -158,14 +203,6 @@ $(BUILD)/micropython.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) $(LDFLAGS) -o "$@" -Wl,-Map,$(@:.elf=.map) $^ $(LIBS)
 	$(Q)$(SIZE) $@
-
-ifeq ($(MEMZIP_DIR),)
-MEMZIP_DIR = memzip_files
-endif
-
-$(BUILD)/micropython-mz.hex: $(BUILD)/micropython.hex $(shell find ${MEMZIP_DIR} -type f)
-	@$(ECHO) "Creating $@"
-	$(Q)./add-memzip.sh $< $@ ${MEMZIP_DIR}
 
 $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"

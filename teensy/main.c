@@ -11,7 +11,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "gccollect.h"
-#include "pyexec.h"
+#include "lib/utils/pyexec.h"
 #include "readline.h"
 #include "lexermemzip.h"
 
@@ -22,6 +22,10 @@
 #include "uart.h"
 #include "pin.h"
 
+#if MICROPY_MODULE_FROZEN
+#include "py/compile.h"
+#include "py/frozenmod.h"
+#endif
 
 extern uint32_t _heap_start;
 
@@ -301,14 +305,27 @@ soft_reset:
     }
 #endif
 
+#if MICROPY_MODULE_FROZEN
+    {
+        mp_lexer_t *lex = mp_find_frozen_module("boot", 4);
+        mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mp_globals_get(), mp_locals_get());
+    }
+#else
     if (!pyexec_file("/boot.py")) {
         flash_error(4);
     }
+#endif
 
     // Turn bootup LED off
     led_state(PYB_LED_BUILTIN, 0);
 
     // run main script
+#if MICROPY_MODULE_FROZEN
+    {
+        mp_lexer_t *lex = mp_find_frozen_module("main", 4);
+        mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mp_globals_get(), mp_locals_get());
+    }
+#else
     {
         vstr_t *vstr = vstr_new();
         vstr_add_str(vstr, "/");
@@ -322,6 +339,7 @@ soft_reset:
         }
         vstr_free(vstr);
     }
+#endif
 
     // enter REPL
     // REPL mode can change, or it can request a soft reset

@@ -115,6 +115,7 @@ SRC_C = \
 	input.c \
 	file.c \
 	modos.c \
+	moduselect.c \
 	alloc.c \
 	coverage.c \
 	$(SRC_MOD)

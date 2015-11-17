@@ -47,6 +47,7 @@ except AttributeError:
     stdout = sys.stdout
 
 def stdout_write_bytes(b):
+    b = b.replace(b"\x04", b"")
     stdout.write(b)
     stdout.flush()
 
@@ -275,7 +276,7 @@ def main():
             sys.exit(1)
 
     if args.command is not None:
-        execbuffer(bytes(args.command, 'utf-8'))
+        execbuffer(args.command.encode('utf-8'))
 
     for filename in args.files:
         with open(filename, 'rb') as f:

@@ -61,7 +61,8 @@ long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
     (void)env;
-    fwrite(str, len, 1, stderr);
+    ssize_t dummy = write(STDERR_FILENO, str, len);
+    (void)dummy;
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -492,7 +493,7 @@ int main(int argc, char **argv) {
 
                 if (mp_obj_is_package(mod)) {
                     // TODO
-                    fprintf(stderr, "%s: -m for packages not yet implemented\n", argv[0]);
+                    mp_printf(&mp_stderr_print, "%s: -m for packages not yet implemented\n", argv[0]);
                     exit(1);
                 }
                 ret = 0;
@@ -502,7 +503,7 @@ int main(int argc, char **argv) {
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
             } else if (strncmp(argv[a], "-O", 2) == 0) {
-                if (isdigit(argv[a][2])) {
+                if (unichar_isdigit(argv[a][2])) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
                 } else {
                     MP_STATE_VM(mp_optimise_value) = 0;
@@ -515,7 +516,7 @@ int main(int argc, char **argv) {
             char *pathbuf = malloc(PATH_MAX);
             char *basedir = realpath(argv[a], pathbuf);
             if (basedir == NULL) {
-                fprintf(stderr, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
+                mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] ", argv[0], argv[a], errno);
                 perror("");
                 // CPython exits with 2 in such case
                 ret = 2;
@@ -577,7 +578,7 @@ uint mp_import_stat(const char *path) {
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    int ret = vfprintf(stderr, fmt, ap);
+    int ret = mp_vprintf(&mp_stderr_print, fmt, ap);
     va_end(ap);
     return ret;
 }

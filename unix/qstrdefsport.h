@@ -41,6 +41,18 @@ Q(statvfs)
 #endif
 Q(system)
 Q(unlink)
+Q(getenv)
+Q(mkdir)
+
+Q(uselect)
+Q(poll)
+Q(register)
+Q(unregister)
+Q(modify)
+Q(POLLIN)
+Q(POLLOUT)
+Q(POLLERR)
+Q(POLLHUP)
 
 Q(ffi)
 Q(ffimod)

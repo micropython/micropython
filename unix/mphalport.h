@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include <unistd.h>
 
-typedef enum {
-    PYEXEC_MODE_RAW_REPL,
-    PYEXEC_MODE_FRIENDLY_REPL,
-} pyexec_mode_kind_t;
+#ifndef CHAR_CTRL_C
+#define CHAR_CTRL_C (3)
+#endif
 
-extern pyexec_mode_kind_t pyexec_mode_kind;
+void mp_hal_set_interrupt_char(char c);
 
-#define PYEXEC_FORCED_EXIT (0x100)
-#define PYEXEC_SWITCH_MODE (0x200)
+void mp_hal_stdio_mode_raw(void);
+void mp_hal_stdio_mode_orig(void);
 
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
+static inline void mp_hal_delay_ms(mp_uint_t ms) { usleep((ms) * 1000); }
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);
+#define RAISE_ERRNO(err_flag, error_val) \
+    { if (err_flag == -1) \
+        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_val))); } }

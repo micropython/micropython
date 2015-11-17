@@ -125,6 +125,16 @@ except:
     print('Exception')
 
 try:
+    os.unmount('/something')
+except:
+    print('Exception')
+
+try:
+    os.unmount('something')
+except:
+    print('Exception')
+
+try:
     os.mkfs('flash') # incorrect path format
 except:
     print('Exception')
