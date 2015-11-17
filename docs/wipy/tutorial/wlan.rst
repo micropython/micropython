@@ -31,14 +31,14 @@ Now you can proceed to scan for networks::
             wlan.connect(net.ssid, auth=(net.sec, 'mywifikey'), timeout=5000)
             while not wlan.isconnected():
                 machine.idle() # save power while waiting
-            print('WLAN connection succeeded!)
+            print('WLAN connection succeeded!')
             break
 
 Assigning a static IP address when booting
 ------------------------------------------
 
-If you want your WiPy to connect to your home router while after boot-up, and with a fixed
-IP address so that you can access it via telnet or FTP, use the following script::
+If you want your WiPy to connect to your home router after boot-up, and with a fixed
+IP address so that you can access it via telnet or FTP, use the following script as /flash/boot.py::
 
    import machine
    from network import WLAN
