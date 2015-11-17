@@ -663,11 +663,6 @@ STATIC qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns
         pns->nodes[4] = (mp_parse_node_t)s;
     }
 
-    // save variables (probably don't need to do this, since we can't have nested definitions..?)
-    uint old_have_star = comp->have_star;
-    uint old_num_dict_params = comp->num_dict_params;
-    uint old_num_default_params = comp->num_default_params;
-
     // compile default parameters
     comp->have_star = false;
     comp->num_dict_params = 0;
@@ -690,11 +685,6 @@ STATIC qstr compile_funcdef_helper(compiler_t *comp, mp_parse_node_struct_t *pns
 
     // make the function
     close_over_variables_etc(comp, fscope, comp->num_default_params, comp->num_dict_params);
-
-    // restore variables
-    comp->have_star = old_have_star;
-    comp->num_dict_params = old_num_dict_params;
-    comp->num_default_params = old_num_default_params;
 
     // return its name (the 'f' in "def f(...):")
     return fscope->simple_name;
