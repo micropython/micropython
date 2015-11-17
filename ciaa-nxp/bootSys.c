@@ -19,6 +19,12 @@ void boot(void)
 {
 	mp_hal_milli_delay(1000); // wait for power stabilization
 
+	const char* data = "print('hola mundo desde boot');\r\n";
+	boot_writeScript(data,strlen(data));
+
+	return;
+
+
 	Board_UARTPutChar(NACK); // send NACK
 
 	//format: SOH 01 FE Data[128] CSUM
@@ -73,10 +79,39 @@ int boot_getChar(void)
 
 void boot_writeScript(char* script,int scriptLen)
 {
+	Board_UARTPutSTR("escribo archivo... ");
+	/*
+	FRESULT res = f_mkfs("/flash", 0, 0);
+        if (res == FR_OK) {
+            // success creating fresh LFS
+        } else {
+            __BKPT(0);
+        }
+
+        // set label
+        f_setlabel("/flash/pybflash");
+	*/
+
         FIL fp;
         f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, script, scriptLen - 1 /* don't count null terminator */, &n);
-        // TODO check we could write n bytes
+	//f_sync(&fp);
         f_close(&fp);
+
+
+	Board_UARTPutSTR("escribi archivo");
+	char aux[160];
+	sprintf(aux,"escribo:%s - n:%d\r\n",script,n);
+	Board_UARTPutSTR(aux);
+
+        // TODO check we could write n bytes
+	f_open(&fp, "/flash/Main.py", FA_READ);
+	char dataread[256];
+	f_read (&fp, dataread, 256, &n);
+	sprintf(aux,"lei:%d bytes\r\n",n);
+	Board_UARTPutSTR(aux);
+	Board_UARTPutSTR(dataread);
+
+
 }
