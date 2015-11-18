@@ -73,7 +73,7 @@ not 100% sure of it.
 
 ## Upgrading the firmware Over The Air:
 
-OTA software updates can be performed through the FTP server. After building a new MCUIMG.BIN in release mode, upload it to:
+OTA software updates can be performed through the FTP server. After building a new **mcuimg.bin** in release mode, upload it to:
 `/flash/sys/mcuimg.bin` it will take around 6s (The TI simplelink file system is quite slow because every file is mirrored for
 safety). You won't see the file being stored inside `/flash/sys/` because it's actually saved bypassing FatFS, but rest assured that
 the file was successfully transferred, and it has been signed with a MD5 checksum to verify its integrity. 
