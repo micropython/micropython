@@ -132,6 +132,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 #endif
+	/*
+	 * Enable WFI for the embedded phy
+	 */
+    __OTGHSULPI_CLK_SLEEP_DISABLE();
+    __OTGHS_CLK_SLEEP_ENABLE();
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
 #else
