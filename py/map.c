@@ -214,12 +214,12 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 if (avail_slot == NULL) {
                     avail_slot = slot;
                 }
-                slot->key = index;
-                slot->value = MP_OBJ_NULL;
+                avail_slot->key = index;
+                avail_slot->value = MP_OBJ_NULL;
                 if (!MP_OBJ_IS_QSTR(index)) {
                     map->all_keys_are_qstrs = 0;
                 }
-                return slot;
+                return avail_slot;
             } else {
                 return NULL;
             }
