@@ -49,6 +49,10 @@ CFLAGS_MOD += -DMICROPY_USE_READLINE=2
 LDFLAGS_MOD += -lreadline
 endif
 
+ifeq ($(CROSS_COMPILE),x86_64-w64-mingw32-)
+CFLAGS_MOD += -DMICROPY_NLR_SETJMP=1
+endif
+
 LIB += -lws2_32
 
 include ../py/mkrules.mk
