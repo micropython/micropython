@@ -36,6 +36,7 @@
 #define NLR_TOP_OFFSET (2 * 4)
 
 #if defined(_WIN32) || defined(__CYGWIN__)
+#define NLR_OS_WINDOWS
 #define NLR_TOP (_mp_state_ctx + NLR_TOP_OFFSET)
 #else
 #define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
@@ -47,7 +48,7 @@
 /**************************************/
 // mp_uint_t nlr_push(4(%esp)=nlr_buf_t *nlr)
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(NLR_OS_WINDOWS)
     .globl  _nlr_push
     .def    _nlr_push; .scl 2; .type 32; .endef
 _nlr_push:
@@ -69,14 +70,14 @@ nlr_push:
     mov     %edx, NLR_TOP           # stor new nlr_buf (to make linked list)
     xor     %eax, %eax              # return 0, normal return
     ret                             # return
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !defined(NLR_OS_WINDOWS)
     .size   nlr_push, .-nlr_push
 #endif
 
 /**************************************/
 // void nlr_pop()
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(NLR_OS_WINDOWS)
     .globl  _nlr_pop
     .def    _nlr_pop; .scl 2; .type 32; .endef
 _nlr_pop:
@@ -89,14 +90,14 @@ nlr_pop:
     mov     (%eax), %eax            # load prev nlr_buf
     mov     %eax, NLR_TOP           # store nlr_top (to unlink list)
     ret                             # return
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !defined(NLR_OS_WINDOWS)
     .size   nlr_pop, .-nlr_pop
 #endif
 
 /**************************************/
 // void nlr_jump(4(%esp)=mp_uint_t val)
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(NLR_OS_WINDOWS)
     .globl  _nlr_jump
     .def    _nlr_jump; .scl 2; .type 32; .endef
 _nlr_jump:
@@ -107,7 +108,7 @@ nlr_jump:
 #endif
     mov     NLR_TOP, %edx           # load nlr_top
     test    %edx, %edx              # check for nlr_top being NULL
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(NLR_OS_WINDOWS)
     je      _nlr_jump_fail           # fail if nlr_top is NULL
 #else
     je      nlr_jump_fail           # fail if nlr_top is NULL
@@ -126,7 +127,7 @@ nlr_jump:
     xor     %eax, %eax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !defined(NLR_OS_WINDOWS)
     .size   nlr_jump, .-nlr_jump
 #endif
 
