@@ -54,7 +54,7 @@ STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
         flags = POLLIN | POLLOUT;
     }
 
-    int i;
+    int i = 0;
     if (self->len < self->alloc) {
         i = self->len++;
     } else {
