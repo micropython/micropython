@@ -493,15 +493,12 @@ STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod_socket_getaddrinfo);
 
-extern mp_obj_type_t sockaddr_in_type;
-
 STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&usocket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&mod_socket_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_inet_pton), (mp_obj_t)&mod_socket_inet_pton_obj },
 #if MICROPY_SOCKET_EXTRA
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sockaddr_in), (mp_obj_t)&sockaddr_in_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_htons), (mp_obj_t)&mod_socket_htons_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gethostbyname), (mp_obj_t)&mod_socket_gethostbyname_obj },
 #endif
