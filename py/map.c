@@ -306,7 +306,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
         if (lookup_kind & MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             mp_set_rehash(set);
         } else {
-            return NULL;
+            return MP_OBJ_NULL;
         }
     }
     mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
