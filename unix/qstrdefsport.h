@@ -79,7 +79,7 @@ Q(ticks_us)
 Q(ticks_diff)
 
 Q(socket)
-Q(sockaddr_in)
+Q(sockaddr)
 Q(htons)
 Q(inet_pton)
 Q(gethostbyname)
