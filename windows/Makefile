@@ -47,12 +47,8 @@ SRC_C += lib/mp-readline/readline.c
 else ifeq ($(MICROPY_USE_READLINE),2)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=2
 LDFLAGS_MOD += -lreadline
-# the following is needed for BSD
-#LDFLAGS_MOD += -ltermcap
 endif
 
 LIB += -lws2_32
-#LIB += -lmman
 
 include ../py/mkrules.mk
-
