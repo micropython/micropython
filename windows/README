@@ -20,10 +20,14 @@ make CROSS_COMPILE=i586-mingw32msvc-
 To compile under Cygwin:
 
 Install following packages using cygwin's setup.exe:
-mingw64-i686-gcc-core, make
+mingw64-i686-gcc-core, mingw64-x86_64-gcc-core, make
 Build using:
 
 make CROSS_COMPILE=i686-w64-mingw32-
+
+or for 64bit:
+
+make CROSS_COMPILE=x86_64-w64-mingw32-
 
 
 To compile using Visual Studio 2013 (or higher):

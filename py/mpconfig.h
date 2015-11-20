@@ -849,10 +849,14 @@ typedef double mp_float_t;
 
 // printf format spec to use for mp_int_t and friends
 #ifndef INT_FMT
-#ifdef __LP64__
+#if defined(__LP64__)
 // Archs where mp_int_t == long, long != int
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
+#elif defined(_WIN64)
+#include <inttypes.h>
+#define UINT_FMT "%"PRIu64
+#define INT_FMT "%"PRId64
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"

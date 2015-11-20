@@ -108,6 +108,11 @@
 #if defined( __MINGW32__ ) && defined( __LP64__ )
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
+#elif defined ( __MINGW32__ ) && defined( _WIN64 )
+#include <stdint.h>
+typedef __int64 mp_int_t;
+typedef unsigned __int64 mp_uint_t;
+#define MP_SSIZE_MAX __INT64_MAX__
 #elif defined ( _MSC_VER ) && defined( _WIN64 )
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;

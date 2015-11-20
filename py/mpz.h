@@ -73,7 +73,11 @@ typedef int8_t mpz_dbl_dig_signed_t;
 #endif
 
 #ifdef _WIN64
-  #define MPZ_LONG_1 1i64
+  #ifdef __MINGW32__
+    #define MPZ_LONG_1 1LL
+  #else
+    #define MPZ_LONG_1 1i64
+  #endif
 #else
   #define MPZ_LONG_1 1L
 #endif
