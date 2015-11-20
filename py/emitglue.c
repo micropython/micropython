@@ -324,6 +324,26 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     return load_raw_code(reader);
 }
 
+typedef struct _mp_mem_reader_t {
+    const byte *cur;
+    const byte *end;
+} mp_mem_reader_t;
+
+STATIC mp_uint_t mp_mem_reader_next_byte(void *br_in) {
+    mp_mem_reader_t *br = br_in;
+    if (br->cur < br->end) {
+        return *br->cur++;
+    } else {
+        return (mp_uint_t)-1;
+    }
+}
+
+mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
+    mp_mem_reader_t mr = {buf, buf + len};
+    mp_reader_t reader = {&mr, mp_mem_reader_next_byte};
+    return mp_raw_code_load(&reader);
+}
+
 // here we define mp_raw_code_load_file depending on the port
 // TODO abstract this away properly
 
