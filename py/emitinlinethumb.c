@@ -161,6 +161,24 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
+typedef struct _special_reg_name_t { byte reg; char name[11]; } special_reg_name_t;
+STATIC const special_reg_name_t special_reg_name_table[] = {
+    {0, "APSR\0"},
+    {1, "IAPSR\0"},
+    {2, "EAPSR\0"},
+    {3, "XPSR\0"},
+    {5, "IPSR\0"},
+    {6, "EPSR\0"},
+    {7, "IEPSR\0"},
+    {8, "MSP\0"},
+    {9, "PSP\0"},
+    {16, "PRIMASK\0"},
+    {17, "BASEPRI\0"},
+    {18, "BASEPRI_MAX"},
+    {19, "FAULTMASK\0"},
+    {20, "CONTROL\0"},
+};
+
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
 STATIC const char *get_arg_str(mp_parse_node_t pn) {
@@ -193,6 +211,20 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     emit_inline_thumb_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
             "'%s' expects a register", op));
+    return 0;
+}
+
+STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+    const char *reg_str = get_arg_str(pn);
+    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(special_reg_name_table); i++) {
+        const special_reg_name_t *r = &special_reg_name_table[i];
+        if (strncmp(r->name, reg_str, 11) == 0) {
+            return r->reg;
+        }
+    }
+    emit_inline_thumb_error_exc(emit,
+        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+            "'%s' expects a special register", op));
     return 0;
 }
 
@@ -627,6 +659,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code_hi = 0xfa90;
                 op_code = 0xf0a0;
                 goto op_clz_rbit;
+            } else if (ARMV7M && strcmp(op_str, "MRS") == 0){
+                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 12);
+                mp_uint_t reg_src = get_arg_special_reg(emit, op_str, pn_args[1]);
+                asm_thumb_op32(emit->as, 0xf3ef, 0x8000 | (reg_dest << 8) | reg_src);
             } else {
                 if (strcmp(op_str, "and_") == 0) {
                     op_code = ASM_THUMB_FORMAT_4_AND;
