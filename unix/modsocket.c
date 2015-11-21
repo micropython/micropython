@@ -435,7 +435,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
         unsigned port = (unsigned short)MP_OBJ_SMALL_INT_VALUE(args[1]);
-        sprintf(buf, "%u", port);
+        snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
 #ifdef __UCLIBC_MAJOR__
