@@ -48,8 +48,6 @@ int vprintf(const char *fmt, va_list ap) {
 }
 
 #if MICROPY_DEBUG_PRINTERS
-mp_uint_t mp_verbose_flag = 1;
-
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);

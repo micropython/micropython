@@ -45,6 +45,10 @@
 #define DEBUG_OP_printf(...) (void)0
 #endif
 
+#if MICROPY_DEBUG_PRINTERS
+mp_uint_t mp_verbose_flag = 0;
+#endif
+
 struct _mp_raw_code_t {
     mp_raw_code_kind_t kind : 3;
     mp_uint_t scope_flags : 7;
