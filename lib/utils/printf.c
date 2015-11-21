@@ -35,6 +35,13 @@
 #include "py/formatfloat.h"
 #endif
 
+int printf(const char *fmt, ...);
+int vprintf(const char *fmt, va_list ap);
+int putchar(int c);
+int puts(const char *s);
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap);
+int snprintf(char *str, size_t size, const char *fmt, ...);
+
 int printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
