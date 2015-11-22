@@ -32,6 +32,22 @@
 
 #define __RAM_FUNC __attribute__ ((section(".ramfunc")))
 
+#ifndef IAP_INIT
+#define IAP_INIT                                    49
+#endif
+
+#define F_ASSERT(exp, msg) do { \
+    if (exp) { \
+        __fatal(msg); \
+    } \
+} while(0)
+
+#if 0
+#define DBG(...) printf(__VA_ARGS__)
+#else
+#define DBG(...) do {} while(0)
+#endif
+
 /* Base address of the Flash sectors */
 #define BANK					IAP_FLASH_BANK_B
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x1B000000) /* Base @ of Sector 0, 32 Kbytes */
@@ -73,21 +89,24 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr,
 	return 0;
 }
 
-static void __fatal(volatile char *msg) {
+static void __fatal(char *msg) {
+    __enable_irq();
+    Board_UARTPutSTR(msg);
 	while(1) {
 		__BKPT(0);
 	}
 }
 
-#define F_ASSERT(exp, msg) do { \
-	if (exp) { \
-		__fatal(msg); \
-		__enable_irq(); \
-		return; \
-	} \
-} while(0)
+/*
+ * F*ck you NXP!!!! I hate this
+ */
+void flash_init(void) { 
+    unsigned int command[5] = { IAP_INIT, 0, 0, 0, 0 };
+    unsigned int result[4];
+    iap_entry(command, result);
+}
 
-void __RAM_FUNC flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
+void flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint8_t e;
 	// check there is something to write
 	if (n_words == 0) {
@@ -95,99 +114,35 @@ void __RAM_FUNC flash_erase(uint32_t f_dst, const uint32_t *src, uint32_t n_word
 	}
 	__disable_irq();
 
-	// erase the sector(s)
+    // erase the sector(s)
 	uint32_t Start = flash_get_sector_info(f_dst, NULL, NULL);
 	uint32_t End = flash_get_sector_info(f_dst + 4 * n_words - 1, NULL, NULL);
 
-	e = Chip_IAP_PreSectorForReadWrite(Start, End, BANK);
+    e = Chip_IAP_PreSectorForReadWrite(Start, End, BANK);
 	F_ASSERT(e != IAP_CMD_SUCCESS, "Prepare for erase FAIL");
+    DBG("ERASE Prepare ok %d:%d\n", Start, End);
     e = Chip_IAP_EraseSector(Start, End, BANK);
-	F_ASSERT(e != IAP_CMD_SUCCESS, "Erase FAIL");
-
+    F_ASSERT(e != IAP_CMD_SUCCESS, "Erase FAIL");
+    DBG("ERASE Operation ok %d:%d\n", Start, End);
+    e = Chip_IAP_BlankCheckSector(Start, End, BANK);
+    F_ASSERT(e != IAP_CMD_SUCCESS, "Blank check FAIL");
+    DBG("ERASE Check ok %d:%d\n", Start, End);
+    __enable_irq();
 }
 
-/*
- // erase the sector using an interrupt
- void flash_erase_it(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
- // check there is something to write
- if (num_word32 == 0) {
- return;
- }
-
- // unlock
- HAL_FLASH_Unlock();
-
- // Clear pending flags (if any)
- __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
- FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
-
- // erase the sector(s)
- FLASH_EraseInitTypeDef EraseInitStruct;
- EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
- EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
- EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
- EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
- if (HAL_FLASHEx_Erase_IT(&EraseInitStruct) != HAL_OK) {
- // error occurred during sector erase
- HAL_FLASH_Lock(); // lock the flash
- return;
- }
- }
- */
-
-void __RAM_FUNC flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
+void flash_write(uint32_t f_dst, const uint32_t *src, uint32_t n_words) {
 	uint8_t e;
 	uint32_t Start = flash_get_sector_info(f_dst, NULL, NULL);
 	uint32_t End = flash_get_sector_info(f_dst + (n_words - 1) * 4, NULL, NULL);
+    __disable_irq();
 	e = Chip_IAP_PreSectorForReadWrite(Start, End, BANK);
 	F_ASSERT(e != IAP_CMD_SUCCESS, "Prepare for erase FAIL");
+    DBG("Write Prepare ok %d:%d:%08X:%08Xx%d\n", Start, End, f_dst, src, n_words);
 	e = Chip_IAP_CopyRamToFlash(f_dst, (uint32_t*) src, n_words * 4);
-	F_ASSERT(e != IAP_CMD_SUCCESS, "writing FAIL");
+    F_ASSERT(e != IAP_CMD_SUCCESS, "Write FAIL");
+    DBG("Write ok %d:%d:%08X:%08Xx%d\n", Start, End, f_dst, src, n_words);
+    e = Chip_IAP_Compare(f_dst, (uint32_t) src, n_words * 4);
+    F_ASSERT(e != IAP_CMD_SUCCESS, "Verify FAIL");
+    DBG("Write Check ok %d:%d:%08X:%08Xx%d\n", Start, End, f_dst, src, n_words);
 	__enable_irq();
-    __asm__ volatile("DSB");
-    __asm__ volatile ("ISB");
 }
-
-/*
- use erase, then write
- void flash_erase_and_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
- // check there is something to write
- if (num_word32 == 0) {
- return;
- }
-
- // unlock
- HAL_FLASH_Unlock();
-
- // Clear pending flags (if any)
- __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
- FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
-
- // erase the sector(s)
- FLASH_EraseInitTypeDef EraseInitStruct;
- EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
- EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
- EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
- EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
- uint32_t SectorError = 0;
- if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
- // error occurred during sector erase
- HAL_FLASH_Lock(); // lock the flash
- return;
- }
-
- // program the flash word by word
- for (int i = 0; i < num_word32; i++) {
- if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
- // error occurred during flash write
- HAL_FLASH_Lock(); // lock the flash
- return;
- }
- flash_dest += 4;
- src += 1;
- }
-
- // lock the flash
- HAL_FLASH_Lock();
- }
- */

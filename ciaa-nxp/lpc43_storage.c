@@ -106,6 +106,7 @@ void storage_init(void) {
         flash_cache_sector_id = -1;
         flash_tick_counter_last_write = 0;
         flash_is_initialised = true;
+        flash_init();
     }
 }
 
