@@ -71,6 +71,7 @@ static inline int fp_signbit(float x) { union floatbits fb = {x}; return fb.u & 
 static inline int fp_isspecial(float x) { union floatbits fb = {x}; return (fb.u & FLT_EXP_MASK) == FLT_EXP_MASK; }
 static inline int fp_isinf(float x) { union floatbits fb = {x}; return (fb.u & FLT_MAN_MASK) == 0; }
 static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 0; }
+static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 0x3f800000; }
 // Assumes both fp_isspecial() and fp_isinf() were applied before
 #define fp_isnan(x) 1
 
@@ -86,6 +87,7 @@ static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 
 #define fp_isnan(x) isnan(x)
 #define fp_isinf(x) isinf(x)
 #define fp_iszero(x) (x == 0)
+#define fp_isless1(x) (x < 1.0)
 
 #endif
 
@@ -169,7 +171,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         } else if (fmt == 'f') {
             num_digits = prec + 1;
         }
-    } else if (f < FPCONST(1.0)) {
+    } else if (fp_isless1(f)) {
         // Build negative exponent
         for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
             if (*neg_pow > f) {
@@ -180,7 +182,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         char first_dig = '0';
         char e_sign_char = '-';
         // TODO
-        if (f < FPCONST(1.0) && f >= FPROUND_TO_ONE) {
+        if (fp_isless1(f) && f >= FPROUND_TO_ONE) {
             f = FPCONST(1.0);
 //printf("e=%d\n", e);
             if (e > 1) {
@@ -357,7 +359,7 @@ assert(d < 10);
             }
             *rs = '1';
         }
-        if (f < FPCONST(1.0) && fmt == 'f') {
+        if (fp_isless1(f) && fmt == 'f') {
             // We rounded up to 1.0
 assert(0);
             prec--;
