@@ -54,25 +54,38 @@
 // exponent is stored with a bias of 127.
 // The min and max floats are on the order of 1x10^37 and 1x10^-37
 
-#include <math.h>
 #define FPTYPE float
 #define FPCONST(x) x##F
 #define FPROUND_TO_ONE 0.9999995F
 #define FPDECEXP 32
-#undef signbit
-#define signbit(x) __builtin_signbit(x)
 
 #define FLT_SIGN_MASK   0x80000000
 #define FLT_EXP_MASK    0x7F800000
 #define FLT_MAN_MASK    0x007FFFFF
 
+union floatbits {
+    float f;
+    uint32_t u;
+};
+static inline int fp_signbit(float x) { union floatbits fb = {x}; return fb.u & FLT_SIGN_MASK; }
+static inline int fp_isspecial(float x) { union floatbits fb = {x}; return (fb.u & FLT_EXP_MASK) == FLT_EXP_MASK; }
+static inline int fp_isinf(float x) { union floatbits fb = {x}; return (fb.u & FLT_MAN_MASK) == 0; }
+static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 0; }
+// Assumes both fp_isspecial() and fp_isinf() were applied before
+#define fp_isnan(x) 1
+
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
-#include <math.h>
 #define FPTYPE double
 #define FPCONST(x) x
 #define FPROUND_TO_ONE 0.999999999995
 #define FPDECEXP 256
+#include <math.h>
+#define fp_signbit(x) signbit(x)
+#define fp_isspecial(x) 1
+#define fp_isnan(x) isnan(x)
+#define fp_isinf(x) isinf(x)
+#define fp_iszero(x) (x == 0)
 
 #endif
 
@@ -106,7 +119,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
         return buf_size >= 2;
     }
-    if (signbit(f)) {
+    if (fp_signbit(f)) {
         *s++ = '-';
         f = -f;
     } else {
@@ -116,14 +129,14 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     }
     buf_remaining -= (s - buf); // Adjust for sign
 
-//    if ((num.u & FLT_EXP_MASK) == FLT_EXP_MASK) {
+    if (fp_isspecial(f)) {
         char uc = fmt & 0x20;
-        if (isinf(f)) {
+        if (fp_isinf(f)) {
             *s++ = 'I' ^ uc;
             *s++ = 'N' ^ uc;
             *s++ = 'F' ^ uc;
             goto ret;
-        } else if (isnan(f)) {
+        } else if (fp_isnan(f)) {
             *s++ = 'N' ^ uc;
             *s++ = 'A' ^ uc;
             *s++ = 'N' ^ uc;
@@ -131,7 +144,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             *s = '\0';
             return s - buf;
         }
-//    }
+    }
 
     if (prec < 0) {
         prec = 6;
@@ -149,7 +162,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     const FPTYPE *pos_pow = g_pos_pow;
     const FPTYPE *neg_pow = g_neg_pow;
 
-    if (f == 0) {
+    if (fp_iszero(f)) {
         e = 0;
         if (fmt == 'e') {
             e_sign = '+';
