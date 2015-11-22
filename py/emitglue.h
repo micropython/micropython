@@ -62,6 +62,7 @@ typedef struct _mp_reader_t {
 } mp_reader_t;
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
+mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
 mp_raw_code_t *mp_raw_code_load_file(const char *filename);
 #endif
 

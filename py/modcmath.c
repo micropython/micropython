@@ -86,6 +86,7 @@ STATIC mp_obj_t mp_cmath_log(mp_obj_t z_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log_obj, mp_cmath_log);
 
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 /// \function log10(z)
 /// Return the base-10 logarithm of `z`.  The branch cut is along the negative real axis.
 STATIC mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
@@ -94,6 +95,7 @@ STATIC mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
     return mp_obj_new_complex(0.5 * MICROPY_FLOAT_C_FUN(log10)(real*real + imag*imag), 0.4342944819032518 * MICROPY_FLOAT_C_FUN(atan2)(imag, real));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log10_obj, mp_cmath_log10);
+#endif
 
 /// \function sqrt(z)
 /// Return the square-root of `z`.
@@ -133,7 +135,9 @@ STATIC const mp_map_elem_t mp_module_cmath_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rect), (mp_obj_t)&mp_cmath_rect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&mp_cmath_exp_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&mp_cmath_log_obj },
+    #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&mp_cmath_log10_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&mp_cmath_sqrt_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_acos), (mp_obj_t)&mp_cmath_acos_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_asin), (mp_obj_t)&mp_cmath_asin_obj },

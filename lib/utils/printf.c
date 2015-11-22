@@ -35,6 +35,14 @@
 #include "py/formatfloat.h"
 #endif
 
+#undef putchar  // Some stdlibs have a #define for putchar
+int printf(const char *fmt, ...);
+int vprintf(const char *fmt, va_list ap);
+int putchar(int c);
+int puts(const char *s);
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap);
+int snprintf(char *str, size_t size, const char *fmt, ...);
+
 int printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -48,19 +56,23 @@ int vprintf(const char *fmt, va_list ap) {
 }
 
 #if MICROPY_DEBUG_PRINTERS
-mp_uint_t mp_verbose_flag = 1;
-
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
+    #if MICROPY_DEBUG_STDERR
+    // Printing debug to stderr may give a chance tests which
+    // check stdout to pass, etc.
+    extern const mp_print_t mp_stderr_print;
+    int ret = mp_vprintf(&mp_stderr_print, fmt, ap);
+    #else
     int ret = mp_vprintf(&mp_plat_print, fmt, ap);
+    #endif
     va_end(ap);
     return ret;
 }
 #endif
 
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
-#undef putchar  // Some stdlibs have a #define for putchar
 int putchar(int c) {
     char chr = c;
     mp_hal_stdout_tx_strn_cooked(&chr, 1);

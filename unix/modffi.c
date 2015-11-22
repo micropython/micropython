@@ -47,9 +47,9 @@
  *          clashes with struct's "p" as "Pascal string").
  *      s - as argument, the same as "p", as return value, causes string
  *          to be allocated and returned, instead of pointer value.
+ *      O - mp_obj_t, passed as is (mostly useful as a callback param)
  *
  * TODO:
- *      O - mp_obj_t, passed as is (mostly useful as callback param)
  *      C - callback function
  *
  * Note: all constraint specified by typecode can be not enforced at this time,

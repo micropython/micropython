@@ -4,7 +4,7 @@ WiPy tutorials and examples
 ===========================
 
 Before starting, make sure that you are running the latest firmware,
-for instrucctions see :ref:`OTA How-To <wipy_firmware_upgrade>`.
+for instructions see :ref:`OTA How-To <wipy_firmware_upgrade>`.
 
 .. toctree::
    :maxdepth: 1

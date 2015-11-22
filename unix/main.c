@@ -51,7 +51,6 @@
 // Command line options, with their defaults
 STATIC bool compile_only = false;
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
-mp_uint_t mp_verbose_flag = 0;
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
@@ -573,14 +572,6 @@ uint mp_import_stat(const char *path) {
         }
     }
     return MP_IMPORT_STAT_NO_EXIST;
-}
-
-int DEBUG_printf(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    int ret = mp_vprintf(&mp_stderr_print, fmt, ap);
-    va_end(ap);
-    return ret;
 }
 
 void nlr_jump_fail(void *val) {
