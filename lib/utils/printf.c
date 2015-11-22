@@ -35,6 +35,7 @@
 #include "py/formatfloat.h"
 #endif
 
+#undef putchar  // Some stdlibs have a #define for putchar
 int printf(const char *fmt, ...);
 int vprintf(const char *fmt, va_list ap);
 int putchar(int c);
@@ -72,7 +73,6 @@ int DEBUG_printf(const char *fmt, ...) {
 #endif
 
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
-#undef putchar  // Some stdlibs have a #define for putchar
 int putchar(int c) {
     char chr = c;
     mp_hal_stdout_tx_strn_cooked(&chr, 1);
