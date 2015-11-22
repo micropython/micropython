@@ -528,7 +528,8 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 // use MICROPY_FLOAT_IMPL_DOUBLE, don't call mp_vprintf()
                 // with float format specifier at all.
                 // TODO: resolve this completely
-                assert(0);
+                mp_float_t f = va_arg(args, double);
+                chrs += mp_print_float(print, f, *fmt, flags, fill, width, prec);
 //#error Calling mp_print_float with double not supported from within printf
 #else
 #error Unknown MICROPY FLOAT IMPL

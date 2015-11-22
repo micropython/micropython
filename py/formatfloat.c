@@ -406,7 +406,7 @@ int mp_format_float(double value, char *buf, size_t bufSize, char fmt, int prec,
         *fmt_s++ = fmt;
         *fmt_s = '\0';
 
-        return snprintf(buf, bufSize, fmt_buf, prec, value);
+        return __snprintf_chk(buf, bufSize, 0, bufSize, fmt_buf, prec, value);
 #ifdef _MSC_VER
     }
 #endif
