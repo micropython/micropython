@@ -170,6 +170,15 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             num_digits = prec + 1;
         }
     } else if (fp_isless1(f)) {
+        // We need to figure out what an integer digit will be used
+        // in case 'f' is used (or we revert other format to it below).
+        // As we just tested number to be <1, this is obviously 0,
+        // but we can round it up to 1 below.
+        char first_dig = '0';
+        if (f >= FPROUND_TO_ONE) {
+            first_dig = '1';
+        }
+
         // Build negative exponent
         for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
             if (*neg_pow > f) {
@@ -177,14 +186,9 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 f *= *pos_pow;
             }
         }
-        char first_dig = '0';
         char e_sign_char = '-';
         if (fp_isless1(f) && f >= FPROUND_TO_ONE) {
             f = FPCONST(1.0);
-            if (e > 1) {
-                // numbers less than 1.0 start with 0.xxx
-                first_dig = '1'; 
-            }
             if (e == 0) {
                 e_sign_char = '+';
             }
