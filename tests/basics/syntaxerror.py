@@ -113,3 +113,11 @@ test_syntax('def f(x):\n nonlocal x')
 
 # can define variable to be both nonlocal and global
 test_syntax('def f():\n nonlocal x\n global x')
+
+# can't have multiple *'s
+test_syntax('def f(x, *a, *):\n pass')
+test_syntax('lambda x, *a, *: 1')
+
+# **kw must be last
+test_syntax('def f(x, *a, **kw, r):\n pass')
+test_syntax('lambda x, *a, **kw, r: 1')

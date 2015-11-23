@@ -2505,7 +2505,12 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
 }
 
 STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star) {
-    // TODO verify that *k and **k are last etc
+    // check that **kw is last
+    if ((comp->scope_cur->scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
+        compile_syntax_error(comp, pn, "invalid syntax");
+        return;
+    }
+
     qstr param_name = MP_QSTR_NULL;
     uint param_flag = ID_FLAG_IS_PARAM;
     if (MP_PARSE_NODE_IS_ID(pn)) {
@@ -2530,6 +2535,11 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
                 comp->scope_cur->num_pos_args += 1;
             }
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
+            if (comp->have_star) {
+                // more than one star
+                compile_syntax_error(comp, pn, "invalid syntax");
+                return;
+            }
             comp->have_star = true;
             param_flag = ID_FLAG_IS_PARAM | ID_FLAG_IS_STAR_PARAM;
             if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
