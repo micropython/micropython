@@ -131,7 +131,8 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 #endif
     /*
-     * Enable WFI for the embedded phy
+     * Enable calling WFI and correct
+     * function of the embedded USB_HS phy
      */
     __OTGHSULPI_CLK_SLEEP_DISABLE();
     __OTGHS_CLK_SLEEP_ENABLE();
