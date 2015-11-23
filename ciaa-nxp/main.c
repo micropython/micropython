@@ -57,7 +57,7 @@ static FATFS fatfs0;
 
 static const char fresh_main_py[] =
 "# main.py -- put your code here!\r\n"
-"print('Sopdawoooop!');"
+"print('prueba desde main');"
 ;
 
 static const char fresh_readme_txt[] =

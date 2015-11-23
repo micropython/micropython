@@ -93,17 +93,24 @@ void boot_writeScript(char* script,int scriptLen)
 	*/
 
         FIL fp;
+	Board_UARTPutSTR("1");
         f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
+	Board_UARTPutSTR("2");
         f_write(&fp, script, scriptLen - 1 /* don't count null terminator */, &n);
 	//f_sync(&fp);
-        f_close(&fp);
 
 
 	Board_UARTPutSTR("escribi archivo");
 	char aux[160];
 	sprintf(aux,"escribo:%s - n:%d\r\n",script,n);
 	Board_UARTPutSTR(aux);
+
+        Board_UARTPutSTR("3");
+        f_close(&fp);
+        Board_UARTPutSTR("4");
+
+
 
         // TODO check we could write n bytes
 	f_open(&fp, "/flash/Main.py", FA_READ);
@@ -112,6 +119,6 @@ void boot_writeScript(char* script,int scriptLen)
 	sprintf(aux,"lei:%d bytes\r\n",n);
 	Board_UARTPutSTR(aux);
 	Board_UARTPutSTR(dataread);
-
+	Board_UARTPutSTR("FIN escribo archivo");
 
 }
