@@ -3,7 +3,7 @@ The MicroPython Interactive Interpreter Mode (aka REPL)
 
 This section covers some characteristics of the MicroPython Interactive
 Interpreter Mode. A commonly used term for this is REPL (read-eval-print-loop)
-which will used to refer to this interactive prompt.
+which will be used to refer to this interactive prompt.
 
 Auto-indent
 -----------
@@ -48,6 +48,10 @@ Finally type ``print(i)``, press RETURN, press BACKSPACE and press RETURN again:
     2
     3
     >>>
+
+Auto-indent won't be applied if the previous two lines were all spaces.  This
+means that you can finish entering a compound statment by pressing RETURN
+twice, and then a third press will finish and execute.
 
 Auto-completion
 ---------------

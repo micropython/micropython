@@ -31,13 +31,8 @@
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;         // the context within which this function was defined
-    mp_uint_t n_pos_args : 8;       // number of arguments this function takes
-    mp_uint_t n_kwonly_args : 8;    // number of keyword-only arguments this function takes
-    mp_uint_t n_def_args : 8;       // number of default arguments
-    mp_uint_t has_def_kw_args : 1;  // set if this function has default keyword args
-    mp_uint_t takes_var_args : 1;   // set if this function takes variable args
-    mp_uint_t takes_kw_args : 1;    // set if this function takes keyword args
     const byte *bytecode;           // bytecode for the function
+    const mp_uint_t *const_table;   // constant table
     // the following extra_args array is allocated space to take (in order):
     //  - values of positional default args (if any)
     //  - a single slot for default kw args dict (if it has them)

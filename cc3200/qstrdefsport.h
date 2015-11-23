@@ -228,6 +228,10 @@ Q(register)
 Q(unregister)
 Q(modify)
 Q(poll)
+Q(POLLIN)
+Q(POLLOUT)
+Q(POLLERR)
+Q(POLLHUP)
 
 // for socket class
 Q(socket)

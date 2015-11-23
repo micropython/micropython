@@ -31,7 +31,6 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "gccollect.h"
-#include "pyexec.h"
 #include "user_interface.h"
 #include "modpyb.h"
 

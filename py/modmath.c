@@ -52,6 +52,11 @@
     STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { mp_int_t x = MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj)); return mp_obj_new_int(x); } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
+#if MP_NEED_LOG2
+// 1.442695040888963407354163704 is 1/_M_LN2
+#define log2(x) (log(x) * 1.442695040888963407354163704)
+#endif
+
 /// \function sqrt(x)
 /// Returns the square root of `x`.
 MATH_FUN_1(sqrt, sqrt)
@@ -60,8 +65,10 @@ MATH_FUN_1(sqrt, sqrt)
 MATH_FUN_2(pow, pow)
 /// \function exp(x)
 MATH_FUN_1(exp, exp)
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 /// \function expm1(x)
 MATH_FUN_1(expm1, expm1)
+#endif
 /// \function log2(x)
 MATH_FUN_1(log2, log2)
 /// \function log10(x)
@@ -187,7 +194,9 @@ STATIC const mp_map_elem_t mp_module_math_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sqrt), (mp_obj_t)&mp_math_sqrt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pow), (mp_obj_t)&mp_math_pow_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_exp), (mp_obj_t)&mp_math_exp_obj },
+    #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
     { MP_OBJ_NEW_QSTR(MP_QSTR_expm1), (mp_obj_t)&mp_math_expm1_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_log), (mp_obj_t)&mp_math_log_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log2), (mp_obj_t)&mp_math_log2_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_log10), (mp_obj_t)&mp_math_log10_obj },

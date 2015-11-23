@@ -36,13 +36,13 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
+#include "lib/utils/pyexec.h"
 #include "lib/fatfs/ff.h"
 
 #include "systick.h"
 #include "pendsv.h"
 #include "gccollect.h"
 #include "readline.h"
-#include "pyexec.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"

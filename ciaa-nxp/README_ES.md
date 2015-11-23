@@ -15,11 +15,14 @@ Table of context
 - Puede usar una linea de comandos python REPL en la UART del puerto USB de DEBUG.
 
 
-#### Soporte de hardware
+## Soporte de hardware
 
-Modulo pyb:
-- Soporte de los 4 LEDS de la placa mediante el modulo pyb.LED. Ejemplo:
+### Modulo pyb:
+##### Soporte de los 4 LEDS
 
+Clase `pyb.LED`.
+
+Ejemplo:
 ```python
 import pyb
 led1 = pyb.LED(1)
@@ -30,8 +33,10 @@ led1.off()
 Numeros de leds disponibles: de 1 a 6 (4:Red, 5:Green, 6:Blue)
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.LED.html
 
-- Soporte para los 4 pulsadores de la placa mediante el modulo pyb.Switch. Ejemplo:
+##### Soporte para los 4 pulsadores de la placa
+Clase `pyb.Switch`.
 
+Ejemplo:
 ```python
 import pyb
 switch1 = pyb.Switch(1)
@@ -41,7 +46,11 @@ print('sw1 vale:'+str(val))
 Numeros de switch disponibles:  de 1 a 4
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Switch.html
 
-- Soporte para la UART RS232 del conector P1 y la UART RS485 de la placa mediante el modulo pyb.UART. Ejemplo:
+##### Soporte para la UART
+
+Implementado RS232 del conector P1 y la UART RS485 de la placa mediante la clase `pyb.UART`.
+
+Ejemplo:
 
 ```python
 import pyb
@@ -72,7 +81,11 @@ art.init(115200,bits=8, parity=None, stop=1,timeout=0, timeout_char=1000, read_b
 En este ejemplo, se detectara un fin de trama cuando llegue el caracter 'o'
 
 
-- Soporte para GPIOs mediante el modulo pyb.Pin. Ejemplo:
+##### Soporte para GPIOs
+
+Clase `pyb.Pin`.
+
+Ejemplo:
 ```python
 import pyb
 
@@ -93,7 +106,10 @@ Las GPIOs disponibles van de 0 a 8
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.Pin.html
 
 
-- Soporte para interrupciones en GPIOs mediante el modulo pyb.ExtInt. Ejemplo:
+##### Soporte para interrupciones en GPIOs
+Clase `pyb.ExtInt`.
+
+Ejemplo:
 ```python
 import pyb
 
@@ -121,7 +137,10 @@ Se implementaron los metodos:
 
 Mas info en : http://test-ergun.readthedocs.org/en/latest/library/pyb.ExtInt.html
 
-- Soporte para DAC mediante el modulo pyb.DAC. Ejemplo:
+##### Soporte para DAC
+Clase `pyb.DAC`.
+
+Ejemplo:
 ```python
 import pyb
 import math
@@ -151,7 +170,11 @@ Existe solo el DAC 1
 A diferencia de la clase DAC de la pyboard (http://test-ergun.readthedocs.org/en/latest/library/pyb.DAC.html) se utilizaron valores de 10bit en vez de 8bits para aprovechar al maximo la resolucion del DAC.
 
 
-- Soporte para Timers mediante el modulo pyb.Timer. Ejemplo:
+##### Soporte para Timers
+
+Clase `pyb.Timer`.
+
+Ejemplo:
 ```python
 import pyb
 
@@ -183,7 +206,9 @@ del tiempo prefijado.
 No se implemento la clase TimerChannel, por lo que las funcionalidades de Output Compare e Input Capture no son accesibles.
 
 
-- Soporte para PWM mediante el modulo pyb.PWM
+##### Soporte para PWM
+
+Clase `pyb.PWM`
 
 Ejemplo:
 ```python
@@ -221,7 +246,9 @@ Salidas de PWM disponibles: 0 a 10
 La placa posee un solo modulo PWM con 11 salidas asociadas, por esta razon todas las salidas comparten la misma frecuencia, pero tienen un valor de ciclo de actividad independiente.
 
 
-- Soporte para ADC mediante el modulo pyb.ADC
+##### Soporte para ADC
+
+Clase `pyb.ADC`.
 
 Ejemplo:
 ```python

@@ -98,7 +98,6 @@ STM_SRC_C = $(addprefix stmhal/,\
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
-	printf.c \
 	pybstdio.c \
 	)
 
@@ -110,6 +109,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
+	utils/printf.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\

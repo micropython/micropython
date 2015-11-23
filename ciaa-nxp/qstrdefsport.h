@@ -44,6 +44,11 @@ Q(readlines)
 Q(readall)
 Q(FileIO)
 Q(os)
+Q(uos)
+Q(io)
+Q(input)
+Q(help)
+
 
 Q(Pin)
 Q(IN)
@@ -65,9 +70,6 @@ Q(zlib)
 Q(json)
 Q(heapq)
 Q(hashlib)
-
-Q(uos)
-Q(os)
 
 Q(/)
 Q(/flash)
@@ -136,11 +138,3 @@ Q(set_frequency)
 
 Q(ADC)
 Q(read)
-
-/*
-Q(readall)
-Q(readinto)
-Q(readline)
-Q(readlines)
-Q(FileIO)
-*/

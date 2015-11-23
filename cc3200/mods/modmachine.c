@@ -39,7 +39,6 @@
 #include "inc/hw_uart.h"
 #include "rom_map.h"
 #include "prcm.h"
-#include "pyexec.h"
 #include "pybuart.h"
 #include "pybpin.h"
 #include "pybrtc.h"

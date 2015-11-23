@@ -33,10 +33,11 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
+#include "lib/utils/pyexec.h"
+
 #include "gccollect.h"
 #include "irq.h"
 #include "systick.h"
-#include "pyexec.h"
 #include "led.h"
 #include "pin.h"
 #include "timer.h"

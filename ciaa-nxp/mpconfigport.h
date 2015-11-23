@@ -21,8 +21,13 @@
 #define MICROPY_ENABLE_DOC_STRING   (1)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
-#define MICROPY_ENABLE_LFN          (1)
-#define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_VOLUMES          (3)
+#define MICROPY_FATFS_MULTI_PARTITION  (1)
 
 #define MICROPY_PY_BUILTINS_BYTEARRAY      (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW     (1)
@@ -36,6 +41,9 @@
 #define MICROPY_PY_BUILTINS_STR_UNICODE    (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
 #define MICROPY_PY_BUILTINS_EXECFILE       (1)
+
+#define MICROPY_PY_SYS_STDFILES     (1)
+#define MICROPY_PY_SYS_STDIO_BUFFER (1)
 
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
@@ -51,7 +59,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 
-#define MICROPY_PY_IO_FILEIO        (0)
+#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)
@@ -81,8 +89,12 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
 // extra built in names to add to the global namespace
+extern const struct _mp_obj_fun_builtin_t mp_builtin_help_obj;
+extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
 extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra builtin modules to add to the list of known ones
@@ -96,6 +108,7 @@ extern const struct _mp_obj_module_t mp_module_ujson;
 extern const struct _mp_obj_module_t mp_module_uheapq;
 extern const struct _mp_obj_module_t mp_module_uhashlib;
 extern const struct _mp_obj_module_t mp_module_uos;
+extern const struct _mp_obj_module_t mp_module_io;
 extern const struct _mp_obj_module_t mp_module_utime;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -110,6 +123,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
     { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib), (mp_obj_t)&mp_module_uhashlib }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_io }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 

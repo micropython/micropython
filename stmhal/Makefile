@@ -104,6 +104,7 @@ SRC_LIB = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/printf.c \
 	)
 
 SRC_C = \
@@ -130,7 +131,6 @@ SRC_C = \
 	uart.c \
 	can.c \
 	usb.c \
-	printf.c \
 	gccollect.c \
 	pybstdio.c \
 	help.c \

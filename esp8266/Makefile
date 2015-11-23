@@ -67,7 +67,6 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
-	printf.c \
 	pybstdio.c \
 	)
 
@@ -77,6 +76,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/printf.c \
 	)
 
 SRC_S = \

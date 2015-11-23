@@ -51,11 +51,6 @@ const PARTITION VolToPart[] = { { 0, 1 }, // Logical drive 0 ==> Physical drive 
 		 */
 		};
 
-/* Definitions of physical drive number for each media */
-#define PD_FLASH (0)
-#define PD_SDCARD (1)
-#define PD_USER (2)
-
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/

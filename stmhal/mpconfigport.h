@@ -46,14 +46,15 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
-/* Enable FatFS LFNs
-    0: Disable LFN feature.
-    1: Enable LFN with static working buffer on the BSS. Always NOT reentrant.
-    2: Enable LFN with dynamic working buffer on the STACK.
-    3: Enable LFN with dynamic working buffer on the HEAP.
-*/
-#define MICROPY_ENABLE_LFN          (1)
-#define MICROPY_LFN_CODE_PAGE       (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_VOLUMES          (3)
+#define MICROPY_FATFS_MULTI_PARTITION  (1)
+
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)

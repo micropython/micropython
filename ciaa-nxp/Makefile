@@ -1,10 +1,5 @@
 include ../py/mkenv.mk
 
-# Generate python script binary data (DEPRECATED)
-#build/ProgramScript.c: py/Main.py
-#	@echo "Generate program script"
-#	@python py2c.py $< $@
-
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
 
@@ -46,6 +41,7 @@ SRC_C = \
 	cr_startup_lpc43xx.c \
 	modpyb.c \
 	ciaanxp_mphal.c \
+	ciaa_help.c \
 	modpybled.c \
 	stmhal/pybstdio.c \
 	lib/fatfs/ff.c \
@@ -68,18 +64,11 @@ SRC_C = \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 	stmhal/fsusermount.c \
 	stmhal/file.c \
+	stmhal/input.c \
 	lpc43_diskio.c \
 	lpc43_flash.c \
 	lpc43_storage.c \
-	stmhal/lexerfatfs.c \
-#	teensy/memzip.c \
-	memzip_extras.c \
-	teensy/lexermemzip.c \
-	build/ProgramScript.c \
-	printf.c \
-	string0.c \
-	malloc0.c \
-	gccollect.c \
+	stmhal/lexerfatfs.c
 
 SRC_S = \
 #	startup_stm32f40xx.s \
@@ -88,14 +77,6 @@ SRC_S = \
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 all: $(BUILD)/firmware.elf
-
-#build/fs.zip: $(wildcard py/*)
-#	$(ECHO) "Create ROMFS (phase 1)"
-#	$(Q)(cd py && zip -0 -r -D ../$@ .)
-#
-#build/fs.o: build/fs.zip
-#	$(ECHO) "Create ROMFS (phase 2)"
-#	$(Q)$(CROSS_COMPILE)objcopy -v -B arm -I binary -O elf32-littlearm $^ $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"

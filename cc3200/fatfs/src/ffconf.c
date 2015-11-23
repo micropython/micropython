@@ -27,9 +27,9 @@
 #include <string.h>
 
 #include "py/mpstate.h"
-#include "ff.h"
-#include "ffconf.h"
-#include "diskio.h"
+#include "lib/fatfs/ff.h"
+#include "lib/fatfs/ffconf.h"
+#include "lib/fatfs/diskio.h"
 #include "moduos.h"
 
 #if _FS_RPATH
@@ -65,7 +65,7 @@ int ff_get_ldnumber (const TCHAR **path) {
     }
 
     if (check_path(path, "/flash", 6)) {
-        return FLASH;
+        return PD_FLASH;
     }
     else {
         for (mp_uint_t i = 0; i < MP_STATE_PORT(mount_obj_list).len; i++) {
@@ -80,7 +80,7 @@ int ff_get_ldnumber (const TCHAR **path) {
 }
 
 void ff_get_volname(BYTE vol, TCHAR **dest) {
-    if (vol == FLASH) {
+    if (vol == PD_FLASH) {
         memcpy(*dest, "/flash", 6);
         *dest += 6;
     } else {

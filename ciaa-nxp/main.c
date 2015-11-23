@@ -8,7 +8,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "stmhal/pyexec.h"
+#include "lib/utils/pyexec.h"
 
 #include "lib/fatfs/ff.h"
 
@@ -30,49 +30,19 @@
 static char *stack_top;
 static __DATA(RAM2) char heap[32*1024];
 
-//extern const char programScript[];
-#if 0
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-    if (lex == NULL) {
-        return;
-    }
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
-        mp_parse_node_t pn = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(pn, source_name, MP_EMIT_OPT_NONE, true);
-        mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        // uncaught exception
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-    }
-}
-#endif
-
 static FATFS fatfs0;
 
 
 static const char fresh_main_py[] =
 "# main.py -- put your code here!\r\n"
-"print('prueba desde main');"
 ;
 
 static const char fresh_readme_txt[] =
-"This is a Micro Python board\r\n"
-"\r\n"
-"You can get started right away by writing your Python code in 'main.py'.\r\n"
-"\r\n"
-"For a serial prompt:\r\n"
-" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
-"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
-"   Then use a terminal program like Hyperterminal or putty.\r\n"
-" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
-" - Linux: use the command: screen /dev/ttyACM0\r\n"
-"\r\n"
-"Please visit http://micropython.org/help/ for further help.\r\n"
+"print('Welcome to Micropython on EDU-CIAA-NXP');\r\n"
+"import os\r\n"
+"import sys\r\n"
+"import pyb\r\n"
+"import gc\r\n"
 ;
 
 void init_flash_fs(uint reset_mode) {
@@ -94,15 +64,10 @@ void init_flash_fs(uint reset_mode) {
 
         // create empty main.py
         FIL fp;
-        f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
-        f_close(&fp);
-
-        // create readme file
-        f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
-        f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
         // keep LED on for at least 200ms
@@ -135,7 +100,6 @@ soft_reset:
 
     init_flash_fs(0);
 
-
 	// check new script from IDE
 	boot();
 	//__________________________
@@ -143,7 +107,7 @@ soft_reset:
 
 
     if (!pyexec_file("/flash/Main.py")) {
-		mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
+        mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }
 
     // Main script is finished, so now go into REPL mode.
@@ -160,7 +124,6 @@ soft_reset:
         }
     }
 
-    // pyexec_friendly_repl();
     printf("soft reboot\n");
     goto soft_reset;
     return 0;
@@ -175,22 +138,9 @@ void gc_collect(void) {
     //gc_dump_info();
 }
 
-#if 0
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
-}
-#endif
-
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
-
-#if 0
-mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-#endif
 
 void nlr_jump_fail(void *val) {
 }
@@ -205,6 +155,9 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 #endif
+
+/*
+<<<<<<< HEAD
 
 #if 0
 int _lseek() {return 0;}
@@ -246,4 +199,8 @@ void _start(void) {main(0, NULL);}
 #endif
 
 
+
+=======
+>>>>>>> master
+*/
 

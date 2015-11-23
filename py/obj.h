@@ -130,16 +130,16 @@ static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
 
-#define mp_const_float_e ((mp_obj_t)((0x402df854 & ~3) | 2))
-#define mp_const_float_pi ((mp_obj_t)((0x40490fdb & ~3) | 2))
+#define mp_const_float_e ((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
+#define mp_const_float_pi ((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
 
 static inline bool mp_obj_is_float(mp_const_obj_t o)
-    { return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0x7f800004) != 0x7f800004; }
+    { return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006; }
 static inline mp_float_t mp_obj_float_get(mp_const_obj_t o) {
     union {
         mp_float_t f;
         mp_uint_t u;
-    } num = {.u = (mp_uint_t)o & ~3};
+    } num = {.u = ((mp_uint_t)o - 0x80800000) & ~3};
     return num.f;
 }
 static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
@@ -147,13 +147,13 @@ static inline mp_obj_t mp_obj_new_float(mp_float_t f) {
         mp_float_t f;
         mp_uint_t u;
     } num = {.f = f};
-    return (mp_obj_t)((num.u & ~0x3) | 2);
+    return (mp_obj_t)(((num.u & ~0x3) | 2) + 0x80800000);
 }
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
-    { return (((mp_uint_t)(o)) & 0x7f800007) == 0x7f800006; }
-#define MP_OBJ_QSTR_VALUE(o) ((((mp_uint_t)(o)) >> 3) & 0xfffff)
-#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 0x7f800006))
+    { return (((mp_uint_t)(o)) & 0xff800007) == 0x00000006; }
+#define MP_OBJ_QSTR_VALUE(o) (((mp_uint_t)(o)) >> 3)
+#define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 3) | 0x00000006))
 
 static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 3) == 0); }
@@ -537,8 +537,8 @@ mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, mp_uint_t n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
-mp_obj_t mp_obj_new_fun_bc(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code);
-mp_obj_t mp_obj_new_fun_native(mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t n_kwonly_args, mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data);
+mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
+mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);

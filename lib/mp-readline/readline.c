@@ -370,6 +370,18 @@ STATIC void readline_auto_indent(void) {
             }
         }
         // i=start of line; j=first non-space
+        if (i > 0 && j + 1 == line->len) {
+            // previous line is not first line and is all spaces
+            for (size_t k = i - 1; k > 0; --k) {
+                if (line->buf[k - 1] == '\n') {
+                    // don't auto-indent if last 2 lines are all spaces
+                    return;
+                } else if (line->buf[k - 1] != ' ') {
+                    // 2nd previous line is not all spaces
+                    break;
+                }
+            }
+        }
         int n = (j - i) / 4;
         if (line->buf[line->len - 2] == ':') {
             n += 1;
