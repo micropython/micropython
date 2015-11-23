@@ -59,7 +59,7 @@ int vprintf(const char *fmt, va_list ap) {
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    #if MICROPY_DEBUG_STDERR
+    #if defined(MICROPY_DEBUG_STDERR) && MICROPY_DEBUG_STDERR
     // Printing debug to stderr may give a chance tests which
     // check stdout to pass, etc.
     extern const mp_print_t mp_stderr_print;
