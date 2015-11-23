@@ -282,9 +282,11 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         } else {
             RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
         }
+        #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
         uint32_t h = RCC_ClkInitStruct.AHBCLKDivider >> 4;
         uint32_t b1 = RCC_ClkInitStruct.APB1CLKDivider >> 10;
         uint32_t b2 = RCC_ClkInitStruct.APB2CLKDivider >> 10;
+        #endif
         if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
             goto fail;
         }
