@@ -319,11 +319,15 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 }
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
-    byte header[2];
-    read_bytes(reader, header, 2);
+    byte header[3];
+    read_bytes(reader, header, 3);
     if (strncmp((char*)header, "M\x00", 2) != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "invalid .mpy file"));
+    }
+    if (header[2] != MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "incompatible .mpy file"));
     }
     return load_raw_code(reader);
 }
@@ -558,7 +562,13 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
 }
 
 void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
-    mp_print_bytes(print, (const byte*)"M\x00", 2);
+    // header contains:
+    //  byte  'M'
+    //  byte  version
+    //  byte  feature flags (right now just OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
+    byte header[3] = {'M', 0, MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE};
+    mp_print_bytes(print, header, 3);
+
     save_raw_code(print, rc);
 }
 
