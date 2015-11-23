@@ -32,6 +32,12 @@ test("{:06e}", float("nan"))
 # The following fails right now
 #test("{:10.1}", 0.0)
 
+print("%.0f" % (1.750000 % 0.08333333333))
+# Below isn't compatible with single-precision float
+#print("%.1f" % (1.750000 % 0.08333333333))
+#print("%.2f" % (1.750000 % 0.08333333333))
+#print("%.12f" % (1.750000 % 0.08333333333))
+
 def test_fmt(conv, fill, alignment, sign, prefix, width, precision, type, arg):
     fmt = '{'
     if conv:

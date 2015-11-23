@@ -1,6 +1,7 @@
 # to test arbitrariy precision integers
 
 x = 1000000000000000000000000000000
+xn = -1000000000000000000000000000000
 y = 2000000000000000000000000000000
 
 # printing
@@ -10,11 +11,15 @@ print(y)
 # addition
 print(x + 1)
 print(x + y)
+print(x + xn == 0)
+print(bool(x + xn))
 
 # subtraction
 print(x - 1)
 print(x - y)
 print(y - x)
+print(x - x == 0)
+print(bool(x - x))
 
 # multiplication
 print(x * 2)

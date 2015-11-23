@@ -285,7 +285,11 @@ STATIC mp_uint_t mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen,
         *idig = *jdig;
     }
 
-    return idig - oidig;
+    // remove trailing zeros
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
+    }
+
+    return idig + 1 - oidig;
 }
 
 /* computes i = i * d1 + d2
