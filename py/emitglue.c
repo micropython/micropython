@@ -226,7 +226,12 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 
 #if MICROPY_PERSISTENT_CODE_LOAD
 
+#include "py/parsenum.h"
 #include "py/bc0.h"
+
+STATIC int read_byte(mp_reader_t *reader) {
+    return reader->read_byte(reader->data);
+}
 
 STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
@@ -256,9 +261,23 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
 }
 
 STATIC mp_obj_t load_obj(mp_reader_t *reader) {
-    (void)reader;
-    assert(0);
-    return MP_OBJ_NULL;
+    byte obj_type = read_byte(reader);
+    if (obj_type == 'e') {
+        return (mp_obj_t)&mp_const_ellipsis_obj;
+    } else {
+        size_t len = read_uint(reader);
+        vstr_t vstr;
+        vstr_init_len(&vstr, len);
+        read_bytes(reader, (byte*)vstr.buf, len);
+        if (obj_type == 's' || obj_type == 'b') {
+            return mp_obj_new_str_from_vstr(obj_type == 's' ? &mp_type_str : &mp_type_bytes, &vstr);
+        } else if (obj_type == 'i') {
+            return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
+        } else {
+            assert(obj_type == 'f' || obj_type == 'c');
+            return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == 'c', false, NULL);
+        }
+    }
 }
 
 STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
@@ -319,11 +338,15 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 }
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
-    byte header[2];
-    read_bytes(reader, header, 2);
+    byte header[3];
+    read_bytes(reader, header, 3);
     if (strncmp((char*)header, "M\x00", 2) != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "invalid .mpy file"));
+    }
+    if (header[2] != MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "incompatible .mpy file"));
     }
     return load_raw_code(reader);
 }
@@ -449,6 +472,9 @@ mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
 #endif // MICROPY_PERSISTENT_CODE_LOAD
 
 #if MICROPY_PERSISTENT_CODE_SAVE
+
+#include "py/objstr.h"
+
 STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
     print->print_strn(print->data, (const char*)data, len);
 }
@@ -473,38 +499,41 @@ STATIC void save_qstr(mp_print_t *print, qstr qst) {
 }
 
 STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
-    if (MP_OBJ_IS_STR(o)) {
-        byte buf[] = {'s'};
-        mp_print_bytes(print, buf, 1);
+    if (MP_OBJ_IS_STR_OR_BYTES(o)) {
+        byte obj_type;
+        if (MP_OBJ_IS_STR(o)) {
+            obj_type = 's';
+        } else {
+            obj_type = 'b';
+        }
         mp_uint_t len;
         const char *str = mp_obj_str_get_data(o, &len);
+        mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, len);
         mp_print_bytes(print, (const byte*)str, len);
-    } else if (MP_OBJ_IS_TYPE(o, &mp_type_bytes)) {
-        byte buf[] = {'b'};
-        mp_print_bytes(print, buf, 1);
-        mp_uint_t len;
-        const char *str = mp_obj_str_get_data(o, &len);
-        mp_print_uint(print, len);
-        mp_print_bytes(print, (const byte*)str, len);
-    } else if (MP_OBJ_IS_TYPE(o, &mp_type_int)) {
-        byte buf[] = {'i'};
-        mp_print_bytes(print, buf, 1);
-        // TODO
-    } else if (MP_OBJ_IS_TYPE(o, &mp_type_float)) {
-        byte buf[] = {'f'};
-        mp_print_bytes(print, buf, 1);
-        // TODO
-    } else if (MP_OBJ_IS_TYPE(o, &mp_type_complex)) {
-        byte buf[] = {'c'};
-        mp_print_bytes(print, buf, 1);
-        // TODO
     } else if (o == &mp_const_ellipsis_obj) {
-        byte buf[] = {'e'};
-        mp_print_bytes(print, buf, 1);
+        byte obj_type = 'e';
+        mp_print_bytes(print, &obj_type, 1);
     } else {
-        mp_obj_print(o, PRINT_STR);
-        assert(0);
+        // we save numbers using a simplistic text representation
+        // TODO could be improved
+        byte obj_type;
+        if (MP_OBJ_IS_TYPE(o, &mp_type_int)) {
+            obj_type = 'i';
+        } else if (MP_OBJ_IS_TYPE(o, &mp_type_float)) {
+            obj_type = 'f';
+        } else {
+            assert(MP_OBJ_IS_TYPE(o, &mp_type_complex));
+            obj_type = 'c';
+        }
+        vstr_t vstr;
+        mp_print_t pr;
+        vstr_init_print(&vstr, 10, &pr);
+        mp_obj_print_helper(&pr, o, PRINT_REPR);
+        mp_print_bytes(print, &obj_type, 1);
+        mp_print_uint(print, vstr.len);
+        mp_print_bytes(print, (const byte*)vstr.buf, vstr.len);
+        vstr_clear(&vstr);
     }
 }
 
@@ -558,7 +587,13 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
 }
 
 void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
-    mp_print_bytes(print, (const byte*)"M\x00", 2);
+    // header contains:
+    //  byte  'M'
+    //  byte  version
+    //  byte  feature flags (right now just OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
+    byte header[3] = {'M', 0, MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE};
+    mp_print_bytes(print, header, 3);
+
     save_raw_code(print, rc);
 }
 
