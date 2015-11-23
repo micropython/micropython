@@ -1,2 +1,0 @@
-MCU_SERIES = 0
-LD_FILE = boards/nRF51422.ld
