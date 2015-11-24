@@ -64,12 +64,33 @@
 
 #endif
 
+// TODO: Since SDIO is fundamentally half-duplex, we really only need to
+//       tie up one DMA channel. However, the HAL DMA API doesn't
+// seem to provide a convenient way to change the direction. I believe that
+// its as simple as changing the CR register and the Init.Direction field
+// and make DMA_SetConfig public.
+
 // TODO: I think that as an optimization, we can allocate these dynamically
 //       if an sd card is detected. This will save approx 260 bytes of RAM
 //       when no sdcard was being used.
 static SD_HandleTypeDef sd_handle;
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
-static DMA_InitTypeDef sd_rx_dma_init, sd_tx_dma_init;
+
+// Parameters to dma_init() for SDIO tx and rx.
+static const DMA_InitTypeDef dma_init_struct_sdio = {
+    .Channel             = 0,
+    .Direction           = 0,
+    .PeriphInc           = DMA_PINC_DISABLE,
+    .MemInc              = DMA_MINC_ENABLE,
+    .PeriphDataAlignment = DMA_PDATAALIGN_WORD,
+    .MemDataAlignment    = DMA_MDATAALIGN_WORD,
+    .Mode                = DMA_PFCTRL,
+    .Priority            = DMA_PRIORITY_VERY_HIGH,
+    .FIFOMode            = DMA_FIFOMODE_ENABLE,
+    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
+    .MemBurst            = DMA_MBURST_INC4,
+    .PeriphBurst         = DMA_PBURST_INC4,
+};
 
 void sdcard_init(void) {
     GPIO_InitTypeDef GPIO_Init_Structure;
@@ -105,36 +126,6 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
     // NVIC configuration for SDIO interrupts
     HAL_NVIC_SetPriority(SDIO_IRQn, IRQ_PRI_SDIO, IRQ_SUBPRI_SDIO);
     HAL_NVIC_EnableIRQ(SDIO_IRQn);
-
-    // TODO: Since SDIO is fundamentally half-duplex, we really only need to
-    //       tie up one DMA channel. However, the HAL DMA API doesn't
-    // seem to provide a convenient way to change the direction. I believe that
-    // its as simple as changing the CR register and the Init.Direction field
-    // and make DMA_SetConfig public.
-
-    // Configure DMA Rx parameters
-    sd_rx_dma_init.PeriphInc           = DMA_PINC_DISABLE;
-    sd_rx_dma_init.MemInc              = DMA_MINC_ENABLE;
-    sd_rx_dma_init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    sd_rx_dma_init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
-    sd_rx_dma_init.Mode                = DMA_PFCTRL;
-    sd_rx_dma_init.Priority            = DMA_PRIORITY_VERY_HIGH;
-    sd_rx_dma_init.FIFOMode            = DMA_FIFOMODE_ENABLE;
-    sd_rx_dma_init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    sd_rx_dma_init.MemBurst            = DMA_MBURST_INC4;
-    sd_rx_dma_init.PeriphBurst         = DMA_PBURST_INC4;
-
-    // Configure DMA Tx parameters
-    sd_tx_dma_init.PeriphInc           = DMA_PINC_DISABLE;
-    sd_tx_dma_init.MemInc              = DMA_MINC_ENABLE;
-    sd_tx_dma_init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    sd_tx_dma_init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
-    sd_tx_dma_init.Mode                = DMA_PFCTRL;
-    sd_tx_dma_init.Priority            = DMA_PRIORITY_VERY_HIGH;
-    sd_tx_dma_init.FIFOMode            = DMA_FIFOMODE_ENABLE;
-    sd_tx_dma_init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
-    sd_tx_dma_init.MemBurst            = DMA_MBURST_INC4;
-    sd_tx_dma_init.PeriphBurst         = DMA_PBURST_INC4;
 
     // GPIO have already been initialised by sdcard_init
 }
@@ -222,7 +213,8 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
     HAL_SD_ErrorTypedef err = SD_OK;
 
     if (query_irq() == IRQ_STATE_ENABLED) {
-        dma_init(&sd_rx_dma, DMA_STREAM_SDIO_RX, &sd_rx_dma_init, DMA_CHANNEL_SDIO_RX, DMA_PERIPH_TO_MEMORY, &sd_handle);
+        dma_init(&sd_rx_dma, DMA_STREAM_SDIO_RX, &dma_init_struct_sdio,
+            DMA_CHANNEL_SDIO_RX, DMA_PERIPH_TO_MEMORY, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
 
         err = HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
@@ -254,7 +246,8 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
     HAL_SD_ErrorTypedef err = SD_OK;
 
     if (query_irq() == IRQ_STATE_ENABLED) {
-        dma_init(&sd_tx_dma, DMA_STREAM_SDIO_TX, &sd_tx_dma_init, DMA_CHANNEL_SDIO_TX, DMA_MEMORY_TO_PERIPH, &sd_handle);
+        dma_init(&sd_tx_dma, DMA_STREAM_SDIO_TX, &dma_init_struct_sdio,
+            DMA_CHANNEL_SDIO_TX, DMA_MEMORY_TO_PERIPH, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
 
         err = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
