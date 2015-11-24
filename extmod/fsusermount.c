@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_FSUSERMOUNT
+
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
@@ -110,3 +113,5 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_mount_obj, 2, pyb_mount);
+
+#endif // MICROPY_FSUSERMOUNT
