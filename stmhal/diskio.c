@@ -38,7 +38,7 @@
 #include "rtc.h"
 #include "storage.h"
 #include "sdcard.h"
-#include "fsusermount.h"
+#include "extmod/fsusermount.h"
 
 const PARTITION VolToPart[] = {
     {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
