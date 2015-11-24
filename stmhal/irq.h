@@ -67,7 +67,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 // Flash IRQ must be higher priority than interrupts of all those components
 // that rely on the flash storage.
 #define IRQ_PRI_FLASH           1
-#define IRQ_SUBPRI_FLASH                    1
+#define IRQ_SUBPRI_FLASH                    0
 
 // SDIO must be higher priority than DMA for SDIO DMA transfers to work.
 #define IRQ_PRI_SDIO            4
@@ -94,21 +94,21 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 #define IRQ_SUBPRI_CAN                      0
 
 #define IRQ_PRI_UART            13
-#define IRQ_SUBPRI_UART                     13
+#define IRQ_SUBPRI_UART                     0
 
 // Interrupt priority for non-special timers.
 #define IRQ_PRI_TIMX            14
-#define IRQ_SUBPRI_TIMX                     14
+#define IRQ_SUBPRI_TIMX                     0
 
 #define IRQ_PRI_EXTINT          15
-#define IRQ_SUBPRI_EXTINT                   15
+#define IRQ_SUBPRI_EXTINT                   0
 
 // PENDSV should be at the lowst priority so that other interrupts complete
 // before exception is raised.
 #define IRQ_PRI_PENDSV          15
-#define IRQ_SUBPRI_PENDSV                   15
+#define IRQ_SUBPRI_PENDSV                   0
 
 #define IRQ_PRI_RTC_WKUP        15
-#define IRQ_SUBPRI_RTC_WKUP                 15
+#define IRQ_SUBPRI_RTC_WKUP                 0
 
 
