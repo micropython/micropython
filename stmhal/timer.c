@@ -148,9 +148,6 @@ TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
 TIM_HandleTypeDef TIM6_Handle;
 
-// Used to divide down TIM3 and periodically call the flash storage IRQ
-STATIC uint32_t tim3_counter = 0;
-
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
 
 STATIC uint32_t timer_get_source_freq(uint32_t tim_id);
@@ -159,7 +156,6 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
 STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
 
 void timer_init0(void) {
-    tim3_counter = 0;
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
         MP_STATE_PORT(pyb_timer_obj_all)[i] = NULL;
     }
@@ -256,13 +252,6 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim == &TIM3_Handle) {
         USBD_CDC_HAL_TIM_PeriodElapsedCallback();
-
-        // Periodically raise a flash IRQ for the flash storage controller
-        if (tim3_counter++ >= 500 / USBD_CDC_POLLING_INTERVAL) {
-            tim3_counter = 0;
-            NVIC->STIR = FLASH_IRQn;
-        }
-
     } else if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }
