@@ -33,7 +33,8 @@
 #include "py/obj.h"
 #include "irq.h"
 
-#define NSTREAMS_PER_CONTROLLER (8)
+#define NSTREAMS_PER_CONTROLLER_LOG2 (3)
+#define NSTREAMS_PER_CONTROLLER (1 << NSTREAMS_PER_CONTROLLER_LOG2)
 #define NCONTROLLERS            (2)
 #define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
 
@@ -117,11 +118,7 @@ static int get_dma_id(DMA_Stream_TypeDef *dma_stream) {
 
 // Resets the idle counter for the DMA controller associated with dma_id.
 static void dma_tickle(int dma_id) {
-    if (dma_id < NSTREAMS_PER_CONTROLLER) {
-        dma_idle.counter[0] = 1;
-    } else {
-        dma_idle.counter[1] = 1;
-    }
+    dma_idle.counter[(dma_id >> NSTREAMS_PER_CONTROLLER_LOG2) & 1] = 1;
 }
 
 static void dma_enable_clock(int dma_id) {
