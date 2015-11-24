@@ -64,9 +64,14 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 //#def  IRQ_PRI_SYSTICK         0
 //#def  IRQ_SUBPRI_SYSTICK                  0
 
+// The UARTs have no FIFOs, so if they don't get serviced quickly then characters
+// get dropped. The handling for each character only consumes about 0.5 usec
+#define IRQ_PRI_UART            1
+#define IRQ_SUBPRI_UART                     0
+
 // Flash IRQ must be higher priority than interrupts of all those components
 // that rely on the flash storage.
-#define IRQ_PRI_FLASH           1
+#define IRQ_PRI_FLASH           2
 #define IRQ_SUBPRI_FLASH                    0
 
 // SDIO must be higher priority than DMA for SDIO DMA transfers to work.
@@ -92,9 +97,6 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 
 #define IRQ_PRI_CAN             7
 #define IRQ_SUBPRI_CAN                      0
-
-#define IRQ_PRI_UART            13
-#define IRQ_SUBPRI_UART                     0
 
 // Interrupt priority for non-special timers.
 #define IRQ_PRI_TIMX            14
