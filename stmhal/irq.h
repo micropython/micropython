@@ -69,6 +69,7 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
 #define IRQ_PRI_FLASH           1
 #define IRQ_SUBPRI_FLASH                    1
 
+// SDIO must be higher priority than DMA for SDIO DMA transfers to work.
 #define IRQ_PRI_SDIO            4
 #define IRQ_SUBPRI_SDIO                     0
 
