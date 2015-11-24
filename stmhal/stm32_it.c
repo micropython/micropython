@@ -261,7 +261,10 @@ void SysTick_Handler(void) {
     // Instead of calling HAL_IncTick we do the increment here of the counter.
     // This is purely for efficiency, since SysTick is called 1000 times per
     // second at the highest interrupt priority.
-    extern __IO uint32_t uwTick;
+    // Note: we don't need uwTick to be declared volatile here because this is
+    // the only place where it can be modified, and the code is more efficient
+    // without the volatile specifier.
+    extern uint32_t uwTick;
     uwTick += 1;
 
     // Read the systick control regster. This has the side effect of clearing
