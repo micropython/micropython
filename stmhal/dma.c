@@ -220,14 +220,16 @@ void dma_invalidate_channel(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel
     }
 }
 
-// Called from the SysTick handler (once per millisecond)
-void dma_idle_handler() {
+// Called from the SysTick handler
+// We use LSB of tick to select which controller to process
+void dma_idle_handler(int tick) {
     static const uint32_t   controller_mask[] = {
         DMA1_ENABLE_MASK, DMA2_ENABLE_MASK
     };
-    for (int controller = 0; controller < NCONTROLLERS; controller++) {
+    {
+        int controller = tick & 1;
         if (dma_idle.counter[controller] == 0) {
-            continue;
+            return;
         }
         if (++dma_idle.counter[controller] > DMA_IDLE_TICK_MAX) {
             if ((dma_enable_mask & controller_mask[controller]) == 0) {

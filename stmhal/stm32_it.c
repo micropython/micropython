@@ -269,8 +269,12 @@ void SysTick_Handler(void) {
     // work properly.
     SysTick->CTRL;
 
+    // Right now we just have the DMA controllers to process during this
+    // interrupt and we use a custom dispatch handler.  If this needs to
+    // be generalised in the future then a dispatch table can be used as
+    // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
     if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
-        dma_idle_handler(); 
+        dma_idle_handler(uwTick);
     }
 }
 
