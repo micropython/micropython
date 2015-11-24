@@ -27,6 +27,8 @@
 #include STM32_HAL_H
 
 #include "flash.h"
+#include "mpconfigport.h"
+#include "py/misc.h"
 
 #if defined(MCU_SERIES_F7)
 
@@ -63,12 +65,28 @@
 #define ADDR_FLASH_SECTOR_9     ((uint32_t)0x080A0000) /* Base @ of Sector 9, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
+#if !defined(FLASH_SECTOR_12)
 #define ADDR_FLASH_END          ((uint32_t)0x08100000) /* 1 Mbytes total */
+#else
+#define ADDR_FLASH_SECTOR_12    ((uint32_t)0x08100000) /* Base @ of Sector 12,  16 Kbytes */
+#define ADDR_FLASH_SECTOR_13    ((uint32_t)0x08104000) /* Base @ of Sector 13,  16 Kbytes */
+#define ADDR_FLASH_SECTOR_14    ((uint32_t)0x08108000) /* Base @ of Sector 14,  16 Kbytes */
+#define ADDR_FLASH_SECTOR_15    ((uint32_t)0x0810C000) /* Base @ of Sector 15,  16 Kbytes */
+#define ADDR_FLASH_SECTOR_16    ((uint32_t)0x08110000) /* Base @ of Sector 16,  64 Kbytes */
+#define ADDR_FLASH_SECTOR_17    ((uint32_t)0x08120000) /* Base @ of Sector 17, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_18    ((uint32_t)0x08140000) /* Base @ of Sector 18, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_19    ((uint32_t)0x08160000) /* Base @ of Sector 19, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_20    ((uint32_t)0x08180000) /* Base @ of Sector 20, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_21    ((uint32_t)0x081A0000) /* Base @ of Sector 21, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_22    ((uint32_t)0x081C0000) /* Base @ of Sector 22, 128 Kbytes */
+#define ADDR_FLASH_SECTOR_23    ((uint32_t)0x081E0000) /* Base @ of Sector 23, 128 Kbytes */
+#define ADDR_FLASH_END          ((uint32_t)0x08200000) /* 2 Mbytes total */
+#endif
 #endif
 
 #endif // MCU_SERIES_F7
 
-static const uint32_t flash_info_table[26] = {
+static const uint32_t flash_info_table[] = {
     ADDR_FLASH_SECTOR_0, FLASH_SECTOR_0,
     ADDR_FLASH_SECTOR_1, FLASH_SECTOR_1,
     ADDR_FLASH_SECTOR_2, FLASH_SECTOR_2,
@@ -83,12 +101,26 @@ static const uint32_t flash_info_table[26] = {
     ADDR_FLASH_SECTOR_10, FLASH_SECTOR_10,
     ADDR_FLASH_SECTOR_11, FLASH_SECTOR_11,
     #endif
+    #if defined(FLASH_SECTOR_12)
+    ADDR_FLASH_SECTOR_12, FLASH_SECTOR_12,
+    ADDR_FLASH_SECTOR_13, FLASH_SECTOR_13,
+    ADDR_FLASH_SECTOR_14, FLASH_SECTOR_14,
+    ADDR_FLASH_SECTOR_15, FLASH_SECTOR_15,
+    ADDR_FLASH_SECTOR_16, FLASH_SECTOR_16,
+    ADDR_FLASH_SECTOR_17, FLASH_SECTOR_17,
+    ADDR_FLASH_SECTOR_18, FLASH_SECTOR_18,
+    ADDR_FLASH_SECTOR_19, FLASH_SECTOR_19,
+    ADDR_FLASH_SECTOR_20, FLASH_SECTOR_20,
+    ADDR_FLASH_SECTOR_21, FLASH_SECTOR_21,
+    ADDR_FLASH_SECTOR_22, FLASH_SECTOR_22,
+    ADDR_FLASH_SECTOR_23, FLASH_SECTOR_23,
+    #endif
     ADDR_FLASH_END, 0,
 };
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_info_table[0]) {
-        for (int i = 0; i < 24; i += 2) {
+        for (int i = 0; i < MP_ARRAY_SIZE(flash_info_table) - 2; i += 2) {
             if (addr < flash_info_table[i + 2]) {
                 if (start_addr != NULL) {
                     *start_addr = flash_info_table[i];

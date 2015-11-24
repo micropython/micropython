@@ -289,7 +289,7 @@ void SysTick_Handler(void) {
 #if defined(USE_USB_FS)
 #define OTG_XX_IRQHandler      OTG_FS_IRQHandler
 #define OTG_XX_WKUP_IRQHandler OTG_FS_WKUP_IRQHandler
-#elif defined(USE_USB_HS)
+#elif defined(USE_USB_HS) || defined(USE_USB_HS_IN_FS)
 #define OTG_XX_IRQHandler      OTG_HS_IRQHandler
 #define OTG_XX_WKUP_IRQHandler OTG_HS_WKUP_IRQHandler
 #endif
@@ -340,7 +340,7 @@ void OTG_XX_WKUP_IRQHandler(void) {
 #ifdef USE_USB_FS
   /* Clear EXTI pending Bit*/
   __HAL_USB_FS_EXTI_CLEAR_FLAG();
-#elif defined(USE_USB_HS)
+#elif defined(USE_USB_HS) || defined(USE_USB_HS_IN_FS)
     /* Clear EXTI pending Bit*/
   __HAL_USB_HS_EXTI_CLEAR_FLAG();
 #endif
