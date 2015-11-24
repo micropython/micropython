@@ -51,14 +51,15 @@ def run_micropython(pyb, args, test_file):
                         return b'SKIP\n'
                     import select
 
-                    def get():
+                    def get(required=False):
                         rv = b''
                         while True:
                             ready = select.select([master], [], [], 0.02)
                             if ready[0] == [master]:
                                 rv += os.read(master, 1024)
                             else:
-                                return rv
+                                if not required or rv:
+                                    return rv
 
                     def send_get(what):
                         os.write(master, what)
@@ -69,7 +70,7 @@ def run_micropython(pyb, args, test_file):
                         master, slave = pty.openpty()
                         p = subprocess.Popen(args, stdin=slave, stdout=slave,
                                              stderr=subprocess.STDOUT, bufsize=0)
-                        banner = get()
+                        banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
                         p.kill()
                         os.close(master)
