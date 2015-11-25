@@ -115,7 +115,7 @@ void uart_deinit(void) {
 STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
-    uint32_t GPIO_Pin, GPIO_Pin2;
+    uint32_t GPIO_Pin, GPIO_Pin2 = 0;
     uint8_t GPIO_AF_UARTx = 0;
     GPIO_TypeDef* GPIO_Port = NULL;
     GPIO_TypeDef* GPIO_Port2 = NULL;
