@@ -128,10 +128,10 @@ int searchXmodemEndOfData(char* data,int maxIndex)
 	while(i<maxIndex)
 	{
 		if(data[i]==0x1A)
-			break;
+			return i;
 		i++;
 	}
-	return i;
+	return maxIndex;
 }
 void boot_writeScript(char* script,int scriptLen,int mode)
 {
@@ -155,7 +155,7 @@ void boot_writeScript(char* script,int scriptLen,int mode)
 	else
 	{
 		f_open(&fp, "/flash/Main.py", FA_WRITE | FA_OPEN_ALWAYS);
-		f_lseek(&fp, f_size(&fp));
+		f_lseek(&fp, f_size(&fp)+1);
 	}
         UINT n;
 	//Board_UARTPutSTR("2");

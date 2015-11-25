@@ -85,6 +85,52 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+//================================================[Keyboard Management]========================================================
+
+
+/*
+typedef struct
+{
+    int8_t port;
+    int8_t portBit;
+    int8_t gpio;
+    int8_t gpioBit;
+    int8_t func;
+
+}KeyboardPinInfo;
+
+static KeyboardPinInfo keyboardPinInfo[]={
+        {6,1,3,0,SCU_MODE_FUNC0},{6,4,3,3,SCU_MODE_FUNC0},{6,5,3,4,SCU_MODE_FUNC0},{6,7,5,15,SCU_MODE_FUNC4},{6,8,5,16,SCU_MODE_FUNC4},{6,9,3,5,SCU_MODE_FUNC0},{6,10,3$
+};
+
+void Board_Keyboard_Init(void)
+{
+        // GPIOs default: input. pull up and pull down disabled.
+        for(int32_t i=0 ; i<9; i++)
+        {
+            Chip_SCU_PinMuxSet(gpiosInfo[i].port, gpiosInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[i].func));
+            Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[i].gpio, gpiosInfo[i].gpioBit);
+        }
+
+}
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+//===========================================================================================================================
+
+
 
 //================================================[ADC Management]========================================================
 typedef struct {
