@@ -189,6 +189,16 @@
 #define MICROPY_STACKLESS_STRICT (0)
 #endif
 
+// Don't use alloca calls. As alloca() is not part of ANSI C, this
+// workaround option is provided for compilers lacking this de-facto
+// standard function. The way it works is allocating from heap, and
+// relying on garbage collection to free it eventually. This is of
+// course much less optimal than real alloca().
+#if defined(MICROPY_NO_ALLOCA) && MICROPY_NO_ALLOCA
+#undef alloca
+#define alloca(x) m_malloc(x)
+#endif
+
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
