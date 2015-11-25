@@ -12,10 +12,24 @@
 #define SOH	0x01
 
 int boot_getChar(void);
-void boot_writeScript(char* script,int scriptLen);
+void boot_writeScript(char* script,int scriptLen,int mode);
 
 int searchXmodemEndOfData(char* data,int maxIndex);
 
+int receiveXmodemPacket(unsigned char* bufferRx)
+{
+        int i=0;
+        while(1)
+        {
+                int inbyte = boot_getChar();
+                if(inbyte==EOF)
+                        break;
+                bufferRx[i] = (unsigned char)inbyte;
+                i++;
+        }
+        //Board_UARTPutChar(ACK); // send ACK
+	return i;
+}
 
 void boot(void)
 {
@@ -33,6 +47,31 @@ void boot(void)
 	//format: SOH 01 FE Data[128] CSUM
 
 	unsigned char bufferRx[160];
+	int size;
+	int mode=0;
+	while(1)
+	{
+		size = receiveXmodemPacket(bufferRx);
+		if(size==0)
+			break;
+		else
+		{
+			// receive packet
+			// write in file
+			if(size>128)
+			{
+                        	int size = searchXmodemEndOfData(bufferRx+3,128);
+                        	boot_writeScript(bufferRx+3,size,mode);
+				mode=1;
+			}
+			Board_UARTPutChar(ACK); // send ACK
+		}
+	}
+	return;
+
+
+	/*
+
 	int inbyte;
 	while(1) {
 		inbyte = boot_getChar();
@@ -53,6 +92,7 @@ void boot(void)
 			// TODO check CRC
 
 			// send ACK
+			p_hal_milli_delay(10);
 			Board_UARTPutChar(ACK); // send ACK
 
 			// write in file
@@ -66,13 +106,14 @@ void boot(void)
 			break;
 		}
 	}
-
+	*/
 }
 
 int boot_getChar(void)
 {
 	int i;
-	for(i=0; i<400000;i++){
+	//for(i=0; i<400000;i++){
+	for(i=0; i<800000;i++){
 		int inbyte  = Board_UARTGetChar();
 		if(inbyte!=EOF)
 			return inbyte;
@@ -92,9 +133,9 @@ int searchXmodemEndOfData(char* data,int maxIndex)
 	}
 	return i;
 }
-void boot_writeScript(char* script,int scriptLen)
+void boot_writeScript(char* script,int scriptLen,int mode)
 {
-	Board_UARTPutSTR("escribo archivo... ");
+	//Board_UARTPutSTR("escribo archivo... ");
 	/*
 	FRESULT res = f_mkfs("/flash", 0, 0);
         if (res == FR_OK) {
@@ -108,24 +149,30 @@ void boot_writeScript(char* script,int scriptLen)
 	*/
 
         FIL fp;
-	Board_UARTPutSTR("1");
-        f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
+	//Board_UARTPutSTR("1");
+	if(mode==0)
+        	f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
+	else
+	{
+		f_open(&fp, "/flash/Main.py", FA_WRITE | FA_OPEN_ALWAYS);
+		f_lseek(&fp, f_size(&fp));
+	}
         UINT n;
-	Board_UARTPutSTR("2");
-        f_write(&fp, script, scriptLen - 1 /* don't count null terminator */, &n);
+	//Board_UARTPutSTR("2");
+        f_write(&fp, script, scriptLen  /* don't count null terminator */, &n);
 	//f_sync(&fp);
 
 
-	Board_UARTPutSTR("escribi archivo");
-	char aux[160];
-	sprintf(aux,"escribo:%s - n:%d\r\n",script,n);
-	Board_UARTPutSTR(aux);
+	//Board_UARTPutSTR("escribi archivo");
+	//char aux[160];
+	//sprintf(aux,"escribo:%s - n:%d\r\n",script,n);
+	//Board_UARTPutSTR(aux);
 
-        Board_UARTPutSTR("3");
+        //Board_UARTPutSTR("3");
         f_close(&fp);
-        Board_UARTPutSTR("4");
+        //Board_UARTPutSTR("4");
 
-
+	/*
         // TODO check we could write n bytes
 	f_open(&fp, "/flash/Main.py", FA_READ);
 	char dataread[256];
@@ -137,5 +184,5 @@ void boot_writeScript(char* script,int scriptLen)
 
 	Board_UARTPutSTR(dataread);
 	Board_UARTPutSTR("FIN escribo archivo");
-
+	*/
 }
