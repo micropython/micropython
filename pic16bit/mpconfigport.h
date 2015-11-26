@@ -63,6 +63,7 @@
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
+#define MICROPY_NO_ALLOCA           (1)
 
 // type definitions for the specific machine
 
@@ -97,9 +98,6 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 extern const struct _mp_obj_module_t pyb_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
-
-// We need to provide a declaration/definition of alloca()
-#define alloca(x) (void*)m_new(byte, (x))
 
 #define MP_STATE_PORT MP_STATE_VM
 
