@@ -95,7 +95,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USBFS Interrupt */
     HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
   } 
-  
+#if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {
 #if defined(USE_USB_HS_IN_FS)
@@ -139,7 +139,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
 
-#elif defined(USE_USB_HS)
+#else // !USE_USB_HS_IN_FS
 
     /* Configure USB HS GPIOs */
     __GPIOA_CLK_ENABLE();
@@ -196,7 +196,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
     __USB_OTG_HS_ULPI_CLK_ENABLE();
- #endif
+#endif // !USE_USB_HS_IN_FS
     
     /* Set USBHS Interrupt to the lowest priority */
     HAL_NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRI_OTG_HS, IRQ_SUBPRI_OTG_HS);
@@ -204,6 +204,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USBHS Interrupt */
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
   }   
+#endif  // USE_USB_HS
 }
 /**
   * @brief  DeInitializes the PCD MSP.
@@ -218,7 +219,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
     __USB_OTG_FS_CLK_DISABLE();
     __SYSCFG_CLK_DISABLE(); 
   }
-  #if defined(USE_USB_HS) || defined(USE_USB_HS_IN_FS)
+  #if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {  
     /* Disable USB FS Clocks */ 
@@ -404,7 +405,8 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
   HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
   HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
-#elif defined(USE_USB_HS_IN_FS)
+#elif defined(USE_USB_HS)
+#if defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
   pcd_handle.Instance = USB_OTG_HS;
   pcd_handle.Init.dev_endpoints = 4; 
@@ -431,7 +433,7 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
   HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
   HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
-#elif defined(USE_USB_HS)
+#else // !defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
   pcd_handle.Instance = USB_OTG_HS;
   pcd_handle.Init.dev_endpoints = 6; 
@@ -460,8 +462,8 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x80);
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x174); 
 
-  
-#endif 
+#endif  // !USE_USB_HS_IN_FS
+#endif  // USE_USB_HS
   return USBD_OK;
 }
 
