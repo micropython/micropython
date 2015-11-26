@@ -70,7 +70,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
 #if MICROPY_PY_OS_STATVFS
 
-#if MICROPY_PY_OS_STATVFS
 #if USE_STATFS
 #include <sys/vfs.h>
 #define STRUCT_STATVFS struct statfs
@@ -85,7 +84,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 #define F_FAVAIL sb.f_favail
 #define F_NAMEMAX sb.f_namemax
 #define F_FLAG sb.f_flag
-#endif
 #endif
 
 STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
