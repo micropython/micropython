@@ -102,7 +102,7 @@ typedef struct _mp_state_vm_t {
 
     // map with loaded modules
     // TODO: expose as sys.modules
-    mp_map_t mp_loaded_modules_map;
+    mp_obj_dict_t mp_loaded_modules_dict;
 
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
