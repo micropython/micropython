@@ -434,5 +434,5 @@ const mp_obj_type_t mp_type_int = {
     .make_new = mp_obj_int_make_new,
     .unary_op = mp_obj_int_unary_op,
     .binary_op = mp_obj_int_binary_op,
-    .locals_dict = (mp_obj_t)&int_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&int_locals_dict,
 };

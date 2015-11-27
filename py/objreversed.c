@@ -49,16 +49,16 @@ STATIC mp_obj_t reversed_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     }
 
     mp_obj_reversed_t *o = m_new_obj(mp_obj_reversed_t);
-    o->base.type = type_in;
+    o->base.type = MP_OBJ_TO_PTR(type_in);
     o->seq = args[0];
     o->cur_index = mp_obj_get_int(mp_obj_len(args[0])); // start at the end of the sequence
 
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_reversed));
-    mp_obj_reversed_t *self = self_in;
+    mp_obj_reversed_t *self = MP_OBJ_TO_PTR(self_in);
 
     // "raise" stop iteration if we are at the end (the start) of the sequence
     if (self->cur_index == 0) {

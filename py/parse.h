@@ -48,7 +48,7 @@ struct _mp_lexer_t;
 #define MP_PARSE_NODE_BYTES     (0x0a)
 #define MP_PARSE_NODE_TOKEN     (0x0e)
 
-typedef mp_uint_t mp_parse_node_t; // must be pointer size
+typedef uintptr_t mp_parse_node_t; // must be pointer size
 
 typedef struct _mp_parse_node_struct_t {
     uint32_t source_line;       // line number in source file
@@ -71,7 +71,7 @@ typedef struct _mp_parse_node_struct_t {
 
 #define MP_PARSE_NODE_LEAF_KIND(pn) ((pn) & 0x0f)
 #define MP_PARSE_NODE_LEAF_ARG(pn) (((mp_uint_t)(pn)) >> 4)
-#define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((mp_int_t)(pn)) >> 1)
+#define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((mp_int_t)(intptr_t)(pn)) >> 1)
 #define MP_PARSE_NODE_STRUCT_KIND(pns) ((pns)->kind_num_nodes & 0xff)
 #define MP_PARSE_NODE_STRUCT_NUM_NODES(pns) ((pns)->kind_num_nodes >> 8)
 

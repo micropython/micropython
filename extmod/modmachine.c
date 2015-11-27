@@ -77,13 +77,13 @@ typedef struct _machine_mem_obj_t {
 
 STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    machine_mem_obj_t *self = self_in;
+    machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<%u-bit memory>", 8 * self->elem_size);
 }
 
 STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     // TODO support slice index to read/write multiple values at once
-    machine_mem_obj_t *self = self_in;
+    machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported

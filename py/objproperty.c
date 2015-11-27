@@ -41,7 +41,7 @@ STATIC mp_obj_t property_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
-    o->base.type = type_in;
+    o->base.type = MP_OBJ_TO_PTR(type_in);
     if (n_args >= 4) {
         // doc ignored
     }
@@ -60,32 +60,32 @@ STATIC mp_obj_t property_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     } else {
         o->proxy[0] = mp_const_none;
     }
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t property_getter(mp_obj_t self_in, mp_obj_t getter) {
     mp_obj_property_t *p2 = m_new_obj(mp_obj_property_t);
-    *p2 = *(mp_obj_property_t*)self_in;
+    *p2 = *(mp_obj_property_t*)MP_OBJ_TO_PTR(self_in);
     p2->proxy[0] = getter;
-    return p2;
+    return MP_OBJ_FROM_PTR(p2);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(property_getter_obj, property_getter);
 
 STATIC mp_obj_t property_setter(mp_obj_t self_in, mp_obj_t setter) {
     mp_obj_property_t *p2 = m_new_obj(mp_obj_property_t);
-    *p2 = *(mp_obj_property_t*)self_in;
+    *p2 = *(mp_obj_property_t*)MP_OBJ_TO_PTR(self_in);
     p2->proxy[1] = setter;
-    return p2;
+    return MP_OBJ_FROM_PTR(p2);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(property_setter_obj, property_setter);
 
 STATIC mp_obj_t property_deleter(mp_obj_t self_in, mp_obj_t deleter) {
     mp_obj_property_t *p2 = m_new_obj(mp_obj_property_t);
-    *p2 = *(mp_obj_property_t*)self_in;
+    *p2 = *(mp_obj_property_t*)MP_OBJ_TO_PTR(self_in);
     p2->proxy[2] = deleter;
-    return p2;
+    return MP_OBJ_FROM_PTR(p2);
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(property_deleter_obj, property_deleter);
@@ -102,12 +102,12 @@ const mp_obj_type_t mp_type_property = {
     { &mp_type_type },
     .name = MP_QSTR_property,
     .make_new = property_make_new,
-    .locals_dict = (mp_obj_t)&property_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&property_locals_dict,
 };
 
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_property));
-    mp_obj_property_t *self = self_in;
+    mp_obj_property_t *self = MP_OBJ_TO_PTR(self_in);
     return self->proxy;
 }
 

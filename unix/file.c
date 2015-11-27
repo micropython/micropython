@@ -62,12 +62,12 @@ extern const mp_obj_type_t mp_type_textio;
 
 STATIC void fdfile_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_fdfile_t *self = self_in;
-    mp_printf(print, "<io.%s %d>", mp_obj_get_type_str(self), self->fd);
+    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "<io.%s %d>", mp_obj_get_type_str(self_in), self->fd);
 }
 
 STATIC mp_uint_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_fdfile_t *o = o_in;
+    mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
@@ -78,7 +78,7 @@ STATIC mp_uint_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 }
 
 STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_fdfile_t *o = o_in;
+    mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
     mp_int_t r = write(o->fd, buf, size);
     if (r == -1) {
@@ -88,8 +88,8 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     return r;
 }
 
-STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    mp_obj_fdfile_t *o = o_in;
+STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
     if (request == MP_STREAM_SEEK) {
         struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
         off_t off = lseek(o->fd, s->offset, s->whence);
@@ -106,7 +106,7 @@ STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, mp_uint_t arg, i
 }
 
 STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
-    mp_obj_fdfile_t *self = self_in;
+    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
     check_fd_is_open(self);
     fsync(self->fd);
     return mp_const_none;
@@ -114,7 +114,7 @@ STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_flush_obj, fdfile_flush);
 
 STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
-    mp_obj_fdfile_t *self = self_in;
+    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
     close(self->fd);
 #ifdef MICROPY_CPYTHON_COMPAT
     self->fd = -1;
@@ -130,7 +130,7 @@ STATIC mp_obj_t fdfile___exit__(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);
 
 STATIC mp_obj_t fdfile_fileno(mp_obj_t self_in) {
-    mp_obj_fdfile_t *self = self_in;
+    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
     check_fd_is_open(self);
     return MP_OBJ_NEW_SMALL_INT(self->fd);
 }
@@ -145,9 +145,8 @@ STATIC const mp_arg_t file_open_args[] = {
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
-STATIC mp_obj_t fdfile_open(mp_obj_t type_in, mp_arg_val_t *args) {
+STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
-    mp_const_obj_t type = type_in;
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
 
     int mode = 0;
@@ -184,7 +183,7 @@ STATIC mp_obj_t fdfile_open(mp_obj_t type_in, mp_arg_val_t *args) {
 
     if (MP_OBJ_IS_SMALL_INT(fid)) {
         o->fd = MP_OBJ_SMALL_INT_VALUE(fid);
-        return o;
+        return MP_OBJ_FROM_PTR(o);
     }
 
     const char *fname = mp_obj_str_get_str(fid);
@@ -193,13 +192,13 @@ STATIC mp_obj_t fdfile_open(mp_obj_t type_in, mp_arg_val_t *args) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
     o->fd = fd;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return fdfile_open(type_in, arg_vals);
+    return fdfile_open(MP_OBJ_TO_PTR(type_in), arg_vals);
 }
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
@@ -235,7 +234,7 @@ const mp_obj_type_t mp_type_fileio = {
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
     .stream_p = &fileio_stream_p,
-    .locals_dict = (mp_obj_t)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 #endif
 
@@ -254,7 +253,7 @@ const mp_obj_type_t mp_type_textio = {
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
     .stream_p = &textio_stream_p,
-    .locals_dict = (mp_obj_t)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes
@@ -262,7 +261,7 @@ mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     // TODO: analyze buffering args and instantiate appropriate type
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return fdfile_open((mp_obj_t)&mp_type_textio, arg_vals);
+    return fdfile_open(&mp_type_textio, arg_vals);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 

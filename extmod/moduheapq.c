@@ -37,7 +37,7 @@ STATIC mp_obj_list_t *get_heap(mp_obj_t heap_in) {
     if (!MP_OBJ_IS_TYPE(heap_in, &mp_type_list)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "heap must be a list"));
     }
-    return heap_in;
+    return MP_OBJ_TO_PTR(heap_in);
 }
 
 STATIC void heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
@@ -74,7 +74,7 @@ STATIC void heap_siftup(mp_obj_list_t *heap, mp_uint_t pos) {
 
 STATIC mp_obj_t mod_uheapq_heappush(mp_obj_t heap_in, mp_obj_t item) {
     mp_obj_list_t *heap = get_heap(heap_in);
-    mp_obj_list_append(heap, item);
+    mp_obj_list_append(heap_in, item);
     heap_siftdown(heap, 0, heap->len - 1);
     return mp_const_none;
 }

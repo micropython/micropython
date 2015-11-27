@@ -45,7 +45,7 @@ extern struct _mp_dummy_t mp_sys_stdout_obj;
 extern struct _mp_dummy_t mp_sys_stderr_obj;
 
 #if MICROPY_PY_IO
-const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, (mp_print_strn_t)mp_stream_write};
+const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adaptor};
 #endif
 
 /// \constant version - Python language version that this implementation conforms to, as a string
@@ -106,12 +106,12 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 STATIC mp_obj_t mp_sys_print_exception(mp_uint_t n_args, const mp_obj_t *args) {
     #if MICROPY_PY_IO
-    mp_obj_t stream_obj = &mp_sys_stdout_obj;
+    void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {
-        stream_obj = args[1];
+        stream_obj = MP_OBJ_TO_PTR(args[1]); // XXX may fail
     }
 
-    mp_print_t print = {stream_obj, (mp_print_strn_t)mp_stream_write};
+    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
     mp_obj_print_exception(&print, args[0]);
     #else
     (void)n_args;
@@ -124,20 +124,20 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_pri
 
 #if MICROPY_PY_SYS_EXC_INFO
 STATIC mp_obj_t mp_sys_exc_info(void) {
-    mp_obj_t cur_exc = MP_STATE_VM(cur_exception);
-    mp_obj_tuple_t *t = mp_obj_new_tuple(3, NULL);
+    mp_obj_t cur_exc = MP_OBJ_FROM_PTR(MP_STATE_VM(cur_exception));
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
 
     if (cur_exc == MP_OBJ_NULL) {
         t->items[0] = mp_const_none;
         t->items[1] = mp_const_none;
         t->items[2] = mp_const_none;
-        return t;
+        return MP_OBJ_FROM_PTR(t);
     }
 
-    t->items[0] = mp_obj_get_type(cur_exc);
+    t->items[0] = MP_OBJ_FROM_PTR(mp_obj_get_type(cur_exc));
     t->items[1] = cur_exc;
     t->items[2] = mp_const_none;
-    return t;
+    return MP_OBJ_FROM_PTR(t);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
 #endif

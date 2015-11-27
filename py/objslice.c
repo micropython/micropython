@@ -47,7 +47,7 @@ typedef struct _mp_obj_slice_t {
 
 STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_slice_t *o = o_in;
+    mp_obj_slice_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_str(print, "slice(");
     mp_obj_print_helper(print, o->start, PRINT_REPR);
     mp_print_str(print, ", ");
@@ -63,7 +63,7 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // not load attribute
         return;
     }
-    mp_obj_slice_t *self = self_in;
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
     if (attr == MP_QSTR_start) {
         dest[0] = self->start;
     } else if (attr == MP_QSTR_stop) {
@@ -89,12 +89,12 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
     o->start = ostart;
     o->stop = ostop;
     o->step = ostep;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 void mp_obj_slice_get(mp_obj_t self_in, mp_obj_t *start, mp_obj_t *stop, mp_obj_t *step) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_slice));
-    mp_obj_slice_t *self = self_in;
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
     *start = self->start;
     *stop = self->stop;
     *step = self->step;

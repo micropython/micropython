@@ -131,12 +131,12 @@ mp_obj_t mp_obj_new_float(mp_float_t value) {
     mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
     o->base.type = &mp_type_float;
     o->value = value;
-    return (mp_obj_t)o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_float_t mp_obj_float_get(mp_obj_t self_in) {
     assert(mp_obj_is_float(self_in));
-    mp_obj_float_t *self = self_in;
+    mp_obj_float_t *self = MP_OBJ_TO_PTR(self_in);
     return self->value;
 }
 

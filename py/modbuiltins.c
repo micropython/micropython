@@ -53,7 +53,7 @@ STATIC mp_obj_t mp_builtin___build_class__(mp_uint_t n_args, const mp_obj_t *arg
     // set the new classes __locals__ object
     mp_obj_dict_t *old_locals = mp_locals_get();
     mp_obj_t class_locals = mp_obj_new_dict(0);
-    mp_locals_set(class_locals);
+    mp_locals_set(MP_OBJ_TO_PTR(class_locals));
 
     // call the class code
     mp_obj_t cell = mp_call_function_0(args[0]);
@@ -65,10 +65,10 @@ STATIC mp_obj_t mp_builtin___build_class__(mp_uint_t n_args, const mp_obj_t *arg
     mp_obj_t meta;
     if (n_args == 2) {
         // no explicit bases, so use 'type'
-        meta = (mp_obj_t)&mp_type_type;
+        meta = MP_OBJ_FROM_PTR(&mp_type_type);
     } else {
         // use type of first base object
-        meta = mp_obj_get_type(args[2]);
+        meta = MP_OBJ_FROM_PTR(mp_obj_get_type(args[2]));
     }
 
     // TODO do proper metaclass resolution for multiple base objects
@@ -206,11 +206,11 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
         } else {
             mp_obj_type_t *type;
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
-                type = args[0];
+                type = MP_OBJ_TO_PTR(args[0]);
             } else {
                 type = mp_obj_get_type(args[0]);
             }
-            if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
+            if (type->locals_dict != NULL && type->locals_dict->base.type == &mp_type_dict) {
                 dict = type->locals_dict;
             }
         }
@@ -376,18 +376,18 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
         end_data = mp_obj_str_get_data(end_elem->value, &end_len);
     }
     #if MICROPY_PY_IO
-    mp_obj_t stream_obj = &mp_sys_stdout_obj;
+    void *stream_obj = &mp_sys_stdout_obj;
     mp_map_elem_t *file_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_file), MP_MAP_LOOKUP);
     if (file_elem != NULL && file_elem->value != mp_const_none) {
-        stream_obj = file_elem->value;
+        stream_obj = MP_OBJ_TO_PTR(file_elem->value); // XXX may not be a concrete object
     }
 
-    mp_print_t print = {stream_obj, (mp_print_strn_t)mp_stream_write};
+    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
     #endif
     for (mp_uint_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO
-            mp_stream_write(stream_obj, sep_data, sep_len);
+            mp_stream_write_adaptor(stream_obj, sep_data, sep_len);
             #else
             mp_print_strn(&mp_plat_print, sep_data, sep_len, 0, 0, 0);
             #endif
@@ -399,7 +399,7 @@ STATIC mp_obj_t mp_builtin_print(mp_uint_t n_args, const mp_obj_t *args, mp_map_
         #endif
     }
     #if MICROPY_PY_IO
-    mp_stream_write(stream_obj, end_data, end_len);
+    mp_stream_write_adaptor(stream_obj, end_data, end_len);
     #else
     mp_print_strn(&mp_plat_print, end_data, end_len, 0, 0, 0);
     #endif
@@ -418,7 +418,7 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
         #endif
         #if MICROPY_CAN_OVERRIDE_BUILTINS
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, o};
-        mp_type_module.attr((mp_obj_t)&mp_module_builtins, MP_QSTR__, dest);
+        mp_type_module.attr(MP_OBJ_FROM_PTR(&mp_module_builtins), MP_QSTR__, dest);
         #endif
     }
     return mp_const_none;
@@ -490,7 +490,7 @@ STATIC mp_obj_t mp_builtin_sorted(mp_uint_t n_args, const mp_obj_t *args, mp_map
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "must use keyword argument for key function"));
     }
-    mp_obj_t self = mp_type_list.make_new((mp_obj_t)&mp_type_list, 1, 0, args);
+    mp_obj_t self = mp_type_list.make_new(MP_OBJ_FROM_PTR(&mp_type_list), 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;

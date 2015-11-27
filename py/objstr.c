@@ -83,7 +83,7 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, mp_uint_
 }
 
 #if MICROPY_PY_UJSON
-void mp_str_print_json(const mp_print_t *print, const byte *str_data, mp_uint_t str_len) {
+void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len) {
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
     mp_print_str(print, "\"");
@@ -149,7 +149,7 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
             mp_print_t print;
             vstr_init_print(&vstr, 16, &print);
             mp_obj_print_helper(&print, args[0], PRINT_STR);
-            return mp_obj_new_str_from_vstr(type_in, &vstr);
+            return mp_obj_new_str_from_vstr(MP_OBJ_TO_PTR(type_in), &vstr);
         }
 
         default: // 2 or 3 args
@@ -157,10 +157,10 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
                 GET_STR_HASH(args[0], str_hash);
-                mp_obj_str_t *o = mp_obj_new_str_of_type(type_in, NULL, str_len);
+                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(MP_OBJ_TO_PTR(type_in), NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
-                return o;
+                return MP_OBJ_FROM_PTR(o);
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
@@ -190,10 +190,10 @@ STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_k
         }
         GET_STR_DATA_LEN(args[0], str_data, str_len);
         GET_STR_HASH(args[0], str_hash);
-        mp_obj_str_t *o = mp_obj_new_str_of_type(&mp_type_bytes, NULL, str_len);
+        mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(&mp_type_bytes, NULL, str_len));
         o->data = str_data;
         o->hash = str_hash;
-        return o;
+        return MP_OBJ_FROM_PTR(o);
     }
 
     if (n_args > 1) {
@@ -376,7 +376,7 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 // objstrunicode defines own version
-const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, mp_uint_t self_len,
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice) {
     mp_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
     return self_data + index_val;
@@ -426,7 +426,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
         if (!MP_OBJ_IS_TYPE(arg, &mp_type_list)) {
             // arg is not a list, try to convert it to one
             // TODO: Try to optimize?
-            arg = mp_type_list.make_new((mp_obj_t)&mp_type_list, 1, 0, &arg);
+            arg = mp_type_list.make_new(MP_OBJ_FROM_PTR(&mp_type_list), 1, 0, &arg);
         }
         mp_obj_list_get(arg, &seq_len, &seq_items);
     }
@@ -579,7 +579,7 @@ STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t org_splits = splits;
     // Preallocate list to the max expected # of elements, as we
     // will fill it from the end.
-    mp_obj_list_t *res = mp_obj_new_list(splits + 1, NULL);
+    mp_obj_list_t *res = MP_OBJ_TO_PTR(mp_obj_new_list(splits + 1, NULL));
     mp_int_t idx = splits;
 
     if (sep == mp_const_none) {
@@ -623,7 +623,7 @@ STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
         }
     }
 
-    return res;
+    return MP_OBJ_FROM_PTR(res);
 }
 
 STATIC mp_obj_t str_finder(mp_uint_t n_args, const mp_obj_t *args, mp_int_t direction, bool is_index) {
@@ -1763,7 +1763,7 @@ STATIC mp_obj_t bytes_decode(mp_uint_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return mp_obj_str_make_new((mp_obj_t)&mp_type_str, n_args, 0, args);
+    return mp_obj_str_make_new(MP_OBJ_FROM_PTR(&mp_type_str), n_args, 0, args);
 }
 
 // TODO: should accept kwargs too
@@ -1775,7 +1775,7 @@ STATIC mp_obj_t str_encode(mp_uint_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return bytes_make_new(NULL, n_args, 0, args);
+    return bytes_make_new(MP_OBJ_NULL, n_args, 0, args);
 }
 #endif
 
@@ -1882,7 +1882,7 @@ const mp_obj_type_t mp_type_str = {
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_t)&str8_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&str8_locals_dict,
 };
 #endif
 
@@ -1896,7 +1896,7 @@ const mp_obj_type_t mp_type_bytes = {
     .subscr = bytes_subscr,
     .getiter = mp_obj_new_bytes_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_t)&str8_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&str8_locals_dict,
 };
 
 // the zero-length bytes
@@ -1904,7 +1904,7 @@ const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
 
 // Create a str/bytes object using the given data.  New memory is allocated and
 // the data is copied across.
-mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_uint_t len) {
+mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, size_t len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
@@ -1915,7 +1915,7 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, mp_
         memcpy(p, data, len * sizeof(byte));
         p[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
     }
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 // Create a str/bytes object from the given vstr.  The vstr buffer is resized to
@@ -1945,7 +1945,7 @@ mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     ((byte*)o->data)[o->len] = '\0'; // add null byte
     vstr->buf = NULL;
     vstr->alloc = 0;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_t mp_obj_new_str(const char* data, mp_uint_t len, bool make_qstr_if_not_already) {
@@ -2009,7 +2009,7 @@ qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
     if (MP_OBJ_IS_QSTR(self_in)) {
         return MP_OBJ_QSTR_VALUE(self_in);
     } else if (MP_OBJ_IS_TYPE(self_in, &mp_type_str)) {
-        mp_obj_str_t *self = self_in;
+        mp_obj_str_t *self = MP_OBJ_TO_PTR(self_in);
         return qstr_from_strn((char*)self->data, self->len);
     } else {
         bad_implicit_conversion(self_in);
@@ -2088,7 +2088,7 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
 #endif
 
 STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
-    mp_obj_str8_it_t *self = self_in;
+    mp_obj_str8_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
         mp_obj_t o_out = MP_OBJ_NEW_SMALL_INT(str[self->cur]);
@@ -2111,5 +2111,5 @@ mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
     o->base.type = &mp_type_bytes_it;
     o->str = str;
     o->cur = 0;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }

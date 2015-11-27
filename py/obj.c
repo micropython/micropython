@@ -41,16 +41,16 @@
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     if (MP_OBJ_IS_SMALL_INT(o_in)) {
-        return (mp_obj_t)&mp_type_int;
+        return (mp_obj_type_t*)&mp_type_int;
     } else if (MP_OBJ_IS_QSTR(o_in)) {
-        return (mp_obj_t)&mp_type_str;
+        return (mp_obj_type_t*)&mp_type_str;
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(o_in)) {
-        return (mp_obj_t)&mp_type_float;
+        return (mp_obj_type_t*)&mp_type_float;
     #endif
     } else {
-        const mp_obj_base_t *o = o_in;
-        return (mp_obj_t)o->type;
+        const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
+        return (mp_obj_type_t*)o->type;
     }
 }
 
@@ -62,7 +62,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
 #ifndef NDEBUG
-    if (o_in == NULL) {
+    if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
         return;
     }

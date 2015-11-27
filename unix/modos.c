@@ -53,7 +53,7 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     int res = stat(path, &sb);
     RAISE_ERRNO(res, errno);
 
-    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
     t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.st_ino);
     t->items[2] = MP_OBJ_NEW_SMALL_INT(sb.st_dev);
@@ -64,7 +64,7 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     t->items[7] = MP_OBJ_NEW_SMALL_INT(sb.st_atime);
     t->items[8] = MP_OBJ_NEW_SMALL_INT(sb.st_mtime);
     t->items[9] = MP_OBJ_NEW_SMALL_INT(sb.st_ctime);
-    return t;
+    return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
@@ -94,7 +94,7 @@ STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
     int res = STATVFS(path, &sb);
     RAISE_ERRNO(res, errno);
 
-    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.f_bsize);
     t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.f_frsize);
     t->items[2] = MP_OBJ_NEW_SMALL_INT(sb.f_blocks);
@@ -105,7 +105,7 @@ STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
     t->items[7] = MP_OBJ_NEW_SMALL_INT(F_FAVAIL);
     t->items[8] = MP_OBJ_NEW_SMALL_INT(F_FLAG);
     t->items[9] = MP_OBJ_NEW_SMALL_INT(F_NAMEMAX);
-    return t;
+    return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_statvfs_obj, mod_os_statvfs);
 #endif

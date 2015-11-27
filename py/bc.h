@@ -66,7 +66,7 @@ typedef struct _mp_exc_stack {
     // bit 1 is whether the opcode was SETUP_WITH or SETUP_FINALLY
     mp_obj_t *val_sp;
     // Saved exception, valid if currently_in_except_block bit is 1
-    mp_obj_t prev_exc;
+    mp_obj_base_t *prev_exc;
 } mp_exc_stack_t;
 
 typedef struct _mp_code_state {

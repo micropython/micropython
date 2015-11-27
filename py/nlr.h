@@ -39,7 +39,7 @@ typedef struct _nlr_buf_t nlr_buf_t;
 struct _nlr_buf_t {
     // the entries here must all be machine word size
     nlr_buf_t *prev;
-    void *ret_val;
+    void *ret_val; // always a concrete object (an exception instance)
 #if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
 #if defined(__i386__)
     void *regs[6];
@@ -86,16 +86,16 @@ void nlr_jump_fail(void *val);
 
 // use nlr_raise instead of nlr_jump so that debugging is easier
 #ifndef DEBUG
-#define nlr_raise(val) nlr_jump(val)
+#define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
 #include "mpstate.h"
 #define nlr_raise(val) \
     do { \
         /*printf("nlr_raise: nlr_top=%p\n", MP_STATE_VM(nlr_top)); \
         fflush(stdout);*/ \
-        void *_val = val; \
+        void *_val = MP_OBJ_TO_PTR(val); \
         assert(_val != NULL); \
-        assert(mp_obj_is_exception_instance(_val)); \
+        assert(mp_obj_is_exception_instance(val)); \
         nlr_jump(_val); \
     } while (0)
 

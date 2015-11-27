@@ -140,8 +140,8 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
 mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args_kw, const mp_obj_t *args);
 void mp_native_raise(mp_obj_t o);
 
-#define mp_sys_path ((mp_obj_t)&MP_STATE_VM(mp_sys_path_obj))
-#define mp_sys_argv ((mp_obj_t)&MP_STATE_VM(mp_sys_argv_obj))
+#define mp_sys_path (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_path_obj)))
+#define mp_sys_argv (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)))
 
 #if MICROPY_WARNINGS
 void mp_warning(const char *msg, ...);
