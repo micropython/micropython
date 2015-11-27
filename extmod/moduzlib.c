@@ -83,9 +83,9 @@ STATIC mp_obj_t mod_uzlib_decompress(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
-STATIC const mp_map_elem_t mp_module_uzlib_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uzlib) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_decompress), (mp_obj_t)&mod_uzlib_decompress_obj },
+STATIC const mp_rom_map_elem_t mp_module_uzlib_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uzlib) },
+    { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uzlib_globals, mp_module_uzlib_globals_table);

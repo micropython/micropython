@@ -151,16 +151,16 @@ STATIC mp_obj_t mod_time_sleep_us(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_us_obj, mod_time_sleep_us);
 
-STATIC const mp_map_elem_t mp_module_time_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_clock), (mp_obj_t)&mod_time_clock_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&mod_time_sleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms), (mp_obj_t)&mod_time_sleep_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us), (mp_obj_t)&mod_time_sleep_us_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mod_time_time_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms), (mp_obj_t)&mod_time_ticks_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_us), (mp_obj_t)&mod_time_ticks_us_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_diff), (mp_obj_t)&mod_time_ticks_diff_obj },
+STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
+    { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mod_time_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mod_time_sleep_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mod_time_sleep_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mod_time_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mod_time_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mod_time_ticks_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mod_time_ticks_diff_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);

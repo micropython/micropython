@@ -313,7 +313,7 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj
 // TODO Python defines sort to be stable but ours is not
 mp_obj_t mp_obj_list_sort(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_reverse, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
@@ -422,18 +422,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, mp_obj_list_remove);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 1, mp_obj_list_sort);
 
-STATIC const mp_map_elem_t list_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_append), (mp_obj_t)&list_append_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&list_clear_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_copy), (mp_obj_t)&list_copy_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&list_count_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_extend), (mp_obj_t)&list_extend_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_index), (mp_obj_t)&list_index_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_insert), (mp_obj_t)&list_insert_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pop), (mp_obj_t)&list_pop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&list_remove_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reverse), (mp_obj_t)&list_reverse_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sort), (mp_obj_t)&list_sort_obj },
+STATIC const mp_rom_map_elem_t list_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&list_append_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&list_clear_obj) },
+    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&list_copy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&list_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&list_extend_obj) },
+    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&list_index_obj) },
+    { MP_ROM_QSTR(MP_QSTR_insert), MP_ROM_PTR(&list_insert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&list_pop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&list_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reverse), MP_ROM_PTR(&list_reverse_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&list_sort_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);

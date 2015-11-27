@@ -90,10 +90,10 @@ STATIC mp_obj_t property_deleter(mp_obj_t self_in, mp_obj_t deleter) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(property_deleter_obj, property_deleter);
 
-STATIC const mp_map_elem_t property_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getter), (mp_obj_t)&property_getter_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setter), (mp_obj_t)&property_setter_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deleter), (mp_obj_t)&property_deleter_obj },
+STATIC const mp_rom_map_elem_t property_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_getter), MP_ROM_PTR(&property_getter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setter), MP_ROM_PTR(&property_setter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deleter), MP_ROM_PTR(&property_deleter_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(property_locals_dict, property_locals_dict_table);

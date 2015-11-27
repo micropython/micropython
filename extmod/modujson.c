@@ -250,10 +250,10 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_loads_obj, mod_ujson_loads);
 
-STATIC const mp_map_elem_t mp_module_ujson_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ujson) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_dumps), (mp_obj_t)&mod_ujson_dumps_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_loads), (mp_obj_t)&mod_ujson_loads_obj },
+STATIC const mp_rom_map_elem_t mp_module_ujson_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ujson) },
+    { MP_ROM_QSTR(MP_QSTR_dumps), MP_ROM_PTR(&mod_ujson_dumps_obj) },
+    { MP_ROM_QSTR(MP_QSTR_loads), MP_ROM_PTR(&mod_ujson_loads_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ujson_globals, mp_module_ujson_globals_table);

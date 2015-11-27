@@ -608,58 +608,58 @@ STATIC const mp_obj_type_t uctypes_struct_type = {
     .buffer_p = { .get_buffer = uctypes_get_buffer },
 };
 
-STATIC const mp_map_elem_t mp_module_uctypes_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uctypes) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&uctypes_struct_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sizeof), (mp_obj_t)&uctypes_struct_sizeof_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_addressof), (mp_obj_t)&uctypes_struct_addressof_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bytes_at), (mp_obj_t)&uctypes_struct_bytes_at_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bytearray_at), (mp_obj_t)&uctypes_struct_bytearray_at_obj },
+STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uctypes) },
+    { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&uctypes_struct_type) },
+    { MP_ROM_QSTR(MP_QSTR_sizeof), MP_ROM_PTR(&uctypes_struct_sizeof_obj) },
+    { MP_ROM_QSTR(MP_QSTR_addressof), MP_ROM_PTR(&uctypes_struct_addressof_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bytes_at), MP_ROM_PTR(&uctypes_struct_bytes_at_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bytearray_at), MP_ROM_PTR(&uctypes_struct_bytearray_at_obj) },
 
     /// \moduleref uctypes
 
     /// \constant NATIVE - Native structure layout - native endianness,
     /// platform-specific field alignment
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NATIVE), MP_OBJ_NEW_SMALL_INT(LAYOUT_NATIVE) },
+    { MP_ROM_QSTR(MP_QSTR_NATIVE), MP_ROM_INT(LAYOUT_NATIVE) },
     /// \constant LITTLE_ENDIAN - Little-endian structure layout, tightly packed
     /// (no alignment constraints)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LITTLE_ENDIAN), MP_OBJ_NEW_SMALL_INT(LAYOUT_LITTLE_ENDIAN) },
+    { MP_ROM_QSTR(MP_QSTR_LITTLE_ENDIAN), MP_ROM_INT(LAYOUT_LITTLE_ENDIAN) },
     /// \constant BIG_ENDIAN - Big-endian structure layout, tightly packed
     /// (no alignment constraints)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BIG_ENDIAN), MP_OBJ_NEW_SMALL_INT(LAYOUT_BIG_ENDIAN) },
+    { MP_ROM_QSTR(MP_QSTR_BIG_ENDIAN), MP_ROM_INT(LAYOUT_BIG_ENDIAN) },
 
     /// \constant VOID - void value type, may be used only as pointer target type.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_VOID), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(UINT8, VAL_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_VOID), MP_ROM_INT(TYPE2SMALLINT(UINT8, VAL_TYPE_BITS)) },
 
     /// \constant UINT8 - uint8_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UINT8), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(UINT8, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT8), MP_ROM_INT(TYPE2SMALLINT(UINT8, 4)) },
     /// \constant INT8 - int8_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_INT8), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(INT8, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_INT8), MP_ROM_INT(TYPE2SMALLINT(INT8, 4)) },
     /// \constant UINT16 - uint16_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UINT16), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(UINT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT16), MP_ROM_INT(TYPE2SMALLINT(UINT16, 4)) },
     /// \constant INT16 - int16_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_INT16), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(INT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_INT16), MP_ROM_INT(TYPE2SMALLINT(INT16, 4)) },
     /// \constant UINT32 - uint32_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UINT32), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(UINT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT32), MP_ROM_INT(TYPE2SMALLINT(UINT32, 4)) },
     /// \constant INT32 - int32_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_INT32), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(INT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_INT32), MP_ROM_INT(TYPE2SMALLINT(INT32, 4)) },
     /// \constant UINT64 - uint64_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UINT64), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(UINT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_UINT64), MP_ROM_INT(TYPE2SMALLINT(UINT64, 4)) },
     /// \constant INT64 - int64_t value type
-    { MP_OBJ_NEW_QSTR(MP_QSTR_INT64), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(INT64, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_INT64), MP_ROM_INT(TYPE2SMALLINT(INT64, 4)) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BFUINT8), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(BFUINT8, 4)) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BFINT8), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(BFINT8, 4)) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BFUINT16), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(BFUINT16, 4)) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BFINT16), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(BFINT16, 4)) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BFUINT32), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(BFUINT32, 4)) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BFINT32), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(BFINT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFUINT8), MP_ROM_INT(TYPE2SMALLINT(BFUINT8, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFINT8), MP_ROM_INT(TYPE2SMALLINT(BFINT8, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFUINT16), MP_ROM_INT(TYPE2SMALLINT(BFUINT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFINT16), MP_ROM_INT(TYPE2SMALLINT(BFINT16, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFUINT32), MP_ROM_INT(TYPE2SMALLINT(BFUINT32, 4)) },
+    { MP_ROM_QSTR(MP_QSTR_BFINT32), MP_ROM_INT(TYPE2SMALLINT(BFINT32, 4)) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BF_POS), MP_OBJ_NEW_SMALL_INT(17) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BF_LEN), MP_OBJ_NEW_SMALL_INT(22) },
+    { MP_ROM_QSTR(MP_QSTR_BF_POS), MP_ROM_INT(17) },
+    { MP_ROM_QSTR(MP_QSTR_BF_LEN), MP_ROM_INT(22) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PTR), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARRAY), MP_OBJ_NEW_SMALL_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_PTR), MP_ROM_INT(TYPE2SMALLINT(PTR, AGG_TYPE_BITS)) },
+    { MP_ROM_QSTR(MP_QSTR_ARRAY), MP_ROM_INT(TYPE2SMALLINT(ARRAY, AGG_TYPE_BITS)) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uctypes_globals, mp_module_uctypes_globals_table);

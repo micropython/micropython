@@ -85,14 +85,14 @@ STATIC mp_obj_t gc_mem_alloc(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_mem_alloc_obj, gc_mem_alloc);
 
-STATIC const mp_map_elem_t mp_module_gc_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_gc) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_collect), (mp_obj_t)&gc_collect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&gc_disable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&gc_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isenabled), (mp_obj_t)&gc_isenabled_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_free), (mp_obj_t)&gc_mem_free_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_alloc), (mp_obj_t)&gc_mem_alloc_obj },
+STATIC const mp_rom_map_elem_t mp_module_gc_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gc) },
+    { MP_ROM_QSTR(MP_QSTR_collect), MP_ROM_PTR(&gc_collect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable), MP_ROM_PTR(&gc_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable), MP_ROM_PTR(&gc_enable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isenabled), MP_ROM_PTR(&gc_isenabled_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem_free), MP_ROM_PTR(&gc_mem_free_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem_alloc), MP_ROM_PTR(&gc_mem_alloc_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_gc_globals, mp_module_gc_globals_table);

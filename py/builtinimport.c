@@ -47,7 +47,7 @@
 #define PATH_SEP_CHAR '/'
 
 #if MICROPY_MODULE_WEAK_LINKS
-STATIC const mp_map_elem_t mp_builtin_module_weak_links_table[] = {
+STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
     MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 };
 

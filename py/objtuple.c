@@ -215,9 +215,9 @@ STATIC mp_obj_t tuple_index(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(tuple_index_obj, 2, 4, tuple_index);
 
-STATIC const mp_map_elem_t tuple_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&tuple_count_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_index), (mp_obj_t)&tuple_index_obj },
+STATIC const mp_rom_map_elem_t tuple_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&tuple_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&tuple_index_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);

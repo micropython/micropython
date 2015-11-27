@@ -84,8 +84,8 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 2))
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#define mp_const_float_e ((mp_obj_t)&mp_const_float_e_obj)
-#define mp_const_float_pi ((mp_obj_t)&mp_const_float_pi_obj)
+#define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
+#define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
 extern const struct _mp_obj_float_t mp_const_float_e_obj;
 extern const struct _mp_obj_float_t mp_const_float_pi_obj;
 
@@ -110,8 +110,8 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 2) | 3))
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#define mp_const_float_e ((mp_obj_t)&mp_const_float_e_obj)
-#define mp_const_float_pi ((mp_obj_t)&mp_const_float_pi_obj)
+#define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
+#define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
 extern const struct _mp_obj_float_t mp_const_float_e_obj;
 extern const struct _mp_obj_float_t mp_const_float_pi_obj;
 
@@ -130,8 +130,8 @@ static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
 #define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
 
-#define mp_const_float_e ((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
-#define mp_const_float_pi ((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
+#define mp_const_float_e MP_ROM_PTR(((0x402df854 & ~3) | 2) + 0x80800000)
+#define mp_const_float_pi MP_ROM_PTR(((0x40490fdb & ~3) | 2) + 0x80800000)
 
 static inline bool mp_obj_is_float(mp_const_obj_t o)
     { return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006; }
@@ -173,6 +173,21 @@ static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
 // Cast object pointer to mp_obj_t
 #ifndef MP_OBJ_UNCAST
 #define MP_OBJ_UNCAST(p) ((mp_obj_t)p)
+#endif
+
+// Macros to create objects that are stored in ROM.
+
+#ifndef MP_ROM_INT
+typedef mp_const_obj_t mp_rom_obj_t;
+#define MP_ROM_INT(i) MP_OBJ_NEW_SMALL_INT(i)
+#define MP_ROM_QSTR(q) MP_OBJ_NEW_QSTR(q)
+#define MP_ROM_PTR(p) (p)
+/* for testing
+typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
+#define MP_ROM_INT(i) {MP_OBJ_NEW_SMALL_INT(i)}
+#define MP_ROM_QSTR(q) {MP_OBJ_NEW_QSTR(q)}
+#define MP_ROM_PTR(p) {.o = p}
+*/
 #endif
 
 // The macros below are derived from the ones above and are used to
@@ -219,7 +234,7 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
         .is_ordered = 1, \
         .used = MP_ARRAY_SIZE(table_name), \
         .alloc = MP_ARRAY_SIZE(table_name), \
-        .table = (mp_map_elem_t*)table_name, \
+        .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
     }
 
 #define MP_DEFINE_CONST_DICT(dict_name, table_name) \
@@ -231,18 +246,18 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
             .is_ordered = 1, \
             .used = MP_ARRAY_SIZE(table_name), \
             .alloc = MP_ARRAY_SIZE(table_name), \
-            .table = (mp_map_elem_t*)table_name, \
+            .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
         }, \
     }
 
 // These macros are used to declare and define constant staticmethond and classmethod objects
 // You can put "static" in front of the definitions to make them local
 
-#define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_obj_static_class_method_t obj_name
-#define MP_DECLARE_CONST_CLASSMETHOD_OBJ(obj_name) extern const mp_obj_static_class_method_t obj_name
+#define MP_DECLARE_CONST_STATICMETHOD_OBJ(obj_name) extern const mp_rom_obj_static_class_method_t obj_name
+#define MP_DECLARE_CONST_CLASSMETHOD_OBJ(obj_name) extern const mp_rom_obj_static_class_method_t obj_name
 
-#define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
-#define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
+#define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
+#define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
 
 // Underlying map/hash table implementation (not dict object or map function)
 
@@ -250,6 +265,11 @@ typedef struct _mp_map_elem_t {
     mp_obj_t key;
     mp_obj_t value;
 } mp_map_elem_t;
+
+typedef struct _mp_rom_map_elem_t {
+    mp_rom_obj_t key;
+    mp_rom_obj_t value;
+} mp_rom_map_elem_t;
 
 // TODO maybe have a truncated mp_map_t for fixed tables, since alloc=used
 // put alloc last in the structure, so the truncated version does not need it
@@ -692,6 +712,10 @@ typedef struct _mp_obj_static_class_method_t {
     mp_obj_base_t base;
     mp_obj_t fun;
 } mp_obj_static_class_method_t;
+typedef struct _mp_rom_obj_static_class_method_t {
+    mp_obj_base_t base;
+    mp_rom_obj_t fun;
+} mp_rom_obj_static_class_method_t;
 
 // property
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
