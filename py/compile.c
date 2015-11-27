@@ -2439,7 +2439,12 @@ STATIC void compile_bytes(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_const_object(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+    // nodes are 32-bit pointers, but need to extract 64-bit object
+    EMIT_ARG(load_const_obj, (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+    #else
     EMIT_ARG(load_const_obj, (mp_obj_t)pns->nodes[0]);
+    #endif
 }
 
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
