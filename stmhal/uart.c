@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -399,7 +400,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         }
         mp_printf(print, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u)",
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2,
-            self->timeout, self->timeout_char, self->read_buf_len);
+            self->timeout, self->timeout_char, self->read_buf_len == 0 ? 0 : self->read_buf_len - 1); //-1 to adjust for usable length of circular buffer
     }
 }
 
@@ -501,8 +502,8 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
     } else {
         // read buffer using interrupts
-        self->read_buf_len = args[7].u_int;
-        self->read_buf = m_new(byte, args[7].u_int << self->char_width);
+        self->read_buf_len = args[7].u_int + 1; //+1 to adjust for usable length of circular buffer
+        self->read_buf = m_new(byte, self->read_buf_len << self->char_width);
         __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
         HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_UART, IRQ_SUBPRI_UART); 
         HAL_NVIC_EnableIRQ(self->irqn);
