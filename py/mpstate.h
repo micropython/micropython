@@ -52,8 +52,8 @@ typedef struct _mp_state_mem_t {
     #if MICROPY_ENABLE_FINALISER
     byte *gc_finaliser_table_start;
     #endif
-    mp_uint_t *gc_pool_start;
-    mp_uint_t *gc_pool_end;
+    byte *gc_pool_start;
+    byte *gc_pool_end;
 
     int gc_stack_overflow;
     mp_uint_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
