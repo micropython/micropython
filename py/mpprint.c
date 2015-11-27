@@ -43,7 +43,7 @@
 static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
-STATIC void plat_print_strn(void *env, const char *str, mp_uint_t len) {
+STATIC void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     MP_PLAT_PRINT_STRN(str, len);
 }
@@ -51,14 +51,14 @@ STATIC void plat_print_strn(void *env, const char *str, mp_uint_t len) {
 const mp_print_t mp_plat_print = {NULL, plat_print_strn};
 
 int mp_print_str(const mp_print_t *print, const char *str) {
-    mp_uint_t len = strlen(str);
+    size_t len = strlen(str);
     if (len) {
         print->print_strn(print->data, str, len);
     }
     return len;
 }
 
-int mp_print_strn(const mp_print_t *print, const char *str, mp_uint_t len, int flags, char fill, int width) {
+int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flags, char fill, int width) {
     int left_pad = 0;
     int right_pad = 0;
     int pad = width - len;
