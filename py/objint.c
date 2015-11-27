@@ -392,7 +392,7 @@ STATIC mp_obj_t int_from_bytes(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 3, int_from_bytes);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, (const mp_obj_t)&int_from_bytes_fun_obj);
+STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO: Support byteorder param (assumes 'little')
@@ -420,9 +420,9 @@ STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 2, 4, int_to_bytes);
 
-STATIC const mp_map_elem_t int_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_from_bytes), (mp_obj_t)&int_from_bytes_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_to_bytes), (mp_obj_t)&int_to_bytes_obj },
+STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_to_bytes), MP_ROM_PTR(&int_to_bytes_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
@@ -434,5 +434,5 @@ const mp_obj_type_t mp_type_int = {
     .make_new = mp_obj_int_make_new,
     .unary_op = mp_obj_int_unary_op,
     .binary_op = mp_obj_int_binary_op,
-    .locals_dict = (mp_obj_t)&int_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&int_locals_dict,
 };
