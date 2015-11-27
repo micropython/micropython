@@ -68,7 +68,7 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expecte
 #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "%q() takes %d positional arguments but %d were given",
-        mp_obj_fun_get_name(f), expected, given));
+        mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given));
 #endif
 }
 
@@ -95,7 +95,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_ui
     mp_uint_t n_state = code_state->n_state;
 
     // ip comes in as an offset into bytecode, so turn it into a true pointer
-    code_state->ip = self->bytecode + (mp_uint_t)code_state->ip;
+    code_state->ip = self->bytecode + (size_t)code_state->ip;
 
     // store pointer to constant table
     code_state->const_table = self->const_table;
@@ -219,7 +219,7 @@ continue2:;
             if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t*)self->extra_args[n_def_pos_args])->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
+                    elem = mp_map_lookup(&((mp_obj_dict_t*)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;

@@ -169,11 +169,11 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             } else {
                 mp_obj_type_t *type;
                 if (MP_OBJ_IS_TYPE(obj, &mp_type_type)) {
-                    type = obj;
+                    type = MP_OBJ_TO_PTR(obj);
                 } else {
                     type = mp_obj_get_type(obj);
                 }
-                if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
+                if (type->locals_dict != NULL && type->locals_dict->base.type == &mp_type_dict) {
                     dict = type->locals_dict;
                 } else {
                     // obj has no dict

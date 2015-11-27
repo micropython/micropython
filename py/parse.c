@@ -350,13 +350,13 @@ STATIC mp_parse_node_t make_node_string_bytes(parser_t *parser, mp_uint_t src_li
     pn->kind_num_nodes = rule_kind | (2 << 8);
     char *p = m_new(char, len);
     memcpy(p, str, len);
-    pn->nodes[0] = (mp_int_t)p;
+    pn->nodes[0] = (uintptr_t)p;
     pn->nodes[1] = len;
     return (mp_parse_node_t)pn;
 }
 
 STATIC mp_parse_node_t make_node_const_object(parser_t *parser, mp_uint_t src_line, mp_obj_t obj) {
-    mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t));
+    mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_obj_t));
     if (pn == NULL) {
         parser->parse_error = PARSE_ERROR_MEMORY;
         return MP_PARSE_NODE_NULL;
@@ -612,7 +612,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, mp_uint_t num_a
         }
         mp_obj_t dest[2];
         mp_load_method_maybe(elem->value, q_attr, dest);
-        if (!(MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == NULL)) {
+        if (!(MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == MP_OBJ_NULL)) {
             return false;
         }
         arg0 = MP_OBJ_SMALL_INT_VALUE(dest[0]);

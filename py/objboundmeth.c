@@ -38,7 +38,7 @@ typedef struct _mp_obj_bound_meth_t {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void bound_meth_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_bound_meth_t *o = o_in;
+    mp_obj_bound_meth_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "<bound_method %p ", o);
     mp_obj_print_helper(print, o->self, PRINT_REPR);
     mp_print_str(print, ".");
@@ -48,7 +48,7 @@ STATIC void bound_meth_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
 #endif
 
 STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_obj_bound_meth_t *self = self_in;
+    mp_obj_bound_meth_t *self = MP_OBJ_TO_PTR(self_in);
 
     // need to insert self->self before all other args and then call self->meth
 
@@ -77,7 +77,7 @@ STATIC void bound_meth_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
     if (attr == MP_QSTR___name__) {
-        mp_obj_bound_meth_t *o = self_in;
+        mp_obj_bound_meth_t *o = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_NEW_QSTR(mp_obj_fun_get_name(o->meth));
     }
 }
@@ -100,5 +100,5 @@ mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self) {
     o->base.type = &mp_type_bound_meth;
     o->meth = meth;
     o->self = self;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }

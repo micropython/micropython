@@ -147,7 +147,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
             return ((mp_obj_t*)p)[index];
         // Extension to CPython: array of pointers
         case 'P':
-            return mp_obj_new_int((mp_int_t)((void**)p)[index]);
+            return mp_obj_new_int((mp_int_t)(uintptr_t)((void**)p)[index]);
     }
     return MP_OBJ_NEW_SMALL_INT(val);
 }
@@ -199,7 +199,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     if (val_type == 'O') {
         return (mp_obj_t)(mp_uint_t)val;
     } else if (val_type == 'S') {
-        const char *s_val = (const char*)(mp_uint_t)val;
+        const char *s_val = (const char*)(uintptr_t)(mp_uint_t)val;
         return mp_obj_new_str(s_val, strlen(s_val), false);
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {
@@ -374,6 +374,6 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
 #endif
         // Extension to CPython: array of pointers
         case 'P':
-            ((void**)p)[index] = (void*)val;
+            ((void**)p)[index] = (void*)(uintptr_t)val;
     }
 }

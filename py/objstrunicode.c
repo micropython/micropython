@@ -114,7 +114,7 @@ STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
 
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
-const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, mp_uint_t self_len,
+const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice) {
     (void)type;
     mp_int_t i;
@@ -259,7 +259,7 @@ const mp_obj_type_t mp_type_str = {
     .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_t)&struni_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&struni_locals_dict,
 };
 
 /******************************************************************************/
@@ -272,7 +272,7 @@ typedef struct _mp_obj_str_it_t {
 } mp_obj_str_it_t;
 
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
-    mp_obj_str_it_t *self = self_in;
+    mp_obj_str_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
         const byte *cur = str + self->cur;
@@ -297,7 +297,7 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
     o->base.type = &mp_type_str_it;
     o->str = str;
     o->cur = 0;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #endif // MICROPY_PY_BUILTINS_STR_UNICODE

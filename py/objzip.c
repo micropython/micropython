@@ -40,31 +40,31 @@ STATIC mp_obj_t zip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
 
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
-    o->base.type = type_in;
+    o->base.type = MP_OBJ_TO_PTR(type_in);
     o->n_iters = n_args;
     for (mp_uint_t i = 0; i < n_args; i++) {
         o->iters[i] = mp_getiter(args[i]);
     }
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_zip));
-    mp_obj_zip_t *self = self_in;
+    mp_obj_zip_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->n_iters == 0) {
         return MP_OBJ_STOP_ITERATION;
     }
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(self->n_iters, NULL);
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->n_iters, NULL));
 
     for (mp_uint_t i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_STOP_ITERATION) {
-            mp_obj_tuple_del(tuple);
+            mp_obj_tuple_del(MP_OBJ_FROM_PTR(tuple));
             return MP_OBJ_STOP_ITERATION;
         }
         tuple->items[i] = next;
     }
-    return tuple;
+    return MP_OBJ_FROM_PTR(tuple);
 }
 
 const mp_obj_type_t mp_type_zip = {

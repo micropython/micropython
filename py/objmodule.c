@@ -35,7 +35,7 @@
 
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_module_t *self = self_in;
+    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
 
 #if MICROPY_PY___FILE__
     // If we store __file__ to imported modules then try to lookup this
@@ -51,7 +51,7 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 }
 
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_module_t *self = self_in;
+    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
@@ -65,7 +65,7 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             #if MICROPY_CAN_OVERRIDE_BUILTINS
             if (dict == &mp_module_builtins_globals) {
                 if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
-                    MP_STATE_VM(mp_module_builtins_override_dict) = mp_obj_new_dict(1);
+                    MP_STATE_VM(mp_module_builtins_override_dict) = MP_OBJ_TO_PTR(mp_obj_new_dict(1));
                 }
                 dict = MP_STATE_VM(mp_module_builtins_override_dict);
             } else
@@ -77,11 +77,11 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
         if (dest[1] == MP_OBJ_NULL) {
             // delete attribute
-            mp_obj_dict_delete(dict, MP_OBJ_NEW_QSTR(attr));
+            mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
         } else {
             // store attribute
             // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-            mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(attr), dest[1]);
+            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
         }
         dest[0] = MP_OBJ_NULL; // indicate success
     }
@@ -106,21 +106,21 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
     o->base.type = &mp_type_module;
     o->name = module_name;
-    o->globals = mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE);
+    o->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
-    mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
-    el->value = o;
+    el->value = MP_OBJ_FROM_PTR(o);
 
     // return the new module
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_module));
-    mp_obj_module_t *self = self_in;
+    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     return self->globals;
 }
 

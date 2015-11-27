@@ -51,3 +51,4 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len);
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_STREAM_H__
+void mp_stream_write_adaptor(void *self, const char *buf, size_t len);

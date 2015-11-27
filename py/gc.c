@@ -203,7 +203,7 @@ STATIC void gc_drain_stack(void) {
         mp_obj_t *scan = (mp_obj_t*)PTR_FROM_BLOCK(block);
         for (mp_uint_t i = n_blocks * WORDS_PER_BLOCK; i > 0; i--, scan++) {
             mp_obj_t obj = *scan;
-            void *ptr2 = (void*)obj;
+            void *ptr2 = MP_OBJ_TO_PTR(obj);
             VERIFY_MARK_AND_PUSH(ptr2);
         }
     }
@@ -237,7 +237,7 @@ STATIC void gc_sweep(void) {
 #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
                     mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
-                    if (((mp_obj_base_t*)obj)->type != MP_OBJ_NULL) {
+                    if (((mp_obj_base_t*)MP_OBJ_TO_PTR(obj))->type != NULL) {
                         // if the object has a type then see if it has a __del__ method
                         mp_obj_t dest[2];
                         mp_load_method_maybe(obj, MP_QSTR___del__, dest);

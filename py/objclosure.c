@@ -37,7 +37,7 @@ typedef struct _mp_obj_closure_t {
 } mp_obj_closure_t;
 
 STATIC mp_obj_t closure_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_obj_closure_t *self = self_in;
+    mp_obj_closure_t *self = MP_OBJ_TO_PTR(self_in);
 
     // need to concatenate closed-over-vars and args
 
@@ -62,7 +62,7 @@ STATIC mp_obj_t closure_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void closure_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_closure_t *o = o_in;
+    mp_obj_closure_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_str(print, "<closure ");
     mp_obj_print_helper(print, o->fun, PRINT_REPR);
     mp_printf(print, " at %p, n_closed=%u ", o, o->n_closed);
@@ -93,5 +93,5 @@ mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_uint_t n_closed_over, const mp_obj_
     o->fun = fun;
     o->n_closed = n_closed_over;
     memcpy(o->closed, closed, n_closed_over * sizeof(mp_obj_t));
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }

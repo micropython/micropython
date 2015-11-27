@@ -222,7 +222,7 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
                     mp_obj_list_init(&stack, 1);
                     stack.items[0] = stack_top;
                 } else {
-                    mp_obj_list_append(&stack, stack_top);
+                    mp_obj_list_append(MP_OBJ_FROM_PTR(&stack), stack_top);
                 }
                 stack_top = next;
                 stack_top_type = mp_obj_get_type(stack_top);

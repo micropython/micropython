@@ -58,13 +58,13 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // as many as we can to MP_OBJ_NULL because it's cheaper to load/compare 0.
 
 #ifdef NDEBUG
-#define MP_OBJ_NULL             ((mp_obj_t)0)
-#define MP_OBJ_STOP_ITERATION   ((mp_obj_t)0)
-#define MP_OBJ_SENTINEL         ((mp_obj_t)4)
+#define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)4))
 #else
-#define MP_OBJ_NULL             ((mp_obj_t)0)
-#define MP_OBJ_STOP_ITERATION   ((mp_obj_t)4)
-#define MP_OBJ_SENTINEL         ((mp_obj_t)8)
+#define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)4))
+#define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)8))
 #endif
 
 // These macros/inline functions operate on objects and depend on the
@@ -166,13 +166,13 @@ static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
 // object representation and memory management.
 
 // Cast mp_obj_t to object pointer
-#ifndef MP_OBJ_CAST
-#define MP_OBJ_CAST(o) ((void*)o)
+#ifndef MP_OBJ_TO_PTR
+#define MP_OBJ_TO_PTR(o) ((void*)o)
 #endif
 
 // Cast object pointer to mp_obj_t
-#ifndef MP_OBJ_UNCAST
-#define MP_OBJ_UNCAST(p) ((mp_obj_t)p)
+#ifndef MP_OBJ_FROM_PTR
+#define MP_OBJ_FROM_PTR(p) ((mp_obj_t)p)
 #endif
 
 // Macros to create objects that are stored in ROM.
@@ -193,11 +193,11 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // The macros below are derived from the ones above and are used to
 // check for more specific object types.
 
-#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#define MP_OBJ_IS_TYPE(o, t) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
 #define MP_OBJ_IS_INT(o) (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int))
 #define MP_OBJ_IS_STR(o) (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str))
-#define MP_OBJ_IS_STR_OR_BYTES(o) (MP_OBJ_IS_QSTR(o) || (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)(o))->type->binary_op == mp_obj_str_binary_op))
-#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type->name == MP_QSTR_function))
+#define MP_OBJ_IS_STR_OR_BYTES(o) (MP_OBJ_IS_QSTR(o) || (MP_OBJ_IS_OBJ(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
+#define MP_OBJ_IS_FUN(o) (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
 
 // Note: inline functions sometimes use much more code space than the
 // equivalent macros, depending on the compiler.
@@ -382,7 +382,7 @@ typedef struct _mp_stream_p_t {
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
-    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, mp_uint_t arg, int *errcode);
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
 
@@ -431,8 +431,8 @@ struct _mp_obj_type_t {
     const mp_stream_p_t *stream_p;
 
     // these are for dynamically created types (classes)
-    mp_obj_t bases_tuple;
-    mp_obj_t locals_dict;
+    struct _mp_obj_tuple_t *bases_tuple;
+    struct _mp_obj_dict_t *locals_dict;
 
     /*
     What we might need to add here:
@@ -517,11 +517,11 @@ extern const mp_obj_type_t mp_type_ZeroDivisionError;
 
 // Constant objects, globally accessible
 // The macros are for convenience only
-#define mp_const_none ((mp_obj_t)&mp_const_none_obj)
-#define mp_const_false ((mp_obj_t)&mp_const_false_obj)
-#define mp_const_true ((mp_obj_t)&mp_const_true_obj)
-#define mp_const_empty_bytes ((mp_obj_t)&mp_const_empty_bytes_obj)
-#define mp_const_empty_tuple ((mp_obj_t)&mp_const_empty_tuple_obj)
+#define mp_const_none (MP_OBJ_FROM_PTR(&mp_const_none_obj))
+#define mp_const_false (MP_OBJ_FROM_PTR(&mp_const_false_obj))
+#define mp_const_true (MP_OBJ_FROM_PTR(&mp_const_true_obj))
+#define mp_const_empty_bytes (MP_OBJ_FROM_PTR(&mp_const_empty_bytes_obj))
+#define mp_const_empty_tuple (MP_OBJ_FROM_PTR(&mp_const_empty_tuple_obj))
 extern const struct _mp_obj_none_t mp_const_none_obj;
 extern const struct _mp_obj_bool_t mp_const_false_obj;
 extern const struct _mp_obj_bool_t mp_const_true_obj;
