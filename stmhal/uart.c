@@ -282,9 +282,15 @@ bool uart_init(pyb_uart_obj_t *uart_obj, uint32_t baudrate) {
 }
 */
 
-bool uart_rx_any(pyb_uart_obj_t *self) {
-    return self->read_buf_tail != self->read_buf_head
-        || __HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET;
+mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
+    int buffer_bytes = self->read_buf_head - self->read_buf_tail;
+    if (buffer_bytes < 0) {
+        return buffer_bytes + self->read_buf_len;
+    } else if (buffer_bytes > 0) {
+        return buffer_bytes;
+    } else {
+        return __HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET;
+    }
 }
 
 // Waits at most timeout milliseconds for at least 1 char to become ready for
@@ -670,11 +676,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_deinit_obj, pyb_uart_deinit);
 /// Return `True` if any characters waiting, else `False`.
 STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    if (uart_rx_any(self)) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
+    return MP_OBJ_NEW_SMALL_INT(uart_rx_any(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
