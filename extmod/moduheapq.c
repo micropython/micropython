@@ -105,11 +105,11 @@ STATIC mp_obj_t mod_uheapq_heapify(mp_obj_t heap_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_uheapq_heapify_obj, mod_uheapq_heapify);
 
-STATIC const mp_map_elem_t mp_module_uheapq_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uheapq) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heappush), (mp_obj_t)&mod_uheapq_heappush_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heappop), (mp_obj_t)&mod_uheapq_heappop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heapify), (mp_obj_t)&mod_uheapq_heapify_obj },
+STATIC const mp_rom_map_elem_t mp_module_uheapq_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uheapq) },
+    { MP_ROM_QSTR(MP_QSTR_heappush), MP_ROM_PTR(&mod_uheapq_heappush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_heappop), MP_ROM_PTR(&mod_uheapq_heappop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_heapify), MP_ROM_PTR(&mod_uheapq_heapify_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uheapq_globals, mp_module_uheapq_globals_table);

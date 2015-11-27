@@ -73,8 +73,8 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
-STATIC const mp_map_elem_t match_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_group), (mp_obj_t) &match_group_obj },
+STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
@@ -167,10 +167,10 @@ STATIC mp_obj_t re_split(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
-STATIC const mp_map_elem_t re_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t) &re_match_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t) &re_search_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t) &re_split_obj },
+STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
+    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
+    { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -225,12 +225,12 @@ STATIC mp_obj_t mod_re_search(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 
-STATIC const mp_map_elem_t mp_module_re_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ure) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_compile), (mp_obj_t)&mod_re_compile_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t)&mod_re_match_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t)&mod_re_search_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DEBUG), MP_OBJ_NEW_SMALL_INT(FLAG_DEBUG) },
+STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
+    { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
+    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
+    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);

@@ -536,25 +536,25 @@ STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
 /* set constructors & public C API                                            */
 
 
-STATIC const mp_map_elem_t set_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_add), (mp_obj_t)&set_add_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&set_clear_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_copy), (mp_obj_t)&set_copy_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_discard), (mp_obj_t)&set_discard_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_difference), (mp_obj_t)&set_diff_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_difference_update), (mp_obj_t)&set_diff_update_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_intersection), (mp_obj_t)&set_intersect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_intersection_update), (mp_obj_t)&set_intersect_update_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isdisjoint), (mp_obj_t)&set_isdisjoint_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_issubset), (mp_obj_t)&set_issubset_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_issuperset), (mp_obj_t)&set_issuperset_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pop), (mp_obj_t)&set_pop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_remove), (mp_obj_t)&set_remove_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_symmetric_difference), (mp_obj_t)&set_symmetric_difference_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_symmetric_difference_update), (mp_obj_t)&set_symmetric_difference_update_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_union), (mp_obj_t)&set_union_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t)&set_update_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___contains__), (mp_obj_t)&mp_op_contains_obj },
+STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_add), MP_ROM_PTR(&set_add_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&set_clear_obj) },
+    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&set_copy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_discard), MP_ROM_PTR(&set_discard_obj) },
+    { MP_ROM_QSTR(MP_QSTR_difference), MP_ROM_PTR(&set_diff_obj) },
+    { MP_ROM_QSTR(MP_QSTR_difference_update), MP_ROM_PTR(&set_diff_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_intersection), MP_ROM_PTR(&set_intersect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_intersection_update), MP_ROM_PTR(&set_intersect_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isdisjoint), MP_ROM_PTR(&set_isdisjoint_obj) },
+    { MP_ROM_QSTR(MP_QSTR_issubset), MP_ROM_PTR(&set_issubset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_issuperset), MP_ROM_PTR(&set_issuperset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&set_pop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&set_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_symmetric_difference), MP_ROM_PTR(&set_symmetric_difference_obj) },
+    { MP_ROM_QSTR(MP_QSTR_symmetric_difference_update), MP_ROM_PTR(&set_symmetric_difference_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_union), MP_ROM_PTR(&set_union_obj) },
+    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&set_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_op_contains_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);

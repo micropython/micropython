@@ -151,11 +151,11 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 2, poll_poll);
 
-STATIC const mp_map_elem_t poll_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_register), (mp_obj_t)&poll_register_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unregister), (mp_obj_t)&poll_unregister_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_modify), (mp_obj_t)&poll_modify_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&poll_poll_obj },
+STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
+    { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
@@ -179,13 +179,13 @@ STATIC mp_obj_t select_poll(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_poll_obj, 0, 1, select_poll);
 
-STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uselect) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLIN), MP_OBJ_NEW_SMALL_INT(POLLIN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLOUT), MP_OBJ_NEW_SMALL_INT(POLLOUT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLERR), MP_OBJ_NEW_SMALL_INT(POLLERR) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLHUP), MP_OBJ_NEW_SMALL_INT(POLLHUP) },
+STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect) },
+    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj) },
+    { MP_ROM_QSTR(MP_QSTR_POLLIN), MP_ROM_INT(POLLIN) },
+    { MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_ROM_INT(POLLOUT) },
+    { MP_ROM_QSTR(MP_QSTR_POLLERR), MP_ROM_INT(POLLERR) },
+    { MP_ROM_QSTR(MP_QSTR_POLLHUP), MP_ROM_INT(POLLHUP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);

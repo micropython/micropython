@@ -58,14 +58,14 @@ STATIC mp_obj_t object___new__(mp_obj_t cls) {
     return res;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___new___fun_obj, object___new__);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, (const mp_obj_t)&object___new___fun_obj);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, MP_ROM_PTR(&object___new___fun_obj));
 
-STATIC const mp_map_elem_t object_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
     #if MICROPY_CPYTHON_COMPAT
-    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&object___init___obj },
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&object___init___obj) },
     #endif
     #if MICROPY_CPYTHON_COMPAT
-    { MP_OBJ_NEW_QSTR(MP_QSTR___new__), (mp_obj_t)&object___new___obj },
+    { MP_ROM_QSTR(MP_QSTR___new__), MP_ROM_PTR(&object___new___obj) },
     #endif
 };
 

@@ -69,8 +69,8 @@ STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
     2,
-        MP_OBJ_NEW_QSTR(MP_QSTR_micropython),
-        (mp_obj_t)&mp_sys_implementation_version_info_obj
+        MP_ROM_QSTR(MP_QSTR_micropython),
+        MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
 );
 #else
 STATIC const mp_obj_tuple_t mp_sys_implementation_obj = {
@@ -142,22 +142,22 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
 #endif
 
-STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_sys) },
+STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_path), (mp_obj_t)&MP_STATE_VM(mp_sys_path_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_argv), (mp_obj_t)&MP_STATE_VM(mp_sys_argv_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_version_info), (mp_obj_t)&mp_sys_version_info_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_implementation), (mp_obj_t)&mp_sys_implementation_obj },
+    { MP_ROM_QSTR(MP_QSTR_path), MP_ROM_PTR(&MP_STATE_VM(mp_sys_path_obj)) },
+    { MP_ROM_QSTR(MP_QSTR_argv), MP_ROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)) },
+    { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&version_obj) },
+    { MP_ROM_QSTR(MP_QSTR_version_info), MP_ROM_PTR(&mp_sys_version_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_implementation), MP_ROM_PTR(&mp_sys_implementation_obj) },
     #ifdef MICROPY_PY_SYS_PLATFORM
-    { MP_OBJ_NEW_QSTR(MP_QSTR_platform), (mp_obj_t)&platform_obj },
+    { MP_ROM_QSTR(MP_QSTR_platform), MP_ROM_PTR(&platform_obj) },
     #endif
     /// \constant byteorder - the byte order of the system ("little" or "big")
     #if MP_ENDIANNESS_LITTLE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_little) },
+    { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_QSTR(MP_QSTR_little) },
     #else
-    { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_big) },
+    { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_QSTR(MP_QSTR_big) },
     #endif
 
     #if MICROPY_PY_SYS_MAXSIZE
@@ -167,33 +167,33 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     // value. Apps also should be careful to not try to compare sys.maxsize
     // with some number (which may not fit in available int size), but instead
     // count number of significant bits in sys.maxsize.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(INT_MAX >> 1) },
+    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(INT_MAX >> 1) },
     #else
-    { MP_OBJ_NEW_QSTR(MP_QSTR_maxsize), (mp_obj_t)&mp_maxsize_obj },
+    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_maxsize_obj) },
     #endif
     #endif
 
     #if MICROPY_PY_SYS_EXIT
     // documented per-port
-    { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
+    { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mp_sys_exit_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES
     // documented per-port
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stdin), (mp_obj_t)&mp_sys_stdin_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stdout), (mp_obj_t)&mp_sys_stdout_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stderr), (mp_obj_t)&mp_sys_stderr_obj },
+    { MP_ROM_QSTR(MP_QSTR_stdin), MP_ROM_PTR(&mp_sys_stdin_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stdout), MP_ROM_PTR(&mp_sys_stdout_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stderr), MP_ROM_PTR(&mp_sys_stderr_obj) },
     #endif
 
     #if MICROPY_PY_SYS_EXC_INFO
-    { MP_OBJ_NEW_QSTR(MP_QSTR_exc_info), (mp_obj_t)&mp_sys_exc_info_obj },
+    { MP_ROM_QSTR(MP_QSTR_exc_info), MP_ROM_PTR(&mp_sys_exc_info_obj) },
     #endif
 
     /*
      * Extensions to CPython
      */
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_print_exception), (mp_obj_t)&mp_sys_print_exception_obj },
+    { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&mp_sys_print_exception_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_sys_globals, mp_module_sys_globals_table);

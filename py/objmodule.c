@@ -127,70 +127,70 @@ mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
 /******************************************************************************/
 // Global module table and related functions
 
-STATIC const mp_map_elem_t mp_builtin_module_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___main__), (mp_obj_t)&mp_module___main__ },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_builtins), (mp_obj_t)&mp_module_builtins },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_micropython), (mp_obj_t)&mp_module_micropython },
+STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___main__), MP_ROM_PTR(&mp_module___main__) },
+    { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
+    { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
 
 #if MICROPY_PY_ARRAY
-    { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&mp_module_array },
+    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mp_module_array) },
 #endif
 #if MICROPY_PY_IO
-    { MP_OBJ_NEW_QSTR(MP_QSTR__io), (mp_obj_t)&mp_module_io },
+    { MP_ROM_QSTR(MP_QSTR__io), MP_ROM_PTR(&mp_module_io) },
 #endif
 #if MICROPY_PY_COLLECTIONS
-    { MP_OBJ_NEW_QSTR(MP_QSTR__collections), (mp_obj_t)&mp_module_collections },
+    { MP_ROM_QSTR(MP_QSTR__collections), MP_ROM_PTR(&mp_module_collections) },
 #endif
 #if MICROPY_PY_STRUCT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ustruct), (mp_obj_t)&mp_module_ustruct },
+    { MP_ROM_QSTR(MP_QSTR_ustruct), MP_ROM_PTR(&mp_module_ustruct) },
 #endif
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #if MICROPY_PY_MATH
-    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&mp_module_math },
+    { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
 #endif
 #if MICROPY_PY_CMATH
-    { MP_OBJ_NEW_QSTR(MP_QSTR_cmath), (mp_obj_t)&mp_module_cmath },
+    { MP_ROM_QSTR(MP_QSTR_cmath), MP_ROM_PTR(&mp_module_cmath) },
 #endif
 #endif
 #if MICROPY_PY_SYS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sys), (mp_obj_t)&mp_module_sys },
+    { MP_ROM_QSTR(MP_QSTR_sys), MP_ROM_PTR(&mp_module_sys) },
 #endif
 #if MICROPY_PY_GC && MICROPY_ENABLE_GC
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gc), (mp_obj_t)&mp_module_gc },
+    { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },
 #endif
 
     // extmod modules
 
 #if MICROPY_PY_UCTYPES
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uctypes), (mp_obj_t)&mp_module_uctypes },
+    { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
 #endif
 #if MICROPY_PY_UZLIB
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uzlib), (mp_obj_t)&mp_module_uzlib },
+    { MP_ROM_QSTR(MP_QSTR_uzlib), MP_ROM_PTR(&mp_module_uzlib) },
 #endif
 #if MICROPY_PY_UJSON
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ujson), (mp_obj_t)&mp_module_ujson },
+    { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
 #endif
 #if MICROPY_PY_URE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ure), (mp_obj_t)&mp_module_ure },
+    { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
 #endif
 #if MICROPY_PY_UHEAPQ
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uheapq), (mp_obj_t)&mp_module_uheapq },
+    { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
 #endif
 #if MICROPY_PY_UHASHLIB
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib },
+    { MP_ROM_QSTR(MP_QSTR_uhashlib), MP_ROM_PTR(&mp_module_uhashlib) },
 #endif
 #if MICROPY_PY_UBINASCII
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii), (mp_obj_t)&mp_module_ubinascii },
+    { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },
 #endif
 #if MICROPY_PY_MACHINE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine },
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #endif
 #if MICROPY_PY_USSL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ussl), (mp_obj_t)&mp_module_ussl },
+    { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
 #endif
 #if MICROPY_PY_LWIP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip },
+    { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
 #endif
 
     // extra builtin modules as defined by a port

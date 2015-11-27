@@ -161,8 +161,8 @@ STATIC mp_obj_t exc___init__(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(exc___init___obj, 1, MP_OBJ_FUN_ARGS_MAX, exc___init__);
 
-STATIC const mp_map_elem_t exc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&exc___init___obj },
+STATIC const mp_rom_map_elem_t exc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&exc___init___obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(exc_locals_dict, exc_locals_dict_table);
@@ -177,7 +177,7 @@ const mp_obj_type_t mp_type_BaseException = {
 };
 
 #define MP_DEFINE_EXCEPTION_BASE(base_name) \
-STATIC const mp_obj_tuple_t mp_type_ ## base_name ## _base_tuple = {{&mp_type_tuple}, 1, {(mp_obj_t)&mp_type_ ## base_name}};\
+STATIC const mp_rom_obj_tuple_t mp_type_ ## base_name ## _base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_ ## base_name)}};\
 
 #define MP_DEFINE_EXCEPTION(exc_name, base_name) \
 const mp_obj_type_t mp_type_ ## exc_name = { \

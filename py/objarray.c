@@ -495,9 +495,9 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 }
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
-STATIC const mp_map_elem_t array_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_append), (mp_obj_t)&array_append_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_extend), (mp_obj_t)&array_extend_obj },
+STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
+    { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
