@@ -542,7 +542,7 @@ void mp_emit_bc_load_const_str(emit_t *emit, qstr qst) {
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_STRING, qst);
 }
 
-void mp_emit_bc_load_const_obj(emit_t *emit, void *obj) {
+void mp_emit_bc_load_const_obj(emit_t *emit, mp_obj_t obj) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, obj);
 }
