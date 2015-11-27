@@ -1344,7 +1344,7 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst) {
     }
 }
 
-STATIC void emit_native_load_const_obj(emit_t *emit, void *obj) {
+STATIC void emit_native_load_const_obj(emit_t *emit, mp_obj_t obj) {
     emit_native_pre(emit);
     need_reg_single(emit, REG_RET, 0);
     ASM_MOV_ALIGNED_IMM_TO_REG(emit->as, (mp_uint_t)obj, REG_RET);
