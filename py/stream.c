@@ -174,7 +174,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 
-mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
+mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
     if (o->type->stream_p == NULL || o->type->stream_p->write == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass

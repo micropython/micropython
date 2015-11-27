@@ -606,8 +606,8 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 #include <sys/stat.h>
 #include <fcntl.h>
 
-STATIC void fd_print_strn(void *env, const char *str, mp_uint_t len) {
-    int fd = (mp_int_t)env;
+STATIC void fd_print_strn(void *env, const char *str, size_t len) {
+    int fd = (intptr_t)env;
     ssize_t ret = write(fd, str, len);
     (void)ret;
 }
