@@ -406,7 +406,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     // three_args =
     // "subs", RLO, RLO, I3, asm_thumb_subs_reg_reg_i3
 
-    mp_uint_t op_len;
+    size_t op_len;
     const char *op_str = (const char*)qstr_data(op, &op_len);
 
     #if MICROPY_EMIT_INLINE_THUMB_FLOAT

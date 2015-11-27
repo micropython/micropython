@@ -73,7 +73,7 @@
 #endif
 
 // this must match the equivalent function in makeqstrdata.py
-mp_uint_t qstr_compute_hash(const byte *data, mp_uint_t len) {
+mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
     mp_uint_t hash = 5381;
     for (const byte *top = data + len; data < top; data++) {
@@ -137,7 +137,7 @@ STATIC qstr qstr_add(const byte *q_ptr) {
     return MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len - 1;
 }
 
-qstr qstr_find_strn(const char *str, mp_uint_t str_len) {
+qstr qstr_find_strn(const char *str, size_t str_len) {
     // work out hash of str
     mp_uint_t str_hash = qstr_compute_hash((const byte*)str, str_len);
 
@@ -158,7 +158,7 @@ qstr qstr_from_str(const char *str) {
     return qstr_from_strn(str, strlen(str));
 }
 
-qstr qstr_from_strn(const char *str, mp_uint_t len) {
+qstr qstr_from_strn(const char *str, size_t len) {
     assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
@@ -182,7 +182,7 @@ qstr qstr_from_strn(const char *str, mp_uint_t len) {
 
         if (MP_STATE_VM(qstr_last_chunk) == NULL) {
             // no existing memory for the interned string so allocate a new chunk
-            mp_uint_t al = n_bytes;
+            size_t al = n_bytes;
             if (al < MICROPY_ALLOC_QSTR_CHUNK_INIT) {
                 al = MICROPY_ALLOC_QSTR_CHUNK_INIT;
             }
@@ -211,7 +211,7 @@ qstr qstr_from_strn(const char *str, mp_uint_t len) {
     return q;
 }
 
-byte *qstr_build_start(mp_uint_t len, byte **q_ptr) {
+byte *qstr_build_start(size_t len, byte **q_ptr) {
     assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
     *q_ptr = m_new(byte, MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
     Q_SET_LENGTH(*q_ptr, len);
@@ -236,7 +236,7 @@ mp_uint_t qstr_hash(qstr q) {
     return Q_GET_HASH(find_qstr(q));
 }
 
-mp_uint_t qstr_len(qstr q) {
+size_t qstr_len(qstr q) {
     const byte *qd = find_qstr(q);
     return Q_GET_LENGTH(qd);
 }
@@ -247,7 +247,7 @@ const char *qstr_str(qstr q) {
     return (const char*)Q_GET_DATA(qd);
 }
 
-const byte *qstr_data(qstr q, mp_uint_t *len) {
+const byte *qstr_data(qstr q, size_t *len) {
     const byte *qd = find_qstr(q);
     *len = Q_GET_LENGTH(qd);
     return Q_GET_DATA(qd);

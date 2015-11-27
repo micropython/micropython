@@ -492,7 +492,7 @@ STATIC void mp_print_uint(mp_print_t *print, mp_uint_t n) {
 }
 
 STATIC void save_qstr(mp_print_t *print, qstr qst) {
-    mp_uint_t len;
+    size_t len;
     const byte *str = qstr_data(qst, &len);
     mp_print_uint(print, len);
     mp_print_bytes(print, str, len);
