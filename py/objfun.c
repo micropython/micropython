@@ -231,7 +231,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
 
     code_state->ip = (byte*)(ip - self->bytecode); // offset to after n_state/n_exc_stack
     code_state->n_state = n_state;
-    mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
+    mp_setup_code_state(code_state, self, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     code_state->old_globals = mp_globals_get();
