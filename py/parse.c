@@ -283,7 +283,11 @@ void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent) {
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_bytes) {
             printf("literal bytes(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
+            #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+            printf("literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+            #else
             printf("literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
+            #endif
         } else {
             mp_uint_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
 #ifdef USE_RULE_NAME
@@ -362,8 +366,15 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, mp_uint_t src_li
         return MP_PARSE_NODE_NULL;
     }
     pn->source_line = src_line;
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+    // nodes are 32-bit pointers, but need to store 64-bit object
+    pn->kind_num_nodes = RULE_const_object | (2 << 8);
+    pn->nodes[0] = (uint64_t)obj;
+    pn->nodes[1] = (uint64_t)obj >> 32;
+    #else
     pn->kind_num_nodes = RULE_const_object | (1 << 8);
     pn->nodes[0] = (mp_uint_t)obj;
+    #endif
     return (mp_parse_node_t)pn;
 }
 

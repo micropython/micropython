@@ -46,6 +46,13 @@
 // Mask to truncate mp_int_t to positive value
 #define MP_SMALL_INT_POSITIVE_MASK ~(WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1) | (WORD_MSBIT_HIGH >> 2))
 
+#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+
+#define MP_SMALL_INT_MIN ((mp_int_t)(((mp_int_t)0xffffffff80000000) >> 1))
+#define MP_SMALL_INT_FITS(n) ((((n) ^ ((n) << 1)) & 0xffffffff80000000) == 0)
+// Mask to truncate mp_int_t to positive value
+#define MP_SMALL_INT_POSITIVE_MASK ~(0xffffffff80000000 | (0xffffffff80000000 >> 1))
+
 #endif
 
 #define MP_SMALL_INT_MAX ((mp_int_t)(~(MP_SMALL_INT_MIN)))
