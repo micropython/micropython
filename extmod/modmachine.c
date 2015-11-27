@@ -40,8 +40,8 @@
 #if MICROPY_PY_MACHINE
 
 
-STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
-    mp_uint_t addr = mp_obj_int_get_truncated(addr_o);
+STATIC uintptr_t get_addr(mp_obj_t addr_o, uint align) {
+    uintptr_t addr = mp_obj_int_get_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
     }
@@ -49,8 +49,8 @@ STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
     {
         // Not thread-safe
         static int fd;
-        static mp_uint_t last_base = (mp_uint_t)-1;
-        static mp_uint_t map_page;
+        static uintptr_t last_base = (uintptr_t)-1;
+        static uintptr_t map_page;
         if (!fd) {
             fd = open("/dev/mem", O_RDWR | O_SYNC);
             if (fd == -1) {
@@ -58,9 +58,9 @@ STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
             }
         }
 
-        mp_uint_t cur_base = addr & ~MICROPY_PAGE_MASK;
+        uintptr_t cur_base = addr & ~MICROPY_PAGE_MASK;
         if (cur_base != last_base) {
-            map_page = (mp_uint_t)mmap(NULL, MICROPY_PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, cur_base);
+            map_page = (uintptr_t)mmap(NULL, MICROPY_PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, cur_base);
             last_base = cur_base;
         }
         addr = map_page + (addr & MICROPY_PAGE_MASK);
@@ -89,7 +89,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
         return MP_OBJ_NULL; // op not supported
     } else if (value == MP_OBJ_SENTINEL) {
         // load
-        mp_uint_t addr = get_addr(index, self->elem_size);
+        uintptr_t addr = get_addr(index, self->elem_size);
         uint32_t val;
         switch (self->elem_size) {
             case 1: val = (*(uint8_t*)addr); break;
@@ -99,7 +99,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
         return mp_obj_new_int(val);
     } else {
         // store
-        mp_uint_t addr = get_addr(index, self->elem_size);
+        uintptr_t addr = get_addr(index, self->elem_size);
         uint32_t val = mp_obj_get_int(value);
         switch (self->elem_size) {
             case 1: (*(uint8_t*)addr) = val; break;
