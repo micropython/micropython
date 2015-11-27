@@ -172,11 +172,11 @@ bool uart_init(pyb_uart_obj_t *uart_obj, uint32_t baudrate) {
     return uart_init2(uart_obj);
 }
 
-bool uart_rx_any(pyb_uart_obj_t *uart_obj) {
+mp_uint_t uart_rx_any(pyb_uart_obj_t *uart_obj) {
 #if 0
     return __HAL_UART_GET_FLAG(&uart_obj->uart, UART_FLAG_RXNE);
 #else
-    return false;
+    return 0;
 #endif
 }
 
