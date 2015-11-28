@@ -57,7 +57,8 @@ void boot(void)
 		}
 	}
 
-	 // Test debug /*
+	 // Test debug
+	/*
 	FIL fp;
 	UINT n;
 	char aux[160];
