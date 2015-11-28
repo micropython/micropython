@@ -92,7 +92,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<generator object '%q' at %p>", mp_obj_code_get_name(self->code_state.code_info), self_in);
+    mp_printf(print, "<generator object '%q' at %p>", mp_obj_code_get_name(self->code_state.code_info), self);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
