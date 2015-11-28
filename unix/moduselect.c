@@ -58,7 +58,15 @@ STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
     if (self->len < self->alloc) {
         i = self->len++;
     } else {
-        assert(0);
+        struct pollfd *entries = self->entries;
+        for (i = 0; i < self->len; i++, entries++) {
+            if (entries->fd == -1) {
+                break;
+            }
+        }
+        if (entries->fd != -1) {
+            assert(0);
+        }
     }
 
     self->entries[i].fd = mp_obj_get_int(args[1]);
