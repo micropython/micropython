@@ -130,13 +130,12 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
     mp_obj_list_t *ret_list = mp_obj_new_list(n_ready, NULL);
     int ret_i = 0;
     struct pollfd *entries = self->entries;
-    for (int i = 0; i < self->len; i++) {
+    for (int i = 0; i < self->len; i++, entries++) {
         if (entries->revents != 0) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(2, NULL);
             t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
             t->items[1] = MP_OBJ_NEW_SMALL_INT(entries->revents);
             ret_list->items[ret_i++] = t;
-            entries++;
         }
     }
 
