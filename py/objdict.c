@@ -587,7 +587,7 @@ const mp_obj_type_t mp_type_ordereddict = {
     .binary_op = dict_binary_op,
     .subscr = dict_subscr,
     .getiter = dict_getiter,
-    .bases_tuple = (mp_obj_tuple_t*)&ordereddict_base_tuple,
+    .bases_tuple = (mp_obj_tuple_t*)(mp_rom_obj_tuple_t*)&ordereddict_base_tuple,
     .locals_dict = (mp_obj_dict_t*)&dict_locals_dict,
 };
 #endif
