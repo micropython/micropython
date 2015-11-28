@@ -37,7 +37,7 @@
 //#include "rng.h"
 #include "stmhal/file.h"
 //#include "sdcard.h"
-#include "stmhal/fsusermount.h"
+#include "extmod/fsusermount.h"
 //#include "portmodules.h"
 
 /// \module os - basic "operating system" services

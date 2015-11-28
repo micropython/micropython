@@ -40,7 +40,7 @@
 #if MICROPY_HW_HAS_SDCARD
 #include "sdcard.h"
 #endif
-#include <stmhal/fsusermount.h>
+#include "extmod/fsusermount.h"
 
 const PARTITION VolToPart[] = { { 0, 1 }, // Logical drive 0 ==> Physical drive 0, 1st partition
 		{ 1, 0 },     // Logical drive 1 ==> Physical drive 1 (auto detection)

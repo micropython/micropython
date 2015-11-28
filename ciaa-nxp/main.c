@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
     int stack_dummy;
 soft_reset:
     stack_top = (char*)&stack_dummy;
-	memset(heap, 0, sizeof(heap));
+    memset(heap, 0, sizeof(heap));
     gc_init(heap, heap + sizeof(heap));
 
     mp_init();
@@ -128,15 +128,13 @@ void gc_collect(void) {
     //gc_dump_info();
 }
 
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
+void NORETURN __fatal_error(const char *msg) {
+    while (1);
 }
 
 void nlr_jump_fail(void *val) {
-}
-
-void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    printf("FATAL: uncaught exception %p\n", val);
+    __fatal_error("");
 }
 
 #ifndef NDEBUG

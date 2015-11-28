@@ -61,8 +61,8 @@ SRC_C = \
 	modpybadc.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
-	stmhal/fsusermount.c \
 	stmhal/file.c \
+	stmhal/import.c \
 	stmhal/input.c \
 	lpc43_diskio.c \
 	lpc43_flash.c \
@@ -92,6 +92,14 @@ download: $(BUILD)/firmware.bin
 		-c "init" \
 		-c "halt 0" \
 		-c "flash write_image erase unlock $^ 0x1A000000 bin" \
+		-c "reset run" \
+		-c "shutdown"
+
+fsdownload: $(BUILD)/fs.bin
+	@openocd -f ciaa-nxp.cfg \
+		-c "init" \
+		-c "halt 0" \
+		-c "flash write_image erase unlock $^ 0x1B000000 bin" \
 		-c "reset run" \
 		-c "shutdown"
 
