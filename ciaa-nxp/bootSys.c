@@ -15,7 +15,7 @@ int boot_getChar(void);
 void boot_writeScript(char* script,int scriptLen,int mode);
 int searchXmodemEndOfData(char* data,int maxIndex);
 int receiveXmodemPacket(unsigned char* bufferRx);
-
+int checkCrc(unsigned char* buffer, int len);
 
 void boot(void)
 {
@@ -39,16 +39,25 @@ void boot(void)
 			// write in file
 			if(size>128)
 			{
-				// TODO : Check CRC
-                        	int size = searchXmodemEndOfData(bufferRx+3,128);
-                        	boot_writeScript(bufferRx+3,size,mode);
-				mode=1;
+				// check CRC
+				int crcOk = checkCrc(bufferRx+3,128+1);
+				if(crcOk==1)
+				{
+                        		int size = searchXmodemEndOfData(bufferRx+3,128);
+                        		boot_writeScript(bufferRx+3,size,mode);
+					mode=1;
+					Board_UARTPutChar(ACK); // send ACK
+				}
+				else
+					Board_UARTPutChar(NACK); // send NACK
 			}
-			Board_UARTPutChar(ACK); // send ACK
+			else
+				Board_UARTPutChar(ACK); // send ACK
+
 		}
 	}
 
-	/* // Test debug
+	 // Test debug /*
 	FIL fp;
 	UINT n;
 	char aux[160];
@@ -57,8 +66,23 @@ void boot(void)
         f_read (&fp, dataread, 600, &n);
         sprintf(aux,"lei:%d bytes\r\n",n);
         Board_UARTPutSTR(aux);
+
         sprintf(aux,"primeros caracteres: 0x%x - 0x%x - 0x%x \r\n",dataread[0],dataread[1],dataread[2]);
         Board_UARTPutSTR(aux);
+
+        sprintf(aux,"ultimos 32 caracteres: \r\n");
+        Board_UARTPutSTR(aux);
+	int k=32;
+	while(k>0)
+	{
+		sprintf(aux,"0x%x -",dataread[n-k]);
+	        Board_UARTPutSTR(aux);
+		k--;
+	}
+        sprintf(aux,"\r\n");
+        Board_UARTPutSTR(aux);
+
+
         Board_UARTPutSTR(dataread);
         Board_UARTPutSTR("FIN escribo archivo");
 	f_close(&fp);
@@ -105,6 +129,17 @@ int receiveXmodemPacket(unsigned char* bufferRx)
         return i;
 }
 
+int checkCrc(unsigned char* buffer, int len)
+{
+	int crc=0;
+	int i;
+	for(i=0; i<(len-1);i++)
+		crc+=buffer[i];
+
+	if((crc&0x00FF)==buffer[len-1])
+		return 1;
+	return 0;
+}
 
 void boot_writeScript(char* script,int scriptLen,int mode)
 {
