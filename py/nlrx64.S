@@ -41,10 +41,14 @@
 #define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define NLR_OS_WINDOWS
+#endif
+
     .file   "nlr.s"
     .text
 
-#if !defined(__CYGWIN__)
+#if !defined(NLR_OS_WINDOWS)
 
 /******************************************************************************/
 //
@@ -140,11 +144,11 @@ nlr_jump:
     je      _nlr_jump_fail          # transfer control to nlr_jump_fail
 #endif
 
-#else // !defined(__CYGWIN__)
+#else // !defined(NLR_OS_WINDOWS)
 
 /******************************************************************************/
 //
-// Functions for Cygwin
+// Functions for Windows
 //
 /******************************************************************************/
 
@@ -210,6 +214,6 @@ nlr_jump:
     movq    %rax, %rcx              # put argument back in first-arg register
     je      nlr_jump_fail           # transfer control to nlr_jump_fail
 
-#endif // !defined(__CYGWIN__)
+#endif // !defined(NLR_OS_WINDOWS)
 
 #endif // defined(__x86_64__) && !MICROPY_NLR_SETJMP

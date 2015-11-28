@@ -435,7 +435,7 @@ STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
     // it may seem stupid, we need to convert int to str
     if (MP_OBJ_IS_SMALL_INT(args[1])) {
         unsigned port = (unsigned short)MP_OBJ_SMALL_INT_VALUE(args[1]);
-        sprintf(buf, "%u", port);
+        snprintf(buf, sizeof(buf), "%u", port);
         serv = buf;
         hints.ai_flags = AI_NUMERICSERV;
 #ifdef __UCLIBC_MAJOR__
@@ -493,15 +493,37 @@ STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_socket_getaddrinfo_obj, 2, 6, mod_socket_getaddrinfo);
 
-extern mp_obj_type_t sockaddr_in_type;
+STATIC mp_obj_t mod_socket_sockaddr(mp_obj_t sockaddr_in) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(sockaddr_in, &bufinfo, MP_BUFFER_READ);
+    switch (((struct sockaddr*)bufinfo.buf)->sa_family) {
+        case AF_INET: {
+            struct sockaddr_in *sa = (struct sockaddr_in*)bufinfo.buf;
+            mp_obj_tuple_t *t = mp_obj_new_tuple(3, NULL);
+            t->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET);
+            t->items[1] = mp_obj_new_bytes((byte*)&sa->sin_addr, sizeof(sa->sin_addr));
+            t->items[2] = MP_OBJ_NEW_SMALL_INT(ntohs(sa->sin_port));
+            return t;
+        }
+        default: {
+            struct sockaddr *sa = (struct sockaddr*)bufinfo.buf;
+            mp_obj_tuple_t *t = mp_obj_new_tuple(2, NULL);
+            t->items[0] = MP_OBJ_NEW_SMALL_INT(sa->sa_family);
+            t->items[1] = mp_obj_new_bytes((byte*)sa->sa_data, bufinfo.len - offsetof(struct sockaddr, sa_data));
+            return t;
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_sockaddr_obj, mod_socket_sockaddr);
 
 STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&usocket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&mod_socket_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_inet_pton), (mp_obj_t)&mod_socket_inet_pton_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sockaddr), (mp_obj_t)&mod_socket_sockaddr_obj },
 #if MICROPY_SOCKET_EXTRA
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sockaddr_in), (mp_obj_t)&sockaddr_in_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_htons), (mp_obj_t)&mod_socket_htons_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_gethostbyname), (mp_obj_t)&mod_socket_gethostbyname_obj },
 #endif

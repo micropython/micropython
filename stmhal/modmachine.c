@@ -39,6 +39,9 @@
 #include "pin.h"
 #include "timer.h"
 #include "usb.h"
+#include "rtc.h"
+#include "i2c.h"
+#include "spi.h"
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
@@ -279,6 +282,11 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         } else {
             RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
         }
+        #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
+        uint32_t h = RCC_ClkInitStruct.AHBCLKDivider >> 4;
+        uint32_t b1 = RCC_ClkInitStruct.APB1CLKDivider >> 10;
+        uint32_t b2 = RCC_ClkInitStruct.APB2CLKDivider >> 10;
+        #endif
         if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
             goto fail;
         }
@@ -309,6 +317,23 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
 
         // re-init TIM3 for USB CDC rate
         timer_tim3_init();
+
+        #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
+        #if defined(MCU_SERIES_F7)
+        #define FREQ_BKP BKP31R
+        #else
+        #define FREQ_BKP BKP19R
+        #endif
+        // qqqqqqqq pppppppp nnnnnnnn nnmmmmmm
+        // qqqqQQQQ ppppppPP nNNNNNNN NNMMMMMM
+        // 222111HH HHQQQQPP nNNNNNNN NNMMMMMM
+        p = (p / 2) - 1;
+        RTC->FREQ_BKP = m
+            | (n << 6) | (p << 16) | (q << 18)
+            | (h << 22)
+            | (b1 << 26)
+            | (b2 << 29);
+        #endif
 
         return mp_const_none;
 
@@ -347,6 +372,8 @@ STATIC mp_obj_t machine_sleep(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 
 STATIC mp_obj_t machine_deepsleep(void) {
+    rtc_init_finalise();
+
 #if defined(MCU_SERIES_F7)
     printf("machine.deepsleep not supported yet\n");
 #else
@@ -417,8 +444,12 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
+#endif
+    // TODO: Per new API, both types below, if called with 1 arg (ID), should still
+    // initialize master mode on the peripheral.
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&pyb_spi_type },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer),               (mp_obj_t)&pyb_timer_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },

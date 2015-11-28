@@ -108,6 +108,11 @@
 #if defined( __MINGW32__ ) && defined( __LP64__ )
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
+#elif defined ( __MINGW32__ ) && defined( _WIN64 )
+#include <stdint.h>
+typedef __int64 mp_int_t;
+typedef unsigned __int64 mp_uint_t;
+#define MP_SSIZE_MAX __INT64_MAX__
 #elif defined ( _MSC_VER ) && defined( _WIN64 )
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
@@ -196,6 +201,13 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define PATH_MAX                    MICROPY_ALLOC_PATH_MAX
 #define S_ISREG(m)                  (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
+#ifdef _WIN64
+#define SSIZE_MAX                   _I64_MAX
+typedef __int64                     ssize_t;
+#else
+#define SSIZE_MAX                   _I32_MAX
+typedef int                         ssize_t;
+#endif
 
 
 // Put static/global variables in sections with a known name

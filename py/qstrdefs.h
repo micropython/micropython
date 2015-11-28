@@ -370,8 +370,11 @@ Q(pi)
 Q(sqrt)
 Q(pow)
 Q(exp)
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 Q(expm1)
+#endif
 Q(log)
+#if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 Q(log2)
 Q(log10)
 Q(cosh)
@@ -380,6 +383,7 @@ Q(tanh)
 Q(acosh)
 Q(asinh)
 Q(atanh)
+#endif
 Q(cos)
 Q(sin)
 Q(tan)

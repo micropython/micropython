@@ -105,13 +105,13 @@ int mp_hal_stdin_rx_chr(void) {
     return c;
 }
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     int ret = write(1, str, len);
     (void)ret; // to suppress compiler warning
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
-void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     mp_hal_stdout_tx_strn(str, len);
 }
 

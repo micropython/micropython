@@ -185,7 +185,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
     size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
         // Make pointer aligned
-        p = (byte*)(((mp_uint_t)p + align - 1) & ~((mp_uint_t)align - 1));
+        p = (byte*)MP_ALIGN(p, (size_t)align);
         #if MP_ENDIANNESS_LITTLE
         struct_type = '<';
         #else
@@ -250,7 +250,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
     size_t size = mp_binary_get_size(struct_type, val_type, &align);
     if (struct_type == '@') {
         // Make pointer aligned
-        p = (byte*)(((mp_uint_t)p + align - 1) & ~((mp_uint_t)align - 1));
+        p = (byte*)MP_ALIGN(p, (size_t)align);
         if (MP_ENDIANNESS_LITTLE) {
             struct_type = '<';
         } else {

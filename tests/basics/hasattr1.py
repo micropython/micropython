@@ -27,3 +27,13 @@ c = C()
 print(hasattr(c, "exists"))
 # TODO
 #print(hasattr(c, "doesnt_exist"))
+
+try:
+    hasattr(1, b'123')
+except TypeError:
+    print('TypeError')
+
+try:
+    hasattr(1, 123)
+except TypeError:
+    print('TypeError')

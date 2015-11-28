@@ -115,17 +115,17 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     return match;
 }
 
-STATIC mp_obj_t re_match(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t re_match(mp_uint_t n_args, const mp_obj_t *args) {
     return re_exec(true, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_match_obj, 2, 4, re_match);
 
-STATIC mp_obj_t re_search(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t re_search(mp_uint_t n_args, const mp_obj_t *args) {
     return re_exec(false, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 
-STATIC mp_obj_t re_split(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t re_split(mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = args[0];
     Subject subj;
     mp_uint_t len;
@@ -182,7 +182,7 @@ STATIC const mp_obj_type_t re_type = {
     .locals_dict = (mp_obj_t)&re_locals_dict,
 };
 
-STATIC mp_obj_t mod_re_compile(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_re_compile(mp_uint_t n_args, const mp_obj_t *args) {
     const char *re_str = mp_obj_str_get_str(args[0]);
     int size = re1_5_sizecode(re_str);
     if (size == -1) {
@@ -215,12 +215,12 @@ STATIC mp_obj_t mod_re_exec(bool is_anchored, uint n_args, const mp_obj_t *args)
     return match;
 }
 
-STATIC mp_obj_t mod_re_match(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_re_match(mp_uint_t n_args, const mp_obj_t *args) {
     return mod_re_exec(true, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_match_obj, 2, 4, mod_re_match);
 
-STATIC mp_obj_t mod_re_search(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_re_search(mp_uint_t n_args, const mp_obj_t *args) {
     return mod_re_exec(false, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);

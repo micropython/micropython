@@ -54,6 +54,7 @@
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_VOLUMES          (3)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#define MICROPY_FSUSERMOUNT            (1)
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)

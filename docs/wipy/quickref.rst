@@ -184,16 +184,16 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
     from network import WLAN
 
     # configure the WLAN subsystem in station mode (the default is AP)
-    wifi = WLAN(mode=WLAN.STA)
+    wlan = WLAN(mode=WLAN.STA)
     # go for fixed IP settings
-    wifi.ifconfig(config=('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
-    wifi.scan()     # scan for available networks
-    wifi.connect(ssid='mynetwork', auth=(WLAN.WPA2, 'mynetworkkey'))
-    while not wifi.isconnected():
+    wlan.ifconfig(config=('192.168.0.107', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+    wlan.scan()     # scan for available networks
+    wlan.connect(ssid='mynetwork', auth=(WLAN.WPA2, 'mynetworkkey'))
+    while not wlan.isconnected():
         pass
-    print(wifi.ifconfig())
+    print(wlan.ifconfig())
     # enable wake on WLAN
-    wifi.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
+    wlan.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep
     machine.sleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up

@@ -853,7 +853,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 // rule should not be emitted if it has only 1 argument
                 // NOTE: can't set this flag for atom_paren because we need it
                 // to distinguish, for example, [a,b] from [(a,b)]
-                // TODO possibly set for: varargslist_name, varargslist_equal
                 if (rule->act & RULE_ACT_ALLOW_IDENT) {
                     emit_rule = false;
                 }

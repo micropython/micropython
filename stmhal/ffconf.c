@@ -30,7 +30,7 @@
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/ffconf.h"
 #include "lib/fatfs/diskio.h"
-#include "fsusermount.h"
+#include "extmod/fsusermount.h"
 
 STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_t mount_point_len) {
     if (strncmp(*path, mount_point_str, mount_point_len) == 0) {

@@ -38,7 +38,10 @@
 // from an object, we must clear the MSB.
 
 STATIC uint32_t get_read_addr(mp_obj_t addr_o, uint align) {
-    uint32_t addr = mp_obj_get_int(addr_o) & 0x7fffffff;
+    uint32_t addr = mp_obj_get_int_truncated(addr_o);
+    if (MP_OBJ_IS_SMALL_INT(addr_o)) {
+        addr &= 0x7fffffff;
+    }
     /*
     if (addr < 0x10000000) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "cannot read from address %08x", addr));
@@ -51,7 +54,10 @@ STATIC uint32_t get_read_addr(mp_obj_t addr_o, uint align) {
 }
 
 STATIC uint32_t get_write_addr(mp_obj_t addr_o, uint align) {
-    uint32_t addr = mp_obj_get_int(addr_o) & 0x7fffffff;
+    uint32_t addr = mp_obj_get_int_truncated(addr_o);
+    if (MP_OBJ_IS_SMALL_INT(addr_o)) {
+        addr &= 0x7fffffff;
+    }
     if (addr < 0x10000000) {
         // Everything below 0x10000000 is either ROM or aliased to something higher, so we don't
         // lose anything by restricting writes to this area, and we gain some safety.
@@ -88,11 +94,11 @@ STATIC mp_obj_t stm_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
             case 2: val = (*(uint16_t*)addr); break;
             default: val = (*(uint32_t*)addr); break;
         }
-        return mp_obj_new_int(val);
+        return mp_obj_new_int_from_uint(val);
     } else {
         // store
         uint32_t addr = get_write_addr(index, self->elem_size);
-        uint32_t val = mp_obj_get_int(value);
+        uint32_t val = mp_obj_get_int_truncated(value);
         switch (self->elem_size) {
             case 1: (*(uint8_t*)addr) = val; break;
             case 2: (*(uint16_t*)addr) = val; break;

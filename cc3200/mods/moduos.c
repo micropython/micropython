@@ -63,6 +63,14 @@ STATIC uint32_t os_num_mounted_devices;
 STATIC os_term_dup_obj_t os_term_dup_obj;
 
 /******************************************************************************
+ DECLARE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC void unmount (os_fs_mount_t *mount_obj);
+STATIC bool path_equal(const char *path, const char *path_canonical);
+STATIC void append_dir_item (mp_obj_t dirlist, const char *item, bool string);
+STATIC void mount (mp_obj_t device, const char *path, uint pathlen, bool readonly);
+
+/******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 
@@ -100,6 +108,13 @@ os_fs_mount_t *osmount_find_by_device (mp_obj_t device) {
         }
     }
     return NULL;
+}
+
+void osmount_unmount_all (void) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mount_obj_list).len; i++) {
+        os_fs_mount_t *mount_obj = ((os_fs_mount_t *)(MP_STATE_PORT(mount_obj_list).items[i]));
+        unmount(mount_obj);
+    }
 }
 
 /******************************************************************************
@@ -188,19 +203,11 @@ STATIC void mount (mp_obj_t device, const char *path, uint pathlen, bool readonl
     os_num_mounted_devices++;
 }
 
-STATIC void unmount (const char *path) {
-    if (FR_OK != f_mount (NULL, path, 1)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
-    }
-
-    // remove from the list after the actual unmount
-    os_fs_mount_t *mount_obj;
-    if ((mount_obj = osmount_find_by_path(path))) {
-        mp_obj_list_remove(&MP_STATE_PORT(mount_obj_list), mount_obj);
-        os_num_mounted_devices--;
-    } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
-    }
+STATIC void unmount (os_fs_mount_t *mount_obj) {
+    // remove it from the list and then call FatFs
+    f_mount (NULL, mount_obj->path, 1);
+    mp_obj_list_remove(&MP_STATE_PORT(mount_obj_list), mount_obj);
+    os_num_mounted_devices--;
 }
 
 /******************************************************************************/
@@ -487,7 +494,12 @@ STATIC mp_obj_t os_unmount(mp_obj_t path_o) {
     }
 
     // now unmount it
-    unmount (path);
+    os_fs_mount_t *mount_obj;
+    if ((mount_obj = osmount_find_by_path(path))) {
+        unmount (mount_obj);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    }
 
     return mp_const_none;
 }
@@ -495,6 +507,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_unmount_obj, os_unmount);
 
 STATIC mp_obj_t os_mkfs(mp_obj_t device) {
     const char *path = "/__mkfs__mnt__";
+    os_fs_mount_t *mount_obj = NULL;
     bool unmt = false;
     FRESULT res;
 
@@ -505,29 +518,26 @@ STATIC mp_obj_t os_mkfs(mp_obj_t device) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_value_invalid_arguments));
         }
     } else {
-        // mount it and unmount it briefly
-        unmt = true;
+        // mount it briefly
         mount(device, path, strlen(path), false);
+        unmt = true;
     }
 
     byte sfd = 0;
     if (!memcmp(path, "/flash", strlen("/flash"))) {
         sfd = 1;
-    } else {
-        os_fs_mount_t *mount_obj;
-        if ((mount_obj = osmount_find_by_path(path))) {
-            if (mount_obj->device != (mp_obj_t)&pybsd_obj &&
-                mp_obj_get_int(mp_call_method_n_kw(0, 0, mount_obj->count)) < 2048) {
-                sfd = 1;
-            }
+    } else if ((mount_obj = osmount_find_by_path(path))) {
+        if (mount_obj->device != (mp_obj_t)&pybsd_obj &&
+            mp_obj_get_int(mp_call_method_n_kw(0, 0, mount_obj->count)) < 2048) {
+            sfd = 1;
         }
     }
 
     // now format the device
     res = f_mkfs(path, sfd, 0);
 
-    if (unmt) {
-        unmount (path);
+    if (unmt && mount_obj) {
+        unmount (mount_obj);
     }
 
     if (res != FR_OK) {

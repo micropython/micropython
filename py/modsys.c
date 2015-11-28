@@ -150,16 +150,17 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_version), (mp_obj_t)&version_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_version_info), (mp_obj_t)&mp_sys_version_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_implementation), (mp_obj_t)&mp_sys_implementation_obj },
-#ifdef MICROPY_PY_SYS_PLATFORM
+    #ifdef MICROPY_PY_SYS_PLATFORM
     { MP_OBJ_NEW_QSTR(MP_QSTR_platform), (mp_obj_t)&platform_obj },
-#endif
+    #endif
     /// \constant byteorder - the byte order of the system ("little" or "big")
-#if MP_ENDIANNESS_LITTLE
+    #if MP_ENDIANNESS_LITTLE
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_little) },
-#else
+    #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_byteorder), MP_OBJ_NEW_QSTR(MP_QSTR_big) },
-#endif
-#if MICROPY_PY_SYS_MAXSIZE
+    #endif
+
+    #if MICROPY_PY_SYS_MAXSIZE
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
     // INT_MAX is not representable as small int, as we know that small int
     // takes one bit for tag. So, we have little choice but to provide this
@@ -170,19 +171,19 @@ STATIC const mp_map_elem_t mp_module_sys_globals_table[] = {
     #else
     { MP_OBJ_NEW_QSTR(MP_QSTR_maxsize), (mp_obj_t)&mp_maxsize_obj },
     #endif
-#endif
+    #endif
 
-#if MICROPY_PY_SYS_EXIT
+    #if MICROPY_PY_SYS_EXIT
     // documented per-port
     { MP_OBJ_NEW_QSTR(MP_QSTR_exit), (mp_obj_t)&mp_sys_exit_obj },
-#endif
+    #endif
 
-#if MICROPY_PY_SYS_STDFILES
+    #if MICROPY_PY_SYS_STDFILES
     // documented per-port
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdin), (mp_obj_t)&mp_sys_stdin_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stdout), (mp_obj_t)&mp_sys_stdout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stderr), (mp_obj_t)&mp_sys_stderr_obj },
-#endif
+    #endif
 
     #if MICROPY_PY_SYS_EXC_INFO
     { MP_OBJ_NEW_QSTR(MP_QSTR_exc_info), (mp_obj_t)&mp_sys_exc_info_obj },

@@ -33,6 +33,7 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/gc.h"
+#include "py/builtin.h"
 #include "lib/utils/pyexec.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
@@ -58,7 +59,6 @@
 #include "dac.h"
 #include "lcd.h"
 #include "usb.h"
-#include "fsusermount.h"
 #include "portmodules.h"
 #include "modmachine.h"
 

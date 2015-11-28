@@ -189,6 +189,16 @@
 #define MICROPY_STACKLESS_STRICT (0)
 #endif
 
+// Don't use alloca calls. As alloca() is not part of ANSI C, this
+// workaround option is provided for compilers lacking this de-facto
+// standard function. The way it works is allocating from heap, and
+// relying on garbage collection to free it eventually. This is of
+// course much less optimal than real alloca().
+#if defined(MICROPY_NO_ALLOCA) && MICROPY_NO_ALLOCA
+#undef alloca
+#define alloca(x) m_malloc(x)
+#endif
+
 /*****************************************************************************/
 /* Micro Python emitters                                                     */
 
@@ -467,6 +477,11 @@ typedef double mp_float_t;
 // behaviour (usually segfault) if the first argument is the wrong type.
 #ifndef MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
+#endif
+
+// Support for user-space VFS mount (selected ports)
+#ifndef MICROPY_FSUSERMOUNT
+#define MICROPY_FSUSERMOUNT (0)
 #endif
 
 /*****************************************************************************/
@@ -849,10 +864,14 @@ typedef double mp_float_t;
 
 // printf format spec to use for mp_int_t and friends
 #ifndef INT_FMT
-#ifdef __LP64__
+#if defined(__LP64__)
 // Archs where mp_int_t == long, long != int
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
+#elif defined(_WIN64)
+#include <inttypes.h>
+#define UINT_FMT "%"PRIu64
+#define INT_FMT "%"PRId64
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"

@@ -95,11 +95,53 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USBFS Interrupt */
     HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
   } 
-  
-  #if defined(USE_USB_HS)
+#if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {
+#if defined(USE_USB_HS_IN_FS)
+
     /* Configure USB FS GPIOs */
+    __GPIOB_CLK_ENABLE();
+
+    /* Configure DM DP Pins */
+    GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+#if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+    /* Configure VBUS Pin */
+    GPIO_InitStruct.Pin = GPIO_PIN_13;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#endif
+
+#if defined(MICROPY_HW_USB_OTG_ID_PIN)
+    /* Configure ID pin */
+    GPIO_InitStruct.Pin = GPIO_PIN_12;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#endif
+    /*
+     * Enable calling WFI and correct
+     * function of the embedded USB_FS_IN_HS phy
+     */
+    __OTGHSULPI_CLK_SLEEP_DISABLE();
+    __OTGHS_CLK_SLEEP_ENABLE();
+    /* Enable USB HS Clocks */
+    __USB_OTG_HS_CLK_ENABLE();
+
+#else // !USE_USB_HS_IN_FS
+
+    /* Configure USB HS GPIOs */
     __GPIOA_CLK_ENABLE();
     __GPIOB_CLK_ENABLE();
     __GPIOC_CLK_ENABLE();
@@ -154,6 +196,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
     __USB_OTG_HS_ULPI_CLK_ENABLE();
+#endif // !USE_USB_HS_IN_FS
     
     /* Set USBHS Interrupt to the lowest priority */
     HAL_NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRI_OTG_HS, IRQ_SUBPRI_OTG_HS);
@@ -161,7 +204,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USBHS Interrupt */
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
   }   
-  #endif
+#endif  // USE_USB_HS
 }
 /**
   * @brief  DeInitializes the PCD MSP.
@@ -335,7 +378,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
   */
 USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
 { 
-#ifdef USE_USB_FS  
+#if defined(USE_USB_FS)
   /*Set LL Driver parameters */
   pcd_handle.Instance = USB_OTG_FS;
   pcd_handle.Init.dev_endpoints = 4; 
@@ -362,10 +405,35 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
   HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
   HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
+#elif defined(USE_USB_HS)
+#if defined(USE_USB_HS_IN_FS)
+  /*Set LL Driver parameters */
+  pcd_handle.Instance = USB_OTG_HS;
+  pcd_handle.Init.dev_endpoints = 4; 
+  pcd_handle.Init.use_dedicated_ep1 = 0;
+  pcd_handle.Init.ep0_mps = 0x40;  
+  pcd_handle.Init.dma_enable = 0;
+  pcd_handle.Init.low_power_enable = 0;
+  pcd_handle.Init.phy_itface = PCD_PHY_EMBEDDED; 
+  pcd_handle.Init.Sof_enable = 0;
+  pcd_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
+#if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
+  pcd_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
+#else
+  pcd_handle.Init.vbus_sensing_enable = 1;
+#endif
+  /* Link The driver to the stack */
+  pcd_handle.pData = pdev;
+  pdev->pData = &pcd_handle;
+  /*Initialize LL Driver */
+  HAL_PCD_Init(&pcd_handle);
 
-
-#endif 
-#ifdef USE_USB_HS  
+  HAL_PCD_SetRxFiFo(&pcd_handle, 0x80);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
+#else // !defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
   pcd_handle.Instance = USB_OTG_HS;
   pcd_handle.Init.dev_endpoints = 6; 
@@ -394,8 +462,8 @@ USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
   HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x80);
   HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x174); 
 
-  
-#endif 
+#endif  // !USE_USB_HS_IN_FS
+#endif  // USE_USB_HS
   return USBD_OK;
 }
 

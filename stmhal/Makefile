@@ -58,14 +58,16 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 LDFLAGS = -nostdlib -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
 LIBS =
 
+# Remove uncalled code from the final image.
+CFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS += --gc-sections
+
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
 COPT = -O0
 else
-CFLAGS += -fdata-sections -ffunction-sections
 COPT += -Os -DNDEBUG
-LDFLAGS += --gc-sections
 endif
 
 # uncomment this if you want libgcc
@@ -153,7 +155,6 @@ SRC_C = \
 	storage.c \
 	file.c \
 	sdcard.c \
-	fsusermount.c \
 	diskio.c \
 	ffconf.c \
 	lcd.c \

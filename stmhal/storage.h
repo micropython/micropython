@@ -26,6 +26,9 @@
 
 #define FLASH_BLOCK_SIZE (512)
 
+#define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
+#define STORAGE_IDLE_TICK(tick) (((tick) & STORAGE_SYSTICK_MASK) == 2)
+
 void storage_init(void);
 uint32_t storage_get_block_size(void);
 uint32_t storage_get_block_count(void);

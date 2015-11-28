@@ -115,6 +115,7 @@ SRC_C = \
 	input.c \
 	file.c \
 	modos.c \
+	moduselect.c \
 	alloc.c \
 	coverage.c \
 	$(SRC_MOD)
@@ -128,6 +129,7 @@ endif
 
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
+	utils/printf.c \
 	)
 
 OBJ = $(PY_O)

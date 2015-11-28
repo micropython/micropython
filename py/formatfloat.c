@@ -24,14 +24,16 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+
 #include <stdlib.h>
 #include <stdint.h>
 #include "py/formatfloat.h"
 
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 /***********************************************************************
 
-  Routine for converting a single-precision floating
+  Routine for converting a arbitrary floating
   point number into a string.
 
   The code in this funcion was inspired from Fred Bayer's pdouble.c.
@@ -44,31 +46,66 @@
 
 ***********************************************************************/
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 // 1 sign bit, 8 exponent bits, and 23 mantissa bits.
 // exponent values 0 and 255 are reserved, exponent can be 1 to 254.
 // exponent is stored with a bias of 127.
 // The min and max floats are on the order of 1x10^37 and 1x10^-37
 
+#define FPTYPE float
+#define FPCONST(x) x##F
+#define FPROUND_TO_ONE 0.9999995F
+#define FPDECEXP 32
+
 #define FLT_SIGN_MASK   0x80000000
 #define FLT_EXP_MASK    0x7F800000
 #define FLT_MAN_MASK    0x007FFFFF
 
-static const float g_pos_pow[] = {
+union floatbits {
+    float f;
+    uint32_t u;
+};
+static inline int fp_signbit(float x) { union floatbits fb = {x}; return fb.u & FLT_SIGN_MASK; }
+static inline int fp_isspecial(float x) { union floatbits fb = {x}; return (fb.u & FLT_EXP_MASK) == FLT_EXP_MASK; }
+static inline int fp_isinf(float x) { union floatbits fb = {x}; return (fb.u & FLT_MAN_MASK) == 0; }
+static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 0; }
+static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 0x3f800000; }
+// Assumes both fp_isspecial() and fp_isinf() were applied before
+#define fp_isnan(x) 1
+
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+
+#define FPTYPE double
+#define FPCONST(x) x
+#define FPROUND_TO_ONE 0.999999999995
+#define FPDECEXP 256
+#include <math.h>
+#define fp_signbit(x) signbit(x)
+#define fp_isspecial(x) 1
+#define fp_isnan(x) isnan(x)
+#define fp_isinf(x) isinf(x)
+#define fp_iszero(x) (x == 0)
+#define fp_isless1(x) (x < 1.0)
+
+#endif
+
+static const FPTYPE g_pos_pow[] = {
+    #if FPDECEXP > 32
+    1e256, 1e128, 1e64,
+    #endif
     1e32, 1e16, 1e8, 1e4, 1e2, 1e1
 };
-static const float g_neg_pow[] = {
+static const FPTYPE g_neg_pow[] = {
+    #if FPDECEXP > 32
+    1e-256, 1e-128, 1e-64,
+    #endif
     1e-32, 1e-16, 1e-8, 1e-4, 1e-2, 1e-1
 };
 
-int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
+int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
 
     char *s = buf;
     int buf_remaining = buf_size - 1;
-
-    union {
-        float f;
-        uint32_t u;
-    } num = {f};
 
     if (buf_size < 7) {
         // Smallest exp notion is -9e+99 which is 6 chars plus terminating
@@ -82,9 +119,9 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
         }
         return buf_size >= 2;
     }
-    if (num.u & FLT_SIGN_MASK) {
+    if (fp_signbit(f)) {
         *s++ = '-';
-        num.u &= ~FLT_SIGN_MASK;
+        f = -f;
     } else {
         if (sign) {
             *s++ = sign;
@@ -92,19 +129,21 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
     }
     buf_remaining -= (s - buf); // Adjust for sign
 
-    if ((num.u & FLT_EXP_MASK) == FLT_EXP_MASK) {
+    if (fp_isspecial(f)) {
         char uc = fmt & 0x20;
-        if ((num.u & FLT_MAN_MASK) == 0) {
+        if (fp_isinf(f)) {
             *s++ = 'I' ^ uc;
             *s++ = 'N' ^ uc;
             *s++ = 'F' ^ uc;
-        } else {
+            goto ret;
+        } else if (fp_isnan(f)) {
             *s++ = 'N' ^ uc;
             *s++ = 'A' ^ uc;
             *s++ = 'N' ^ uc;
+        ret:
+            *s = '\0';
+            return s - buf;
         }
-        *s = '\0';
-        return s - buf;
     }
 
     if (prec < 0) {
@@ -120,38 +159,42 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
     int dec = 0;
     char e_sign = '\0';
     int num_digits = 0;
-    const float *pos_pow = g_pos_pow;
-    const float *neg_pow = g_neg_pow;
+    const FPTYPE *pos_pow = g_pos_pow;
+    const FPTYPE *neg_pow = g_neg_pow;
 
-    if (num.u == 0) {
+    if (fp_iszero(f)) {
         e = 0;
         if (fmt == 'e') {
             e_sign = '+';
         } else if (fmt == 'f') {
             num_digits = prec + 1;
         }
-    } else if (num.u < 0x3f800000) { // f < 1.0
+    } else if (fp_isless1(f)) {
+        // We need to figure out what an integer digit will be used
+        // in case 'f' is used (or we revert other format to it below).
+        // As we just tested number to be <1, this is obviously 0,
+        // but we can round it up to 1 below.
+        char first_dig = '0';
+        if (f >= FPROUND_TO_ONE) {
+            first_dig = '1';
+        }
+
         // Build negative exponent
-        for (e = 0, e1 = 32; e1; e1 >>= 1, pos_pow++, neg_pow++) {
-            if (*neg_pow > num.f) {
+        for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
+            if (*neg_pow > f) {
                 e += e1;
-                num.f *= *pos_pow;
+                f *= *pos_pow;
             }
         }
-        char first_dig = '0';
         char e_sign_char = '-';
-        if (num.f < 1.0F && num.f >= 0.9999995F) {
-            num.f = 1.0F;
-            if (e > 1) {
-                // numbers less than 1.0 start with 0.xxx
-                first_dig = '1'; 
-            }
+        if (fp_isless1(f) && f >= FPROUND_TO_ONE) {
+            f = FPCONST(1.0);
             if (e == 0) {
                 e_sign_char = '+';
             }
         } else {
             e++; 
-            num.f *= 10.0F;
+            f *= FPCONST(10.0);
         }
 
         // If the user specified 'g' format, and e is <= 4, then we'll switch
@@ -192,10 +235,10 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
         }
     } else {
         // Build positive exponent
-        for (e = 0, e1 = 32; e1; e1 >>= 1, pos_pow++, neg_pow++) {
-            if (*pos_pow <= num.f) {
+        for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
+            if (*pos_pow <= f) {
                 e += e1;
-                num.f *= *neg_pow;
+                f *= *neg_pow;
             }
         }
 
@@ -259,17 +302,19 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
 
     // Print the digits of the mantissa
     for (int i = 0; i < num_digits; ++i, --dec) {
-        int32_t d = num.f;
+        int32_t d = f;
         *s++ = '0' + d;
         if (dec == 0 && prec > 0) {
             *s++ = '.';
         }
-        num.f -= (float)d;
-        num.f *= 10.0F;
+        f -= (FPTYPE)d;
+        f *= FPCONST(10.0);
     }
 
     // Round
-    if (num.f >= 5.0F) {
+    // If we print non-exponential format (i.e. 'f'), but a digit we're going
+    // to round by (e) is too far away, then there's nothing to round.
+    if ((org_fmt != 'f' || e <= 1) && f >= FPCONST(5.0)) {
         char *rs = s;
         rs--;
         while (1) {
@@ -313,7 +358,7 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
             }
             *rs = '1';
         }
-        if (num.u < 0x3f800000 && fmt == 'f') {
+        if (fp_isless1(f) && fmt == 'f') {
             // We rounded up to 1.0
             prec--;
         }
@@ -340,76 +385,4 @@ int mp_format_float(float f, char *buf, size_t buf_size, char fmt, int prec, cha
     return s - buf;
 }
 
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-
-#include <errno.h>
-#include <stdio.h>
-
-#ifdef _MSC_VER
-// For msvc we need to address some quirks in the snprintf implementation:
-// - there is no standard snprintf, it is named _snprintf instead
-// - 'F' format isn't handled so use 'f'
-// - nan and inf are printed as 1.#QNAN and 1.#INF
-#include <math.h>
-#include <string.h>
-
-STATIC int copy_with_sign(char *dest, size_t bufSize, const char *value, char sign) {
-    if (bufSize == 0) {
-        return 0;
-    }
-    size_t numSignChars = 0;
-    if (sign) {
-        *dest = sign;
-        ++numSignChars;
-    }
-    // check total length including terminator
-    size_t length = strlen(value) + 1 + numSignChars;
-    if (length > bufSize) {
-        length = bufSize;
-    }
-    // length without terminator
-    --length;
-    if (length > numSignChars) {
-        memcpy(dest + numSignChars, value, length - numSignChars);
-    }
-    dest[length] = 0;
-    return length;
-}
-
-#define snprintf _snprintf
-#endif
-
-int mp_format_float(double value, char *buf, size_t bufSize, char fmt, int prec, char sign) {
-    if (!buf) {
-        errno = EINVAL;
-        return -1;
-    }
-#ifdef _MSC_VER
-    if (isnan(value)) {
-        return copy_with_sign(buf, bufSize, "nan", sign);
-    } else if (isinf(value)) {
-        return copy_with_sign(buf, bufSize, "inf", value > 0.0 ? sign : '-');
-    } else {
-        if (fmt == 'F') {
-            fmt = 'f';
-        }
-#endif
-        char fmt_buf[6];
-        char *fmt_s = fmt_buf;
-
-        *fmt_s++ = '%';
-        if (sign) {
-            *fmt_s++ = sign;
-        }
-        *fmt_s++ = '.';
-        *fmt_s++ = '*';
-        *fmt_s++ = fmt;
-        *fmt_s = '\0';
-
-        return snprintf(buf, bufSize, fmt_buf, prec, value);
-#ifdef _MSC_VER
-    }
-#endif
-}
-
-#endif
+#endif // MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE

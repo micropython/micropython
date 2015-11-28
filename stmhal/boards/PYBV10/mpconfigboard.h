@@ -22,9 +22,12 @@
 #define MICROPY_HW_CLK_PLLN (336)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
 #define MICROPY_HW_CLK_PLLQ (7)
+#define MICROPY_HW_CLK_LAST_FREQ (1)
 
 // The pyboard has a 32kHz crystal for the RTC
 #define MICROPY_HW_RTC_USE_LSE      (1)
+#define MICROPY_HW_RTC_USE_US       (0)
+#define MICROPY_HW_RTC_USE_CALOUT   (1)
 
 // UART config
 #define MICROPY_HW_UART1_NAME "XB"

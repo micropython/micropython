@@ -38,7 +38,7 @@
 #include "uart.h"
 #include "file.h"
 #include "sdcard.h"
-#include "fsusermount.h"
+#include "extmod/fsusermount.h"
 #include "portmodules.h"
 
 /// \module os - basic "operating system" services

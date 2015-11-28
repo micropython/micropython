@@ -105,7 +105,7 @@ typedef struct _mp_state_vm_t {
     mp_map_t mp_loaded_modules_map;
 
     // pending exception object (MP_OBJ_NULL if not pending)
-    mp_obj_t mp_pending_exception;
+    volatile mp_obj_t mp_pending_exception;
 
     // current exception being handled, for sys.exc_info()
     #if MICROPY_PY_SYS_EXC_INFO

@@ -70,7 +70,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
 #if MICROPY_PY_OS_STATVFS
 
-#if MICROPY_PY_OS_STATVFS
 #if USE_STATFS
 #include <sys/vfs.h>
 #define STRUCT_STATVFS struct statfs
@@ -85,7 +84,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 #define F_FAVAIL sb.f_favail
 #define F_NAMEMAX sb.f_namemax
 #define F_FLAG sb.f_flag
-#endif
 #endif
 
 STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
@@ -137,6 +135,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_system_obj, mod_os_system);
 
 STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
     const char *s = getenv(mp_obj_str_get_str(var_in));
+    if (s == NULL) {
+        return mp_const_none;
+    }
     return mp_obj_new_str(s, strlen(s), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
@@ -144,7 +145,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
 STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
     // TODO: Accept mode param
     const char *path = mp_obj_str_get_str(path_in);
+    #ifdef _WIN32
+    int r = mkdir(path);
+    #else
     int r = mkdir(path, 0777);
+    #endif
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }

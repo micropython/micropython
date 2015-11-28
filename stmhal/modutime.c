@@ -57,6 +57,7 @@ STATIC mp_obj_t time_localtime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         // get current date and time
         // note: need to call get time then get date to correctly access the registers
+        rtc_init_finalise();
         RTC_DateTypeDef date;
         RTC_TimeTypeDef time;
         HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
@@ -119,6 +120,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 STATIC mp_obj_t time_time(void) {
     // get date and time
     // note: need to call get time then get date to correctly access the registers
+    rtc_init_finalise();
     RTC_DateTypeDef date;
     RTC_TimeTypeDef time;
     HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);

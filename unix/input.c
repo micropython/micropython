@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "py/mpstate.h"
 #include "py/mphal.h"
@@ -100,14 +101,18 @@ void prompt_read_history(void) {
         vstr_t vstr;
         vstr_init(&vstr, 50);
         vstr_printf(&vstr, "%s/.micropython.history", home);
-        FILE *fp = fopen(vstr_null_terminated_str(&vstr), "r");
-        if (fp != NULL) {
+        int fd = open(vstr_null_terminated_str(&vstr), O_RDONLY);
+        if (fd != -1) {
             vstr_reset(&vstr);
             for (;;) {
-                int c = fgetc(fp);
-                if (c == EOF || c == '\n') {
+                char c;
+                int sz = read(fd, &c, 1);
+                if (sz < 0) {
+                    break;
+                }
+                if (sz == 0 || c == '\n') {
                     readline_push_history(vstr_null_terminated_str(&vstr));
-                    if (c == EOF) {
+                    if (sz == 0) {
                         break;
                     }
                     vstr_reset(&vstr);
@@ -115,7 +120,7 @@ void prompt_read_history(void) {
                     vstr_add_byte(&vstr, c);
                 }
             }
-            fclose(fp);
+            close(fd);
         }
         vstr_clear(&vstr);
     }
@@ -133,16 +138,18 @@ void prompt_write_history(void) {
         vstr_t vstr;
         vstr_init(&vstr, 50);
         vstr_printf(&vstr, "%s/.micropython.history", home);
-        FILE *fp = fopen(vstr_null_terminated_str(&vstr), "w");
-        if (fp != NULL) {
+        int fd = open(vstr_null_terminated_str(&vstr), O_CREAT | O_TRUNC | O_WRONLY, 0644);
+        if (fd != -1) {
             for (int i = MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)) - 1; i >= 0; i--) {
                 const char *line = MP_STATE_PORT(readline_hist)[i];
                 if (line != NULL) {
-                    fwrite(line, 1, strlen(line), fp);
-                    fputc('\n', fp);
+                    int res;
+                    res = write(fd, line, strlen(line));
+                    res = write(fd, "\n", 1);
+                    (void)res;
                 }
             }
-            fclose(fp);
+            close(fd);
         }
     }
     #elif MICROPY_USE_READLINE == 2
