@@ -39,7 +39,6 @@
 
 #if MICROPY_PY_MACHINE
 
-
 STATIC mp_uint_t get_addr(mp_obj_t addr_o, uint align) {
     mp_uint_t addr = mp_obj_int_get_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
