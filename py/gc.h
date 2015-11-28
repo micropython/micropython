@@ -31,6 +31,8 @@
 #include "py/mpconfig.h"
 #include "py/misc.h"
 
+int gc_block_size(void);
+
 void gc_init(void *start, void *end);
 
 // These lock/unlock functions can be nested.
