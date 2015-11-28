@@ -95,7 +95,7 @@ void nlr_jump_fail(void *val);
         fflush(stdout);*/ \
         void *_val = MP_OBJ_TO_PTR(val); \
         assert(_val != NULL); \
-        assert(mp_obj_is_exception_instance(_val)); \
+        assert(mp_obj_is_exception_instance(val)); \
         nlr_jump(_val); \
     } while (0)
 
