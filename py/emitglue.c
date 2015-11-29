@@ -263,7 +263,7 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
 STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
     if (obj_type == 'e') {
-        return (mp_obj_t)&mp_const_ellipsis_obj;
+        return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
     } else {
         size_t len = read_uint(reader);
         vstr_t vstr;
@@ -324,7 +324,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
         *ct++ = (mp_uint_t)load_obj(reader);
     }
     for (mp_uint_t i = 0; i < n_raw_code; ++i) {
-        *ct++ = (mp_uint_t)load_raw_code(reader);
+        *ct++ = (mp_uint_t)(uintptr_t)load_raw_code(reader);
     }
 
     // create raw_code and return it
@@ -492,7 +492,7 @@ STATIC void mp_print_uint(mp_print_t *print, mp_uint_t n) {
 }
 
 STATIC void save_qstr(mp_print_t *print, qstr qst) {
-    mp_uint_t len;
+    size_t len;
     const byte *str = qstr_data(qst, &len);
     mp_print_uint(print, len);
     mp_print_bytes(print, str, len);
@@ -511,7 +511,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, len);
         mp_print_bytes(print, (const byte*)str, len);
-    } else if (o == &mp_const_ellipsis_obj) {
+    } else if (MP_OBJ_TO_PTR(o) == &mp_const_ellipsis_obj) {
         byte obj_type = 'e';
         mp_print_bytes(print, &obj_type, 1);
     } else {
@@ -582,7 +582,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
         save_obj(print, (mp_obj_t)*const_table++);
     }
     for (uint i = 0; i < rc->data.u_byte.n_raw_code; ++i) {
-        save_raw_code(print, (mp_raw_code_t*)*const_table++);
+        save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++);
     }
 }
 
@@ -606,15 +606,15 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 #include <sys/stat.h>
 #include <fcntl.h>
 
-STATIC void fd_print_strn(void *env, const char *str, mp_uint_t len) {
-    int fd = (mp_int_t)env;
+STATIC void fd_print_strn(void *env, const char *str, size_t len) {
+    int fd = (intptr_t)env;
     ssize_t ret = write(fd, str, len);
     (void)ret;
 }
 
 void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    mp_print_t fd_print = {(void*)(mp_int_t)fd, fd_print_strn};
+    mp_print_t fd_print = {(void*)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(rc, &fd_print);
     close(fd);
 }

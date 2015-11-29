@@ -36,7 +36,7 @@ typedef struct _mp_obj_bool_t {
 } mp_obj_bool_t;
 
 STATIC void bool_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_obj_bool_t *self = self_in;
+    mp_obj_bool_t *self = MP_OBJ_TO_PTR(self_in);
     if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
         if (self->value) {
             mp_print_str(print, "true");
@@ -66,7 +66,7 @@ STATIC mp_obj_t bool_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
 }
 
 STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
-    mp_int_t value = ((mp_obj_bool_t*)o_in)->value;
+    mp_int_t value = ((mp_obj_bool_t*)MP_OBJ_TO_PTR(o_in))->value;
     switch (op) {
         case MP_UNARY_OP_BOOL: return o_in;
         // needs to hash to the same value as if converting to an integer
@@ -88,7 +88,7 @@ STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
 }
 
 STATIC mp_obj_t bool_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mp_obj_bool_t *self = lhs_in;
+    mp_obj_bool_t *self = MP_OBJ_TO_PTR(lhs_in);
     return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(self->value), rhs_in);
 }
 

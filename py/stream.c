@@ -50,7 +50,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
 STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
@@ -85,7 +85,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
             }
             int error;
-            mp_uint_t out_sz = o->type->stream_p->read(o, p, more_bytes, &error);
+            mp_uint_t out_sz = o->type->stream_p->read(MP_OBJ_FROM_PTR(o), p, more_bytes, &error);
             if (out_sz == MP_STREAM_ERROR) {
                 vstr_cut_tail_bytes(&vstr, more_bytes);
                 if (mp_is_nonblocking_error(error)) {
@@ -156,7 +156,7 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
     vstr_init_len(&vstr, sz);
     int error;
-    mp_uint_t out_sz = o->type->stream_p->read(o, vstr.buf, sz, &error);
+    mp_uint_t out_sz = o->type->stream_p->read(MP_OBJ_FROM_PTR(o), vstr.buf, sz, &error);
     if (out_sz == MP_STREAM_ERROR) {
         vstr_clear(&vstr);
         if (mp_is_nonblocking_error(error)) {
@@ -174,8 +174,8 @@ STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 
-mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
+mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)MP_OBJ_TO_PTR(self_in);
     if (o->type->stream_p == NULL || o->type->stream_p->write == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
@@ -198,6 +198,11 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t len) {
     }
 }
 
+// XXX hack
+void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
+    mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len);
+}
+
 STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -205,7 +210,7 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
 }
 
 STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
@@ -225,7 +230,7 @@ STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_uint_t out_sz = o->type->stream_p->read(o, bufinfo.buf, len, &error);
+    mp_uint_t out_sz = o->type->stream_p->read(MP_OBJ_FROM_PTR(o), bufinfo.buf, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
@@ -237,7 +242,7 @@ STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)self_in;
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)MP_OBJ_TO_PTR(self_in);
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
@@ -286,7 +291,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
     if (o->type->stream_p == NULL || o->type->stream_p->read == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
@@ -311,7 +316,7 @@ STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *arg
         }
 
         int error;
-        mp_uint_t out_sz = o->type->stream_p->read(o, p, 1, &error);
+        mp_uint_t out_sz = o->type->stream_p->read(MP_OBJ_FROM_PTR(o), p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
             if (mp_is_nonblocking_error(error)) {
                 if (vstr.len == 1) {
@@ -368,7 +373,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
 }
 
 STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)args[0];
+    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
     if (o->type->stream_p == NULL || o->type->stream_p->ioctl == NULL) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Operation not supported"));
@@ -383,7 +388,7 @@ STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_uint_t res = o->type->stream_p->ioctl(o, MP_STREAM_SEEK, (mp_uint_t)&seek_s, &error);
+    mp_uint_t res = o->type->stream_p->ioctl(MP_OBJ_FROM_PTR(o), MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &error);
     if (res == MP_STREAM_ERROR) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     }

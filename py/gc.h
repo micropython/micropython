@@ -42,21 +42,21 @@ bool gc_is_locked(void);
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
 void gc_collect_start(void);
-void gc_collect_root(void **ptrs, mp_uint_t len);
+void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
-void *gc_alloc(mp_uint_t n_bytes, bool has_finaliser);
+void *gc_alloc(size_t n_bytes, bool has_finaliser);
 void gc_free(void *ptr); // does not call finaliser
-mp_uint_t gc_nbytes(const void *ptr);
-void *gc_realloc(void *ptr, mp_uint_t n_bytes, bool allow_move);
+size_t gc_nbytes(const void *ptr);
+void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
 
 typedef struct _gc_info_t {
-    mp_uint_t total;
-    mp_uint_t used;
-    mp_uint_t free;
-    mp_uint_t num_1block;
-    mp_uint_t num_2block;
-    mp_uint_t max_block;
+    size_t total;
+    size_t used;
+    size_t free;
+    size_t num_1block;
+    size_t num_2block;
+    size_t max_block;
 } gc_info_t;
 
 void gc_info(gc_info_t *info);

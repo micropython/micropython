@@ -414,7 +414,7 @@ int main (void) {
 //*****************************************************************************
 #include "py/qstr.h"
 
-const byte *qstr_data(qstr q, mp_uint_t *len) {
+const byte *qstr_data(qstr q, size_t *len) {
     *len = 0;
     return NULL;
 }

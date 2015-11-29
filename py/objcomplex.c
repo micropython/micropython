@@ -47,7 +47,7 @@ typedef struct _mp_obj_complex_t {
 
 STATIC void complex_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_complex_t *o = o_in;
+    mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     const int precision = 7;
@@ -114,7 +114,7 @@ STATIC mp_obj_t complex_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 }
 
 STATIC mp_obj_t complex_unary_op(mp_uint_t op, mp_obj_t o_in) {
-    mp_obj_complex_t *o = o_in;
+    mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->real != 0 || o->imag != 0);
         case MP_UNARY_OP_POSITIVE: return o_in;
@@ -124,7 +124,7 @@ STATIC mp_obj_t complex_unary_op(mp_uint_t op, mp_obj_t o_in) {
 }
 
 STATIC mp_obj_t complex_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    mp_obj_complex_t *lhs = lhs_in;
+    mp_obj_complex_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     return mp_obj_complex_binary_op(op, lhs->real, lhs->imag, rhs_in);
 }
 
@@ -133,7 +133,7 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // not load attribute
         return;
     }
-    mp_obj_complex_t *self = self_in;
+    mp_obj_complex_t *self = MP_OBJ_TO_PTR(self_in);
     if (attr == MP_QSTR_real) {
         dest[0] = mp_obj_new_float(self->real);
     } else if (attr == MP_QSTR_imag) {
@@ -156,12 +156,12 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
     o->base.type = &mp_type_complex;
     o->real = real;
     o->imag = imag;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_complex));
-    mp_obj_complex_t *self = self_in;
+    mp_obj_complex_t *self = MP_OBJ_TO_PTR(self_in);
     *real = self->real;
     *imag = self->imag;
 }

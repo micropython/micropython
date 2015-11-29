@@ -37,8 +37,8 @@ STATIC mp_obj_t object_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     (void)args;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     mp_obj_object_t *o = m_new_obj(mp_obj_object_t);
-    o->base.type = type_in;
-    return o;
+    o->base.type = MP_OBJ_TO_PTR(type_in);
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #if MICROPY_CPYTHON_COMPAT
@@ -49,7 +49,7 @@ STATIC mp_obj_t object___init__(mp_obj_t self) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
 
 STATIC mp_obj_t object___new__(mp_obj_t cls) {
-    if (!MP_OBJ_IS_TYPE(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t*)cls)) {
+    if (!MP_OBJ_IS_TYPE(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t*)MP_OBJ_TO_PTR(cls))) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                     "__new__ arg must be a user-type"));
     }
@@ -58,14 +58,14 @@ STATIC mp_obj_t object___new__(mp_obj_t cls) {
     return res;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___new___fun_obj, object___new__);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, (const mp_obj_t)&object___new___fun_obj);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, MP_ROM_PTR(&object___new___fun_obj));
 
-STATIC const mp_map_elem_t object_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
     #if MICROPY_CPYTHON_COMPAT
-    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&object___init___obj },
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&object___init___obj) },
     #endif
     #if MICROPY_CPYTHON_COMPAT
-    { MP_OBJ_NEW_QSTR(MP_QSTR___new__), (mp_obj_t)&object___new___obj },
+    { MP_ROM_QSTR(MP_QSTR___new__), MP_ROM_PTR(&object___new___obj) },
     #endif
 };
 
@@ -77,6 +77,6 @@ const mp_obj_type_t mp_type_object = {
     .name = MP_QSTR_object,
     .make_new = object_make_new,
     #if MICROPY_CPYTHON_COMPAT
-    .locals_dict = (mp_obj_t)&object_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&object_locals_dict,
     #endif
 };

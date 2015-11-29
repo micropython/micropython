@@ -39,18 +39,18 @@ typedef struct _mp_obj_map_t {
 STATIC mp_obj_t map_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, false);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
-    o->base.type = type_in;
+    o->base.type = MP_OBJ_TO_PTR(type_in);
     o->n_iters = n_args - 1;
     o->fun = args[0];
     for (mp_uint_t i = 0; i < n_args - 1; i++) {
         o->iters[i] = mp_getiter(args[i + 1]);
     }
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_map));
-    mp_obj_map_t *self = self_in;
+    mp_obj_map_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t *nextses = m_new(mp_obj_t, self->n_iters);
 
     for (mp_uint_t i = 0; i < self->n_iters; i++) {

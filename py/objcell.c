@@ -32,19 +32,19 @@ typedef struct _mp_obj_cell_t {
 } mp_obj_cell_t;
 
 mp_obj_t mp_obj_cell_get(mp_obj_t self_in) {
-    mp_obj_cell_t *self = self_in;
+    mp_obj_cell_t *self = MP_OBJ_TO_PTR(self_in);
     return self->obj;
 }
 
 void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
-    mp_obj_cell_t *self = self_in;
+    mp_obj_cell_t *self = MP_OBJ_TO_PTR(self_in);
     self->obj = obj;
 }
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_cell_t *o = o_in;
+    mp_obj_cell_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "<cell %p ", o->obj);
     if (o->obj == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
@@ -67,5 +67,5 @@ mp_obj_t mp_obj_new_cell(mp_obj_t obj) {
     mp_obj_cell_t *o = m_new_obj(mp_obj_cell_t);
     o->base.type = &mp_type_cell;
     o->obj = obj;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }

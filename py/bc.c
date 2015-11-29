@@ -68,7 +68,7 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expecte
 #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
         "%q() takes %d positional arguments but %d were given",
-        mp_obj_fun_get_name(f), expected, given));
+        mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given));
 #endif
 }
 
@@ -89,14 +89,13 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 //    - code_state->ip should contain the offset in bytes from the start of
 //      the bytecode chunk to just after n_state and n_exc_stack
 //    - code_state->n_state should be set to the state size (locals plus stack)
-void mp_setup_code_state(mp_code_state *code_state, mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
-    mp_obj_fun_bc_t *self = self_in;
     mp_uint_t n_state = code_state->n_state;
 
     // ip comes in as an offset into bytecode, so turn it into a true pointer
-    code_state->ip = self->bytecode + (mp_uint_t)code_state->ip;
+    code_state->ip = self->bytecode + (size_t)code_state->ip;
 
     // store pointer to constant table
     code_state->const_table = self->const_table;
@@ -220,7 +219,7 @@ continue2:;
             if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t*)self->extra_args[n_def_pos_args])->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
+                    elem = mp_map_lookup(&((mp_obj_dict_t*)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;

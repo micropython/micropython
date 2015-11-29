@@ -44,16 +44,16 @@ STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg);
 STATIC mp_obj_t hash_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(SHA256_CTX));
-    o->base.type = type_in;
+    o->base.type = MP_OBJ_TO_PTR(type_in);
     sha256_init((SHA256_CTX*)o->state);
     if (n_args == 1) {
-        hash_update(o, args[0]);
+        hash_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg) {
-    mp_obj_hash_t *self = self_in;
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
     sha256_update((SHA256_CTX*)self->state, bufinfo.buf, bufinfo.len);
@@ -62,7 +62,7 @@ STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg) {
 MP_DEFINE_CONST_FUN_OBJ_2(hash_update_obj, hash_update);
 
 STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
-    mp_obj_hash_t *self = self_in;
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
     sha256_final((SHA256_CTX*)self->state, (byte*)vstr.buf);
@@ -70,9 +70,9 @@ STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 
-STATIC const mp_map_elem_t hash_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_update), (mp_obj_t) &hash_update_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_digest), (mp_obj_t) &hash_digest_obj },
+STATIC const mp_rom_map_elem_t hash_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&hash_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&hash_digest_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);
@@ -81,12 +81,12 @@ STATIC const mp_obj_type_t sha256_type = {
     { &mp_type_type },
     .name = MP_QSTR_sha256,
     .make_new = hash_make_new,
-    .locals_dict = (mp_obj_t)&hash_locals_dict,
+    .locals_dict = (void*)&hash_locals_dict,
 };
 
-STATIC const mp_map_elem_t mp_module_hashlib_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sha256), (mp_obj_t)&sha256_type },
+STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&sha256_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_hashlib_globals, mp_module_hashlib_globals_table);

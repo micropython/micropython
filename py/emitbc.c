@@ -38,6 +38,11 @@
 #define DUMMY_DATA_SIZE (BYTES_FOR_INT)
 
 struct _emit_t {
+    // Accessed as mp_obj_t, so must be aligned as such, and we rely on the
+    // memory allocator returning a suitably aligned pointer.
+    // Should work for cases when mp_obj_t is 64-bit on a 32-bit machine.
+    byte dummy_data[DUMMY_DATA_SIZE];
+
     pass_kind_t pass : 8;
     mp_uint_t last_emit_was_return_value : 8;
 
@@ -51,10 +56,10 @@ struct _emit_t {
     mp_uint_t max_num_labels;
     mp_uint_t *label_offsets;
 
-    mp_uint_t code_info_offset;
-    mp_uint_t code_info_size;
-    mp_uint_t bytecode_offset;
-    mp_uint_t bytecode_size;
+    size_t code_info_offset;
+    size_t code_info_size;
+    size_t bytecode_offset;
+    size_t bytecode_size;
     byte *code_base; // stores both byte code and code info
 
     #if MICROPY_PERSISTENT_CODE
@@ -63,9 +68,6 @@ struct _emit_t {
     uint16_t ct_cur_raw_code;
     #endif
     mp_uint_t *const_table;
-
-    // Accessed as mp_uint_t, so must be aligned as such
-    byte dummy_data[DUMMY_DATA_SIZE];
 };
 
 emit_t *emit_bc_new(void) {
@@ -224,16 +226,6 @@ STATIC void emit_write_bytecode_byte_const(emit_t *emit, byte b, mp_uint_t n, mp
     }
     emit_write_bytecode_byte_uint(emit, b, n);
 }
-#else
-STATIC void emit_write_bytecode_byte_ptr(emit_t *emit, byte b, void *ptr) {
-    // aligns the pointer so it is friendly to GC
-    emit_write_bytecode_byte(emit, b);
-    emit->bytecode_offset = (mp_uint_t)MP_ALIGN(emit->bytecode_offset, sizeof(mp_uint_t));
-    mp_uint_t *c = (mp_uint_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_uint_t));
-    // Verify thar c is already uint-aligned
-    assert(c == MP_ALIGN(c, sizeof(mp_uint_t)));
-    *c = (mp_uint_t)ptr;
-}
 #endif
 
 STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, byte b, qstr qst) {
@@ -248,13 +240,19 @@ STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, byte b, qstr qst) {
     #endif
 }
 
-STATIC void emit_write_bytecode_byte_obj(emit_t *emit, byte b, void *ptr) {
+STATIC void emit_write_bytecode_byte_obj(emit_t *emit, byte b, mp_obj_t obj) {
     #if MICROPY_PERSISTENT_CODE
     emit_write_bytecode_byte_const(emit, b,
         emit->scope->num_pos_args + emit->scope->num_kwonly_args
-        + emit->ct_cur_obj++, (mp_uint_t)ptr);
+        + emit->ct_cur_obj++, (mp_uint_t)obj);
     #else
-    emit_write_bytecode_byte_ptr(emit, b, ptr);
+    // aligns the pointer so it is friendly to GC
+    emit_write_bytecode_byte(emit, b);
+    emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(mp_obj_t));
+    mp_obj_t *c = (mp_obj_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_obj_t));
+    // Verify thar c is already uint-aligned
+    assert(c == MP_ALIGN(c, sizeof(mp_obj_t)));
+    *c = obj;
     #endif
 }
 
@@ -262,9 +260,15 @@ STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, byte b, mp_raw_code_
     #if MICROPY_PERSISTENT_CODE
     emit_write_bytecode_byte_const(emit, b,
         emit->scope->num_pos_args + emit->scope->num_kwonly_args
-        + emit->ct_num_obj + emit->ct_cur_raw_code++, (mp_uint_t)rc);
+        + emit->ct_num_obj + emit->ct_cur_raw_code++, (mp_uint_t)(uintptr_t)rc);
     #else
-    emit_write_bytecode_byte_ptr(emit, b, rc);
+    // aligns the pointer so it is friendly to GC
+    emit_write_bytecode_byte(emit, b);
+    emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(void*));
+    void **c = (void**)emit_get_cur_to_write_bytecode(emit, sizeof(void*));
+    // Verify thar c is already uint-aligned
+    assert(c == MP_ALIGN(c, sizeof(void*)));
+    *c = rc;
     #endif
 }
 
@@ -416,7 +420,7 @@ void mp_emit_bc_end_pass(emit_t *emit) {
     if (emit->pass == MP_PASS_CODE_SIZE) {
         #if !MICROPY_PERSISTENT_CODE
         // so bytecode is aligned
-        emit->code_info_offset = (mp_uint_t)MP_ALIGN(emit->code_info_offset, sizeof(mp_uint_t));
+        emit->code_info_offset = (size_t)MP_ALIGN(emit->code_info_offset, sizeof(mp_uint_t));
         #endif
 
         // calculate size of total code-info + bytecode, in bytes
@@ -523,7 +527,7 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
         case MP_TOKEN_KW_NONE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_NONE); break;
         case MP_TOKEN_KW_TRUE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_TRUE); break;
         no_other_choice:
-        case MP_TOKEN_ELLIPSIS: emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, (void*)&mp_const_ellipsis_obj); break;
+        case MP_TOKEN_ELLIPSIS: emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj)); break;
         default: assert(0); goto no_other_choice; // to help flow control analysis
     }
 }
@@ -542,7 +546,7 @@ void mp_emit_bc_load_const_str(emit_t *emit, qstr qst) {
     emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_CONST_STRING, qst);
 }
 
-void mp_emit_bc_load_const_obj(emit_t *emit, void *obj) {
+void mp_emit_bc_load_const_obj(emit_t *emit, mp_obj_t obj) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, obj);
 }

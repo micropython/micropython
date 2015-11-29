@@ -37,7 +37,7 @@ STATIC mp_obj_list_t *get_heap(mp_obj_t heap_in) {
     if (!MP_OBJ_IS_TYPE(heap_in, &mp_type_list)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "heap must be a list"));
     }
-    return heap_in;
+    return MP_OBJ_TO_PTR(heap_in);
 }
 
 STATIC void heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
@@ -74,7 +74,7 @@ STATIC void heap_siftup(mp_obj_list_t *heap, mp_uint_t pos) {
 
 STATIC mp_obj_t mod_uheapq_heappush(mp_obj_t heap_in, mp_obj_t item) {
     mp_obj_list_t *heap = get_heap(heap_in);
-    mp_obj_list_append(heap, item);
+    mp_obj_list_append(heap_in, item);
     heap_siftdown(heap, 0, heap->len - 1);
     return mp_const_none;
 }
@@ -105,11 +105,11 @@ STATIC mp_obj_t mod_uheapq_heapify(mp_obj_t heap_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_uheapq_heapify_obj, mod_uheapq_heapify);
 
-STATIC const mp_map_elem_t mp_module_uheapq_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uheapq) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heappush), (mp_obj_t)&mod_uheapq_heappush_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heappop), (mp_obj_t)&mod_uheapq_heappop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heapify), (mp_obj_t)&mod_uheapq_heapify_obj },
+STATIC const mp_rom_map_elem_t mp_module_uheapq_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uheapq) },
+    { MP_ROM_QSTR(MP_QSTR_heappush), MP_ROM_PTR(&mod_uheapq_heappush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_heappop), MP_ROM_PTR(&mod_uheapq_heappop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_heapify), MP_ROM_PTR(&mod_uheapq_heapify_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uheapq_globals, mp_module_uheapq_globals_table);

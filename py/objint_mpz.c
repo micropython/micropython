@@ -93,7 +93,7 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
 char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
-    const mp_obj_int_t *self = self_in;
+    const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_uint_t needed_size = mpz_as_str_size(&self->mpz, base, prefix, comma);
     if (needed_size > *buf_size) {
@@ -109,7 +109,7 @@ char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
-    mp_obj_int_t *self = self_in;
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
 }
 
@@ -117,7 +117,7 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
     }
-    mp_obj_int_t *self = self_in;
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     return !self->mpz.neg;
 }
 
@@ -125,10 +125,10 @@ bool mp_obj_int_is_positive(mp_obj_t self_in) {
 // TypeError if the argument is not integral
 mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
     if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
-        mp_obj_int_t *self = self_in;
+        mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         mp_obj_int_t *self2 = mp_obj_int_new_mpz();
         mpz_abs_inpl(&self2->mpz, &self->mpz);
-        return self2;
+        return MP_OBJ_FROM_PTR(self2);
     } else {
         mp_int_t val = mp_obj_get_int(self_in);
         if (val == MP_SMALL_INT_MIN) {
@@ -143,13 +143,13 @@ mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
 }
 
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
-    mp_obj_int_t *o = o_in;
+    mp_obj_int_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(!mpz_is_zero(&o->mpz));
         case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mpz_hash(&o->mpz));
         case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return o2; }
-        case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return o2; }
+        case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return MP_OBJ_FROM_PTR(o2); }
+        case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return MP_OBJ_FROM_PTR(o2); }
         default: return MP_OBJ_NULL; // op not supported
     }
 }
@@ -165,7 +165,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
         zlhs = &z_int;
     } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
-        zlhs = &((mp_obj_int_t*)lhs_in)->mpz;
+        zlhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(lhs_in))->mpz;
     } else {
         // unsupported type
         return MP_OBJ_NULL;
@@ -176,7 +176,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
     } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
-        zrhs = &((mp_obj_int_t*)rhs_in)->mpz;
+        zrhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(rhs_in))->mpz;
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(rhs_in)) {
         return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
@@ -294,7 +294,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 if (zlhs->neg != zrhs->neg) {
                     mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
                 }
-                mp_obj_t tuple[2] = {quo, res};
+                mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
 
@@ -302,7 +302,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 return MP_OBJ_NULL; // op not supported
         }
 
-        return res;
+        return MP_OBJ_FROM_PTR(res);
 
     } else {
         int cmp = mpz_cmp(zlhs, zrhs);
@@ -334,13 +334,13 @@ mp_obj_t mp_obj_new_int(mp_int_t value) {
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     mpz_set_from_ll(&o->mpz, val, true);
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     mpz_set_from_ll(&o->mpz, val, false);
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
@@ -366,7 +366,7 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
         } else {
             mp_obj_int_t *o = mp_obj_int_new_mpz();
             mpz_set_from_float(&o->mpz, val);
-            return o;
+            return MP_OBJ_FROM_PTR(o);
         }
     }
 }
@@ -376,14 +376,14 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, 
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     mp_uint_t n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
     *str += n;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        const mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         // hash returns actual int value if it fits in mp_int_t
         return mpz_hash(&self->mpz);
     }
@@ -393,7 +393,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        const mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         mp_int_t value;
         if (mpz_as_int_checked(&self->mpz, &value)) {
             return value;
@@ -409,7 +409,7 @@ mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        mp_obj_int_t *self = self_in;
+        mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         return mpz_as_float(&self->mpz);
     }
 }

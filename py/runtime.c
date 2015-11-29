@@ -83,7 +83,7 @@ void mp_init(void) {
 
     // initialise the __main__ module
     mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
-    mp_obj_dict_store(&MP_STATE_VM(dict_main), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(dict_main)), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     MP_STATE_CTX(dict_locals) = MP_STATE_CTX(dict_globals) = &MP_STATE_VM(dict_main);
@@ -156,29 +156,29 @@ mp_obj_t mp_load_build_class(void) {
         }
     }
     #endif
-    return (mp_obj_t)&mp_builtin___build_class___obj;
+    return MP_OBJ_FROM_PTR(&mp_builtin___build_class___obj);
 }
 
 void mp_store_name(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
-    mp_obj_dict_store(MP_STATE_CTX(dict_locals), MP_OBJ_NEW_QSTR(qst), obj);
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_locals)), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
 void mp_delete_name(qstr qst) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
-    mp_obj_dict_delete(MP_STATE_CTX(dict_locals), MP_OBJ_NEW_QSTR(qst));
+    mp_obj_dict_delete(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_locals)), MP_OBJ_NEW_QSTR(qst));
 }
 
 void mp_store_global(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qst), obj);
-    mp_obj_dict_store(MP_STATE_CTX(dict_globals), MP_OBJ_NEW_QSTR(qst), obj);
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_globals)), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
 void mp_delete_global(qstr qst) {
     DEBUG_OP_printf("delete global %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
-    mp_obj_dict_delete(MP_STATE_CTX(dict_globals), MP_OBJ_NEW_QSTR(qst));
+    mp_obj_dict_delete(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_globals)), MP_OBJ_NEW_QSTR(qst));
 }
 
 mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
@@ -273,7 +273,7 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 return mp_const_false;
             }
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_tuple)) {
-            mp_obj_tuple_t *tuple = rhs;
+            mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(rhs);
             for (mp_uint_t i = 0; i < tuple->len; i++) {
                 rhs = tuple->items[i];
                 if (!mp_obj_is_exception_type(rhs)) {
@@ -437,10 +437,10 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         goto zero_division;
                     }
                     // to reduce stack usage we don't pass a temp array of the 2 items
-                    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
+                    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
                     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(mp_small_int_floor_divide(lhs_val, rhs_val));
                     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(mp_small_int_modulo(lhs_val, rhs_val));
-                    return tuple;
+                    return MP_OBJ_FROM_PTR(tuple);
                 }
 
                 case MP_BINARY_OP_LESS: return mp_obj_new_bool(lhs_val < rhs_val); break;
@@ -582,7 +582,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args, mp_uint_t n_kw
 // if n_args==0 and n_kw==0 then there are only fun and self/NULL
 mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     DEBUG_OP_printf("call method (fun=%p, self=%p, n_args=" UINT_FMT ", n_kw=" UINT_FMT ", args=%p)\n", args[0], args[1], n_args, n_kw, args);
-    int adjust = (args[1] == NULL) ? 0 : 1;
+    int adjust = (args[1] == MP_OBJ_NULL) ? 0 : 1;
     return mp_call_function_n_kw(args[0], n_args + adjust, n_kw, args + 2 - adjust);
 }
 
@@ -839,18 +839,18 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
             }
             items[num_left + num_right + 1 - 1 - seq_len] = item;
         }
-        mp_obj_list_t *rest = mp_obj_new_list(0, NULL);
+        mp_obj_list_t *rest = MP_OBJ_TO_PTR(mp_obj_new_list(0, NULL));
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            mp_obj_list_append(rest, item);
+            mp_obj_list_append(MP_OBJ_FROM_PTR(rest), item);
         }
         if (rest->len < num_right) {
             goto too_short;
         }
-        items[num_right] = rest;
+        items[num_right] = MP_OBJ_FROM_PTR(rest);
         for (mp_uint_t i = 0; i < num_right; i++) {
             items[num_right - 1 - i] = rest->items[rest->len - num_right + i];
         }
-        mp_obj_list_set_len(rest, rest->len - num_right);
+        mp_obj_list_set_len(MP_OBJ_FROM_PTR(rest), rest->len - num_right);
     }
     return;
 
@@ -891,7 +891,7 @@ typedef struct _mp_obj_checked_fun_t {
 } mp_obj_checked_fun_t;
 
 STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_obj_checked_fun_t *self = self_in;
+    mp_obj_checked_fun_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args > 0) {
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);
         if (arg0_type != self->type) {
@@ -918,7 +918,7 @@ STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) 
     o->base.type = &mp_type_checked_fun;
     o->type = type;
     o->fun = fun;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #endif // MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
@@ -930,11 +930,11 @@ STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) 
 void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
     if (MP_OBJ_IS_TYPE(member, &mp_type_staticmethod)) {
         // return just the function
-        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
+        dest[0] = ((mp_obj_static_class_method_t*)MP_OBJ_TO_PTR(member))->fun;
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
         // return a bound method, with self being the type of this object
-        dest[0] = ((mp_obj_static_class_method_t*)member)->fun;
-        dest[1] = (mp_obj_t)type;
+        dest[0] = ((mp_obj_static_class_method_t*)MP_OBJ_TO_PTR(member))->fun;
+        dest[1] = MP_OBJ_FROM_PTR(type);
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
         // Don't try to bind types (even though they're callable)
         dest[0] = member;
@@ -973,11 +973,11 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
 #if MICROPY_CPYTHON_COMPAT
     } else if (attr == MP_QSTR___class__) {
         // a.__class__ is equivalent to type(a)
-        dest[0] = type;
+        dest[0] = MP_OBJ_FROM_PTR(type);
 #endif
 
     } else if (attr == MP_QSTR___next__ && type->iternext != NULL) {
-        dest[0] = (mp_obj_t)&mp_builtin_next_obj;
+        dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
 
     } else if (type->attr != NULL) {
@@ -987,8 +987,8 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     } else if (type->locals_dict != NULL) {
         // generic method lookup
         // this is a lookup in the object (ie not class or type)
-        assert(MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)); // Micro Python restriction, for now
-        mp_map_t *locals_map = mp_obj_dict_get_map(type->locals_dict);
+        assert(type->locals_dict->base.type == &mp_type_dict); // Micro Python restriction, for now
+        mp_map_t *locals_map = &type->locals_dict->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             mp_convert_member_lookup(obj, type, elem->value, dest);
@@ -1011,7 +1011,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
             if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
                     "type object '%q' has no attribute '%q'",
-                    ((mp_obj_type_t*)base)->name, attr));
+                    ((mp_obj_type_t*)MP_OBJ_TO_PTR(base))->name, attr));
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
                     "'%s' object has no attribute '%q'",
@@ -1116,10 +1116,10 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 nlr_pop();
                 return ret;
             } else {
-                if (mp_obj_is_subclass_fast(mp_obj_get_type(nlr.ret_val), &mp_type_StopIteration)) {
+                if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
                     return MP_OBJ_STOP_ITERATION;
                 } else {
-                    nlr_raise(nlr.ret_val);
+                    nlr_jump(nlr.ret_val);
                 }
             }
         } else {
@@ -1174,7 +1174,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     }
 
     if (throw_value != MP_OBJ_NULL) {
-        if (mp_obj_is_subclass_fast(mp_obj_get_type(throw_value), &mp_type_GeneratorExit)) {
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
             mp_load_method_maybe(self_in, MP_QSTR_close, dest);
             if (dest[0] != MP_OBJ_NULL) {
                 // TODO: Exceptions raised in close() are not propagated,
@@ -1284,7 +1284,7 @@ void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
     // TODO: Support __all__
-    mp_map_t *map = mp_obj_dict_get_map(mp_obj_module_get_globals(module));
+    mp_map_t *map = mp_obj_dict_get_map(MP_OBJ_FROM_PTR(mp_obj_module_get_globals(module)));
     for (mp_uint_t i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
@@ -1329,7 +1329,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
         // exception; restore context and re-raise same exception
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
-        nlr_raise(nlr.ret_val);
+        nlr_jump(nlr.ret_val);
     }
 }
 

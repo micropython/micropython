@@ -137,7 +137,7 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
     uint size = calcsize_items(fmt);
-    mp_obj_tuple_t *res = mp_obj_new_tuple(size, NULL);
+    mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(size, NULL));
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
     byte *p = bufinfo.buf;
@@ -161,7 +161,7 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
         }
         fmt++;
     }
-    return res;
+    return MP_OBJ_FROM_PTR(res);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(struct_unpack_obj, struct_unpack);
 
@@ -203,11 +203,11 @@ STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
-STATIC const mp_map_elem_t mp_module_struct_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ustruct) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_calcsize), (mp_obj_t)&struct_calcsize_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pack), (mp_obj_t)&struct_pack_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unpack), (mp_obj_t)&struct_unpack_obj },
+STATIC const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ustruct) },
+    { MP_ROM_QSTR(MP_QSTR_calcsize), MP_ROM_PTR(&struct_calcsize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&struct_pack_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unpack), MP_ROM_PTR(&struct_unpack_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_table);

@@ -1025,7 +1025,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
                 if (i > 0) {
                     *str_dest++ = '.';
                 }
-                mp_uint_t str_src_len;
+                size_t str_src_len;
                 const byte *str_src = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &str_src_len);
                 memcpy(str_dest, str_src, str_src_len);
                 str_dest += str_src_len;
@@ -2115,7 +2115,7 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     byte *s_dest = (byte*)vstr.buf;
     for (int i = 0; i < n; i++) {
         if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
-            mp_uint_t s_len;
+            size_t s_len;
             const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
             memcpy(s_dest, s, s_len);
             s_dest += s_len;
@@ -2439,7 +2439,12 @@ STATIC void compile_bytes(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_const_object(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+    // nodes are 32-bit pointers, but need to extract 64-bit object
+    EMIT_ARG(load_const_obj, (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+    #else
     EMIT_ARG(load_const_obj, (mp_obj_t)pns->nodes[0]);
+    #endif
 }
 
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
@@ -2473,7 +2478,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
                 if (comp->pass != MP_PASS_EMIT) {
                     EMIT_ARG(load_const_obj, mp_const_none);
                 } else {
-                    mp_uint_t len;
+                    size_t len;
                     const byte *data = qstr_data(arg, &len);
                     EMIT_ARG(load_const_obj, mp_obj_new_bytes(data, len));
                 }

@@ -53,12 +53,12 @@ typedef struct _mp_obj_match_t {
 
 STATIC void match_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_match_t *self = self_in;
+    mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<match num=%d>", self->num_matches);
 }
 
 STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
-    mp_obj_match_t *self = self_in;
+    mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t no = mp_obj_get_int(no_in);
     if (no < 0 || no >= self->num_matches) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, no_in));
@@ -73,8 +73,8 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
-STATIC const mp_map_elem_t match_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_group), (mp_obj_t) &match_group_obj },
+STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
@@ -83,18 +83,18 @@ STATIC const mp_obj_type_t match_type = {
     { &mp_type_type },
     .name = MP_QSTR_match,
     .print = match_print,
-    .locals_dict = (mp_obj_t)&match_locals_dict,
+    .locals_dict = (void*)&match_locals_dict,
 };
 
 STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_re_t *self = self_in;
+    mp_obj_re_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<re %p>", self);
 }
 
 STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
-    mp_obj_re_t *self = args[0];
+    mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
     mp_uint_t len;
     subj.begin = mp_obj_str_get_data(args[1], &len);
@@ -112,7 +112,7 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     match->base.type = &match_type;
     match->num_matches = caps_num / 2; // caps_num counts start and end pointers
     match->str = args[1];
-    return match;
+    return MP_OBJ_FROM_PTR(match);
 }
 
 STATIC mp_obj_t re_match(mp_uint_t n_args, const mp_obj_t *args) {
@@ -126,7 +126,7 @@ STATIC mp_obj_t re_search(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 
 STATIC mp_obj_t re_split(mp_uint_t n_args, const mp_obj_t *args) {
-    mp_obj_re_t *self = args[0];
+    mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
     mp_uint_t len;
     subj.begin = mp_obj_str_get_data(args[1], &len);
@@ -167,10 +167,10 @@ STATIC mp_obj_t re_split(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
-STATIC const mp_map_elem_t re_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t) &re_match_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t) &re_search_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_split), (mp_obj_t) &re_split_obj },
+STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
+    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
+    { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -179,7 +179,7 @@ STATIC const mp_obj_type_t re_type = {
     { &mp_type_type },
     .name = MP_QSTR_ure,
     .print = re_print,
-    .locals_dict = (mp_obj_t)&re_locals_dict,
+    .locals_dict = (void*)&re_locals_dict,
 };
 
 STATIC mp_obj_t mod_re_compile(mp_uint_t n_args, const mp_obj_t *args) {
@@ -202,16 +202,16 @@ error:
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);
     }
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_compile_obj, 1, 2, mod_re_compile);
 
 STATIC mp_obj_t mod_re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
-    mp_obj_re_t *self = mod_re_compile(1, args);
+    mp_obj_t self = mod_re_compile(1, args);
 
     const mp_obj_t args2[] = {self, args[1]};
-    mp_obj_match_t *match = re_exec(is_anchored, 2, args2);
+    mp_obj_t match = re_exec(is_anchored, 2, args2);
     return match;
 }
 
@@ -225,12 +225,12 @@ STATIC mp_obj_t mod_re_search(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 
-STATIC const mp_map_elem_t mp_module_re_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ure) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_compile), (mp_obj_t)&mod_re_compile_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_match), (mp_obj_t)&mod_re_match_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_search), (mp_obj_t)&mod_re_search_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DEBUG), MP_OBJ_NEW_SMALL_INT(FLAG_DEBUG) },
+STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
+    { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
+    { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
+    { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);

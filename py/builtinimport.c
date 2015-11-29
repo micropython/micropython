@@ -47,7 +47,7 @@
 #define PATH_SEP_CHAR '/'
 
 #if MICROPY_MODULE_WEAK_LINKS
-STATIC const mp_map_elem_t mp_builtin_module_weak_links_table[] = {
+STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
     MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 };
 
@@ -174,7 +174,7 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
         // exception; restore context and re-raise same exception
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
-        nlr_raise(nlr.ret_val);
+        nlr_jump(nlr.ret_val);
     }
 }
 #endif
@@ -237,15 +237,15 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
         // "Relative imports use a module's __name__ attribute to determine that
         // module's position in the package hierarchy."
         level--;
-        mp_obj_t this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
+        mp_obj_t this_name_q = mp_obj_dict_get(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(MP_QSTR___name__));
         assert(this_name_q != MP_OBJ_NULL);
         #if MICROPY_CPYTHON_COMPAT
         if (MP_OBJ_QSTR_VALUE(this_name_q) == MP_QSTR___main__) {
             // This is a module run by -m command-line switch, get its real name from backup attribute
-            this_name_q = mp_obj_dict_get(mp_globals_get(), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+            this_name_q = mp_obj_dict_get(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
         }
         #endif
-        mp_map_t *globals_map = mp_obj_dict_get_map(mp_globals_get());
+        mp_map_t *globals_map = &mp_globals_get()->map;
         mp_map_elem_t *elem = mp_map_lookup(globals_map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP);
         bool is_pkg = (elem != NULL);
 
@@ -338,8 +338,8 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
         // name to __main__ instead of real name).
         // TODO: Duplicated below too.
         if (fromtuple == mp_const_false) {
-            mp_obj_module_t *o = module_obj;
-            mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+            mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
+            mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
         }
         do_load_from_lexer(module_obj, lex, mod_str);
         return module_obj;
@@ -409,11 +409,11 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
                 // this module for command-line "-m" option (set module's
                 // name to __main__ instead of real name).
                 if (i == mod_len && fromtuple == mp_const_false) {
-                    mp_obj_module_t *o = module_obj;
-                    mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
+                    mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
+                    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
                     #if MICROPY_CPYTHON_COMPAT
                     // Store real name in "__main__" attribute. Choosen semi-randonly, to reuse existing qstr's.
-                    mp_obj_dict_store(o->globals, MP_OBJ_NEW_QSTR(MP_QSTR___main__), MP_OBJ_NEW_QSTR(mod_name));
+                    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___main__), MP_OBJ_NEW_QSTR(mod_name));
                     #endif
                 }
 

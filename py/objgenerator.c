@@ -50,9 +50,9 @@ typedef struct _mp_obj_gen_instance_t {
 } mp_obj_gen_instance_t;
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_obj_gen_wrap_t *self = self_in;
+    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
-    assert(MP_OBJ_IS_TYPE(self_fun, &mp_type_fun_bc));
+    assert(self_fun->base.type == &mp_type_fun_bc);
 
     // get start of bytecode
     const byte *ip = self_fun->bytecode;
@@ -70,7 +70,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw
     o->code_state.n_state = n_state;
     o->code_state.ip = (byte*)(ip - self_fun->bytecode); // offset to prelude
     mp_setup_code_state(&o->code_state, self_fun, n_args, n_kw, args);
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 const mp_obj_type_t mp_type_gen_wrap = {
@@ -82,8 +82,8 @@ const mp_obj_type_t mp_type_gen_wrap = {
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
     mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
     o->base.type = &mp_type_gen_wrap;
-    o->fun = fun;
-    return o;
+    o->fun = MP_OBJ_TO_PTR(fun);
+    return MP_OBJ_FROM_PTR(o);
 }
 
 /******************************************************************************/
@@ -91,13 +91,13 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_gen_instance_t *self = self_in;
-    mp_printf(print, "<generator object '%q' at %p>", mp_obj_code_get_name(self->code_state.code_info), self_in);
+    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "<generator object '%q' at %p>", mp_obj_code_get_name(self->code_state.code_info), self);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
-    mp_obj_gen_instance_t *self = self_in;
+    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {
         *ret_val = MP_OBJ_STOP_ITERATION;
         return MP_VM_RETURN_NORMAL;
@@ -155,7 +155,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             }
 
         case MP_VM_RETURN_YIELD:
-            if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(mp_obj_get_type(throw_value), &mp_type_GeneratorExit)) {
+            if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
             }
             return ret;
@@ -164,7 +164,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             // TODO: Optimization of returning MP_OBJ_STOP_ITERATION is really part
             // of mp_iternext() protocol, but this function is called by other methods
             // too, which may not handled MP_OBJ_STOP_ITERATION.
-            if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
                 mp_obj_t val = mp_obj_exception_get_value(ret);
                 if (val == mp_const_none) {
                     return MP_OBJ_STOP_ITERATION;
@@ -206,15 +206,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(gen_instance_throw_obj, 2, 4, gen_ins
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
-    switch (mp_obj_gen_resume(self_in, mp_const_none, (mp_obj_t)&mp_const_GeneratorExit_obj, &ret)) {
+    switch (mp_obj_gen_resume(self_in, mp_const_none, MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj), &ret)) {
         case MP_VM_RETURN_YIELD:
             nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
 
         // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
         case MP_VM_RETURN_EXCEPTION:
             // ret should always be an instance of an exception class
-            if (mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_GeneratorExit) ||
-                mp_obj_is_subclass_fast(mp_obj_get_type(ret), &mp_type_StopIteration)) {
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit)) ||
+                mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(ret)), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
                 return mp_const_none;
             }
             nlr_raise(ret);
@@ -227,10 +227,10 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_close_obj, gen_instance_close);
 
-STATIC const mp_map_elem_t gen_instance_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&gen_instance_close_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&gen_instance_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_throw), (mp_obj_t)&gen_instance_throw_obj },
+STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
@@ -241,5 +241,5 @@ const mp_obj_type_t mp_type_gen_instance = {
     .print = gen_instance_print,
     .getiter = mp_identity,
     .iternext = gen_instance_iternext,
-    .locals_dict = (mp_obj_t)&gen_instance_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
 };
