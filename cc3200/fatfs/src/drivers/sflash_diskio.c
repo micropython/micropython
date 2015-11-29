@@ -96,7 +96,7 @@ DRESULT sflash_disk_status(void) {
     if (!sflash_init_done) {
         return STA_NOINIT;
     }
-    return 0;
+    return RES_OK;
 }
 
 DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
@@ -126,7 +126,7 @@ DRESULT sflash_disk_read(BYTE *buff, DWORD sector, UINT count) {
         }
         // Copy the requested sector from the block cache
         memcpy (buff, &sflash_block_cache[(secindex * SFLASH_SECTOR_SIZE)], SFLASH_SECTOR_SIZE);
-        buff += SFLASH_BLOCK_SIZE;
+        buff += SFLASH_SECTOR_SIZE;
     }
     return RES_OK;
 }
@@ -161,7 +161,7 @@ DRESULT sflash_disk_write(const BYTE *buff, DWORD sector, UINT count) {
         }
         // Copy the input sector to the block cache
         memcpy (&sflash_block_cache[(secindex * SFLASH_SECTOR_SIZE)], buff, SFLASH_SECTOR_SIZE);
-        buff += SFLASH_BLOCK_SIZE;
+        buff += SFLASH_SECTOR_SIZE;
         sflash_cache_is_dirty = true;
     } while (++index < count);
 
