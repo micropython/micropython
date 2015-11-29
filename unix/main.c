@@ -338,9 +338,15 @@ STATIC void pre_process_options(int argc, char **argv) {
                         heap_size *= 1024;
                     } else if ((*end | 0x20) == 'm') {
                         heap_size *= 1024 * 1024;
+                    } else if (*end != '\0') {
+                        mp_printf(&mp_stderr_print, "Unrecognized modifier: %c\n", *end);
+                        exit(usage(argv));
                     }
                     if (word_adjust) {
                         heap_size = heap_size * BYTES_PER_WORD / 4;
+                    }
+                    if (heap_size < gc_block_size()) {
+                        heap_size = gc_block_size();
                     }
 #endif
                 } else {
@@ -364,17 +370,7 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
-int main(int argc, char **argv) {
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
-
-    pre_process_options(argc, argv);
-
-#if MICROPY_ENABLE_GC
-    char *heap = malloc(heap_size);
-    gc_init(heap, heap + heap_size);
-#endif
-
-    mp_init();
+STATIC int main_core(int argc, char **argv) {
 
     #ifndef _WIN32
     // create keyboard interrupt object
@@ -548,6 +544,39 @@ int main(int argc, char **argv) {
         mp_micropython_mem_info(0, NULL);
     }
     #endif
+
+    return ret;
+}
+
+int main(int argc, char **argv) {
+    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+
+    pre_process_options(argc, argv);
+
+#if MICROPY_ENABLE_GC
+    // Make sure that the heap is block_size aligned (gc_init seems to want this)
+    int block_size = gc_block_size();
+    char *heap = malloc(heap_size + block_size);
+    char *heap_start = (char*)((long)(heap + block_size - 1) & ~(block_size - 1));
+    gc_init(heap_start, heap_start + heap_size);
+#endif
+
+    int ret = 0;
+    nlr_buf_t nlr;
+
+    if (nlr_push(&nlr) == 0) {
+        // mp_init calls mp_stack_ctrl_init. Since handle_uncaught_exception
+        // calls functions which in turn call mp_stack_check() we need
+        // to call mp_init at a similar stack level to the one which calls
+        // handle_uncaught_exception, otherwise the stack checker gets
+        // confused. This is why the call to mp_init has to be here and
+        // not inside main_core.
+
+        mp_init();
+        ret = main_core(argc, argv);
+    } else {
+        return handle_uncaught_exception((mp_obj_t)nlr.ret_val);
+    }
 
     mp_deinit();
 
