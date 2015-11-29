@@ -25,6 +25,7 @@
  */
 
 #include <unistd.h>
+#include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
@@ -32,6 +33,7 @@
 
 #include "py/runtime.h"
 #include "py/smallint.h"
+#include "py/mphal.h"
 
 #ifdef _WIN32
 void msec_sleep_tv(struct timeval *tv) {
@@ -113,8 +115,23 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     double ipart;
     tv.tv_usec = round(modf(val, &ipart) * 1000000);
     tv.tv_sec = ipart;
-    sleep_select(0, NULL, NULL, NULL, &tv);
+    int res;
+    while (1) {
+        res = sleep_select(0, NULL, NULL, NULL, &tv);
+        #if MICROPY_SELECT_REMAINING_TIME
+        // TODO: This assumes Linux behavior of modifying tv to the remaining
+        // time.
+        if (res != -1 || errno != EINTR) {
+            break;
+        }
+        //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
+        #else
+        break;
+        #endif
+    }
+    RAISE_ERRNO(res, errno);
 #else
+    // TODO: Handle EINTR
     sleep(mp_obj_get_int(arg));
 #endif
     return mp_const_none;

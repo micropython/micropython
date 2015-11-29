@@ -205,6 +205,10 @@ void mp_unix_mark_exec(void);
 #define MICROPY_PLAT_DEV_MEM  (1)
 #endif
 
+// Assume that select() call, interrupted with a signal, and erroring
+// with EINTR, updates remaining timeout value.
+#define MICROPY_SELECT_REMAINING_TIME (1)
+
 #ifdef __ANDROID__
 #include <android/api-level.h>
 #if __ANDROID_API__ < 4
