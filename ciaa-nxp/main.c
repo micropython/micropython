@@ -26,7 +26,11 @@
 
 // maximum heap for device with 32k RAM o RAM2 (40K block)
 static char *stack_top;
-static __DATA(RAM2) char heap[32*1024];
+//static __DATA(RAM2) char heap[32*1024];
+
+#define HEAP_START ((void*) 0x20000000)
+#define HEAP_SIZE  (64*1024)
+#define HEAP_END   (HEAP_START + HEAP_SIZE)
 
 static FATFS fatfs0;
 
@@ -82,8 +86,10 @@ int main(int argc, char **argv) {
     int stack_dummy;
 soft_reset:
     stack_top = (char*)&stack_dummy;
-    memset(heap, 0, sizeof(heap));
-    gc_init(heap, heap + sizeof(heap));
+    // memset(heap, 0, sizeof(heap));
+    // gc_init(heap, heap + sizeof(heap));
+    memset(HEAP_START, 0, HEAP_SIZE);
+    gc_init(HEAP_START, HEAP_END);
 
     mp_init();
     mp_hal_init();
