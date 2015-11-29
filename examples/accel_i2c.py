@@ -4,16 +4,17 @@
 # example. For the latter, using pyb.Accel class is
 # much easier.
 
-import pyb
+from machine import Pin
+from machine import I2C
 import time
 
 # Accelerometer needs to be powered on first. Even
 # though signal is called "AVDD", and there's separate
 # "DVDD", without AVDD, it won't event talk on I2C bus.
-accel_pwr = pyb.Pin("MMA_AVDD")
+accel_pwr = Pin("MMA_AVDD")
 accel_pwr.value(1)
 
-i2c = pyb.I2C(1)
+i2c = I2C(1, baudrate=100000)
 addrs = i2c.scan()
 print("Scanning devices:", [hex(x) for x in addrs])
 if 0x4c not in addrs:
