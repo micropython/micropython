@@ -65,7 +65,9 @@ STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
             }
         }
         if (entries->fd != -1) {
-            assert(0);
+            i = self->len++;
+            self->entries = m_renew(struct pollfd, self->entries, self->alloc, self->alloc + 4);
+            self->alloc += 4;
         }
     }
 
