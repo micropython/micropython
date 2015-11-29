@@ -41,6 +41,13 @@ void boot(void)
 			{
 				// check CRC
 				int crcOk = checkCrc(bufferRx+3,128+1);
+
+				/* // test echo
+				int j=0;
+				for(j=0; j<size; j++)
+					Board_UARTPutChar(bufferRx[j]);
+				*/
+
 				if(crcOk==1)
 				{
                         		int size = searchXmodemEndOfData(bufferRx+3,128);
