@@ -517,19 +517,9 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'g':
             case 'G':
             {
-#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#if ((MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT) || (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE))
                 mp_float_t f = va_arg(args, double);
                 chrs += mp_print_float(print, f, *fmt, flags, fill, width, prec);
-#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-                // Currently mp_print_float uses snprintf, but snprintf
-                // itself may be implemented in terms of mp_vprintf() for
-                // some ports. So, for extra caution, this case is handled
-                // with assert below. Note that currently ports which
-                // use MICROPY_FLOAT_IMPL_DOUBLE, don't call mp_vprintf()
-                // with float format specifier at all.
-                // TODO: resolve this completely
-                assert(0);
-//#error Calling mp_print_float with double not supported from within printf
 #else
 #error Unknown MICROPY FLOAT IMPL
 #endif
