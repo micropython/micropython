@@ -331,13 +331,37 @@ int uart_rx_char(pyb_uart_obj_t *self) {
     }
 }
 
+// Waits at most timeout milliseconds for TX register to become empty.
+// Returns true if can write, false if can't.
+STATIC bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
+    uint32_t start = HAL_GetTick();
+    for (;;) {
+        if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_TXE)) {
+            return true; // tx register is empty
+        }
+        if (HAL_GetTick() - start >= timeout) {
+            return false; // timeout
+        }
+        __WFI();
+    }
+}
+
+STATIC HAL_StatusTypeDef uart_tx_data(pyb_uart_obj_t *self, uint8_t *data, uint16_t len) {
+    // The timeout specified here is for waiting for the TX data register to
+    // become empty (ie between chars), as well as for the final char to be
+    // completely transferred.  The default value for timeout_char is long
+    // enough for 1 char, but we need to double it to wait for the last char
+    // to be transferred to the data register, and then to be transmitted.
+    return HAL_UART_Transmit(&self->uart, data, len, 2 * self->timeout_char);
+}
+
 STATIC void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
     uint8_t ch = c;
-    HAL_UART_Transmit(&uart_obj->uart, &ch, 1, uart_obj->timeout);
+    uart_tx_data(uart_obj, &ch, 1);
 }
 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
-    HAL_UART_Transmit(&uart_obj->uart, (uint8_t*)str, len, uart_obj->timeout);
+    uart_tx_data(uart_obj, (uint8_t*)str, len);
 }
 
 void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
@@ -480,9 +504,16 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", self->uart_id));
     }
 
-    // set timeouts
+    // set timeout
     self->timeout = args[5].u_int;
+
+    // set timeout_char
+    // make sure it is at least as long as a whole character (13 bits to be safe)
     self->timeout_char = args[6].u_int;
+    uint32_t min_timeout_char = 13000 / init->BaudRate + 1;
+    if (self->timeout_char < min_timeout_char) {
+        self->timeout_char = min_timeout_char;
+    }
 
     // setup the read buffer
     m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
@@ -689,8 +720,13 @@ STATIC mp_obj_t pyb_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
     // get the character to write (might be 9 bits)
     uint16_t data = mp_obj_get_int(char_in);
 
-    // write the data
-    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, (uint8_t*)&data, 1, self->timeout);
+    // write the character
+    HAL_StatusTypeDef status;
+    if (uart_tx_wait(self, self->timeout)) {
+        status = uart_tx_data(self, (uint8_t*)&data, 1);
+    } else {
+        status = HAL_TIMEOUT;
+    }
 
     if (status != HAL_OK) {
         mp_hal_raise(status);
@@ -807,8 +843,14 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
         return MP_STREAM_ERROR;
     }
 
+    // wait to be able to write the first character
+    if (!uart_tx_wait(self, self->timeout)) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
     // write the data
-    HAL_StatusTypeDef status = HAL_UART_Transmit(&self->uart, (uint8_t*)buf, size >> self->char_width, self->timeout);
+    HAL_StatusTypeDef status = uart_tx_data(self, (uint8_t*)buf, size >> self->char_width);
 
     if (status == HAL_OK) {
         // return number of bytes written
