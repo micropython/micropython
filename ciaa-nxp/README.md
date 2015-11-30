@@ -327,3 +327,25 @@ while True:
 ```
 AD Inputs available: 1,2 and 3. read() method returns the conversion's value (10 bit- 3.3V)
 
+
+## Keyboard support over pyb.Keyboard (Poncho UI)
+
+Example:
+```python
+import pyb
+
+keyboard = pyb.Keyboard(4,4)
+
+print(keyboard)
+
+while True:
+    key = keyboard.get_char()
+    print("key:"+str(key))
+
+```
+
+Constructor's arguments are number of rows and number o columns. get_chat method will wait until a key is pressed. One byte is returned, most significative 4 bits represents number of row and less
+significative 4 bits represents number of column. 
+
+"get_matrix method" will not wait and it will return 0xFF if any key is pressed
+

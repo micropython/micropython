@@ -113,4 +113,8 @@ void mp_hal_enableADCchannel(uint8_t channelNumber);
 void mp_hal_startADCconversion(void);
 uint16_t mp_hal_readADCchannel(uint8_t channelNumber);
 
+//Keyboard
+void mp_hal_initKeyboard(uint8_t rows, uint8_t columns);
+uint8_t mp_hal_readMatrixKeyboard(uint8_t row, uint8_t col);
+
 #endif

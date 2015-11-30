@@ -100,6 +100,33 @@ soft_reset:
 
     init_flash_fs(0);
 
+
+	//debug keyboard
+	/*
+	char aux[64];
+	mp_hal_initKeyboard(4, 4);
+	int r,c;
+	while(1)
+	{
+	    Board_UARTPutSTR("\r\nKEYBOARD SCAN:\r\n");
+	    for(r=0; r<4; r++)
+	    {
+		sprintf(aux,"ROW %d:",r);
+		Board_UARTPutSTR(aux);
+		for(c=0; c<4;c++)
+		{
+			int val = mp_hal_readMatrixKeyboard(r,c);
+			sprintf(aux," [%d]",val);
+			Board_UARTPutSTR(aux);
+		}
+		Board_UARTPutSTR("\r\n");
+	    }
+
+		mp_hal_milli_delay(1000);
+	}*/
+	//________________
+
+
 	// check new script from IDE
 	boot();
 	//__________________________

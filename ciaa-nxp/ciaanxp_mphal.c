@@ -36,6 +36,7 @@ void SysTick_Handler(void) {
 	tick_ct++;
 	Board_UART_tick_ms();
 	Board_LED_PWM_tick_ms();
+	Board_KEYBOARD_tick_ms();
 }
 
 
@@ -348,4 +349,15 @@ uint16_t mp_hal_readADCchannel(uint8_t channelNumber)
 	return Board_ADC_readValue(channelNumber);
 }
 
+
+// Keyboard
+void mp_hal_initKeyboard(uint8_t rows, uint8_t columns)
+{
+	Board_KEYBOARD_Init(rows, columns);
+}
+
+uint8_t mp_hal_readMatrixKeyboard(uint8_t row, uint8_t col)
+{
+	return Board_KEYBOARD_readMatrix(row,col);
+}
 

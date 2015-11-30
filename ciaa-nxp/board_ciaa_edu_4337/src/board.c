@@ -86,9 +86,13 @@ typedef struct {
 static ExtIntData extIntData[4];
 
 //================================================[Keyboard Management]========================================================
+#define KEYBOARD_MAX_ROWS       4
+#define KEYBOARD_MAX_COLUMNS    4
 
+#define KEYBOARD_SCAN_STATE_START	0
+#define KEYBOARD_SCAN_STATE_COL_LOW	1
+#define KEYBOARD_SCAN_STATE_READ_ROWS	2
 
-/*
 typedef struct
 {
     int8_t port;
@@ -99,34 +103,113 @@ typedef struct
 
 }KeyboardPinInfo;
 
-static KeyboardPinInfo keyboardPinInfo[]={
-        {6,1,3,0,SCU_MODE_FUNC0},{6,4,3,3,SCU_MODE_FUNC0},{6,5,3,4,SCU_MODE_FUNC0},{6,7,5,15,SCU_MODE_FUNC4},{6,8,5,16,SCU_MODE_FUNC4},{6,9,3,5,SCU_MODE_FUNC0},{6,10,3$
+typedef struct {
+	int rows;
+	int columns;
+	int enable;
+	int stateMatrix[KEYBOARD_MAX_ROWS][KEYBOARD_MAX_COLUMNS];
+	int currentCol;
+	int state;
+}KeyboardInfo;
+
+static KeyboardPinInfo keyboardRowsPinInfo[]={
+        {4,0,2,0,SCU_MODE_FUNC0},{4,1,2,1,SCU_MODE_FUNC0},{4,2,2,2,SCU_MODE_FUNC0},{4,3,2,3,SCU_MODE_FUNC0}
 };
 
-void Board_Keyboard_Init(void)
+static KeyboardPinInfo keyboardColsPinInfo[]={
+        {1,5,1,8,SCU_MODE_FUNC0},{7,4,3,12,SCU_MODE_FUNC0},{7,5,3,13,SCU_MODE_FUNC0},{6,12,2,8,SCU_MODE_FUNC0}
+};
+
+static volatile KeyboardInfo keyboardInfo;
+
+
+void Board_KEYBOARD_Init(uint8_t rows, uint8_t columns)
 {
-        // GPIOs default: input. pull up and pull down disabled.
-        for(int32_t i=0 ; i<9; i++)
+	keyboardInfo.enable=0;
+
+	if(rows>KEYBOARD_MAX_ROWS)
+		rows=KEYBOARD_MAX_ROWS;
+	if(columns>KEYBOARD_MAX_COLUMNS)
+		columns=KEYBOARD_MAX_COLUMNS;
+
+	keyboardInfo.rows=rows;
+	keyboardInfo.columns=columns;
+
+        // configure Rows (Input)
+        for(int32_t i=0 ; i<rows; i++)
         {
-            Chip_SCU_PinMuxSet(gpiosInfo[i].port, gpiosInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[i].func));
-            Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, gpiosInfo[i].gpio, gpiosInfo[i].gpioBit);
+            Chip_SCU_PinMuxSet(keyboardRowsPinInfo[i].port, keyboardRowsPinInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | keyboardRowsPinInfo[i].func));
+            Chip_GPIO_SetPinDIRInput(LPC_GPIO_PORT, keyboardRowsPinInfo[i].gpio, keyboardRowsPinInfo[i].gpioBit);
         }
 
+
+	// configure Columns (output)
+        for(int32_t i=0 ; i<columns; i++)
+        {
+            Chip_SCU_PinMuxSet(keyboardColsPinInfo[i].port, keyboardColsPinInfo[i].portBit, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | keyboardColsPinInfo[i].func));
+            Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, keyboardColsPinInfo[i].gpio, keyboardColsPinInfo[i].gpioBit);
+
+	    Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT, keyboardColsPinInfo[i].gpio, keyboardColsPinInfo[i].gpioBit);
+        }
+
+	keyboardInfo.state=KEYBOARD_SCAN_STATE_START;
+	for(uint32_t r=0; r<KEYBOARD_MAX_ROWS; r++)
+	{
+	    for(uint32_t c=0; c<KEYBOARD_MAX_COLUMNS; c++)
+		keyboardInfo.stateMatrix[r][c]=1;
+	}
+	keyboardInfo.enable=1;
 }
 
-*/
+void Board_KEYBOARD_tick_ms(void)
+{
+	if(keyboardInfo.enable==1)
+	{
+		switch(keyboardInfo.state)
+		{
+			case KEYBOARD_SCAN_STATE_START:
+			{
+				keyboardInfo.currentCol=0;
+				keyboardInfo.state=KEYBOARD_SCAN_STATE_COL_LOW;
+				break;
+			}
+			case KEYBOARD_SCAN_STATE_COL_LOW:
+			{
+				if(keyboardInfo.currentCol>=keyboardInfo.columns)
+				{
+					keyboardInfo.state=KEYBOARD_SCAN_STATE_START;
+				}
+				else
+				{
+					// set col low
+	                        	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, keyboardColsPinInfo[keyboardInfo.currentCol].gpio, keyboardColsPinInfo[keyboardInfo.currentCol].gpioBit);
+					keyboardInfo.state=KEYBOARD_SCAN_STATE_READ_ROWS;
+				}
+				break;
+			}
+			case KEYBOARD_SCAN_STATE_READ_ROWS:
+			{
+				// read rows
+                        	int row;
+                        	for(row=0; row<keyboardInfo.rows;row++)
+                        	{
+                                	int rowVal = Chip_GPIO_GetPinState(LPC_GPIO_PORT, keyboardRowsPinInfo[row].gpio, keyboardRowsPinInfo[row].gpioBit);
+                                	keyboardInfo.stateMatrix[row][keyboardInfo.currentCol] = rowVal;
+                        	}
+                                // set col high
+                                Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT, keyboardColsPinInfo[keyboardInfo.currentCol].gpio, keyboardColsPinInfo[keyboardInfo.currentCol].gpioBit);
+				keyboardInfo.currentCol++;
+				keyboardInfo.state=KEYBOARD_SCAN_STATE_COL_LOW;
+				break;
+			}
+		}
+	}
+}
 
-
-
-
-
-
-
-
-
-
-
-
+int Board_KEYBOARD_readMatrix(uint8_t row,uint8_t col)
+{
+	return keyboardInfo.stateMatrix[row][col];
+}
 
 //===========================================================================================================================
 
@@ -1263,6 +1346,10 @@ void Board_Init(void)
 
 	/* Initialize ADCs */
 	Board_ADC_Init();
+
+	/* Initialize Keyboard disabled */
+	keyboardInfo.enable=0;
+
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

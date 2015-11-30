@@ -269,3 +269,28 @@ while True:
 ```
 Entradas AD disponibles: 1,2 y 3. El resultado del metodo read es el valor de conversion (10 bit de resolucion en 3.3V)
 
+
+##### Soporte para Keyboard (Poncho UI)
+
+Clase `pyb.Keyboard`.
+
+Ejemplo:
+```python
+import pyb
+
+keyboard = pyb.Keyboard(4,4)
+
+print(keyboard)
+
+while True:
+    key = keyboard.get_char()
+    print("key:"+str(key))
+
+```
+
+El constructor recibe la cantidad de filas y columnas que se sensan. El metodo get_char se quedara esperando que se presione una tecla, se devolvera un byte en donde los 4 bits de mas peso corresponden
+con el numero de fila y los 4 bits de menor peso corresponden con el numero de columna. Tambien puede utilizarse el metodo "get_matrix" el cual no es bloqueante y devolvera 0xFF si ninguna tecla es presionada.
+
+
+    
+
