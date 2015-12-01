@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014, 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,22 @@
 
 #include "extmod/machine_mem.h"
 
-STATIC const mp_map_elem_t stm_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_stm) },
+#if MICROPY_PY_MACHINE
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem8), (mp_obj_t)&machine_mem8_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem16), (mp_obj_t)&machine_mem16_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem32), (mp_obj_t)&machine_mem32_obj },
+STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
 
-#include "genhdr/modmachine_mem_const.h"
+    { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
-const mp_obj_module_t stm_module = {
+const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_stm,
-    .globals = (mp_obj_dict_t*)&stm_module_globals,
+    .name = MP_QSTR_machine,
+    .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
+
+#endif // MICROPY_PY_MACHINE

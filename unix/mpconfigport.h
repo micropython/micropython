@@ -124,6 +124,7 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 
+extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_time;
@@ -157,9 +158,15 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #else
 #define MICROPY_PY_SOCKET_DEF
 #endif
+#if MICROPY_PY_MACHINE
+#define MICROPY_PY_MACHINE_DEF { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
+#else
+#define MICROPY_PY_MACHINE_DEF
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_PY_FFI_DEF \
+    MICROPY_PY_MACHINE_DEF \
     MICROPY_PY_JNI_DEF \
     MICROPY_PY_TIME_DEF \
     MICROPY_PY_SOCKET_DEF \

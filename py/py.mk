@@ -165,7 +165,7 @@ PY_O_BASENAME = \
 	../extmod/moduheapq.o \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
-	../extmod/modmachine.o \
+	../extmod/machine_mem.o \
 	../extmod/modussl.o \
 	../extmod/fsusermount.o \
 

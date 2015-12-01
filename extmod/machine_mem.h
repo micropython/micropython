@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "extmod/machine_mem.h"
+#ifndef MICROPY_EXTMOD_MACHINE_MEM
+#define MICROPY_EXTMOD_MACHINE_MEM
 
-STATIC const mp_map_elem_t stm_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_stm) },
+#include "py/obj.h"
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem8), (mp_obj_t)&machine_mem8_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem16), (mp_obj_t)&machine_mem16_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem32), (mp_obj_t)&machine_mem32_obj },
+typedef struct _machine_mem_obj_t {
+    mp_obj_base_t base;
+    unsigned elem_size; // in bytes
+} machine_mem_obj_t;
 
-#include "genhdr/modmachine_mem_const.h"
-};
+extern const mp_obj_type_t machine_mem_type;
 
-STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
+extern const machine_mem_obj_t machine_mem8_obj;
+extern const machine_mem_obj_t machine_mem16_obj;
+extern const machine_mem_obj_t machine_mem32_obj;
 
-const mp_obj_module_t stm_module = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_stm,
-    .globals = (mp_obj_dict_t*)&stm_module_globals,
-};
+#endif /*  MICROPY_EXTMOD_MACHINE_MEM */

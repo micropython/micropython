@@ -13,7 +13,7 @@ include ../py/mkenv.mk
 include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
+QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modmachine_mem_qstr.h
 
 # include py core make definitions
 include ../py/py.mk
@@ -328,17 +328,18 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
 
-GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
-GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
+GEN_MEMCONST_HDR = $(HEADER_BUILD)/modmachine_mem_const.h
+GEN_MEMCONST_QSTR = $(BUILD)/modmachine_mem_qstr.h
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
 CMSIS_MCU_HDR = cmsis/devinc/$(CMSIS_MCU_LOWER).h
 
-$(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
-# Use a pattern rule here so that make will only call make-stmconst.py once to
-# make both modstm_const.h and modstm_qstr.h
-$(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py
-	$(ECHO) "Create stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+$(BUILD)/modstm.o: $(GEN_MEMCONST_HDR)
+$(BUILD)/modmachine.o: $(GEN_MEMCONST_HDR)
+# Use a pattern rule here so that make will only call make-memconst.py once to
+# make both modmachine_mem_const.h and modmachine_mem_qstr.h
+$(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-memconst.py
+	$(ECHO) "Create memconst $@"
+	$(Q)$(PYTHON) make-memconst.py --qstr $(GEN_MEMCONST_QSTR) $(CMSIS_MCU_HDR) > $(GEN_MEMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H)
 	$(ECHO) "Create $@"
