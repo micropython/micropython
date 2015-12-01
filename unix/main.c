@@ -121,6 +121,12 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
         if (!compile_only) {
             // execute it
             mp_call_function_0(module_fun);
+            // check for pending exception
+            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                nlr_raise(obj);
+            }
         }
 
         mp_hal_set_interrupt_char(-1);
