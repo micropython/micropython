@@ -134,17 +134,17 @@ I2C_HandleTypeDef I2CHandle3 = {.Instance = NULL};
 
 STATIC const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
-    {{&pyb_i2c_type}, &I2CHandle1, DMA1_Stream7, DMA_CHANNEL_1, DMA1_Stream0, DMA_CHANNEL_1},
+    {{&pyb_i2c_type}, &I2CHandle1, DMA_STREAM_I2C1_TX, DMA_CHANNEL_I2C1_TX, DMA_STREAM_I2C1_RX, DMA_CHANNEL_I2C1_RX},
     #else
     {{&pyb_i2c_type}, NULL, NULL, 0, NULL, 0},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    {{&pyb_i2c_type}, &I2CHandle2, DMA1_Stream7, DMA_CHANNEL_7, DMA1_Stream2, DMA_CHANNEL_7},
+    {{&pyb_i2c_type}, &I2CHandle2, DMA_STREAM_I2C2_TX, DMA_CHANNEL_I2C2_TX, DMA_STREAM_I2C2_RX, DMA_CHANNEL_I2C2_RX},
     #else
     {{&pyb_i2c_type}, NULL, NULL, 0, NULL, 0},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    {{&pyb_i2c_type}, &I2CHandle3, DMA1_Stream4, DMA_CHANNEL_3, DMA1_Stream2, DMA_CHANNEL_3},
+    {{&pyb_i2c_type}, &I2CHandle3, DMA_STREAM_I2C3_TX, DMA_CHANNEL_I2C3_TX, DMA_STREAM_I2C3_RX, DMA_CHANNEL_I2C3_RX},
     #else
     {{&pyb_i2c_type}, NULL, NULL, 0, NULL, 0},
     #endif
