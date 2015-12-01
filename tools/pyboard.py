@@ -130,7 +130,7 @@ class Pyboard:
                     self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
                     done = True
                     break
-                except (OSError, serial.serialutil.SerialException):
+                except serial.serialutil.SerialException:
                     if attempt == 0:
                         sys.stdout.write('Waiting {} seconds for pyboard '.format(delay))
                 time.sleep(1)
