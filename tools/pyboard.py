@@ -123,7 +123,25 @@ class Pyboard:
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
-            self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+            delayed = False
+            delay = 25
+            for attempt in range(delay):
+                try:
+                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    done = True
+                    break
+                except (OSError, serial.serialutil.SerialException):
+                    if attempt == 0:
+                        sys.stdout.write('Waiting {} seconds for pyboard '.format(delay))
+                time.sleep(1)
+                delayed = True
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            else:
+                print("\nFailed to access device")
+                sys.exit(1)
+            if delayed:
+                print()
 
     def close(self):
         self.serial.close()
