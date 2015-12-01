@@ -114,17 +114,17 @@ SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 
 STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
 #if MICROPY_HW_ENABLE_SPI1
-    {{&pyb_spi_type}, &SPIHandle1, DMA2_Stream5, DMA_CHANNEL_3, DMA2_Stream2, DMA_CHANNEL_3},
+    {{&pyb_spi_type}, &SPIHandle1, DMA_STREAM_SPI1_TX, DMA_CHANNEL_SPI1_TX, DMA_STREAM_SPI1_RX, DMA_CHANNEL_SPI1_RX},
 #else
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif
 #if MICROPY_HW_ENABLE_SPI2
-    {{&pyb_spi_type}, &SPIHandle2, DMA1_Stream4, DMA_CHANNEL_0, DMA1_Stream3, DMA_CHANNEL_0},
+    {{&pyb_spi_type}, &SPIHandle2, DMA_STREAM_SPI2_TX, DMA_CHANNEL_SPI2_TX, DMA_STREAM_SPI2_RX, DMA_CHANNEL_SPI2_RX},
 #else
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif
 #if MICROPY_HW_ENABLE_SPI3
-    {{&pyb_spi_type}, &SPIHandle3, DMA1_Stream7, DMA_CHANNEL_0, DMA1_Stream2, DMA_CHANNEL_0},
+    {{&pyb_spi_type}, &SPIHandle3, DMA_STREAM_SPI3_TX, DMA_CHANNEL_SPI3_TX, DMA_STREAM_SPI3_RX, DMA_CHANNEL_SPI3_RX},
 #else
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
 #endif

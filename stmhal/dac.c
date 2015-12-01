@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "timer.h"
 #include "dac.h"
+#include "dma.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 
@@ -216,11 +217,11 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     if (dac_id == 1) {
         dac->pin = GPIO_PIN_4;
         dac->dac_channel = DAC_CHANNEL_1;
-        dac->dma_stream = DMA1_Stream5;
+        dac->dma_stream = DMA_STREAM_DAC1;
     } else if (dac_id == 2) {
         dac->pin = GPIO_PIN_5;
         dac->dac_channel = DAC_CHANNEL_2;
-        dac->dma_stream = DMA1_Stream6;
+        dac->dma_stream = DMA_STREAM_DAC2;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC %d does not exist", dac_id));
     }
@@ -396,7 +397,7 @@ mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     DMA_Handle.State = HAL_DMA_STATE_READY;
     HAL_DMA_DeInit(&DMA_Handle);
 
-    DMA_Handle.Init.Channel = DMA_CHANNEL_7;
+    DMA_Handle.Init.Channel = DMA_CHANNEL_DAC1;  // DAC1 & DAC2 both use the same channel
     DMA_Handle.Init.Direction = DMA_MEMORY_TO_PERIPH;
     DMA_Handle.Init.PeriphInc = DMA_PINC_DISABLE;
     DMA_Handle.Init.MemInc = DMA_MINC_ENABLE;
