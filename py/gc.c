@@ -46,8 +46,8 @@
 // make this 1 to dump the heap each time it changes
 #define EXTENSIVE_HEAP_PROFILING (0)
 
-#define WORDS_PER_BLOCK (4)
-#define BYTES_PER_BLOCK (WORDS_PER_BLOCK * BYTES_PER_WORD)
+#define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
+#define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
 
 // ATB = allocation table byte
 // 0b00 = FREE -- free block
