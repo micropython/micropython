@@ -174,7 +174,7 @@ typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless for actual size.
+// regardless of actual size.
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
