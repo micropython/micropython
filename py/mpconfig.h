@@ -98,7 +98,9 @@
 
 // Number of bytes in memory allocation/GC block. Any size allocated will be
 // rounded up to be multiples of this.
+#ifndef MICROPY_BYTES_PER_GC_BLOCK
 #define MICROPY_BYTES_PER_GC_BLOCK (4 * BYTES_PER_WORD)
+#endif
 
 // Number of words allocated (in BSS) to the GC stack (minimum is 1)
 #ifndef MICROPY_ALLOC_GC_STACK_SIZE
