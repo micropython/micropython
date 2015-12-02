@@ -42,6 +42,7 @@
 #include "rtc.h"
 #include "i2c.h"
 #include "spi.h"
+#include "extmod/machine_mem.h"
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
@@ -455,7 +456,13 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },
+#endif
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem8),                (mp_obj_t)(&machine_mem8_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem16),               (mp_obj_t)(&machine_mem16_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mem32),               (mp_obj_t)(&machine_mem32_obj) },
+
+#if 0
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_IDLE),                MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
@@ -469,6 +476,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PIN_WAKE),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_GPIO) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC_WAKE),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_RTC) },
 #endif
+
+#include "genhdr/modmachine_mem_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);

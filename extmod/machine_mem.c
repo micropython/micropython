@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014, 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,13 @@
  * THE SOFTWARE.
  */
 
+#include "machine_mem.h"
+
 #include <stdio.h>
 #include <stdint.h>
 
 #include "py/nlr.h"
-#include "py/obj.h"
+
 #if MICROPY_PLAT_DEV_MEM
 #include <errno.h>
 #include <fcntl.h>
@@ -38,7 +40,6 @@
 #endif
 
 #if MICROPY_PY_MACHINE
-
 
 STATIC uintptr_t get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_int_get_truncated(addr_o);
@@ -65,15 +66,15 @@ STATIC uintptr_t get_addr(mp_obj_t addr_o, uint align) {
         }
         addr = map_page + (addr & MICROPY_PAGE_MASK);
     }
+    #else
+    if (MP_OBJ_IS_SMALL_INT(addr_o)) {
+        // TODO: This should probably be based on MCIROPY_OBJ_REPR
+        addr &= 0x7fffffff;
+    }
     #endif
 
     return addr;
 }
-
-typedef struct _machine_mem_obj_t {
-    mp_obj_base_t base;
-    unsigned elem_size; // in bytes
-} machine_mem_obj_t;
 
 STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -100,6 +101,14 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else {
         // store
         uintptr_t addr = get_addr(index, self->elem_size);
+        #if defined(MICROPY_MACHINE_MEM_MIN_WRITABLE_ADDR)
+        if (addr < MICROPY_MACHINE_MEM_MIN_WRITABLE_ADDR) {
+            // Everything below MICROPY_MACHINE_MEM_MIN_WRITABLE_ADDR is either ROM or aliased to something higher, so we don't
+            // lose anything by restricting writes to this area, and we gain some safety.
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "cannot write to address %08x", addr));
+        }
+        #endif
+
         uint32_t val = mp_obj_get_int(value);
         switch (self->elem_size) {
             case 1: (*(uint8_t*)addr) = val; break;
@@ -110,31 +119,16 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     }
 }
 
-STATIC const mp_obj_type_t machine_mem_type = {
+
+const mp_obj_type_t machine_mem_type = {
     { &mp_type_type },
     .name = MP_QSTR_mem,
     .print = machine_mem_print,
     .subscr = machine_mem_subscr,
 };
 
-STATIC const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
-STATIC const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
-STATIC const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
-
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
-
-    { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_machine,
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
-};
+const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
+const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
+const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
 
 #endif // MICROPY_PY_MACHINE
