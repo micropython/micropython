@@ -139,7 +139,6 @@ SRC_C = \
 	input.c \
 	modmachine.c \
 	modpyb.c \
-	modstm.c \
 	moduos.c \
 	modutime.c \
 	moduselect.c \
