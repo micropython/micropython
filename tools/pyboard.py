@@ -117,8 +117,7 @@ class TelnetToSerial:
             return n_waiting
 
 class Pyboard:
-    def __init__(self, device, baudrate=115200, user='micro', password='python', wait=3, exit_on_fail=False):
-        self.initialised = True
+    def __init__(self, device, baudrate=115200, user='micro', password='python', wait=3):
         if device and device[0].isdigit() and device[-1].isdigit() and device.count('.') == 3:
             # device looks like an IP address
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
@@ -138,16 +137,11 @@ class Pyboard:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             else:
-                print("\nFailed to access device")
-                if exit_on_fail:
-                    sys.exit(1)
-                else:
-                    self.initialised = False
+                raise PyboardError('\nFailed to access ' + device)
             if delayed:
                 print('')
 
     def close(self):
-        self.initialised = False
         self.serial.close()
 
     def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
@@ -262,13 +256,16 @@ class Pyboard:
 setattr(Pyboard, "exec", Pyboard.exec_)
 
 def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', password='python'):
-    pyb = Pyboard(device, baudrate, user, password)
-    if pyb.initialised:
-        pyb.enter_raw_repl()
-        output = pyb.execfile(filename)
-        stdout_write_bytes(output)
-        pyb.exit_raw_repl()
-        pyb.close()
+    try:
+        pyb = Pyboard(device, baudrate, user, password)
+    except PyboardError as er:
+        print(er)
+        return
+    pyb.enter_raw_repl()
+    output = pyb.execfile(filename)
+    stdout_write_bytes(output)
+    pyb.exit_raw_repl()
+    pyb.close()
 
 def main():
     import argparse
@@ -286,21 +283,17 @@ def main():
     def execbuffer(buf):
         try:
             pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
-            if pyb.initialised:
-                pyb.enter_raw_repl()
-                ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
-                pyb.exit_raw_repl()
-                pyb.close()
-            else:
-                ret_err = True
+            pyb.enter_raw_repl()
+            ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
+            pyb.exit_raw_repl()
+            pyb.close()
         except PyboardError as er:
             print(er)
             sys.exit(1)
         except KeyboardInterrupt:
             sys.exit(1)
         if ret_err:
-            if type(ret_err) is str:
-                stdout_write_bytes(ret_err)
+            stdout_write_bytes(ret_err)
             sys.exit(1)
 
     if args.command is not None:
@@ -314,19 +307,15 @@ def main():
     if args.follow or (args.command is None and len(args.files) == 0):
         try:
             pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
-            if pyb.initialised:
-                ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
-                pyb.close()
-            else:
-                ret_err = True
+            ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
+            pyb.close()
         except PyboardError as er:
             print(er)
             sys.exit(1)
         except KeyboardInterrupt:
             sys.exit(1)
         if ret_err:
-            if type(ret_err) is str:
-                stdout_write_bytes(ret_err)
+            stdout_write_bytes(ret_err)
             sys.exit(1)
 
 if __name__ == "__main__":
