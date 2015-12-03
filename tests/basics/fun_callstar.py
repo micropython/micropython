@@ -14,6 +14,9 @@ foo(1, 2, *[100])
 # Iterator
 foo(*range(3))
 
+# pos then iterator
+foo(1, *range(2, 4))
+
 # method calls with *pos
 
 class A:

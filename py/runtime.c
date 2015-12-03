@@ -671,6 +671,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const 
 
         // copy the fixed position args
         mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
+        args2_len += n_args;
 
         // extract the variable position args from the iterator
         mp_obj_t iterable = mp_getiter(pos_seq);
