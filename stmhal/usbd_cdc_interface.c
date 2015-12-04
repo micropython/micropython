@@ -57,26 +57,43 @@
 #define CDC_SET_CONTROL_LINE_STATE                  0x22
 #define CDC_SEND_BREAK                              0x23
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-#define APP_RX_DATA_SIZE  1024 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE=64 (APP_RX_DATA_SIZE was 2048)
-#define APP_TX_DATA_SIZE  1024 // I think this can be any value (was 2048)
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+
+// rx/tx buffer sizes depend on the following
+// 1) interval that the USB host polls the device (unreliable, specified in the descriptor).
+//    64 bytes / polling interval gives the total number of bytes per second
+//    e.g. if polling interval = 10msec -> 64 / 0.01 = 6.4kB/sec. the minimum polling interval in the
+//    USB descriptor is 1msec - hence a theoretical maximum of 64kB /sec (or 512kBaud) is possible
+// 2) you may increase the size also if the application wants to send big block of data without
+//    being blocked by the timeout
+#define APP_RX_DATA_SIZE  1024
+#define APP_TX_DATA_SIZE  1024
+
+void CDC_Itf_TxFinished(void);
+void CDC_send_packet(void);
+
+static __IO uint8_t dev_is_connected = 0; // indicates if we are connected
+uint8_t UserRxBuffer[64];/* Received Data over USB are stored in this buffer */
+uint8_t tx_buffer[APP_RX_DATA_SIZE];
+uint8_t rx_buffer[APP_TX_DATA_SIZE];
+bool CDC_is_busy;
+
+typedef struct {
+    uint8_t* start;
+    uint8_t* end;
+    uint16_t sizeof_data;
+    uint8_t* push_ptr;
+    uint8_t* pop_ptr;
+} ringbuffer_t;
+
+ringbuffer_t tx_ringbuffer;     // tx ringbuffer for USB CDC
+ringbuffer_t rx_ringbuffer;     // rx ringbuffer for USB CDC
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-static __IO uint8_t dev_is_connected = 0; // indicates if we are connected
-
-static uint8_t UserRxBuffer[APP_RX_DATA_SIZE]; // received data from USB OUT endpoint is stored in this buffer
-static uint16_t UserRxBufCur = 0; // points to next available character in UserRxBuffer
-static uint16_t UserRxBufLen = 0; // counts number of valid characters in UserRxBuffer
-
-static uint8_t UserTxBuffer[APP_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
-static uint16_t UserTxBufPtrIn = 0; // increment this pointer modulo APP_TX_DATA_SIZE when new data is available
-static __IO uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_TX_DATA_SIZE when data is drained
-static uint16_t UserTxBufPtrOutShadow = 0; // shadow of above
-static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting for low-level USB driver
-static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
+// static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
 static int user_interrupt_char = -1;
 static void *user_interrupt_data = NULL;
@@ -87,15 +104,95 @@ static int8_t CDC_Itf_DeInit   (void);
 static int8_t CDC_Itf_Control  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Itf_Receive  (uint8_t* pbuf, uint32_t *Len);
 
+// CDC_Itf_TxFinished callback has been added in addition to the standard USB stack from ST
 const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
     CDC_Itf_Init,
     CDC_Itf_DeInit,
     CDC_Itf_Control,
-    CDC_Itf_Receive
+    CDC_Itf_Receive,
+    CDC_Itf_TxFinished
 };
 
 /* Private functions ---------------------------------------------------------*/
 
+/**
+ * simple ringbuffer handling that support putc/getc/is_full/is_empty functionality
+ * may further be optmized by using 2'er complement masking instead of checking wraparound
+ * conditions using if's (but the improvement is minimal).
+ *
+ * Example usage:
+ *
+ * uint8_t tx_buffer[256];
+ * uint8_t* buf;
+ * ringbuffer_t tx_ringbuffer;
+ *
+ * // initialize buffer first using "ringbuffer_init"
+ * ringbuffer_init(&tx_ringbuffer, tx_buffer, sizeof(tx_buffer));
+ * ringbuffer_putc(&tx_ringbuffer, "H")
+ * ringbuffer_putc(&tx_ringbuffer, "i")
+ * ringbuffer_getc(&tx_ringbuffer, buf);
+ * ...
+ */
+
+inline bool ringbuffer_is_empty(ringbuffer_t* rbuffer) {
+    return (rbuffer->push_ptr == rbuffer->pop_ptr);
+}
+
+void ringbuffer_init(ringbuffer_t* rbuffer, uint8_t* user_data, uint16_t len) {
+    rbuffer->start = rbuffer->push_ptr = rbuffer->pop_ptr = user_data;
+    rbuffer->sizeof_data = len;
+    rbuffer->end = rbuffer->start + len - 1;
+}
+
+uint16_t ringbuffer_get_used_mem(ringbuffer_t* rbuffer) {
+    if (rbuffer->push_ptr > rbuffer->pop_ptr) {
+        return rbuffer->push_ptr - rbuffer->pop_ptr;
+    } else {
+        return rbuffer->sizeof_data  - (rbuffer->pop_ptr - rbuffer->push_ptr);
+    }
+}
+
+uint16_t ringbuffer_get_free_mem(ringbuffer_t* rbuffer) {
+    if (rbuffer->push_ptr > rbuffer->pop_ptr) {
+        return rbuffer->sizeof_data - (rbuffer->push_ptr - rbuffer->pop_ptr) - 1;
+    } else {
+        return rbuffer->pop_ptr - rbuffer->push_ptr - 1;
+    }
+}
+
+bool ringbuffer_is_full(ringbuffer_t* rbuffer) {
+    return !ringbuffer_get_free_mem(rbuffer);
+}
+
+bool ringbuffer_putc(ringbuffer_t* rbuffer, uint8_t character) {
+    *rbuffer->push_ptr++ = character;
+    if (rbuffer->push_ptr > rbuffer->end ) {
+        rbuffer->push_ptr = rbuffer->start;
+    }
+    // check if buffer is full
+    if (rbuffer->push_ptr == rbuffer->pop_ptr) {
+        // move pop pointer one forward - overwrites oldest data
+        rbuffer->pop_ptr++;
+        if (rbuffer->pop_ptr  > rbuffer->end ) {
+            rbuffer->pop_ptr = rbuffer->start;
+        }
+        return false;
+    }
+    return true;
+}
+
+bool ringbuffer_getc(ringbuffer_t* rbuffer, uint8_t* ch) {
+    if (ringbuffer_is_empty(rbuffer)) {
+        return false;
+    }
+    *ch = *(rbuffer->pop_ptr);
+    rbuffer->pop_ptr++;
+    if (rbuffer->pop_ptr  > rbuffer->end ) {
+        // wraparound
+        rbuffer->pop_ptr = rbuffer->start;
+    }
+    return true;
+}
 /**
   * @brief  CDC_Itf_Init
   *         Initializes the CDC media low layer
@@ -139,18 +236,15 @@ static int8_t CDC_Itf_Init(void)
   now done in HAL_MspInit
   TIM_Config();
 #endif
-  
-    /*##-4- Start the TIM Base generation in interrupt mode ####################*/
-    /* Start Channel1 */
-    __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
-  
+
+    CDC_is_busy = false;
+
+    ringbuffer_init(&tx_ringbuffer, tx_buffer, APP_TX_DATA_SIZE);
+    ringbuffer_init(&rx_ringbuffer, rx_buffer, APP_RX_DATA_SIZE);
     /*##-5- Set Application Buffers ############################################*/
-    USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
+    USBD_CDC_SetTxBuffer(&hUSBDDevice, tx_ringbuffer.start, 0);
     USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
 
-    UserRxBufCur = 0;
-    UserRxBufLen = 0;
-  
     /* NOTE: we cannot reset these here, because USBD_CDC_SetInterrupt
      * may be called before this init function to set these values.
      * This can happen if the USB enumeration occurs after the call to
@@ -258,77 +352,26 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
 }
 
 /**
-  * @brief  TIM period elapsed callback
-  * @param  htim: TIM handle
-  * @retval None
+  * @brief  CDC_Itf_TxFinished
+  *         Callback of USB stack if a transmission to the USB host has finished
+  *         Ringbuffer is checked and a new transmission initiated if it is not empty
+  *         CDC_is_busy is used to indicate the transmission state
   */
-void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
-    if (!dev_is_connected) {
-        // CDC device is not connected to a host, so we are unable to send any data
+void CDC_Itf_TxFinished(void) {
+    if (ringbuffer_is_empty(&tx_ringbuffer)) {
+        CDC_is_busy = false;
         return;
     }
-
-    if (UserTxBufPtrOut == UserTxBufPtrIn && !UserTxNeedEmptyPacket) {
-        // No outstanding data to send
-        return;
-    }
-
-    if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
-        // We have sent data and are waiting for the low-level USB driver to
-        // finish sending it over the USB in-endpoint.
-        // We have a 15 * 10ms = 150ms timeout
-        if (UserTxBufPtrWaitCount < 15) {
-            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
-            USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-            if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
-                // USB in-endpoint is still reading the data
-                UserTxBufPtrWaitCount++;
-                return;
-            }
-        }
-        UserTxBufPtrOut = UserTxBufPtrOutShadow;
-    }
-
-    if (UserTxBufPtrOutShadow != UserTxBufPtrIn || UserTxNeedEmptyPacket) {
-        uint32_t buffptr;
-        uint32_t buffsize;
-
-        if (UserTxBufPtrOutShadow > UserTxBufPtrIn) { // rollback
-            buffsize = APP_TX_DATA_SIZE - UserTxBufPtrOutShadow;
-        } else {
-            buffsize = UserTxBufPtrIn - UserTxBufPtrOutShadow;
-        }
-
-        buffptr = UserTxBufPtrOutShadow;
-
-        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
-
-        if (USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
-            UserTxBufPtrOutShadow += buffsize;
-            if (UserTxBufPtrOutShadow == APP_TX_DATA_SIZE) {
-                UserTxBufPtrOutShadow = 0;
-            }
-            UserTxBufPtrWaitCount = 0;
-
-            // According to the USB specification, a packet size of 64 bytes (CDC_DATA_FS_MAX_PACKET_SIZE)
-            // gets held at the USB host until the next packet is sent.  This is because a
-            // packet of maximum size is considered to be part of a longer chunk of data, and
-            // the host waits for all data to arrive (ie, waits for a packet < max packet size).
-            // To flush a packet of exactly max packet size, we need to send a zero-size packet.
-            // See eg http://www.cypress.com/?id=4&rID=92719
-            UserTxNeedEmptyPacket = (buffsize > 0 && buffsize % CDC_DATA_FS_MAX_PACKET_SIZE == 0 && UserTxBufPtrOutShadow == UserTxBufPtrIn);
-        }
-    }
+    CDC_is_busy = true;
+    CDC_send_packet();
 }
 
 /**
-  * @brief  CDC_Itf_DataRx
+  * @brief  CDC_Itf_Receive
   *         Data received over USB OUT endpoint is processed here.
   * @param  Buf: Buffer of data received
   * @param  Len: Number of data received (in bytes)
-  * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
-  * @note   The buffer we are passed here is just UserRxBuffer, so we are
-  *         free to modify it.
+  * @retval Result of the operation: USBD_OK
   */
 static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
 #if 0
@@ -336,54 +379,17 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
     HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
 #endif
 
-    // TODO improve this function to implement a circular buffer
-
-    // if we have processed all the characters, reset the buffer counters
-    if (UserRxBufCur > 0 && UserRxBufCur >= UserRxBufLen) {
-        memmove(UserRxBuffer, UserRxBuffer + UserRxBufLen, *Len);
-        UserRxBufCur = 0;
-        UserRxBufLen = 0;
-    }
-
-    uint32_t delta_len;
-
-    if (user_interrupt_char == -1) {
-        // no special interrupt character
-        delta_len = *Len;
-
-    } else {
-        // filter out special interrupt character from the buffer
-        bool char_found = false;
-        uint8_t *dest = Buf;
-        uint8_t *src = Buf;
-        uint8_t *buf_top = Buf + *Len;
-        for (; src < buf_top; src++) {
-            if (*src == user_interrupt_char) {
-                char_found = true;
-                // raise exception when interrupts are finished
-                pendsv_nlr_jump(user_interrupt_data);
-            } else {
-                if (char_found) {
-                    *dest = *src;
-                }
-                dest++;
-            }
+    uint32_t i=0;
+    // copy over to ringbuffer, check for special interrupt char
+    while (i < *Len) {
+        if (Buf[i] == user_interrupt_char) {
+            pendsv_nlr_jump(user_interrupt_data);
+        } else {
+            ringbuffer_putc(&rx_ringbuffer,Buf[i]);
         }
-
-        // length of remaining characters
-        delta_len = dest - Buf;
+        i++;
     }
-
-    if (UserRxBufLen + delta_len + CDC_DATA_FS_MAX_PACKET_SIZE > APP_RX_DATA_SIZE) {
-        // if we keep this data then the buffer can overflow on the next USB rx
-        // so we don't increment the length, and throw this data away
-    } else {
-        // data fits, leaving room for another CDC_DATA_FS_OUT_PACKET_SIZE
-        UserRxBufLen += delta_len;
-    }
-
-    // initiate next USB packet transfer, to append to existing data in buffer
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer + UserRxBufLen);
+    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
     USBD_CDC_ReceivePacket(&hUSBDDevice);
 
     return USBD_OK;
@@ -397,118 +403,152 @@ void USBD_CDC_SetInterrupt(int chr, void *data) {
     user_interrupt_char = chr;
     user_interrupt_data = data;
 }
+/**
+  * @brief  poll_ringbuffer
+  *         polls a ringbuffer until is is no more full or timeout
+  * @param  timout      timeout in msec
+  * @retval false on timout
+  */
+bool poll_ringbuffer(ringbuffer_t* rbuffer, int16_t timeout) {
+    uint32_t start = HAL_GetTick();
 
-int USBD_CDC_TxHalfEmpty(void) {
-    int32_t tx_waiting = (int32_t)UserTxBufPtrIn - (int32_t)UserTxBufPtrOut;
-    if (tx_waiting < 0) {
-        tx_waiting += APP_TX_DATA_SIZE;
-    }
-    return tx_waiting <= APP_TX_DATA_SIZE / 2;
-}
-
-// timout in milliseconds.
-// Returns number of bytes written to the device.
-int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout) {
-    for (uint32_t i = 0; i < len; i++) {
-        // Wait until the device is connected and the buffer has space, with a given timeout
-        uint32_t start = HAL_GetTick();
-        while (!dev_is_connected || ((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut) {
-            // Wraparound of tick is taken care of by 2's complement arithmetic.
-            if (HAL_GetTick() - start >= timeout) {
-                // timeout
-                return i;
-            }
-            if (query_irq() == IRQ_STATE_DISABLED) {
-                // IRQs disabled so buffer will never be drained; return immediately
-                return i;
-            }
-            __WFI(); // enter sleep mode, waiting for interrupt
+    while (HAL_GetTick() - start <= timeout) {
+        if (query_irq() == IRQ_STATE_DISABLED) {
+            // IRQs disabled so buffer will never be filled; return immediately
+            return true;
         }
+        __WFI(); // enter sleep mode, waiting for interrupt (systick?)
 
-        // Write data to device buffer
-        UserTxBuffer[UserTxBufPtrIn] = buf[i];
-        UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
+        if (!ringbuffer_is_full(rbuffer)) {
+            return true;
+        }
     }
+    // timeout
+    return false;
+}
+/**
+  * @brief  USBD_CDC_Tx_Abort
+  *         Transmits a data buffer over USB CDC channel using a ringbuffer structure.
+  *         if the ringbuffer is full, this function blocks for up to ::timeout msec for the buffer to be
+  *         drained by the USB stack. After timeout it will either return the bytes transferred to the
+  *         ringbuffer or it will silently overwrite the oldest data in the ringbuffer (abort_if_timeout = false)
+  * @param  buf         pointer to the data to be transferred
+  * @param  len         number of bytes
+  * @param  timout      timeout in msec
+  * @param  abort_if_timeout abort filling buffer if it is full
+  * @retval number of bytes that were put in the ringbuffer
+  */
+int USBD_CDC_Tx_Abort(const uint8_t *buf, uint32_t len, uint32_t timeout, bool abort_if_timeout) {
+    bool usb_is_transmitting = true;
 
-    // Success, return number of bytes read
+    // ringbuffer_put_mem(&tx_ringbuffer, (uint8_t*)buf, len);
+    for (uint32_t i = 0; i < len; i++) {
+        if (dev_is_connected && usb_is_transmitting) {
+            // store it, don't force store if buffer is full
+            if (!ringbuffer_putc(&tx_ringbuffer, *buf++)) {
+                // buffer is full
+                // the handling is as follows:
+                // 1) the ringbuffer state is polled for max 500msec. If the buffer is still full then it will
+                //    exit and overwrite the oldest data in ringbuffer if ::abort_if_timeout is not set
+                // 2) if the device continues to send (at mininum 1 character) then the timout is re-set again
+                //    to 500msec. This can be modified if needed so that the start time is not reset
+                usb_is_transmitting = poll_ringbuffer(&tx_ringbuffer, timeout);
+                if ((!usb_is_transmitting) && abort_if_timeout) {
+                    // abort transmission here
+                    return i;
+                }
+            }
+        } else {
+            // either not connected or timout - overwrite oldest ringbuffer data
+            ringbuffer_putc(&tx_ringbuffer, *buf++);
+        }
+    }
+    if (!CDC_is_busy && !ringbuffer_is_empty(&tx_ringbuffer)) {
+        CDC_send_packet();
+        CDC_is_busy = true;
+    }
     return len;
 }
 
-// Always write all of the data to the device tx buffer, even if the
-// device is not connected, or if the buffer is full.  Has a small timeout
-// to wait for the buffer to be drained, in the case the device is connected.
+int USBD_CDC_TxHalfEmpty(void) {
+    return ringbuffer_get_free_mem(&tx_ringbuffer) > (tx_ringbuffer.sizeof_data / 2);
+}
+
+/**
+  * @brief  USBD_CDC_TxAlways
+  *         mphal callback - sends USB data with 500msec fixed timeout
+  *         always puts data in buffer even if buffer is full (will overwrite oldest data in buffer in
+  *         case of a timeout)
+  * @param  buf         pointer to the data to be transferred
+  * @param  len         number of bytes
+  * @retval number of bytes that were put in the ringbuffer
+  */
 void USBD_CDC_TxAlways(const uint8_t *buf, uint32_t len) {
-    for (int i = 0; i < len; i++) {
-        // If the CDC device is not connected to the host then we don't have anyone to receive our data.
-        // The device may become connected in the future, so we should at least try to fill the buffer
-        // and hope that it doesn't overflow by the time the device connects.
-        // If the device is not connected then we should go ahead and fill the buffer straight away,
-        // ignoring overflow.  Otherwise, we should make sure that we have enough room in the buffer.
-        if (dev_is_connected) {
-            // If the buffer is full, wait until it gets drained, with a timeout of 500ms
-            // (wraparound of tick is taken care of by 2's complement arithmetic).
-            uint32_t start = HAL_GetTick();
-            while (((UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1)) == UserTxBufPtrOut && HAL_GetTick() - start <= 500) {
-                if (query_irq() == IRQ_STATE_DISABLED) {
-                    // IRQs disabled so buffer will never be drained; exit loop
-                    break;
-                }
-                __WFI(); // enter sleep mode, waiting for interrupt
-            }
+    USBD_CDC_Tx_Abort(buf,len,500,false);
+}
 
-            // Some unused code that makes sure the low-level USB buffer is drained.
-            // Waiting for low-level is handled in USBD_CDC_HAL_TIM_PeriodElapsedCallback.
-            /*
-            start = HAL_GetTick();
-            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
-            if (hpcd->IN_ep[0x83 & 0x7f].is_in) {
-                //volatile uint32_t *xfer_count = &hpcd->IN_ep[0x83 & 0x7f].xfer_count;
-                //volatile uint32_t *xfer_len = &hpcd->IN_ep[0x83 & 0x7f].xfer_len;
-                USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-                while (
-                    // *xfer_count < *xfer_len // using this works
-                    // (USBx_INEP(3)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) // using this works
-                    && HAL_GetTick() - start <= 2000) {
-                    __WFI(); // enter sleep mode, waiting for interrupt
-                }
-            }
-            */
-        }
-
-        UserTxBuffer[UserTxBufPtrIn] = buf[i];
-        UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
-    }
+/**
+  * @brief  USBD_CDC_Tx
+  *         mphal callback - sends USB data with a timeout option
+  *         aborts transmission if buffer is full
+  * @param  buf         pointer to the data to be transferred
+  * @param  len         number of bytes
+  * @param  timout      timeout in msec
+  * @retval number of bytes that were put in the ringbuffer
+  */
+int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout) {
+    return USBD_CDC_Tx_Abort(buf,len,timeout,true);
 }
 
 // Returns number of bytes in the rx buffer.
 int USBD_CDC_RxNum(void) {
-    return UserRxBufLen - UserRxBufCur;
+    return ringbuffer_get_free_mem(&rx_ringbuffer);
 }
 
-// timout in milliseconds.
-// Returns number of bytes read from the device.
-int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
-    // loop to read bytes
-    for (uint32_t i = 0; i < len; i++) {
-        // Wait until we have at least 1 byte to read
-        uint32_t start = HAL_GetTick();
-        while (UserRxBufLen == UserRxBufCur) {
-            // Wraparound of tick is taken care of by 2's complement arithmetic.
-            if (HAL_GetTick() - start >= timeout) {
-                // timeout
-                return i;
-            }
-            if (query_irq() == IRQ_STATE_DISABLED) {
-                // IRQs disabled so buffer will never be filled; return immediately
-                return i;
-            }
-            __WFI(); // enter sleep mode, waiting for interrupt
-        }
-
-        // Copy byte from device to user buffer
-        buf[i] = UserRxBuffer[UserRxBufCur++];
+/**
+  * @brief  CDC_send_packet
+  *         helper function, transfers a continous memory block over CDC
+  *         checks for wraparound conditions
+  */
+void CDC_send_packet(void) {
+    if (tx_ringbuffer.push_ptr < tx_ringbuffer.pop_ptr) {
+        // wraparound
+        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)(tx_ringbuffer.pop_ptr), tx_ringbuffer.end - tx_ringbuffer.pop_ptr + 1 );
+        tx_ringbuffer.pop_ptr = tx_ringbuffer.start;
+    } else {
+        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)(tx_ringbuffer.pop_ptr), tx_ringbuffer.push_ptr - tx_ringbuffer.pop_ptr );
+        tx_ringbuffer.pop_ptr = tx_ringbuffer.push_ptr;
     }
+    USBD_CDC_TransmitPacket(&hUSBDDevice);
 
+}
+/**
+  * @brief  USBD_CDC_Rx
+  *         reads ::len number of bytes from the rx ringbuffer to the ::buf data pointer
+  *         with a ::timout option in msec. returns the number of bytes returned from the
+  *         ringbuffer
+  */
+int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
+    uint32_t i;
+    for (i=0; i<len; i++) {
+        // Wait until we have at least 1 byte to read
+        if (!ringbuffer_getc(&rx_ringbuffer, buf++)) {
+            // buffer is empty, wait
+            uint32_t start;
+            if (query_irq() == IRQ_STATE_DISABLED) {
+                return i;
+            }
+            start = HAL_GetTick();
+            while (ringbuffer_is_empty(&rx_ringbuffer)) {
+                if (HAL_GetTick() - start <= timeout) {
+                    // timeout - return the nr of bytes read so far
+                    return i;
+                }
+                // sleep
+                __WFI();
+            }
+        }
+    }
     // Success, return number of bytes read
-    return len;
+    return i;
 }
