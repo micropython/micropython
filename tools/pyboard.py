@@ -165,8 +165,14 @@ class Pyboard:
             raise PyboardError('could not enter raw repl')
 
         self.serial.write(b'\x04') # ctrl-D: soft reset
-        data = self.read_until(1, b'soft reboot\r\nraw REPL; CTRL-B to exit\r\n')
-        if not data.endswith(b'soft reboot\r\nraw REPL; CTRL-B to exit\r\n'):
+        data = self.read_until(1, b'soft reboot\r\n')
+        if not data.endswith(b'soft reboot\r\n'):
+            print(data)
+            raise PyboardError('could not enter raw repl')
+        # By splitting this into 2 reads, it allows boot.py to print stuff,
+        # which will show up after the soft reboot and before the raw REPL.
+        data = self.read_until(1, b'raw REPL; CTRL-B to exit\r\n')
+        if not data.endswith(b'raw REPL; CTRL-B to exit\r\n'):
             print(data)
             raise PyboardError('could not enter raw repl')
 
