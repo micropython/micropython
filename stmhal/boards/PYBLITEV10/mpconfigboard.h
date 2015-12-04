@@ -65,7 +65,7 @@
 #define MICROPY_HW_LED2             (pin_A14) // green
 #define MICROPY_HW_LED3             (pin_A15) // yellow
 #define MICROPY_HW_LED4             (pin_B4)  // blue
-#define MICROPY_HW_LED4_PWM         (1)
+#define MICROPY_HW_LED4_PWM         (0) // TIM3 is now a user timer
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
@@ -77,6 +77,7 @@
 
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
+#define MICROPY_HW_USE_ALT_IRQ_FOR_CDC (1)
 
 // MMA accelerometer config
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_A10)

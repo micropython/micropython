@@ -250,9 +250,12 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    #if !defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
     if (htim == &TIM3_Handle) {
         USBD_CDC_HAL_TIM_PeriodElapsedCallback();
-    } else if (htim == &TIM5_Handle) {
+    } else
+    #endif
+    if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }
 }
@@ -653,7 +656,11 @@ STATIC mp_obj_t pyb_timer_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t
     switch (tim->tim_id) {
         case 1: tim->tim.Instance = TIM1; tim->irqn = TIM1_UP_TIM10_IRQn; break;
         case 2: tim->tim.Instance = TIM2; tim->irqn = TIM2_IRQn; tim->is_32bit = true; break;
+        #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
+        case 3: tim->tim.Instance = TIM3; tim->irqn = TIM3_IRQn; break;
+        #else
         case 3: nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Timer 3 is for internal use only")); // TIM3 used for low-level stuff; go via regs if necessary
+        #endif
         case 4: tim->tim.Instance = TIM4; tim->irqn = TIM4_IRQn; break;
         case 5: tim->tim.Instance = TIM5; tim->irqn = TIM5_IRQn; tim->is_32bit = true; break;
         #if defined(TIM6)
