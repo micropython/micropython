@@ -68,6 +68,18 @@ static inline void __set_PRIMASK(uint32_t priMask) {
 }
 
 __attribute__(( always_inline ))
+static inline uint32_t __get_BASEPRI(void) {
+    uint32_t result;
+    __asm volatile ("mrs %0, basepri" : "=r" (result));
+    return(result);
+}
+
+__attribute__(( always_inline ))
+static inline void __set_BASEPRI(uint32_t value) {
+    __asm volatile ("msr basepri, %0" : : "r" (value) : "memory");
+}
+
+__attribute__(( always_inline ))
 static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);
 }
