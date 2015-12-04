@@ -95,7 +95,8 @@ const mp_obj_type_t mp_type_module = {
 };
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
-    mp_map_elem_t *el = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    mp_map_t *mp_loaded_modules_map = mp_obj_dict_get_map(&MP_STATE_VM(mp_loaded_modules_dict));
+    mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     // We could error out if module already exists, but let C extensions
     // add new members to existing modules.
     if (el->value != MP_OBJ_NULL) {
@@ -200,17 +201,18 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
 void mp_module_init(void) {
-    mp_map_init(&MP_STATE_VM(mp_loaded_modules_map), 3);
+    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
 }
 
 void mp_module_deinit(void) {
-    mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
+    //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 }
 
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {
+    mp_map_t *mp_loaded_modules_map = mp_obj_dict_get_map(&MP_STATE_VM(mp_loaded_modules_dict));
     // lookup module
-    mp_map_elem_t *el = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
     if (el == NULL) {
         // module not found, look for builtin module names
@@ -236,5 +238,6 @@ mp_obj_t mp_module_get(qstr module_name) {
 }
 
 void mp_module_register(qstr qst, mp_obj_t module) {
-    mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_map), MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+    mp_map_t *mp_loaded_modules_map = mp_obj_dict_get_map(&MP_STATE_VM(mp_loaded_modules_dict));
+    mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
 }

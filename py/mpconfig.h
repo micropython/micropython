@@ -704,6 +704,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_MAXSIZE (0)
 #endif
 
+// Whether to provide "sys.modules" dictionary
+#ifndef MICROPY_PY_SYS_MODULES
+#define MICROPY_PY_SYS_MODULES (1)
+#endif
+
 // Whether to provide "sys.exc_info" function
 // Avoid enabling this, this function is Python2 heritage
 #ifndef MICROPY_PY_SYS_EXC_INFO
