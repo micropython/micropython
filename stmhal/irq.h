@@ -34,6 +34,8 @@ static inline mp_uint_t query_irq(void) {
 
 // enable_irq and disable_irq are defined inline in mpconfigport.h
 
+#if __CORTEX_M >= 0x03
+
 // irqs with a priority value greater or equal to "pri" will be disabled
 // "pri" should be between 1 and 15 inclusive
 static inline uint32_t raise_irq_pri(uint32_t pri) {
@@ -52,6 +54,8 @@ static inline uint32_t raise_irq_pri(uint32_t pri) {
 static inline void restore_irq_pri(uint32_t basepri) {
     __set_BASEPRI(basepri);
 }
+
+#endif
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
