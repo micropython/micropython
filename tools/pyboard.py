@@ -123,8 +123,6 @@ class Pyboard:
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
-            delayed = False
-            wait = int(wait)
             for attempt in range(wait):
                 try:
                     self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
@@ -133,13 +131,11 @@ class Pyboard:
                     if attempt == 0:
                         sys.stdout.write('Waiting {} seconds for pyboard '.format(wait))
                 time.sleep(1)
-                delayed = True
                 sys.stdout.write('.')
                 sys.stdout.flush()
             else:
                 raise PyboardError('\nFailed to access ' + device)
-            if delayed:
-                print('')
+            print('')
 
     def close(self):
         self.serial.close()
@@ -275,7 +271,7 @@ def main():
     cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-c', '--command', help='program passed in as string')
-    cmd_parser.add_argument('-w', '--wait', default=3, help='seconds to wait for USB connected board to become avaialabe')
+    cmd_parser.add_argument('-w', '--wait', default=3, type=int, help='seconds to wait for USB connected board to become available')
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
