@@ -96,6 +96,12 @@
 /*****************************************************************************/
 /* Memory allocation policy                                                  */
 
+// Number of bytes in memory allocation/GC block. Any size allocated will be
+// rounded up to be multiples of this.
+#ifndef MICROPY_BYTES_PER_GC_BLOCK
+#define MICROPY_BYTES_PER_GC_BLOCK (4 * BYTES_PER_WORD)
+#endif
+
 // Number of words allocated (in BSS) to the GC stack (minimum is 1)
 #ifndef MICROPY_ALLOC_GC_STACK_SIZE
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
@@ -696,6 +702,11 @@ typedef double mp_float_t;
 // Whether to provide "sys.maxsize" constant
 #ifndef MICROPY_PY_SYS_MAXSIZE
 #define MICROPY_PY_SYS_MAXSIZE (0)
+#endif
+
+// Whether to provide "sys.modules" dictionary
+#ifndef MICROPY_PY_SYS_MODULES
+#define MICROPY_PY_SYS_MODULES (1)
 #endif
 
 // Whether to provide "sys.exc_info" function

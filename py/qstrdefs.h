@@ -474,6 +474,9 @@ Q(implementation)
 #if MICROPY_PY_SYS_MAXSIZE
 Q(maxsize)
 #endif
+#if MICROPY_PY_SYS_MODULES
+Q(modules)
+#endif
 #if MICROPY_PY_SYS_EXC_INFO
 Q(exc_info)
 #endif

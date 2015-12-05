@@ -12,9 +12,13 @@ UART XB
 UART YA
 UART YB
 ValueError Z
-UART(1, baudrate=9600, bits=8, parity=None, stop=1, timeout=1000, timeout_char=0, read_buf_len=64)
-UART(1, baudrate=2400, bits=8, parity=None, stop=1, timeout=1000, timeout_char=0, read_buf_len=64)
-False
+UART(1, baudrate=9600, bits=8, parity=None, stop=1, timeout=1000, timeout_char=2, read_buf_len=64)
+UART(1, baudrate=2400, bits=8, parity=None, stop=1, timeout=1000, timeout_char=6, read_buf_len=64)
+0
 3
 4
+None
+1
+4
+None
 None

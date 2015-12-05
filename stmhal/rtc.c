@@ -105,7 +105,7 @@ STATIC bool lse_magic(void) {
 #endif
 }
 
-void rtc_init_start(void) {
+void rtc_init_start(bool force_init) {
     RTCHandle.Instance = RTC;
 
     /* Configure RTC prescaler and RTC data registers */
@@ -124,26 +124,30 @@ void rtc_init_start(void) {
     RTCHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
 
     rtc_need_init_finalise = false;
-    if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
-        // LSE is enabled & ready --> no need to (re-)init RTC
-        // remove Backup Domain write protection
-        HAL_PWR_EnableBkUpAccess();
-        // Clear source Reset Flag
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-        // provide some status information
-        rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
-        return;
-    } else if (((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) && ((RCC->CSR & 3) == 3)) {
-        // LSI configured & enabled & ready --> no need to (re-)init RTC
-        // remove Backup Domain write protection
-        HAL_PWR_EnableBkUpAccess();
-        // Clear source Reset Flag
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-        RCC->CSR |= 1;
-        // provide some status information
-        rtc_info |= 0x80000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
-        return;
+
+    if (!force_init) {
+        if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
+            // LSE is enabled & ready --> no need to (re-)init RTC
+            // remove Backup Domain write protection
+            HAL_PWR_EnableBkUpAccess();
+            // Clear source Reset Flag
+            __HAL_RCC_CLEAR_RESET_FLAGS();
+            // provide some status information
+            rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+            return;
+        } else if (((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) && ((RCC->CSR & 3) == 3)) {
+            // LSI configured & enabled & ready --> no need to (re-)init RTC
+            // remove Backup Domain write protection
+            HAL_PWR_EnableBkUpAccess();
+            // Clear source Reset Flag
+            __HAL_RCC_CLEAR_RESET_FLAGS();
+            RCC->CSR |= 1;
+            // provide some status information
+            rtc_info |= 0x80000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+            return;
+        }
     }
+
     rtc_startup_tick = HAL_GetTick();
     rtc_info = 0x3f000000 | (rtc_startup_tick & 0xffffff);
     if (rtc_use_lse) {
@@ -422,6 +426,14 @@ STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
+// force rtc to re-initialise
+mp_obj_t pyb_rtc_init(mp_obj_t self_in) {
+    rtc_init_start(true);
+    rtc_init_finalise();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_init_obj, pyb_rtc_init);
+
 /// \method info()
 /// Get information about the startup time and reset source.
 ///
@@ -687,6 +699,7 @@ mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_calibration_obj, 1, 2, pyb_rtc_calibration);
 
 STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_rtc_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_rtc_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_wakeup), (mp_obj_t)&pyb_rtc_wakeup_obj },

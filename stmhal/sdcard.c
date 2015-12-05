@@ -213,6 +213,9 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
     HAL_SD_ErrorTypedef err = SD_OK;
 
     if (query_irq() == IRQ_STATE_ENABLED) {
+        // we must disable USB irqs to prevent MSC contention with SD card
+        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+
         dma_init(&sd_rx_dma, DMA_STREAM_SDIO_RX, &dma_init_struct_sdio,
             DMA_CHANNEL_SDIO_RX, DMA_PERIPH_TO_MEMORY, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
@@ -225,6 +228,8 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 
         dma_deinit(sd_handle.hdmarx);
         sd_handle.hdmarx = NULL;
+
+        restore_irq_pri(basepri);
     } else {
         err = HAL_SD_ReadBlocks_BlockNumber(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
     }
@@ -246,6 +251,9 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
     HAL_SD_ErrorTypedef err = SD_OK;
 
     if (query_irq() == IRQ_STATE_ENABLED) {
+        // we must disable USB irqs to prevent MSC contention with SD card
+        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+
         dma_init(&sd_tx_dma, DMA_STREAM_SDIO_TX, &dma_init_struct_sdio,
             DMA_CHANNEL_SDIO_TX, DMA_MEMORY_TO_PERIPH, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
@@ -257,6 +265,8 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         }
         dma_deinit(sd_handle.hdmatx);
         sd_handle.hdmatx = NULL;
+
+        restore_irq_pri(basepri);
     } else {
         err = HAL_SD_WriteBlocks_BlockNumber(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
     }

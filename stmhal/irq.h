@@ -34,6 +34,29 @@ static inline mp_uint_t query_irq(void) {
 
 // enable_irq and disable_irq are defined inline in mpconfigport.h
 
+#if __CORTEX_M >= 0x03
+
+// irqs with a priority value greater or equal to "pri" will be disabled
+// "pri" should be between 1 and 15 inclusive
+static inline uint32_t raise_irq_pri(uint32_t pri) {
+    uint32_t basepri = __get_BASEPRI();
+    // If non-zero, the processor does not process any exception with a
+    // priority value greater than or equal to BASEPRI.
+    // When writing to BASEPRI_MAX the write goes to BASEPRI only if either:
+    //   - Rn is non-zero and the current BASEPRI value is 0
+    //   - Rn is non-zero and less than the current BASEPRI value
+    pri <<= (8 - __NVIC_PRIO_BITS);
+    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
+    return basepri;
+}
+
+// "basepri" should be the value returned from raise_irq_pri
+static inline void restore_irq_pri(uint32_t basepri) {
+    __set_BASEPRI(basepri);
+}
+
+#endif
+
 MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);

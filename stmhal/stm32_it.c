@@ -277,6 +277,12 @@ void SysTick_Handler(void) {
     // be generalised in the future then a dispatch table can be used as
     // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
 
+    #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
+    if (((uwTick) & 7) == 4) { // every 8ms
+        NVIC->STIR = PVD_IRQn;
+    }
+    #endif
+
     if (STORAGE_IDLE_TICK(uwTick)) {
         NVIC->STIR = FLASH_IRQn;
     }
@@ -425,6 +431,10 @@ void EXTI15_10_IRQHandler(void) {
 }
 
 void PVD_IRQHandler(void) {
+    #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
+    extern void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
+    USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+    #endif
     Handle_EXTI_Irq(EXTI_PVD_OUTPUT);
 }
 
@@ -465,7 +475,11 @@ void TIM2_IRQHandler(void) {
 }
 
 void TIM3_IRQHandler(void) {
+    #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
+    timer_irq_handler(3);
+    #else
     HAL_TIM_IRQHandler(&TIM3_Handle);
+    #endif
 }
 
 void TIM4_IRQHandler(void) {

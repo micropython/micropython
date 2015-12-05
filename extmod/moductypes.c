@@ -359,6 +359,15 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
             ((uint32_t*)p)[index] = (uint32_t)v; return;
         case INT32:
             ((int32_t*)p)[index] = (int32_t)v; return;
+        case INT64:
+        case UINT64:
+            if (sizeof(mp_int_t) == 8) {
+                ((uint64_t*)p)[index] = (uint64_t)v;
+            } else {
+                // TODO: Doesn't offer atomic store semantics, but should at least try
+                set_unaligned(val_type, p, MP_ENDIANNESS_BIG, val);
+            }
+            return;
         default:
             assert(0);
     }

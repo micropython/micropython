@@ -47,6 +47,7 @@ typedef struct _mp_obj_poll_t {
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
+    int fd = mp_obj_get_int(args[1]);
     mp_uint_t flags;
     if (n_args == 3) {
         flags = mp_obj_get_int(args[2]);
@@ -54,26 +55,32 @@ STATIC mp_obj_t poll_register(uint n_args, const mp_obj_t *args) {
         flags = POLLIN | POLLOUT;
     }
 
-    int i = 0;
-    if (self->len < self->alloc) {
-        i = self->len++;
-    } else {
-        struct pollfd *entries = self->entries;
-        for (i = 0; i < self->len; i++, entries++) {
-            if (entries->fd == -1) {
-                break;
-            }
+    struct pollfd *free_slot = NULL;
+
+    struct pollfd *entry = self->entries;
+    for (int i = 0; i < self->len; i++, entry++) {
+        int entry_fd = entry->fd;
+        if (entry_fd == fd) {
+            entry->events = flags;
+            return mp_const_false;
         }
-        if (entries->fd != -1) {
-            assert(0);
+        if (entry_fd == -1) {
+            free_slot = entry;
         }
     }
 
-    self->entries[i].fd = mp_obj_get_int(args[1]);
-    self->entries[i].events = flags;
-    self->entries[i].revents = 0;
+    if (free_slot == NULL) {
+        if (self->len >= self->alloc) {
+            self->entries = m_renew(struct pollfd, self->entries, self->alloc, self->alloc + 4);
+            self->alloc += 4;
+        }
+        free_slot = &self->entries[self->len++];
+    }
 
-    return mp_const_none;
+    free_slot->fd = fd;
+    free_slot->events = flags;
+    free_slot->revents = 0;
+    return mp_const_true;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 

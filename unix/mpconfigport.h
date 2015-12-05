@@ -174,7 +174,7 @@ typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless for actual size.
+// regardless of actual size.
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
@@ -232,8 +232,11 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()
+// unless support for it is disabled.
+#if !defined(MICROPY_NO_ALLOCA) || MICROPY_NO_ALLOCA == 0
 #ifdef __FreeBSD__
 #include <stdlib.h>
 #else
 #include <alloca.h>
+#endif
 #endif
