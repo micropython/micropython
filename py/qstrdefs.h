@@ -232,8 +232,10 @@ Q(len)
 Q(list)
 Q(locals)
 Q(map)
+#if MICROPY_PY_BUILTINS_MIN_MAX
 Q(max)
 Q(min)
+#endif
 Q(namedtuple)
 Q(next)
 Q(oct)
