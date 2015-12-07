@@ -117,25 +117,32 @@ class TelnetToSerial:
             return n_waiting
 
 class Pyboard:
-    def __init__(self, device, baudrate=115200, user='micro', password='python', wait=3):
+    def __init__(self, device, baudrate=115200, user='micro', password='python', wait=0):
         if device and device[0].isdigit() and device[-1].isdigit() and device.count('.') == 3:
             # device looks like an IP address
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
-            for attempt in range(wait):
+            errmsg = '\nFailed to access ' + device
+            if wait:
+                for attempt in range(wait):
+                    try:
+                        self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                        break
+                    except IOError:
+                        if attempt == 0:
+                            sys.stdout.write('Waiting {} seconds for pyboard '.format(wait))
+                    time.sleep(1)
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                else:
+                    raise PyboardError(errmsg)
+                print('')
+            else:
                 try:
                     self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
-                    break
                 except IOError:
-                    if attempt == 0:
-                        sys.stdout.write('Waiting {} seconds for pyboard '.format(wait))
-                time.sleep(1)
-                sys.stdout.write('.')
-                sys.stdout.flush()
-            else:
-                raise PyboardError('\nFailed to access ' + device)
-            print('')
+                    raise PyboardError(errmsg)
 
     def close(self):
         self.serial.close()
@@ -271,7 +278,7 @@ def main():
     cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-c', '--command', help='program passed in as string')
-    cmd_parser.add_argument('-w', '--wait', default=3, type=int, help='seconds to wait for USB connected board to become available')
+    cmd_parser.add_argument('-w', '--wait', default=0, type=int, help='seconds to wait for USB connected board to become available')
     cmd_parser.add_argument('--follow', action='store_true', help='follow the output after running the scripts [default if no scripts given]')
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
