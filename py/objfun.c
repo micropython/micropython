@@ -197,6 +197,9 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_arg
 #endif
 
 STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+#if !MICROPY_ENABLE_RUNTIME
+    mp_not_implemented("function execution");
+#else
     MP_STACK_CHECK();
 
     DEBUG_printf("Input n_args: " UINT_FMT ", n_kw: " UINT_FMT "\n", n_args, n_kw);
@@ -295,6 +298,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, 
     } else { // MP_VM_RETURN_EXCEPTION
         nlr_raise(result);
     }
+#endif
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS

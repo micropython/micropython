@@ -66,6 +66,8 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
+#if MICROPY_ENABLE_RUNTIME
+
 #define FORCED_EXIT (0x100)
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
@@ -279,6 +281,47 @@ STATIC int do_str(const char *str) {
     return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
 }
 
+#else
+
+STATIC int compile_and_save(const char *file) {
+    mp_lexer_t *lex = mp_lexer_new_from_file(file);
+    if (lex == NULL) {
+        printf("MemoryError: lexer could not allocate memory\n");
+        return 1;
+    }
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        qstr source_name = lex->source_name;
+
+        #if MICROPY_PY___FILE__
+        if (input_kind == MP_PARSE_FILE_INPUT) {
+            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+        }
+        #endif
+
+        mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
+
+        vstr_t vstr;
+        vstr_init(&vstr, 16);
+        vstr_add_str(&vstr, file);
+        vstr_cut_tail_bytes(&vstr, 2);
+        vstr_add_str(&vstr, "mpy");
+        mp_raw_code_save_file(rc, vstr_null_terminated_str(&vstr));
+        vstr_clear(&vstr);
+
+        nlr_pop();
+        return 0;
+    } else {
+        // uncaught exception
+        mp_obj_print_exception(&mp_stderr_print, (mp_obj_t)nlr.ret_val);
+        return 1;
+    }
+}
+
+#endif
+
 STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] [-c <command>] [<filename>]\n"
@@ -401,9 +444,11 @@ int main(int argc, char **argv) {
 
     mp_init();
 
+    #if MICROPY_ENABLE_RUNTIME
     #ifndef _WIN32
     // create keyboard interrupt object
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    #endif
     #endif
 
     char *home = getenv("HOME");
@@ -479,6 +524,7 @@ int main(int argc, char **argv) {
     int ret = NOTHING_EXECUTED;
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
+            #if MICROPY_ENABLE_RUNTIME
             if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
                     return usage(argv);
@@ -522,10 +568,14 @@ int main(int argc, char **argv) {
                 }
                 ret = 0;
                 break;
-            } else if (strcmp(argv[a], "-X") == 0) {
+            } else
+            #endif
+            if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "-v") == 0) {
+                #if MICROPY_DEBUG_PRINTERS
                 mp_verbose_flag++;
+                #endif
             } else if (strncmp(argv[a], "-O", 2) == 0) {
                 if (unichar_isdigit(argv[a][2])) {
                     MP_STATE_VM(mp_optimise_value) = argv[a][2] & 0xf;
@@ -552,11 +602,18 @@ int main(int argc, char **argv) {
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);
+
+            #if MICROPY_ENABLE_RUNTIME
             ret = do_file(argv[a]);
+            #else
+            ret = compile_and_save(argv[a]);
+            #endif
+
             break;
         }
     }
 
+    #if MICROPY_ENABLE_RUNTIME
     if (ret == NOTHING_EXECUTED) {
         if (isatty(0)) {
             prompt_read_history();
@@ -567,6 +624,7 @@ int main(int argc, char **argv) {
             ret = execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
         }
     }
+    #endif
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
     if (mp_verbose_flag) {

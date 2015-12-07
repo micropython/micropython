@@ -27,6 +27,7 @@
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
     #define MICROPY_EMIT_X64        (1)
 #endif
@@ -61,7 +62,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)

@@ -37,6 +37,8 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 
+#if MICROPY_ENABLE_RUNTIME
+
 #if 0
 //#define TRACE(ip) printf("sp=" INT_FMT " ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
 #define TRACE(ip) printf("sp=%d ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
@@ -1386,3 +1388,5 @@ unwind_loop:
         }
     }
 }
+
+#endif // MICROPY_ENABLE_RUNTIME

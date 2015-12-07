@@ -340,6 +340,11 @@
 /*****************************************************************************/
 /* Python internal features                                                  */
 
+// Whether to enable the runtime and VM
+#ifndef MICROPY_ENABLE_RUNTIME
+#define MICROPY_ENABLE_RUNTIME (1)
+#endif
+
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
 #define MICROPY_ENABLE_GC (0)

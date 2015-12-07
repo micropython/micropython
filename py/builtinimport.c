@@ -36,6 +36,8 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
+#if MICROPY_ENABLE_RUNTIME
+
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -465,3 +467,5 @@ mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
     return top_module_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);
+
+#endif
