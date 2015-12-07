@@ -71,6 +71,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PWM), (mp_obj_t)&pyb_pwm_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Keyboard), (mp_obj_t)&pyb_keyboard_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LCD), (mp_obj_t)&pyb_lcd_type },
 
 };
 

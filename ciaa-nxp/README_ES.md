@@ -292,5 +292,36 @@ El constructor recibe la cantidad de filas y columnas que se sensan. El metodo g
 con el numero de fila y los 4 bits de menor peso corresponden con el numero de columna. Tambien puede utilizarse el metodo "get_matrix" el cual no es bloqueante y devolvera 0xFF si ninguna tecla es presionada.
 
 
-    
+##### Soporte para LCD HD44780U (Poncho UI)
+
+Clase `pyb.LCD`.
+
+Ejemplo:
+```python
+import pyb
+
+lcd = pyb.LCD(2,0) # 2 lines, dot format:5x8
+
+lcd.clear()
+
+lcd.write("Test LCD\nEDUCIAA")
+pyb.delay(1000)
+lcd.clear()
+lcd.config_cursor(True,True) #Cursor ON, Blink ON
+
+c=0
+while(True):
+    c=c+1   
+    lcd.goto_xy(0,0)
+    lcd.write("counter:"+str(c))        
+    lcd.goto_xy(10,1)
+    lcd.write(str(c))
+    pyb.delay(1000)
+
+```
+
+El constructor recibe la cantidad de lineas (1,2,3 o 4) y el formato del caracter (0:5x8 - 1:5x10). 
+
+
+  
 

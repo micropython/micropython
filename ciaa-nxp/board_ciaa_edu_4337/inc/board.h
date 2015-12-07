@@ -286,7 +286,7 @@ void Board_Audio_Init(LPC_I2S_T *pI2S, int micIn);
  * @brief	Initialize Pinmuxing for the LCD interface
  * @return	Nothing
  */
-void Board_LCD_Init(void);
+//void Board_LCD_Init(void);
 
 /**
  * @brief	Write given data to LCD module
@@ -621,29 +621,7 @@ uint16_t Board_ADC_readValue(uint8_t channelNumber);
 
 
 
-/**
- * @brief       Enable Kayboard scanning
- * @param       rows : Number of rows (1, 2, 3 or 4)
- * @param       columns : Number of columns (1, 2, 3 or 4)
- * @return      void
- */
-void Board_KEYBOARD_Init(uint8_t rows, uint8_t columns);
-
-
-/**
- * @brief       Read matrix value of coordinates row and column
- * @param       row : row number (0,1,2 or 3)
- * @param       row : column number (0,1,2 or 3)
- * @return      1 if switch on specified position is pressed, 0 otherwise
- */
-int Board_KEYBOARD_readMatrix(uint8_t row,uint8_t col);
-
-
-/**
- * @brief       This function must be called every 1ms for Keyboard management
- * @return      void
- */
-void Board_KEYBOARD_tick_ms(void);
+#include "../src/ponchos/poncho_ui.h"
 
 
 /**

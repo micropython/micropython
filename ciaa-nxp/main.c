@@ -14,9 +14,9 @@
 
 #include "modpyb.h"
 
-//prueba uart, sacar
 #include "chip.h"
 #include "board.h"
+#include "../src/ponchos/poncho_ui.h"
 
 #include "bootSys.h"
 
@@ -101,28 +101,29 @@ soft_reset:
     init_flash_fs(0);
 
 
-	//debug keyboard
+	//debug LCD
 	/*
-	char aux[64];
-	mp_hal_initKeyboard(4, 4);
-	int r,c;
+	mp_hal_initLCD(2,0);
+	mp_hal_clearLCD();
+	mp_hal_printStringLCD("Inicio Test LCD");
 	while(1)
-	{
-	    Board_UARTPutSTR("\r\nKEYBOARD SCAN:\r\n");
-	    for(r=0; r<4; r++)
-	    {
-		sprintf(aux,"ROW %d:",r);
-		Board_UARTPutSTR(aux);
-		for(c=0; c<4;c++)
-		{
-			int val = mp_hal_readMatrixKeyboard(r,c);
-			sprintf(aux," [%d]",val);
-			Board_UARTPutSTR(aux);
-		}
-		Board_UARTPutSTR("\r\n");
-	    }
-
+	{		
+		mp_hal_gotoXYLCD(0,0);
+		mp_hal_printStringLCD("Linea 1\nLinea 2");
 		mp_hal_milli_delay(1000);
+		mp_hal_gotoXYLCD(13,1);
+		mp_hal_printStringLCD("Jojo");
+		mp_hal_milli_delay(1000);
+		mp_hal_clearLCD();
+		mp_hal_printStringLCD("Cursor:\n");
+		mp_hal_configCursorLCD(1,1);
+		mp_hal_milli_delay(4000);
+		mp_hal_configCursorLCD(1,0);
+		mp_hal_milli_delay(2000);
+		mp_hal_configCursorLCD(0,0);
+		mp_hal_milli_delay(3000);
+		mp_hal_clearLCD();
+		mp_hal_milli_delay(1000);				
 	}*/
 	//________________
 

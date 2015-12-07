@@ -355,9 +355,30 @@ void mp_hal_initKeyboard(uint8_t rows, uint8_t columns)
 {
 	Board_KEYBOARD_Init(rows, columns);
 }
-
 uint8_t mp_hal_readMatrixKeyboard(uint8_t row, uint8_t col)
 {
 	return Board_KEYBOARD_readMatrix(row,col);
+}
+
+//LCD
+void mp_hal_initLCD(uint8_t lines,uint8_t dotFormat)
+{
+	Board_LCD_Init(lines,dotFormat);
+}
+void mp_hal_clearLCD(void)
+{
+	Board_LCD_clear();
+}
+void mp_hal_printStringLCD(char* text)
+{
+	Board_LCD_printString(text);
+}
+void mp_hal_gotoXYLCD(uint8_t x,uint8_t y)
+{
+	Board_LCD_gotoXY(x,y);
+}
+void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff)
+{
+	Board_LCD_configCursor(onOff,blinkOnOff);
 }
 

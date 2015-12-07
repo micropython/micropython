@@ -60,9 +60,11 @@ SRC_C = \
 	modpybpwm.c \
 	modpybadc.c \
 	modpybkeyboard.c \
+	modpyblcd44780u.c \
 	bootSys.c  \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
+	$(wildcard board_ciaa_edu_4337/src/ponchos/*.c) \
 	stmhal/fsusermount.c \
 	stmhal/file.c \
 	stmhal/input.c \
