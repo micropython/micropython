@@ -327,3 +327,52 @@ while True:
 ```
 AD Inputs available: 1,2 and 3. read() method returns the conversion's value (10 bit- 3.3V)
 
+
+## Keyboard support over pyb.Keyboard (Poncho UI)
+
+Example:
+```python
+import pyb
+
+keyboard = pyb.Keyboard(4,4)
+
+print(keyboard)
+
+while True:
+    key = keyboard.get_char()
+    print("key:"+str(key))
+
+```
+
+Constructor's arguments are number of rows and number o columns. get_chat method will wait until a key is pressed. One byte is returned, most significative 4 bits represents number of row and less
+significative 4 bits represents number of column. 
+
+"get_matrix method" will not wait and it will return 0xFF if any key is pressed
+
+## LCD HD44780U over pyb.LCD (Poncho UI)
+
+Example:
+```python
+import pyb
+
+lcd = pyb.LCD(2,0) # 2 lines, dot format:5x8
+
+lcd.clear()
+
+lcd.write("Test LCD\nEDUCIAA")
+pyb.delay(1000)
+lcd.clear()
+lcd.config_cursor(True,True) #Cursor ON, Blink ON
+
+c=0
+while(True):
+    c=c+1   
+    lcd.goto_xy(0,0)
+    lcd.write("counter:"+str(c))        
+    lcd.goto_xy(10,1)
+    lcd.write(str(c))
+    pyb.delay(1000)
+
+```
+
+Constructor's arguments are number of lines (1,2,3 o 4) and dot format (0:5x8 - 1:5x10).

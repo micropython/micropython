@@ -14,9 +14,10 @@
 
 #include "modpyb.h"
 
-//prueba uart, sacar
 #include "chip.h"
 #include "board.h"
+
+#include "bootSys.h"
 
 #define __SECTION_EXT(type, bank, name) __attribute__ ((section("." #type ".$" #bank "." #name)))
 #define __SECTION(type, bank) __attribute__ ((section("." #type ".$" #bank)))
@@ -37,6 +38,9 @@ static FATFS fatfs0;
 
 static const char fresh_main_py[] =
 "# main.py -- put your code here!\r\n"
+;
+
+static const char fresh_readme_txt[] =
 "print('Welcome to Micropython on EDU-CIAA-NXP');\r\n"
 "import os\r\n"
 "import sys\r\n"
@@ -102,6 +106,12 @@ soft_reset:
     init_flash_fs(0);
 
 
+	// check new script from IDE
+	boot();
+	//__________________________
+
+
+
     if (!pyexec_file("/flash/Main.py")) {
         mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }
@@ -149,3 +159,52 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 #endif
+
+/*
+<<<<<<< HEAD
+
+#if 0
+int _lseek() {return 0;}
+int _read() {return 0;}
+int _write() {return 0;}
+int _close() {return 0;}
+void _exit(int x) {for(;;){}}
+int _sbrk() {return 0;}
+int _kill() {return 0;}
+int _getpid() {return 0;}
+int _fstat() {return 0;}
+int _isatty() {return 0;}
+#endif
+
+#if 0
+void *malloc(size_t n) {return NULL;}
+void *calloc(size_t nmemb, size_t size) {return NULL;}
+void *realloc(void *ptr, size_t size) {return NULL;}
+void free(void *p) {}
+int printf(const char *m, ...) {return 0;}
+void *memcpy(void *dest, const void *src, size_t n) {return NULL;}
+int memcmp(const void *s1, const void *s2, size_t n) {return 0;}
+void *memmove(void *dest, const void *src, size_t n) {return NULL;}
+void *memset(void *s, int c, size_t n) {return NULL;}
+int strcmp(const char *s1, const char* s2) {return 0;}
+int strncmp(const char *s1, const char* s2, size_t n) {return 0;}
+size_t strlen(const char *s) {return 0;}
+char *strcat(char *dest, const char *src) {return NULL;}
+char *strchr(const char *dest, int c) {return NULL;}
+#include <stdarg.h>
+int vprintf(const char *format, va_list ap) {return 0;}
+int vsnprintf(char *str,  size_t  size,  const  char  *format, va_list ap) {return 0;}
+
+#undef putchar
+int putchar(int c) {return 0;}
+int puts(const char *s) {return 0;}
+
+void _start(void) {main(0, NULL);}
+#endif
+
+
+
+=======
+>>>>>>> master
+*/
+
