@@ -35,3 +35,5 @@ print(min([1, 2, 3, 4, 5], default=-1))
 print(min([], default=-1))
 print(max([1, 2, 3, 4, 5], default=-1))
 print(max([], default=-1))
+# Make sure it works with lazy iterables
+print(min((i for i in []), default=-10))
