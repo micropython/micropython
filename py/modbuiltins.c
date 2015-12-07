@@ -254,6 +254,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 
 STATIC mp_obj_t mp_builtin_min_max(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs, mp_uint_t op) {
     mp_map_elem_t *key_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_key), MP_MAP_LOOKUP);
+    mp_map_elem_t *default_elem;
     mp_obj_t key_fn = key_elem == NULL ? MP_OBJ_NULL : key_elem->value;
     if (n_args == 1) {
         // given an iterable
@@ -269,7 +270,12 @@ STATIC mp_obj_t mp_builtin_min_max(mp_uint_t n_args, const mp_obj_t *args, mp_ma
             }
         }
         if (best_obj == MP_OBJ_NULL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "arg is an empty sequence"));
+            default_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_default), MP_MAP_LOOKUP);
+            if (default_elem != NULL) {
+                best_obj = default_elem->value;
+            } else {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "arg is an empty sequence"));
+            }
         }
         return best_obj;
     } else {
