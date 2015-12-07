@@ -29,3 +29,9 @@ try:
     min([])
 except ValueError:
     print("ValueError")
+
+# 'default' tests
+print(min([1, 2, 3, 4, 5], default=-1))
+print(min([], default=-1))
+print(max([1, 2, 3, 4, 5], default=-1))
+print(max([], default=-1))
