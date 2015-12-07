@@ -72,28 +72,9 @@ void Board_LCD_Init(uint8_t lines,uint8_t dotFormat)
 		Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, lcdPinInfo[i].gpio, lcdPinInfo[i].gpioBit);
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, lcdPinInfo[i].gpio, lcdPinInfo[i].gpioBit);
 	}
-	
+
 	LCD4Bit_init(lines,dotFormat);
-	
-	//debug delays
-	/*
-	Board_UARTPutSTR("Test delay LCD!!!");	
-	while(1)
-	{
-		//LCD4Bit_clear();
-		LCD4Bit_cursorTo(0, 0);
-		LCD4Bit_printIn("hola mundo\nsara\tsa\0");
-		//LCD4Bit_cursorTo(1, 4);
-		//LCD4Bit_printIn("linea 2\0");
-		Board_UARTPutSTR("ya mande a escribir\n");
-		LCD4Bit_delay(1000);
-		LCD4Bit_configureCursor(1,1);
-		LCD4Bit_cursorTo(0, 13);
-		LCD4Bit_delay(5000);
-		LCD4Bit_configureCursor(0,0);
-	}*/
-	//_____________
-	
+
 }
 
 void Board_LCD_clear(void)
