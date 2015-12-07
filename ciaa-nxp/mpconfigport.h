@@ -46,7 +46,7 @@
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER (1)
 
-#define MICROPY_PY___FILE__         (0)
+#define MICROPY_PY___FILE__         (1)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_ATTRTUPLE        (1)
