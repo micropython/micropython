@@ -16,7 +16,6 @@
 
 #include "chip.h"
 #include "board.h"
-#include "../src/ponchos/poncho_ui.h"
 
 #include "bootSys.h"
 
@@ -99,33 +98,6 @@ soft_reset:
     mp_obj_list_init(mp_sys_argv, 0);
 
     init_flash_fs(0);
-
-
-	//debug LCD
-	/*
-	mp_hal_initLCD(2,0);
-	mp_hal_clearLCD();
-	mp_hal_printStringLCD("Inicio Test LCD");
-	while(1)
-	{		
-		mp_hal_gotoXYLCD(0,0);
-		mp_hal_printStringLCD("Linea 1\nLinea 2");
-		mp_hal_milli_delay(1000);
-		mp_hal_gotoXYLCD(13,1);
-		mp_hal_printStringLCD("Jojo");
-		mp_hal_milli_delay(1000);
-		mp_hal_clearLCD();
-		mp_hal_printStringLCD("Cursor:\n");
-		mp_hal_configCursorLCD(1,1);
-		mp_hal_milli_delay(4000);
-		mp_hal_configCursorLCD(1,0);
-		mp_hal_milli_delay(2000);
-		mp_hal_configCursorLCD(0,0);
-		mp_hal_milli_delay(3000);
-		mp_hal_clearLCD();
-		mp_hal_milli_delay(1000);				
-	}*/
-	//________________
 
 
 	// check new script from IDE
