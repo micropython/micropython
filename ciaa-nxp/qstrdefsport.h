@@ -138,3 +138,14 @@ Q(set_frequency)
 
 Q(ADC)
 Q(read)
+
+Q(Keyboard)
+Q(get_matrix)
+Q(get_char)
+
+Q(LCD)
+Q(clear)
+Q(goto_xy)
+Q(config_cursor)
+
+

@@ -86,6 +86,8 @@ typedef struct {
 static ExtIntData extIntData[4];
 
 
+
+
 //================================================[ADC Management]========================================================
 typedef struct {
 	ADC_CLOCK_SETUP_T setup;
@@ -1217,6 +1219,10 @@ void Board_Init(void)
 
 	/* Initialize ADCs */
 	Board_ADC_Init();
+
+	/* Initialize Keyboard disabled */
+	Board_KEYBOARD_disable();
+
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

@@ -286,7 +286,7 @@ void Board_Audio_Init(LPC_I2S_T *pI2S, int micIn);
  * @brief	Initialize Pinmuxing for the LCD interface
  * @return	Nothing
  */
-void Board_LCD_Init(void);
+//void Board_LCD_Init(void);
 
 /**
  * @brief	Write given data to LCD module
@@ -620,6 +620,8 @@ void Board_ADC_StartConversion(void);
 uint16_t Board_ADC_readValue(uint8_t channelNumber);
 
 
+
+#include "../src/ponchos/poncho_ui.h"
 
 
 /**
