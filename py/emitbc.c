@@ -801,15 +801,8 @@ void mp_emit_bc_pop_except(emit_t *emit) {
 }
 
 void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op) {
-    if (op == MP_UNARY_OP_NOT) {
-        emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte(emit, MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_BOOL);
-        emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte(emit, MP_BC_NOT);
-    } else {
-        emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte(emit, MP_BC_UNARY_OP_MULTI + op);
-    }
+    emit_bc_pre(emit, 0);
+    emit_write_bytecode_byte(emit, MP_BC_UNARY_OP_MULTI + op);
 }
 
 void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op) {
@@ -825,7 +818,7 @@ void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op) {
     emit_write_bytecode_byte(emit, MP_BC_BINARY_OP_MULTI + op);
     if (invert) {
         emit_bc_pre(emit, 0);
-        emit_write_bytecode_byte(emit, MP_BC_NOT);
+        emit_write_bytecode_byte(emit, MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NOT);
     }
 }
 
