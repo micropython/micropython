@@ -13,6 +13,7 @@ MicroPython are described in the sections here.
    :maxdepth: 1
 
    repl.rst
+   isr_rules.rst
 
 .. only:: port_pyboard
 
