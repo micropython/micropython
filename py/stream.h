@@ -37,6 +37,15 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
 
+// the order and numbering of these must match the order in struct mp_stream_p_t
+typedef enum {
+    MP_STREAM_OP_READ = 0,
+    MP_STREAM_OP_WRITE = 1,
+    MP_STREAM_OP_IOCTL = 2,
+} mp_stream_op_t;
+
+const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, mp_stream_op_t op);
+
 // Iterator which uses mp_stream_unbuffered_readline_obj
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
