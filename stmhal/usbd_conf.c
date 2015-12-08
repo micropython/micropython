@@ -34,13 +34,18 @@
 #include "usbd_core.h"
 #include "py/obj.h"
 #include "irq.h"
+#include "usb.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-PCD_HandleTypeDef pcd_handle;
-
+#ifdef USE_USB_FS
+PCD_HandleTypeDef pcd_fs_handle;
+#endif
+#ifdef USE_USB_HS
+PCD_HandleTypeDef pcd_hs_handle;
+#endif
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -379,90 +384,97 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
 { 
 #if defined(USE_USB_FS)
+if (pdev->id ==  USB_PHY_FS_ID)
+{
   /*Set LL Driver parameters */
-  pcd_handle.Instance = USB_OTG_FS;
-  pcd_handle.Init.dev_endpoints = 4; 
-  pcd_handle.Init.use_dedicated_ep1 = 0;
-  pcd_handle.Init.ep0_mps = 0x40;  
-  pcd_handle.Init.dma_enable = 0;
-  pcd_handle.Init.low_power_enable = 0;
-  pcd_handle.Init.phy_itface = PCD_PHY_EMBEDDED; 
-  pcd_handle.Init.Sof_enable = 0;
-  pcd_handle.Init.speed = PCD_SPEED_FULL;
+  pcd_fs_handle.Instance = USB_OTG_FS;
+  pcd_fs_handle.Init.dev_endpoints = 4;
+  pcd_fs_handle.Init.use_dedicated_ep1 = 0;
+  pcd_fs_handle.Init.ep0_mps = 0x40;
+  pcd_fs_handle.Init.dma_enable = 0;
+  pcd_fs_handle.Init.low_power_enable = 0;
+  pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
+  pcd_fs_handle.Init.Sof_enable = 0;
+  pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
 #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
-  pcd_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
+  pcd_fs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
 #else
-  pcd_handle.Init.vbus_sensing_enable = 1;
+  pcd_fs_handle.Init.vbus_sensing_enable = 1;
 #endif
   /* Link The driver to the stack */
-  pcd_handle.pData = pdev;
-  pdev->pData = &pcd_handle;
+  pcd_fs_handle.pData = pdev;
+  pdev->pData = &pcd_fs_handle;
   /*Initialize LL Driver */
-  HAL_PCD_Init(&pcd_handle);
+  HAL_PCD_Init(&pcd_fs_handle);
 
-  HAL_PCD_SetRxFiFo(&pcd_handle, 0x80);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x20);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
-#elif defined(USE_USB_HS)
+  HAL_PCD_SetRxFiFo(&pcd_fs_handle, 0x80);
+  HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 0x40);
+  HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 0x40);
+}
+#endif
+#if defined(USE_USB_HS)
+if (pdev->id == USB_PHY_HS_ID)
+{
 #if defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
-  pcd_handle.Instance = USB_OTG_HS;
-  pcd_handle.Init.dev_endpoints = 4; 
-  pcd_handle.Init.use_dedicated_ep1 = 0;
-  pcd_handle.Init.ep0_mps = 0x40;  
-  pcd_handle.Init.dma_enable = 0;
-  pcd_handle.Init.low_power_enable = 0;
-  pcd_handle.Init.phy_itface = PCD_PHY_EMBEDDED; 
-  pcd_handle.Init.Sof_enable = 0;
-  pcd_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
+  pcd_hs_handle.Instance = USB_OTG_HS;
+  pcd_hs_handle.Init.dev_endpoints = 4;
+  pcd_hs_handle.Init.use_dedicated_ep1 = 0;
+  pcd_hs_handle.Init.ep0_mps = 0x40;
+  pcd_hs_handle.Init.dma_enable = 0;
+  pcd_hs_handle.Init.low_power_enable = 0;
+  pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
+  pcd_hs_handle.Init.Sof_enable = 0;
+  pcd_hs_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
 #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
-  pcd_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
+  pcd_hs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
 #else
-  pcd_handle.Init.vbus_sensing_enable = 1;
+  pcd_hs_handle.Init.vbus_sensing_enable = 1;
 #endif
   /* Link The driver to the stack */
-  pcd_handle.pData = pdev;
-  pdev->pData = &pcd_handle;
+  pcd_hs_handle.pData = pdev;
+  pdev->pData = &pcd_hs_handle;
   /*Initialize LL Driver */
-  HAL_PCD_Init(&pcd_handle);
+  HAL_PCD_Init(&pcd_hs_handle);
 
-  HAL_PCD_SetRxFiFo(&pcd_handle, 0x80);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x20);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x40);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 2, 0x20);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 3, 0x40);
+  HAL_PCD_SetRxFiFo(&pcd_hs_handle, 0x80);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x40);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 0x20);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 0x40);
 #else // !defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
-  pcd_handle.Instance = USB_OTG_HS;
-  pcd_handle.Init.dev_endpoints = 6; 
-  pcd_handle.Init.use_dedicated_ep1 = 0;
-  pcd_handle.Init.ep0_mps = 0x40;
+  pcd_hs_handle.Instance = USB_OTG_HS;
+  pcd_hs_handle.Init.dev_endpoints = 6;
+  pcd_hs_handle.Init.use_dedicated_ep1 = 0;
+  pcd_hs_handle.Init.ep0_mps = 0x40;
   
   /* Be aware that enabling USB-DMA mode will result in data being sent only by
      multiple of 4 packet sizes. This is due to the fact that USB-DMA does
      not allow sending data from non word-aligned addresses.
      For this specific application, it is advised to not enable this option
      unless required. */
-  pcd_handle.Init.dma_enable = 0;
+  pcd_hs_handle.Init.dma_enable = 0;
   
-  pcd_handle.Init.low_power_enable = 0;
-  pcd_handle.Init.phy_itface = PCD_PHY_ULPI; 
-  pcd_handle.Init.Sof_enable = 0;
-  pcd_handle.Init.speed = PCD_SPEED_HIGH;
-  pcd_handle.Init.vbus_sensing_enable = 1;
+  pcd_hs_handle.Init.low_power_enable = 0;
+  pcd_hs_handle.Init.phy_itface = PCD_PHY_ULPI;
+  pcd_hs_handle.Init.Sof_enable = 0;
+  pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
+  pcd_hs_handle.Init.vbus_sensing_enable = 1;
   /* Link The driver to the stack */
-  pcd_handle.pData = pdev;
-  pdev->pData = &pcd_handle;
+  pcd_hs_handle.pData = pdev;
+  pdev->pData = &pcd_hs_handle;
   /*Initialize LL Driver */
-  HAL_PCD_Init(&pcd_handle);
+  HAL_PCD_Init(&pcd_hs_handle);
   
-  HAL_PCD_SetRxFiFo(&pcd_handle, 0x200);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 0, 0x80);
-  HAL_PCD_SetTxFiFo(&pcd_handle, 1, 0x174); 
+  HAL_PCD_SetRxFiFo(&pcd_hs_handle, 0x200);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 0x80);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x174);
 
 #endif  // !USE_USB_HS_IN_FS
+}
 #endif  // USE_USB_HS
   return USBD_OK;
 }

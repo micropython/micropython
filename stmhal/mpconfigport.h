@@ -234,6 +234,8 @@ static inline mp_uint_t disable_irq(void) {
 #define free gc_free
 #define realloc gc_realloc
 
+//see STM32F4xx_HAL_CONF.h USE_USB_FS & USE_USB_HS
+// at the moment only USB_FS is supported.
 #define USE_DEVICE_MODE
 //#define USE_HOST_MODE
 
