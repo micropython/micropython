@@ -1421,6 +1421,19 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                         optimize = false;
                     }
                 }
+                // arguments must be able to be compiled as standard expressions
+                if (optimize && MP_PARSE_NODE_IS_STRUCT(pn_range_start)) {
+                    int k = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn_range_start);
+                    if (k == PN_arglist_star || k == PN_arglist_dbl_star || k == PN_argument) {
+                        optimize = false;
+                    }
+                }
+                if (optimize && MP_PARSE_NODE_IS_STRUCT(pn_range_end)) {
+                    int k = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn_range_end);
+                    if (k == PN_arglist_star || k == PN_arglist_dbl_star || k == PN_argument) {
+                        optimize = false;
+                    }
+                }
             }
             if (optimize) {
                 compile_for_stmt_optimised_range(comp, pns->nodes[0], pn_range_start, pn_range_end, pn_range_step, pns->nodes[2], pns->nodes[3]);
