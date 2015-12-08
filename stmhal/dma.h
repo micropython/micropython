@@ -74,11 +74,29 @@
 #define DMA_STREAM_SPI1_RX      DMA2_Stream2
 #define DMA_CHANNEL_SPI1_RX                     DMA_CHANNEL_3
 
+#define DMA_STREAM_SPI5_RX      DMA2_Stream3
+#define DMA_CHANNEL_SPI5_RX                     DMA_CHANNEL_2
+
 #define DMA_STREAM_SDIO_RX      DMA2_Stream3
 #define DMA_CHANNEL_SDIO_RX                     DMA_CHANNEL_4
 
+#define DMA_STREAM_SPI4_RX      DMA2_Stream3
+#define DMA_CHANNEL_SPI4_RX                     DMA_CHANNEL_5
+
+#define DMA_STREAM_SPI5_TX      DMA2_Stream4
+#define DMA_CHANNEL_SPI5_TX                     DMA_CHANNEL_2
+
+#define DMA_STREAM_SPI4_TX      DMA2_Stream4
+#define DMA_CHANNEL_SPI4_TX                     DMA_CHANNEL_5
+
+#define DMA_STREAM_SPI6_TX      DMA2_Stream5
+#define DMA_CHANNEL_SPI6_TX                     DMA_CHANNEL_1
+
 #define DMA_STREAM_SPI1_TX      DMA2_Stream5
 #define DMA_CHANNEL_SPI1_TX                     DMA_CHANNEL_3
+
+#define DMA_STREAM_SPI6_RX      DMA2_Stream6
+#define DMA_CHANNEL_SPI6_RX                     DMA_CHANNEL_1
 
 #define DMA_STREAM_SDIO_TX      DMA2_Stream6
 #define DMA_CHANNEL_SDIO_TX                     DMA_CHANNEL_4
