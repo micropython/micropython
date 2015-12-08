@@ -123,26 +123,26 @@ class Pyboard:
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
-            errmsg = '\nFailed to access ' + device
-            if wait:
-                for attempt in range(wait):
-                    try:
-                        self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
-                        break
-                    except IOError:
-                        if attempt == 0:
-                            sys.stdout.write('Waiting {} seconds for pyboard '.format(wait))
-                    time.sleep(1)
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
-                else:
-                    raise PyboardError(errmsg)
-                print('')
-            else:
+            delayed = False
+            for attempt in range(wait +1):
                 try:
                     self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    break
                 except IOError:
-                    raise PyboardError(errmsg)
+                    if wait == 0:
+                        continue
+                    if attempt == 0:
+                        sys.stdout.write('Waiting {} seconds for pyboard '.format(wait))
+                        delayed = True
+                time.sleep(1)
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            else:
+                if delayed:
+                    print('')
+                raise PyboardError('failed to access ' + device)
+            if delayed:
+                print('')
 
     def close(self):
         self.serial.close()
@@ -259,11 +259,7 @@ class Pyboard:
 setattr(Pyboard, "exec", Pyboard.exec_)
 
 def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', password='python'):
-    try:
-        pyb = Pyboard(device, baudrate, user, password)
-    except PyboardError as er:
-        print(er)
-        return
+    pyb = Pyboard(device, baudrate, user, password)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
     stdout_write_bytes(output)
