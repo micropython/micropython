@@ -184,7 +184,10 @@ void mp_delete_global(qstr qst) {
 mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
     DEBUG_OP_printf("unary " UINT_FMT " %p\n", op, arg);
 
-    if (MP_OBJ_IS_SMALL_INT(arg)) {
+    if (op == MP_UNARY_OP_NOT) {
+        // "not x" is the negative of whether "x" is true per Python semantics
+        return mp_obj_new_bool(mp_obj_is_true(arg) == 0);
+    } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(arg);
         switch (op) {
             case MP_UNARY_OP_BOOL:
