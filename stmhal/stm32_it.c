@@ -80,8 +80,8 @@
 #include "dma.h"
 
 extern void __fatal_error(const char*);
-extern PCD_HandleTypeDef pcd_handle;
-
+extern PCD_HandleTypeDef pcd_fs_handle;
+extern PCD_HandleTypeDef pcd_hs_handle;
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
@@ -305,28 +305,24 @@ void SysTick_Handler(void) {
   * @retval None
   */
 #if defined(USE_USB_FS)
-#define OTG_XX_IRQHandler      OTG_FS_IRQHandler
-#define OTG_XX_WKUP_IRQHandler OTG_FS_WKUP_IRQHandler
-#elif defined(USE_USB_HS)
-#define OTG_XX_IRQHandler      OTG_HS_IRQHandler
-#define OTG_XX_WKUP_IRQHandler OTG_HS_WKUP_IRQHandler
+void OTG_FS_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
 #endif
-
-#if defined(OTG_XX_IRQHandler)
-void OTG_XX_IRQHandler(void) {
-    HAL_PCD_IRQHandler(&pcd_handle);
+#if defined(USE_USB_HS)
+void OTG_HS_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_hs_handle);
 }
 #endif
 
 /**
-  * @brief  This function handles USB OTG FS or HS Wakeup IRQ Handler.
-  * @param  None
+  * @brief  This function handles USB OTG Common FS/HS Wakeup functions.
+  * @param  *pcd_handle for FS or HS
   * @retval None
   */
-#if defined(OTG_XX_WKUP_IRQHandler)
-void OTG_XX_WKUP_IRQHandler(void) {
+void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 
-  if ((&pcd_handle)->Init.low_power_enable) {
+  if (pcd_handle->Init.low_power_enable) {
     /* Reset SLEEPDEEP bit of Cortex System Control Register */
     SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
 
@@ -353,15 +349,39 @@ void OTG_XX_WKUP_IRQHandler(void) {
     {}
 
     /* ungate PHY clock */
-     __HAL_PCD_UNGATE_PHYCLOCK((&pcd_handle));
+     __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
   }
-#ifdef USE_USB_FS
+
+}
+
+/**
+  * @brief  This function handles USB OTG FS Wakeup IRQ Handler.
+  * @param  None
+  * @retval None
+  */
+#if defined(USE_USB_FS)
+void OTG_FS_WKUP_IRQHandler(void) {
+
+  OTG_CMD_WKUP_Handler(&pcd_fs_handle);
+
   /* Clear EXTI pending Bit*/
   __HAL_USB_FS_EXTI_CLEAR_FLAG();
-#elif defined(USE_USB_HS)
-    /* Clear EXTI pending Bit*/
-  __HAL_USB_HS_EXTI_CLEAR_FLAG();
+
+}
 #endif
+
+/**
+  * @brief  This function handles USB OTG HS Wakeup IRQ Handler.
+  * @param  None
+  * @retval None
+  */
+#if defined(USE_USB_HS)
+void OTG_HS_WKUP_IRQHandler(void) {
+
+  OTG_CMD_WKUP_Handler(&pcd_hs_handle);
+
+  /* Clear EXTI pending Bit*/
+  __HAL_USB_HS_EXTI_CLEAR_FLAG();
 
 }
 #endif
