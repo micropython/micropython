@@ -934,6 +934,11 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
         dest[0] = ((mp_obj_static_class_method_t*)MP_OBJ_TO_PTR(member))->fun;
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_classmethod)) {
         // return a bound method, with self being the type of this object
+        // this type should be the type of the original instance, not the base
+        // type (which is what is passed in the 'type' argument to this function)
+        if (self != MP_OBJ_NULL) {
+            type = mp_obj_get_type(self);
+        }
         dest[0] = ((mp_obj_static_class_method_t*)MP_OBJ_TO_PTR(member))->fun;
         dest[1] = MP_OBJ_FROM_PTR(type);
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
