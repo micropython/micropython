@@ -49,10 +49,13 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
-const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, mp_stream_op_t op) {
+const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     mp_obj_base_t *o = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *stream_p = o->type->stream_p;
-    if (stream_p == NULL || ((void**)stream_p)[op] == NULL) {
+    if (stream_p == NULL
+        || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
+        || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
+        || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
         // CPython: io.UnsupportedOperation, OSError subclass
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "stream operation not supported"));
     }
