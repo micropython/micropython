@@ -155,7 +155,7 @@ STATIC void uctypes_struct_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 // Get size of any type descriptor
-STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size);
+STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size);
 
 // Get size of scalar type descriptor
 static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
@@ -167,7 +167,7 @@ static inline mp_uint_t uctypes_struct_scalar_size(int val_type) {
 }
 
 // Get size of aggregate type descriptor
-STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, mp_uint_t *max_field_size) {
+STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, int layout_type, mp_uint_t *max_field_size) {
     mp_uint_t total_size = 0;
 
     mp_int_t offset_ = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
@@ -175,7 +175,7 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, mp_uint_t *max_field
 
     switch (agg_type) {
         case STRUCT:
-            return uctypes_struct_size(t->items[1], max_field_size);
+            return uctypes_struct_size(t->items[1], layout_type, max_field_size);
         case PTR:
             if (sizeof(void*) > *max_field_size) {
                 *max_field_size = sizeof(void*);
@@ -194,7 +194,7 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, mp_uint_t *max_field
                 }
             } else {
                 // Elements of array are aggregates
-                item_s = uctypes_struct_size(t->items[2], max_field_size);
+                item_s = uctypes_struct_size(t->items[2], layout_type, max_field_size);
             }
 
             return item_s * arr_sz;
@@ -206,10 +206,10 @@ STATIC mp_uint_t uctypes_struct_agg_size(mp_obj_tuple_t *t, mp_uint_t *max_field
     return total_size;
 }
 
-STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size) {
+STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_t *max_field_size) {
     if (!MP_OBJ_IS_TYPE(desc_in, &mp_type_dict)) {
         if (MP_OBJ_IS_TYPE(desc_in, &mp_type_tuple)) {
-            return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), max_field_size);
+            return uctypes_struct_agg_size((mp_obj_tuple_t*)MP_OBJ_TO_PTR(desc_in), layout_type, max_field_size);
         } else if (MP_OBJ_IS_SMALL_INT(desc_in)) {
             // We allow sizeof on both type definitions and structures/structure fields,
             // but scalar structure field is lowered into native Python int, so all
@@ -244,7 +244,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size
                 mp_obj_tuple_t *t = MP_OBJ_TO_PTR(v);
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
                 offset &= VALUE_MASK(AGG_TYPE_BITS);
-                mp_uint_t s = uctypes_struct_agg_size(t, max_field_size);
+                mp_uint_t s = uctypes_struct_agg_size(t, layout_type, max_field_size);
                 if (offset + s > total_size) {
                     total_size = offset + s;
                 }
@@ -253,7 +253,9 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, mp_uint_t *max_field_size
     }
 
     // Round size up to alignment of biggest field
-    total_size = (total_size + *max_field_size - 1) & ~(*max_field_size - 1);
+    if (layout_type == LAYOUT_NATIVE) {
+        total_size = (total_size + *max_field_size - 1) & ~(*max_field_size - 1);
+    }
     return total_size;
 }
 
@@ -262,14 +264,16 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
     if (MP_OBJ_IS_TYPE(obj_in, &mp_type_bytearray)) {
         return mp_obj_len(obj_in);
     }
+    int layout_type = LAYOUT_NATIVE;
     // We can apply sizeof either to structure definition (a dict)
     // or to instantiated structure
     if (MP_OBJ_IS_TYPE(obj_in, &uctypes_struct_type)) {
         // Extract structure definition
         mp_obj_uctypes_struct_t *obj = MP_OBJ_TO_PTR(obj_in);
         obj_in = obj->desc;
+        layout_type = obj->flags;
     }
-    mp_uint_t size = uctypes_struct_size(obj_in, &max_field_size);
+    mp_uint_t size = uctypes_struct_size(obj_in, layout_type, &max_field_size);
     return MP_OBJ_NEW_SMALL_INT(size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
@@ -470,7 +474,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         case ARRAY: {
             mp_uint_t dummy;
             if (IS_SCALAR_ARRAY(sub) && IS_SCALAR_ARRAY_OF_BYTES(sub)) {
-                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, &dummy), self->addr + offset);
+                return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, self->flags, &dummy), self->addr + offset);
             }
             // Fall thru to return uctypes struct object
         }
@@ -533,7 +537,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
                 return get_unaligned(val_type, p, self->flags);
             } else {
                 mp_uint_t dummy = 0;
-                mp_uint_t size = uctypes_struct_size(t->items[2], &dummy);
+                mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
                 mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
                 o->base.type = &uctypes_struct_type;
                 o->desc = t->items[2];
@@ -548,7 +552,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
                 return get_aligned(val_type, p, index);
             } else {
                 mp_uint_t dummy = 0;
-                mp_uint_t size = uctypes_struct_size(t->items[1], &dummy);
+                mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
                 mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
                 o->base.type = &uctypes_struct_type;
                 o->desc = t->items[1];
@@ -570,7 +574,7 @@ STATIC mp_int_t uctypes_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, 
     (void)flags;
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t max_field_size = 0;
-    mp_uint_t size = uctypes_struct_size(self->desc, &max_field_size);
+    mp_uint_t size = uctypes_struct_size(self->desc, self->flags, &max_field_size);
 
     bufinfo->buf = self->addr;
     bufinfo->len = size;
