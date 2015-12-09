@@ -35,6 +35,9 @@
 #include "py/objtuple.h"
 #include "py/mphal.h"
 
+// Flags for poll()
+#define FLAG_ONESHOT (1)
+
 /// \class Poll - poll class
 
 typedef struct _mp_obj_poll_t {
@@ -125,14 +128,18 @@ MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    // work out timeout (its given already in ms)
+    // work out timeout (it's given already in ms)
     int timeout = -1;
-    if (n_args == 2) {
+    int flags = 0;
+    if (n_args >= 2) {
         if (args[1] != mp_const_none) {
             mp_int_t timeout_i = mp_obj_get_int(args[1]);
             if (timeout_i >= 0) {
                 timeout = timeout_i;
             }
+        }
+        if (n_args >= 3) {
+            flags = mp_obj_get_int(args[2]);
         }
     }
 
@@ -151,12 +158,15 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
             t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
             t->items[1] = MP_OBJ_NEW_SMALL_INT(entries->revents);
             ret_list->items[ret_i++] = MP_OBJ_FROM_PTR(t);
+            if (flags & FLAG_ONESHOT) {
+                entries->events = 0;
+            }
         }
     }
 
     return MP_OBJ_FROM_PTR(ret_list);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 2, poll_poll);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
 STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
