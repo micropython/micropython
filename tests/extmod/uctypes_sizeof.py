@@ -6,6 +6,7 @@ desc = {
     # arr2 is array at offset 0, size 2, of structures defined recursively
     "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
     "arr3": (uctypes.ARRAY | 2, uctypes.UINT16 | 2),
+    "arr4": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0, "w": uctypes.UINT16 | 1})
 }
 
 data = bytearray(b"01234567")
@@ -24,3 +25,7 @@ try:
     print(uctypes.sizeof(S.arr3[0]))
 except TypeError:
     print("TypeError")
+
+print(uctypes.sizeof(S.arr4))
+assert uctypes.sizeof(S.arr4) == 6
+
