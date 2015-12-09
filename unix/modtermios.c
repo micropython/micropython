@@ -59,8 +59,10 @@ STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
             cc->items[i] = MP_OBJ_NEW_SMALL_INT(term.c_cc[i]);
         } else {
             // https://docs.python.org/3/library/termios.html says value is *string*,
-            // but no way unicode chars could be there.
-            cc->items[i] = mp_obj_new_bytes(&term.c_cc[i], 1);
+            // but no way unicode chars could be there, if c_cc is defined to be a
+            // a "char". But it's type is actually cc_t, which can be anything.
+            // TODO: For now, we still deal with it like that.
+            cc->items[i] = mp_obj_new_bytes((byte*)&term.c_cc[i], 1);
         }
     }
     return MP_OBJ_FROM_PTR(r);
