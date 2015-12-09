@@ -87,72 +87,51 @@ static ExtIntData extIntData[4];
 
 
 //================================================[EEPROM Management]========================================================
-#define AUTOPROG_ON     1
 
-/* Read data from EEPROM */
-/* size must be multiple of 4 bytes */
-STATIC void EEPROM_Read(uint32_t pageOffset, uint32_t pageAddr, uint32_t* ptr, uint32_t size)
+void Board_EEPROM_writeByte(uint32_t addr,uint8_t value)
 {
-    uint32_t i = 0;
-    uint32_t *pEepromMem = (uint32_t*)EEPROM_ADDRESS(pageAddr,pageOffset);
-    for(i = 0; i < size/4; i++) {
-   	ptr[i] = pEepromMem[i];
-    }
+	uint32_t addr4 = addr/4;
+	uint32_t pageAddr = addr4/EEPROM_PAGE_SIZE;
+	uint32_t pageOffset = addr4 - pageAddr*EEPROM_PAGE_SIZE;
+
+	uint32_t *pEepromMem = (uint32_t*)EEPROM_ADDRESS(pageAddr,pageOffset*4);
+	
+	// read 4 bytes in auxValue
+	uint32_t auxValue = pEepromMem[0];
+	uint8_t* pAuxValue = (uint8_t*)&auxValue;
+	
+	// modify auxValue with new Byte value
+	uint32_t indexInBlock = addr % 4;
+	pAuxValue[indexInBlock] = value;
+
+	//write auxValue back in eeprom
+	pEepromMem[0] = auxValue;
+	Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
 }
 
-/* Erase a page in EEPROM */
-STATIC void EEPROM_Erase(uint32_t pageAddr)
+uint8_t Board_EEPROM_readByte(uint32_t addr)
 {
-    uint32_t i = 0;
-    uint32_t *pEepromMem = (uint32_t*)EEPROM_ADDRESS(pageAddr,0);
-    for(i = 0; i < EEPROM_PAGE_SIZE/4; i++) {
-   	pEepromMem[i] = 0;
-	#if AUTOPROG_ON
-   	Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
- 	#endif
-    }
-    #if (AUTOPROG_ON == 0)
-    Chip_EEPROM_EraseProgramPage(LPC_EEPROM);
-    #endif
+	uint32_t addr4 = addr/4;
+	uint32_t pageAddr = addr4/EEPROM_PAGE_SIZE;
+	uint32_t pageOffset = addr4 - pageAddr*EEPROM_PAGE_SIZE;
+
+	uint32_t *pEepromMem = (uint32_t*)EEPROM_ADDRESS(pageAddr,pageOffset*4);
+	
+	// read 4 bytes in auxValue
+	uint32_t auxValue = pEepromMem[0];
+	uint8_t* pAuxValue = (uint8_t*)&auxValue;
+	
+	// modify auxValue with new Byte value
+	uint32_t indexInBlock = addr % 4;
+	return pAuxValue[indexInBlock];
+		
 }
-
-/* Write data to a page in EEPROM */
-/* size must be multiple of 4 bytes */
-STATIC void EEPROM_Write(uint32_t pageOffset, uint32_t pageAddr, uint32_t* ptr, uint32_t size)
-{
-    uint32_t i = 0;
-    uint32_t *pEepromMem = (uint32_t*)EEPROM_ADDRESS(pageAddr,pageOffset);
-
-    if(size > EEPROM_PAGE_SIZE - pageOffset)
-	size = EEPROM_PAGE_SIZE - pageOffset;
-
-    for(i = 0; i < size/4; i++) {
-   	pEepromMem[i] = ptr[i];
-	#if AUTOPROG_ON
-    	Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
- 	#endif
-    }
-
-    #if (AUTOPROG_ON == 0)
-    Chip_EEPROM_EraseProgramPage(LPC_EEPROM);
-    #endif
-}
-
 void Board_EEPROM_init(void)
 {
 	Chip_EEPROM_Init(LPC_EEPROM);
-	#if AUTOPROG_ON
   	/* Set Auto Programming mode */
- 	 Chip_EEPROM_SetAutoProg(LPC_EEPROM,EEPROM_AUTOPROG_AFT_1WORDWRITTEN);
-	#else
-  	/* Set Auto Programming mode */
-  	Chip_EEPROM_SetAutoProg(LPC_EEPROM,EEPROM_AUTOPROG_OFF);
-	#endif /*AUTOPROG_ON*/
-
-
+ 	Chip_EEPROM_SetAutoProg(LPC_EEPROM,EEPROM_AUTOPROG_AFT_1WORDWRITTEN);
 }
-
-
 //===========================================================================================================================
 
 
@@ -1292,6 +1271,8 @@ void Board_Init(void)
 	/* Initialize Keyboard disabled */
 	Board_KEYBOARD_disable();
 
+	/* Initilize EEPROM */
+	Board_EEPROM_init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }
