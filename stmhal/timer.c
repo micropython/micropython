@@ -361,13 +361,13 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
     if (0) {
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (MP_OBJ_IS_TYPE(percent_in, &mp_type_float)) {
-        float percent = mp_obj_get_float(percent_in);
+        mp_float_t percent = mp_obj_get_float(percent_in);
         if (percent <= 0.0) {
             cmp = 0;
         } else if (percent >= 100.0) {
             cmp = period;
         } else {
-            cmp = percent / 100.0 * ((float)period);
+            cmp = percent / 100.0 * ((mp_float_t)period);
         }
     #endif
     } else {
@@ -391,11 +391,11 @@ STATIC uint32_t compute_pwm_value_from_percent(uint32_t period, mp_obj_t percent
 // Helper function to compute percentage from timer perion and PWM value.
 STATIC mp_obj_t compute_percent_from_pwm_value(uint32_t period, uint32_t cmp) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    float percent;
+    mp_float_t percent;
     if (cmp >= period) {
         percent = 100.0;
     } else {
-        percent = (float)cmp * 100.0 / ((float)period);
+        percent = (mp_float_t)cmp * 100.0 / ((mp_float_t)period);
     }
     return mp_obj_new_float(percent);
     #else
