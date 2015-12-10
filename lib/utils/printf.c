@@ -102,6 +102,12 @@ STATIC void strn_print_strn(void *data, const char *str, size_t len) {
     strn_print_env->remain -= len;
 }
 
+#ifdef __GNUC__
+// uClibc requires this alias to be defined, or there may be link errors
+// when linkings against it statically.
+int __GI_vsnprintf(char *str, size_t size, const char *fmt, va_list ap) __attribute__((weak, alias ("vsnprintf")));
+#endif
+
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
     strn_print_env_t strn_print_env = {str, size};
     mp_print_t print = {&strn_print_env, strn_print_strn};
