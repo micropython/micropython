@@ -1,6 +1,6 @@
 import sys
 try:
-    import _os as os
+    import uos as os
 except ImportError:
     import os
 

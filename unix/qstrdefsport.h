@@ -34,7 +34,7 @@ Q(makefile)
 Q(FileIO)
 Q(flush)
 
-Q(_os)
+Q(uos)
 Q(stat)
 #if MICROPY_PY_OS_STATVFS
 Q(statvfs)

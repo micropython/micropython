@@ -163,7 +163,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_JNI_DEF \
     MICROPY_PY_TIME_DEF \
     MICROPY_PY_SOCKET_DEF \
-    { MP_ROM_QSTR(MP_QSTR__os), MP_ROM_PTR(&mp_module_os) }, \
+    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
     { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) }, \
     MICROPY_PY_TERMIOS_DEF \
 

@@ -156,7 +156,7 @@ STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_mkdir_obj, mod_os_mkdir);
 
 STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__os) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mod_os_stat_obj) },
     #if MICROPY_PY_OS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mod_os_statvfs_obj) },
@@ -171,6 +171,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);
 
 const mp_obj_module_t mp_module_os = {
     .base = { &mp_type_module },
-    .name = MP_QSTR__os,
+    .name = MP_QSTR_uos,
     .globals = (mp_obj_dict_t*)&mp_module_os_globals,
 };
