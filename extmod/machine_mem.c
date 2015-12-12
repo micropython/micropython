@@ -24,56 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-
-#include "py/nlr.h"
-#include "py/obj.h"
-#if MICROPY_PLAT_DEV_MEM
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#define MICROPY_PAGE_SIZE 4096
-#define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
-#endif
+#include "extmod/machine_mem.h"
 
 #if MICROPY_PY_MACHINE
-
-
-STATIC uintptr_t get_addr(mp_obj_t addr_o, uint align) {
-    uintptr_t addr = mp_obj_int_get_truncated(addr_o);
-    if ((addr & (align - 1)) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
-    }
-    #if MICROPY_PLAT_DEV_MEM
-    {
-        // Not thread-safe
-        static int fd;
-        static uintptr_t last_base = (uintptr_t)-1;
-        static uintptr_t map_page;
-        if (!fd) {
-            fd = open("/dev/mem", O_RDWR | O_SYNC);
-            if (fd == -1) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
-            }
-        }
-
-        uintptr_t cur_base = addr & ~MICROPY_PAGE_MASK;
-        if (cur_base != last_base) {
-            map_page = (uintptr_t)mmap(NULL, MICROPY_PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, cur_base);
-            last_base = cur_base;
-        }
-        addr = map_page + (addr & MICROPY_PAGE_MASK);
-    }
-    #endif
-
-    return addr;
-}
-
-typedef struct _machine_mem_obj_t {
-    mp_obj_base_t base;
-    unsigned elem_size; // in bytes
-} machine_mem_obj_t;
 
 STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -89,7 +42,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
         return MP_OBJ_NULL; // op not supported
     } else if (value == MP_OBJ_SENTINEL) {
         // load
-        uintptr_t addr = get_addr(index, self->elem_size);
+        uintptr_t addr = machine_mem_get_read_addr(index, self->elem_size);
         uint32_t val;
         switch (self->elem_size) {
             case 1: val = (*(uint8_t*)addr); break;
@@ -99,7 +52,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
         return mp_obj_new_int(val);
     } else {
         // store
-        uintptr_t addr = get_addr(index, self->elem_size);
+        uintptr_t addr = machine_mem_get_write_addr(index, self->elem_size);
         uint32_t val = mp_obj_get_int(value);
         switch (self->elem_size) {
             case 1: (*(uint8_t*)addr) = val; break;
@@ -110,31 +63,15 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     }
 }
 
-STATIC const mp_obj_type_t machine_mem_type = {
+const mp_obj_type_t machine_mem_type = {
     { &mp_type_type },
     .name = MP_QSTR_mem,
     .print = machine_mem_print,
     .subscr = machine_mem_subscr,
 };
 
-STATIC const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
-STATIC const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
-STATIC const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
-
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
-
-    { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_machine,
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
-};
+const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
+const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
+const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
 
 #endif // MICROPY_PY_MACHINE

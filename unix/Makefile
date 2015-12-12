@@ -114,6 +114,7 @@ SRC_C = \
 	unix_mphal.c \
 	input.c \
 	file.c \
+	modmachine.c \
 	modos.c \
 	moduselect.c \
 	alloc.c \
