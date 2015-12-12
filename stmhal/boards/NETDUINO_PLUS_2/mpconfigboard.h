@@ -17,9 +17,6 @@
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_SPI1      (0)
-#define MICROPY_HW_ENABLE_SPI2      (1)
-#define MICROPY_HW_ENABLE_SPI3      (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
 // HSE is 25MHz
@@ -47,6 +44,12 @@
 // I2C busses
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
+
+// SPI busses
+#define MICROPY_HW_SPI2_NSS  (pin_B12)
+#define MICROPY_HW_SPI2_SCK  (pin_B13)
+#define MICROPY_HW_SPI2_MISO (pin_B14)
+#define MICROPY_HW_SPI2_MOSI (pin_B15)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_B11)

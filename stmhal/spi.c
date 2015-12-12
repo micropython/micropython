@@ -37,30 +37,6 @@
 #include "dma.h"
 #include "spi.h"
 
-// The following defines are for compatability with the '405
-#if !defined(MICROPY_HW_SPI1_NSS)
-// X-skin: X5=PA4=SPI1_NSS, X6=PA5=SPI1_SCK, X7=PA6=SPI1_MISO, X8=PA7=SPI1_MOSI
-#define MICROPY_HW_SPI1_NSS     (pin_A4)
-#define MICROPY_HW_SPI1_SCK     (pin_A5)
-#define MICROPY_HW_SPI1_MISO    (pin_A6)
-#define MICROPY_HW_SPI1_MOSI    (pin_A7)
-#endif
-
-#if !defined(MICROPY_HW_SPI2_NSS)
-// Y-skin: Y5=PB12=SPI2_NSS, Y6=PB13=SPI2_SCK, Y7=PB14=SPI2_MISO, Y8=PB15=SPI2_MOSI
-#define MICROPY_HW_SPI2_NSS     (pin_B12)
-#define MICROPY_HW_SPI2_SCK     (pin_B13)
-#define MICROPY_HW_SPI2_MISO    (pin_B14)
-#define MICROPY_HW_SPI2_MOSI    (pin_B15)
-#endif
-
-#if !defined(MICROPY_HW_SPI3_NSS)
-#define MICROPY_HW_SPI3_NSS     (pin_A4)
-#define MICROPY_HW_SPI3_SCK     (pin_B3)
-#define MICROPY_HW_SPI3_MISO    (pin_B4)
-#define MICROPY_HW_SPI3_MOSI    (pin_B5)
-#endif
-
 /// \moduleref pyb
 /// \class SPI - a master-driven serial protocol
 ///
@@ -102,48 +78,48 @@ typedef struct _pyb_spi_obj_t {
     uint32_t rx_dma_channel;
 } pyb_spi_obj_t;
 
-#if MICROPY_HW_ENABLE_SPI1
+#if defined(MICROPY_HW_SPI1_SCK)
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
-#if MICROPY_HW_ENABLE_SPI2
+#if defined(MICROPY_HW_SPI2_SCK)
 SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
 #endif
-#if MICROPY_HW_ENABLE_SPI3
+#if defined(MICROPY_HW_SPI3_SCK)
 SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 #endif
 
 STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
-#if MICROPY_HW_ENABLE_SPI1
+    #if defined(MICROPY_HW_SPI1_SCK)
     {{&pyb_spi_type}, &SPIHandle1, DMA_STREAM_SPI1_TX, DMA_CHANNEL_SPI1_TX, DMA_STREAM_SPI1_RX, DMA_CHANNEL_SPI1_RX},
-#else
+    #else
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
-#endif
-#if MICROPY_HW_ENABLE_SPI2
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
     {{&pyb_spi_type}, &SPIHandle2, DMA_STREAM_SPI2_TX, DMA_CHANNEL_SPI2_TX, DMA_STREAM_SPI2_RX, DMA_CHANNEL_SPI2_RX},
-#else
+    #else
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
-#endif
-#if MICROPY_HW_ENABLE_SPI3
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
     {{&pyb_spi_type}, &SPIHandle3, DMA_STREAM_SPI3_TX, DMA_CHANNEL_SPI3_TX, DMA_STREAM_SPI3_RX, DMA_CHANNEL_SPI3_RX},
-#else
+    #else
     {{&pyb_spi_type}, NULL, NULL, 0, NULL, 0},
-#endif
+    #endif
 };
 
 void spi_init0(void) {
     // reset the SPI handles
-#if MICROPY_HW_ENABLE_SPI1
+    #if defined(MICROPY_HW_SPI1_SCK)
     memset(&SPIHandle1, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle1.Instance = SPI1;
-#endif
-#if MICROPY_HW_ENABLE_SPI2
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
     memset(&SPIHandle2, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle2.Instance = SPI2;
-#endif
-#if MICROPY_HW_ENABLE_SPI3
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
     memset(&SPIHandle3, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle3.Instance = SPI3;
-#endif
+    #endif
 }
 
 // TODO allow to take a list of pins to use
@@ -158,7 +134,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     const pin_obj_t *pins[4];
 
     if (0) {
-#if MICROPY_HW_ENABLE_SPI1
+    #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         self = &pyb_spi_obj[0];
         pins[0] = &MICROPY_HW_SPI1_NSS;
@@ -168,8 +144,8 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         GPIO_InitStructure.Alternate = GPIO_AF5_SPI1;
         // enable the SPI clock
         __SPI1_CLK_ENABLE();
-#endif
-#if MICROPY_HW_ENABLE_SPI2
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         self = &pyb_spi_obj[1];
         pins[0] = &MICROPY_HW_SPI2_NSS;
@@ -179,8 +155,8 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         GPIO_InitStructure.Alternate = GPIO_AF5_SPI2;
         // enable the SPI clock
         __SPI2_CLK_ENABLE();
-#endif
-#if MICROPY_HW_ENABLE_SPI3
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         self = &pyb_spi_obj[2];
         pins[0] = &MICROPY_HW_SPI3_NSS;
@@ -190,7 +166,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         GPIO_InitStructure.Alternate = GPIO_AF6_SPI3;
         // enable the SPI clock
         __SPI3_CLK_ENABLE();
-#endif
+    #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
         return;
@@ -221,24 +197,24 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
 void spi_deinit(SPI_HandleTypeDef *spi) {
     HAL_SPI_DeInit(spi);
     if (0) {
-#if MICROPY_HW_ENABLE_SPI1
+    #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         __SPI1_FORCE_RESET();
         __SPI1_RELEASE_RESET();
         __SPI1_CLK_DISABLE();
-#endif
-#if MICROPY_HW_ENABLE_SPI2
+    #endif
+    #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         __SPI2_FORCE_RESET();
         __SPI2_RELEASE_RESET();
         __SPI2_CLK_DISABLE();
-#endif
-#if MICROPY_HW_ENABLE_SPI3
+    #endif
+    #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         __SPI3_FORCE_RESET();
         __SPI3_RELEASE_RESET();
         __SPI3_CLK_DISABLE();
-#endif
+    #endif
     }
 }
 
