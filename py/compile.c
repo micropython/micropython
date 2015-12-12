@@ -662,6 +662,13 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
 }
 
 STATIC void compile_funcdef_lambdef(compiler_t *comp, scope_t *scope, mp_parse_node_t pn_params, pn_kind_t pn_list_kind) {
+    // When we call compile_funcdef_lambdef_param below it can compile an arbitrary
+    // expression for default arguments, which may contain a lambda.  The lambda will
+    // call here in a nested way, so we must save and restore the relevant state.
+    bool orig_have_star = comp->have_star;
+    uint16_t orig_num_dict_params = comp->num_dict_params;
+    uint16_t orig_num_default_params = comp->num_default_params;
+
     // compile default parameters
     comp->have_star = false;
     comp->num_dict_params = 0;
@@ -681,6 +688,11 @@ STATIC void compile_funcdef_lambdef(compiler_t *comp, scope_t *scope, mp_parse_n
 
     // make the function
     close_over_variables_etc(comp, scope, comp->num_default_params, comp->num_dict_params);
+
+    // restore state
+    comp->have_star = orig_have_star;
+    comp->num_dict_params = orig_num_dict_params;
+    comp->num_default_params = orig_num_default_params;
 }
 
 // leaves function object on stack
