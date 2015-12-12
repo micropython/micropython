@@ -252,7 +252,7 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     #if !defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
     if (htim == &TIM3_Handle) {
-        USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+        // USBD_CDC_HAL_TIM_PeriodElapsedCallback();
     } else
     #endif
     if (htim == &TIM5_Handle) {

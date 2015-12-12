@@ -271,6 +271,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   USBD_LL_DataInStage(hpcd->pData, epnum, hpcd->IN_ep[epnum].xfer_buff);
 }
 
+extern void USBD_CDC_SOF_callback(PCD_HandleTypeDef *hpcd);
 /**
   * @brief  SOF callback.
   * @param  hpcd: PCD handle
@@ -278,7 +279,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   */
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 {
-  USBD_LL_SOF(hpcd->pData);
+  USBD_CDC_SOF_callback(hpcd);
 }
 
 /**
@@ -394,7 +395,7 @@ if (pdev->id ==  USB_PHY_FS_ID)
   pcd_fs_handle.Init.dma_enable = 0;
   pcd_fs_handle.Init.low_power_enable = 0;
   pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
-  pcd_fs_handle.Init.Sof_enable = 0;
+  pcd_fs_handle.Init.Sof_enable = 1;
   pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
 #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
   pcd_fs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
