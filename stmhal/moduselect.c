@@ -33,6 +33,9 @@
 #include "py/mphal.h"
 #include "pybioctl.h"
 
+// Flags for poll()
+#define FLAG_ONESHOT (1)
+
 /// \module select - Provides select function to wait for events on a stream
 ///
 /// This module provides the select function.
@@ -223,12 +226,16 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
 
     // work out timeout (its given already in ms)
     mp_uint_t timeout = -1;
-    if (n_args == 2) {
+    int flags = 0;
+    if (n_args >= 2) {
         if (args[1] != mp_const_none) {
             mp_int_t timeout_i = mp_obj_get_int(args[1]);
             if (timeout_i >= 0) {
                 timeout = timeout_i;
             }
+        }
+        if (n_args >= 3) {
+            flags = mp_obj_get_int(args[2]);
         }
     }
 
@@ -249,6 +256,10 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
                 if (poll_obj->flags_ret != 0) {
                     mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
                     ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
+                    if (flags & FLAG_ONESHOT) {
+                        // Don't poll next time, until new event flags will be set explicitly
+                        poll_obj->flags = 0;
+                    }
                 }
             }
             return ret_list;
@@ -256,7 +267,7 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
         __WFI();
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 2, poll_poll);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
 STATIC const mp_map_elem_t poll_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_register), (mp_obj_t)&poll_register_obj },
