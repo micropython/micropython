@@ -77,6 +77,7 @@ Q(sleep_us)
 Q(ticks_ms)
 Q(ticks_us)
 Q(ticks_diff)
+Q(strftime)
 
 Q(socket)
 Q(sockaddr)
