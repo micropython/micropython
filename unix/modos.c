@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include "py/mpconfig.h"
 
 #include "py/nlr.h"
@@ -155,6 +156,50 @@ STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_mkdir_obj, mod_os_mkdir);
 
+typedef struct _mp_obj_listdir_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    DIR *dir;
+} mp_obj_listdir_t;
+
+STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
+    mp_obj_listdir_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->dir == NULL) {
+        goto done;
+    }
+    struct dirent *dirent = readdir(self->dir);
+    if (dirent == NULL) {
+        closedir(self->dir);
+        self->dir = NULL;
+    done:
+        return MP_OBJ_STOP_ITERATION;
+    }
+
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
+    #ifdef _DIRENT_HAVE_D_TYPE
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+    #else
+    t->items[1] = 0;
+    #endif
+    t->items[2] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name), false);
+    return MP_OBJ_FROM_PTR(t);
+}
+
+STATIC mp_obj_t mod_os_ilistdir(mp_uint_t n_args, const mp_obj_t *args) {
+    const char *path = ".";
+    if (n_args > 0) {
+        path = mp_obj_str_get_str(args[0]);
+    }
+    mp_obj_listdir_t *o = m_new_obj(mp_obj_listdir_t);
+    o->base.type = &mp_type_polymorph_iter;
+    o->dir = opendir(path);
+    o->iternext = listdir_next;
+    return o;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_ilistdir_obj, 0, 1, mod_os_ilistdir);
+
 STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mod_os_stat_obj) },
@@ -165,6 +210,7 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mod_os_unlink_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,112 +24,31 @@
  * THE SOFTWARE.
  */
 
-// qstrs specific to this port
+#include <stdlib.h>
 
-Q(Test)
+#include "py/nlr.h"
+#include "py/runtime.h"
 
-Q(fileno)
-Q(makefile)
+// This is universal iterator type which calls "iternext" method stored in
+// particualr object instance. (So, each instance of this time can have its
+// own iteration behavior.) Having this type saves to define type objects
+// for various internal iterator objects.
 
-Q(FileIO)
-Q(flush)
+// Any instance should have these 2 fields at the beginning
+typedef struct _mp_obj_polymorph_iter_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+} mp_obj_polymorph_iter_t;
 
-Q(uos)
-Q(stat)
-#if MICROPY_PY_OS_STATVFS
-Q(statvfs)
-#endif
-Q(system)
-Q(unlink)
-Q(getenv)
-Q(mkdir)
-Q(ilistdir)
+STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
+    mp_obj_polymorph_iter_t *self = MP_OBJ_TO_PTR(self_in);
+    // Redirect call to object instance's iternext method
+    return self->iternext(self_in);
+}
 
-Q(uselect)
-Q(poll)
-Q(register)
-Q(unregister)
-Q(modify)
-Q(POLLIN)
-Q(POLLOUT)
-Q(POLLERR)
-Q(POLLHUP)
-
-Q(ffi)
-Q(ffimod)
-Q(ffifunc)
-Q(fficallback)
-Q(ffivar)
-Q(as_bytearray)
-Q(callback)
-Q(addr)
-Q(func)
-Q(var)
-Q(get)
-Q(set)
-
-Q(input)
-Q(utime)
-Q(time)
-Q(clock)
-Q(sleep)
-Q(sleep_ms)
-Q(sleep_us)
-Q(ticks_ms)
-Q(ticks_us)
-Q(ticks_diff)
-Q(strftime)
-
-Q(socket)
-Q(sockaddr)
-Q(htons)
-Q(inet_pton)
-Q(gethostbyname)
-Q(getaddrinfo)
-Q(usocket)
-Q(connect)
-Q(bind)
-Q(listen)
-Q(accept)
-Q(recv)
-Q(recvfrom)
-Q(sendto)
-Q(setsockopt)
-Q(setblocking)
-
-Q(AF_UNIX)
-Q(AF_INET)
-Q(AF_INET6)
-Q(SOCK_STREAM)
-Q(SOCK_DGRAM)
-Q(SOCK_RAW)
-
-Q(MSG_DONTROUTE)
-Q(MSG_DONTWAIT)
-
-Q(SOL_SOCKET)
-Q(SO_BROADCAST)
-Q(SO_ERROR)
-Q(SO_KEEPALIVE)
-Q(SO_LINGER)
-Q(SO_REUSEADDR)
-
-#if MICROPY_PY_TERMIOS
-Q(termios)
-Q(tcgetattr)
-Q(tcsetattr)
-Q(setraw)
-Q(TCSANOW)
-Q(B9600)
-Q(B57600)
-Q(B115200)
-#endif
-
-#if MICROPY_PY_JNI
-Q(jni)
-Q(cls)
-Q(env)
-Q(jclass)
-Q(jobject)
-Q(jmethod)
-#endif
+const mp_obj_type_t mp_type_polymorph_iter = {
+    { &mp_type_type },
+    .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
+    .iternext = polymorph_it_iternext,
+};
