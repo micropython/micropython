@@ -376,3 +376,80 @@ while(True):
 ```
 
 Constructor's arguments are number of lines (1,2,3 o 4) and dot format (0:5x8 - 1:5x10).
+
+
+## Internal EEPROM over pyb.EEPROM
+
+Primitive variables read and write example:
+```python
+import pyb
+
+eeprom = pyb.EEPROM()
+
+# R/W bytes test
+eeprom.write_byte(0x0000,0x27)
+eeprom.write_byte(0x0004,0x28)
+for addr in range (0,16):
+    val = eeprom.read_byte(addr)
+    print(hex(val))
+
+# R/W 32bit integers test
+eeprom.write_int(0x0000,0x11223344)
+eeprom.write_int(0x0004,0x12345678)
+val = eeprom.read_int(0x0000)
+print(hex(val))
+val = eeprom.read_int(0x0004)
+print(hex(val))
+
+
+# R/W 64bit doubles test
+eeprom.write_float(0x0000,3.14)
+val = eeprom.read_float(0x0000)
+print(str(val))
+```
+EEPROM class has methods for bytes, ints, floats and strings read and writing
+
+- write_byte: Write a byte in the specified address and returns the number of bytes written (1 byte)
+- write_int: Write an integer in the specified address and returns the number of bytes written (4 bytes)
+- write_float: Write a float in the specified address and returns the number of bytes written (4 bytes)
+- write : Write a String at the beginning of the memory (0x0000 address) 
+
+- read_byte: Read a byte from the specified address
+- read_int: Read an integer from the specified address
+- read_float: Read a float from the specified address
+- readall : Read a String from the beginning of the memory (0x0000 address)
+
+EEPROM's size is 16Kbytes.
+
+Serialize a python Dict using JSON example:
+```python
+import pyb
+import json
+
+dic = dict()
+dic["k1"] = "Hello"
+dic["k2"] = "World"
+dic["k3"] = 2016
+dic["k4"] = 3.14
+print("Python Dict obj:")
+print(dic)
+
+#write dict in eeprom
+jsonStr = json.dumps(dic)
+print("JSON to write:")
+print(jsonStr)
+eeprom = pyb.EEPROM()
+eeprom.write(jsonStr)
+
+
+# read dict from eeprom
+print("Python Dict obj from EEPROM:")
+jsonStr = eeprom.readall()
+dic = json.loads(jsonStr)
+print(dic)
+```
+
+In this example a python Dict is created and serialized using json module. Then json String is written in EEPROM memory using "write" method.
+Python Dict is rebuilt reading json string from EEPROM ("readall" method) and using "loads" method from json module
+
+

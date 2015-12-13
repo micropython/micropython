@@ -25,12 +25,14 @@
  */
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "board.h"
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
 typedef struct _pyb_eeprom_obj_t {
     mp_obj_base_t base;
+    uint32_t currentIndex;
 } pyb_eeprom_obj_t;
 
 STATIC pyb_eeprom_obj_t pyb_eeprom_obj[] = {
@@ -46,7 +48,7 @@ void pyb_eeprom_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 
 STATIC mp_obj_t pyb_eeprom_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-
+    pyb_eeprom_obj[0].currentIndex=0;
     return (mp_obj_t)&pyb_eeprom_obj[0];
 }
 
@@ -136,22 +138,107 @@ mp_obj_t pyb_eeprom_write_float(mp_obj_t self_in,mp_obj_t mpAddr,mp_obj_t mpValu
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_eeprom_write_float_obj, pyb_eeprom_write_float);
 
 
+// functions used by streams
+STATIC mp_uint_t pyb_eeprom_write_m(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+
+    const byte *buf = buf_in;
+
+    if((size+1)>=(16*1024)) // 16Kbytes max
+	    return 0;
+
+    // write the data
+    uint32_t addr;
+    for(addr=0; addr<size; addr++)
+	    mp_hal_writeByteEEPROM(addr,buf[addr]);
+
+    mp_hal_writeByteEEPROM(addr,0x00);
+
+    return size+1;
+}
+
+STATIC mp_uint_t pyb_eeprom_read_m(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    pyb_eeprom_obj_t *self = self_in;
+    byte *buf = buf_in;
+
+	if(self->currentIndex==-1)
+	{
+		self->currentIndex=0;
+		return 0; // end of reading
+	}
+	
+	if(mp_hal_readByteEEPROM(self->currentIndex)==0x00)
+		return 0; // end of reading
+	
+    if (size == 0) {
+        return 0;
+    }
+
+    uint32_t i;
+    uint8_t data;
+    uint32_t c=0;
+    i=self->currentIndex;
+    while(1) {
+		data = mp_hal_readByteEEPROM(i);
+        *buf++ = data;
+        size--;
+        i++;
+        c++;
+        if(size==0)
+            break;
+		if(data==0x00)
+			break;	
+    }
+
+    if(data!=0x00 && mp_hal_readByteEEPROM(i)!=0x00)
+    {
+           // reading not finished. save current index for next reading
+           self->currentIndex = i;
+    }
+    else
+    {       // packet cleaning
+        self->currentIndex=-1;
+        if(data==0x00){
+			if(c>0)
+				c--; // 0x00 does not count
+		}
+    }
+
+    return c;
+}
+
+
+
 
 STATIC const mp_map_elem_t pyb_eeprom_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_byte), (mp_obj_t)&pyb_eeprom_read_byte_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_int), (mp_obj_t)&pyb_eeprom_read_int_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_float), (mp_obj_t)&pyb_eeprom_read_float_obj },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_byte), (mp_obj_t)&pyb_eeprom_write_byte_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_int), (mp_obj_t)&pyb_eeprom_write_int_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_float), (mp_obj_t)&pyb_eeprom_write_float_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+
+    /// \method readall()
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_eeprom_locals_dict, pyb_eeprom_locals_dict_table);
+
+
+STATIC const mp_stream_p_t eeprom_stream_p = {
+    .read = pyb_eeprom_read_m,
+    .write = pyb_eeprom_write_m,
+    .is_text = true,
+};
 
 const mp_obj_type_t pyb_eeprom_type = {
     { &mp_type_type },
     .name = MP_QSTR_EEPROM,
     .print = pyb_eeprom_print,
     .make_new = pyb_eeprom_make_new,
+    .stream_p = &eeprom_stream_p,
     .locals_dict = (mp_obj_t)&pyb_eeprom_locals_dict,
 };
