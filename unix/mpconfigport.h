@@ -250,3 +250,8 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #include <alloca.h>
 #endif
 #endif
+
+#ifndef _DIRENT_HAVE_D_TYPE
+// Proactively assume that dirent->d_type is available on a modern *nix system
+#define _DIRENT_HAVE_D_TYPE (1)
+#endif

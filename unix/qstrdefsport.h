@@ -43,6 +43,7 @@ Q(system)
 Q(unlink)
 Q(getenv)
 Q(mkdir)
+Q(ilistdir)
 
 Q(uselect)
 Q(poll)
