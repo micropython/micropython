@@ -48,7 +48,7 @@
 
 #define USE_USB_HS
 #define USE_USB_HS_IN_FS
-
+#define USE_USB_PHY_1  USB_PHY_HS_IN_FS_ID
  /* ########################## Module Selection ############################## */
 /**
   * @brief This is the list of modules to be used in the HAL driver 
