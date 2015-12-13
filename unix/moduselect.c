@@ -25,6 +25,10 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_USELECT
+
 #include <stdio.h>
 #include <errno.h>
 #include <poll.h>
@@ -212,3 +216,5 @@ const mp_obj_module_t mp_module_uselect = {
     .name = MP_QSTR_uselect,
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
+
+#endif // MICROPY_PY_USELECT

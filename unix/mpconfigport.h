@@ -104,6 +104,9 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UBINASCII        (1)
+#ifndef MICROPY_PY_USELECT
+#define MICROPY_PY_USELECT          (1)
+#endif
 #define MICROPY_PY_MACHINE          (1)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
@@ -158,6 +161,11 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #else
 #define MICROPY_PY_SOCKET_DEF
 #endif
+#if MICROPY_PY_USELECT
+#define MICROPY_PY_USELECT_DEF { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
+#else
+#define MICROPY_PY_USELECT_DEF
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_PY_FFI_DEF \
@@ -166,7 +174,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_SOCKET_DEF \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
-    { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) }, \
+    MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
