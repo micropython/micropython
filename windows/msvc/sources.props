@@ -12,7 +12,8 @@
     <ClCompile Include="$(PyBaseDir)unix\main.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modos.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modtime.c"/>
-    <ClCompile Include="$(PyBaseDir)extmod\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)unix\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\machine_mem.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modubinascii.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moductypes.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduhashlib.c" />
