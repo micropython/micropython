@@ -25,8 +25,34 @@
  */
 
 #include "extmod/machine_mem.h"
+#include "py/nlr.h"
 
 #if MICROPY_PY_MACHINE
+
+// If you wish to override the functions for mapping the machine_mem read/write
+// address, then add a #define for MICROPY_MACHINE_MEM_GET_READ_ADDR and/or
+// MICROPY_MACHINE_MEM_GET_WRITE_ADDR in yopur mpconfigport.h. Since the
+// prototypes are identical, it is allowable for both of the macros to evaluate
+// the to same function.
+//
+// It is expected that the modmachine.c file for a given port will provide the
+// implementations, if the default implementation isn't used.
+
+#if !defined(MICROPY_MACHINE_MEM_GET_READ_ADDR) || !defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
+STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
+    uintptr_t addr = mp_obj_int_get_truncated(addr_o);
+    if ((addr & (align - 1)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
+    }
+    return addr;
+}
+#if !defined(MICROPY_MACHINE_MEM_GET_READ_ADDR)
+#define MICROPY_MACHINE_MEM_GET_READ_ADDR machine_mem_get_addr
+#endif
+#if !defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
+#define MICROPY_MACHINE_MEM_GET_WRITE_ADDR machine_mem_get_addr
+#endif
+#endif
 
 STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -42,7 +68,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
         return MP_OBJ_NULL; // op not supported
     } else if (value == MP_OBJ_SENTINEL) {
         // load
-        uintptr_t addr = machine_mem_get_read_addr(index, self->elem_size);
+        uintptr_t addr = MICROPY_MACHINE_MEM_GET_READ_ADDR(index, self->elem_size);
         uint32_t val;
         switch (self->elem_size) {
             case 1: val = (*(uint8_t*)addr); break;
@@ -52,7 +78,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
         return mp_obj_new_int(val);
     } else {
         // store
-        uintptr_t addr = machine_mem_get_write_addr(index, self->elem_size);
+        uintptr_t addr = MICROPY_MACHINE_MEM_GET_WRITE_ADDR(index, self->elem_size);
         uint32_t val = mp_obj_get_int(value);
         switch (self->elem_size) {
             case 1: (*(uint8_t*)addr) = val; break;
