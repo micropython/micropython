@@ -250,3 +250,12 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #include <alloca.h>
 #endif
 #endif
+
+// From "man readdir": "Under glibc, programs can check for the availability
+// of the fields [in struct dirent] not defined in POSIX.1 by testing whether
+// the macros [...], _DIRENT_HAVE_D_TYPE are defined."
+// Other libc's don't define it, but proactively assume that dirent->d_type
+// is available on a modern *nix system.
+#ifndef _DIRENT_HAVE_D_TYPE
+#define _DIRENT_HAVE_D_TYPE (1)
+#endif
