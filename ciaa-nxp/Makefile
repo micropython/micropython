@@ -61,6 +61,7 @@ SRC_C = \
 	modpybadc.c \
 	modpybkeyboard.c \
 	modpyblcd44780u.c \
+	modpybeeprom.c \
 	bootSys.c  \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \

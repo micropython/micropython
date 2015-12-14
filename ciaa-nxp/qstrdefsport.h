@@ -148,4 +148,11 @@ Q(clear)
 Q(goto_xy)
 Q(config_cursor)
 
+Q(EEPROM)
+Q(read_byte)
+Q(write_byte)
+Q(read_int)
+Q(write_int)
+Q(read_float)
+Q(write_float)
 

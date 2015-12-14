@@ -325,3 +325,84 @@ El constructor recibe la cantidad de lineas (1,2,3 o 4) y el formato del caracte
 
   
 
+##### Soporte para EEPROM interna
+
+Clase `pyb.EEPROM`.
+
+Ejemplo lectura y escritura de variables primitivas:
+```python
+import pyb
+
+eeprom = pyb.EEPROM()
+
+# R/W bytes test
+eeprom.write_byte(0x0000,0x27)
+eeprom.write_byte(0x0004,0x28)
+for addr in range (0,16):
+    val = eeprom.read_byte(addr)
+    print(hex(val))
+
+# R/W 32bit integers test
+eeprom.write_int(0x0000,0x11223344)
+eeprom.write_int(0x0004,0x12345678)
+val = eeprom.read_int(0x0000)
+print(hex(val))
+val = eeprom.read_int(0x0004)
+print(hex(val))
+
+
+# R/W 64bit doubles test
+eeprom.write_float(0x0000,3.14)
+val = eeprom.read_float(0x0000)
+print(str(val))
+```
+La clase EEPROM posee metodos para leer y escribir bytes (8bit) enteros (32bits), numeros con punto flotante (32bits) y Strings.
+
+- write_byte: Escribe un byte en la direccion indicada y devuelve la cantidad de bytes escritos (1 byte)
+- write_int: Escribe un entero en la direccion indicada y devuelve la cantidad de bytes escritos (4 bytes)
+- write_float: Escribe un float en la direccion indicada y devuelve la cantidad de bytes escritos (4 bytes)
+- write : Escribe un String a partir de la direccion 0x0000 de la EEPROM
+
+- read_byte: Lee un byte en la direccion indicada
+- read_int: Lee un entero desde la direccion indicada
+- read_float: Lee un float desde la direccion indicada
+- readall : Lee un string desde la direccion 0x0000 de la EEPROM
+
+La capacidad de la EEPROM es de 16Kbytes.
+
+Ejemplo lectura y escritura de un diccionario usando JSON:
+```python
+import pyb
+import json
+
+dic = dict()
+dic["k1"] = "Hello"
+dic["k2"] = "World"
+dic["k3"] = 2016
+dic["k4"] = 3.14
+print("Python Dict obj:")
+print(dic)
+
+#write dict in eeprom
+jsonStr = json.dumps(dic)
+print("JSON to write:")
+print(jsonStr)
+eeprom = pyb.EEPROM()
+eeprom.write(jsonStr)
+
+
+# read dict from eeprom
+print("Python Dict obj from EEPROM:")
+jsonStr = eeprom.readall()
+dic = json.loads(jsonStr)
+print(dic)
+```
+
+En este ejemplo se crea un dicionario python y luego se serializa utilizando el modulo json, una vez obtenido el string que representa al diccionario, se graba
+en la EEPROM mediante el metodo "write". 
+Para volver a construir el diccionario, se lee el string desde la EEPROM mediante el metodo "readall" y luego se decodifica mediante el metodo "loads" del modulo json.
+
+
+
+
+

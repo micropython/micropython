@@ -382,3 +382,13 @@ void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff)
 	Board_LCD_configCursor(onOff,blinkOnOff);
 }
 
+//EEPROM
+void mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value)
+{
+	Board_EEPROM_writeByte(addr,value);
+}
+
+uint8_t mp_hal_readByteEEPROM(uint32_t addr)
+{
+	return Board_EEPROM_readByte(addr);
+}
