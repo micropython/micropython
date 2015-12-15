@@ -44,6 +44,7 @@ Q(unlink)
 Q(getenv)
 Q(mkdir)
 Q(ilistdir)
+Q(errno)
 
 Q(uselect)
 Q(poll)
