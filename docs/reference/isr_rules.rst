@@ -122,6 +122,12 @@ On platforms with hardware floating point (such as the Pyboard) the inline ARM T
 round this limitation. This is because the processor stores float values in a machine word; values can be shared
 between the ISR and main program code via an array of floats.
 
+Exceptions
+----------
+
+If an ISR raises an exception it will not propagate to the main loop. The interrupt will be disabled unless the
+exception is handled by the ISR code.
+
 General Issues
 --------------
 
