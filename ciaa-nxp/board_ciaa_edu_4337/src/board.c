@@ -360,6 +360,8 @@ void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t ma
         Chip_TIMER_MatchEnableInt(t, match); // enable int for match 0
         if(flagOnce==1)
         { 
+			Board_TIMER_DisableTimer(timerNum);
+			Board_TIMER_SetTimerCounter(timerNum,0);
 			Chip_TIMER_ResetOnMatchDisable(t, match); // reset count on match0
 		}
 		else 
