@@ -182,12 +182,12 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
     t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
     #else
     // DT_UNKNOWN should have 0 value on any reasonable system
-    t->items[1] = 0;
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
     #endif
     #if !defined(_DIRENT_HAVE_D_INO) || _DIRENT_HAVE_D_INO
     t->items[2] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
     #else
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     #endif
     return MP_OBJ_FROM_PTR(t);
 }
