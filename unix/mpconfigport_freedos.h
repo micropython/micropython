@@ -35,4 +35,4 @@
 #define MICROPY_PY_SYS_PLATFORM "freedos"
 
 // djgpp dirent struct does not have d_ino field
-#define _DIRENT_HAVE_D_INO (0)
+#undef _DIRENT_HAVE_D_INO

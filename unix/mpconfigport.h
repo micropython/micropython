@@ -259,3 +259,8 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #ifndef _DIRENT_HAVE_D_TYPE
 #define _DIRENT_HAVE_D_TYPE (1)
 #endif
+// This macro is not provided by glibc but we need it so ports that don't have
+// dirent->d_ino can disable the use of this field.
+#ifndef _DIRENT_HAVE_D_INO
+#define _DIRENT_HAVE_D_INO (1)
+#endif
