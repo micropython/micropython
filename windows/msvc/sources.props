@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="env.props" Condition="$(PyEnvIncluded)!=True"/>
+  <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
   <ItemGroup>
     <ClCompile Include="$(PyBaseDir)py\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
@@ -12,7 +12,8 @@
     <ClCompile Include="$(PyBaseDir)unix\main.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modos.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modtime.c"/>
-    <ClCompile Include="$(PyBaseDir)extmod\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)unix\modmachine.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\machine_mem.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modubinascii.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moductypes.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduhashlib.c" />

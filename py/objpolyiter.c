@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,31 @@
  * THE SOFTWARE.
  */
 
-extern SPI_HandleTypeDef SPIHandle1;
-extern SPI_HandleTypeDef SPIHandle2;
-extern SPI_HandleTypeDef SPIHandle3;
-extern SPI_HandleTypeDef SPIHandle4;
-extern SPI_HandleTypeDef SPIHandle5;
-extern SPI_HandleTypeDef SPIHandle6;
-extern const mp_obj_type_t pyb_spi_type;
+#include <stdlib.h>
 
-void spi_init0(void);
-void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
-SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);
+#include "py/nlr.h"
+#include "py/runtime.h"
+
+// This is universal iterator type which calls "iternext" method stored in
+// particular object instance. (So, each instance of this time can have its
+// own iteration behavior.) Having this type saves to define type objects
+// for various internal iterator objects.
+
+// Any instance should have these 2 fields at the beginning
+typedef struct _mp_obj_polymorph_iter_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+} mp_obj_polymorph_iter_t;
+
+STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
+    mp_obj_polymorph_iter_t *self = MP_OBJ_TO_PTR(self_in);
+    // Redirect call to object instance's iternext method
+    return self->iternext(self_in);
+}
+
+const mp_obj_type_t mp_type_polymorph_iter = {
+    { &mp_type_type },
+    .name = MP_QSTR_iterator,
+    .getiter = mp_identity,
+    .iternext = polymorph_it_iternext,
+};

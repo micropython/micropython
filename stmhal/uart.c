@@ -458,22 +458,25 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     };
 
     // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    struct {
+        mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, read_buf_len;
+    } args;
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     // set the UART configuration values
     memset(&self->uart, 0, sizeof(self->uart));
     UART_InitTypeDef *init = &self->uart.Init;
 
     // baudrate
-    init->BaudRate = args[0].u_int;
+    init->BaudRate = args.baudrate.u_int;
 
     // parity
-    mp_int_t bits = args[1].u_int;
-    if (args[2].u_obj == mp_const_none) {
+    mp_int_t bits = args.bits.u_int;
+    if (args.parity.u_obj == mp_const_none) {
         init->Parity = UART_PARITY_NONE;
     } else {
-        mp_int_t parity = mp_obj_get_int(args[2].u_obj);
+        mp_int_t parity = mp_obj_get_int(args.parity.u_obj);
         init->Parity = (parity & 1) ? UART_PARITY_ODD : UART_PARITY_EVEN;
         bits += 1; // STs convention has bits including parity
     }
@@ -488,13 +491,13 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     }
 
     // stop bits
-    switch (args[3].u_int) {
+    switch (args.stop.u_int) {
         case 1: init->StopBits = UART_STOPBITS_1; break;
         default: init->StopBits = UART_STOPBITS_2; break;
     }
 
     // flow control
-    init->HwFlowCtl = args[4].u_int;
+    init->HwFlowCtl = args.flow.u_int;
 
     // extra config (not yet configurable)
     init->Mode = UART_MODE_TX_RX;
@@ -506,11 +509,11 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     }
 
     // set timeout
-    self->timeout = args[5].u_int;
+    self->timeout = args.timeout.u_int;
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
-    self->timeout_char = args[6].u_int;
+    self->timeout_char = args.timeout_char.u_int;
     uint32_t min_timeout_char = 13000 / init->BaudRate + 1;
     if (self->timeout_char < min_timeout_char) {
         self->timeout_char = min_timeout_char;
@@ -531,7 +534,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     }
     self->read_buf_head = 0;
     self->read_buf_tail = 0;
-    if (args[7].u_int <= 0) {
+    if (args.read_buf_len.u_int <= 0) {
         // no read buffer
         self->read_buf_len = 0;
         self->read_buf = NULL;
@@ -539,7 +542,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
     } else {
         // read buffer using interrupts
-        self->read_buf_len = args[7].u_int + 1; // +1 to adjust for usable length of buffer
+        self->read_buf_len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
         self->read_buf = m_new(byte, self->read_buf_len << self->char_width);
         __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
         HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_UART, IRQ_SUBPRI_UART); 

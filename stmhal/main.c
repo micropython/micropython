@@ -103,6 +103,7 @@ void NORETURN __fatal_error(const char *msg) {
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
+    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)val);
     __fatal_error("");
 }
 
@@ -529,7 +530,7 @@ soft_reset:
 
     // run boot.py, if it exists
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
-    if (reset_mode == 1) {
+    if (reset_mode == 1 || reset_mode == 3) {
         const char *boot_py = "boot.py";
         FRESULT res = f_stat(boot_py, NULL);
         if (res == FR_OK) {
@@ -585,7 +586,7 @@ soft_reset:
     // At this point everything is fully configured and initialised.
 
     // Run the main script from the current directory.
-    if (reset_mode == 1 && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    if ((reset_mode == 1 || reset_mode == 3) && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         const char *main_py;
         if (MP_STATE_PORT(pyb_config_main) == MP_OBJ_NULL) {
             main_py = "main.py";

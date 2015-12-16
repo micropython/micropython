@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,27 @@
  * THE SOFTWARE.
  */
 
-extern SPI_HandleTypeDef SPIHandle1;
-extern SPI_HandleTypeDef SPIHandle2;
-extern SPI_HandleTypeDef SPIHandle3;
-extern SPI_HandleTypeDef SPIHandle4;
-extern SPI_HandleTypeDef SPIHandle5;
-extern SPI_HandleTypeDef SPIHandle6;
-extern const mp_obj_type_t pyb_spi_type;
 
-void spi_init0(void);
-void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
-SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);
+#ifndef MICROPY_EXTMOD_MACHINE_MEM
+#define MICROPY_EXTMOD_MACHINE_MEM
+
+#include "py/obj.h"
+
+typedef struct _machine_mem_obj_t {
+    mp_obj_base_t base;
+    unsigned elem_size; // in bytes
+} machine_mem_obj_t;
+
+extern const mp_obj_type_t machine_mem_type;
+
+extern const machine_mem_obj_t machine_mem8_obj;
+extern const machine_mem_obj_t machine_mem16_obj;
+extern const machine_mem_obj_t machine_mem32_obj;
+
+// It is expected that a port will provide the following 2 functions.
+// We define the prototypes here, but the modmachine.c file for a port should
+// provide the implementation
+uintptr_t machine_mem_get_read_addr(mp_obj_t addr_o, uint align);
+uintptr_t machine_mem_get_write_addr(mp_obj_t addr_o, uint align);
+
+#endif /*  MICROPY_EXTMOD_MACHINE_MEM */

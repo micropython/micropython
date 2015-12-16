@@ -37,6 +37,13 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
 
+// these are for mp_get_stream_raise and can be or'd together
+#define MP_STREAM_OP_READ (1)
+#define MP_STREAM_OP_WRITE (2)
+#define MP_STREAM_OP_IOCTL (4)
+
+const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
+
 // Iterator which uses mp_stream_unbuffered_readline_obj
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 

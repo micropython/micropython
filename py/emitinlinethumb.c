@@ -161,6 +161,13 @@ STATIC const reg_name_t reg_name_table[] = {
     {15, "pc\0"},
 };
 
+#define MAX_SPECIAL_REGISTER_NAME_LENGTH 7
+typedef struct _special_reg_name_t { byte reg; char name[MAX_SPECIAL_REGISTER_NAME_LENGTH + 1]; } special_reg_name_t;
+STATIC const special_reg_name_t special_reg_name_table[] = {
+    {5, "IPSR"},
+    {17, "BASEPRI"},
+};
+
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
 STATIC const char *get_arg_str(mp_parse_node_t pn) {
@@ -193,6 +200,20 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     emit_inline_thumb_error_exc(emit,
         mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
             "'%s' expects a register", op));
+    return 0;
+}
+
+STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+    const char *reg_str = get_arg_str(pn);
+    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(special_reg_name_table); i++) {
+        const special_reg_name_t *r = &special_reg_name_table[i];
+        if (strcmp(r->name, reg_str) == 0) {
+            return r->reg;
+        }
+    }
+    emit_inline_thumb_error_exc(emit,
+        mp_obj_new_exception_msg_varg(&mp_type_SyntaxError,
+            "'%s' expects a special register", op));
     return 0;
 }
 
@@ -627,6 +648,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 op_code_hi = 0xfa90;
                 op_code = 0xf0a0;
                 goto op_clz_rbit;
+            } else if (ARMV7M && strcmp(op_str, "mrs") == 0){
+                mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 12);
+                mp_uint_t reg_src = get_arg_special_reg(emit, op_str, pn_args[1]);
+                asm_thumb_op32(emit->as, 0xf3ef, 0x8000 | (reg_dest << 8) | reg_src);
             } else {
                 if (strcmp(op_str, "and_") == 0) {
                     op_code = ASM_THUMB_FORMAT_4_AND;

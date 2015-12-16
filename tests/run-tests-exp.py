@@ -6,7 +6,7 @@
 # which is to be tested, so should use minimal language functionality.
 #
 import sys
-import _os as os
+import uos as os
 
 
 tests = [

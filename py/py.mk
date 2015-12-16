@@ -122,6 +122,7 @@ PY_O_BASENAME = \
 	objmap.o \
 	objmodule.o \
 	objobject.o \
+	objpolyiter.o \
 	objproperty.o \
 	objnone.o \
 	objnamedtuple.o \
@@ -165,7 +166,7 @@ PY_O_BASENAME = \
 	../extmod/moduheapq.o \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
-	../extmod/modmachine.o \
+	../extmod/machine_mem.o \
 	../extmod/modussl.o \
 	../extmod/fsusermount.o \
 

@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,15 @@
  * THE SOFTWARE.
  */
 
-extern SPI_HandleTypeDef SPIHandle1;
-extern SPI_HandleTypeDef SPIHandle2;
-extern SPI_HandleTypeDef SPIHandle3;
-extern SPI_HandleTypeDef SPIHandle4;
-extern SPI_HandleTypeDef SPIHandle5;
-extern SPI_HandleTypeDef SPIHandle6;
-extern const mp_obj_type_t pyb_spi_type;
+// options to control how MicroPython is built
 
-void spi_init0(void);
-void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
-SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);
+#include <mpconfigport.h>
+
+#undef MICROPY_STREAMS_NON_BLOCK
+#define MICROPY_STREAMS_NON_BLOCK (0)
+
+#undef MICROPY_PY_SYS_PLATFORM
+#define MICROPY_PY_SYS_PLATFORM "freedos"
+
+// djgpp dirent struct does not have d_ino field
+#undef _DIRENT_HAVE_D_INO

@@ -38,6 +38,14 @@ For example::
     services running on the WiPy. Any changes performed using this class' methods will
     affect both.
 
+    Example::
+
+    import network
+    s = network.server()
+    s.deinit() # disable the server
+    # enable the server again with new settings
+    s.init(login=('user', 'password'), timeout=600)
+
     Constructors
     ------------
 

@@ -114,6 +114,7 @@ SRC_C = \
 	unix_mphal.c \
 	input.c \
 	file.c \
+	modmachine.c \
 	modos.c \
 	moduselect.c \
 	alloc.c \
@@ -124,6 +125,8 @@ SRC_C = \
 ifeq ($(PROG),micropython)
 SRC_C += $(BUILD)/_frozen_upip.c
 else ifeq ($(PROG),micropython_coverage)
+SRC_C += $(BUILD)/_frozen_upip.c
+else ifeq ($(PROG), micropython_freedos)
 SRC_C += $(BUILD)/_frozen_upip.c
 endif
 
@@ -167,6 +170,16 @@ fast:
 # build a minimal interpreter
 minimal:
 	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' BUILD=build-minimal PROG=micropython_minimal MICROPY_PY_TIME=0 MICROPY_PY_TERMIOS=0 MICROPY_PY_SOCKET=0 MICROPY_PY_FFI=0 MICROPY_USE_READLINE=0
+
+freedos:
+	$(MAKE) \
+	CC=i586-pc-msdosdjgpp-gcc \
+	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_freedos.h>" -DMICROPY_NLR_SETJMP -Dtgamma=gamma -DMICROPY_EMIT_X86=0 -DMICROPY_NO_ALLOCA=1 -DMICROPY_PY_USELECT=0' \
+	BUILD=build-freedos \
+	PROG=micropython_freedos \
+	MICROPY_PY_SOCKET=0 \
+	MICROPY_PY_FFI=0 \
+	MICROPY_PY_JNI=0
 
 # build an interpreter for coverage testing and do the testing
 coverage:

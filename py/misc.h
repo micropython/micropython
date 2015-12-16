@@ -31,6 +31,7 @@
 /** types *******************************************************/
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stddef.h>
 
 typedef unsigned char byte;
@@ -106,7 +107,6 @@ size_t m_get_peak_bytes_allocated(void);
 /** unichar / UTF-8 *********************************************/
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-#include <stdint.h> // only include if we need it
 // with unicode enabled we need a type which can fit chars up to 0x10ffff
 typedef uint32_t unichar;
 #else

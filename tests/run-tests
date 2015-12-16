@@ -182,12 +182,19 @@ def run_tests(pyb, tests, args):
         skip_tests.add('cmdline/cmd_showbc.py')
 
     upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
+    has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
     cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
+
+    if not has_complex:
+        skip_tests.add('float/complex1.py')
+        skip_tests.add('float/int_big_float.py')
+        skip_tests.add('float/true_value.py')
+        skip_tests.add('float/types.py')
 
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
@@ -230,6 +237,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
         skip_tests.add('basics/exception_chain.py') # raise from is not supported
+        skip_tests.add('basics/for_range.py') # requires yield_value
         skip_tests.add('basics/try_finally_loops.py') # requires proper try finally code
         skip_tests.add('basics/try_finally_return.py') # requires proper try finally code
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local

@@ -10,3 +10,22 @@ class Sub(Base):
 
 
 Sub.foo()
+
+# overriding a member and accessing it via a classmethod
+
+class A(object):
+    foo = 0
+
+    @classmethod
+    def bar(cls):
+        print(cls.foo)
+
+    def baz(self):
+        print(self.foo)
+
+class B(A):
+    foo = 1
+
+B.bar() # class calling classmethod
+B().bar() # instance calling classmethod
+B().baz() # instance calling normal method

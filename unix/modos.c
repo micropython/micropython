@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include "py/mpconfig.h"
 
 #include "py/nlr.h"
@@ -155,8 +156,68 @@ STATIC mp_obj_t mod_os_mkdir(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_mkdir_obj, mod_os_mkdir);
 
+typedef struct _mp_obj_listdir_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    DIR *dir;
+} mp_obj_listdir_t;
+
+STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
+    mp_obj_listdir_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->dir == NULL) {
+        goto done;
+    }
+    struct dirent *dirent = readdir(self->dir);
+    if (dirent == NULL) {
+        closedir(self->dir);
+        self->dir = NULL;
+    done:
+        return MP_OBJ_STOP_ITERATION;
+    }
+
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+    t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name), false);
+    #ifdef _DIRENT_HAVE_D_TYPE
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+    #else
+    // DT_UNKNOWN should have 0 value on any reasonable system
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
+    #endif
+    #ifdef _DIRENT_HAVE_D_INO
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(dirent->d_ino);
+    #else
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);
+    #endif
+    return MP_OBJ_FROM_PTR(t);
+}
+
+STATIC mp_obj_t mod_os_ilistdir(mp_uint_t n_args, const mp_obj_t *args) {
+    const char *path = ".";
+    if (n_args > 0) {
+        path = mp_obj_str_get_str(args[0]);
+    }
+    mp_obj_listdir_t *o = m_new_obj(mp_obj_listdir_t);
+    o->base.type = &mp_type_polymorph_iter;
+    o->dir = opendir(path);
+    o->iternext = listdir_next;
+    return MP_OBJ_FROM_PTR(o);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_ilistdir_obj, 0, 1, mod_os_ilistdir);
+
+STATIC mp_obj_t mod_os_errno(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(errno);
+    }
+
+    errno = mp_obj_get_int(args[0]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_errno_obj, 0, 1, mod_os_errno);
+
 STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__os) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mod_os_errno_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mod_os_stat_obj) },
     #if MICROPY_PY_OS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mod_os_statvfs_obj) },
@@ -165,12 +226,13 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mod_os_unlink_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);
 
 const mp_obj_module_t mp_module_os = {
     .base = { &mp_type_module },
-    .name = MP_QSTR__os,
+    .name = MP_QSTR_uos,
     .globals = (mp_obj_dict_t*)&mp_module_os_globals,
 };

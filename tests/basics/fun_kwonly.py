@@ -57,3 +57,10 @@ def f(a, *b, c):
 f(1, c=2)
 f(1, 2, c=3)
 f(a=1, c=3)
+
+# lambda as kw-only arg (exposes nested behaviour in compiler)
+def f(*, x=lambda:1):
+    return x()
+print(f())
+print(f(x=f))
+print(f(x=lambda:2))

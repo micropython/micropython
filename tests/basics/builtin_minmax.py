@@ -29,3 +29,13 @@ try:
     min([])
 except ValueError:
     print("ValueError")
+
+# 'default' tests
+print(min([1, 2, 3, 4, 5], default=-1))
+print(min([], default=-1))
+print(max([1, 2, 3, 4, 5], default=-1))
+print(max([], default=-1))
+# make sure it works with lazy iterables
+# can't use Python generators here, as they're not supported
+# byy native codegenerator.
+print(min(enumerate([]), default=-10))

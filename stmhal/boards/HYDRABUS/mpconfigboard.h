@@ -13,9 +13,6 @@
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (1)
-#define MICROPY_HW_ENABLE_SPI1      (1)
-#define MICROPY_HW_ENABLE_SPI2      (1)
-#define MICROPY_HW_ENABLE_SPI3      (1)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
 // HSE is 8MHz
@@ -45,6 +42,20 @@
 #define MICROPY_HW_I2C1_SDA (pin_B7)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
+
+// SPI busses
+#define MICROPY_HW_SPI1_NSS  (pin_A4)
+#define MICROPY_HW_SPI1_SCK  (pin_A5)
+#define MICROPY_HW_SPI1_MISO (pin_A6)
+#define MICROPY_HW_SPI1_MOSI (pin_A7)
+#define MICROPY_HW_SPI2_NSS  (pin_B12)
+#define MICROPY_HW_SPI2_SCK  (pin_B13)
+#define MICROPY_HW_SPI2_MISO (pin_B14)
+#define MICROPY_HW_SPI2_MOSI (pin_B15)
+#define MICROPY_HW_SPI3_NSS  (pin_A4)
+#define MICROPY_HW_SPI3_SCK  (pin_B3)
+#define MICROPY_HW_SPI3_MISO (pin_B4)
+#define MICROPY_HW_SPI3_MOSI (pin_B5)
 
 // USRSW/UBTN (Needs Jumper UBTN) is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_A0)
