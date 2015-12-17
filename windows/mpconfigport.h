@@ -156,7 +156,8 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #if MICROPY_USE_READLINE == 1
 #define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[50];
+    char *readline_hist[50]; \
+    mp_obj_t keyboard_interrupt_obj;
 #endif
 
 #define MP_STATE_PORT               MP_STATE_VM
