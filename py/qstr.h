@@ -43,7 +43,7 @@ enum {
     MP_QSTR_number_of,
 };
 
-typedef mp_uint_t qstr;
+typedef size_t qstr;
 
 typedef struct _qstr_pool_t {
     struct _qstr_pool_t *prev;
