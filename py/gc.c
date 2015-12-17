@@ -200,11 +200,10 @@ STATIC void gc_drain_stack(void) {
         } while (ATB_GET_KIND(block + n_blocks) == AT_TAIL);
 
         // check this block's children
-        mp_obj_t *scan = (mp_obj_t*)PTR_FROM_BLOCK(block);
-        for (mp_uint_t i = n_blocks * WORDS_PER_BLOCK; i > 0; i--, scan++) {
-            mp_obj_t obj = *scan;
-            void *ptr2 = MP_OBJ_TO_PTR(obj);
-            VERIFY_MARK_AND_PUSH(ptr2);
+        void **ptrs = (void**)PTR_FROM_BLOCK(block);
+        for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void*); i > 0; i--, ptrs++) {
+            void *ptr = *ptrs;
+            VERIFY_MARK_AND_PUSH(ptr);
         }
     }
 }
