@@ -26,6 +26,7 @@
 #ifndef __MICROPY_INCLUDED_PY_PARSE_H__
 #define __MICROPY_INCLUDED_PY_PARSE_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "py/mpconfig.h"
