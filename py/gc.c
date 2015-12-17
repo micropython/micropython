@@ -230,16 +230,16 @@ STATIC void gc_sweep(void) {
     #endif
     // free unmarked heads and their tails
     int free_tail = 0;
-    for (mp_uint_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+    for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
-                    mp_obj_t obj = (mp_obj_t)PTR_FROM_BLOCK(block);
-                    if (((mp_obj_base_t*)MP_OBJ_TO_PTR(obj))->type != NULL) {
+                    mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
+                    if (obj->type != NULL) {
                         // if the object has a type then see if it has a __del__ method
                         mp_obj_t dest[2];
-                        mp_load_method_maybe(obj, MP_QSTR___del__, dest);
+                        mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
                         if (dest[0] != MP_OBJ_NULL) {
                             // load_method returned a method
                             mp_call_method_n_kw(0, 0, dest);
