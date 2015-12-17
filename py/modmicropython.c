@@ -79,9 +79,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_mem_info_obj, 0, 1, mp
 
 STATIC mp_obj_t mp_micropython_qstr_info(mp_uint_t n_args, const mp_obj_t *args) {
     (void)args;
-    mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+    size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-    mp_printf(&mp_plat_print, "qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes=" UINT_FMT ", n_total_bytes=" UINT_FMT "\n",
+    mp_printf(&mp_plat_print, "qstr pool: n_pool=%u, n_qstr=%u, n_str_data_bytes=%u, n_total_bytes=%u\n",
         n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
     if (n_args == 1) {
         // arg given means dump qstr data
