@@ -81,7 +81,7 @@ typedef struct _compiler_t {
 
     // try to keep compiler clean from nlr
     mp_obj_t compile_error; // set to an exception object if there's an error
-    mp_uint_t compile_error_line; // set to best guess of line of error
+    size_t compile_error_line; // set to best guess of line of error
 
     uint next_label;
 
@@ -110,7 +110,7 @@ typedef struct _compiler_t {
 STATIC void compile_error_set_line(compiler_t *comp, mp_parse_node_t pn) {
     // if the line of the error is unknown then try to update it from the pn
     if (comp->compile_error_line == 0 && MP_PARSE_NODE_IS_STRUCT(pn)) {
-        comp->compile_error_line = (mp_uint_t)((mp_parse_node_struct_t*)pn)->source_line;
+        comp->compile_error_line = ((mp_parse_node_struct_t*)pn)->source_line;
     }
 }
 
@@ -2101,7 +2101,7 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
     // check type of list (string or bytes) and count total number of bytes
     int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    int n_bytes = 0;
+    size_t n_bytes = 0;
     int string_kind = MP_PARSE_NODE_NULL;
     for (int i = 0; i < n; i++) {
         int pn_kind;
@@ -2118,7 +2118,7 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 assert(MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_bytes);
                 pn_kind = MP_PARSE_NODE_BYTES;
             }
-            n_bytes += (mp_uint_t)pns_string->nodes[1];
+            n_bytes += pns_string->nodes[1];
         }
         if (i == 0) {
             string_kind = pn_kind;
@@ -2146,8 +2146,8 @@ STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
             s_dest += s_len;
         } else {
             mp_parse_node_struct_t *pns_string = (mp_parse_node_struct_t*)pns->nodes[i];
-            memcpy(s_dest, (const char*)pns_string->nodes[0], (mp_uint_t)pns_string->nodes[1]);
-            s_dest += (mp_uint_t)pns_string->nodes[1];
+            memcpy(s_dest, (const char*)pns_string->nodes[0], pns_string->nodes[1]);
+            s_dest += pns_string->nodes[1];
         }
     }
 
@@ -2450,7 +2450,7 @@ STATIC void compile_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass != MP_PASS_EMIT) {
         EMIT_ARG(load_const_obj, mp_const_none);
     } else {
-        EMIT_ARG(load_const_obj, mp_obj_new_str((const char*)pns->nodes[0], (mp_uint_t)pns->nodes[1], false));
+        EMIT_ARG(load_const_obj, mp_obj_new_str((const char*)pns->nodes[0], pns->nodes[1], false));
     }
 }
 
@@ -2459,7 +2459,7 @@ STATIC void compile_bytes(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass != MP_PASS_EMIT) {
         EMIT_ARG(load_const_obj, mp_const_none);
     } else {
-        EMIT_ARG(load_const_obj, mp_obj_new_bytes((const byte*)pns->nodes[0], (mp_uint_t)pns->nodes[1]));
+        EMIT_ARG(load_const_obj, mp_obj_new_bytes((const byte*)pns->nodes[0], pns->nodes[1]));
     }
 }
 
@@ -2494,7 +2494,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
         EMIT_ARG(load_const_small_int, arg);
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
-        mp_uint_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {
             case MP_PARSE_NODE_ID: compile_load_id(comp, arg); break;
             case MP_PARSE_NODE_STRING: EMIT_ARG(load_const_str, arg); break;
