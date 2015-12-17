@@ -54,7 +54,7 @@ mp_uint_t mp_decode_uint(const byte **ptr) {
     return unum;
 }
 
-STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expected, mp_uint_t given) {
+STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
@@ -73,9 +73,9 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, mp_uint_t expecte
 }
 
 #if DEBUG_PRINT
-STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
+STATIC void dump_args(const mp_obj_t *a, size_t sz) {
     DEBUG_printf("%p: ", a);
-    for (mp_uint_t i = 0; i < sz; i++) {
+    for (size_t i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");
@@ -89,10 +89,10 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 //    - code_state->ip should contain the offset in bytes from the start of
 //      the bytecode chunk to just after n_state and n_exc_stack
 //    - code_state->n_state should be set to the state size (locals plus stack)
-void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
-    mp_uint_t n_state = code_state->n_state;
+    size_t n_state = code_state->n_state;
 
     // ip comes in as an offset into bytecode, so turn it into a true pointer
     code_state->ip = self->bytecode + (size_t)code_state->ip;
@@ -105,10 +105,10 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_ui
     #endif
 
     // get params
-    mp_uint_t scope_flags = *code_state->ip++;
-    mp_uint_t n_pos_args = *code_state->ip++;
-    mp_uint_t n_kwonly_args = *code_state->ip++;
-    mp_uint_t n_def_pos_args = *code_state->ip++;
+    size_t scope_flags = *code_state->ip++;
+    size_t n_pos_args = *code_state->ip++;
+    size_t n_kwonly_args = *code_state->ip++;
+    size_t n_def_pos_args = *code_state->ip++;
 
     code_state->sp = &code_state->state[0] - 1;
     code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
@@ -139,9 +139,9 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_ui
         // Apply processing and check below only if we don't have kwargs,
         // otherwise, kw handling code below has own extensive checks.
         if (n_kw == 0 && (scope_flags & MP_SCOPE_FLAG_DEFKWARGS) == 0) {
-            if (n_args >= (mp_uint_t)(n_pos_args - n_def_pos_args)) {
+            if (n_args >= (size_t)(n_pos_args - n_def_pos_args)) {
                 // given enough arguments, but may need to use some default arguments
-                for (mp_uint_t i = n_args; i < n_pos_args; i++) {
+                for (size_t i = n_args; i < n_pos_args; i++) {
                     code_state->state[n_state - 1 - i] = self->extra_args[i - (n_pos_args - n_def_pos_args)];
                 }
             } else {
@@ -151,7 +151,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_ui
     }
 
     // copy positional args into state
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (size_t i = 0; i < n_args; i++) {
         code_state->state[n_state - 1 - i] = args[i];
     }
 
@@ -170,9 +170,9 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, mp_ui
         // get pointer to arg_names array
         const mp_obj_t *arg_names = (const mp_obj_t*)code_state->const_table;
 
-        for (mp_uint_t i = 0; i < n_kw; i++) {
+        for (size_t i = 0; i < n_kw; i++) {
             mp_obj_t wanted_arg_name = kwargs[2 * i];
-            for (mp_uint_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
+            for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
                 if (wanted_arg_name == arg_names[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
@@ -196,7 +196,7 @@ continue2:;
         // fill in defaults for positional args
         mp_obj_t *d = &code_state->state[n_state - n_pos_args];
         mp_obj_t *s = &self->extra_args[n_def_pos_args - 1];
-        for (mp_uint_t i = n_def_pos_args; i > 0; i--, d++, s--) {
+        for (size_t i = n_def_pos_args; i > 0; i--, d++, s--) {
             if (*d == MP_OBJ_NULL) {
                 *d = *s;
             }
@@ -215,7 +215,7 @@ continue2:;
 
         // Check that all mandatory keyword args are specified
         // Fill in default kw args if we have them
-        for (mp_uint_t i = 0; i < n_kwonly_args; i++) {
+        for (size_t i = 0; i < n_kwonly_args; i++) {
             if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
@@ -248,12 +248,12 @@ continue2:;
     {
         code_state->code_info = ip;
         const byte *ip2 = ip;
-        mp_uint_t code_info_size = mp_decode_uint(&ip2);
+        size_t code_info_size = mp_decode_uint(&ip2);
         ip += code_info_size;
     }
 
     // bytecode prelude: initialise closed over variables
-    mp_uint_t local_num;
+    size_t local_num;
     while ((local_num = *ip++) != 255) {
         code_state->state[n_state - 1 - local_num] =
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
