@@ -53,6 +53,7 @@ void mp_hal_set_interrupt_char(char c) {
         #ifndef _WIN32
         // enable signal handler
         struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
         sa.sa_handler = sighandler;
         sigemptyset(&sa.sa_mask);
         sigaction(SIGINT, &sa, NULL);
