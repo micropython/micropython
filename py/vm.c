@@ -973,7 +973,7 @@ unwind_jump:;
 
                         mp_uint_t n_args = unum & 0xff;
                         mp_uint_t n_kw = (unum >> 8) & 0xff;
-                        int adjust = (sp[1] == NULL) ? 0 : 1;
+                        int adjust = (sp[1] == MP_OBJ_NULL) ? 0 : 1;
 
                         mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(*sp, n_args + adjust, n_kw, sp + 2 - adjust);
                         if (new_state) {
