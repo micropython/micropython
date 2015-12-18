@@ -154,6 +154,7 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),      (mp_obj_t)&mp_module_usocket },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii),    (mp_obj_t)&mp_module_ubinascii }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ssl),         (mp_obj_t)&mp_module_ussl },      \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine),     (mp_obj_t)&machine_module },      \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
