@@ -28,7 +28,7 @@
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_COLLECTIONS      (1)
-#define MICROPY_PY_MATH             (0)
+#define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_STRUCT           (1)

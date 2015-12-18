@@ -76,6 +76,20 @@ LIB_SRC_C = $(addprefix lib/,\
 	libm/fmodf.c \
 	libm/roundf.c \
 	libm/ef_sqrt.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
+	libm/sf_frexp.c \
+	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/asinfacosf.c \
+	libm/atanf.c \
+	libm/atan2f.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
