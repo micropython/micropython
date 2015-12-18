@@ -72,6 +72,10 @@ STM_SRC_C = $(addprefix stmhal/,\
 
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
+	libm/math.c \
+	libm/fmodf.c \
+	libm/roundf.c \
+	libm/ef_sqrt.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
