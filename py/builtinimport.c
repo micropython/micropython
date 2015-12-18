@@ -120,6 +120,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 #endif
 }
 
+#if MICROPY_ENABLE_COMPILER
 STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char *fname) {
 
     if (lex == NULL) {
@@ -141,6 +142,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char 
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
+#endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
@@ -182,16 +184,24 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // create the lexer
     char *file_str = vstr_null_terminated_str(file);
+
     #if MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
         do_execute_raw_code(module_obj, raw_code);
-    } else
+        return;
+    }
     #endif
+
+    #if MICROPY_ENABLE_COMPILER
     {
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
         do_load_from_lexer(module_obj, lex, file_str);
     }
+    #else
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+        "script compilation not supported"));
+    #endif
 }
 
 STATIC void chop_component(const char *start, const char **end) {

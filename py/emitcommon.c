@@ -28,6 +28,8 @@
 
 #include "py/emit.h"
 
+#if MICROPY_ENABLE_COMPILER
+
 void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
     // name adding/lookup
     bool added;
@@ -77,3 +79,5 @@ void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emi
         emit_method_table->deref(emit, qst, id->local_num);
     }
 }
+
+#endif // MICROPY_ENABLE_COMPILER

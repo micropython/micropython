@@ -31,6 +31,8 @@
 #include "py/lexer.h"
 #include "py/runtime.h"
 
+#if MICROPY_ENABLE_COMPILER
+
 #define TAB_SIZE (8)
 
 // TODO seems that CPython allows NULL byte in the input stream
@@ -785,3 +787,5 @@ void mp_lexer_show_token(const mp_lexer_t *lex) {
     printf("\n");
 }
 #endif
+
+#endif // MICROPY_ENABLE_COMPILER

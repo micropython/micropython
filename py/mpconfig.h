@@ -278,6 +278,11 @@
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
+// Whether to include the compiler
+#ifndef MICROPY_ENABLE_COMPILER
+#define MICROPY_ENABLE_COMPILER (1)
+#endif
+
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
 #define MICROPY_COMP_CONST_FOLDING (1)
@@ -588,6 +593,12 @@ typedef double mp_float_t;
 // Whether to support enumerate function(type)
 #ifndef MICROPY_PY_BUILTINS_ENUMERATE
 #define MICROPY_PY_BUILTINS_ENUMERATE (1)
+#endif
+
+// Whether to support eval and exec functions
+// By default they are supported if the compiler is enabled
+#ifndef MICROPY_PY_BUILTINS_EVAL_EXEC
+#define MICROPY_PY_BUILTINS_EVAL_EXEC (MICROPY_ENABLE_COMPILER)
 #endif
 
 // Whether to support the Python 2 execfile function

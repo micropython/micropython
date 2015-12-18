@@ -35,6 +35,8 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 
+#if MICROPY_ENABLE_COMPILER
+
 // TODO need to mangle __attr names
 
 typedef enum {
@@ -3310,3 +3312,5 @@ mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt
     // return function that executes the outer module
     return mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
 }
+
+#endif // MICROPY_ENABLE_COMPILER

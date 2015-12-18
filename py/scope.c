@@ -28,6 +28,8 @@
 
 #include "py/scope.h"
 
+#if MICROPY_ENABLE_COMPILER
+
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options) {
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
@@ -149,3 +151,5 @@ void scope_close_over_in_parents(scope_t *scope, qstr qst) {
     }
     assert(0); // we should have found the variable in one of the parents
 }
+
+#endif // MICROPY_ENABLE_COMPILER
