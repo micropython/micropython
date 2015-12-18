@@ -658,10 +658,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 void gc_dump_info(void) {
     gc_info_t info;
     gc_info(&info);
-    mp_printf(&mp_plat_print, "GC: total: " UINT_FMT ", used: " UINT_FMT ", free: " UINT_FMT "\n",
-        info.total, info.used, info.free);
-    mp_printf(&mp_plat_print, " No. of 1-blocks: " UINT_FMT ", 2-blocks: " UINT_FMT ", max blk sz: " UINT_FMT "\n",
-           info.num_1block, info.num_2block, info.max_block);
+    mp_printf(&mp_plat_print, "GC: total: %u, used: %u, free: %u\n",
+        (uint)info.total, (uint)info.used, (uint)info.free);
+    mp_printf(&mp_plat_print, " No. of 1-blocks: %u, 2-blocks: %u, max blk sz: %u\n",
+           (uint)info.num_1block, (uint)info.num_2block, (uint)info.max_block);
 }
 
 void gc_dump_alloc_table(void) {
@@ -682,7 +682,7 @@ void gc_dump_alloc_table(void) {
                 }
                 if (bl2 - bl >= 2 * DUMP_BYTES_PER_LINE) {
                     // there are at least 2 lines containing only free blocks, so abbreviate their printing
-                    mp_printf(&mp_plat_print, "\n       (" UINT_FMT " lines all free)", (bl2 - bl) / DUMP_BYTES_PER_LINE);
+                    mp_printf(&mp_plat_print, "\n       (%u lines all free)", (uint)(bl2 - bl) / DUMP_BYTES_PER_LINE);
                     bl = bl2 & (~(DUMP_BYTES_PER_LINE - 1));
                     if (bl >= MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB) {
                         // got to end of heap
