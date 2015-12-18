@@ -36,6 +36,7 @@
 #include "uart.h"
 #include "pybioctl.h"
 #include "irq.h"
+#include "pendsv.h"
 
 //TODO: Add UART7/8 support for MCU_SERIES_F7
 
@@ -84,6 +85,7 @@ struct _pyb_uart_obj_t {
     pyb_uart_t uart_id : 8;
     bool is_enabled : 1;
     byte char_width;                    // 0 for 7,8 bit chars, 1 for 9 bit chars
+    int16_t interrupt_char;             // Char to interrupt (-1 to disable)
     uint16_t char_mask;                 // 0x7f for 7 bit, 0xff for 8 bit, 0x1ff for 9 bit
     uint16_t timeout;                   // timeout waiting for first char
     uint16_t timeout_char;              // timeout waiting between chars
@@ -96,6 +98,10 @@ struct _pyb_uart_obj_t {
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
 
 void uart_init0(void) {
+    // create an exception object for interrupting by VCP
+    if (MP_STATE_PORT(mp_const_kbd_interrupt) == NULL) {
+        MP_STATE_PORT(mp_const_kbd_interrupt) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    }
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
         MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
     }
@@ -241,6 +247,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
 
     uart_obj->irqn = irqn;
     uart_obj->uart.Instance = UARTx;
+    uart_obj->interrupt_char = -1;
 
     // init GPIO
     mp_hal_gpio_clock_enable(GPIO_Port);
@@ -309,6 +316,27 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
     }
 }
 
+void uart_set_interrupt_char(pyb_uart_obj_t *self, int c) {
+    if (c != -1) {
+        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_const_kbd_interrupt));
+    }
+    self->interrupt_char = c;
+}
+
+int uart_read_rd_reg(pyb_uart_obj_t *self) {
+    int data;
+    #if defined(MCU_SERIES_F7)
+    data = self->uart.Instance->RDR & self->char_mask;
+    #else
+    data = self->uart.Instance->DR & self->char_mask;
+    #endif
+    if (data == self->interrupt_char) {
+        pendsv_nlr_jump(MP_STATE_PORT(mp_const_kbd_interrupt));
+        return -1;
+    }
+    return data;
+}
+
 // assumes there is a character available
 int uart_rx_char(pyb_uart_obj_t *self) {
     if (self->read_buf_tail != self->read_buf_head) {
@@ -323,11 +351,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(MCU_SERIES_F7)
-        return self->uart.Instance->RDR & self->char_mask;
-        #else
-        return self->uart.Instance->DR & self->char_mask;
-        #endif
+        return uart_read_rd_reg(self);
     }
 }
 
@@ -385,12 +409,11 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
-        #if defined(MCU_SERIES_F7)
-        int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
-        #else
-        int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
-        #endif
-        data &= self->char_mask;
+        int data = uart_read_rd_reg(self);
+        if (data == -1) {
+            // -1 implies Control-C
+            return;
+        }
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
@@ -824,13 +847,18 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     byte *orig_buf = buf;
     for (;;) {
         int data = uart_rx_char(self);
-        if (self->char_width == CHAR_WIDTH_9BIT) {
-            *(uint16_t*)buf = data;
-            buf += 2;
-        } else {
-            *buf++ = data;
+        // -1 implies Control-C, we treat it like a timeout so that we
+        // get back to the VM as soon as possible to throw the exception.
+        if (data != -1) {
+            if (self->char_width == CHAR_WIDTH_9BIT) {
+                *(uint16_t*)buf = data;
+                buf += 2;
+            } else {
+                *buf++ = data;
+            }
+            size--;
         }
-        if (--size == 0 || !uart_rx_wait(self, self->timeout_char)) {
+        if (size == 0 || data == -1 || !uart_rx_wait(self, self->timeout_char)) {
             // return number of bytes read
             return buf - orig_buf;
         }

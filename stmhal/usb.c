@@ -89,8 +89,10 @@ const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 
 void pyb_usb_init0(void) {
     // create an exception object for interrupting by VCP
-    MP_STATE_PORT(mp_const_vcp_interrupt) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    USBD_CDC_SetInterrupt(-1, MP_STATE_PORT(mp_const_vcp_interrupt));
+    if (MP_STATE_PORT(mp_const_kbd_interrupt) == NULL) {
+        MP_STATE_PORT(mp_const_kbd_interrupt) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    }
+    USBD_CDC_SetInterrupt(-1, MP_STATE_PORT(mp_const_kbd_interrupt));
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 
@@ -137,9 +139,9 @@ bool usb_vcp_is_enabled(void) {
 void usb_vcp_set_interrupt_char(int c) {
     if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
         if (c != -1) {
-            mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_const_vcp_interrupt));
+            mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_const_kbd_interrupt));
         }
-        USBD_CDC_SetInterrupt(c, MP_STATE_PORT(mp_const_vcp_interrupt));
+        USBD_CDC_SetInterrupt(c, MP_STATE_PORT(mp_const_kbd_interrupt));
     }
 }
 
