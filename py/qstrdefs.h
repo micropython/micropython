@@ -613,7 +613,7 @@ Q(b2a_base64)
 #endif
 
 #if MICROPY_PY_MACHINE
-Q(machine)
+Q(umachine)
 Q(mem)
 Q(mem8)
 Q(mem16)
