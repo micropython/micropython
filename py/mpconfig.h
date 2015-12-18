@@ -909,9 +909,8 @@ typedef double mp_float_t;
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 #elif defined(_WIN64)
-#include <inttypes.h>
-#define UINT_FMT "%"PRIu64
-#define INT_FMT "%"PRId64
+#define UINT_FMT "%llu"
+#define INT_FMT "%lld"
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"
