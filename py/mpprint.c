@@ -529,7 +529,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             // Because 'l' is eaten above, another 'l' means %ll.  We need to support
             // this length specifier for OBJ_REPR_D (64-bit NaN boxing).
             // TODO Either enable this unconditionally, or provide a specific config var.
-            #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+            #if (MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D) || defined(_WIN64)
             case 'l': {
                 unsigned long long int arg_value = va_arg(args, unsigned long long int);
                 ++fmt;
