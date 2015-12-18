@@ -379,6 +379,7 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
 
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 typedef struct _mp_lexer_file_buf_t {
     int fd;
