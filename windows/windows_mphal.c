@@ -30,6 +30,7 @@
 
 #include <windows.h>
 #include <unistd.h>
+#include <signal.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;
@@ -66,6 +67,17 @@ void mp_hal_stdio_mode_orig(void) {
     SetConsoleMode(std_in, orig_mode);
 }
 
+STATIC void sighandler(int signum) {
+    if (signum == SIGINT) {
+        if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
+            // this is the second time we are called, so die straight away
+            exit(1);
+        }
+        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
+        MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
+    }
+}
+
 void mp_hal_set_interrupt_char(char c) {
     assure_stdin_handle();
     if (c == CHAR_CTRL_C) {
@@ -73,11 +85,13 @@ void mp_hal_set_interrupt_char(char c) {
         GetConsoleMode(std_in, &mode);
         mode |= ENABLE_PROCESSED_INPUT;
         SetConsoleMode(std_in, mode);
+        signal(SIGINT, sighandler);
     } else {
         DWORD mode;
         GetConsoleMode(std_in, &mode);
         mode &= ~ENABLE_PROCESSED_INPUT;
         SetConsoleMode(std_in, mode);
+        signal(SIGINT, SIG_DFL);
     }
 }
 

@@ -401,10 +401,8 @@ int main(int argc, char **argv) {
 
     mp_init();
 
-    #ifndef _WIN32
     // create keyboard interrupt object
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    #endif
 
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");

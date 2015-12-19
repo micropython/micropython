@@ -165,19 +165,19 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 #define VM_DETECT_STACK_OVERFLOW (0)
 
 #if MICROPY_STACKLESS
-mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
-    mp_obj_fun_bc_t *self = self_in;
+    mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
 
     // get start of bytecode
     const byte *ip = self->bytecode;
 
     // bytecode prelude: state size and exception stack size
-    mp_uint_t n_state = mp_decode_uint(&ip);
-    mp_uint_t n_exc_stack = mp_decode_uint(&ip);
+    size_t n_state = mp_decode_uint(&ip);
+    size_t n_exc_stack = mp_decode_uint(&ip);
 
     // allocate state for locals and stack
-    mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    size_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state *code_state;
     code_state = m_new_obj_var_maybe(mp_code_state, byte, state_size);
     if (!code_state) {
@@ -186,7 +186,7 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, mp_uint_t n_arg
 
     code_state->ip = (byte*)(ip - self->bytecode); // offset to after n_state/n_exc_stack
     code_state->n_state = n_state;
-    mp_setup_code_state(code_state, self_in, n_args, n_kw, args);
+    mp_setup_code_state(code_state, self, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     code_state->old_globals = mp_globals_get();

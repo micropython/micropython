@@ -80,7 +80,7 @@ typedef struct _mp_code_state {
     #if MICROPY_STACKLESS
     struct _mp_code_state *prev;
     #endif
-    mp_uint_t n_state;
+    size_t n_state;
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
@@ -90,9 +90,9 @@ typedef struct _mp_code_state {
 mp_uint_t mp_decode_uint(const byte **ptr);
 
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc);
-mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);
 struct _mp_obj_fun_bc_t;
-void mp_setup_code_state(mp_code_state *code_state, struct _mp_obj_fun_bc_t *self, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+void mp_setup_code_state(mp_code_state *code_state, struct _mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_bytecode_print(const void *descr, const byte *code, mp_uint_t len, const mp_uint_t *const_table);
 void mp_bytecode_print2(const byte *code, mp_uint_t len);
 const byte *mp_bytecode_print_str(const byte *ip);

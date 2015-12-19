@@ -30,6 +30,7 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/machine_mem.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "gccollect.h"
@@ -418,8 +419,44 @@ STATIC mp_obj_t machine_reset_cause(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 #endif
 
+// To use compile-time constants we are restricted to 31-bit numbers (a small int,
+// so it fits in a Micro Python object pointer).  Thus, when extracting a constant
+// from an object, we must clear the MSB.
+
+uintptr_t mod_machine_mem_get_read_addr(mp_obj_t addr_o, uint align) {
+    uint32_t addr = mp_obj_get_int_truncated(addr_o);
+    if (MP_OBJ_IS_SMALL_INT(addr_o)) {
+        addr &= 0x7fffffff;
+    }
+    /*
+    if (addr < 0x10000000) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "cannot read from address %08x", addr));
+    }
+    */
+    if ((addr & (align - 1)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
+    }
+    return addr;
+}
+
+uintptr_t mod_machine_mem_get_write_addr(mp_obj_t addr_o, uint align) {
+    uint32_t addr = mp_obj_get_int_truncated(addr_o);
+    if (MP_OBJ_IS_SMALL_INT(addr_o)) {
+        addr &= 0x7fffffff;
+    }
+    if (addr < 0x10000000) {
+        // Everything below 0x10000000 is either ROM or aliased to something higher, so we don't
+        // lose anything by restricting writes to this area, and we gain some safety.
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "cannot write to address %08x", addr));
+    }
+    if ((addr & (align - 1)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "address %08x is not aligned to %d bytes", addr, align));
+    }
+    return addr;
+}
+
 STATIC const mp_map_elem_t machine_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_machine) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_umachine) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&machine_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&machine_reset_obj },
@@ -438,6 +475,10 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
+
+    { MP_ROM_QSTR(MP_QSTR_mem8),                    (mp_obj_t)&machine_mem8_obj },
+    { MP_ROM_QSTR(MP_QSTR_mem16),                   (mp_obj_t)&machine_mem16_obj },
+    { MP_ROM_QSTR(MP_QSTR_mem32),                   (mp_obj_t)&machine_mem32_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
 
@@ -475,7 +516,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_machine,
+    .name = MP_QSTR_umachine,
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
 

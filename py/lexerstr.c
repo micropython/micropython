@@ -26,6 +26,8 @@
 
 #include "py/lexer.h"
 
+#if MICROPY_ENABLE_COMPILER
+
 typedef struct _mp_lexer_str_buf_t {
     mp_uint_t free_len;         // if > 0, src_beg will be freed when done by: m_free(src_beg, free_len)
     const char *src_beg;        // beginning of source
@@ -59,3 +61,5 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t 
     sb->src_end = str + len;
     return mp_lexer_new(src_name, sb, (mp_lexer_stream_next_byte_t)str_buf_next_byte, (mp_lexer_stream_close_t)str_buf_free);
 }
+
+#endif // MICROPY_ENABLE_COMPILER

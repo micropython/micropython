@@ -278,6 +278,11 @@
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
+// Whether to include the compiler
+#ifndef MICROPY_ENABLE_COMPILER
+#define MICROPY_ENABLE_COMPILER (1)
+#endif
+
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
 #define MICROPY_COMP_CONST_FOLDING (1)
@@ -590,6 +595,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_ENUMERATE (1)
 #endif
 
+// Whether to support eval and exec functions
+// By default they are supported if the compiler is enabled
+#ifndef MICROPY_PY_BUILTINS_EVAL_EXEC
+#define MICROPY_PY_BUILTINS_EVAL_EXEC (MICROPY_ENABLE_COMPILER)
+#endif
+
 // Whether to support the Python 2 execfile function
 #ifndef MICROPY_PY_BUILTINS_EXECFILE
 #define MICROPY_PY_BUILTINS_EXECFILE (0)
@@ -898,9 +909,8 @@ typedef double mp_float_t;
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"
 #elif defined(_WIN64)
-#include <inttypes.h>
-#define UINT_FMT "%"PRIu64
-#define INT_FMT "%"PRId64
+#define UINT_FMT "%llu"
+#define INT_FMT "%lld"
 #else
 // Archs where mp_int_t == int
 #define UINT_FMT "%u"

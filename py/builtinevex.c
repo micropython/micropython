@@ -107,6 +107,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj, 3, 6, mp_builtin_com
 
 #endif // MICROPY_PY_BUILTINS_COMPILE
 
+#if MICROPY_PY_BUILTINS_EVAL_EXEC
+
 STATIC mp_obj_t eval_exec_helper(mp_uint_t n_args, const mp_obj_t *args, mp_parse_input_kind_t parse_input_kind) {
     // work out the context
     mp_obj_dict_t *globals = mp_globals_get();
@@ -154,6 +156,8 @@ STATIC mp_obj_t mp_builtin_exec(mp_uint_t n_args, const mp_obj_t *args) {
     return eval_exec_helper(n_args, args, MP_PARSE_FILE_INPUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_exec_obj, 1, 3, mp_builtin_exec);
+
+#endif // MICROPY_PY_BUILTINS_EVAL_EXEC
 
 #if MICROPY_PY_BUILTINS_EXECFILE
 STATIC mp_obj_t mp_builtin_execfile(mp_uint_t n_args, const mp_obj_t *args) {

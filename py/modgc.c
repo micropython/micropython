@@ -32,8 +32,6 @@
 
 /// \module gc - control the garbage collector
 
-extern uint gc_collected;
-
 /// \function collect()
 /// Run a garbage collection.
 STATIC mp_obj_t py_gc_collect(void) {

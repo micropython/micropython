@@ -165,7 +165,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
         // qstr does not exist in interned pool so need to add it
 
         // compute number of bytes needed to intern this string
-        mp_uint_t n_bytes = MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1;
+        size_t n_bytes = MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1;
 
         if (MP_STATE_VM(qstr_last_chunk) != NULL && MP_STATE_VM(qstr_last_used) + n_bytes > MP_STATE_VM(qstr_last_alloc)) {
             // not enough room at end of previously interned string so try to grow
@@ -221,7 +221,7 @@ byte *qstr_build_start(size_t len, byte **q_ptr) {
 qstr qstr_build_end(byte *q_ptr) {
     qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
-        mp_uint_t len = Q_GET_LENGTH(q_ptr);
+        size_t len = Q_GET_LENGTH(q_ptr);
         mp_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
         Q_SET_HASH(q_ptr, hash);
         q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
@@ -253,7 +253,7 @@ const byte *qstr_data(qstr q, size_t *len) {
     return Q_GET_DATA(qd);
 }
 
-void qstr_pool_info(mp_uint_t *n_pool, mp_uint_t *n_qstr, mp_uint_t *n_str_data_bytes, mp_uint_t *n_total_bytes) {
+void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, size_t *n_total_bytes) {
     *n_pool = 0;
     *n_qstr = 0;
     *n_str_data_bytes = 0;

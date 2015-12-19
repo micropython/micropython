@@ -26,7 +26,7 @@
  */
 
 // for machine module
-Q(machine)
+Q(umachine)
 #ifdef DEBUG
 Q(info)
 #endif

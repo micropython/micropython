@@ -25,8 +25,8 @@
  */
 
 
-#ifndef MICROPY_EXTMOD_MACHINE_MEM
-#define MICROPY_EXTMOD_MACHINE_MEM
+#ifndef __MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H__
+#define __MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H__
 
 #include "py/obj.h"
 
@@ -41,10 +41,11 @@ extern const machine_mem_obj_t machine_mem8_obj;
 extern const machine_mem_obj_t machine_mem16_obj;
 extern const machine_mem_obj_t machine_mem32_obj;
 
-// It is expected that a port will provide the following 2 functions.
-// We define the prototypes here, but the modmachine.c file for a port should
-// provide the implementation
-uintptr_t machine_mem_get_read_addr(mp_obj_t addr_o, uint align);
-uintptr_t machine_mem_get_write_addr(mp_obj_t addr_o, uint align);
+#if defined(MICROPY_MACHINE_MEM_GET_READ_ADDR)
+uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(mp_obj_t addr_o, uint align);
+#endif
+#if defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
+uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
+#endif
 
-#endif /*  MICROPY_EXTMOD_MACHINE_MEM */
+#endif // __MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H__

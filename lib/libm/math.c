@@ -45,6 +45,8 @@ typedef union {
     };
 } double_s_t;
 
+#if defined(__thumb__)
+
 double __attribute__((pcs("aapcs"))) __aeabi_i2d(int32_t x) {
     return (float)x;
 }
@@ -82,6 +84,11 @@ double __aeabi_dmul(double x , double y) {
 
 }
 
+#endif // defined(__thumb__)
+
+// TODO this needs a better way of testing for Thumb2 FP hardware
+#if defined(__thumb2__)
+
 float sqrtf(float x) {
     asm volatile (
             "vsqrt.f32  %[r], %[x]\n"
@@ -89,6 +96,8 @@ float sqrtf(float x) {
             : [x] "t"  (x));
     return x;
 }
+
+#endif
 
 #ifndef NDEBUG
 float copysignf(float x, float y) {

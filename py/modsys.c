@@ -186,7 +186,7 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #endif
 
     #if MICROPY_PY_SYS_MODULES
-    { MP_OBJ_NEW_QSTR(MP_QSTR_modules), MP_ROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)) },
+    { MP_ROM_QSTR(MP_QSTR_modules), MP_ROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)) },
     #endif
     #if MICROPY_PY_SYS_EXC_INFO
     { MP_ROM_QSTR(MP_QSTR_exc_info), MP_ROM_PTR(&mp_sys_exc_info_obj) },

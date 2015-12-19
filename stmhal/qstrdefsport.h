@@ -28,7 +28,7 @@
 
 Q(help)
 Q(pyb)
-Q(machine)
+Q(umachine)
 Q(unique_id)
 Q(bootloader)
 Q(hard_reset)

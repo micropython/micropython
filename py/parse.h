@@ -26,6 +26,7 @@
 #ifndef __MICROPY_INCLUDED_PY_PARSE_H__
 #define __MICROPY_INCLUDED_PY_PARSE_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "py/mpconfig.h"
@@ -70,14 +71,14 @@ typedef struct _mp_parse_node_struct_t {
 #define MP_PARSE_NODE_IS_TOKEN_KIND(pn, k) ((pn) == (MP_PARSE_NODE_TOKEN | ((k) << 4)))
 
 #define MP_PARSE_NODE_LEAF_KIND(pn) ((pn) & 0x0f)
-#define MP_PARSE_NODE_LEAF_ARG(pn) (((mp_uint_t)(pn)) >> 4)
+#define MP_PARSE_NODE_LEAF_ARG(pn) (((uintptr_t)(pn)) >> 4)
 #define MP_PARSE_NODE_LEAF_SMALL_INT(pn) (((mp_int_t)(intptr_t)(pn)) >> 1)
 #define MP_PARSE_NODE_STRUCT_KIND(pns) ((pns)->kind_num_nodes & 0xff)
 #define MP_PARSE_NODE_STRUCT_NUM_NODES(pns) ((pns)->kind_num_nodes >> 8)
 
-mp_parse_node_t mp_parse_node_new_leaf(mp_int_t kind, mp_int_t arg);
-int mp_parse_node_extract_list(mp_parse_node_t *pn, mp_uint_t pn_kind, mp_parse_node_t **nodes);
-void mp_parse_node_print(mp_parse_node_t pn, mp_uint_t indent);
+mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg);
+int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes);
+void mp_parse_node_print(mp_parse_node_t pn, size_t indent);
 
 typedef enum {
     MP_PARSE_SINGLE_INPUT,
