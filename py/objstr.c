@@ -1484,7 +1484,7 @@ not_enough_args:
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not all arguments converted during string formatting"));
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(is_bytes ? &mp_type_bytes : &mp_type_str, &vstr);
 }
 
 // The implementation is optimized, returning the original string if there's
