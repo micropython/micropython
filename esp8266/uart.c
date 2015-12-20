@@ -210,10 +210,15 @@ void ICACHE_FLASH_ATTR uart_reattach() {
 #include "lib/utils/pyexec.h"
 
 void soft_reset(void);
+void mp_keyboard_interrupt(void);
 
+int interrupt_char;
 void uart_task_handler(os_event_t *evt) {
     int c, ret = 0;
     while ((c = uart_rx_one_char(UART_REPL)) >= 0) {
+        if (c == interrupt_char) {
+            mp_keyboard_interrupt();
+        }
         ret = pyexec_event_repl_process_char(c);
         if (ret & PYEXEC_FORCED_EXIT) {
             break;

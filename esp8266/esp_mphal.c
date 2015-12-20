@@ -98,7 +98,11 @@ void mp_hal_delay_ms(uint32_t delay) {
 }
 
 void mp_hal_set_interrupt_char(int c) {
-    // TODO
+    if (c != -1) {
+        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
+    }
+    extern int interrupt_char;
+    interrupt_char = c;
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {

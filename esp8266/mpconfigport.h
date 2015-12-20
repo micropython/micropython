@@ -99,6 +99,7 @@ extern const struct _mp_obj_module_t mp_module_machine;
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
+    mp_obj_t mp_kbd_exception; \
     \
     /* Singleton instance of scan callback, meaning that there can
        be only one concurrent AP scan. */ \
