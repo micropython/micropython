@@ -37,7 +37,6 @@
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
-#include "ip_addr.h"
 #include "spi_flash.h"
 #include "utils.h"
 
