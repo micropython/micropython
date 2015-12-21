@@ -26,9 +26,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <windows.h>
 #include "sleep.h"
 
+extern BOOL WINAPI console_sighandler(DWORD evt);
+
 void init() {
+    SetConsoleCtrlHandler(console_sighandler, TRUE);
     init_sleep();
 #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");
@@ -40,5 +44,6 @@ void init() {
 }
 
 void deinit() {
+    SetConsoleCtrlHandler(console_sighandler, FALSE);
     deinit_sleep();
 }
