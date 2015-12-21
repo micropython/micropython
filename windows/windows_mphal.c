@@ -30,7 +30,6 @@
 
 #include <windows.h>
 #include <unistd.h>
-#include <signal.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;
@@ -67,15 +66,27 @@ void mp_hal_stdio_mode_orig(void) {
     SetConsoleMode(std_in, orig_mode);
 }
 
-STATIC void sighandler(int signum) {
-    if (signum == SIGINT) {
+// Handler to be installed by SetConsoleCtrlHandler, currently used only to handle Ctrl-C.
+// This handler has to be installed just once (this has to be done elswhere in init code).
+// Previous versions of the mp_hal code would install a handler whenever Ctrl-C input is
+// allowed and remove the handler again when it is not. That is not necessary though (1),
+// and it might introduce problems (2) because console notifications are delivered to the
+// application in a seperate thread. 
+// (1) mp_hal_set_interrupt_char effectively enables/disables processing of Ctrl-C via the
+// ENABLE_PROCESSED_INPUT flag so in raw mode console_sighandler won't be called.
+// (2) if mp_hal_set_interrupt_char would remove the handler while Ctrl-C was issued earlier,
+// the thread created for handling it might not be running yet so we'd miss the notification.
+BOOL WINAPI console_sighandler(DWORD evt) {
+    if (evt == CTRL_C_EVENT) {
         if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
         mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
         MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
+        return TRUE;
     }
+    return FALSE;
 }
 
 void mp_hal_set_interrupt_char(char c) {
@@ -85,13 +96,11 @@ void mp_hal_set_interrupt_char(char c) {
         GetConsoleMode(std_in, &mode);
         mode |= ENABLE_PROCESSED_INPUT;
         SetConsoleMode(std_in, mode);
-        signal(SIGINT, sighandler);
     } else {
         DWORD mode;
         GetConsoleMode(std_in, &mode);
         mode &= ~ENABLE_PROCESSED_INPUT;
         SetConsoleMode(std_in, mode);
-        signal(SIGINT, SIG_DFL);
     }
 }
 
