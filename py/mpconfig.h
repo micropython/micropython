@@ -371,6 +371,12 @@
 #   endif
 #endif
 
+// Prefer to raise KeyboardInterrupt asynchronously (from signal or interrupt
+// handler) - if supported by a particular port.
+#ifndef MICROPY_ASYNC_KBD_INTR
+#define MICROPY_ASYNC_KBD_INTR (0)
+#endif
+
 // Whether to include REPL helper function
 #ifndef MICROPY_HELPER_REPL
 #define MICROPY_HELPER_REPL (0)

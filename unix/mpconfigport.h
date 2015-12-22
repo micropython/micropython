@@ -128,6 +128,7 @@
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
+#define MICROPY_ASYNC_KBD_INTR      (1)
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_os;
