@@ -136,6 +136,19 @@ STATIC mp_obj_t esp_mac(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_mac_obj, 0, 1, esp_mac);
 
+STATIC mp_obj_t esp_ifconfig(void) {
+    struct ip_info info;
+    wifi_get_ip_info(STATION_IF, &info);
+    mp_obj_t ifconfig[4] = {
+            netutils_format_ipv4_addr((uint8_t*)&info.ip, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t*)&info.netmask, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t*)&info.gw, NETUTILS_BIG),
+            MP_OBJ_NEW_QSTR(MP_QSTR_), // no DNS server
+    };
+    return mp_obj_new_tuple(4, ifconfig);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_ifconfig_obj, esp_ifconfig);
+
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     // MicroPython "network" module interface requires it to contains classes
@@ -149,6 +162,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),
