@@ -3,6 +3,7 @@
 #include "os_type.h"
 #include "ets_sys.h"
 #include "etshal.h"
+#include "user_interface.h"
 
 // Use standard ets_task or alternative impl
 #define USE_ETS_TASK 0
@@ -103,6 +104,7 @@ bool ets_loop_iter(void) {
     //static unsigned cnt;
     bool progress = false;
     for (volatile struct task_entry *t = emu_tasks; t < &emu_tasks[MP_ARRAY_SIZE(emu_tasks)]; t++) {
+        system_soft_wdt_feed();
         ets_intr_lock();
         //printf("etc_loop_iter: "); dump_task(t - emu_tasks + FIRST_PRIO, t);
         if (t->i_get != t->i_put) {
