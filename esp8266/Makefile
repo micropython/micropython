@@ -9,7 +9,7 @@ include ../py/py.mk
 MAKE_FROZEN = ../tools/make-frozen.py
 
 SCRIPTDIR = scripts
-PORT = /dev/ttyACM0
+PORT ?= /dev/ttyACM0
 BAUD = 115200
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
