@@ -40,6 +40,11 @@
 #include "spi_flash.h"
 #include "utils.h"
 
+#define WLAN_STA    0
+#define WLAN_AP     1
+#define WLAN_DHCP   "dhcp"
+#define NO_DHCP_IP  "0.0.0.0"
+
 void error_check(bool status, const char *msg);
 extern const mp_obj_module_t network_module;
 
@@ -116,90 +121,87 @@ STATIC mp_obj_t esp_isconnected() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_isconnected_obj, esp_isconnected);
 
-/// \method ifconfig([(mode = STATION_IF|SOFTAP_IF, ip, subnet, gateway)])
-/// Return a list of (STATION_IF|SOFTAP_IF, ip, subnet, gateway) if no parameters were specified
+/// \method ifconfig(id = SPA|AP, config = [(ip, netmask, gateway, dns)])
+/// Return (ip, netmask, gateway, dns) if config is empty
 ///     none otherwise.
-STATIC mp_obj_t esp_ifconfig(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_ifconfig(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     struct ip_info ipconfig;
 
-    // get
-    if (n_args == 0) {
-        bool station_if_result = wifi_get_ip_info(STATION_IF, &ipconfig) && ipconfig.ip.addr != 0;
+    STATIC const mp_arg_t wlan_ifconfig_args[] = {
+        { MP_QSTR_id,               MP_ARG_INT,     {.u_int = 0} },
+        { MP_QSTR_config,           MP_ARG_OBJ,     {.u_obj = MP_OBJ_NULL} },
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(wlan_ifconfig_args)];
+
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(args), wlan_ifconfig_args, args);
+    
+    uint8 mode = args[0].u_int;
+    
+    // translate MicroPython mode to ESP8266 mode
+    switch (mode) {
+        case WLAN_STA:
+            mode = STATION_IF;
+            break;
+
+        case WLAN_AP:
+            mode = SOFTAP_IF;
+            break;
+            
+        default:
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "the parameter id has to be STA or AP"));
+    }
+
+    // get the configuration
+    if (args[1].u_obj == MP_OBJ_NULL) {
+        wifi_get_ip_info(mode, &ipconfig);
 
         mp_obj_t station_array[4] = {
-            MP_OBJ_NEW_SMALL_INT(STATION_IF),
             netutils_format_ipv4_addr((uint8_t*) &ipconfig.ip.addr, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*) &ipconfig.netmask.addr, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*) &ipconfig.gw.addr, NETUTILS_BIG),
+            mp_obj_new_str(NO_DHCP_IP, strlen(NO_DHCP_IP), false)
         };
 
-        mp_obj_t station_tuple = mp_obj_new_tuple(4, station_array);
+        return mp_obj_new_tuple(4, station_array);
+    }
 
-        bool softap_if_result = wifi_get_ip_info(SOFTAP_IF, &ipconfig) && ipconfig.ip.addr != 0;
+    // set the configuration using a tuple
+    if (MP_OBJ_IS_TYPE(args[1].u_obj, &mp_type_tuple)) {
+        mp_obj_t *items;
 
-        mp_obj_t softap_array[4] = {
-            MP_OBJ_NEW_SMALL_INT(SOFTAP_IF),
-            netutils_format_ipv4_addr((uint8_t*) &ipconfig.ip.addr, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*) &ipconfig.netmask.addr, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*) &ipconfig.gw.addr, NETUTILS_BIG),
-        };
+        mp_obj_get_array_fixed_n(args[1].u_obj, 4, &items);
 
-        mp_obj_t softap_tuple = mp_obj_new_tuple(4, softap_array);
+        netutils_parse_ipv4_addr(items[0], (uint8_t*) &ipconfig.ip.addr, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[1], (uint8_t*) &ipconfig.netmask.addr, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[2], (uint8_t*) &ipconfig.gw.addr, NETUTILS_BIG);
 
-        if (station_if_result && station_if_result) {
-            mp_obj_t ifconfig_array[2] = {
-                station_tuple,
-                softap_tuple
-            };
-
-            return mp_obj_new_tuple(2, ifconfig_array);
-
-        } else if (station_if_result) {
-            mp_obj_t ifconfig_array[1] = {
-                station_tuple
-            };
-
-            return mp_obj_new_tuple(1, ifconfig_array);
-
-        } else if (softap_if_result) {
-            mp_obj_t ifconfig_array[1] = {
-                softap_tuple
-            };
-
-            return mp_obj_new_tuple(1, ifconfig_array);
+        if (STATION_IF == mode) {
+            wifi_station_dhcpc_stop();
+            wifi_set_ip_info(mode, &ipconfig);
+        } else {
+            wifi_softap_dhcps_stop();
+            wifi_set_ip_info(mode, &ipconfig);
+            wifi_softap_dhcps_start();
+        }
+    } else {
+        const char *config_mode = mp_obj_str_get_str(args[1].u_obj);
+        
+        if (strcmp(WLAN_DHCP, config_mode)) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "The config parameter has to be '" WLAN_DHCP "'"));
         }
 
-        return mp_const_none;
-    }
-
-    // set
-    mp_obj_t *items;
-
-    mp_obj_get_array_fixed_n(args[0], 4, &items);
-
-    uint8 mode = mp_obj_get_int(items[0]);
-
-    if (mode != STATION_IF && mode != SOFTAP_IF) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "The first value in the tupple has to be STATION_IF or SOFT_IF."));
-    }
-
-    netutils_parse_ipv4_addr(items[1], (uint8_t*) &ipconfig.ip.addr, NETUTILS_BIG);
-    netutils_parse_ipv4_addr(items[2], (uint8_t*) &ipconfig.netmask.addr, NETUTILS_BIG);
-    netutils_parse_ipv4_addr(items[3], (uint8_t*) &ipconfig.gw.addr, NETUTILS_BIG);
-
-    if(STATION_IF == mode) {
-        wifi_station_dhcpc_stop();
-        wifi_set_ip_info(mode, &ipconfig);
-    } else {
-        wifi_softap_dhcps_stop();
-        wifi_set_ip_info(mode, &ipconfig);
-        wifi_softap_dhcps_start();
+        if (STATION_IF == mode) {
+            wifi_station_dhcpc_start();
+        } 
     }
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 0, 1, esp_ifconfig);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_ifconfig_obj, 0, esp_ifconfig);
 
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
@@ -228,10 +230,10 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
         MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STATION_IF),
-        MP_OBJ_NEW_SMALL_INT(STATION_IF)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFTAP_IF),
-        MP_OBJ_NEW_SMALL_INT(SOFTAP_IF)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STA),
+        MP_OBJ_NEW_SMALL_INT(WLAN_STA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AP),
+        MP_OBJ_NEW_SMALL_INT(WLAN_AP)},
 #endif
 };
 
