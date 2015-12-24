@@ -832,6 +832,10 @@ STATIC bool arg_looks_numeric(mp_obj_t arg) {
     ;
 }
 
+STATIC bool arg_looks_string(mp_obj_t arg) {
+    return MP_OBJ_IS_TYPE(arg, &mp_type_str) || MP_OBJ_IS_STR(arg);
+}
+
 STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
 #if MICROPY_PY_BUILTINS_FLOAT
     if (mp_obj_is_float(arg)) {
@@ -1093,6 +1097,9 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
         }
         if (!fill) {
             fill = ' ';
+        }
+        if(!type && arg_looks_string(arg)) {
+            type = 's';
         }
 
         if (sign) {
