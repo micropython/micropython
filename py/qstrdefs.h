@@ -491,7 +491,9 @@ Q(print_exception)
 Q(struct)
 Q(ustruct)
 Q(pack)
+Q(pack_into)
 Q(unpack)
+Q(unpack_from)
 Q(calcsize)
 #endif
 

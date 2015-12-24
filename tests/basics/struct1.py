@@ -66,3 +66,44 @@ except TypeError:
 # but later were implemented for all.
 print(struct.unpack("<3B2h", b"foo\x12\x34\xff\xff"))
 print(struct.pack("<3B", 1, 2, 3))
+
+# pack_into
+buf = bytearray(b'>>>123<<<')
+struct.pack_into('<bbb', buf, 3, 0x41, 0x42, 0x43)
+print(buf)
+struct.pack_into('<bbb', buf, -6, 0x44, 0x45, 0x46)
+print(buf)
+
+try:
+    struct.pack_into('<bbb', buf, 7, 0x41, 0x42, 0x43)
+except:
+    print('struct.error')
+try:
+    struct.pack_into('<bbb', buf, -10, 0x41, 0x42, 0x43)
+except:
+    print('struct.error')
+
+# unpack_from
+buf = b'0123456789'
+print(struct.unpack_from('<b', buf, 4))
+print(struct.unpack_from('<b', buf, -4))
+try:
+    print(struct.unpack_from('<b', buf, 10))
+except:
+    print('struct.error')
+try:
+    print(struct.unpack_from('<b', buf, -11))
+except:
+    print('struct.error')
+
+# pack with too many args, not checked by uPy
+#try:
+#    print(struct.pack('ii', 1, 2, 3))
+#except:
+#    print('struct.error')
+
+# pack with too few args, not checked by uPy
+#try:
+#    print(struct.pack('ii', 1))
+#except:
+#    print('struct.error')
