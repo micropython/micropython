@@ -1032,6 +1032,14 @@ unwind_jump:;
 
                 ENTRY(MP_BC_RETURN_VALUE):
                     MARK_EXC_IP_SELECTIVE();
+                    // These next 3 lines pop a try-finally exception handler, if one
+                    // is there on the exception stack.  Without this the finally block
+                    // is executed a second time when the return is executed, because
+                    // the try-finally exception handler is still on the stack.
+                    // TODO Possibly find a better way to handle this case.
+                    if (currently_in_except_block) {
+                        POP_EXC_BLOCK();
+                    }
 unwind_return:
                     while (exc_sp >= exc_stack) {
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
