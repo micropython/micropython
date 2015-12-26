@@ -27,12 +27,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/frozenmod.h"
 #include "py/mphal.h"
 #if defined(USE_DEVICE_MODE)
 #include "irq.h"
@@ -475,6 +477,19 @@ int pyexec_file(const char *filename) {
 
     return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0);
 }
+
+#if MICROPY_MODULE_FROZEN
+int pyexec_frozen_module(const char *name) {
+    mp_lexer_t *lex = mp_find_frozen_module(name, strlen(name));
+
+    if (lex == NULL) {
+        printf("could not find module '%s'\n", name);
+        return false;
+    }
+
+    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0);
+}
+#endif
 
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
     repl_display_debugging_info = mp_obj_get_int(o_value);
