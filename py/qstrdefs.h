@@ -487,6 +487,7 @@ Q(print_exception)
 #endif
 
 #if MICROPY_PY_STRUCT
+Q(struct)
 Q(ustruct)
 Q(pack)
 Q(unpack)
