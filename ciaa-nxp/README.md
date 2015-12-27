@@ -453,3 +453,39 @@ In this example a python Dict is created and serialized using json module. Then 
 Python Dict is rebuilt reading json string from EEPROM ("readall" method) and using "loads" method from json module
 
 
+## SPI Master mode over pyb.SPI
+
+Example (half-duplex):
+```python
+import pyb
+
+spi = pyb.SPI(8,0,10000)
+
+dataTx = bytearray()
+dataTx.append(0x55)
+dataTx.append(0x55)
+dataTx.append(0x55)
+dataTx.append(0x55)
+
+while True:
+    print("send:")
+    print(dataTx)
+    spi.write(dataTx)
+    pyb.delay(1000)
+
+    
+    dataRx = spi.read(5)
+    print("received:")
+    print(dataRx)
+    pyb.delay(1000)
+```
+Constructor receives 3 arguments:
+
+- SPI frame's bits: 4 8 o 16
+- SPI mode: 0,1,2 o 3
+- Bitrate: expressed in Hz
+
+Once spi object is created, it can be used for reading and writing data.
+"write" method receives a bytearray and send it by the SPI bus.
+"read" method receives the amount of frames to be read.
+
