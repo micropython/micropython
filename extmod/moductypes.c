@@ -107,6 +107,9 @@ enum {
 // We cannot apply the below to INT8, as their range [-128, 127]
 #define IS_SCALAR_ARRAY_OF_BYTES(tuple_desc) (GET_TYPE(MP_OBJ_SMALL_INT_VALUE((tuple_desc)->items[1]), VAL_TYPE_BITS) == UINT8)
 
+#define IS_ALIGNED(addr, val_type) (!(((uintptr_t)addr) & (GET_SCALAR_SIZE(val_type)-1)))
+
+
 // "struct" in uctypes context means "structural", i.e. aggregate, type.
 STATIC const mp_obj_type_t uctypes_struct_type;
 
@@ -512,8 +515,8 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported
-    } else if (value == MP_OBJ_SENTINEL) {
-        // load
+    } else {
+        // load / store
         if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "struct: cannot index"));
         }
@@ -533,9 +536,24 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             }
 
             if (t->len == 2) {
-                byte *p = self->addr + GET_SCALAR_SIZE(val_type) * index;
-                return get_unaligned(val_type, p, self->flags);
-            } else {
+                // array of scalar
+                if ((self->flags == LAYOUT_NATIVE) && IS_ALIGNED(self->addr, val_type)) {
+                    if (value == MP_OBJ_SENTINEL) {
+                        return get_aligned(val_type, self->addr, index);
+                    } else {
+                        set_aligned(val_type, self->addr, index, value);
+                        return value; // just !MP_OBJ_NULL
+                    }
+                } else {
+                    byte *p = self->addr + GET_SCALAR_SIZE(val_type) * index;
+                    if (value == MP_OBJ_SENTINEL) {
+                        return get_unaligned(val_type, p, self->flags);
+                    } else {
+                        set_unaligned(val_type, p, self->flags, value);
+                        return value; // just !MP_OBJ_NULL
+                    }
+                }
+            } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
                 mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
@@ -544,7 +562,10 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
                 o->addr = self->addr + size * index;
                 o->flags = self->flags;
                 return MP_OBJ_FROM_PTR(o);
+            } else {
+                return MP_OBJ_NULL; // op not supported
             }
+
         } else if (agg_type == PTR) {
             byte *p = *(void**)self->addr;
             if (MP_OBJ_IS_SMALL_INT(t->items[1])) {
@@ -564,9 +585,6 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
 
         assert(0);
         return MP_OBJ_NULL;
-    } else {
-        // store
-        return MP_OBJ_NULL; // op not supported
     }
 }
 
