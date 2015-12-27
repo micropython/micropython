@@ -45,6 +45,9 @@ Q(getenv)
 Q(mkdir)
 Q(ilistdir)
 Q(errno)
+#if MICROPY_PY_OS_DUPTERM
+Q(dupterm)
+#endif
 
 Q(uselect)
 Q(poll)
