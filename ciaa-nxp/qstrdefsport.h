@@ -156,3 +156,5 @@ Q(write_int)
 Q(read_float)
 Q(write_float)
 
+Q(SPI)
+
