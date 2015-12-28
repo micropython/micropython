@@ -103,7 +103,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 #if defined(USE_USB_HS)
   else if(hpcd->Instance == USB_OTG_HS)
   {
-#if defined(USE_USB_HS_IN_FS)
+    // We just have to check if the embedded or an external phy is used.
+    if(hpcd->Init.phy_itface == PCD_PHY_EMBEDDED)
+    {
 
     /* Configure USB FS GPIOs */
     __GPIOB_CLK_ENABLE();
@@ -143,8 +145,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     __OTGHS_CLK_SLEEP_ENABLE();
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
-
-#else // !USE_USB_HS_IN_FS
+    }
+    else if (hpcd->Init.phy_itface == PCD_PHY_ULPI)
+    {
 
     /* Configure USB HS GPIOs */
     __GPIOA_CLK_ENABLE();
@@ -201,7 +204,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USB HS Clocks */
     __USB_OTG_HS_CLK_ENABLE();
     __USB_OTG_HS_ULPI_CLK_ENABLE();
-#endif // !USE_USB_HS_IN_FS
+}
     
     /* Set USBHS Interrupt to the lowest priority */
     HAL_NVIC_SetPriority(OTG_HS_IRQn, IRQ_PRI_OTG_HS, IRQ_SUBPRI_OTG_HS);
@@ -415,9 +418,8 @@ if (pdev->id ==  USB_PHY_FS_ID)
 }
 #endif
 #if defined(USE_USB_HS)
-if (pdev->id == USB_PHY_HS_ID)
+if (pdev->id == USB_PHY_HS_IN_FS_ID)
 {
-#if defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
   pcd_hs_handle.Instance = USB_OTG_HS;
   pcd_hs_handle.Init.dev_endpoints = 4;
@@ -444,7 +446,9 @@ if (pdev->id == USB_PHY_HS_ID)
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x40);
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 0x20);
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 0x40);
-#else // !defined(USE_USB_HS_IN_FS)
+  }
+  else if (pdev->id == USB_PHY_HS_ID)
+  {
   /*Set LL Driver parameters */
   pcd_hs_handle.Instance = USB_OTG_HS;
   pcd_hs_handle.Init.dev_endpoints = 6;
@@ -473,7 +477,6 @@ if (pdev->id == USB_PHY_HS_ID)
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 0x80);
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x174);
 
-#endif  // !USE_USB_HS_IN_FS
 }
 #endif  // USE_USB_HS
   return USBD_OK;
