@@ -86,6 +86,10 @@ uint32_t mp_hal_ticks_ms(void) {
     return system_get_time() / 1000;
 }
 
+uint32_t mp_hal_ticks_us(void) {
+    return system_get_time();
+}
+
 void mp_hal_delay_ms(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
 }
