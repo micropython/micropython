@@ -211,8 +211,11 @@ typedef struct _lwip_socket_obj_t {
 } lwip_socket_obj_t;
 
 static inline void poll_sockets(void) {
-    // TODO: Allow to override by ports
+#ifdef MICROPY_EVENT_POLL_HOOK
+    MICROPY_EVENT_POLL_HOOK;
+#else
     mp_hal_delay_ms(1);
+#endif
 }
 
 /*******************************************************************************/
@@ -348,7 +351,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
         } else {
             while (socket->incoming.pbuf == NULL) {
-                mp_hal_delay_ms(100);
+                poll_sockets();
             }
         }
     }
@@ -605,7 +608,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
             }
         } else {
             while (socket->incoming.connection == NULL) {
-                mp_hal_delay_ms(100);
+                poll_sockets();
             }
         }
     }
@@ -688,7 +691,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 }
             } else {
                 while (socket->state == STATE_CONNECTING) {
-                    mp_hal_delay_ms(100);
+                    poll_sockets();
                 }
             }
             if (socket->state == STATE_CONNECTED) {
@@ -1011,7 +1014,7 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
         }
         case ERR_INPROGRESS: {
             while(!lwip_dns_returned) {
-                mp_hal_delay_ms(100);
+                poll_sockets();
             }
             if (lwip_dns_returned == 2) {
                 nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
