@@ -424,6 +424,12 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
 STATIC const mp_obj_type_t lwip_socket_type;
 
+STATIC void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    lwip_socket_obj_t *self = self_in;
+    mp_printf(print, "<socket state=%d timeout=%d incoming=%p remaining=%d>", self->state, self->timeout,
+        self->incoming.pbuf, self->leftover_count);
+}
+
 // FIXME: Only supports two arguments at present
 STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     mp_uint_t n_kw, const mp_obj_t *args) {
@@ -882,6 +888,7 @@ STATIC MP_DEFINE_CONST_DICT(lwip_socket_locals_dict, lwip_socket_locals_dict_tab
 STATIC const mp_obj_type_t lwip_socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
+    .print = lwip_socket_print,
     .make_new = lwip_socket_make_new,
     .locals_dict = (mp_obj_t)&lwip_socket_locals_dict,
 };
