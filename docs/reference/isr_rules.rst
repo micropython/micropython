@@ -14,6 +14,20 @@ This introduction uses vague terms like "slow" or "as fast as possible". This is
 application dependent. Acceptable durations for an ISR are dependent on the rate at which interrupts occur,
 the nature of the main program, and the presence of other concurrent events.
 
+Tips and recommended practices
+------------------------------
+
+This summarises the points detailed below and lists the principal recommendations for interrupt handler code.
+
+* Keep the code as short and simple as possible.
+* Avoid memory allocation: no appending to lists or insertion into dictionaries, no floating point.
+* Where an ISR returns multiple bytes use a pre-allocated ``bytearray``. If multiple integers are to be
+  shared between an ISR and the main program consider an array (``array.array``).
+* Where data is shared between the main program and an ISR, consider disabling interrupts prior to accessing
+  the data in the main program and re-enabling them immediately afterwards (see Critcal Sections).
+* Allocate an emergency exception buffer (see below).
+
+
 MicroPython Issues
 ------------------
 
@@ -229,28 +243,37 @@ the critical section. One way to achieve this is to issue ``pyb.disable_irq()`` 
             if index >= ARRAYSIZE:
                 raise BoundsException('Array bounds exceeded')
 
-    tim4 = pyb.Timer(4, freq=100, callback = callback1)
+    tim4 = pyb.Timer(4, freq = 100, callback = callback1)
 
     for loop in range(1000):
         if index > 0:
-            irq_state = pyb.disable_irq()
+            irq_state = pyb.disable_irq() # Start of critical section
             for x in range(index):
                 print(data[x])
             index = 0
-            pyb.enable_irq(irq_state)
+            pyb.enable_irq(irq_state) # End of critical section
             print('loop {}'.format(loop))
         pyb.delay(1)
 
     tim4.callback(None)
 
-A critical section can comprise a single line of code and a single variable.
-`This <https://github.com/dhylands/upy-examples/blob/master/atomic.py>`_ example illustrates a subtle source
-of bugs. The line ``t.counter += 1`` carries a specific race condition hazard known as a read-modify-write. This
-is a classic cause of bugs in real time systems. In the main loop MicroPython reads the value of
-``t.counter``, adds 1 to it, and writes it back. On rare occasions the  interrupt occurs after the read and before
-the write. The interrupt modifies ``t.counter`` but its change is overwritten by the main loop when the ISR returns.
-If you run this code you will see how uncommonly this occurs: in a real system this could lead to rare, unpredictable
-failures.
+A critical section can comprise a single line of code and a single variable. Consider the following code fragment.
+
+.. code:: python
+
+    count = 0
+    def cb(): # An interrupt callback
+        count +=1
+    def main():
+        # Code to set up the interrupt callback omitted
+        while True:
+            count += 1
+
+This example illustrates a subtle source of bugs. The line ``count += 1`` in the main loop carries a specific race
+condition hazard known as a read-modify-write. This is a classic cause of bugs in real time systems. In the main loop
+MicroPython reads the value of ``t.counter``, adds 1 to it, and writes it back. On rare occasions the  interrupt occurs
+after the read and before the write. The interrupt modifies ``t.counter`` but its change is overwritten by the main
+loop when the ISR returns. In a real system this could lead to rare, unpredictable failures.
 
 As mentioned above, care should be taken if an instance of a Python built in type is modified in the main code and
 that instance is accessed in an ISR. The code performing the modification should be regarded as a critical
