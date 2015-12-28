@@ -111,7 +111,6 @@ soft_reset:
 	//__________________________
 
 
-
     if (!pyexec_file("/flash/Main.py")) {
         mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);
     }

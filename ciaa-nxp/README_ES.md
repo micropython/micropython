@@ -405,4 +405,44 @@ Para volver a construir el diccionario, se lee el string desde la EEPROM mediant
 
 
 
+##### Soporte para SPI modo Master
+
+Clase `pyb.SPI`.
+
+Ejemplo lectura y escritura sobre el modulo SPI (half-duplex):
+```python
+import pyb
+
+spi = pyb.SPI(8,0,10000)
+
+dataTx = bytearray()
+dataTx.append(0x55)
+dataTx.append(0x55)
+dataTx.append(0x55)
+dataTx.append(0x55)
+
+while True:
+    print("send:")
+    print(dataTx)
+    spi.write(dataTx)
+    pyb.delay(1000)
+
+    
+    dataRx = spi.read(5)
+    print("received:")
+    print(dataRx)
+    pyb.delay(1000)
+```
+El constructor de la clase SPI recibe 3 argumentos:
+
+- cantidad de bits: 4 8 o 16
+- Modo del SPI: 0,1,2 o 3
+- Frecuencia del clock SPI: expresada en Hz
+
+Una vez creado el objeto spi se podra leer y escribir datos mediante el metodo write, el cual recibe un bytearray y el metodo read el cual recibe como argumento la cantidad
+de frames spi (cantidad de bytes si los bits fueron configurados en 8) y devuelve un array de bytes con los datos leidos.
+
+
+
+
 

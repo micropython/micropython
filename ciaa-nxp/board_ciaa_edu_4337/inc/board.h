@@ -213,13 +213,6 @@ __STATIC_INLINE void Board_USB1_DisableVbus(void)
 void Board_GPIO_Int_Init(void);
 
 /**
- * @brief	Initialize pin muxing for SSP interface
- * @param	pSSP	: Pointer to SSP interface to initialize
- * @return	Nothing
- */
-void Board_SSP_Init(LPC_SSP_T *pSSP);
-
-/**
  * @brief	Returns the MAC address assigned to this board
  * @param	mcaddr : Pointer to 6-byte character array to populate with MAC address
  * @return	Nothing
@@ -634,6 +627,48 @@ void Board_EEPROM_writeByte(uint32_t addr,uint8_t value);
  * @return      byte value read
  */
 uint8_t Board_EEPROM_readByte(uint32_t addr);
+
+
+
+/**
+ * @brief       Initializes SPI Module in Master mode
+ * @return      void
+ */
+void Board_SSP_Init(void);
+
+/**
+ * @brief       Configure SPI module
+ * @param       bits : bits for each spi frame (4, 8 or 16)
+ * @param       clockMode : SPI Mode : 0,1,2 or 3
+ * @param       bitrate : SPI clock frequency in Hz
+ * @return      void
+ */
+void Board_SSP_config(uint8_t bits, uint8_t clockMode, uint32_t bitrate);
+
+/**
+ * @brief       Send data using SPI module
+ * @param       buffer : buffer to send
+ * @param       bufferLen : Amount of frames to be sended
+ * @return      Amount of frames sended
+ */
+uint32_t Board_SSP_writeBuffer(uint8_t *buffer, uint32_t bufferLen);
+
+/**
+ * @brief       Receive data using SPI module
+ * @param       buffer : buffer for reception
+ * @param       bufferLen : Amount of frames to be received
+ * @return      Amount of frames received
+ */
+uint32_t Board_SSP_readBuffer(uint8_t *buffer, uint32_t bufferLen);
+
+/**
+ * @brief       Send and receive at the same time data using SPI module
+ * @param       bufferTx : buffer to send
+ * @param       bufferRx : buffer for reception
+ * @param       bufferLen : Amount of frames to be sended
+ * @return      Amount of frames sended and received
+ */
+uint32_t Board_SSP_transfer(uint8_t *bufferTx, uint8_t *bufferRx, uint32_t bufferLen);
 
 
 

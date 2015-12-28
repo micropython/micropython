@@ -128,4 +128,10 @@ void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff);
 void mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value);
 uint8_t mp_hal_readByteEEPROM(uint32_t addr);
 
+//SPI
+void mp_hal_configSPI(uint8_t bits, uint8_t clockMode, uint32_t bitrate);
+uint32_t mp_hal_writeSPI(uint8_t *buffer, uint32_t bufferLen);
+uint32_t mp_hal_readSPI(uint8_t *buffer, uint32_t bufferLen);
+
+
 #endif

@@ -392,3 +392,19 @@ uint8_t mp_hal_readByteEEPROM(uint32_t addr)
 {
 	return Board_EEPROM_readByte(addr);
 }
+
+//SPI
+void mp_hal_configSPI(uint8_t bits, uint8_t clockMode, uint32_t bitrate)
+{
+	Board_SSP_config(bits, clockMode, bitrate);
+}
+
+uint32_t mp_hal_writeSPI(uint8_t *buffer, uint32_t bufferLen)
+{
+	return Board_SSP_writeBuffer(buffer, bufferLen);
+}
+
+uint32_t mp_hal_readSPI(uint8_t *buffer, uint32_t bufferLen)
+{
+	return Board_SSP_readBuffer(buffer, bufferLen);
+}
