@@ -66,6 +66,7 @@ SRC_C = \
 	modmachine.c \
 	utils.c \
 	$(BUILD)/frozen.c \
+	../extmod/modlwip.o \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \

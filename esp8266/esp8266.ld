@@ -94,6 +94,7 @@ SECTIONS
         *modnetwork.o(.literal* .text*)
         *moduos.o(.literal* .text*)
         *modutime.o(.literal* .text*)
+        *modlwip.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */

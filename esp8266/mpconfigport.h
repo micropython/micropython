@@ -43,6 +43,7 @@
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UJSON            (1)
+#define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_CPYTHON_COMPAT      (1)
@@ -67,6 +68,7 @@ typedef uint32_t mp_uint_t; // must be pointer size
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
+typedef uint32_t sys_prot_t; // for modlwip
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
@@ -81,11 +83,13 @@ extern const struct _mp_obj_module_t esp_module;
 extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t utime_module;
 extern const struct _mp_obj_module_t uos_module;
+extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_machine;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
