@@ -67,6 +67,15 @@ example causes two LED's to flash at different rates.
     red = Foo(pyb.Timer(4, freq=1), pyb.LED(1))
     greeen = Foo(pyb.Timer(2, freq=0.8), pyb.LED(2))
 
+In this example the ``red`` instance associates timer 4 with LED 1: when a timer 4 interrupt occurs ``red.cb()``
+is called causing LED 1 to change state. The ``green`` instance operates similarly: a timer 2 interrupt
+results in the execution of ``green.cb()`` and toggles LED 2. The use of instance methods confers two
+benefits. Firstly a single class enables code to be shared between multiple hardware instances. Secondly, as
+a bound method the callback function's first argument is ``self``. This enables the callback to access instance
+data and to save state between successive calls. For example, if the class above had a variable ``self.count``
+set to zero in the constructor, ``cb()`` could increment the counter. The ``red`` and ``green`` instances would
+then maintain independent counts of the number of times each LED had changed state.
+
 Creation of Python objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
