@@ -6,7 +6,7 @@
   void LCD4Bit_commandWrite(int value);
   void LCD4Bit_init(int num_lines,int dotFormat);
   void LCD4Bit_print(int value);
-  void LCD4Bit_printIn(char value[]);
+  void LCD4Bit_printIn(const char value[]);
   void LCD4Bit_clear();
   void LCD4Bit_configureCursor(int onOff,int blinkOnOff);
   //non-core---------------

@@ -369,7 +369,7 @@ void mp_hal_clearLCD(void)
 {
 	Board_LCD_clear();
 }
-void mp_hal_printStringLCD(char* text)
+void mp_hal_printStringLCD(const char* text)
 {
 	Board_LCD_printString(text);
 }
@@ -399,7 +399,7 @@ void mp_hal_configSPI(uint8_t bits, uint8_t clockMode, uint32_t bitrate)
 	Board_SSP_config(bits, clockMode, bitrate);
 }
 
-uint32_t mp_hal_writeSPI(uint8_t *buffer, uint32_t bufferLen)
+uint32_t mp_hal_writeSPI(const uint8_t *buffer, uint32_t bufferLen)
 {
 	return Board_SSP_writeBuffer(buffer, bufferLen);
 }

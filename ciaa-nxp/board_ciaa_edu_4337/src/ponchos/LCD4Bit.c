@@ -148,7 +148,7 @@ void LCD4Bit_print(int value) {
 
 //print the given string to the LCD at the current cursor position.  overwrites, doesn't insert.
 //While I don't understand why this was named printIn (PRINT IN?) in the original LiquidCrystal library, I've preserved it here to maintain the interchangeability of the two libraries.
-void LCD4Bit_printIn(char* buffer) {
+void LCD4Bit_printIn(const char* buffer) {
 
     while(*buffer != '\0'){
 	     LCD4Bit_print(*buffer++);

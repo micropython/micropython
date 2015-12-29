@@ -78,7 +78,7 @@ void Board_LCD_clear(void);
  * @param       text: string with null terminator
  * @return      void
  */
-void Board_LCD_printString(char* text);
+void Board_LCD_printString(const char* text);
 
 
 /**
