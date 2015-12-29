@@ -183,11 +183,11 @@ static const int error_lookup_table[] = {
 typedef struct _lwip_socket_obj_t {
     mp_obj_base_t base;
 
-    union {
+    volatile union {
         struct tcp_pcb *tcp;
         struct udp_pcb *udp;
     } pcb;
-    union {
+    volatile union {
         struct pbuf *pbuf;
         struct tcp_pcb *connection;
     } incoming;
