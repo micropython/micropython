@@ -85,6 +85,38 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+//================================================[RTC Management]========================================================
+void Board_RTC_Init(void)
+{
+	Chip_RTC_Init(LPC_RTC);
+	Chip_RTC_Enable(LPC_RTC, ENABLE);
+
+	RTC_TIME_T rtc;
+	rtc.time[RTC_TIMETYPE_SECOND] = 0x00;
+	rtc.time[RTC_TIMETYPE_MINUTE] = 0x00;
+	rtc.time[RTC_TIMETYPE_HOUR] = 0x00;
+
+	rtc.time[RTC_TIMETYPE_DAYOFMONTH] = 0x01;
+
+	rtc.time[RTC_TIMETYPE_MONTH] = 0x01;
+	rtc.time[RTC_TIMETYPE_YEAR] = 0x00;
+
+
+	Chip_RTC_SetFullTime(LPC_RTC, &rtc);
+
+	while(1)
+	{
+		Chip_RTC_GetFullTime(LPC_RTC, &rtc);
+		char aux[200];
+		sprintf(aux,"min:%d sec:%d",rtc.time[RTC_TIMETYPE_MINUTE],rtc.time[RTC_TIMETYPE_SECOND]);
+		Board_UARTPutSTR(aux);
+		mp_hal_milli_delay(1000);
+	}
+}
+
+//===========================================================================================================================
+
+
 //================================================[SPI Management]========================================================
 
 void Board_SSP_Init(void)
