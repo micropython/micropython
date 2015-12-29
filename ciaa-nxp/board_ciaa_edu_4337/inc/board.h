@@ -35,6 +35,22 @@
 #include "chip.h"
 /* board_api.h is included at the bottom of this file after DEBUG setup */
 
+#ifndef __SECTION_EXT
+#define __SECTION_EXT(type, bank, name) __attribute__ ((section("." #type ".$" #bank "." #name)))
+#endif
+
+#ifndef __SECTION
+#define __SECTION(type, bank) __attribute__ ((section("." #type ".$" #bank)))
+#endif
+
+#ifndef __DATA_EXT
+#define __DATA_EXT(bank, name) __SECTION_EXT(data, bank, name)
+#endif
+
+#ifndef __DATA
+#define __DATA(bank) __SECTION(data, bank)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

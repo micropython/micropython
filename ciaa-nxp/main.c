@@ -19,12 +19,6 @@
 
 #include "bootSys.h"
 
-#define __SECTION_EXT(type, bank, name) __attribute__ ((section("." #type ".$" #bank "." #name)))
-#define __SECTION(type, bank) __attribute__ ((section("." #type ".$" #bank)))
-
-#define __DATA_EXT(bank, name) __SECTION_EXT(data, bank, name)
-#define __DATA(bank) __SECTION(data, bank)
-
 // maximum heap for device with 32k RAM o RAM2 (40K block)
 static char *stack_top;
 //static __DATA(RAM2) char heap[32*1024];
