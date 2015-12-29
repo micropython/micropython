@@ -178,4 +178,15 @@ Q(period)
 Q(ONE_SHOT)
 Q(PERIODIC)
 
+// onewire
+Q(_onewire)
+Q(onewire)
+Q(timings)
+Q(reset)
+Q(readbit)
+Q(readbyte)
+Q(writebit)
+Q(writebyte)
+Q(crc8)
+
 Q(json)

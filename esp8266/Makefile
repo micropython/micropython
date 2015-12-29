@@ -67,6 +67,7 @@ SRC_C = \
 	modutime.c \
 	moduos.c \
 	modmachine.c \
+	modonewire.c \
 	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
