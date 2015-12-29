@@ -71,6 +71,10 @@ void SystemInit(void)
 	extern void *__Vectors;
 
 	*pSCB_VTOR = (unsigned int) &__Vectors;
+#else
+	extern void *g_pfnVectors;
+
+	*pSCB_VTOR = (unsigned int) &g_pfnVectors;
 #endif
 
 #if defined(__FPU_PRESENT) && __FPU_PRESENT == 1

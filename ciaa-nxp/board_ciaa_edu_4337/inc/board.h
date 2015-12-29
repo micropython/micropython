@@ -651,7 +651,7 @@ void Board_SSP_config(uint8_t bits, uint8_t clockMode, uint32_t bitrate);
  * @param       bufferLen : Amount of frames to be sended
  * @return      Amount of frames sended
  */
-uint32_t Board_SSP_writeBuffer(uint8_t *buffer, uint32_t bufferLen);
+uint32_t Board_SSP_writeBuffer(const uint8_t *buffer, uint32_t bufferLen);
 
 /**
  * @brief       Receive data using SPI module

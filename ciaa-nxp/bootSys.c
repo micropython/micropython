@@ -12,8 +12,8 @@
 #define SOH	0x01
 
 int boot_getChar(void);
-void boot_writeScript(char* script,int scriptLen,int mode);
-int searchXmodemEndOfData(char* data,int maxIndex);
+void boot_writeScript(const unsigned char* script,int scriptLen,int mode);
+int searchXmodemEndOfData(unsigned char* data,int maxIndex);
 int receiveXmodemPacket(unsigned char* bufferRx);
 int checkCrc(unsigned char* buffer, int len);
 
@@ -50,8 +50,8 @@ void boot(void)
 
 				if(crcOk==1)
 				{
-                        		int size = searchXmodemEndOfData(bufferRx+3,128);
-                        		boot_writeScript(bufferRx+3,size,mode);
+                    int size = searchXmodemEndOfData(bufferRx+3,128);
+                    boot_writeScript(bufferRx+3,size,mode);
 					mode=1;
 					Board_UARTPutChar(ACK); // send ACK
 				}
@@ -111,7 +111,7 @@ int boot_getChar(void)
 }
 
 
-int searchXmodemEndOfData(char* data,int maxIndex)
+int searchXmodemEndOfData(unsigned char* data,int maxIndex)
 {
 	int i=0;
 	while(i<maxIndex)
@@ -149,21 +149,19 @@ int checkCrc(unsigned char* buffer, int len)
 	return 0;
 }
 
-void boot_writeScript(char* script,int scriptLen,int mode)
+void boot_writeScript(const unsigned char* script,int scriptLen,int mode)
 {
-
-        FIL fp;
-	if(mode==0)
-        	f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
-	else
-	{
+	FIL fp;
+	if(mode==0) {
+        f_open(&fp, "/flash/Main.py", FA_WRITE | FA_CREATE_ALWAYS);
+	} else {
 		f_open(&fp, "/flash/Main.py", FA_WRITE | FA_OPEN_ALWAYS);
 		f_lseek(&fp, f_size(&fp));
 	}
 
-        UINT n;
+	UINT n;
 
-        f_write(&fp, script, scriptLen , &n);
-        f_close(&fp);
+	f_write(&fp, script, scriptLen , &n);
+	f_close(&fp);
 	// TODO: Check n
 }

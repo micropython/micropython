@@ -95,7 +95,7 @@ STATIC void Chip_UART_ABIntHandler(LPC_USART_T *pUART)
 /* Initializes the pUART peripheral */
 void Chip_UART_Init(LPC_USART_T *pUART)
 {
-    volatile uint32_t tmp;
+    /*volatile uint32_t tmp;*/
 
 	/* Enable UART clocking. UART base clock(s) must already be enabled */
 	Chip_Clock_EnableOpts(UART_PClock[Chip_UART_GetIndex(pUART)], true, true, 1);
@@ -124,7 +124,8 @@ void Chip_UART_Init(LPC_USART_T *pUART)
 		/* Set Modem Control to default state */
 		pUART->MCR = 0;
 		/*Dummy Reading to Clear Status */
-		tmp = pUART->MSR;
+		/*tmp = pUART->MSR;*/
+		pUART->MSR;
 	}
 
 	/* Default 8N1, with DLAB disabled */

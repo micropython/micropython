@@ -200,7 +200,10 @@ void Chip_LCD_LoadPalette(LPC_LCD_T *pLCD, void *palette)
 		pal_entry.Ru = (*pal_ptr++) >> 3;	/* get red */
 		pal_ptr++;	/* skip over the unused byte */
 
-		pLCD->PAL[i] = *((uint32_t *)&pal_entry);
+		if (1) {
+			uint32_t v = *((uint32_t *)&pal_entry);
+			pLCD->PAL[i] = v;
+		}
 	}
 }
 

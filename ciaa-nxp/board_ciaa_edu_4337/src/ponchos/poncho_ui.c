@@ -81,7 +81,7 @@ void Board_LCD_clear(void)
 {
 	 LCD4Bit_clear();
 }
-void Board_LCD_printString(char* text)
+void Board_LCD_printString(const char* text)
 {
 	LCD4Bit_printIn(text);
 }

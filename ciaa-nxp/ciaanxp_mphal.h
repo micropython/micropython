@@ -35,7 +35,7 @@ void mp_hal_init(void);
 mp_uint_t mp_hal_get_milliseconds(void);
 void mp_hal_milli_delay(mp_uint_t ms);
 
-//void mp_hal_set_interrupt_char(int c);
+void mp_hal_set_interrupt_char(int c);
 //int mp_hal_stdin_rx_chr(void);
 //void mp_hal_stdout_tx_str(const char *str);
 //void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len);
@@ -120,7 +120,7 @@ uint8_t mp_hal_readMatrixKeyboard(uint8_t row, uint8_t col);
 //LCD
 void mp_hal_initLCD(uint8_t lines,uint8_t dotFormat);
 void mp_hal_clearLCD(void);
-void mp_hal_printStringLCD(char* text);
+void mp_hal_printStringLCD(const char* text);
 void mp_hal_gotoXYLCD(uint8_t x,uint8_t y);
 void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff);
 
@@ -130,7 +130,7 @@ uint8_t mp_hal_readByteEEPROM(uint32_t addr);
 
 //SPI
 void mp_hal_configSPI(uint8_t bits, uint8_t clockMode, uint32_t bitrate);
-uint32_t mp_hal_writeSPI(uint8_t *buffer, uint32_t bufferLen);
+uint32_t mp_hal_writeSPI(const uint8_t *buffer, uint32_t bufferLen);
 uint32_t mp_hal_readSPI(uint8_t *buffer, uint32_t bufferLen);
 
 

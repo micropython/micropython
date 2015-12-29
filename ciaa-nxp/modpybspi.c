@@ -62,7 +62,7 @@ STATIC mp_obj_t pyb_spi_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 // functions used by streams
 STATIC mp_uint_t pyb_spi_write_m(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
 
-    const byte *buf = buf_in;
+    const uint8_t *buf = buf_in;
 
     // write the data
     mp_hal_writeSPI(buf, size);

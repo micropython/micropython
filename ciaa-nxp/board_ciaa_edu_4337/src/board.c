@@ -117,7 +117,7 @@ void Board_SSP_config(uint8_t bits, uint8_t clockMode, uint32_t bitrate)
         Chip_SSP_Enable(LPC_SSP1);
 }
 
-uint32_t Board_SSP_writeBuffer(uint8_t *buffer, uint32_t bufferLen)
+uint32_t Board_SSP_writeBuffer(const uint8_t *buffer, uint32_t bufferLen)
 {
 	return Chip_SSP_WriteFrames_Blocking(LPC_SSP1, buffer, bufferLen);
 }

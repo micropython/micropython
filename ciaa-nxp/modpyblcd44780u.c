@@ -96,7 +96,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_config_cursor_obj, pyb_lcd_config_curso
 // used by stream
 STATIC mp_uint_t pyb_lcd_print_m(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     
-    const byte *buf = buf_in;
+    const char *buf = buf_in;
 
     // write the data
     mp_hal_printStringLCD(buf);
