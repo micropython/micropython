@@ -39,18 +39,16 @@ SRC_C = \
 	sysinit.c \
 	system.c \
 	cr_startup_lpc43xx.c \
-	modpyb.c \
 	ciaanxp_mphal.c \
 	ciaa_help.c \
-	modpybled.c \
-	stmhal/pybstdio.c \
-	lib/fatfs/ff.c \
-	lib/fatfs/option/ccsbcs.c \
-	lib/mp-readline/readline.c \
-	lib/timeutils/timeutils.c \
-	lib/utils/pyexec.c \
+	bootSys.c  \
+	lpc43_diskio.c \
+	lpc43_flash.c \
+	lpc43_storage.c \
 	ffconf.c \
 	moduos.c \
+	modpyb.c \
+	modpybled.c \
 	modpybswitch.c \
 	modpybuart.c \
 	modpybpin.c \
@@ -63,17 +61,19 @@ SRC_C = \
 	modpyblcd44780u.c \
 	modpybeeprom.c \
 	modpybspi.c \
-	bootSys.c  \
-	$(wildcard lpc_chip_43xx/src/*.c) \
-	$(wildcard board_ciaa_edu_4337/src/*.c) \
-	$(wildcard board_ciaa_edu_4337/src/ponchos/*.c) \
+	lib/fatfs/ff.c \
+	lib/fatfs/option/ccsbcs.c \
+	lib/mp-readline/readline.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/pyexec.c \
 	stmhal/file.c \
 	stmhal/import.c \
 	stmhal/input.c \
-	lpc43_diskio.c \
-	lpc43_flash.c \
-	lpc43_storage.c \
-	stmhal/lexerfatfs.c
+	stmhal/lexerfatfs.c \
+	stmhal/pybstdio.c \
+	$(wildcard lpc_chip_43xx/src/*.c) \
+	$(wildcard board_ciaa_edu_4337/src/*.c) \
+	$(wildcard board_ciaa_edu_4337/src/ponchos/*.c)
 
 SRC_S = \
 #	startup_stm32f40xx.s \
