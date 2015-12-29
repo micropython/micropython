@@ -30,6 +30,8 @@
 #include "uart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
+#include "py/obj.h"
+#include "py/mpstate.h"
 
 extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
@@ -97,4 +99,10 @@ void mp_hal_delay_ms(uint32_t delay) {
 
 void mp_hal_set_interrupt_char(int c) {
     // TODO
+}
+
+void __assert_func(const char *file, int line, const char *func, const char *expr) {
+    printf("assert:%s:%d:%s: %s\n", file, line, func, expr);
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_AssertionError,
+        "C-level assert"));
 }
