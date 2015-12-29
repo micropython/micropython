@@ -69,10 +69,22 @@ STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
 
 STATIC uint8_t pin_mode[16];
 
-STATIC void pin_set(uint pin, uint mode, int value) {
+uint mp_obj_get_pin(mp_obj_t pin_in) {
+    if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "expecting a pin"));
+    }
+    pyb_pin_obj_t *self = pin_in;
+    return self->phys_port;
+}
+
+int pin_get(uint pin) {
+    return GPIO_INPUT_GET(pin);
+}
+
+void pin_set(uint pin, int value) {
     uint32_t enable = 0;
     uint32_t disable = 0;
-    switch (mode) {
+    switch (pin_mode[pin]) {
         case GPIO_MODE_INPUT:
             value = -1;
             disable = 1;
@@ -162,7 +174,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
         PIN_PULLUP_EN(self->periph);
     }
 
-    pin_set(self->phys_port, mode, value);
+    pin_set(self->phys_port, value);
 
     return mp_const_none;
 }
@@ -203,7 +215,7 @@ STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
         return MP_OBJ_NEW_SMALL_INT(GPIO_INPUT_GET(self->phys_port));
     } else {
         // set pin
-        pin_set(self->phys_port, pin_mode[self->phys_port], mp_obj_is_true(args[0]));
+        pin_set(self->phys_port, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
 }
@@ -223,7 +235,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pin_value_obj, 1, 2, pyb_pin_valu
 // pin.low()
 STATIC mp_obj_t pyb_pin_low(mp_obj_t self_in) {
     pyb_pin_obj_t *self = self_in;
-    pin_set(self->phys_port, pin_mode[self->phys_port], 0);
+    pin_set(self->phys_port, 0);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_low_obj, pyb_pin_low);
@@ -231,7 +243,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_low_obj, pyb_pin_low);
 // pin.high()
 STATIC mp_obj_t pyb_pin_high(mp_obj_t self_in) {
     pyb_pin_obj_t *self = self_in;
-    pin_set(self->phys_port, pin_mode[self->phys_port], 1);
+    pin_set(self->phys_port, 1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_high_obj, pyb_pin_high);
