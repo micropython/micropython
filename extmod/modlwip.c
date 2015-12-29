@@ -203,6 +203,11 @@ typedef struct _lwip_socket_obj_t {
     int8_t connected;
 } lwip_socket_obj_t;
 
+static inline void poll_sockets(void) {
+    // TODO: Allow to override by ports
+    mp_hal_delay_ms(1);
+}
+
 /*******************************************************************************/
 // Callback functions for the lwIP raw API.
 
@@ -378,19 +383,13 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     }
 
     if (socket->incoming.pbuf == NULL) {
-        if (socket->timeout != -1) {
-            for (mp_uint_t retries = socket->timeout / 100; retries--;) {
-                mp_hal_delay_ms(100);
-                if (socket->incoming.pbuf != NULL) break;
-            }
-            if (socket->incoming.pbuf == NULL) {
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (socket->incoming.pbuf == NULL) {
+            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = ETIMEDOUT;
                 return -1;
             }
-        } else {
-            while (socket->incoming.pbuf == NULL) {
-                mp_hal_delay_ms(100);
-            }
+            poll_sockets();
         }
     }
 
