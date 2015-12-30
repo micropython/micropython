@@ -391,12 +391,18 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
     if (socket->incoming.pbuf == NULL) {
         mp_uint_t start = mp_hal_ticks_ms();
-        while (socket->incoming.pbuf == NULL) {
+        while (socket->state == STATE_CONNECTED && socket->incoming.pbuf == NULL) {
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = ETIMEDOUT;
                 return -1;
             }
             poll_sockets();
+        }
+        if (socket->state == STATE_PEER_CLOSED) {
+            return 0;
+        } else if (socket->state != STATE_CONNECTED) {
+            *_errno = -socket->state;
+            return -1;
         }
     }
 
