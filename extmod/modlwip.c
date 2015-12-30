@@ -226,7 +226,7 @@ STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, 
     } else {
         socket->incoming.pbuf = p;
         socket->peer_port = (mp_uint_t)port;
-        memcpy(&socket->peer, addr, 4);
+        memcpy(&socket->peer, addr, sizeof(socket->peer));
     }
 }
 
@@ -285,7 +285,7 @@ STATIC uint8_t lwip_dns_result[4];
 STATIC void _lwip_dns_incoming(const char *name, ip_addr_t *addr, void *callback_arg) {
     if (addr != NULL) {
         lwip_dns_returned = 1;
-        memcpy(lwip_dns_result, addr, 4);
+        memcpy(lwip_dns_result, addr, sizeof(lwip_dns_result));
     } else {
         lwip_dns_returned = 2;
     }
@@ -351,7 +351,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     }
 
     if (ip != NULL) {
-        memcpy(ip, &socket->peer, 4);
+        memcpy(ip, &socket->peer, sizeof(socket->peer));
         *port = socket->peer_port;
     }
 
@@ -613,7 +613,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
 
     // make the return value
     uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    memcpy(ip, &(socket2->pcb.tcp->remote_ip), 4);
+    memcpy(ip, &(socket2->pcb.tcp->remote_ip), sizeof(ip));
     mp_uint_t port = (mp_uint_t)socket2->pcb.tcp->remote_port;
     mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
     client->items[0] = socket2;
@@ -656,7 +656,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_lookup_table[-err])));
             }
             socket->peer_port = (mp_uint_t)port;
-            memcpy(socket->peer, &dest, 4);
+            memcpy(socket->peer, &dest, sizeof(socket->peer));
             // And now we wait...
             if (socket->timeout != -1) {
                 for (mp_uint_t retries = socket->timeout / 100; retries--;) {
@@ -819,7 +819,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_uint_t ret = 0;
     switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM: {
-            memcpy(ip, &socket->peer, 4);
+            memcpy(ip, &socket->peer, sizeof(socket->peer));
             port = (mp_uint_t) socket->peer_port;
             ret = lwip_tcp_receive(socket, (byte*)vstr.buf, len, &_errno);
             break;
@@ -963,7 +963,7 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     }
 
     uint8_t out_ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    memcpy(out_ip, lwip_dns_result, 4);
+    memcpy(out_ip, lwip_dns_result, sizeof(lwip_dns_result));
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
