@@ -150,6 +150,8 @@ STATIC const mp_obj_type_t lwip_slip_type = {
 // Table to convert lwIP err_t codes to socket errno codes, from the lwIP
 // socket API.
 
+// Extension to lwIP error codes
+#define _ERR_BADF -16
 static const int error_lookup_table[] = {
     0,             /* ERR_OK          0      No error, everything OK. */
     ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
@@ -167,7 +169,7 @@ static const int error_lookup_table[] = {
     ENOTCONN,      /* ERR_CONN       -13     Not connected.           */
     EIO,           /* ERR_ARG        -14     Illegal argument.        */
     -1,            /* ERR_IF         -15     Low-level netif error    */
-    EBADF,         /* Not an ERR     -16     Closed socket (null pcb) */
+    EBADF,         /* _ERR_BADF      -16     Closed socket (null pcb) */
 };
 
 /*******************************************************************************/
@@ -493,7 +495,7 @@ STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
         //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
     }
     socket->pcb.tcp = NULL;
-    socket->state = -16; // EBADF
+    socket->state = _ERR_BADF;
     if (socket->incoming.pbuf != NULL) {
         if (!socket_is_listener) {
             pbuf_free(socket->incoming.pbuf);
@@ -699,7 +701,7 @@ STATIC mp_obj_t lwip_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     if (socket->pcb.tcp == NULL) {
         // not connected
         _errno = error_lookup_table[-(socket->state)];
-        socket->state = -16;
+        socket->state = _ERR_BADF;
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
 
@@ -732,7 +734,7 @@ STATIC mp_obj_t lwip_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     if (socket->pcb.tcp == NULL) {
         // not connected
         _errno = error_lookup_table[-(socket->state)];
-        socket->state = -16;
+        socket->state = _ERR_BADF;
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
 
@@ -770,7 +772,7 @@ STATIC mp_obj_t lwip_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t 
     if (socket->pcb.tcp == NULL) {
         // not connected
         _errno = error_lookup_table[-(socket->state)];
-        socket->state = -16;
+        socket->state = _ERR_BADF;
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
 
@@ -806,7 +808,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     if (socket->pcb.tcp == NULL) {
         // not connected
         _errno = error_lookup_table[-(socket->state)];
-        socket->state = -16;
+        socket->state = _ERR_BADF;
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
 
