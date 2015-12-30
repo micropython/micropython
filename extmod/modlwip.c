@@ -384,11 +384,6 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
 // Helper function for recv/recvfrom to handle TCP packets
 STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
-
-    if (socket->state == STATE_PEER_CLOSED) {
-        return 0;
-    }
-
     if (socket->incoming.pbuf == NULL) {
         mp_uint_t start = mp_hal_ticks_ms();
         while (socket->state == STATE_CONNECTED && socket->incoming.pbuf == NULL) {
@@ -399,7 +394,10 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             poll_sockets();
         }
         if (socket->state == STATE_PEER_CLOSED) {
-            return 0;
+            if (socket->incoming.pbuf == NULL) {
+                // socket closed and no data left in buffer
+                return 0;
+            }
         } else if (socket->state != STATE_CONNECTED) {
             *_errno = -socket->state;
             return -1;
