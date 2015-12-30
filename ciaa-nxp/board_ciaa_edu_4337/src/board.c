@@ -89,21 +89,18 @@ static ExtIntData extIntData[4];
 void Board_RTC_Init(void)
 {
 	Chip_RTC_Init(LPC_RTC);
-	Chip_RTC_Enable(LPC_RTC, ENABLE);
 
+	/*
 	RTC_TIME_T rtc;
 	rtc.time[RTC_TIMETYPE_SECOND] = 0x00;
 	rtc.time[RTC_TIMETYPE_MINUTE] = 0x00;
 	rtc.time[RTC_TIMETYPE_HOUR] = 0x00;
-
 	rtc.time[RTC_TIMETYPE_DAYOFMONTH] = 0x01;
-
 	rtc.time[RTC_TIMETYPE_MONTH] = 0x01;
-	rtc.time[RTC_TIMETYPE_YEAR] = 0x00;
-
+	rtc.time[RTC_TIMETYPE_YEAR] = 2000;
 
 	Chip_RTC_SetFullTime(LPC_RTC, &rtc);
-
+	Chip_RTC_Enable(LPC_RTC, ENABLE);
 	while(1)
 	{
 		Chip_RTC_GetFullTime(LPC_RTC, &rtc);
@@ -112,6 +109,51 @@ void Board_RTC_Init(void)
 		Board_UARTPutSTR(aux);
 		mp_hal_milli_delay(1000);
 	}
+	*/
+}
+
+void Board_RTC_setTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek)
+{
+        RTC_TIME_T rtc;
+        rtc.time[RTC_TIMETYPE_SECOND] = sec;
+        rtc.time[RTC_TIMETYPE_MINUTE] = min;
+        rtc.time[RTC_TIMETYPE_HOUR] = hr;
+        rtc.time[RTC_TIMETYPE_DAYOFMONTH] = day;
+        rtc.time[RTC_TIMETYPE_MONTH] = mon;
+        rtc.time[RTC_TIMETYPE_YEAR] = yr;
+        rtc.time[RTC_TIMETYPE_DAYOFWEEK] = dayOfWeek;
+        Chip_RTC_SetFullTime(LPC_RTC, &rtc);
+        Chip_RTC_Enable(LPC_RTC, ENABLE);
+}
+
+void Board_RTC_getTime(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek)
+{
+	RTC_TIME_T rtc;
+	Chip_RTC_GetFullTime(LPC_RTC, &rtc);
+
+        *sec = rtc.time[RTC_TIMETYPE_SECOND];
+        *min = rtc.time[RTC_TIMETYPE_MINUTE];
+        *hr = rtc.time[RTC_TIMETYPE_HOUR];
+        *day = rtc.time[RTC_TIMETYPE_DAYOFMONTH];
+        *mon = rtc.time[RTC_TIMETYPE_MONTH];
+        *yr = rtc.time[RTC_TIMETYPE_YEAR];
+        *dayOfWeek = rtc.time[RTC_TIMETYPE_DAYOFWEEK];
+}
+
+void Board_RTC_calibration(uint32_t value)
+{
+	uint8_t calibDir = RTC_CALIB_DIR_FORWARD;
+	if(value<0)
+	{
+		calibDir = RTC_CALIB_DIR_BACKWARD;
+		value=value*(-1);
+	}
+
+	if(value>131072)
+		value=131072;
+
+	Chip_RTC_CalibConfig(LPC_RTC, value, calibDir);
+	Chip_RTC_CalibCounterCmd(LPC_RTC, ENABLE);
 }
 
 //===========================================================================================================================
@@ -1364,6 +1406,9 @@ void Board_Init(void)
 
 	/* Initialize SPI pins */
 	Board_SSP_Init();
+
+	/* Initialize RTC moduke */
+	Board_RTC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

@@ -105,7 +105,26 @@ soft_reset:
 	//__________________________
 
 	//debug rtc
-	Board_RTC_Init();
+	int c=0;
+	Board_UARTPutSTR("pongo en hora");
+	Board_RTC_setTime(23,59,0, 31, 12, 2015,0);
+	Board_UARTPutSTR(" leo ");
+	while(1)
+	{
+		uint32_t h,m,s,d,mon,yr,dow;
+
+		Board_RTC_getTime(&h,&m,&s,&d, &mon, &yr,&dow);
+		char aux[512];
+		sprintf(aux,"%2d-%2d-%2d %2d:%2d:%2d\n",d,mon,yr,h,m,s);
+		Board_UARTPutSTR(aux);
+		mp_hal_milli_delay(1000);
+		c++;
+		if(c==15)
+		{
+			Board_RTC_setTime(23,59,0, 31, 12, 2015,0);
+			c=0;
+		}
+	}
 	//________
 
     if (!pyexec_file("/flash/Main.py")) {

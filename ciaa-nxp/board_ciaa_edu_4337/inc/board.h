@@ -671,6 +671,11 @@ uint32_t Board_SSP_readBuffer(uint8_t *buffer, uint32_t bufferLen);
 uint32_t Board_SSP_transfer(uint8_t *bufferTx, uint8_t *bufferRx, uint32_t bufferLen);
 
 
+void Board_RTC_calibration(uint32_t value);
+void Board_RTC_getTime(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek);
+void Board_RTC_setTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek);
+
+
 
 #include "../src/ponchos/poncho_ui.h"
 
