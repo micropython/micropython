@@ -63,6 +63,7 @@ SRC_C = \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
+	modmachine.c \
 	utils.c \
 	$(BUILD)/frozen.c \
 
