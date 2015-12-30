@@ -178,6 +178,7 @@ bool gc_is_locked(void) {
             size_t _block = BLOCK_FROM_PTR(ptr); \
             if (ATB_GET_KIND(_block) == AT_HEAD) { \
                 /* an unmarked head, mark it, and push it on gc stack */ \
+                DEBUG_printf("gc_mark(%p)\n", ptr); \
                 ATB_HEAD_TO_MARK(_block); \
                 if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
                     *MP_STATE_MEM(gc_sp)++ = _block; \
@@ -250,6 +251,7 @@ STATIC void gc_sweep(void) {
                 }
 #endif
                 free_tail = 1;
+                DEBUG_printf("gc_sweep(%x)\n", PTR_FROM_BLOCK(block));
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
@@ -257,7 +259,6 @@ STATIC void gc_sweep(void) {
 
             case AT_TAIL:
                 if (free_tail) {
-                    DEBUG_printf("gc_sweep(%p)\n",PTR_FROM_BLOCK(block));
                     ATB_ANY_TO_FREE(block);
                 }
                 break;

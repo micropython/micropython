@@ -37,10 +37,12 @@
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
-#include "ip_addr.h"
 #include "spi_flash.h"
 #include "utils.h"
 
+#define MODESP_ESPCONN (1)
+
+#if MODESP_ESPCONN
 STATIC const mp_obj_type_t esp_socket_type;
 
 typedef struct _esp_socket_obj_t {
@@ -500,6 +502,7 @@ STATIC const mp_obj_type_t esp_socket_type = {
     .make_new = esp_socket_make_new,
     .locals_dict = (mp_obj_t)&esp_socket_locals_dict,
 };
+#endif
 
 #define MODESP_INCLUDE_CONSTANTS (1)
 
@@ -539,26 +542,6 @@ STATIC mp_obj_t esp_sleep_type(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_sleep_type_obj, 0, 1, esp_sleep_type);
 
-STATIC mp_obj_t esp_mac(mp_uint_t n_args, const mp_obj_t *args) {
-    uint8_t mac[6];
-    if (n_args == 0) {
-        wifi_get_macaddr(STATION_IF, mac);
-        return mp_obj_new_bytes(mac, sizeof(mac));
-    } else {
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-
-        if (bufinfo.len != 6) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "invalid buffer length"));
-        }
-
-        wifi_set_macaddr(STATION_IF, bufinfo.buf);
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_mac_obj, 0, 1, esp_mac);
-
 STATIC mp_obj_t esp_deepsleep(mp_uint_t n_args, const mp_obj_t *args) {
     system_deep_sleep(n_args > 0 ? mp_obj_get_int(args[0]) : 0);
     return mp_const_none;
@@ -582,20 +565,21 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_in) {
     m_del(byte, buf, len);
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_flash_read_obj, esp_flash_read);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
 
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_wifi_mode), (mp_obj_t)&esp_wifi_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_type), (mp_obj_t)&esp_sleep_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id), (mp_obj_t)&esp_flash_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_read), (mp_obj_t)&esp_flash_read_obj },
+    #if MODESP_ESPCONN
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
+    #endif
 
 #if MODESP_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),

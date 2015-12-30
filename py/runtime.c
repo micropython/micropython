@@ -947,7 +947,11 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
     } else if (MP_OBJ_IS_TYPE(member, &mp_type_type)) {
         // Don't try to bind types (even though they're callable)
         dest[0] = member;
-    } else if (mp_obj_is_callable(member)) {
+    } else if (MP_OBJ_IS_FUN(member)
+        || (MP_OBJ_IS_OBJ(member)
+            && (((mp_obj_base_t*)MP_OBJ_TO_PTR(member))->type->name == MP_QSTR_closure
+                || ((mp_obj_base_t*)MP_OBJ_TO_PTR(member))->type->name == MP_QSTR_generator))) {
+        // only functions, closures and generators objects can be bound to self
         #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
         if (self == MP_OBJ_NULL && mp_obj_get_type(member) == &mp_type_fun_builtin) {
             // we extracted a builtin method without a first argument, so we must

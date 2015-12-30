@@ -196,7 +196,9 @@ uint64_t sdcard_get_capacity_in_bytes(void) {
 }
 
 void SDIO_IRQHandler(void) {
+    IRQ_ENTER(SDIO_IRQn);
     HAL_SD_IRQHandler(&sd_handle);
+    IRQ_EXIT(SDIO_IRQn);
 }
 
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {

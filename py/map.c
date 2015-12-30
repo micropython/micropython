@@ -201,7 +201,14 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
     }
 
-    mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
+    // get hash of index, with fast path for common case of qstr
+    mp_uint_t hash;
+    if (MP_OBJ_IS_QSTR(index)) {
+        hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
+    } else {
+        hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
+    }
+
     mp_uint_t pos = hash % map->alloc;
     mp_uint_t start_pos = pos;
     mp_map_elem_t *avail_slot = NULL;

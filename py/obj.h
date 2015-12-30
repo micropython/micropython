@@ -390,6 +390,7 @@ typedef enum {
     PRINT_REPR = 1,
     PRINT_EXC = 2, // Special format for printing exception in unhandled exception message
     PRINT_JSON = 3,
+    PRINT_RAW = 4, // Special format for printing bytes as an undercorated string
     PRINT_EXC_SUBCLASS = 0x80, // Internal flag for printing exception subclasses
 } mp_print_kind_t;
 

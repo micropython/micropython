@@ -22,11 +22,6 @@
 #include "uart.h"
 #include "pin.h"
 
-#if MICROPY_MODULE_FROZEN
-#include "py/compile.h"
-#include "py/frozenmod.h"
-#endif
-
 extern uint32_t _heap_start;
 
 void flash_error(int n) {
@@ -306,10 +301,7 @@ soft_reset:
 #endif
 
 #if MICROPY_MODULE_FROZEN
-    {
-        mp_lexer_t *lex = mp_find_frozen_module("boot", 4);
-        mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mp_globals_get(), mp_locals_get());
-    }
+    pyexec_frozen_module("boot");
 #else
     if (!pyexec_file("/boot.py")) {
         flash_error(4);
@@ -321,10 +313,7 @@ soft_reset:
 
     // run main script
 #if MICROPY_MODULE_FROZEN
-    {
-        mp_lexer_t *lex = mp_find_frozen_module("main", 4);
-        mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mp_globals_get(), mp_locals_get());
-    }
+    pyexec_frozen_module("main");
 #else
     {
         vstr_t *vstr = vstr_new();

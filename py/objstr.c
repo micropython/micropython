@@ -121,7 +121,7 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     #else
     bool is_bytes = true;
     #endif
-    if (!MICROPY_PY_BUILTINS_STR_UNICODE && kind == PRINT_STR && !is_bytes) {
+    if (kind == PRINT_RAW || (!MICROPY_PY_BUILTINS_STR_UNICODE && kind == PRINT_STR && !is_bytes)) {
         mp_printf(print, "%.*s", str_len, str_data);
     } else {
         if (is_bytes) {
@@ -1296,6 +1296,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
 
     GET_STR_DATA_LEN(pattern, str, len);
     const byte *start_str = str;
+    bool is_bytes = MP_OBJ_IS_TYPE(pattern, &mp_type_bytes);
     int arg_i = 0;
     vstr_t vstr;
     mp_print_t print;
@@ -1444,7 +1445,13 @@ not_enough_args:
                 vstr_t arg_vstr;
                 mp_print_t arg_print;
                 vstr_init_print(&arg_vstr, 16, &arg_print);
-                mp_obj_print_helper(&arg_print, arg, *str == 'r' ? PRINT_REPR : PRINT_STR);
+                mp_print_kind_t print_kind = (*str == 'r' ? PRINT_REPR : PRINT_STR);
+                if (print_kind == PRINT_STR && is_bytes && MP_OBJ_IS_TYPE(arg, &mp_type_bytes)) {
+                    // If we have something like b"%s" % b"1", bytes arg should be
+                    // printed undecorated.
+                    print_kind = PRINT_RAW;
+                }
+                mp_obj_print_helper(&arg_print, arg, print_kind);
                 uint vlen = arg_vstr.len;
                 if (prec < 0) {
                     prec = vlen;
@@ -1477,7 +1484,7 @@ not_enough_args:
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "not all arguments converted during string formatting"));
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(is_bytes ? &mp_type_bytes : &mp_type_str, &vstr);
 }
 
 // The implementation is optimized, returning the original string if there's

@@ -487,6 +487,7 @@ Q(print_exception)
 #endif
 
 #if MICROPY_PY_STRUCT
+Q(struct)
 Q(ustruct)
 Q(pack)
 Q(unpack)
@@ -652,4 +653,15 @@ Q(settimeout)
 Q(slip)
 Q(status)
 #endif
+#endif
+
+#if MICROPY_FSUSERMOUNT
+// for user-mountable block devices
+Q(mount)
+Q(readonly)
+Q(mkfs)
+Q(readblocks)
+Q(writeblocks)
+Q(sync)
+Q(count)
 #endif

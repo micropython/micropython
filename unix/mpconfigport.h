@@ -128,6 +128,7 @@
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
+#define MICROPY_ASYNC_KBD_INTR      (1)
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_os;
@@ -209,8 +210,12 @@ void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
 
+#if MICROPY_PY_OS_DUPTERM
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#else
 #include <unistd.h>
 #define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
+#endif
 
 #ifdef __linux__
 // Can access physical memory using /dev/mem
@@ -238,9 +243,19 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#if MICROPY_PY_OS_DUPTERM
+#define ROOT_POINTERS_1 mp_obj_t term_obj
+#include <stddef.h>
+void mp_hal_dupterm_tx_strn(const char *str, size_t len);
+#else
+#define ROOT_POINTERS_1
+#define mp_hal_dupterm_tx_strn(s, l)
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
+    ROOT_POINTERS_1; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()

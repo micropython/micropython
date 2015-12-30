@@ -36,7 +36,6 @@
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
-#include "ip_addr.h"
 #include "spi_flash.h"
 #include "utils.h"
 
@@ -117,6 +116,26 @@ STATIC mp_obj_t esp_isconnected() {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_isconnected_obj, esp_isconnected);
 
+STATIC mp_obj_t esp_mac(mp_uint_t n_args, const mp_obj_t *args) {
+    uint8_t mac[6];
+    if (n_args == 0) {
+        wifi_get_macaddr(STATION_IF, mac);
+        return mp_obj_new_bytes(mac, sizeof(mac));
+    } else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+
+        if (bufinfo.len != 6) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "invalid buffer length"));
+        }
+
+        wifi_set_macaddr(STATION_IF, bufinfo.buf);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_mac_obj, 0, 1, esp_mac);
+
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     // MicroPython "network" module interface requires it to contains classes
@@ -129,6 +148,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),

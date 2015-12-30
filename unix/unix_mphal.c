@@ -31,18 +31,29 @@
 
 #include "py/mpstate.h"
 #include "py/mphal.h"
+#include "py/runtime.h"
 
 #ifndef _WIN32
 #include <signal.h>
 
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
+        #if MICROPY_ASYNC_KBD_INTR
+        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
+        sigset_t mask;
+        sigemptyset(&mask);
+        // On entry to handler, its signal is blocked, and unblocked on
+        // normal exit. As we instead perform longjmp, unblock it manually.
+        sigprocmask(SIG_SETMASK, &mask, NULL);
+        nlr_raise(MP_STATE_VM(keyboard_interrupt_obj));
+        #else
         if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
         mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
         MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
+        #endif
     }
 }
 #endif
@@ -96,8 +107,40 @@ void mp_hal_stdio_mode_orig(void) {
 
 #endif
 
+#if MICROPY_PY_OS_DUPTERM
+void mp_hal_dupterm_tx_strn(const char *str, size_t len) {
+    if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
+        mp_obj_t write_m[3];
+        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
+        write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
+        mp_call_method_n_kw(1, 0, write_m);
+    }
+}
+#endif
+
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
+    #if MICROPY_PY_OS_DUPTERM
+    while (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
+        mp_obj_t read_m[3];
+        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_read, read_m);
+        read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
+        mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
+        if (res == mp_const_none) {
+            break;
+        }
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
+        if (bufinfo.len == 0) {
+            break;
+        }
+        c = *(byte*)bufinfo.buf;
+        if (c == '\n') {
+            c = '\r';
+        }
+        return c;
+    }
+    #endif
     int ret = read(0, &c, 1);
     if (ret == 0) {
         c = 4; // EOF, ctrl-D
@@ -109,6 +152,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     int ret = write(1, str, len);
+    mp_hal_dupterm_tx_strn(str, len);
     (void)ret; // to suppress compiler warning
 }
 

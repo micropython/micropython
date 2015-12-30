@@ -37,12 +37,18 @@
 mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
     // Second argument is for an extension to allow a separator to be used
     // between values.
-    (void)n_args;
+    const char *sep = NULL;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     vstr_t vstr;
-    vstr_init_len(&vstr, bufinfo.len * 2);
+    size_t out_len = bufinfo.len * 2;
+    if (n_args > 1) {
+        // 1-char separator between hex numbers
+        out_len += bufinfo.len - 1;
+        sep = mp_obj_str_get_str(args[1]);
+    }
+    vstr_init_len(&vstr, out_len);
     byte *in = bufinfo.buf, *out = (byte*)vstr.buf;
     for (mp_uint_t i = bufinfo.len; i--;) {
         byte d = (*in >> 4);
@@ -55,6 +61,9 @@ mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
             d += 'a' - '9' - 1;
         }
         *out++ = d + '0';
+        if (sep != NULL && i != 0) {
+            *out++ = *sep;
+        }
     }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }

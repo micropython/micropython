@@ -28,6 +28,19 @@
 #define IRQ_STATE_DISABLED (0x00000001)
 #define IRQ_STATE_ENABLED  (0x00000000)
 
+// Enable this to get a count for the number of times each irq handler is called,
+// accessible via pyb.irq_stats().
+#define IRQ_ENABLE_STATS (0)
+
+#if IRQ_ENABLE_STATS
+extern uint32_t irq_stats[FPU_IRQn + 1];
+#define IRQ_ENTER(irq) ++irq_stats[irq]
+#define IRQ_EXIT(irq)
+#else
+#define IRQ_ENTER(irq)
+#define IRQ_EXIT(irq)
+#endif
+
 static inline mp_uint_t query_irq(void) {
     return __get_PRIMASK();
 }
@@ -60,6 +73,7 @@ static inline void restore_irq_pri(uint32_t basepri) {
 MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
 MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ(pyb_irq_stats_obj);
 
 // IRQ priority definitions.
 //

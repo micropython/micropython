@@ -40,6 +40,7 @@ Q(wfi)
 Q(disable_irq)
 Q(enable_irq)
 Q(reset)
+Q(irq_stats)
 Q(stop)
 Q(standby)
 Q(idle)
@@ -75,15 +76,6 @@ Q(millis)
 Q(micros)
 Q(elapsed_millis)
 Q(elapsed_micros)
-
-// for user-mountable block devices
-Q(mount)
-Q(readonly)
-Q(mkfs)
-Q(readblocks)
-Q(writeblocks)
-Q(sync)
-Q(count)
 
 // for module weak links
 Q(binascii)

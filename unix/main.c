@@ -61,6 +61,7 @@ long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDERR_FILENO, str, len);
+    mp_hal_dupterm_tx_strn(str, len);
     (void)dummy;
 }
 
@@ -176,7 +177,11 @@ STATIC int do_repl(void) {
         int ret = readline(&line, ">>> ");
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
-        if (ret == CHAR_CTRL_D) {
+        if (ret == CHAR_CTRL_C) {
+            // cancel input
+            mp_hal_stdout_tx_str("\r\n");
+            goto input_restart;
+        } else if (ret == CHAR_CTRL_D) {
             // EOF
             printf("\n");
             mp_hal_stdio_mode_orig();
