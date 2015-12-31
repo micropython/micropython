@@ -41,6 +41,14 @@
 #include "usb.h"
 #include "pybioctl.h"
 
+#if defined(USE_USB_FS)
+#define USB_PHY_ID  USB_PHY_FS_ID
+#elif defined(USE_USB_HS) && defined(USE_USB_HS_IN_FS)
+#define USB_PHY_ID  USB_PHY_HS_ID
+#else
+#error Unable to determine proper USB_PHY_ID to use
+#endif
+
 // this will be persistent across a soft-reset
 mp_uint_t pyb_usb_flags = 0;
 
@@ -102,7 +110,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         if (USBD_SelectMode(mode, hid_info) != 0) {
             return false;
         }
-        USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&USBD_Descriptors, USB_PHY_FS_ID);
+        USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&USBD_Descriptors, USB_PHY_ID);
         USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
         USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
         switch (pyb_usb_storage_medium) {

@@ -139,6 +139,11 @@ STATIC void mp_map_rehash(mp_map_t *map) {
 //  - returns NULL if not found, else the slot if was found in with key null and value non-null
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind) {
 
+    if (map->is_fixed && lookup_kind != MP_MAP_LOOKUP) {
+        // can't add/remove from a fixed array
+        return NULL;
+    }
+
     // Work out if we can compare just pointers
     bool compare_only_ptrs = map->all_keys_are_qstrs;
     if (compare_only_ptrs) {
@@ -160,10 +165,6 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
     // if the map is an ordered array then we must do a brute force linear search
     if (map->is_ordered) {
-        if (map->is_fixed && lookup_kind != MP_MAP_LOOKUP) {
-            // can't add/remove from a fixed array
-            return NULL;
-        }
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
                 if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {
