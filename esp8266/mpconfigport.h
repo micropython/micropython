@@ -37,6 +37,8 @@
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UCTYPES          (1)
+#define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
