@@ -30,7 +30,7 @@
 #define likely(x) __builtin_expect((x), 1)
 
 void *memcpy(void *dst, const void *src, size_t n) {
-    if (likely(!(((uint32_t)dst) & 3) && !(((uint32_t)src) & 3))) {
+    if (likely(!(((uintptr_t)dst) & 3) && !(((uintptr_t)src) & 3))) {
         // pointers aligned
         uint32_t *d = dst;
         const uint32_t *s = src;
@@ -80,7 +80,7 @@ void *memmove(void *dest, const void *src, size_t n) {
 }
 
 void *memset(void *s, int c, size_t n) {
-    if (c == 0 && ((uint32_t)s & 3) == 0) {
+    if (c == 0 && ((uintptr_t)s & 3) == 0) {
         // aligned store of 0
         uint32_t *s32 = s;
         for (size_t i = n >> 2; i > 0; i--) {
