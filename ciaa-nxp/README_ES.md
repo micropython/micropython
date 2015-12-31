@@ -476,11 +476,13 @@ Ejemplo de calibracion:
 import pyb
 rtc = pyb.RTC()
 rtc.calibration(0)
+newDt = [2015,12,31,0,18,16,0]
+rtc.datetime(newDt)
 ```
 
 El metodo "calibration" ajusta de forma periodica el contador del modulo RTC
 los valores permitidos son -131072 to 131072. Leer http://www.nxp.com/documents/user_manual/UM10503.pdf para informacion detallada del procedimiento de calibracion.
-
+Luego de la calibracion se debe setear una fecha y hora.
 
 
 Ejemplo uso de registros de backup:

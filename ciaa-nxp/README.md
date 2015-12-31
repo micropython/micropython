@@ -519,6 +519,8 @@ Calibration Example:
 import pyb
 rtc = pyb.RTC()
 rtc.calibration(0)
+newDt = [2015,12,31,0,18,16,0]
+rtc.datetime(newDt)
 ```
 
 Method "calibration" can periodically adjust the time counter either by not incrementing 
@@ -527,6 +529,7 @@ RTC oscillator under some typical voltage and temperature conditions without the
 externally trim the RTC oscillator.
 
 Values allowed are -131072 to 131072. Read http://www.nxp.com/documents/user_manual/UM10503.pdf for further information.
+After calibration a datime must be loaded.
 
 
 Back up registers example:
