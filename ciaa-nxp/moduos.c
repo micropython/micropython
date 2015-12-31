@@ -365,15 +365,17 @@ static __attribute__ ((section(".noinit"))) uint32_t s_seed;
 
 STATIC uint32_t lfsr (uint32_t input) {
     assert( input != 0 );
-    entropy_pool[input&0x1F] = input;
     return (input >> 1) ^ (-(input & 0x01) & 0x00E10000);
 }
 
 STATIC uint32_t get_rnd(void) {
 	int i = 0;
+	uint32_t old_seed = s_seed;
 	for(i=0; i<sizeof(entropy_pool); i++)
 		s_seed += entropy_pool[i];
 	s_seed = lfsr(s_seed);
+	/* shake up entropy pool for next soft reset */
+    entropy_pool[s_seed&0x1F] = entropy_pool[old_seed&0x1F];
 	return s_seed;
 }
 
