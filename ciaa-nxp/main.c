@@ -105,6 +105,7 @@ soft_reset:
 	//__________________________
 
 	//debug rtc
+	/*
 	int c=0;
 	Board_UARTPutSTR("pongo en hora");
 	Board_RTC_setTime(23,59,0, 31, 12, 2015,0);
@@ -124,7 +125,7 @@ soft_reset:
 			Board_RTC_setTime(23,59,0, 31, 12, 2015,0);
 			c=0;
 		}
-	}
+	}*/
 	//________
 
     if (!pyexec_file("/flash/Main.py")) {

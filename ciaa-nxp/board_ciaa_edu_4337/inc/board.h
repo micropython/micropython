@@ -671,9 +671,62 @@ uint32_t Board_SSP_readBuffer(uint8_t *buffer, uint32_t bufferLen);
 uint32_t Board_SSP_transfer(uint8_t *bufferTx, uint8_t *bufferRx, uint32_t bufferLen);
 
 
+/**
+ * @brief       Initialize RTC module
+ * @return      void
+ */
+void Board_RTC_Init(void);
+
+/**
+ * @brief       Calibrate RTC module
+ * @param       value : Calibration value, should be in range from -131,072 to 131,072
+ * @return      void
+ */
 void Board_RTC_calibration(uint32_t value);
+
+/**
+ * @brief       Return current RTC module datetime
+ * @param       hr : Pointer to variable where Hour (24hs format) will be stored
+ * @param       min : Pointer to variable where Minutes will be stored
+ * @param       sec : Pointer to variable where Seconds will be stored
+ * @param       day : Pointer to variable where Day of Month will be stored
+ * @param       mon : Pointer to variable where Month will be stored
+ * @param       yr : Pointer to variable where Year will be stored
+ * @param       dayOfWeek : Pointer to variable where Day of Week will be stored
+ * @return      void
+ */
 void Board_RTC_getTime(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek);
+
+
+/**
+ * @brief       Set current RTC module datetime
+ * @param       hr : Hour (24hs format)
+ * @param       min : Minutes
+ * @param       sec : Seconds
+ * @param       day : Day
+ * @param       mon : Month
+ * @param       yr : Year
+ * @param       dayOfWeek : Day of Week
+ * @return      void
+ */
 void Board_RTC_setTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek);
+
+
+/**
+ * @brief       Write a value in RTC Backup registers space
+ * @param       address : Back up register address (o to 63)
+ * @param       value : 32-bit value to be written
+ * @return      void
+ */
+void Board_RTC_writeBkpRegister(uint8_t address,uint32_t value);
+
+/**
+ * @brief       Read a value from RTC Backup registers space
+ * @param       address : Back up register address (o to 63)
+ * @return      32-bit value
+ */
+uint32_t Board_RTC_readBkpRegister(uint8_t address);
+
 
 
 

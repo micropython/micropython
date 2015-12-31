@@ -63,6 +63,7 @@ SRC_C = \
 	modpyblcd44780u.c \
 	modpybeeprom.c \
 	modpybspi.c \
+	modpybrtc.c \
 	bootSys.c  \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \

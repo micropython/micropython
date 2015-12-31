@@ -158,3 +158,8 @@ Q(write_float)
 
 Q(SPI)
 
+Q(RTC)
+Q(datetime)
+Q(read_bkp_reg)
+Q(write_bkp_reg)
+Q(calibration)

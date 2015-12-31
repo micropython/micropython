@@ -89,27 +89,6 @@ static ExtIntData extIntData[4];
 void Board_RTC_Init(void)
 {
 	Chip_RTC_Init(LPC_RTC);
-
-	/*
-	RTC_TIME_T rtc;
-	rtc.time[RTC_TIMETYPE_SECOND] = 0x00;
-	rtc.time[RTC_TIMETYPE_MINUTE] = 0x00;
-	rtc.time[RTC_TIMETYPE_HOUR] = 0x00;
-	rtc.time[RTC_TIMETYPE_DAYOFMONTH] = 0x01;
-	rtc.time[RTC_TIMETYPE_MONTH] = 0x01;
-	rtc.time[RTC_TIMETYPE_YEAR] = 2000;
-
-	Chip_RTC_SetFullTime(LPC_RTC, &rtc);
-	Chip_RTC_Enable(LPC_RTC, ENABLE);
-	while(1)
-	{
-		Chip_RTC_GetFullTime(LPC_RTC, &rtc);
-		char aux[200];
-		sprintf(aux,"min:%d sec:%d",rtc.time[RTC_TIMETYPE_MINUTE],rtc.time[RTC_TIMETYPE_SECOND]);
-		Board_UARTPutSTR(aux);
-		mp_hal_milli_delay(1000);
-	}
-	*/
 }
 
 void Board_RTC_setTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek)
@@ -156,6 +135,22 @@ void Board_RTC_calibration(uint32_t value)
 	Chip_RTC_CalibCounterCmd(LPC_RTC, ENABLE);
 }
 
+void Board_RTC_writeBkpRegister(uint8_t address,uint32_t value)
+{
+	if(address<64)
+	{
+		Chip_REGFILE_Write(LPC_REGFILE, address, value);
+	}
+}
+
+uint32_t Board_RTC_readBkpRegister(uint8_t address)
+{
+	if(address<64)
+	{
+		return Chip_REGFILE_Read(LPC_REGFILE, address);
+	}
+	return 0;
+}
 //===========================================================================================================================
 
 
@@ -1407,8 +1402,8 @@ void Board_Init(void)
 	/* Initialize SPI pins */
 	Board_SSP_Init();
 
-	/* Initialize RTC moduke */
-	Board_RTC_Init();
+	/* Initialize RTC module */
+	//Board_RTC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

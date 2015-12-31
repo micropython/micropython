@@ -489,3 +489,72 @@ Once spi object is created, it can be used for reading and writing data.
 "write" method receives a bytearray and send it by the SPI bus.
 "read" method receives the amount of frames to be read.
 
+
+## RTC module over pyb.RTC
+
+Example:
+```python
+import pyb
+rtc = pyb.RTC()
+
+# (year, month, day, weekday, hours, minutes, seconds)
+#newDt = [2015,12,31,0,18,16,0]
+#rtc.datetime(newDt)
+
+while True:
+    now = rtc.datetime()
+    print(now)   
+    pyb.delay(1000)
+```
+
+Method "datetime" Get or set the date and time of the RTC.
+With no arguments, this method returns an 7-tuple with the current date and time. With 1 argument (being an 7-tuple) it sets the date and time.
+The 7-tuple has the following format:
+(year, month, day, weekday, hours, minutes, seconds)
+
+RTC module will continue working after a CPU reset. If a battery is provided, RTC module will be working without main power supply.
+
+Calibration Example:
+```python
+import pyb
+rtc = pyb.RTC()
+rtc.calibration(0)
+```
+
+Method "calibration" can periodically adjust the time counter either by not incrementing 
+the counter, or by incrementing the counter by 2 instead of 1. This allows calibrating the 
+RTC oscillator under some typical voltage and temperature conditions without the need to 
+externally trim the RTC oscillator.
+
+Values allowed are -131072 to 131072. Read http://www.nxp.com/documents/user_manual/UM10503.pdf for further information.
+
+
+Back up registers example:
+```python
+import pyb
+rtc = pyb.RTC()
+
+#rtc.write_bkp_reg(0,27)
+#rtc.write_bkp_reg(32,28)
+#rtc.write_bkp_reg(63,29)
+
+while True:
+    print(rtc.read_bkp_reg(0))
+    print(rtc.read_bkp_reg(32))
+    print(rtc.read_bkp_reg(63))
+    pyb.delay(1000)
+```
+
+There are 64 backup registers that will keep their values after a CPU reset or without main power supply if a battery is provided.
+
+Method "write_bkp_reg" has two arguments : address (0 to 63) and value. This method will store the value in the specified address.
+Method "read_bkp_reg" has one argument, address (0 to 63) and it will return the backup register's value stored with "write_bkp_reg".
+
+
+
+
+
+
+
+
+

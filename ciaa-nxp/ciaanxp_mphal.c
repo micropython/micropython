@@ -408,3 +408,35 @@ uint32_t mp_hal_readSPI(uint8_t *buffer, uint32_t bufferLen)
 {
 	return Board_SSP_readBuffer(buffer, bufferLen);
 }
+
+//RTC
+void mp_hal_initRTC(void)
+{
+	Board_RTC_Init();
+}
+
+void mp_hal_setTimeRTC(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek)
+{
+	Board_RTC_setTime(hr,min, sec, day, mon, yr,dayOfWeek);
+}
+
+void mp_hal_getTimeRTC(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek)
+{
+	Board_RTC_getTime(hr,min, sec, day, mon, yr,dayOfWeek);
+}
+
+void mp_hal_setCalibRTC(uint32_t value)
+{
+	Board_RTC_calibration(value);
+}
+
+void mp_hal_writeBkpRegisterRTC(uint8_t address,uint32_t value)
+{
+	Board_RTC_writeBkpRegister(address,value);
+}
+
+uint32_t mp_hal_readBkpRegisterRTC(uint8_t address)
+{
+	return Board_RTC_readBkpRegister(address);
+}
+

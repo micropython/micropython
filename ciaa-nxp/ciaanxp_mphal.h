@@ -134,4 +134,13 @@ uint32_t mp_hal_writeSPI(uint8_t *buffer, uint32_t bufferLen);
 uint32_t mp_hal_readSPI(uint8_t *buffer, uint32_t bufferLen);
 
 
+//RTC
+void mp_hal_initRTC(void);
+void mp_hal_setTimeRTC(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek);
+void mp_hal_getTimeRTC(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek);
+void mp_hal_setCalibRTC(uint32_t value);
+void mp_hal_writeBkpRegisterRTC(uint8_t address,uint32_t value);
+uint32_t mp_hal_readBkpRegisterRTC(uint8_t address);
+
+
 #endif
