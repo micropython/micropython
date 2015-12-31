@@ -705,6 +705,7 @@ Q(recv)
 Q(sendto)
 Q(recvfrom)
 Q(settimeout)
+Q(setsockopt)
 #if MICROPY_PY_LWIP_SLIP
 // for lwip.slip
 Q(slip)
