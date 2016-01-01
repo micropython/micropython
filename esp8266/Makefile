@@ -68,11 +68,14 @@ SRC_C = \
 	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
-	../extmod/modlwip.o \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
 	)
+
+EXTMOD_SRC_C = $(addprefix extmod/,\
+	modlwip.o \
+        )
 
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
@@ -109,6 +112,7 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
