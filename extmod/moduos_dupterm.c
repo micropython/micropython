@@ -36,10 +36,21 @@
 
 void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
-        mp_obj_t write_m[3];
-        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
-        write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
-        mp_call_method_n_kw(1, 0, write_m);
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_t write_m[3];
+            mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
+            write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
+            mp_call_method_n_kw(1, 0, write_m);
+            nlr_pop();
+        } else {
+            // Temporarily disable dupterm to avoid infinite recursion
+            mp_obj_t save_term = MP_STATE_PORT(term_obj);
+            MP_STATE_PORT(term_obj) = NULL;
+            mp_printf(&mp_plat_print, "dupterm: ");
+            mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
+            MP_STATE_PORT(term_obj) = save_term;
+        }
     }
 }
 
