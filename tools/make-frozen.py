@@ -55,5 +55,5 @@ for f, st in modules:
         data = data[1:]
     data = data[1:-1]
     data = data.replace('"', '\\"')
-    print('"%s"' % data)
+    print('"%s\\0"' % data)
 print("};")

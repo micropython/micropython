@@ -46,7 +46,7 @@ mp_lexer_t *mp_find_frozen_module(const char *str, int len) {
             mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR_, s, *sz_ptr, 0);
             return lex;
         }
-        s += l + 1 + *sz_ptr++;
+        s += (l + 1) + (*sz_ptr++ + 1);
     }
     return NULL;
 }
