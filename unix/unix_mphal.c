@@ -108,6 +108,7 @@ void mp_hal_stdio_mode_orig(void) {
 
 #endif
 
+#if MICROPY_PY_OS_DUPTERM
 static int call_dupterm_read(void) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -138,6 +139,7 @@ static int call_dupterm_read(void) {
 
     return -1;
 }
+#endif
 
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
