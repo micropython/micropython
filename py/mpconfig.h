@@ -819,6 +819,12 @@ typedef double mp_float_t;
 #define MICROPY_PORT_ROOT_POINTERS
 #endif
 
+#if MICROPY_PY_OS_DUPTERM
+#define MP_ROOT_PTR_DUPTERM_OBJ mp_obj_t term_obj
+#else
+#define MP_ROOT_PTR_DUPTERM_OBJ
+#endif
+
 /*****************************************************************************/
 /* Miscellaneous settings                                                    */
 

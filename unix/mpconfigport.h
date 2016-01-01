@@ -244,18 +244,16 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MP_STATE_PORT MP_STATE_VM
 
 #if MICROPY_PY_OS_DUPTERM
-#define ROOT_POINTERS_1 mp_obj_t term_obj
 #include <stddef.h>
 void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 #else
-#define ROOT_POINTERS_1
 #define mp_hal_dupterm_tx_strn(s, l)
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
-    ROOT_POINTERS_1; \
+    MP_ROOT_PTR_DUPTERM_OBJ; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()
