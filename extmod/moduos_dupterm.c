@@ -34,6 +34,15 @@
 
 #if MICROPY_PY_OS_DUPTERM
 
+void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
+    if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
+        mp_obj_t write_m[3];
+        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
+        write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
+        mp_call_method_n_kw(1, 0, write_m);
+    }
+}
+
 STATIC mp_obj_t mp_uos_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         if (MP_STATE_PORT(term_obj) == MP_OBJ_NULL) {

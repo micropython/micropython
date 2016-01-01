@@ -32,6 +32,7 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "extmod/misc.h"
 
 #ifndef _WIN32
 #include <signal.h>
@@ -107,17 +108,6 @@ void mp_hal_stdio_mode_orig(void) {
 
 #endif
 
-#if MICROPY_PY_OS_DUPTERM
-void mp_hal_dupterm_tx_strn(const char *str, size_t len) {
-    if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
-        mp_obj_t write_m[3];
-        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
-        write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
-        mp_call_method_n_kw(1, 0, write_m);
-    }
-}
-#endif
-
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
     #if MICROPY_PY_OS_DUPTERM
@@ -152,7 +142,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     int ret = write(1, str, len);
-    mp_hal_dupterm_tx_strn(str, len);
+    mp_uos_dupterm_tx_strn(str, len);
     (void)ret; // to suppress compiler warning
 }
 

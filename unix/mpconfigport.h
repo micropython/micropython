@@ -243,13 +243,6 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_OS_DUPTERM
-#include <stddef.h>
-void mp_hal_dupterm_tx_strn(const char *str, size_t len);
-#else
-#define mp_hal_dupterm_tx_strn(s, l)
-#endif
-
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
