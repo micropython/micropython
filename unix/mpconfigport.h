@@ -253,7 +253,6 @@ void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
-    MP_ROOT_PTR_DUPTERM_OBJ; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()

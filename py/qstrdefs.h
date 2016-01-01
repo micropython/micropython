@@ -665,3 +665,7 @@ Q(writeblocks)
 Q(sync)
 Q(count)
 #endif
+
+#if MICROPY_PY_OS_DUPTERM
+Q(dupterm)
+#endif
