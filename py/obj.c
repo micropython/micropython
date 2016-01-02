@@ -86,7 +86,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 // helper function to print an exception with traceback
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     if (mp_obj_is_exception_instance(exc)) {
-        mp_uint_t n, *values;
+        size_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
