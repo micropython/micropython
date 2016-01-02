@@ -85,6 +85,137 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+//================================================[RTC Management]========================================================
+static void(*rtcCallback)(void*);
+static void* rtcCallbackArg;
+
+void Board_RTC_Init(void)
+{
+	Chip_RTC_Init(LPC_RTC);
+	rtcCallback=NULL;
+	
+	Chip_RTC_CntIncrIntConfig(LPC_RTC,0, DISABLE);
+	
+	NVIC_EnableIRQ(RTC_IRQn);
+}
+
+void Board_RTC_setTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek)
+{
+        RTC_TIME_T rtc;
+        rtc.time[RTC_TIMETYPE_SECOND] = sec;
+        rtc.time[RTC_TIMETYPE_MINUTE] = min;
+        rtc.time[RTC_TIMETYPE_HOUR] = hr;
+        rtc.time[RTC_TIMETYPE_DAYOFMONTH] = day;
+        rtc.time[RTC_TIMETYPE_MONTH] = mon;
+        rtc.time[RTC_TIMETYPE_YEAR] = yr;
+        rtc.time[RTC_TIMETYPE_DAYOFWEEK] = dayOfWeek;
+        Chip_RTC_SetFullTime(LPC_RTC, &rtc);
+        Chip_RTC_Enable(LPC_RTC, ENABLE);
+}
+
+void Board_RTC_getTime(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek)
+{
+	RTC_TIME_T rtc;
+	Chip_RTC_GetFullTime(LPC_RTC, &rtc);
+
+	*sec = rtc.time[RTC_TIMETYPE_SECOND];
+	*min = rtc.time[RTC_TIMETYPE_MINUTE];
+	*hr = rtc.time[RTC_TIMETYPE_HOUR];
+	*day = rtc.time[RTC_TIMETYPE_DAYOFMONTH];
+	*mon = rtc.time[RTC_TIMETYPE_MONTH];
+	*yr = rtc.time[RTC_TIMETYPE_YEAR];
+	*dayOfWeek = rtc.time[RTC_TIMETYPE_DAYOFWEEK];
+}
+
+void Board_RTC_calibration(uint32_t value)
+{
+	uint8_t calibDir = RTC_CALIB_DIR_FORWARD;
+	if(value<0)
+	{
+		calibDir = RTC_CALIB_DIR_BACKWARD;
+		value=value*(-1);
+	}
+
+	if(value>131072)
+		value=131072;
+
+	Chip_RTC_CalibConfig(LPC_RTC, value, calibDir);
+	Chip_RTC_CalibCounterCmd(LPC_RTC, ENABLE);
+	Chip_RTC_Enable(LPC_RTC, ENABLE);
+}
+
+void Board_RTC_writeBkpRegister(uint8_t address,uint32_t value)
+{
+	if(address<64)
+	{
+		Chip_REGFILE_Write(LPC_REGFILE, address, value);
+	}
+}
+
+uint32_t Board_RTC_readBkpRegister(uint8_t address)
+{
+	if(address<64)
+	{
+		return Chip_REGFILE_Read(LPC_REGFILE, address);
+	}
+	return 0;
+}
+
+// Alarm
+void RTC_IRQHandler (void)
+{
+	if(Chip_RTC_GetIntPending(LPC_RTC,RTC_INT_ALARM)==1)
+	{
+		if(rtcCallback!=NULL)
+			rtcCallback(rtcCallbackArg);
+			
+		Chip_RTC_ClearIntPending(LPC_RTC, RTC_INT_ALARM);
+	}
+	else
+		Chip_RTC_ClearIntPending(LPC_RTC, RTC_INT_COUNTER_INCREASE);
+}
+
+void Board_RTC_setAlarmTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek,uint32_t alarmMask)
+{
+        RTC_TIME_T rtc;
+        rtc.time[RTC_TIMETYPE_SECOND] = sec;
+        rtc.time[RTC_TIMETYPE_MINUTE] = min;
+        rtc.time[RTC_TIMETYPE_HOUR] = hr;
+        rtc.time[RTC_TIMETYPE_DAYOFMONTH] = day;
+        rtc.time[RTC_TIMETYPE_MONTH] = mon;
+        rtc.time[RTC_TIMETYPE_YEAR] = yr;
+        rtc.time[RTC_TIMETYPE_DAYOFWEEK] = dayOfWeek;        
+        Chip_RTC_SetFullAlarmTime(LPC_RTC, &rtc);        
+        Chip_RTC_AlarmIntConfig(LPC_RTC,alarmMask, ENABLE);
+}
+
+void Board_RTC_getAlarmTime(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek)
+{
+	RTC_TIME_T rtc;
+	Chip_RTC_GetFullAlarmTime(LPC_RTC, &rtc);
+
+	*sec = rtc.time[RTC_TIMETYPE_SECOND];
+	*min = rtc.time[RTC_TIMETYPE_MINUTE];
+	*hr = rtc.time[RTC_TIMETYPE_HOUR];
+	*day = rtc.time[RTC_TIMETYPE_DAYOFMONTH];
+	*mon = rtc.time[RTC_TIMETYPE_MONTH];
+	*yr = rtc.time[RTC_TIMETYPE_YEAR];
+	*dayOfWeek = rtc.time[RTC_TIMETYPE_DAYOFWEEK];
+}
+
+void Board_RTC_disableAlarm(void)
+{
+	Chip_RTC_AlarmIntConfig(LPC_RTC,0xFF, DISABLE);
+}
+
+void Board_RTC_setAlarmCallback(void(*function)(void*),void* arg)
+{
+	rtcCallback = function;
+	rtcCallbackArg = arg;
+}
+//===========================================================================================================================
+
+
 //================================================[SPI Management]========================================================
 
 void Board_SSP_Init(void)
@@ -654,8 +785,7 @@ void UART3_IRQHandler (void)
 			if(uart3RxBufferData.buffer[uart3RxBufferData.index]==uart3RxBufferData.finalByte)
 			{
 				uart3RxBufferData.flagNewPacket=1;
-				//Board_UARTPutSTR("entro paquete por byte final!:");
-			        //Board_UARTPutSTR(uart3RxBufferData.buffer);
+			    //Board_UARTPutSTR(uart3RxBufferData.buffer);
 			}
 		}
 		else
@@ -1332,6 +1462,9 @@ void Board_Init(void)
 
 	/* Initialize SPI pins */
 	Board_SSP_Init();
+
+	/* Initialize RTC module */
+	//Board_RTC_Init();
 
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }

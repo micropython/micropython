@@ -489,3 +489,108 @@ Once spi object is created, it can be used for reading and writing data.
 "write" method receives a bytearray and send it by the SPI bus.
 "read" method receives the amount of frames to be read.
 
+
+## RTC module over pyb.RTC
+
+Example:
+```python
+import pyb
+rtc = pyb.RTC()
+
+# (year, month, day, weekday, hours, minutes, seconds)
+#newDt = [2015,12,31,0,18,16,0]
+#rtc.datetime(newDt)
+
+while True:
+    now = rtc.datetime()
+    print(now)   
+    pyb.delay(1000)
+```
+
+Method "datetime" Get or set the date and time of the RTC.
+With no arguments, this method returns an 7-tuple with the current date and time. With 1 argument (being an 7-tuple) it sets the date and time.
+The 7-tuple has the following format:
+(year, month, day, weekday, hours, minutes, seconds)
+
+Field "weekday" takes values from 0 to 6
+RTC module will continue working after a CPU reset. If a battery is provided, RTC module will be working without main power supply.
+
+Calibration Example:
+```python
+import pyb
+rtc = pyb.RTC()
+rtc.calibration(0)
+newDt = [2015,12,31,0,18,16,0]
+rtc.datetime(newDt)
+```
+
+Method "calibration" can periodically adjust the time counter either by not incrementing 
+the counter, or by incrementing the counter by 2 instead of 1. This allows calibrating the 
+RTC oscillator under some typical voltage and temperature conditions without the need to 
+externally trim the RTC oscillator.
+
+Values allowed are -131072 to 131072. Read http://www.nxp.com/documents/user_manual/UM10503.pdf for further information.
+After calibration a datime must be loaded.
+
+
+Back up registers example:
+```python
+import pyb
+rtc = pyb.RTC()
+
+#rtc.write_bkp_reg(0,27)
+#rtc.write_bkp_reg(32,28)
+#rtc.write_bkp_reg(63,29)
+
+while True:
+    print(rtc.read_bkp_reg(0))
+    print(rtc.read_bkp_reg(32))
+    print(rtc.read_bkp_reg(63))
+    pyb.delay(1000)
+```
+
+There are 64 backup registers that will keep their values after a CPU reset or without main power supply if a battery is provided.
+
+Method "write_bkp_reg" has two arguments : address (0 to 63) and value. This method will store the value in the specified address.
+Method "read_bkp_reg" has one argument, address (0 to 63) and it will return the backup register's value stored with "write_bkp_reg".
+
+
+Alarm example:
+```python
+import pyb
+rtc = pyb.RTC()
+
+newDt = [2015,12,31,0,20,15,0]
+rtc.datetime(newDt)
+
+def rtcCallback(rtc):
+    print("Alarm int!")
+
+alarmDt = [2015,12,31,0,20,16,10]
+rtc.alarm_datetime(alarmDt,pyb.RTC.MASK_SEC | pyb.RTC.MASK_MIN)
+rtc.callback(rtcCallback)
+
+print("alarm:")
+print(rtc.alarm_datetime())
+```
+
+In this example "rtcCallback" function is invoked when alarm datetime is equals to current datetime. 
+"alarm_datetime" method configures or returns an 7-tuple with the configurated date and time for RTC alarm. This method has a second argument 
+"alarm mask" that is built with the followings constants:
+
+- pyb.RTC.MASK_SEC : Seconds field is used for comparation.
+- pyb.RTC.MASK_MIN : Minutes field is used for comparation.
+- pyb.RTC.MASK_HR : Hours field is used for comparation.
+- pyb.RTC.MASK_DAY : Day field is used for comparation.
+- pyb.RTC.MASK_MON : Month field is used for comparation.
+- pyb.RTC.MASK_YR : Year field is used for comparation.
+- pyb.RTC.MASK_DOW : Day of week field is used for comparation.
+
+Using "callback" method a callback function can be set and it will execute at alarm time. In this example the mask is built using seconds and minutes
+so alarm interrupt will happen each hour at 16 minutes and 10 seconds.
+
+Alarm can be disable using "alarm_disable" method.
+
+
+
+
