@@ -35,7 +35,7 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_
 	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
+LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
