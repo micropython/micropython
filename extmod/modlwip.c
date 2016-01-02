@@ -901,6 +901,19 @@ STATIC mp_uint_t lwip_socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
     return MP_STREAM_ERROR;
 }
 
+STATIC mp_uint_t lwip_socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+    lwip_socket_obj_t *socket = self_in;
+
+    switch (socket->type) {
+        case MOD_NETWORK_SOCK_STREAM:
+            return lwip_tcp_send(socket, buf, size, errcode);
+        case MOD_NETWORK_SOCK_DGRAM:
+            return lwip_udp_send(socket, buf, size, NULL, 0, errcode);
+    }
+    // Unreachable
+    return MP_STREAM_ERROR;
+}
+
 STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&lwip_socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&lwip_socket_close_obj },
@@ -918,12 +931,13 @@ STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(lwip_socket_locals_dict, lwip_socket_locals_dict_table);
 
 STATIC const mp_stream_p_t lwip_socket_stream_p = {
     .read = lwip_socket_read,
-    //.write = lwip_socket_write,
+    .write = lwip_socket_write,
 };
 
 STATIC const mp_obj_type_t lwip_socket_type = {
