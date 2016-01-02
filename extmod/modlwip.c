@@ -385,6 +385,13 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 // Helper function for recv/recvfrom to handle TCP packets
 STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     if (socket->incoming.pbuf == NULL) {
+
+        // Non-blocking socket
+        if (socket->timeout == 0) {
+            *_errno = EAGAIN;
+            return -1;
+        }
+
         mp_uint_t start = mp_hal_ticks_ms();
         while (socket->state == STATE_CONNECTED && socket->incoming.pbuf == NULL) {
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
