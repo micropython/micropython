@@ -141,6 +141,9 @@ void mp_hal_getTimeRTC(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day,
 void mp_hal_setCalibRTC(uint32_t value);
 void mp_hal_writeBkpRegisterRTC(uint8_t address,uint32_t value);
 uint32_t mp_hal_readBkpRegisterRTC(uint8_t address);
-
+void mp_hal_setAlarmTimeRTC(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek,uint32_t alarmMask);
+void mp_hal_getAlarmTimeRTC(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek);
+void mp_hal_disableAlarmRTC(void);
+void mp_hal_setCallbackRTC(void(*function)(void*),void* arg);
 
 #endif

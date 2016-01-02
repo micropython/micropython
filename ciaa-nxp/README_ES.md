@@ -467,6 +467,7 @@ la fecha y hora actual. Si se la pasa una tupla igual como argumento, esos valor
 El formato de la tupla es:
 (year, month, day, weekday, hours, minutes, seconds)
 
+El campo weekday toma los valores de 0 a 6
 El modulo RTC continua funcionando despues de un reset del CPU y si se alimenta al mismo con una bateria, el RTC seguira funcionando inclusive sin la
 alimentacion principal del CPU.
 
@@ -508,4 +509,39 @@ El metodo "write_bkp_reg" tiene como argumento la direccion del registro (0 a 63
 El metodo "read_bkp_reg" tiene como argumento la direccion del registro (0 a 63) y devolvera el valor que se encuentra en el mismo.
 
 
+Ejemplo uso de alarma:
+```python
+import pyb
+rtc = pyb.RTC()
+
+newDt = [2015,12,31,0,20,15,0]
+rtc.datetime(newDt)
+
+def rtcCallback(rtc):
+    print("Alarm int!")
+
+alarmDt = [2015,12,31,0,20,16,10]
+rtc.alarm_datetime(alarmDt,pyb.RTC.MASK_SEC | pyb.RTC.MASK_MIN)
+rtc.callback(rtcCallback)
+
+print("alarm:")
+print(rtc.alarm_datetime())
+```
+
+En este ejemplo se define una funcion (rtcCallback) que se ejecutara cuando se cumpla la fecha de la alarma. Mediante el metodo "alarm_datetime"
+se configura (o lee) la fecha de la alarma con la misma tupla de 7 valores usada para configurar la fecha y hora actual, y como segundo argumento se le pasa
+la mascara de la alarma la cual se construye con las constantes:
+
+- pyb.RTC.MASK_SEC : Se chequea el campo de segundos en la comparacion.
+- pyb.RTC.MASK_MIN : Se chequea el campo de minutos en la comparacion.
+- pyb.RTC.MASK_HR : Se chequea el campo de horas en la comparacion.
+- pyb.RTC.MASK_DAY : Se chequea el campo de dia en la comparacion.
+- pyb.RTC.MASK_MON : Se chequea el campo de mes en la comparacion.
+- pyb.RTC.MASK_YR : Se chequea el campo de año en la comparacion.
+- pyb.RTC.MASK_DOW : Se chequea el campo de dia de la semana en la comparacion.
+
+Mediante el metodo "callback" se setea la funcion que se ejecutara cuando se produzca la alarma. En el ejemplo se construye la mascara con segundos y minutos,
+por lo que la alarma se producira cada hora, a los 16 minutos y 10 segundos.
+
+Para deshabilitar la alarma puede ejecutarse el metodo "alarm_disable"
 

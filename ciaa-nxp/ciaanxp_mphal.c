@@ -440,3 +440,20 @@ uint32_t mp_hal_readBkpRegisterRTC(uint8_t address)
 	return Board_RTC_readBkpRegister(address);
 }
 
+
+void mp_hal_setAlarmTimeRTC(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek,uint32_t alarmMask)
+{
+	Board_RTC_setAlarmTime(hr,min, sec, day, mon, yr,dayOfWeek, alarmMask);
+}
+void mp_hal_getAlarmTimeRTC(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek)
+{
+	Board_RTC_getAlarmTime(hr,min, sec, day, mon, yr,dayOfWeek);
+}
+void mp_hal_disableAlarmRTC(void)
+{
+	Board_RTC_disableAlarm();
+}
+void mp_hal_setCallbackRTC(void(*function)(void*),void* arg)
+{
+	Board_RTC_setAlarmCallback(function,arg);
+}

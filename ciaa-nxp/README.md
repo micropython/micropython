@@ -512,6 +512,7 @@ With no arguments, this method returns an 7-tuple with the current date and time
 The 7-tuple has the following format:
 (year, month, day, weekday, hours, minutes, seconds)
 
+Field "weekday" takes values from 0 to 6
 RTC module will continue working after a CPU reset. If a battery is provided, RTC module will be working without main power supply.
 
 Calibration Example:
@@ -554,9 +555,41 @@ Method "write_bkp_reg" has two arguments : address (0 to 63) and value. This met
 Method "read_bkp_reg" has one argument, address (0 to 63) and it will return the backup register's value stored with "write_bkp_reg".
 
 
+Alarm example:
+```python
+import pyb
+rtc = pyb.RTC()
 
+newDt = [2015,12,31,0,20,15,0]
+rtc.datetime(newDt)
 
+def rtcCallback(rtc):
+    print("Alarm int!")
 
+alarmDt = [2015,12,31,0,20,16,10]
+rtc.alarm_datetime(alarmDt,pyb.RTC.MASK_SEC | pyb.RTC.MASK_MIN)
+rtc.callback(rtcCallback)
+
+print("alarm:")
+print(rtc.alarm_datetime())
+```
+
+In this example "rtcCallback" function is invoked when alarm datetime is equals to current datetime. 
+"alarm_datetime" method configures or returns an 7-tuple with the configurated date and time for RTC alarm. This method has a second argument 
+"alarm mask" that is built with the followings constants:
+
+- pyb.RTC.MASK_SEC : Seconds field is used for comparation.
+- pyb.RTC.MASK_MIN : Minutes field is used for comparation.
+- pyb.RTC.MASK_HR : Hours field is used for comparation.
+- pyb.RTC.MASK_DAY : Day field is used for comparation.
+- pyb.RTC.MASK_MON : Month field is used for comparation.
+- pyb.RTC.MASK_YR : Year field is used for comparation.
+- pyb.RTC.MASK_DOW : Day of week field is used for comparation.
+
+Using "callback" method a callback function can be set and it will execute at alarm time. In this example the mask is built using seconds and minutes
+so alarm interrupt will happen each hour at 16 minutes and 10 seconds.
+
+Alarm can be disable using "alarm_disable" method.
 
 
 

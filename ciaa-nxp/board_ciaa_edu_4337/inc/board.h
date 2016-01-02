@@ -500,7 +500,7 @@ void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t ma
 void Board_TIMER_DisableTimer(uint8_t timerNum);
 
 /**
- * @brief       Sets the functino that will be called by timer's interupt
+ * @brief       Sets the function that will be called by timer's interupt
  * @param       timerNum : Number of timer (0 to 3)
  * @param       function : calback to be called. prototype: void function(void* arg);
  * @param       arg : argument passed to callback function when it is called
@@ -727,6 +727,56 @@ void Board_RTC_writeBkpRegister(uint8_t address,uint32_t value);
  */
 uint32_t Board_RTC_readBkpRegister(uint8_t address);
 
+
+/**
+ * @brief       Set Alarm for RTC module
+ * @param       hr : Hour (24hs format)
+ * @param       min : Minutes
+ * @param       sec : Seconds
+ * @param       day : Day
+ * @param       mon : Month
+ * @param       yr : Year
+ * @param       dayOfWeek : Day of Week
+ * @param       alarmMask :  Or'ed bit values for time types:
+ * 				bit 0 : second
+ * 				bit 1 : minute
+ * 				bit 2 : hour
+ * 				bit 3 : day of month
+ * 				bit 4 : day of week
+ * 				bit 5 : always 0 (not implemented)
+ * 				bit 6 : month
+ * 				bit 7 : year
+ * 
+ * @return      void
+ */
+void Board_RTC_setAlarmTime(uint32_t hr,uint32_t min, uint32_t sec, uint32_t day, uint32_t mon, uint32_t yr,uint32_t dayOfWeek,uint32_t alarmMask);
+
+/**
+ * @brief       Return Alarm RTC module datetime
+ * @param       hr : Pointer to variable where Hour (24hs format) will be stored
+ * @param       min : Pointer to variable where Minutes will be stored
+ * @param       sec : Pointer to variable where Seconds will be stored
+ * @param       day : Pointer to variable where Day of Month will be stored
+ * @param       mon : Pointer to variable where Month will be stored
+ * @param       yr : Pointer to variable where Year will be stored
+ * @param       dayOfWeek : Pointer to variable where Day of Week will be stored
+ * @return      void
+ */
+void Board_RTC_getAlarmTime(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t* day, uint32_t* mon, uint32_t* yr,uint32_t* dayOfWeek);
+
+/**
+ * @brief       Disable RTC Alarm
+ * @return      void
+ */
+void Board_RTC_disableAlarm(void);
+
+/**
+ * @brief       Sets the function that will be called by RTC Alarm interupt
+ * @param       function : calback to be called. prototype: void function(void* arg);
+ * @param       arg : argument passed to callback function when it is called
+ * @return      void
+ */
+void Board_RTC_setAlarmCallback(void(*function)(void*),void* arg);
 
 
 
