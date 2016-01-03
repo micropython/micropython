@@ -546,12 +546,12 @@ STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args
     return res;
 }
 
-mp_obj_t mp_obj_str_split(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
     return str_split_internal(n_args, args, SPLIT);
 }
 
 #if MICROPY_PY_BUILTINS_STR_SPLITLINES
-STATIC mp_obj_t str_splitlines(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_keepends, MP_ARG_BOOL, {.u_bool = false} },
     };
@@ -565,7 +565,7 @@ STATIC mp_obj_t str_splitlines(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 #endif
 
-STATIC mp_obj_t str_rsplit(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     if (n_args < 3) {
         // If we don't have split limit, it doesn't matter from which side
         // we split.
@@ -667,24 +667,24 @@ STATIC mp_obj_t str_finder(mp_uint_t n_args, const mp_obj_t *args, mp_int_t dire
     }
 }
 
-STATIC mp_obj_t str_find(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_find(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, 1, false);
 }
 
-STATIC mp_obj_t str_rfind(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rfind(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, -1, false);
 }
 
-STATIC mp_obj_t str_index(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_index(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, 1, true);
 }
 
-STATIC mp_obj_t str_rindex(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rindex(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, -1, true);
 }
 
 // TODO: (Much) more variety in args
-STATIC mp_obj_t str_startswith(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_startswith(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], prefix, prefix_len);
@@ -698,7 +698,7 @@ STATIC mp_obj_t str_startswith(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_obj_new_bool(memcmp(start, prefix, prefix_len) == 0);
 }
 
-STATIC mp_obj_t str_endswith(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], suffix, suffix_len);
     if (n_args > 2) {
@@ -785,15 +785,15 @@ STATIC mp_obj_t str_uni_strip(int type, mp_uint_t n_args, const mp_obj_t *args) 
     return mp_obj_new_str_of_type(self_type, orig_str + first_good_char_pos, stripped_len);
 }
 
-STATIC mp_obj_t str_strip(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_strip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(STRIP, n_args, args);
 }
 
-STATIC mp_obj_t str_lstrip(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_lstrip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(LSTRIP, n_args, args);
 }
 
-STATIC mp_obj_t str_rstrip(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_rstrip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(RSTRIP, n_args, args);
 }
 
@@ -845,7 +845,7 @@ STATIC NORETURN void terse_str_format_value_error(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad format string"));
 }
 
-mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     GET_STR_DATA_LEN(args[0], str, len);
@@ -1486,7 +1486,7 @@ not_enough_args:
 
 // The implementation is optimized, returning the original string if there's
 // nothing to replace.
-STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_replace(size_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
     mp_int_t max_rep = -1;
@@ -1591,7 +1591,7 @@ STATIC mp_obj_t str_replace(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
 
-STATIC mp_obj_t str_count(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
@@ -1759,7 +1759,7 @@ STATIC mp_obj_t str_islower(mp_obj_t self_in) {
 // These methods are superfluous in the presense of str() and bytes()
 // constructors.
 // TODO: should accept kwargs too
-STATIC mp_obj_t bytes_decode(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[2];
     if (n_args == 1) {
         new_args[0] = args[0];
@@ -1771,7 +1771,7 @@ STATIC mp_obj_t bytes_decode(mp_uint_t n_args, const mp_obj_t *args) {
 }
 
 // TODO: should accept kwargs too
-STATIC mp_obj_t str_encode(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[2];
     if (n_args == 1) {
         new_args[0] = args[0];

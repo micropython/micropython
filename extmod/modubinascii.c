@@ -34,7 +34,7 @@
 #include "modubinascii.h"
 
 
-mp_obj_t mod_binascii_hexlify(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     // Second argument is for an extension to allow a separator to be used
     // between values.
     const char *sep = NULL;

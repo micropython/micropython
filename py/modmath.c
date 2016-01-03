@@ -152,7 +152,7 @@ MATH_FUN_1(lgamma, lgamma)
 // Function that takes a variable number of arguments
 
 // log(x[, base])
-STATIC mp_obj_t mp_math_log(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
     mp_float_t x = mp_obj_get_float(args[0]);
     if (x <= (mp_float_t)0.0) {
         math_error();

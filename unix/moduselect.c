@@ -52,7 +52,7 @@ typedef struct _mp_obj_poll_t {
 } mp_obj_poll_t;
 
 /// \method register(obj[, eventmask])
-STATIC mp_obj_t poll_register(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
     int fd = mp_obj_get_int(args[1]);
     mp_uint_t flags;
@@ -129,7 +129,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
 /// \method poll([timeout])
 /// Timeout is in milliseconds.
-STATIC mp_obj_t poll_poll(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
     // work out timeout (it's given already in ms)
@@ -186,7 +186,7 @@ STATIC const mp_obj_type_t mp_type_poll = {
     .locals_dict = (void*)&poll_locals_dict,
 };
 
-STATIC mp_obj_t select_poll(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     int alloc = 4;
     if (n_args > 0) {
         alloc = mp_obj_get_int(args[0]);

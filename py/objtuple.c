@@ -208,7 +208,7 @@ STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
 
-STATIC mp_obj_t tuple_index(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t tuple_index(size_t n_args, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(args[0]);
     return mp_seq_index_obj(self->items, self->len, n_args, args);

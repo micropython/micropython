@@ -381,7 +381,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_
 }
 
 // this is a classmethod
-STATIC mp_obj_t int_from_bytes(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support long ints
     // TODO: Support byteorder param (assumes 'little' at the moment)
     // TODO: Support signed param (assumes signed=False at the moment)
@@ -403,7 +403,7 @@ STATIC mp_obj_t int_from_bytes(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 3, int_from_bytes);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
-STATIC mp_obj_t int_to_bytes(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support byteorder param (assumes 'little')
     // TODO: Support signed param (assumes signed=False)
     (void)n_args;

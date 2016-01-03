@@ -158,7 +158,7 @@ void prompt_write_history(void) {
 #endif
 }
 
-STATIC mp_obj_t mp_builtin_input(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         mp_obj_print(args[0], PRINT_STR);
     }

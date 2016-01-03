@@ -62,7 +62,7 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     return stream_p;
 }
 
-STATIC mp_obj_t stream_read(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
 
     // What to do if sz < -1?  Python docs don't specify this case.
@@ -214,7 +214,7 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     return mp_stream_write(self_in, bufinfo.buf, bufinfo.len);
 }
 
-STATIC mp_obj_t stream_readinto(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
@@ -287,7 +287,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
 }
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
-STATIC mp_obj_t stream_unbuffered_readline(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
 
     mp_int_t max_size = -1;
@@ -365,7 +365,7 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-STATIC mp_obj_t stream_seek(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_IOCTL);
 
     struct mp_stream_seek_t seek_s;

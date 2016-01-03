@@ -208,7 +208,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t ffimod_func(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_func(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     mp_obj_ffimod_t *self = MP_OBJ_TO_PTR(args[0]);
     const char *symname = mp_obj_str_get_str(args[2]);
@@ -477,7 +477,7 @@ STATIC const mp_obj_type_t opaque_type = {
 };
 */
 
-STATIC mp_obj_t mod_ffi_open(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_ffi_open(size_t n_args, const mp_obj_t *args) {
     return ffimod_make_new((mp_obj_t)&ffimod_type, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);

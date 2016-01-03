@@ -28,9 +28,9 @@
 
 #include "py/obj.h"
 
-mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args);
-mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args);
+mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args);
+mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___build_class___obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin___import___obj);

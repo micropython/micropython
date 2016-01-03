@@ -223,7 +223,7 @@ STATIC mp_obj_t set_discard(mp_obj_t self_in, mp_obj_t item) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_discard_obj, set_discard);
 
-STATIC mp_obj_t set_diff_int(mp_uint_t n_args, const mp_obj_t *args, bool update) {
+STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
     assert(n_args > 0);
 
     mp_obj_t self;
@@ -253,12 +253,12 @@ STATIC mp_obj_t set_diff_int(mp_uint_t n_args, const mp_obj_t *args, bool update
     return self;
 }
 
-STATIC mp_obj_t set_diff(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t set_diff(size_t n_args, const mp_obj_t *args) {
     return set_diff_int(n_args, args, false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(set_diff_obj, 1, set_diff);
 
-STATIC mp_obj_t set_diff_update(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t set_diff_update(size_t n_args, const mp_obj_t *args) {
     set_diff_int(n_args, args, true);
     return mp_const_none;
 }
@@ -442,7 +442,7 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
     }
 }
 
-STATIC mp_obj_t set_update(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t set_update(size_t n_args, const mp_obj_t *args) {
     assert(n_args > 0);
 
     for (mp_uint_t i = 1; i < n_args; i++) {

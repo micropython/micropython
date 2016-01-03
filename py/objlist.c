@@ -36,7 +36,7 @@
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, mp_uint_t cur);
 STATIC mp_obj_list_t *list_new(mp_uint_t n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
-STATIC mp_obj_t list_pop(mp_uint_t n_args, const mp_obj_t *args);
+STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
@@ -262,7 +262,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none; // return None, as per CPython
 }
 
-STATIC mp_obj_t list_pop(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     assert(1 <= n_args && n_args <= 2);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -311,7 +311,7 @@ STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj
 }
 
 // TODO Python defines sort to be stable but ours is not
-mp_obj_t mp_obj_list_sort(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_reverse, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -355,7 +355,7 @@ STATIC mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     return mp_seq_count_obj(self->items, self->len, value);
 }
 
-STATIC mp_obj_t list_index(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t list_index(size_t n_args, const mp_obj_t *args) {
     assert(2 <= n_args && n_args <= 4);
     assert(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(args[0]);

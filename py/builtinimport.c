@@ -215,7 +215,7 @@ STATIC void chop_component(const char *start, const char **end) {
     *end = p;
 }
 
-mp_obj_t mp_builtin___import__(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
     for (mp_uint_t i = 0; i < n_args; i++) {

@@ -93,7 +93,7 @@ STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 /// \function exit([retval])
 /// Raise a `SystemExit` exception.  If an argument is given, it is the
 /// value given to `SystemExit`.
-STATIC mp_obj_t mp_sys_exit(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc;
     if (n_args == 0) {
         exc = mp_obj_new_exception(&mp_type_SystemExit);
@@ -104,7 +104,7 @@ STATIC mp_obj_t mp_sys_exit(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
-STATIC mp_obj_t mp_sys_print_exception(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_PY_IO
     void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {

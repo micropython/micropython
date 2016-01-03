@@ -193,7 +193,7 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
     return MP_OBJ_FROM_PTR(t);
 }
 
-STATIC mp_obj_t mod_os_ilistdir(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_os_ilistdir(size_t n_args, const mp_obj_t *args) {
     const char *path = ".";
     if (n_args > 0) {
         path = mp_obj_str_get_str(args[0]);
@@ -206,7 +206,7 @@ STATIC mp_obj_t mod_os_ilistdir(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_ilistdir_obj, 0, 1, mod_os_ilistdir);
 
-STATIC mp_obj_t mod_os_errno(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_os_errno(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(errno);
     }

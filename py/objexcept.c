@@ -153,7 +153,7 @@ STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t exc___init__(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t exc___init__(size_t n_args, const mp_obj_t *args) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t argst = mp_obj_new_tuple(n_args - 1, args + 1);
     self->args = MP_OBJ_TO_PTR(argst);

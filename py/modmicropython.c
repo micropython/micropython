@@ -53,7 +53,7 @@ STATIC mp_obj_t mp_micropython_mem_peak(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_peak_obj, mp_micropython_mem_peak);
 #endif
 
-mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
     (void)args;
 #if MICROPY_MEM_STATS
     mp_printf(&mp_plat_print, "mem: total=" UINT_FMT ", current=" UINT_FMT ", peak=" UINT_FMT "\n",
@@ -77,7 +77,7 @@ mp_obj_t mp_micropython_mem_info(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_mem_info_obj, 0, 1, mp_micropython_mem_info);
 
-STATIC mp_obj_t mp_micropython_qstr_info(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_micropython_qstr_info(size_t n_args, const mp_obj_t *args) {
     (void)args;
     size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);

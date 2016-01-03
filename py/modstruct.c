@@ -165,7 +165,7 @@ STATIC mp_obj_t struct_unpack(mp_obj_t fmt_in, mp_obj_t data_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(struct_unpack_obj, struct_unpack);
 
-STATIC mp_obj_t struct_pack(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     // TODO: "The arguments must match the values required by the format exactly."
     const char *fmt = mp_obj_str_get_str(args[0]);
     char fmt_type = get_fmt_type(&fmt);

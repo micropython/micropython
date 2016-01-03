@@ -190,7 +190,7 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
-STATIC mp_obj_t gen_instance_throw(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
     exc = mp_make_raise_obj(exc);
 

@@ -154,7 +154,7 @@ STATIC mp_obj_t mod_time_sleep_us(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_us_obj, mod_time_sleep_us);
 
-STATIC mp_obj_t mod_time_strftime(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_time_strftime(size_t n_args, const mp_obj_t *args) {
     time_t t;
     if (n_args == 1) {
         t = time(NULL);

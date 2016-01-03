@@ -395,8 +395,8 @@ typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
-typedef mp_obj_t (*mp_fun_var_t)(mp_uint_t n, const mp_obj_t *);
-typedef mp_obj_t (*mp_fun_kw_t)(mp_uint_t n, const mp_obj_t *, mp_map_t *);
+typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
+typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
     PRINT_STR = 0,
@@ -725,7 +725,7 @@ mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
 void mp_obj_list_set_len(mp_obj_t self_in, mp_uint_t len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
-mp_obj_t mp_obj_list_sort(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 // dict
 typedef struct _mp_obj_dict_t {

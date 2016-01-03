@@ -171,7 +171,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 // Note: besides flag param, this differs from read() in that
 // this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
 // these would be thrown as exceptions.
-STATIC mp_obj_t socket_recv(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
     int flags = 0;
@@ -190,7 +190,7 @@ STATIC mp_obj_t socket_recv(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 
-STATIC mp_obj_t socket_recvfrom(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
     int flags = 0;
@@ -220,7 +220,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recvfrom_obj, 2, 3, socket_rec
 // Note: besides flag param, this differs from write() in that
 // this does not swallow blocking errors (EAGAIN, EWOULDBLOCK) -
 // these would be thrown as exceptions.
-STATIC mp_obj_t socket_send(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_send(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int flags = 0;
 
@@ -237,7 +237,7 @@ STATIC mp_obj_t socket_send(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_send_obj, 2, 3, socket_send);
 
-STATIC mp_obj_t socket_sendto(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_sendto(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int flags = 0;
 
@@ -258,7 +258,7 @@ STATIC mp_obj_t socket_sendto(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_sendto_obj, 3, 4, socket_sendto);
 
-STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int level = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -299,7 +299,7 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
-STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     // TODO: CPython explicitly says that closing returned object doesn't close
     // the original socket (Python2 at all says that fd is dup()ed). But we
     // save on the bloat.
@@ -421,7 +421,7 @@ STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_socket_inet_pton_obj, mod_socket_inet_pton);
 
-STATIC mp_obj_t mod_socket_getaddrinfo(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     // TODO: Implement all args
     assert(n_args >= 2 && n_args <= 4);
     assert(MP_OBJ_IS_STR(args[0]));
