@@ -47,7 +47,7 @@ STATIC void bound_meth_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
 }
 #endif
 
-STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_bound_meth_t *self = MP_OBJ_TO_PTR(self_in);
 
     // need to insert self->self before all other args and then call self->meth

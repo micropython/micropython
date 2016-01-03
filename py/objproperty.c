@@ -37,7 +37,7 @@ typedef struct _mp_obj_property_t {
     mp_obj_t proxy[3]; // getter, setter, deleter
 } mp_obj_property_t;
 
-STATIC mp_obj_t property_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t property_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     mp_obj_property_t *o = m_new_obj(mp_obj_property_t);

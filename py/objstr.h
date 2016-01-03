@@ -60,7 +60,7 @@ const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len);
     else { str_len = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->len; str_data = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->data; }
 #endif
 
-mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len);
 mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 mp_obj_t mp_obj_str_split(mp_uint_t n_args, const mp_obj_t *args);

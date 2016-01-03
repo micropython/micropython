@@ -49,7 +49,7 @@ typedef struct _mp_obj_gen_instance_t {
     mp_code_state code_state;
 } mp_obj_gen_instance_t;
 
-STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
     assert(self_fun->base.type == &mp_type_fun_bc);

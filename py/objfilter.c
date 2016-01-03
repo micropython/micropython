@@ -34,7 +34,7 @@ typedef struct _mp_obj_filter_t {
     mp_obj_t iter;
 } mp_obj_filter_t;
 
-STATIC mp_obj_t filter_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t filter_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
     o->base.type = MP_OBJ_TO_PTR(type_in);

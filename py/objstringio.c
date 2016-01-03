@@ -128,7 +128,7 @@ STATIC mp_obj_stringio_t *stringio_new(mp_obj_t type_in) {
     return o;
 }
 
-STATIC mp_obj_t stringio_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t stringio_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_kw; // TODO check n_kw==0
     mp_obj_stringio_t *o = stringio_new(type_in);
 

@@ -894,7 +894,7 @@ typedef struct _mp_obj_checked_fun_t {
     mp_obj_t fun;
 } mp_obj_checked_fun_t;
 
-STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_checked_fun_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args > 0) {
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);

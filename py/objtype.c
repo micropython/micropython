@@ -43,7 +43,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
 // instance object
@@ -235,7 +235,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
-mp_obj_t mp_obj_instance_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_instance_make_new(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_type));
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
     assert(mp_obj_is_instance_type(self));
@@ -707,7 +707,7 @@ bool mp_obj_instance_is_callable(mp_obj_t self_in) {
     return mp_obj_instance_get_call(self_in) != MP_OBJ_NULL;
 }
 
-mp_obj_t mp_obj_instance_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_t call = mp_obj_instance_get_call(self_in);
     if (call == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -778,7 +778,7 @@ STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     mp_printf(print, "<class '%q'>", self->name);
 }
 
-STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
@@ -798,7 +798,7 @@ STATIC mp_obj_t type_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw
     }
 }
 
-STATIC mp_obj_t type_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // instantiate an instance of a class
 
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
@@ -957,7 +957,7 @@ STATIC void super_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
     mp_print_str(print, ">");
 }
 
-STATIC mp_obj_t super_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t super_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
@@ -1108,7 +1108,7 @@ mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t 
 /******************************************************************************/
 // staticmethod and classmethod types (probably should go in a different file)
 
-STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t static_class_method_make_new(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
     assert(self == &mp_type_staticmethod || self == &mp_type_classmethod);
 
