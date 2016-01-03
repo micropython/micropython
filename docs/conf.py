@@ -237,7 +237,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'MicroPython.tex', 'MicroPython Documentation',
-   'Damien P. George', 'manual'),
+   'Damien P. George and contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -267,7 +267,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'micropython', 'MicroPython Documentation',
-     ['Damien P. George'], 1),
+     ['Damien P. George and contributors'], 1),
 ]
 
 # If true, show URL addresses after external links.
@@ -281,7 +281,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'MicroPython', 'MicroPython Documentation',
-   'Damien P. George', 'MicroPython', 'One line description of project.',
+   'Damien P. George and contributors', 'MicroPython', 'One line description of project.',
    'Miscellaneous'),
 ]
 
