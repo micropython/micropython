@@ -66,7 +66,7 @@ STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
-        return ((mp_fun_kw_t)self->fun)(n_args, args, &kw_args);
+        return self->fun.kw(n_args, args, &kw_args);
 
     } else if (self->n_args_min <= 3 && self->n_args_min == self->n_args_max) {
         // function requires a fixed number of arguments
@@ -74,23 +74,23 @@ STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n
         // dispatch function call
         switch (self->n_args_min) {
             case 0:
-                return ((mp_fun_0_t)self->fun)();
+                return self->fun._0();
 
             case 1:
-                return ((mp_fun_1_t)self->fun)(args[0]);
+                return self->fun._1(args[0]);
 
             case 2:
-                return ((mp_fun_2_t)self->fun)(args[0], args[1]);
+                return self->fun._2(args[0], args[1]);
 
             case 3:
             default:
-                return ((mp_fun_3_t)self->fun)(args[0], args[1], args[2]);
+                return self->fun._3(args[0], args[1], args[2]);
         }
 
     } else {
         // function takes a variable number of arguments, but no keywords
 
-        return ((mp_fun_var_t)self->fun)(n_args, args);
+        return self->fun.var(n_args, args);
     }
 }
 

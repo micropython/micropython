@@ -32,6 +32,7 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "extmod/misc.h"
 
 #ifndef _WIN32
 #include <signal.h>
@@ -108,13 +109,35 @@ void mp_hal_stdio_mode_orig(void) {
 #endif
 
 #if MICROPY_PY_OS_DUPTERM
-void mp_hal_dupterm_tx_strn(const char *str, size_t len) {
-    if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
-        mp_obj_t write_m[3];
-        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
-        write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
-        mp_call_method_n_kw(1, 0, write_m);
+static int call_dupterm_read(void) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_obj_t read_m[3];
+        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_read, read_m);
+        read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
+        mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
+        if (res == mp_const_none) {
+            return -1;
+        }
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
+        if (bufinfo.len == 0) {
+            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
+            MP_STATE_PORT(term_obj) = NULL;
+            return -1;
+        }
+        nlr_pop();
+        return *(byte*)bufinfo.buf;
+    } else {
+        // Temporarily disable dupterm to avoid infinite recursion
+        mp_obj_t save_term = MP_STATE_PORT(term_obj);
+        MP_STATE_PORT(term_obj) = NULL;
+        mp_printf(&mp_plat_print, "dupterm: ");
+        mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
+        MP_STATE_PORT(term_obj) = save_term;
     }
+
+    return -1;
 }
 #endif
 
@@ -122,19 +145,10 @@ int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
     #if MICROPY_PY_OS_DUPTERM
     while (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
-        mp_obj_t read_m[3];
-        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_read, read_m);
-        read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
-        mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
-        if (res == mp_const_none) {
+        int c = call_dupterm_read();
+        if (c == -1) {
             break;
         }
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
-        if (bufinfo.len == 0) {
-            break;
-        }
-        c = *(byte*)bufinfo.buf;
         if (c == '\n') {
             c = '\r';
         }
@@ -152,7 +166,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     int ret = write(1, str, len);
-    mp_hal_dupterm_tx_strn(str, len);
+    mp_uos_dupterm_tx_strn(str, len);
     (void)ret; // to suppress compiler warning
 }
 

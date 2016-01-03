@@ -1311,9 +1311,9 @@ unwind_loop:
                 qstr block_name = mp_decode_uint(&ip);
                 qstr source_file = mp_decode_uint(&ip);
                 #endif
-                mp_uint_t bc = code_state->ip - code_state->code_info - code_info_size;
-                mp_uint_t source_line = 1;
-                mp_uint_t c;
+                size_t bc = code_state->ip - code_state->code_info - code_info_size;
+                size_t source_line = 1;
+                size_t c;
                 while ((c = *ip)) {
                     mp_uint_t b, l;
                     if ((c & 0x80) == 0) {

@@ -552,11 +552,19 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
 
+STATIC mp_obj_t mp_builtin_globals(void) {
+    return MP_OBJ_FROM_PTR(mp_globals_get());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_builtin_globals);
+
+STATIC mp_obj_t mp_builtin_locals(void) {
+    return MP_OBJ_FROM_PTR(mp_locals_get());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_builtin_locals);
+
 // These are defined in terms of MicroPython API functions right away
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
-MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_globals_obj, mp_globals_get);
-MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_locals_obj, mp_locals_get);
 
 STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     // built-in core functions

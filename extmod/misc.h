@@ -1,9 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2014-2016 Damien P. George
+ * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +25,15 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdint.h>
+// This file contains cumulative declarations for extmod/ .
 
-#include "py/lexer.h"
-#include "py/frozenmod.h"
+#include <stddef.h>
+#include "py/runtime.h"
 
-#if MICROPY_MODULE_FROZEN
+MP_DECLARE_CONST_FUN_OBJ(mp_uos_dupterm_obj);
 
-extern const uint16_t mp_frozen_sizes[];
-extern const char mp_frozen_content[];
-
-mp_lexer_t *mp_find_frozen_module(const char *str, int len) {
-    const uint16_t *sz_ptr = mp_frozen_sizes;
-    const char *s = mp_frozen_content;
-
-    while (*sz_ptr) {
-        int l = strlen(s);
-        if (l == len && !memcmp(str, s, l)) {
-            s += l + 1;
-            mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR_, s, *sz_ptr, 0);
-            return lex;
-        }
-        s += (l + 1) + (*sz_ptr++ + 1);
-    }
-    return NULL;
-}
-
-#endif // MICROPY_MODULE_FROZEN
+#if MICROPY_PY_OS_DUPTERM
+void mp_uos_dupterm_tx_strn(const char *str, size_t len);
+#else
+#define mp_uos_dupterm_tx_strn(s, l)
+#endif

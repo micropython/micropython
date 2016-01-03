@@ -346,9 +346,9 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             offset += sizeof(void *) - 1;
             offset &= ~(sizeof(void *) - 1);
 
-            if ((mp_emergency_exception_buf_size - offset) > (sizeof(mp_uint_t) * 3)) {
+            if ((mp_emergency_exception_buf_size - offset) > (sizeof(o->traceback_data[0]) * 3)) {
                 // We have room to store some traceback.
-                o->traceback_data = (mp_uint_t*)((byte *)MP_STATE_VM(mp_emergency_exception_buf) + offset);
+                o->traceback_data = (size_t*)((byte *)MP_STATE_VM(mp_emergency_exception_buf) + offset);
                 o->traceback_alloc = (MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - (byte *)o->traceback_data) / sizeof(o->traceback_data[0]);
                 o->traceback_len = 0;
             }
@@ -429,14 +429,14 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     self->traceback_data = NULL;
 }
 
-void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block) {
+void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
 
     if (self->traceback_data == NULL) {
-        self->traceback_data = m_new_maybe(mp_uint_t, 3);
+        self->traceback_data = m_new_maybe(size_t, 3);
         if (self->traceback_data == NULL) {
             return;
         }
@@ -444,7 +444,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line,
         self->traceback_len = 0;
     } else if (self->traceback_len + 3 > self->traceback_alloc) {
         // be conservative with growing traceback data
-        mp_uint_t *tb_data = m_renew_maybe(mp_uint_t, self->traceback_data, self->traceback_alloc, self->traceback_alloc + 3, true);
+        size_t *tb_data = m_renew_maybe(size_t, self->traceback_data, self->traceback_alloc, self->traceback_alloc + 3, true);
         if (tb_data == NULL) {
             return;
         }
@@ -452,14 +452,14 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line,
         self->traceback_alloc += 3;
     }
 
-    mp_uint_t *tb_data = &self->traceback_data[self->traceback_len];
+    size_t *tb_data = &self->traceback_data[self->traceback_len];
     self->traceback_len += 3;
-    tb_data[0] = (mp_uint_t)file;
-    tb_data[1] = (mp_uint_t)line;
-    tb_data[2] = (mp_uint_t)block;
+    tb_data[0] = file;
+    tb_data[1] = line;
+    tb_data[2] = block;
 }
 
-void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values) {
+void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values) {
     GET_NATIVE_EXCEPTION(self, self_in);
 
     if (self->traceback_data == NULL) {

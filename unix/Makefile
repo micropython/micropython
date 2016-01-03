@@ -1,5 +1,5 @@
-include ../py/mkenv.mk
 -include mpconfigport.mk
+include ../py/mkenv.mk
 
 # define main target
 PROG = micropython

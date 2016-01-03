@@ -270,14 +270,27 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
 
 #define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_builtin_t obj_name
 
-#define MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, is_kw, n_args_min, n_args_max, fun_name) const mp_obj_fun_builtin_t obj_name = {{&mp_type_fun_builtin}, is_kw, n_args_min, n_args_max, (void(*)(void))fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 0, 0, (mp_fun_0_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 1, 1, (mp_fun_1_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 2, 2, (mp_fun_2_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, 3, 3, (mp_fun_3_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, MP_OBJ_FUN_ARGS_MAX, (mp_fun_var_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, false, n_args_min, n_args_max, (mp_fun_var_t)fun_name)
-#define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) MP_DEFINE_CONST_FUN_OBJ_VOID_PTR(obj_name, true, n_args_min, MP_OBJ_FUN_ARGS_MAX, (mp_fun_kw_t)fun_name)
+#define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, false, 0, 0, .fun._0 = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_1(obj_name, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, false, 1, 1, .fun._1 = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_2(obj_name, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, false, 2, 2, .fun._2 = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, false, 3, 3, .fun._3 = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, false, n_args_min, MP_OBJ_FUN_ARGS_MAX, .fun.var = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name, n_args_min, n_args_max, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, false, n_args_min, n_args_max, .fun.var = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_KW(obj_name, n_args_min, fun_name) \
+    const mp_obj_fun_builtin_t obj_name = \
+        {{&mp_type_fun_builtin}, true, n_args_min, MP_OBJ_FUN_ARGS_MAX, .fun.kw = fun_name}
 
 // These macros are used to define constant map/dict objects
 // You can put "static" in front of the definition to make it local
@@ -680,8 +693,8 @@ bool mp_obj_is_exception_type(mp_obj_t self_in);
 bool mp_obj_is_exception_instance(mp_obj_t self_in);
 bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type);
 void mp_obj_exception_clear_traceback(mp_obj_t self_in);
-void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, mp_uint_t line, qstr block);
-void mp_obj_exception_get_traceback(mp_obj_t self_in, mp_uint_t *n, mp_uint_t **values);
+void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block);
+void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
@@ -744,7 +757,14 @@ typedef struct _mp_obj_fun_builtin_t { // use this to make const objects that go
     bool is_kw : 1;
     mp_uint_t n_args_min : 15; // inclusive
     mp_uint_t n_args_max : 16; // inclusive
-    void (*fun)(void); // must be a pointer to a callable function in ROM
+    union {
+        mp_fun_0_t _0;
+        mp_fun_1_t _1;
+        mp_fun_2_t _2;
+        mp_fun_3_t _3;
+        mp_fun_var_t var;
+        mp_fun_kw_t kw;
+    } fun;
 } mp_obj_fun_builtin_t;
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun);
