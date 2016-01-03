@@ -230,6 +230,9 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
                 mp_uint_t offset = MP_OBJ_SMALL_INT_VALUE(v);
                 mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
                 offset &= VALUE_MASK(VAL_TYPE_BITS);
+                if (val_type >= BFUINT8 && val_type <= BFINT32) {
+                    offset &= (1 << OFFSET_BITS) - 1;
+                }
                 mp_uint_t s = uctypes_struct_scalar_size(val_type);
                 if (s > *max_field_size) {
                     *max_field_size = s;
