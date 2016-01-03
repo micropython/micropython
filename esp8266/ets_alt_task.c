@@ -111,16 +111,17 @@ bool ets_loop_iter(void) {
             progress = true;
             //printf("#%d Calling task %d(%p) (%x, %x)\n", cnt++,
             //    t - emu_tasks + FIRST_PRIO, t->task, t->queue[t->i_get].sig, t->queue[t->i_get].par);
-            //ets_intr_unlock();
-            t->task(&t->queue[t->i_get]);
-            //ets_intr_lock();
-            //printf("Done calling task %d\n", t - emu_tasks + FIRST_PRIO);
+            int idx = t->i_get;
             if (t->i_put == -1) {
                 t->i_put = t->i_get;
             }
             if (++t->i_get == t->qlen) {
                 t->i_get = 0;
             }
+            //ets_intr_unlock();
+            t->task(&t->queue[idx]);
+            //ets_intr_lock();
+            //printf("Done calling task %d\n", t - emu_tasks + FIRST_PRIO);
         }
         ets_intr_unlock();
     }
