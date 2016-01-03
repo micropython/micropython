@@ -186,6 +186,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
 typedef struct _mp_obj_dict_it_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     mp_obj_t dict;
     mp_uint_t cur;
 } mp_obj_dict_it_t;
@@ -201,16 +202,10 @@ STATIC mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_dict_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = dict_it_iternext,
-};
-
 STATIC mp_obj_t dict_getiter(mp_obj_t self_in) {
     mp_obj_dict_it_t *o = m_new_obj(mp_obj_dict_it_t);
-    o->base.type = &mp_type_dict_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = dict_it_iternext;
     o->dict = self_in;
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);

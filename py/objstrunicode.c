@@ -267,6 +267,7 @@ const mp_obj_type_t mp_type_str = {
 
 typedef struct _mp_obj_str_it_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     mp_obj_t str;
     mp_uint_t cur;
 } mp_obj_str_it_t;
@@ -285,16 +286,10 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_str_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = str_it_iternext,
-};
-
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
     mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
-    o->base.type = &mp_type_str_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = str_it_iternext;
     o->str = str;
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);

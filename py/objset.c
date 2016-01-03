@@ -42,6 +42,7 @@ typedef struct _mp_obj_set_t {
 
 typedef struct _mp_obj_set_it_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     mp_obj_set_t *set;
     mp_uint_t cur;
 } mp_obj_set_it_t;
@@ -146,15 +147,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw,
     }
 }
 
-const mp_obj_type_t mp_type_set_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = set_it_iternext,
-};
-
 STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set_it));
     mp_obj_set_it_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t max = self->set->set.alloc;
     mp_set_t *set = &self->set->set;
@@ -171,7 +164,8 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t set_getiter(mp_obj_t set_in) {
     mp_obj_set_it_t *o = m_new_obj(mp_obj_set_it_t);
-    o->base.type = &mp_type_set_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = set_it_iternext;
     o->set = (mp_obj_set_t *)MP_OBJ_TO_PTR(set_in);
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
