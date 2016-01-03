@@ -44,7 +44,7 @@ typedef struct _mp_obj_namedtuple_t {
     mp_obj_tuple_t tuple;
 } mp_obj_namedtuple_t;
 
-STATIC mp_uint_t namedtuple_find_field(mp_obj_namedtuple_type_t *type, qstr name) {
+STATIC mp_uint_t namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name) {
     for (mp_uint_t i = 0; i < type->n_fields; i++) {
         if (type->fields[i] == name) {
             return i;
@@ -77,8 +77,8 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_namedtuple_type_t *type = MP_OBJ_TO_PTR(type_in);
+STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)type_in;
     mp_uint_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -130,7 +130,7 @@ STATIC mp_obj_t namedtuple_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_fields, arg_objects));
-    tuple->base.type = MP_OBJ_TO_PTR(type_in);
+    tuple->base.type = type_in;
     return MP_OBJ_FROM_PTR(tuple);
 }
 

@@ -202,10 +202,10 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t fdfile_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return fdfile_open(MP_OBJ_TO_PTR(type_in), arg_vals);
+    return fdfile_open(type, arg_vals);
 }
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {

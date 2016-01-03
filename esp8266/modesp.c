@@ -82,7 +82,7 @@ STATIC mp_obj_t esp_socket_make_new_base() {
 
 // constructor esp_socket(family=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP, fileno=None)
 // Arguments ignored as we do not support UDP (yet)
-STATIC mp_obj_t esp_socket_make_new(mp_obj_t type_in, mp_uint_t n_args,
+STATIC mp_obj_t esp_socket_make_new(const mp_obj_type_t *type_in, mp_uint_t n_args,
     mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 

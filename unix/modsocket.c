@@ -313,7 +313,7 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-STATIC mp_obj_t socket_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     (void)n_kw;
 

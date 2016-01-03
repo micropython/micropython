@@ -354,7 +354,7 @@ STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
 /// \classmethod \constructor()
 /// Create a new USB_VCP object.
-STATIC mp_obj_t pyb_usb_vcp_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -543,7 +543,7 @@ typedef struct _pyb_usb_hid_obj_t {
 
 STATIC const pyb_usb_hid_obj_t pyb_usb_hid_obj = {{&pyb_usb_hid_type}};
 
-STATIC mp_obj_t pyb_usb_hid_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_usb_hid_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 

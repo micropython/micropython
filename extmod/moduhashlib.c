@@ -41,10 +41,10 @@ typedef struct _mp_obj_hash_t {
 
 STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg);
 
-STATIC mp_obj_t hash_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t hash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
-    o->base.type = MP_OBJ_TO_PTR(type_in);
+    o->base.type = type;
     sha256_init((CRYAL_SHA256_CTX*)o->state);
     if (n_args == 1) {
         hash_update(MP_OBJ_FROM_PTR(o), args[0]);

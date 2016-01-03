@@ -157,7 +157,7 @@ STATIC const mp_arg_t file_open_args[] = {
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
-STATIC mp_obj_t file_open(mp_obj_t type, mp_arg_val_t *args) {
+STATIC mp_obj_t file_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     int mode = 0;
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
     // TODO make sure only one of r, w, x, a, and b, t are specified
@@ -180,11 +180,11 @@ STATIC mp_obj_t file_open(mp_obj_t type, mp_arg_val_t *args) {
                 break;
             #if MICROPY_PY_IO_FILEIO
             case 'b':
-                type = (mp_obj_t)&mp_type_fileio;
+                type = &mp_type_fileio;
                 break;
             #endif
             case 't':
-                type = (mp_obj_t)&mp_type_textio;
+                type = &mp_type_textio;
                 break;
         }
     }
@@ -207,10 +207,10 @@ STATIC mp_obj_t file_open(mp_obj_t type, mp_arg_val_t *args) {
     return o;
 }
 
-STATIC mp_obj_t file_obj_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open(type_in, arg_vals);
+    return file_open(type, arg_vals);
 }
 
 // TODO gc hook to close the file if not already closed
@@ -275,6 +275,6 @@ mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     // TODO: analyze buffering args and instantiate appropriate type
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open((mp_obj_t)&mp_type_textio, arg_vals);
+    return file_open(&mp_type_textio, arg_vals);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);

@@ -114,7 +114,7 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
     mp_obj_tuple_print(print, MP_OBJ_FROM_PTR(o->args), kind);
 }
 
-mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, false);
     mp_obj_exception_t *o = m_new_obj_var_maybe(mp_obj_exception_t, mp_obj_t, 0);
     if (o == NULL) {
@@ -125,7 +125,7 @@ mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw,
     } else {
         o->args = MP_OBJ_TO_PTR(mp_obj_new_tuple(n_args, args));
     }
-    o->base.type = MP_OBJ_TO_PTR(type_in);
+    o->base.type = type;
     o->traceback_data = NULL;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -290,7 +290,7 @@ mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) 
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, mp_uint_t n_args, const mp_obj_t *args) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
-    return exc_type->make_new(MP_OBJ_FROM_PTR(exc_type), n_args, 0, args);
+    return exc_type->make_new(exc_type, n_args, 0, args);
 }
 
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {

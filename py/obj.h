@@ -42,12 +42,14 @@ typedef machine_ptr_t mp_obj_t;
 typedef machine_const_ptr_t mp_const_obj_t;
 #endif
 
-// Anything that wants to be a Micro Python object must have
-// mp_obj_base_t as its first member (except small ints and qstrs)
+// This mp_obj_type_t struct is a concrete MicroPython object which holds info
+// about a type.  See below for actual definition of the struct.
+typedef struct _mp_obj_type_t mp_obj_type_t;
 
-struct _mp_obj_type_t;
+// Anything that wants to be a concrete MicroPython object must have mp_obj_base_t
+// as its first member (small ints, qstr objs and inline floats are not concrete).
 struct _mp_obj_base_t {
-    const struct _mp_obj_type_t *type MICROPY_OBJ_BASE_ALIGNMENT;
+    const mp_obj_type_t *type MICROPY_OBJ_BASE_ALIGNMENT;
 };
 typedef struct _mp_obj_base_t mp_obj_base_t;
 
@@ -259,8 +261,8 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 //static inline bool MP_OBJ_IS_TYPE(mp_const_obj_t o, const mp_obj_type_t *t) { return (MP_OBJ_IS_OBJ(o) && (((mp_obj_base_t*)(o))->type == (t))); } // this does not work for checking a string, use below macro for that
 //static inline bool MP_OBJ_IS_INT(mp_const_obj_t o) { return (MP_OBJ_IS_SMALL_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_int)); } // returns true if o is a small int or long int
 // Need to forward declare these for the inline function to compile.
-extern const struct _mp_obj_type_t mp_type_int;
-extern const struct _mp_obj_type_t mp_type_bool;
+extern const mp_obj_type_t mp_type_int;
+extern const mp_obj_type_t mp_type_bool;
 static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o) || MP_OBJ_IS_TYPE(o, &mp_type_bool); } // returns true if o is bool, small int or long int
 //static inline bool MP_OBJ_IS_STR(mp_const_obj_t o) { return (MP_OBJ_IS_QSTR(o) || MP_OBJ_IS_TYPE(o, &mp_type_str)); }
 
@@ -408,7 +410,7 @@ typedef enum {
 } mp_print_kind_t;
 
 typedef void (*mp_print_fun_t)(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
-typedef mp_obj_t (*mp_make_new_fun_t)(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_unary_op_fun_t)(mp_uint_t op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(mp_uint_t op, mp_obj_t, mp_obj_t);
@@ -509,8 +511,6 @@ struct _mp_obj_type_t {
     unpack seq      list tuple
     */
 };
-
-typedef struct _mp_obj_type_t mp_obj_type_t;
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;
@@ -691,7 +691,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
-mp_obj_t mp_obj_exception_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
 

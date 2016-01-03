@@ -119,7 +119,7 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     #endif
 }
 
-STATIC mp_obj_t set_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     switch (n_args) {
@@ -127,7 +127,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const
             // create a new, empty set
             mp_obj_set_t *set = MP_OBJ_TO_PTR(mp_obj_new_set(0, NULL));
             // set actual set/frozenset type
-            set->base.type = MP_OBJ_TO_PTR(type_in);
+            set->base.type = type;
             return MP_OBJ_FROM_PTR(set);
         }
 
@@ -141,7 +141,7 @@ STATIC mp_obj_t set_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const
                 mp_obj_set_store(set, item);
             }
             // Set actual set/frozenset type
-            ((mp_obj_set_t*)MP_OBJ_TO_PTR(set))->base.type = MP_OBJ_TO_PTR(type_in);
+            ((mp_obj_set_t*)MP_OBJ_TO_PTR(set))->base.type = type;
             return set;
         }
     }
@@ -327,7 +327,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (is_set_or_frozenset(self_in)) {
         self = MP_OBJ_TO_PTR(self_in);
     } else {
-        self = MP_OBJ_TO_PTR(set_make_new(MP_OBJ_FROM_PTR(&mp_type_set), 1, 0, &self_in));
+        self = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &self_in));
         cleanup_self = true;
     }
 
@@ -336,7 +336,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (is_set_or_frozenset(other_in)) {
         other = MP_OBJ_TO_PTR(other_in);
     } else {
-        other = MP_OBJ_TO_PTR(set_make_new(MP_OBJ_FROM_PTR(&mp_type_set), 1, 0, &other_in));
+        other = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &other_in));
         cleanup_other = true;
     }
     bool out = true;

@@ -307,7 +307,7 @@ STATIC const mp_arg_t pyb_extint_make_new_args[] = {
 };
 #define PYB_EXTINT_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(pyb_extint_make_new_args)
 
-STATIC mp_obj_t extint_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
 
     // parse args
@@ -315,7 +315,7 @@ STATIC mp_obj_t extint_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_
     mp_arg_parse_all_kw_array(n_args, n_kw, args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_args, vals);
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
-    self->base.type = type_in;
+    self->base.type = type;
     self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
 
     return self;

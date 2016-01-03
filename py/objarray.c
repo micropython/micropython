@@ -168,7 +168,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 #endif
 
 #if MICROPY_PY_ARRAY
-STATIC mp_obj_t array_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
@@ -187,7 +187,7 @@ STATIC mp_obj_t array_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, con
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
-STATIC mp_obj_t bytearray_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
@@ -219,7 +219,7 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, mp_uint_t nitems, void *items) {
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t memoryview_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
     // TODO possibly allow memoryview constructor to take start/stop so that one

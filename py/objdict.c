@@ -82,12 +82,12 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     }
 }
 
-STATIC mp_obj_t dict_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_t dict_out = mp_obj_new_dict(0);
     mp_obj_dict_t *dict = MP_OBJ_TO_PTR(dict_out);
-    dict->base.type = MP_OBJ_TO_PTR(type_in);
+    dict->base.type = type;
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
-    if (MP_OBJ_TO_PTR(type_in) == &mp_type_ordereddict) {
+    if (type == &mp_type_ordereddict) {
         dict->map.is_ordered = 1;
     }
     #endif

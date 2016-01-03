@@ -301,7 +301,7 @@ STATIC mp_obj_t ffimod_addr(mp_obj_t self_in, mp_obj_t symname_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ffimod_addr_obj, ffimod_addr);
 
-STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_args;
     (void)n_kw;
 
@@ -315,7 +315,7 @@ STATIC mp_obj_t ffimod_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, co
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
     mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
-    o->base.type = MP_OBJ_TO_PTR(type_in);
+    o->base.type = type;
     o->handle = mod;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -478,7 +478,7 @@ STATIC const mp_obj_type_t opaque_type = {
 */
 
 STATIC mp_obj_t mod_ffi_open(size_t n_args, const mp_obj_t *args) {
-    return ffimod_make_new((mp_obj_t)&ffimod_type, n_args, 0, args);
+    return ffimod_make_new(&ffimod_type, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);
 

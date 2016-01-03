@@ -49,7 +49,7 @@ typedef struct _pyb_rtc_obj_t {
 // singleton RTC object
 STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
-STATIC mp_obj_t pyb_rtc_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 

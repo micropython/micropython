@@ -131,7 +131,7 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
         mp_arg_error_unimpl_kw();
@@ -149,7 +149,7 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const
             mp_print_t print;
             vstr_init_print(&vstr, 16, &print);
             mp_obj_print_helper(&print, args[0], PRINT_STR);
-            return mp_obj_new_str_from_vstr(MP_OBJ_TO_PTR(type_in), &vstr);
+            return mp_obj_new_str_from_vstr(type, &vstr);
         }
 
         default: // 2 or 3 args
@@ -157,7 +157,7 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const
             if (MP_OBJ_IS_TYPE(args[0], &mp_type_bytes)) {
                 GET_STR_DATA_LEN(args[0], str_data, str_len);
                 GET_STR_HASH(args[0], str_hash);
-                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(MP_OBJ_TO_PTR(type_in), NULL, str_len));
+                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
                 return MP_OBJ_FROM_PTR(o);
@@ -169,7 +169,7 @@ mp_obj_t mp_obj_str_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const
     }
 }
 
-STATIC mp_obj_t bytes_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
     #if MICROPY_CPYTHON_COMPAT
@@ -426,7 +426,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
         if (!MP_OBJ_IS_TYPE(arg, &mp_type_list)) {
             // arg is not a list, try to convert it to one
             // TODO: Try to optimize?
-            arg = mp_type_list.make_new(MP_OBJ_FROM_PTR(&mp_type_list), 1, 0, &arg);
+            arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
         }
         mp_obj_list_get(arg, &seq_len, &seq_items);
     }
@@ -1767,7 +1767,7 @@ STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return mp_obj_str_make_new(MP_OBJ_FROM_PTR(&mp_type_str), n_args, 0, args);
+    return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
 
 // TODO: should accept kwargs too
@@ -1779,7 +1779,7 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return bytes_make_new(MP_OBJ_NULL, n_args, 0, args);
+    return bytes_make_new(NULL, n_args, 0, args);
 }
 #endif
 
