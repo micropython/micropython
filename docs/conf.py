@@ -21,6 +21,29 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
+# Work out the port to generate the docs for
+from collections import OrderedDict
+micropy_port = os.getenv('MICROPY_PORT') or 'pyboard'
+tags.add('port_' + micropy_port)
+ports = OrderedDict((
+    ("unix", "unix"),
+    ("pyboard", "the pyboard"),
+    ("wipy", "the WiPy"),
+    ("esp8266", "esp8266"),
+))
+
+# The members of the html_context dict are available inside topindex.html
+url_prefix = os.getenv('MICROPY_URL_PREFIX') or '/'
+html_context = {
+    'port':micropy_port,
+    'port_name':ports[micropy_port],
+    'all_ports':[(n, url_prefix + p) for p, n in ports.items()],
+}
+
+
+# Specify a custom master document based on the port name
+master_doc = micropy_port + '_' + 'index'
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -213,7 +236,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'MicroPython.tex', 'MicroPython Documentation',
+  (master_doc, 'MicroPython.tex', 'MicroPython Documentation',
    'Damien P. George', 'manual'),
 ]
 
@@ -257,7 +280,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'MicroPython', 'MicroPython Documentation',
+  (master_doc, 'MicroPython', 'MicroPython Documentation',
    'Damien P. George', 'MicroPython', 'One line description of project.',
    'Miscellaneous'),
 ]
@@ -278,26 +301,6 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-
-# Work out the port to generate the docs for
-from collections import OrderedDict
-micropy_port = os.getenv('MICROPY_PORT') or 'pyboard'
-tags.add('port_' + micropy_port)
-ports = OrderedDict((
-    ("unix", "unix"),
-    ("pyboard", "the pyboard"),
-    ("wipy", "the WiPy"),
-    ("esp8266", "esp8266"),
-))
-
-# The members of the html_context dict are available inside topindex.html
-url_prefix = os.getenv('MICROPY_URL_PREFIX') or '/'
-html_context = {
-    'port':micropy_port,
-    'port_name':ports[micropy_port],
-    'all_ports':[(n, url_prefix + p) for p, n in ports.items()],
-}
-
 # Append the other ports' specific folders/files to the exclude pattern
 exclude_patterns.extend([port + '*' for port in ports if port != micropy_port])
 # Exclude pyb module if the port is the WiPy
@@ -305,6 +308,3 @@ if micropy_port == 'wipy':
     exclude_patterns.append('library/pyb*')
 else: # exclude machine
     exclude_patterns.append('library/machine*')
-
-# Specify a custom master document based on the port name
-master_doc = micropy_port + '_' + 'index'
