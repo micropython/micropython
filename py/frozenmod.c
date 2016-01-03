@@ -32,21 +32,22 @@
 
 #if MICROPY_MODULE_FROZEN
 
-extern const uint16_t mp_frozen_sizes[];
+extern const char mp_frozen_names[];
+extern const uint32_t mp_frozen_sizes[];
 extern const char mp_frozen_content[];
 
 mp_lexer_t *mp_find_frozen_module(const char *str, int len) {
-    const uint16_t *sz_ptr = mp_frozen_sizes;
-    const char *s = mp_frozen_content;
+    const char *name = mp_frozen_names;
 
-    while (*sz_ptr) {
-        int l = strlen(s);
-        if (l == len && !memcmp(str, s, l)) {
-            s += l + 1;
-            mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR_, s, *sz_ptr, 0);
+    size_t offset = 0;
+    for (int i = 0; *name != 0; i++) {
+        int l = strlen(name);
+        if (l == len && !memcmp(str, name, l)) {
+            mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR_, mp_frozen_content + offset, mp_frozen_sizes[i], 0);
             return lex;
         }
-        s += (l + 1) + (*sz_ptr++ + 1);
+        name += l + 1;
+        offset += mp_frozen_sizes[i] + 1;
     }
     return NULL;
 }
