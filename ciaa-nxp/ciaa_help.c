@@ -68,7 +68,7 @@ STATIC void pyb_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
     printf("\n");
 }
 
-STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_help(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message
         printf("%s", help_text);

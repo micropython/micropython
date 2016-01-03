@@ -202,7 +202,7 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in, mp_obj_t callback) {
 		
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_deinit_obj, pyb_timer_deinit);
 
 /// \method freq([value])
 /// Get or set the timer frequency:
@@ -279,7 +279,7 @@ STATIC mp_obj_t pyb_timer_source_freq(mp_obj_t self_in, mp_obj_t callback) {
   		
     return MP_OBJ_NEW_SMALL_INT(mp_hal_getTimerClockFrequency());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_source_freq_obj, pyb_timer_source_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_source_freq_obj, pyb_timer_source_freq);
 
 
 STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
