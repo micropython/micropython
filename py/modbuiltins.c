@@ -217,7 +217,7 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
             }
         }
         if (mp_obj_is_instance_type(mp_obj_get_type(args[0]))) {
-            mp_obj_instance_t *inst = args[0];
+            mp_obj_instance_t *inst = MP_OBJ_TO_PTR(args[0]);
             members = &inst->members;
         }
     }
