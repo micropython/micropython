@@ -1259,10 +1259,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             }
 
             switch (type) {
-                case '\0':
-                    mp_obj_print_helper(&print, arg, PRINT_STR);
-                    break;
-
+                case '\0': // no explicit format type implies 's'
                 case 's': {
                     mp_uint_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);

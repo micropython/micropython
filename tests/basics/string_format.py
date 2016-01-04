@@ -62,6 +62,10 @@ test("{:@<6d}",  -123)
 test("{:@=6d}",  -123)
 test("{:06d}",  -123)
 
+test("{:>20}", "foo")
+test("{:^20}", "foo")
+test("{:<20}", "foo")
+
 print("{foo}/foo".format(foo="bar"))
 print("{}".format(123, foo="bar"))
 print("{}-{foo}".format(123, foo="bar"))
