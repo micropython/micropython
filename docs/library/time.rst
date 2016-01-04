@@ -44,7 +44,7 @@ Functions
     
        Sleep for the given number of seconds.
 
-.. only:: port_wipy
+.. only:: port_wipy or port_pyboard
 
     .. function::  sleep_ms(ms)
 
