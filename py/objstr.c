@@ -1259,10 +1259,7 @@ mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwa
             }
 
             switch (type) {
-                case '\0':
-                    mp_obj_print_helper(&print, arg, PRINT_STR);
-                    break;
-
+                case '\0': // no explicit format type implies 's'
                 case 's': {
                     mp_uint_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);
@@ -2061,6 +2058,7 @@ const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len) {
 
 typedef struct _mp_obj_str8_it_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     mp_obj_t str;
     mp_uint_t cur;
 } mp_obj_str8_it_t;
@@ -2078,16 +2076,10 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_str_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = str_it_iternext,
-};
-
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
     mp_obj_str8_it_t *o = m_new_obj(mp_obj_str8_it_t);
-    o->base.type = &mp_type_str_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = str_it_iternext;
     o->str = str;
     o->cur = 0;
     return o;
@@ -2106,16 +2098,10 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_bytes_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = bytes_it_iternext,
-};
-
 mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
     mp_obj_str8_it_t *o = m_new_obj(mp_obj_str8_it_t);
-    o->base.type = &mp_type_bytes_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = bytes_it_iternext;
     o->str = str;
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);

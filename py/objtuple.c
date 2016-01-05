@@ -270,6 +270,7 @@ void mp_obj_tuple_del(mp_obj_t self_in) {
 
 typedef struct _mp_obj_tuple_it_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     mp_obj_tuple_t *tuple;
     mp_uint_t cur;
 } mp_obj_tuple_it_t;
@@ -285,16 +286,10 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_tuple_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = tuple_it_iternext,
-};
-
 STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, mp_uint_t cur) {
     mp_obj_tuple_it_t *o = m_new_obj(mp_obj_tuple_it_t);
-    o->base.type = &mp_type_tuple_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = tuple_it_iternext;
     o->tuple = tuple;
     o->cur = cur;
     return MP_OBJ_FROM_PTR(o);

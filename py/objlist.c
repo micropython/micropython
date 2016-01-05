@@ -498,6 +498,7 @@ void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
 typedef struct _mp_obj_list_it_t {
     mp_obj_base_t base;
+    mp_fun_1_t iternext;
     mp_obj_t list;
     mp_uint_t cur;
 } mp_obj_list_it_t;
@@ -514,16 +515,10 @@ STATIC mp_obj_t list_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_list_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
-    .iternext = list_it_iternext,
-};
-
 mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, mp_uint_t cur) {
     mp_obj_list_it_t *o = m_new_obj(mp_obj_list_it_t);
-    o->base.type = &mp_type_list_it;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = list_it_iternext;
     o->list = list;
     o->cur = cur;
     return MP_OBJ_FROM_PTR(o);

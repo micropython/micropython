@@ -99,3 +99,9 @@ The above sequence of events gets a bit more complicated when multiple
 interrupts occur at the same time.  In that case, the interrupt with the
 highest priority goes first, then the others in order of their priority.
 The switch interrupt is set at the lowest priority.
+
+Further reading
+---------------
+
+For further information about using hardware interrupts see
+:ref:`writing interrupt handlers <isr_rules>`.

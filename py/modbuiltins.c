@@ -31,6 +31,7 @@
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+#include "py/objtype.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -196,6 +197,7 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
     // TODO make this function more general and less of a hack
 
     mp_obj_dict_t *dict = NULL;
+    mp_map_t *members = NULL;
     if (n_args == 0) {
         // make a list of names in the local name space
         dict = mp_locals_get();
@@ -214,6 +216,10 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
                 dict = type->locals_dict;
             }
         }
+        if (mp_obj_is_instance_type(mp_obj_get_type(args[0]))) {
+            mp_obj_instance_t *inst = MP_OBJ_TO_PTR(args[0]);
+            members = &inst->members;
+        }
     }
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
@@ -224,7 +230,13 @@ STATIC mp_obj_t mp_builtin_dir(mp_uint_t n_args, const mp_obj_t *args) {
             }
         }
     }
-
+    if (members != NULL) {
+        for (mp_uint_t i = 0; i < members->alloc; i++) {
+            if (MP_MAP_SLOT_IS_FILLED(members, i)) {
+                mp_obj_list_append(dir, members->table[i].key);
+            }
+        }
+    }
     return dir;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);
