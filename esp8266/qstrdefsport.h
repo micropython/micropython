@@ -147,3 +147,11 @@ Q(ticks_us)
 Q(ticks_cpu)
 Q(ticks_diff)
 Q(time)
+
+// machine
+Q(Timer)
+Q(callback)
+Q(deinit)
+Q(init)
+Q(mode)
+Q(period)
