@@ -151,10 +151,10 @@ int _rename_r(struct _reent *r, const char *oldf, const char *newf) {
 }
 
 void *_sbrk_r(struct _reent *r, ptrdiff_t incr) {
-	register void *sp __asm__("sp");
-	extern int _pvHeapStart;
-	static void *heap_end;
-	void *prev_heap_end;
+	register uint8_t *sp __asm__("sp");
+	extern uint8_t _pvHeapStart;
+	static uint8_t *heap_end;
+	uint8_t *prev_heap_end;
 	if (heap_end == 0) {
 		heap_end = &_pvHeapStart;
 	}
@@ -163,7 +163,7 @@ void *_sbrk_r(struct _reent *r, ptrdiff_t incr) {
 	if (heap_end >= sp) {
 		_exit(-1);
 	}
-	return prev_heap_end;
+	return (void*) prev_heap_end;
 }
 
 int _stat_r(struct _reent *r, const char *name, struct stat *s) {

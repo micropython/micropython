@@ -23,7 +23,7 @@
 static char *stack_top;
 //static __DATA(RAM2) char heap[32*1024];
 
-#define HEAP_START ((void*) 0x20000000)
+#define HEAP_START ((uint8_t*) 0x20000000)
 #define HEAP_SIZE  (64*1024)
 #define HEAP_END   (HEAP_START + HEAP_SIZE)
 
