@@ -72,6 +72,7 @@ SRC_C = \
 	stmhal/input.c \
 	stmhal/lexerfatfs.c \
 	stmhal/pybstdio.c \
+	stmhal/bufhelper.c \
 	$(wildcard lpc_chip_43xx/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/*.c) \
 	$(wildcard board_ciaa_edu_4337/src/ponchos/*.c)
