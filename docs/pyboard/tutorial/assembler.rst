@@ -61,6 +61,21 @@ This code uses a few new concepts:
     the corresponding bit in ``r0`` is set.  In our example above, the 13th
     bit in ``r0`` is set, so PA13 is pulled high.  This turns on the red LED.
 
+If you want to pass a peripheral address as an argument, keep in mind that due
+to the restriction that bit 31 and bit 30 are the same, the peripheral addresses
+all have bit 31 set, so your code will need to clear it::
+
+    @micropython.asm_thumb
+    def pin_on(r0, r1): # r0 = GPIO port, r1 = pin xxx
+        movw(r2, 0xffff)
+        movt(r2, 0x7fff)
+        and_(r0, r2)    # port &= 0x7fffffff
+        mov(r2, 1)
+        lsl(r2, r1)
+        strh(r2, [r0, stm.GPIO_BSRRL])
+
+    pin_on(stm.GPIOA, 13)
+    
 Accepting arguments
 -------------------
 
