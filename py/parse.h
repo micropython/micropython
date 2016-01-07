@@ -29,7 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "py/mpconfig.h"
+#include "py/obj.h"
 
 struct _mp_lexer_t;
 
@@ -77,6 +77,7 @@ typedef struct _mp_parse_node_struct_t {
 #define MP_PARSE_NODE_STRUCT_NUM_NODES(pns) ((pns)->kind_num_nodes >> 8)
 
 mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg);
+bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o);
 int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes);
 void mp_parse_node_print(mp_parse_node_t pn, size_t indent);
 
