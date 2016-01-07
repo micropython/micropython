@@ -703,11 +703,10 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto op_movw_movt;
             } else if (ARMV7M && strcmp(op_str, "movwt") == 0) {
                 // this is a convenience instruction
-                // we clear the MSB since it might be set from extracting the small int value
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
-                int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
+                uint32_t i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVW, reg_dest, i_src & 0xffff);
-                asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVT, reg_dest, (i_src >> 16) & 0x7fff);
+                asm_thumb_mov_reg_i16(emit->as, ASM_THUMB_OP_MOVT, reg_dest, (i_src >> 16) & 0xffff);
             } else if (ARMV7M && strcmp(op_str, "ldrex") == 0) {
                 mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_parse_node_t pn_base, pn_offset;

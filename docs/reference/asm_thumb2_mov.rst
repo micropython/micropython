@@ -21,8 +21,7 @@ Where immediate values are used, these are zero-extended to 32 bits. Thus
 movt writes an immediate value to the top halfword of the destination register.
 It does not affect the contents of the bottom halfword.
 
-* movwt(Rd, imm30) ``Rd = imm30``
+* movwt(Rd, imm32) ``Rd = imm32``
 
-movwt is a pseudo-instruction: the MicroPython assembler emits a ``movw`` and a ``movt``
-to move a zero extended 30 bit value into Rd. Where the full 32 bits are required a
-workround is to use the movw and movt operations.
+movwt is a pseudo-instruction: the MicroPython assembler emits a ``movw`` followed
+by a ``movt`` to move a 32-bit value into Rd.
