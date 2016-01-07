@@ -85,10 +85,7 @@
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
-
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_read_addr
-#define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_write_addr
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
