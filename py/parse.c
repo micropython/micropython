@@ -647,6 +647,20 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
 #endif
 
 STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t num_args) {
+    // optimise away parenthesis around an expression if possible
+    if (rule->rule_id == RULE_atom_paren) {
+        // there should be just 1 arg for this rule
+        mp_parse_node_t pn = peek_result(parser, 0);
+        if (MP_PARSE_NODE_IS_NULL(pn)) {
+            // need to keep parenthesis for ()
+        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_testlist_comp)) {
+            // need to keep parenthesis for (a, b, ...)
+        } else {
+            // parenthesis around a single expression, so it's just the expression
+            return;
+        }
+    }
+
     #if MICROPY_COMP_CONST_FOLDING
     if (fold_constants(parser, rule, num_args)) {
         // we folded this rule so return straight away
@@ -864,8 +878,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // if a rule has the RULE_ACT_ALLOW_IDENT bit set then this
                 // rule should not be emitted if it has only 1 argument
-                // NOTE: can't set this flag for atom_paren because we need it
-                // to distinguish, for example, [a,b] from [(a,b)]
                 if (rule->act & RULE_ACT_ALLOW_IDENT) {
                     emit_rule = false;
                 }

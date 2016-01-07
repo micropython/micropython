@@ -299,14 +299,12 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
                 if (jump_if == false) {
                     EMIT_ARG(jump, label);
                 }
-            } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
+            } else {
+                assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
                 // non-empty tuple, acts as true for the condition
                 if (jump_if == true) {
                     EMIT_ARG(jump, label);
                 }
-            } else {
-                // parenthesis around 1 item, is just that item
-                c_if_cond(comp, pns->nodes[0], jump_if, label);
             }
             return;
         }
@@ -420,7 +418,6 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
 
 // assigns top of stack to pn
 STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_kind) {
-    tail_recursion:
     assert(!MP_PARSE_NODE_IS_NULL(pn));
     if (MP_PARSE_NODE_IS_LEAF(pn)) {
         if (MP_PARSE_NODE_IS_ID(pn)) {
@@ -462,16 +459,13 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty tuple
                     goto cannot_assign;
-                } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
+                } else {
+                    assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
                     if (assign_kind != ASSIGN_STORE) {
                         goto bad_aug;
                     }
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
                     goto testlist_comp;
-                } else {
-                    // parenthesis around 1 item, is just that item
-                    pn = pns->nodes[0];
-                    goto tail_recursion;
                 }
                 break;
 
@@ -885,7 +879,10 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
         }
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_atom_paren)) {
         pn = ((mp_parse_node_struct_t*)pn)->nodes[0];
-        if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_testlist_comp)) {
+        if (MP_PARSE_NODE_IS_NULL(pn)) {
+            goto cannot_delete;
+        } else {
+            assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_testlist_comp));
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
             // TODO perhaps factorise testlist_comp code with other uses of PN_testlist_comp
 
@@ -915,12 +912,9 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
                 c_del_stmt(comp, pns->nodes[0]);
                 c_del_stmt(comp, pns->nodes[1]);
             }
-        } else {
-            // tuple with 1 element
-            c_del_stmt(comp, pn);
         }
     } else {
-        // TODO is there anything else to implement?
+        // some arbitrary statment that we can't delete (eg del 1)
         goto cannot_delete;
     }
 
@@ -2185,7 +2179,8 @@ STATIC void compile_atom_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // an empty tuple
         c_tuple(comp, MP_PARSE_NODE_NULL, NULL);
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
+    } else {
+        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
         pns = (mp_parse_node_struct_t*)pns->nodes[0];
         assert(!MP_PARSE_NODE_IS_NULL(pns->nodes[1]));
         if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
@@ -2209,9 +2204,6 @@ STATIC void compile_atom_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
             tuple_with_2_items:
             c_tuple(comp, MP_PARSE_NODE_NULL, pns);
         }
-    } else {
-        // parenthesis around a single item, is just that item
-        compile_node(comp, pns->nodes[0]);
     }
 }
 
