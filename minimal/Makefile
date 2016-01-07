@@ -19,6 +19,8 @@ INC += -I../stmhal
 INC += -I$(BUILD)
 
 ifeq ($(CROSS), 1)
+DFU = ../tools/dfu.py
+PYDFU = ../tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 else
@@ -49,19 +51,27 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 
-SRC_S = \
+OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-#	startup_stm32f40xx.s \
-#	gchelper.s \
-
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
-
+ifeq ($(CROSS), 1)
+all: $(BUILD)/firmware.dfu
+else
 all: $(BUILD)/firmware.elf
+endif
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
+	$(ECHO) "Create $@"
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
+
+deploy: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board"
+	$(Q)$(PYTHON) $(PYDFU) -u $<
 
 # Run emulation build on a POSIX system with suitable terminal settings
 run:
