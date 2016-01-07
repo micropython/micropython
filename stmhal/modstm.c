@@ -34,6 +34,9 @@
 #include "extmod/machine_mem.h"
 #include "portmodules.h"
 
+#include "py/objint.h"
+#include "genhdr/modstm_mpz.h"
+
 STATIC const mp_map_elem_t stm_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_stm) },
 

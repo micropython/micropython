@@ -330,6 +330,7 @@ $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 
 GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
+GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
 CMSIS_MCU_HDR = cmsis/devinc/$(CMSIS_MCU_LOWER).h
 
@@ -338,7 +339,7 @@ $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # make both modstm_const.h and modstm_qstr.h
 $(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
 	$(ECHO) "Create stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
