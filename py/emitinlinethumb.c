@@ -298,12 +298,13 @@ bad_arg:
     return 0;
 }
 
-STATIC int get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int fit_mask) {
-    if (!MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, uint32_t fit_mask) {
+    mp_obj_t o;
+    if (!mp_parse_node_get_int_maybe(pn, &o)) {
         emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' expects an integer", op));
         return 0;
     }
-    int i = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
+    uint32_t i = mp_obj_get_int_truncated(o);
     if ((i & (~fit_mask)) != 0) {
         emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "'%s' integer 0x%x does not fit in mask 0x%x", op, i, fit_mask));
         return 0;
