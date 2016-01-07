@@ -259,8 +259,15 @@ char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size,
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
-bool mp_obj_int_is_positive(mp_obj_t self_in) {
-    return mp_obj_get_int(self_in) >= 0;
+int mp_obj_int_sign(mp_obj_t self_in) {
+    mp_int_t val = mp_obj_get_int(self_in);
+    if (val < 0) {
+        return -1;
+    } else if (val > 0) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 // This must handle int and bool types, and must raise a

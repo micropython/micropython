@@ -71,12 +71,21 @@ void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, 
     }
 }
 
-bool mp_obj_int_is_positive(mp_obj_t self_in) {
+int mp_obj_int_sign(mp_obj_t self_in) {
+    mp_longint_impl_t val;
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        return MP_OBJ_SMALL_INT_VALUE(self_in) >= 0;
+        val = MP_OBJ_SMALL_INT_VALUE(self_in);
+    } else {
+        mp_obj_int_t *self = self_in;
+        val = self->val;
     }
-    mp_obj_int_t *self = self_in;
-    return self->val >= 0;
+    if (val < 0) {
+        return -1;
+    } else if (val > 0) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 // This must handle int and bool types, and must raise a
