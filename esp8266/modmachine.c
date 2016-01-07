@@ -75,6 +75,8 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, mp_uint_t n_args, c
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     self->callback = args[2].u_obj;
+    // Be sure to disarm timer before making any changes
+    os_timer_disarm(&self->timer);
     os_timer_setfn(&self->timer, esp_timer_cb, self);
     os_timer_arm(&self->timer, args[0].u_int, args[1].u_int);
 
