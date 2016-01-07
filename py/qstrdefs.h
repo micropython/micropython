@@ -437,6 +437,9 @@ Q(qstr_info)
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
 Q(alloc_emergency_exception_buf)
 #endif
+#if MICROPY_PY_MICROPYTHON_HEAP_ALLOC_SIZE
+Q(heap_alloc_size)
+#endif
 Q(maximum recursion depth exceeded)
 
 Q(<module>)

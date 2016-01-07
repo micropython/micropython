@@ -97,6 +97,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_qstr_info_obj, 0, 1, m
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
 #endif
 
+#if MICROPY_PY_MICROPYTHON_HEAP_ALLOC_SIZE
+STATIC mp_obj_t mp_micropython_heap_alloc_size(mp_obj_t obj) {
+    size_t nbytes = 0;
+    void *ptr = NULL;
+    if (MP_OBJ_IS_OBJ(obj)) {
+        // If we were passed an object, then assume that's what
+        // is being asked for.
+        ptr = (void *)obj;
+    } else {
+        // Otherwise assume its an int and use it as a pointer.
+        ptr = (void *)mp_obj_int_get_truncated(obj);
+    }
+    if (ptr) {
+        nbytes = gc_nbytes(ptr);
+    }
+    return mp_obj_new_int_from_uint(nbytes); 
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_heap_alloc_size_obj, mp_micropython_heap_alloc_size);
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
@@ -110,6 +130,9 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
 #endif
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
     { MP_ROM_QSTR(MP_QSTR_alloc_emergency_exception_buf), MP_ROM_PTR(&mp_alloc_emergency_exception_buf_obj) },
+#endif
+#if MICROPY_PY_MICROPYTHON_HEAP_ALLOC_SIZE
+    { MP_ROM_QSTR(MP_QSTR_heap_alloc_size), MP_ROM_PTR(&mp_micropython_heap_alloc_size_obj) },
 #endif
 };
 
