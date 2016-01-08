@@ -196,6 +196,28 @@ mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_ove
 
 #if MICROPY_PERSISTENT_CODE
 
+#include "py/smallint.h"
+
+// The feature flags byte encodes the compile-time config options that
+// affect the generate bytecode.
+#define MPY_FEATURE_FLAGS ( \
+    ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) << 0) \
+    | ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
+    )
+
+// The bytecode will depend on the number of bits in a small-int, and
+// this function computes that (could make it a fixed constant, but it
+// would need to be defined in mpconfigport.h).
+STATIC int mp_small_int_bits(void) {
+    mp_int_t i = MP_SMALL_INT_MAX;
+    int n = 1;
+    while (i != 0) {
+        i >>= 1;
+        ++n;
+    }
+    return n;
+}
+
 typedef struct _bytecode_prelude_t {
     uint n_state;
     uint n_exc_stack;
@@ -338,13 +360,13 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 }
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
-    byte header[3];
-    read_bytes(reader, header, 3);
+    byte header[4];
+    read_bytes(reader, header, sizeof(header));
     if (strncmp((char*)header, "M\x00", 2) != 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "invalid .mpy file"));
     }
-    if (header[2] != MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
+    if (header[2] != MPY_FEATURE_FLAGS || header[3] != mp_small_int_bits()) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "incompatible .mpy file"));
     }
@@ -591,9 +613,10 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     // header contains:
     //  byte  'M'
     //  byte  version
-    //  byte  feature flags (right now just OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
-    byte header[3] = {'M', 0, MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE};
-    mp_print_bytes(print, header, 3);
+    //  byte  feature flags
+    //  byte  number of bits in a small int
+    byte header[4] = {'M', 0, MPY_FEATURE_FLAGS, mp_small_int_bits()};
+    mp_print_bytes(print, header, sizeof(header));
 
     save_raw_code(print, rc);
 }
