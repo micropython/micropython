@@ -32,7 +32,6 @@ functions = [
     ('rect', rect, ((0, 0), (0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (1, -1), (123., -456.))),
     ('exp', exp, test_values),
     ('log', log, test_values_non_zero),
-    ('log10', log10, test_values_non_zero),
     ('sqrt', sqrt, test_values),
     ('cos', cos, test_values),
     ('sin', sin, test_values),
