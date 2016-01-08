@@ -31,6 +31,6 @@ for function_name, function, test_vals in functions:
     print(function_name)
     for value in test_vals:
         try:
-            print("{:.5g}".format(function(value)))
+            print("{:.4g}".format(function(value)))
         except ValueError as e:
             print(str(e))
