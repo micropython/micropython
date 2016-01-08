@@ -1351,7 +1351,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 #endif // MICROPY_ENABLE_COMPILER
 
 void *m_malloc_fail(size_t num_bytes) {
-    DEBUG_printf("memory allocation failed, allocating " UINT_FMT " bytes\n", num_bytes);
+    DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
     if (0) {
         // dummy
     #if MICROPY_ENABLE_GC
@@ -1361,7 +1361,7 @@ void *m_malloc_fail(size_t num_bytes) {
     #endif
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError,
-                                                "memory allocation failed, allocating " UINT_FMT " bytes", num_bytes));
+            "memory allocation failed, allocating %u bytes", (uint)num_bytes));
     }
 }
 
