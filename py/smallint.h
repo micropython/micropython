@@ -31,6 +31,8 @@
 
 // Functions for small integer arithmetic
 
+#ifndef MP_SMALL_INT_MIN
+
 // In SMALL_INT, next-to-highest bits is used as sign, so both must match for value in range
 #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
 
@@ -52,6 +54,8 @@
 #define MP_SMALL_INT_FITS(n) ((((n) ^ ((n) << 1)) & 0xffffffff80000000) == 0)
 // Mask to truncate mp_int_t to positive value
 #define MP_SMALL_INT_POSITIVE_MASK ~(0xffffffff80000000 | (0xffffffff80000000 >> 1))
+
+#endif
 
 #endif
 
