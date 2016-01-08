@@ -65,9 +65,12 @@ STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
     {{&pyb_pin_type}, 13, 13, PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13},
     {{&pyb_pin_type}, 14, 14, PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14},
     {{&pyb_pin_type}, 15, 15, PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15},
+    // GPIO16 is special, belongs to different register set, and
+    // otherwise handled specially.
+    {{&pyb_pin_type}, 16, 16, -1, -1},
 };
 
-STATIC uint8_t pin_mode[16];
+STATIC uint8_t pin_mode[16 + 1];
 
 uint mp_obj_get_pin(mp_obj_t pin_in) {
     if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
@@ -78,10 +81,22 @@ uint mp_obj_get_pin(mp_obj_t pin_in) {
 }
 
 int pin_get(uint pin) {
+    if (pin == 16) {
+        return READ_PERI_REG(RTC_GPIO_IN_DATA) & 1;
+    }
     return GPIO_INPUT_GET(pin);
 }
 
 void pin_set(uint pin, int value) {
+    if (pin == 16) {
+        int out_en = (pin_mode[pin] == GPIO_MODE_OUTPUT);
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | out_en);
+        WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1) | value);
+        return;
+    }
+
     uint32_t enable = 0;
     uint32_t disable = 0;
     switch (pin_mode[pin]) {
@@ -155,23 +170,27 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
     pin_mode[self->phys_port] = mode;
 
     // configure the GPIO as requested
-    PIN_FUNC_SELECT(self->periph, self->func);
-    #if 0
-    // Removed in SDK 1.1.0
-    if ((pull & GPIO_PULL_DOWN) == 0) {
-        PIN_PULLDWN_DIS(self->periph);
-    }
-    #endif
-    if ((pull & GPIO_PULL_UP) == 0) {
-        PIN_PULLUP_DIS(self->periph);
-    }
-    #if 0
-    if ((pull & GPIO_PULL_DOWN) != 0) {
-        PIN_PULLDWN_EN(self->periph);
-    }
-    #endif
-    if ((pull & GPIO_PULL_UP) != 0) {
-        PIN_PULLUP_EN(self->periph);
+    if (self->phys_port == 16) {
+        // TODO: Set pull up/pull down
+    } else {
+        PIN_FUNC_SELECT(self->periph, self->func);
+        #if 0
+        // Removed in SDK 1.1.0
+        if ((pull & GPIO_PULL_DOWN) == 0) {
+            PIN_PULLDWN_DIS(self->periph);
+        }
+        #endif
+        if ((pull & GPIO_PULL_UP) == 0) {
+            PIN_PULLUP_DIS(self->periph);
+        }
+        #if 0
+        if ((pull & GPIO_PULL_DOWN) != 0) {
+            PIN_PULLDWN_EN(self->periph);
+        }
+        #endif
+        if ((pull & GPIO_PULL_UP) != 0) {
+            PIN_PULLUP_EN(self->periph);
+        }
     }
 
     pin_set(self->phys_port, value);
