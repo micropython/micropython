@@ -480,8 +480,6 @@ void EXTI15_10_IRQHandler(void) {
 void PVD_IRQHandler(void) {
     IRQ_ENTER(PVD_IRQn);
     #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
-    extern void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
-    USBD_CDC_HAL_TIM_PeriodElapsedCallback();
     #endif
     Handle_EXTI_Irq(EXTI_PVD_OUTPUT);
     IRQ_EXIT(PVD_IRQn);
