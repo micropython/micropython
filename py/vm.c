@@ -723,7 +723,7 @@ unwind_jump:;
 
                 ENTRY(MP_BC_GET_ITER):
                     MARK_EXC_IP_SELECTIVE();
-                    SET_TOP(mp_getiter(TOP()));
+                    SET_TOP(mp_getiter(TOP(), NULL));
                     DISPATCH();
 
                 ENTRY(MP_BC_FOR_ITER): {

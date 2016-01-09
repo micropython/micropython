@@ -38,7 +38,7 @@
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
-STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
+STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
 
 /******************************************************************************/
@@ -231,7 +231,8 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         vstr_init(&vstr, len);
     }
 
-    mp_obj_t iterable = mp_getiter(args[0]);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         mp_int_t val = mp_obj_get_int(item);
@@ -1942,7 +1943,7 @@ STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 const mp_obj_type_t mp_type_str = {
     { &mp_type_type },
@@ -2142,8 +2143,9 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
-    mp_obj_str8_it_t *o = m_new_obj(mp_obj_str8_it_t);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_str8_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_str8_it_t *o = (mp_obj_str8_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = str_it_iternext;
     o->str = str;
@@ -2164,8 +2166,9 @@ STATIC mp_obj_t bytes_it_iternext(mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str) {
-    mp_obj_str8_it_t *o = m_new_obj(mp_obj_str8_it_t);
+mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_str8_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_str8_it_t *o = (mp_obj_str8_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = bytes_it_iternext;
     o->str = str;

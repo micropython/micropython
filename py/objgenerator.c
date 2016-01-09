@@ -236,7 +236,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
 };

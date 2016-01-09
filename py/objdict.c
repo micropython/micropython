@@ -210,8 +210,9 @@ STATIC mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t dict_getiter(mp_obj_t self_in) {
-    mp_obj_dict_it_t *o = m_new_obj(mp_obj_dict_it_t);
+STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_dict_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_dict_it_t *o = (mp_obj_dict_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = dict_it_iternext;
     o->dict = self_in;
@@ -249,7 +250,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t iter = mp_getiter(args[1]);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iter = mp_getiter(args[1], &iter_buf);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = MP_OBJ_NULL;
 
@@ -375,10 +377,12 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
             }
         } else {
             // update from a generic iterable of pairs
-            mp_obj_t iter = mp_getiter(args[1]);
+            mp_obj_iter_buf_t iter_buf;
+            mp_obj_t iter = mp_getiter(args[1], &iter_buf);
             mp_obj_t next = MP_OBJ_NULL;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-                mp_obj_t inneriter = mp_getiter(next);
+                mp_obj_iter_buf_t inner_iter_buf;
+                mp_obj_t inneriter = mp_getiter(next, &inner_iter_buf);
                 mp_obj_t key = mp_iternext(inneriter);
                 mp_obj_t value = mp_iternext(inneriter);
                 mp_obj_t stop = mp_iternext(inneriter);
@@ -457,14 +461,15 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t dict_view_it_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = dict_view_it_iternext,
 };
 
-STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
+STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_check_self(MP_OBJ_IS_TYPE(view_in, &dict_view_type));
     mp_obj_dict_view_t *view = MP_OBJ_TO_PTR(view_in);
-    mp_obj_dict_view_it_t *o = m_new_obj(mp_obj_dict_view_it_t);
+    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t*)iter_buf;
     o->base.type = &dict_view_it_type;
     o->kind = view->kind;
     o->dict = view->dict;
@@ -479,7 +484,8 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     bool first = true;
     mp_print_str(print, mp_dict_view_names[self->kind]);
     mp_print_str(print, "([");
-    mp_obj_t self_iter = dict_view_getiter(self_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t self_iter = dict_view_getiter(self_in, &iter_buf);
     mp_obj_t next = MP_OBJ_NULL;
     while ((next = dict_view_it_iternext(self_iter)) != MP_OBJ_STOP_ITERATION) {
         if (!first) {

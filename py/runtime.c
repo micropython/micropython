@@ -520,7 +520,8 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         }
         if (type->getiter != NULL) {
             /* second attempt, walk the iterator */
-            mp_obj_t iter = mp_getiter(rhs);
+            mp_obj_iter_buf_t iter_buf;
+            mp_obj_t iter = mp_getiter(rhs, &iter_buf);
             mp_obj_t next;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
                 if (mp_obj_equal(next, lhs)) {
@@ -698,7 +699,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         args2_len += n_args;
 
         // extract the variable position args from the iterator
-        mp_obj_t iterable = mp_getiter(pos_seq);
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(pos_seq, &iter_buf);
         mp_obj_t item;
         while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (args2_len >= args2_alloc) {
@@ -743,7 +745,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // get the keys iterable
         mp_obj_t dest[3];
         mp_load_method(kw_dict, MP_QSTR_keys, dest);
-        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest));
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), &iter_buf);
 
         mp_obj_t key;
         while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -809,7 +812,8 @@ void mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
             items[i] = seq_items[num - 1 - i];
         }
     } else {
-        mp_obj_t iterable = mp_getiter(seq_in);
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(seq_in, &iter_buf);
 
         for (seq_len = 0; seq_len < num; seq_len++) {
             mp_obj_t el = mp_iternext(iterable);
@@ -873,7 +877,8 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         // items destination array, then the rest to a dynamically created list.  Once the
         // iterable is exhausted, we take from this list for the right part of the items.
         // TODO Improve to waste less memory in the dynamically created list.
-        mp_obj_t iterable = mp_getiter(seq_in);
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(seq_in, &iter_buf);
         mp_obj_t item;
         for (seq_len = 0; seq_len < num_left; seq_len++) {
             item = mp_iternext(iterable);
@@ -1096,13 +1101,18 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     }
 }
 
-mp_obj_t mp_getiter(mp_obj_t o_in) {
+mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(o_in);
+
+    // if caller did not provide a buffer then allocate one on the heap
+    if (iter_buf == NULL) {
+        iter_buf = m_new_obj(mp_obj_iter_buf_t);
+    }
 
     // check for native getiter (corresponds to __iter__)
     mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
-        mp_obj_t iter = type->getiter(o_in);
+        mp_obj_t iter = type->getiter(o_in, iter_buf);
         if (iter != MP_OBJ_NULL) {
             return iter;
         }
@@ -1113,7 +1123,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in) {
     mp_load_method_maybe(o_in, MP_QSTR___getitem__, dest);
     if (dest[0] != MP_OBJ_NULL) {
         // __getitem__ exists, create and return an iterator
-        return mp_obj_new_getitem_iter(dest);
+        return mp_obj_new_getitem_iter(dest, iter_buf);
     }
 
     // object not iterable

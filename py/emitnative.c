@@ -1806,6 +1806,7 @@ STATIC void emit_native_get_iter(emit_t *emit) {
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
+    assert(0); // TODO allocate memory for iter_buf
     emit_call(emit, MP_F_GETITER);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }

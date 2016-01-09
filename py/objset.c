@@ -129,7 +129,8 @@ STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         default: { // can only be 0 or 1 arg
             // 1 argument, an iterable from which we make a new set
             mp_obj_t set = mp_obj_new_set(0, NULL);
-            mp_obj_t iterable = mp_getiter(args[0]);
+            mp_obj_iter_buf_t iter_buf;
+            mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
             mp_obj_t item;
             while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 mp_obj_set_store(set, item);
@@ -156,8 +157,9 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-STATIC mp_obj_t set_getiter(mp_obj_t set_in) {
-    mp_obj_set_it_t *o = m_new_obj(mp_obj_set_it_t);
+STATIC mp_obj_t set_getiter(mp_obj_t set_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_set_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_set_it_t *o = (mp_obj_set_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = set_it_iternext;
     o->set = (mp_obj_set_t *)MP_OBJ_TO_PTR(set_in);
@@ -233,7 +235,8 @@ STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
         if (self == other) {
             set_clear(self);
         } else {
-            mp_obj_t iter = mp_getiter(other);
+            mp_obj_iter_buf_t iter_buf;
+            mp_obj_t iter = mp_getiter(other, &iter_buf);
             mp_obj_t next;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
                 set_discard(self, next);
@@ -270,7 +273,8 @@ STATIC mp_obj_t set_intersect_int(mp_obj_t self_in, mp_obj_t other, bool update)
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_set_t *out = MP_OBJ_TO_PTR(mp_obj_new_set(0, NULL));
 
-    mp_obj_t iter = mp_getiter(other);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iter = mp_getiter(other, &iter_buf);
     mp_obj_t next;
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
@@ -302,7 +306,8 @@ STATIC mp_obj_t set_isdisjoint(mp_obj_t self_in, mp_obj_t other) {
     check_set_or_frozenset(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_obj_t iter = mp_getiter(other);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iter = mp_getiter(other, &iter_buf);
     mp_obj_t next;
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         if (mp_set_lookup(&self->set, next, MP_MAP_LOOKUP)) {
@@ -335,7 +340,8 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (proper && self->set.used == other->set.used) {
         out = false;
     } else {
-        mp_obj_t iter = set_getiter(MP_OBJ_FROM_PTR(self));
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iter = set_getiter(MP_OBJ_FROM_PTR(self), &iter_buf);
         mp_obj_t next;
         while ((next = set_it_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
             if (!mp_set_lookup(&other->set, next, MP_MAP_LOOKUP)) {
@@ -408,7 +414,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
 STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other_in) {
     check_set(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t iter = mp_getiter(other_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iter = mp_getiter(other_in, &iter_buf);
     mp_obj_t next;
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND_OR_REMOVE_IF_FOUND);
@@ -427,7 +434,8 @@ STATIC mp_obj_t set_symmetric_difference(mp_obj_t self_in, mp_obj_t other_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_difference);
 
 STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
-    mp_obj_t iter = mp_getiter(other_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iter = mp_getiter(other_in, &iter_buf);
     mp_obj_t next;
     while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_set_lookup(&self->set, next, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);

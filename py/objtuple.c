@@ -32,8 +32,6 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 
-STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, size_t cur);
-
 /******************************************************************************/
 /* tuple                                                                      */
 
@@ -84,7 +82,8 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
             size_t len = 0;
             mp_obj_t *items = m_new(mp_obj_t, alloc);
 
-            mp_obj_t iterable = mp_getiter(args[0]);
+            mp_obj_iter_buf_t iter_buf;
+            mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
             mp_obj_t item;
             while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 if (len >= alloc) {
@@ -195,10 +194,6 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in) {
-    return mp_obj_new_tuple_iterator(MP_OBJ_TO_PTR(o_in), 0);
-}
-
 STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
@@ -284,11 +279,12 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, size_t cur) {
-    mp_obj_tuple_it_t *o = m_new_obj(mp_obj_tuple_it_t);
+mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_tuple_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_tuple_it_t *o = (mp_obj_tuple_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = tuple_it_iternext;
-    o->tuple = tuple;
-    o->cur = cur;
+    o->tuple = MP_OBJ_TO_PTR(o_in);
+    o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
 }

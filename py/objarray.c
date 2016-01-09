@@ -59,7 +59,7 @@
 #define TYPECODE_MASK (~(size_t)0)
 #endif
 
-STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
+STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf);
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in);
 STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
@@ -141,7 +141,8 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 
     mp_obj_array_t *array = array_new(typecode, len);
 
-    mp_obj_t iterable = mp_getiter(initializer);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(initializer, &iter_buf);
     mp_obj_t item;
     size_t i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -608,15 +609,18 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t array_it_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = array_it_iternext,
 };
 
-STATIC mp_obj_t array_iterator_new(mp_obj_t array_in) {
+STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_array_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_array_t *array = MP_OBJ_TO_PTR(array_in);
-    mp_obj_array_it_t *o = m_new0(mp_obj_array_it_t, 1);
+    mp_obj_array_it_t *o = (mp_obj_array_it_t*)iter_buf;
     o->base.type = &array_it_type;
     o->array = array;
+    o->offset = 0;
+    o->cur = 0;
     #if MICROPY_PY_BUILTINS_MEMORYVIEW
     if (array->base.type == &mp_type_memoryview) {
         o->offset = array->free;

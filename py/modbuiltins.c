@@ -117,7 +117,8 @@ STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 
 STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
-    mp_obj_t iterable = mp_getiter(o_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(o_in, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (!mp_obj_is_true(item)) {
@@ -129,7 +130,8 @@ STATIC mp_obj_t mp_builtin_all(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_all_obj, mp_builtin_all);
 
 STATIC mp_obj_t mp_builtin_any(mp_obj_t o_in) {
-    mp_obj_t iterable = mp_getiter(o_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(o_in, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (mp_obj_is_true(item)) {
@@ -258,7 +260,7 @@ STATIC mp_obj_t mp_builtin_hex(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
 
 STATIC mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
-    return mp_getiter(o_in);
+    return mp_getiter(o_in, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_iter_obj, mp_builtin_iter);
 
@@ -270,7 +272,8 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
     mp_obj_t key_fn = key_elem == NULL ? MP_OBJ_NULL : key_elem->value;
     if (n_args == 1) {
         // given an iterable
-        mp_obj_t iterable = mp_getiter(args[0]);
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
         mp_obj_t best_key = MP_OBJ_NULL;
         mp_obj_t best_obj = MP_OBJ_NULL;
         mp_obj_t item;
@@ -495,7 +498,8 @@ STATIC mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
         case 1: value = MP_OBJ_NEW_SMALL_INT(0); break;
         default: value = args[1]; break;
     }
-    mp_obj_t iterable = mp_getiter(args[0]);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(args[0], &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         value = mp_binary_op(MP_BINARY_OP_ADD, value, item);

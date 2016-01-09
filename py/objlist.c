@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur);
+STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
 STATIC mp_obj_list_t *list_new(size_t n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
 STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
@@ -60,7 +60,8 @@ STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
 }
 
 STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
-    mp_obj_t iter = mp_getiter(iterable);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iter = mp_getiter(iterable, &iter_buf);
     mp_obj_t item;
     while ((item = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_obj_list_append(list, item);
@@ -225,8 +226,8 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC mp_obj_t list_getiter(mp_obj_t o_in) {
-    return mp_obj_new_list_iterator(o_in, 0);
+STATIC mp_obj_t list_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+    return mp_obj_new_list_iterator(o_in, 0, iter_buf);
 }
 
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
@@ -516,8 +517,9 @@ STATIC mp_obj_t list_it_iternext(mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur) {
-    mp_obj_list_it_t *o = m_new_obj(mp_obj_list_it_t);
+mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_list_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_list_it_t *o = (mp_obj_list_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = list_it_iternext;
     o->list = list;
