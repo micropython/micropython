@@ -1799,14 +1799,19 @@ STATIC void emit_native_end_finally(emit_t *emit) {
     emit_post(emit);
 }
 
-STATIC void emit_native_get_iter(emit_t *emit) {
+STATIC void emit_native_get_iter(emit_t *emit, bool use_stack) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
 
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
-    assert(0); // TODO allocate memory for iter_buf
+    if (use_stack) {
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t));
+    } else {
+        // mp_getiter will allocate the iter_buf on the heap
+        ASM_MOV_IMM_TO_REG(emit->as, 0, REG_ARG_2);
+    }
     emit_call(emit, MP_F_GETITER);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
@@ -1822,10 +1827,13 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_for_iter_end(emit_t *emit) {
+STATIC void emit_native_for_iter_end(emit_t *emit, bool use_stack) {
     // adjust stack counter (we get here from for_iter ending, which popped the value for us)
     emit_native_pre(emit);
     adjust_stack(emit, -1);
+    if (use_stack) {
+        adjust_stack(emit, -(sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t)));
+    }
     emit_post(emit);
 }
 

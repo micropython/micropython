@@ -1475,7 +1475,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint pop_label = comp_next_label(comp);
 
     compile_node(comp, pns->nodes[1]); // iterator
-    EMIT(get_iter);
+    EMIT_ARG(get_iter, true);
     EMIT_ARG(label_assign, continue_label);
     EMIT_ARG(for_iter, pop_label);
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
@@ -1484,7 +1484,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(jump, continue_label);
     }
     EMIT_ARG(label_assign, pop_label);
-    EMIT(for_iter_end);
+    EMIT_ARG(for_iter_end, true);
 
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
@@ -1680,7 +1680,7 @@ STATIC void compile_with_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_yield_from(compiler_t *comp) {
-    EMIT(get_iter);
+    EMIT_ARG(get_iter, false);
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
     EMIT(yield_from);
 }
@@ -2372,7 +2372,7 @@ STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns,
     close_over_variables_etc(comp, this_scope, 0, 0);
 
     compile_node(comp, pns_comp_for->nodes[1]); // source of the iterator
-    EMIT(get_iter);
+    EMIT_ARG(get_iter, false);
     EMIT_ARG(call_function, 1, 0, 0);
 }
 
@@ -2900,13 +2900,13 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
         // for loop
         mp_parse_node_struct_t *pns_comp_for2 = (mp_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);
-        EMIT(get_iter);
+        EMIT_ARG(get_iter, false);
         compile_scope_comp_iter(comp, pns_comp_for2, pn_inner_expr, for_depth + 1);
     }
 
     EMIT_ARG(jump, l_top);
     EMIT_ARG(label_assign, l_end);
-    EMIT(for_iter_end);
+    EMIT_ARG(for_iter_end, false);
 }
 
 STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {

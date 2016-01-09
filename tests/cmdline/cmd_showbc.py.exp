@@ -31,7 +31,7 @@ File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ byt
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+rg names:
-(N_STATE 22)
+(N_STATE 23)
 (N_EXC_STACK 2)
 (INIT_CELL 14)
 (INIT_CELL 15)
@@ -245,12 +245,16 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ LOAD_FAST 0
 \\d\+ STORE_FAST 0
 \\d\+ LOAD_DEREF 14
-\\d\+ GET_ITER
+\\d\+ GET_ITER_STACK
 \\d\+ FOR_ITER \\d\+
 \\d\+ STORE_FAST 0
 \\d\+ LOAD_FAST 1
 \\d\+ POP_TOP
 \\d\+ JUMP \\d\+
+\\d\+ POP_TOP
+\\d\+ POP_TOP
+\\d\+ POP_TOP
+\\d\+ POP_TOP
 \\d\+ SETUP_FINALLY \\d\+
 \\d\+ SETUP_EXCEPT \\d\+
 \\d\+ JUMP \\d\+

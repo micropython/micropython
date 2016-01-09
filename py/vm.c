@@ -681,7 +681,9 @@ unwind_jump:;
                     }
                     ip = (const byte*)MP_OBJ_TO_PTR(POP()); // pop destination ip for jump
                     if (unum != 0) {
+                        // pop iter and iter_buf
                         sp--;
+                        sp -= sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t);
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
                 }
@@ -725,6 +727,15 @@ unwind_jump:;
                     MARK_EXC_IP_SELECTIVE();
                     SET_TOP(mp_getiter(TOP(), NULL));
                     DISPATCH();
+
+                ENTRY(MP_BC_GET_ITER_STACK): {
+                    MARK_EXC_IP_SELECTIVE();
+                    mp_obj_t obj = TOP();
+                    mp_obj_iter_buf_t *iter_buf = (mp_obj_iter_buf_t*)sp;
+                    sp += sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t);
+                    SET_TOP(mp_getiter(obj, iter_buf));
+                    DISPATCH();
+                }
 
                 ENTRY(MP_BC_FOR_ITER): {
                     MARK_EXC_IP_SELECTIVE();
