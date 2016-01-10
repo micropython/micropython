@@ -155,8 +155,14 @@ STATIC mp_obj_t mod_time_sleep_us(mp_obj_t arg) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_us_obj, mod_time_sleep_us);
 
 STATIC mp_obj_t mod_time_strftime(mp_uint_t n_args, const mp_obj_t *args) {
-    assert(n_args == 1);
-    time_t t = time(NULL);
+    time_t t;
+    if (n_args == 1) {
+        t = time(NULL);
+    } else {
+        // CPython requires passing struct tm, but we allow to pass time_t
+        // (and don't support struct tm so far).
+        t = mp_obj_get_int(args[1]);
+    }
     struct tm *tm = localtime(&t);
     char buf[32];
     size_t sz = strftime(buf, sizeof(buf), mp_obj_str_get_str(args[0]), tm);
