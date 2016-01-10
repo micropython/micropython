@@ -415,11 +415,6 @@ typedef mp_obj_t (*mp_binary_op_fun_t)(mp_uint_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 
-typedef struct _mp_method_t {
-    qstr name;
-    mp_const_obj_t fun;
-} mp_method_t;
-
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
     // if we'd bother to support various versions of structure
