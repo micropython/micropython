@@ -54,7 +54,7 @@ Methods
 
        To support previous behaviour of this function, ``timer`` can also be an
        integer which specifies the frequency (in Hz) to sample at.  In this case
-       Timer(6) will be automatically configured to run at the given frequency.
+       Timer(6) will be automatically configured to run at the given frequency.The
 
        Example using a Timer object (preferred way)::
 
@@ -74,3 +74,9 @@ Methods
 
        This function does not allocate any memory.
 
+The ADCAll Object
+-----------------
+
+Instantiating this changes all ADC pins to analog inputs. It is possible to read the
+MCU temperature, VREF and VBAT without using ADCAll. The raw data can be accessed on
+ADC channels 16, 17 and 18 respectively. However appropriate scaling will need to be applied.
