@@ -74,3 +74,9 @@ Methods
 
        This function does not allocate any memory.
 
+The ADCAll Object
+-----------------
+
+Instantiating this changes all ADC pins to analog inputs. It is possible to read the
+MCU temperature, VREF and VBAT without using ADCAll. The raw data can be accessed on
+ADC channels 16, 17 and 18 respectively. However appropriate scaling will need to be applied.

@@ -78,11 +78,11 @@ three arguments, which must (if used) be named ``r0``, ``r1`` and ``r2``. When
 the code executes the registers will be initialised to those values.
 
 The data types which can be passed in this way are integers and memory
-addresses. Further, integers are restricted in that the top two bits
-must be identical, limiting the range to -2**30 to 2**30 -1. Return
-values are similarly limited. These limitations can be overcome by means
-of the ``array`` module to allow any number of values of any type to
-be accessed.
+addresses. With current firmware all possible 32 bit values may be passed.
+Returned integers are restricted in that the top two bits must be identical,
+limiting the range to -2**30 to 2**30 -1. The limitations on number of arguments
+and return values can be overcome by means of the ``array`` module which enables
+any number of values of any type to be accessed.
 
 Multiple arguments
 ~~~~~~~~~~~~~~~~~~
