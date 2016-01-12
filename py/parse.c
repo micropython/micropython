@@ -519,7 +519,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
                 MP_BINARY_OP_RSHIFT,
             };
             mp_binary_op_t op = token_to_op[tok - MP_TOKEN_OP_PLUS];
-            if (op == 255) {
+            if (op == (mp_binary_op_t)255) {
                 return false;
             }
             int rhs_sign = mp_obj_int_sign(arg1);
@@ -543,7 +543,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
             return false;
         }
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, 1));
-        mp_binary_op_t op;
+        mp_unary_op_t op;
         if (tok == MP_TOKEN_OP_PLUS) {
             op = MP_UNARY_OP_POSITIVE;
         } else if (tok == MP_TOKEN_OP_MINUS) {
