@@ -50,6 +50,7 @@
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+#include "mpexception.h"
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
@@ -70,6 +71,13 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
+STATIC void print_exception(void *data, mp_obj_t exc) {
+    (void) data;
+    mp_obj_print_exception(&mp_stderr_print, exc);
+}
+
+mp_handle_exception_t mp_uncaught_exception = {NULL, print_exception};
+
 #define FORCED_EXIT (0x100)
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
@@ -87,7 +95,9 @@ STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
     }
 
     // Report all other exceptions
-    mp_obj_print_exception(&mp_stderr_print, MP_OBJ_FROM_PTR(exc));
+    if (mp_uncaught_exception.handle) {
+        mp_uncaught_exception.handle(mp_uncaught_exception.data, MP_OBJ_FROM_PTR(exc));
+    }
     return 1;
 }
 

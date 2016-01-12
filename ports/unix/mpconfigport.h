@@ -155,6 +155,7 @@
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 
 extern const struct _mp_print_t mp_stderr_print;
+extern struct _mp_handle_exception_t mp_uncaught_exception;
 
 // Define to 1 to use undertested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
