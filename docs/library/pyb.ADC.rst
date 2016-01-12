@@ -54,7 +54,7 @@ Methods
 
        To support previous behaviour of this function, ``timer`` can also be an
        integer which specifies the frequency (in Hz) to sample at.  In this case
-       Timer(6) will be automatically configured to run at the given frequency.The
+       Timer(6) will be automatically configured to run at the given frequency.
 
        Example using a Timer object (preferred way)::
 
