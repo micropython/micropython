@@ -93,3 +93,8 @@ try:
     del d.prop
 except AttributeError:
     print('AttributeError')
+
+# properties take keyword arguments
+class E:
+    p = property(fget=lambda self: 42, doc="This is truth.")
+print(E().p)
