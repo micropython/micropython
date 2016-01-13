@@ -543,7 +543,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         byte obj_type;
         if (MP_OBJ_IS_TYPE(o, &mp_type_int)) {
             obj_type = 'i';
-        } else if (MP_OBJ_IS_TYPE(o, &mp_type_float)) {
+        } else if (mp_obj_is_float(o)) {
             obj_type = 'f';
         } else {
             assert(MP_OBJ_IS_TYPE(o, &mp_type_complex));
