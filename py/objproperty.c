@@ -39,9 +39,9 @@ typedef struct _mp_obj_property_t {
 
 STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_fget, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_fset, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
-        { MP_QSTR_fdel, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_doc, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
     };
     mp_arg_val_t vals[MP_ARRAY_SIZE(allowed_args)];

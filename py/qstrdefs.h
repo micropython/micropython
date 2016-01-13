@@ -570,9 +570,6 @@ Q(property)
 Q(getter)
 Q(setter)
 Q(deleter)
-Q(fget)
-Q(fset)
-Q(fdel)
 Q(doc)
 #endif
 
