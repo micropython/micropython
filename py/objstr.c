@@ -557,11 +557,14 @@ STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     };
 
     // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    struct {
+        mp_arg_val_t keepends;
+    } args;
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     mp_obj_t new_args[2] = {pos_args[0], MP_OBJ_NEW_QSTR(MP_QSTR__backslash_n)};
-    return str_split_internal(2, new_args, SPLITLINES | (args[0].u_bool ? KEEP : 0));
+    return str_split_internal(2, new_args, SPLITLINES | (args.keepends.u_bool ? KEEP : 0));
 }
 #endif
 

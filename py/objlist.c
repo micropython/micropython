@@ -318,16 +318,19 @@ mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     };
 
     // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    struct {
+        mp_arg_val_t key, reverse;
+    } args;
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     assert(MP_OBJ_IS_TYPE(pos_args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     if (self->len > 1) {
         mp_quicksort(self->items, self->items + self->len - 1,
-                     args[0].u_obj == mp_const_none ? MP_OBJ_NULL : args[0].u_obj,
-                     args[1].u_bool ? mp_const_false : mp_const_true);
+                     args.key.u_obj == mp_const_none ? MP_OBJ_NULL : args.key.u_obj,
+                     args.reverse.u_bool ? mp_const_false : mp_const_true);
     }
 
     return mp_const_none;
