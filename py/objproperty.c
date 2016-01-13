@@ -38,6 +38,7 @@ typedef struct _mp_obj_property_t {
 } mp_obj_property_t;
 
 STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    enum { ARG_fget, ARG_fset, ARG_fdel, ARG_doc };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
@@ -51,12 +52,12 @@ STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size
 
     mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
     o->base.type = type;
-    if (vals[3].u_obj != mp_const_none) {
+    if (vals[ARG_doc].u_obj != mp_const_none) {
         // doc ignored
     }
-    o->proxy[0] = vals[0].u_obj;
-    o->proxy[1] = vals[1].u_obj;
-    o->proxy[2] = vals[2].u_obj;
+    o->proxy[ARG_fget] = vals[0].u_obj;
+    o->proxy[ARG_fset] = vals[1].u_obj;
+    o->proxy[ARG_fdel] = vals[2].u_obj;
     return MP_OBJ_FROM_PTR(o);
 }
 
