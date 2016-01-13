@@ -570,6 +570,7 @@ Q(property)
 Q(getter)
 Q(setter)
 Q(deleter)
+Q(doc)
 #endif
 
 #if MICROPY_PY_UZLIB
