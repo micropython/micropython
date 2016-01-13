@@ -96,5 +96,7 @@ except AttributeError:
 
 # properties take keyword arguments
 class E:
-    p = property(fget=lambda self: 42, doc="This is truth.")
+    p = property(lambda self: 42, doc="This is truth.")
+    # not tested for because the other keyword arguments are not accepted
+    # q = property(fget=lambda self: 21, doc="Half the truth.")
 print(E().p)
