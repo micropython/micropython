@@ -182,6 +182,8 @@ extern const struct _mp_obj_module_t mp_module_jni;
 
 // type definitions for the specific machine
 
+// assume that if we already defined the obj repr then we also defined types
+#ifndef MICROPY_OBJ_REPR
 #ifdef __LP64__
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
@@ -190,6 +192,7 @@ typedef unsigned long mp_uint_t; // must be pointer size
 // regardless of actual size.
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
+#endif
 #endif
 
 #define BYTES_PER_WORD sizeof(mp_int_t)
