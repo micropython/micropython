@@ -84,13 +84,14 @@ STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pa
     asm_thumb_entry(emit->as, 0);
 }
 
-STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit) {
+STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
     asm_thumb_exit(emit->as);
     asm_thumb_end_pass(emit->as);
 
     if (emit->pass == MP_PASS_EMIT) {
         void *f = asm_thumb_get_code(emit->as);
-        mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f, asm_thumb_get_code_size(emit->as), NULL, emit->scope->num_pos_args, 0, 0);
+        mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f,
+            asm_thumb_get_code_size(emit->as), NULL, emit->scope->num_pos_args, 0, type_sig);
     }
 }
 

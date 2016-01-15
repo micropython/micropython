@@ -452,6 +452,7 @@ typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
     mp_uint_t n_args;
     void *fun_data; // GC must be able to trace this pointer
+    mp_uint_t type_sig;
 } mp_obj_fun_asm_t;
 
 typedef mp_uint_t (*inline_asm_fun_0_t)(void);
@@ -509,11 +510,6 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     }
 }
 
-// convert a return value from inline asm to a sensible Micro Python object
-STATIC mp_obj_t convert_val_from_inline_asm(mp_uint_t val) {
-    return MP_OBJ_NEW_SMALL_INT(val);
-}
-
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
@@ -535,7 +531,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         ret = 0;
     }
 
-    return convert_val_from_inline_asm(ret);
+    return mp_convert_native_to_obj(ret, self->type_sig);
 }
 
 STATIC const mp_obj_type_t mp_type_fun_asm = {
@@ -545,11 +541,12 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     .unary_op = mp_generic_unary_op,
 };
 
-mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data) {
+mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig) {
     mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
     o->base.type = &mp_type_fun_asm;
     o->n_args = n_args;
     o->fun_data = fun_data;
+    o->type_sig = type_sig;
     return o;
 }
 

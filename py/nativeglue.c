@@ -34,13 +34,13 @@
 #include "py/emitglue.h"
 #include "py/bc.h"
 
-#if MICROPY_EMIT_NATIVE
-
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif
+
+#if MICROPY_EMIT_NATIVE
 
 // convert a Micro Python object to a valid native value based on type
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
@@ -61,6 +61,10 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
     }
 }
 
+#endif
+
+#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_THUMB
+
 // convert a native value to a Micro Python object based on type
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
     DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
@@ -72,6 +76,10 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
         default: assert(0); return mp_const_none;
     }
 }
+
+#endif
+
+#if MICROPY_EMIT_NATIVE
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)

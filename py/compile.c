@@ -2936,7 +2936,24 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         }
     }
 
-    assert(MP_PARSE_NODE_IS_NULL(pns->nodes[2])); // type
+    // pns->nodes[2] is function return annotation
+    mp_uint_t type_sig = MP_NATIVE_TYPE_INT;
+    mp_parse_node_t pn_annotation = pns->nodes[2];
+    if (!MP_PARSE_NODE_IS_NULL(pn_annotation)) {
+        // nodes[2] can be null or a test-expr
+        if (MP_PARSE_NODE_IS_ID(pn_annotation)) {
+            qstr ret_type = MP_PARSE_NODE_LEAF_ARG(pn_annotation);
+            switch (ret_type) {
+                case MP_QSTR_object: type_sig = MP_NATIVE_TYPE_OBJ; break;
+                case MP_QSTR_bool: type_sig = MP_NATIVE_TYPE_BOOL; break;
+                case MP_QSTR_int: type_sig = MP_NATIVE_TYPE_INT; break;
+                case MP_QSTR_uint: type_sig = MP_NATIVE_TYPE_UINT; break;
+                default: compile_syntax_error(comp, pn_annotation, "unknown type"); return;
+            }
+        } else {
+            compile_syntax_error(comp, pn_annotation, "return annotation must be an identifier");
+        }
+    }
 
     mp_parse_node_t pn_body = pns->nodes[3]; // body
     mp_parse_node_t *nodes;
@@ -3028,7 +3045,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        EMIT_INLINE_ASM(end_pass);
+        EMIT_INLINE_ASM_ARG(end_pass, type_sig);
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {

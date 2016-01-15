@@ -113,6 +113,7 @@ Q(asm_thumb)
 Q(label)
 Q(align)
 Q(data)
+Q(uint)
 #endif
 
 Q(builtins)

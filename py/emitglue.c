@@ -162,7 +162,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
         #endif
         #if MICROPY_EMIT_INLINE_THUMB
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data);
+            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
             break;
         #endif
         default:
