@@ -396,6 +396,7 @@ Q(rmdir)
 Q(unlink)
 Q(sep)
 Q(stat)
+Q(statvfs)
 Q(urandom)
 Q(dupterm)
 

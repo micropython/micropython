@@ -349,6 +349,36 @@ error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
+STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
+    const char *path = mp_obj_str_get_str(path_in);
+
+    DWORD nclst;
+    FATFS *fatfs;
+    FRESULT res = f_getfree(path, &nclst, &fatfs);
+    if (res != FR_OK) {
+        goto error;
+    }
+
+    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * 512); // f_bsize - block size
+    t->items[1] = t->items[0];                  // f_frsize - fragment size
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);      // f_blocks - total number of blocks
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst);  // f_bfree  - number of free blocks
+    t->items[4] = t->items[3];                  // f_bavail - free blocks avail to unpriviledged users
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0);      // f_files - # inodes
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(0);      // f_ffree - # free inodes
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(0);      // f_favail - # free inodes avail to unpriviledges users
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(0);      // f_flags
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(_MAX_LFN);   // f_namemax
+
+    return t;
+
+error:
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
+
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
@@ -410,6 +440,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_rename),(mp_obj_t)&os_rename_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir), (mp_obj_t)&os_rmdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stat), (mp_obj_t)&os_stat_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_statvfs), (mp_obj_t)&os_statvfs_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), (mp_obj_t)&os_remove_obj }, // unlink aliases to remove
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&mod_os_sync_obj },
