@@ -53,9 +53,12 @@ SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
 ifeq ($(MICROPY_FORCE_32BIT),1)
-CC += -m32
-CXX += -m32
-LD += -m32
+# It's not uncommon to specify CC=something on the command line. When that's
+# done, the += on the CC += line is ignored. By using override, it allows us
+# to add the CC option passed on the command line.
+override CC += -m32
+override CXX += -m32
+override LD += -m32
 endif
 
 all:
