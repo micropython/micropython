@@ -46,7 +46,7 @@ void pyb_led_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
     mp_printf(print, "LED(%u)", LED_ID(self));
 }
 
-STATIC mp_obj_t pyb_led_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_led_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_int_t led_id = mp_obj_get_int(args[0]);
     if (!(1 <= led_id && led_id <= NUM_LED)) {
