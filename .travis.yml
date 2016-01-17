@@ -1,23 +1,31 @@
+sudo: required
+dist: trusty
 language: c
 compiler:
   - gcc
 
 before_script:
-  - sudo add-apt-repository -y ppa:fkrull/deadsnakes
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+# Extra CPython versions
+#  - sudo add-apt-repository -y ppa:fkrull/deadsnakes
+# Extra gcc versions
+#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+  - sudo dpkg --add-architecture i386
   - sudo apt-get update -qq
-  - sudo apt-get install -y python3.4 python3 gcc-4.7 gcc-multilib gcc-arm-none-eabi qemu-system mingw32
+  - sudo apt-get install -y python3 gcc-multilib gcc-arm-none-eabi pkg-config libffi-dev libffi-dev:i386 qemu-system mingw32
   # For teensy build
   - sudo apt-get install realpath
   # For coverage testing
   - sudo pip install cpp-coveralls
+  - gcc --version
+  - arm-none-eabi-gcc --version
+  - python3 --version
 
 script:
   - make -C minimal test
-  - make -C unix deplibs CC=gcc-4.7
-  - make -C unix CC=gcc-4.7
-  - make -C unix CC=gcc-4.7 nanbox
+  - make -C unix deplibs
+  - make -C unix
+  - make -C unix nanbox
   - make -C bare-arm
   - make -C qemu-arm test
   - make -C stmhal
@@ -33,12 +41,12 @@ script:
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
 
   # run tests with coverage info
-  - make -C unix CC=gcc-4.7 coverage
+  - make -C unix coverage
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
 
 after_success:
-  - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov-4.7) --gcov-options '\-o build-coverage/' --include py --include extmod)
+  - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
