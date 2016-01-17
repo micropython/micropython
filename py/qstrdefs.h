@@ -671,3 +671,9 @@ Q(count)
 #if MICROPY_PY_OS_DUPTERM
 Q(dupterm)
 #endif
+
+#if MICROPY_PY_URANDOM
+Q(urandom)
+Q(getrandbits)
+Q(seed)
+#endif
