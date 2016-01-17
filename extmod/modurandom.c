@@ -40,7 +40,7 @@
 STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
 
-uint32_t yasmarang(void)
+STATIC uint32_t yasmarang(void)
 {
    yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
    yasmarang_pad = (yasmarang_pad<<3) + (yasmarang_pad>>29);
