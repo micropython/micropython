@@ -545,3 +545,49 @@ por lo que la alarma se producira cada hora, a los 16 minutos y 10 segundos.
 
 Para deshabilitar la alarma puede ejecutarse el metodo "alarm_disable"
 
+
+## Modulo para soporte de operaciones de fecha y hora
+
+### Existe el soporte de funciones temporales mediante el modulo utime.
+
+Ejemplo:
+```python
+import pyb
+import utime
+
+print("utime Test")
+
+rtc = pyb.RTC()
+
+while True:
+    now = rtc.datetime()
+    print(now)
+    
+    ts = utime.time()
+    print("timestamp:"+str(ts))
+    dateTimeTuple = utime.localtime(ts)
+    print(dateTimeTuple)
+    ts = utime.mktime(dateTimeTuple)
+    print("mktime timestamp:"+str(ts))
+    print("__________________________")
+
+    utime.sleep(1)
+```
+
+- localtime([secs]): Convierte un timestamp desde el 1 de enero de 2000 a una tupla de 8 items (year, month, mday, hour, minute, second, weekday, yearday)
+Si no se le pasan los segundos como argumento, se utilizara la fech ay hora actual tomadas del modulo RTC. El año incluye todos los digitos (p. ej. 2016)
+el mes es de 1 a 12 y el dia de 1 a 31, las horas de 0 a 23, los minutos de 0 a 59 asi como los segundos. el dia de la semana va de 0 a 6 y el dia del año
+de 1 a 366.
+
+- mktime(): Es la funcion inversa a localtime. Recibe como argumento una tupla de 8 items y devuelve la cantidad de segundos desde el 1 de enero de 2000.
+
+- sleep(seconds): Es un delay de la cantidad de segundos pasada como argumento, el cual puede ser un float.
+
+- time(): Devuelve el timestamp en segundos desde el 1 de enero de 2000, tomando la fecha y hora del modulo RTC
+
+
+NOTA: El modulo RTC debe ser inicializado antes de utilizar el modulo utime.
+
+> Mas informacion en: https://micropython.org/doc/module/time
+
+

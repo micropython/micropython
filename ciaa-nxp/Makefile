@@ -47,6 +47,7 @@ SRC_C = \
 	lpc43_storage.c \
 	ffconf.c \
 	moduos.c \
+	modutime.c \
 	modpyb.c \
 	modpybled.c \
 	modpybswitch.c \
