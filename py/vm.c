@@ -36,6 +36,7 @@
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
+#include "py/softirq.h"
 
 #if 0
 //#define TRACE(ip) printf("sp=" INT_FMT " ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
@@ -1258,6 +1259,9 @@ pending_exception_check:
                     MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
                     RAISE(obj);
                 }
+                #if MICROPY_PY_SOFTIRQ
+                exec_softirq();
+                #endif
 
             } // for loop
 

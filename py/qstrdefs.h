@@ -671,3 +671,8 @@ Q(count)
 #if MICROPY_PY_OS_DUPTERM
 Q(dupterm)
 #endif
+
+#if MICROPY_PY_SOFTIRQ
+Q(softirq)
+Q(setsoftirq)
+#endif

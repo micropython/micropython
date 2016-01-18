@@ -108,6 +108,7 @@
 #define MICROPY_PY_USELECT          (1)
 #endif
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_SOFTIRQ          (0)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 

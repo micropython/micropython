@@ -190,6 +190,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_LWIP
     { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
 #endif
+#if MICROPY_PY_SOFTIRQ
+    { MP_ROM_QSTR(MP_QSTR_softirq), MP_ROM_PTR(&mp_module_softirq) },
+#endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES

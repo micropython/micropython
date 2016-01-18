@@ -90,6 +90,7 @@ extern const mp_obj_module_t mp_module_micropython;
 extern const mp_obj_module_t mp_module_ustruct;
 extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
+extern const mp_obj_module_t mp_module_softirq;
 
 extern const mp_obj_dict_t mp_module_builtins_globals;
 
