@@ -45,15 +45,17 @@ stack_elem_t stack[STACK_DEPTH];
 void exec_softirq(void){
     stack_elem_t softirq;
     mp_uint_t irqstate;
-    bool busy = false;
-    
-    if (sp >= 0 && busy == false) {
+    static bool busy = false;
+
+    if (sp >= 0 && busy == false && __get_IPSR() == 0) {
         irqstate = disable_irq();
         softirq = stack[sp--];
         busy = true;
         enable_irq(irqstate);
         mp_call_function_1(softirq.irqfunc, softirq.arg);
+        irqstate = disable_irq();
         busy = false;
+        enable_irq(irqstate);
     }
 }
 
