@@ -90,7 +90,7 @@ extern PCD_HandleTypeDef pcd_hs_handle;
 // Set the following to 1 to get some more information on the Hard Fault
 // More information about decoding the fault registers can be found here:
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0646a/Cihdjcfc.html
-#define REPORT_HARD_FAULT_REGS  0
+#define REPORT_HARD_FAULT_REGS  1
 
 #if REPORT_HARD_FAULT_REGS
 

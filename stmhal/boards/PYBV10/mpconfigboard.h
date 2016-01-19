@@ -13,6 +13,8 @@
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_I2S2      (1)
+#define MICROPY_HW_ENABLE_I2S3      (0)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8)
@@ -97,3 +99,7 @@
 
 // MMA accelerometer config
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)
+
+// Add hardware UART REPL for debugging
+#define MICROPY_HW_UART_REPL        PYB_UART_4
+#define MICROPY_HW_UART_REPL_BAUD   115200
