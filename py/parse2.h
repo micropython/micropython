@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,10 @@
 #ifndef __MICROPY_INCLUDED_PY_PARSE_H__
 #define __MICROPY_INCLUDED_PY_PARSE_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
-#include "py/mpconfig.h"
-#include "py/misc.h"
-#include "py/qstr.h"
+#include "py/obj.h"
 
 struct _mp_lexer_t;
 
@@ -108,9 +107,10 @@ mp_int_t pt_small_int_value(const byte *p);
 const byte *pt_get_small_int(const byte *p, mp_int_t *val);
 const byte *pt_rule_first(const byte *p);
 const byte *pt_rule_extract_top(const byte *p, const byte **ptop);
-const byte *pt_rule_extract(const byte *p, mp_uint_t *rule_id, mp_uint_t *src_line, const byte **ptop);
+const byte *pt_rule_extract(const byte *p, mp_uint_t *rule_id, size_t *src_line, const byte **ptop);
 bool pt_is_rule_empty(const byte *p);
 
+bool mp_parse_node_get_int_maybe(const byte *p, mp_obj_t *o);
 const byte *mp_parse_node_extract_list(const byte **p, mp_uint_t pn_kind);
 
 typedef enum {

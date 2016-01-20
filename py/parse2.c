@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,16 +104,16 @@ STATIC const rule_t *rules[] = {
 };
 
 typedef struct _rule_stack_t {
-    mp_uint_t src_line : BITS_PER_WORD - 8; // maximum bits storing source line number
-    mp_uint_t rule_id : 8; // this must be large enough to fit largest rule number
-    mp_uint_t arg_i; // this dictates the maximum nodes in a "list" of things
+    size_t src_line : 8 * sizeof(size_t) - 8; // maximum bits storing source line number
+    size_t rule_id : 8; // this must be large enough to fit largest rule number
+    size_t arg_i; // this dictates the maximum nodes in a "list" of things
     size_t pt_off;
 } rule_stack_t;
 
 typedef struct _mp_parse_chunk_t {
-    mp_uint_t alloc;
+    size_t alloc;
     union {
-        mp_uint_t used;
+        size_t used;
         struct _mp_parse_chunk_t *next;
     } union_;
     byte data[];
@@ -128,14 +128,14 @@ typedef enum {
 typedef struct _parser_t {
     parse_error_t parse_error;
 
-    mp_uint_t rule_stack_alloc;
-    mp_uint_t rule_stack_top;
+    size_t rule_stack_alloc;
+    size_t rule_stack_top;
     rule_stack_t *rule_stack;
 
     mp_uint_t cur_scope_id;
 
-    mp_uint_t co_alloc;
-    mp_uint_t co_used;
+    size_t co_alloc;
+    size_t co_used;
     mp_uint_t *co_data;
 
     mp_lexer_t *lexer;
@@ -147,7 +147,7 @@ typedef struct _parser_t {
     #endif
 } parser_t;
 
-STATIC void push_rule(parser_t *parser, mp_uint_t src_line, const rule_t *rule, mp_uint_t arg_i, size_t pt_off) {
+STATIC void push_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t arg_i, size_t pt_off) {
     if (parser->parse_error) {
         return;
     }
@@ -167,14 +167,14 @@ STATIC void push_rule(parser_t *parser, mp_uint_t src_line, const rule_t *rule, 
     rs->pt_off = pt_off;
 }
 
-STATIC void push_rule_from_arg(parser_t *parser, mp_uint_t arg) {
+STATIC void push_rule_from_arg(parser_t *parser, size_t arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
-    mp_uint_t rule_id = arg & RULE_ARG_ARG_MASK;
+    size_t rule_id = arg & RULE_ARG_ARG_MASK;
     assert(rule_id < RULE_maximum_number_of);
     push_rule(parser, parser->lexer->tok_line, rules[rule_id], 0, 0);
 }
 
-STATIC void pop_rule(parser_t *parser, const rule_t **rule, mp_uint_t *arg_i, mp_uint_t *src_line, size_t *pt_off) {
+STATIC void pop_rule(parser_t *parser, const rule_t **rule, size_t *arg_i, size_t *src_line, size_t *pt_off) {
     assert(!parser->parse_error);
     parser->rule_stack_top -= 1;
     *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
@@ -205,7 +205,7 @@ STATIC void pt_raw_truncate_at(pt_t *pt, size_t pt_off) {
     pt->vv.len = pt_off;
 }
 
-STATIC int vuint_nbytes(mp_uint_t val) {
+STATIC int vuint_nbytes(size_t val) {
     int n = 0;
     do {
         n += 1;
@@ -214,7 +214,7 @@ STATIC int vuint_nbytes(mp_uint_t val) {
     return n;
 }
 
-STATIC void vuint_store(byte *p, int nbytes, mp_uint_t val) {
+STATIC void vuint_store(byte *p, int nbytes, size_t val) {
     p += nbytes;
     *--p = val & 0x7f;
     for (--nbytes; nbytes > 0; --nbytes) {
@@ -223,9 +223,9 @@ STATIC void vuint_store(byte *p, int nbytes, mp_uint_t val) {
     }
 }
 
-STATIC mp_uint_t vuint_load(const byte **p_in) {
+STATIC size_t vuint_load(const byte **p_in) {
     const byte *p = *p_in;
-    mp_uint_t val = 0;
+    size_t val = 0;
     do {
         val = (val << 7) + (*p & 0x7f);
     } while ((*p++ & 0x80) != 0);
@@ -269,8 +269,28 @@ STATIC byte *pt_advance(const byte *p, bool full_rule) {
     return (byte*)p;
 }
 
+bool mp_parse_node_get_int_maybe(const byte *p, mp_obj_t *o) {
+    if (pt_is_small_int(p)) {
+        *o = MP_OBJ_NEW_SMALL_INT(pt_small_int_value(p));
+        return true;
+    #if 0 // TODO
+    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
+        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+        // nodes are 32-bit pointers, but need to extract 64-bit object
+        *o = (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
+        #else
+        *o = (mp_obj_t)pns->nodes[0];
+        #endif
+        return MP_OBJ_IS_INT(*o);
+    #endif
+    } else {
+        return false;
+    }
+}
+
 // TODO this could perhaps allow *p to be null and in that case return null?
-const byte *mp_parse_node_extract_list(const byte **p, mp_uint_t pn_kind) {
+const byte *mp_parse_node_extract_list(const byte **p, size_t pn_kind) {
     if (pt_is_null(*p)) {
         *p += 1;
         return *p;
@@ -295,7 +315,7 @@ const byte *pt_extract_id(const byte *p, qstr *qst) {
 }
 */
 
-const byte *pt_extract_const_obj(const byte *p, mp_uint_t *idx) {
+const byte *pt_extract_const_obj(const byte *p, size_t *idx) {
     assert(*p == MP_PT_CONST_OBJECT);
     p += 1;
     *idx = vuint_load(&p);
@@ -646,7 +666,7 @@ STATIC bool fold_constants(parser_t *parser, pt_t *pt, size_t pt_off, const rule
         }
         mp_obj_t dest[2];
         mp_load_method_maybe(elem->value, q_attr, dest);
-        if (!(MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == NULL)) {
+        if (!(MP_OBJ_IS_SMALL_INT(dest[0]) && dest[1] == MP_OBJ_NULL)) {
             return false;
         }
         arg0 = MP_OBJ_SMALL_INT_VALUE(dest[0]);
@@ -665,8 +685,23 @@ STATIC bool fold_constants(parser_t *parser, pt_t *pt, size_t pt_off, const rule
 }
 #endif
 
-STATIC void pt_ins_rule(parser_t *parser, pt_t *pt, size_t pt_off, mp_uint_t src_line, const rule_t *rule, mp_uint_t num_args) {
+STATIC void pt_ins_rule(parser_t *parser, pt_t *pt, size_t pt_off, size_t src_line, const rule_t *rule, size_t num_args) {
     (void)num_args;
+
+    // optimise away parenthesis around an expression if possible
+    if (rule->rule_id == RULE_atom_paren) {
+        // there should be just 1 arg for this rule
+        const byte *p = (byte*)pt->vv.buf + pt_off;
+        if (pt_is_null(p)) {
+            // need to keep parenthesis for ()
+        } else if (pt_is_rule(p, RULE_testlist_comp)) {
+            // need to keep parenthesis for (a, b, ...)
+        } else {
+            // parenthesis around a single expression, so it's just the expression
+            //printf("opt!\n");
+            return;
+        }
+    }
 
     #if MICROPY_COMP_CONST_FOLDING
     if (fold_constants(parser, pt, pt_off, rule)) {
@@ -826,7 +861,7 @@ folding_fail:;
     // insert small int node for scope index
     if (extra_node != 0) {
         dest[1 + nb1 + nb2] = MP_PT_SMALL_INT;
-        mp_uint_t val = ++parser->cur_scope_id;
+        size_t val = ++parser->cur_scope_id;
         for (size_t i = 0; i < BYTES_PER_WORD; ++i) {
             dest[1 + nb1 + nb2 + 1 + i] = val;
             val >>= 8;
@@ -848,7 +883,7 @@ STATIC void make_node_const_object(parser_t *parser, pt_t *pt, mp_obj_t obj) {
     parser->co_data[parser->co_used++] = (mp_uint_t)obj;
 }
 
-STATIC void make_node_string_bytes(parser_t *parser, pt_t *pt, mp_token_kind_t tok, const char *str, mp_uint_t len) {
+STATIC void make_node_string_bytes(parser_t *parser, pt_t *pt, mp_token_kind_t tok, const char *str, size_t len) {
     mp_obj_t o;
     if (tok == MP_TOKEN_STRING) {
         o = mp_obj_new_str(str, len, false);
@@ -926,16 +961,16 @@ const byte *pt_rule_extract_top(const byte *p, const byte **ptop) {
     assert(*p >= MP_PT_RULE_BASE);
     p++;
     vuint_load(&p);
-    mp_uint_t nbytes = vuint_load(&p);
+    size_t nbytes = vuint_load(&p);
     *ptop = p + nbytes;
     return p;
 }
 
-const byte *pt_rule_extract(const byte *p, mp_uint_t *rule_id, mp_uint_t *src_line, const byte **ptop) {
+const byte *pt_rule_extract(const byte *p, size_t *rule_id, size_t *src_line, const byte **ptop) {
     assert(*p >= MP_PT_RULE_BASE);
     *rule_id = *p++ - MP_PT_RULE_BASE;
     *src_line = vuint_load(&p);
-    mp_uint_t nbytes = vuint_load(&p);
+    size_t nbytes = vuint_load(&p);
     *ptop = p + nbytes;
     return p;
 }
@@ -977,7 +1012,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     }
 
     // work out the top-level rule to use, and push it on the stack
-    mp_uint_t top_level_rule;
+    size_t top_level_rule;
     switch (input_kind) {
         case MP_PARSE_SINGLE_INPUT: top_level_rule = RULE_single_input; break;
         case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
@@ -987,9 +1022,9 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     // parse!
 
-    mp_uint_t n, i; // state for the current rule
+    size_t n, i; // state for the current rule
     size_t pt_off = 0; // state for the current rule
-    mp_uint_t rule_src_line; // source line for the first token matched by the current rule
+    size_t rule_src_line; // source line for the first token matched by the current rule
     bool backtrack = false;
     const rule_t *rule = NULL;
     pt_t *pt = pt_new();
@@ -1109,7 +1144,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 i = 0;
                 bool emit_rule = false;
                 /*
-                for (mp_uint_t x = 0; x < n; ++x) {
+                for (size_t x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         mp_token_kind_t tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind >= MP_TOKEN_NAME) {
@@ -1125,7 +1160,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     }
                 }
                 */
-                for (mp_uint_t x = 0; x < n; ++x) {
+                for (size_t x = 0; x < n; ++x) {
                     if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         mp_token_kind_t tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind >= MP_TOKEN_NAME) {
@@ -1164,8 +1199,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // if a rule has the RULE_ACT_ALLOW_IDENT bit set then this
                 // rule should not be emitted if it has only 1 argument
-                // NOTE: can't set this flag for atom_paren because we need it
-                // to distinguish, for example, [a,b] from [(a,b)]
                 if (rule->act & RULE_ACT_ALLOW_IDENT) {
                     emit_rule = false;
                 }
@@ -1179,10 +1212,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 }
 
                 // count number of non-null nodes
-                mp_uint_t num_not_null = 0;
-                mp_uint_t num_trail_null = 0;
+                size_t num_not_null = 0;
+                size_t num_trail_null = 0;
                 { const byte *p = (byte*)pt->vv.buf + pt_off;
-                for (mp_uint_t x = 0; x < i; ++x) {
+                for (size_t x = 0; x < i; ++x) {
                     if (*p != MP_PT_NULL) {
                         num_not_null += 1;
                         num_trail_null = 0;
@@ -1199,7 +1232,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 } else {
                     // single result, leave it on stack
                     const byte *p = (byte*)pt->vv.buf + pt_off;
-                    for (mp_uint_t x = 0; x < i; ++x) {
+                    for (size_t x = 0; x < i; ++x) {
                         if (*p == MP_PT_NULL) {
                             p = pt_del_byte(pt, p);
                         } else {
@@ -1249,7 +1282,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     }
                 } else {
                     for (;;) {
-                        mp_uint_t arg = rule->arg[i & 1 & n];
+                        size_t arg = rule->arg[i & 1 & n];
                         switch (arg & RULE_ARG_KIND_MASK) {
                             case RULE_ARG_TOK:
                                 if (lex->tok_kind == (arg & RULE_ARG_ARG_MASK)) {
@@ -1312,7 +1345,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     pt_show(pt);
 
     {
-        mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+        size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
         qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
         printf("qstr pool: n_pool=" UINT_FMT ", n_qstr=" UINT_FMT ", n_str_data_bytes="
             UINT_FMT ", n_total_bytes=" UINT_FMT "\n",

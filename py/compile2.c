@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@
 #include "py/scope.h"
 #include "py/emit.h"
 #include "py/compile.h"
-#include "py/smallint.h"
 #include "py/runtime.h"
-#include "py/builtin.h"
+
+#if MICROPY_ENABLE_COMPILER
 
 // TODO need to mangle __attr names
 
@@ -80,7 +80,7 @@ typedef struct _compiler_t {
 
     // try to keep compiler clean from nlr
     mp_obj_t compile_error; // set to an exception object if there's an error
-    mp_uint_t compile_error_line; // set to best guess of line of error
+    size_t compile_error_line; // set to best guess of line of error
 
     uint next_label;
 
@@ -94,7 +94,7 @@ typedef struct _compiler_t {
 
     mp_uint_t *co_data;
 
-    mp_uint_t num_scopes;
+    size_t num_scopes;
     scope_t **scopes;
     scope_t *scope_cur;
 
@@ -112,7 +112,7 @@ typedef struct _compiler_t {
 STATIC void compile_error_set_line(compiler_t *comp, const byte *p) {
     // if the line of the error is unknown then try to update it from the parse data
     if (comp->compile_error_line == 0 && p != NULL && pt_is_any_rule(p)) {
-        mp_uint_t rule_id, src_line;
+        size_t rule_id, src_line;
         const byte *ptop;
         pt_rule_extract(p, &rule_id, &src_line, &ptop);
         comp->compile_error_line = src_line;
@@ -147,7 +147,7 @@ STATIC void compile_decrease_except_level(compiler_t *comp) {
     comp->cur_except_level -= 1;
 }
 
-STATIC void scope_new_and_link(compiler_t *comp, mp_uint_t scope_idx, scope_kind_t kind, const byte *p, uint emit_options) {
+STATIC void scope_new_and_link(compiler_t *comp, size_t scope_idx, scope_kind_t kind, const byte *p, uint emit_options) {
     scope_t *scope = scope_new(kind, p, comp->source_file, emit_options);
     scope->parent = comp->scope_cur;
     comp->scopes[scope_idx] = scope;
@@ -284,14 +284,12 @@ STATIC const byte *c_if_cond(compiler_t *comp, const byte *p, bool jump_if, int 
                 if (jump_if == false) {
                     EMIT_ARG(jump, label);
                 }
-            } else if (pt_is_rule(pt_rule_first(p), PN_testlist_comp)) {
+            } else {
+                assert(pt_is_rule(pt_rule_first(p), PN_testlist_comp));
                 // non-empty tuple, acts as true for the condition
                 if (jump_if == true) {
                     EMIT_ARG(jump, label);
                 }
-            } else {
-                // parenthesis around 1 item, is just that item
-                c_if_cond(comp, pt_rule_first(p), jump_if, label);
             }
             return pt_next(p);
         }
@@ -416,7 +414,6 @@ STATIC void c_assign_tuple(compiler_t *comp, const byte *p_head, const byte *p_t
 
 // assigns top of stack to pn
 STATIC void c_assign(compiler_t *comp, const byte *p, assign_kind_t assign_kind) {
-    tail_recursion:
     assert(!pt_is_null(p));
     if (pt_is_any_id(p)) {
         qstr arg;
@@ -459,16 +456,13 @@ STATIC void c_assign(compiler_t *comp, const byte *p, assign_kind_t assign_kind)
                 if (pt_is_null_with_top(p0, ptop)) {
                     // empty tuple
                     goto cannot_assign;
-                } else if (pt_is_rule(p0, PN_testlist_comp)) {
+                } else {
+                    assert(pt_is_rule(p0, PN_testlist_comp));
                     if (assign_kind != ASSIGN_STORE) {
                         goto bad_aug;
                     }
                     p = p0;
                     goto testlist_comp;
-                } else {
-                    // parenthesis around 1 item, is just that item
-                    p = p0;
-                    goto tail_recursion;
                 }
                 break;
             }
@@ -670,6 +664,13 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, const byte *p) {
 }
 
 STATIC void compile_funcdef_lambdef(compiler_t *comp, scope_t *scope, const byte *p, pn_kind_t pn_list_kind) {
+    // When we call compile_funcdef_lambdef_param below it can compile an arbitrary
+    // expression for default arguments, which may contain a lambda.  The lambda will
+    // call here in a nested way, so we must save and restore the relevant state.
+    bool orig_have_star = comp->have_star;
+    uint16_t orig_num_dict_params = comp->num_dict_params;
+    uint16_t orig_num_default_params = comp->num_default_params;
+
     // compile default parameters
     comp->have_star = false;
     comp->num_dict_params = 0;
@@ -689,6 +690,11 @@ STATIC void compile_funcdef_lambdef(compiler_t *comp, scope_t *scope, const byte
 
     // make the function
     close_over_variables_etc(comp, scope, comp->num_default_params, comp->num_dict_params);
+
+    // restore state
+    comp->have_star = orig_have_star;
+    comp->num_dict_params = orig_num_dict_params;
+    comp->num_default_params = orig_num_default_params;
 }
 
 // leaves function object on stack
@@ -897,8 +903,11 @@ STATIC void c_del_stmt(compiler_t *comp, const byte *p) {
             goto cannot_delete;
         }
     } else if (pt_is_rule(p, PN_atom_paren)) {
-        p = pt_rule_first(p);
-        if (pt_is_rule(p, PN_testlist_comp)) {
+        if (pt_is_rule_empty(p)) {
+            goto cannot_delete;
+        } else {
+            p = pt_rule_first(p);
+            assert(pt_is_rule(p, PN_testlist_comp));
             // TODO perhaps factorise testlist_comp code with other uses of PN_testlist_comp
             // or, simplify the logic here my making the parser simplify everything to a list
             const byte *p0 = pt_rule_first(p);
@@ -923,12 +932,9 @@ STATIC void c_del_stmt(compiler_t *comp, const byte *p) {
                 // sequence with 2 items
                 c_del_stmt(comp, p1);
             }
-        } else {
-            // tuple with 1 element
-            c_del_stmt(comp, p);
         }
     } else {
-        // TODO is there anything else to implement?
+        // some arbitrary statment that we can't delete (eg del 1)
         goto cannot_delete;
     }
 
@@ -1062,7 +1068,7 @@ STATIC void do_import_name(compiler_t *comp, const byte *p, qstr *q_base) {
             }
             qstr qst;
             p2 = pt_extract_id(p2, &qst);
-            mp_uint_t str_src_len;
+            size_t str_src_len;
             const byte *str_src = qstr_data(qst, &str_src_len);
             memcpy(str_dest, str_src, str_src_len);
             str_dest += str_src_len;
@@ -1493,6 +1499,19 @@ STATIC void compile_for_stmt(compiler_t *comp, const byte *p, const byte *ptop) 
                         // range has at least 4 args, so don't know how to optimise it
                         goto optimise_fail;
                     }
+                }
+            }
+            // arguments must be able to be compiled as standard expressions
+            if (pt_is_any_rule(p_start)) {
+                int k = pt_rule_extract_rule_id(p_start);
+                if (k == PN_arglist_star || k == PN_arglist_dbl_star || k == PN_argument) {
+                    goto optimise_fail;
+                }
+            }
+            if (pt_is_any_rule(p_end)) {
+                int k = pt_rule_extract_rule_id(p_end);
+                if (k == PN_arglist_star || k == PN_arglist_dbl_star || k == PN_argument) {
+                    goto optimise_fail;
                 }
             }
             // can optimise
@@ -2221,7 +2240,8 @@ STATIC void compile_atom_paren(compiler_t *comp, const byte *p, const byte *ptop
     if (pt_is_null_with_top(p, ptop)) {
         // an empty tuple
         c_tuple(comp, NULL, NULL, NULL);
-    } else if (pt_is_rule(p, PN_testlist_comp)) {
+    } else {
+        assert(pt_is_rule(p, PN_testlist_comp));
         p = pt_rule_first(p);
         const byte *p1 = pt_next(p);
         if (pt_is_rule(p1, PN_testlist_comp_3b) || pt_is_rule(p1, PN_testlist_comp_3c)) {
@@ -2234,9 +2254,6 @@ STATIC void compile_atom_paren(compiler_t *comp, const byte *p, const byte *ptop
             // tuple with 2 items
             c_tuple(comp, NULL, p, ptop);
         }
-    } else {
-        // parenthesis around a single item, is just that item
-        compile_node(comp, p);
     }
 }
 
@@ -2499,7 +2516,7 @@ STATIC const byte *compile_node(compiler_t *comp, const byte *p) {
             EMIT_ARG(load_const_obj, mp_const_none);
         } else {
             qstr qst = p[1] | (p[2] << 8);
-            mp_uint_t len;
+            size_t len;
             const byte *data = qstr_data(qst, &len);
             EMIT_ARG(load_const_obj, mp_obj_new_bytes(data, len));
         }
@@ -2510,13 +2527,13 @@ STATIC const byte *compile_node(compiler_t *comp, const byte *p) {
         compile_load_id(comp, qst);
         return p;
     } else if (*p == MP_PT_CONST_OBJECT) {
-        mp_uint_t idx;
+        size_t idx;
         p = pt_extract_const_obj(p, &idx);
         EMIT_ARG(load_const_obj, (mp_obj_t)comp->co_data[idx]);
         return p;
     } else {
         assert(*p >= MP_PT_RULE_BASE);
-        mp_uint_t rule_id, src_line;
+        size_t rule_id, src_line;
         const byte *ptop;
         p = pt_rule_extract(p, &rule_id, &src_line, &ptop);
         EMIT_ARG(set_source_line, src_line);
@@ -2542,7 +2559,12 @@ STATIC const byte *compile_node(compiler_t *comp, const byte *p) {
 
 STATIC void compile_scope_func_lambda_param(compiler_t *comp, const byte *p, pn_kind_t pn_name, pn_kind_t pn_star, pn_kind_t pn_dbl_star) {
     (void)pn_dbl_star;
-    // TODO verify that *k and **k are last etc
+    // check that **kw is last
+    if ((comp->scope_cur->scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
+        compile_syntax_error(comp, p, "invalid syntax");
+        return;
+    }
+
     qstr param_name = MP_QSTR_NULL;
     uint param_flag = ID_FLAG_IS_PARAM;
     if (pt_is_any_id(p)) {
@@ -2565,6 +2587,11 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, const byte *p, pn_
                 comp->scope_cur->num_pos_args += 1;
             }
         } else if (pt_is_rule(p, pn_star)) {
+            if (comp->have_star) {
+                // more than one star
+                compile_syntax_error(comp, p, "invalid syntax");
+                return;
+            }
             comp->have_star = true;
             param_flag = ID_FLAG_IS_PARAM | ID_FLAG_IS_STAR_PARAM;
             if (pt_is_rule_empty(p)) {
@@ -2655,9 +2682,16 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, const byte *p) {
 }
 #endif // MICROPY_EMIT_NATIVE
 
-STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_iter, const byte *p_inner_expr, int l_top, int for_depth) {
+STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_comp_for, const byte *p_comp_for_top, const byte *p_inner_expr, int for_depth) {
+    uint l_top = comp_next_label(comp);
+    uint l_end = comp_next_label(comp);
+    EMIT_ARG(label_assign, l_top);
+    EMIT_ARG(for_iter, l_end);
+    c_assign(comp, p_comp_for, ASSIGN_STORE);
+    const byte *p_iter = pt_next(pt_next(p_comp_for));
+
     tail_recursion:
-    if (p_iter == NULL) {
+    if (p_iter == p_comp_for_top) {
         // no more nested if/for; compile inner expression
         compile_node(comp, p_inner_expr);
         if (comp->scope_cur->kind == SCOPE_LIST_COMP) {
@@ -2674,12 +2708,8 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_iter, const 
         }
     } else if (pt_is_rule(p_iter, PN_comp_if)) {
         // if condition
-        const byte *ptop;
-        const byte *p0 = pt_rule_extract_top(p_iter, &ptop);
+        const byte *p0 = pt_rule_extract_top(p_iter, &p_comp_for_top);
         p_iter = c_if_cond(comp, p0, false, l_top);
-        if (p_iter == ptop) {
-            p_iter = NULL;
-        }
         goto tail_recursion;
     } else {
         assert(pt_is_rule(p_iter, PN_comp_for)); // should be
@@ -2687,18 +2717,14 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_iter, const 
         const byte *ptop;
         const byte *p0 = pt_rule_extract_top(p_iter, &ptop);
         p0 = pt_next(p0); // skip scope index
-        const byte *p2 = compile_node(comp, pt_next(p0));
-        uint l_end2 = comp_next_label(comp);
-        uint l_top2 = comp_next_label(comp);
+        compile_node(comp, pt_next(p0));
         EMIT(get_iter);
-        EMIT_ARG(label_assign, l_top2);
-        EMIT_ARG(for_iter, l_end2);
-        c_assign(comp, p0, ASSIGN_STORE);
-        compile_scope_comp_iter(comp, p2 == ptop ? NULL : p2, p_inner_expr, l_top2, for_depth + 1);
-        EMIT_ARG(jump, l_top2);
-        EMIT_ARG(label_assign, l_end2);
-        EMIT(for_iter_end);
+        compile_scope_comp_iter(comp, p0, ptop, p_inner_expr, for_depth + 1);
     }
+
+    EMIT_ARG(jump, l_top);
+    EMIT_ARG(label_assign, l_end);
+    EMIT(for_iter_end);
 }
 
 #if 0
@@ -2865,20 +2891,8 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         #endif
         }
 
-        uint l_end = comp_next_label(comp);
-        uint l_top = comp_next_label(comp);
         compile_load_id(comp, qstr_arg);
-        EMIT_ARG(label_assign, l_top);
-        EMIT_ARG(for_iter, l_end);
-        c_assign(comp, p_comp_for, ASSIGN_STORE);
-        const byte *p_comp_for_p2 = pt_next(pt_next(p_comp_for));
-        if (p_comp_for_p2 == p_comp_for_top) {
-            p_comp_for_p2 = NULL;
-        }
-        compile_scope_comp_iter(comp, p_comp_for_p2, p, l_top, 0);
-        EMIT_ARG(jump, l_top);
-        EMIT_ARG(label_assign, l_end);
-        EMIT(for_iter_end);
+        compile_scope_comp_iter(comp, p_comp_for, p_comp_for_top, p, 0);
 
         if (scope->kind == SCOPE_GEN_EXPR) {
             EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
@@ -3063,7 +3077,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        EMIT_INLINE_ASM(end_pass);
+        EMIT_INLINE_ASM_ARG(end_pass, 0);
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {
@@ -3154,7 +3168,10 @@ STATIC void scope_compute_things(scope_t *scope) {
     }
 }
 
-mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
+#if !MICROPY_PERSISTENT_CODE_SAVE
+STATIC
+#endif
+mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
     // put compiler state on the stack, it's relatively small
     compiler_t comp_state = {0};
     compiler_t *comp = &comp_state;
@@ -3351,7 +3368,14 @@ mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt
     if (comp->compile_error != MP_OBJ_NULL) {
         nlr_raise(comp->compile_error);
     } else {
-        // return function that executes the outer module
-        return mp_make_function_from_raw_code(outer_raw_code, MP_OBJ_NULL, MP_OBJ_NULL);
+        return outer_raw_code;
     }
 }
+
+mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
+    mp_raw_code_t *rc = mp_compile_to_raw_code(parse_tree, source_file, emit_opt, is_repl);
+    // return function that executes the outer module
+    return mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
+}
+
+#endif // MICROPY_ENABLE_COMPILER
