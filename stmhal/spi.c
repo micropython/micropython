@@ -47,12 +47,16 @@
 /// parameters to init the SPI bus:
 ///
 ///     from pyb import SPI
-///     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
+///     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, dir=SPI.DIRECTION_2LINES, phase=0, crc=0x7, nss=SPI.NSS_SOFT, firstbit=SPI.MSB, ti=False)
 ///
 /// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
 /// 0 or 1, and is the level the idle clock line sits at.  Phase can be 0 or 1
 /// to sample data on the first or second clock edge respectively.  Crc can be
-/// None for no CRC, or a polynomial specifier.
+/// None for no CRC, or a polynomial specifier. Dir can be SPI.DIRECTION_2LINES,
+/// SPI.DIRECTION_2LINES_RXONLY or SPI.DIRECTION_1LINE and defines the wiring setup
+/// (direction mode - see also STM manual). nss defines the slave select managment
+/// and can either be SPI.NSS_SOFT (select by sw), SPI.NSS_HARD_INPUT (hw pin) and
+/// SPI.NSS_HARD_OUTPUT (hw pin, for master devices only)
 ///
 /// Additional method for SPI:
 ///
@@ -370,7 +374,34 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         } else {
             mp_printf(print, "SPI(%u, SPI.SLAVE", spi_num);
         }
-        mp_printf(print, ", polarity=%u, phase=%u, bits=%u", self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+        mp_printf(print, ", polarity=%u, phase=%u, bits=%u, wires=SPI.",
+                        self->spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1,
+                        self->spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1,
+                        self->spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
+                        
+        switch (self->spi->Init.Direction) {
+            case SPI_DIRECTION_2LINES:
+                mp_printf(print, qstr_str(MP_QSTR_TWO_WIRE));
+                break;
+            case SPI_DIRECTION_2LINES_RXONLY:
+                mp_printf(print, qstr_str(MP_QSTR_ONE_WIRE_RX));
+                break;
+            case SPI_DIRECTION_1LINE:
+                mp_printf(print, qstr_str(MP_QSTR_ONE_WIRE_BI));
+                break;
+        }
+        mp_printf(print, ", cs=SPI.");
+        switch (self->spi->Init.NSS) {
+            case SPI_NSS_SOFT:
+                mp_printf(print, qstr_str(MP_QSTR_CS_SW));
+                break;
+            case SPI_NSS_HARD_INPUT:
+                mp_printf(print, qstr_str(MP_QSTR_CS_HW_OUT));
+                break;
+            case SPI_NSS_HARD_OUTPUT:
+                mp_printf(print, qstr_str(MP_QSTR_CS_HW_IN));
+                break;
+        }
         if (self->spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED) {
             mp_printf(print, ", crc=0x%x", self->spi->Init.CRCPolynomial);
         }
@@ -378,12 +409,17 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-/// \method init(mode, baudrate=328125, *, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
+/// \method init(mode, baudrate=328125, *, polarity=1, phase=0, wires=SPI.DIRECTION_2LINES, bits=8, cs=SPI.NSS_SOFT, firstbit=SPI.MSB, ti=False, crc=None)
 ///
 /// Initialise the SPI bus with the given parameters:
 ///
 ///   - `mode` must be either `SPI.MASTER` or `SPI.SLAVE`.
 ///   - `baudrate` is the SCK clock rate (only sensible for a master).
+///   - `polarity` must be 0 (low when idle) or 1 (high when idle)
+///   - `phase` must be 0 (first clock transition for capture) or 1 (second clock transition for capture)
+///   - `dir` must either be `SPI.DIRECTION_2LINES`, `SPI.DIRECTION_2LINES_RXONLY` or `SPI.DIRECTION_1LINE`
+///   - `nss` defines the slave selection mode and can be `SPI.NSS_SOFT`, `SPI.NSS_HARD_INPUT` or `SPI.NSS_HARD_OUTPUT`
+///   - `crc` defines the polynomial used for checksum calculations
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -391,9 +427,9 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
         { MP_QSTR_prescaler, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 0} },
-        { MP_QSTR_dir,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_DIRECTION_2LINES} },
+        { MP_QSTR_wires,    MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_DIRECTION_2LINES} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = 8} },
-        { MP_QSTR_nss,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_NSS_SOFT} },
+        { MP_QSTR_cs,       MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_NSS_SOFT} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
         { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -421,6 +457,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
         }
         br_prescale = spi_clock / args[1].u_int;
     }
+    
     if (br_prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
     else if (br_prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
     else if (br_prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
@@ -429,7 +466,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, mp_uint_t n_args,
     else if (br_prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
     else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
     else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
-
+    
     init->CLKPolarity = args[3].u_int == 0 ? SPI_POLARITY_LOW : SPI_POLARITY_HIGH;
     init->CLKPhase = args[4].u_int == 0 ? SPI_PHASE_1EDGE : SPI_PHASE_2EDGE;
     init->Direction = args[5].u_int;
@@ -747,18 +784,22 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     /// \constant SLAVE - for initialising the bus to slave mode
     /// \constant MSB - set the first bit to MSB
     /// \constant LSB - set the first bit to LSB
+    /// \constant 2WIRE - 2 wire full duplex mode
+    /// \constant 1WIRE_RX - 1 wire unidirectional receive
+    /// \constant 1WIRE_BI - 1 wire bidirectional mode
+    /// \constant CS_SOFT - slave select via sw
+    /// \constant CS_HARD_INPUT - slave select via hw (used by master devices only)
+    /// \constant CS_HARD_OUTPUT - slave select via hw (used by slaves for multimaster cap.)
     { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER), MP_OBJ_NEW_SMALL_INT(SPI_MODE_MASTER) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLAVE),  MP_OBJ_NEW_SMALL_INT(SPI_MODE_SLAVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MSB),    MP_OBJ_NEW_SMALL_INT(SPI_FIRSTBIT_MSB) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LSB),    MP_OBJ_NEW_SMALL_INT(SPI_FIRSTBIT_LSB) },
-    /* TODO
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_2LINES             ((uint32_t)0x00000000)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_2LINES_RXONLY      SPI_CR1_RXONLY
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_1LINE              SPI_CR1_BIDIMODE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_SOFT                    SPI_CR1_SSM
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_HARD_INPUT              ((uint32_t)0x00000000)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_HARD_OUTPUT             ((uint32_t)0x00040000)
-    */
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TWO_WIRE), MP_OBJ_NEW_SMALL_INT(SPI_DIRECTION_2LINES) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ONE_WIRE_RX), MP_OBJ_NEW_SMALL_INT(SPI_CR1_RXONLY) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ONE_WIRE_BI), MP_OBJ_NEW_SMALL_INT(SPI_CR1_BIDIMODE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CS_SW),     MP_OBJ_NEW_SMALL_INT(SPI_CR1_SSM) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CS_HW_OUT),  MP_OBJ_NEW_SMALL_INT(SPI_NSS_HARD_INPUT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CS_HW_IN), MP_OBJ_NEW_SMALL_INT(SPI_NSS_HARD_OUTPUT) }
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
