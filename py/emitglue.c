@@ -83,6 +83,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t
     uint16_t n_obj, uint16_t n_raw_code,
     #endif
     mp_uint_t scope_flags) {
+    (void)len; // possibly unused
 
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
