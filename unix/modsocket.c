@@ -155,9 +155,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    struct sockaddr addr;
+    // sockaddr_storage isn't stack-friendly (129 bytes or so)
+    //struct sockaddr_storage addr;
+    byte addr[32];
     socklen_t addr_len = sizeof(addr);
-    int fd = accept(self->fd, &addr, &addr_len);
+    int fd = accept(self->fd, (struct sockaddr*)&addr, &addr_len);
     RAISE_ERRNO(fd, errno);
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
