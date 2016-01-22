@@ -166,6 +166,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
 #endif
+#if MICROPY_PY_UZIPFILE
+    { MP_ROM_QSTR(MP_QSTR_uzipfile), MP_ROM_PTR(&mp_module_uzipfile) },
+#endif
 #if MICROPY_PY_UZLIB
     { MP_ROM_QSTR(MP_QSTR_uzlib), MP_ROM_PTR(&mp_module_uzlib) },
 #endif

@@ -628,6 +628,17 @@ Q(a2b_base64)
 Q(b2a_base64)
 #endif
 
+#if MICROPY_PY_UZIPFILE
+Q(uzipfile)
+Q(ZIP_STORED)
+Q(ZIP_DEFLATED)
+Q(is_zipfile)
+Q(rb)
+Q(ZipFile)
+Q(namelist)
+Q(ZipExtFile)
+#endif
+
 #if MICROPY_PY_MACHINE
 Q(umachine)
 Q(mem)

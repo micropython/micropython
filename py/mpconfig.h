@@ -788,6 +788,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_UBINASCII (0)
 #endif
 
+#ifndef MICROPY_PY_UZIPFILE
+#define MICROPY_PY_UZIPFILE (0)
+#endif
+
 #ifndef MICROPY_PY_URANDOM
 #define MICROPY_PY_URANDOM (0)
 #endif

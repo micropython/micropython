@@ -163,6 +163,7 @@ PY_O_BASENAME = \
 	../extmod/moductypes.o \
 	../extmod/modujson.o \
 	../extmod/modure.o \
+	../extmod/moduzipfile.o \
 	../extmod/moduzlib.o \
 	../extmod/moduheapq.o \
 	../extmod/moduhashlib.o \
