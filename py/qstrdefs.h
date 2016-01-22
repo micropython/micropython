@@ -686,4 +686,11 @@ Q(dupterm)
 Q(urandom)
 Q(getrandbits)
 Q(seed)
+#if MICROPY_PY_URANDOM_EXTRA_FUNCS
+Q(randrange)
+Q(randint)
+Q(choice)
+Q(random)
+Q(uniform)
+#endif
 #endif
