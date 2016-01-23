@@ -28,6 +28,7 @@ DFU=../tools/dfu.py
 USE_PYDFU ?= 0
 PYDFU = ../tools/pydfu.py
 DFU_UTIL ?= dfu-util
+ST_FLASH ?= st-flash
 DEVICE=0483:df11
 
 CROSS_COMPILE = arm-none-eabi-
@@ -264,7 +265,7 @@ $(BUILD)/$(HAL_DIR)/src/stm32$(MCU_SERIES)xx_hal_sd.o: COPT += -Os
 
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
-.PHONY: deploy
+.PHONY: deploy deploy-st-flash
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
@@ -273,6 +274,11 @@ ifeq ($(USE_PYDFU),1)
 else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
+
+deploy-st-flash: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board"
+	$(Q)$(ST_FLASH) write $(BUILD)/firmware0.bin 0x8000000
+	$(Q)$(ST_FLASH) write $(BUILD)/firmware1.bin 0x8020000
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
