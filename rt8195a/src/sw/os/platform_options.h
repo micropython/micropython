@@ -1,0 +1,105 @@
+
+#ifndef __PLATFORM_OPTIONS_H__
+#define __PLATFORM_OPTIONS_H__
+
+
+
+/*
+ * Target Platform Selection
+ */
+
+const static int SYSTEM_CLK = 166666666;
+const static int CPU_CLOCK_SEL_VALUE = 0;
+//const static int DRAM_TIMING_TCK = 20000;
+const static int SDR_CLOCK_SEL_VALUE = 1;
+
+
+//
+// Configuration for boot sequence 
+//
+const static int CONFIG_MP=0;
+
+//
+// Config for modules 
+//
+const static int CONFIG_SPIC_MODULE = 1;
+const static int CONFIG_SDR_EN = 1;
+
+//
+#define CONFIG_UART_LOG_HISTORY 1
+#define CONFIG_DEBUG_LOG 1
+#define CONFIG_CHIP_B_CUT 1
+
+
+//
+
+#undef  CONFIG_TIMER_TEST
+#define CONFIG_TIMER_MODULE 1
+#undef  CONFIG_WDG
+#define CONFIG_WDG_NON 1
+#define CONFIG_GDMA_EN 1
+#define CONFIG_GDMA_NORMAL 1
+#undef  CONFIG_GDMA_TEST
+#define CONFIG_GDMA_MODULE 1
+#undef  CONFIG_WIFI_EN
+#define CONFIG_GPIO_EN 1
+#define CONFIG_GPIO_NORMAL 1
+#undef  CONFIG_GPIO_TEST
+#define CONFIG_GPIO_MODULE 1
+#undef  CONFIG_SDIO_DEVICE_EN
+#undef  CONFIG_SDIO_HOST_EN
+#undef  CONFIG_USB_EN
+#define CONFIG_SPI_COM_EN 1
+#define CONFIG_SPI_COM_NORMAL 1
+#undef  CONFIG_SPI_COM_TEST
+#define CONFIG_SPI_COM_MODULE 1
+#define CONFIG_UART_EN 1
+#define CONFIG_UART_NORMAL 1
+#undef  CONFIG_UART_TEST
+#define CONFIG_UART_MODULE 1
+#define CONFIG_I2C_EN 1
+#define CONFIG_I2C_NORMAL 1
+#undef  CONFIG_I2C_TEST
+#define CONFIG_I2C_MODULE 1
+#undef  CONFIG_DEBUG_LOG_I2C_HAL
+#undef  CONFIG_PCM_EN
+#define CONFIG_I2S_EN 1
+#define CONFIG_I2S_NORMAL 1
+#undef  CONFIG_I2S_TEST
+#define CONFIG_I2S_MODULE 1
+#undef  CONFIG_DEBUG_LOG_I2S_HAL
+#undef  CONFIG_NFC_EN 
+#undef  CONFIG_NFC_NORMAL 
+#undef  CONFIG_NFC_TEST
+#define CONFIG_NFC_MODULE 1
+#undef  CONFIG_SOC_PS_EN
+#undef  CONFIG_MII_EN
+#define CONFIG_PWM_EN 1
+#define CONFIG_PWM_NORMAL 1
+#undef  CONFIG_PWM_TEST
+#define CONFIG_PWM_MODULE 1
+#define CONFIG_EFUSE_EN 1
+#define CONFIG_EFUSE_NORMAL 1
+#undef  CONFIG_EFUSE_TEST
+#define CONFIG_EFUSE_MODULE 1
+#define CONFIG_SDR_NORMAL 1
+#undef  CONFIG_SDR_TEST
+#define CONFIG_SDR_MODULE 1
+#define CONFIG_SPIC_EN 1
+#define CONFIG_SPIC_NORMAL 1
+#undef  CONFIG_SPIC_TEST
+
+#define  CONFIG_ADC_EN 1
+#define CONFIG_DAC_EN 1
+#define CONFIG_DAC_NORMAL 1
+#undef  CONFIG_DAC_TEST
+#define CONFIG_DAC_MODULE 1
+#define CONFIG_DEBUG_LOG_DAC_HAL 1
+#define CONFIG_NOR_FLASH 1
+#undef  CONFIG_SPI_FLASH
+#undef  CONFIG_NAND_FLASH
+#undef  CONFIG_NONE_FLASH
+
+
+#endif // __PLATFORM_OPTIONS_H__
+
