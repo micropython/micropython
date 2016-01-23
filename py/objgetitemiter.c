@@ -29,7 +29,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 
-// this is a wrapper object that is turns something that has a __getitem__ method into an iterator
+// this is a wrapper object that turns something that has a __getitem__ method into an iterator
 
 typedef struct _mp_obj_getitem_iter_t {
     mp_obj_base_t base;
