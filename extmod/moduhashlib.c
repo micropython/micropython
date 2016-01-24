@@ -33,7 +33,7 @@
 #if MICROPY_PY_UHASHLIB
 
 #include "crypto-algorithms/sha256.h"
-#if MICROPY_PY_USSL
+#if MICROPY_PY_UHASHLIB_SHA1
 #include "lib/axtls/crypto/crypto.h"
 #endif
 
@@ -55,7 +55,7 @@ STATIC mp_obj_t hash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(o);
 }
 
-#if MICROPY_PY_USSL
+#if MICROPY_PY_UHASHLIB_SHA1
 STATIC mp_obj_t sha1_update(mp_obj_t self_in, mp_obj_t arg);
 
 STATIC mp_obj_t sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -79,7 +79,7 @@ STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(hash_update_obj, hash_update);
 
-#if MICROPY_PY_USSL
+#if MICROPY_PY_UHASHLIB_SHA1
 STATIC mp_obj_t sha1_update(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
@@ -99,7 +99,7 @@ STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 
-#if MICROPY_PY_USSL
+#if MICROPY_PY_UHASHLIB_SHA1
 STATIC mp_obj_t sha1_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
@@ -124,7 +124,7 @@ STATIC const mp_obj_type_t sha256_type = {
     .locals_dict = (void*)&hash_locals_dict,
 };
 
-#if MICROPY_PY_USSL
+#if MICROPY_PY_UHASHLIB_SHA1
 STATIC const mp_rom_map_elem_t sha1_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&sha1_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&sha1_digest_obj) },
@@ -142,7 +142,7 @@ STATIC const mp_obj_type_t sha1_type = {
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&sha256_type) },
-    #if MICROPY_PY_USSL
+    #if MICROPY_PY_UHASHLIB_SHA1
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&sha1_type) },
     #endif
 };
