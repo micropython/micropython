@@ -425,7 +425,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 STATIC const mp_obj_type_t lwip_socket_type;
 
 // FIXME: Only supports two arguments at present
-STATIC mp_obj_t lwip_socket_make_new(mp_obj_t type_in, mp_uint_t n_args,
+STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
