@@ -99,6 +99,7 @@ PY_O_BASENAME = \
 	argcheck.o \
 	warning.o \
 	map.o \
+	mpfile.o \
 	obj.o \
 	objarray.o \
 	objattrtuple.o \

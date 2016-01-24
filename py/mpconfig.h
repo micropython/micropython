@@ -696,6 +696,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_GC_COLLECT_RETVAL (0)
 #endif
 
+// Whether to provide "file" or "file-like" API support
+#ifndef MICROPY_PY_FILE_LIKE
+#define MICROPY_PY_FILE_LIKE (0)
+#endif
+
 // Whether to provide "io" module
 #ifndef MICROPY_PY_IO
 #define MICROPY_PY_IO (1)

@@ -266,6 +266,8 @@ Q(value)
 Q(write)
 Q(zip)
 
+Q(mp_file)
+
 #if MICROPY_PY_BUILTINS_COMPILE
 Q(compile)
 Q(code)
