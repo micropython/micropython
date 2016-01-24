@@ -614,6 +614,7 @@ Q(uhashlib)
 Q(update)
 Q(digest)
 Q(sha256)
+Q(sha1)
 #endif
 
 #if MICROPY_PY_UBINASCII
