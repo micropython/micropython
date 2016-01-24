@@ -212,9 +212,9 @@ SECTIONS
         . = ALIGN(8);
     } > BD_RAM
 
-        PROVIDE(_estack = .);
-	PROVIDE(__StackTop = _estack);
-	PROVIDE(__stack = __StackTop);
+    /*PROVIDE(_estack = .);*/
+	/*PROVIDE(__StackTop = _estack);*/
+	/*PROVIDE(__stack = __StackTop);*/
 
 
 
