@@ -43,6 +43,7 @@
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UJSON            (1)
+#define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
