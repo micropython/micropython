@@ -264,6 +264,19 @@ $(BUILD)/$(HAL_DIR)/src/stm32$(MCU_SERIES)xx_hal_sd.o: COPT += -Os
 
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
+ifneq ($(FROZEN_DIR),)
+CFLAGS += -DMICROPY_MODULE_FROZEN
+OBJ += $(BUILD)/frozen-files.o
+MAKE_FROZEN = ../tools/make-frozen.py
+
+$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
+	$(call compile_c)
+
+$(BUILD)/frozen-files.c: $(shell find $(FROZEN_DIR) -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+endif
+
 .PHONY: deploy
 
 deploy: $(BUILD)/firmware.dfu

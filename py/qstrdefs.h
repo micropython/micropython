@@ -432,6 +432,13 @@ Q(mem_peak)
 #endif
 Q(mem_info)
 Q(qstr_info)
+#if MICROPY_STACK_CHECK
+Q(stack_use)
+#endif
+#endif
+#if MICROPY_ENABLE_GC
+Q(heap_lock)
+Q(heap_unlock)
 #endif
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
@@ -607,6 +614,7 @@ Q(uhashlib)
 Q(update)
 Q(digest)
 Q(sha256)
+Q(sha1)
 #endif
 
 #if MICROPY_PY_UBINASCII
