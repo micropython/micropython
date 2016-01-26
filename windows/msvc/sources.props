@@ -19,6 +19,7 @@
     <ClCompile Include="$(PyBaseDir)extmod\moduhashlib.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduheapq.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modujson.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\modurandom.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modure.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduzlib.c" />
   </ItemGroup>
