@@ -8,7 +8,7 @@ try:
 except AttributeError:
     import sys
     print('SKIP')
-    sys.exit(1)
+    sys.exit()
 
 print('randrange')
 for i in range(50):
