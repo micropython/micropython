@@ -63,6 +63,10 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_AND,
     MP_TOKEN_KW_AS,
     MP_TOKEN_KW_ASSERT,
+    #if MICROPY_PY_ASYNC_AWAIT
+    MP_TOKEN_KW_ASYNC,
+    MP_TOKEN_KW_AWAIT,
+    #endif
     MP_TOKEN_KW_BREAK,
     MP_TOKEN_KW_CLASS,
     MP_TOKEN_KW_CONTINUE,
