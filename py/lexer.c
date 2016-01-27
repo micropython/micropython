@@ -261,6 +261,10 @@ STATIC const char *tok_kw[] = {
     "while",
     "with",
     "yield",
+    #if MICROPY_ASYNC_SYNTAX
+    "async",
+    "await",
+    #endif
     "__debug__",
 };
 

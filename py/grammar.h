@@ -46,8 +46,9 @@ DEF_RULE(eval_input_2, nc, and(1), tok(NEWLINE))
 
 // decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE
 // decorators: decorator+
-// decorated: decorators (classdef | funcdef)
+// decorated: decorators (classdef | funcdef | async_funcdef)
 // funcdef: 'def' NAME parameters ['->' test] ':' suite
+// async_funcdef: 'async' funcdef
 // parameters: '(' [typedargslist] ')'
 // typedargslist: tfpdef ['=' test] (',' tfpdef ['=' test])* [',' ['*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef]] | '*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef
 // tfpdef: NAME [':' test]
@@ -57,7 +58,12 @@ DEF_RULE(eval_input_2, nc, and(1), tok(NEWLINE))
 DEF_RULE(decorator, nc, and(4), tok(DEL_AT), rule(dotted_name), opt_rule(trailer_paren), tok(NEWLINE))
 DEF_RULE(decorators, nc, one_or_more, rule(decorator))
 DEF_RULE(decorated, c(decorated), and(2), rule(decorators), rule(decorated_body))
+#if MICROPY_ASYNC_SYNTAX
+DEF_RULE(decorated_body, nc, or(3), rule(classdef), rule(funcdef), rule(async_funcdef))
+DEF_RULE(async_funcdef, nc, and(2), tok(KW_ASYNC), rule(funcdef))
+#else
 DEF_RULE(decorated_body, nc, or(2), rule(classdef), rule(funcdef))
+#endif
 DEF_RULE(funcdef, c(funcdef), blank | and(8), tok(KW_DEF), tok(NAME), tok(DEL_PAREN_OPEN), opt_rule(typedargslist), tok(DEL_PAREN_CLOSE), opt_rule(funcdefrettype), tok(DEL_COLON), rule(suite))
 DEF_RULE(funcdefrettype, nc, ident | and(2), tok(DEL_MINUS_MORE), rule(test))
 // note: typedargslist lets through more than is allowed, compiler does further checks
@@ -157,7 +163,7 @@ DEF_RULE(name_list, nc, list, tok(NAME), tok(DEL_COMMA))
 DEF_RULE(assert_stmt, c(assert_stmt), and(3), tok(KW_ASSERT), rule(test), opt_rule(assert_stmt_extra))
 DEF_RULE(assert_stmt_extra, nc, ident | and(2), tok(DEL_COMMA), rule(test))
 
-// compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated
+// compound_stmt: if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt
 // if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
 // while_stmt: 'while' test ':' suite ['else' ':' suite]
 // for_stmt: 'for' exprlist 'in' testlist ':' suite ['else' ':' suite]
@@ -167,8 +173,15 @@ DEF_RULE(assert_stmt_extra, nc, ident | and(2), tok(DEL_COMMA), rule(test))
 // with_stmt: 'with' with_item (',' with_item)* ':' suite
 // with_item: test ['as' expr]
 // suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT
+// async_stmt: 'async' (funcdef | with_stmt | for_stmt)
 
+#if MICROPY_ASYNC_SYNTAX
+DEF_RULE(compound_stmt, nc, or(9), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated), rule(async_stmt))
+DEF_RULE(async_stmt, c(async_stmt), and(2), tok(KW_ASYNC), rule(async_stmt_2))
+DEF_RULE(async_stmt_2, nc, or(3), rule(funcdef), rule(with_stmt), rule(for_stmt))
+#else
 DEF_RULE(compound_stmt, nc, or(8), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated))
+#endif
 DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
 DEF_RULE(if_stmt_elif_list, nc, one_or_more, rule(if_stmt_elif))
 DEF_RULE(if_stmt_elif, nc, and(4), tok(KW_ELIF), rule(test), tok(DEL_COLON), rule(suite))
@@ -215,7 +228,8 @@ DEF_RULE(lambdef_nocond, c(lambdef), blank | and(4), tok(KW_LAMBDA), opt_rule(va
 // arith_expr: term (('+'|'-') term)*
 // term: factor (('*'|'/'|'%'|'//') factor)*
 // factor: ('+'|'-'|'~') factor | power
-// power: atom trailer* ['**' factor]
+// power: atom_expr ['**' factor]
+// atom_expr: 'await' atom trailer* | atom trailer*
 
 DEF_RULE(or_test, c(or_test), list, rule(and_test), tok(KW_OR))
 DEF_RULE(and_test, c(and_test), list, rule(not_test), tok(KW_AND))
@@ -239,8 +253,15 @@ DEF_RULE(term_op, nc, or(4), tok(OP_STAR), tok(OP_SLASH), tok(OP_PERCENT), tok(O
 DEF_RULE(factor, nc, or(2), rule(factor_2), rule(power))
 DEF_RULE(factor_2, c(factor_2), and(2), rule(factor_op), rule(factor))
 DEF_RULE(factor_op, nc, or(3), tok(OP_PLUS), tok(OP_MINUS), tok(OP_TILDE))
-DEF_RULE(power, c(power), and(3), rule(atom), opt_rule(power_trailers), opt_rule(power_dbl_star))
-DEF_RULE(power_trailers, c(power_trailers), one_or_more, rule(trailer))
+DEF_RULE(power, c(power), and(2), rule(atom_expr), opt_rule(power_dbl_star))
+#if MICROPY_ASYNC_SYNTAX
+DEF_RULE(atom_expr, nc, or(2), rule(atom_expr_await), rule(atom_expr_normal))
+DEF_RULE(atom_expr_await, c(atom_expr_await), and(3), tok(KW_AWAIT), rule(atom), opt_rule(atom_expr_trailers))
+#else
+DEF_RULE(atom_expr, nc, or(1), rule(atom_expr_normal))
+#endif
+DEF_RULE(atom_expr_normal, c(atom_expr_normal), and(2), rule(atom), opt_rule(atom_expr_trailers))
+DEF_RULE(atom_expr_trailers, c(atom_expr_trailers), one_or_more, rule(trailer))
 DEF_RULE(power_dbl_star, nc, ident | and(2), tok(OP_DBL_STAR), rule(factor))
 
 // atom: '(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']' | '{' [dictorsetmaker] '}' | NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False'

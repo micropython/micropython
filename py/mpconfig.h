@@ -550,6 +550,11 @@ typedef double mp_float_t;
 #define MICROPY_FSUSERMOUNT (0)
 #endif
 
+// Support for async/await/async for/async with
+#ifndef MICROPY_ASYNC_SYNTAX
+#define MICROPY_ASYNC_SYNTAX (1)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 

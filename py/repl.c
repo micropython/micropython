@@ -57,6 +57,9 @@ bool mp_repl_continue_with_input(const char *input) {
         || str_startswith_word(input, "with")
         || str_startswith_word(input, "def")
         || str_startswith_word(input, "class")
+        #if MICROPY_ASYNC_SYNTAX
+        || str_startswith_word(input, "async")
+        #endif
         ;
 
     // check for unmatched open bracket, quote or escape quote
