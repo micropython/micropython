@@ -253,6 +253,7 @@ int main(void) {
     #define SCB_CCR_STKALIGN (1 << 9)
     SCB_CCR |= SCB_CCR_STKALIGN;
 
+    mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
 
     pinMode(LED_BUILTIN, OUTPUT);
