@@ -34,6 +34,7 @@
 #include "py/objlist.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
@@ -848,16 +849,12 @@ STATIC NORETURN void terse_str_format_value_error(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad format string"));
 }
 
-mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
-
-    GET_STR_DATA_LEN(args[0], str, len);
-    int arg_i = 0;
+vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 16, &print);
 
-    for (const byte *top = str + len; str < top; str++) {
+    for (; str < top; str++) {
         if (*str == '}') {
             str++;
             if (str < top && *str == '}') {
@@ -886,7 +883,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
         vstr_t *field_name = NULL;
         char conversion = '\0';
-        vstr_t *format_spec = NULL;
+        const char *format_spec = NULL;
 
         if (str < top && *str != '}' && *str != '!' && *str != ':') {
             field_name = vstr_new();
@@ -927,9 +924,16 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             // '{:d}'.format(True) returns '1'
             // So we treat {:} as {} and this later gets treated to be {!s}
             if (*str != '}') {
-                format_spec = vstr_new();
-                while (str < top && *str != '}') {
-                    vstr_add_byte(format_spec, *str++);
+                format_spec = str;
+                for (int nest = 1; str < top;) {
+                    if (*str == '{') {
+                        ++nest;
+                    } else if (*str == '}') {
+                        if (--nest == 0) {
+                            break;
+                        }
+                    }
+                    ++str;
                 }
             }
         }
@@ -957,7 +961,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             const char *field = vstr_null_terminated_str(field_name);
             const char *lookup = NULL;
             if (MP_LIKELY(unichar_isdigit(*field))) {
-                if (arg_i > 0) {
+                if (*arg_i > 0) {
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
@@ -970,7 +974,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
                 }
                 arg = args[index + 1];
-                arg_i = -1;
+                *arg_i = -1;
             } else {
                 for (lookup = field; *lookup && *lookup != '.' && *lookup != '['; lookup++);
                 mp_obj_t field_q = mp_obj_new_str(field, lookup - field, true/*?*/);
@@ -986,7 +990,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             vstr_free(field_name);
             field_name = NULL;
         } else {
-            if (arg_i < 0) {
+            if (*arg_i < 0) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
@@ -994,11 +998,11 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         "can't switch from manual field specification to automatic field numbering"));
                 }
             }
-            if ((uint)arg_i >= n_args - 1) {
+            if ((uint)*arg_i >= n_args - 1) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
             }
-            arg = args[arg_i + 1];
-            arg_i++;
+            arg = args[(*arg_i) + 1];
+            (*arg_i)++;
         }
         if (!format_spec && !conversion) {
             conversion = 's';
@@ -1037,7 +1041,10 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             // precision   ::=  integer
             // type        ::=  "b" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" | "n" | "o" | "s" | "x" | "X" | "%"
 
-            const char *s = vstr_null_terminated_str(format_spec);
+            // recursively call the formatter to format any nested specifiers
+            MP_STACK_CHECK();
+            vstr_t format_spec_vstr = mp_obj_str_format_helper(format_spec, str, arg_i, n_args, args, kwargs);
+            const char *s = vstr_null_terminated_str(&format_spec_vstr);
             if (isalignment(*s)) {
                 align = *s++;
             } else if (*s && isalignment(s[1])) {
@@ -1084,8 +1091,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         "invalid format specifier"));
                 }
             }
-            vstr_free(format_spec);
-            format_spec = NULL;
+            vstr_clear(&format_spec_vstr);
         }
         if (!align) {
             if (arg_looks_numeric(arg)) {
@@ -1288,6 +1294,15 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
     }
 
+    return vstr;
+}
+
+mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
+
+    GET_STR_DATA_LEN(args[0], str, len);
+    int arg_i = 0;
+    vstr_t vstr = mp_obj_str_format_helper((const char*)str, (const char*)str + len, &arg_i, n_args, args, kwargs);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 
