@@ -147,7 +147,6 @@ TIM_HandleTypeDef TIM6_Handle;
 
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
 
-STATIC uint32_t timer_get_source_freq(uint32_t tim_id);
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
 STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
@@ -229,7 +228,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // If the APB prescaler is 1, then the timer clock is equal to its respective
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
-STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
+uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
