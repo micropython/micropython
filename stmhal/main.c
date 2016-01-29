@@ -395,12 +395,6 @@ int main(void) {
 
     // basic sub-system init
     pendsv_init();
-    #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
-    HAL_NVIC_SetPriority(PVD_IRQn, 6, 0); // same priority as USB
-    HAL_NVIC_EnableIRQ(PVD_IRQn);
-    #else
-    timer_tim3_init();
-    #endif
     led_init();
 #if MICROPY_HW_HAS_SWITCH
     switch_init0();

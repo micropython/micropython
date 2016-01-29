@@ -82,7 +82,6 @@
 
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
-#define MICROPY_HW_USE_ALT_IRQ_FOR_CDC (1)
 
 // MMA accelerometer config
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_A10)

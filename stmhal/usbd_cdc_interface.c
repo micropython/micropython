@@ -140,10 +140,6 @@ static int8_t CDC_Itf_Init(void)
   TIM_Config();
 #endif
   
-    /*##-4- Start the TIM Base generation in interrupt mode ####################*/
-    /* Start Channel1 */
-    __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
-  
     /*##-5- Set Application Buffers ############################################*/
     USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
     USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
