@@ -544,7 +544,7 @@ void TIM3_IRQHandler(void) {
     #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
     timer_irq_handler(3);
     #else
-    HAL_TIM_IRQHandler(&TIM3_Handle);
+    // HAL_TIM_IRQHandler(&TIM3_Handle);
     #endif
     IRQ_EXIT(TIM3_IRQn);
 }

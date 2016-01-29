@@ -90,7 +90,7 @@ static const uint8_t *hid_report_desc;
 static USBD_CDC_ItfTypeDef *CDC_fops;
 static USBD_StorageTypeDef *MSC_fops;
 
-static USBD_CDC_HandleTypeDef CDC_ClassData;
+USBD_CDC_HandleTypeDef CDC_ClassData;
 static USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
 static USBD_HID_HandleTypeDef HID_ClassData;
 
@@ -904,6 +904,8 @@ static uint8_t USBD_CDC_MSC_HID_EP0_RxReady(USBD_HandleTypeDef *pdev) {
 static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
     if ((usbd_mode & USBD_MODE_CDC) && (epnum == (CDC_IN_EP & 0x7f) || epnum == (CDC_CMD_EP & 0x7f))) {
         CDC_ClassData.TxState = 0;
+        // added tx_complete callback here
+        CDC_fops->TxComplete();
         return USBD_OK;
     } else if ((usbd_mode & USBD_MODE_MSC) && epnum == (MSC_IN_EP & 0x7f)) {
         MSC_BOT_DataIn(pdev, epnum);

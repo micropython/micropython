@@ -87,11 +87,15 @@ static int8_t CDC_Itf_DeInit   (void);
 static int8_t CDC_Itf_Control  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Itf_Receive  (uint8_t* pbuf, uint32_t *Len);
 
+extern USBD_CDC_HandleTypeDef CDC_ClassData;
+void CDC_TxComplete(void);
+// TxComplete callback is routed to USBD_CDC_HAL_TIM_PeriodElapsedCallback
 const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
     CDC_Itf_Init,
     CDC_Itf_DeInit,
     CDC_Itf_Control,
-    CDC_Itf_Receive
+    CDC_Itf_Receive,
+    CDC_TxComplete
 };
 
 /* Private functions ---------------------------------------------------------*/
@@ -142,7 +146,7 @@ static int8_t CDC_Itf_Init(void)
   
     /*##-4- Start the TIM Base generation in interrupt mode ####################*/
     /* Start Channel1 */
-    __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
+    // __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
   
     /*##-5- Set Application Buffers ############################################*/
     USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
@@ -258,11 +262,11 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
 }
 
 /**
-  * @brief  TIM period elapsed callback
-  * @param  htim: TIM handle
+  * @brief  callback of USB start-of-frame (SOF) in 1msec intervals
+  * @param  hpcd PCD handle
   * @retval None
   */
-void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
+void USBD_CDC_SOF_callback(PCD_HandleTypeDef *hpcd) {
     if (!dev_is_connected) {
         // CDC device is not connected to a host, so we are unable to send any data
         return;
@@ -276,9 +280,8 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
     if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
         // We have sent data and are waiting for the low-level USB driver to
         // finish sending it over the USB in-endpoint.
-        // We have a 15 * 10ms = 150ms timeout
-        if (UserTxBufPtrWaitCount < 15) {
-            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+        // We have a 150 * 1ms = 150ms timeout
+        if (UserTxBufPtrWaitCount < 150) {
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
             if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
@@ -320,7 +323,16 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
         }
     }
 }
-
+/**
+  * @brief  CDC_TxComplete 
+  *         Callback for tx complete event (in endpoint is empty)
+  */
+void CDC_TxComplete(void) {
+    PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+    // check for any pending data and setup new packet
+    USBD_CDC_SOF_callback(hpcd);
+    
+}
 /**
   * @brief  CDC_Itf_DataRx
   *         Data received over USB OUT endpoint is processed here.
@@ -429,7 +441,6 @@ int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout) {
         UserTxBuffer[UserTxBufPtrIn] = buf[i];
         UserTxBufPtrIn = (UserTxBufPtrIn + 1) & (APP_TX_DATA_SIZE - 1);
     }
-
     // Success, return number of bytes read
     return len;
 }
