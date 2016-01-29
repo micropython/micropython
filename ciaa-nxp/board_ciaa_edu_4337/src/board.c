@@ -85,6 +85,75 @@ typedef struct {
 } ExtIntData;
 static ExtIntData extIntData[4];
 
+
+//================================================[I2C Management]========================================================
+void Board_I2C_Init(I2C_ID_T id)
+{
+	if (id == I2C1) {
+		/* Configure pin function for I2C1*/
+		Chip_SCU_PinMuxSet(0x2, 3, (SCU_MODE_ZIF_DIS | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC1));		/* P2.3 : I2C1_SDA */
+		Chip_SCU_PinMuxSet(0x2, 4, (SCU_MODE_ZIF_DIS | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC1));		/* P2.4 : I2C1_SCL */
+	}
+	else {
+		Chip_SCU_I2C0PinConfig(I2C0_STANDARD_FAST_MODE);
+	}
+}
+/* Set I2C mode to polling/interrupt */
+static void i2c_set_mode(I2C_ID_T id, int polling)
+{
+	if (!polling) {
+		//mode_poll &= ~(1 << id);
+		Chip_I2C_SetMasterEventHandler(id, Chip_I2C_EventHandler);
+		NVIC_EnableIRQ(id == I2C0 ? I2C0_IRQn : I2C1_IRQn);
+	}
+	else {
+		//mode_poll |= 1 << id;
+		NVIC_DisableIRQ(id == I2C0 ? I2C0_IRQn : I2C1_IRQn);
+		Chip_I2C_SetMasterEventHandler(id, Chip_I2C_EventHandlerPolling);
+	}
+}
+void i2C0_IRQHandler (void)
+{
+	if (Chip_I2C_IsMasterActive(I2C0)) {
+		Chip_I2C_MasterStateHandler(I2C0);
+	}
+	else {
+		Chip_I2C_SlaveStateHandler(I2C0);
+    }	
+}
+
+
+void Board_I2C_Master_Init(void)
+{
+	Board_I2C_Init(I2C0);
+    /* Initialize I2C */
+    Chip_I2C_Init(I2C0);
+    Chip_I2C_SetClockRate(I2C0, 100000);
+   
+    /* Set default mode to interrupt */
+    i2c_set_mode(I2C0, 0);
+}
+void Board_I2C_Master_SetSpeed(uint32_t speed)
+{
+	Chip_I2C_SetClockRate(I2C0, speed);
+}
+
+uint32_t Board_I2C_Master_Read(uint8_t slaveAddr, uint8_t *buff, int len)
+{
+	return Chip_I2C_MasterRead(I2C0, slaveAddr, buff, len);
+}
+uint32_t Board_I2C_Master_Write(uint8_t slaveAddr, uint8_t *buff, int len)
+{
+	return Chip_I2C_MasterSend(I2C0, slaveAddr, buff, len);
+}
+uint32_t Board_I2C_Master_WriteCmdAdnRead(uint8_t slaveAddr, uint8_t cmd,uint8_t *buff, int len)
+{
+	return Chip_I2C_MasterCmdRead(I2C0, slaveAddr, cmd, buff, len);
+}
+
+//========================================================================================================================
+
+
 //================================================[RTC Management]========================================================
 static void(*rtcCallback)(void*);
 static void* rtcCallbackArg;
@@ -1466,20 +1535,13 @@ void Board_Init(void)
 	/* Initialize RTC module */
 	//Board_RTC_Init();
 
+	/* Initialize I2C0 module */
+	Board_I2C_Master_Init();
+
 	Chip_ENET_RMIIEnable(LPC_ETHERNET);
 }
 
-void Board_I2C_Init(I2C_ID_T id)
-{
-	if (id == I2C1) {
-		/* Configure pin function for I2C1*/
-		Chip_SCU_PinMuxSet(0x2, 3, (SCU_MODE_ZIF_DIS | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC1));		/* P2.3 : I2C1_SDA */
-		Chip_SCU_PinMuxSet(0x2, 4, (SCU_MODE_ZIF_DIS | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC1));		/* P2.4 : I2C1_SCL */
-	}
-	else {
-		Chip_SCU_I2C0PinConfig(I2C0_STANDARD_FAST_MODE);
-	}
-}
+
 
 void Board_SDMMC_Init(void)
 {
