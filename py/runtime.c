@@ -61,7 +61,6 @@ const mp_obj_module_t mp_module___main__ = {
 
 void mp_init(void) {
     qstr_init();
-    mp_stack_ctrl_init();
 
     // no pending exceptions to start with
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;

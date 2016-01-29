@@ -376,26 +376,19 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #define PATHLIST_SEP_CHAR ':'
 #endif
 
-/*
-typedef union _a_t { uint32_t u32; uint64_t u64; } a_t;
-STATIC const uint64_t table[4] = {
-    1,
-    2,
-    3,
-    //(a_t){(uint32_t)&set_sys_argv}.u64,
-    ((a_t){(uint32_t)123}).u64,
-};
-*/
+MP_NOINLINE int main_(int argc, char **argv);
 
 int main(int argc, char **argv) {
-    /*
-    printf("sizeof(void*)=%u\n", (uint)sizeof(void*));
-    for (int i = 0; i < sizeof(table); ++i) {
-        byte *ptr = (void*)&table[0];
-        printf(" %02x", ptr[i]);
-        if ((i + 1)%8 == 0) printf("\n");
-    }
-    */
+    // We should capture stack top ASAP after start, and it should be
+    // captured guaranteedly before any other stack variables are allocated.
+    // For this, actual main (renamed main_) should not be inlined into
+    // this function. main_() itself may have other functions inlined (with
+    // their own stack variables), that's why we need this main/main_ split.
+    mp_stack_ctrl_init();
+    return main_(argc, argv);
+}
+
+MP_NOINLINE int main_(int argc, char **argv) {
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
     pre_process_options(argc, argv);

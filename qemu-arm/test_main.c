@@ -49,6 +49,7 @@ end:
 
 int main() {
     const char a[] = {"sim"};
+    mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
     void *heap = malloc(256 * 1024);
     gc_init(heap, (char*)heap + 256 * 1024);

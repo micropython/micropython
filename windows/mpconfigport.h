@@ -178,6 +178,10 @@ extern const struct _mp_obj_module_t mp_module_time;
 #include "init.h"
 #include "sleep.h"
 
+#ifdef __GNUC__
+#define MP_NOINLINE __attribute__((noinline))
+#endif
+
 // MSVC specifics
 #ifdef _MSC_VER
 
@@ -191,6 +195,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 // CL specific overrides from mpconfig
 
 #define NORETURN                    __declspec(noreturn)
+#define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
 #define MICROPY_PORT_CONSTANTS      { "dummy", 0 } //can't have zero-sized array

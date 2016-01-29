@@ -28,6 +28,31 @@ CFLAGS += -g
 COPT = -O0
 else
 COPT = -Os #-DNDEBUG
+# _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
+# security for detecting buffer overflows. Some distros (Ubuntu at the very least)
+# have it enabled by default.
+#
+# gcc already optimizes some printf calls to call puts and/or putchar. When
+# _FORTIFY_SOURCE is enabled and compiling with -O1 or greater, then some
+# printf calls will also be optimized to call __printf_chk (in glibc). Any
+# printfs which get redirected to __printf_chk are then no longer synchronized
+# with printfs that go through mp_printf.
+#
+# In MicroPython, we don't want to use the runtime library's printf but rather
+# go through mp_printf, so that stdout is properly tied into streams, etc.
+# This means that we either need to turn off _FORTIFY_SOURCE or provide our
+# own implementation of __printf_chk. We've chosen to turn off _FORTIFY_SOURCE.
+# It should also be noted that the use of printf in MicroPython is typically
+# quite limited anyways (primarily for debug and some error reporting, etc
+# in the unix version).
+#
+# Information about _FORTIFY_SOURCE seems to be rather scarce. The best I could
+# find was this: https://securityblog.redhat.com/2014/03/26/fortify-and-you/
+# Original patchset was introduced by
+# https://gcc.gnu.org/ml/gcc-patches/2004-09/msg02055.html .
+#
+# Turning off _FORTIFY_SOURCE is only required when compiling with -O1 or greater
+CFLAGS += -U _FORTIFY_SOURCE
 endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
