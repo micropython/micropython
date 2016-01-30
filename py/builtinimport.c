@@ -36,6 +36,8 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
+#include "extmod/moduzipfile.h"
+
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -60,22 +62,42 @@ bool mp_obj_is_package(mp_obj_t module) {
     return dest[0] != MP_OBJ_NULL;
 }
 
+#if DEBUG_PRINT
+STATIC const char *stat_str[] = { "doesn't exit", "dir", "file" };
+#endif
+
+STATIC mp_import_stat_t import_stat(const char *path) {
+    mp_import_stat_t stat;
+
+#if MICROPY_PY_ZIPIMPORT
+    stat = zipfile_import_stat(path);
+    if (stat != MP_IMPORT_STAT_NO_EXIST) {
+        DEBUG_printf("zipimport import_stat('%s') returned %s\n", path, stat_str[stat]);
+        return stat;
+    }
+#endif
+
+    stat = mp_import_stat(path);
+    DEBUG_printf("import_stat('%s') returned %s\n", path, stat_str[stat]);
+    return stat;
+}
+
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
-    mp_import_stat_t stat = mp_import_stat(vstr_null_terminated_str(path));
+    mp_import_stat_t stat = import_stat(vstr_null_terminated_str(path));
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
 
     vstr_add_str(path, ".py");
-    stat = mp_import_stat(vstr_null_terminated_str(path));
+    stat = import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
 
     #if MICROPY_PERSISTENT_CODE_LOAD
     vstr_ins_byte(path, path->len - 2, 'm');
-    stat = mp_import_stat(vstr_null_terminated_str(path));
+    stat = import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -85,6 +107,7 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 }
 
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
+    DEBUG_printf("find_file(%s)\n", file_str);
 #if MICROPY_PY_SYS
     // extract the list of paths
     mp_uint_t path_num;
@@ -103,6 +126,9 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
             vstr_reset(dest);
             mp_uint_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
+
+            DEBUG_printf("find_file: Checking sys.path entry '%s' file_str = '%s'\n", p, file_str);
+
             if (p_len > 0) {
                 vstr_add_strn(dest, p, p_len);
                 vstr_add_char(dest, PATH_SEP_CHAR);
@@ -187,7 +213,17 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     #if MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
-        mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
+        mp_raw_code_t *raw_code;
+
+        #if MICROPY_PY_ZIPIMPORT
+        mp_obj_t zip_file = zipfile_import_open_archive(file_str);
+        if (zip_file != mp_const_none && MP_OBJ_IS_OBJ(zip_file)) {
+            raw_code = mp_raw_code_load_file_obj(zip_file);
+        } else
+        #endif
+        {
+            raw_code = mp_raw_code_load_file(file_str);
+        }
         do_execute_raw_code(module_obj, raw_code);
         return;
     }
@@ -195,7 +231,17 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     #if MICROPY_ENABLE_COMPILER
     {
-        mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
+        mp_lexer_t *lex;
+
+        #if MICROPY_PY_ZIPIMPORT
+        mp_obj_t zip_file = zipfile_import_open_archive(file_str);
+        if (zip_file != mp_const_none && MP_OBJ_IS_OBJ(zip_file)) {
+            lex = mp_lexer_new_from_file_obj(qstr_from_str(file_str), zip_file);
+        } else
+        #endif
+        {
+            lex = mp_lexer_new_from_file(file_str);
+        }
         do_load_from_lexer(module_obj, lex, file_str);
     }
     #else
@@ -434,7 +480,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
-                    if (mp_import_stat(vstr_null_terminated_str(&path)) != MP_IMPORT_STAT_FILE) {
+                    if (import_stat(vstr_null_terminated_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                         mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {

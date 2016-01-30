@@ -73,6 +73,7 @@ PY_O_BASENAME = \
 	unicode.o \
 	mpz.o \
 	lexer.o \
+	lexermpfile.o \
 	lexerstr.o \
 	lexerunix.o \
 	parse.o \

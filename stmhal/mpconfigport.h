@@ -88,6 +88,10 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_FILE_LIKE        (1)
+#define MICROPY_PY_UZIPFILE         (0)
+#define MICROPY_PY_ZIPIMPORT        (1)
+#define MICROPY_HELPER_LEXER_MPFILE (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)

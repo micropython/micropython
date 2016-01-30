@@ -30,6 +30,7 @@
 
 #include "py/mpconfig.h"
 #include "py/qstr.h"
+#include "py/obj.h"
 
 /* lexer.h -- simple tokeniser for Micro Python
  *
@@ -196,6 +197,10 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename);
 
 #if MICROPY_HELPER_LEXER_UNIX
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);
+#endif
+
+#if MICROPY_HELPER_LEXER_MPFILE
+mp_lexer_t *mp_lexer_new_from_file_obj(qstr filename, mp_obj_t file_obj);
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_LEXER_H__

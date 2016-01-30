@@ -402,6 +402,11 @@
 #define MICROPY_HELPER_LEXER_UNIX (0)
 #endif
 
+// Whether to include lexer helper function for mpfile (needed for zipimport)
+#ifndef MICROPY_HELPER_LEXER_MPFILE
+#define MICROPY_HELPER_LEXER_MPFILE (0)
+#endif
+
 // Long int implementation
 #define MICROPY_LONGINT_IMPL_NONE (0)
 #define MICROPY_LONGINT_IMPL_LONGLONG (1)
@@ -790,6 +795,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UZIPFILE
 #define MICROPY_PY_UZIPFILE (0)
+#endif
+
+#ifndef MICROPY_PY_ZIPIMPORT
+#define MICROPY_PY_ZIPIMPORT (0)
 #endif
 
 #ifndef MICROPY_PY_URANDOM

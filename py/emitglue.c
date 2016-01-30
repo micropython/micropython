@@ -34,6 +34,7 @@
 #include "py/emitglue.h"
 #include "py/runtime0.h"
 #include "py/bc.h"
+#include "py/mpfile.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)
@@ -396,7 +397,57 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
 // here we define mp_raw_code_load_file depending on the port
 // TODO abstract this away properly
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(MICROPY_PY_FILE_LIKE)
+// Universal file reader
+
+typedef struct _mp_lexer_file_buf_t {
+    mp_file_t *file;
+    byte buf[20];
+    mp_uint_t len;
+    mp_uint_t pos;
+} mp_lexer_file_buf_t;
+
+STATIC mp_uint_t mp_file_buf_next_byte(void *fb_in) {
+    mp_lexer_file_buf_t *fb = fb_in;
+    if (fb->pos >= fb->len) {
+        if (fb->len == 0) {
+            return (mp_uint_t)-1;
+        } else {
+            int n = mp_readinto(fb->file, fb->buf, sizeof(fb->buf));
+            if (n <= 0) {
+                fb->len = 0;
+                return (mp_uint_t)-1;
+            }
+            fb->len = n;
+            fb->pos = 0;
+        }
+    }
+    return fb->buf[fb->pos++];
+}
+
+STATIC mp_raw_code_t *mp_raw_code_load_mp_file(mp_file_t *file) {
+    mp_lexer_file_buf_t fb;
+    fb.file = file;
+    int n = mp_readinto(fb.file, fb.buf, sizeof(fb.buf));
+    fb.len = n;
+    fb.pos = 0;
+    mp_reader_t reader;
+    reader.data = &fb;
+    reader.read_byte = mp_file_buf_next_byte;
+    mp_raw_code_t *rc = mp_raw_code_load(&reader);
+    mp_close(fb.file);
+    return rc;
+}
+
+mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
+    return mp_raw_code_load_mp_file(mp_open(filename, "rb"));
+}
+
+mp_raw_code_t *mp_raw_code_load_file_obj(mp_obj_t file_obj) {
+    return mp_raw_code_load_mp_file(mp_file_from_file_obj(file_obj));
+}
+
+#elif defined(__i386__) || defined(__x86_64__)
 // unix file reader
 
 #include <sys/stat.h>

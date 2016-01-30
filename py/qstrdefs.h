@@ -636,7 +636,11 @@ Q(is_zipfile)
 Q(rb)
 Q(ZipFile)
 Q(namelist)
+#endif
+#if MICROPY_PY_UZIPFILE || MICROPY_PY_ZIPIMPORT
 Q(ZipExtFile)
+
+
 #endif
 
 #if MICROPY_PY_MACHINE
