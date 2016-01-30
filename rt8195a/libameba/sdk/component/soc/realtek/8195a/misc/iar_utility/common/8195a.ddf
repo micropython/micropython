@@ -1,0 +1,23 @@
+;; Memory information ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 
+;; Used to define address zones within the ARM address space (Memory). 
+;;
+;;   Name      may be almost anything
+;;   AdrSpace  must be Memory
+;;   StartAdr  start of memory block
+;;   EndAdr    end of memory block
+;;   AccType   type of access, read-only (R), read-write (RW) or SFR (W)
+
+[Memory]
+;;         Name             AdrSpace    StartAdr    EndAdr      AccType   Width
+Memory =  ROM              Memory      0x00000000  0x003FFFFF  RW
+Memory =  SRAM             Memory      0x10000000  0x1FFFFFFF  RW
+Memory =  DRAM             Memory      0x30000000  0x30FFFFFF  RW
+Memory =  SFR              Memory      0x40000000  0x41FFFFFF  RW
+Memory =  SFR_Bitband      Memory      0x42000000  0x43FFFFFF  RW
+Memory =  PPB              Memory      0xE0000000  0xFFFFFFFF  RW  
+
+TrustedRanges = true
+UseSfrFilter = true
+
+[SfrInclude]

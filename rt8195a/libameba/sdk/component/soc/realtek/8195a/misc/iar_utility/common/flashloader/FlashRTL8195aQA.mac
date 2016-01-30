@@ -1,0 +1,60 @@
+setup()
+{
+	__var tmp;
+
+	__hwReset(1);
+
+	__writeMemory32(0x21, 		0x40000014, "Memory");	__delay(10);
+	__writeMemory32(0x1FC00002,     0x40000304, "Memory");	__delay(10);
+	__writeMemory32(0x400,          0x40000250, "Memory");	__delay(10);
+	__writeMemory32(0x0,            0x40000340, "Memory");	__delay(10);
+	__writeMemory32(0xc04,		0x40000230, "Memory");	__delay(10);
+	__writeMemory32(0x1157, 	0x40000210, "Memory");	__delay(10);
+	__writeMemory32(0x110011, 	0x400002c0, "Memory");	__delay(10);
+	__writeMemory32(0xffffffff,     0x40000320, "Memory");	__delay(10);
+        
+	__writeMemory32(0x1, 		0x40005224, "Memory");	__delay(10);
+	__writeMemory32(0x2c8, 		0x40005004, "Memory");	__delay(10);
+	__writeMemory32(0xffffd000,	0x40005008, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x22, 		0x40005020, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x09032001,	0x40005010, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x2611, 	0x40005014, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x68413, 	0x40005018, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x42, 		0x4000501c, "Memory");	__delay(10);
+	__delay(3);
+        
+        // Enable
+ 	__writeMemory32(0x700, 		0x4000500c, "Memory");	__delay(10);
+	__delay(20);
+	__writeMemory32(0x1, 		0x40005000, "Memory");	__delay(10);
+	__delay(100);
+	tmp = __readMemory32(0x40005000,"Memory");	__delay(10);
+	__writeMemory32(0x600, 		0x4000500c, "Memory");	__delay(10);
+	__delay(30);  
+}
+
+execUserPreload()
+{
+	__message "----- Prepare hardware for Flashloader -----\n";
+	setup();
+	__writeMemory32(0x80000000, 0x40000218, "Memory");
+}
+
+execUserSetup()
+{
+	//execUserPreload();
+	//__loadImage("$TARGET_PATH$ ", 0, 0);
+	//__writeMemory32(0x80000000, 0x40000218, "Memory");
+}
+
+execUserFlashInit()  // Called by debugger before loading flash loader in RAM.
+{
+	__message "----- Prepare hardware for Flashloader -----\n";
+	setup();
+	__writeMemory32(0x80000000, 0x40000218, "Memory");
+}

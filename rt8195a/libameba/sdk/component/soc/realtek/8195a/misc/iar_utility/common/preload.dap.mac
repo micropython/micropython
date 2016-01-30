@@ -1,0 +1,372 @@
+//DRAM_INFO
+__var DeviceType;
+__var Page;
+__var Bank;
+__var DqWidth;
+
+//DRAM_MODE_REG_INFO
+__var BstLen;
+__var BstType;
+__var Mode0Cas;
+__var Mode0Wr;
+__var Mode1DllEnN;
+__var Mode1AllLat;
+__var Mode2Cwl;
+
+//DRAM_TIMING_INFO, additional parameter, to config DRAM_TIMING INFO
+__var DramTimingTref;
+__var DramRowNum;
+__var Tck;
+
+//DRAM_TIMING_INFO
+__var TrfcPs;
+__var TrefiPs;
+__var WrMaxTck;
+__var TrcdPs; 
+__var TrpPs;
+__var TrasPs;
+__var TrrdTck;
+__var TwrPs;
+__var TwtrTck; 
+__var TmrdTck;
+__var TrtpTck;
+__var TccdTck;
+__var TrcPs;
+
+//DRAM_DEVICE_INFO
+__var DdrPeriodPs;
+__var DfiRate;
+
+__config_dram_param(){
+        __var CsBstLen;
+        __var CasWr;
+        __var CasRd;
+        __var CasRdT;
+        __var ClrSrt;
+        __var AddLat;
+        __var DramEmr2;
+        __var DramMr0;
+        __var CrTwr;
+        __var DramMaxWr;
+        __var DramWr;
+        __var CrTrtw;
+        __var CrTrtwT;
+        __var DramPeriod;
+        __var DdrType;
+        //__var paDqWidth;
+        //__var paPage;
+        //__var paDfiRate
+        
+        __var tmp;
+       
+        // Register dram common.mac
+        //__registerMacroFile("$PROJ_DIR$\\..\\..\\..\\component\\soc\\realtek\\8195a\\misc\\iar_utility\\common\\dram\\common.mac");
+        __load_dram_common();
+        
+        // Load parameter
+        __load_dram_param();
+        
+        DfiRate = 1<<DfiRate;
+        DramPeriod = DdrPeriodPs*DfiRate;
+        DramMaxWr= (WrMaxTck)/(DfiRate) +1;
+        DramWr = ((TwrPs) / DramPeriod)+1;
+        CrTwr = ((TwrPs) / DramPeriod) + 3;
+        
+        if (CrTwr < DramMaxWr) {
+                CrTwr = CrTwr;
+        }else {
+                CrTwr = DramMaxWr;
+        }      
+        
+        if(DeviceType==2){              // Case DDR2
+                DdrType = 2;
+                if (BstLen == 0){
+                        CsBstLen = 0;
+                        CrTrtwT = 4;
+                        DramMr0 = 2;
+                }else{
+                        CsBstLen = 1;
+                        CrTrtwT = 6;
+                        DramMr0 = 3;
+                }
+                CasRd = Mode0Cas;
+                AddLat = Mode1AllLat;
+                CasWr = CasRd + AddLat -1;
+                DramEmr2 = 0;
+                DramMr0  =(((DramWr%6)-1)<<(8+1))|(0<<8)|(Mode0Cas<<4)|(BstType<<3)|DramMr0;
+        }
+        if(DeviceType==3){        // Case DDR3
+                DdrType = 3;
+                if (BstLen==0){
+                        CsBstLen = 0; //bst_4
+                        DramMr0 = 2;
+                }else{ 
+                        CsBstLen = 1; // bst_8
+                        DramMr0 = 0;
+                }
+                CrlSrt = (Mode0Cas >> 1);
+                if (((Mode0Cas) & 0x1) ) {
+                        CasRdT = CrlSrt+ 12;
+                }else{
+                        CasRdT = CrlSrt+ 4;
+                }
+                
+                AddLat = 0;
+                if (Mode1AllLat == 1) { // CL-1
+                        AddLat = CasRd -1;
+                } 
+                if (Mode1AllLat == 2){ // CL-2
+                        AddLat = CasRd -2;
+                }
+                CasRd = CasRdT + AddLat;
+                CasWr = Mode2Cwl + 5 + AddLat;
+                DramEmr2 = Mode2Cwl << 3;
+                
+                DramWr = (DramWr + 1) / 2;
+                if (DramWr == 16) {
+                        DramWr = 0;
+                } 
+                if (DramWr <= 9) {  // 5< wr <= 9
+                        DramWr = DramWr - 4;
+                } 
+                DramMr0  =(DramWr<<(8+1))|(0<<8)|((Mode0Cas>>1)<<4)|(BstType<<3)|((Mode0Cas&0x1)<<2)|DramMr0;
+                CrTrtwT = (CasRdT + 6) - CasWr;
+        }
+        if (DeviceType == 8){
+                DdrType = 8;
+                if (BstLen == 0) {
+                        DramMr0 = 2; // bst_4
+                        CsBstLen = 0; //bst_4
+                        CasRd = 0x2;
+                } else {
+                        DramMr0 = 3; // bst_8
+                        CsBstLen = 1; // bst_8
+                        CasRd  = 0x3;
+                }
+                CasWr = 0;
+                DramMr0  =(CasRd<<4)|(BstType<<3)|DramMr0;
+                CrTrtwT = 0; // tic: CasRd + rd_rtw + rd_pipe        
+        }
+        
+        // countting tRTW
+        if ((CrTrtwT & 0x1)) {
+                CrTrtw = (CrTrtwT+1) /(DfiRate);
+        } else {
+                CrTrtw = CrTrtwT /(DfiRate);
+        }
+        
+        DqWidth = DqWidth; 
+        Page = Page +1; // DQ16 -> memory:byte_unit *2
+        if (DqWidth == 1) { // paralle dq_16 => Page + 1
+                Page = Page +1;
+        }
+        
+        // REG_SDR_MISC
+        tmp =(Page<<0)|(Bank<<4)|(CsBstLen<<6)|(DqWidth<<8);
+        __writeMemory32(tmp, 		0x40005224, "Memory");	__delay(10);
+        // REG_SDR_DCR
+        tmp =(0x2<<8)|(DqWidth<<4)|(DdrType<<0);
+        __writeMemory32(tmp, 		0x40005004, "Memory");	__delay(10);
+        // REG_SDR_IOCR
+        tmp =((CasRd-4)/(DfiRate)<<20)|(0<<17)|(((CasWr-3)/(DfiRate))<<12)|(0<<8);
+        __writeMemory32(tmp, 		0x40005008, "Memory");	__delay(10);
+        if(DeviceType != 8){
+                tmp =DramEmr2;
+                __writeMemory32(tmp, 		0x40005028, "Memory");	__delay(10);
+                tmp =(1<<2)|(1<<1)|(Mode1DllEnN);
+                __writeMemory32(tmp, 		0x40005024, "Memory");	__delay(10);
+        }
+        tmp =DramMr0;
+        __writeMemory32(tmp, 		0x40005020, "Memory");	__delay(10);
+        tmp =(0<<28)|(9<<24)|((((TrefiPs)/DramPeriod)+1)<<8)|((((TrfcPs)/DramPeriod)+1)<<0);
+        __writeMemory32(tmp, 		0x40005010, "Memory");	__delay(10);
+        tmp =((((TrtpTck)/DfiRate)+1)<<13)|(CrTwr<<9)|((((TrasPs)/DramPeriod)+1)<<4)|((((TrpPs)/DramPeriod)+1)<<0);
+        __writeMemory32(tmp, 		0x40005014, "Memory");	__delay(10);
+        tmp =(CrTrtw                    << 20) |
+             ((((TwtrTck)/DfiRate)+3)   << 17) |
+             ((((TccdTck)/DfiRate)+1)   << 14) |
+             ((((TrcdPs)/DramPeriod)+1) << 10) |
+             ((((TrcPs)/DramPeriod)+1)  << 4 ) |
+             (((TrrdTck/DfiRate)+1)     << 0);
+        __writeMemory32(tmp, 		0x40005018, "Memory");	__delay(10);
+        tmp =(TmrdTck<<5)|(0<<4)|(2<<0);
+        __writeMemory32(tmp, 		0x4000501c, "Memory");	__delay(10);
+        // Set Idle
+ 	__writeMemory32(0x700, 		0x4000500c, "Memory");	__delay(10);
+        // start init
+ 	__writeMemory32(0x1, 		0x40005000, "Memory");	__delay(100);
+	tmp = __readMemory32(0x40005000,"Memory");	__delay(10);
+        // enter memory mode
+        __writeMemory32(0x600, 		0x4000500c, "Memory");	__delay(10);
+}
+
+__config_dram_param_fixed(){
+        __var tmp;
+        // Dram Attribute
+	__writeMemory32(0x1, 		0x40005224, "Memory");	__delay(10);
+	__writeMemory32(0x2c8, 		0x40005004, "Memory");	__delay(10);
+	__writeMemory32(0xffffd000,	0x40005008, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x22, 		0x40005020, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x09032001,	0x40005010, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x2611, 	0x40005014, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x68413, 	0x40005018, "Memory");	__delay(10);
+	__delay(3);
+	__writeMemory32(0x42, 		0x4000501c, "Memory");	__delay(10);
+	__delay(3);
+        
+        // Enable
+ 	__writeMemory32(0x700, 		0x4000500c, "Memory");	__delay(10);
+	__delay(20);
+	__writeMemory32(0x1, 		0x40005000, "Memory");	__delay(10);
+	__delay(100);
+	tmp = __readMemory32(0x40005000,"Memory");	__delay(10);
+	__writeMemory32(0x600, 		0x4000500c, "Memory");	__delay(10);
+        __delay(30);
+}
+
+__mem_test(){
+	__var i;
+        __var vaddr;
+        __var tmp;
+        
+        i=0;
+        while(i<10){
+            vaddr = 0x30000000+((i*23)&0x1FFFFC);
+            __writeMemory32(0x55AA55AA,	vaddr, "Memory");
+            tmp = __readMemory32(vaddr,"Memory");
+            if(tmp!=0x55AA55AA)
+                return 1;
+            i=i+1;
+        }
+        return 0;
+}
+
+__var ok_pipe_id0;
+__var ok_pipe_id1;
+__var ok_tpc_min0;
+__var ok_tpc_max0;
+__var ok_tpc_min1;
+__var ok_tpc_max1;
+__var tpc0_cnt;
+__var tpc1_cnt;
+
+// calibration result
+__var isCalibrationDone;
+
+__dram_calibration(){
+      __var rdp;
+      __var tpc;
+      __var rdp_reg;
+      __var tpc_reg;
+      __var err_cnt;
+      __var ok_cnt;
+
+
+      ok_cnt=0;
+      ok_pipe_id0 = 15;
+      ok_tpc_min0 = 12;
+      ok_tpc_max0 = 0;
+   
+      rdp_reg = __readMemory32(0x40005008,"Memory")&0xFFFF00FF;
+      tpc_reg = __readMemory32(0x40000300,"Memory")&0xFF00FFFF;
+      for(rdp=0;(rdp<=7)&&(err_cnt==0||ok_cnt==0);rdp++){
+            err_cnt=0;
+            // try pipe
+            __writeMemory32(rdp_reg|rdp<<8,0x40005008, "Memory");__delay(10);
+            for(tpc=0;(tpc<=12)&&(err_cnt<2);tpc++){
+                // try tpc
+                __writeMemory32(tpc_reg|tpc<<16,0x40000300, "Memory");__delay(10);
+                if(__mem_test()==0){
+                   if(ok_pipe_id0==15) {ok_pipe_id0 = rdp; ok_cnt++;}
+                   if(ok_tpc_min0>tpc) ok_tpc_min0 = tpc;
+                   if(ok_tpc_max0<tpc) ok_tpc_max0 = tpc;
+                }else{
+                   err_cnt++;
+                }
+            }
+            if(ok_pipe_id0!=15){
+                  ok_pipe_id1 = ok_pipe_id0;
+                  ok_tpc_min1 = ok_tpc_min0;
+                  ok_tpc_max1 = ok_tpc_max0;
+                  ok_pipe_id0 = 15;
+                  ok_tpc_min0 = 12;
+                  ok_tpc_max0 = 0;
+            }
+      }
+      tpc0_cnt = ok_tpc_max0-ok_tpc_min0;
+      if(tpc0_cnt<0) tpc0_cnt = 0;
+      tpc1_cnt = ok_tpc_max1-ok_tpc_min1;
+      if(tpc1_cnt<0) tpc1_cnt = 0;
+           
+      if(tpc1_cnt>tpc0_cnt){
+          __writeMemory32(rdp_reg|ok_pipe_id1<<8,0x40005008, "Memory");__delay(10);
+          __writeMemory32(tpc_reg|(tpc1_cnt/2)<<16,0x40000300, "Memory");__delay(10);
+      }else{
+          __writeMemory32(rdp_reg|ok_pipe_id0<<8,0x40005008, "Memory");__delay(10);
+          __writeMemory32(tpc_reg|(tpc0_cnt/2)<<16,0x40000300, "Memory");__delay(10);
+      }
+}
+
+__setup_system()
+{
+      __var tmp;
+
+      __hwReset(1);
+        
+      __writeMemory32(0x21, 		0x40000014, "Memory");	__delay(10);
+      __writeMemory32(0x1FC00002,   0x40000304, "Memory");	__delay(10);
+      __writeMemory32(0x400,        0x40000250, "Memory");	__delay(10);
+      __writeMemory32(0x0,          0x40000340, "Memory");	__delay(10);
+      __writeMemory32(0xdcc4,		0x40000230, "Memory");	__delay(10);
+      __writeMemory32(0x11117, 		0x40000210, "Memory");	__delay(10);
+      __writeMemory32(0x11157, 		0x40000210, "Memory");	__delay(10);
+      __writeMemory32(0x110011, 	0x400002c0, "Memory");	__delay(10);
+      __writeMemory32(0xffffffff,   0x40000320, "Memory");	__delay(10);
+  
+      __config_dram_param();
+        
+      if(isCalibrationDone){
+            __var rdp_reg;
+            __var tpc_reg;
+            rdp_reg = __readMemory32(0x40005008,"Memory")&0xFFFF00FF;
+            tpc_reg = __readMemory32(0x40000300,"Memory")&0xFF00FFFF;
+            if(tpc1_cnt>tpc0_cnt){
+                __writeMemory32(rdp_reg|ok_pipe_id1<<8,0x40005008, "Memory");__delay(10);
+                __writeMemory32(tpc_reg|(tpc1_cnt/2)<<16,0x40000300, "Memory");__delay(10);
+            }else{
+                __writeMemory32(rdp_reg|ok_pipe_id0<<8,0x40005008, "Memory");__delay(10);
+                __writeMemory32(tpc_reg|(tpc0_cnt/2)<<16,0x40000300, "Memory");__delay(10);
+            }
+      }else{
+          // Calibration
+          __dram_calibration();
+          isCalibrationDone = 1;
+      }
+}
+
+execUserPreload()
+{
+        // Register dram common.mac
+        __registerMacroFile("$PROJ_DIR$\\..\\..\\..\\component\\soc\\realtek\\8195a\\misc\\iar_utility\\common\\dram\\common.mac");
+        
+		__message "User Preload....";
+        //isCalibrationDone = 0;
+        __setup_system();
+}
+
+execUserSetup()
+{
+		__var tmp;
+        __message "User Setup....";
+        // if use normal reset, please unmark those 2 lines
+        //execUserPreload();
+        __setup_system();
+        //__loadImage("$TARGET_PATH$", 0, 0);
+		// DISABLE DRAM init
+		tmp = __readMemory32(0x40000210, "Memory")|(1<<21);
+		__writeMemory32(tmp, 0x40000210, "Memory");
+}

@@ -69,7 +69,6 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 // garbage-collected heap. For completeness, emulate C heap via
 // GC heap. Note that MicroPython core never uses malloc() and friends,
 // so these defines are mostly to help extension module writers.
-#define malloc  RtlZmalloc
-#define free    RtlMfree
+//
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
