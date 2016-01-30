@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<flash_board>
+  <pass>
+  	<range>CODE 0x200006b4 0x2002FFFF</range>
+    <loader>$PROJ_DIR$\flashloader\FlashRTL8195aQA.flash</loader>   
+    <abs_offset>0x00000000</abs_offset> 
+  </pass>
+  <pass>
+  	<range>CODE 0x30000000 0x301FFFFF</range>
+    <loader>$PROJ_DIR$\flashloader\FlashRTL8195aQA.flash</loader>   
+    <abs_offset>0x00010000</abs_offset> 
+    <ignore>DATA_Z 0x30000000 0x301FFFFF</ignore>
+  </pass>
+  <pass>
+  	<range>CODE 0x20080000 0x200BFFFF</range>
+    <loader>$PROJ_DIR$\flashloader\FlashRTL8195aQA.flash</loader>   
+    <abs_offset>0x00020000</abs_offset>
+    <ignore>DATA_Z 0x20080000 0x200BFFFF</ignore>
+  </pass>  
+  <pass>
+  	<range>CODE 0x00000000 0x00000000</range>
+    <loader>$PROJ_DIR$\flashloader\FlashRTL8195aQA.flash</loader>   
+    <abs_offset>0x00030000</abs_offset>
+  </pass> 
+  <ignore>CODE 0x00000001 0x000BFFFF</ignore>
+  <ignore>CODE 0x20000000 0x200006b3</ignore>
+</flash_board>
+
+

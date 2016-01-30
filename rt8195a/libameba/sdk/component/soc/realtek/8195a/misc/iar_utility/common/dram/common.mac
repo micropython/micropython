@@ -1,0 +1,4 @@
+
+__load_dram_common(){
+        __registerMacroFile("$PROJ_DIR$\\..\\..\\..\\component\\soc\\realtek\\8195a\\misc\\iar_utility\\common\\dram\\EM6A6165TS_7G.mac");
+}

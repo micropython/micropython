@@ -1,0 +1,41 @@
+__load_dram_param(){
+        //DRAM_INFO
+        DeviceType = 8;         //DRAM_SDR
+        Page = 0;               //DRAM_COLADDR_8B
+        Bank=0;                 //DRAM_BANK_2
+        DqWidth=0;              //DRAM_DQ_1
+
+        //DRAM_MODE_REG_INFO
+        BstLen=0;               //BST_LEN_4
+        BstType=0;              //SENQUENTIAL
+        Mode0Cas=3;
+        Mode0Wr=0;
+        Mode1DllEnN=0;
+        Mode1AllLat=0;
+        Mode2Cwl=0;
+
+        //DRAM_TIMING_INFO
+        DramTimingTref = 64000;
+        DramRowNum = 8192;
+        //SDR 100MHZ==>10000, 50MHZ==>20000, 25MHZ==>40000, 12.5MHZ==>80000
+        Tck = 80000;            //SDR 12.5MHZ
+        
+        TrfcPs=60000;
+        TrefiPs=((DramTimingTref*1000)/DramRowNum)*1000;
+        WrMaxTck=2;
+        TrcdPs=15000; 
+        TrpPs=15000;
+        TrasPs=42000;
+        TrrdTck=2;
+        TwrPs=Tck*2;
+        TwtrTck=0; 
+        TmrdTck=2;
+        TrtpTck=0;
+        TccdTck=1;
+        TrcPs=60000;
+
+        //DRAM_DEVICE_INFO
+        DdrPeriodPs=Tck;
+        DfiRate=0;              //DFI_RATIO_1
+  
+}
