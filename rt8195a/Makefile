@@ -82,15 +82,15 @@ CFLAGS += -ffunction-sections
 CFLAGS += -fdata-sections
 CFLAGS += -fomit-frame-pointer
 CFLAGS += -fno-short-enums
-#CFLAGS += -nostdlib
-#CFLAGS += -Werror
-#CFLAGS += -Wundef
+CFLAGS += -nostdlib
+CFLAGS += -Werror
+CFLAGS += -Wundef
 #CFLAGS += -Wpointer-arith
-#CFLAGS += -Wstrict-prototypes
+CFLAGS += -Wstrict-prototypes
 #CFLAGS += -Wno-write-strings
 #CFLAGS += -fsingle-precision-constant
 #CFLAGS += -Wdouble-promotion
-#CFLAGS += -nostartfiles
+CFLAGS += -nostartfiles
 CFLAGS += -DCONFIG_PLATFORM_8195A $(INC)
 
 #Debugging/Optimization
@@ -154,9 +154,24 @@ $(addprefix $(BUILD)/,$(OBJ)): $(BUILD)/%.o: %.c
 	$(Q)$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD)/firmware.elf: $(OBJ)
-	$(ECHO) "BUILDING $@"
+	$(Q)$(ECHO) "BUILDING $@"
 	$(Q)$(CC) $(ELF_CFLAGS) $(ELF_LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--start-group $(ELF_ARLIST) -Wl,--end-group -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
 	$(Q)$(SIZE) $@
+
+image: 
+	$(Q)$(ECHO) "CREATING IMAGE"
+	$(Q)$(RM) -f $(BUILD)/firmware.asm 
+	$(Q)$(RM) -f $(BUILD)/firmware.map
+	$(Q)$(RM) -f $(BUILD)/*.bin
+	$(Q)$(CROSS_COMPILE)nm $(BUILD)/firmware.elf | sort > $(BUILD)/firmware.map
+	$(Q)$(CROSS_COMPILE)objdump -d $(BUILD)/firmware.elf >  $(BUILD)/firmware.asm
+	$(Q)export RAM2_START_ADDR=0x$(shell grep __ram_image2_text $(BUILD)/firmware.map | grep _start__ | awk '{print $$1}')
+	$(Q)export RAM2_END_ADDR=0x$(shell grep __ram_image2_text $(BUILD)/firmware.map | grep _end__ | awk '{print $$1}')
+	$(Q)export RAM3_START_ADDR=0x$(shell grep __sdram_data_ $(BUILD)/firmware.map | grep _start__ | awk '{print $$1}')
+	$(Q)export RAM3_END_ADDR=0x$(shell grep __sdram_data_ $(BUILD)/firmware.map | grep _end__ | awk '{print $$1}')
+	$(Q)$(OBJCOPY) -j .image2.start.table -j .ram_image2.text -j .ram.data -Obinary $(BUILD)/firmware.elf $(BUILD)/ram2.bin
+	$(Q)$(OBJCOPY) -j .image3 -j .ARM.exidx -j .sdr_data -Obinary $(BUILD)/firmware.elf $(BUILD)/sdram.bin
+
 
 deploy:
 	@./makebin/makebin.sh
