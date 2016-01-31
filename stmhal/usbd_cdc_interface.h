@@ -31,8 +31,6 @@
 
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
-void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
-
 int USBD_CDC_IsConnected(void);
 void USBD_CDC_SetInterrupt(int chr, void *data);
 

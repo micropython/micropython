@@ -253,7 +253,7 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         //printf("%lu %lu %lu %lu %lu\n", sysclk_source, m, n, p, q);
 
         // let the USB CDC have a chance to process before we change the clock
-        HAL_Delay(USBD_CDC_POLLING_INTERVAL + 2);
+        HAL_Delay(5);
 
         // desired system clock source is in sysclk_source
         RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -315,9 +315,6 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
                 goto fail;
             }
         }
-
-        // re-init TIM3 for USB CDC rate
-        timer_tim3_init();
 
         #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
         #if defined(MCU_SERIES_F7)

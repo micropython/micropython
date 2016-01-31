@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,6 @@
 #include "genhdr/pins.h"
 
 #if defined(MICROPY_HW_LED1)
-
-// default is to not PWM LED4
-#if !defined(MICROPY_HW_LED4_PWM)
-#define MICROPY_HW_LED4_PWM (0)
-#endif
 
 /// \moduleref pyb
 /// \class LED - LED object
@@ -83,46 +78,122 @@ void led_init(void) {
         GPIO_InitStructure.Pin = led_pin->pin_mask;
         HAL_GPIO_Init(led_pin->gpio, &GPIO_InitStructure);
     }
+}
 
-    #if MICROPY_HW_LED4_PWM
-    // LED4 (blue) is on PB4 which is TIM3_CH1
-    // we use PWM on this channel to fade the LED
+#if defined(MICROPY_HW_LED1_PWM) \
+    || defined(MICROPY_HW_LED2_PWM) \
+    || defined(MICROPY_HW_LED3_PWM) \
+    || defined(MICROPY_HW_LED4_PWM)
 
-    // LED3 (yellow) is on PA15 which has TIM2_CH1, so we could PWM that as well
+// The following is semi-generic code to control LEDs using PWM.
+// It currently supports TIM2 and TIM3, channel 1 only.
+// Configure by defining the relevant MICROPY_HW_LEDx_PWM macros in mpconfigboard.h.
+// If they are not defined then PWM will not be available for that LED.
+
+#define LED_PWM_ENABLED (1)
+
+#ifndef MICROPY_HW_LED1_PWM
+#define MICROPY_HW_LED1_PWM { NULL, 0, 0 }
+#endif
+#ifndef MICROPY_HW_LED2_PWM
+#define MICROPY_HW_LED2_PWM { NULL, 0, 0 }
+#endif
+#ifndef MICROPY_HW_LED3_PWM
+#define MICROPY_HW_LED3_PWM { NULL, 0, 0 }
+#endif
+#ifndef MICROPY_HW_LED4_PWM
+#define MICROPY_HW_LED4_PWM { NULL, 0, 0 }
+#endif
+
+#define LED_PWM_TIM_PERIOD (10000) // TIM runs at 1MHz and fires every 10ms
+
+typedef struct _led_pwm_config_t {
+    TIM_TypeDef *tim;
+    uint8_t tim_id;
+    uint8_t alt_func;
+} led_pwm_config_t;
+
+STATIC const led_pwm_config_t led_pwm_config[] = {
+    MICROPY_HW_LED1_PWM,
+    MICROPY_HW_LED2_PWM,
+    MICROPY_HW_LED3_PWM,
+    MICROPY_HW_LED4_PWM,
+};
+
+STATIC uint8_t led_pwm_state = 0;
+
+static inline bool led_pwm_is_enabled(int led) {
+    return (led_pwm_state & (1 << led)) != 0;
+}
+
+// this function has a large stack so it should not be inlined
+STATIC void led_pwm_init(int led) __attribute__((noinline));
+STATIC void led_pwm_init(int led) {
+    const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
+    const led_pwm_config_t *pwm_cfg = &led_pwm_config[led - 1];
 
     // GPIO configuration
-    GPIO_InitStructure.Pin = MICROPY_HW_LED4.pin_mask;
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(MICROPY_HW_LED4.gpio, &GPIO_InitStructure);
+    GPIO_InitTypeDef gpio_init;
+    gpio_init.Pin = led_pin->pin_mask;
+    gpio_init.Mode = GPIO_MODE_AF_PP;
+    gpio_init.Speed = GPIO_SPEED_FAST;
+    gpio_init.Pull = GPIO_NOPULL;
+    gpio_init.Alternate = pwm_cfg->alt_func;
+    HAL_GPIO_Init(led_pin->gpio, &gpio_init);
 
-    // PWM mode configuration
+    // TIM configuration
+    switch (pwm_cfg->tim_id) {
+        case 2: __TIM2_CLK_ENABLE(); break;
+        case 3: __TIM3_CLK_ENABLE(); break;
+        default: assert(0);
+    }
+    TIM_HandleTypeDef tim;
+    tim.Instance = pwm_cfg->tim;
+    tim.Init.Period = LED_PWM_TIM_PERIOD - 1;
+    tim.Init.Prescaler = timer_get_source_freq(pwm_cfg->tim_id) / 1000000 - 1; // TIM runs at 1MHz
+    tim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    tim.Init.CounterMode = TIM_COUNTERMODE_UP;
+    HAL_TIM_PWM_Init(&tim);
+
+    // PWM configuration (only channel 1 supported at the moment)
     TIM_OC_InitTypeDef oc_init;
     oc_init.OCMode = TIM_OCMODE_PWM1;
     oc_init.Pulse = 0; // off
     oc_init.OCPolarity = TIM_OCPOLARITY_HIGH;
     oc_init.OCFastMode = TIM_OCFAST_DISABLE;
-    HAL_TIM_PWM_ConfigChannel(&TIM3_Handle, &oc_init, TIM_CHANNEL_1);
+    /* needed only for TIM1 and TIM8
+    oc_init.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    oc_init.OCIdleState = TIM_OCIDLESTATE_SET;
+    oc_init.OCNIdleState = TIM_OCNIDLESTATE_SET;
+    */
+    HAL_TIM_PWM_ConfigChannel(&tim, &oc_init, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&tim, TIM_CHANNEL_1);
 
-    // start PWM
-    TIM_CCxChannelCmd(TIM3, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-    #endif
+    // indicate that this LED is using PWM
+    led_pwm_state |= 1 << led;
 }
+
+STATIC void led_pwm_deinit(int led) {
+    // make the LED's pin a standard GPIO output pin
+    const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
+    GPIO_TypeDef *g = led_pin->gpio;
+    uint32_t pin = led_pin->pin;
+    static const int mode = 1; // output
+    static const int alt = 0; // no alt func
+    g->MODER = (g->MODER & ~(3 << (2 * pin))) | (mode << (2 * pin));
+    g->AFR[pin >> 3] = (g->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
+    led_pwm_state &= ~(1 << led);
+}
+
+#else
+#define LED_PWM_ENABLED (0)
+#endif
 
 void led_state(pyb_led_t led, int state) {
     if (led < 1 || led > NUM_LEDS) {
         return;
     }
-    if (MICROPY_HW_LED4_PWM && led == 4) {
-        if (state) {
-            TIM3->CCR1 = 0xffff;
-        } else {
-            TIM3->CCR1 = 0;
-        }
-        return;
-    }
+
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
     //printf("led_state(%d,%d)\n", led, state);
     if (state == 0) {
@@ -132,6 +203,12 @@ void led_state(pyb_led_t led, int state) {
         // turn LED on
         MICROPY_HW_LED_ON(led_pin);
     }
+
+    #if LED_PWM_ENABLED
+    if (led_pwm_is_enabled(led)) {
+        led_pwm_deinit(led);
+    }
+    #endif
 }
 
 void led_toggle(pyb_led_t led) {
@@ -139,14 +216,13 @@ void led_toggle(pyb_led_t led) {
         return;
     }
 
-    if (MICROPY_HW_LED4_PWM && led == 4) {
-        if (TIM3->CCR1 == 0) {
-            TIM3->CCR1 = 0xffff;
-        } else {
-            TIM3->CCR1 = 0;
-        }
+    #if LED_PWM_ENABLED
+    if (led_pwm_is_enabled(led)) {
+        // if PWM is enabled then LED has non-zero intensity, so turn it off
+        led_state(led, 0);
         return;
     }
+    #endif
 
     // toggle the output data register to toggle the LED state
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
@@ -158,13 +234,16 @@ int led_get_intensity(pyb_led_t led) {
         return 0;
     }
 
-    if (MICROPY_HW_LED4_PWM && led == 4) {
-        mp_uint_t i = (TIM3->CCR1 * 255 + (USBD_CDC_POLLING_INTERVAL*1000) - 2) / ((USBD_CDC_POLLING_INTERVAL*1000) - 1);
+    #if LED_PWM_ENABLED
+    if (led_pwm_is_enabled(led)) {
+        TIM_TypeDef *tim = led_pwm_config[led - 1].tim;
+        mp_uint_t i = (tim->CCR1 * 255 + LED_PWM_TIM_PERIOD - 2) / (LED_PWM_TIM_PERIOD - 1);
         if (i > 255) {
             i = 255;
         }
         return i;
     }
+    #endif
 
     const pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
     GPIO_TypeDef *gpio = led_pin->gpio;
@@ -180,18 +259,19 @@ int led_get_intensity(pyb_led_t led) {
 }
 
 void led_set_intensity(pyb_led_t led, mp_int_t intensity) {
-    if (MICROPY_HW_LED4_PWM && led == 4) {
-        // set intensity using PWM pulse width
-        if (intensity < 0) {
-            intensity = 0;
-        } else if (intensity >= 255) {
-            intensity = 0xffff;
-        } else {
-            intensity = intensity * ((USBD_CDC_POLLING_INTERVAL*1000) - 1) / 255;
+    #if LED_PWM_ENABLED
+    if (intensity > 0 && intensity < 255) {
+        TIM_TypeDef *tim = led_pwm_config[led - 1].tim;
+        if (tim != NULL) {
+            // set intensity using PWM pulse width
+            if (!led_pwm_is_enabled(led)) {
+                led_pwm_init(led);
+            }
+            tim->CCR1 = intensity * (LED_PWM_TIM_PERIOD - 1) / 255;
+            return;
         }
-        TIM3->CCR1 = intensity;
-        return;
     }
+    #endif
 
     // intensity not supported for this LED; just turn it on/off
     led_state(led, intensity > 0);

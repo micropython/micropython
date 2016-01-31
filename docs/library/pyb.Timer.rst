@@ -37,9 +37,13 @@ class Timer -- control internal timers
         tim.callback(lambda t: ...)     # set callback for update interrupt (t=tim instance)
         tim.callback(None)              # clear callback
     
-    *Note:* Timer 3 is reserved for internal use.  Timer 5 controls
-    the servo driver, and Timer 6 is used for timed ADC/DAC reading/writing.
-    It is recommended to use the other timers in your programs.
+    *Note:* Timer(2) and Timer(3) are used for PWM to set the intensity of LED(3)
+    and LED(4) respectively.  But these timers are only configured for PWM if
+    the intensity of the relevant LED is set to a value between 1 and 254.  If
+    the intensity feature of the LEDs is not used then these timers are free for
+    general purpose use.  Similarly, Timer(5) controls the servo driver, and
+    Timer(6) is used for timed ADC/DAC reading/writing.  It is recommended to
+    use the other timers in your programs.
 
 *Note:* Memory can't be allocated during a callback (an interrupt) and so
 exceptions raised within a callback don't give much information.  See
@@ -56,7 +60,7 @@ Constructors
     
        Construct a new timer object of the given id.  If additional
        arguments are given, then the timer is initialised by ``init(...)``.
-       ``id`` can be 1 to 14, excluding 3.
+       ``id`` can be 1 to 14.
 
 Methods
 -------

@@ -68,7 +68,7 @@
 ///     tim.callback(lambda t: ...)     # set callback for update interrupt (t=tim instance)
 ///     tim.callback(None)              # clear callback
 ///
-/// *Note:* Timer 3 is reserved for internal use.  Timer 5 controls
+/// *Note:* Timer 3 is used for fading the blue LED.  Timer 5 controls
 /// the servo driver, and Timer 6 is used for timed ADC/DAC reading/writing.
 /// It is recommended to use the other timers in your programs.
 
@@ -76,8 +76,6 @@
 // the interrupts to be dispatched, so they are all collected here.
 //
 // TIM3:
-//  - flash storage controller, to flush the cache
-//  - USB CDC interface, interval, to check for new data
 //  - LED 4, PWM to set the LED intensity
 //
 // TIM5:
@@ -144,13 +142,11 @@ typedef struct _pyb_timer_obj_t {
 #define TIMER_CNT_MASK(self)    ((self)->is_32bit ? 0xffffffff : 0xffff)
 #define TIMER_CHANNEL(self)     ((((self)->channel) - 1) << 2)
 
-TIM_HandleTypeDef TIM3_Handle;
 TIM_HandleTypeDef TIM5_Handle;
 TIM_HandleTypeDef TIM6_Handle;
 
 #define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
 
-STATIC uint32_t timer_get_source_freq(uint32_t tim_id);
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
 STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
@@ -170,34 +166,6 @@ void timer_deinit(void) {
         }
     }
 }
-
-// TIM3 is set-up for the USB CDC interface
-void timer_tim3_init(void) {
-    // set up the timer for USBD CDC
-    __TIM3_CLK_ENABLE();
-
-    TIM3_Handle.Instance = TIM3;
-    TIM3_Handle.Init.Period = (USBD_CDC_POLLING_INTERVAL*1000) - 1; // TIM3 fires every USBD_CDC_POLLING_INTERVAL ms
-    TIM3_Handle.Init.Prescaler = timer_get_source_freq(3) / 1000000 - 1; // TIM3 runs at 1MHz
-    TIM3_Handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    TIM3_Handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    HAL_TIM_Base_Init(&TIM3_Handle);
-
-    HAL_NVIC_SetPriority(TIM3_IRQn, IRQ_PRI_TIM3, IRQ_SUBPRI_TIM3);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
-
-    if (HAL_TIM_Base_Start(&TIM3_Handle) != HAL_OK) {
-        /* Starting Error */
-    }
-}
-
-/* unused
-void timer_tim3_deinit(void) {
-    // reset TIM3 timer
-    __TIM3_FORCE_RESET();
-    __TIM3_RELEASE_RESET();
-}
-*/
 
 // TIM5 is set-up for the servo controller
 // This function inits but does not start the timer
@@ -250,11 +218,6 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    #if !defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
-    if (htim == &TIM3_Handle) {
-        USBD_CDC_HAL_TIM_PeriodElapsedCallback();
-    } else
-    #endif
     if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }
@@ -265,7 +228,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // If the APB prescaler is 1, then the timer clock is equal to its respective
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
-STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
+uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
@@ -656,11 +619,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, 
     switch (tim->tim_id) {
         case 1: tim->tim.Instance = TIM1; tim->irqn = TIM1_UP_TIM10_IRQn; break;
         case 2: tim->tim.Instance = TIM2; tim->irqn = TIM2_IRQn; tim->is_32bit = true; break;
-        #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
         case 3: tim->tim.Instance = TIM3; tim->irqn = TIM3_IRQn; break;
-        #else
-        case 3: nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Timer 3 is for internal use only")); // TIM3 used for low-level stuff; go via regs if necessary
-        #endif
         case 4: tim->tim.Instance = TIM4; tim->irqn = TIM4_IRQn; break;
         case 5: tim->tim.Instance = TIM5; tim->irqn = TIM5_IRQn; tim->is_32bit = true; break;
         #if defined(TIM6)
