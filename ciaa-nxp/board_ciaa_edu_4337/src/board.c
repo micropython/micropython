@@ -112,6 +112,7 @@ static void i2c_set_mode(I2C_ID_T id, int polling)
 		Chip_I2C_SetMasterEventHandler(id, Chip_I2C_EventHandlerPolling);
 	}
 }
+/*
 void i2C0_IRQHandler (void)
 {
 	if (Chip_I2C_IsMasterActive(I2C0)) {
@@ -121,8 +122,7 @@ void i2C0_IRQHandler (void)
 		Chip_I2C_SlaveStateHandler(I2C0);
     }	
 }
-
-
+*/
 void Board_I2C_Master_Init(void)
 {
 	Board_I2C_Init(I2C0);
@@ -130,8 +130,8 @@ void Board_I2C_Master_Init(void)
     Chip_I2C_Init(I2C0);
     Chip_I2C_SetClockRate(I2C0, 100000);
    
-    /* Set default mode to interrupt */
-    i2c_set_mode(I2C0, 0);
+    /* Set default mode to poll */
+    i2c_set_mode(I2C0, 1); 
 }
 void Board_I2C_Master_SetSpeed(uint32_t speed)
 {
