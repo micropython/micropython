@@ -1262,19 +1262,6 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint16_t 
     hi2c->State = HAL_I2C_STATE_BUSY_TX;
     hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
 
-    hi2c->pBuffPtr = pData;
-    hi2c->XferSize = Size;
-    hi2c->XferCount = Size;
-
-    /* Set the I2C DMA transfert complete callback */
-    hi2c->hdmatx->XferCpltCallback = I2C_DMAMasterTransmitCplt;
-
-    /* Set the DMA error callback */
-    hi2c->hdmatx->XferErrorCallback = I2C_DMAError;
-
-    /* Enable the DMA Stream */
-    HAL_DMA_Start_IT(hi2c->hdmatx, (uint32_t)pData, (uint32_t)&hi2c->Instance->DR, Size);
-
     /* Send Slave Address */
     if(I2C_MasterRequestWrite(hi2c, DevAddress, I2C_TIMEOUT_FLAG) != HAL_OK)
     {
@@ -1290,6 +1277,22 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit_DMA(I2C_HandleTypeDef *hi2c, uint16_t 
         __HAL_UNLOCK(hi2c);
         return HAL_TIMEOUT;
       }
+    }
+
+    /* dpgeorge: DMA initialisation is moved to after sending the address */
+    {
+        hi2c->pBuffPtr = pData;
+        hi2c->XferSize = Size;
+        hi2c->XferCount = Size;
+
+        /* Set the I2C DMA transfert complete callback */
+        hi2c->hdmatx->XferCpltCallback = I2C_DMAMasterTransmitCplt;
+
+        /* Set the DMA error callback */
+        hi2c->hdmatx->XferErrorCallback = I2C_DMAError;
+
+        /* Enable the DMA Stream */
+        HAL_DMA_Start_IT(hi2c->hdmatx, (uint32_t)pData, (uint32_t)&hi2c->Instance->DR, Size);
     }
 
     /* Enable DMA Request */
@@ -1338,19 +1341,6 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive_DMA(I2C_HandleTypeDef *hi2c, uint16_t D
     hi2c->State = HAL_I2C_STATE_BUSY_RX;
     hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
 
-    hi2c->pBuffPtr = pData;
-    hi2c->XferSize = Size;
-    hi2c->XferCount = Size;
-
-    /* Set the I2C DMA transfert complete callback */
-    hi2c->hdmarx->XferCpltCallback = I2C_DMAMasterReceiveCplt;
-
-    /* Set the DMA error callback */
-    hi2c->hdmarx->XferErrorCallback = I2C_DMAError;
-
-    /* Enable the DMA Stream */
-    HAL_DMA_Start_IT(hi2c->hdmarx, (uint32_t)&hi2c->Instance->DR, (uint32_t)pData, Size);
-
     /* Send Slave Address */
     if(I2C_MasterRequestRead(hi2c, DevAddress, I2C_TIMEOUT_FLAG) != HAL_OK)
     {
@@ -1366,6 +1356,22 @@ HAL_StatusTypeDef HAL_I2C_Master_Receive_DMA(I2C_HandleTypeDef *hi2c, uint16_t D
         __HAL_UNLOCK(hi2c);
         return HAL_TIMEOUT;
       }
+    }
+
+    /* dpgeorge: DMA initialisation is moved to after sending the address */
+    {
+        hi2c->pBuffPtr = pData;
+        hi2c->XferSize = Size;
+        hi2c->XferCount = Size;
+
+        /* Set the I2C DMA transfert complete callback */
+        hi2c->hdmarx->XferCpltCallback = I2C_DMAMasterReceiveCplt;
+
+        /* Set the DMA error callback */
+        hi2c->hdmarx->XferErrorCallback = I2C_DMAError;
+
+        /* Enable the DMA Stream */
+        HAL_DMA_Start_IT(hi2c->hdmarx, (uint32_t)&hi2c->Instance->DR, (uint32_t)pData, Size);
     }
 
     if(Size == 1)
@@ -2050,19 +2056,6 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAdd
     hi2c->State = HAL_I2C_STATE_MEM_BUSY_TX;
     hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
 
-    hi2c->pBuffPtr = pData;
-    hi2c->XferSize = Size;
-    hi2c->XferCount = Size;
-
-    /* Set the I2C DMA transfert complete callback */
-    hi2c->hdmatx->XferCpltCallback = I2C_DMAMemTransmitCplt;
-
-    /* Set the DMA error callback */
-    hi2c->hdmatx->XferErrorCallback = I2C_DMAError;
-
-    /* Enable the DMA Stream */
-    HAL_DMA_Start_IT(hi2c->hdmatx, (uint32_t)pData, (uint32_t)&hi2c->Instance->DR, Size);
-
     /* Send Slave Address and Memory Address */
     if(I2C_RequestMemoryWrite(hi2c, DevAddress, MemAddress, MemAddSize, I2C_TIMEOUT_FLAG) != HAL_OK)
     {
@@ -2078,6 +2071,22 @@ HAL_StatusTypeDef HAL_I2C_Mem_Write_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAdd
         __HAL_UNLOCK(hi2c);
         return HAL_TIMEOUT;
       }
+    }
+
+    /* dpgeorge: DMA initialisation is moved to after sending the addresses */
+    {
+        hi2c->pBuffPtr = pData;
+        hi2c->XferSize = Size;
+        hi2c->XferCount = Size;
+
+        /* Set the I2C DMA transfert complete callback */
+        hi2c->hdmatx->XferCpltCallback = I2C_DMAMemTransmitCplt;
+
+        /* Set the DMA error callback */
+        hi2c->hdmatx->XferErrorCallback = I2C_DMAError;
+
+        /* Enable the DMA Stream */
+        HAL_DMA_Start_IT(hi2c->hdmatx, (uint32_t)pData, (uint32_t)&hi2c->Instance->DR, Size);
     }
 
     /* Enable DMA Request */
@@ -2128,19 +2137,6 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddr
     hi2c->State = HAL_I2C_STATE_MEM_BUSY_RX;
     hi2c->ErrorCode = HAL_I2C_ERROR_NONE;
 
-    hi2c->pBuffPtr = pData;
-    hi2c->XferSize = Size;
-    hi2c->XferCount = Size;
-
-    /* Set the I2C DMA transfert complete callback */
-    hi2c->hdmarx->XferCpltCallback = I2C_DMAMemReceiveCplt;
-
-    /* Set the DMA error callback */
-    hi2c->hdmarx->XferErrorCallback = I2C_DMAError;
-
-    /* Enable the DMA Stream */
-    HAL_DMA_Start_IT(hi2c->hdmarx, (uint32_t)&hi2c->Instance->DR, (uint32_t)pData, Size);
-
     /* Send Slave Address and Memory Address */
     if(I2C_RequestMemoryRead(hi2c, DevAddress, MemAddress, MemAddSize, I2C_TIMEOUT_FLAG) != HAL_OK)
     {
@@ -2156,6 +2152,22 @@ HAL_StatusTypeDef HAL_I2C_Mem_Read_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddr
         __HAL_UNLOCK(hi2c);
         return HAL_TIMEOUT;
       }
+    }
+
+    /* dpgeorge: DMA initialisation is moved to after sending the addresses */
+    {
+        hi2c->pBuffPtr = pData;
+        hi2c->XferSize = Size;
+        hi2c->XferCount = Size;
+
+        /* Set the I2C DMA transfert complete callback */
+        hi2c->hdmarx->XferCpltCallback = I2C_DMAMemReceiveCplt;
+
+        /* Set the DMA error callback */
+        hi2c->hdmarx->XferErrorCallback = I2C_DMAError;
+
+        /* Enable the DMA Stream */
+        HAL_DMA_Start_IT(hi2c->hdmarx, (uint32_t)&hi2c->Instance->DR, (uint32_t)pData, Size);
     }
 
     if(Size == 1)

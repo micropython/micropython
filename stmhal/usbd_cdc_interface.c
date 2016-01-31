@@ -140,10 +140,6 @@ static int8_t CDC_Itf_Init(void)
   TIM_Config();
 #endif
   
-    /*##-4- Start the TIM Base generation in interrupt mode ####################*/
-    /* Start Channel1 */
-    __HAL_TIM_ENABLE_IT(&TIM3_Handle, TIM_IT_UPDATE);
-  
     /*##-5- Set Application Buffers ############################################*/
     USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
     USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
@@ -257,12 +253,10 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
     return USBD_OK;
 }
 
-/**
-  * @brief  TIM period elapsed callback
-  * @param  htim: TIM handle
-  * @retval None
-  */
-void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
+// This function is called to process outgoing data.  We hook directly into the
+// SOF (start of frame) callback so that it is called exactly at the time it is
+// needed (reducing latency), and often enough (increasing bandwidth).
+void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     if (!dev_is_connected) {
         // CDC device is not connected to a host, so we are unable to send any data
         return;
@@ -276,9 +270,8 @@ void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void) {
     if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
         // We have sent data and are waiting for the low-level USB driver to
         // finish sending it over the USB in-endpoint.
-        // We have a 15 * 10ms = 150ms timeout
-        if (UserTxBufPtrWaitCount < 15) {
-            PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;
+        // SOF occurs every 1ms, so we have a 150 * 1ms = 150ms timeout
+        if (UserTxBufPtrWaitCount < 150) {
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
             if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
@@ -457,7 +450,7 @@ void USBD_CDC_TxAlways(const uint8_t *buf, uint32_t len) {
             }
 
             // Some unused code that makes sure the low-level USB buffer is drained.
-            // Waiting for low-level is handled in USBD_CDC_HAL_TIM_PeriodElapsedCallback.
+            // Waiting for low-level is handled in HAL_PCD_SOFCallback.
             /*
             start = HAL_GetTick();
             PCD_HandleTypeDef *hpcd = hUSBDDevice.pData;

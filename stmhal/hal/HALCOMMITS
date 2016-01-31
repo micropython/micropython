@@ -4,6 +4,9 @@ should be separate from any other changes and should be listed here, most
 recent commit at the top of the list.  This makes it easier to upgrade to
 a new HAL version.
 
+ea040a4f9ace1c50abc22ab755415305fd2bda41
+stmhal: In HAL I2C driver, move DMA setup to after sending I2C address.
+
 7a55c1a88473d36d4a907c1a2e33967a6c38d157
 stmhal: Port of f4 hal commit 1d7fb82 to f7 hal
 

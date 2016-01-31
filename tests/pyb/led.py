@@ -1,29 +1,40 @@
 import pyb
 from pyb import LED
 
-for i in range(4):
-    print(LED(i+1))
+l1 = pyb.LED(1)
+l2 = pyb.LED(2)
+l3 = pyb.LED(3)
+l4 = pyb.LED(4)
 
-for i in range(4):
-    LED(i+1).on()
-pyb.delay(10)
-for i in range(4):
-    LED(i+1).off()
-pyb.delay(10)
-for i in range(4):
-    LED(i+1).toggle()
-pyb.delay(10)
-for i in range(4):
-    LED(i+1).intensity(0)
+leds = [LED(i) for i in range(1, 5)]
+pwm_leds = leds[2:]
 
-for i in range(256):
-    LED(4).intensity(i)
-    if LED(4).intensity() != i:
-        print('fail', i)
-    pyb.delay(1)
-for i in range(256):
-    LED(4).intensity(255 - i)
-    pyb.delay(1)
+# test printing
+for l in leds:
+    print(l)
 
-for i in range(4):
-    LED(i+1).off()
+# test on and off
+for l in leds:
+    l.on()
+    assert l.intensity() == 255
+    pyb.delay(100)
+    l.off()
+    assert l.intensity() == 0
+    pyb.delay(100)
+
+# test toggle
+for l in 2 * leds:
+    l.toggle()
+    assert l.intensity() in (0, 255)
+    pyb.delay(100)
+
+# test intensity
+for l in pwm_leds:
+    for i in range(256):
+        l.intensity(i)
+        assert l.intensity() == i
+        pyb.delay(1)
+    for i in range(255, -1, -1):
+        l.intensity(i)
+        assert l.intensity() == i
+        pyb.delay(1)
