@@ -49,28 +49,6 @@
 mp_uint_t mp_verbose_flag = 0;
 #endif
 
-struct _mp_raw_code_t {
-    mp_raw_code_kind_t kind : 3;
-    mp_uint_t scope_flags : 7;
-    mp_uint_t n_pos_args : 11;
-    union {
-        struct {
-            const byte *bytecode;
-            const mp_uint_t *const_table;
-            #if MICROPY_PERSISTENT_CODE_SAVE
-            mp_uint_t bc_len;
-            uint16_t n_obj;
-            uint16_t n_raw_code;
-            #endif
-        } u_byte;
-        struct {
-            void *fun_data;
-            const mp_uint_t *const_table;
-            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
-        } u_native;
-    } data;
-};
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
