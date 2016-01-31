@@ -10,12 +10,19 @@ CROSS_COMPILE = arm-none-eabi-
 
 SDK = libameba/sdk
 LIB = linklibs
+TOOLS = tools
+HELPER = mphelper
 
 PROJECT = realtek_ameba1_va0_example
 
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
+
+INC += -I../lib/utils
+INC += -I../lib/timeutils
+INC += -I../lib/mp-readline
+
 INC += -I$(SDK)/project/$(PROJECT)/inc
 INC += -I$(SDK)/component/soc/realtek/common/bsp
 INC += -I$(SDK)/component/os/freertos
@@ -60,6 +67,9 @@ INC += -I$(SDK)/component/soc/realtek/8195a/fwlib/ram_lib/usb_otg/include
 INC += -I$(SDK)/component/common/video/v4l2/inc
 INC += -I$(SDK)/component/common/media/codec
 INC += -I$(SDK)/component/common/drivers/usb_class/host/uvc/inc
+
+INC += -I$(HELPER)/gccollect/
+INC += -I$(HELPER)/hal/
 
 #-------------------------------------------------------------------------------
 # Flags
@@ -128,29 +138,26 @@ ELF_ARLIST += ./$(LIB)/lib_platform.a
 # C source files and objects
 #-------------------------------------------------------------------------------
 
-# SRC_C += $(wildcard $(SRC)/targets/hal/target_rtk/target_8195a/src/*.c)
+SRC_C += $(wildcard $(HELPER)/gccollect/*.c)
+SRC_C += $(wildcard $(HELPER)/hal/*.c)
 
 SRC_C += \
 	main.c \
 	lib/libc/string0.c \
-	#printf.c \
-	string0.c \
-	malloc0.c \
-	gccollect.c \
+	lib/utils/pyexec.c \
+	lib/mp-readline/readline.c \
 
-#SRC_S += $(wildcard $(SRC)/source/*.s)
-SRC_S += \
-#	startup_stm32f40xx.s \
-	gchelper.s \
+SRC_S += $(wildcard $(HELPER)/gccollect/*.s)
+SRC_S += 
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 #-------------------------------------------------------------------------------
 # Rules
 #-------------------------------------------------------------------------------
-all: $(BUILD)/firmware.elf
+all: $(BUILD)/firmware.elf image
 
-$(addprefix $(BUILD)/,$(OBJ)): $(BUILD)/%.o: %.c
+$(addprefix $(BUILD)/,$(OBJ)): $(BUILD)/%.o: %.c %.s
 	$(Q)$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD)/firmware.elf: $(OBJ)
@@ -165,15 +172,23 @@ image:
 	$(Q)$(RM) -f $(BUILD)/*.bin
 	$(Q)$(CROSS_COMPILE)nm $(BUILD)/firmware.elf | sort > $(BUILD)/firmware.map
 	$(Q)$(CROSS_COMPILE)objdump -d $(BUILD)/firmware.elf >  $(BUILD)/firmware.asm
-	$(Q)export RAM2_START_ADDR=0x$(shell grep __ram_image2_text $(BUILD)/firmware.map | grep _start__ | awk '{print $$1}')
-	$(Q)export RAM2_END_ADDR=0x$(shell grep __ram_image2_text $(BUILD)/firmware.map | grep _end__ | awk '{print $$1}')
-	$(Q)export RAM3_START_ADDR=0x$(shell grep __sdram_data_ $(BUILD)/firmware.map | grep _start__ | awk '{print $$1}')
-	$(Q)export RAM3_END_ADDR=0x$(shell grep __sdram_data_ $(BUILD)/firmware.map | grep _end__ | awk '{print $$1}')
-	$(Q)$(OBJCOPY) -j .image2.start.table -j .ram_image2.text -j .ram.data -Obinary $(BUILD)/firmware.elf $(BUILD)/ram2.bin
+	$(Q)$(eval RAM2_START_ADDR :=0x$(shell grep __ram_image2_text $(BUILD)/firmware.map | grep _start__ | awk '{print $$1}'))
+	$(Q)$(eval RAM2_END_ADDR :=0x$(shell grep __ram_image2_text $(BUILD)/firmware.map | grep _end__ | awk '{print $$1}'))
+	$(Q)$(eval RAM3_START_ADDR :=0x$(shell grep __sdram_data_ $(BUILD)/firmware.map | grep _start__ | awk '{print $$1}'))
+	$(Q)$(eval RAM3_END_ADDR :=0x$(shell grep __sdram_data_ $(BUILD)/firmware.map | grep _end__ | awk '{print $$1}'))
+	$(Q)$(OBJCOPY) -j .image2.start.table -j .ram_image2.text -j .ram.data -Obinary $(BUILD)/firmware.elf $(BUILD)/ram_2.bin
 	$(Q)$(OBJCOPY) -j .image3 -j .ARM.exidx -j .sdr_data -Obinary $(BUILD)/firmware.elf $(BUILD)/sdram.bin
-
+	$(Q)$(TOOLS)/mac/pick $(RAM2_START_ADDR) $(RAM2_END_ADDR) $(BUILD)/ram_2.bin $(BUILD)/ram_2.p.bin body+reset_offset+sig
+	$(Q)$(TOOLS)/mac/pick $(RAM2_START_ADDR) $(RAM2_END_ADDR) $(BUILD)/ram_2.bin $(BUILD)/ram_2.ns.bin body+reset_offset
+	$(Q)$(TOOLS)/mac/pick $(RAM3_START_ADDR) $(RAM3_END_ADDR) $(BUILD)/sdram.bin $(BUILD)/ram_3.p.bin body+reset_offset
+	$(Q)$(CP) $(TOOLS)/ram_1.p.bin $(BUILD)/ram_1.p.bin
+	$(Q)$(TOOLS)/mac/padding 44k 0xFF $(BUILD)/ram_1.p.bin
+	$(Q)cat $(BUILD)/ram_1.p.bin $(BUILD)/ram_2.p.bin $(BUILD)/ram_3.p.bin > $(BUILD)/ram_all.bin
+	$(Q)cat $(BUILD)/ram_2.ns.bin $(BUILD)/ram_3.p.bin > $(BUILD)/ota.bin
+	$(Q)$(TOOLS)/mac/checksum $(BUILD)/ota.bin
 
 deploy:
-	@./makebin/makebin.sh
+	cp $(BUILD)/ram_all.bin /Volumes/MBED/
+	sync
 
 include ../py/mkrules.mk
