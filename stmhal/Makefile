@@ -267,7 +267,7 @@ $(BUILD)/$(HAL_DIR)/src/stm32$(MCU_SERIES)xx_hal_sd.o: COPT += -Os
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 ifneq ($(FROZEN_DIR),)
-CFLAGS += -DMICROPY_MODULE_FROZEN
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 OBJ += $(BUILD)/frozen-files.o
 MAKE_FROZEN = ../tools/make-frozen.py
 
