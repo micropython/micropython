@@ -40,7 +40,7 @@ enum {
 #define QDEF(id, str) id,
 #include "genhdr/qstrdefs.generated.h"
 #undef QDEF
-    MP_QSTR_number_of,
+    MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
 
 typedef size_t qstr;

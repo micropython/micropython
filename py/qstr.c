@@ -87,11 +87,11 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     return hash;
 }
 
-STATIC const qstr_pool_t const_pool = {
+const qstr_pool_t mp_qstr_const_pool = {
     NULL,               // no previous pool
     0,                  // no previous pool
     10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
-    MP_QSTR_number_of,  // corresponds to number of strings in array just below
+    MP_QSTRnumber_of,   // corresponds to number of strings in array just below
     {
 #define QDEF(id, str) str,
 #include "genhdr/qstrdefs.generated.h"
@@ -99,8 +99,15 @@ STATIC const qstr_pool_t const_pool = {
     },
 };
 
+#ifdef MICROPY_QSTR_EXTRA_POOL
+extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
+#define CONST_POOL MICROPY_QSTR_EXTRA_POOL
+#else
+#define CONST_POOL mp_qstr_const_pool
+#endif
+
 void qstr_init(void) {
-    MP_STATE_VM(last_pool) = (qstr_pool_t*)&const_pool; // we won't modify the const_pool since it has no allocated room left
+    MP_STATE_VM(last_pool) = (qstr_pool_t*)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
 }
 
@@ -258,7 +265,7 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
     *n_qstr = 0;
     *n_str_data_bytes = 0;
     *n_total_bytes = 0;
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &const_pool; pool = pool->prev) {
+    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
         *n_pool += 1;
         *n_qstr += pool->len;
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
@@ -275,7 +282,7 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
 
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 void qstr_dump_data(void) {
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &const_pool; pool = pool->prev) {
+    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
             mp_printf(&mp_plat_print, "Q(%s)\n", Q_GET_DATA(*q));
         }

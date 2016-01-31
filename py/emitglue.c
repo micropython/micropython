@@ -172,7 +172,7 @@ mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_clos
     return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
 }
 
-#if MICROPY_PERSISTENT_CODE
+#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #include "py/smallint.h"
 
@@ -229,7 +229,7 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
     }
 }
 
-#endif // MICROPY_PERSISTENT_CODE
+#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #if MICROPY_PERSISTENT_CODE_LOAD
 

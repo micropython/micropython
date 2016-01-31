@@ -144,7 +144,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char 
 }
 #endif
 
-#if MICROPY_PERSISTENT_CODE_LOAD
+#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
     #if MICROPY_PY___FILE__
     // TODO
@@ -182,8 +182,9 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
 #endif
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    // create the lexer
+    #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
     char *file_str = vstr_null_terminated_str(file);
+    #endif
 
     #if MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
@@ -340,8 +341,9 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     DEBUG_printf("Module not yet loaded\n");
 
     #if MICROPY_MODULE_FROZEN
-    mp_lexer_t *lex = mp_find_frozen_module(mod_str, mod_len);
-    if (lex != NULL) {
+    void *frozen_data;
+    int frozen_type = mp_find_frozen_module(mod_str, mod_len, &frozen_data);
+    if (frozen_type != MP_FROZEN_NONE) {
         module_obj = mp_obj_new_module(module_name_qstr);
         // if args[3] (fromtuple) has magic value False, set up
         // this module for command-line "-m" option (set module's
@@ -351,7 +353,16 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
             mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
         }
-        do_load_from_lexer(module_obj, lex, mod_str);
+        #if MICROPY_MODULE_FROZEN_STR
+        if (frozen_type == MP_FROZEN_STR) {
+            do_load_from_lexer(module_obj, frozen_data, mod_str);
+        }
+        #endif
+        #if MICROPY_MODULE_FROZEN_MPY
+        if (frozen_type == MP_FROZEN_MPY) {
+            do_execute_raw_code(module_obj, frozen_data);
+        }
+        #endif
         return module_obj;
     }
     #endif
