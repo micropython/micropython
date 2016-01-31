@@ -29,9 +29,6 @@
 
 #include "py/mpz.h"
 
-// this is only needed for mp_not_implemented, which should eventually be removed
-#include "py/runtime.h"
-
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 
 #define DIG_SIZE (MPZ_DIG_SIZE)
@@ -246,6 +243,46 @@ STATIC mp_uint_t mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t j
     return idig + 1 - oidig;
 }
 
+/* computes i = -(-j & -k) = ~(~(j - 1) & ~(k - 1)) + 1 = ((j - 1) | (k - 1)) + 1
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j, k
+   can have i, j, k pointing to same memory
+*/
+STATIC mp_uint_t mpn_and_neg2(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen) {
+    mpz_dig_t *oidig = idig;
+    mpz_dbl_dig_t carryi = 1;
+    mpz_dbl_dig_t carryj = 0;
+    mpz_dbl_dig_t carryk = 0;
+
+    for (; jlen > 0 && klen > 0; --jlen, --klen, ++idig, ++jdig, ++kdig) {
+        carryk += *kdig + DIG_MASK;
+        carryj += *jdig + DIG_MASK;
+        carryi += (carryj | carryk) & DIG_MASK;
+        *idig = carryi & DIG_MASK;
+        carryk >>= DIG_SIZE;
+        carryj >>= DIG_SIZE;
+        carryi >>= DIG_SIZE;
+    }
+
+    for (; jlen > 0; --jlen, ++idig, ++jdig) {
+        carryk += DIG_MASK;
+        carryj += *jdig + DIG_MASK;
+        carryi += (carryj | carryk) & DIG_MASK;
+        *idig = carryi & DIG_MASK;
+        carryk >>= DIG_SIZE;
+        carryj >>= DIG_SIZE;
+        carryi >>= DIG_SIZE;
+    }
+
+    *idig++ = carryi;
+
+    // remove trailing zeros
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
+    }
+
+    return idig + 1 - oidig;
+}
+
 /* computes i = j | k
    returns number of digits in i
    assumes enough memory in i; assumes normalised j, k; assumes jlen >= klen
@@ -283,6 +320,95 @@ STATIC mp_uint_t mpn_xor(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen,
 
     for (; jlen > 0; --jlen, ++idig, ++jdig) {
         *idig = *jdig;
+    }
+
+    // remove trailing zeros
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
+    }
+
+    return idig + 1 - oidig;
+}
+
+/*  i = (-j) ^ (-k) = ~(j - 1) ^ ~(k - 1)                   = (j - 1) ^ (k - 1) 
+    i = -(j ^ (-k)) = -(j ^ ~(k - 1)) = ~(j ^ ~(k - 1)) + 1 = (j ^ (k - 1)) + 1
+    i = -((-j) ^ k) = -(~(j - 1) ^ k) = ~(~(j - 1) ^ k) + 1 = ((j - 1) ^ k) + 1
+   computes general form: 
+   i = ((j - 1 + jc) ^ (k - 1 + kc)) + ic
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j, k; assumes length j >= length k
+   can have i, j, k pointing to same memory
+*/
+STATIC mp_uint_t mpn_xor_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen,
+                              mpz_dbl_dig_t carryi, mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
+    mpz_dig_t *oidig = idig;
+
+    for (; jlen > 0 && klen > 0; --jlen, --klen, ++idig, ++jdig, ++kdig) {
+        carryj += *jdig + DIG_MASK;
+        carryk += *kdig + DIG_MASK;
+        carryi += (carryj ^ carryk) & DIG_MASK;
+        *idig = carryi & DIG_MASK;
+        carryk >>= DIG_SIZE;
+        carryj >>= DIG_SIZE;
+        carryi >>= DIG_SIZE;
+    }
+
+    for (; jlen > 0; --jlen, ++idig, ++jdig) {
+        carryj += *jdig + DIG_MASK;
+        carryi += carryj & DIG_MASK;
+        *idig = carryi & DIG_MASK;
+        carryj >>= DIG_SIZE;
+        carryi >>= DIG_SIZE;
+    }
+
+    if (0 != carryi) {
+        *idig++ = carryi;
+    }
+
+    // remove trailing zeros
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
+    }
+
+    return idig + 1 - oidig;
+}
+
+/*  i = -((-j) | (-k))                = ~((~j + 1) | (~k + 1)) + 1
+    i = -(j | (-k)) = -(j | (~k + 1)) = ~(  j      | (~k + 1)) + 1
+    i = -((-j) | k) = -((~j + 1) | k) = ~((~j + 1) |   k     ) + 1
+   computes general form: 
+   i = ~(((j ^ jm) + jc) | ((k ^ km) + kc)) + 1  where Xm = Xc == 0 ? 0 : DIG_MASK
+   returns number of digits in i
+   assumes enough memory in i; assumes normalised j, k; assumes length j >= length k
+   can have i, j, k pointing to same memory
+*/
+STATIC mp_uint_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen,
+                            mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
+    mpz_dig_t *oidig = idig;
+    mpz_dbl_dig_t carryi = 1;
+    mpz_dig_t jmask = (0 == carryj) ? 0 : DIG_MASK;
+    mpz_dig_t kmask = (0 == carryk) ? 0 : DIG_MASK;
+
+    for (; jlen > 0 && klen > 0; --jlen, --klen, ++idig, ++jdig, ++kdig) {
+        carryj += *jdig ^ jmask;
+        carryk += *kdig ^ kmask;
+        carryi += ((carryj | carryk) ^ DIG_MASK) & DIG_MASK;
+        *idig = carryi & DIG_MASK;
+        carryk >>= DIG_SIZE;
+        carryj >>= DIG_SIZE;
+        carryi >>= DIG_SIZE;
+    }
+
+    for (; jlen > 0; --jlen, ++idig, ++jdig) {
+        carryj += *jdig ^ jmask;
+        carryk += kmask;
+        carryi += ((carryj | carryk) ^ DIG_MASK) & DIG_MASK;
+        *idig = carryi & DIG_MASK;
+        carryk >>= DIG_SIZE;
+        carryj >>= DIG_SIZE;
+        carryi >>= DIG_SIZE;
+    }
+
+    if (0 != carryi) {
+        *idig++ = carryi;
     }
 
     // remove trailing zeros
@@ -1098,20 +1224,22 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 */
 void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     if (lhs->neg == rhs->neg) {
+        // make sure lhs has the most digits
+        if (lhs->len < rhs->len) {
+            const mpz_t *temp = lhs;
+            lhs = rhs;
+            rhs = temp;
+        }
         if (lhs->neg == 0) {
-            // make sure lhs has the most digits
-            if (lhs->len < rhs->len) {
-                const mpz_t *temp = lhs;
-                lhs = rhs;
-                rhs = temp;
-            }
             // do the and'ing
             mpz_need_dig(dest, rhs->len);
             dest->len = mpn_and(dest->dig, lhs->dig, rhs->dig, rhs->len);
             dest->neg = 0;
         } else {
-            // TODO both args are negative
-            mp_not_implemented("bignum and with negative args");
+            // do the and'ing
+            mpz_need_dig(dest, lhs->len + 1); // + 1 in case we negate a max int for its size
+            dest->len = mpn_and_neg2(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+            dest->neg = 1;
         }
     } else {
         // args have different sign
@@ -1132,30 +1260,31 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
    can have dest, lhs, rhs the same
 */
 void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
-    if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+    // make sure lhs has the most digits
+    if (lhs->len < rhs->len) { // (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
         const mpz_t *temp = lhs;
         lhs = rhs;
         rhs = temp;
     }
 
-    if (lhs->neg == rhs->neg) {
+    if ((0 == lhs->neg) && (0 == rhs->neg)) {
         mpz_need_dig(dest, lhs->len);
         dest->len = mpn_or(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+        dest->neg = 0;
     } else {
-        mpz_need_dig(dest, lhs->len);
-        // TODO
-        mp_not_implemented("bignum or with negative args");
-//        dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+        mpz_need_dig(dest, lhs->len + 1);
+        dest->len = mpn_or_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len,
+                                 0 != lhs->neg, 0 != rhs->neg);
+        dest->neg = 1;
     }
-
-    dest->neg = lhs->neg;
 }
 
 /* computes dest = lhs ^ rhs
    can have dest, lhs, rhs the same
 */
 void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
-    if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+    // make sure lhs has the most digits
+    if (lhs->len < rhs->len) { // (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
         const mpz_t *temp = lhs;
         lhs = rhs;
         rhs = temp;
@@ -1163,15 +1292,21 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
     if (lhs->neg == rhs->neg) {
         mpz_need_dig(dest, lhs->len);
-        dest->len = mpn_xor(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+        if (lhs->neg == 0) {
+            dest->len = mpn_xor(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+        } else {
+            dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len, 0, 0, 0);
+        }
+        dest->neg = 0;
     } else {
-        mpz_need_dig(dest, lhs->len);
-        // TODO
-        mp_not_implemented("bignum xor with negative args");
-//        dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
+        mpz_need_dig(dest, lhs->len + 1);
+        if (lhs->neg == 0) {
+            dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len, 1, 1, 0);
+        } else {
+            dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len, 1, 0, 1);
+        }
+        dest->neg = 1;
     }
-
-    dest->neg = 0;
 }
 
 /* computes dest = lhs * rhs
