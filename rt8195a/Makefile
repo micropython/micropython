@@ -9,7 +9,7 @@ include ../py/py.mk
 CROSS_COMPILE = arm-none-eabi-
 
 SDK = libameba/sdk
-LIB = lib
+LIB = linklibs
 
 PROJECT = realtek_ameba1_va0_example
 
@@ -116,13 +116,13 @@ ELF_LDFLAGS += -Wl,--no-wchar-size-warning
 ELF_LDFLAGS += -Wl,--entry=InfraStart
 ELF_LDFLAGS += -Wl,-nostdlib
 
-ELF_ARLIST += ./lib/lib_wlan.a
-ELF_ARLIST += ./lib/lib_wlan_mp.a 
-ELF_ARLIST += ./lib/lib_wps.a
-ELF_ARLIST += ./lib/lib_mdns.a
-ELF_ARLIST += ./lib/lib_ameba.a
-ELF_ARLIST += ./lib/lib_rtlstd.a
-ELF_ARLIST += ./lib/lib_platform.a
+ELF_ARLIST += ./$(LIB)/lib_wlan.a
+ELF_ARLIST += ./$(LIB)/lib_wlan_mp.a 
+ELF_ARLIST += ./$(LIB)/lib_wps.a
+ELF_ARLIST += ./$(LIB)/lib_mdns.a
+ELF_ARLIST += ./$(LIB)/lib_ameba.a
+ELF_ARLIST += ./$(LIB)/lib_rtlstd.a
+ELF_ARLIST += ./$(LIB)/lib_platform.a
 
 #-------------------------------------------------------------------------------
 # C source files and objects
