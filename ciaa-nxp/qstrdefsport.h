@@ -179,3 +179,6 @@ Q(time)
 Q(localtime)
 Q(mktime)
 Q(sleep)
+
+Q(I2C)
+Q(slave_addr)

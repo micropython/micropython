@@ -146,4 +146,11 @@ void mp_hal_getAlarmTimeRTC(uint32_t* hr,uint32_t* min, uint32_t* sec, uint32_t*
 void mp_hal_disableAlarmRTC(void);
 void mp_hal_setCallbackRTC(void(*function)(void*),void* arg);
 
+//I2C
+void mp_hal_setSpeedI2C(uint32_t speed);
+uint32_t mp_hal_masterReadI2C(uint8_t slaveAddr, uint8_t *buff, int len);
+uint32_t mp_hal_masterWrite(uint8_t slaveAddr, uint8_t *buff, int len);
+uint32_t mp_hal_masterWriteCmdAdnRead(uint8_t slaveAddr, uint8_t cmd,uint8_t *buff, int len);
+
+
 #endif

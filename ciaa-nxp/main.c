@@ -105,6 +105,7 @@ soft_reset:
 	//__________________________
 	
 	//debug i2c
+	/*
 	int i;
 	uint8_t ch[2];
 	char aux[64];
@@ -126,8 +127,7 @@ soft_reset:
 			continue;
 		}
 		
-		/* Address 0x48 points to LM75AIM device which needs 2 bytes be read */
-		
+		// Address 0x48 points to LM75AIM device which needs 2 bytes be read 		
 		if (Board_I2C_Master_Read(i, ch, 1 + (i == 0x48)) > 0) 
 		{
 			sprintf(aux," %02X", i);
@@ -143,7 +143,8 @@ soft_reset:
 	printf("\r\n");	
 	printf("\r\n****************************************************");
 	printf("\r\n");	
-	
+	*/
+	/*
 	// escribo
 	aux[0] = 0x00; // addr
 	aux[1] = 0x28; // data
@@ -186,6 +187,7 @@ soft_reset:
 		printf(aux);
 	}
 		printf("\r\n");
+		*/
 	//__________________________
 
     if (!pyexec_file("/flash/Main.py")) {
