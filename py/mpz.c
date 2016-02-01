@@ -227,7 +227,7 @@ STATIC mp_uint_t mpn_and(mpz_dig_t *idig, const mpz_dig_t *jdig, const mpz_dig_t
     i =  (j & (-k)) =  (j & (~k + 1)) =  (  j      & (~k + 1)) 
     i =  ((-j) & k) =  ((~j + 1) & k) =  ((~j + 1) &   k     )
    computes general form: 
-   i = (im ^ (((j ^ jm) + jc) & ((k ^ km) + kc))) + ki  where Xm = Xc == 0 ? 0 : DIG_MASK
+   i = (im ^ (((j ^ jm) + jc) & ((k ^ km) + kc))) + ic  where Xm = Xc == 0 ? 0 : DIG_MASK
    returns number of digits in i
    assumes enough memory in i; assumes normalised j, k; assumes length j >= length k
    can have i, j, k pointing to same memory
@@ -1166,7 +1166,7 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     }
 }
 
-/* computes dest = lhs | rhs
+/* computes dest = lhs & rhs
    can have dest, lhs, rhs the same
 */
 void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
