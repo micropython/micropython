@@ -458,6 +458,7 @@ int tinf_uncompress(void *dest, unsigned int *destLen,
 
    d.destStart = (unsigned char *)dest;
    d.destRemaining = *destLen;
+   d.destSize = *destLen;
 
    res = tinf_uncompress_dyn(&d);
 
