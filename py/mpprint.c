@@ -494,16 +494,16 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 break;
             }
             case 'u':
-                chrs += mp_print_int(print, va_arg(args, int), 0, 10, 'a', flags, fill, width);
+                chrs += mp_print_int(print, va_arg(args, unsigned int), 0, 10, 'a', flags, fill, width);
                 break;
             case 'd':
                 chrs += mp_print_int(print, va_arg(args, int), 1, 10, 'a', flags, fill, width);
                 break;
             case 'x':
-                chrs += mp_print_int(print, va_arg(args, int), 0, 16, 'a', flags, fill, width);
+                chrs += mp_print_int(print, va_arg(args, unsigned int), 0, 16, 'a', flags, fill, width);
                 break;
             case 'X':
-                chrs += mp_print_int(print, va_arg(args, int), 0, 16, 'A', flags, fill, width);
+                chrs += mp_print_int(print, va_arg(args, unsigned int), 0, 16, 'A', flags, fill, width);
                 break;
             case 'p':
             case 'P': // don't bother to handle upcase for 'P'

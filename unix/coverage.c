@@ -22,6 +22,10 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
         mp_printf(&mp_plat_print, "%s\n", NULL); // null string
         mp_printf(&mp_plat_print, "%t\n"); // non-format char
+        mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
+        mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
+        mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
+        mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
     }
 
     // vstr
