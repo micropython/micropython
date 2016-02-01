@@ -238,12 +238,13 @@ class SDCard:
             self.write(TOKEN_DATA, buf)
         else:
             offset = 0
+            mv = memoryview(buf)
             # CMD25: set write address for first block
             if self.cmd(25, block_num * self.cdv, 0) != 0:
                 return 1
             while nblocks:
             # send the data
-                self.write(TOKEN_CMD25, buf[offset : offset+512])
+                self.write(TOKEN_CMD25, mv[offset : offset+512])
                 offset += 512
                 nblocks -= 1
             self.write_token(TOKEN_STOP_TRAN)
