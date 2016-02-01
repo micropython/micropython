@@ -1217,7 +1217,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 */
 void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
     // make sure lhs has the most digits
-    if (lhs->len < rhs->len) { // (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
+    if (lhs->len < rhs->len) {
         const mpz_t *temp = lhs;
         lhs = rhs;
         rhs = temp;
@@ -1233,11 +1233,8 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         dest->neg = 0;
     } else {
         mpz_need_dig(dest, lhs->len + 1);
-        if (lhs->neg == 0) {
-            dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len, 1, 1, 0);
-        } else {
-            dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len, 1, 0, 1);
-        }
+        dest->len = mpn_xor_neg(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len, 1,
+                                0 == lhs->neg, 0 == rhs->neg);
         dest->neg = 1;
     }
 }
