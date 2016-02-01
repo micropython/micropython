@@ -674,7 +674,7 @@ unwind_jump:;
                             exc_sp--; // pop exception handler
                             goto dispatch_loop; // run the exception handler
                         }
-                        exc_sp--;
+                        POP_EXC_BLOCK();
                     }
                     ip = (const byte*)MP_OBJ_TO_PTR(POP()); // pop destination ip for jump
                     if (unum != 0) {
