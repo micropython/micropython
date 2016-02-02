@@ -34,6 +34,7 @@
 #include "py/objlist.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
+#include "py/stackctrl.h"
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
@@ -848,19 +849,24 @@ STATIC NORETURN void terse_str_format_value_error(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad format string"));
 }
 
-mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
-
-    GET_STR_DATA_LEN(args[0], str, len);
-    int arg_i = 0;
+vstr_t mp_obj_str_format_helper(const byte *start, int len, int position, int *arg_i, int recursion_level, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     vstr_t vstr;
     mp_print_t print;
+    const byte *str = start + position;
+    const byte *top = start + len;
+
     vstr_init_print(&vstr, 16, &print);
 
-    for (const byte *top = str + len; str < top; str++) {
+    for (; str < top; str++) {
         if (*str == '}') {
+            if (recursion_level) {
+                while (str < top) {
+                    vstr_add_byte(&vstr, *str++);
+                }
+                break;
+            }
             str++;
-            if (str < top && *str == '}') {
+            if (str < top && *str == '}' && !recursion_level) {
                 vstr_add_byte(&vstr, '}');
                 continue;
             }
@@ -877,9 +883,24 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
 
         str++;
-        if (str < top && *str == '{') {
+        if (str < top && *str == '{' && !recursion_level) {
             vstr_add_byte(&vstr, '{');
             continue;
+        }
+
+        if (str < top) {
+            const byte *check;
+            for(check = str; check < top && *check != '}'; check++) {
+                if (*check == '{') {
+                    MP_STACK_CHECK();
+                    vstr_t new_format = mp_obj_str_format_helper(start, len, position + (str - start), arg_i, recursion_level + 1, n_args, args, kwargs);
+                    str = start = (byte *)vstr_null_terminated_str(&new_format);
+                    len = vstr_len(&new_format);
+                    position = 0;
+                    top = start + len;
+                    break;
+                }
+            }
         }
 
         // replacement_field ::=  "{" [field_name] ["!" conversion] [":" format_spec] "}"
@@ -957,7 +978,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             const char *field = vstr_null_terminated_str(field_name);
             const char *lookup = NULL;
             if (MP_LIKELY(unichar_isdigit(*field))) {
-                if (arg_i > 0) {
+                if (*arg_i > 0) {
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
@@ -970,7 +991,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
                 }
                 arg = args[index + 1];
-                arg_i = -1;
+                *arg_i = -1;
             } else {
                 for (lookup = field; *lookup && *lookup != '.' && *lookup != '['; lookup++);
                 mp_obj_t field_q = mp_obj_new_str(field, lookup - field, true/*?*/);
@@ -986,7 +1007,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             vstr_free(field_name);
             field_name = NULL;
         } else {
-            if (arg_i < 0) {
+            if (*arg_i < 0) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
@@ -994,11 +1015,11 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         "can't switch from manual field specification to automatic field numbering"));
                 }
             }
-            if ((uint)arg_i >= n_args - 1) {
+            if ((uint)*arg_i >= n_args - 1) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
             }
-            arg = args[arg_i + 1];
-            arg_i++;
+            arg = args[(*arg_i) + 1];
+            (*arg_i)++;
         }
         if (!format_spec && !conversion) {
             conversion = 's';
@@ -1288,6 +1309,15 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
     }
 
+    return vstr;
+}
+
+mp_obj_t mp_obj_str_format(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    assert(MP_OBJ_IS_STR_OR_BYTES(args[0]));
+
+    GET_STR_DATA_LEN(args[0], str, len);
+    int arg_i = 0;
+    vstr_t vstr = mp_obj_str_format_helper(str, len, 0, &arg_i, 0, n_args, args, kwargs);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 
