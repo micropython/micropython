@@ -204,7 +204,7 @@ STATIC mp_uint_t mpn_trimmed_length(mpz_dig_t *oidig, mpz_dig_t *idig) {
     return idig + 1 - oidig;
 }
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
 /* computes i = j & k
    returns number of digits in i
@@ -260,7 +260,7 @@ STATIC mp_uint_t mpn_and_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t j
     return mpn_trimmed_length(oidig, idig);
 }
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
 /* computes i = j | k
    returns number of digits in i
@@ -285,7 +285,7 @@ STATIC mp_uint_t mpn_or(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, 
 
 #endif
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
 /* computes i = j ^ k
    returns number of digits in i
@@ -354,7 +354,7 @@ STATIC mp_uint_t mpn_xor_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t j
    can have i, j, k pointing to same memory
 */
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
 STATIC mp_uint_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jlen, const mpz_dig_t *kdig, mp_uint_t klen,
                             mpz_dbl_dig_t carryj, mpz_dbl_dig_t carryk) {
@@ -1220,7 +1220,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         rhs = temp;
     }
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
     if ((0 == lhs->neg) && (0 == rhs->neg)) {
         mpz_need_dig(dest, lhs->len);
@@ -1254,7 +1254,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         rhs = temp;
     }
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
     if ((0 == lhs->neg) && (0 == rhs->neg)) {
         mpz_need_dig(dest, lhs->len);
@@ -1288,7 +1288,7 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         rhs = temp;
     }
 
-#if MICROPY_MPZ_BITWISE_SPEEDIER
+#if MICROPY_MPZ_BITWISE_FAST
 
     if (lhs->neg == rhs->neg) {
         mpz_need_dig(dest, lhs->len);
