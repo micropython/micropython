@@ -848,7 +848,7 @@ STATIC NORETURN void terse_str_format_value_error(void) {
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad format string"));
 }
 
-vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 16, &print);
