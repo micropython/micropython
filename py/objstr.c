@@ -803,17 +803,16 @@ STATIC mp_obj_t str_rstrip(size_t n_args, const mp_obj_t *args) {
 
 // Takes an int arg, but only parses unsigned numbers, and only changes
 // *num if at least one digit was parsed.
-STATIC int str_to_int(const char *str, int *num) {
-    const char *s = str;
-    if ('0' <= *s && *s <= '9') {
+STATIC const char *str_to_int(const char *str, const char *top, int *num) {
+    if (str < top && '0' <= *str && *str <= '9') {
         *num = 0;
         do {
-            *num = *num * 10 + (*s - '0');
-            s++;
+            *num = *num * 10 + (*str - '0');
+            str++;
         }
-        while ('0' <= *s && *s <= '9');
+        while (str < top && '0' <= *str && *str <= '9');
     }
-    return s - str;
+    return str;
 }
 
 STATIC bool isalignment(char ch) {
@@ -881,15 +880,17 @@ vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp
 
         // replacement_field ::=  "{" [field_name] ["!" conversion] [":" format_spec] "}"
 
-        vstr_t *field_name = NULL;
+        const char *field_name = NULL;
+        const char *field_name_top = NULL;
         char conversion = '\0';
         const char *format_spec = NULL;
 
         if (str < top && *str != '}' && *str != '!' && *str != ':') {
-            field_name = vstr_new();
+            field_name = (const char *)str;
             while (str < top && *str != '}' && *str != '!' && *str != ':') {
-                vstr_add_byte(field_name, *str++);
+                ++str;
             }
+            field_name_top = (const char *)str;
         }
 
         // conversion ::=  "r" | "s"
@@ -958,9 +959,7 @@ vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp
 
         if (field_name) {
             int index = 0;
-            const char *field = vstr_null_terminated_str(field_name);
-            const char *lookup = NULL;
-            if (MP_LIKELY(unichar_isdigit(*field))) {
+            if (MP_LIKELY(unichar_isdigit(*field_name))) {
                 if (*arg_i > 0) {
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
@@ -969,26 +968,26 @@ vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp
                             "can't switch from automatic field numbering to manual field specification"));
                     }
                 }
-                lookup = str_to_int(field, &index) + field;
+                field_name = str_to_int(field_name, field_name_top, &index);
                 if ((uint)index >= n_args - 1) {
                     nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "tuple index out of range"));
                 }
                 arg = args[index + 1];
                 *arg_i = -1;
             } else {
-                for (lookup = field; *lookup && *lookup != '.' && *lookup != '['; lookup++);
-                mp_obj_t field_q = mp_obj_new_str(field, lookup - field, true/*?*/);
+                const char *lookup;
+                for (lookup = field_name; lookup < field_name_top && *lookup != '.' && *lookup != '['; lookup++);
+                mp_obj_t field_q = mp_obj_new_str(field_name, lookup - field_name, true/*?*/);
+                field_name = lookup;
                 mp_map_elem_t *key_elem = mp_map_lookup(kwargs, field_q, MP_MAP_LOOKUP);
                 if (key_elem == NULL) {
                     nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, field_q));
                 }
                 arg = key_elem->value;
             }
-            if (*lookup) {
+            if (field_name < field_name_top) {
                 mp_not_implemented("attributes not supported yet");
             }
-            vstr_free(field_name);
-            field_name = NULL;
         } else {
             if (*arg_i < 0) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -1045,6 +1044,7 @@ vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp
             MP_STACK_CHECK();
             vstr_t format_spec_vstr = mp_obj_str_format_helper(format_spec, str, arg_i, n_args, args, kwargs);
             const char *s = vstr_null_terminated_str(&format_spec_vstr);
+            const char *stop = s + format_spec_vstr.len;
             if (isalignment(*s)) {
                 align = *s++;
             } else if (*s && isalignment(s[1])) {
@@ -1071,14 +1071,14 @@ vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp
                     fill = '0';
                 }
             }
-            s += str_to_int(s, &width);
+            s = str_to_int(s, stop, &width);
             if (*s == ',') {
                 flags |= PF_FLAG_SHOW_COMMA;
                 s++;
             }
             if (*s == '.') {
                 s++;
-                s += str_to_int(s, &precision);
+                s = str_to_int(s, stop, &precision);
             }
             if (istype(*s)) {
                 type = *s++;
@@ -1374,7 +1374,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
                 width = mp_obj_get_int(args[arg_i++]);
                 str++;
             } else {
-                str += str_to_int((const char*)str, &width);
+                str = (const byte*)str_to_int((const char*)str, (const char*)top, &width);
             }
         }
         int prec = -1;
@@ -1388,7 +1388,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
                     str++;
                 } else {
                     prec = 0;
-                    str += str_to_int((const char*)str, &prec);
+                    str = (const byte*)str_to_int((const char*)str, (const char*)top, &prec);
                 }
             }
         }
