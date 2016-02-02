@@ -510,19 +510,19 @@ typedef enum {
     STACK_IMM,
 } stack_info_kind_t;
 
-// these enums must be distinct and the bottom 2 bits
+// these enums must be distinct and the bottom 4 bits
 // must correspond to the correct MP_NATIVE_TYPE_xxx value
 typedef enum {
     VTYPE_PYOBJ = 0x00 | MP_NATIVE_TYPE_OBJ,
     VTYPE_BOOL = 0x00 | MP_NATIVE_TYPE_BOOL,
     VTYPE_INT = 0x00 | MP_NATIVE_TYPE_INT,
     VTYPE_UINT = 0x00 | MP_NATIVE_TYPE_UINT,
+    VTYPE_PTR = 0x00 | MP_NATIVE_TYPE_PTR,
+    VTYPE_PTR8 = 0x00 | MP_NATIVE_TYPE_PTR8,
+    VTYPE_PTR16 = 0x00 | MP_NATIVE_TYPE_PTR16,
+    VTYPE_PTR32 = 0x00 | MP_NATIVE_TYPE_PTR32,
 
-    VTYPE_PTR = 0x10 | MP_NATIVE_TYPE_UINT, // pointer to word sized entity
-    VTYPE_PTR8 = 0x20 | MP_NATIVE_TYPE_UINT,
-    VTYPE_PTR16 = 0x30 | MP_NATIVE_TYPE_UINT,
-    VTYPE_PTR32 = 0x40 | MP_NATIVE_TYPE_UINT,
-    VTYPE_PTR_NONE = 0x50 | MP_NATIVE_TYPE_UINT,
+    VTYPE_PTR_NONE = 0x50 | MP_NATIVE_TYPE_PTR,
 
     VTYPE_UNBOUND = 0x60 | MP_NATIVE_TYPE_OBJ,
     VTYPE_BUILTIN_CAST = 0x70 | MP_NATIVE_TYPE_OBJ,
@@ -882,10 +882,10 @@ STATIC void emit_native_end_pass(emit_t *emit) {
         mp_uint_t f_len = ASM_GET_CODE_SIZE(emit->as);
 
         // compute type signature
-        // note that the lower 2 bits of a vtype are tho correct MP_NATIVE_TYPE_xxx
-        mp_uint_t type_sig = emit->return_vtype & 3;
+        // note that the lower 4 bits of a vtype are tho correct MP_NATIVE_TYPE_xxx
+        mp_uint_t type_sig = emit->return_vtype & 0xf;
         for (mp_uint_t i = 0; i < emit->scope->num_pos_args; i++) {
-            type_sig |= (emit->local_vtype[i] & 3) << (i * 2 + 2);
+            type_sig |= (emit->local_vtype[i] & 0xf) << (i * 4 + 4);
         }
 
         mp_emit_glue_assign_native(emit->scope->raw_code,
@@ -2382,7 +2382,7 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 vtype_kind_t vtype;
                 emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
                 emit_pre_pop_discard(emit);
-                emit_call_with_imm_arg(emit, MP_F_CONVERT_OBJ_TO_NATIVE, MP_NATIVE_TYPE_UINT, REG_ARG_2); // arg2 = type
+                emit_call_with_imm_arg(emit, MP_F_CONVERT_OBJ_TO_NATIVE, vtype_cast, REG_ARG_2); // arg2 = type
                 emit_post_push_reg(emit, vtype_cast, REG_RET);
                 break;
             }

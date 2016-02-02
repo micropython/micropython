@@ -37,6 +37,10 @@
 #define MP_NATIVE_TYPE_BOOL (0x01)
 #define MP_NATIVE_TYPE_INT  (0x02)
 #define MP_NATIVE_TYPE_UINT (0x03)
+#define MP_NATIVE_TYPE_PTR  (0x04)
+#define MP_NATIVE_TYPE_PTR8 (0x05)
+#define MP_NATIVE_TYPE_PTR16 (0x06)
+#define MP_NATIVE_TYPE_PTR32 (0x07)
 
 typedef enum {
     MP_UNARY_OP_BOOL, // __bool__
