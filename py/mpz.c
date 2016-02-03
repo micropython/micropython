@@ -1374,6 +1374,44 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 #if 0
 these functions are unused
 
+/* computes dest = (lhs ** rhs) % mod
+   can have dest, lhs, rhs the same; mod can't be the same as dest
+*/
+void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t *mod) {
+    if (lhs->len == 0 || rhs->neg != 0) {
+        mpz_set_from_int(dest, 0);
+        return;
+    }
+
+    if (rhs->len == 0) {
+        mpz_set_from_int(dest, 1);
+        return;
+    }
+
+    mpz_t *x = mpz_clone(lhs);
+    mpz_t *n = mpz_clone(rhs);
+    mpz_t quo; mpz_init_zero(&quo);
+
+    mpz_set_from_int(dest, 1);
+
+    while (n->len > 0) {
+        if ((n->dig[0] & 1) != 0) {
+            mpz_mul_inpl(dest, dest, x);
+            mpz_divmod_inpl(&quo, dest, dest, mod);
+        }
+        n->len = mpn_shr(n->dig, n->dig, n->len, 1);
+        if (n->len == 0) {
+            break;
+        }
+        mpz_mul_inpl(x, x, x);
+        mpz_divmod_inpl(&quo, x, x, mod);
+    }
+
+    mpz_deinit(&quo);
+    mpz_free(x);
+    mpz_free(n);
+}
+
 /* computes gcd(z1, z2)
    based on Knuth's modified gcd algorithm (I think?)
    gcd(z1, z2) >= 0
