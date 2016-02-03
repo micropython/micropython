@@ -631,3 +631,51 @@ NOTE: RTC module must be initialized before utime utilization
 > More info: https://micropython.org/doc/module/time
 
 
+## I2C support module
+
+### I2C master mode via pyb.I2C module
+
+24C04 eeprom memory with I2C interface example:
+```python
+import pyb
+
+print("Test I2C with AT24C04")
+
+i2c = pyb.I2C(100000) #100Khz
+i2c.slave_addr(0x50)
+
+def writeByte(addr,value):
+    data = bytearray()
+    data.append(addr)
+    data.append(value)
+    i2c.write(data)
+
+
+def readBytes(addr,size):
+    data = bytearray()
+    data.append(addr)    
+    i2c.write(data)    
+    return i2c.read(size)
+
+writeByte(0x00,11)
+pyb.delay(10)
+writeByte(0x01,22)
+pyb.delay(10)
+writeByte(0x02,33)
+pyb.delay(10)
+
+
+data = readBytes(0x00,16)
+print("[0]:"+str(data[0]))
+print("[1]:"+str(data[1]))
+print("[2]:"+str(data[2]))
+```
+I2C constructor receive as argument the bus speed (100Khz or 400Khz) expressed in Hz.
+slave_addr method configure slave's address used each time bytes are written or read.
+Once spi object is created, it can be used for reading and writing data.
+"write" method receives a bytearray and send it by the I2C bus.
+"read" method receives the amount of bytes to be read.
+
+In this example two functions are written, the first one allows to write a byte in a specified address in the memory and the second one reads a specified amont of
+bytes from the specified address.
+

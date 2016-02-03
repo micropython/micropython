@@ -796,6 +796,15 @@ void Board_RTC_setAlarmCallback(void(*function)(void*),void* arg);
 
 
 
+
+
+void Board_I2C_Master_SetSpeed(uint32_t speed);
+uint32_t Board_I2C_Master_Read(uint8_t slaveAddr, uint8_t *buff, int len);
+uint32_t Board_I2C_Master_Write(uint8_t slaveAddr, uint8_t *buff, int len);
+uint32_t Board_I2C_Master_WriteCmdAdnRead(uint8_t slaveAddr, uint8_t cmd,uint8_t *buff, int len);
+
+
+
 #include "../src/ponchos/poncho_ui.h"
 
 

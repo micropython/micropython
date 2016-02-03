@@ -457,3 +457,22 @@ void mp_hal_setCallbackRTC(void(*function)(void*),void* arg)
 {
 	Board_RTC_setAlarmCallback(function,arg);
 }
+
+//I2C
+void mp_hal_setSpeedI2C(uint32_t speed)
+{
+	Board_I2C_Master_SetSpeed(speed);
+}
+uint32_t mp_hal_masterReadI2C(uint8_t slaveAddr, uint8_t *buff, int len)
+{
+	return Board_I2C_Master_Read(slaveAddr,buff,len);
+}
+uint32_t mp_hal_masterWrite(uint8_t slaveAddr, uint8_t *buff, int len)
+{
+	return Board_I2C_Master_Write(slaveAddr,buff,len);
+}
+uint32_t mp_hal_masterWriteCmdAdnRead(uint8_t slaveAddr, uint8_t cmd,uint8_t *buff, int len)
+{
+	return Board_I2C_Master_WriteCmdAdnRead(slaveAddr,cmd,buff,len);
+}
+

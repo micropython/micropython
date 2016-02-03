@@ -63,6 +63,7 @@ SRC_C = \
 	modpybeeprom.c \
 	modpybspi.c \
 	modpybrtc.c \
+	modpybi2c.c \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/mp-readline/readline.c \
