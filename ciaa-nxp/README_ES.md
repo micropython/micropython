@@ -591,3 +591,52 @@ NOTA: El modulo RTC debe ser inicializado antes de utilizar el modulo utime.
 > Mas informacion en: https://micropython.org/doc/module/time
 
 
+
+##### Soporte para I2C modo Master
+
+Clase `pyb.I2C`.
+
+Ejemplo lectura y escritura de una memoria tipo 24C04:
+```python
+import pyb
+
+print("Test I2C with AT24C04")
+
+i2c = pyb.I2C(100000) #100Khz
+i2c.slave_addr(0x50)
+
+def writeByte(addr,value):
+    data = bytearray()
+    data.append(addr)
+    data.append(value)
+    i2c.write(data)
+
+
+def readBytes(addr,size):
+    data = bytearray()
+    data.append(addr)    
+    i2c.write(data)    
+    return i2c.read(size)
+
+writeByte(0x00,11)
+pyb.delay(10)
+writeByte(0x01,22)
+pyb.delay(10)
+writeByte(0x02,33)
+pyb.delay(10)
+
+
+data = readBytes(0x00,16)
+print("[0]:"+str(data[0]))
+print("[1]:"+str(data[1]))
+print("[2]:"+str(data[2]))
+```
+El constructor de la clase I2C recibe como argumento la velocidad (100Khz o 400Khz) expresada en Hz:
+Luego de crear el objeto i2c, se ejecuta el metodo slave_addr mediante el cual se configura la direccion del dispositivo esclavo que se
+utilizara al leer y escribir datos por el bus. Puede cambiarse en cualquier momento.
+
+Se podra leer y escribir datos mediante el metodo write, el cual recibe un bytearray y el metodo read el cual recibe como argumento la cantidad
+de bytes a leer y devuelve un array de bytes con los datos leidos.
+
+En el ejemplo se escriben dos funciones para poder escribir un byte en la memoria y luego poder leer una cierta cantidad de bytes, siempre
+indicando la direccion.
