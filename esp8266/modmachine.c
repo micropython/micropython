@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
 #include "utils.h"
+#include "modpyb.h"
 
 #include "os_type.h"
 #include "osapi.h"
@@ -120,6 +121,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },
+    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pyb_pin_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
