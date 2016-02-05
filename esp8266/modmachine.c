@@ -34,6 +34,7 @@
 
 #include "os_type.h"
 #include "osapi.h"
+#include "etshal.h"
 
 #if MICROPY_PY_MACHINE
 
