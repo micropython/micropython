@@ -2,6 +2,7 @@
 #include "osapi.h"
 #include "os_type.h"
 #include "ets_sys.h"
+#include <esp_sdk_ver.h>
 #include "etshal.h"
 #include "user_interface.h"
 
@@ -22,7 +23,11 @@ struct task_entry {
 static void (*idle_cb)(void *);
 static void *idle_arg;
 
-#define FIRST_PRIO 0x14
+#if ESP_SDK_VERSION >= 010500
+# define FIRST_PRIO 3
+#else
+# define FIRST_PRIO 0x14
+#endif
 #define LAST_PRIO 0x20
 #define PRIO2ID(prio) ((prio) - FIRST_PRIO)
 
