@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-extern const byte fresult_to_errno_table[20];
+#include "py/runtime.h"
+#include "file.h"
 
-mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-MP_DECLARE_CONST_FUN_OBJ(mp_builtin_open_obj);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, fatfs_builtin_open);
