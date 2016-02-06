@@ -8,6 +8,10 @@ ab abc
 false true
 (null)
 t
+-2147483648
+2147483648
+80000000
+80000000
 # vstr
 tests
 sts

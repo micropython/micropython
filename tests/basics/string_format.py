@@ -66,6 +66,14 @@ test("{:>20}", "foo")
 test("{:^20}", "foo")
 test("{:<20}", "foo")
 
+# nested format specifiers
+print("{:{}}".format(123, '#>10'))
+print("{:{}{}{}}".format(123, '#', '>', '10'))
+print("{0:{1}{2}}".format(123, '#>', '10'))
+print("{text:{align}{width}}".format(text="foo", align="<", width=20))
+print("{text:{align}{width}}".format(text="foo", align="^", width=10))
+print("{text:{align}{width}}".format(text="foo", align=">", width=30))
+
 print("{foo}/foo".format(foo="bar"))
 print("{}".format(123, foo="bar"))
 print("{}-{foo}".format(123, foo="bar"))
