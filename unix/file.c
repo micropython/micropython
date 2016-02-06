@@ -156,21 +156,22 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     mp_obj_fdfile_t *o = m_new_obj(mp_obj_fdfile_t);
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
 
-    int mode = 0;
+    int mode_rw = 0, mode_x = 0;
     while (*mode_s) {
         switch (*mode_s++) {
-            // Note: these assume O_RDWR = O_RDONLY | O_WRONLY
             case 'r':
-                mode |= O_RDONLY;
+                mode_rw = O_RDONLY;
                 break;
             case 'w':
-                mode |= O_WRONLY | O_CREAT | O_TRUNC;
+                mode_rw = O_WRONLY;
+                mode_x = O_CREAT | O_TRUNC;
                 break;
             case 'a':
-                mode |= O_WRONLY | O_CREAT | O_APPEND;
+                mode_rw = O_WRONLY;
+                mode_x = O_CREAT | O_APPEND;
                 break;
             case '+':
-                mode |= O_RDWR;
+                mode_rw = O_RDWR;
                 break;
             #if MICROPY_PY_IO_FILEIO
             // If we don't have io.FileIO, then files are in text mode implicitly
@@ -194,7 +195,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     }
 
     const char *fname = mp_obj_str_get_str(fid);
-    int fd = open(fname, mode, 0644);
+    int fd = open(fname, mode_x | mode_rw, 0644);
     if (fd == -1) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
