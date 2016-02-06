@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include STM32_HAL_H
+#include "py/mphal.h"
 
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"        /* FatFs lower layer API */
@@ -60,9 +60,11 @@ DSTATUS disk_initialize (
 )
 {
     switch (pdrv) {
+#if MICROPY_HW_HAS_FLASH
         case PD_FLASH:
             storage_init();
             return 0;
+#endif
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
@@ -130,6 +132,7 @@ DRESULT disk_read (
 )
 {
     switch (pdrv) {
+#if MICROPY_HW_HAS_FLASH
         case PD_FLASH:
             for (int i = 0; i < count; i++) {
                 if (!storage_read_block(buff + i * FLASH_BLOCK_SIZE, sector + i)) {
@@ -137,6 +140,7 @@ DRESULT disk_read (
                 }
             }
             return RES_OK;
+#endif
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
@@ -173,6 +177,7 @@ DRESULT disk_write (
 )
 {
     switch (pdrv) {
+#if MICROPY_HW_HAS_FLASH
         case PD_FLASH:
             for (int i = 0; i < count; i++) {
                 if (!storage_write_block(buff + i * FLASH_BLOCK_SIZE, sector + i)) {
@@ -180,6 +185,7 @@ DRESULT disk_write (
                 }
             }
             return RES_OK;
+#endif
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
@@ -221,6 +227,7 @@ DRESULT disk_ioctl (
 )
 {
     switch (pdrv) {
+#if MICROPY_HW_HAS_FLASH
         case PD_FLASH:
             switch (cmd) {
                 case CTRL_SYNC:
@@ -232,6 +239,7 @@ DRESULT disk_ioctl (
                     return RES_OK;
             }
             break;
+#endif
 
 #if MICROPY_HW_HAS_SDCARD
         case PD_SDCARD:
