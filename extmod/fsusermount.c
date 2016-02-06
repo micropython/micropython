@@ -66,31 +66,31 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
 
         // create new object
-        MP_STATE_PORT(fs_user_mount) = m_new_obj(fs_user_mount_t);
-        MP_STATE_PORT(fs_user_mount)->str = mnt_str;
-        MP_STATE_PORT(fs_user_mount)->len = mnt_len;
+        fs_user_mount_t *vfs;
+        MP_STATE_PORT(fs_user_mount) = vfs = m_new_obj(fs_user_mount_t);
+        vfs->str = mnt_str;
+        vfs->len = mnt_len;
 
         // load block protocol methods
-        mp_load_method(device, MP_QSTR_readblocks, MP_STATE_PORT(fs_user_mount)->readblocks);
-        mp_load_method_maybe(device, MP_QSTR_writeblocks, MP_STATE_PORT(fs_user_mount)->writeblocks);
-        mp_load_method_maybe(device, MP_QSTR_sync, MP_STATE_PORT(fs_user_mount)->sync);
-        mp_load_method(device, MP_QSTR_count, MP_STATE_PORT(fs_user_mount)->count);
+        mp_load_method(device, MP_QSTR_readblocks, vfs->readblocks);
+        mp_load_method_maybe(device, MP_QSTR_writeblocks, vfs->writeblocks);
+        mp_load_method_maybe(device, MP_QSTR_sync, vfs->sync);
+        mp_load_method(device, MP_QSTR_count, vfs->count);
 
         // Read-only device indicated by writeblocks[0] == MP_OBJ_NULL.
         // User can specify read-only device by:
         //  1. readonly=True keyword argument
         //  2. nonexistent writeblocks method (then writeblocks[0] == MP_OBJ_NULL already)
         if (args[0].u_bool) {
-            MP_STATE_PORT(fs_user_mount)->writeblocks[0] = MP_OBJ_NULL;
+            vfs->writeblocks[0] = MP_OBJ_NULL;
         }
 
         // mount the block device
-        FRESULT res = f_mount(&MP_STATE_PORT(fs_user_mount)->fatfs, MP_STATE_PORT(fs_user_mount)->str, 1);
-
+        FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
         // check the result
         if (res == FR_OK) {
         } else if (res == FR_NO_FILESYSTEM && args[1].u_bool) {
-            res = f_mkfs(MP_STATE_PORT(fs_user_mount)->str, 1, 0);
+            res = f_mkfs(vfs->str, 1, 0);
             if (res != FR_OK) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mkfs"));
             }
@@ -99,15 +99,15 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
 
         /*
-        if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
+        if (vfs->writeblocks[0] == MP_OBJ_NULL) {
             printf("mounted read-only");
         } else {
             printf("mounted read-write");
         }
         DWORD nclst;
         FATFS *fatfs;
-        f_getfree(MP_STATE_PORT(fs_user_mount)->str, &nclst, &fatfs);
-        printf(" on %s with %u bytes free\n", MP_STATE_PORT(fs_user_mount)->str, (uint)(nclst * fatfs->csize * 512));
+        f_getfree(vfs->str, &nclst, &fatfs);
+        printf(" on %s with %u bytes free\n", vfs->str, (uint)(nclst * fatfs->csize * 512));
         */
     }
     return mp_const_none;
