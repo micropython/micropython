@@ -567,6 +567,32 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
 
+STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
+    mp_int_t offset = mp_obj_get_int(offset_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+    SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
+    if (res == SPI_FLASH_RESULT_OK) {
+        return mp_const_none;
+    }
+    nlr_raise(mp_obj_new_exception_arg1(
+        &mp_type_OSError,
+        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
+
+STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
+    mp_int_t sector = mp_obj_get_int(sector_in);
+    SpiFlashOpResult res = spi_flash_erase_sector(sector);
+    if (res == SPI_FLASH_RESULT_OK) {
+        return mp_const_none;
+    }
+    nlr_raise(mp_obj_new_exception_arg1(
+        &mp_type_OSError,
+        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
+
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
@@ -576,6 +602,8 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id), (mp_obj_t)&esp_flash_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_read), (mp_obj_t)&esp_flash_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_write), (mp_obj_t)&esp_flash_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_erase), (mp_obj_t)&esp_flash_erase_obj },
     #if MODESP_ESPCONN
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
