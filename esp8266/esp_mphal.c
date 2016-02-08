@@ -37,6 +37,7 @@ extern void ets_delay_us();
 
 void mp_hal_init(void) {
     ets_wdt_disable(); // it's a pain while developing
+    mp_hal_rtc_init();
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
 }
 
