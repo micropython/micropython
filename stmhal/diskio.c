@@ -263,6 +263,16 @@ DRESULT disk_ioctl (
                     *((DWORD*)buff) = mp_obj_get_int(ret);
                     return RES_OK;
                 }
+
+                case GET_SECTOR_SIZE: {
+                    if (MP_STATE_PORT(fs_user_mount)->secsize[0] != MP_OBJ_NULL) {
+                        mp_obj_t ret = mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->secsize);
+                        *((DWORD*)buff) = mp_obj_get_int(ret);
+                        return RES_OK;
+                    }
+                    *((DWORD*)buff) = 512;
+                    return RES_OK;
+                }
             }
             break;
     }

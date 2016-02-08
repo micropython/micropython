@@ -31,6 +31,7 @@ typedef struct _fs_user_mount_t {
     mp_obj_t writeblocks[4];
     mp_obj_t sync[2];
     mp_obj_t count[2];
+    mp_obj_t secsize[2];
     FATFS fatfs;
 } fs_user_mount_t;
 

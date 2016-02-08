@@ -76,6 +76,7 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_load_method_maybe(device, MP_QSTR_writeblocks, vfs->writeblocks);
         mp_load_method_maybe(device, MP_QSTR_sync, vfs->sync);
         mp_load_method(device, MP_QSTR_count, vfs->count);
+        mp_load_method_maybe(device, MP_QSTR_secsize, vfs->secsize);
 
         // Read-only device indicated by writeblocks[0] == MP_OBJ_NULL.
         // User can specify read-only device by:

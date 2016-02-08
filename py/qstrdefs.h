@@ -677,6 +677,7 @@ Q(readblocks)
 Q(writeblocks)
 Q(sync)
 Q(count)
+Q(secsize)
 #endif
 
 #if MICROPY_PY_OS_DUPTERM
