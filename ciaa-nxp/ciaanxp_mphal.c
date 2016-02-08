@@ -77,6 +77,8 @@ int mp_hal_stdin_rx_chr(void) {
         int r = Board_UARTGetChar();
         if (r!= EOF) {
             return r;
+        } else {
+            __WFI();
         }
     }
 }

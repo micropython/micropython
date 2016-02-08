@@ -117,6 +117,10 @@ erase:
 	@openocd -f ciaa-nxp.cfg \
 		-c "init" -c "halt 0" -c "flash erase_sector 0 0 last" -c "shutdown"
 
+erase_fs:
+	@openocd -f ciaa-nxp.cfg \
+		-c "init" -c "halt 0" -c "flash erase_sector 1 0 last" -c "shutdown"
+
 openocd:
 	@openocd -f ciaa-nxp.cfg
 
