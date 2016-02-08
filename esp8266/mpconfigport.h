@@ -43,6 +43,7 @@
 #define MICROPY_FATFS_ENABLE_LFN        (0)
 #define MICROPY_FATFS_LFN_CODE_PAGE     (1)
 #define MICROPY_FATFS_MAX_LFN           (MICROPY_ALLOC_PATH_MAX)
+#define MICROPY_FATFS_NORTC             (1)
 #define MICROPY_FSUSERMOUNT             (1)
 
 // type definitions for the specific machine
