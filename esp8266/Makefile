@@ -67,16 +67,23 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
+	diskio.c \
+	ffconf.c \
 	pybstdio.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
+	fatfs/ff.c \
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/printf.c \
+	)
+
+EXTMOD_SRC_C = $(addprefix extmod/,\
+	fsusermount.c \
 	)
 
 SRC_S = \

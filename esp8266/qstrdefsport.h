@@ -42,6 +42,15 @@ Q(sync)
 Q(hard_reset)
 Q(unique_id)
 
+// for user-mountable block devices
+Q(mount)
+Q(readonly)
+Q(mkfs)
+Q(readblocks)
+Q(writeblocks)
+Q(sync)
+Q(count)
+
 // uos module
 Q(uos)
 Q(os)
@@ -63,8 +72,13 @@ Q(deepsleep)
 Q(adc)
 Q(vdd33)
 Q(chip_id)
+
+// spi flash
 Q(flash_id)
 Q(flash_read)
+Q(flash_write)
+Q(flash_erase)
+
 Q(sdk_version)
 Q(getaddrinfo)
 Q(send)

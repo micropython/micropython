@@ -33,6 +33,8 @@
 #include "gccollect.h"
 #include "user_interface.h"
 #include "modpyb.h"
+#include "lib/fatfs/ff.h"
+#include "extmod/fsusermount.h"
 
 STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
     // print info about memory
@@ -168,6 +170,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hard_reset), (mp_obj_t)&pyb_hard_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&pyb_mount_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pyb_pin_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },
