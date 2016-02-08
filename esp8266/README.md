@@ -31,6 +31,12 @@ The tool chain required for the build is the OpenSource ESP SDK, which can be
 found at <https://github.com/pfalcon/esp-open-sdk>.  Clone this repository and
 run `make` in its directory to build and install the SDK locally.
 
+Export the toolchain path:
+e.g.
+```bash
+$ export PATH=${HOME}/esp-open-sdk/xtensa-lx106-elf/bin:$PATH
+```
+
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ make
