@@ -87,6 +87,24 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 all: $(BUILD)/firmware.elf
 
+# Frozen ####################################################################
+
+OBJ += $(BUILD)/frozen-files.o
+MAKE_FROZEN = ../tools/make-frozen.py
+
+ifeq ($(FROZEN_DIR),)
+FROZEN_DIR = frozen
+endif
+
+$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
+	$(call compile_c)
+
+$(BUILD)/frozen-files.c: $(shell find ${FROZEN_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+
+# Frozen ####################################################################
+
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
@@ -95,7 +113,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(CROSS_COMPILE)objcopy -v -O binary $< $@
 
-PHONY: debug openocd download erase
+PHONY: debug openocd download erase erase_fs
 
 download: $(BUILD)/firmware.bin
 	@openocd -f ciaa-nxp.cfg \
