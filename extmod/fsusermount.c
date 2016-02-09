@@ -32,7 +32,7 @@
 #include "lib/fatfs/ff.h"
 #include "fsusermount.h"
 
-STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -85,14 +85,27 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
             vfs->writeblocks[0] = MP_OBJ_NULL;
         }
 
-        // mount the block device
-        FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+        // mount the block device (if mkfs, only pre-mount)
+        FRESULT res = f_mount(&vfs->fatfs, vfs->str, !mkfs);
         // check the result
         if (res == FR_OK) {
+            if (mkfs) {
+                goto mkfs;
+            }
         } else if (res == FR_NO_FILESYSTEM && args[1].u_bool) {
+mkfs:
             res = f_mkfs(vfs->str, 1, 0);
             if (res != FR_OK) {
+mkfs_error:
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mkfs"));
+            }
+            if (mkfs) {
+                // If requested to only mkfs, unmount pre-mounted device
+                res = f_mount(NULL, vfs->str, 0);
+                if (res != FR_OK) {
+                    goto mkfs_error;
+                }
+                MP_STATE_PORT(fs_user_mount) = NULL;
             }
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
@@ -112,6 +125,15 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(pyb_mount_obj, 2, pyb_mount);
+
+STATIC mp_obj_t fatfs_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return fatfs_mount_mkfs(n_args, pos_args, kw_args, false);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mount_obj, 2, fatfs_mount);
+
+STATIC mp_obj_t fatfs_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return fatfs_mount_mkfs(n_args, pos_args, kw_args, true);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj, 2, fatfs_mkfs);
 
 #endif // MICROPY_FSUSERMOUNT

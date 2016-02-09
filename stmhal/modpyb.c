@@ -61,6 +61,7 @@
 #include "usb.h"
 #include "portmodules.h"
 #include "modmachine.h"
+#include "extmod/fsusermount.h"
 
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
@@ -164,7 +165,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&time_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&time_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&mod_os_sync_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&pyb_mount_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&fsuser_mount_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer), (mp_obj_t)&pyb_timer_type },
 
