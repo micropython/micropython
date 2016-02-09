@@ -26,6 +26,8 @@
 
 #include "py/mpconfig.h"
 #if MICROPY_FSUSERMOUNT
+#include <string.h>
+#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -130,6 +132,34 @@ STATIC mp_obj_t fatfs_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     return fatfs_mount_mkfs(n_args, pos_args, kw_args, false);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mount_obj, 2, fatfs_mount);
+
+STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
+    if (MP_STATE_PORT(fs_user_mount) == NULL) {
+        goto einval;
+    }
+
+    if (MP_OBJ_IS_STR(bdev_or_path_in)) {
+        mp_uint_t mnt_len;
+        const char *mnt_str = mp_obj_str_get_data(bdev_or_path_in, &mnt_len);
+        if (memcmp(mnt_str, MP_STATE_PORT(fs_user_mount)->str, mnt_len + 1)) {
+            goto einval;
+        }
+    } else if (bdev_or_path_in != MP_STATE_PORT(fs_user_mount)->readblocks[1]) {
+        goto einval;
+    }
+
+    FRESULT res = f_mount(NULL, MP_STATE_PORT(fs_user_mount)->str, 0);
+    m_del_obj(fs_user_mount_t, MP_STATE_PORT(fs_user_mount));
+    MP_STATE_PORT(fs_user_mount) = NULL;
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
+    }
+    return mp_const_none;
+
+einval:
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(fsuser_umount_obj, fatfs_umount);
 
 STATIC mp_obj_t fatfs_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return fatfs_mount_mkfs(n_args, pos_args, kw_args, true);
