@@ -39,6 +39,12 @@
 #include "sdcard.h"
 #include "extmod/fsusermount.h"
 
+// constants for block protocol ioctl
+//#define BP_IOCTL_INIT           (1) // unused
+//#define BP_IOCTL_DEINIT         (2) // unused
+#define BP_IOCTL_SYNC           (3)
+#define BP_IOCTL_SEC_COUNT      (4)
+
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/
@@ -242,29 +248,57 @@ DRESULT disk_ioctl (
             break;
 #endif
 
-        case PD_USER:
-            if (MP_STATE_PORT(fs_user_mount) == NULL) {
+        case PD_USER: {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount);
+            if (vfs == NULL) {
                 // nothing mounted
                 return RES_ERROR;
             }
-            switch (cmd) {
-                case CTRL_SYNC:
-                    if (MP_STATE_PORT(fs_user_mount)->sync[0] != MP_OBJ_NULL) {
-                        mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->sync);
+            if (vfs->u.old.count[1] == MP_OBJ_SENTINEL) {
+                // new protocol with ioctl
+                switch (cmd) {
+                    case CTRL_SYNC:
+                        vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SYNC);
+                        vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                        mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                        vfs->u.ioctl[3] = MP_OBJ_SENTINEL; // indicate new protocol
+                        return RES_OK;
+
+                    case GET_SECTOR_COUNT: {
+                        vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_COUNT);
+                        vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                        mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                        *((DWORD*)buff) = mp_obj_get_int(ret);
+                        vfs->u.ioctl[3] = MP_OBJ_SENTINEL; // indicate new protocol
+                        return RES_OK;
                     }
-                    return RES_OK;
 
-                case GET_BLOCK_SIZE:
-                    *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) bl
-                    return RES_OK;
+                    case GET_BLOCK_SIZE:
+                        *((DWORD*)buff) = 1; // erase block size in units of sector size
+                        return RES_OK;
+                }
+            } else {
+                // old protocol with sync and count
+                switch (cmd) {
+                    case CTRL_SYNC:
+                        if (vfs->u.old.sync[0] != MP_OBJ_NULL) {
+                            mp_call_method_n_kw(0, 0, vfs->u.old.sync);
+                        }
+                        return RES_OK;
 
-                case GET_SECTOR_COUNT: {
-                    mp_obj_t ret = mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->count);
-                    *((DWORD*)buff) = mp_obj_get_int(ret);
-                    return RES_OK;
+                    case GET_SECTOR_COUNT: {
+                        mp_obj_t ret = mp_call_method_n_kw(0, 0, vfs->u.old.count);
+                        *((DWORD*)buff) = mp_obj_get_int(ret);
+                        return RES_OK;
+                    }
+
+                    case GET_BLOCK_SIZE:
+                        *((DWORD*)buff) = 1; // erase block size in units of sector size
+                        return RES_OK;
                 }
             }
             break;
+        }
     }
 
     return RES_PARERR;

@@ -675,6 +675,7 @@ Q(readonly)
 Q(mkfs)
 Q(readblocks)
 Q(writeblocks)
+Q(ioctl)
 Q(sync)
 Q(count)
 #endif

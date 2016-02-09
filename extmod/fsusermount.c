@@ -76,8 +76,15 @@ STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
         // load block protocol methods
         mp_load_method(device, MP_QSTR_readblocks, vfs->readblocks);
         mp_load_method_maybe(device, MP_QSTR_writeblocks, vfs->writeblocks);
-        mp_load_method_maybe(device, MP_QSTR_sync, vfs->sync);
-        mp_load_method(device, MP_QSTR_count, vfs->count);
+        mp_load_method_maybe(device, MP_QSTR_ioctl, vfs->u.ioctl);
+        if (vfs->u.ioctl[0] != MP_OBJ_NULL) {
+            // device supports new block protocol, so indicate it
+            vfs->u.old.count[1] = MP_OBJ_SENTINEL;
+        } else {
+            // no ioctl method, so assume the device uses the old block protocol
+            mp_load_method_maybe(device, MP_QSTR_sync, vfs->u.old.sync);
+            mp_load_method(device, MP_QSTR_count, vfs->u.old.count);
+        }
 
         // Read-only device indicated by writeblocks[0] == MP_OBJ_NULL.
         // User can specify read-only device by:

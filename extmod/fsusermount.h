@@ -29,8 +29,15 @@ typedef struct _fs_user_mount_t {
     mp_uint_t len;
     mp_obj_t readblocks[4];
     mp_obj_t writeblocks[4];
-    mp_obj_t sync[2];
-    mp_obj_t count[2];
+    // new protocol uses just ioctl, old uses sync (optional) and count
+    // if ioctl[3]=count[1]=MP_OBJ_SENTINEL then we have the new protocol, else old
+    union {
+        mp_obj_t ioctl[4];
+        struct {
+            mp_obj_t sync[2];
+            mp_obj_t count[2];
+        } old;
+    } u;
     FATFS fatfs;
 } fs_user_mount_t;
 
