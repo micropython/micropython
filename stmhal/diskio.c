@@ -44,6 +44,7 @@
 //#define BP_IOCTL_DEINIT         (2) // unused
 #define BP_IOCTL_SYNC           (3)
 #define BP_IOCTL_SEC_COUNT      (4)
+#define BP_IOCTL_SEC_SIZE       (5)
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
@@ -273,6 +274,15 @@ DRESULT disk_ioctl (
                         return RES_OK;
                     }
 
+                    case GET_SECTOR_SIZE: {
+                        vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_SIZE);
+                        vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                        mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                        *((WORD*)buff) = mp_obj_get_int(ret);
+                        vfs->u.ioctl[3] = MP_OBJ_SENTINEL; // indicate new protocol
+                        return RES_OK;
+                    }
+
                     case GET_BLOCK_SIZE:
                         *((DWORD*)buff) = 1; // erase block size in units of sector size
                         return RES_OK;
@@ -291,6 +301,10 @@ DRESULT disk_ioctl (
                         *((DWORD*)buff) = mp_obj_get_int(ret);
                         return RES_OK;
                     }
+
+                    case GET_SECTOR_SIZE:
+                        *((WORD*)buff) = 512; // old protocol had fixed sector size
+                        return RES_OK;
 
                     case GET_BLOCK_SIZE:
                         *((DWORD*)buff) = 1; // erase block size in units of sector size
