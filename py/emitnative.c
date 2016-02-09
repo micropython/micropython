@@ -1545,18 +1545,20 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             int reg_index = REG_ARG_2;
             emit_pre_pop_reg_flexible(emit, &vtype_index, &reg_index, REG_ARG_1, REG_ARG_1);
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
+            if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                    "can't load with '%q' index", vtype_to_qstr(vtype_index));
+            }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
                     // TODO optimise to use thumb ldrb r1, [r2, r3]
-                    assert(vtype_index == VTYPE_INT);
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD8_REG_REG(emit->as, REG_RET, REG_ARG_1); // store value to (base+index)
                     break;
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    assert(vtype_index == VTYPE_INT);
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_LOAD16_REG_REG(emit->as, REG_RET, REG_ARG_1); // load from (base+2*index)
@@ -1564,7 +1566,6 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR32: {
                     // pointer to word-size memory
-                    assert(vtype_index == VTYPE_INT);
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
                     ASM_ADD_REG_REG(emit->as, REG_ARG_1, reg_index); // add index to base
@@ -1773,6 +1774,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             int reg_value = REG_ARG_3;
             emit_pre_pop_reg_flexible(emit, &vtype_index, &reg_index, REG_ARG_1, reg_value);
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
+            if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                    "can't store with '%q' index", vtype_to_qstr(vtype_index));
+            }
             #if N_X86
             // special case: x86 needs byte stores to be from lower 4 regs (REG_ARG_3 is EDX)
             emit_pre_pop_reg(emit, &vtype_value, reg_value);
@@ -1783,7 +1788,6 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
                     // TODO optimise to use thumb strb r1, [r2, r3]
-                    assert(vtype_index == VTYPE_INT);
                     #if N_ARM
                     asm_arm_strb_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
                     break;
@@ -1794,7 +1798,6 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR16: {
                     // pointer to 16-bit memory
-                    assert(vtype_index == VTYPE_INT);
                     #if N_ARM
                     asm_arm_strh_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
                     break;
@@ -1806,7 +1809,6 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
                 }
                 case VTYPE_PTR32: {
                     // pointer to 32-bit memory
-                    assert(vtype_index == VTYPE_INT);
                     #if N_ARM
                     asm_arm_str_reg_reg_reg(emit->as, reg_value, REG_ARG_1, reg_index);
                     break;
