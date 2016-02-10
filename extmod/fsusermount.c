@@ -53,25 +53,38 @@ STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     if (device == mp_const_none) {
         // umount
         FRESULT res = FR_NO_FILESYSTEM;
-        if (MP_STATE_PORT(fs_user_mount) != NULL) {
-            res = f_mount(NULL, MP_STATE_PORT(fs_user_mount)->str, 0);
-            m_del_obj(fs_user_mount_t, MP_STATE_PORT(fs_user_mount));
-            MP_STATE_PORT(fs_user_mount) = NULL;
+        for (size_t i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+            if (vfs != NULL && !memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+                res = f_mount(NULL, vfs->str, 0);
+                if (vfs->flags & FSUSER_FREE_OBJ) {
+                    m_del_obj(fs_user_mount_t, vfs);
+                }
+                MP_STATE_PORT(fs_user_mount)[i] = NULL;
+                break;
+            }
         }
         if (res != FR_OK) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
         }
     } else {
         // mount
-        if (MP_STATE_PORT(fs_user_mount) != NULL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "device already mounted"));
+        size_t i = 0;
+        for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            if (MP_STATE_PORT(fs_user_mount)[i] == NULL) {
+                break;
+            }
+        }
+        if (i == MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "too many devices mounted"));
         }
 
         // create new object
         fs_user_mount_t *vfs;
-        MP_STATE_PORT(fs_user_mount) = vfs = m_new_obj(fs_user_mount_t);
+        MP_STATE_PORT(fs_user_mount)[i] = vfs = m_new_obj(fs_user_mount_t);
         vfs->str = mnt_str;
         vfs->len = mnt_len;
+        vfs->flags = FSUSER_FREE_OBJ;
 
         // load block protocol methods
         mp_load_method(device, MP_QSTR_readblocks, vfs->readblocks);
@@ -79,7 +92,7 @@ STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
         mp_load_method_maybe(device, MP_QSTR_ioctl, vfs->u.ioctl);
         if (vfs->u.ioctl[0] != MP_OBJ_NULL) {
             // device supports new block protocol, so indicate it
-            vfs->u.old.count[1] = MP_OBJ_SENTINEL;
+            vfs->flags |= FSUSER_HAVE_IOCTL;
         } else {
             // no ioctl method, so assume the device uses the old block protocol
             mp_load_method_maybe(device, MP_QSTR_sync, vfs->u.old.sync);
@@ -114,7 +127,7 @@ mkfs_error:
                 if (res != FR_OK) {
                     goto mkfs_error;
                 }
-                MP_STATE_PORT(fs_user_mount) = NULL;
+                MP_STATE_PORT(fs_user_mount)[i] = NULL;
             }
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
@@ -141,30 +154,39 @@ STATIC mp_obj_t fatfs_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
 MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mount_obj, 2, fatfs_mount);
 
 STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
-    if (MP_STATE_PORT(fs_user_mount) == NULL) {
-        goto einval;
-    }
-
+    size_t i = 0;
     if (MP_OBJ_IS_STR(bdev_or_path_in)) {
         mp_uint_t mnt_len;
         const char *mnt_str = mp_obj_str_get_data(bdev_or_path_in, &mnt_len);
-        if (memcmp(mnt_str, MP_STATE_PORT(fs_user_mount)->str, mnt_len + 1)) {
-            goto einval;
+        for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+            if (!memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+                break;
+            }
         }
-    } else if (bdev_or_path_in != MP_STATE_PORT(fs_user_mount)->readblocks[1]) {
-        goto einval;
+    } else {
+        for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+            if (bdev_or_path_in == vfs->readblocks[1]) {
+                break;
+            }
+        }
     }
 
-    FRESULT res = f_mount(NULL, MP_STATE_PORT(fs_user_mount)->str, 0);
-    m_del_obj(fs_user_mount_t, MP_STATE_PORT(fs_user_mount));
-    MP_STATE_PORT(fs_user_mount) = NULL;
+    if (i == MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
+    }
+
+    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+    FRESULT res = f_mount(NULL, vfs->str, 0);
+    if (vfs->flags & FSUSER_FREE_OBJ) {
+        m_del_obj(fs_user_mount_t, vfs);
+    }
+    MP_STATE_PORT(fs_user_mount)[i] = NULL;
     if (res != FR_OK) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
     }
     return mp_const_none;
-
-einval:
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(fsuser_umount_obj, fatfs_umount);
 

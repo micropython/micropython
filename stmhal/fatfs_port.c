@@ -34,6 +34,7 @@ const PARTITION VolToPart[] = {
     {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
     {1, 0},     // Logical drive 1 ==> Physical drive 1 (auto detection)
     {2, 0},     // Logical drive 2 ==> Physical drive 2 (auto detection)
+    {3, 0},     // Logical drive 3 ==> Physical drive 3 (auto detection)
     /*
     {0, 2},     // Logical drive 2 ==> Physical drive 0, 2nd partition
     {0, 3},     // Logical drive 3 ==> Physical drive 0, 3rd partition

@@ -183,8 +183,8 @@ extern const struct _mp_obj_module_t mp_module_network;
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[2]; \
     \
-    /* for user-mountable block device */ \
-    struct _fs_user_mount_t *fs_user_mount; \
+    /* for user-mountable block device (max fixed at compile time) */ \
+    struct _fs_user_mount_t *fs_user_mount[4]; \
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \

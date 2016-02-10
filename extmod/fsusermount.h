@@ -24,13 +24,18 @@
  * THE SOFTWARE.
  */
 
+// these are the values for fs_user_mount_t.flags
+#define FSUSER_NATIVE       (0x0001) // readblocks[2]/writeblocks[2] contain native func
+#define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount
+#define FSUSER_HAVE_IOCTL   (0x0004) // new protocol with ioctl
+
 typedef struct _fs_user_mount_t {
     const char *str;
-    mp_uint_t len;
+    uint16_t len; // length of str
+    uint16_t flags;
     mp_obj_t readblocks[4];
     mp_obj_t writeblocks[4];
     // new protocol uses just ioctl, old uses sync (optional) and count
-    // if ioctl[3]=count[1]=MP_OBJ_SENTINEL then we have the new protocol, else old
     union {
         mp_obj_t ioctl[4];
         struct {
@@ -42,4 +47,5 @@ typedef struct _fs_user_mount_t {
 } fs_user_mount_t;
 
 MP_DECLARE_CONST_FUN_OBJ(fsuser_mount_obj);
+MP_DECLARE_CONST_FUN_OBJ(fsuser_umount_obj);
 MP_DECLARE_CONST_FUN_OBJ(fsuser_mkfs_obj);
