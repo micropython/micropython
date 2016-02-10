@@ -2,6 +2,7 @@
 #define MICROPY_HW_MCU_NAME         "STM32F401xE"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
+#define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 
 // HSE is 8MHz, CPU freq set to 84MHz
@@ -15,6 +16,11 @@
 #define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
 #define MICROPY_HW_UART6_PORT (GPIOC)
 #define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
+
+// UART 2 connects to the STM32F103 (STLINK) on the Nucleo board
+// and this is exposed as a USB Serial port.
+#define MICROPY_HW_UART_REPL        PYB_UART_2
+#define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
