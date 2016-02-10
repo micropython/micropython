@@ -3,6 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Daniel Campora
  * Copyright (c) 2016 Chester Tseng
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,18 +26,26 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <stdint.h>
 
-void mp_hal_delay_ms(uint32_t delay) {
-    //TODO
-}
+/* micropython headers */
+#include "py/mpstate.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
 
-uint32_t mp_hal_ticks_ms(void) {
-    // TODO
-    return 0;
-}
+/* mphelper */
+#include "hardware/objpin.h"
 
-void mp_hal_delay_us(uint32_t us) {
-    ets_delay_us(us);
-}
 
+STATIC const mp_map_elem_t hardware_module_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_hardware) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
+};
+
+STATIC MP_DEFINE_CONST_DICT(hardware_module_globals, hardware_module_globals_table);
+
+const mp_obj_module_t hardware_module = {
+    .base    = { &mp_type_module },
+    .name    = MP_QSTR_hardware,
+    .globals = (mp_obj_dict_t*)&hardware_module_globals,
+};

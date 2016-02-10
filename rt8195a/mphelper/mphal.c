@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Chester Tseng
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,57 +24,65 @@
  * THE SOFTWARE.
  */
 
-// qstrs specific to this port
-Q(hardware)
 
-// for Pin class
-Q(Pin)
-Q(board)
-Q(value)
-Q(toggle)
-Q(id)
-Q(dir)
-Q(pull)
-Q(IN)
-Q(OUT)
-Q(PULL_NONE)
-Q(PULL_UP)
-Q(PULL_DOWN)
-Q(OPEN_DRAIN)
-// for pin name string
-Q(PA_0)
-Q(PA_1)
-Q(PA_2)
-Q(PA_3)
-Q(PA_4)
-Q(PA_5)
-Q(PA_6)
-Q(PA_7)
+#include <stdio.h>
+#include "device.h"
+#include "log_uart_api.h"
 
-Q(PB_0)
-Q(PB_1)
-Q(PB_2)
-Q(PB_3)
-Q(PB_4)
-Q(PB_5)
-Q(PB_6)
-Q(PB_7)
+static log_uart_t log_uart_obj;
 
-Q(PC_0)
-Q(PC_1)
-Q(PC_2)
-Q(PC_3)
-Q(PC_4)
-Q(PC_5)
-Q(PC_6)
-Q(PC_7)
+void mp_hal_log_uart_init(void)
+{
+    log_uart_init(&log_uart_obj, 38400, 8, ParityNone, 1);
+}
 
-Q(PD_0)
-Q(PD_1)
-Q(PD_2)
-Q(PD_3)
-Q(PD_4)
-Q(PD_5)
-Q(PD_6)
-Q(PD_7)
+int mp_hal_stdin_rx_chr(void) {
+    for (;;) {
+        int c = log_uart_getc(&log_uart_obj);
+        if (c != -1) {
+            return c;
+        }
+    }
+}
+
+void mp_hal_stdout_tx_str(const char *str) {
+    while (*str) {
+        log_uart_putc(&log_uart_obj, *str++);
+    }
+}
+
+void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+    while (len--) {
+        log_uart_putc(&log_uart_obj, *str++);
+    }
+}
+
+void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
+    while (len--) {
+        if (*str == '\n') {
+            log_uart_putc(&log_uart_obj, '\r');
+        }
+        log_uart_putc(&log_uart_obj, *str++);
+    }
+}
+
+void mp_hal_set_interrupt_char(int c) {
+    mpexception_set_interrupt_char (c);
+}
+
+void mp_hal_delay_ms(uint32_t ms) {
+    //TODO
+    mdelay(ms);
+}
+
+void mp_hal_delay_us(uint32_t us) {
+    //TODO
+    udelay(us);
+}
+
+uint32_t mp_hal_ticks_ms(void) {
+    // TODO
+    return 0;
+}
+
 

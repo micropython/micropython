@@ -3,6 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2015 Daniel Campora
  * Copyright (c) 2016 Chester Tseng
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,53 +25,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef OBJPIN_H_
+#define OBJPIN_H_
+
+extern const mp_obj_type_t pin_type;
+extern const mp_obj_dict_t pin_board_pins_locals_dict;
+
+typedef struct {
+    const mp_obj_base_t base;
+    const qstr          name;
+    struct gpio_t       *obj;
+    uint8_t             id;
+    const uint32_t      port;
+    uint16_t            pull;
+    const uint8_t       pin_num;
+    uint8_t             dir;         
+    const uint8_t       num_afs;    
+    uint8_t             value;
+    uint8_t             used;
+    uint8_t             irq_trigger;
+    uint8_t             irq_flags;
+} pin_obj_t;
+
+typedef struct {
+    const char *name;
+    const pin_obj_t *pin;
+} pin_named_pin_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    qstr name;
+    const pin_named_pin_t *named_pins;
+} pin_named_pins_obj_t;
 
 
-#include "device.h"
-#include "serial_api.h"
-
-#define UART_TX    PA_7
-#define UART_RX    PA_6
-
-static serial_t sobj;
-
-void mp_hal_uart_init(void)
-{
-    serial_init(&sobj, UART_TX, UART_RX);
-    serial_baud(&sobj, 9600);
-    serial_format(&sobj, 8, ParityNone, 1);
-}
-
-int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        int c = serial_getc(&sobj);
-        if (c != -1) {
-            return c;
-        }
-    }
-}
-
-void mp_hal_stdout_tx_str(const char *str) {
-    while (*str) {
-        serial_putc(&sobj, *str++);
-    }
-}
-
-void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    while (len--) {
-        serial_putc(&sobj, *str++);
-    }
-}
-
-void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
-    while (len--) {
-        if (*str == '\n') {
-            serial_putc(&sobj, '\r');
-        }
-        serial_putc(&sobj, *str++);
-    }
-}
-
-void mp_hal_set_interrupt_char(int c) {
-    // TODO
-}
+#endif  // OBJPIN_H_

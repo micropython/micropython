@@ -68,8 +68,11 @@ INC += -I$(SDK)/component/common/video/v4l2/inc
 INC += -I$(SDK)/component/common/media/codec
 INC += -I$(SDK)/component/common/drivers/usb_class/host/uvc/inc
 
-INC += -I$(HELPER)/gccollect/
-INC += -I$(HELPER)/hal/
+INC += -I$(HELPER)
+INC += -I$(HELPER)/gccollect
+INC += -I$(HELPER)/hal
+INC += -I$(HELPER)/mods
+
 
 #-------------------------------------------------------------------------------
 # Flags
@@ -137,9 +140,11 @@ ELF_ARLIST += ./$(LIB)/lib_platform.a
 #-------------------------------------------------------------------------------
 # C source files and objects
 #-------------------------------------------------------------------------------
-
+SRC_C += $(wildcard $(HELPER)/*.c)
 SRC_C += $(wildcard $(HELPER)/gccollect/*.c)
 SRC_C += $(wildcard $(HELPER)/hal/*.c)
+SRC_C += $(wildcard $(HELPER)/mods/*.c)
+SRC_C += $(wildcard $(HELPER)/mods/hardware/*.c)
 
 SRC_C += \
 	main.c \
