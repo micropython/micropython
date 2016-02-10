@@ -190,8 +190,13 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Switch), (mp_obj_t)&pyb_switch_type },
 #endif
 
+#if MICROPY_HW_HAS_FLASH
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Flash), (mp_obj_t)&pyb_flash_type },
+#endif
+
 #if MICROPY_HW_HAS_SDCARD
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SD), (mp_obj_t)&pyb_sdcard_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD), (mp_obj_t)&pyb_sdcard_obj }, // now obsolete
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SDCard), (mp_obj_t)&pyb_sdcard_type },
 #endif
 
 #if defined(MICROPY_HW_LED1)
