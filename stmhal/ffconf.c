@@ -60,26 +60,18 @@ int ff_get_ldnumber (const TCHAR **path) {
         #endif
     }
 
-    if (check_path(path, "/flash", 6)) {
-        return PD_FLASH;
-    } else if (check_path(path, "/sd", 3)) {
-        return PD_SDCARD;
-    } else if (MP_STATE_PORT(fs_user_mount) != NULL && check_path(path, MP_STATE_PORT(fs_user_mount)->str, MP_STATE_PORT(fs_user_mount)->len)) {
-        return PD_USER;
-    } else {
-        return -1;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+        fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+        if (vfs != NULL && check_path(path, vfs->str, vfs->len)) {
+            return i;
+        }
     }
+
+    return -1;
 }
 
 void ff_get_volname(BYTE vol, TCHAR **dest) {
-    if (vol == PD_FLASH) {
-        memcpy(*dest, "/flash", 6);
-        *dest += 6;
-    } else if (vol == PD_SDCARD) {
-        memcpy(*dest, "/sd", 3);
-        *dest += 3;
-    } else {
-        memcpy(*dest, MP_STATE_PORT(fs_user_mount)->str, MP_STATE_PORT(fs_user_mount)->len);
-        *dest += MP_STATE_PORT(fs_user_mount)->len;
-    }
+    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[vol];
+    memcpy(*dest, vfs->str, vfs->len);
+    *dest += vfs->len;
 }

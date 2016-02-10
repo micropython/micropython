@@ -387,3 +387,15 @@ const mp_obj_type_t pyb_flash_type = {
     .make_new = pyb_flash_make_new,
     .locals_dict = (mp_obj_t)&pyb_flash_locals_dict,
 };
+
+void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
+    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
+    vfs->readblocks[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->readblocks[2] = (mp_obj_t)storage_read_blocks; // native version
+    vfs->writeblocks[0] = (mp_obj_t)&pyb_flash_writeblocks_obj;
+    vfs->writeblocks[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->writeblocks[2] = (mp_obj_t)storage_write_blocks; // native version
+    vfs->u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
+    vfs->u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
+}
