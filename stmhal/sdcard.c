@@ -424,4 +424,16 @@ const mp_obj_type_t pyb_sdcard_type = {
     .locals_dict = (mp_obj_t)&pyb_sdcard_locals_dict,
 };
 
+void sdcard_init_vfs(fs_user_mount_t *vfs) {
+    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->readblocks[0] = (mp_obj_t)&pyb_sdcard_readblocks_obj;
+    vfs->readblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
+    vfs->readblocks[2] = (mp_obj_t)sdcard_read_blocks; // native version
+    vfs->writeblocks[0] = (mp_obj_t)&pyb_sdcard_writeblocks_obj;
+    vfs->writeblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
+    vfs->writeblocks[2] = (mp_obj_t)sdcard_write_blocks; // native version
+    vfs->u.ioctl[0] = (mp_obj_t)&pyb_sdcard_ioctl_obj;
+    vfs->u.ioctl[1] = (mp_obj_t)&pyb_sdcard_obj;
+}
+
 #endif // MICROPY_HW_HAS_SDCARD
