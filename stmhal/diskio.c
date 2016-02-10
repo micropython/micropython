@@ -37,13 +37,6 @@
 #include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
 #include "extmod/fsusermount.h"
 
-// constants for block protocol ioctl
-#define BP_IOCTL_INIT           (1)
-//#define BP_IOCTL_DEINIT         (2) // unused
-#define BP_IOCTL_SYNC           (3)
-#define BP_IOCTL_SEC_COUNT      (4)
-#define BP_IOCTL_SEC_SIZE       (5)
-
 STATIC fs_user_mount_t *disk_get_device(uint id) {
     if (id < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
         return MP_STATE_PORT(fs_user_mount)[id];

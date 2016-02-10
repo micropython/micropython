@@ -377,24 +377,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_sdcard_writeblocks_obj, pyb_sdcard_writeblo
 STATIC mp_obj_t pyb_sdcard_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case 1: // INIT
+        case BP_IOCTL_INIT:
             if (!sdcard_power_on()) {
                 return MP_OBJ_NEW_SMALL_INT(-1); // error
             }
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
-        case 2: // DEINIT
+        case BP_IOCTL_DEINIT:
             sdcard_power_off();
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
-        case 3: // SYNC
+        case BP_IOCTL_SYNC:
             // nothing to do
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
-        case 4: // SEC_COUNT
+        case BP_IOCTL_SEC_COUNT:
             return MP_OBJ_NEW_SMALL_INT(0); // TODO
 
-        case 5: // SEC_SIZE
+        case BP_IOCTL_SEC_SIZE:
             return MP_OBJ_NEW_SMALL_INT(SDCARD_BLOCK_SIZE);
 
         default: // unknown command

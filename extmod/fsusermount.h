@@ -29,6 +29,13 @@
 #define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount
 #define FSUSER_HAVE_IOCTL   (0x0004) // new protocol with ioctl
 
+// constants for block protocol ioctl
+#define BP_IOCTL_INIT           (1)
+#define BP_IOCTL_DEINIT         (2)
+#define BP_IOCTL_SYNC           (3)
+#define BP_IOCTL_SEC_COUNT      (4)
+#define BP_IOCTL_SEC_SIZE       (5)
+
 typedef struct _fs_user_mount_t {
     const char *str;
     uint16_t len; // length of str
