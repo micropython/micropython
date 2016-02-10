@@ -42,4 +42,5 @@ typedef struct _fs_user_mount_t {
 } fs_user_mount_t;
 
 MP_DECLARE_CONST_FUN_OBJ(fsuser_mount_obj);
+MP_DECLARE_CONST_FUN_OBJ(fsuser_umount_obj);
 MP_DECLARE_CONST_FUN_OBJ(fsuser_mkfs_obj);
