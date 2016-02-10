@@ -37,8 +37,15 @@
 #include "py/runtime.h"
 #include "py/compile.h"
 #include "py/gc.h"
+
+/* from mphelper */
 #include "gccollect.h"
 #include "gchelper.h"
+#include "exception.h"
+
+/* from Ameba sdk */
+#include "sys_api.h"
+#include "log_uart_api.h"
 
 int main(void)
 {
@@ -49,24 +56,31 @@ int main(void)
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); 
-    mp_hal_uart_init();
+    mp_hal_log_uart_init();
+    pin_init0();
+    mpexception_init0();
     readline_init0();
-    for ( ; ; ) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            if (pyexec_raw_repl() != 0) {
-                break;
-            }
-        } else {
-            if (pyexec_friendly_repl() != 0) {
-                break;
-            }
+    if (pyexec_friendly_repl() != 0) {
+        DiagPrintf("Soft reset\r\n");
+        sys_reset();
+    }
+}
+
+void NORETURN __fatal_error(const char *msg) {
+    for (volatile uint delay = 0; delay < 10000000; delay++) {
+    }
+    mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    mp_hal_stdout_tx_strn(msg, strlen(msg));
+    for (uint i = 0;;) {
+        for (volatile uint delay = 0; delay < 10000000; delay++) {
         }
     }
 }
 
 void nlr_jump_fail(void *val) {
-    for (;;) {
-    }
+    DiagPrintf("FATAL: uncaught exception %p\n", val);
+    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)val);
+    __fatal_error("");
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
@@ -81,4 +95,5 @@ mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+
 
