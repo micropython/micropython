@@ -25,6 +25,9 @@ class SDCard:
     #R1_ERASE_SEQUENCE_ERROR = const(1 << 4)
     #R1_ADDRESS_ERROR = const(1 << 5)
     #R1_PARAMETER_ERROR = const(1 << 6)
+    TOKEN_CMD25 = const(0xfc)
+    TOKEN_STOP_TRAN = const(0xfd)
+    TOKEN_DATA = const(0xfe)
 
     def __init__(self, spi, cs):
         self.spi = spi
@@ -136,6 +139,18 @@ class SDCard:
         self.spi.send(0xff)
         return -1
 
+    def cmd_nodata(self, cmd):
+        self.spi.send(cmd)
+        self.spi.send_recv(0xff) # ignore stuff byte
+        for _ in range(CMD_TIMEOUT):
+            if self.spi.send_recv(0xff)[0] == 0xff:
+                self.cs.high()
+                self.spi.send(0xff)
+                return 0    # OK
+        self.cs.high()
+        self.spi.send(0xff)
+        return 1 # timeout
+
     def readinto(self, buf):
         self.cs.low()
 
@@ -154,11 +169,11 @@ class SDCard:
         self.cs.high()
         self.spi.send(0xff)
 
-    def write(self, buf):
+    def write(self, token, buf):
         self.cs.low()
 
         # send: start of block, data, checksum
-        self.spi.send(0xfe)
+        self.spi.send(token)
         self.spi.send(buf)
         self.spi.send(0xff)
         self.spi.send(0xff)
@@ -176,29 +191,62 @@ class SDCard:
         self.cs.high()
         self.spi.send(0xff)
 
+    def write_token(self, token):
+        self.cs.low()
+        self.spi.send(token)
+        self.spi.send(0xff)
+        # wait for write to finish
+        while self.spi.send_recv(0xff)[0] == 0:
+            pass
+
+        self.cs.high()
+        self.spi.send(0xff)
+
     def count(self):
         return self.sectors
 
     def readblocks(self, block_num, buf):
-        # TODO support multiple block reads
-        assert len(buf) == 512
-
-        # CMD17: set read address for single block
-        if self.cmd(17, block_num * self.cdv, 0) != 0:
-            return 1
-
-        # receive the data
-        self.readinto(buf)
+        nblocks, err = divmod(len(buf), 512)
+        assert nblocks and not err, 'Buffer length is invalid'
+        if nblocks == 1:
+            # CMD17: set read address for single block
+            if self.cmd(17, block_num * self.cdv, 0) != 0:
+                return 1
+            # receive the data
+            self.readinto(buf)
+        else:
+            # CMD18: set read address for multiple blocks
+            if self.cmd(18, block_num * self.cdv, 0) != 0:
+                return 1
+            offset = 0
+            mv = memoryview(buf)
+            while nblocks:
+                self.readinto(mv[offset : offset + 512])
+                offset += 512
+                nblocks -= 1
+            return self.cmd_nodata(12)
         return 0
 
     def writeblocks(self, block_num, buf):
-        # TODO support multiple block writes
-        assert len(buf) == 512
+        nblocks, err = divmod(len(buf), 512)
+        assert nblocks and not err, 'Buffer length is invalid'
+        if nblocks == 1:
+            # CMD24: set write address for single block
+            if self.cmd(24, block_num * self.cdv, 0) != 0:
+                return 1
 
-        # CMD24: set write address for single block
-        if self.cmd(24, block_num * self.cdv, 0) != 0:
-            return 1
-
-        # send the data
-        self.write(buf)
+            # send the data
+            self.write(TOKEN_DATA, buf)
+        else:
+            # CMD25: set write address for first block
+            if self.cmd(25, block_num * self.cdv, 0) != 0:
+                return 1
+            # send the data
+            offset = 0
+            mv = memoryview(buf)
+            while nblocks:
+                self.write(TOKEN_CMD25, mv[offset : offset + 512])
+                offset += 512
+                nblocks -= 1
+            self.write_token(TOKEN_STOP_TRAN)
         return 0

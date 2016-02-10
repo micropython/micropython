@@ -404,17 +404,17 @@ STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, con
     if (n_args == 0) {
         ret = ((viper_fun_0_t)fun)();
     } else if (n_args == 1) {
-        ret = ((viper_fun_1_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2));
+        ret = ((viper_fun_1_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 4));
     } else if (n_args == 2) {
-        ret = ((viper_fun_2_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4));
+        ret = ((viper_fun_2_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 4), mp_convert_obj_to_native(args[1], self->type_sig >> 8));
     } else if (n_args == 3) {
-        ret = ((viper_fun_3_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 2), mp_convert_obj_to_native(args[1], self->type_sig >> 4), mp_convert_obj_to_native(args[2], self->type_sig >> 6));
+        ret = ((viper_fun_3_t)fun)(mp_convert_obj_to_native(args[0], self->type_sig >> 4), mp_convert_obj_to_native(args[1], self->type_sig >> 8), mp_convert_obj_to_native(args[2], self->type_sig >> 12));
     } else if (n_args == 4) {
         ret = ((viper_fun_4_t)fun)(
-            mp_convert_obj_to_native(args[0], self->type_sig >> 2),
-            mp_convert_obj_to_native(args[1], self->type_sig >> 4),
-            mp_convert_obj_to_native(args[2], self->type_sig >> 6),
-            mp_convert_obj_to_native(args[3], self->type_sig >> 8)
+            mp_convert_obj_to_native(args[0], self->type_sig >> 4),
+            mp_convert_obj_to_native(args[1], self->type_sig >> 8),
+            mp_convert_obj_to_native(args[2], self->type_sig >> 12),
+            mp_convert_obj_to_native(args[3], self->type_sig >> 16)
         );
     } else {
         // TODO 5 or more arguments not supported for viper call

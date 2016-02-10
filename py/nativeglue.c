@@ -45,19 +45,16 @@
 // convert a Micro Python object to a valid native value based on type
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
     DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);
-    switch (type & 3) {
+    switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
         case MP_NATIVE_TYPE_BOOL:
-        case MP_NATIVE_TYPE_INT: return mp_obj_get_int_truncated(obj);
-        case MP_NATIVE_TYPE_UINT: {
+        case MP_NATIVE_TYPE_INT:
+        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
+        default: { // a pointer
             mp_buffer_info_t bufinfo;
-            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_RW)) {
-                return (mp_uint_t)bufinfo.buf;
-            } else {
-                return mp_obj_get_int_truncated(obj);
-            }
+            mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_RW);
+            return (mp_uint_t)bufinfo.buf;
         }
-        default: assert(0); return 0;
     }
 }
 
@@ -68,12 +65,14 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 // convert a native value to a Micro Python object based on type
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
     DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
-    switch (type & 3) {
+    switch (type & 0xf) {
         case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
         case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
         case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
         case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
-        default: assert(0); return mp_const_none;
+        default: // a pointer
+            // we return just the value of the pointer as an integer
+            return mp_obj_new_int_from_uint(val);
     }
 }
 
