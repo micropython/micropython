@@ -163,3 +163,5 @@ Q(mode)
 Q(period)
 Q(ONE_SHOT)
 Q(PERIODIC)
+
+Q(json)
