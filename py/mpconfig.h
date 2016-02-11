@@ -283,6 +283,20 @@
 #define MICROPY_ENABLE_COMPILER (1)
 #endif
 
+// Whether the compiler is dynamically configurable (ie at runtime)
+#ifndef MICROPY_DYNAMIC_COMPILER
+#define MICROPY_DYNAMIC_COMPILER (0)
+#endif
+
+// Configure dynamic compiler macros
+#if MICROPY_DYNAMIC_COMPILER
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC (mp_dynamic_compiler.opt_cache_map_lookup_in_bytecode)
+#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC (mp_dynamic_compiler.py_builtins_str_unicode)
+#else
+#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
+#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC MICROPY_PY_BUILTINS_STR_UNICODE
+#endif
+
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
 #define MICROPY_COMP_CONST_FOLDING (1)

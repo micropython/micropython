@@ -204,7 +204,13 @@ mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_ove
     ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) << 0) \
     | ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
     )
+// This is a version of the flags that can be configured at runtime.
+#define MPY_FEATURE_FLAGS_DYNAMIC ( \
+    ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) << 0) \
+    | ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
+    )
 
+#if MICROPY_PERSISTENT_CODE_LOAD || (MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_DYNAMIC_COMPILER)
 // The bytecode will depend on the number of bits in a small-int, and
 // this function computes that (could make it a fixed constant, but it
 // would need to be defined in mpconfigport.h).
@@ -217,6 +223,7 @@ STATIC int mp_small_int_bits(void) {
     }
     return n;
 }
+#endif
 
 typedef struct _bytecode_prelude_t {
     uint n_state;
@@ -366,7 +373,7 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "invalid .mpy file"));
     }
-    if (header[2] != MPY_FEATURE_FLAGS || header[3] != mp_small_int_bits()) {
+    if (header[2] != MPY_FEATURE_FLAGS || header[3] > mp_small_int_bits()) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "incompatible .mpy file"));
     }
@@ -615,7 +622,13 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     //  byte  version
     //  byte  feature flags
     //  byte  number of bits in a small int
-    byte header[4] = {'M', 0, MPY_FEATURE_FLAGS, mp_small_int_bits()};
+    byte header[4] = {'M', 0, MPY_FEATURE_FLAGS_DYNAMIC,
+        #if MICROPY_DYNAMIC_COMPILER
+        mp_dynamic_compiler.small_int_bits,
+        #else
+        mp_small_int_bits(),
+        #endif
+    };
     mp_print_bytes(print, header, sizeof(header));
 
     save_raw_code(print, rc);

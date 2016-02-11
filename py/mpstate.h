@@ -39,6 +39,16 @@
 // memory system, runtime and virtual machine.  The state is a global
 // variable, but in the future it is hoped that the state can become local.
 
+// This structure contains dynamic configuration for the compiler.
+#if MICROPY_DYNAMIC_COMPILER
+typedef struct mp_dynamic_compiler_t {
+    uint8_t small_int_bits; // must be <= host small_int_bits
+    bool opt_cache_map_lookup_in_bytecode;
+    bool py_builtins_str_unicode;
+} mp_dynamic_compiler_t;
+extern mp_dynamic_compiler_t mp_dynamic_compiler;
+#endif
+
 // This structure hold information about the memory allocation system.
 typedef struct _mp_state_mem_t {
     #if MICROPY_MEM_STATS
