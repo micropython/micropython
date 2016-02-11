@@ -23,8 +23,13 @@
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses
-#define MICROPY_HW_I2C1_SCL (pin_B6)
-#define MICROPY_HW_I2C1_SDA (pin_B7)
+#define MICROPY_HW_I2C1_SCL (pin_B6)    // D10 on arduino connector, pin 17 on CN10
+#define MICROPY_HW_I2C1_SDA (pin_B7)    //                           pin 21 on CN7
+#define MICROPY_HW_I2C2_SCL (pin_B10)   // D6  on arduino connector, pin 25 on CN10
+#define MICROPY_HW_I2C2_SDA (pin_B3)    // D3  on arduino connector, pin 31 on CN10
+#define MICROPY_HW_I2C3_SCL (pin_A8)    // D7  on arduino connector, pin 23 on CN10
+#define MICROPY_HW_I2C3_SDA (pin_C9)    //                           pin  1 on CN10
+
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_C13)
