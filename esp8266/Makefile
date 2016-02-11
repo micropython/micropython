@@ -61,6 +61,7 @@ SRC_C = \
 	modpybpin.c \
 	modpybrtc.c \
 	modpybadc.c \
+	modpybi2c.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \

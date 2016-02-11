@@ -142,6 +142,17 @@ Q(memory)
 Q(ADC)
 Q(read)
 
+// I2C
+Q(I2C)
+Q(init)
+Q(scl)
+Q(sda)
+Q(freq)
+Q(writeto)
+Q(stop)
+Q(buf)
+Q(addr)
+
 // utime
 Q(utime)
 Q(localtime)
