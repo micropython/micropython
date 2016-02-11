@@ -25,39 +25,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef OBJPIN_H_
-#define OBJPIN_H_
 
-#include "gpio_api.h"
+// rtl8195a_prefix.c becomes the initial portion of the generated pins file.
 
-extern const mp_obj_type_t pin_type;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+#include <stdio.h>
+#include <stdint.h>
 
-typedef struct {
-    const mp_obj_base_t base;
-    const qstr          name;
-    gpio_t              obj;
-    uint8_t             id;
-    uint16_t            port;
-    uint16_t            pull;
-    const uint8_t       pin_num;
-    uint8_t             dir;         
-    uint8_t             value;
-    uint8_t             used;
-    uint8_t             irq_trigger;
-    uint8_t             irq_flags;
-} pin_obj_t;
+#include "py/mpconfig.h"
+#include "py/obj.h"
+#include "hardware/objpin.h"
+#include "PinNames.h"
 
-typedef struct {
-    const char *name;
-    const pin_obj_t *pin;
-} pin_named_pin_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    const pin_named_pin_t *named_pins;
-} pin_named_pins_obj_t;
+#define AF(af_name, af_idx, af_fn, af_unit, af_type) \
+{ \
+    .name = MP_QSTR_ ## af_name, \
+    .idx = (af_idx), \
+    .fn = PIN_FN_ ## af_fn, \
+    .unit = (af_unit), \
+    .type = PIN_TYPE_ ## af_fn ## _ ## af_type, \
+}
 
 
-#endif  // OBJPIN_H_
+#define PIN(p_pin_name, p_port, p_pin_num) \
+{ \
+    { &pin_type }, \
+    .name           = MP_QSTR_ ## p_pin_name, \
+    .id             = (p_pin_name), \
+    .port           = PORT_ ## p_port, \
+    .pull           = PullNone, \
+    .pin_num        = (p_pin_num), \
+    .dir            = PIN_INPUT, \
+    .value          = 0, \
+    .used           = false, \
+    .irq_trigger    = 0, \
+    .irq_flags      = 0, \
+}

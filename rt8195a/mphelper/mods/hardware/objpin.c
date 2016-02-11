@@ -105,17 +105,17 @@ STATIC uint8_t pin_get_value (const pin_obj_t* self) {
     if (self->dir == PullNone || self->dir == OpenDrain) {
         setdir = true;
         // configure the direction to IN for a moment in order to read the pin value
-        gpio_dir(self->obj, PIN_INPUT);
+        gpio_dir(&(self->obj), PIN_INPUT);
     }
     // now get the value
-    value = gpio_read(self->obj);
+    value = gpio_read(&(self->obj));
     if (setdir) {
         // set the direction back to output
-        gpio_dir(self->obj, PIN_OUTPUT);
+        gpio_dir(&(self->obj), PIN_OUTPUT);
         if (self->value) {
-            gpio_write(self->obj, 1);
+            gpio_write(&(self->obj), 1);
         } else {
-            gpio_write(self->obj, 0);
+            gpio_write(&(self->obj), 0);
         }
     }
     // return it
@@ -167,9 +167,9 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
         self->value = value;
 
     // config pin hardware
-    gpio_init(self->obj, self->id);
-    gpio_dir(self->obj, self->dir);
-    gpio_mode(self->obj, self->pull);
+    gpio_init(&(self->obj), self->id);
+    gpio_dir(&(self->obj), self->dir);
+    gpio_mode(&(self->obj), self->pull);
 
     // Initial finished, mark it as in used
     self->used = true;
@@ -288,10 +288,10 @@ STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
         // set the pin value
         if (mp_obj_is_true(args[1])) {
             self->value = 1;
-            gpio_write(self->obj, 1);
+            gpio_write(&(self->obj), 1);
         } else {
             self->value = 0;
-            gpio_write(self->obj, 0);
+            gpio_write(&(self->obj), 0);
         }
         return mp_const_none;
     }
@@ -300,7 +300,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
 STATIC mp_obj_t pin_toggle(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    gpio_write(self->obj, ~gpio_read(self->obj));
+    gpio_write(&(self->obj), ~gpio_read(&(self->obj)));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_toggle_obj, pin_toggle);
