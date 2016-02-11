@@ -12,12 +12,26 @@ SDK = libameba/sdk
 LIB = linklibs
 TOOLS = tools
 HELPER = mphelper
-
 PROJECT = realtek_ameba1_va0_example
+BOARD ?= ameba
+
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = boards/$(BOARD)/pins.csv
+AF_FILE = boards/rtl8195a_af.csv
+PREFIX_FILE = boards/rtl8195a_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
+
+#-------------------------------------------------------------------------------
+# Includes
+#-------------------------------------------------------------------------------
 
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
+
+INC += -I$(HEADER_BUILD)
 
 INC += -I../lib/utils
 INC += -I../lib/timeutils
@@ -140,6 +154,7 @@ ELF_ARLIST += ./$(LIB)/lib_platform.a
 #-------------------------------------------------------------------------------
 # C source files and objects
 #-------------------------------------------------------------------------------
+SRC_C += $(wildcard $(BUILD)/*.c)
 SRC_C += $(wildcard $(HELPER)/*.c)
 SRC_C += $(wildcard $(HELPER)/gccollect/*.c)
 SRC_C += $(wildcard $(HELPER)/hal/*.c)
@@ -160,10 +175,14 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 #-------------------------------------------------------------------------------
 # Rules
 #-------------------------------------------------------------------------------
-all: $(BUILD)/firmware.elf image
+all: genpin $(BUILD)/firmware.elf image
 
 $(addprefix $(BUILD)/,$(OBJ)): $(BUILD)/%.o: %.c %.s
 	$(Q)$(CC) $(CFLAGS) $< -o $@
+
+genpin:
+	$(ECHO) "CREATING PIN FILES"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(ECHO) "BUILDING $@"
