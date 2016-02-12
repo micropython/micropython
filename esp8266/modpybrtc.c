@@ -146,7 +146,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         }
 
         magic = MEM_MAGIC;
-        system_rtc_mem_write(MEM_USER_MAGIC_ADDR, &magic, sizeof(len));
+        system_rtc_mem_write(MEM_USER_MAGIC_ADDR, &magic, sizeof(magic));
         len = bufinfo.len;
         system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
 

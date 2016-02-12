@@ -24,14 +24,35 @@
  * THE SOFTWARE.
  */
 
+// these are the values for fs_user_mount_t.flags
+#define FSUSER_NATIVE       (0x0001) // readblocks[2]/writeblocks[2] contain native func
+#define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount
+#define FSUSER_HAVE_IOCTL   (0x0004) // new protocol with ioctl
+
+// constants for block protocol ioctl
+#define BP_IOCTL_INIT           (1)
+#define BP_IOCTL_DEINIT         (2)
+#define BP_IOCTL_SYNC           (3)
+#define BP_IOCTL_SEC_COUNT      (4)
+#define BP_IOCTL_SEC_SIZE       (5)
+
 typedef struct _fs_user_mount_t {
     const char *str;
-    mp_uint_t len;
+    uint16_t len; // length of str
+    uint16_t flags;
     mp_obj_t readblocks[4];
     mp_obj_t writeblocks[4];
-    mp_obj_t sync[2];
-    mp_obj_t count[2];
+    // new protocol uses just ioctl, old uses sync (optional) and count
+    union {
+        mp_obj_t ioctl[4];
+        struct {
+            mp_obj_t sync[2];
+            mp_obj_t count[2];
+        } old;
+    } u;
     FATFS fatfs;
 } fs_user_mount_t;
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_mount_obj);
+MP_DECLARE_CONST_FUN_OBJ(fsuser_mount_obj);
+MP_DECLARE_CONST_FUN_OBJ(fsuser_umount_obj);
+MP_DECLARE_CONST_FUN_OBJ(fsuser_mkfs_obj);

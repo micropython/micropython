@@ -26,13 +26,15 @@
 
 #include "py/mpconfig.h"
 #if MICROPY_FSUSERMOUNT
+#include <string.h>
+#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
 #include "fsusermount.h"
 
-STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -51,67 +53,146 @@ STATIC mp_obj_t pyb_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (device == mp_const_none) {
         // umount
         FRESULT res = FR_NO_FILESYSTEM;
-        if (MP_STATE_PORT(fs_user_mount) != NULL) {
-            res = f_mount(NULL, MP_STATE_PORT(fs_user_mount)->str, 0);
-            m_del_obj(fs_user_mount_t, MP_STATE_PORT(fs_user_mount));
-            MP_STATE_PORT(fs_user_mount) = NULL;
+        for (size_t i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+            if (vfs != NULL && !memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+                res = f_mount(NULL, vfs->str, 0);
+                if (vfs->flags & FSUSER_FREE_OBJ) {
+                    m_del_obj(fs_user_mount_t, vfs);
+                }
+                MP_STATE_PORT(fs_user_mount)[i] = NULL;
+                break;
+            }
         }
         if (res != FR_OK) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
         }
     } else {
         // mount
-        if (MP_STATE_PORT(fs_user_mount) != NULL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "device already mounted"));
+        size_t i = 0;
+        for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            if (MP_STATE_PORT(fs_user_mount)[i] == NULL) {
+                break;
+            }
+        }
+        if (i == MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "too many devices mounted"));
         }
 
         // create new object
-        MP_STATE_PORT(fs_user_mount) = m_new_obj(fs_user_mount_t);
-        MP_STATE_PORT(fs_user_mount)->str = mnt_str;
-        MP_STATE_PORT(fs_user_mount)->len = mnt_len;
+        fs_user_mount_t *vfs;
+        MP_STATE_PORT(fs_user_mount)[i] = vfs = m_new_obj(fs_user_mount_t);
+        vfs->str = mnt_str;
+        vfs->len = mnt_len;
+        vfs->flags = FSUSER_FREE_OBJ;
 
         // load block protocol methods
-        mp_load_method(device, MP_QSTR_readblocks, MP_STATE_PORT(fs_user_mount)->readblocks);
-        mp_load_method_maybe(device, MP_QSTR_writeblocks, MP_STATE_PORT(fs_user_mount)->writeblocks);
-        mp_load_method_maybe(device, MP_QSTR_sync, MP_STATE_PORT(fs_user_mount)->sync);
-        mp_load_method(device, MP_QSTR_count, MP_STATE_PORT(fs_user_mount)->count);
+        mp_load_method(device, MP_QSTR_readblocks, vfs->readblocks);
+        mp_load_method_maybe(device, MP_QSTR_writeblocks, vfs->writeblocks);
+        mp_load_method_maybe(device, MP_QSTR_ioctl, vfs->u.ioctl);
+        if (vfs->u.ioctl[0] != MP_OBJ_NULL) {
+            // device supports new block protocol, so indicate it
+            vfs->flags |= FSUSER_HAVE_IOCTL;
+        } else {
+            // no ioctl method, so assume the device uses the old block protocol
+            mp_load_method_maybe(device, MP_QSTR_sync, vfs->u.old.sync);
+            mp_load_method(device, MP_QSTR_count, vfs->u.old.count);
+        }
 
         // Read-only device indicated by writeblocks[0] == MP_OBJ_NULL.
         // User can specify read-only device by:
         //  1. readonly=True keyword argument
         //  2. nonexistent writeblocks method (then writeblocks[0] == MP_OBJ_NULL already)
         if (args[0].u_bool) {
-            MP_STATE_PORT(fs_user_mount)->writeblocks[0] = MP_OBJ_NULL;
+            vfs->writeblocks[0] = MP_OBJ_NULL;
         }
 
-        // mount the block device
-        FRESULT res = f_mount(&MP_STATE_PORT(fs_user_mount)->fatfs, MP_STATE_PORT(fs_user_mount)->str, 1);
-
+        // mount the block device (if mkfs, only pre-mount)
+        FRESULT res = f_mount(&vfs->fatfs, vfs->str, !mkfs);
         // check the result
         if (res == FR_OK) {
+            if (mkfs) {
+                goto mkfs;
+            }
         } else if (res == FR_NO_FILESYSTEM && args[1].u_bool) {
-            res = f_mkfs(MP_STATE_PORT(fs_user_mount)->str, 1, 0);
+mkfs:
+            res = f_mkfs(vfs->str, 1, 0);
             if (res != FR_OK) {
+mkfs_error:
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mkfs"));
+            }
+            if (mkfs) {
+                // If requested to only mkfs, unmount pre-mounted device
+                res = f_mount(NULL, vfs->str, 0);
+                if (res != FR_OK) {
+                    goto mkfs_error;
+                }
+                MP_STATE_PORT(fs_user_mount)[i] = NULL;
             }
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
         }
 
         /*
-        if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
+        if (vfs->writeblocks[0] == MP_OBJ_NULL) {
             printf("mounted read-only");
         } else {
             printf("mounted read-write");
         }
         DWORD nclst;
         FATFS *fatfs;
-        f_getfree(MP_STATE_PORT(fs_user_mount)->str, &nclst, &fatfs);
-        printf(" on %s with %u bytes free\n", MP_STATE_PORT(fs_user_mount)->str, (uint)(nclst * fatfs->csize * 512));
+        f_getfree(vfs->str, &nclst, &fatfs);
+        printf(" on %s with %u bytes free\n", vfs->str, (uint)(nclst * fatfs->csize * 512));
         */
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(pyb_mount_obj, 2, pyb_mount);
+
+STATIC mp_obj_t fatfs_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return fatfs_mount_mkfs(n_args, pos_args, kw_args, false);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mount_obj, 2, fatfs_mount);
+
+STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
+    size_t i = 0;
+    if (MP_OBJ_IS_STR(bdev_or_path_in)) {
+        mp_uint_t mnt_len;
+        const char *mnt_str = mp_obj_str_get_data(bdev_or_path_in, &mnt_len);
+        for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+            if (!memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+                break;
+            }
+        }
+    } else {
+        for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+            fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+            if (bdev_or_path_in == vfs->readblocks[1]) {
+                break;
+            }
+        }
+    }
+
+    if (i == MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
+    }
+
+    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+    FRESULT res = f_mount(NULL, vfs->str, 0);
+    if (vfs->flags & FSUSER_FREE_OBJ) {
+        m_del_obj(fs_user_mount_t, vfs);
+    }
+    MP_STATE_PORT(fs_user_mount)[i] = NULL;
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(fsuser_umount_obj, fatfs_umount);
+
+STATIC mp_obj_t fatfs_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return fatfs_mount_mkfs(n_args, pos_args, kw_args, true);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj, 2, fatfs_mkfs);
 
 #endif // MICROPY_FSUSERMOUNT

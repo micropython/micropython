@@ -2,6 +2,7 @@
 #define MICROPY_HW_MCU_NAME         "STM32F401xE"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
+#define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 
 // HSE is 8MHz, CPU freq set to 84MHz
@@ -16,9 +17,19 @@
 #define MICROPY_HW_UART6_PORT (GPIOC)
 #define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
 
+// UART 2 connects to the STM32F103 (STLINK) on the Nucleo board
+// and this is exposed as a USB Serial port.
+#define MICROPY_HW_UART_REPL        PYB_UART_2
+#define MICROPY_HW_UART_REPL_BAUD   115200
+
 // I2C busses
-#define MICROPY_HW_I2C1_SCL (pin_B6)
-#define MICROPY_HW_I2C1_SDA (pin_B7)
+#define MICROPY_HW_I2C1_SCL (pin_B6)    // D10 on arduino connector, pin 17 on CN10
+#define MICROPY_HW_I2C1_SDA (pin_B7)    //                           pin 21 on CN7
+#define MICROPY_HW_I2C2_SCL (pin_B10)   // D6  on arduino connector, pin 25 on CN10
+#define MICROPY_HW_I2C2_SDA (pin_B3)    // D3  on arduino connector, pin 31 on CN10
+#define MICROPY_HW_I2C3_SCL (pin_A8)    // D7  on arduino connector, pin 23 on CN10
+#define MICROPY_HW_I2C3_SDA (pin_C9)    //                           pin  1 on CN10
+
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_C13)

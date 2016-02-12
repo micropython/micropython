@@ -671,10 +671,12 @@ Q(status)
 #if MICROPY_FSUSERMOUNT
 // for user-mountable block devices
 Q(mount)
+Q(umount)
 Q(readonly)
 Q(mkfs)
 Q(readblocks)
 Q(writeblocks)
+Q(ioctl)
 Q(sync)
 Q(count)
 #endif

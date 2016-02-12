@@ -26,4 +26,5 @@
 
 extern const byte fresult_to_errno_table[20];
 
+mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_open_obj);

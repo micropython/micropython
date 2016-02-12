@@ -217,32 +217,30 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
     GPIO_InitStructure.Pull = GPIO_NOPULL; // have external pull-up resistors on both lines
 
-    const pyb_i2c_obj_t *self;
-    const pin_obj_t *pins[2];
+    int i2c_unit;
+    const pin_obj_t *scl_pin;
+    const pin_obj_t *sda_pin;
 
     if (0) {
     #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c == &I2CHandle1) {
-        self = &pyb_i2c_obj[0];
-        pins[0] = &MICROPY_HW_I2C1_SCL;
-        pins[1] = &MICROPY_HW_I2C1_SDA;
-        GPIO_InitStructure.Alternate = GPIO_AF4_I2C1;
+        i2c_unit = 1;
+        scl_pin = &MICROPY_HW_I2C1_SCL;
+        sda_pin = &MICROPY_HW_I2C1_SDA;
         __I2C1_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c == &I2CHandle2) {
-        self = &pyb_i2c_obj[1];
-        pins[0] = &MICROPY_HW_I2C2_SCL;
-        pins[1] = &MICROPY_HW_I2C2_SDA;
-        GPIO_InitStructure.Alternate = GPIO_AF4_I2C2;
+        i2c_unit = 2;
+        scl_pin = &MICROPY_HW_I2C2_SCL;
+        sda_pin = &MICROPY_HW_I2C2_SDA;
         __I2C2_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     } else if (i2c == &I2CHandle3) {
-        self = &pyb_i2c_obj[2];
-        pins[0] = &MICROPY_HW_I2C3_SCL;
-        pins[1] = &MICROPY_HW_I2C3_SDA;
-        GPIO_InitStructure.Alternate = GPIO_AF4_I2C3;
+        i2c_unit = 3;
+        scl_pin = &MICROPY_HW_I2C3_SCL;
+        sda_pin = &MICROPY_HW_I2C3_SDA;
         __I2C3_CLK_ENABLE();
     #endif
     } else {
@@ -251,11 +249,8 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     }
 
     // init the GPIO lines
-    for (uint i = 0; i < 2; i++) {
-        mp_hal_gpio_clock_enable(pins[i]->gpio);
-        GPIO_InitStructure.Pin = pins[i]->pin_mask;
-        HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
-    }
+    mp_hal_gpio_set_af(scl_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
+    mp_hal_gpio_set_af(sda_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
 
     // init the I2C device
     if (HAL_I2C_Init(i2c) != HAL_OK) {
@@ -267,6 +262,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     }
 
     // invalidate the DMA channels so they are initialised on first use
+    const pyb_i2c_obj_t *self = &pyb_i2c_obj[i2c_unit - 1];
     dma_invalidate_channel(self->tx_dma_stream, self->tx_dma_channel);
     dma_invalidate_channel(self->rx_dma_stream, self->rx_dma_channel);
 }

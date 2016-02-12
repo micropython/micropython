@@ -5,6 +5,7 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
 #define MICROPY_HW_HAS_SWITCH       (0)
+#define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SDCARD       (0)
 #define MICROPY_HW_HAS_MMA7660      (0)
 #define MICROPY_HW_HAS_LIS3DSH      (0)
@@ -47,6 +48,8 @@
 #define MICROPY_HW_I2C1_SDA (pin_B7)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
+#define MICROPY_HW_I2C3_SCL (pin_A8)
+#define MICROPY_HW_I2C3_SDA (pin_C9)
 
 // SPI busses
 #define MICROPY_HW_SPI1_NSS  (pin_A4)
