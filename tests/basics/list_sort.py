@@ -27,7 +27,7 @@ print(l)
 print(l == sorted(l, reverse=False))
 
 # test large lists (should not stack overflow)
-l = list(range(2000))
+l = list(range(200))
 l.sort()
 print(l[0], l[-1])
 l.sort(reverse=True)

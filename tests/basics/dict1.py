@@ -12,7 +12,7 @@ print(d)
 print(d[1])
 
 x = 1
-while x < 1000:
+while x < 100:
     d[x] = x
     x += 1
-print(d[500])
+print(d[50])
