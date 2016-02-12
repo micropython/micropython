@@ -377,6 +377,9 @@ Q(EDGE_TIME)
 Q(PWM)
 Q(POSITIVE)
 Q(NEGATIVE)
+Q(TIMEOUT)
+Q(MATCH)
+Q(EVENT)
 
 // for uhashlib module
 //Q(uhashlib)
