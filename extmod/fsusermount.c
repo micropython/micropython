@@ -160,14 +160,14 @@ STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
         const char *mnt_str = mp_obj_str_get_data(bdev_or_path_in, &mnt_len);
         for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
             fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
-            if (!memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+            if (vfs != NULL && !memcmp(mnt_str, vfs->str, mnt_len + 1)) {
                 break;
             }
         }
     } else {
         for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
             fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
-            if (bdev_or_path_in == vfs->readblocks[1]) {
+            if (vfs != NULL && bdev_or_path_in == vfs->readblocks[1]) {
                 break;
             }
         }
