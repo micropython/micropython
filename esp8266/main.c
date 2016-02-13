@@ -41,7 +41,8 @@
 STATIC char heap[16384];
 
 STATIC void mp_reset(void) {
-    mp_stack_set_limit(10240);
+    mp_stack_set_top((void*)0x40000000);
+    mp_stack_set_limit(8192);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
     mp_init();
