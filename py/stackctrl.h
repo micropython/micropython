@@ -29,6 +29,7 @@
 #include "py/mpconfig.h"
 
 void mp_stack_ctrl_init(void);
+void mp_stack_set_top(void *top);
 mp_uint_t mp_stack_usage(void);
 
 #if MICROPY_STACK_CHECK
