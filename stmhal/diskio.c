@@ -30,26 +30,20 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include STM32_HAL_H
+#include "py/mphal.h"
 
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"        /* FatFs lower layer API */
 #include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
-#include "rtc.h"
-#include "storage.h"
-#include "sdcard.h"
 #include "extmod/fsusermount.h"
 
-const PARTITION VolToPart[] = {
-    {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
-    {1, 0},     // Logical drive 1 ==> Physical drive 1 (auto detection)
-    {2, 0},     // Logical drive 2 ==> Physical drive 2 (auto detection)
-    /*
-    {0, 2},     // Logical drive 2 ==> Physical drive 0, 2nd partition
-    {0, 3},     // Logical drive 3 ==> Physical drive 0, 3rd partition
-    */
-};
-
+STATIC fs_user_mount_t *disk_get_device(uint id) {
+    if (id < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        return MP_STATE_PORT(fs_user_mount)[id];
+    } else {
+        return NULL;
+    }
+}
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
@@ -59,31 +53,27 @@ DSTATUS disk_initialize (
     BYTE pdrv                /* Physical drive nmuber (0..) */
 )
 {
-    switch (pdrv) {
-        case PD_FLASH:
-            storage_init();
-            return 0;
-
-#if MICROPY_HW_HAS_SDCARD
-        case PD_SDCARD:
-            if (!sdcard_power_on()) {
-                return STA_NODISK;
-            }
-            // TODO return STA_PROTECT if SD card is read only
-            return 0;
-#endif
-
-        case PD_USER:
-            if (MP_STATE_PORT(fs_user_mount) == NULL) {
-                return STA_NODISK;
-            }
-            if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
-                return STA_PROTECT;
-            }
-            return 0;
+    fs_user_mount_t *vfs = disk_get_device(pdrv);
+    if (vfs == NULL) {
+        return STA_NOINIT;
     }
 
-    return STA_NOINIT;
+    if (vfs->flags & FSUSER_HAVE_IOCTL) {
+        // new protocol with ioctl; call ioctl(INIT, 0)
+        vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_INIT);
+        vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+        mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+        if (MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
+            // error initialising
+            return STA_NOINIT;
+        }
+    }
+
+    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+        return STA_PROTECT;
+    } else {
+        return 0;
+    }
 }
 
 /*-----------------------------------------------------------------------*/
@@ -94,28 +84,16 @@ DSTATUS disk_status (
     BYTE pdrv        /* Physical drive nmuber (0..) */
 )
 {
-    switch (pdrv) {
-        case PD_FLASH :
-            // flash is ready
-            return 0;
-
-#if MICROPY_HW_HAS_SDCARD
-        case PD_SDCARD:
-            // TODO return STA_PROTECT if SD card is read only
-            return 0;
-#endif
-
-        case PD_USER:
-            if (MP_STATE_PORT(fs_user_mount) == NULL) {
-                return STA_NODISK;
-            }
-            if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
-                return STA_PROTECT;
-            }
-            return 0;
+    fs_user_mount_t *vfs = disk_get_device(pdrv);
+    if (vfs == NULL) {
+        return STA_NOINIT;
     }
 
-    return STA_NOINIT;
+    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+        return STA_PROTECT;
+    } else {
+        return 0;
+    }
 }
 
 /*-----------------------------------------------------------------------*/
@@ -129,35 +107,24 @@ DRESULT disk_read (
     UINT count        /* Number of sectors to read (1..128) */
 )
 {
-    switch (pdrv) {
-        case PD_FLASH:
-            for (int i = 0; i < count; i++) {
-                if (!storage_read_block(buff + i * FLASH_BLOCK_SIZE, sector + i)) {
-                    return RES_ERROR;
-                }
-            }
-            return RES_OK;
-
-#if MICROPY_HW_HAS_SDCARD
-        case PD_SDCARD:
-            if (sdcard_read_blocks(buff, sector, count) != 0) {
-                return RES_ERROR;
-            }
-            return RES_OK;
-#endif
-
-        case PD_USER:
-            if (MP_STATE_PORT(fs_user_mount) == NULL) {
-                // nothing mounted
-                return RES_ERROR;
-            }
-            MP_STATE_PORT(fs_user_mount)->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-            MP_STATE_PORT(fs_user_mount)->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
-            mp_call_method_n_kw(2, 0, MP_STATE_PORT(fs_user_mount)->readblocks);
-            return RES_OK;
+    fs_user_mount_t *vfs = disk_get_device(pdrv);
+    if (vfs == NULL) {
+        return RES_PARERR;
     }
 
-    return RES_PARERR;
+    if (vfs->flags & FSUSER_NATIVE) {
+        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)vfs->readblocks[2];
+        if (f(buff, sector, count) != 0) {
+            return RES_ERROR;
+        }
+    } else {
+        vfs->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+        vfs->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
+        mp_call_method_n_kw(2, 0, vfs->readblocks);
+        // TODO handle error return
+    }
+
+    return RES_OK;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -172,39 +139,29 @@ DRESULT disk_write (
     UINT count            /* Number of sectors to write (1..128) */
 )
 {
-    switch (pdrv) {
-        case PD_FLASH:
-            for (int i = 0; i < count; i++) {
-                if (!storage_write_block(buff + i * FLASH_BLOCK_SIZE, sector + i)) {
-                    return RES_ERROR;
-                }
-            }
-            return RES_OK;
-
-#if MICROPY_HW_HAS_SDCARD
-        case PD_SDCARD:
-            if (sdcard_write_blocks(buff, sector, count) != 0) {
-                return RES_ERROR;
-            }
-            return RES_OK;
-#endif
-
-        case PD_USER:
-            if (MP_STATE_PORT(fs_user_mount) == NULL) {
-                // nothing mounted
-                return RES_ERROR;
-            }
-            if (MP_STATE_PORT(fs_user_mount)->writeblocks[0] == MP_OBJ_NULL) {
-                // read-only block device
-                return RES_ERROR;
-            }
-            MP_STATE_PORT(fs_user_mount)->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-            MP_STATE_PORT(fs_user_mount)->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
-            mp_call_method_n_kw(2, 0, MP_STATE_PORT(fs_user_mount)->writeblocks);
-            return RES_OK;
+    fs_user_mount_t *vfs = disk_get_device(pdrv);
+    if (vfs == NULL) {
+        return RES_PARERR;
     }
 
-    return RES_PARERR;
+    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+        // read-only block device
+        return RES_WRPRT;
+    }
+
+    if (vfs->flags & FSUSER_NATIVE) {
+        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)vfs->writeblocks[2];
+        if (f(buff, sector, count) != 0) {
+            return RES_ERROR;
+        }
+    } else {
+        vfs->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
+        vfs->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
+        mp_call_method_n_kw(2, 0, vfs->writeblocks);
+        // TODO handle error return
+    }
+
+    return RES_OK;
 }
 #endif
 
@@ -220,69 +177,69 @@ DRESULT disk_ioctl (
     void *buff        /* Buffer to send/receive control data */
 )
 {
-    switch (pdrv) {
-        case PD_FLASH:
-            switch (cmd) {
-                case CTRL_SYNC:
-                    storage_flush();
-                    return RES_OK;
-
-                case GET_BLOCK_SIZE:
-                    *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) block size
-                    return RES_OK;
-            }
-            break;
-
-#if MICROPY_HW_HAS_SDCARD
-        case PD_SDCARD:
-            switch (cmd) {
-                case CTRL_SYNC:
-                    return RES_OK;
-
-                case GET_BLOCK_SIZE:
-                    *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) block size
-                    return RES_OK;
-            }
-            break;
-#endif
-
-        case PD_USER:
-            if (MP_STATE_PORT(fs_user_mount) == NULL) {
-                // nothing mounted
-                return RES_ERROR;
-            }
-            switch (cmd) {
-                case CTRL_SYNC:
-                    if (MP_STATE_PORT(fs_user_mount)->sync[0] != MP_OBJ_NULL) {
-                        mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->sync);
-                    }
-                    return RES_OK;
-
-                case GET_BLOCK_SIZE:
-                    *((DWORD*)buff) = 1; // high-level sector erase size in units of the small (512) bl
-                    return RES_OK;
-
-                case GET_SECTOR_COUNT: {
-                    mp_obj_t ret = mp_call_method_n_kw(0, 0, MP_STATE_PORT(fs_user_mount)->count);
-                    *((DWORD*)buff) = mp_obj_get_int(ret);
-                    return RES_OK;
-                }
-            }
-            break;
+    fs_user_mount_t *vfs = disk_get_device(pdrv);
+    if (vfs == NULL) {
+        return RES_PARERR;
     }
 
-    return RES_PARERR;
+    if (vfs->flags & FSUSER_HAVE_IOCTL) {
+        // new protocol with ioctl
+        switch (cmd) {
+            case CTRL_SYNC:
+                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SYNC);
+                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                return RES_OK;
+
+            case GET_SECTOR_COUNT: {
+                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_COUNT);
+                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                *((DWORD*)buff) = mp_obj_get_int(ret);
+                return RES_OK;
+            }
+
+            case GET_SECTOR_SIZE: {
+                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_SIZE);
+                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                *((WORD*)buff) = mp_obj_get_int(ret);
+                return RES_OK;
+            }
+
+            case GET_BLOCK_SIZE:
+                *((DWORD*)buff) = 1; // erase block size in units of sector size
+                return RES_OK;
+
+            default:
+                return RES_PARERR;
+        }
+    } else {
+        // old protocol with sync and count
+        switch (cmd) {
+            case CTRL_SYNC:
+                if (vfs->u.old.sync[0] != MP_OBJ_NULL) {
+                    mp_call_method_n_kw(0, 0, vfs->u.old.sync);
+                }
+                return RES_OK;
+
+            case GET_SECTOR_COUNT: {
+                mp_obj_t ret = mp_call_method_n_kw(0, 0, vfs->u.old.count);
+                *((DWORD*)buff) = mp_obj_get_int(ret);
+                return RES_OK;
+            }
+
+            case GET_SECTOR_SIZE:
+                *((WORD*)buff) = 512; // old protocol had fixed sector size
+                return RES_OK;
+
+            case GET_BLOCK_SIZE:
+                *((DWORD*)buff) = 1; // erase block size in units of sector size
+                return RES_OK;
+
+            default:
+                return RES_PARERR;
+        }
+    }
 }
 #endif
-
-DWORD get_fattime (
-    void
-)
-{
-    rtc_init_finalise();
-    RTC_TimeTypeDef time;
-    RTC_DateTypeDef date;
-    HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
-    HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
-    return ((2000 + date.Year - 1980) << 25) | ((date.Month) << 21) | ((date.Date) << 16) | ((time.Hours) << 11) | ((time.Minutes) << 5) | (time.Seconds / 2);
-}

@@ -50,10 +50,14 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
         case MP_NATIVE_TYPE_BOOL:
         case MP_NATIVE_TYPE_INT:
         case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
-        default: { // a pointer
+        default: { // cast obj to a pointer
             mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_RW);
-            return (mp_uint_t)bufinfo.buf;
+            if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_RW)) {
+                return (mp_uint_t)bufinfo.buf;
+            } else {
+                // assume obj is an integer that represents an address
+                return mp_obj_get_int_truncated(obj);
+            }
         }
     }
 }

@@ -5,6 +5,7 @@
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 
+#define MICROPY_HW_HAS_FLASH        (1)
 // On the netuino, the sdcard appears to be wired up as a 1-bit
 // SPI, so the driver needs to be converted to support that before
 // we can turn this on.

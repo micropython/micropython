@@ -3,6 +3,7 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
+#define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SDCARD       (0)
 #define MICROPY_HW_HAS_MMA7660      (0)
 #define MICROPY_HW_HAS_LIS3DSH      (0)

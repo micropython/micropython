@@ -29,7 +29,8 @@ Build instructions
 
 The tool chain required for the build is the OpenSource ESP SDK, which can be
 found at <https://github.com/pfalcon/esp-open-sdk>.  Clone this repository and
-run `make` in its directory to build and install the SDK locally.
+run `make` in its directory to build and install the SDK locally.  Make sure
+to add toolchain bin directory to your PATH.
 
 Then, to build MicroPython for the ESP8266, just run:
 ```bash

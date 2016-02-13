@@ -1,5 +1,6 @@
 // We use the ST Cube HAL library for most hardware peripherals
 #include STM32_HAL_H
+#include "pin.h"
 
 // The unique id address differs per MCU.  Ideally this define should
 // go in some MCU-specific header, but for now it lives here.
@@ -23,6 +24,7 @@
 #define GPIO_read_output_pin(gpio, pin) (((gpio)->ODR >> (pin)) & 1)
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
+bool mp_hal_gpio_set_af(const pin_obj_t *pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit);
 
 extern const unsigned char mp_hal_status_to_errno_table[4];
 

@@ -33,6 +33,11 @@
 #include "lib/fatfs/ff.h"
 #include "file.h"
 
+#if MICROPY_VFS_FAT
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+#endif
+
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
 
@@ -271,10 +276,9 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t mp_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     // TODO: analyze buffering args and instantiate appropriate type
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return file_open(&mp_type_textio, arg_vals);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
