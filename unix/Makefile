@@ -144,7 +144,13 @@ SRC_C = \
 	moduselect.c \
 	alloc.c \
 	coverage.c \
+	fatfs_port.c \
 	$(SRC_MOD)
+
+STMHAL_SRC_C = \
+	stmhal/diskio.c \
+	stmhal/ffconf.c \
+	stmhal/file.c
 
 # Include builtin package manager in the standard build (and coverage)
 ifeq ($(PROG),micropython)
@@ -160,11 +166,14 @@ endif
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	utils/printf.c \
+	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
 	)
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(STMHAL_SRC_C:.c=.o))
 
 include ../py/mkrules.mk
 

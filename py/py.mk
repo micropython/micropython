@@ -170,6 +170,7 @@ PY_O_BASENAME = \
 	../extmod/modussl.o \
 	../extmod/modurandom.o \
 	../extmod/fsusermount.o \
+	../extmod/vfs_fat.o \
 	../extmod/moduos_dupterm.o \
 
 # prepend the build destination prefix to the py object files

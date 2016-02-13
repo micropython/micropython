@@ -112,6 +112,16 @@
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_RPATH            (2)
+// Can't have less than 3 values because diskio.h uses volume numbers
+// as volume types and PD_USER == 2.
+#define MICROPY_FATFS_VOLUMES          (3)
+#define MICROPY_FATFS_MAX_SS           (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FSUSERMOUNT            (1)
+#define MICROPY_VFS_FAT                (1)
+
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
@@ -254,6 +264,8 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
+    /* for user-mountable block device (max fixed at compile time) */ \
+    struct _fs_user_mount_t *fs_user_mount[MICROPY_FATFS_VOLUMES]; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()
