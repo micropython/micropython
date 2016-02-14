@@ -41,7 +41,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     mp_obj_fat_vfs_t *vfs = fatfs_mount_mkfs(n_args, args, (mp_map_t*)&mp_const_empty_map, false);
     vfs->base.type = type;
-    return vfs;
+    return MP_OBJ_FROM_PTR(vfs);
 }
 
 STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
@@ -52,7 +52,7 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_mkfs_fun_obj, fat_vfs_mkfs);
 STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(fat_vfs_mkfs_obj, MP_ROM_PTR(&fat_vfs_mkfs_fun_obj));
 
-mp_obj_t fat_vfs_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+STATIC mp_obj_t fat_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     // Skip self
     return fatfs_builtin_open(n_args - 1, args + 1, kwargs);
 }

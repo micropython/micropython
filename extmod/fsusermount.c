@@ -150,7 +150,7 @@ mkfs_error:
     }
 }
 
-STATIC mp_obj_t fatfs_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t fatfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     fatfs_mount_mkfs(n_args, pos_args, kw_args, false);
     return mp_const_none;
 }
@@ -193,7 +193,7 @@ STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(fsuser_umount_obj, fatfs_umount);
 
-STATIC mp_obj_t fatfs_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t fatfs_mkfs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     fatfs_mount_mkfs(n_args, pos_args, kw_args, true);
     return mp_const_none;
 }
