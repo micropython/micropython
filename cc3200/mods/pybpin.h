@@ -72,10 +72,7 @@ enum {
 };
 
 enum {
-    PIN_TYPE_TIM_PWM0 = 0,
-    PIN_TYPE_TIM_PWM1,
-    PIN_TYPE_TIM_CC0,
-    PIN_TYPE_TIM_CC1,
+    PIN_TYPE_TIM_PWM = 0,
 };
 
 enum {
@@ -139,5 +136,6 @@ pin_obj_t *pin_find(mp_obj_t user_obj);
 void pin_assign_pins_af (mp_obj_t *pins, uint32_t n_pins, uint32_t pull, uint32_t fn, uint32_t unit);
 uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type);
 uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit);
+int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);;
 
 #endif  // PYBPIN_H_
