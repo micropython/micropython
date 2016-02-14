@@ -156,7 +156,6 @@ SRC_C = \
 	file.c \
 	builtin_open.c \
 	sdcard.c \
-	diskio.c \
 	fatfs_port.c \
 	ffconf.c \
 	lcd.c \

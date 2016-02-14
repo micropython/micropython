@@ -148,7 +148,6 @@ SRC_C = \
 	$(SRC_MOD)
 
 STMHAL_SRC_C = \
-	stmhal/diskio.c \
 	stmhal/ffconf.c \
 	stmhal/file.c
 

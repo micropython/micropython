@@ -27,6 +27,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_FSUSERMOUNT
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -248,3 +251,5 @@ DRESULT disk_ioctl (
     }
 }
 #endif
+
+#endif // MICROPY_FSUSERMOUNT
