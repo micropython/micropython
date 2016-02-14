@@ -21,11 +21,10 @@ class RAMFS:
         for i in range(len(buf)):
             self.data[n*512+i] = buf[i]
 
-    def sync(self):
-        pass
-
-    def count(self):
-        return len(self.data) // 512
+    def ioctl(self, op, arg):
+        #print("ioctl(%d, %r)" % (op, arg))
+        if op == 4:  # BP_IOCTL_SEC_COUNT
+            return len(self.data) // 512
 
 
 bdev = RAMFS(48)
