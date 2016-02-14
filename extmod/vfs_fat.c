@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
-#include "stmhal/file.h"
+#include "extmod/vfs_fat_file.h"
 #include "fsusermount.h"
 
 #define mp_obj_fat_vfs_t fs_user_mount_t

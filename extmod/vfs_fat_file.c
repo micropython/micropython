@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_FSUSERMOUNT
+
 #include <stdio.h>
 #include <errno.h>
 
@@ -31,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "lib/fatfs/ff.h"
-#include "file.h"
+#include "extmod/vfs_fat_file.h"
 
 #if MICROPY_VFS_FAT
 #define mp_type_fileio fatfs_type_fileio
@@ -284,3 +287,5 @@ mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw
     mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return file_open(&mp_type_textio, arg_vals);
 }
+
+#endif // MICROPY_FSUSERMOUNT

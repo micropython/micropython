@@ -148,8 +148,7 @@ SRC_C = \
 	$(SRC_MOD)
 
 STMHAL_SRC_C = \
-	stmhal/ffconf.c \
-	stmhal/file.c
+	stmhal/ffconf.c
 
 # Include builtin package manager in the standard build (and coverage)
 ifeq ($(PROG),micropython)

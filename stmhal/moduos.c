@@ -36,7 +36,7 @@
 #include "timeutils.h"
 #include "rng.h"
 #include "uart.h"
-#include "file.h"
+#include "extmod/vfs_fat_file.h"
 #include "sdcard.h"
 #include "extmod/fsusermount.h"
 #include "portmodules.h"
