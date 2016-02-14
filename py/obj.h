@@ -710,6 +710,8 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs);
 // complex
 void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in); // can return MP_OBJ_NULL if op not supported
+#else
+#define mp_obj_is_float(o) (false)
 #endif
 
 // tuple
