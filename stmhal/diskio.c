@@ -113,7 +113,7 @@ DRESULT disk_read (
     }
 
     if (vfs->flags & FSUSER_NATIVE) {
-        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)vfs->readblocks[2];
+        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->readblocks[2];
         if (f(buff, sector, count) != 0) {
             return RES_ERROR;
         }
@@ -150,7 +150,7 @@ DRESULT disk_write (
     }
 
     if (vfs->flags & FSUSER_NATIVE) {
-        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)vfs->writeblocks[2];
+        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->writeblocks[2];
         if (f(buff, sector, count) != 0) {
             return RES_ERROR;
         }
