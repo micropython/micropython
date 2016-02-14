@@ -147,9 +147,6 @@ SRC_C = \
 	fatfs_port.c \
 	$(SRC_MOD)
 
-STMHAL_SRC_C = \
-	stmhal/ffconf.c
-
 # Include builtin package manager in the standard build (and coverage)
 ifeq ($(PROG),micropython)
 SRC_C += $(BUILD)/_frozen_upip.c

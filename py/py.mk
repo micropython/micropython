@@ -171,6 +171,7 @@ PY_O_BASENAME = \
 	../extmod/modurandom.o \
 	../extmod/fsusermount.o \
 	../extmod/vfs_fat.o \
+	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
 	../extmod/moduos_dupterm.o \
