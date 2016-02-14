@@ -70,7 +70,8 @@ typedef struct _pyb_file_obj_t {
     FIL fp;
 } pyb_file_obj_t;
 
-void file_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void file_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
     mp_printf(print, "<io.%s %p>", mp_obj_get_type_str(self_in), self_in);
 }
 
@@ -108,14 +109,15 @@ STATIC mp_obj_t file_obj_flush(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_flush_obj, file_obj_flush);
 
-mp_obj_t file_obj_close(mp_obj_t self_in) {
+STATIC mp_obj_t file_obj_close(mp_obj_t self_in) {
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     f_close(&self->fp);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
 
-mp_obj_t file_obj___exit__(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t file_obj___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     return file_obj_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj___exit__);
