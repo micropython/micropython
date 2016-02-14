@@ -63,7 +63,7 @@ DSTATUS disk_initialize (
         vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_INIT);
         vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
         mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-        if (MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
+        if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
             // error initialising
             return STA_NOINIT;
         }
@@ -203,7 +203,12 @@ DRESULT disk_ioctl (
                 vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_SIZE);
                 vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
                 mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-                *((WORD*)buff) = mp_obj_get_int(ret);
+                if (ret == mp_const_none) {
+                    // Default sector size
+                    *((WORD*)buff) = 512;
+                } else {
+                    *((WORD*)buff) = mp_obj_get_int(ret);
+                }
                 return RES_OK;
             }
 
