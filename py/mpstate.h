@@ -136,6 +136,11 @@ typedef struct _mp_state_vm_t {
     mp_obj_t lwip_slip_stream;
     #endif
 
+    #if MICROPY_FSUSERMOUNT
+    // for user-mountable block device (max fixed at compile time)
+    struct _fs_user_mount_t *fs_user_mount[MICROPY_FATFS_VOLUMES];
+    #endif
+
     //
     // END ROOT POINTER SECTION
     ////////////////////////////////////////////////////////////

@@ -264,8 +264,6 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
     mp_obj_t keyboard_interrupt_obj; \
-    /* for user-mountable block device (max fixed at compile time) */ \
-    struct _fs_user_mount_t *fs_user_mount[MICROPY_FATFS_VOLUMES]; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()
