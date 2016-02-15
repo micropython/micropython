@@ -20,6 +20,9 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
+#define MICROPY_BOARD_EARLY_INIT    NETDUINO_PLUS_2_board_early_init
+void NETDUINO_PLUS_2_board_early_init(void);
+
 // HSE is 25MHz
 #define MICROPY_HW_CLK_PLLM (25)
 #define MICROPY_HW_CLK_PLLN (336)
@@ -43,8 +46,8 @@
 #define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
 
 // I2C busses
-#define MICROPY_HW_I2C2_SCL (pin_B10)
-#define MICROPY_HW_I2C2_SDA (pin_B11)
+#define MICROPY_HW_I2C1_SCL (pin_B6)
+#define MICROPY_HW_I2C1_SDA (pin_B7)
 
 // SPI busses
 #define MICROPY_HW_SPI2_NSS  (pin_B12)
