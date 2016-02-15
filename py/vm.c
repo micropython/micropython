@@ -179,6 +179,7 @@ outer_dispatch_loop:
             const byte *ip = code_state->ip;
             mp_obj_t *sp = code_state->sp;
             mp_obj_t obj_shared;
+            MICROPY_VM_HOOK_INIT
 
             // If we have exception to inject, now that we finish setting up
             // execution context, raise it. This works as if RAISE_VARARGS
@@ -1069,6 +1070,7 @@ unwind_return:
                     nlr_pop();
                     code_state->sp = sp;
                     assert(exc_sp == exc_stack - 1);
+                    MICROPY_VM_HOOK_RETURN
                     #if MICROPY_STACKLESS
                     if (code_state->prev != NULL) {
                         mp_obj_t res = *sp;
@@ -1252,6 +1254,7 @@ yield:
 #endif
 
 pending_exception_check:
+                MICROPY_VM_HOOK_LOOP
                 if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
