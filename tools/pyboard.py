@@ -214,7 +214,7 @@ class Pyboard:
         # return normal and error output
         return data, data_err
 
-    def exec_raw_no_follow(self, command):
+    def exec_raw_no_follow(self, command, timeout=0.01):
         if isinstance(command, bytes):
             command_bytes = command
         else:
@@ -228,7 +228,7 @@ class Pyboard:
         # write command
         for i in range(0, len(command_bytes), 256):
             self.serial.write(command_bytes[i:min(i + 256, len(command_bytes))])
-            time.sleep(0.01)
+            time.sleep(timeout)
         self.serial.write(b'\x04')
 
         # check if we could exec command
