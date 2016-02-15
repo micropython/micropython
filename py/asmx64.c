@@ -98,6 +98,10 @@
 #define REX_R       (0x04)  // register
 #define REX_X       (0x02)  // index
 #define REX_B       (0x01)  // base
+#define REX_W_FROM_R64(r64) ((r64) >> 0 & 0x08)
+#define REX_R_FROM_R64(r64) ((r64) >> 1 & 0x04)
+#define REX_X_FROM_R64(r64) ((r64) >> 2 & 0x02)
+#define REX_B_FROM_R64(r64) ((r64) >> 3 & 0x01)
 
 #define IMM32_L0(x) ((x) & 0xff)
 #define IMM32_L1(x) (((x) >> 8) & 0xff)
@@ -274,7 +278,7 @@ STATIC void asm_x64_write_r64_disp(asm_x64_t *as, int r64, int disp_r64, int dis
 }
 
 STATIC void asm_x64_generic_r64_r64(asm_x64_t *as, int dest_r64, int src_r64, int op) {
-    asm_x64_write_byte_3(as, REX_PREFIX | REX_W | (src_r64 < 8 ? 0 : REX_R) | (dest_r64 < 8 ? 0 : REX_B), op, MODRM_R64(src_r64) | MODRM_RM_REG | MODRM_RM_R64(dest_r64));
+    asm_x64_write_byte_3(as, REX_PREFIX | REX_W | REX_R_FROM_R64(src_r64) | REX_B_FROM_R64(dest_r64), op, MODRM_R64(src_r64) | MODRM_RM_REG | MODRM_RM_R64(dest_r64));
 }
 
 void asm_x64_nop(asm_x64_t *as) {
@@ -352,7 +356,7 @@ void asm_x64_mov_r32_to_mem32(asm_x64_t *as, int src_r64, int dest_r64, int dest
 
 void asm_x64_mov_r64_to_mem64(asm_x64_t *as, int src_r64, int dest_r64, int dest_disp) {
     // use REX prefix for 64 bit operation
-    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | (src_r64 < 8 ? 0 : REX_R) | (dest_r64 < 8 ? 0 : REX_B), OPCODE_MOV_R64_TO_RM64);
+    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | REX_R_FROM_R64(src_r64) | REX_B_FROM_R64(dest_r64), OPCODE_MOV_R64_TO_RM64);
     asm_x64_write_r64_disp(as, src_r64, dest_r64, dest_disp);
 }
 
@@ -388,7 +392,7 @@ void asm_x64_mov_mem32_to_r64zx(asm_x64_t *as, int src_r64, int src_disp, int de
 
 void asm_x64_mov_mem64_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest_r64) {
     // use REX prefix for 64 bit operation
-    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_R) | (src_r64 < 8 ? 0 : REX_B), OPCODE_MOV_RM64_TO_R64);
+    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | REX_R_FROM_R64(dest_r64) | REX_B_FROM_R64(src_r64), OPCODE_MOV_RM64_TO_R64);
     asm_x64_write_r64_disp(as, dest_r64, src_r64, src_disp);
 }
 
@@ -475,7 +479,7 @@ void asm_x64_sub_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
 
 void asm_x64_mul_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
     // imul reg64, reg/mem64 -- 0x0f 0xaf /r
-    asm_x64_write_byte_1(as, REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_R) | (src_r64 < 8 ? 0 : REX_B));
+    asm_x64_write_byte_1(as, REX_PREFIX | REX_W | REX_R_FROM_R64(dest_r64) | REX_B_FROM_R64(src_r64));
     asm_x64_write_byte_3(as, 0x0f, 0xaf, MODRM_R64(dest_r64) | MODRM_RM_REG | MODRM_RM_R64(src_r64));
 }
 
