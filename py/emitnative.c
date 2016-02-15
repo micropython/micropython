@@ -1698,6 +1698,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             #else
             emit_pre_pop_reg_flexible(emit, &vtype_value, &reg_value, reg_base, reg_index);
             #endif
+            if (vtype_value != VTYPE_BOOL && vtype_value != VTYPE_INT && vtype_value != VTYPE_UINT) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                    "can't store '%q'", vtype_to_qstr(vtype_value));
+            }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
@@ -1784,6 +1788,10 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
             #else
             emit_pre_pop_reg_flexible(emit, &vtype_value, &reg_value, REG_ARG_1, reg_index);
             #endif
+            if (vtype_value != VTYPE_BOOL && vtype_value != VTYPE_INT && vtype_value != VTYPE_UINT) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                    "can't store '%q'", vtype_to_qstr(vtype_value));
+            }
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory

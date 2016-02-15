@@ -58,7 +58,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 }
 
 STATIC uint64_t pyb_rtc_raw_us(uint64_t cal) {
-    return system_get_rtc_time() * ((cal >> 12) * 1000 + (cal & 0xfff) / 4) / 1000;
+    return (system_get_rtc_time() * cal) >> 12;
 };
 
 void pyb_rtc_set_us_since_2000(uint64_t nowus) {

@@ -112,6 +112,16 @@
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_RPATH            (2)
+// Can't have less than 3 values because diskio.h uses volume numbers
+// as volume types and PD_USER == 2.
+#define MICROPY_FATFS_VOLUMES          (3)
+#define MICROPY_FATFS_MAX_SS           (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FSUSERMOUNT            (1)
+#define MICROPY_VFS_FAT                (1)
+
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)

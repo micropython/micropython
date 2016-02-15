@@ -37,6 +37,7 @@
 #define BP_IOCTL_SEC_SIZE       (5)
 
 typedef struct _fs_user_mount_t {
+    mp_obj_base_t base;
     const char *str;
     uint16_t len; // length of str
     uint16_t flags;
@@ -52,6 +53,8 @@ typedef struct _fs_user_mount_t {
     } u;
     FATFS fatfs;
 } fs_user_mount_t;
+
+fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs);
 
 MP_DECLARE_CONST_FUN_OBJ(fsuser_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ(fsuser_umount_obj);

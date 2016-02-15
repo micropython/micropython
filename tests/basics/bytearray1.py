@@ -31,3 +31,9 @@ print(bytearray() == bytearray())
 print(bytearray() == 1)
 
 # TODO: other comparisons
+
+# __contains__
+b = bytearray(b"\0foo\0")
+print(b"foo" in b)
+print(b"foo\x01" in b)
+print(b"" in b)

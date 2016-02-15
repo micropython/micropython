@@ -27,6 +27,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_FSUSERMOUNT
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -63,7 +66,7 @@ DSTATUS disk_initialize (
         vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_INIT);
         vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
         mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-        if (MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
+        if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
             // error initialising
             return STA_NOINIT;
         }
@@ -113,7 +116,7 @@ DRESULT disk_read (
     }
 
     if (vfs->flags & FSUSER_NATIVE) {
-        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)vfs->readblocks[2];
+        mp_uint_t (*f)(uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->readblocks[2];
         if (f(buff, sector, count) != 0) {
             return RES_ERROR;
         }
@@ -150,7 +153,7 @@ DRESULT disk_write (
     }
 
     if (vfs->flags & FSUSER_NATIVE) {
-        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)vfs->writeblocks[2];
+        mp_uint_t (*f)(const uint8_t*, uint32_t, uint32_t) = (void*)(uintptr_t)vfs->writeblocks[2];
         if (f(buff, sector, count) != 0) {
             return RES_ERROR;
         }
@@ -203,7 +206,12 @@ DRESULT disk_ioctl (
                 vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_SIZE);
                 vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
                 mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-                *((WORD*)buff) = mp_obj_get_int(ret);
+                if (ret == mp_const_none) {
+                    // Default sector size
+                    *((WORD*)buff) = 512;
+                } else {
+                    *((WORD*)buff) = mp_obj_get_int(ret);
+                }
                 return RES_OK;
             }
 
@@ -243,3 +251,5 @@ DRESULT disk_ioctl (
     }
 }
 #endif
+
+#endif // MICROPY_FSUSERMOUNT

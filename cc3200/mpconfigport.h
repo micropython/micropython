@@ -70,6 +70,7 @@
 #define MICROPY_FATFS_REENTRANT                     (1)
 #define MICROPY_FATFS_TIMEOUT                       (2500)
 #define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
+#define MICROPY_FSUSERMOUNT_ADHOC                   (1)
 
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)

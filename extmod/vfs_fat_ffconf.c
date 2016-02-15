@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_FSUSERMOUNT
+
 #include <string.h>
 
 #include "py/mpstate.h"
@@ -75,3 +78,5 @@ void ff_get_volname(BYTE vol, TCHAR **dest) {
     memcpy(*dest, vfs->str, vfs->len);
     *dest += vfs->len;
 }
+
+#endif // MICROPY_FSUSERMOUNT
