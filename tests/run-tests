@@ -341,7 +341,7 @@ def main():
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    if args.target == 'pyboard' or args.target == 'wipy':
+    if args.target in ('pyboard', 'wipy', 'esp8266'):
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
@@ -355,6 +355,8 @@ def main():
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')
+            if args.target == 'esp8266':
+                test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests
                 test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')

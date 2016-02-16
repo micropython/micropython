@@ -37,7 +37,7 @@
 #include "moduos.h"
 #include "diskio.h"
 #include "sflash_diskio.h"
-#include "file.h"
+#include "extmod/vfs_fat_file.h"
 #include "random.h"
 #include "mpexception.h"
 #include "version.h"

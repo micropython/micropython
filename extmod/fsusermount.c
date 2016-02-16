@@ -34,7 +34,7 @@
 #include "lib/fatfs/ff.h"
 #include "fsusermount.h"
 
-STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs) {
+fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_mkfs, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -67,6 +67,7 @@ STATIC mp_obj_t fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
         if (res != FR_OK) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't umount"));
         }
+        return NULL;
     } else {
         // mount
         size_t i = 0;
@@ -128,6 +129,7 @@ mkfs_error:
                     goto mkfs_error;
                 }
                 MP_STATE_PORT(fs_user_mount)[i] = NULL;
+                return NULL;
             }
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
@@ -144,12 +146,13 @@ mkfs_error:
         f_getfree(vfs->str, &nclst, &fatfs);
         printf(" on %s with %u bytes free\n", vfs->str, (uint)(nclst * fatfs->csize * 512));
         */
+        return vfs;
     }
-    return mp_const_none;
 }
 
-STATIC mp_obj_t fatfs_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return fatfs_mount_mkfs(n_args, pos_args, kw_args, false);
+STATIC mp_obj_t fatfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    fatfs_mount_mkfs(n_args, pos_args, kw_args, false);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mount_obj, 2, fatfs_mount);
 
@@ -160,14 +163,14 @@ STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
         const char *mnt_str = mp_obj_str_get_data(bdev_or_path_in, &mnt_len);
         for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
             fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
-            if (!memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+            if (vfs != NULL && !memcmp(mnt_str, vfs->str, mnt_len + 1)) {
                 break;
             }
         }
     } else {
         for (; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
             fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
-            if (bdev_or_path_in == vfs->readblocks[1]) {
+            if (vfs != NULL && bdev_or_path_in == vfs->readblocks[1]) {
                 break;
             }
         }
@@ -190,8 +193,9 @@ STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(fsuser_umount_obj, fatfs_umount);
 
-STATIC mp_obj_t fatfs_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return fatfs_mount_mkfs(n_args, pos_args, kw_args, true);
+STATIC mp_obj_t fatfs_mkfs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    fatfs_mount_mkfs(n_args, pos_args, kw_args, true);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj, 2, fatfs_mkfs);
 

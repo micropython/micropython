@@ -25,6 +25,6 @@
  */
 
 #include "py/runtime.h"
-#include "file.h"
+#include "extmod/vfs_fat_file.h"
 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, fatfs_builtin_open);

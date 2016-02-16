@@ -33,7 +33,7 @@ p2_rng = ((30,63,127),(62,63,127))[is_64bit][ll_type]
 for i in range(0,p2_rng):
     bitcnt = len(bin(int(2.**i))) - 3;
     if i != bitcnt:
-        print('fail: 2**%u was %u bits long' % (i, bitcnt));
+        print('fail: 2.**%u was %u bits long' % (i, bitcnt));
         testpass = False
 print("power of  2 test: %s" % (testpass and 'passed' or 'failed'))
 
@@ -43,7 +43,7 @@ p10_rng = 9 if (ll_type == 0 and ~is_64bit) else 11
 for i in range(0,p10_rng):
     digcnt = len(str(int(10.**i))) - 1;
     if i != digcnt:
-        print('fail: 10**%u was %u digits long' % (i, digcnt));
+        print('fail: 10.**%u was %u digits long' % (i, digcnt));
         testpass = False
 print("power of 10 test: %s" % (testpass and 'passed' or 'failed'))
 
