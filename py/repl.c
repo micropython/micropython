@@ -38,7 +38,7 @@ STATIC bool str_startswith_word(const char *str, const char *head) {
             return false;
         }
     }
-    return head[i] == '\0' && (str[i] == '\0' || !unichar_isalpha(str[i]));
+    return head[i] == '\0' && (str[i] == '\0' || !unichar_isident(str[i]));
 }
 
 bool mp_repl_continue_with_input(const char *input) {
