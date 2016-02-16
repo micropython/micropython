@@ -32,7 +32,12 @@ class RAMFS:
             return self.SEC_SIZE
 
 
-bdev = RAMFS(48)
+try:
+    bdev = RAMFS(48)
+except MemoryError:
+    print("SKIP")
+    sys.exit()
+
 uos.VfsFat.mkfs(bdev)
 
 assert b"FOO_FILETXT" not in bdev.data
