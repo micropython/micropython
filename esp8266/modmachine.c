@@ -36,8 +36,26 @@
 #include "os_type.h"
 #include "osapi.h"
 #include "etshal.h"
+#include "user_interface.h"
 
 #if MICROPY_PY_MACHINE
+
+STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        // get
+        return mp_obj_new_int(system_get_cpu_freq() * 1000000);
+    } else {
+        // set
+        mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
+        if (freq != 80 && freq != 160) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                    "frequency can only be either 80Mhz or 160MHz"));
+        }
+        system_update_cpu_freq(freq);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 typedef struct _esp_timer_obj_t {
     mp_obj_base_t base;
@@ -119,6 +137,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pyb_pin_type) },
