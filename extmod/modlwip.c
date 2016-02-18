@@ -284,19 +284,6 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
     return ERR_OK;
 }
 
-STATIC uint8_t lwip_dns_returned;
-STATIC uint8_t lwip_dns_result[4];
-
-// Callback for incoming DNS requests. Just set our results.
-STATIC void _lwip_dns_incoming(const char *name, ip_addr_t *addr, void *callback_arg) {
-    if (addr != NULL) {
-        lwip_dns_returned = 1;
-        memcpy(lwip_dns_result, addr, sizeof(lwip_dns_result));
-    } else {
-        lwip_dns_returned = 2;
-    }
-}
-
 /*******************************************************************************/
 // Functions for socket send/recieve operations. Socket send/recv and friends call
 // these to do the work.
@@ -999,41 +986,59 @@ STATIC mp_obj_t mod_lwip_callback() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_lwip_callback_obj, mod_lwip_callback);
 
+typedef struct _getaddrinfo_state_t {
+    volatile int status;
+    volatile ip_addr_t ipaddr;
+} getaddrinfo_state_t;
+
+// Callback for incoming DNS requests.
+STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) {
+    getaddrinfo_state_t *state = arg;
+    if (ipaddr != NULL) {
+        state->status = 1;
+        state->ipaddr = *ipaddr;
+    } else {
+        // error
+        state->status = -2;
+    }
+}
+
 // lwip.getaddrinfo
 STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     mp_uint_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
     mp_int_t port = mp_obj_get_int(port_in);
 
-    ip_addr_t result;
-    lwip_dns_returned = 0;
+    getaddrinfo_state_t state;
+    state.status = 0;
 
-    switch (dns_gethostbyname(host, &result, _lwip_dns_incoming, NULL)) {
-        case ERR_OK: {
-             break;
-        }
-        case ERR_INPROGRESS: {
-            while(!lwip_dns_returned) {
+    err_t ret = dns_gethostbyname(host, (ip_addr_t*)&state.ipaddr, lwip_getaddrinfo_cb, &state);
+    switch (ret) {
+        case ERR_OK:
+            // cached
+            state.status = 1;
+            break;
+        case ERR_INPROGRESS:
+            while (state.status == 0) {
                 poll_sockets();
             }
-            if (lwip_dns_returned == 2) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
-            }
             break;
-        }
-        default: {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
-        }
+        default:
+            state.status = ret;
     }
 
-    uint8_t out_ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    memcpy(out_ip, lwip_dns_result, sizeof(lwip_dns_result));
+    if (state.status < 0) {
+        // TODO: CPython raises gaierror, we raise with native lwIP negative error
+        // values, to differentiate from normal errno's at least in such way.
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(state.status)));
+    }
+
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
+    tuple->items[4] = netutils_format_inet_addr((uint8_t*)&state.ipaddr, port, NETUTILS_BIG);
     return mp_obj_new_list(1, (mp_obj_t*)&tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_getaddrinfo_obj, lwip_getaddrinfo);
