@@ -1,6 +1,7 @@
 import pyb
 import struct
 import sys
+import utime
 
 MODE_RTU   = 'rtu'
 MODE_ASCII = 'ascii'
@@ -9,12 +10,12 @@ CLOSE_PORT_AFTER_EACH_CALL = False
 
 _NUMBER_OF_BYTES_PER_REGISTER = 2
 
+_LATEST_READ_TIMES = {}
+
 class Instrument():
 
     def __init__(self, uartObj, slaveaddress, mode=MODE_RTU):
-
-	self.serial = uartObj
-
+        self.serial = uartObj
         self.address = slaveaddress
 
         self.mode = mode
@@ -26,6 +27,10 @@ class Instrument():
         self.precalculate_read_size = True
         
         self.handle_local_echo = False
+
+        self.rtc = pyb.RTC()
+
+        _LATEST_READ_TIMES[str(self.serial)] = 0
 
     def __repr__(self):
         return "{}<id=0x{:x}, address={}, mode={}, close_port_after_each_call={}, precalculate_read_size={}, debug={}, serial={}>".format(
@@ -253,8 +258,8 @@ class Instrument():
         #    #request = bytes(request)  # Convert types to make it Python3 compatible
 
         # Sleep to make sure 3.5 character times have passed
-        minimum_silent_period   = _calculate_minimum_silent_period(self.serial.baudrate)
-        time_since_read         = time.time() - _LATEST_READ_TIMES.get(self.serial.port, 0)
+        minimum_silent_period   = _calculate_minimum_silent_period(self.serial.get_baudrate())
+        time_since_read         = utime.time() - _LATEST_READ_TIMES[str(self.serial)]
 
         if time_since_read < minimum_silent_period:
             sleep_time = minimum_silent_period - time_since_read
@@ -268,7 +273,7 @@ class Instrument():
                     time_since_read * _SECONDS_TO_MILLISECONDS)
                 _print_out(text)
 
-            time.sleep(sleep_time)
+            utime.sleep(sleep_time)
 
         elif self.debug:
             template = 'MinimalModbus debug mode. No sleep required before write. ' + \
@@ -279,7 +284,7 @@ class Instrument():
             _print_out(text)
 
         # Write request
-        latest_write_time = time.time()
+        latest_write_time = utime.time()
         
         self.serial.write(request)
 
@@ -298,13 +303,14 @@ class Instrument():
 
         # Read response
         answer = self.serial.read(number_of_bytes_to_read)
-        _LATEST_READ_TIMES[self.serial.port] = time.time()
+        _LATEST_READ_TIMES[str(self.serial)] = utime.time()
 
         if self.close_port_after_each_call:
             self.serial.close()
 
         if sys.version_info[0] > 2:
-            answer = str(answer, encoding='latin1')  # Convert types to make it Python3 compatible
+            #answer = str(answer, encoding='latin1')  # Convert types to make it Python3 compatible
+            answer = str(answer)  # Convert types to make it Python3 compatible
 
         if self.debug:
             template = 'MinimalModbus debug mode. Response from instrument: {!r} ({}) ({} bytes), ' + \
@@ -570,3 +576,126 @@ def _hexencode(bytestring, insert_spaces = False):
         byte_representions.append( '{0:02X}'.format(ord(c)) )
     return separator.join(byte_representions).strip()
 
+
+def _hexdecode(hexstring):
+    _checkString(hexstring, description='hexstring')
+
+    if len(hexstring) % 2 != 0:
+        raise ValueError('The input hexstring must be of even length. Given: {!r}'.format(hexstring))
+
+    try:
+        return hexstring.decode('hex')
+    except TypeError as err:
+        raise TypeError('Hexdecode reported an error: {}. Input hexstring: {}'.format(err.message, hexstring))
+
+
+def _calculate_minimum_silent_period(baudrate):
+    _checkNumerical(baudrate, minvalue=1, description='baudrate')  # Avoid division by zero
+    BITTIMES_PER_CHARACTERTIME = 11
+    MINIMUM_SILENT_CHARACTERTIMES = 3.5
+    bittime = 1 / float(baudrate)
+    return bittime * BITTIMES_PER_CHARACTERTIME * MINIMUM_SILENT_CHARACTERTIMES
+
+def _extractPayload(response, slaveaddress, mode, functioncode):
+    BYTEPOSITION_FOR_ASCII_HEADER          = 0  # Relative to plain response
+
+    BYTEPOSITION_FOR_SLAVEADDRESS          = 0  # Relative to (stripped) response
+    BYTEPOSITION_FOR_FUNCTIONCODE          = 1
+
+    NUMBER_OF_RESPONSE_STARTBYTES          = 2  # Number of bytes before the response payload (in stripped response)
+    NUMBER_OF_CRC_BYTES                    = 2
+    NUMBER_OF_LRC_BYTES                    = 1
+    BITNUMBER_FUNCTIONCODE_ERRORINDICATION = 7
+
+    MINIMAL_RESPONSE_LENGTH_RTU            = NUMBER_OF_RESPONSE_STARTBYTES + NUMBER_OF_CRC_BYTES
+    MINIMAL_RESPONSE_LENGTH_ASCII          = 9
+
+    # Argument validity testing
+    _checkString(response, description='response')
+    #_checkSlaveaddress(slaveaddress)
+    #_checkMode(mode)
+    _checkFunctioncode(functioncode, None)
+
+    plainresponse = response
+
+    # Validate response length
+    if mode == MODE_ASCII:
+        if len(response) < MINIMAL_RESPONSE_LENGTH_ASCII:
+            raise ValueError('Too short Modbus ASCII response (minimum length {} bytes). Response: {!r}'.format( \
+                MINIMAL_RESPONSE_LENGTH_ASCII,
+                response))
+    elif len(response) < MINIMAL_RESPONSE_LENGTH_RTU:
+            raise ValueError('Too short Modbus RTU response (minimum length {} bytes). Response: {!r}'.format( \
+                MINIMAL_RESPONSE_LENGTH_RTU,
+                response))
+
+    # Validate the ASCII header and footer.
+    if mode == MODE_ASCII:
+        if response[BYTEPOSITION_FOR_ASCII_HEADER] != _ASCII_HEADER:
+            raise ValueError('Did not find header ({!r}) as start of ASCII response. The plain response is: {!r}'.format( \
+                _ASCII_HEADER,
+                response))
+        elif response[-len(_ASCII_FOOTER):] != _ASCII_FOOTER:
+            raise ValueError('Did not find footer ({!r}) as end of ASCII response. The plain response is: {!r}'.format( \
+                _ASCII_FOOTER,
+                response))
+
+        # Strip ASCII header and footer
+        response = response[1:-2]
+
+        if len(response) % 2 != 0:
+            template = 'Stripped ASCII frames should have an even number of bytes, but is {} bytes. ' + \
+                    'The stripped response is: {!r} (plain response: {!r})'
+            raise ValueError(template.format(len(response), response, plainresponse))
+
+        # Convert the ASCII (stripped) response string to RTU-like response string
+        response = _hexdecode(response)
+
+    # Validate response checksum
+    if mode == MODE_ASCII:
+        calculateChecksum = _calculateLrcString
+        numberOfChecksumBytes = NUMBER_OF_LRC_BYTES
+    else:
+        calculateChecksum = _calculateCrcString
+        numberOfChecksumBytes = NUMBER_OF_CRC_BYTES
+
+    receivedChecksum = response[-numberOfChecksumBytes:]
+    responseWithoutChecksum = response[0 : len(response) - numberOfChecksumBytes]
+    calculatedChecksum = calculateChecksum(responseWithoutChecksum)
+
+    if receivedChecksum != calculatedChecksum:
+        template = 'Checksum error in {} mode: {!r} instead of {!r} . The response is: {!r} (plain response: {!r})'
+        text = template.format(
+                mode,
+                receivedChecksum,
+                calculatedChecksum,
+                response, plainresponse)
+        raise ValueError(text)
+
+    # Check slave address
+    responseaddress = ord(response[BYTEPOSITION_FOR_SLAVEADDRESS])
+
+    if responseaddress != slaveaddress:
+        raise ValueError('Wrong return slave address: {} instead of {}. The response is: {!r}'.format( \
+            responseaddress, slaveaddress, response))
+
+    # Check function code
+    receivedFunctioncode = ord(response[BYTEPOSITION_FOR_FUNCTIONCODE])
+
+    if receivedFunctioncode == _setBitOn(functioncode, BITNUMBER_FUNCTIONCODE_ERRORINDICATION):
+        raise ValueError('The slave is indicating an error. The response is: {!r}'.format(response))
+
+    elif receivedFunctioncode != functioncode:
+        raise ValueError('Wrong functioncode: {} instead of {}. The response is: {!r}'.format( \
+            receivedFunctioncode, functioncode, response))
+
+    # Read data payload
+    firstDatabyteNumber = NUMBER_OF_RESPONSE_STARTBYTES
+
+    if mode == MODE_ASCII:
+        lastDatabyteNumber = len(response) - NUMBER_OF_LRC_BYTES
+    else:
+        lastDatabyteNumber = len(response) - NUMBER_OF_CRC_BYTES
+
+    payload = response[firstDatabyteNumber:lastDatabyteNumber]
+    return payload

@@ -49,6 +49,7 @@ Q(uos)
 Q(io)
 Q(input)
 Q(help)
+Q(get_baudrate)
 
 
 Q(Pin)
