@@ -64,6 +64,7 @@ SRC_C = \
 	modpybspi.c \
 	modpybrtc.c \
 	modpybi2c.c \
+	frozen.c \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/mp-readline/readline.c \

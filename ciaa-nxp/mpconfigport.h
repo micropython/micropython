@@ -69,6 +69,8 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 
+#define MICROPY_MODULE_FROZEN	    (1)
+
 // Optimizations
 #define MICROPY_OPT_COMPUTED_GOTO (1)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
