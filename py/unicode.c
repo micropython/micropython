@@ -145,11 +145,9 @@ bool unichar_isxdigit(unichar c) {
     return c < 128 && (attr[c] & FL_XDIGIT) != 0;
 }
 
-/*
-bool unichar_is_alpha_or_digit(unichar c) {
-    return c < 128 && (attr[c] & (FL_ALPHA | FL_DIGIT)) != 0;
+bool unichar_isident(unichar c) {
+    return c < 128 && ((attr[c] & (FL_ALPHA | FL_DIGIT)) != 0 || c == '_');
 }
-*/
 
 bool unichar_isupper(unichar c) {
     return c < 128 && (attr[c] & FL_UPPER) != 0;
