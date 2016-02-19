@@ -71,6 +71,7 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
 
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice);
+const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *needle, mp_uint_t nlen, mp_int_t direction);
 
 MP_DECLARE_CONST_FUN_OBJ(str_encode_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_find_obj);

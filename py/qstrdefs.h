@@ -697,3 +697,8 @@ Q(random)
 Q(uniform)
 #endif
 #endif
+
+#if MICROPY_VFS_FAT
+Q(VfsFat)
+Q(flush)
+#endif

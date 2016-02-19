@@ -245,7 +245,7 @@ wrong_args:
 
 // like strstr but with specified length and allows \0 bytes
 // TODO replace with something more efficient/standard
-STATIC const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *needle, mp_uint_t nlen, mp_int_t direction) {
+const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *needle, mp_uint_t nlen, mp_int_t direction) {
     if (hlen >= nlen) {
         mp_uint_t str_index, str_index_end;
         if (direction > 0) {

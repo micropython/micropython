@@ -153,12 +153,9 @@ SRC_C = \
 	rtc.c \
 	flash.c \
 	storage.c \
-	file.c \
 	builtin_open.c \
 	sdcard.c \
-	diskio.c \
 	fatfs_port.c \
-	ffconf.c \
 	lcd.c \
 	accel.c \
 	servo.c \

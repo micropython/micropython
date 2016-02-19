@@ -16,6 +16,7 @@ The MicroPython project
 
 This is the MicroPython project, which aims to put an implementation
 of Python 3.x on microcontrollers and small embedded systems.
+You can find the official website at [micropython.org](http://www.micropython.org).
 
 WARNING: this project is in beta stage and is subject to changes of the
 code-base, including project-wide name changes and API changes.

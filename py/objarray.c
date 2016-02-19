@@ -33,6 +33,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 
@@ -281,6 +282,29 @@ STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
             #endif
             array_extend(lhs_in, rhs_in);
             return lhs_in;
+        }
+
+        case MP_BINARY_OP_IN: {
+            /* NOTE `a in b` is `b.__contains__(a)` */
+            mp_buffer_info_t lhs_bufinfo;
+            mp_buffer_info_t rhs_bufinfo;
+
+            // Can search string only in bytearray
+            if (mp_get_buffer(rhs_in, &rhs_bufinfo, MP_BUFFER_READ)) {
+                if (!MP_OBJ_IS_TYPE(lhs_in, &mp_type_bytearray)) {
+                    return mp_const_false;
+                }
+                array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
+                return mp_obj_new_bool(
+                    find_subbytes(lhs_bufinfo.buf, lhs_bufinfo.len, rhs_bufinfo.buf, rhs_bufinfo.len, 1) != NULL);
+            }
+
+            // Otherwise, can only look for a scalar numeric value in an array
+            if (MP_OBJ_IS_INT(rhs_in) || mp_obj_is_float(rhs_in)) {
+                mp_not_implemented("");
+            }
+
+            return mp_const_false;
         }
 
         case MP_BINARY_OP_EQUAL: {
