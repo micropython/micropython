@@ -68,6 +68,29 @@ STATIC mp_obj_t get_wlan(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
 
+STATIC mp_obj_t esp_active(mp_uint_t n_args, const mp_obj_t *args) {
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t mode = wifi_get_opmode();
+    if (n_args > 1) {
+        int mask = self->if_id == STATION_IF ? STATION_MODE : SOFTAP_MODE;
+        if (mp_obj_get_int(args[1]) != 0) {
+            mode |= mask;
+        } else {
+            mode &= ~mask;
+        }
+        error_check(wifi_set_opmode(mode), "Cannot update i/f status");
+        return mp_const_none;
+    }
+
+    // Get active status
+    if (self->if_id == STATION_IF) {
+        return mp_obj_new_bool(mode & STATION_MODE);
+    } else {
+        return mp_obj_new_bool(mode & SOFTAP_MODE);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
+
 STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
     require_if(args[0], STATION_IF);
     struct station_config config = {{0}};
@@ -186,6 +209,7 @@ STATIC mp_obj_t esp_ifconfig(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_ifconfig_obj, esp_ifconfig);
 
 STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_active), (mp_obj_t)&esp_active_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },

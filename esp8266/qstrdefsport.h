@@ -99,6 +99,7 @@ Q(STA_AP_MODE)
 // network module
 Q(network)
 Q(WLAN)
+Q(active)
 Q(scan)
 Q(status)
 Q(isconnected)
