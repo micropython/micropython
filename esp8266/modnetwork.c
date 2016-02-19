@@ -208,6 +208,74 @@ STATIC mp_obj_t esp_ifconfig(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_ifconfig_obj, esp_ifconfig);
 
+STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (n_args != 1 && kwargs->used != 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+            "either pos or kw args are allowed"));
+    }
+
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    union {
+        struct station_config sta;
+        struct softap_config ap;
+    } cfg;
+
+    if (self->if_id == STATION_IF) {
+        error_check(wifi_station_get_config(&cfg.sta), "can't get STA config");
+    } else {
+        error_check(wifi_softap_get_config(&cfg.ap), "can't get AP config");
+    }
+
+    if (kwargs->used != 0) {
+
+        for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
+                switch ((uintptr_t)kwargs->table[i].key) {
+                    case QS(MP_QSTR_essid): {
+                        mp_uint_t len;
+                        const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                        len = MIN(len, sizeof(cfg.ap.ssid));
+                        memcpy(cfg.ap.ssid, s, len);
+                        cfg.ap.ssid_len = len;
+                        break;
+                    }
+                    default:
+                        goto unknown;
+                }
+                #undef QS
+            }
+        }
+
+        if (self->if_id == STATION_IF) {
+            error_check(wifi_station_set_config(&cfg.sta), "can't set STA config");
+        } else {
+            error_check(wifi_softap_set_config(&cfg.ap), "can't set AP config");
+        }
+
+        return mp_const_none;
+    }
+
+    // Get config
+
+    if (n_args != 2) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+            "can query only one param"));
+    }
+
+    #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
+    switch ((uintptr_t)args[1]) {
+        case QS(MP_QSTR_essid):
+            return mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+    }
+    #undef QS
+
+unknown:
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+        "unknown config param"));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
+
 STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_active), (mp_obj_t)&esp_active_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
@@ -216,6 +284,7 @@ STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_config), (mp_obj_t)&esp_config_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
 };
 
