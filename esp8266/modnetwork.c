@@ -39,6 +39,8 @@
 #include "spi_flash.h"
 #include "utils.h"
 
+#define MODNETWORK_INCLUDE_CONSTANTS (1)
+
 typedef struct _wlan_if_obj_t {
     mp_obj_base_t base;
     int if_id;
@@ -115,8 +117,6 @@ STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
-
-#define MODNETWORK_INCLUDE_CONSTANTS (1)
 
 STATIC mp_obj_t esp_status(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
