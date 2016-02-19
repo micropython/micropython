@@ -323,6 +323,11 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STA_IF),
+        MP_OBJ_NEW_SMALL_INT(STATION_IF)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_IF),
+        MP_OBJ_NEW_SMALL_INT(SOFTAP_IF)},
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),
         MP_OBJ_NEW_SMALL_INT(STATION_IDLE)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECTING),
