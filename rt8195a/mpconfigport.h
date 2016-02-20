@@ -70,9 +70,11 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 extern const struct _mp_obj_module_t hardware_module;
+extern const struct _mp_obj_module_t wireless_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_hardware),     (mp_obj_t)&hardware_module },      \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wireless),     (mp_obj_t)&wireless_module },      \
 
 // There is no classical C heap in bare-metal ports, only Python
 // garbage-collected heap. For completeness, emulate C heap via

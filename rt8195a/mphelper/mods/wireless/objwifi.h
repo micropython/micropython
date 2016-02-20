@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Chester Tseng
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,91 +23,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef OBJWIFI_H_
+#define OBJWIFI_H_
 
-// qstrs specific to this port
-Q(hardware)
-Q(wireless)
-Q(wifi)
-Q(nfc)
+#include <stdint.h>
+#include <stdbool.h>
 
-// for wifi class
-Q(mode)
-Q(channel)
-Q(ssid)
-Q(bssid)
-Q(auth)
-Q(mac)
-Q(connect)
-Q(disconnect)
-Q(scan)
-Q(rssi)
-Q(MODE_STA)
-Q(MODE_AP)
-Q(MODE_STA_AP)
-Q(MODE_PROMISC)
-Q(MODE_P2P)
+#include "py/mpconfig.h"
+#include "py/obj.h"
+#include "py/objstr.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
 
-Q(SECURITY_OPEN)
-Q(SECURITY_WEP_PSK)
-Q(SECURITY_WEP_SHARED)
-Q(SECURITY_WPA_TKIP_PSK)
-Q(SECURITY_WPA_AES_PSK)
-Q(SECURITY_WPA2_AES_PSK)
-Q(SECURITY_WPA2_TKIP_PSK)
-Q(SECURITY_WPA2_MIXED_PSK)
-Q(SECURITY_WPA_WPA2_MIXED)
-Q(SECURITY_WPS_OPEN)
-Q(SECURITY_WPS_SECURE)
+#include "exception.h"
+
+#include "wifi_conf.h"
+#include "lwip_netconf.h"
+
+#define WIFI_INTERFACE_NUMBER   2
+#define WIFI_MIN_SSID_LEN       3
+#define WIFI_MAX_SSID_LEN       32
+#define WIFI_MAC_LEN            6
+#define WIFI_KEY_LEN            65
+#define WIFI_MAX_SCAN_NETWORKS  50
+
+void wifi_init0(void);
+
+extern const mp_obj_type_t wifi_type;
+
+typedef struct {
+    mp_obj_base_t     base;
+    uint8_t                 idx;
+    uint8_t                 mode;
+    uint8_t                 security_type;
+    uint8_t                 channel;
+    uint8_t                 mac[WIFI_MAC_LEN];
+    uint8_t                 ssid[WIFI_MAX_SSID_LEN+1];
+    uint8_t                 bssid[WIFI_MAC_LEN];
+    uint8_t                 key[WIFI_KEY_LEN];
+
+} wifi_obj_t;
 
 
-// for Pin class
-Q(Pin)
-Q(board)
-Q(value)
-Q(toggle)
-Q(id)
-Q(dir)
-Q(pull)
-Q(IN)
-Q(OUT)
-Q(PULL_NONE)
-Q(PULL_UP)
-Q(PULL_DOWN)
-Q(OPEN_DRAIN)
-// for pin name string
-Q(PA_0)
-Q(PA_1)
-Q(PA_2)
-Q(PA_3)
-Q(PA_4)
-Q(PA_5)
-Q(PA_6)
-Q(PA_7)
-
-Q(PB_0)
-Q(PB_1)
-Q(PB_2)
-Q(PB_3)
-Q(PB_4)
-Q(PB_5)
-Q(PB_6)
-Q(PB_7)
-
-Q(PC_0)
-Q(PC_1)
-Q(PC_2)
-Q(PC_3)
-Q(PC_4)
-Q(PC_5)
-Q(PC_6)
-Q(PC_7)
-
-Q(PD_0)
-Q(PD_1)
-Q(PD_2)
-Q(PD_3)
-Q(PD_4)
-Q(PD_5)
-Q(PD_6)
-Q(PD_7)
-
+#endif  // OBJWIFI_H_
