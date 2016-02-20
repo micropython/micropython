@@ -44,8 +44,18 @@
 #include "exception.h"
 
 /* from Ameba sdk */
+#include "cmsis_os.h"
 #include "sys_api.h"
 #include "log_uart_api.h"
+
+osThreadId main_tid = 0;
+
+void main_task(void const *arg) {
+    if (pyexec_friendly_repl() != 0) {
+        DiagPrintf("Soft reset\r\n");
+        sys_reset();
+    }
+}
 
 int main(void)
 {
@@ -61,10 +71,14 @@ int main(void)
     wifi_init0();
     mpexception_init0();
     readline_init0();
-    if (pyexec_friendly_repl() != 0) {
-        DiagPrintf("Soft reset\r\n");
-        sys_reset();
-    }
+
+    osThreadDef(main_task, osPriorityRealtime, 1, 4096);
+    main_tid = osThreadCreate (osThread (main_task), NULL);
+    osKernelStart();
+
+    while(1);
+
+    return 0;
 }
 
 void NORETURN __fatal_error(const char *msg) {

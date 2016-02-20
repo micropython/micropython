@@ -27,9 +27,17 @@
 
 #include "objwifi.h"
 
-/********************** Local variables ***************************************/
-static bool lwip_initialized = false;
 extern struct netif xnetif[WIFI_INTERFACE_NUMBER];
+/********************** Local variables ***************************************/
+uint8_t  ScanNetworkCounter = 0;
+int8_t   ScanNetworkSsidCache[WIFI_MAX_SCAN_NETWORKS][WIFI_MAX_SSID_LEN] = {0};
+int8_t   ScanNetworkBssidCache[WIFI_MAX_SCAN_NETWORKS][WIFI_MAC_LEN]     = {0};
+uint32_t ScanNetworkRssiCache[WIFI_MAX_SCAN_NETWORKS]                    = {0};
+int8_t   ScanNetworkBssCache[WIFI_MAX_SCAN_NETWORKS]                     = {0};
+int8_t   ScanNetworkSecurityCache[WIFI_MAX_SCAN_NETWORKS]                = {0};
+int8_t   ScanNetworkWpsCache[WIFI_MAX_SCAN_NETWORKS]                     = {0};
+uint8_t  ScanNetworkChannelCache[WIFI_MAX_SCAN_NETWORKS]                 = {0};
+uint8_t  ScanNetworkBandCache[WIFI_MAX_SCAN_NETWORKS]                    = {0};
 
 /********************** Local functions ***************************************/
 void validate_wifi_mode(uint8_t mode) {
@@ -92,49 +100,46 @@ void wifi_init0(void) {
 
 rtw_result_t wifi_scan_handler(rtw_scan_handler_result_t *malloced_scan_result) {
     rtw_scan_result_t *record;
-    DiagPrintf("bbb\r\n");
     if (malloced_scan_result->scan_complete != RTW_TRUE) {
-        DiagPrintf("ccc\r\n");
         record = &malloced_scan_result->ap_details;
         record->SSID.val[record->SSID.len] = 0;
+        if (ScanNetworkCounter < WIFI_MAX_SCAN_NETWORKS) {
+            memcpy(ScanNetworkSsidCache[ScanNetworkCounter], record->SSID.val, record->SSID.len);
+            memcpy(ScanNetworkBssidCache[ScanNetworkCounter], record->BSSID.octet, WIFI_MAC_LEN);
+            ScanNetworkRssiCache[ScanNetworkCounter] = record->signal_strength;
+            ScanNetworkBssCache[ScanNetworkCounter] = record->bss_type;
+            ScanNetworkSecurityCache[ScanNetworkCounter] = record->security;
+            ScanNetworkWpsCache[ScanNetworkCounter] = record->wps_type;
+            ScanNetworkChannelCache[ScanNetworkCounter] = record->channel;
+            ScanNetworkBandCache[ScanNetworkCounter] = record->band;
+            ScanNetworkCounter++;
+        }
     }
 }
 
 STATIC mp_obj_t wifi_scan_network(mp_obj_t self_in) {
     STATIC const qstr wifi_scan_info_fields[] = {
-        MP_QSTR_ssid, MP_QSTR_bssid, /*MP_QSTR_sec,*/ MP_QSTR_channel, MP_QSTR_rssi
+        MP_QSTR_ssid, MP_QSTR_bssid, MP_QSTR_rssi, MP_QSTR_bss, MP_QSTR_security, MP_QSTR_wps, MP_QSTR_channel, MP_QSTR_band
     };
-
     mp_obj_t nets = mp_obj_new_list(0, NULL);
-    DiagPrintf("111\r\n");
+    uint8_t cnt = 0;
+    
+    ScanNetworkCounter = 0;
+
     wifi_scan_networks(wifi_scan_handler, NULL);
-    DiagPrintf("222\r\n");
-#if 0
-    // check for correct wlan mode
-    if (self_in.mode == RTW_MODE_AP) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+
+    for (cnt=0;cnt<ScanNetworkCounter;cnt++) {
+        mp_obj_t tuple[8];
+        tuple[0] = mp_obj_new_str((const char *)ScanNetworkSsidCache[cnt], strlen(ScanNetworkSsidCache[cnt]), false);
+        tuple[1] = mp_obj_new_bytes((const char *)ScanNetworkBssidCache[cnt], WIFI_MAC_LEN);
+        tuple[2] = mp_obj_new_int(ScanNetworkRssiCache[cnt]);
+        tuple[3] = mp_obj_new_int(ScanNetworkBssCache[cnt]);
+        tuple[4] = mp_obj_new_int(ScanNetworkSecurityCache[cnt]);
+        tuple[5] = mp_obj_new_int(ScanNetworkWpsCache[cnt]);
+        tuple[6] = mp_obj_new_int(ScanNetworkChannelCache[cnt]);
+        tuple[7] = mp_obj_new_int(ScanNetworkBandCache[cnt]);
+        mp_obj_list_append(nets, mp_obj_new_attrtuple(wifi_scan_info_fields, 8, tuple));
     }
-
-    uint8_t _index = 0;
-
-    do {
-        mp_obj_t tuple[5];
-        tuple[0] = mp_obj_new_str((const char *)wlanEntry.ssid, wlanEntry.ssid_len, false);
-        tuple[1] = mp_obj_new_bytes((const byte *)wlanEntry.bssid, SL_BSSID_LENGTH);
-
-        // 'normalize' the security type
-        if (wlanEntry.sec_type > 2) {
-            wlanEntry.sec_type = 2;
-        }
-        tuple[2] = mp_obj_new_int(wlanEntry.sec_type);
-        tuple[3] = mp_const_none;
-        tuple[4] = mp_obj_new_int(wlanEntry.rssi);
-
-        // add the network to the list
-        mp_obj_list_append(nets, mp_obj_new_attrtuple(wifi_scan_info_fields, 5, tuple));
-
-    } while (_index < WIFI_MAX_SCAN_NETWORKS);
-#endif
     return nets;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wifi_scan_obj, 1, 2, wifi_scan_network);
@@ -184,6 +189,8 @@ STATIC mp_obj_t wifi_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_ui
     self->channel = channel;
 
     self->base.type = &wifi_type;
+
+    wifi_on(self->mode);
 
     return (mp_obj_t)self;
 }
