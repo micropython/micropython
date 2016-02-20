@@ -1,7 +1,7 @@
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS += qstrdefsport.h
 
 # include py core make definitions
 include ../py/py.mk
@@ -160,6 +160,7 @@ SRC_C += $(wildcard $(HELPER)/gccollect/*.c)
 SRC_C += $(wildcard $(HELPER)/hal/*.c)
 SRC_C += $(wildcard $(HELPER)/mods/*.c)
 SRC_C += $(wildcard $(HELPER)/mods/hardware/*.c)
+SRC_C += $(wildcard $(HELPER)/mods/wireless/*.c)
 
 SRC_C += \
 	main.c \
