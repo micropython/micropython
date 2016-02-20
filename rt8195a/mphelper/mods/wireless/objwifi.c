@@ -50,16 +50,16 @@ void validate_wifi_mode(uint8_t mode) {
     }
 }
 
-void validate_ssid(int8_t *ssid, mp_obj_t obj) {
+void validate_ssid(int8_t **ssid, mp_obj_t obj) {
     mp_uint_t ssid_len = 0;
     if (obj != NULL) {
-        ssid = mp_obj_str_get_data(obj, &ssid_len);
+        *ssid = mp_obj_str_get_data(obj, &ssid_len);
         if (ssid_len > WIFI_MAX_SSID_LEN || ssid_len < WIFI_MIN_SSID_LEN)
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
     }
 }
 
-void validate_key(uint8_t *security_type, uint8_t *key, mp_obj_t obj) {
+void validate_key(uint32_t *security_type, uint8_t **key, mp_obj_t obj) {
     mp_uint_t key_len = 0;
 
     if (obj != mp_const_none) {
@@ -67,8 +67,21 @@ void validate_key(uint8_t *security_type, uint8_t *key, mp_obj_t obj) {
         mp_obj_get_array_fixed_n(obj, 2, &sec);
 
         *security_type = mp_obj_get_int(sec[0]);
+        DiagPrintf("type = %d\r\n", *security_type);
 
-        key = mp_obj_str_get_data(sec[1], &key_len);
+        *key = mp_obj_str_get_data(sec[1], &key_len);
+        DiagPrintf("key = %s\r\n", *key);
+        DiagPrintf("RTW_SECURITY_OPEN = %d\r\n", RTW_SECURITY_OPEN);
+        DiagPrintf("RTW_SECURITY_WEP_PSK = %d\r\n", RTW_SECURITY_WEP_PSK);
+        DiagPrintf("RTW_SECURITY_WEP_SHARED = %d\r\n", RTW_SECURITY_WEP_SHARED);
+        DiagPrintf("RTW_SECURITY_WPA_TKIP_PSK = %d\r\n", RTW_SECURITY_WPA_TKIP_PSK);
+        DiagPrintf("RTW_SECURITY_WPA_AES_PSK = %d\r\n", RTW_SECURITY_WPA_AES_PSK);
+        DiagPrintf("RTW_SECURITY_WPA2_TKIP_PSK = %d\r\n", RTW_SECURITY_WPA2_TKIP_PSK);
+        DiagPrintf("RTW_SECURITY_WPA2_MIXED_PSK = %d\r\n", RTW_SECURITY_WPA2_MIXED_PSK);
+        DiagPrintf("RTW_SECURITY_WPA_WPA2_MIXED = %d\r\n", RTW_SECURITY_WPA_WPA2_MIXED);
+        DiagPrintf("RTW_SECURITY_WPS_OPEN = %d\r\n", RTW_SECURITY_WPS_OPEN);
+        DiagPrintf("RTW_SECURITY_OPEN = %d\r\n", RTW_SECURITY_OPEN);
+        DiagPrintf("RTW_SECURITY_WPS_SECURE = %d\r\n", RTW_SECURITY_WPS_SECURE);
 
         if (*security_type != RTW_SECURITY_OPEN &&
             *security_type != RTW_SECURITY_WEP_PSK &&
@@ -81,7 +94,7 @@ void validate_key(uint8_t *security_type, uint8_t *key, mp_obj_t obj) {
             *security_type != RTW_SECURITY_WPA_WPA2_MIXED &&
             *security_type != RTW_SECURITY_WPS_OPEN &&
             *security_type != RTW_SECURITY_WPS_SECURE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
         }
     }
 }
@@ -142,7 +155,53 @@ STATIC mp_obj_t wifi_scan_network(mp_obj_t self_in) {
     }
     return nets;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wifi_scan_obj, 1, 2, wifi_scan_network);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_scan_obj, wifi_scan_network);
+
+STATIC mp_obj_t wifi_connect_network(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    STATIC const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_auth,                       MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_timeout,  MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    
+    wifi_obj_t *self = pos_args[0];
+
+    if (self->mode == RTW_MODE_AP) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+    }
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    int8_t *ssid = NULL;
+    validate_ssid(&ssid, args[0].u_obj);
+
+    int8_t   *key = NULL;
+    uint32_t  security_type = 0;
+    validate_key(&security_type, &key, args[1].u_obj);
+
+    int32_t timeout = -1;
+    if (args[2].u_obj != mp_const_none) {
+        timeout = mp_obj_get_int(args[2].u_obj);
+    }
+    
+    int16_t ret = -1;
+    ret = wifi_connect(ssid, security_type, key, strlen(ssid), strlen(key), 0, NULL);
+
+    if (ret == RTW_SUCCESS) {
+        return mp_const_true;
+    }
+    else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_connect_obj, 1, wifi_connect_network);
+
+STATIC mp_obj_t wifi_disconnect_network(mp_obj_t self_in) {
+    wifi_disconnect();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_disconnect_obj, wifi_disconnect_network);
 
 STATIC void wifi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     wifi_obj_t *self = self_in;
@@ -172,13 +231,13 @@ STATIC mp_obj_t wifi_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_ui
 
     // Verify ssid 
     int8_t *ssid = NULL;
-    validate_ssid(ssid, args[1].u_obj);
+    validate_ssid(&ssid, args[1].u_obj);
     memcpy(self->ssid, ssid, strlen(ssid));
     
     // Verify security type and key
     int8_t   *key = NULL;
-    uint8_t  security_type = 0;
-    validate_key(&security_type, key, args[2].u_obj);
+    uint32_t  security_type = 0;
+    validate_key(&security_type, &key, args[2].u_obj);
     self->security_type = security_type;
     memcpy(self->key, key, strlen(key));
 
@@ -198,10 +257,8 @@ STATIC mp_obj_t wifi_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_ui
 STATIC const mp_map_elem_t wifi_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                       (mp_obj_t)&wifi_scan_obj },
-#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),                    (mp_obj_t)&wifi_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),                 (mp_obj_t)&wifi_disconnect_obj },
-#endif
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_STA),                   MP_OBJ_NEW_SMALL_INT(RTW_MODE_STA) },
