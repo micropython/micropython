@@ -50,7 +50,7 @@ STATIC void mp_reset(void) {
     mp_obj_list_init(mp_sys_argv, 0);
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("main");
+    pyexec_frozen_module("boot");
 #endif
 }
 
