@@ -252,17 +252,6 @@ STATIC void timer_channel_init (pyb_timer_channel_obj_t *ch) {
         MAP_TimerMatchSet(ch->timer->timer, ch->channel, match);
         MAP_TimerPrescaleMatchSet(ch->timer->timer, ch->channel, match >> 16);
     }
-    // configure the event edge type if we are in such mode
-    else if ((ch->timer->config & 0x0F) == TIMER_CFG_A_CAP_COUNT || (ch->timer->config & 0x0F) == TIMER_CFG_A_CAP_TIME) {
-        uint32_t polarity = TIMER_EVENT_BOTH_EDGES;
-        if (ch->polarity == PYBTIMER_POLARITY_POS) {
-            polarity = TIMER_EVENT_POS_EDGE;
-        }
-        else if (ch->polarity == PYBTIMER_POLARITY_NEG) {
-            polarity = TIMER_EVENT_NEG_EDGE;
-        }
-        MAP_TimerControlEvent(ch->timer->timer, ch->channel, polarity);
-    }
 
 #ifdef DEBUG
     // stall the timer when the processor is halted while debugging
@@ -292,7 +281,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     default:
         break;
     }
-    mp_printf(print, "Timer(%u, mode=Timer.%q)", (tim->id + 1), mode_qst);
+    mp_printf(print, "Timer(%u, mode=Timer.%q)", tim->id, mode_qst);
 }
 
 STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -317,7 +306,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, co
     }
     bool is16bit = (args[1].u_int == 16);
 
-    if (!is16bit && (_mode != TIMER_CFG_A_ONE_SHOT_UP && _mode != TIMER_CFG_A_PERIODIC_UP)) {
+    if (!is16bit && _mode == TIMER_CFG_A_PWM) {
         // 32-bit mode is only available when in free running modes
         goto error;
     }
@@ -544,7 +533,7 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
     mp_printf(print, "timer.channel(Timer.%s, %q=%u", ch_id, MP_QSTR_freq, ch->frequency);
 
     uint32_t mode = ch->timer->config & 0xFF;
-    if (mode == TIMER_CFG_A_CAP_COUNT || mode == TIMER_CFG_A_CAP_TIME || mode == TIMER_CFG_A_PWM) {
+    if (mode == TIMER_CFG_A_PWM) {
         mp_printf(print, ", %q=Timer.", MP_QSTR_polarity);
         switch (ch->polarity) {
             case PYBTIMER_POLARITY_POS:
@@ -557,9 +546,7 @@ STATIC void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
                 mp_printf(print, "BOTH");
                 break;
         }
-        if (mode == TIMER_CFG_A_PWM) {
-            mp_printf(print, ", %q=%u.%02u", MP_QSTR_duty_cycle, ch->duty_cycle / 100, ch->duty_cycle % 100);
-        }
+        mp_printf(print, ", %q=%u.%02u", MP_QSTR_duty_cycle, ch->duty_cycle / 100, ch->duty_cycle % 100);
     }
     mp_printf(print, ")");
 }
