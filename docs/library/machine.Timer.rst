@@ -20,7 +20,7 @@ class Timer -- control internal timers
         tim = Timer(3)                                   # create a timer object using timer 3
         tim.init(mode=Timer.PERIODIC)                    # initialize it in periodic mode
         tim_ch = tim.channel(Timer.A, freq=5)            # configure channel A at a frequency of 5Hz
-        tim_ch.irq(handler=lambda t:led.toggle())        # toggle a LED on every cycle of the timer
+        tim_ch.irq(handler=lambda t:led.toggle(), trigger=Timer.TIMEOUT)        # toggle a LED on every cycle of the timer
 
     Example using named function for the callback::
 
@@ -32,10 +32,10 @@ class Timer -- control internal timers
         led = Pin('GP16', mode=Pin.OUT) # enable GP16 as output to drive the LED
 
         def tick(timer):                # we will receive the timer object when being called
-            print(timer.time())         # show current timer's time value (is microseconds)
+            global led
             led.toggle()                # toggle the LED
 
-        tim_a.irq(handler=tick)         # create the interrupt
+        tim_a.irq(handler=tick, trigger=Timer.TIMEOUT)         # create the interrupt
 
     Further examples::
 
