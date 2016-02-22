@@ -279,7 +279,7 @@ Q(CERT_REQUIRED)
 
 // for network class
 Q(network)
-Q(server)
+Q(Server)
 Q(init)
 Q(deinit)
 Q(login)

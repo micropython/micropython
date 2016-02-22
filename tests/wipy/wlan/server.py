@@ -9,7 +9,7 @@ mch = os.uname().machine
 if not 'LaunchPad' in mch and not'WiPy' in mch:
     raise Exception('Board not supported!')
 
-server = network.server()
+server = network.Server()
 
 print(server.timeout() == 300)
 print(server.isrunning() == True)

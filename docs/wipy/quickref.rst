@@ -201,12 +201,12 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
 Telnet and FTP server
 ---------------------
 
-See :ref:`network.server <network.server>` ::
+See :ref:`network.Server <network.Server>` ::
 
-    from network import server
+    from network import Server
 
     # init with new user, password and seconds timeout
-    server = server.init(login=('user', 'password'), timeout=60)
+    server = Server(login=('user', 'password'), timeout=60)
     server.timeout(300) # change the timeout
     server.timeout() # get the timeout
     server.isrunning() # check wether the server is running or not

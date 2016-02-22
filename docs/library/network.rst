@@ -30,27 +30,27 @@ For example::
 
 .. only:: port_wipy
 
-    .. _network.server:
+    .. _network.Server:
 
-    class server
+    class Server
     ============
 
-    The server class controls the behaviour and the configuration of the FTP and telnet
+    The ``Server`` class controls the behaviour and the configuration of the FTP and telnet
     services running on the WiPy. Any changes performed using this class' methods will
     affect both.
 
     Example::
 
     import network
-    s = network.server()
-    s.deinit() # disable the server
+    server = network.Server()
+    server.deinit() # disable the server
     # enable the server again with new settings
-    s.init(login=('user', 'password'), timeout=600)
+    server.init(login=('user', 'password'), timeout=600)
 
     Constructors
     ------------
 
-    .. class:: network.server(id, ...)
+    .. class:: network.Server(id, ...)
 
        Create a server instance, see ``init`` for parameters of initialization.
 
