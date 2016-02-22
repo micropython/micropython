@@ -123,6 +123,7 @@ bool unichar_isalpha(unichar c);
 bool unichar_isprint(unichar c);
 bool unichar_isdigit(unichar c);
 bool unichar_isxdigit(unichar c);
+bool unichar_isident(unichar c);
 bool unichar_isupper(unichar c);
 bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);

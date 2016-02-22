@@ -351,6 +351,22 @@
 /*****************************************************************************/
 /* Python internal features                                                  */
 
+// Hook for the VM at the start of the opcode loop (can contain variable
+// definitions usable by the other hook functions)
+#ifndef MICROPY_VM_HOOK_INIT
+#define MICROPY_VM_HOOK_INIT
+#endif
+
+// Hook for the VM during the opcode loop (but only after jump opcodes)
+#ifndef MICROPY_VM_HOOK_LOOP
+#define MICROPY_VM_HOOK_LOOP
+#endif
+
+// Hook for the VM just before return opcode is finished being interpreted
+#ifndef MICROPY_VM_HOOK_RETURN
+#define MICROPY_VM_HOOK_RETURN
+#endif
+
 // Whether to include the garbage collector
 #ifndef MICROPY_ENABLE_GC
 #define MICROPY_ENABLE_GC (0)

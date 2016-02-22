@@ -29,3 +29,6 @@ def f(x):
 print(x)
 
 f(3)
+if1=1
+if1 = 2
+print(if1)

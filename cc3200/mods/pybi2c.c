@@ -63,7 +63,7 @@ typedef struct _pyb_i2c_obj_t {
 #define PYBI2C_MIN_BAUD_RATE_HZ                (50000)
 #define PYBI2C_MAX_BAUD_RATE_HZ                (400000)
 
-#define PYBI2C_TRANSC_TIMEOUT_MS               (10)
+#define PYBI2C_TRANSC_TIMEOUT_MS               (20)
 #define PYBI2C_TRANSAC_WAIT_DELAY_US           (10)
 
 #define PYBI2C_TIMEOUT_TO_COUNT(to_us, baud)   (((baud) * to_us) / 16000000)
@@ -78,8 +78,12 @@ typedef struct _pyb_i2c_obj_t {
  DECLARE PRIVATE DATA
  ******************************************************************************/
 STATIC pyb_i2c_obj_t pyb_i2c_obj = {.baudrate = 0};
-
 STATIC const mp_obj_t pyb_i2c_def_pin[2] = {&pin_GP13, &pin_GP23};
+
+/******************************************************************************
+ DECLARE PRIVATE FUNCTIONS
+ ******************************************************************************/
+STATIC bool pyb_i2c_write(byte addr, byte *data, uint len, bool stop);
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
@@ -107,13 +111,13 @@ STATIC bool pyb_i2c_transaction(uint cmd) {
     // Wait until the current byte has been transferred.
     // Poll on the raw interrupt status.
     while ((MAP_I2CMasterIntStatusEx(I2CA0_BASE, false) & (I2C_MASTER_INT_DATA | I2C_MASTER_INT_TIMEOUT)) == 0) {
-        // wait for a few microseconds
-        UtilsDelay(UTILS_DELAY_US_TO_COUNT(PYBI2C_TRANSAC_WAIT_DELAY_US));
-        timeout -= PYBI2C_TRANSAC_WAIT_DELAY_US;
         if (timeout < 0) {
             // the peripheral is not responding, so stop
             return false;
         }
+        // wait for a few microseconds
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(PYBI2C_TRANSAC_WAIT_DELAY_US));
+        timeout -= PYBI2C_TRANSAC_WAIT_DELAY_US;
     }
 
     // Check for any errors in the transfer
@@ -145,13 +149,22 @@ STATIC void pyb_i2c_check_init(pyb_i2c_obj_t *self) {
 }
 
 STATIC bool pyb_i2c_scan_device(byte devAddr) {
-    // Set I2C codec slave address
+    bool ret = false;
+    // Set the I2C slave address
     MAP_I2CMasterSlaveAddrSet(I2CA0_BASE, devAddr, true);
     // Initiate the transfer.
-    RET_IF_ERR(pyb_i2c_transaction(I2C_MASTER_CMD_SINGLE_RECEIVE));
-    // Since this is a hack, send the stop bit anyway
+    if (pyb_i2c_transaction(I2C_MASTER_CMD_SINGLE_RECEIVE)) {
+        ret = true;
+    }
+    // Send the stop bit to cancel the read transaction
     MAP_I2CMasterControl(I2CA0_BASE, I2C_MASTER_CMD_BURST_SEND_ERROR_STOP);
-    return true;
+    if (!ret) {
+        uint8_t data = 0;
+        if (pyb_i2c_write(devAddr, &data, sizeof(data), true)) {
+            ret = true;
+        }
+    }
+    return ret;
 }
 
 STATIC bool pyb_i2c_mem_addr_write (byte addr, byte *mem_addr, uint mem_addr_len) {
@@ -365,7 +378,7 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     pyb_i2c_check_init(&pyb_i2c_obj);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     for (uint addr = 1; addr <= 127; addr++) {
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 3; i++) {
             if (pyb_i2c_scan_device(addr)) {
                 mp_obj_list_append(list, mp_obj_new_int(addr));
                 break;

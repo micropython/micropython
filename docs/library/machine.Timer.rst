@@ -5,11 +5,6 @@ class Timer -- control internal timers
 
 .. only:: port_wipy
 
-    .. note::
-
-        Contrary with the rest of the API, timer IDs start at 1, not a t zero. This is because
-        the ``Timer`` API is still provisional. A new MicroPython wide API will come soon.
-
     Timers can be used for a great variety of tasks, calling a function periodically,
     counting events, and generating a PWM signal are among the most common use cases.
     Each timer consists of 2 16-bit channels and this channels can be tied together to
@@ -20,40 +15,39 @@ class Timer -- control internal timers
     Example usage to toggle an LED at a fixed frequency::
 
         from machine import Timer
-        tim = Timer(4)                                   # create a timer object using timer 4
+        from machine import Pin
+        led = Pin('GP16', mode=Pin.OUT)                  # enable GP16 as output to drive the LED
+        tim = Timer(3)                                   # create a timer object using timer 3
         tim.init(mode=Timer.PERIODIC)                    # initialize it in periodic mode
-        tim_ch = tim.channel(Timer.A, freq=2)            # configure channel A at a frequency of 2Hz
-        tim_ch.callback(handler=lambda t:led.toggle())   # toggle a LED on every cycle of the timer
+        tim_ch = tim.channel(Timer.A, freq=5)            # configure channel A at a frequency of 5Hz
+        tim_ch.irq(handler=lambda t:led.toggle(), trigger=Timer.TIMEOUT)        # toggle a LED on every cycle of the timer
 
     Example using named function for the callback::
 
         from machine import Timer
-        tim = Timer(1, mode=Timer.PERIODIC)
-        tim_a = tim.channel(Timer.A, freq=1000)
+        from machine import Pin
+        tim = Timer(1, mode=Timer.PERIODIC, width=32)
+        tim_a = tim.channel(Timer.A | Timer.B, freq=1)   # 1 Hz frequency requires a 32 bit timer
 
-        led = Pin('GPIO2', mode=Pin.OUT)
+        led = Pin('GP16', mode=Pin.OUT) # enable GP16 as output to drive the LED
 
         def tick(timer):                # we will receive the timer object when being called
-            print(timer.time())         # show current timer's time value (is microseconds)
+            global led
             led.toggle()                # toggle the LED
 
-        tim_a.callback(handler=tick)
+        tim_a.irq(handler=tick, trigger=Timer.TIMEOUT)         # create the interrupt
 
     Further examples::
 
         from machine import Timer
-        tim1 = Timer(2, mode=Timer.EVENT_COUNT)                         # initialize it capture mode
-        tim2 = Timer(1, mode=Timer.PWM)                                 # initialize it in PWM mode
-        tim_ch = tim1.channel(Timer.A, freq=1, polarity=Timer.POSITIVE) # start the event counter with a frequency of 1Hz and triggered by positive edges
-        tim_ch = tim2.channel(Timer.B, freq=10000, duty_cycle=50)       # start the PWM on channel B with a 50% duty cycle
-        tim_ch.time()                                                   # get the current time in usec (can also be set)
-        tim_ch.freq(20)                                                 # set the frequency (can also get)
-        tim_ch.duty_cycle(30)                                           # set the duty cycle to 30% (can also get)
-        tim_ch.duty_cycle(30, Timer.NEGATIVE)                           # set the duty cycle to 30% and change the polarity to negative
-        tim_ch.event_count()                                            # get the number of captured events
-        tim_ch.event_time()                                             # get the the time of the last captured event
-        tim_ch.period(2000000)                                          # change the period to 2 seconds
-
+        tim1 = Timer(2, mode=Timer.ONE_SHOT)                               # initialize it in one shot mode
+        tim2 = Timer(1, mode=Timer.PWM)                                    # initialize it in PWM mode
+        tim1_ch = tim1.channel(Timer.A, freq=10, polarity=Timer.POSITIVE)  # start the event counter with a frequency of 10Hz and triggered by positive edges
+        tim2_ch = tim2.channel(Timer.B, freq=10000, duty_cycle=50)         # start the PWM on channel B with a 50% duty cycle
+        tim2_ch.freq(20)                                                   # set the frequency (can also get)
+        tim2_ch.duty_cycle(30)                                             # set the duty cycle to 30% (can also get)
+        tim2_ch.duty_cycle(30, Timer.NEGATIVE)                             # set the duty cycle to 30% and change the polarity to negative
+        tim2_ch.period(2000000)                                            # change the period to 2 seconds
 
 .. note::
 
@@ -69,9 +63,7 @@ Constructors
 
     .. only:: port_wipy
 
-       Construct a new timer object of the given id.  If additional
-       arguments are given, then the timer is initialised by ``init(...)``.
-       ``id`` can be 1 to 4.
+       Construct a new timer object of the given id. ``id`` can take values from 0 to 3.
 
 
 Methods
@@ -94,10 +86,9 @@ Methods
              period of the channel expires.
            - ``Timer.PERIODIC`` - The timer runs periodically at the configured 
              frequency of the channel.
-           - ``Timer.EDGE_TIME`` - Meaure the time pin level changes.
-           - ``Timer.EDGE_COUNT`` - Count the number of pin level changes.
+           - ``Timer.PWM``      - Output a PWM signal on a pin.
 
-         - ``width`` must be either 16 or 32 (bits). For really low frequencies <= ~1Hz
+         - ``width`` must be either 16 or 32 (bits). For really low frequencies < 5Hz
            (or large periods), 32-bit timers should be used. 32-bit mode is only available
            for ``ONE_SHOT`` AND ``PERIODIC`` modes.
 
@@ -112,7 +103,7 @@ Methods
     
        If only a channel identifier passed, then a previously initialized channel
        object is returned (or ``None`` if there is no previous channel).
-       
+
        Othwerwise, a TimerChannel object is initialized and returned.
        
        The operating mode is is the one configured to the Timer object that was used to
@@ -130,12 +121,11 @@ Methods
 
             Either ``freq`` or ``period`` must be given, never both.
 
-         - ``polarity`` this is applicable for:
-           
-           - ``PWM``, defines the polarity of the duty cycle
-           - ``EDGE_TIME`` and ``EDGE_COUNT``, defines the polarity of the pin level change to detect.
-             To detect both rising and falling edges, make ``polarity=Timer.POSITIVE | Timer.NEGATIVE``.
-         - ``duty_cycle`` only applicable to ``PWM``. It's a percentage (0-100)
+         - ``polarity`` this is applicable for ``PWM``, and defines the polarity of the duty cycle
+         - ``duty_cycle`` only applicable to ``PWM``. It's a percentage (0.00-100.00). Since the WiPy
+           doesn't support floating point numbers the duty cycle must be specified in the range 0-10000,
+           where 10000 would represent 100.00, 5050 represents 50.50, and so on.
+
 
 class TimerChannel --- setup a channel for a timer
 ==================================================
@@ -166,31 +156,47 @@ Methods
             - ``priority`` level of the interrupt. Can take values in the range 1-7.
               Higher values represent higher priorities.
             - ``handler`` is an optional function to be called when the interrupt is triggered.
+            - ``trigger`` must be ``Timer.TIMEOUT`` when the operating mode is either ``Timer.PERIODIC`` or
+              ``Timer.ONE_SHOT``. In the case that mode is ``Timer.PWM`` then trigger must be equal to
+              ``Timer.MATCH``.
 
         Returns a callback object.
 
 .. only:: port_wipy
 
     .. method:: timerchannel.freq([value])
-    
+
        Get or set the timer channel frequency (in Hz).
 
     .. method:: timerchannel.period([value])
 
        Get or set the timer channel period (in microseconds).
-       
-    .. method:: timerchannel.time([value])
-
-       Get or set the timer channel current **time** value (in microseconds).
-    
-    .. method:: timerchannel.event_count()
-
-       Get the number of edge events counted.
-
-    .. method:: timerchannel.event_time()
-
-       Get the time of ocurrance of the last event.
 
     .. method:: timerchannel.duty_cycle([value])
-     
+
        Get or set the duty cycle of the PWM signal (in the range of 0-100).
+
+Constants
+---------
+
+.. data:: Timer.ONE_SHOT
+.. data:: Timer.PERIODIC
+.. data:: Timer.PWM
+
+   Selects the timer operating mode.
+
+.. data:: Timer.A
+.. data:: Timer.B
+
+   Selects the timer channel. Must be ORed (``Timer.A`` | ``Timer.B``) when
+   using a 32-bit timer.
+
+.. data:: Timer.POSITIVE
+.. data:: Timer.NEGATIVE
+
+   Timer channel polarity selection (only relevant in PWM mode).
+
+.. data:: Timer.TIMEOUT
+.. data:: Timer.MATCH
+
+   Timer channel IRQ triggers.
