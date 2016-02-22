@@ -164,29 +164,25 @@ class Instrument():
 
         ## Build payload to slave ##
         payloadToSlave = bytearray()
+        __append2BytesFromInt(payloadToSlave,registeraddress)
+        
         if functioncode in [1, 2]:
-            payloadToSlave = _numToTwoByteString(registeraddress) + \
-                            _numToTwoByteString(NUMBER_OF_BITS)
+            __append2BytesFromInt(payloadToSlave,NUMBER_OF_BITS)
 
         elif functioncode in [3, 4]:
-            payloadToSlave = _numToTwoByteString(registeraddress) + \
-                            _numToTwoByteString(numberOfRegisters)
+            __append2BytesFromInt(payloadToSlave,numberOfRegisters)
+           
 
         elif functioncode == 5:
-            #payloadToSlave = _numToTwoByteString(registeraddress) + _createBitpattern(functioncode, value)
-            payloadToSlave.append(registeraddress>>8)
-            payloadToSlave.append(registeraddress&0xFF)
             if value == 0:
-                payloadToSlave.append(0x00)
-                payloadToSlave.append(0x00)
+                __append2BytesFromInt(payloadToSlave,0x0000)
             else:
-                payloadToSlave.append(0xFF)
-                payloadToSlave.append(0x00)
+                __append2BytesFromInt(payloadToSlave,0xFF00)
 
 
         elif functioncode == 6:
-            payloadToSlave = _numToTwoByteString(registeraddress) + \
-                            _numToTwoByteString(value, numberOfDecimals, signed=signed)
+            __append2BytesFromInt(payloadToSlave,value,numberOfDecimals)
+
 
         elif functioncode == 15:
             payloadToSlave = _numToTwoByteString(registeraddress) + \
@@ -195,6 +191,8 @@ class Instrument():
                             _createBitpattern(functioncode, value)
 
         elif functioncode == 16:
+            registerData = value
+            ''' # por ahora no se usan
             if payloadformat == PAYLOADFORMAT_REGISTER:
                 registerdata = _numToTwoByteString(value, numberOfDecimals, signed=signed)
 
@@ -209,14 +207,15 @@ class Instrument():
 
             elif payloadformat == PAYLOADFORMAT_REGISTERS:
                 registerdata = _valuelistToBytestring(value, numberOfRegisters)
-
+            '''
             #assert len(registerdata) == numberOfRegisterBytes
-            payloadToSlave = _numToTwoByteString(registeraddress) + _numToTwoByteString(numberOfRegisters) + _numToOneByteString(numberOfRegisterBytes) + registerdata
+            __append2BytesFromInt(payloadToSlave,numberOfRegisters)
+            payloadToSlave.append(numberOfRegisterBytes)
+            __append2BytesFromInt(payloadToSlave,registerData,numberOfDecimals) # cuando registerData tenga muchos bytes hay que cambiar esto
+
 
         print("payload to slave")
         print(payloadToSlave)
-        print("type:")
-        print(type(payloadToSlave))
         print("________________")
 
         #Comunicate		
@@ -225,19 +224,14 @@ class Instrument():
         ## Check the contents in the response payload ##
         ## TODO 
         print("FIN")
-        return
+        return payloadFromSlave
 
     def _performCommand(self, functioncode, payloadToSlave):
         DEFAULT_NUMBER_OF_BYTES_TO_READ = 1000
-
         _checkFunctioncode(functioncode, None)
-        #_checkString(payloadToSlave, description='payload')
 
         # Build request
         request = _embedPayload(self.address, self.mode, functioncode, payloadToSlave)
-        #print("request!")
-        #print(request)
-        #print("________")
 
         # Calculate number of bytes to read
         number_of_bytes_to_read = DEFAULT_NUMBER_OF_BYTES_TO_READ
@@ -252,6 +246,9 @@ class Instrument():
 
         # Communicate
         response = self._communicate(request, number_of_bytes_to_read)
+
+        print("tengo respuesta!, tipo:")
+        print(type(response))
 
         # Extract payload
         payloadFromSlave = _extractPayload(response, self.address, self.mode, functioncode)
@@ -296,7 +293,10 @@ class Instrument():
         latest_write_time = utime.time()
 
         print("estoy por enviar request:")
-        print(request)
+        s = ""
+        for b in request:
+            s+=" "+hex(b)
+        print(s)
         print("largo:"+str(len(request)))
                 
         self.serial.write(request)
@@ -321,9 +321,6 @@ class Instrument():
         if self.close_port_after_each_call:
             self.serial.close()
 
-        if sys.version_info[0] > 2:
-            #answer = str(answer, encoding='latin1')  # Convert types to make it Python3 compatible
-            answer = str(answer)  # Convert types to make it Python3 compatible
 
         if self.debug:
             template = 'MinimalModbus debug mode. Response from instrument: {!r} ({}) ({} bytes), ' + \
@@ -347,9 +344,15 @@ class Instrument():
 
 
 
-
-
-
+def __append2BytesFromInt(payloadToSlave,value,numberOfDecimals=0,flagMSF=True):
+    multiplier = 10 ** numberOfDecimals
+    intVal = int(float(value) * multiplier)
+    if flagMSF:
+        payloadToSlave.append((intVal>>8)&0xFF)
+        payloadToSlave.append(intVal&0xFF)
+    else:
+        payloadToSlave.append(intVal&0xFF)
+        payloadToSlave.append((intVal>>8)&0xFF)
 
 
 
@@ -664,7 +667,6 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
     MINIMAL_RESPONSE_LENGTH_ASCII          = 9
 
     # Argument validity testing
-    _checkString(response, description='response')
     #_checkSlaveaddress(slaveaddress)
     #_checkMode(mode)
     _checkFunctioncode(functioncode, None)
@@ -716,7 +718,7 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
     responseWithoutChecksum = response[0 : len(response) - numberOfChecksumBytes]
     calculatedChecksum = calculateChecksum(responseWithoutChecksum)
 
-    if receivedChecksum != calculatedChecksum:
+    if (receivedChecksum[0] != calculatedChecksum&0xFF) or (receivedChecksum[1] != (calculatedChecksum>>8)&0xFF):
         template = 'Checksum error in {} mode: {!r} instead of {!r} . The response is: {!r} (plain response: {!r})'
         text = template.format(
                 mode,
@@ -726,16 +728,16 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
         raise ValueError(text)
 
     # Check slave address
-    responseaddress = ord(response[BYTEPOSITION_FOR_SLAVEADDRESS])
+    responseaddress = int(response[BYTEPOSITION_FOR_SLAVEADDRESS])
 
     if responseaddress != slaveaddress:
         raise ValueError('Wrong return slave address: {} instead of {}. The response is: {!r}'.format( \
             responseaddress, slaveaddress, response))
 
     # Check function code
-    receivedFunctioncode = ord(response[BYTEPOSITION_FOR_FUNCTIONCODE])
+    receivedFunctioncode = int(response[BYTEPOSITION_FOR_FUNCTIONCODE])
 
-    if receivedFunctioncode == _setBitOn(functioncode, BITNUMBER_FUNCTIONCODE_ERRORINDICATION):
+    if receivedFunctioncode == (functioncode | (1 << BITNUMBER_FUNCTIONCODE_ERRORINDICATION)): # _setBitOn(functioncode, BITNUMBER_FUNCTIONCODE_ERRORINDICATION):
         raise ValueError('The slave is indicating an error. The response is: {!r}'.format(response))
 
     elif receivedFunctioncode != functioncode:
