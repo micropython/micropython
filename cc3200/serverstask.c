@@ -39,7 +39,8 @@
 #include "pybwdt.h"
 #include "modusocket.h"
 #include "mpexception.h"
-
+#include "modnetwork.h"
+#include "modwlan.h"
 
 /******************************************************************************
  DEFINE PRIVATE TYPES
@@ -50,13 +51,13 @@ typedef struct {
     bool do_disable;
     bool do_enable;
     bool do_reset;
+    bool do_wlan_cycle_power;
 } servers_data_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static servers_data_t servers_data = {.timeout = SERVERS_DEF_TIMEOUT_MS, .enabled = false, .do_disable = false,
-                                      .do_enable = false, .do_reset = false};
+static servers_data_t servers_data = {.timeout = SERVERS_DEF_TIMEOUT_MS};
 static volatile bool sleep_sockets = false;
 
 /******************************************************************************
@@ -120,10 +121,16 @@ void TASK_Servers (void *pvParameters) {
         }
 
         if (sleep_sockets) {
-            sleep_sockets = false;
             pybwdt_srv_sleeping(true);
             modusocket_enter_sleep();
             pybwdt_srv_sleeping(false);
+            mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 2);
+            if (servers_data.do_wlan_cycle_power) {
+                servers_data.do_wlan_cycle_power = false;
+                wlan_off_on();
+            }
+            sleep_sockets = false;
+
         }
 
         // set the alive flag for the wdt
@@ -150,6 +157,10 @@ void servers_stop (void) {
 
 void servers_reset (void) {
     servers_data.do_reset = true;
+}
+
+void servers_wlan_cycle_power (void) {
+    servers_data.do_wlan_cycle_power = true;
 }
 
 bool servers_are_enabled (void) {

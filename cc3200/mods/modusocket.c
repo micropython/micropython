@@ -106,8 +106,10 @@ void modusocket_enter_sleep (void) {
         }
     }
 
-    // wait for any of the sockets to become ready...
-    sl_Select(maxfd + 1, &socketset, NULL, NULL, NULL);
+    if (maxfd > 0) {
+        // wait for any of the sockets to become ready...
+        sl_Select(maxfd + 1, &socketset, NULL, NULL, NULL);
+    }
 }
 
 void modusocket_close_all_user_sockets (void) {
