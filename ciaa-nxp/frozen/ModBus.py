@@ -163,6 +163,7 @@ class Instrument():
                     'List: {0!r},  Number of registers: {1!r}.'.format(value, numberOfRegisters))
 
         ## Build payload to slave ##
+        payloadToSlave = bytearray()
         if functioncode in [1, 2]:
             payloadToSlave = _numToTwoByteString(registeraddress) + \
                             _numToTwoByteString(NUMBER_OF_BITS)
@@ -172,8 +173,16 @@ class Instrument():
                             _numToTwoByteString(numberOfRegisters)
 
         elif functioncode == 5:
-            payloadToSlave = _numToTwoByteString(registeraddress) + \
-                            _createBitpattern(functioncode, value)
+            #payloadToSlave = _numToTwoByteString(registeraddress) + _createBitpattern(functioncode, value)
+            payloadToSlave.append(registeraddress>>8)
+            payloadToSlave.append(registeraddress&0xFF)
+            if value == 0:
+                payloadToSlave.append(0x00)
+                payloadToSlave.append(0x00)
+            else:
+                payloadToSlave.append(0xFF)
+                payloadToSlave.append(0x00)
+
 
         elif functioncode == 6:
             payloadToSlave = _numToTwoByteString(registeraddress) + \
@@ -204,6 +213,12 @@ class Instrument():
             #assert len(registerdata) == numberOfRegisterBytes
             payloadToSlave = _numToTwoByteString(registeraddress) + _numToTwoByteString(numberOfRegisters) + _numToOneByteString(numberOfRegisterBytes) + registerdata
 
+        print("payload to slave")
+        print(payloadToSlave)
+        print("type:")
+        print(type(payloadToSlave))
+        print("________________")
+
         #Comunicate		
         payloadFromSlave = self._performCommand(functioncode, payloadToSlave)
 
@@ -216,10 +231,13 @@ class Instrument():
         DEFAULT_NUMBER_OF_BYTES_TO_READ = 1000
 
         _checkFunctioncode(functioncode, None)
-        _checkString(payloadToSlave, description='payload')
+        #_checkString(payloadToSlave, description='payload')
 
         # Build request
         request = _embedPayload(self.address, self.mode, functioncode, payloadToSlave)
+        #print("request!")
+        #print(request)
+        #print("________")
 
         # Calculate number of bytes to read
         number_of_bytes_to_read = DEFAULT_NUMBER_OF_BYTES_TO_READ
@@ -241,21 +259,12 @@ class Instrument():
 
 
     def _communicate(self, request, number_of_bytes_to_read):
-        _checkString(request, minlength=1, description='request')
         _checkInt(number_of_bytes_to_read)
 
         if self.debug:
             _print_out('\nMinimalModbus debug mode. Writing to instrument (expecting {} bytes back): {!r} ({})'. \
                 format(number_of_bytes_to_read, request, _hexlify(request)))
 
-        #if self.close_port_after_each_call:
-        #    self.serial.open()
-
-        #self.serial.flushInput() TODO
-
-        #if sys.version_info[0] > 2:
-        #    request = bytes(request, encoding='latin1')  # Convert types to make it Python3 compatible
-        #    #request = bytes(request)  # Convert types to make it Python3 compatible
 
         # Sleep to make sure 3.5 character times have passed
         minimum_silent_period   = _calculate_minimum_silent_period(self.serial.get_baudrate())
@@ -285,7 +294,11 @@ class Instrument():
 
         # Write request
         latest_write_time = utime.time()
-        
+
+        print("estoy por enviar request:")
+        print(request)
+        print("largo:"+str(len(request)))
+                
         self.serial.write(request)
 
         # Read and discard local echo
@@ -351,9 +364,13 @@ def _embedPayload(slaveaddress, mode, functioncode, payloaddata):
     #_checkSlaveaddress(slaveaddress)
     #_checkMode(mode)
     #_checkFunctioncode(functioncode, None)
-    #_checkString(payloaddata, description='payload')
-
-    firstPart = _numToOneByteString(slaveaddress) + _numToOneByteString(functioncode) + payloaddata
+    
+    #firstPart = _numToOneByteString(slaveaddress) + _numToOneByteString(functioncode) + payloaddata
+    firstPart = bytearray()
+    firstPart.append(slaveaddress)
+    firstPart.append(functioncode)
+    for b in payloaddata:
+        firstPart.append(b)
 
     if mode == MODE_ASCII:
         request = _ASCII_HEADER + \
@@ -361,29 +378,26 @@ def _embedPayload(slaveaddress, mode, functioncode, payloaddata):
                 _hexencode(_calculateLrcString(firstPart)) + \
                 _ASCII_FOOTER
     else:
-        request = firstPart + _calculateCrcString(firstPart)
-
+        #request = firstPart + _calculateCrcString(firstPart)
+        crc = _calculateCrcString(firstPart)
+        request = bytearray()
+        for b in firstPart:
+            request.append(b)
+        request.append(crc&0xFF)
+        request.append((crc>>8)&0xFF)
     return request
 
 
 
 
 def _calculateCrcString(inputstring):
-    _checkString(inputstring, description='input CRC string')
- 
     # Preload a 16-bit register with ones
     register = 0xFFFF
 
     for char in inputstring:
-        register = (register >> 8) ^ _CRC16TABLE[(register ^ ord(char)) & 0xFF]
+        register = (register >> 8) ^ _CRC16TABLE[(register ^ int(char)) & 0xFF]
  
-    return _numToTwoByteString(register, LsbFirst=True)
-
-
-
-
-
-
+    return register #_numToTwoByteString(register, LsbFirst=True)
 
 
 
@@ -450,6 +464,22 @@ def _checkFunctioncode(functioncode, listOfAllowedValues=[]):
         raise ValueError('Wrong function code: {0}, allowed values are {1!r}'.format(functioncode, listOfAllowedValues))
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def _numToTwoByteString(value, numberOfDecimals=0, LsbFirst=False, signed=False):
     _checkNumerical(value, description='inputvalue')
     _checkInt(numberOfDecimals, minvalue=0, description='number of decimals')
@@ -470,7 +500,7 @@ def _numToTwoByteString(value, numberOfDecimals=0, LsbFirst=False, signed=False)
 
     outstring = _pack(formatcode, integer)
     #print(outstring)
-    #assert len(outstring) == 2
+    assert len(outstring) == 2
     return outstring
 
 
@@ -484,9 +514,15 @@ def _pack(formatstring, value):
         errortext += ' Value: {0!r} Struct format code is: {1}'
         raise ValueError(errortext.format(value, formatstring))
 
+    print("pack!")
+    print("result en bytes:")
+    print(result)
+    
     if sys.version_info[0] > 2:
         #return str(result, encoding='latin1')  # Convert types to make it Python3 compatible
-        return str(result)  # Convert types to make it Python3 compatible
+        result = str(result,"utf-8")  # Convert types to make it Python3 compatible
+    print("result en str:")
+    print(result)
     return result
 
 def _createBitpattern(functioncode, value):
@@ -495,19 +531,36 @@ def _createBitpattern(functioncode, value):
 
     if functioncode == 5:
         if value == 0:
-            return '\x00\x00'
+            print("aaaaaaaaaaaaaa devuelve 0")
+            return str('\x00\x00',"utf-8")
         else:
-            return '\xff\x00'
+            print("bbbbbbbbbbbbbbb devuelve ff")
+            s =  str('\xff\x00',"utf-8")
+            print(s)
+            print("len:")
+            print(len(s))
+            return s
 
     elif functioncode == 15:
         if value == 0:
-            return '\x00'
+            return str('\x00',"utf-8")
         else:
-            return '\x01'  # Is this correct??
+            return str('\x01',"utf-8")  # Is this correct??
 
 def _numToOneByteString(inputvalue):
     _checkInt(inputvalue, minvalue=0, maxvalue=0xFF)
     return chr(inputvalue)
+
+
+
+
+
+
+
+
+
+
+
 
 
 def _checkString(inputstring, description, minlength=0, maxlength=None):
