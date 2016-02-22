@@ -183,31 +183,10 @@ $(BUILD)/drivers/cc3100/src/driver.o: CFLAGS += -fno-strict-aliasing
 
 # Check if we would like to debug the port code
 ifeq ($(BTYPE), release)
-# Optimize everything and define the NDEBUG flag
-CFLAGS += -Os -DNDEBUG
+CFLAGS += -DNDEBUG
 else
 ifeq ($(BTYPE), debug)
-# Define the DEBUG flag
-CFLAGS += -DDEBUG=DEBUG
-# Optimize the stable sources only
-$(BUILD)/extmod/%.o: CFLAGS += -Os
-$(BUILD)/lib/%.o: CFLAGS += -Os
-$(BUILD)/fatfs/src/%.o: CFLAGS += -Os
-$(BUILD)/FreeRTOS/Source/%.o: CFLAGS += -Os
-$(BUILD)/ftp/%.o: CFLAGS += -Os
-$(BUILD)/hal/%.o: CFLAGS += -Os
-$(BUILD)/misc/%.o: CFLAGS += -Os
-$(BUILD)/mods/%.o: CFLAGS += -Os
-$(BUILD)/py/%.o: CFLAGS += -Os
-$(BUILD)/simplelink/%.o: CFLAGS += -Os
-$(BUILD)/drivers/cc3100/%.o: CFLAGS += -Os
-$(BUILD)/stmhal/%.o: CFLAGS += -Os
-$(BUILD)/telnet/%.o: CFLAGS += -Os
-$(BUILD)/util/%.o: CFLAGS += -Os
-$(BUILD)/pins.o: CFLAGS += -Os
-$(BUILD)/main.o: CFLAGS += -Os
-$(BUILD)/mptask.o: CFLAGS += -Os
-$(BUILD)/servertask.o: CFLAGS += -Os
+CFLAGS += -DNDEBUG
 else
 $(error Invalid BTYPE specified)
 endif

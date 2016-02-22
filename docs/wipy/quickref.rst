@@ -49,10 +49,10 @@ See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. :
     from machine import Timer
     from machine import Pin
 
-    tim = Timer(1, mode=Timer.PERIODIC)
+    tim = Timer(0, mode=Timer.PERIODIC)
     tim_a = tim.channel(Timer.A, freq=1000)
     tim_a.time() # get the value in microseconds
-    tim_a.freq(1) # 1 Hz
+    tim_a.freq(5) # 5 Hz
     
     p_out = Pin('GP2', mode=Pin.OUT)
     tim_a.irq(handler=lambda t: p_out.toggle())

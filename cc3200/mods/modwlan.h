@@ -95,6 +95,7 @@ extern void wlan_get_mac (uint8_t *macAddress);
 extern void wlan_get_ip (uint32_t *ip);
 extern bool wlan_is_connected (void);
 extern void wlan_set_current_time (uint32_t seconds_since_2000);
+extern void wlan_off_on (void);
 
 extern int wlan_gethostbyname(const char *name, mp_uint_t len, uint8_t *out_ip, uint8_t family);
 extern int wlan_socket_socket(mod_network_socket_obj_t *s, int *_errno);

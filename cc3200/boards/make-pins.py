@@ -12,7 +12,7 @@ SUPPORTED_AFS = { 'UART': ('TX', 'RX', 'RTS', 'CTS'),
                   'SPI': ('CLK', 'MOSI', 'MISO', 'CS0'),
                   #'I2S': ('CLK', 'FS', 'DAT0', 'DAT1'),
                   'I2C': ('SDA', 'SCL'),
-                  'TIM': ('PWM0', 'PWM1', 'CC0', 'CC1'),
+                  'TIM': ('PWM'),
                   'SD': ('CLK', 'CMD', 'DAT0'),
                   'ADC': ('CH0', 'CH1', 'CH2', 'CH3')
                 }
@@ -43,6 +43,7 @@ class AF:
 
     def print(self):
         print ('    AF({:16s}, {:4d}, {:8s}, {:4d}, {:8s}),    // {}'.format(self.name, self.idx, self.fn, self.unit, self.type, self.name))
+
 
 class Pin:
     """Holds the information associated with a pin."""

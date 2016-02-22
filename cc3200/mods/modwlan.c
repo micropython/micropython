@@ -149,8 +149,8 @@ STATIC wlan_obj_t wlan_obj = {
         .ssid = MICROPY_PORT_WLAN_AP_SSID,
         .key = MICROPY_PORT_WLAN_AP_KEY,
         .mac = {0},
-        .ssid_o = {0},
-        .bssid = {0},
+        //.ssid_o = {0},
+        //.bssid = {0},
     #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
         .servers_enabled = false,
     #endif
@@ -210,11 +210,11 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
     {
         case SL_WLAN_CONNECT_EVENT:
         {
-            slWlanConnectAsyncResponse_t *pEventData = &pWlanEvent->EventData.STAandP2PModeWlanConnected;
+            //slWlanConnectAsyncResponse_t *pEventData = &pWlanEvent->EventData.STAandP2PModeWlanConnected;
             // copy the new connection data
-            memcpy(wlan_obj.bssid, pEventData->bssid, SL_BSSID_LENGTH);
-            memcpy(wlan_obj.ssid_o, pEventData->ssid_name, pEventData->ssid_len);
-            wlan_obj.ssid_o[pEventData->ssid_len] = '\0';
+            //memcpy(wlan_obj.bssid, pEventData->bssid, SL_BSSID_LENGTH);
+            //memcpy(wlan_obj.ssid_o, pEventData->ssid_name, pEventData->ssid_len);
+            //wlan_obj.ssid_o[pEventData->ssid_len] = '\0';
             SET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
         #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
             // we must reset the servers in case that the last connection
@@ -228,15 +228,16 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_IP_ACQUIRED);
         #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
             servers_reset();
+            servers_wlan_cycle_power();
         #endif
             break;
         case SL_WLAN_STA_CONNECTED_EVENT:
         {
-            slPeerInfoAsyncResponse_t *pEventData = &pWlanEvent->EventData.APModeStaConnected;
+            //slPeerInfoAsyncResponse_t *pEventData = &pWlanEvent->EventData.APModeStaConnected;
             // get the mac address and name of the connected device
-            memcpy(wlan_obj.bssid, pEventData->mac, SL_BSSID_LENGTH);
-            memcpy(wlan_obj.ssid_o, pEventData->go_peer_device_name, pEventData->go_peer_device_name_len);
-            wlan_obj.ssid_o[pEventData->go_peer_device_name_len] = '\0';
+            //memcpy(wlan_obj.bssid, pEventData->mac, SL_BSSID_LENGTH);
+            //memcpy(wlan_obj.ssid_o, pEventData->go_peer_device_name, pEventData->go_peer_device_name_len);
+            //wlan_obj.ssid_o[pEventData->go_peer_device_name_len] = '\0';
             SET_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
         #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
             // we must reset the servers in case that the last connection
@@ -249,6 +250,7 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent) {
             CLR_STATUS_BIT(wlan_obj.status, STATUS_BIT_CONNECTION);
         #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
             servers_reset();
+            servers_wlan_cycle_power();
         #endif
             break;
         case SL_WLAN_P2P_DEV_FOUND_EVENT:
@@ -547,6 +549,12 @@ void wlan_set_current_time (uint32_t seconds_since_2000) {
     sl_DevSet(SL_DEVICE_GENERAL_CONFIGURATION, SL_DEVICE_GENERAL_CONFIGURATION_DATE_TIME, sizeof(SlDateTime_t), (_u8 *)(&sl_datetime));
 }
 
+void wlan_off_on (void) {
+    // no need to lock the WLAN object on every API call since the servers and the MicroPtyhon
+    // task have the same priority
+    wlan_reenable(wlan_obj.mode);
+}
+
 //*****************************************************************************
 // DEFINE STATIC FUNCTIONS
 //*****************************************************************************
@@ -554,8 +562,8 @@ void wlan_set_current_time (uint32_t seconds_since_2000) {
 STATIC void wlan_clear_data (void) {
     CLR_STATUS_BIT_ALL(wlan_obj.status);
     wlan_obj.ip = 0;
-    memset(wlan_obj.ssid_o, 0, sizeof(wlan_obj.ssid));
-    memset(wlan_obj.bssid, 0, sizeof(wlan_obj.bssid));
+    //memset(wlan_obj.ssid_o, 0, sizeof(wlan_obj.ssid));
+    //memset(wlan_obj.bssid, 0, sizeof(wlan_obj.bssid));
 }
 
 STATIC void wlan_reenable (SlWlanMode_t mode) {
