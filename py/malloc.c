@@ -59,7 +59,16 @@
 #define realloc(ptr, n) gc_realloc(ptr, n, true)
 #define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
 #else
-#define realloc_ext(ptr, n, mv) realloc(ptr, n)
+STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
+    if (allow_move) {
+        return realloc(ptr, n_bytes);
+    } else {
+        // We are asked to resize, but without moving the memory region pointed to
+        // by ptr.  Unless the underlying memory manager has special provision for
+        // this behaviour there is nothing we can do except fail to resize.
+        return NULL;
+    }
+}
 #endif // MICROPY_ENABLE_GC
 
 void *m_malloc(size_t num_bytes) {
