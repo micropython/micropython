@@ -63,16 +63,12 @@ PWM (pulse width modulation)
 See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. ::
 
     from machine import Timer
-    from machine import Pin
 
-    # assign GP25 to alternate function 9 (PWM)
-    p_out = Pin('GP25', mode=Pin.AF, alt=9)
-
-    # timer 2 in PWM mode and width must be 16 buts
-    tim = Timer(2, mode=Timer.PWM, width=16)
+    # timer 1 in PWM mode and width must be 16 buts
+    tim = Timer(1, mode=Timer.PWM, width=16)
     
-    # enable channel A @1KHz with a 50% duty cycle
-    tim_a = tim.channel(Timer.A, freq=1000, duty_cycle=50)
+    # enable channel A @1KHz with a 50.55% duty cycle
+    tim_a = tim.channel(Timer.A, freq=1000, duty_cycle=5055)
 
 ADC (analog to digital conversion)
 ----------------------------------
