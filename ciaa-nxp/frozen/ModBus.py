@@ -213,18 +213,12 @@ class Instrument():
             payloadToSlave.append(numberOfRegisterBytes)
             __append2BytesFromInt(payloadToSlave,registerData,numberOfDecimals) # cuando registerData tenga muchos bytes hay que cambiar esto
 
-
-        print("payload to slave")
-        print(payloadToSlave)
-        print("________________")
-
         #Comunicate		
         payloadFromSlave = self._performCommand(functioncode, payloadToSlave)
 
         ## Check the contents in the response payload ##
-        ## TODO 
-        print("FIN")
         return payloadFromSlave
+
 
     def _performCommand(self, functioncode, payloadToSlave):
         DEFAULT_NUMBER_OF_BYTES_TO_READ = 1000
@@ -247,9 +241,6 @@ class Instrument():
         # Communicate
         response = self._communicate(request, number_of_bytes_to_read)
 
-        print("tengo respuesta!, tipo:")
-        print(type(response))
-
         # Extract payload
         payloadFromSlave = _extractPayload(response, self.address, self.mode, functioncode)
         return payloadFromSlave
@@ -258,36 +249,13 @@ class Instrument():
     def _communicate(self, request, number_of_bytes_to_read):
         _checkInt(number_of_bytes_to_read)
 
-        if self.debug:
-            _print_out('\nMinimalModbus debug mode. Writing to instrument (expecting {} bytes back): {!r} ({})'. \
-                format(number_of_bytes_to_read, request, _hexlify(request)))
-
-
         # Sleep to make sure 3.5 character times have passed
         minimum_silent_period   = _calculate_minimum_silent_period(self.serial.get_baudrate())
         time_since_read         = utime.time() - _LATEST_READ_TIMES[str(self.serial)]
 
         if time_since_read < minimum_silent_period:
             sleep_time = minimum_silent_period - time_since_read
-
-            if self.debug:
-                template = 'MinimalModbus debug mode. Sleeping for {:.1f} ms. ' + \
-                        'Minimum silent period: {:.1f} ms, time since read: {:.1f} ms.'
-                text = template.format(
-                    sleep_time * _SECONDS_TO_MILLISECONDS,
-                    minimum_silent_period * _SECONDS_TO_MILLISECONDS,
-                    time_since_read * _SECONDS_TO_MILLISECONDS)
-                _print_out(text)
-
             utime.sleep(sleep_time)
-
-        elif self.debug:
-            template = 'MinimalModbus debug mode. No sleep required before write. ' + \
-                'Time since previous read: {:.1f} ms, minimum silent period: {:.2f} ms.'
-            text = template.format(
-                time_since_read * _SECONDS_TO_MILLISECONDS,
-                minimum_silent_period * _SECONDS_TO_MILLISECONDS)
-            _print_out(text)
 
         # Write request
         latest_write_time = utime.time()
@@ -308,16 +276,14 @@ class Instrument():
                 template = 'Local echo handling is enabled, but the local echo does not match the sent request. ' + \
                     'Request: {!r} ({} bytes), local echo: {!r} ({} bytes).' 
                 text = template.format(request, len(request), localEchoToDiscard, len(localEchoToDiscard))
-                raise IOError(text)
+                raise Exception(text)
 
         # Read response
         print("leo respuesta....")
-        #answer = self.serial.read(number_of_bytes_to_read)
         answer = bytearray()
         timeOutRead = 200
         while True:
             if self.serial.any():
-                #answer = self.serial.readall()
                 answer = self.serial.read(number_of_bytes_to_read)
                 break
             else:
@@ -330,7 +296,6 @@ class Instrument():
         print(answer)
 
         _LATEST_READ_TIMES[str(self.serial)] = utime.time()
-
 
         if len(answer) == 0:
             raise Exception('No communication with the instrument (no answer)')
