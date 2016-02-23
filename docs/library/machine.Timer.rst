@@ -126,6 +126,17 @@ Methods
            doesn't support floating point numbers the duty cycle must be specified in the range 0-10000,
            where 10000 would represent 100.00, 5050 represents 50.50, and so on.
 
+       .. note::
+
+          When the channel is in PWM mode, the corresponding pin is assigned automatically, therefore
+          there's no need to assign the alternate function of the pin via the ``Pin`` class. The pins which
+          support PWM functionality are the following:
+
+          - ``GP24`` on Timer 0 channel A.
+          - ``GP25`` on Timer 1 channel A.
+          - ``GP9``  on Timer 2 channel B.
+          - ``GP10`` on Timer 3 channel A.
+          - ``GP11`` on Timer 3 channel B.
 
 class TimerChannel --- setup a channel for a timer
 ==================================================
