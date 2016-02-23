@@ -304,10 +304,6 @@ class Instrument():
         # Read and discard local echo
         if self.handle_local_echo:
             localEchoToDiscard = self.serial.read(len(request))
-            if self.debug:
-                template = 'MinimalModbus debug mode. Discarding this local echo: {!r} ({} bytes).' 
-                text = template.format(localEchoToDiscard, len(localEchoToDiscard))
-                _print_out(text)
             if localEchoToDiscard != request:
                 template = 'Local echo handling is enabled, but the local echo does not match the sent request. ' + \
                     'Request: {!r} ({} bytes), local echo: {!r} ({} bytes).' 
@@ -315,26 +311,29 @@ class Instrument():
                 raise IOError(text)
 
         # Read response
-        answer = self.serial.read(number_of_bytes_to_read)
+        print("leo respuesta....")
+        #answer = self.serial.read(number_of_bytes_to_read)
+        answer = bytearray()
+        timeOutRead = 200
+        while True:
+            if self.serial.any():
+                #answer = self.serial.readall()
+                answer = self.serial.read(number_of_bytes_to_read)
+                break
+            else:
+                pyb.delay(10)
+                timeOutRead-=1
+                if timeOutRead<=0:
+                    break
+        #_________                       
+        print("llego respuesta:")
+        print(answer)
+
         _LATEST_READ_TIMES[str(self.serial)] = utime.time()
 
-        if self.close_port_after_each_call:
-            self.serial.close()
-
-
-        if self.debug:
-            template = 'MinimalModbus debug mode. Response from instrument: {!r} ({}) ({} bytes), ' + \
-                'roundtrip time: {:.1f} ms. Timeout setting: {:.1f} ms.\n'
-            text = template.format(
-                answer,
-                _hexlify(answer),
-                len(answer),
-                (_LATEST_READ_TIMES.get(self.serial.port, 0) - latest_write_time) * _SECONDS_TO_MILLISECONDS,
-                self.serial.timeout * _SECONDS_TO_MILLISECONDS)
-            _print_out(text)
 
         if len(answer) == 0:
-            raise IOError('No communication with the instrument (no answer)')
+            raise Exception('No communication with the instrument (no answer)')
 
         return answer
 
