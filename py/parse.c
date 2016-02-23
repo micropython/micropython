@@ -166,8 +166,8 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
             sizeof(mp_parse_chunk_t) + chunk->alloc + num_bytes, false);
         if (new_data == NULL) {
             // could not grow existing memory; shrink it to fit previous
-            (void)m_renew(byte, chunk, sizeof(mp_parse_chunk_t) + chunk->alloc,
-                sizeof(mp_parse_chunk_t) + chunk->union_.used);
+            (void)m_renew_maybe(byte, chunk, sizeof(mp_parse_chunk_t) + chunk->alloc,
+                sizeof(mp_parse_chunk_t) + chunk->union_.used, false);
             chunk->alloc = chunk->union_.used;
             chunk->union_.next = parser->tree.chunk;
             parser->tree.chunk = chunk;
