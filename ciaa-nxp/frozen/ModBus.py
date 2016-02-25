@@ -67,6 +67,20 @@ class Instrument():
         self._genericCommand(functioncode, registeraddress, value, numberOfDecimals, signed=signed)
 
 
+    def read_registers(self, registeraddress, numberOfRegisters, functioncode=3):
+        _checkFunctioncode(functioncode, [3, 4])
+        _checkInt(numberOfRegisters, minvalue=1, description='number of registers')
+        return self._genericCommand(functioncode, registeraddress, \
+            numberOfRegisters=numberOfRegisters, payloadformat='registers')
+
+
+
+    def write_registers(self, registeraddress, values):
+        if not isinstance(values, list):
+            raise TypeError('The "values parameter" must be a list. Given: {0!r}'.format(values))
+        _checkInt(len(values), minvalue=1, description='length of input list')
+        self._genericCommand(16, registeraddress, values, numberOfRegisters=len(values), payloadformat='registers')
+
 
 
 
@@ -81,7 +95,6 @@ class Instrument():
         MAX_NUMBER_OF_REGISTERS = 255
 
         # Payload format constants, so datatypes can be told apart.
-        # Note that bit datatype not is included, because it uses other functioncodes.
         PAYLOADFORMAT_LONG      = 'long'
         PAYLOADFORMAT_FLOAT     = 'float'
         PAYLOADFORMAT_STRING    = 'string'
@@ -92,9 +105,9 @@ class Instrument():
 
         ## Check input values ##
         _checkFunctioncode(functioncode, ALL_ALLOWED_FUNCTIONCODES)  # Note: The calling facade functions should validate this
-        #_checkRegisteraddress(registeraddress)
+        _checkRegisteraddress(registeraddress)
         _checkInt(numberOfDecimals, minvalue=0, description='number of decimals')
-        #_checkInt(numberOfRegisters, minvalue=1, maxvalue=MAX_NUMBER_OF_REGISTERS, description='number of registers')
+        _checkInt(numberOfRegisters, minvalue=1, maxvalue=MAX_NUMBER_OF_REGISTERS, description='number of registers')
         #_checkBool(signed, description='signed')
 
         if payloadformat is not None:
@@ -127,7 +140,7 @@ class Instrument():
             raise ValueError('The "numberOfDecimals" parameter can not be used for this data format. ' + \
                 'Given format: {0!r}.'.format(payloadformat))
 
-                    # Number of registers
+        # Number of registers
         if functioncode not in [3, 4, 16] and numberOfRegisters != 1:
             raise ValueError('The numberOfRegisters is not valid for this function code. ' + \
                 'NumberOfRegisters: {0!r}, functioncode {1}.'.format(numberOfRegisters, functioncode))
@@ -148,12 +161,8 @@ class Instrument():
         if functioncode == 6 and payloadformat == PAYLOADFORMAT_REGISTER:
             _checkNumerical(value, description='input value')
 
-        # Value for string
-        if functioncode == 16 and payloadformat == PAYLOADFORMAT_STRING:
-            _checkString(value, 'input string', minlength=1, maxlength=numberOfRegisterBytes)
-            # Note: The string might be padded later, so the length might be shorter than numberOfRegisterBytes.
 
-                    # Value for registers
+        # Value for registers
         if functioncode == 16 and payloadformat == PAYLOADFORMAT_REGISTERS:
             if not isinstance(value, list):
                 raise TypeError('The value parameter must be a list. Given {0!r}.'.format(value))
@@ -185,38 +194,53 @@ class Instrument():
 
 
         elif functioncode == 15:
-            payloadToSlave = _numToTwoByteString(registeraddress) + \
-                            _numToTwoByteString(NUMBER_OF_BITS) + \
-                            _numToOneByteString(NUMBER_OF_BYTES_FOR_ONE_BIT) + \
-                            _createBitpattern(functioncode, value)
+            __append2BytesFromInt(payloadToSlave,NUMBER_OF_BITS)
+            payloadToSlave.append(NUMBER_OF_BYTES_FOR_ONE_BIT)
+            if value == 0:
+                __append2BytesFromInt(payloadToSlave,0x0000)
+            else:
+                __append2BytesFromInt(payloadToSlave,0xFF00)
+
 
         elif functioncode == 16:
-            registerData = value
-            ''' # por ahora no se usan
-            if payloadformat == PAYLOADFORMAT_REGISTER:
-                registerdata = _numToTwoByteString(value, numberOfDecimals, signed=signed)
-
-            elif payloadformat == PAYLOADFORMAT_STRING:
-                registerdata = _textstringToBytestring(value, numberOfRegisters)
-
-            elif payloadformat == PAYLOADFORMAT_LONG:
-                registerdata = _longToBytestring(value, signed, numberOfRegisters)
-
-            elif payloadformat == PAYLOADFORMAT_FLOAT:
-                registerdata = _floatToBytestring(value, numberOfRegisters)
-
-            elif payloadformat == PAYLOADFORMAT_REGISTERS:
-                registerdata = _valuelistToBytestring(value, numberOfRegisters)
-            '''
-            #assert len(registerdata) == numberOfRegisterBytes
             __append2BytesFromInt(payloadToSlave,numberOfRegisters)
             payloadToSlave.append(numberOfRegisterBytes)
-            __append2BytesFromInt(payloadToSlave,registerData,numberOfDecimals) # cuando registerData tenga muchos bytes hay que cambiar esto
+
+            if payloadformat == PAYLOADFORMAT_REGISTER:
+                registerData = value
+                __append2BytesFromInt(payloadToSlave,registerData,numberOfDecimals)
+            elif payloadformat == PAYLOADFORMAT_REGISTERS:
+                for reg in value:
+                    __append2BytesFromInt(payloadToSlave,reg,numberOfDecimals)
+
 
         #Comunicate		
         payloadFromSlave = self._performCommand(functioncode, payloadToSlave)
 
         ## Check the contents in the response payload ##
+        if functioncode in [1, 2, 3, 4]:
+            _checkResponseByteCount(payloadFromSlave)
+         
+        if functioncode in [5, 6, 15, 16]:
+            _checkResponseRegisterAddress(payloadFromSlave, registeraddress)
+
+        if functioncode == 5:
+            if value == 0:
+                _checkResponseWriteData(payloadFromSlave, 0x0000)
+            else:
+                _checkResponseWriteData(payloadFromSlave, 0xFF00)
+         
+        if functioncode == 6:
+            aux = bytearray()
+            __append2BytesFromInt(aux,value,numberOfDecimals)
+            _checkResponseWriteData(payloadFromSlave, aux[0]<<8 | aux[1] )
+
+        if functioncode == 15:
+            _checkResponseNumberOfRegisters(payloadFromSlave, NUMBER_OF_BITS)
+
+        if functioncode == 16:
+            _checkResponseNumberOfRegisters(payloadFromSlave, numberOfRegisters)
+
         return payloadFromSlave
 
 
@@ -233,10 +257,7 @@ class Instrument():
             try:
                 number_of_bytes_to_read = _predictResponseSize(self.mode, functioncode, payloadToSlave)
             except:
-                if self.debug:
-                    template = 'MinimalModbus debug mode. Could not precalculate response size for Modbus {} mode. ' + \
-                        'Will read {} bytes. request: {!r}'
-                    _print_out(template.format(self.mode, number_of_bytes_to_read, request))
+                pass
 
         # Communicate
         response = self._communicate(request, number_of_bytes_to_read)
@@ -319,20 +340,7 @@ def __append2BytesFromInt(payloadToSlave,value,numberOfDecimals=0,flagMSF=True):
         payloadToSlave.append((intVal>>8)&0xFF)
 
 
-
-
-
-
-
-
-
-
 def _embedPayload(slaveaddress, mode, functioncode, payloaddata):
-    #_checkSlaveaddress(slaveaddress)
-    #_checkMode(mode)
-    #_checkFunctioncode(functioncode, None)
-    
-    #firstPart = _numToOneByteString(slaveaddress) + _numToOneByteString(functioncode) + payloaddata
     firstPart = bytearray()
     firstPart.append(slaveaddress)
     firstPart.append(functioncode)
@@ -345,7 +353,6 @@ def _embedPayload(slaveaddress, mode, functioncode, payloaddata):
                 _hexencode(_calculateLrcString(firstPart)) + \
                 _ASCII_FOOTER
     else:
-        #request = firstPart + _calculateCrcString(firstPart)
         crc = _calculateCrcString(firstPart)
         request = bytearray()
         for b in firstPart:
@@ -356,16 +363,12 @@ def _embedPayload(slaveaddress, mode, functioncode, payloaddata):
 
 
 
-
 def _calculateCrcString(inputstring):
-    # Preload a 16-bit register with ones
     register = 0xFFFF
-
     for char in inputstring:
         register = (register >> 8) ^ _CRC16TABLE[(register ^ int(char)) & 0xFF]
  
-    return register #_numToTwoByteString(register, LsbFirst=True)
-
+    return register
 
 
 def _checkNumerical(inputvalue, minvalue=None, maxvalue=None, description='inputvalue'):
@@ -431,135 +434,42 @@ def _checkFunctioncode(functioncode, listOfAllowedValues=[]):
         raise ValueError('Wrong function code: {0}, allowed values are {1!r}'.format(functioncode, listOfAllowedValues))
 
 
+def _checkRegisteraddress(registeraddress):
+    REGISTERADDRESS_MAX = 0xFFFF
+    REGISTERADDRESS_MIN = 0
+    _checkInt(registeraddress, REGISTERADDRESS_MIN, REGISTERADDRESS_MAX, description='registeraddress')
 
 
 
 
+def _checkResponseByteCount(payload):
+    givenNumberOfDatabytes = payload[0]
+    countedNumberOfDatabytes = len(payload)-1
+    if givenNumberOfDatabytes != countedNumberOfDatabytes:
+        errortemplate = 'Wrong given number of bytes in the response: {0}, but counted is {1} as data payload length is {2}.' + \
+            ' The data payload is: {3!r}'
+        errortext = errortemplate.format(givenNumberOfDatabytes, countedNumberOfDatabytes, len(payload), payload)
+        raise ValueError(errortext)
+
+def _checkResponseRegisterAddress(payload, registeraddress):
+    receivedStartAddress = payload[0]<<8 | payload[1]
+    if receivedStartAddress!= registeraddress:
+        raise ValueError('Wrong given write start adress: {0}, but commanded is {1}. The data payload is: {2!r}'.format( \
+            receivedStartAddress, registeraddress, payload))
 
 
+def _checkResponseWriteData(payload, writedata):
+    receivedWritedata = payload[2]<<8 | payload[3]
+    if receivedWritedata != writedata:
+        raise ValueError('Wrong write data in the response: {0!r}, but commanded is {1!r}. The data payload is: {2!r}'.format( \
+            receivedWritedata, writedata, payload))
 
 
-
-
-
-
-
-
-
-
-def _numToTwoByteString(value, numberOfDecimals=0, LsbFirst=False, signed=False):
-    _checkNumerical(value, description='inputvalue')
-    _checkInt(numberOfDecimals, minvalue=0, description='number of decimals')
-    #_checkBool(LsbFirst, description='LsbFirst')
-    #_checkBool(signed, description='signed parameter')
-
-    multiplier = 10 ** numberOfDecimals
-    integer = int(float(value) * multiplier)
-
-    if LsbFirst:
-        formatcode = '<'  # Little-endian
-    else:
-        formatcode = '>'  # Big-endian
-    if signed:
-        formatcode += 'h'  # (Signed) short (2 bytes)
-    else:
-        formatcode += 'H'  # Unsigned short (2 bytes)
-
-    outstring = _pack(formatcode, integer)
-    #print(outstring)
-    assert len(outstring) == 2
-    return outstring
-
-
-def _pack(formatstring, value):
-    _checkString(formatstring, description='formatstring', minlength=1)
-
-    try:
-        result = struct.pack(formatstring, value)
-    except:
-        errortext = 'The value to send is probably out of range, as the num-to-bytestring conversion failed.'
-        errortext += ' Value: {0!r} Struct format code is: {1}'
-        raise ValueError(errortext.format(value, formatstring))
-
-    print("pack!")
-    print("result en bytes:")
-    print(result)
-    
-    if sys.version_info[0] > 2:
-        #return str(result, encoding='latin1')  # Convert types to make it Python3 compatible
-        result = str(result,"utf-8")  # Convert types to make it Python3 compatible
-    print("result en str:")
-    print(result)
-    return result
-
-def _createBitpattern(functioncode, value):
-    _checkFunctioncode(functioncode, [5, 15])
-    _checkInt(value, minvalue=0, maxvalue=1, description='inputvalue')
-
-    if functioncode == 5:
-        if value == 0:
-            print("aaaaaaaaaaaaaa devuelve 0")
-            return str('\x00\x00',"utf-8")
-        else:
-            print("bbbbbbbbbbbbbbb devuelve ff")
-            s =  str('\xff\x00',"utf-8")
-            print(s)
-            print("len:")
-            print(len(s))
-            return s
-
-    elif functioncode == 15:
-        if value == 0:
-            return str('\x00',"utf-8")
-        else:
-            return str('\x01',"utf-8")  # Is this correct??
-
-def _numToOneByteString(inputvalue):
-    _checkInt(inputvalue, minvalue=0, maxvalue=0xFF)
-    return chr(inputvalue)
-
-
-
-
-
-
-
-
-
-
-
-
-
-def _checkString(inputstring, description, minlength=0, maxlength=None):
-    # Type checking
-    if not isinstance(description, str):
-        raise TypeError('The description should be a string. Given: {0!r}'.format(description))
-
-    if not isinstance(inputstring, str):
-        raise TypeError('The {0} should be a string. Given: {1!r}'.format(description, inputstring))
-
-    if not isinstance(maxlength, (int, type(None))):
-        raise TypeError('The maxlength must be an integer or None. Given: {0!r}'.format(maxlength))
-
-    # Check values
-    _checkInt(minlength, minvalue=0, maxvalue=None, description='minlength')
-
-    if len(inputstring) < minlength:
-        raise ValueError('The {0} is too short: {1}, but minimum value is {2}. Given: {3!r}'.format( \
-            description, len(inputstring), minlength, inputstring))
-
-    if not maxlength is None:
-        if maxlength < 0:
-            raise ValueError('The maxlength must be positive. Given: {0}'.format(maxlength))
-
-        if maxlength < minlength:
-            raise ValueError('The maxlength must not be smaller than minlength. Given: {0} and {1}'.format( \
-                maxlength, minlength))
-
-        if len(inputstring) > maxlength:
-            raise ValueError('The {0} is too long: {1}, but maximum value is {2}. Given: {3!r}'.format( \
-                description, len(inputstring), maxlength, inputstring))
-
+def _checkResponseNumberOfRegisters(payload, numberOfRegisters):
+    receivedNumberOfWrittenReisters = payload[2]<<8 | payload[3]
+    if receivedNumberOfWrittenReisters != numberOfRegisters:
+        raise ValueError('Wrong number of registers to write in the response: {0}, but commanded is {1}. The data payload is: {2!r}'.format( \
+            receivedNumberOfWrittenReisters, numberOfRegisters, payload))
 
 
 _CRC16TABLE = (
@@ -631,8 +541,6 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
     MINIMAL_RESPONSE_LENGTH_ASCII          = 9
 
     # Argument validity testing
-    #_checkSlaveaddress(slaveaddress)
-    #_checkMode(mode)
     _checkFunctioncode(functioncode, None)
 
     plainresponse = response
