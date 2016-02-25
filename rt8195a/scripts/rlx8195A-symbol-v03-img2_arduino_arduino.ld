@@ -1,9 +1,9 @@
+
+
 ENTRY(Reset_Handler)
 
 INCLUDE "export-rom_v03.txt"
 
-__stack_size__    = 3K;       /* interrupts are handled within this stack */
-__min_heap_size__ = 8K;
 
 MEMORY
 {
@@ -13,6 +13,8 @@ MEMORY
   BD_RAM (rwx)  : ORIGIN = 0x10006000, LENGTH = 434176
   SDRAM_RAM (rwx)  : ORIGIN = 0x30000000, LENGTH = 2M
 }
+
+
 
 SECTIONS
 {
@@ -69,15 +71,6 @@ SECTIONS
     *(.mon.ram.text*)
     INCLUDE "sdram_obj_list.txt"
     __sdram_data_end__ = .;
-
-    /* define micropython heap start and end */
-    . = ALIGN(8);
-    _mp_heap_head = .;
-    . = . + __min_heap_size__;
-    . = . + (ORIGIN(SDRAM_RAM) + LENGTH(SDRAM_RAM) - __stack_size__ - ABSOLUTE(.));
-    . = ALIGN(8);
-    _mp_heap_end = .;
-
   } > SDRAM_RAM
 
   .image2.start.table :
