@@ -1,7 +1,7 @@
 import pyb
 import struct
 import sys
-import utime
+#import utime
 
 MODE_RTU   = 'rtu'
 MODE_ASCII = 'ascii'
@@ -27,8 +27,6 @@ class Instrument():
         self.precalculate_read_size = True
         
         self.handle_local_echo = False
-
-        self.rtc = pyb.RTC()
 
         _LATEST_READ_TIMES[str(self.serial)] = 0
 
@@ -241,6 +239,41 @@ class Instrument():
         if functioncode == 16:
             _checkResponseNumberOfRegisters(payloadFromSlave, numberOfRegisters)
 
+
+        ## Calculate return value ##
+        if functioncode in [1, 2]:
+            registerdata = payloadFromSlave[NUMBER_OF_BYTES_BEFORE_REGISTERDATA:]
+            if len(registerdata) != NUMBER_OF_BYTES_FOR_ONE_BIT:
+                raise ValueError('The registerdata length does not match NUMBER_OF_BYTES_FOR_ONE_BIT. ' + \
+                    'Given {0}.'.format(len(registerdata)))
+            return _bitResponseToValue(registerdata)
+
+
+        if functioncode in [3, 4]:
+            registerdata = payloadFromSlave[NUMBER_OF_BYTES_BEFORE_REGISTERDATA:]
+            if len(registerdata) != numberOfRegisterBytes:
+                raise ValueError('The registerdata length does not match number of register bytes. ' + \
+                    'Given {0!r} and {1!r}.'.format(len(registerdata), numberOfRegisterBytes))
+            ''' 
+            if payloadformat == PAYLOADFORMAT_STRING:
+                return _bytestringToTextstring(registerdata, numberOfRegisters)
+
+            elif payloadformat == PAYLOADFORMAT_LONG:
+                return _bytestringToLong(registerdata, signed, numberOfRegisters)
+
+            elif payloadformat == PAYLOADFORMAT_FLOAT:
+                return _bytestringToFloat(registerdata, numberOfRegisters)
+            '''
+
+            if payloadformat == PAYLOADFORMAT_REGISTERS:
+                return _bytesResponseToValuelist(registerdata, numberOfRegisters)
+
+            elif payloadformat == PAYLOADFORMAT_REGISTER:
+                return _bytesResponseToInt(registerdata, numberOfDecimals, signed)
+
+            raise ValueError('Wrong payloadformat for return value generation. ' + \
+                'Given {0}'.format(payloadformat))
+
         return payloadFromSlave
 
 
@@ -260,6 +293,7 @@ class Instrument():
                 pass
 
         # Communicate
+        print("llamo a comunicate, bytes a leer:"+str(number_of_bytes_to_read))
         response = self._communicate(request, number_of_bytes_to_read)
 
         # Extract payload
@@ -272,14 +306,15 @@ class Instrument():
 
         # Sleep to make sure 3.5 character times have passed
         minimum_silent_period   = _calculate_minimum_silent_period(self.serial.get_baudrate())
-        time_since_read         = utime.time() - _LATEST_READ_TIMES[str(self.serial)]
+        #time_since_read         = utime.time() - _LATEST_READ_TIMES[str(self.serial)]
 
-        if time_since_read < minimum_silent_period:
-            sleep_time = minimum_silent_period - time_since_read
-            utime.sleep(sleep_time)
+        #if time_since_read < minimum_silent_period:
+        #    sleep_time = minimum_silent_period - time_since_read
+        #    utime.sleep(sleep_time)
+        pyb.delay(minimum_silent_period)
 
         # Write request
-        latest_write_time = utime.time()
+        #latest_write_time = utime.time()
 
         print("estoy por enviar request:")
         s = ""
@@ -316,7 +351,7 @@ class Instrument():
         print("llego respuesta:")
         print(answer)
 
-        _LATEST_READ_TIMES[str(self.serial)] = utime.time()
+        #_LATEST_READ_TIMES[str(self.serial)] = utime.time()
 
         if len(answer) == 0:
             raise Exception('No communication with the instrument (no answer)')
@@ -472,6 +507,33 @@ def _checkResponseNumberOfRegisters(payload, numberOfRegisters):
             receivedNumberOfWrittenReisters, numberOfRegisters, payload))
 
 
+def _bitResponseToValue(bytesdata):
+    if bytesdata[0] == 0x01:
+        return 1
+    elif bytesdata[0] == 0x00:
+        return 0
+    else:
+        raise ValueError('Could not convert bit response to a value. Input: {0!r}'.format(bytesdata))
+
+
+def _bytesResponseToInt(bytesdata, numberOfDecimals,signed=False):
+    reg = bytesdata[0]<<8 | bytesdata[1]
+    if numberOfDecimals>0:
+        reg = reg / (10**numberOfDecimals)
+    return reg
+    
+
+def _bytesResponseToValuelist(bytesdata,numberOfRegisters):
+    out = []
+    index = 0
+    while numberOfRegisters>0:
+        reg =bytesdata[index]<<8 | bytesdata[index+1]
+        out.append(reg)
+        index+=2
+        numberOfRegisters-=1
+    return out
+
+
 _CRC16TABLE = (
         0, 49345, 49537,   320, 49921,   960,   640, 49729, 50689,  1728,  1920, 
     51009,  1280, 50625, 50305,  1088, 52225,  3264,  3456, 52545,  3840, 53185, 
@@ -524,7 +586,7 @@ def _calculate_minimum_silent_period(baudrate):
     BITTIMES_PER_CHARACTERTIME = 11
     MINIMUM_SILENT_CHARACTERTIMES = 3.5
     bittime = 1 / float(baudrate)
-    return bittime * BITTIMES_PER_CHARACTERTIME * MINIMUM_SILENT_CHARACTERTIMES
+    return int((bittime * BITTIMES_PER_CHARACTERTIME * MINIMUM_SILENT_CHARACTERTIMES)*1000)
 
 def _extractPayload(response, slaveaddress, mode, functioncode):
     BYTEPOSITION_FOR_ASCII_HEADER          = 0  # Relative to plain response
