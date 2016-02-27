@@ -12,6 +12,9 @@ _NUMBER_OF_BYTES_PER_REGISTER = 2
 
 _LATEST_READ_TIMES = {}
 
+_ASCII_HEADER = ':'
+_ASCII_FOOTER = '\r\n'
+
 class Instrument():
 
     def __init__(self, uartObj, slaveaddress, mode=MODE_RTU):
@@ -318,8 +321,11 @@ class Instrument():
 
         print("estoy por enviar request:")
         s = ""
-        for b in request:
-            s+=" "+hex(b)
+        if self.mode==MODE_RTU:
+            for b in request:
+                s+=" "+hex(b)
+        else:
+            s = request
         print(s)
         print("largo:"+str(len(request)))
                 
@@ -404,6 +410,18 @@ def _calculateCrcString(inputstring):
         register = (register >> 8) ^ _CRC16TABLE[(register ^ int(char)) & 0xFF]
  
     return register
+
+def _calculateLrcString(inputstring):
+    register = 0
+    for character in inputstring:
+        register += character
+
+    lrc = ((register ^ 0xFF) + 1) & 0xFF
+
+    out = bytearray()
+    out.append(lrc)
+    return out
+
 
 
 def _checkNumerical(inputvalue, minvalue=None, maxvalue=None, description='inputvalue'):
@@ -561,25 +579,32 @@ _CRC16TABLE = (
     33217, 32897, 16448)
 
 def _hexencode(bytestring, insert_spaces = False):
-    _checkString(bytestring, description='byte string')
     separator = '' if not insert_spaces else ' '
     byte_representions = []
     for c in bytestring:
-        byte_representions.append( '{0:02X}'.format(ord(c)) )
+        byte_representions.append( '{0:02X}'.format(c) )
     return separator.join(byte_representions).strip()
 
 
 def _hexdecode(hexstring):
-    _checkString(hexstring, description='hexstring')
 
     if len(hexstring) % 2 != 0:
         raise ValueError('The input hexstring must be of even length. Given: {!r}'.format(hexstring))
 
-    try:
-        return hexstring.decode('hex')
-    except TypeError as err:
-        raise TypeError('Hexdecode reported an error: {}. Input hexstring: {}'.format(err.message, hexstring))
-
+    #try:
+    print("decodifigo hex")
+    print(hexstring)
+    #return hexstring.decode('hex')
+    index = 0
+    out = bytearray()
+    while len(hexstring)/2 > index:
+        out.append( (hexstring[index]-0x30)<<4 | (hexstring[index+1]-0x30) )
+        index+=2
+    print(out)
+    return out
+    #except TypeError as err:
+    #raise TypeError('Hexdecode reported an error: {}. Input hexstring: {}'.format(err.message, hexstring))
+    #raise Exception(err)
 
 def _calculate_minimum_silent_period(baudrate):
     _checkNumerical(baudrate, minvalue=1, description='baudrate')  # Avoid division by zero
@@ -620,11 +645,11 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
 
     # Validate the ASCII header and footer.
     if mode == MODE_ASCII:
-        if response[BYTEPOSITION_FOR_ASCII_HEADER] != _ASCII_HEADER:
+        if response[BYTEPOSITION_FOR_ASCII_HEADER] != ord(_ASCII_HEADER):
             raise ValueError('Did not find header ({!r}) as start of ASCII response. The plain response is: {!r}'.format( \
                 _ASCII_HEADER,
                 response))
-        elif response[-len(_ASCII_FOOTER):] != _ASCII_FOOTER:
+        elif response[-len(_ASCII_FOOTER):][0] != ord(_ASCII_FOOTER[0]) and response[-len(_ASCII_FOOTER):][1] != ord(_ASCII_FOOTER[1]):
             raise ValueError('Did not find footer ({!r}) as end of ASCII response. The plain response is: {!r}'.format( \
                 _ASCII_FOOTER,
                 response))
