@@ -1,7 +1,7 @@
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS += qstrdefsport.h
+QSTR_DEFS += qstrdefsport.h $(HEADER_BUILD)/pins_qstr.h
 
 # include py core make definitions
 include ../py/py.mk
@@ -14,14 +14,6 @@ TOOLS = tools
 HELPER = mphelper
 PROJECT = realtek_ameba1_va0_example
 BOARD ?= ameba
-
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = boards/$(BOARD)/pins.csv
-AF_FILE = boards/rtl8195a_af.csv
-PREFIX_FILE = boards/rtl8195a_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins.c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
 
 #-------------------------------------------------------------------------------
 # Includes
@@ -154,7 +146,6 @@ ELF_ARLIST += ./$(LIB)/lib_platform.a
 #-------------------------------------------------------------------------------
 # C source files and objects
 #-------------------------------------------------------------------------------
-SRC_C += $(wildcard $(BUILD)/*.c)
 SRC_C += $(wildcard $(HELPER)/*.c)
 SRC_C += $(wildcard $(HELPER)/gccollect/*.c)
 SRC_C += $(wildcard $(HELPER)/hal/*.c)
@@ -176,19 +167,41 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 #-------------------------------------------------------------------------------
 # Rules
 #-------------------------------------------------------------------------------
-all: genpin $(BUILD)/firmware.elf image
+all: $(BUILD)/firmware.elf image
+
+deploy:
+	cp $(BUILD)/ram_all.bin /Volumes/MBED/
+	sync
 
 $(addprefix $(BUILD)/,$(OBJ)): $(BUILD)/%.o: %.c %.s
 	$(Q)$(CC) $(CFLAGS) $< -o $@
 
-genpin:
-	$(ECHO) "CREATING PIN FILES"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
+# Making OBJ use an order-only dependency on the generated pins.h file
+# has the side effect of making the pins.h file before we actually compile
+# any of the objects. The normal dependency generation will deal with the
+# case when pins.h is modified. But when it doesn't exist, we don't know
+# which source files might need it.
+$(BUILD)/firmware.elf:| $(BUILD)/pins.o
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ) $(BUILD)/pins.o
 	$(Q)$(ECHO) "BUILDING $@"
 	$(Q)$(CC) $(ELF_CFLAGS) $(ELF_LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--start-group $(ELF_ARLIST) -Wl,--end-group -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys
 	$(Q)$(SIZE) $@
+
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = boards/$(BOARD)/pins.csv
+AF_FILE = boards/rtl8195a_af.csv
+PREFIX_FILE = boards/rtl8195a_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
+
+$(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR): $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "CREATING PIN FILES"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
+
+$(BUILD)/pins.o: $(BUILD)/pins.c
+	$(call compile_c)
 
 image: 
 	$(Q)$(ECHO) "CREATING IMAGE"
@@ -211,9 +224,5 @@ image:
 	$(Q)cat $(BUILD)/ram_1.p.bin $(BUILD)/ram_2.p.bin $(BUILD)/ram_3.p.bin > $(BUILD)/ram_all.bin
 	$(Q)cat $(BUILD)/ram_2.ns.bin $(BUILD)/ram_3.p.bin > $(BUILD)/ota.bin
 	$(Q)$(TOOLS)/mac/checksum $(BUILD)/ota.bin
-
-deploy:
-	cp $(BUILD)/ram_all.bin /Volumes/MBED/
-	sync
 
 include ../py/mkrules.mk
