@@ -6,7 +6,7 @@
 
 This module implements "foreign data interface" for MicroPython. The idea
 behind it is similar to CPython's ``ctypes`` modules, but actual API is
-different, steamlined and optimized for small size.
+different, streamlined and optimized for small size.
 
 Defining structure layout
 -------------------------
