@@ -1,16 +1,11 @@
 import pyb
 import struct
 import sys
-#import utime
 
 MODE_RTU   = 'rtu'
 MODE_ASCII = 'ascii'
 
-CLOSE_PORT_AFTER_EACH_CALL = False
-
 _NUMBER_OF_BYTES_PER_REGISTER = 2
-
-_LATEST_READ_TIMES = {}
 
 _ASCII_HEADER = ':'
 _ASCII_FOOTER = '\r\n'
@@ -25,21 +20,16 @@ class Instrument():
 
         self.debug = False
 
-        self.close_port_after_each_call = CLOSE_PORT_AFTER_EACH_CALL
-
         self.precalculate_read_size = True
         
         self.handle_local_echo = False
 
-        _LATEST_READ_TIMES[str(self.serial)] = 0
-
     def __repr__(self):
-        return "{}<id=0x{:x}, address={}, mode={}, close_port_after_each_call={}, precalculate_read_size={}, debug={}, serial={}>".format(
+        return "{}<id=0x{:x}, address={}, mode={}, precalculate_read_size={}, debug={}, serial={}>".format(
             self.__module__,
             id(self),
             self.address,
             self.mode,
-            self.close_port_after_each_call,
             self.precalculate_read_size,
             self.debug,
             self.serial,
@@ -57,13 +47,11 @@ class Instrument():
     def read_register(self, registeraddress, numberOfDecimals=0, functioncode=3, signed=False):
         _checkFunctioncode(functioncode, [3, 4])
         _checkInt(numberOfDecimals, minvalue=0, maxvalue=10, description='number of decimals')
-        #_checkBool(signed, description='signed')
         return self._genericCommand(functioncode, registeraddress, numberOfDecimals=numberOfDecimals, signed=signed)
 
     def write_register(self, registeraddress, value, numberOfDecimals=0, functioncode=16, signed=False):
         _checkFunctioncode(functioncode, [6, 16])
         _checkInt(numberOfDecimals, minvalue=0, maxvalue=10, description='number of decimals')
-        #_checkBool(signed, description='signed')
         _checkNumerical(value, description='input value')
         self._genericCommand(functioncode, registeraddress, value, numberOfDecimals, signed=signed)
 
@@ -109,7 +97,6 @@ class Instrument():
         _checkRegisteraddress(registeraddress)
         _checkInt(numberOfDecimals, minvalue=0, description='number of decimals')
         _checkInt(numberOfRegisters, minvalue=1, maxvalue=MAX_NUMBER_OF_REGISTERS, description='number of registers')
-        #_checkBool(signed, description='signed')
 
         if payloadformat is not None:
             if payloadformat not in ALL_PAYLOADFORMATS:
@@ -257,16 +244,13 @@ class Instrument():
             if len(registerdata) != numberOfRegisterBytes:
                 raise ValueError('The registerdata length does not match number of register bytes. ' + \
                     'Given {0!r} and {1!r}.'.format(len(registerdata), numberOfRegisterBytes))
-            ''' 
-            if payloadformat == PAYLOADFORMAT_STRING:
-                return _bytestringToTextstring(registerdata, numberOfRegisters)
 
-            elif payloadformat == PAYLOADFORMAT_LONG:
-                return _bytestringToLong(registerdata, signed, numberOfRegisters)
-
-            elif payloadformat == PAYLOADFORMAT_FLOAT:
-                return _bytestringToFloat(registerdata, numberOfRegisters)
-            '''
+            #if payloadformat == PAYLOADFORMAT_STRING:
+            #    return _bytestringToTextstring(registerdata, numberOfRegisters)
+            #elif payloadformat == PAYLOADFORMAT_LONG:
+            #    return _bytestringToLong(registerdata, signed, numberOfRegisters)
+            #elif payloadformat == PAYLOADFORMAT_FLOAT:
+            #    return _bytestringToFloat(registerdata, numberOfRegisters)
 
             if payloadformat == PAYLOADFORMAT_REGISTERS:
                 return _bytesResponseToValuelist(registerdata, numberOfRegisters)
@@ -296,7 +280,6 @@ class Instrument():
                 pass
 
         # Communicate
-        print("llamo a comunicate, bytes a leer:"+str(number_of_bytes_to_read))
         response = self._communicate(request, number_of_bytes_to_read)
 
         # Extract payload
@@ -309,16 +292,9 @@ class Instrument():
 
         # Sleep to make sure 3.5 character times have passed
         minimum_silent_period   = _calculate_minimum_silent_period(self.serial.get_baudrate())
-        #time_since_read         = utime.time() - _LATEST_READ_TIMES[str(self.serial)]
-
-        #if time_since_read < minimum_silent_period:
-        #    sleep_time = minimum_silent_period - time_since_read
-        #    utime.sleep(sleep_time)
         pyb.delay(minimum_silent_period)
 
         # Write request
-        #latest_write_time = utime.time()
-
         print("estoy por enviar request:")
         s = ""
         if self.mode==MODE_RTU:
@@ -356,8 +332,6 @@ class Instrument():
         #_________                       
         print("llego respuesta:")
         print(answer)
-
-        #_LATEST_READ_TIMES[str(self.serial)] = utime.time()
 
         if len(answer) == 0:
             raise Exception('No communication with the instrument (no answer)')
@@ -586,25 +560,22 @@ def _hexencode(bytestring, insert_spaces = False):
     return separator.join(byte_representions).strip()
 
 
+def _hexDecodeNibble(hexStrByte):
+    if hexStrByte >=0x30 and hexStrByte <=0x39 :
+        return hexStrByte - 0x30
+    return hexStrByte - 0x41 + 0x0A
+
 def _hexdecode(hexstring):
 
     if len(hexstring) % 2 != 0:
         raise ValueError('The input hexstring must be of even length. Given: {!r}'.format(hexstring))
 
-    #try:
-    print("decodifigo hex")
-    print(hexstring)
-    #return hexstring.decode('hex')
     index = 0
     out = bytearray()
-    while len(hexstring)/2 > index:
-        out.append( (hexstring[index]-0x30)<<4 | (hexstring[index+1]-0x30) )
+    while len(hexstring) > index:
+        out.append( _hexDecodeNibble(hexstring[index])<<4 | _hexDecodeNibble(hexstring[index+1]) )
         index+=2
-    print(out)
     return out
-    #except TypeError as err:
-    #raise TypeError('Hexdecode reported an error: {}. Input hexstring: {}'.format(err.message, hexstring))
-    #raise Exception(err)
 
 def _calculate_minimum_silent_period(baudrate):
     _checkNumerical(baudrate, minvalue=1, description='baudrate')  # Avoid division by zero
@@ -677,7 +648,15 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
     responseWithoutChecksum = response[0 : len(response) - numberOfChecksumBytes]
     calculatedChecksum = calculateChecksum(responseWithoutChecksum)
 
-    if (receivedChecksum[0] != calculatedChecksum&0xFF) or (receivedChecksum[1] != (calculatedChecksum>>8)&0xFF):
+    flagCrcError = False
+    if mode == MODE_ASCII:
+        if (receivedChecksum[0] != calculatedChecksum[0]&0xFF):
+            flagCrcError = True
+    else:
+        if (receivedChecksum[0] != calculatedChecksum&0xFF) or (receivedChecksum[1] != (calculatedChecksum>>8)&0xFF):
+            flagCrcError = True
+
+    if flagCrcError:
         template = 'Checksum error in {} mode: {!r} instead of {!r} . The response is: {!r} (plain response: {!r})'
         text = template.format(
                 mode,
