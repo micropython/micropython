@@ -49,8 +49,6 @@
 //
 
 #include "wizchip_conf.h"
-#include "socket.h"
-
 /**
  * @brief Default function to enable interrupt.
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
@@ -98,13 +96,13 @@ void 	wizchip_bus_writebyte(uint32_t AddrSel, uint8_t wb)  { *((volatile uint8_t
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
  * null function is called.
  */
-void wizchip_spi_readbytes(uint8_t *buf, uint32_t len) {}
+uint8_t wizchip_spi_readbyte(void)        {return 0;};
 /**
  * @brief Default function to write in SPI interface.
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
  * null function is called.
  */
-void wizchip_spi_writebytes(const uint8_t *buf, uint32_t len) {}
+void 	wizchip_spi_writebyte(uint8_t wb) {};
 
 /**
  * @\ref _WIZCHIP instance
@@ -123,9 +121,6 @@ _WIZCHIP  WIZCHIP =
 //    .IF.SPI._write_byte  = wizchip_spi_writebyte
       };
 
-#if _WIZCHIP_ == 5200   // for W5200 ARP errata
-static uint8_t    _SUBN_[4];     // subnet
-#endif
 static uint8_t    _DNS_[4];      // DNS server ip address
 static dhcp_mode  _DHCP_;        // DHCP mode
 
@@ -173,19 +168,20 @@ void reg_wizchip_bus_cbfunc(uint8_t(*bus_rb)(uint32_t addr), void (*bus_wb)(uint
    }
 }
 
-void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t))
+//id reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t)) //
+void reg_wizchip_spi_cbfunc(uint8_t (*spi_rb)(void), void (*spi_wb)(uint8_t wb))
 {
    while(!(WIZCHIP.if_mode & _WIZCHIP_IO_MODE_SPI_));
    
    if(!spi_rb || !spi_wb)
    {
-      WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbytes;
-      WIZCHIP.IF.SPI._write_bytes  = wizchip_spi_writebytes;
+      WIZCHIP.IF.SPI._read_byte   = wizchip_spi_readbyte;
+      WIZCHIP.IF.SPI._write_byte  = wizchip_spi_writebyte;
    }
    else
    {
-      WIZCHIP.IF.SPI._read_bytes   = spi_rb;
-      WIZCHIP.IF.SPI._write_bytes  = spi_wb;
+      WIZCHIP.IF.SPI._read_byte   = spi_rb;
+      WIZCHIP.IF.SPI._write_byte  = spi_wb;
    }
 }
 
@@ -330,9 +326,6 @@ int8_t wizchip_init(uint8_t* txsize, uint8_t* rxsize)
       for(i = 0 ; i < _WIZCHIP_SOCK_NUM_; i++)
          setSn_RXBUF_SIZE(i, rxsize[i]);
    }
-
-   WIZCHIP_EXPORT(socket_reset)();
-
    return 0;
 }
 
@@ -592,12 +585,6 @@ void wizchip_setnetinfo(wiz_NetInfo* pnetinfo)
    setGAR(pnetinfo->gw);
    setSUBR(pnetinfo->sn);
    setSIPR(pnetinfo->ip);
-#if _WIZCHIP_ == 5200   // for W5200 ARP errata
-   _SUBN_[0] = pnetinfo->sn[0];
-   _SUBN_[1] = pnetinfo->sn[1];
-   _SUBN_[2] = pnetinfo->sn[2];
-   _SUBN_[3] = pnetinfo->sn[3];
-#endif
    _DNS_[0] = pnetinfo->dns[0];
    _DNS_[1] = pnetinfo->dns[1];
    _DNS_[2] = pnetinfo->dns[2];
@@ -611,24 +598,12 @@ void wizchip_getnetinfo(wiz_NetInfo* pnetinfo)
    getGAR(pnetinfo->gw);
    getSUBR(pnetinfo->sn);
    getSIPR(pnetinfo->ip);
-#if _WIZCHIP_ == 5200   // for W5200 ARP errata
-   pnetinfo->sn[0] = _SUBN_[0];
-   pnetinfo->sn[1] = _SUBN_[1];
-   pnetinfo->sn[2] = _SUBN_[2];
-   pnetinfo->sn[3] = _SUBN_[3];
-#endif
    pnetinfo->dns[0]= _DNS_[0];
    pnetinfo->dns[1]= _DNS_[1];
    pnetinfo->dns[2]= _DNS_[2];
    pnetinfo->dns[3]= _DNS_[3];
    pnetinfo->dhcp  = _DHCP_;
 }
-
-#if _WIZCHIP_ == 5200   // for W5200 ARP errata
-uint8_t *wizchip_getsubn(void) {
-    return _SUBN_;
-}
-#endif
 
 int8_t wizchip_setnetmode(netmode_type netmode)
 {

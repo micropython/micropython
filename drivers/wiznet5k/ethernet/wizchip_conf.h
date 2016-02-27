@@ -56,7 +56,7 @@
  * @todo You should select one, \b 5100, \b 5200 ,\b 5500 or etc. \n\n
  *       ex> <code> #define \_WIZCHIP_      5500 </code>
  */
-#define _WIZCHIP_                      5200   // 5100, 5200, 5500
+#define _WIZCHIP_                      5500   // 5100, 5200, 5500
 
 #define _WIZCHIP_IO_MODE_NONE_         0x0000
 #define _WIZCHIP_IO_MODE_BUS_          0x0100 /**< Bus interface mode */
@@ -92,7 +92,7 @@
  */
 // #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_INDIR_
    #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_
-   #include "w5200/w5200.h"
+   #include "W5200/w5200.h"
 #elif (_WIZCHIP_ == 5500)
   #define _WIZCHIP_ID_                 "W5500\0"
   
@@ -186,8 +186,8 @@ typedef struct __WIZCHIP
        */
       struct
       {
-         void (*_read_bytes)  (uint8_t *buf, uint32_t len);
-         void (*_write_bytes) (const uint8_t *buf, uint32_t len);
+         uint8_t (*_read_byte)   (void);
+         void    (*_write_byte)  (uint8_t wb);
       }SPI;
       // To be added
       //
@@ -393,7 +393,8 @@ void reg_wizchip_bus_cbfunc(uint8_t (*bus_rb)(uint32_t addr), void (*bus_wb)(uin
  *or register your functions.
  *@note If you do not describe or register, null function is called.
  */
-void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t));
+void reg_wizchip_spi_cbfunc(uint8_t (*spi_rb)(void), void (*spi_wb)(uint8_t wb));
+//void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t));
 
 /**
  * @ingroup extra_functions
@@ -514,10 +515,6 @@ void wizchip_setnetinfo(wiz_NetInfo* pnetinfo);
  * @param pnetinfo : @ref wizNetInfo
  */
 void wizchip_getnetinfo(wiz_NetInfo* pnetinfo);
-
-#if _WIZCHIP_ == 5200   // for W5200 ARP errata
-uint8_t *wizchip_getsubn(void);
-#endif
 
 /**
  * @ingroup extra_functions
