@@ -861,6 +861,18 @@ STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_settimeout_obj, lwip_socket_settimeout);
 
+STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+    lwip_socket_obj_t *socket = self_in;
+    bool val = mp_obj_is_true(flag_in);
+    if (val) {
+        socket->timeout = -1;
+    } else {
+        socket->timeout = 0;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblocking);
+
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     printf("Warning: lwip.setsockopt() not implemented\n");
@@ -912,6 +924,7 @@ STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&lwip_socket_sendto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&lwip_socket_recvfrom_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settimeout), (mp_obj_t)&lwip_socket_settimeout_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&lwip_socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&lwip_socket_setsockopt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&lwip_socket_makefile_obj },
 
