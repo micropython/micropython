@@ -712,16 +712,20 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_connect_obj, lwip_socket_connect);
 
+STATIC void lwip_socket_check_connected(lwip_socket_obj_t *socket) {
+    if (socket->pcb.tcp == NULL) {
+        // not connected
+        int _errno = error_lookup_table[-socket->state];
+        socket->state = _ERR_BADF;
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
+    }
+}
+
 STATIC mp_obj_t lwip_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     lwip_socket_obj_t *socket = self_in;
     int _errno;
 
-    if (socket->pcb.tcp == NULL) {
-        // not connected
-        _errno = error_lookup_table[-(socket->state)];
-        socket->state = _ERR_BADF;
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
-    }
+    lwip_socket_check_connected(socket);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -749,12 +753,7 @@ STATIC mp_obj_t lwip_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     lwip_socket_obj_t *socket = self_in;
     int _errno;
 
-    if (socket->pcb.tcp == NULL) {
-        // not connected
-        _errno = error_lookup_table[-(socket->state)];
-        socket->state = _ERR_BADF;
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
-    }
+    lwip_socket_check_connected(socket);
 
     mp_int_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
@@ -787,12 +786,7 @@ STATIC mp_obj_t lwip_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t 
     lwip_socket_obj_t *socket = self_in;
     int _errno;
 
-    if (socket->pcb.tcp == NULL) {
-        // not connected
-        _errno = error_lookup_table[-(socket->state)];
-        socket->state = _ERR_BADF;
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
-    }
+    lwip_socket_check_connected(socket);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
@@ -823,12 +817,7 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     lwip_socket_obj_t *socket = self_in;
     int _errno;
 
-    if (socket->pcb.tcp == NULL) {
-        // not connected
-        _errno = error_lookup_table[-(socket->state)];
-        socket->state = _ERR_BADF;
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
-    }
+    lwip_socket_check_connected(socket);
 
     mp_int_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
