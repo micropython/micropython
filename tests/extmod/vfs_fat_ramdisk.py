@@ -57,3 +57,6 @@ assert b"FOO_FILETXT" in bdev.data
 assert b"hello!" in bdev.data
 
 assert vfs.listdir() == ['foo_file.txt']
+
+vfs.remove('foo_file.txt')
+assert vfs.listdir() == []
