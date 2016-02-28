@@ -75,6 +75,7 @@ STATIC mp_obj_t fat_vfs_listdir_func(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_listdir_obj, 1, 2, fat_vfs_listdir_func);
 
 STATIC mp_obj_t fat_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
+    (void)vfs_in;
     const char *path = mp_obj_str_get_str(path_in);
     // TODO check that path is actually a file before trying to unlink it
     FRESULT res = f_unlink(path);
