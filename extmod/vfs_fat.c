@@ -58,9 +58,26 @@ STATIC mp_obj_t fat_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fat_vfs_open_obj, 2, fat_vfs_open);
 
+STATIC mp_obj_t fat_vfs_listdir_func(size_t n_args, const mp_obj_t *args) {
+    bool is_str_type = true;
+    const char *path;
+    if (n_args == 2) {
+        if (mp_obj_get_type(args[1]) == &mp_type_bytes) {
+            is_str_type = false;
+        }
+        path = mp_obj_str_get_str(args[1]);
+    } else {
+        path = "";
+    }
+
+    return fat_vfs_listdir(path, is_str_type);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_listdir_obj, 1, 2, fat_vfs_listdir_func);
+
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&fat_vfs_open_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&fat_vfs_listdir_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 
