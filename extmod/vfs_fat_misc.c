@@ -95,6 +95,8 @@ mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
     return dir_list;
 }
 
+mp_import_stat_t fat_vfs_import_stat(const char *path);
+
 mp_import_stat_t fat_vfs_import_stat(const char *path) {
     FILINFO fno;
 #if _USE_LFN
