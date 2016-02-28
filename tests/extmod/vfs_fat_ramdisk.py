@@ -68,3 +68,6 @@ f.write("data in file")
 f.close()
 
 assert vfs.listdir("foo_dir") == ['file-in-dir.txt']
+
+vfs.rename("foo_dir/file-in-dir.txt", "moved-to-root.txt")
+assert vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
