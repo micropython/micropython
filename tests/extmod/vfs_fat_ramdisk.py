@@ -60,3 +60,10 @@ assert vfs.listdir() == ['foo_file.txt']
 
 vfs.remove('foo_file.txt')
 assert vfs.listdir() == []
+
+vfs.mkdir("foo_dir")
+assert vfs.listdir() == ['foo_dir']
+with vfs.open("foo_dir/file-in-dir.txt", "w") as f:
+    f.write("data in file")
+
+assert vfs.listdir("foo_dir") == ['file-in-dir.txt']
