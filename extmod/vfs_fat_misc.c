@@ -34,6 +34,7 @@
 #include "lib/fatfs/diskio.h"
 #include "extmod/vfs_fat_file.h"
 #include "fsusermount.h"
+#include "py/lexer.h"
 
 #if _USE_LFN
 STATIC char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
@@ -92,6 +93,23 @@ mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
     f_closedir(&dir);
 
     return dir_list;
+}
+
+mp_import_stat_t fat_vfs_import_stat(const char *path) {
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+    FRESULT res = f_stat(path, &fno);
+    if (res == FR_OK) {
+        if ((fno.fattrib & AM_DIR) != 0) {
+            return MP_IMPORT_STAT_DIR;
+        } else {
+            return MP_IMPORT_STAT_FILE;
+        }
+    }
+    return MP_IMPORT_STAT_NO_EXIST;
 }
 
 #endif // MICROPY_VFS_FAT
