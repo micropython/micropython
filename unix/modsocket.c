@@ -114,6 +114,13 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+    // There's a POSIX drama regarding return value of close in general,
+    // and EINTR error in particular. See e.g.
+    // http://lwn.net/Articles/576478/
+    // http://austingroupbugs.net/view.php?id=529
+    // The rationale MicroPython follows is that close() just releases
+    // file descriptor. If you're interested to catch I/O errors before
+    // closing fd, fsync() it.
     close(self->fd);
     return mp_const_none;
 }
