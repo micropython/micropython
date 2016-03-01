@@ -155,6 +155,20 @@ Q(buf)
 Q(addr)
 Q(n)
 
+// SPI
+Q(SPI)
+Q(init)
+Q(baudrate)
+Q(phase)
+Q(polarity)
+Q(sck)
+Q(mosi)
+Q(miso)
+Q(read)
+Q(readinto)
+Q(write)
+Q(write_readinto)
+
 // utime
 Q(utime)
 Q(localtime)

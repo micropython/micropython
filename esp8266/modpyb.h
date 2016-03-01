@@ -2,6 +2,7 @@ extern const mp_obj_type_t pyb_pin_type;
 extern const mp_obj_type_t pyb_adc_type;
 extern const mp_obj_type_t pyb_rtc_type;
 extern const mp_obj_type_t pyb_i2c_type;
+extern const mp_obj_type_t pyb_spi_type;
 
 typedef struct _pyb_pin_obj_t {
     mp_obj_base_t base;
