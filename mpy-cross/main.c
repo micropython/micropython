@@ -55,7 +55,7 @@ STATIC const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 STATIC int compile_and_save(const char *file, const char *output_file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     if (lex == NULL) {
-        printf("MemoryError: lexer could not allocate memory\n");
+        printf("could not open file '%s' for reading\n", file);
         return 1;
     }
 
