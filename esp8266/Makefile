@@ -57,8 +57,10 @@ SRC_C = \
 	gccollect.c \
 	lexerstr32.c \
 	uart.c \
+	esppwm.c \
 	modpyb.c \
 	modpybpin.c \
+	modpybpwm.c \
 	modpybrtc.c \
 	modpybadc.c \
 	modpybi2c.c \

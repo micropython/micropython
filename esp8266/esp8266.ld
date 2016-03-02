@@ -131,6 +131,7 @@ SECTIONS
         *gchelper.o(.literal* .text*)
         *modpyb.o(.literal*, .text*)
         *modpybpin.o(.literal*, .text*)
+        *modpybpwm.o(.literal*, .text*)
         *modpybrtc.o(.literal*, .text*)
         *modpybadc.o(.literal*, .text*)
         *modpybspi.o(.literal*, .text*)

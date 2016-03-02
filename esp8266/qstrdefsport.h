@@ -133,6 +133,13 @@ Q(PULL_NONE)
 Q(PULL_UP)
 Q(PULL_DOWN)
 
+// PWM class
+Q(PWM)
+Q(init)
+Q(deinit)
+Q(freq)
+Q(duty)
+
 // RTC
 Q(RTC)
 Q(datetime)
