@@ -61,6 +61,8 @@ STATIC void file_buf_close(mp_lexer_file_buf_t *fb) {
     m_del_obj(mp_lexer_file_buf_t, fb);
 }
 
+mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
+
 mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename) {
     mp_lexer_file_buf_t *fb = m_new_obj_maybe(mp_lexer_file_buf_t);
     if (fb == NULL) {
