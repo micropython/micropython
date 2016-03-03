@@ -69,6 +69,7 @@ int main(void)
     mp_hal_log_uart_init();
     pin_init0();
     wifi_init0();
+    lwip_init0();
     mpexception_init0();
     readline_init0();
 

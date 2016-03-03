@@ -41,6 +41,7 @@
 #define MICROPY_PY_UJSON                        (1)
 #define MICROPY_PY_STRUCT                       (1)
 #define MICROPY_PY_SYS                          (1)
+#define MICROPY_PY_LWIP                         (1)
 #define MICROPY_CPYTHON_COMPAT                  (0)
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_NONE)
@@ -72,10 +73,12 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 
 extern const struct _mp_obj_module_t hardware_module;
 extern const struct _mp_obj_module_t wireless_module;
+extern const struct _mp_obj_module_t mp_module_lwip;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hardware),     (mp_obj_t)&hardware_module },      \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wireless),     (mp_obj_t)&wireless_module },      \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hardware),    (mp_obj_t)&hardware_module },      \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wireless),    (mp_obj_t)&wireless_module },      \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lwip),        (mp_obj_t)&mp_module_lwip },      \
 
 // There is no classical C heap in bare-metal ports, only Python
 // garbage-collected heap. For completeness, emulate C heap via

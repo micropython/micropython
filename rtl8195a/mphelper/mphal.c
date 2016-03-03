@@ -26,6 +26,7 @@
 
 
 #include <stdio.h>
+#include "osdep_api.h"
 #include "device.h"
 #include "log_uart_api.h"
 

@@ -3,6 +3,8 @@ include ../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS += qstrdefsport.h $(HEADER_BUILD)/pins_qstr.h
 
+-include mpconfigport.mk
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -111,6 +113,7 @@ CFLAGS += -Wstrict-prototypes
 #CFLAGS += -Wdouble-promotion
 CFLAGS += -nostartfiles
 CFLAGS += -DCONFIG_PLATFORM_8195A $(INC)
+CFLAGS += $(CFLAGS_MOD)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -158,6 +161,8 @@ SRC_C += \
 	lib/libc/string0.c \
 	lib/utils/pyexec.c \
 	lib/mp-readline/readline.c \
+	lib/netutils/netutils.c \
+	$(SRC_MOD)
 
 SRC_S += $(wildcard $(HELPER)/gccollect/*.s)
 SRC_S += 
