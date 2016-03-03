@@ -24,7 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include "py/mpconfig.h"
+// *_ADHOC part is for cc3200 port which doesn't use general uPy
+// infrastructure and instead duplicates code. TODO: Resolve.
+#if MICROPY_VFS_FAT || MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
 
 #include "py/lexer.h"
 #include "lib/fatfs/ff.h"
@@ -74,3 +77,5 @@ mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename) {
     fb->pos = 0;
     return mp_lexer_new(qstr_from_str(filename), fb, (mp_lexer_stream_next_byte_t)file_buf_next_byte, (mp_lexer_stream_close_t)file_buf_close);
 }
+
+#endif // MICROPY_VFS_FAT
