@@ -150,7 +150,7 @@ def run_micropython(pyb, args, test_file):
         import pyboard
         pyb.enter_raw_repl()
         try:
-            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+            output_mupy = pyb.execfile(test_file)
         except pyboard.PyboardError:
             output_mupy = b'CRASH'
 
