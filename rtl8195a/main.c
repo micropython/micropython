@@ -69,16 +69,12 @@ int main(void)
     mp_hal_log_uart_init();
     pin_init0();
     wifi_init0();
-    lwip_init0();
     mpexception_init0();
     readline_init0();
-
     osThreadDef(main_task, osPriorityRealtime, 1, 4096);
     main_tid = osThreadCreate (osThread (main_task), NULL);
     osKernelStart();
-
     while(1);
-
     return 0;
 }
 

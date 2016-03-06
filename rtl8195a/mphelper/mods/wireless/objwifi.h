@@ -52,16 +52,15 @@ void wifi_init0(void);
 extern const mp_obj_type_t wifi_type;
 
 typedef struct {
-    mp_obj_base_t     base;
-    uint8_t                 idx;
-    uint8_t                 mode;
-    uint8_t                 security_type;
-    uint8_t                 channel;
-    uint8_t                 mac[WIFI_MAC_LEN];
-    uint8_t                 ssid[WIFI_MAX_SSID_LEN+1];
-    uint8_t                 bssid[WIFI_MAC_LEN];
-    uint8_t                 key[WIFI_KEY_LEN];
-
+    mp_obj_base_t    base;
+    uint8_t          idx;                       // Reserved for RTl8195A cocurrency mode
+    uint8_t          mode;                      // WiFi mode, STA / AP / MIX
+    uint8_t          security_type;             // WiFi security mode, WPA2 / WEP ...
+    uint8_t          channel;                   // WiFi channel 0 ~ 11
+    uint8_t          mac[WIFI_MAC_LEN];         // WiFi mac address
+    uint8_t          ssid[WIFI_MAX_SSID_LEN+1]; // WiFi ssid in *AP mode*
+    uint8_t          bssid[WIFI_MAC_LEN];       // WiFi bssid in *AP mode*
+    uint8_t          key[WIFI_KEY_LEN];         // WiFi key in *AP mode*
 } wifi_obj_t;
 
 

@@ -27,8 +27,8 @@
 // qstrs specific to this port
 Q(hardware)
 Q(wireless)
-Q(wifi)
-Q(nfc)
+Q(WIFI)
+Q(NFC)
 
 // for wifi class
 Q(mode)
@@ -42,6 +42,8 @@ Q(security)
 Q(mac)
 Q(connect)
 Q(disconnect)
+Q(rf)
+Q(mac)
 Q(scan)
 Q(rssi)
 Q(band)
