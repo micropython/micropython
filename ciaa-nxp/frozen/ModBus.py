@@ -15,23 +15,16 @@ class Instrument():
     def __init__(self, uartObj, slaveaddress, mode=MODE_RTU):
         self.serial = uartObj
         self.address = slaveaddress
-
         self.mode = mode
-
         self.debug = False
-
-        self.precalculate_read_size = True
-        
-        self.handle_local_echo = False
+        self.precalculate_read_size = True      
 
     def __repr__(self):
-        return "{}<id=0x{:x}, address={}, mode={}, precalculate_read_size={}, debug={}, serial={}>".format(
+        return "{}<id=0x{:x}, address={}, mode={}, serial={}>".format(
             self.__module__,
             id(self),
             self.address,
             self.mode,
-            self.precalculate_read_size,
-            self.debug,
             self.serial,
             )
 
@@ -52,17 +45,13 @@ class Instrument():
     def write_register(self, registeraddress, value, numberOfDecimals=0, functioncode=16, signed=False):
         _checkFunctioncode(functioncode, [6, 16])
         _checkInt(numberOfDecimals, minvalue=0, maxvalue=10, description='number of decimals')
-        _checkNumerical(value, description='input value')
         self._genericCommand(functioncode, registeraddress, value, numberOfDecimals, signed=signed)
-
 
     def read_registers(self, registeraddress, numberOfRegisters, functioncode=3):
         _checkFunctioncode(functioncode, [3, 4])
         _checkInt(numberOfRegisters, minvalue=1, description='number of registers')
         return self._genericCommand(functioncode, registeraddress, \
             numberOfRegisters=numberOfRegisters, payloadformat='registers')
-
-
 
     def write_registers(self, registeraddress, values):
         if not isinstance(values, list):
@@ -71,16 +60,10 @@ class Instrument():
         self._genericCommand(16, registeraddress, values, numberOfRegisters=len(values), payloadformat='registers')
 
 
-
-
-
-
-
     def _genericCommand(self, functioncode, registeraddress, value=None, numberOfDecimals=0, numberOfRegisters=1, signed=False, payloadformat=None):
         NUMBER_OF_BITS = 1
         NUMBER_OF_BYTES_FOR_ONE_BIT = 1
         NUMBER_OF_BYTES_BEFORE_REGISTERDATA = 1
-        ALL_ALLOWED_FUNCTIONCODES = list(range(1, 7)) + [15, 16]  # To comply with both Python2 and Python3
         MAX_NUMBER_OF_REGISTERS = 255
 
         # Payload format constants, so datatypes can be told apart.
@@ -90,17 +73,10 @@ class Instrument():
         PAYLOADFORMAT_REGISTER  = 'register'
         PAYLOADFORMAT_REGISTERS = 'registers'
 
-        ALL_PAYLOADFORMATS = [PAYLOADFORMAT_LONG, PAYLOADFORMAT_FLOAT,PAYLOADFORMAT_STRING, PAYLOADFORMAT_REGISTER, PAYLOADFORMAT_REGISTERS]
-
         ## Check input values ##
-        _checkFunctioncode(functioncode, ALL_ALLOWED_FUNCTIONCODES)  # Note: The calling facade functions should validate this
         _checkRegisteraddress(registeraddress)
         _checkInt(numberOfDecimals, minvalue=0, description='number of decimals')
         _checkInt(numberOfRegisters, minvalue=1, maxvalue=MAX_NUMBER_OF_REGISTERS, description='number of registers')
-
-        if payloadformat is not None:
-            if payloadformat not in ALL_PAYLOADFORMATS:
-                raise ValueError('Wrong payload format variable. Given: {0!r}'.format(payloadformat))
 
         ## Check combinations of input parameters ##
         numberOfRegisterBytes = numberOfRegisters * _NUMBER_OF_BYTES_PER_REGISTER
@@ -108,11 +84,6 @@ class Instrument():
         # Payload format
         if functioncode in [3, 4, 6, 16] and payloadformat is None:
             payloadformat = PAYLOADFORMAT_REGISTER
-
-        if functioncode in [3, 4, 6, 16]:
-            if payloadformat not in ALL_PAYLOADFORMATS:
-                raise ValueError('The payload format is unknown. Given format: {0!r}, functioncode: {1!r}.'.\
-                    format(payloadformat, functioncode))
         else:
             if payloadformat is not None:
                 raise ValueError('The payload format given is not allowed for this function code. ' + \
@@ -143,13 +114,6 @@ class Instrument():
             raise ValueError('The input value is not valid for this function code. ' + \
                 'Given {0!r} and {1}.'.format(value, functioncode))
 
-        if functioncode == 16 and payloadformat in [PAYLOADFORMAT_REGISTER, PAYLOADFORMAT_FLOAT, PAYLOADFORMAT_LONG]:
-            _checkNumerical(value, description='input value')
-
-        if functioncode == 6 and payloadformat == PAYLOADFORMAT_REGISTER:
-            _checkNumerical(value, description='input value')
-
-
         # Value for registers
         if functioncode == 16 and payloadformat == PAYLOADFORMAT_REGISTERS:
             if not isinstance(value, list):
@@ -176,7 +140,6 @@ class Instrument():
             else:
                 __append2BytesFromInt(payloadToSlave,0xFF00)
 
-
         elif functioncode == 6:
             __append2BytesFromInt(payloadToSlave,value,numberOfDecimals)
 
@@ -188,7 +151,6 @@ class Instrument():
                 __append2BytesFromInt(payloadToSlave,0x0000)
             else:
                 __append2BytesFromInt(payloadToSlave,0xFF00)
-
 
         elif functioncode == 16:
             __append2BytesFromInt(payloadToSlave,numberOfRegisters)
@@ -307,14 +269,6 @@ class Instrument():
                 
         self.serial.write(request)
 
-        # Read and discard local echo
-        if self.handle_local_echo:
-            localEchoToDiscard = self.serial.read(len(request))
-            if localEchoToDiscard != request:
-                template = 'Local echo handling is enabled, but the local echo does not match the sent request. ' + \
-                    'Request: {!r} ({} bytes), local echo: {!r} ({} bytes).' 
-                text = template.format(request, len(request), localEchoToDiscard, len(localEchoToDiscard))
-                raise Exception(text)
 
         # Read response
         print("leo respuesta....")
@@ -362,7 +316,7 @@ class Slave:
                 out = bytearray()
                 qty = payloadFromMaster[4]<<8 | payloadFromMaster[5]
                 for addr in range(regAddr,regAddr+qty):
-                    val = self.__getRegisterValue(addr)        
+                    val = self.__getRegisterValue(addr)
                     out.append(val>>8)
                     out.append(val&0xFF)
 
@@ -386,6 +340,9 @@ class Slave:
         if addr in self.mappedRegisters:
             return self.mappedRegisters[addr]
         return 0
+
+
+
 
 
 
@@ -443,65 +400,22 @@ def _calculateLrcString(inputstring):
 
 
 
-def _checkNumerical(inputvalue, minvalue=None, maxvalue=None, description='inputvalue'):
-    # Type checking
-    if not isinstance(description, str):
-        raise TypeError('The description should be a string. Given: {0!r}'.format(description))
-
-    if not isinstance(inputvalue, (int, float)):
-        raise TypeError('The {0} must be numerical. Given: {1!r}'.format(description, inputvalue))
-
-    if not isinstance(minvalue, (int, float, type(None))):
-        raise TypeError('The minvalue must be numeric or None. Given: {0!r}'.format(minvalue))
-
-    if not isinstance(maxvalue, (int, float, type(None))):
-        raise TypeError('The maxvalue must be numeric or None. Given: {0!r}'.format(maxvalue))
-
-    # Consistency checking
-    if (not minvalue is None) and (not maxvalue is None):
-        if maxvalue < minvalue:
-            raise ValueError('The maxvalue must not be smaller than minvalue. Given: {0} and {1}, respectively.'.format( \
-                maxvalue, minvalue))
-
-    # Value checking
-    if not minvalue is None:
-        if inputvalue < minvalue:
-            raise ValueError('The {0} is too small: {1}, but minimum value is {2}.'.format( \
-                description, inputvalue, minvalue))
-
-    if not maxvalue is None:
-        if inputvalue > maxvalue:
-            raise ValueError('The {0} is too large: {1}, but maximum value is {2}.'.format( \
-                description, inputvalue, maxvalue))
-
-
 def _checkInt(inputvalue, minvalue=None, maxvalue=None, description='inputvalue'):
-    if not isinstance(description, str):
-        raise TypeError('The description should be a string. Given: {0!r}'.format(description))
-
-    if not isinstance(inputvalue, (int)):
-        raise TypeError('The {0} must be an integer. Given: {1!r}'.format(description, inputvalue))
-
-    if not isinstance(minvalue, (int, type(None))):
-        raise TypeError('The minvalue must be an integer or None. Given: {0!r}'.format(minvalue))
-
-    if not isinstance(maxvalue, (int, type(None))):
-        raise TypeError('The maxvalue must be an integer or None. Given: {0!r}'.format(maxvalue))
-
-    _checkNumerical(inputvalue, minvalue, maxvalue, description)
+    flagError=False
+    if minvalue!=None and inputvalue<minvalue:
+        flagError=True
+    if maxvalue!=None and inputvalue>maxvalue:
+        flagError=True
+    if flagError:
+        raise TypeError('{0} out of range. Given: {1!r}'.format(description, inputvalue))
 
 
 
 def _checkFunctioncode(functioncode, listOfAllowedValues=[]):
-    FUNCTIONCODE_MIN = 1
-    FUNCTIONCODE_MAX = 127
-    _checkInt(functioncode, FUNCTIONCODE_MIN, FUNCTIONCODE_MAX, description='functioncode')
+    if functioncode < 1 or functioncode > 127:
+        raise ValueError('Wrong function code: {0}'.format(functioncode))
     if listOfAllowedValues is None:
         return
-    if not isinstance(listOfAllowedValues, list):
-        raise TypeError('The listOfAllowedValues should be a list. Given: {0!r}'.format(listOfAllowedValues))
-    for value in listOfAllowedValues:
-        _checkInt(value, FUNCTIONCODE_MIN, FUNCTIONCODE_MAX, description='functioncode inside listOfAllowedValues')
     if functioncode not in listOfAllowedValues:
         raise ValueError('Wrong function code: {0}, allowed values are {1!r}'.format(functioncode, listOfAllowedValues))
 
@@ -510,8 +424,6 @@ def _checkRegisteraddress(registeraddress):
     REGISTERADDRESS_MAX = 0xFFFF
     REGISTERADDRESS_MIN = 0
     _checkInt(registeraddress, REGISTERADDRESS_MIN, REGISTERADDRESS_MAX, description='registeraddress')
-
-
 
 
 def _checkResponseByteCount(payload):
@@ -623,7 +535,7 @@ def _hexdecode(hexstring):
     return out
 
 def _calculate_minimum_silent_period(baudrate):
-    _checkNumerical(baudrate, minvalue=1, description='baudrate')  # Avoid division by zero
+    _checkInt(baudrate, minvalue=1, description='baudrate')  # Avoid division by zero
     BITTIMES_PER_CHARACTERTIME = 11
     MINIMUM_SILENT_CHARACTERTIMES = 3.5
     bittime = 1 / float(baudrate)
