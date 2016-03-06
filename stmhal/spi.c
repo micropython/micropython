@@ -183,7 +183,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[1] = &MICROPY_HW_SPI1_SCK;
         pins[2] = &MICROPY_HW_SPI1_MISO;
         pins[3] = &MICROPY_HW_SPI1_MOSI;
-        GPIO_InitStructure.Alternate = GPIO_AF5_SPI1;
         // enable the SPI clock
         __SPI1_CLK_ENABLE();
     #endif
@@ -194,7 +193,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[1] = &MICROPY_HW_SPI2_SCK;
         pins[2] = &MICROPY_HW_SPI2_MISO;
         pins[3] = &MICROPY_HW_SPI2_MOSI;
-        GPIO_InitStructure.Alternate = GPIO_AF5_SPI2;
         // enable the SPI clock
         __SPI2_CLK_ENABLE();
     #endif
@@ -205,7 +203,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[1] = &MICROPY_HW_SPI3_SCK;
         pins[2] = &MICROPY_HW_SPI3_MISO;
         pins[3] = &MICROPY_HW_SPI3_MOSI;
-        GPIO_InitStructure.Alternate = GPIO_AF6_SPI3;
         // enable the SPI clock
         __SPI3_CLK_ENABLE();
     #endif
@@ -216,7 +213,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[1] = &MICROPY_HW_SPI4_SCK;
         pins[2] = &MICROPY_HW_SPI4_MISO;
         pins[3] = &MICROPY_HW_SPI4_MOSI;
-        GPIO_InitStructure.Alternate = GPIO_AF5_SPI4;
         // enable the SPI clock
         __SPI4_CLK_ENABLE();
     #endif
@@ -227,7 +223,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[1] = &MICROPY_HW_SPI5_SCK;
         pins[2] = &MICROPY_HW_SPI5_MISO;
         pins[3] = &MICROPY_HW_SPI5_MOSI;
-        GPIO_InitStructure.Alternate = GPIO_AF5_SPI5;
         // enable the SPI clock
         __SPI5_CLK_ENABLE();
     #endif
@@ -238,7 +233,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[1] = &MICROPY_HW_SPI6_SCK;
         pins[2] = &MICROPY_HW_SPI6_MISO;
         pins[3] = &MICROPY_HW_SPI6_MOSI;
-        GPIO_InitStructure.Alternate = GPIO_AF5_SPI6;
         // enable the SPI clock
         __SPI6_CLK_ENABLE();
     #endif
@@ -248,9 +242,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     }
 
     for (uint i = (enable_nss_pin ? 0 : 1); i < 4; i++) {
-        mp_hal_gpio_clock_enable(pins[i]->gpio);
-        GPIO_InitStructure.Pin = pins[i]->pin_mask;
-        HAL_GPIO_Init(pins[i]->gpio, &GPIO_InitStructure);
+        mp_hal_gpio_set_af(pins[i], &GPIO_InitStructure, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
     }
 
     // init the SPI device
