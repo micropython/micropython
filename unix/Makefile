@@ -10,6 +10,9 @@ QSTR_DEFS = qstrdefsport.h
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
 
+# Machine name
+UNAME_M := $(shell uname -m)
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -74,7 +77,11 @@ ifeq ($(MICROPY_FORCE_32BIT),1)
 # starting with linux-libc-dev:i386
 ifeq ($(MICROPY_PY_FFI),1)
 ifeq ($(UNAME_S),Linux)
+ifeq ($(UNAME_M), armv7l)
+CFLAGS_MOD += -I/usr/include/arm-linux-gnueabihf
+else
 CFLAGS_MOD += -I/usr/include/i686-linux-gnu
+endif
 endif
 endif
 endif
