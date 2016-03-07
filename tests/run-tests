@@ -136,8 +136,6 @@ def run_micropython(pyb, args, test_file):
                 if i_mupy >= len(lines_mupy):
                     break
             output_mupy = b''.join(lines_mupy)
-            if os.name == 'nt':
-                output_mupy = output_mupy.replace(b'\n', b'\r\n')
 
         else:
             # a standard test
@@ -150,9 +148,12 @@ def run_micropython(pyb, args, test_file):
         import pyboard
         pyb.enter_raw_repl()
         try:
-            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+            output_mupy = pyb.execfile(test_file)
         except pyboard.PyboardError:
             output_mupy = b'CRASH'
+
+    # canonical form for all ports/platforms is to use \n for end-of-line
+    output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
     return output_mupy
 
@@ -277,8 +278,6 @@ def run_tests(pyb, tests, args):
             # expected output given by a file, so read that in
             with open(test_file_expected, 'rb') as f:
                 output_expected = f.read()
-                if os.name == 'nt':
-                    output_expected = output_expected.replace(b'\n', b'\r\n')
         else:
             # run CPython to work out expected output
             try:
@@ -289,17 +288,16 @@ def run_tests(pyb, tests, args):
             except subprocess.CalledProcessError:
                 output_expected = b'CPYTHON3 CRASH'
 
+        # canonical form for all host platforms is to use \n for end-of-line
+        output_expected = output_expected.replace(b'\r\n', b'\n')
+
         if args.write_exp:
             continue
 
         # run Micro Python
         output_mupy = run_micropython(pyb, args, test_file)
-        if os.name != 'nt':
-            # It may be the case that we run Windows build under Linux
-            # (using Wine).
-            output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
-        if output_mupy == b'SKIP\n' or output_mupy == b'SKIP\r\n':
+        if output_mupy == b'SKIP\n':
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
