@@ -363,7 +363,7 @@ def main():
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            if args.target == 'esp8266':
+            elif args.target == 'esp8266':
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests
