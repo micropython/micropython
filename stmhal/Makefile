@@ -25,8 +25,8 @@ USBDEV_DIR=usbdev
 FATFS_DIR=lib/fatfs
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
-USE_PYDFU ?= 0
-PYDFU = ../tools/pydfu.py
+USE_PYDFU ?= 1
+PYDFU ?= ../tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 
