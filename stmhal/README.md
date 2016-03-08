@@ -57,6 +57,23 @@ Or using `dfu-util` directly:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV11/firmware.dfu
 
+
+### Flashing the Firmware with OpenOCD
+
+Another option to deploy the firmware on ST Discovery or Nucleo boards with a
+ST-LINK interface uses [OpenOCD](http://openocd.org/). Connect the board with
+a mini USB cable to its ST-LINK USB port and then use the make target
+`deploy-openocd`. For example, if you have the STM32F4DISCOVERY board:
+
+    $ make BOARD=STM32F4DISC deploy-openocd
+
+The `openocd` program, which writes the firmware to the target board's flash,
+is configured via the file `stmhal/boards/openocd_stm32f4.cfg`. This
+configuration should work for all boards based on a STM32F4xx MCU with a
+ST-LINKv2 interface. You can override the path to this configuration by setting
+`OPENOCD_CONFIG` in your Makefile or on the command line.
+
+
 Accessing the board
 -------------------
 
