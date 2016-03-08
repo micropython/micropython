@@ -29,6 +29,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
 	-fno-inline-functions \
 	-Wl,-EL -mlongcalls -mtext-section-literals \
+	-DLWIP_OPEN_SRC
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
