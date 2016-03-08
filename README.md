@@ -149,3 +149,4 @@ Then to flash the code via USB DFU to your device:
 This will use the included `tools/pydfu.py` script.  If flashing the firmware
 does not work it may be because you don't have the correct permissions, and
 need to use `sudo make deploy`.
+See the README.md file in the stmhal/ directory for further details.
