@@ -57,6 +57,31 @@ Or using `dfu-util` directly:
 
     $ sudo dfu-util -a 0 -d 0483:df11 -D build-PYBV11/firmware.dfu
 
+
+### Flashing the Firmware with stlink
+
+ST Discovery or Nucleo boards have a builtin programmer called ST-LINK. With
+these boards and using Linux or OS X, you have the option to upload the
+`stmhal` firmware using the `st-flash` utility from the
+[stlink](https://github.com/texane/stlink) project. To do so, connect the board
+with a mini USB cable to its ST-LINK USB port and then use the make target
+`deploy-stlink`. For example, if you have the STM32F4DISCOVERY board, you can
+run:
+
+    $ make BOARD=STM32F4DISC deploy-stlink
+
+The `st-flash` program should detect the USB connection to the board
+automatically. If not, run `lsusb` to determine its USB bus and device number
+and set the `STLINK_DEVICE` environment variable accordingly, using the format
+`<USB_BUS>:<USB_ADDR>`. Example:
+
+    $ lsusb
+    [...]
+    Bus 002 Device 035: ID 0483:3748 STMicroelectronics ST-LINK/V2
+    $ export STLINK_DEVICE="002:0035"
+    $ make BOARD=STM32F4DISC deploy-stlink
+
+
 Accessing the board
 -------------------
 
