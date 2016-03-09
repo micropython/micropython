@@ -34,6 +34,7 @@ ports = OrderedDict((
 
 # The members of the html_context dict are available inside topindex.html
 micropy_version = os.getenv('MICROPY_VERSION') or 'latest'
+micropy_all_versions = (os.getenv('MICROPY_ALL_VERSIONS') or 'latest').split(',')
 url_pattern = '%s/en/%%s/%%s' % (os.getenv('MICROPY_URL_PREFIX') or '/',)
 html_context = {
     'port':micropy_port,
@@ -46,7 +47,7 @@ html_context = {
     ],
     'all_versions':[
         (ver, url_pattern % (ver, micropy_port))
-            for ver in ('v1.4', 'v1.4.1', 'v1.5', 'v1.6', 'latest')
+            for ver in micropy_all_versions
     ],
 }
 
