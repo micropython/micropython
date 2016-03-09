@@ -1,5 +1,3 @@
-MICROPY_FORCE_32BIT = 1
-
 include ../py/mkenv.mk
 
 # define main target
