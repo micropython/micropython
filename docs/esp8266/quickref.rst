@@ -12,6 +12,7 @@ The Adafruit Feather HUZZAH board (image attribution: Adafruit).
 General board control
 ---------------------
 
+The MicroPython REPL is on UART0 (GPIO1=TX, GPIO3=RX) at baudrate 115200.
 Tab-completion is useful to find out what methods an object has.
 Paste mode (ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
@@ -53,14 +54,14 @@ A useful function for connecting to your local WiFi network is::
 
     def do_connect():
         import network
-        wlan = network.WLAN(wlan.STA_IF)
+        wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
-             wlan.connect('essid', 'password')
-             while not wlan.isconnected():
-                 pass
-         print('network config:', wlan.ifconfig())
+            wlan.connect('essid', 'password')
+            while not wlan.isconnected():
+                pass
+        print('network config:', wlan.ifconfig())
 
 Once the network is established the ``socket`` module can be used
 to create and use TCP/UDP sockets as usual.
@@ -188,6 +189,8 @@ The I2C driver is implemented in software and works on all pins::
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
 
     i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
+
+Note that reading is not yet implemented.
 
 OneWire driver
 --------------
