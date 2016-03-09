@@ -26,18 +26,28 @@ from collections import OrderedDict
 micropy_port = os.getenv('MICROPY_PORT') or 'pyboard'
 tags.add('port_' + micropy_port)
 ports = OrderedDict((
-    ("unix", "unix"),
-    ("pyboard", "the pyboard"),
-    ("wipy", "the WiPy"),
-    ("esp8266", "esp8266"),
+    ('unix', ('unix', 'unix')),
+    ('pyboard', ('pyboard', 'the pyboard')),
+    ('wipy', ('WiPy', 'the WiPy')),
+    ('esp8266', ('ESP8266', 'the ESP8266')),
 ))
 
 # The members of the html_context dict are available inside topindex.html
-url_prefix = os.getenv('MICROPY_URL_PREFIX') or '/'
+micropy_version = os.getenv('MICROPY_VERSION') or 'latest'
+url_pattern = '%s/en/%%s/%%s' % (os.getenv('MICROPY_URL_PREFIX') or '/',)
 html_context = {
     'port':micropy_port,
-    'port_name':ports[micropy_port],
-    'all_ports':[(n, url_prefix + p) for p, n in ports.items()],
+    'port_short_name':ports[micropy_port][0],
+    'port_name':ports[micropy_port][1],
+    'port_version':micropy_version,
+    'all_ports':[
+        (port_name[0], url_pattern % (micropy_version, port_id))
+            for port_id, port_name in ports.items()
+    ],
+    'all_versions':[
+        (ver, url_pattern % (ver, micropy_port))
+            for ver in ('v1.4', 'v1.4.1', 'v1.5', 'v1.6', 'latest')
+    ],
 }
 
 
