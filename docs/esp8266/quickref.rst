@@ -86,8 +86,10 @@ Use the ``machine.Timer`` class::
     from machine import Timer
 
     tim = Timer(0)
-    tim.init(period=10, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
-    tim.init(period=1, mode=Timer.PERIODIC, callback=lambda t:print(2))
+    tim.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
+    tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
+
+The period is in milliseconds.
 
 Pins and GPIO
 -------------
@@ -178,7 +180,7 @@ The I2C driver is implemented in software and works on all pins::
     from machine import Pin, I2C
 
     # construct an I2C bus
-    i2c = I2C(frequency=100000, scl=Pin(5), sda=Pin(4))
+    i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
 
     i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a
 
