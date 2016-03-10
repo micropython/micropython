@@ -15,7 +15,10 @@
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text
 tests/basics/string_crlf_conversion.py -text
-stmhal/pybcdc.inf_template -text
+stmhal/flash_files/boot.py -text
+stmhal/flash_files/main.py -text
+stmhal/flash_files/README.txt -text
+stmhal/flash_files/pybcdc.inf_template -text
 stmhal/usbd_* -text
 stmhal/boards/*/stm32f4xx_hal_conf.h -text
 stmhal/cmsis/** -text

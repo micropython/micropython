@@ -341,10 +341,18 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 INSERT_USB_IDS = ../tools/insert-usb-ids.py
 FILE2H = ../tools/file2h.py
 
+BOOT_PY_SRC ?= flash_files/boot.py
+MAIN_PY_SRC ?= flash_files/main.py
+README_TXT_SRC ?= flash_files/README.txt
+
 USB_IDS_FILE = usb.h
-CDCINF_TEMPLATE = pybcdc.inf_template
+CDCINF_TEMPLATE = flash_files/pybcdc.inf_template
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
-GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
+GEN_FLASH_HDRS = $(addprefix $(HEADER_BUILD)/,\
+	boot_py.h \
+	main_py.h \
+	pybcdc_inf.h \
+	readme_txt.h)
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
@@ -365,6 +373,8 @@ $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
 # main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
 main.c: $(GEN_CDCINF_HEADER)
+
+$(BUILD)/main.o: $(GEN_FLASH_HDRS)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
@@ -388,7 +398,12 @@ $(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py |
 	$(ECHO) "Create stmconst $@"
 	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
 
-$(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
+$(HEADER_BUILD)/boot_py.h: $(BOOT_PY_SRC)
+$(HEADER_BUILD)/main_py.h: $(MAIN_PY_SRC)
+$(HEADER_BUILD)/readme_txt.h: $(README_TXT_SRC)
+$(HEADER_BUILD)/pybcdc_inf.h: $(GEN_CDCINF_FILE)
+$(GEN_FLASH_HDRS): $(FILE2H) | $(HEADER_BUILD)
+$(GEN_FLASH_HDRS):
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(FILE2H) $< > $@
 

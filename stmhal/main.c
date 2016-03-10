@@ -61,6 +61,12 @@
 #include "can.h"
 #include "modnetwork.h"
 
+// include flash files converted to char arrays
+#include "genhdr/boot_py.h"
+#include "genhdr/main_py.h"
+#include "genhdr/readme_txt.h"
+#include "genhdr/pybcdc_inf.h"
+
 void SystemClock_Config(void);
 
 pyb_thread_t pyb_thread_main;
@@ -129,40 +135,6 @@ STATIC mp_obj_t pyb_main(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
-static const char fresh_boot_py[] =
-"# boot.py -- run on boot-up\r\n"
-"# can run arbitrary Python, but best to keep it minimal\r\n"
-"\r\n"
-"import machine\r\n"
-"import pyb\r\n"
-"#pyb.main('main.py') # main script to run after this one\r\n"
-"#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
-"#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
-;
-
-static const char fresh_main_py[] =
-"# main.py -- put your code here!\r\n"
-;
-
-static const char fresh_pybcdc_inf[] =
-#include "genhdr/pybcdc_inf.h"
-;
-
-static const char fresh_readme_txt[] =
-"This is a MicroPython board\r\n"
-"\r\n"
-"You can get started right away by writing your Python code in 'main.py'.\r\n"
-"\r\n"
-"For a serial prompt:\r\n"
-" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
-"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
-"   Then use a terminal program like Hyperterminal or putty.\r\n"
-" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
-" - Linux: use the command: screen /dev/ttyACM0\r\n"
-"\r\n"
-"Please visit http://micropython.org/help/ for further help.\r\n"
-;
-
 // avoid inlining to avoid stack usage within main()
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // init the vfs object
@@ -196,7 +168,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         FIL fp;
         f_open(&vfs_fat->fatfs, &fp, "/main.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
-        f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
+        f_write(&fp, main_py_data, main_py_len, &n);
         // TODO check we could write n bytes
         f_close(&fp);
 
@@ -250,7 +222,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         FIL fp;
         f_open(&vfs_fat->fatfs, &fp, "/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
-        f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
+        f_write(&fp, boot_py_data, boot_py_len, &n);
         // TODO check we could write n bytes
         f_close(&fp);
 
