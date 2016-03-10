@@ -1,32 +1,27 @@
 /*
-    GNU linker script for STM32F401
+    GNU linker script for STM32F439
 */
 
 /* Specify the memory areas */
-/* TODO verify these regions */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x080000 /* entire flash, 512 KiB */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x200000 /* entire flash, 2048 KiB */
     FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 0x004000 /* sector 0, 16 KiB */
-                                                             /* sectors 1,2,3 are 16K, 4 is 64K (for filesystem) */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x080000 /* sectors 5,6,7 3*128KiB = 384 KiB */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x018000 /* 96 KiB */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x080000 /* sectors 5,6,7,8, 4*128KiB = 512 KiB (could increase it more) */
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x030000 /* 192 KiB */
+    CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
 }
-
-ENTRY(Reset_Handler)
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
- 
-/* Define tho top end of the stack.  The stack is full descending so begins just
-   above last byte of RAM.  Note that EABI requires the stack to be 8-byte
-   aligned for a call. */
+
+/* top end of the stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_end = 0x20014000; /* tunable */
+_heap_end = 0x2002c000; /* tunable */
 
 /* define output sections */
 SECTIONS
@@ -37,22 +32,16 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
 
-        /* This first flash block is 16K annd the isr vectors only take up
-           about 400 bytes. So we pull in a couple of object files to pad it
-           out. */
-
-        . = ALIGN(4);
-        */ff.o(.text*)
-        */stm32f4xx_hal_sd.o(.text*)
-
         . = ALIGN(4);
     } >FLASH_ISR
-   
+
     /* The program code and other data goes into FLASH */
     .text :
     {
         . = ALIGN(4);
+        *(.text)           /* .text sections (code) */
         *(.text*)          /* .text* sections (code) */
+        *(.rodata)         /* .rodata sections (constants, strings, etc.) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */
     /*  *(.glue_7t)  */    /* glue thumb to arm code */
@@ -60,7 +49,7 @@ SECTIONS
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
     } >FLASH_TEXT
-     
+
     /*
     .ARM.extab :
     {
@@ -74,10 +63,10 @@ SECTIONS
         __exidx_end = .;
     } >FLASH
     */
-        
+
     /* used by the startup to initialize data */
     _sidata = LOADADDR(.data);
-        
+
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
@@ -87,17 +76,19 @@ SECTIONS
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
         _ram_start = .;    /* create a global symbol at ram start for garbage collector */
+        *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM AT> FLASH_TEXT
-            
+
     /* Uninitialized data section */
     .bss :
     {
         . = ALIGN(4);
         _sbss = .;         /* define a global symbol at bss start; used by startup code */
+        *(.bss)
         *(.bss*)
         *(COMMON)
 

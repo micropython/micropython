@@ -58,9 +58,75 @@ STATIC mp_obj_t fat_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fat_vfs_open_obj, 2, fat_vfs_open);
 
+STATIC mp_obj_t fat_vfs_listdir_func(size_t n_args, const mp_obj_t *args) {
+    bool is_str_type = true;
+    const char *path;
+    if (n_args == 2) {
+        if (mp_obj_get_type(args[1]) == &mp_type_bytes) {
+            is_str_type = false;
+        }
+        path = mp_obj_str_get_str(args[1]);
+    } else {
+        path = "";
+    }
+
+    return fat_vfs_listdir(path, is_str_type);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_listdir_obj, 1, 2, fat_vfs_listdir_func);
+
+STATIC mp_obj_t fat_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
+    (void)vfs_in;
+    const char *path = mp_obj_str_get_str(path_in);
+    // TODO check that path is actually a file before trying to unlink it
+    FRESULT res = f_unlink(path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            // TODO: standard errno's
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_remove_obj, fat_vfs_remove);
+
+STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_out) {
+    (void)vfs_in;
+    const char *old_path = mp_obj_str_get_str(path_in);
+    const char *new_path = mp_obj_str_get_str(path_out);
+    FRESULT res = f_rename(old_path, new_path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error renaming file '%s' to '%s'", old_path, new_path));
+    }
+
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_rename_obj, fat_vfs_rename);
+
+STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
+    (void)vfs_in;
+    const char *path = mp_obj_str_get_str(path_o);
+    FRESULT res = f_mkdir(path);
+    switch (res) {
+        case FR_OK:
+            return mp_const_none;
+        case FR_EXIST:
+            // TODO should be FileExistsError
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "File exists: '%s'", path));
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
+
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&fat_vfs_open_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&fat_vfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&fat_vfs_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&fat_vfs_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&fat_vfs_rename_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 

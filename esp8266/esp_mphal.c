@@ -30,6 +30,8 @@
 #include "uart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
+#include "py/obj.h"
+#include "py/mpstate.h"
 
 extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
@@ -37,6 +39,7 @@ extern void ets_delay_us();
 
 void mp_hal_init(void) {
     ets_wdt_disable(); // it's a pain while developing
+    mp_hal_rtc_init();
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
 }
 
@@ -86,10 +89,24 @@ uint32_t mp_hal_ticks_ms(void) {
     return system_get_time() / 1000;
 }
 
+uint32_t mp_hal_ticks_us(void) {
+    return system_get_time();
+}
+
 void mp_hal_delay_ms(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
 }
 
 void mp_hal_set_interrupt_char(int c) {
-    // TODO
+    if (c != -1) {
+        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
+    }
+    extern int interrupt_char;
+    interrupt_char = c;
+}
+
+void __assert_func(const char *file, int line, const char *func, const char *expr) {
+    printf("assert:%s:%d:%s: %s\n", file, line, func, expr);
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_AssertionError,
+        "C-level assert"));
 }

@@ -52,22 +52,25 @@ STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
 
     // need to insert self->self before all other args and then call self->meth
 
-    mp_uint_t n_total = n_args + 2 * n_kw;
-    if (n_total <= 4) {
-        // use stack to allocate temporary args array
-        mp_obj_t args2[5];
-        args2[0] = self->self;
-        memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
-        return mp_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
-    } else {
-        // use heap to allocate temporary args array
-        mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_total);
-        args2[0] = self->self;
-        memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
-        mp_obj_t res = mp_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
-        m_del(mp_obj_t, args2, 1 + n_total);
-        return res;
+    size_t n_total = n_args + 2 * n_kw;
+    mp_obj_t *args2 = NULL;
+    mp_obj_t *free_args2 = NULL;
+    if (n_total > 4) {
+        // try to use heap to allocate temporary args array
+        args2 = m_new_maybe(mp_obj_t, 1 + n_total);
+        free_args2 = args2;
     }
+    if (args2 == NULL) {
+        // (fallback to) use stack to allocate temporary args array
+        args2 = alloca(sizeof(mp_obj_t) * (1 + n_total));
+    }
+    args2[0] = self->self;
+    memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
+    mp_obj_t res = mp_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
+    if (free_args2 != NULL) {
+        m_del(mp_obj_t, free_args2, 1 + n_total);
+    }
+    return res;
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS

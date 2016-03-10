@@ -105,6 +105,15 @@ void uart_tx_one_char(uint8 uart, uint8 TxChar) {
     WRITE_PERI_REG(UART_FIFO(uart), TxChar);
 }
 
+void uart_flush(uint8 uart) {
+    while (true) {
+        uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT<<UART_TXFIFO_CNT_S);
+        if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) == 0) {
+            break;
+        }
+    }
+}
+
 /******************************************************************************
  * FunctionName : uart1_write_char
  * Description  : Internal used function
@@ -210,10 +219,15 @@ void ICACHE_FLASH_ATTR uart_reattach() {
 #include "lib/utils/pyexec.h"
 
 void soft_reset(void);
+void mp_keyboard_interrupt(void);
 
+int interrupt_char;
 void uart_task_handler(os_event_t *evt) {
     int c, ret = 0;
     while ((c = uart_rx_one_char(UART_REPL)) >= 0) {
+        if (c == interrupt_char) {
+            mp_keyboard_interrupt();
+        }
         ret = pyexec_event_repl_process_char(c);
         if (ret & PYEXEC_FORCED_EXIT) {
             break;

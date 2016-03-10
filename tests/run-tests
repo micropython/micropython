@@ -136,8 +136,6 @@ def run_micropython(pyb, args, test_file):
                 if i_mupy >= len(lines_mupy):
                     break
             output_mupy = b''.join(lines_mupy)
-            if os.name == 'nt':
-                output_mupy = output_mupy.replace(b'\n', b'\r\n')
 
         else:
             # a standard test
@@ -150,9 +148,12 @@ def run_micropython(pyb, args, test_file):
         import pyboard
         pyb.enter_raw_repl()
         try:
-            output_mupy = pyb.execfile(test_file).replace(b'\r\n', b'\n')
+            output_mupy = pyb.execfile(test_file)
         except pyboard.PyboardError:
             output_mupy = b'CRASH'
+
+    # canonical form for all ports/platforms is to use \n for end-of-line
+    output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
     return output_mupy
 
@@ -218,6 +219,12 @@ def run_tests(pyb, tests, args):
             skip_tests.add('extmod/uheapq1.py')             # uheapq not supported by WiPy
             skip_tests.add('extmod/urandom_basic.py')       # requires urandom
             skip_tests.add('extmod/urandom_extra.py')       # requires urandom
+        elif args.target == 'esp8266':
+            skip_tests.add('float/float2int.py')            # requires at least fp32, there's float2int_fp30.py instead
+            skip_tests.add('float/string_format.py')        # requires at least fp32, there's string_format_fp30.py instead
+            skip_tests.add('float/bytes_construct.py')      # requires fp32
+            skip_tests.add('float/bytearray_construct.py')  # requires fp32
+            skip_tests.add('misc/rge_sm.py')                # too large
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -271,8 +278,6 @@ def run_tests(pyb, tests, args):
             # expected output given by a file, so read that in
             with open(test_file_expected, 'rb') as f:
                 output_expected = f.read()
-                if os.name == 'nt':
-                    output_expected = output_expected.replace(b'\n', b'\r\n')
         else:
             # run CPython to work out expected output
             try:
@@ -283,17 +288,16 @@ def run_tests(pyb, tests, args):
             except subprocess.CalledProcessError:
                 output_expected = b'CPYTHON3 CRASH'
 
+        # canonical form for all host platforms is to use \n for end-of-line
+        output_expected = output_expected.replace(b'\r\n', b'\n')
+
         if args.write_exp:
             continue
 
         # run Micro Python
         output_mupy = run_micropython(pyb, args, test_file)
-        if os.name != 'nt':
-            # It may be the case that we run Windows build under Linux
-            # (using Wine).
-            output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
-        if output_mupy == b'SKIP\n' or output_mupy == b'SKIP\r\n':
+        if output_mupy == b'SKIP\n':
             print("skip ", test_file)
             skipped_tests.append(test_name)
             continue
@@ -357,7 +361,7 @@ def main():
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            if args.target == 'esp8266':
+            elif args.target == 'esp8266':
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests

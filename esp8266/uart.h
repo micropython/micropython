@@ -92,5 +92,6 @@ typedef struct {
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
 int uart0_rx(void);
 void uart_tx_one_char(uint8 uart, uint8 TxChar);
+void uart_flush(uint8 uart);
 
 #endif // _INCLUDED_UART_H_

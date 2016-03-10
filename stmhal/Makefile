@@ -25,10 +25,13 @@ USBDEV_DIR=usbdev
 FATFS_DIR=lib/fatfs
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
-USE_PYDFU ?= 0
-PYDFU = ../tools/pydfu.py
+USE_PYDFU ?= 1
+PYDFU ?= ../tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
+STFLASH ?= st-flash
+OPENOCD ?= openocd
+OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -285,6 +288,16 @@ ifeq ($(USE_PYDFU),1)
 else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
+
+deploy-stlink: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
+	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
+	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
+
+deploy-openocd: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
+	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin"
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"

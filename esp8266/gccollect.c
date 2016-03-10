@@ -39,10 +39,6 @@ void gc_collect(void) {
     // start the GC
     gc_collect_start();
 
-    // We need to scan everything in RAM that can hold a pointer.
-    // The data segment is used, but should not contain pointers, so we just scan the bss.
-    gc_collect_root((void**)&_bss_start, ((uint32_t)&_bss_end - (uint32_t)&_bss_start) / sizeof(uint32_t));
-
     // get the registers and the sp
     mp_uint_t regs[8];
     mp_uint_t sp = gc_helper_get_regs_and_sp(regs);

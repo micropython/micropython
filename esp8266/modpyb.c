@@ -77,23 +77,6 @@ STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
 
-STATIC mp_obj_t pyb_freq(mp_uint_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        // get
-        return mp_obj_new_int(system_get_cpu_freq() * 1000000);
-    } else {
-        // set
-        mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
-        if (freq != 80 && freq != 160) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                    "frequency can only be either 80Mhz or 160MHz"));
-        }
-        system_update_cpu_freq(freq);
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_freq_obj, 0, 1, pyb_freq);
-
 STATIC mp_obj_t pyb_sync(void) {
     //storage_flush();
     return mp_const_none;
@@ -158,7 +141,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&pyb_freq_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },

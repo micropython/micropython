@@ -35,6 +35,10 @@ void mp_stack_ctrl_init(void) {
     MP_STATE_VM(stack_top) = (char*)&stack_dummy;
 }
 
+void mp_stack_set_top(void *top) {
+    MP_STATE_VM(stack_top) = top;
+}
+
 mp_uint_t mp_stack_usage(void) {
     // Assumes descending stack
     volatile int stack_dummy;

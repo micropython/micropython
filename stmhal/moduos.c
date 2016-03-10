@@ -54,10 +54,6 @@
 /// On boot up, the current directory is `/flash` if no SD card is inserted,
 /// otherwise it is `/sd`.
 
-#if _USE_LFN
-static char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
-#endif
-
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
     MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
@@ -144,57 +140,7 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
         return dir_list;
     }
 
-    FRESULT res;
-    FILINFO fno;
-    DIR dir;
-#if _USE_LFN
-    fno.lfname = lfn;
-    fno.lfsize = sizeof lfn;
-#endif
-
-    res = f_opendir(&dir, path);                       /* Open the directory */
-    if (res != FR_OK) {
-        // TODO should be mp_type_FileNotFoundError
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "No such file or directory: '%s'", path));
-    }
-
-    mp_obj_t dir_list = mp_obj_new_list(0, NULL);
-
-    for (;;) {
-        res = f_readdir(&dir, &fno);                   /* Read a directory item */
-        if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
-        if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;             /* Ignore . entry */
-        if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
-
-#if _USE_LFN
-        char *fn = *fno.lfname ? fno.lfname : fno.fname;
-#else
-        char *fn = fno.fname;
-#endif
-
-        /*
-        if (fno.fattrib & AM_DIR) {
-            // dir
-        } else {
-            // file
-        }
-        */
-
-        // make a string object for this entry
-        mp_obj_t entry_o;
-        if (is_str_type) {
-            entry_o = mp_obj_new_str(fn, strlen(fn), false);
-        } else {
-            entry_o = mp_obj_new_bytes((const byte*)fn, strlen(fn));
-        }
-
-        // add the entry to the list
-        mp_obj_list_append(dir_list, entry_o);
-    }
-
-    f_closedir(&dir);
-
-    return dir_list;
+    return fat_vfs_listdir(path, is_str_type);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 

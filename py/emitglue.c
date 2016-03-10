@@ -403,7 +403,7 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
 // here we define mp_raw_code_load_file depending on the port
 // TODO abstract this away properly
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || (defined(__arm__) && (defined(__unix__)))
 // unix file reader
 
 #include <sys/stat.h>
@@ -637,7 +637,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 // here we define mp_raw_code_save_file depending on the port
 // TODO abstract this away properly
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || (defined(__arm__) && (defined(__unix__)))
 
 #include <unistd.h>
 #include <sys/stat.h>

@@ -9,8 +9,8 @@ include ../py/py.mk
 MAKE_FROZEN = ../tools/make-frozen.py
 
 SCRIPTDIR = scripts
-PORT = /dev/ttyACM0
-BAUD = 115200
+PORT ?= /dev/ttyACM0
+BAUD ?= 115200
 CROSS_COMPILE = xtensa-lx106-elf-
 ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 
@@ -29,12 +29,13 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
 	-fno-inline-functions \
 	-Wl,-EL -mlongcalls -mtext-section-literals \
+	-DLWIP_OPEN_SRC
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
+LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
@@ -63,8 +64,10 @@ SRC_C = \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
+	modmachine.c \
 	utils.c \
 	$(BUILD)/frozen.c \
+	../extmod/modlwip.o \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
@@ -72,6 +75,24 @@ STM_SRC_C = $(addprefix stmhal/,\
 
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
+	libm/math.c \
+	libm/fmodf.c \
+	libm/roundf.c \
+	libm/ef_sqrt.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
+	libm/sf_frexp.c \
+	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/asinfacosf.c \
+	libm/atanf.c \
+	libm/atan2f.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \

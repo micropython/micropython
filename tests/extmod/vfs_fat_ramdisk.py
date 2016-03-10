@@ -55,3 +55,19 @@ f2.close()
 
 assert b"FOO_FILETXT" in bdev.data
 assert b"hello!" in bdev.data
+
+assert vfs.listdir() == ['foo_file.txt']
+
+vfs.remove('foo_file.txt')
+assert vfs.listdir() == []
+
+vfs.mkdir("foo_dir")
+assert vfs.listdir() == ['foo_dir']
+f = vfs.open("foo_dir/file-in-dir.txt", "w")
+f.write("data in file")
+f.close()
+
+assert vfs.listdir("foo_dir") == ['file-in-dir.txt']
+
+vfs.rename("foo_dir/file-in-dir.txt", "moved-to-root.txt")
+assert vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
