@@ -2,8 +2,8 @@ ENTRY(Reset_Handler)
 
 INCLUDE "export-rom_v03.txt"
 
-__stack_size__    = 3K;       /* interrupts are handled within this stack */
-__min_heap_size__ = 8K;
+__stack_size__    = 5K;       /* interrupts are handled within this stack */
+__min_heap_size__ = 20K;
 
 MEMORY
 {
