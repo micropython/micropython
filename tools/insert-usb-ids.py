@@ -18,7 +18,7 @@ def parse_usb_ids(filename):
         if match and match.group(1).startswith('USBD_'):
             key = match.group(1).replace('USBD', 'USB')
             val = match.group(2)
-            print("key =", key, "val =", val)
+            print("key =", key, "val =", val, end='\r\n')
             if key in needed_keys:
                 rv[key] = val
     for k in needed_keys:
@@ -31,4 +31,5 @@ if __name__ == "__main__":
     template_file = sys.argv[2]
     replacements = parse_usb_ids(usb_ids_file)
     for line in open(template_file, 'r').readlines():
-        print(string.Template(line).safe_substitute(replacements), end='')
+        print(string.Template(line.rstrip('\n')).safe_substitute(replacements),
+              end='\r\n')
