@@ -9,7 +9,10 @@ The process of developing high performance code comprises the following stages
 which should be performed in the order listed.
 
 * Design for speed.
-* Code and debug. Optimisation steps:
+* Code and debug.
+
+Optimisation steps:
+
 * Identify the slowest section of code.
 * Improve the efficiency of the Python code.
 * Use the native code emitter.
@@ -56,12 +59,12 @@ An example of the above is the common case where a buffer is required, such as o
 used for communication with a device. A typical driver will create the buffer in the
 constructor and use it in its I/O methods which will be called repeatedly.
 
-The MicroPython libraries typically provide optional support pre-allocated buffers.
+The MicroPython libraries typically provide optional support for pre-allocated buffers.
 For example the ``uart.readinto()`` method allows two options for its argument, an integer
 or a buffer. If an integer is supplied it will read up to that number of bytes and
 return the outcome: this implies that a buffer is created with a corresponding
 memory allocation. Providing a pre-allocated buffer as the argument avoids this. See
-the code fragment in :ref:`Cacheing object references <Cacheing>` below.
+the code fragment in :ref:`Caching object references <Caching>` below.
 
 Floating Point
 ~~~~~~~~~~~~~~
@@ -74,12 +77,11 @@ where performance is not paramount.
 Arrays
 ~~~~~~
 
-Python lists are convenient but randomly accessing list elements is relatively slow
-involving navigation through a linked list. The ``array`` module provides an alternative 
-along with Python's built in ``bytes`` and ``bytearray`` classes. These data
-structures store elements in contiguous memory locations enabling fast random
-access. Once again to avoid memory allocation in critical code these
-should be pre-allocated and passed as arguments or as bound objects.
+Consider the use of the various types of array classes as an alternative to lists.
+The ``array`` module supports various element types with 8-bit elements supported
+by Python's built in ``bytes`` and ``bytearray`` classes. These data structures all store
+elements in contiguous memory locations. Once again to avoid memory allocation in critical
+code these should be pre-allocated and passed as arguments or as bound objects.
 
 When passing slices of objects such as ``bytearray`` instances, Python creates
 a copy which involves allocation. This can be avoided using a ``memoryview``
@@ -92,9 +94,8 @@ object:
     mv = memoryview(ba)
     func(mv[3:10]) # a pointer to memory is passed
 
-The ``memoryview`` can only be applied to objects whose data is contained in contiguous
-memory locations (objects supporting the buffer protocol) - another reason for using
-arrays rather than lists.
+A ``memoryview`` can only be applied to objects supporting the buffer protocol - this
+includes arrays but not lists.
 
 Identifying the slowest section of code
 ---------------------------------------
@@ -103,7 +104,9 @@ This is a process known as profiling and is covered in textbooks and
 (for standard Python) supported by various software tools. For the type of
 smaller embedded application likely to be running on MicroPython platforms
 the slowest function or method can usually be established by judicious use
-of ``print(pyb.elapsed_micros(start))`` statements.
+of the timing ``ticks`` group of functions documented
+`here <http://docs.micropython.org/en/latest/pyboard/library/time.html>`_.
+Code execution time can be measured in ms, us, or CPU cycles.
 
 The following enables any function or method to be timed by adding an
 ``@timed_function`` decorator:
@@ -113,9 +116,9 @@ The following enables any function or method to be timed by adding an
     def timed_function(f, *args, **kwargs):
         myname = str(f).split(' ')[1]
         def new_func(*args, **kwargs):
-            t = pyb.micros()
+            t = time.ticks_us()
             result = f(*args, **kwargs)
-            delta = pyb.elapsed_micros(t)
+            delta = time.ticks_diff(t, time.ticks_us())
             print('Function {} Time = {:6.3f}ms'.format(myname, delta/1000))
             return result
         return new_func
@@ -132,13 +135,13 @@ substitutes the numeric value for the identifier. This avoids a dictionary
 lookup at runtime. The argument to ``const()`` may be anything which, at
 compile time, evaluates to an integer e.g. ``0x100`` or ``1 << 8``.
 
-.. _Cacheing:
+.. _Caching:
 
-Cacheing object references
+Caching object references
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Where a function or method repeatedly accesses objects performance is improved
-by cacheing the object in a local variable:
+by caching the object in a local variable:
 
 .. code:: python
 
@@ -177,7 +180,7 @@ Accessing hardware directly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This comes into the category of more advanced programming and involves some knowledge
-of the target MPU. Consider the example of toggling an output pin on the Pyboard. The 
+of the target MCU. Consider the example of toggling an output pin on the Pyboard. The 
 standard approach would be to write
 
 .. code:: python
@@ -200,7 +203,7 @@ The Native code emitter
 -----------------------
 
 This causes the MicroPython compiler to emit ARM native opcodes rather than
-bytecode. It covers the bulk or the Python language so most functions will require
+bytecode. It covers the bulk of the Python language so most functions will require
 no adaptation (but see below). It is invoked by means of a function decorator:
 
 .. code:: python
@@ -216,7 +219,8 @@ There are certain limitations in the current implementation of the native code e
 * Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
 
-The trade-off for the improved performance is an increase in compiled code size.
+The trade-off for the improved performance (roughly twices as fast as bytecode) is an
+increase in compiled code size.
 
 The Viper code emitter
 ----------------------
@@ -238,7 +242,7 @@ bit manipulations. It is invoked using a decorator:
 
 As the above fragment illustrates it is beneficial to use Python type hints to assist the Viper optimiser. 
 Type hints provide information on the data types of arguments and of the return value; these
-are a new language feature formally defined here `PEP0484 <https://www.python.org/dev/peps/pep-0484/>`_.
+are a standard Python language feature formally defined here `PEP0484 <https://www.python.org/dev/peps/pep-0484/>`_.
 Viper supports its own set of types namely ``int``, ``uint`` (unsigned integer), ``ptr``, ``ptr8``,
 ``ptr16`` and ``ptr32``. The ``ptrX`` types are discussed below. Currently the ``uint`` type serves
 a single purpose: as a type hint for a function return value. If such a function returns ``0xffffffff``
@@ -261,9 +265,10 @@ The concept of a pointer may be unfamiliar to Python programmers. It has similar
 to a Python ``memoryview`` object in that it provides direct access to data stored in memory.
 Items are accessed using subscript notation, but slices are not supported: a pointer can return
 a single item only. Its purpose is to provide fast random access to data stored in contiguous
-memory locations - in other words data stored in objects which support the buffer protocol.
-It should be noted that programming using pointers is hazardous: bounds checking is not performed
-and the compiler does nothing to prevent buffer overrun errors.
+memory locations - such as data stored in objects which support the buffer protocol, and
+memory-mapped peripheral registers in a microcontroller. It should be noted that programming
+using pointers is hazardous: bounds checking is not performed and the compiler does nothing to
+prevent buffer overrun errors.
 
 Typical usage is to cache variables:
 
@@ -282,7 +287,7 @@ used to convert objects to Viper native types these should be performed at the s
 the function rather than in critical timing loops as the cast operation can take several
 microseconds. The rules for casting are as follows:
 
-* Casting operators are currently: ``int``, ``uint``, ``ptr``, ``ptr8``, ``ptr16`` and ``ptr32``.
+* Casting operators are currently: ``int``, ``bool``, ``uint``, ``ptr``, ``ptr8``, ``ptr16`` and ``ptr32``.
 * The result of a cast will be a native Viper variable.
 * Arguments to a cast can be a Python object or a native Viper variable.
 * If argument is a native Viper variable, then cast is a no-op (i.e. costs nothing at runtime)
@@ -290,6 +295,8 @@ microseconds. The rules for casting are as follows:
   using this pointer.
 * If the argument is a Python object and the cast is ``int`` or ``uint``, then the Python object
   must be of integral type and the value of that integral object is returned.
+* The argument to a bool cast must be integral type (boolean or integer); when used as a return
+  type the viper function will return True or False objects.
 * If the argument is a Python object and the cast is ``ptr``, ``ptr``, ``ptr16`` or ``ptr32``,
   then the Python object must either have the buffer protocol with read-write capabilities
   (in which case a pointer to the start of the buffer is returned) or it must be of integral

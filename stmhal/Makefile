@@ -158,6 +158,7 @@ SRC_C = \
 	diskio.c \
 	ffconf.c \
 	lcd.c \
+	font_flash.c \
 	accel.c \
 	servo.c \
 	dac.c \

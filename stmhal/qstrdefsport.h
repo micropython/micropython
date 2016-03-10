@@ -497,3 +497,7 @@ Q(mem)
 Q(mem8)
 Q(mem16)
 Q(mem32)
+
+Q(font_flash)
+Q(font_addr)
+
