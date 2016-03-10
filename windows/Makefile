@@ -56,4 +56,10 @@ endif
 
 LIB += -lws2_32
 
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
+
 include ../py/mkrules.mk

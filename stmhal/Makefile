@@ -353,6 +353,12 @@ CDCINF_TEMPLATE = pybcdc.inf_template
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
+
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the

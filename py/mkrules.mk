@@ -46,9 +46,29 @@ vpath %.c . $(TOP)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
+# A empty qstrdefs header is needed to properly preprocess every file
+EMPTY_QSTRDEFS_GENERATED_H = $(BUILD)/tmp/genhdr/qstrdefs.generated.h
+
+# List all native flags since the current build system doesn't have
+# the micropython configuration available. However, these flags are
+# needed to extract all qstrings
+QSTR_GEN_EXTRA_CFLAGS += -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
+QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
+
+vpath %.c . $(TOP)
+$(HEADER_BUILD)/%.qstr: % | $(EMPTY_QSTRDEFS_GENERATED_H) $(HEADER_BUILD)/mpversion.h $(SRC_QSTR_AUTO_DEPS)
+	  @mkdir -p $(dir $@);
+	  $(Q)$(CPP)  $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $< -o - | $(PYTHON) $(PY_SRC)/makeqstrdefs.py -s -o $@
+
+
 $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
+
+$(EMPTY_QSTRDEFS_GENERATED_H):
+	$(ECHO) "Generate empty $@ to satisfy qstr generator"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)touch $@
 
 # The following rule uses | to create an order only prereuisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
@@ -60,6 +80,14 @@ $(BUILD)/%.pp: %.c
 # an order-only dependendency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
+
+# This rule joins all generated qstr files
+$(QSTR_DEFS_COLLECTED): $(addprefix $(HEADER_BUILD)/,$(addsuffix .qstr,$(SRC_QSTR))) $(PY_SRC)/mpconfig.h
+	$(ECHO) "GEN $@"
+	$(Q)cat $^ > $@
+
+
+#
 
 # $(sort $(var)) removes duplicates
 #
