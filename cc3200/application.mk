@@ -171,6 +171,12 @@ OBJ += $(addprefix $(BUILD)/, $(APP_MODS_SRC_C:.c=.o) $(APP_CC3100_SRC_C:.c=.o) 
 OBJ += $(addprefix $(BUILD)/, $(APP_MAIN_SRC_C:.c=.o) $(APP_LIB_SRC_C:.c=.o) $(APP_STM_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins.o
 
+# List of sources for qstr extraction
+SRC_QSTR += $(APP_MODS_SRC_C) $(APP_MISC_SRC_C) $(APP_STM_SRC_C)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
+
 # Add the linker script
 LINKER_SCRIPT = application.lds
 LDFLAGS += -T $(LINKER_SCRIPT)
