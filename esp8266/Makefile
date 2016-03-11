@@ -66,6 +66,7 @@ SRC_C = \
 	moduos.c \
 	modmachine.c \
 	utils.c \
+	ets_alt_task.c \
 	$(BUILD)/frozen.c \
 	../extmod/modlwip.o \
 
