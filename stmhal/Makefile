@@ -160,6 +160,7 @@ SRC_C = \
 	sdcard.c \
 	fatfs_port.c \
 	lcd.c \
+	font_flash.c \
 	accel.c \
 	servo.c \
 	dac.c \
