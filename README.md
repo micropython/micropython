@@ -56,6 +56,41 @@ Additional components:
 "make" is used to build the components, or "gmake" on BSD-based systems.
 You will also need bash and Python (at least 2.7 or 3.3).
 
+External dependencies
+---------------------
+
+Some ports (e.g. unix, esp2866) require some dependencies installed. On
+Debian/Ubuntu/Mint derivative Linux distros, install `build-essential`
+(includes toolchain and make), `libffi-dev` (for unix port), and `pkg-config`
+packages.
+
+Other dependencies can be built together with MicroPython. Oftentimes,
+you need to do this to enable extra features or capabilities. To build
+these additional dependencies, first fetch git submodules for them:
+
+    $ git submodule update --init
+
+Use this same command to get the latest versions of dependencies, as
+they are updated from time to time.
+
+For most ports you can then continue to build the port according to the
+instructions given in the port-specifc sections below. To build external
+dependencies for the unix port, change to the `unix/` dir and execute:
+
+    $ make deplibs
+
+This will build all available dependencies (regardless whether they
+are used or not). If you intend to build MicroPython with additional
+options (like cross-compiling), the same set of options should be passed
+to `make deplibs`. To actually enable use of dependencies, edit
+`unix/mpconfigport.mk` file, which has inline descriptions of the options.
+For example, to build SSL module (required for `upip` tool described above),
+set `MICROPY_PY_USSL` to 1.
+
+In `unix/mpconfigport.mk`, you can also disable some dependencies enabled
+by default, like FFI support, which requires libffi development files to
+be installed.
+
 The Unix version
 ----------------
 
@@ -95,36 +130,6 @@ Browse available modules on
 Standard library modules come from
 [micropython-lib](https://github.com/micropython/micropython-lib) project.
 
-External dependencies
----------------------
-
-Building Unix version requires some dependencies installed. For
-Debian/Ubuntu/Mint derivative Linux distros, install `build-essential`
-(includes toolchain and make), `libffi-dev`, and `pkg-config` packages.
-
-Other dependencies can be built together with MicroPython. Oftentimes,
-you need to do this to enable extra features or capabilities. To build
-these additional dependencies, first fetch git submodules for them:
-
-    $ git submodule update --init
-
-Use this same command to get the latest versions of dependencies, as
-they are updated from time to time. After that, in `unix/` dir, execute:
-
-    $ make deplibs
-
-This will build all available dependencies (regardless whether they
-are used or not). If you intend to build MicroPython with additional
-options (like cross-compiling), the same set of options should be passed
-to `make deplibs`. To actually enabled use of dependencies, edit
-`unix/mpconfigport.mk` file, which has inline descriptions of the options.
-For example, to build SSL module (required for `upip` tool described above),
-set `MICROPY_PY_USSL` to 1.
-
-In `unix/mpconfigport.mk`, you can also disable some dependencies enabled
-by default, like FFI support, which requires libffi development files to
-be installed.
-
 The STM version
 ---------------
 
@@ -148,5 +153,11 @@ Then to flash the code via USB DFU to your device:
 
 This will use the included `tools/pydfu.py` script.  If flashing the firmware
 does not work it may be because you don't have the correct permissions, and
-need to use `sudo make deploy`.
-See the README.md file in the stmhal/ directory for further details.
+need to use `sudo make deploy`. See the `README.md` file in the `stmhal/`
+directory for further details.
+
+The ESP8266 version
+-------------------
+
+Instructions for building MicroPython for ESP8266-based boards are found in
+the `README.md` file in the `esp2866/` directory.
