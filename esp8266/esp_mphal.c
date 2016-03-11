@@ -30,6 +30,7 @@
 #include "uart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
+#include "ets_alt_task.h"
 #include "py/obj.h"
 #include "py/mpstate.h"
 
@@ -103,6 +104,15 @@ void mp_hal_set_interrupt_char(int c) {
     }
     extern int interrupt_char;
     interrupt_char = c;
+}
+
+void ets_event_poll(void) {
+    ets_loop_iter();
+    if (MP_STATE_VM(mp_pending_exception) != NULL) {
+        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+        nlr_raise(obj);
+    }
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
