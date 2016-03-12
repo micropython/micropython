@@ -303,44 +303,52 @@ class Slave:
     def receive(self):
         if self.serial.any():
             answer = self.serial.readall()
-            payloadFromMaster = _extractPayload(answer, self.address, self.mode, None)
-            self.__analysePacket(payloadFromMaster)
+            #try:
+            payloadFromMaster,receivedFunctioncode = _extractPayload(answer, self.address, self.mode, None)
+            self.__analysePacket(payloadFromMaster,receivedFunctioncode)
+            #except Exception as err:
+            #    pass
 
-    def __analysePacket(payloadFromMaster):
-        if payloadFromMaster[0] == self.address:
-            regAddr = payloadFromMaster[2]<<8 | payloadFromMaster[3]
-            if payloadFromMaster[1] == 3: # read holding registers
-                pass
-                # starting address 2 bytes
-                # qty 2 bytes
-                out = bytearray()
-                qty = payloadFromMaster[4]<<8 | payloadFromMaster[5]
-                for addr in range(regAddr,regAddr+qty):
-                    val = self.__getRegisterValue(addr)
-                    out.append(val>>8)
-                    out.append(val&0xFF)
+    def __analysePacket(self,payloadFromMaster,receivedFunctioncode):
+        regAddr = payloadFromMaster[0]<<8 | payloadFromMaster[1]
+        out = bytearray()
+        if receivedFunctioncode == 3 or receivedFunctioncode == 4: # read holding/input reg
+            qty = payloadFromMaster[2]<<8 | payloadFromMaster[3]
+            out.append(qty*2)
+            for addr in range(regAddr,regAddr+qty):
+                val = self.__getRegisterValue(addr)
+                out.append(val>>8)
+                out.append(val&0xFF)
+        if receivedFunctioncode == 6: # write single reg
+            val = payloadFromMaster[2]<<8 | payloadFromMaster[3]
+            self.__setRegisterValue(regAddr,val)
+            out.append((regAddr>>8)&0xFF)
+            out.append(regAddr&0xFF)
+            out.append((val>>8)&0xFF)
+            out.append(val&0xFF)
 
-            if payloadFromMaster[1] == 4: # read inputs registers
-                pass
-                # igual que el 3
-            if payloadFromMaster[1] == 6: # write single register
-                pass
-                #direccion del register 2 bytes
-                # valor 2 bytes
-            if payloadFromMaster[1] == 16: # write multiple registers
-                pass
-                # startting address 2 bytes
-                # qty 2 bytes
-                # byte count 1 byte
-                # data hl (2bytes)
-                # data hl (2bytes)
-                # ...
+        if receivedFunctioncode == 16: # write multiple registers
+            pass
+            # startting address 2 bytes
+            # qty 2 bytes
+            # byte count 1 byte
+            # data hl (2bytes)
+            # data hl (2bytes)
+            # ...
+
+        print("envio:")
+        data = _embedPayload(self.address, self.mode, receivedFunctioncode, out)
+        print(data)
 
     def __getRegisterValue(self,addr):
         if addr in self.mappedRegisters:
             return self.mappedRegisters[addr]
         return 0
 
+    def __setRegisterValue(self,addr,val):
+        if addr in self.mappedRegisters:
+            self.mappedRegisters[addr] = val
+   
 
 
 
@@ -631,8 +639,8 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
             responseaddress, slaveaddress, response))
 
     # Check function code
+    receivedFunctioncode = int(response[BYTEPOSITION_FOR_FUNCTIONCODE])
     if functioncode!=None:
-        receivedFunctioncode = int(response[BYTEPOSITION_FOR_FUNCTIONCODE])
         if receivedFunctioncode == (functioncode | (1 << BITNUMBER_FUNCTIONCODE_ERRORINDICATION)): # _setBitOn(functioncode, BITNUMBER_FUNCTIONCODE_ERRORINDICATION):
             raise ValueError('The slave is indicating an error. The response is: {!r}'.format(response))
         elif receivedFunctioncode != functioncode:
@@ -648,4 +656,4 @@ def _extractPayload(response, slaveaddress, mode, functioncode):
         lastDatabyteNumber = len(response) - NUMBER_OF_CRC_BYTES
 
     payload = response[firstDatabyteNumber:lastDatabyteNumber]
-    return payload
+    return payload,receivedFunctioncode
