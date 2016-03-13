@@ -4,8 +4,7 @@ import ModBus
 class UartMock:
     def write(self,data):
         print("envio:")
-        for b in data:
-            print(b)
+        print(data)
 
     def readall(self):
         print("recibi:")
@@ -28,22 +27,49 @@ class UartMock:
         b.append(ord('6'))
         b.append(ord('6'))
         '''
-
+        '''
         b.append(ord('0'))
         b.append(ord('6'))
         b.append(ord('4'))
         b.append(ord('0'))
         b.append(ord('0'))
         b.append(ord('0'))
-
         b.append(ord('1'))
         b.append(ord('1'))
         b.append(ord('2'))
-        b.append(ord('2'))
-                
+        b.append(ord('2'))               
         b.append(ord('3'))
         b.append(ord('2'))
+        '''
+        b.append(ord('1'))
+        b.append(ord('0'))
+        
+        b.append(ord('4'))
+        b.append(ord('0'))
+        b.append(ord('0'))
+        b.append(ord('0'))
+        
+        b.append(ord('0'))
+        b.append(ord('0'))
+        b.append(ord('0'))
+        b.append(ord('2'))
+        
+        b.append(ord('0'))
+        b.append(ord('4'))
+                
+        b.append(ord('7'))
+        b.append(ord('7'))
+        b.append(ord('7'))
+        b.append(ord('9')) 
+               
+        b.append(ord('8'))
+        b.append(ord('8'))
+        b.append(ord('8'))
+        b.append(ord('9'))
 
+        b.append(ord('5'))
+        b.append(ord('4'))
+                                                        
         b.append(ord('\r'))
         b.append(ord('\n'))
              

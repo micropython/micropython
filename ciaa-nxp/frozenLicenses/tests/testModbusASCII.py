@@ -4,8 +4,7 @@ import ModBus
 class UartMock:
     def write(self,data):
         print("envio:")
-        for b in data:
-            print(b)
+        print(data)
 
     def read(self,numberOfBytes):
         print("recibo:")
@@ -18,10 +17,12 @@ class UartMock:
         b.append(ord('3'))
         b.append(ord('0'))
         b.append(ord('2'))
+        
         b.append(ord('1'))
         b.append(ord('1'))
         b.append(ord('2'))
         b.append(ord('2'))
+        
         b.append(ord('7'))
         b.append(ord('3'))
         b.append(ord('\r'))

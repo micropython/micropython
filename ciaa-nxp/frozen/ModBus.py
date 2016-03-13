@@ -165,7 +165,7 @@ class Instrument():
 
 
         #Comunicate		
-        payloadFromSlave = self._performCommand(functioncode, payloadToSlave)
+        payloadFromSlave,retFnc = self._performCommand(functioncode, payloadToSlave)
 
         ## Check the contents in the response payload ##
         if functioncode in [1, 2, 3, 4]:
@@ -257,21 +257,10 @@ class Instrument():
         pyb.delay(minimum_silent_period)
 
         # Write request
-        print("estoy por enviar request:")
-        s = ""
-        if self.mode==MODE_RTU:
-            for b in request:
-                s+=" "+hex(b)
-        else:
-            s = request
-        print(s)
-        print("largo:"+str(len(request)))
-                
         self.serial.write(request)
 
 
         # Read response
-        print("leo respuesta....")
         answer = bytearray()
         timeOutRead = 200
         while True:
@@ -284,8 +273,6 @@ class Instrument():
                 if timeOutRead<=0:
                     break
         #_________                       
-        print("llego respuesta:")
-        print(answer)
 
         if len(answer) == 0:
             raise Exception('No communication with the instrument (no answer)')
@@ -303,16 +290,18 @@ class Slave:
     def receive(self):
         if self.serial.any():
             answer = self.serial.readall()
-            #try:
-            payloadFromMaster,receivedFunctioncode = _extractPayload(answer, self.address, self.mode, None)
-            self.__analysePacket(payloadFromMaster,receivedFunctioncode)
-            #except Exception as err:
-            #    pass
+            try:
+                payloadFromMaster,receivedFunctioncode = _extractPayload(answer, self.address, self.mode, None)
+                self.__analysePacket(payloadFromMaster,receivedFunctioncode)
+            except Exception as err:
+                pass
 
     def __analysePacket(self,payloadFromMaster,receivedFunctioncode):
+        flagUnsupFnc = True
         regAddr = payloadFromMaster[0]<<8 | payloadFromMaster[1]
         out = bytearray()
         if receivedFunctioncode == 3 or receivedFunctioncode == 4: # read holding/input reg
+            flagUnsupFnc = False
             qty = payloadFromMaster[2]<<8 | payloadFromMaster[3]
             out.append(qty*2)
             for addr in range(regAddr,regAddr+qty):
@@ -320,6 +309,7 @@ class Slave:
                 out.append(val>>8)
                 out.append(val&0xFF)
         if receivedFunctioncode == 6: # write single reg
+            flagUnsupFnc = False
             val = payloadFromMaster[2]<<8 | payloadFromMaster[3]
             self.__setRegisterValue(regAddr,val)
             out.append((regAddr>>8)&0xFF)
@@ -328,17 +318,26 @@ class Slave:
             out.append(val&0xFF)
 
         if receivedFunctioncode == 16: # write multiple registers
-            pass
-            # startting address 2 bytes
-            # qty 2 bytes
-            # byte count 1 byte
-            # data hl (2bytes)
-            # data hl (2bytes)
-            # ...
+            flagUnsupFnc = False
+            qty = payloadFromMaster[2]<<8 | payloadFromMaster[3]
+            i = 5
+            for addr in range(regAddr,regAddr+qty):
+                val = payloadFromMaster[i]<<8 | payloadFromMaster[i+1]
+                self.__setRegisterValue(addr,val)
+                i+=2
+            out.append(payloadFromMaster[0])
+            out.append(payloadFromMaster[1])
+            out.append(payloadFromMaster[2])
+            out.append(payloadFromMaster[3])
 
-        print("envio:")
+        if flagUnsupFnc:
+            receivedFunctioncode+=0x80
+            receivedFunctioncode=receivedFunctioncode&0xFF
+            out.append(0x01) #err code
+
         data = _embedPayload(self.address, self.mode, receivedFunctioncode, out)
-        print(data)
+        self.serial.write(data)
+
 
     def __getRegisterValue(self,addr):
         if addr in self.mappedRegisters:
