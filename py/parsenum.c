@@ -81,7 +81,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     for (; str < top; str++) {
         // get next digit as a value
         mp_uint_t dig = *str;
-        if (unichar_isdigit(dig) && dig - '0' < base) {
+        if (unichar_isdigit(dig) && (int)dig - '0' < base) {
             // 0-9 digit
             dig = dig - '0';
         } else if (base == 16) {
