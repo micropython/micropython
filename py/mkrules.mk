@@ -56,7 +56,7 @@ QSTR_GEN_EXTRA_CFLAGS += -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
 vpath %.c . $(TOP)
-$(HEADER_BUILD)/%.qstr: % | $(EMPTY_QSTRDEFS_GENERATED_H) $(HEADER_BUILD)/mpversion.h $(SRC_QSTR_AUTO_DEPS)
+$(HEADER_BUILD)/%.qstr: % mpconfigport.h $(PY_SRC)/mpconfig.h | $(EMPTY_QSTRDEFS_GENERATED_H) $(HEADER_BUILD)/mpversion.h $(SRC_QSTR_AUTO_DEPS)
 	  @mkdir -p $(dir $@);
 	  $(Q)$(CPP)  $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $< -o - | $(PYTHON) $(PY_SRC)/makeqstrdefs.py -s -o $@
 
@@ -82,7 +82,7 @@ $(EMPTY_QSTRDEFS_GENERATED_H):
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 
 # This rule joins all generated qstr files
-$(QSTR_DEFS_COLLECTED): $(addprefix $(HEADER_BUILD)/,$(addsuffix .qstr,$(SRC_QSTR))) $(PY_SRC)/mpconfig.h
+$(QSTR_DEFS_COLLECTED): $(addprefix $(HEADER_BUILD)/,$(addsuffix .qstr,$(SRC_QSTR)))
 	$(ECHO) "Generating collected qstrdef header: $@"
 	$(Q)cat $^ > $@
 
