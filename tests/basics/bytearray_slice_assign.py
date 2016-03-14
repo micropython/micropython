@@ -47,6 +47,9 @@ b = bytearray(2)
 b[2:] = bytearray(10)
 print(b)
 
+b = bytearray(10)
+b[:-1] = bytearray(500)
+print(len(b), b[0], b[-1])
 
 # Assignment of bytes to array slice
 b = bytearray(2)
