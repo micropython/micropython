@@ -148,10 +148,12 @@ Q(init)
 Q(scl)
 Q(sda)
 Q(freq)
+Q(readfrom)
 Q(writeto)
 Q(stop)
 Q(buf)
 Q(addr)
+Q(n)
 
 // utime
 Q(utime)
