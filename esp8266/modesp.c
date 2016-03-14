@@ -40,7 +40,7 @@
 #include "spi_flash.h"
 #include "utils.h"
 
-#define MODESP_ESPCONN (1)
+#define MODESP_ESPCONN (0)
 
 #if MODESP_ESPCONN
 STATIC const mp_obj_type_t esp_socket_type;

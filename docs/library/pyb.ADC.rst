@@ -18,6 +18,7 @@ class ADC -- analog to digital conversion
         val = adc.read_core_vbat()      # read MCU VBAT
         val = adc.read_core_vref()      # read MCU VREF
 
+ 
 Constructors
 ------------
 
@@ -77,6 +78,65 @@ Methods
 The ADCAll Object
 -----------------
 
-Instantiating this changes all ADC pins to analog inputs. It is possible to read the
-MCU temperature, VREF and VBAT without using ADCAll. The raw data can be accessed on
-ADC channels 16, 17 and 18 respectively. However appropriate scaling will need to be applied.
+.. only:: port_pyboard
+
+    Instantiating this changes all ADC pins to analog inputs. The raw MCU temperature,
+    VREF and VBAT data can be accessed on ADC channels 16, 17 and 18 respectively.
+    Appropriate scaling will need to be applied. The temperature sensor on the chip
+    has poor absolute accuracy and is suitable only for detecting temperature changes.
+
+    The ``ADCAll`` ``read_core_vbat()`` and ``read_core_vref()`` methods read
+    the backup battery voltage and the (1.21V nominal) reference voltage using the
+    3.3V supply as a reference. Assuming the ``ADCAll`` object has been Instantiated with
+    ``adc = pyb.ADCAll(12)`` the 3.3V supply voltage may be calculated:
+    
+    ``v33 = 3.3 * 1.21 / adc.read_core_vref()``
+
+    If the 3.3V supply is correct the value of ``adc.read_core_vbat()`` will be
+    valid. If the supply voltage can drop below 3.3V, for example in in battery
+    powered systems with a discharging battery, the regulator will fail to preserve
+    the 3.3V supply resulting in an incorrect reading. To produce a value which will
+    remain valid under these circumstances use the following:
+
+    ``vback = adc.read_core_vbat() * 1.21 / adc.read_core_vref()``
+
+    It is possible to access these values without incurring the side effects of ``ADCAll``::
+    
+        def adcread(chan):                              # 16 temp 17 vbat 18 vref
+            assert chan >= 16 and chan <= 18, 'Invalid ADC channel'
+            start = pyb.millis()
+            timeout = 100
+            stm.mem32[stm.RCC + stm.RCC_APB2ENR] |= 0x100 # enable ADC1 clock.0x4100
+            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 1       # Turn on ADC
+            stm.mem32[stm.ADC1 + stm.ADC_CR1] = 0       # 12 bit
+            if chan == 17:
+                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x200000 # 15 cycles
+                stm.mem32[stm.ADC + 4] = 1 << 23
+            elif chan == 18:
+                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x1000000
+                stm.mem32[stm.ADC + 4] = 0xc00000
+            else:
+                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x40000
+                stm.mem32[stm.ADC + 4] = 1 << 23
+            stm.mem32[stm.ADC1 + stm.ADC_SQR3] = chan
+            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 1 | (1 << 30) | (1 << 10) # start conversion
+            while not stm.mem32[stm.ADC1 + stm.ADC_SR] & 2: # wait for EOC
+                if pyb.elapsed_millis(start) > timeout:
+                    raise OSError('ADC timout')
+            data = stm.mem32[stm.ADC1 + stm.ADC_DR]     # clear down EOC
+            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 0       # Turn off ADC
+            return data
+
+        def v33():
+            return 4096 * 1.21 / adcread(17)
+
+        def vbat():
+            return  1.21 * 2 * adcread(18) / adcread(17)  # 2:1 divider on Vbat channel
+
+        def vref():
+            return 3.3 * adcread(17) / 4096
+
+        def temperature():
+            return 25 + 400 * (3.3 * adcread(16) / 4096 - 0.76)
+
+    

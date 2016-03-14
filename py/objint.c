@@ -311,9 +311,9 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 }
 
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
-    // SMALL_INT accepts only signed numbers, of one bit less size
-    // then word size, which totals 2 bits less for unsigned numbers.
-    if ((value & (WORD_MSBIT_HIGH | (WORD_MSBIT_HIGH >> 1))) == 0) {
+    // SMALL_INT accepts only signed numbers, so make sure the input
+    // value fits completely in the small-int positive range.
+    if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));

@@ -32,8 +32,16 @@ found at <https://github.com/pfalcon/esp-open-sdk>.  Clone this repository and
 run `make` in its directory to build and install the SDK locally.  Make sure
 to add toolchain bin directory to your PATH.
 
+Add the external dependencies to the MicroPython repository checkout:
+```bash
+$ git submodule update --init
+```
+See the README in the repository root for more information about external
+dependencies.
+
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
+$ cd esp8266
 $ make
 ```
 This should produce binary images in the `build/` subdirectory.  To flash them

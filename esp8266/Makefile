@@ -35,7 +35,7 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_
 	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
+LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
@@ -66,12 +66,16 @@ SRC_C = \
 	moduos.c \
 	modmachine.c \
 	utils.c \
+	ets_alt_task.c \
 	$(BUILD)/frozen.c \
-	../extmod/modlwip.o \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
 	)
+
+EXTMOD_SRC_C = $(addprefix extmod/,\
+	modlwip.o \
+        )
 
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
@@ -108,6 +112,7 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 

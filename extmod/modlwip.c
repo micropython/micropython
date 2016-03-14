@@ -211,8 +211,11 @@ typedef struct _lwip_socket_obj_t {
 } lwip_socket_obj_t;
 
 static inline void poll_sockets(void) {
-    // TODO: Allow to override by ports
+#ifdef MICROPY_EVENT_POLL_HOOK
+    MICROPY_EVENT_POLL_HOOK;
+#else
     mp_hal_delay_ms(1);
+#endif
 }
 
 /*******************************************************************************/
@@ -281,19 +284,6 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
     return ERR_OK;
 }
 
-STATIC uint8_t lwip_dns_returned;
-STATIC uint8_t lwip_dns_result[4];
-
-// Callback for incoming DNS requests. Just set our results.
-STATIC void _lwip_dns_incoming(const char *name, ip_addr_t *addr, void *callback_arg) {
-    if (addr != NULL) {
-        lwip_dns_returned = 1;
-        memcpy(lwip_dns_result, addr, sizeof(lwip_dns_result));
-    } else {
-        lwip_dns_returned = 2;
-    }
-}
-
 /*******************************************************************************/
 // Functions for socket send/recieve operations. Socket send/recv and friends call
 // these to do the work.
@@ -348,7 +338,7 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
         } else {
             while (socket->incoming.pbuf == NULL) {
-                mp_hal_delay_ms(100);
+                poll_sockets();
             }
         }
     }
@@ -406,7 +396,8 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
                 return 0;
             }
         } else if (socket->state != STATE_CONNECTED) {
-            *_errno = -socket->state;
+            assert(socket->state < 0);
+            *_errno = error_lookup_table[-socket->state];
             return -1;
         }
     }
@@ -605,7 +596,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
             }
         } else {
             while (socket->incoming.connection == NULL) {
-                mp_hal_delay_ms(100);
+                poll_sockets();
             }
         }
     }
@@ -688,7 +679,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                 }
             } else {
                 while (socket->state == STATE_CONNECTING) {
-                    mp_hal_delay_ms(100);
+                    poll_sockets();
                 }
             }
             if (socket->state == STATE_CONNECTED) {
@@ -871,6 +862,18 @@ STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_settimeout_obj, lwip_socket_settimeout);
 
+STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+    lwip_socket_obj_t *socket = self_in;
+    bool val = mp_obj_is_true(flag_in);
+    if (val) {
+        socket->timeout = -1;
+    } else {
+        socket->timeout = 0;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblocking);
+
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     printf("Warning: lwip.setsockopt() not implemented\n");
@@ -922,6 +925,7 @@ STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&lwip_socket_sendto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&lwip_socket_recvfrom_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settimeout), (mp_obj_t)&lwip_socket_settimeout_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&lwip_socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&lwip_socket_setsockopt_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&lwip_socket_makefile_obj },
 
@@ -996,41 +1000,59 @@ STATIC mp_obj_t mod_lwip_callback() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_lwip_callback_obj, mod_lwip_callback);
 
+typedef struct _getaddrinfo_state_t {
+    volatile int status;
+    volatile ip_addr_t ipaddr;
+} getaddrinfo_state_t;
+
+// Callback for incoming DNS requests.
+STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) {
+    getaddrinfo_state_t *state = arg;
+    if (ipaddr != NULL) {
+        state->status = 1;
+        state->ipaddr = *ipaddr;
+    } else {
+        // error
+        state->status = -2;
+    }
+}
+
 // lwip.getaddrinfo
 STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     mp_uint_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
     mp_int_t port = mp_obj_get_int(port_in);
 
-    ip_addr_t result;
-    lwip_dns_returned = 0;
+    getaddrinfo_state_t state;
+    state.status = 0;
 
-    switch (dns_gethostbyname(host, &result, _lwip_dns_incoming, NULL)) {
-        case ERR_OK: {
-             break;
-        }
-        case ERR_INPROGRESS: {
-            while(!lwip_dns_returned) {
-                mp_hal_delay_ms(100);
-            }
-            if (lwip_dns_returned == 2) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
+    err_t ret = dns_gethostbyname(host, (ip_addr_t*)&state.ipaddr, lwip_getaddrinfo_cb, &state);
+    switch (ret) {
+        case ERR_OK:
+            // cached
+            state.status = 1;
+            break;
+        case ERR_INPROGRESS:
+            while (state.status == 0) {
+                poll_sockets();
             }
             break;
-        }
-        default: {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
-        }
+        default:
+            state.status = ret;
     }
 
-    uint8_t out_ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    memcpy(out_ip, lwip_dns_result, sizeof(lwip_dns_result));
+    if (state.status < 0) {
+        // TODO: CPython raises gaierror, we raise with native lwIP negative error
+        // values, to differentiate from normal errno's at least in such way.
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(state.status)));
+    }
+
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
+    tuple->items[4] = netutils_format_inet_addr((uint8_t*)&state.ipaddr, port, NETUTILS_BIG);
     return mp_obj_new_list(1, (mp_obj_t*)&tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_getaddrinfo_obj, lwip_getaddrinfo);
