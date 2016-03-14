@@ -23,11 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_PARSENUM_H__
-#define __MICROPY_INCLUDED_PY_PARSENUM_H__
+#ifndef __MICROPY_INCLUDED_PY_PARSENUMBASE_H__
+#define __MICROPY_INCLUDED_PY_PARSENUMBASE_H__
 
 #include "py/mpconfig.h"
 
-mp_uint_t mp_parse_num_base(const char *str, mp_uint_t len, mp_uint_t *base);
+size_t mp_parse_num_base(const char *str, size_t len, int *base);
 
-#endif // __MICROPY_INCLUDED_PY_PARSENUM_H__
+#endif // __MICROPY_INCLUDED_PY_PARSENUMBASE_H__
