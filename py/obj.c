@@ -342,7 +342,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
                 "tuple/list has wrong length"));
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "requested length %d but object has length %d", len, seq_len));
+                "requested length %d but object has length %d", (int)len, (int)seq_len));
         }
     }
 }
