@@ -40,22 +40,22 @@ typedef struct _pyb_i2c_obj_t {
     mp_obj_base_t base;
     pyb_pin_obj_t *scl;
     pyb_pin_obj_t *sda;
-    uint8_t prev_sda;
-    uint8_t prev_scl;
 } pyb_i2c_obj_t;
 
 // these set the frequency of SCL
 #define mphal_i2c_wait_a() os_delay_us(2)
 #define mphal_i2c_wait_b() os_delay_us(1)
 
-STATIC void mphal_i2c_set_sda_scl(pyb_i2c_obj_t *self, uint8_t sda, uint8_t scl) {
+STATIC void mphal_i2c_set_sda(pyb_i2c_obj_t *self, uint8_t sda) {
+    uint32_t port = self->sda->phys_port;
     sda &= 0x01;
+    gpio_output_set(sda << port, (1 - sda) << port, 1 << port, 0);
+}
+
+STATIC void mphal_i2c_set_scl(pyb_i2c_obj_t *self, uint8_t scl) {
+    uint32_t port = self->scl->phys_port;
     scl &= 0x01;
-    self->prev_sda = sda;
-    self->prev_scl = scl;
-    gpio_output_set((sda << self->sda->phys_port) | (scl << self->scl->phys_port),
-        ((1 - sda) << self->sda->phys_port) | ((1 - scl) << self->scl->phys_port),
-        (1 << self->sda->phys_port) | (1 << self->scl->phys_port), 0);
+    gpio_output_set(scl << port, (1 - scl) << port, 1 << port, 0);
 }
 
 STATIC int mphal_i2c_get_sda(pyb_i2c_obj_t *self) {
@@ -63,21 +63,21 @@ STATIC int mphal_i2c_get_sda(pyb_i2c_obj_t *self) {
 }
 
 STATIC void mphal_i2c_start(pyb_i2c_obj_t *self) {
-    mphal_i2c_set_sda_scl(self, 1, self->prev_scl);
+    mphal_i2c_set_sda(self, 1);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 1, 1);
+    mphal_i2c_set_scl(self, 1);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 0, 1);
+    mphal_i2c_set_sda(self, 0);
     mphal_i2c_wait_a();
 }
 
 STATIC void mphal_i2c_stop(pyb_i2c_obj_t *self) {
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 0, self->prev_scl);
+    mphal_i2c_set_sda(self, 0);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 0, 1);
+    mphal_i2c_set_scl(self, 1);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 1, 1);
+    mphal_i2c_set_sda(self, 1);
     mphal_i2c_wait_a();
 }
 
@@ -102,25 +102,26 @@ STATIC void mphal_i2c_init(pyb_i2c_obj_t *self, uint32_t freq) {
     GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
         GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << scl->phys_port));
 
-    mphal_i2c_set_sda_scl(self, 1, 1);
+    mphal_i2c_set_scl(self, 1);
+    mphal_i2c_set_sda(self, 1);
 
     ETS_GPIO_INTR_ENABLE();
     //ETS_INTR_UNLOCK();
 
-    mphal_i2c_set_sda_scl(self, 1, 0);
+    mphal_i2c_set_scl(self, 0);
     mphal_i2c_wait_a();
 
     // when SCL = 0, toggle SDA to clear up
-    mphal_i2c_set_sda_scl(self, 0, 0);
+    mphal_i2c_set_sda(self, 0);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 1, 0);
+    mphal_i2c_set_sda(self, 1);
     mphal_i2c_wait_a();
 
     // set data_cnt to max value
     for (uint8_t i = 0; i < 28; i++) {
-        mphal_i2c_set_sda_scl(self, 1, 0);
+        mphal_i2c_set_scl(self, 0);
         mphal_i2c_wait_a();
-        mphal_i2c_set_sda_scl(self, 1, 1);
+        mphal_i2c_set_scl(self, 1);
         mphal_i2c_wait_a();
     }
 
@@ -134,34 +135,32 @@ STATIC int mphal_i2c_write_byte(pyb_i2c_obj_t *self, uint8_t val) {
 
     mphal_i2c_wait_a();
 
-    mphal_i2c_set_sda_scl(self, self->prev_sda, 0);
+    mphal_i2c_set_scl(self, 0);
     mphal_i2c_wait_a();
 
     for (i = 7; i >= 0; i--) {
         dat = val >> i;
-        mphal_i2c_set_sda_scl(self, dat, 0);
+        mphal_i2c_set_sda(self, dat);
         mphal_i2c_wait_a();
-        mphal_i2c_set_sda_scl(self, dat, 1);
+        mphal_i2c_set_scl(self, 1);
         mphal_i2c_wait_a();
 
         if (i == 0) {
             mphal_i2c_wait_b();
         }
 
-        mphal_i2c_set_sda_scl(self, dat, 0);
+        mphal_i2c_set_scl(self, 0);
         mphal_i2c_wait_a();
     }
 
-    mphal_i2c_set_sda_scl(self, self->prev_sda, 0);
+    mphal_i2c_set_sda(self, 1);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 1, 0);
-    mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 1, 1);
+    mphal_i2c_set_scl(self, 1);
     mphal_i2c_wait_a();
 
     int ret = mphal_i2c_get_sda(self);
     mphal_i2c_wait_a();
-    mphal_i2c_set_sda_scl(self, 1, 0);
+    mphal_i2c_set_scl(self, 0);
     mphal_i2c_wait_a();
 
     return !ret;
