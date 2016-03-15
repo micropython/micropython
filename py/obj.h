@@ -425,7 +425,7 @@ typedef struct _mp_buffer_info_t {
     //int ver; // ?
 
     void *buf;      // can be NULL if len == 0
-    mp_uint_t len;  // in bytes
+    size_t len;     // in bytes
     int typecode;   // as per binary.h
 
     // Rationale: to load arbitrary-sized sprites directly to LCD
