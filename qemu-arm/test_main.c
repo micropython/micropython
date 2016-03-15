@@ -15,8 +15,14 @@
 #include "tinytest.h"
 #include "tinytest_macros.h"
 
+#define HEAP_SIZE (128 * 1024)
+STATIC void *heap;
+
 void do_str(const char *src);
 inline void do_str(const char *src) {
+    gc_init(heap, (char*)heap + HEAP_SIZE);
+    mp_init();
+
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
         tt_abort_msg("Lexer initialization error");
@@ -36,13 +42,13 @@ inline void do_str(const char *src) {
             // TODO: That can be always true, we should set up convention to
             // use specific exit code as skip indicator.
             tinytest_set_test_skipped_();
-            return;
+            goto end;
         }
         mp_obj_print_exception(&mp_plat_print, exc);
         tt_abort_msg("Uncaught exception");
     }
 end:
-    ;
+    mp_deinit();
 }
 
 #include "genhdr/tests.h"
@@ -51,11 +57,8 @@ int main() {
     const char a[] = {"sim"};
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
-    void *heap = malloc(256 * 1024);
-    gc_init(heap, (char*)heap + 256 * 1024);
-    mp_init();
+    heap = malloc(HEAP_SIZE);
     int r = tinytest_main(1, (const char **) a, groups);
-    mp_deinit();
     printf( "status: %i\n", r);
     return r;
 }
