@@ -267,7 +267,7 @@ $(BUILD)/$(HAL_DIR)/src/stm32$(MCU_SERIES)xx_hal_sd.o: COPT += -Os
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 ifneq ($(FROZEN_DIR),)
-CFLAGS += -DMICROPY_MODULE_FROZEN
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 OBJ += $(BUILD)/frozen-files.o
 MAKE_FROZEN = ../tools/make-frozen.py
 
@@ -277,6 +277,28 @@ $(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
 $(BUILD)/frozen-files.c: $(shell find $(FROZEN_DIR) -type f)
 	@$(ECHO) "Creating $@"
 	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
+# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+FROZEN_MPY_FILES := $(wildcard $(FROZEN_MPY_DIR)/*.py)
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+OBJ += $(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.o
+MPY_CROSS = ../mpy-cross/mpy-cross
+MPY_TOOL = ../tools/mpy-tool.py
+
+$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
+	@$(ECHO) "MPY $<"
+	$(Q)$(MPY_CROSS) -o $@ $^
+
+$(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.c: $(addprefix $(BUILD)/,$(FROZEN_MPY_FILES:.py=.mpy))
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $^ > $@
+
+$(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.o: $(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.c
+	$(call compile_c)
 endif
 
 .PHONY: deploy
