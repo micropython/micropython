@@ -365,7 +365,7 @@ def main():
         if args.test_dirs is None:
             if args.target == 'pyboard':
                 # run pyboard tests
-                test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod', 'pyb', 'pybnative', 'inlineasm')
+                test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
             elif args.target == 'esp8266':
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
@@ -373,7 +373,7 @@ def main():
                 test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
             else:
                 # run PC tests
-                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'unicode', 'extmod', 'unix', 'cmdline')
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'stress', 'unicode', 'extmod', 'unix', 'cmdline')
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
