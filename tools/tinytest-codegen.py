@@ -46,10 +46,8 @@ testgroup_member = (
 
 ## XXX: may be we could have `--without <groups>` argument...
 # currently these tests are selected because they pass on qemu-arm
-# basics/try_finally1.py passes on local machine but only passes 50% of the
-# time on Travis CI; no idea why so we just disable it.
 test_dirs = ('basics', 'micropython', 'inlineasm') # 'float', 'import', 'io', 'misc')
-exclude_tests = ('basics/builtin_override.py', 'basics/class_super_object.py', 'basics/memoryerror.py', 'basics/try_finally1.py', 'micropython/heapalloc.py', 'inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py', 'inlineasm/asmfpmuldiv.py', 'inlineasm/asmfpsqrt.py',)
+exclude_tests = ('inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py', 'inlineasm/asmfpmuldiv.py', 'inlineasm/asmfpsqrt.py',)
 
 output = []
 
