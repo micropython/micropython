@@ -47,6 +47,7 @@ INC += -I../lib/timeutils
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
+CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
