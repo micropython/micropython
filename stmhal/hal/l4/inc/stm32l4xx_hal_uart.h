@@ -962,7 +962,8 @@ typedef struct
   * @param  __BAUD__: Baud rate set by the user.
   * @retval Division result
   */
-#define UART_DIV_LPUART(__PCLK__, __BAUD__)                (((uint64_t)(__PCLK__)*256)/((__BAUD__)))
+/* FIXME tobbad Adapted to avoid 64 bit division. */
+#define UART_DIV_LPUART(__PCLK__, __BAUD__)                HAL_UART_CalcBrr((__PCLK__), (__BAUD__))
 
 /** @brief  BRR division operation to set BRR register in 8-bit oversampling mode.
   * @param  __PCLK__: UART clock.
@@ -1369,6 +1370,8 @@ void UART_AdvFeatureConfig(UART_HandleTypeDef *huart);
 /**
   * @}
   */
+/* Functions added by micropython */
+uint32_t HAL_UART_CalcBrr(uint32_t fck, uint32_t baud);
 
 #ifdef __cplusplus
 }

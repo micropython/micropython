@@ -2101,6 +2101,44 @@ static HAL_StatusTypeDef UART_Receive_IT(UART_HandleTypeDef *huart)
   }
 }
 
+
+/**
+  * @brief Calculate register BRR value without using uint64.
+  * @note   This function is added by the micropython project.
+  * @param  fck: Input clock frequency to the uart block in Hz.
+  * @param  baud: baud rate should be one of {300, 600, 1200, 2400, 4800, 9600, 19200, 57600, 115200}.
+  * @retval BRR value
+  */
+uint32_t HAL_UART_CalcBrr(uint32_t fck, uint32_t baud)
+{
+    const struct
+    {
+        uint32_t limit;
+        uint32_t div;
+    } comDiv[]= {
+        {1<<31, 300 }, /* must by >= 256 */
+        {1<<30, 150 }, /* must by >= 128 */
+        {1<<29,  75 }, /* must by >= 64 */
+        {1<<28,  50 }, /* must by >= 32 */
+        {1<<27,  20 }, /* must by >= 16 */
+        {1<<26,  10 }, /* must by >= 8 */
+        {1<<25,   5 }, /* must by >= 4 */
+        {1<<24,   2 }  /* must by >= 2 */
+    };
+    const uint32_t comDivCnt = sizeof(comDiv)/sizeof(comDiv[0]);
+    uint8_t i;
+    for (i=0; i<comDivCnt ;i++)
+    {
+        if (fck >= comDiv[i].limit)
+        {
+            fck  /= comDiv[i].div;
+            baud /= comDiv[i].div;
+            break;
+        }
+    }
+    return (fck<<8)/baud;
+}
+
 /**
   * @}
   */
