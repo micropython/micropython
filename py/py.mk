@@ -7,8 +7,11 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
-# All collected qstr defs
+# If qstr autogeneration is not disabled we specify the output header
+# for all collected qstrings.
+ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
+endif
 
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
