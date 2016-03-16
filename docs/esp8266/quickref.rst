@@ -183,14 +183,14 @@ The I2C driver is implemented in software and works on all pins::
     # construct an I2C bus
     i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
 
+    i2c.readfrom(0x3a, 4)   # read 4 bytes from slave device with address 0x3a
     i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
 
+    i2c.readfrom(0x3a, 4, stop=False) # don't send a stop bit after reading
     i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
-
-Note that reading is not yet implemented.
 
 OneWire driver
 --------------
@@ -227,7 +227,7 @@ NeoPixel driver
 Use the ``neopixel`` module::
 
     from machine import Pin
-    import neopixel
+    from neopixel import NeoPixel
 
     pin = Pin(0, Pin.OUT)   # set GPIO0 to output to drive NeoPixels
     np = NeoPixel(pin, 8)   # create NeoPixel driver on GPIO0 for 8 pixels
@@ -235,6 +235,7 @@ Use the ``neopixel`` module::
     np.write()              # write data to all pixels
     r, g, b = np[0]         # get first pixel colour
 
+    import neopixel
     neopixel.demo(np)       # run a demo
 
 For low-level driving of a NeoPixel::
