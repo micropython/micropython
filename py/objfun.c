@@ -459,6 +459,7 @@ typedef mp_uint_t (*inline_asm_fun_0_t)(void);
 typedef mp_uint_t (*inline_asm_fun_1_t)(mp_uint_t);
 typedef mp_uint_t (*inline_asm_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*inline_asm_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
+typedef mp_uint_t (*inline_asm_fun_4_t)(mp_uint_t, mp_uint_t, mp_uint_t, mp_uint_t);
 
 // convert a Micro Python object to a sensible value for inline asm
 STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
@@ -527,8 +528,14 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     } else if (n_args == 3) {
         ret = ((inline_asm_fun_3_t)fun)(convert_obj_for_inline_asm(args[0]), convert_obj_for_inline_asm(args[1]), convert_obj_for_inline_asm(args[2]));
     } else {
-        assert(0);
-        ret = 0;
+        // compiler allows at most 4 arguments
+        assert(n_args == 4);
+        ret = ((inline_asm_fun_4_t)fun)(
+            convert_obj_for_inline_asm(args[0]),
+            convert_obj_for_inline_asm(args[1]),
+            convert_obj_for_inline_asm(args[2]),
+            convert_obj_for_inline_asm(args[3])
+        );
     }
 
     return mp_convert_native_to_obj(ret, self->type_sig);
