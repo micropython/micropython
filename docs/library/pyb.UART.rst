@@ -103,7 +103,7 @@ Methods
 
     .. method:: uart.any()
 
-       Return ``True`` if any characters waiting, else ``False``.
+       Returns the number of characters waiting (may be 0).
 
     .. method:: uart.writechar(char)
 
