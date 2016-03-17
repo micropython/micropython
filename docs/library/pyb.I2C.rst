@@ -63,16 +63,24 @@ Constructors
 
     .. class:: pyb.I2C(bus, ...)
 
-       Construct an I2C object on the given bus.  ``bus`` can be 1 or 2.
-       With no additional parameters, the I2C object is created but not
+       Construct an I2C object on the given bus.  ``bus`` can be 1 or 2, 'X' or
+       'Y'. With no additional parameters, the I2C object is created but not
        initialised (it has the settings from the last initialisation of
        the bus, if any).  If extra arguments are given, the bus is initialised.
        See ``init`` for parameters of initialisation.
 
-       The physical pins of the I2C busses are:
+       The physical pins of the I2C busses on Pyboards V1.0 and V1.1 are:
 
          - ``I2C(1)`` is on the X position: ``(SCL, SDA) = (X9, X10) = (PB6, PB7)``
          - ``I2C(2)`` is on the Y position: ``(SCL, SDA) = (Y9, Y10) = (PB10, PB11)``
+       
+       On the Pyboard Lite:
+       
+         - ``I2C(1)`` is on the X position: ``(SCL, SDA) = (X9, X10) = (PB6, PB7)``
+         - ``I2C(3)`` is on the Y position: ``(SCL, SDA) = (Y9, Y10) = (PA8, PB8)``
+         
+       Calling the constructor with 'X' or 'Y' enables portability between Pyboard
+       types.
 
 Methods
 -------
