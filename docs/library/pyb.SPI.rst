@@ -33,9 +33,9 @@ Constructors
 
     .. class:: pyb.SPI(bus, ...)
 
-       Construct an SPI object on the given bus.  ``bus`` can be 1 or 2.
-       With no additional parameters, the SPI object is created but not
-       initialised (it has the settings from the last initialisation of
+       Construct an SPI object on the given bus.  ``bus`` can be 1 or 2, or
+       'X' or 'Y'. With no additional parameters, the SPI object is created but
+       not initialised (it has the settings from the last initialisation of
        the bus, if any).  If extra arguments are given, the bus is initialised.
        See ``init`` for parameters of initialisation.
 
