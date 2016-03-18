@@ -307,7 +307,7 @@ if __name__ == "__main__":
     if args.output_filename:
         real_output_filename = args.output_filename
         if os.path.isfile(args.output_filename) and args.skip_write_when_same:
-            with open(args.output_filename, 'rb') as f:
+            with open(args.output_filename, 'r') as f:
                 existing_data = f.read()
             if existing_data == file_data:
                 sys.stderr.write("Skip regeneration of: %s\n" %
