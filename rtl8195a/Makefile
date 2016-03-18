@@ -81,6 +81,7 @@ INC += -I$(HELPER)/gccollect
 INC += -I$(HELPER)/hal
 INC += -I$(HELPER)/mods
 
+INC += -I../stmhal
 
 #-------------------------------------------------------------------------------
 # Flags
@@ -156,13 +157,21 @@ SRC_C += $(wildcard $(HELPER)/mods/*.c)
 SRC_C += $(wildcard $(HELPER)/mods/hardware/*.c)
 SRC_C += $(wildcard $(HELPER)/mods/wireless/*.c)
 
+#-------------------------------------------------------------------------------
+# External C source files and objects
+#-------------------------------------------------------------------------------
+STM_SRC_C = $(addprefix stmhal/,\
+	bufhelper.c \
+	)
+
 SRC_C += \
 	main.c \
 	lib/libc/string0.c \
 	lib/utils/pyexec.c \
 	lib/mp-readline/readline.c \
 	lib/netutils/netutils.c \
-	$(SRC_MOD)
+	$(SRC_MOD) \
+	$(STM_SRC_C)
 
 SRC_S += $(wildcard $(HELPER)/gccollect/*.s)
 SRC_S += 

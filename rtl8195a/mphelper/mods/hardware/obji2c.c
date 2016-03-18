@@ -39,15 +39,49 @@
 #define I2C_MIN_BAUD_RATE_HZ                (50000)
 #define I2C_MAX_BAUD_RATE_HZ                (400000)
 
-#define I2C_SDA                    PD_4
-#define I2C_SCL                    PD_5
+#define I2C_SDA                             PD_7
+#define I2C_SCL                             PD_6
+
+// Declare RTK i2c struct data in heap. If you declare it in the stack, it will hang !
+
+// channe 0 (I2C 0) is mapped to (SDA, SCL) = (PD_4, PD_5) 
+// channe 1 (I2C 1) is mapped to (SDA, SCL) = (PD_7, PD_6), (PC_4, PC_5)
+// channe 2 (I2C 2) did not mapped to evm
+// channe 3 (I2C 3) is mapped to (SDA, SCL) = (PB_3, PB_2) 
+i2c_t i2c_channel0;
+i2c_t i2c_channel1;
+i2c_t i2c_channel3;
 
 STATIC mp_obj_t mp_i2c_reset(mp_obj_t self_in) {
     i2c_obj_t *self = (i2c_obj_t *)&self_in;
-    i2c_reset(&(self->obj));
+    i2c_reset((i2c_t *)self->obj);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(i2c_reset_obj, mp_i2c_reset);
+
+STATIC bool pyb_i2c_write(i2c_t *i2c, byte addr, byte *data, uint len, bool stop) {
+    int8_t retval = true;
+
+    retval = i2c_write(i2c, addr, data, len, stop);
+
+    if (retval <= 0) {
+        return false;
+    }
+ret:
+    return true;
+}
+
+STATIC bool pyb_i2c_read(i2c_t *i2c, byte addr, byte **data, uint len) {
+    int8_t retval = true;
+
+    retval = i2c_read(i2c, addr, *data, len, true);
+    
+    if (retval != len) {
+        return false;
+    }
+ret:
+    return true;
+}
 
 STATIC mp_obj_t i2c_readfrom(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t i2c_readfrom_args[] = {
@@ -66,10 +100,9 @@ STATIC mp_obj_t i2c_readfrom(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     pyb_buf_get_for_recv(args[1].u_obj, &vstr);
 
     // receive the data
-    if (!i2c_read(&(self->obj), args[0].u_int, (byte)vstr.buf, vstr.len, true)) {
+    if (!pyb_i2c_read((i2c_t *)self->obj, args[0].u_int, (byte *)&(vstr.buf), vstr.len)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
-
     // return the received data
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
@@ -93,7 +126,7 @@ STATIC mp_obj_t i2c_writeto(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     pyb_buf_get_for_send(args[1].u_obj, &bufinfo, data);
 
     // send the data
-    if (!i2c_write(&(self->obj), args[0].u_int, bufinfo.buf, bufinfo.len, args[2].u_bool)) {
+    if (!pyb_i2c_write((i2c_t *)self->obj, args[0].u_int, bufinfo.buf, bufinfo.len, args[2].u_bool)) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
     }
 
@@ -138,9 +171,12 @@ STATIC mp_obj_t i2c_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
     self->mode      = args[1].u_int;
     self->baudrate  = MIN(MAX(args[2].u_int, I2C_MIN_BAUD_RATE_HZ), I2C_MAX_BAUD_RATE_HZ);
 
+    self->obj = (void *)&i2c_channel1;
+
     // TODO: should check alternative pins 
-    i2c_init(&(self->obj), I2C_SDA, I2C_SCL);
-    i2c_frequency(&(self->obj), self->baudrate);
+    i2c_init((i2c_t *)self->obj, I2C_SDA, I2C_SCL);
+
+    i2c_frequency((i2c_t *)self->obj, self->baudrate);
 
     return (mp_obj_t)self;
 }

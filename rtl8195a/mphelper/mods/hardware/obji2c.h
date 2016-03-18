@@ -32,7 +32,7 @@ extern const mp_obj_type_t i2c_type;
 
 typedef struct {
     mp_obj_base_t base;
-    i2c_t     obj;
+    void      *obj;
     uint8_t   id;
     uint8_t   mode;
     uint32_t  baudrate;
