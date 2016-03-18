@@ -64,7 +64,6 @@ SRC_C = \
 	modpybspi.c \
 	modpybrtc.c \
 	modpybi2c.c \
-	frozen.c \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/mp-readline/readline.c \
@@ -87,6 +86,24 @@ SRC_S = \
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
 all: $(BUILD)/firmware.elf
+
+# Frozen ####################################################################
+
+OBJ += $(BUILD)/frozen-files.o
+MAKE_FROZEN = tools/make-frozen.py
+
+ifeq ($(FROZEN_DIR),)
+FROZEN_DIR = frozen
+endif
+
+$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
+	$(call compile_c)
+
+$(BUILD)/frozen-files.c: $(shell find ${FROZEN_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+
+# Frozen ####################################################################
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
