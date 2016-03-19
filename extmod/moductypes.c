@@ -282,12 +282,9 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
 
 STATIC inline mp_obj_t get_unaligned(uint val_type, void *p, int big_endian) {
-    mp_int_t val = mp_binary_get_int(GET_SCALAR_SIZE(val_type), val_type & 1, big_endian, p);
-    if (val_type == UINT32) {
-        return mp_obj_new_int_from_uint(val);
-    } else {
-        return mp_obj_new_int(val);
-    }
+    char struct_type = big_endian ? '>' : '<';
+    static const char type2char[8] = "BbHhIiQq";
+    return mp_binary_get_val(struct_type, type2char[val_type], (byte**)&p);
 }
 
 STATIC inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
