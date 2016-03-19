@@ -640,3 +640,48 @@ de bytes a leer y devuelve un array de bytes con los datos leidos.
 
 En el ejemplo se escriben dos funciones para poder escribir un byte en la memoria y luego poder leer una cierta cantidad de bytes, siempre
 indicando la direccion.
+
+
+## Modulos escritos en python
+
+### Modulo Modbus:
+##### Clase Instrument : (Modbus modo master)
+
+```python
+import pyb
+import Modbus
+
+uart = pyb.UART(1)
+uart.init(115200)
+
+modbus = ModBus.Instrument(uart,0x55,mode=ModBus.MODE_ASCII)
+print(modbus)
+
+v = modbus.read_register(1)
+print("value :"+str(v))
+```
+
+
+##### Clase Slave : (Modbus modo slave)
+
+```python
+import pyb
+import Modbus
+
+uart = pyb.UART(1)
+uart.init(115200)
+
+mappedRegs = {0x4000 : 0x1112 , 0x4001 : 0x1314}
+
+modbus = ModBus.Slave(uart,0x55,mappedRegs,mode=ModBus.MODE_ASCII)
+print(modbus)
+
+print(mappedRegs)
+
+while True:
+    modbus.receive()
+```
+
+
+
+
