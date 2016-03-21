@@ -3,8 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
  * Copyright (c) 2016 Chester Tseng
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,29 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef OBJI2C_H_
+#define OBJI2C_H_
 
-#include <stdint.h>
+#include "i2c_api.h"
 
-/* micropython headers */
-#include "py/mpstate.h"
-#include "py/runtime.h"
-#include "py/mphal.h"
+extern const mp_obj_type_t i2c_type;
 
-/* mphelper */
-#include "hardware/objpin.h"
-#include "hardware/obji2c.h"
+typedef struct {
+    mp_obj_base_t base;
+    void      *obj;
+    uint8_t   id;
+    uint8_t   mode;
+    uint32_t  baudrate;
+} i2c_obj_t;
 
-
-STATIC const mp_map_elem_t hardware_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_hardware) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&i2c_type },
-};
-
-STATIC MP_DEFINE_CONST_DICT(hardware_module_globals, hardware_module_globals_table);
-
-const mp_obj_module_t hardware_module = {
-    .base    = { &mp_type_module },
-    .name    = MP_QSTR_hardware,
-    .globals = (mp_obj_dict_t*)&hardware_module_globals,
-};
+#endif  // OBJPIN_H_
