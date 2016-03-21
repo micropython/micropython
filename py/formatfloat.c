@@ -27,6 +27,7 @@
 #include "py/mpconfig.h"
 #if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "py/formatfloat.h"
@@ -210,13 +211,15 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             dec = -1;
             *s++ = first_dig;
 
-            if (prec + e + 1 > buf_remaining) {
-                prec = buf_remaining - e - 1;
-            }
-
             if (org_fmt == 'g') {
                 prec += (e - 1);
             }
+
+            // truncate precision to prevent buffer overflow
+            if (prec + 2 > buf_remaining) {
+                prec = buf_remaining - 2;
+            }
+
             num_digits = prec;
             if (num_digits) {
                 *s++ = '.'; 
@@ -389,6 +392,9 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         *s++ = '0' + (e % 10);
     }
     *s = '\0';
+
+    // verify that we did not overrun the input buffer
+    assert((size_t)(s + 1 - buf) <= buf_size);
 
     return s - buf;
 }

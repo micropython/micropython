@@ -620,7 +620,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
         }
         mp_obj_t dest[2];
         mp_load_method_maybe(elem->value, q_attr, dest);
-        if (!(MP_OBJ_IS_INT(dest[0]) && dest[1] == MP_OBJ_NULL)) {
+        if (!(dest[0] != MP_OBJ_NULL && MP_OBJ_IS_INT(dest[0]) && dest[1] == MP_OBJ_NULL)) {
             return false;
         }
         arg0 = dest[0];

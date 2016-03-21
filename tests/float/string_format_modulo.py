@@ -26,3 +26,19 @@ print("%02.3d" % 123) # prec > width
 print("%+f %+f" % (1.23, -1.23)) # float sign
 print("% f % f" % (1.23, -1.23)) # float space sign
 print("%0f" % -1.23) # negative number with 0 padding
+
+# numbers with large negative exponents
+print('%f' % 1e-10)
+print('%f' % 1e-20)
+print('%f' % 1e-50)
+print('%f' % 1e-100)
+print('%f' % 1e-300)
+
+# large decimal precision should be truncated and not overflow buffer
+# the output depends on the FP calculation so only first 2 digits are printed
+# (the 'g' with small e are printed using 'f' style, so need to be checked)
+print(('%.40f' % 1e-300)[:2])
+print(('%.40g' % 1e-1)[:2])
+print(('%.40g' % 1e-2)[:2])
+print(('%.40g' % 1e-3)[:2])
+print(('%.40g' % 1e-4)[:2])

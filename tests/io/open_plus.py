@@ -40,3 +40,9 @@ f.write(b"1234")
 f.seek(0)
 print(f.read())
 f.close()
+
+# cleanup
+try:
+    os.unlink("testfile")
+except OSError:
+    pass

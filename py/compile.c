@@ -1970,6 +1970,10 @@ STATIC void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
     comp->func_arg_is_super = MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]) == MP_QSTR_super;
 
     compile_generic_all_nodes(comp, pns);
+
+    if (!MP_PARSE_NODE_IS_NULL(pns->nodes[2])) {
+        EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
+    }
 }
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
@@ -2085,11 +2089,6 @@ STATIC void compile_power_trailers(compiler_t *comp, mp_parse_node_struct_t *pns
         }
         comp->func_arg_is_super = false;
     }
-}
-
-STATIC void compile_power_dbl_star(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    compile_node(comp, pns->nodes[0]);
-    EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
 }
 
 STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {

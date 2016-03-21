@@ -24,11 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "py/parsenum.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
+#include "py/parsenumbase.h"
 
 // find real radix base, and strip preceding '0x', '0o' and '0b'
 // puts base in *base, and returns number of bytes to skip the prefix
-mp_uint_t mp_parse_num_base(const char *str, mp_uint_t len, mp_uint_t *base) {
+size_t mp_parse_num_base(const char *str, size_t len, int *base) {
     const byte *p = (const byte*)str;
     if (len <= 1) {
         goto no_prefix;

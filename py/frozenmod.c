@@ -32,6 +32,12 @@
 
 #if MICROPY_MODULE_FROZEN
 
+#ifndef MICROPY_MODULE_FROZEN_LEXER
+#define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str_len
+#else
+mp_lexer_t *MICROPY_MODULE_FROZEN_LEXER(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
+#endif
+
 extern const char mp_frozen_names[];
 extern const uint32_t mp_frozen_sizes[];
 extern const char mp_frozen_content[];
@@ -43,7 +49,7 @@ mp_lexer_t *mp_find_frozen_module(const char *str, int len) {
     for (int i = 0; *name != 0; i++) {
         int l = strlen(name);
         if (l == len && !memcmp(str, name, l)) {
-            mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR_, mp_frozen_content + offset, mp_frozen_sizes[i], 0);
+            mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(MP_QSTR_, mp_frozen_content + offset, mp_frozen_sizes[i], 0);
             return lex;
         }
         name += l + 1;

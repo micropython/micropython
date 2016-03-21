@@ -55,6 +55,7 @@ SRC_C = \
 	main.c \
 	esp_mphal.c \
 	gccollect.c \
+	lexerstr32.c \
 	uart.c \
 	modpyb.c \
 	modpybpin.c \
