@@ -8,13 +8,15 @@
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #elif defined(MCU_SERIES_F7)
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
+#elif defined(MCU_SERIES_L4)
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
 #else
 #error mphalport.h: Unrecognized MCU_SERIES
 #endif
 
 // Basic GPIO functions
 #define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)
-#if defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
 #define GPIO_set_pin(gpio, pin_mask)    (((gpio)->BSRR) = (pin_mask))
 #define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRR) = ((pin_mask) << 16))
 #else
