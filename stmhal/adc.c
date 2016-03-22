@@ -65,6 +65,8 @@
       defined(STM32F437xx) || defined(STM32F439xx) || \
       defined(STM32F746xx)
 #define VBAT_DIV (4)
+#elif defined(STM32L476xx)
+#define VBAT_DIV (3)
 #else
 #error Unsupported processor
 #endif
@@ -80,8 +82,45 @@ typedef struct _pyb_obj_adc_t {
     ADC_HandleTypeDef handle;
 } pyb_obj_adc_t;
 
+STATIC bool is_adcx_channel(int channel) {
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    return IS_ADC_CHANNEL(channel);
+#elif defined(MCU_SERIES_L4)
+    ADC_HandleTypeDef handle;
+    handle.Instance = ADCx;
+    return IS_ADC_CHANNEL(&handle, channel);
+#else
+    #error Unsupported processor
+#endif
+}
+
+STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
+    uint32_t tickstart = HAL_GetTick();
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+#elif defined(MCU_SERIES_L4)
+    while (READ_BIT(ADCx->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
+#else
+    #error Unsupported processor
+#endif
+        if (((HAL_GetTick() - tickstart ) > timeout)) {
+            break; // timeout
+        }
+    }
+}
+
+STATIC void adcx_clock_enable(void) {
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    ADCx_CLK_ENABLE();
+#elif defined(MCU_SERIES_L4)
+    __HAL_RCC_ADC_CLK_ENABLE();
+#else
+    #error Unsupported processor
+#endif
+}
+
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
-    if (!IS_ADC_CHANNEL(adc_obj->channel)) {
+    if (!is_adcx_channel(adc_obj->channel)) {
         return;
     }
 
@@ -97,22 +136,33 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
       HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
     }
 
-    ADCx_CLK_ENABLE();
+    adcx_clock_enable();
 
     ADC_HandleTypeDef *adcHandle = &adc_obj->handle;
     adcHandle->Instance                   = ADCx;
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
     adcHandle->Init.Resolution            = ADC_RESOLUTION12b;
-    adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ContinuousConvMode    = DISABLE;
     adcHandle->Init.DiscontinuousConvMode = DISABLE;
     adcHandle->Init.NbrOfDiscConversion   = 0;
     adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
     adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
     adcHandle->Init.EOCSelection          = DISABLE;
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    adcHandle->Init.ScanConvMode          = DISABLE;
+    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
+#elif defined(MCU_SERIES_L4)
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
+    adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
+    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIG_T1_CC1;
+    adcHandle->Init.LowPowerAutoWait      = DISABLE;
+    adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
+    adcHandle->Init.OversamplingMode      = DISABLE;
+#else
+    #error Unsupported processor
+#endif
 
     HAL_ADC_Init(adcHandle);
 }
@@ -122,7 +172,13 @@ STATIC void adc_config_channel(pyb_obj_adc_t *adc_obj) {
 
     sConfig.Channel = adc_obj->channel;
     sConfig.Rank = 1;
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+#elif defined(MCU_SERIES_L4)
+    sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+#else
+    #error Unsupported processor
+#endif
     sConfig.Offset = 0;
 
     HAL_ADC_ConfigChannel(&adc_obj->handle, &sConfig);
@@ -173,7 +229,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
         channel = pin->adc_channel;
     }
 
-    if (!IS_ADC_CHANNEL(channel)) {
+    if (!is_adcx_channel(channel)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel));
     }
     if (pin_adc1[channel] == NULL) {
@@ -274,17 +330,18 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
             HAL_ADC_Start(&self->handle);
         } else {
             // for subsequent samples we can just set the "start sample" bit
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+#elif defined(MCU_SERIES_L4)
+            SET_BIT(ADCx->CR, ADC_CR_ADSTART);
+#else
+            #error Unsupported processor
+#endif
         }
 
         // wait for sample to complete
-        uint32_t tickstart = HAL_GetTick();
-        while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
-            #define READ_TIMED_TIMEOUT (10) // in ms
-            if (((HAL_GetTick() - tickstart ) > READ_TIMED_TIMEOUT)) {
-                break; // timeout
-            }
-        }
+        #define READ_TIMED_TIMEOUT (10) // in ms
+        adc_wait_for_eoc_or_timeout(READ_TIMED_TIMEOUT);
 
         // read value
         uint value = ADCx->DR;
@@ -357,22 +414,33 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
         HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
     }
 
-    ADCx_CLK_ENABLE();
+    adcx_clock_enable();
 
     ADC_HandleTypeDef *adcHandle = &adc_all->handle;
     adcHandle->Instance = ADCx;
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
     adcHandle->Init.Resolution            = resolution;
-    adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ContinuousConvMode    = DISABLE;
     adcHandle->Init.DiscontinuousConvMode = DISABLE;
     adcHandle->Init.NbrOfDiscConversion   = 0;
     adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
     adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
     adcHandle->Init.EOCSelection          = DISABLE;
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    adcHandle->Init.ScanConvMode          = DISABLE;
+    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
+#elif defined(MCU_SERIES_L4)
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
+    adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
+    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIG_T1_CC1;
+    adcHandle->Init.LowPowerAutoWait      = DISABLE;
+    adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
+    adcHandle->Init.OversamplingMode      = DISABLE;
+#else
+    #error Unsupported processor
+#endif
 
     HAL_ADC_Init(adcHandle);
 }
@@ -381,7 +449,13 @@ uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t chan
     ADC_ChannelConfTypeDef sConfig;
     sConfig.Channel = channel;
     sConfig.Rank = 1;
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+#elif defined(MCU_SERIES_L4)
+    sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+#else
+    #error Unsupported processor
+#endif
     sConfig.Offset = 0;
     HAL_ADC_ConfigChannel(adcHandle, &sConfig);
 
