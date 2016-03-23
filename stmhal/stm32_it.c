@@ -477,6 +477,16 @@ void PVD_IRQHandler(void) {
     IRQ_EXIT(PVD_IRQn);
 }
 
+void PVD_PVM_IRQHandler(void) {
+    IRQ_ENTER(PVD_PVM_IRQn);
+    #if defined(MICROPY_HW_USE_ALT_IRQ_FOR_CDC)
+    extern void USBD_CDC_HAL_TIM_PeriodElapsedCallback(void);
+    USBD_CDC_HAL_TIM_PeriodElapsedCallback();
+    #endif
+    Handle_EXTI_Irq(EXTI_PVD_OUTPUT);
+    IRQ_EXIT(PVD_PVM_IRQn);
+}
+
 void RTC_Alarm_IRQHandler(void) {
     IRQ_ENTER(RTC_Alarm_IRQn);
     Handle_EXTI_Irq(EXTI_RTC_ALARM);
@@ -510,6 +520,12 @@ void TIM1_BRK_TIM9_IRQHandler(void) {
     IRQ_EXIT(TIM1_BRK_TIM9_IRQn);
 }
 
+void TIM1_BRK_TIM15_IRQHandler(void) {
+    IRQ_ENTER(TIM1_BRK_TIM15_IRQn);
+    timer_irq_handler(15);
+    IRQ_EXIT(TIM1_BRK_TIM15_IRQn);
+}
+
 void TIM1_UP_TIM10_IRQHandler(void) {
     IRQ_ENTER(TIM1_UP_TIM10_IRQn);
     timer_irq_handler(1);
@@ -517,11 +533,25 @@ void TIM1_UP_TIM10_IRQHandler(void) {
     IRQ_EXIT(TIM1_UP_TIM10_IRQn);
 }
 
+void TIM1_UP_TIM16_IRQHandler(void) {
+    IRQ_ENTER(TIM1_UP_TIM16_IRQn);
+    timer_irq_handler(1);
+    timer_irq_handler(16);
+    IRQ_EXIT(TIM1_UP_TIM16_IRQn);
+}
+
 void TIM1_TRG_COM_TIM11_IRQHandler(void) {
     IRQ_ENTER(TIM1_TRG_COM_TIM11_IRQn);
     timer_irq_handler(11);
     IRQ_EXIT(TIM1_TRG_COM_TIM11_IRQn);
 }
+
+void TIM1_TRG_COM_TIM17_IRQHandler(void) {
+    IRQ_ENTER(TIM1_TRG_COM_TIM17_IRQn);
+    timer_irq_handler(17);
+    IRQ_EXIT(TIM1_TRG_COM_TIM17_IRQn);
+}
+
 
 void TIM2_IRQHandler(void) {
     IRQ_ENTER(TIM2_IRQn);
@@ -571,6 +601,12 @@ void TIM8_UP_TIM13_IRQHandler(void) {
     timer_irq_handler(8);
     timer_irq_handler(13);
     IRQ_EXIT(TIM8_UP_TIM13_IRQn);
+}
+
+void TIM8_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM8_UP_IRQn);
+    timer_irq_handler(8);
+    IRQ_EXIT(TIM8_UP_IRQn);
 }
 
 void TIM8_TRG_COM_TIM14_IRQHandler(void) {

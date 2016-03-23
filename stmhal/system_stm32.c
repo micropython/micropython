@@ -108,6 +108,28 @@ void __fatal_error(const char *msg);
   * @{
   */
 
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+        /* Set HSION bit */
+#define CONFIG_RCC_CR_1ST  RCC_CR_HSION
+#define CONFIG_RCC_CR_2ND  (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
+#define CONFIG_RCC_PLLCFGR (0x24003010)  /* Reset register Value is set */
+#elif defined(MCU_SERIES_L4)
+        /* Set MSION bit */
+#define CONFIG_RCC_CR_1ST  RCC_CR_MSION
+#define CONFIG_RCC_CR_2ND  (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_HSION || RCC_CR_PLLON)
+#define CONFIG_RCC_PLLCFGR (0x00001000)
+/*
+ * FIXME Do not know why I have to define these arrays here! they should be defined in the
+ * hal_rcc-file!!
+ *
+ */
+const uint8_t  AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+const uint8_t  APBPrescTable[8] =  {0, 0, 0, 0, 1, 2, 3, 4};
+const uint32_t MSIRangeTable[12] = {100000, 200000, 400000, 800000, 1000000, 2000000, \
+                                  4000000, 8000000, 16000000, 24000000, 32000000, 48000000};
+#else
+    #error Unknown processor
+#endif
 /************************* Miscellaneous Configuration ************************/
 
 /*!< Uncomment the following line if you need to relocate your vector Table in
@@ -172,23 +194,28 @@ void SystemInit(void)
     SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
   #endif
   /* Reset the RCC clock configuration to the default reset state ------------*/
+
   /* Set HSION bit */
-  RCC->CR |= (uint32_t)0x00000001;
+  RCC->CR |= CONFIG_RCC_CR_1ST;
 
   /* Reset CFGR register */
   RCC->CFGR = 0x00000000;
 
   /* Reset HSEON, CSSON and PLLON bits */
-  RCC->CR &= (uint32_t)0xFEF6FFFF;
+  RCC->CR &= ~ CONFIG_RCC_CR_2ND;
 
   /* Reset PLLCFGR register */
-  RCC->PLLCFGR = 0x24003010;
+  RCC->PLLCFGR = CONFIG_RCC_PLLCFGR;
 
   /* Reset HSEBYP bit */
   RCC->CR &= (uint32_t)0xFFFBFFFF;
 
   /* Disable all interrupts */
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
   RCC->CIR = 0x00000000;
+#elif defined(MCU_SERIES_L4)
+  RCC->CIER = 0x00000000;
+#endif
 
   /* Configure the Vector Table location add offset address ------------------*/
 #ifdef VECT_TAB_SRAM
@@ -204,7 +231,8 @@ void SystemInit(void)
 
 /**
   * @brief  System Clock Configuration
-  *         The system Clock is configured as follow :
+  *
+  *         The system Clock is configured for F4/F7 as follow :
   *            System Clock source            = PLL (HSE)
   *            SYSCLK(Hz)                     = 168000000
   *            HCLK(Hz)                       = 168000000
@@ -219,15 +247,39 @@ void SystemInit(void)
   *            VDD(V)                         = 3.3
   *            Main regulator output voltage  = Scale1 mode
   *            Flash Latency(WS)              = 5
+  *
+  *         The system Clock is configured for L4 as follow :
+  *            System Clock source            = PLL (MSI)
+  *            SYSCLK(Hz)                     = 80000000
+  *            HCLK(Hz)                       = 80000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 1
+  *            APB2 Prescaler                 = 1
+  *            MSI Frequency(Hz)              = MSI_VALUE (4000000)
+  *            LSE Frequency(Hz)              = 32768
+  *            PLL_M                          = 1
+  *            PLL_N                          = 40
+  *            PLL_P                          = 7
+  *            PLL_Q                          = 2
+  *            PLL_R                          = 2 <= This is the source for SysClk, not as on F4/7 PLL_P
+  *            Flash Latency(WS)              = 4
   * @param  None
   * @retval None
   *
   * PLL is configured as follows:
   *
-  *     VCO_IN  = HSE / M
-  *     VCO_OUT = HSE / M * N
-  *     PLLCLK  = HSE / M * N / P
+  *     VCO_IN
+  *         F4/F7 = HSE / M
+  *         L4    = MSI / M
+  *     VCO_OUT
+  *         F4/F7 = HSE / M * N
+  *         L4    = MSI / M * N
+  *     PLLCLK  =
+  *         F4/F7 = HSE / M * N / P
+  *         L4    = MSI / M * N / R
   *     PLL48CK = HSE / M * N / Q
+  *         F4/F7 = HSE / M * N / Q
+  *         L4    = MSI / M * N / Q  USB Clock is obtained over PLLSAI1
   *
   *     SYSCLK = PLLCLK
   *     HCLK   = SYSCLK / AHB_PRESC
@@ -261,6 +313,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
 
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
   /* Enable Power Control clock */
   __PWR_CLK_ENABLE();
 
@@ -268,12 +321,30 @@ void SystemClock_Config(void)
      clocked below the maximum system frequency, to update the voltage scaling value
      regarding system frequency refer to product datasheet.  */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+#elif defined(MCU_SERIES_L4)
+    /* Enable the LSE Oscillator */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        __fatal_error("HAL_RCC_OscConfig");
+    }
 
+#endif
     /* Enable HSE Oscillator and activate PLL with HSE as source */
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+#elif defined(MCU_SERIES_L4)
+    RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+    RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+#endif
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
      clocks dividers */
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
@@ -282,6 +353,8 @@ void SystemClock_Config(void)
 #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     #if defined(MCU_SERIES_F7)
     #define FREQ_BKP BKP31R
+    #elif defined(MCU_SERIES_L4)
+    #error Unsupported Processor
     #else
     #define FREQ_BKP BKP19R
     #endif
@@ -319,15 +392,23 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.AHBCLKDivider = h;  //RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = b1; //RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = b2; //RCC_HCLK_DIV2;
-#else
+#else // defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
     RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
+#if defined(MCU_SERIES_L4)
+    RCC_OscInitStruct.PLL.PLLR = MICROPY_HW_CLK_PLLR;
+#endif 
 
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+#elif defined(MCU_SERIES_L4)
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+#endif
 #endif
   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -357,6 +438,44 @@ void SystemClock_Config(void)
   // whether we were started from DFU or from a power on reset.
 
   RCC->DCKCFGR2 = 0;
+#endif
+#if defined(MCU_SERIES_L4)
+    // Enable MSI-Hardware auto calibration mode with LSE
+    HAL_RCCEx_EnableMSIPLLMode();
+
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI1|RCC_PERIPHCLK_I2C1
+                                              |RCC_PERIPHCLK_USB |RCC_PERIPHCLK_ADC
+                                              |RCC_PERIPHCLK_RNG |RCC_PERIPHCLK_RTC;
+    PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+    /* PLLSAI is used to clock USB, ADC, I2C1 and RNG. The frequency is
+       HSE(8MHz)/PLLM(2)*PLLSAI1N(24)/PLLSAIQ(2) = 48MHz. See the STM32CubeMx
+       application or the reference manual. */
+    PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
+    PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1;
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+    PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_PLLSAI1;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1N = 24;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
+    PeriphClkInitStruct.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_SAI1CLK
+                                                 |RCC_PLLSAI1_48M2CLK
+                                                 |RCC_PLLSAI1_ADC1CLK;
+
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
+    
+    __PWR_CLK_ENABLE();
+
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 #endif
 }
 
