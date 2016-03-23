@@ -54,6 +54,7 @@ Q(machine)
 
 Q(esp)
 Q(socket)
+Q(usocket)
 Q(connect)
 Q(disconnect)
 Q(wifi_mode)
