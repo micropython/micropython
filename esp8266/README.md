@@ -12,12 +12,10 @@ Currently implemented features include:
 - Garbage collector, exceptions.
 - Unicode support.
 - Builtin modules: gc, array, collections, io, struct, sys, esp, network.
-- C long-long type used as bignum implementation (gives 64 bit signed ints).
-- Rudimentary WiFi support in station mode.
-- Sockets with callbacks.
+- Arbitrary-precision long integers and 30-bit precision floats.
+- Basic WiFi support.
+- Basic sockets using modlwip.
 - Basic GPIO support.
-
-Note that floating-point numbers are not supported.
 
 On the TODO list:
 - Full wifi support.
