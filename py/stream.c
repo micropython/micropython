@@ -208,6 +208,21 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
     mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len);
 }
 
+// Works only with blocking streams
+mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, int *errcode) {
+    mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    mp_uint_t sz = size;
+    while (sz > 0) {
+        mp_uint_t out_sz = s->type->stream_p->write(s, buf, size, errcode);
+        if (out_sz == MP_STREAM_ERROR) {
+            return MP_STREAM_ERROR;
+        }
+        buf += out_sz;
+        sz -= out_sz;
+    }
+    return size;
+}
+
 STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
