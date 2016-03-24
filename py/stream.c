@@ -213,7 +213,7 @@ mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, i
     mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
     mp_uint_t sz = size;
     while (sz > 0) {
-        mp_uint_t out_sz = s->type->stream_p->write(s, buf, size, errcode);
+        mp_uint_t out_sz = s->type->stream_p->write(stream, buf, size, errcode);
         if (out_sz == MP_STREAM_ERROR) {
             return MP_STREAM_ERROR;
         }
