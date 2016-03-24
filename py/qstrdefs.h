@@ -752,3 +752,7 @@ Q(uniform)
 Q(VfsFat)
 Q(flush)
 #endif
+
+#if MICROPY_PY_WEBSOCKET
+Q(websocket)
+#endif
