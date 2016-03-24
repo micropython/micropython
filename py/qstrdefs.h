@@ -607,6 +607,9 @@ Q(file)
 Q(mode)
 Q(r)
 Q(encoding)
+#if MICROPY_PY_IO_BUFFEREDWRITER
+Q(BufferedWriter)
+#endif
 #endif
 
 #if MICROPY_PY_GC
