@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "ets_sys.h"
+#include "etshal.h"
 #include "osapi.h"
 #include "gpio.h"
 
