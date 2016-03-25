@@ -158,6 +158,9 @@ STATIC const mp_obj_type_t lwip_slip_type = {
 
 // Extension to lwIP error codes
 #define _ERR_BADF -16
+// TODO: We just know that change happened somewhere between 1.4.0 and 1.4.1,
+// investigate in more detail.
+#if LWIP_VERSION < 0x01040100
 static const int error_lookup_table[] = {
     0,             /* ERR_OK          0      No error, everything OK. */
     ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
@@ -167,6 +170,28 @@ static const int error_lookup_table[] = {
     EINPROGRESS,   /* ERR_INPROGRESS -5      Operation in progress    */
     EINVAL,        /* ERR_VAL        -6      Illegal value.           */
     EWOULDBLOCK,   /* ERR_WOULDBLOCK -7      Operation would block.   */
+
+    ECONNABORTED,  /* ERR_ABRT       -8      Connection aborted.      */
+    ECONNRESET,    /* ERR_RST        -9      Connection reset.        */
+    ENOTCONN,      /* ERR_CLSD       -10     Connection closed.       */
+    ENOTCONN,      /* ERR_CONN       -11     Not connected.           */
+    EIO,           /* ERR_ARG        -12     Illegal argument.        */
+    EADDRINUSE,    /* ERR_USE        -13     Address in use.          */
+    -1,            /* ERR_IF         -14     Low-level netif error    */
+    EALREADY,      /* ERR_ISCONN     -15     Already connected.       */
+    EBADF,         /* _ERR_BADF      -16     Closed socket (null pcb) */
+};
+#else
+static const int error_lookup_table[] = {
+    0,             /* ERR_OK          0      No error, everything OK. */
+    ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
+    ENOBUFS,       /* ERR_BUF        -2      Buffer error.            */
+    EWOULDBLOCK,   /* ERR_TIMEOUT    -3      Timeout                  */
+    EHOSTUNREACH,  /* ERR_RTE        -4      Routing problem.         */
+    EINPROGRESS,   /* ERR_INPROGRESS -5      Operation in progress    */
+    EINVAL,        /* ERR_VAL        -6      Illegal value.           */
+    EWOULDBLOCK,   /* ERR_WOULDBLOCK -7      Operation would block.   */
+
     EADDRINUSE,    /* ERR_USE        -8      Address in use.          */
     EALREADY,      /* ERR_ISCONN     -9      Already connected.       */
     ECONNABORTED,  /* ERR_ABRT       -10     Connection aborted.      */
@@ -177,6 +202,7 @@ static const int error_lookup_table[] = {
     -1,            /* ERR_IF         -15     Low-level netif error    */
     EBADF,         /* _ERR_BADF      -16     Closed socket (null pcb) */
 };
+#endif
 
 /*******************************************************************************/
 // The socket object provided by lwip.socket.
