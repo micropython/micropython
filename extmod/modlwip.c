@@ -48,6 +48,9 @@
 #ifndef ip_set_option
 #define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
 #endif
+#ifndef ip_reset_option
+#define ip_reset_option(pcb, opt) ((pcb)->so_options &= ~(opt))
+#endif
 
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
@@ -941,8 +944,11 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     switch (mp_obj_get_int(args[2])) {
         case SOF_REUSEADDR:
             // Options are common for UDP and TCP pcb's.
-            // TODO: handle val
-            ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+            if (val) {
+                ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+            } else {
+                ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
+            }
             break;
         default:
             printf("Warning: lwip.setsockopt() not implemented\n");
