@@ -113,6 +113,9 @@ Use the ``machine.Pin`` class::
 
 Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16.
 Note that Pin(1) and Pin(3) are REPL UART TX and RX respectively.
+Also note that Pin(16) is a special pin (used for wakeup from deepsleep
+mode) and may be not available for use with higher-level classes like
+``Neopixel``.
 
 PWM (pulse width modulation)
 ----------------------------
