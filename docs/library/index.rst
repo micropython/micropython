@@ -85,6 +85,19 @@ library.
       usocket.rst
       uzlib.rst
 
+.. only:: port_esp8266
+
+   .. toctree::
+      :maxdepth: 1
+
+      ubinascii.rst
+      uctypes.rst
+      uhashlib.rst
+      uheapq.rst
+      ujson.rst
+      ure.rst
+      uzlib.rst
+
 .. only:: port_pyboard
 
    Libraries specific to the pyboard
