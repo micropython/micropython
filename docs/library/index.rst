@@ -55,6 +55,17 @@ For additional libraries, please download them from the `micropython-lib reposit
        sys.rst
        time.rst
 
+.. only:: port_esp8266
+
+    .. toctree::
+       :maxdepth: 1
+
+       gc.rst
+       math.rst
+       struct.rst
+       sys.rst
+       time.rst
+
 Python micro-libraries
 ----------------------
 
