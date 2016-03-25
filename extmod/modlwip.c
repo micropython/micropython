@@ -44,6 +44,11 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 
+// For compatibilily with older lwIP versions.
+#ifndef ip_set_option
+#define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
+#endif
+
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
 #include "lwip/sio.h"
@@ -876,7 +881,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblo
 
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
-    printf("Warning: lwip.setsockopt() not implemented\n");
+    lwip_socket_obj_t *socket = args[0];
+    mp_int_t val = mp_obj_get_int(args[3]);
+    switch (mp_obj_get_int(args[2])) {
+        case SOF_REUSEADDR:
+            // Options are common for UDP and TCP pcb's.
+            // TODO: handle val
+            ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+            break;
+        default:
+            printf("Warning: lwip.setsockopt() not implemented\n");
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
