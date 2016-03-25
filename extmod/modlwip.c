@@ -365,6 +365,35 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 // Helper function for send/sendto to handle TCP packets
 STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     u16_t available = tcp_sndbuf(socket->pcb.tcp);
+
+    if (available == 0) {
+        // Non-blocking socket
+        if (socket->timeout == 0) {
+            *_errno = EAGAIN;
+            return -1;
+        }
+
+        mp_uint_t start = mp_hal_ticks_ms();
+        // Assume that STATE_PEER_CLOSED may mean half-closed connection, where peer closed it
+        // sending direction, but not receiving. Consequently, check for both STATE_CONNECTED
+        // and STATE_PEER_CLOSED as normal conditions and still waiting for buffers to be sent.
+        // If peer fully closed socket, we would have socket->state set to ERR_RST (connection
+        // reset) by error callback.
+        // Avoid sending too small packets, so wait until at least 16 bytes available
+        while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
+            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
+                *_errno = ETIMEDOUT;
+                return -1;
+            }
+            poll_sockets();
+        }
+
+        if (socket->state < 0) {
+            *_errno = error_lookup_table[-socket->state];
+            return -1;
+        }
+    }
+
     u16_t write_len = MIN(available, len);
 
     err_t err = tcp_write(socket->pcb.tcp, buf, write_len, TCP_WRITE_FLAG_COPY);
