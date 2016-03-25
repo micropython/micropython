@@ -697,6 +697,8 @@ Q(AF_INET6)
 Q(SOCK_STREAM)
 Q(SOCK_DGRAM)
 Q(SOCK_RAW)
+Q(SOL_SOCKET)
+Q(SO_REUSEADDR)
 // for lwip.socket
 Q(close)
 Q(bind)
