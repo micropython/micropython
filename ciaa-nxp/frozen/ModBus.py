@@ -293,8 +293,10 @@ class Slave:
             try:
                 payloadFromMaster,receivedFunctioncode = _extractPayload(answer, self.address, self.mode, None)
                 self.__analysePacket(payloadFromMaster,receivedFunctioncode)
+                return True
             except Exception as err:
                 pass
+        return False
 
     def __analysePacket(self,payloadFromMaster,receivedFunctioncode):
         flagUnsupFnc = True
