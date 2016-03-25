@@ -888,8 +888,10 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
     if (status == HAL_OK) {
         return size;
     }
-    if (status == HAL_TIMEOUT) { // UART_WaitOnFlagUntilTimeout() disables RXNE interrupt
-        __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE); // on t/o: re-enable RX
+    if (status == HAL_TIMEOUT) { // UART_WaitOnFlagUntilTimeout() disables RXNE interrupt on timeout
+        if (self->read_buf_len > 0) {
+            __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE); // re-enable RXNE
+        }
         // return number of bytes written
         if (self->char_width == 0) {
             return size - self->uart.TxXferCount -1;
