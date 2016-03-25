@@ -41,10 +41,10 @@
       {% endif %}
       <p class="biglink">
         <a class="biglink" href="{{ pathto("library/index") }}">Library Reference</a><br/>
-        {% if port == "wipy" %}
-          <span class="linkdescr">MicroPython libraries, including the <a href="{{ pathto("library/machine") }}">machine module</a></span>
-        {% else %}
+        {% if port == "pyboard" %}
           <span class="linkdescr">MicroPython libraries, including the <a href="{{ pathto("library/pyb") }}">pyb module</a></span>
+        {% else %}
+          <span class="linkdescr">MicroPython libraries, including the <a href="{{ pathto("library/machine") }}">machine module</a></span>
         {% endif %}
       </p>
     </td>
