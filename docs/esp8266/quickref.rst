@@ -82,11 +82,12 @@ Use the ``time`` module::
 Timers
 ------
 
-Use the ``machine.Timer`` class::
+Virtual (RTOS-based) timers are supported. Use the ``machine.Timer`` class
+with timer ID of -1::
 
     from machine import Timer
 
-    tim = Timer(0)
+    tim = Timer(-1)
     tim.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
     tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
 
