@@ -302,8 +302,9 @@ pwm_get_freq(uint8 channel)
  * Returns      : NONE
 *******************************************************************************/
 STATIC void ICACHE_RAM_ATTR
-pwm_tim1_intr_handler(void)
+pwm_tim1_intr_handler(void *dummy)
 {
+    (void)dummy;
     uint8 local_toggle = pwm_toggle;                        // pwm_toggle may change outside
     RTC_CLR_REG_MASK(FRC1_INT_ADDRESS, FRC1_INT_CLR_MASK);
 
