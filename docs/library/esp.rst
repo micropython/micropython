@@ -17,14 +17,6 @@ Functions
     If the ``address`` parameter is provided, sets the address to its value. If
     the function is called wihout parameters, returns the current address.
 
-.. function:: getaddrinfo((hostname, port, lambda))
-
-    Initiate resolving of the given hostname.
-
-    When the hostname is resolved, the provided ``lambda`` callback will be
-    called with two arguments, first being the hostname being resolved,
-    second a tuple with information about that hostname.
-
 .. function:: wifi_mode([mode])
 
     Get or set the wireless network operating mode.
