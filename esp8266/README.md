@@ -8,7 +8,6 @@ WARNING: The port is highly experimental and any APIs are subject to change.
 
 Currently implemented features include:
 - REPL (Python prompt) over UART0.
-- 24k heap RAM available for Python code.
 - Garbage collector, exceptions.
 - Unicode support.
 - Builtin modules: gc, array, collections, io, struct, sys, esp, network.
