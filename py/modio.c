@@ -82,8 +82,25 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
     return org_size;
 }
 
+STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
+    mp_obj_bufwriter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->len != 0) {
+        int err;
+        mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->len, &err);
+        self->len = 0;
+        if (out_sz == MP_STREAM_ERROR) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bufwriter_flush_obj, bufwriter_flush);
+
 STATIC const mp_map_elem_t bufwriter_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&bufwriter_flush_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
