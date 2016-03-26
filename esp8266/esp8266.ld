@@ -136,6 +136,7 @@ SECTIONS
         *modpybpwm.o(.literal*, .text*)
         *modpybrtc.o(.literal*, .text*)
         *modpybadc.o(.literal*, .text*)
+        *modpybi2c.o(.literal*, .text*)
         *modpybspi.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
         *modnetwork.o(.literal* .text*)
