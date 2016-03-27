@@ -269,6 +269,12 @@ For example::
     Methods
     -------
 
+    .. method:: wlan.active([is_active])
+
+        Activate ("up") or deactivate ("down") network interface, if boolean
+        argument is passed. Otherwise, query current state if no argument is
+        provided. Most other methods require active interface.
+
     .. method:: wlan.connect(ssid, password)
 
         Connect to the specified wireless network, using the specified password.

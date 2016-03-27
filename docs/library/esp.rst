@@ -17,19 +17,6 @@ Functions
     If the ``address`` parameter is provided, sets the address to its value. If
     the function is called wihout parameters, returns the current address.
 
-.. function:: wifi_mode([mode])
-
-    Get or set the wireless network operating mode.
-
-    If the ``mode`` parameter is provided, sets the mode to its value. If
-    the function is called wihout parameters, returns the current mode.
-
-    The possible modes are defined as constants:
-
-        * ``STA_MODE`` -- station mode,
-        * ``AP_MODE`` -- software access point mode,
-        * ``STA_AP_MODE`` -- mixed station and software access point mode.
-
 .. function:: sleep_type([sleep_type])
 
     Get or set the sleep type.
