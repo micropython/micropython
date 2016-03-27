@@ -10,13 +10,6 @@ The ``esp`` module contains specific functions related to the ESP8266 module.
 Functions
 ---------
 
-.. function:: mac([address])
-
-    Get or set the network interface's MAC address.
-
-    If the ``address`` parameter is provided, sets the address to its value. If
-    the function is called wihout parameters, returns the current address.
-
 .. function:: sleep_type([sleep_type])
 
     Get or set the sleep type.
