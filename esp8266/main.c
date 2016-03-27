@@ -62,10 +62,10 @@ void soft_reset(void) {
 }
 
 void init_done(void) {
+    uart_task_init();
     mp_reset();
     mp_hal_stdout_tx_str("\r\n");
     pyexec_event_repl_init();
-    uart_task_init();
 }
 
 void user_init(void) {
