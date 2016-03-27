@@ -10,11 +10,13 @@ Currently implemented features include:
 - REPL (Python prompt) over UART0.
 - Garbage collector, exceptions.
 - Unicode support.
-- Builtin modules: gc, array, collections, io, struct, sys, esp, network.
+- Builtin modules: gc, array, collections, io, struct, sys, esp, network,
+  many more.
 - Arbitrary-precision long integers and 30-bit precision floats.
 - Basic WiFi support.
-- Basic sockets using modlwip.
-- Basic GPIO support.
+- Sockets using modlwip.
+- GPIO and bit-banging I2C, SPI support.
+- 1-Wire and WS2812 (aka Neopixel) protocols support.
 
 On the TODO list:
 - Full wifi support.
