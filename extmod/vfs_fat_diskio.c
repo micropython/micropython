@@ -40,6 +40,12 @@
 #include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
 #include "extmod/fsusermount.h"
 
+#if _MAX_SS == _MIN_SS
+#define SECSIZE(fs) (_MIN_SS)
+#else
+#define SECSIZE(fs) ((fs)->ssize)
+#endif
+
 STATIC fs_user_mount_t *disk_get_device(uint id) {
     if (id < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
         return MP_STATE_PORT(fs_user_mount)[id];
@@ -122,7 +128,7 @@ DRESULT disk_read (
         }
     } else {
         vfs->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->readblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, buff);
+        vfs->readblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), buff);
         mp_call_method_n_kw(2, 0, vfs->readblocks);
         // TODO handle error return
     }
@@ -159,7 +165,7 @@ DRESULT disk_write (
         }
     } else {
         vfs->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * 512, (void*)buff);
+        vfs->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), (void*)buff);
         mp_call_method_n_kw(2, 0, vfs->writeblocks);
         // TODO handle error return
     }
