@@ -229,6 +229,21 @@ For example::
 
 .. only:: port_esp8266
 
+    Functions
+    =========
+
+    .. function:: phy_mode([mode])
+
+        Get or set the PHY mode.
+
+        If the ``mode`` parameter is provided, sets the mode to its value. If
+        the function is called wihout parameters, returns the current mode.
+
+        The possible modes are defined as constants:
+            * ``MODE_11B`` -- IEEE 802.11b,
+            * ``MODE_11G`` -- IEEE 802.11g,
+            * ``MODE_11N`` -- IEEE 802.11n.
+
     class WLAN
     ==========
 

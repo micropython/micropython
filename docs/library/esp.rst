@@ -30,18 +30,6 @@ Functions
         * ``AP_MODE`` -- software access point mode,
         * ``STA_AP_MODE`` -- mixed station and software access point mode.
 
-.. function:: phy_mode([mode])
-
-    Get or set the network interface mode.
-
-    If the ``mode`` parameter is provided, sets the mode to its value. If
-    the function is called wihout parameters, returns the current mode.
-
-    The possible modes are defined as constants:
-        * ``MODE_11B`` -- IEEE 802.11b,
-        * ``MODE_11G`` -- IEEE 802.11g,
-        * ``MODE_11N`` -- IEEE 802.11n.
-
 .. function:: sleep_type([sleep_type])
 
     Get or set the sleep type.
