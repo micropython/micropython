@@ -119,6 +119,7 @@ SECTIONS
 
         *extmod/*.o*(.literal* .text*)
 
+        *lib/fatfs/*.o*(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)
         *lib/netutils/*.o*(.literal*, .text*)
