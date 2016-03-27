@@ -535,16 +535,34 @@ STATIC mp_obj_t esp_flash_id() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
 
-STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_in) {
+STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
-    mp_int_t len = mp_obj_get_int(len_in);
-    byte *buf = m_new(byte, len);
+
+    mp_int_t len;
+    byte *buf;
+    bool alloc_buf = MP_OBJ_IS_INT(len_or_buf_in);
+
+    if (alloc_buf) {
+        len = mp_obj_get_int(len_or_buf_in);
+        buf = m_new(byte, len);
+    } else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(len_or_buf_in, &bufinfo, MP_BUFFER_WRITE);
+        len = bufinfo.len;
+        buf = bufinfo.buf;
+    }
+
     // We know that allocation will be 4-byte aligned for sure
     SpiFlashOpResult res = spi_flash_read(offset, (uint32_t*)buf, len);
     if (res == SPI_FLASH_RESULT_OK) {
-        return mp_obj_new_bytes(buf, len);
+        if (alloc_buf) {
+            return mp_obj_new_bytes(buf, len);
+        }
+        return mp_const_none;
     }
-    m_del(byte, buf, len);
+    if (alloc_buf) {
+        m_del(byte, buf, len);
+    }
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
