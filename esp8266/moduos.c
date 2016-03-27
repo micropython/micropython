@@ -34,6 +34,8 @@
 #include "genhdr/mpversion.h"
 #include "user_interface.h"
 
+extern const mp_obj_type_t mp_fat_vfs_type;
+
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
     MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
@@ -68,6 +70,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_uname),           (mp_obj_t)&os_uname_obj },
+    #if MICROPY_VFS_FAT
+    { MP_ROM_QSTR(MP_QSTR_VfsFat), (mp_obj_t)&mp_fat_vfs_type },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

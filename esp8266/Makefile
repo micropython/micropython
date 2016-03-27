@@ -75,6 +75,7 @@ SRC_C = \
 	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
+	fatfs_port.o \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
@@ -109,6 +110,8 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/printf.c \
+	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
 	)
 
 SRC_S = \

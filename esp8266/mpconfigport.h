@@ -59,6 +59,14 @@
 #define MICROPY_MODULE_FROZEN       (1)
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_VOLUMES          (2)
+#define MICROPY_FATFS_MAX_SS           (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FSUSERMOUNT            (1)
+#define MICROPY_VFS_FAT                (1)
+
 #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
 
 // type definitions for the specific machine
