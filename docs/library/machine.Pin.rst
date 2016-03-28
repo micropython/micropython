@@ -24,7 +24,7 @@ Usage Model:
             print(pin.id())
 
         pin_int = Pin('GP10', mode=Pin.IN, pull=Pin.PULL_DOWN)
-        pin_int.irq(mode=Pin.IRQ_RISING, handler=pincb)
+        pin_int.irq(trigger=Pin.IRQ_RISING, handler=pincb)
         # the callback can be triggered manually
         pin_int.irq()()
         # to disable the callback
