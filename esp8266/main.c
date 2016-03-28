@@ -73,12 +73,15 @@ void user_init(void) {
     system_init_done_cb(init_done);
 }
 
+mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
+mp_import_stat_t fat_vfs_import_stat(const char *path);
+
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    return fat_vfs_lexer_new_from_file(filename);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
+    return fat_vfs_import_stat(path);
 }
 
 mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
