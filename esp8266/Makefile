@@ -148,7 +148,7 @@ $(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(CONFVARS_FILE)
 deploy: $(BUILD)/firmware-combined.bin
 	$(ECHO) "Writing $< to the board"
 	#$(Q)esptool.py --port $(PORT) write_flash 0 $<
-	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash 0 $(BUILD)/firmware.elf-0x00000.bin 0x10000 $(BUILD)/firmware.elf-0x10000.bin
+	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --flash_size=8m 0 $(BUILD)/firmware.elf-0x00000.bin 0x10000 $(BUILD)/firmware.elf-0x10000.bin
 
 reset:
 	echo -e "\r\nimport pyb; pyb.hard_reset()\r\n" >$(PORT)
