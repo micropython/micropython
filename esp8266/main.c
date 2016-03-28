@@ -48,7 +48,9 @@ STATIC void mp_reset(void) {
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
+    #if MICROPY_VFS_FAT
     memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
+    #endif
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("boot");
@@ -77,11 +79,21 @@ mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
 mp_import_stat_t fat_vfs_import_stat(const char *path);
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    #if MICROPY_VFS_FAT
     return fat_vfs_lexer_new_from_file(filename);
+    #else
+    (void)filename;
+    return NULL;
+    #endif
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
+    #if MICROPY_VFS_FAT
     return fat_vfs_import_stat(path);
+    #else
+    (void)path;
+    return MP_IMPORT_STAT_NO_EXIST;
+    #endif
 }
 
 mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
