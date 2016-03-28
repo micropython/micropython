@@ -68,15 +68,19 @@ STATIC mp_obj_t os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
-STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args) {
     if (MP_STATE_PORT(fs_user_mount)[0] == NULL) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENODEV)));
     }
 
     mp_obj_t meth[n_args + 2];
-    mp_load_method(MP_STATE_PORT(fs_user_mount)[0], MP_QSTR_listdir, meth);
+    mp_load_method(MP_STATE_PORT(fs_user_mount)[0], method_name, meth);
     memcpy(meth + 2, args, n_args * sizeof(*args));
     return mp_call_method_n_kw(n_args, 0, meth);
+}
+
+STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
+    return vfs_proxy_call(MP_QSTR_listdir, n_args, args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 
