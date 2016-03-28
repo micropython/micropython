@@ -25,6 +25,7 @@
  */
 
 #include <string.h>
+#include <errno.h>
 
 #include "py/mpconfig.h"
 #include "py/nlr.h"
@@ -67,9 +68,22 @@ STATIC mp_obj_t os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
+STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
+    if (MP_STATE_PORT(fs_user_mount)[0] == NULL) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENODEV)));
+    }
+
+    mp_obj_t meth[n_args + 2];
+    mp_load_method(MP_STATE_PORT(fs_user_mount)[0], MP_QSTR_listdir, meth);
+    memcpy(meth + 2, args, n_args * sizeof(*args));
+    return mp_call_method_n_kw(n_args, 0, meth);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
+
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
     #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     #endif
