@@ -23,7 +23,9 @@ INC += -I../lib/timeutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
-UART_OS = 1
+# UART for "os" messages. 0 is normal UART as used by MicroPython REPL,
+# 1 is debug UART (tx only).
+UART_OS = 0
 
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
