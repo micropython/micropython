@@ -198,7 +198,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             if (e == 0) {
                 e_sign_char = '+';
             }
-        } else {
+        } else if (fp_isless1(f)) {
             e++; 
             f *= FPCONST(10.0);
         }
@@ -248,6 +248,12 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 e += e1;
                 f *= *neg_pow;
             }
+        }
+
+        // It can be that f was right on the edge of an entry in pos_pow needs to be reduced
+        if (f >= FPCONST(10.0)) {
+            e += 1;
+            f *= FPCONST(0.1);
         }
 
         // If the user specified fixed format (fmt == 'f') and e makes the 
