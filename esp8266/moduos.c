@@ -34,6 +34,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "genhdr/mpversion.h"
+#include "etshal.h"
 #include "user_interface.h"
 
 extern const mp_obj_type_t mp_fat_vfs_type;
@@ -92,9 +93,21 @@ STATIC mp_obj_t os_remove(mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 #endif
 
+STATIC mp_obj_t os_urandom(mp_obj_t num) {
+    mp_int_t n = mp_obj_get_int(num);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
+    for (int i = 0; i < n; i++) {
+        vstr.buf[i] = *WDEV_HWRNG;
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
+
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
+    { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
     #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
