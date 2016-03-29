@@ -170,10 +170,20 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
 
     if (fp_iszero(f)) {
         e = 0;
-        if (fmt == 'e') {
-            e_sign = '+';
-        } else if (fmt == 'f') {
+        if (fmt == 'f') {
+            // Truncate precision to prevent buffer overflow
+            if (prec + 2 > buf_remaining) {
+                prec = buf_remaining - 2;
+            }
             num_digits = prec + 1;
+        } else {
+            // Truncate precision to prevent buffer overflow
+            if (prec + 6 > buf_remaining) {
+                prec = buf_remaining - 6;
+            }
+            if (fmt == 'e') {
+                e_sign = '+';
+            }
         }
     } else if (fp_isless1(f)) {
         // We need to figure out what an integer digit will be used
@@ -274,6 +284,12 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
         if (fmt == 'e' && prec > (buf_remaining - FPMIN_BUF_SIZE)) {
             prec = buf_remaining - FPMIN_BUF_SIZE;
+        }
+        if (fmt == 'g'){
+            // Truncate precision to prevent buffer overflow
+            if (prec + (FPMIN_BUF_SIZE - 1) > buf_remaining) {
+                prec = buf_remaining - (FPMIN_BUF_SIZE - 1);
+            }
         }
         // If the user specified 'g' format, and e is < prec, then we'll switch
         // to the fixed format.
@@ -377,6 +393,9 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             prec--;
         }
     }
+
+    // verify that we did not overrun the input buffer so far
+    assert((size_t)(s + 1 - buf) <= buf_size);
 
     if (org_fmt == 'g' && prec > 0) {
         // Remove trailing zeros and a trailing decimal point
