@@ -39,6 +39,9 @@ extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
 extern void ets_delay_us();
 
+void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
+const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
+
 void mp_hal_init(void) {
     ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
@@ -74,6 +77,15 @@ void mp_hal_stdout_tx_char(char c) {
     mp_uos_dupterm_tx_strn(&c, 1);
 }
 
+#if 0
+void mp_hal_debug_str(const char *str) {
+    while (*str) {
+        uart_tx_one_char(UART0, *str++);
+    }
+    uart_flush(UART0);
+}
+#endif
+
 void mp_hal_stdout_tx_str(const char *str) {
     while (*str) {
         mp_hal_stdout_tx_char(*str++);
@@ -92,6 +104,16 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
             mp_hal_stdout_tx_char('\r');
         }
         mp_hal_stdout_tx_char(*str++);
+    }
+}
+
+void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
+    (void)env;
+    while (len--) {
+        if (*str == '\n') {
+            uart_tx_one_char(UART0, '\r');
+        }
+        uart_tx_one_char(UART0, *str++);
     }
 }
 
