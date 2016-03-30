@@ -159,7 +159,18 @@ static void uart0_rx_intr_handler(void *para) {
         read_chars:
 #if 1 //MICROPY_REPL_EVENT_DRIVEN is not available here
         ETS_UART_INTR_DISABLE();
-        system_os_post(UART_TASK_ID, 0, 0);
+
+        while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
+            uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
+            ringbuf_put(&input_buf, RcvChar);
+        }
+
+        mp_hal_signal_input();
+
+        // Clear pending FIFO interrupts
+        WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
+        ETS_UART_INTR_ENABLE();
+
 #else
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
@@ -224,7 +235,7 @@ void mp_keyboard_interrupt(void);
 int interrupt_char;
 void uart_task_handler(os_event_t *evt) {
     int c, ret = 0;
-    while ((c = uart_rx_one_char(UART_REPL)) >= 0) {
+    while ((c = ringbuf_get(&input_buf)) >= 0) {
         if (c == interrupt_char) {
             mp_keyboard_interrupt();
         }
@@ -233,11 +244,6 @@ void uart_task_handler(os_event_t *evt) {
             break;
         }
     }
-
-    // Clear pending FIFO interrupts
-    WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
-    // Enable UART interrupts, so our task will receive events again from IRQ handler
-    ETS_UART_INTR_ENABLE();
 
     if (ret & PYEXEC_FORCED_EXIT) {
         soft_reset();

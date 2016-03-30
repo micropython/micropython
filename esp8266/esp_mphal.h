@@ -27,9 +27,15 @@
 #ifndef _INCLUDED_MPHAL_H_
 #define _INCLUDED_MPHAL_H_
 
+#include "py/ringbuf.h"
+
 struct _mp_print_t;
 // Structure for UART-only output via mp_printf()
 extern const struct _mp_print_t mp_debug_print;
+
+extern ringbuf_t input_buf;
+// Call this after putting data to input_buf
+void mp_hal_signal_input(void);
 
 void mp_hal_init(void);
 void mp_hal_rtc_init(void);
