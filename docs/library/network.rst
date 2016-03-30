@@ -317,7 +317,7 @@ For example::
             * 0 -- visible
             * 1 -- hidden
 
-    .. method:: status()
+    .. method:: wlan.status()
 
         Return the current status of the wireless connection.
 
