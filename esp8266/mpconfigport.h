@@ -127,10 +127,6 @@ extern const struct _mp_obj_module_t onewire_module;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t mp_kbd_exception; \
-    \
-    /* Singleton instance of scan callback, meaning that there can
-       be only one concurrent AP scan. */ \
-    mp_obj_t scan_cb_obj; \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

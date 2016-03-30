@@ -44,5 +44,6 @@ uint32_t mp_hal_get_cpu_freq(void);
 void uart_task_init();
 
 void ets_event_poll(void);
+#define ETS_POLL_WHILE(cond) { while (cond) ets_event_poll(); }
 
 #endif // _INCLUDED_MPHAL_H_

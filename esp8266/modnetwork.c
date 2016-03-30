@@ -32,12 +32,13 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "netutils.h"
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"
-#include "utils.h"
+#include "ets_alt_task.h"
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
@@ -127,9 +128,15 @@ STATIC mp_obj_t esp_status(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_status_obj, esp_status);
 
+STATIC mp_obj_t *esp_scan_list = NULL;
+
 STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
-    struct bss_info *bs;
-    if (si->pbss) {
+    if (esp_scan_list == NULL) {
+        // called unexpectedly
+        return;
+    }
+    if (si->pbss && status == 0) {
+        struct bss_info *bs;
         STAILQ_FOREACH(bs, si->pbss, next) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
             t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
@@ -138,21 +145,30 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
             t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
             t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
             t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
-            call_function_1_protected(MP_STATE_PORT(scan_cb_obj), t);
+            mp_obj_list_append(*esp_scan_list, MP_OBJ_FROM_PTR(t));
         }
+    } else {
+        // indicate error
+        *esp_scan_list = MP_OBJ_NULL;
     }
+    esp_scan_list = NULL;
 }
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in, mp_obj_t cb_in) {
-    MP_STATE_PORT(scan_cb_obj) = cb_in;
+STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     if (wifi_get_opmode() == SOFTAP_MODE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, 
-            "Scan not supported in AP mode"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "scan unsupported in AP mode"));
     }
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    esp_scan_list = &list;
     wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
-    return mp_const_none;
+    ETS_POLL_WHILE(esp_scan_list != NULL);
+    if (list == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "scan failed"));
+    }
+    return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_scan_obj, esp_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
 /// \method isconnected()
 /// Return True if connected to an AP and an IP address has been assigned,
