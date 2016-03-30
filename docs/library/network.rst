@@ -291,16 +291,12 @@ For example::
         value, which should be bytes object of length 6. If the function
         is called wihout parameters, returns the current address.
 
-    .. method:: wlan.scan(cb)
+    .. method:: wlan.scan()
 
-        Initiate scanning for the available wireless networks.
+        Scan for the available wireless networks.
 
-        Scanning is only possible if the radio is in station or station+AP mode; if
-        called while in AP only mode, an OSError exception will be raised.
-
-        Once the scanning is complete, the provided callback function ``cb`` will
-        be called once for each network found, and passed a tuple with information
-        about that network:
+        Scanning is only possible on STA interface. Returns list of tuples with
+        the information about WiFi access points:
 
             (ssid, bssid, channel, RSSI, authmode, hidden)
 
