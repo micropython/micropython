@@ -52,6 +52,7 @@ STATIC void mp_reset(void) {
     memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
     #endif
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("boot");
 #endif
