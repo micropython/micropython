@@ -69,6 +69,7 @@ void init_done(void) {
     mp_reset();
     mp_hal_stdout_tx_str("\r\n");
     pyexec_event_repl_init();
+    dupterm_task_init();
 }
 
 void user_init(void) {
