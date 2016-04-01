@@ -19,18 +19,22 @@
 #include "user_interface.h"
 #include "esp_mphal.h"
 
-#define RX_BUF_SIZE (256)
 #define UART_REPL UART0
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
 
+/* unused
 // circular buffer for RX buffering
+#define RX_BUF_SIZE (256)
 static uint16_t rx_buf_in;
 static uint16_t rx_buf_out;
 static uint8_t rx_buf[RX_BUF_SIZE];
+*/
 
+#if MICROPY_REPL_EVENT_DRIVEN
 static os_event_t uart_evt_queue[16];
+#endif
 
 static void uart0_rx_intr_handler(void *para);
 
@@ -83,9 +87,11 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
     // enable rx_interrupt
     SET_PERI_REG_MASK(UART_INT_ENA(uart_no), UART_RXFIFO_FULL_INT_ENA);
 
+    /* unused
     // init RX buffer
     rx_buf_in = 0;
     rx_buf_out = 0;
+    */
 }
 
 /******************************************************************************
@@ -184,6 +190,7 @@ static void uart0_rx_intr_handler(void *para) {
     }
 }
 
+/* unused
 int uart0_rx(void) {
   if (rx_buf_out != rx_buf_in) {
       int chr = rx_buf[rx_buf_out];
@@ -193,6 +200,7 @@ int uart0_rx(void) {
       return -1;
   }
 }
+*/
 
 int uart_rx_one_char(uint8 uart_no) {
     if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
