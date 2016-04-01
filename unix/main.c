@@ -474,9 +474,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
+    bool inspect = false;
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
-            if (strcmp(argv[a], "-c") == 0) {
+            if (strcmp(argv[a], "-i") == 0) {
+                inspect = true;
+            } else if (strcmp(argv[a], "-c") == 0) {
                 if (a + 1 >= argc) {
                     return usage(argv);
                 }
@@ -556,7 +559,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
     }
 
-    if (ret == NOTHING_EXECUTED) {
+    if (ret == NOTHING_EXECUTED || inspect) {
         if (isatty(0)) {
             prompt_read_history();
             ret = do_repl();
