@@ -277,12 +277,17 @@ input_restart:
     }
 }
 
+uint8_t pyexec_repl_active;
 int pyexec_event_repl_process_char(int c) {
+    pyexec_repl_active = 1;
+    int res;
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-        return pyexec_raw_repl_process_char(c);
+        res = pyexec_raw_repl_process_char(c);
     } else {
-        return pyexec_friendly_repl_process_char(c);
+        res = pyexec_friendly_repl_process_char(c);
     }
+    pyexec_repl_active = 0;
+    return res;
 }
 
 #else // MICROPY_REPL_EVENT_DRIVEN

@@ -234,6 +234,17 @@ void mp_keyboard_interrupt(void);
 
 int interrupt_char;
 void uart_task_handler(os_event_t *evt) {
+    if (pyexec_repl_active) {
+        // TODO: Just returning here isn't exactly right.
+        // What really should be done is something like
+        // enquing delayed event to itself, for another
+        // chance to feed data to REPL. Otherwise, there
+        // can be situation when buffer has bunch of data,
+        // and sits unprocessed, because we consumed all
+        // processing signals like this.
+        return;
+    }
+
     int c, ret = 0;
     while ((c = ringbuf_get(&input_buf)) >= 0) {
         if (c == interrupt_char) {
