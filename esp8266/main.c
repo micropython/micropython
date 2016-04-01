@@ -62,15 +62,38 @@ void soft_reset(void) {
     mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
+    #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
+    #endif
 }
 
 void init_done(void) {
+    #if MICROPY_REPL_EVENT_DRIVEN
     uart_task_init();
+    #endif
     mp_reset();
     mp_hal_stdout_tx_str("\r\n");
+    #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
+    #endif
     dupterm_task_init();
+
+    #if !MICROPY_REPL_EVENT_DRIVEN
+soft_reset:
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
+    soft_reset();
+    goto soft_reset;
+    #endif
 }
 
 void user_init(void) {

@@ -66,7 +66,7 @@ void mp_hal_delay_us(uint32_t us) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        int c = uart0_rx();
+        int c = ringbuf_get(&input_buf);
         if (c != -1) {
             return c;
         }
@@ -156,7 +156,9 @@ void __assert_func(const char *file, int line, const char *func, const char *exp
 }
 
 void mp_hal_signal_input(void) {
+    #if MICROPY_REPL_EVENT_DRIVEN
     system_os_post(UART_TASK_ID, 0, 0);
+    #endif
 }
 
 static int call_dupterm_read(void) {

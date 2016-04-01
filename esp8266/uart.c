@@ -233,6 +233,7 @@ void soft_reset(void);
 void mp_keyboard_interrupt(void);
 
 int interrupt_char;
+#if MICROPY_REPL_EVENT_DRIVEN
 void uart_task_handler(os_event_t *evt) {
     if (pyexec_repl_active) {
         // TODO: Just returning here isn't exactly right.
@@ -264,3 +265,4 @@ void uart_task_handler(os_event_t *evt) {
 void uart_task_init() {
     system_os_task(uart_task_handler, UART_TASK_ID, uart_evt_queue, sizeof(uart_evt_queue) / sizeof(*uart_evt_queue));
 }
+#endif
