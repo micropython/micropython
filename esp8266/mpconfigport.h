@@ -69,6 +69,15 @@
 #define MICROPY_VFS_FAT                (1)
 
 #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
+#define MICROPY_VM_HOOK_COUNT (10)
+#define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
+#define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
+        vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
+        extern void ets_loop_iter(void); \
+        ets_loop_iter(); \
+    }
+#define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
+#define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
 
 // type definitions for the specific machine
 
