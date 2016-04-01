@@ -11,7 +11,7 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
-#define MICROPY_REPL_EVENT_DRIVEN   (1)
+#define MICROPY_REPL_EVENT_DRIVEN   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
