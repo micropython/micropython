@@ -356,6 +356,13 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
         MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
+        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11B) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
+        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11G) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
+        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11N) },
 #endif
 };
 

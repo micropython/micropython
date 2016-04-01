@@ -621,13 +621,6 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&esp_neopixel_write_obj },
 
 #if MODESP_INCLUDE_CONSTANTS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
-        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
-        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11G) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
-        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11N) },
-
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_NONE),
         MP_OBJ_NEW_SMALL_INT(NONE_SLEEP_T) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_LIGHT),
