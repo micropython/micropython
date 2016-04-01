@@ -38,6 +38,11 @@ static os_event_t uart_evt_queue[16];
 
 static void uart0_rx_intr_handler(void *para);
 
+void soft_reset(void);
+void mp_keyboard_interrupt(void);
+
+int interrupt_char;
+
 /******************************************************************************
  * FunctionName : uart_config
  * Description  : Internal used function
@@ -168,7 +173,11 @@ static void uart0_rx_intr_handler(void *para) {
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            ringbuf_put(&input_buf, RcvChar);
+            if (RcvChar == interrupt_char) {
+                mp_keyboard_interrupt();
+            } else {
+                ringbuf_put(&input_buf, RcvChar);
+            }
         }
 
         mp_hal_signal_input();
@@ -237,10 +246,6 @@ void ICACHE_FLASH_ATTR uart_reattach() {
 #include "py/obj.h"
 #include "lib/utils/pyexec.h"
 
-void soft_reset(void);
-void mp_keyboard_interrupt(void);
-
-int interrupt_char;
 #if MICROPY_REPL_EVENT_DRIVEN
 void uart_task_handler(os_event_t *evt) {
     if (pyexec_repl_active) {
