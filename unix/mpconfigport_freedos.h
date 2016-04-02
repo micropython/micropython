@@ -34,5 +34,11 @@
 #undef MICROPY_PY_SYS_PLATFORM
 #define MICROPY_PY_SYS_PLATFORM "freedos"
 
+#undef MICROPY_VFS_FAT
+#define MICROPY_VFS_FAT (0)
+
+#undef MICROPY_FSUSERMOUNT
+#define MICROPY_FSUSERMOUNT (0)
+
 // djgpp dirent struct does not have d_ino field
 #undef _DIRENT_HAVE_D_INO
