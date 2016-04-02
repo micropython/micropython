@@ -155,6 +155,9 @@ SECTIONS
         */frozen.o(.rodata.mp_frozen_sizes) /* frozen modules */
         */frozen.o(.rodata.mp_frozen_content) /* frozen modules */
 
+        /* for -mforce-l32 */
+        build/*.o(.rodata*)
+
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr
 

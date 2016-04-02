@@ -48,7 +48,7 @@ CFLAGS += -g
 COPT = -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -DNDEBUG
+COPT += -Os -mforce-l32 -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
