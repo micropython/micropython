@@ -102,6 +102,9 @@ ifeq ($(MICROPY_PY_SOCKET),1)
 CFLAGS_MOD += -DMICROPY_PY_SOCKET=1
 SRC_MOD += modsocket.c
 endif
+ifeq ($(MICROPY_PY_FATFS),1)
+LIB_SRC_C_EXTRA += fatfs/ff.c fatfs/option/ccsbcs.c
+endif
 
 ifeq ($(MICROPY_PY_FFI),1)
 
@@ -161,8 +164,6 @@ endif
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	utils/printf.c \
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
 	)
 
 OBJ = $(PY_O)
@@ -213,12 +214,15 @@ nanbox:
 freedos:
 	$(MAKE) \
 	CC=i586-pc-msdosdjgpp-gcc \
+	STRIP=i586-pc-msdosdjgpp-strip \
+	SIZE=i586-pc-msdosdjgpp-size \
 	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_freedos.h>" -DMICROPY_NLR_SETJMP -Dtgamma=gamma -DMICROPY_EMIT_X86=0 -DMICROPY_NO_ALLOCA=1 -DMICROPY_PY_USELECT=0' \
 	BUILD=build-freedos \
 	PROG=micropython_freedos \
 	MICROPY_PY_SOCKET=0 \
 	MICROPY_PY_FFI=0 \
-	MICROPY_PY_JNI=0
+	MICROPY_PY_JNI=0 \
+	MICROPY_PY_FATFS=0
 
 # build an interpreter for coverage testing and do the testing
 coverage:

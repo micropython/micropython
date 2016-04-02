@@ -26,3 +26,6 @@ MICROPY_PY_USSL = 0
 
 # jni module requires JVM/JNI
 MICROPY_PY_JNI = 0
+
+# fatfs module
+MICROPY_PY_FATFS = 1
