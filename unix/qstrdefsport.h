@@ -30,6 +30,7 @@ Q(Test)
 
 Q(fileno)
 Q(makefile)
+Q(buffering)
 
 Q(FileIO)
 Q(flush)
