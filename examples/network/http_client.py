@@ -4,21 +4,25 @@ except:
     import socket
 
 
-s = socket.socket()
+def main(use_stream=False):
+    s = socket.socket()
 
-ai = socket.getaddrinfo("google.com", 80)
-print("Address infos:", ai)
-addr = ai[0][4]
+    ai = socket.getaddrinfo("google.com", 80)
+    print("Address infos:", ai)
+    addr = ai[0][4]
 
-print("Connect address:", addr)
-s.connect(addr)
+    print("Connect address:", addr)
+    s.connect(addr)
 
-if 0:
-    # MicroPython socket objects support stream (aka file) interface
-    # directly, but the line below is needed for CPython.
-    s = s.makefile("rwb", 0)
-    s.write(b"GET / HTTP/1.0\n\n")
-    print(s.readall())
-else:
-    s.send(b"GET / HTTP/1.0\n\n")
-    print(s.recv(4096))
+    if use_stream:
+        # MicroPython socket objects support stream (aka file) interface
+        # directly, but the line below is needed for CPython.
+        s = s.makefile("rwb", 0)
+        s.write(b"GET / HTTP/1.0\n\n")
+        print(s.readall())
+    else:
+        s.send(b"GET / HTTP/1.0\n\n")
+        print(s.recv(4096))
+
+
+main()
