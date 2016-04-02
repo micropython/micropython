@@ -85,7 +85,7 @@ source_suffix = '.rst'
 
 # General information about the project.
 project = 'MicroPython'
-copyright = '2014, Damien P. George'
+copyright = '2014-2016, Damien P. George and contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
