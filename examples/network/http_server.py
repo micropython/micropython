@@ -13,14 +13,15 @@ Hello #%d from MicroPython!
 def main(use_stream=False):
     s = socket.socket()
 
-    ai = socket.getaddrinfo("127.0.0.1", 8080)
+    # Binding to all interfaces - server will be accessible to other hosts!
+    ai = socket.getaddrinfo("0.0.0.0", 8080)
     print("Bind address info:", ai)
     addr = ai[0][4]
 
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(addr)
     s.listen(5)
-    print("Listening, connect your browser to http://127.0.0.1:8080/")
+    print("Listening, connect your browser to http://<this_host>:8080/")
 
     counter = 0
     while True:
