@@ -4,10 +4,10 @@ except:
     import socket
 
 
-CONTENT = """\
+CONTENT = b"""\
 HTTP/1.0 200 OK
 
-Hello #{} from MicroPython!
+Hello #%d from MicroPython!
 """
 
 s = socket.socket()
@@ -30,12 +30,13 @@ while True:
     print("Client socket:", client_s)
     print("Request:")
     if 0:
-        # MicroPython rawsocket module supports file interface directly
+        # MicroPython socket objects support stream (aka file) interface
+        # directly.
         print(client_s.read(4096))
-        #print(client_s.readall())
-        client_s.write(CONTENT.format(counter))
+        client_s.write(CONTENT % counter)
     else:
         print(client_s.recv(4096))
-        client_s.send(bytes(CONTENT.format(counter), "ascii"))
+        client_s.send(CONTENT % counter)
     client_s.close()
     counter += 1
+    print()
