@@ -23,6 +23,9 @@ On the TODO list:
 - Internal filesystem using the flash.
 - ...
 
+Work-in-progress documentation is available at
+http://docs.micropython.org/en/latest/esp8266/ .
+
 Build instructions
 ------------------
 
