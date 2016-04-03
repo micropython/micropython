@@ -4,12 +4,13 @@
 .. module:: os
    :synopsis: basic "operating system" services
 
-The ``os`` module contains functions for filesystem access and ``urandom``.
+The ``os`` module contains functions for filesystem access and ``urandom``
+function.
 
-Pyboard specifics
------------------
+Port specifics
+--------------
 
-The filesystem on the pyboard has ``/`` as the root directory and the
+The filesystem has ``/`` as the root directory and the
 available physical drives are accessible from here.  They are currently:
 
     ``/flash``      -- the internal flash filesystem
