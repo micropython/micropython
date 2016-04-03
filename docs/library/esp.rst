@@ -39,11 +39,3 @@ Functions
 .. function:: flash_id()
 
     Read the device ID of the flash memory.
-
-Classes
--------
-
-.. toctree::
-    :maxdepth: 1
-
-    esp.socket.rst
