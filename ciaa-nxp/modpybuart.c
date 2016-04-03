@@ -42,6 +42,7 @@ typedef struct _pyb_uart_obj_t {
     uint32_t timeoutBtwChars;
     uint8_t bufferEnabled;
     uint32_t currentIndex;
+    uint32_t baudrate;
 } pyb_uart_obj_t;
 
 STATIC pyb_uart_obj_t pyb_uart_obj[] = {
@@ -95,6 +96,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
 	// Baudrate
 	mp_int_t baudrate = args[0].u_int;
+    self->baudrate = baudrate;
 
 	// bits
     	mp_int_t bits = args[1].u_int;
@@ -336,6 +338,15 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in)
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_deinit_obj, pyb_uart_deinit);
 //_______________________________________________________________________________________________________________
 
+// method get_baudrate
+// returns current baudrate
+STATIC mp_obj_t pyb_uart_get_baudrate(mp_obj_t self_in)
+{
+    pyb_uart_obj_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(self->baudrate);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_get_baudrate_obj, pyb_uart_get_baudrate);
+
 
 
 STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
@@ -343,6 +354,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_uart_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readchar), (mp_obj_t)&pyb_uart_readchar_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_writechar), (mp_obj_t)&pyb_uart_writechar_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_baudrate), (mp_obj_t)&pyb_uart_get_baudrate_obj },
 
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
