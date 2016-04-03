@@ -38,7 +38,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-STATIC char heap[15360];
+STATIC char heap[24 * 1024];
 
 STATIC void mp_reset(void) {
     mp_stack_set_top((void*)0x40000000);
