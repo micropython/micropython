@@ -80,6 +80,10 @@ void init_flash_fs(uint reset_mode) {
     f_chdrive("/flash");
 }
 
+#ifdef TESTING
+    #include "testing/mainTest.c"
+#endif
+
 int main(int argc, char **argv) {
     int stack_dummy;
 soft_reset:
@@ -99,6 +103,10 @@ soft_reset:
 
     init_flash_fs(0);
 
+    #ifdef TESTING
+        startTesting();
+        return 0;
+    #endif
 
 	// check new script from IDE
 	boot();
