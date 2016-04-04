@@ -125,12 +125,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
-STATIC mp_obj_t pyb_unique_id(void) {
-    uint32_t id = system_get_chip_id();
-    return mp_obj_new_bytes((byte *)&id, sizeof(id));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
-
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
