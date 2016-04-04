@@ -398,6 +398,8 @@ typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
+// mp_fun_kw_t takes mp_map_t* (and not const mp_map_t*) to ease passing
+// this arg to mp_map_lookup().
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
