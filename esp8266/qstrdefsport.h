@@ -39,7 +39,6 @@ Q(elapsed_micros)
 Q(delay)
 Q(udelay)
 Q(sync)
-Q(hard_reset)
 Q(unique_id)
 
 // uos module
@@ -191,6 +190,7 @@ Q(ticks_diff)
 Q(time)
 
 // machine
+Q(reset)
 Q(Timer)
 Q(callback)
 Q(deinit)
