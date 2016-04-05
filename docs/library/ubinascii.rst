@@ -18,3 +18,11 @@ Functions
 
    Convert hexadecimal data to binary representation. Return bytes string.
    (i.e. inverse of hexlify)
+
+.. function:: a2b_base64(data)
+
+   Convert Base64-encoded data to binary representation. Return bytes string.
+
+.. function:: b2a_base64(data)
+
+   Encode binary data in Base64 format. Return string.
