@@ -58,7 +58,7 @@ STATIC const wlan_if_obj_t wlan_objs[] = {
 STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(wlan_if);
     if (self->if_id != if_no) {
-        error_check(false, "STA required");
+        error_check(false, if_no == STATION_IF ? "STA required" : "AP required");
     }
 }
 
