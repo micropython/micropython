@@ -2,6 +2,9 @@ class TestException(Exception):
     pass
 
 class TestCase (object):
+    testCounter=0
+    testOKCounter=0
+
     def setUp(self):
         pass
     
@@ -49,9 +52,11 @@ class TestCase (object):
             if hasattr(o,mName):
                 m = getattr(o,mName)
                 print("Testing "+mName+" ... ")
+                TestCase.testCounter+=1
                 try:
                     m()
                     print("OK")
+                    TestCase.testOKCounter+=1
                 except Exception as e:
                     print(e)
                     break
@@ -60,3 +65,7 @@ class TestCase (object):
             i+=1
         o.tearDown()
 
+
+    @staticmethod
+    def printStatistics():
+        print("Tests:"+str(TestCase.testCounter)+" Errors:"+str(TestCase.testCounter-TestCase.testOKCounter))
