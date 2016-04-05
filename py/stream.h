@@ -28,6 +28,19 @@
 
 #include "py/obj.h"
 
+#define MP_STREAM_ERROR ((mp_uint_t)-1)
+
+// Stream ioctl request codes
+#define MP_STREAM_FLUSH (1)
+#define MP_STREAM_SEEK  (2)
+#define MP_STREAM_POLL  (3)
+
+// Argument structure for MP_STREAM_SEEK
+struct mp_stream_seek_t {
+    mp_off_t offset;
+    int whence;
+};
+
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
