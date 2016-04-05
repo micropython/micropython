@@ -35,6 +35,8 @@
 #include "py/runtime.h"
 #include "netutils.h"
 #include "queue.h"
+#include "ets_sys.h"
+#include "uart.h"
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"
@@ -514,6 +516,16 @@ void error_check(bool status, const char *msg) {
     }
 }
 
+STATIC mp_obj_t esp_osdebug(mp_obj_t val) {
+    if (val == mp_const_none) {
+        uart_os_config(-1);
+    } else {
+        uart_os_config(mp_obj_get_int(val));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_osdebug_obj, esp_osdebug);
+
 STATIC mp_obj_t esp_sleep_type(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_sleep_type());
@@ -608,6 +620,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_osdebug), (mp_obj_t)&esp_osdebug_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_type), (mp_obj_t)&esp_sleep_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_id), (mp_obj_t)&esp_flash_id_obj },

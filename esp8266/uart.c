@@ -24,6 +24,9 @@
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
 
+// the uart to which OS messages go; -1 to disable
+static int uart_os = UART_OS;
+
 /* unused
 // circular buffer for RX buffering
 #define RX_BUF_SIZE (256)
@@ -134,13 +137,21 @@ void uart_flush(uint8 uart) {
 *******************************************************************************/
 static void ICACHE_FLASH_ATTR
 uart_os_write_char(char c) {
+    if (uart_os == -1) {
+        return;
+    }
     if (c == '\n') {
-        uart_tx_one_char(UART_OS, '\r');
-        uart_tx_one_char(UART_OS, '\n');
+        uart_tx_one_char(uart_os, '\r');
+        uart_tx_one_char(uart_os, '\n');
     } else if (c == '\r') {
     } else {
-        uart_tx_one_char(UART_OS, c);
+        uart_tx_one_char(uart_os, c);
     }
+}
+
+void ICACHE_FLASH_ATTR
+uart_os_config(int uart) {
+    uart_os = uart;
 }
 
 /******************************************************************************
