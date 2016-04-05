@@ -111,7 +111,13 @@ Use the ``machine.Pin`` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
-Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16.
+Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, which correspond
+to the actual GPIO pin numbers of ESP8266 chip. Note that many end-user
+boards use their own adhoc pin numbering (marked e.g. D0, D1, ...). As
+MicroPython supports different boards and modules, physical pin numbering
+was chosen as the lowest common denominator. For mapping between board
+logical pins and physical chip pins, consult your board documentation.
+
 Note that Pin(1) and Pin(3) are REPL UART TX and RX respectively.
 Also note that Pin(16) is a special pin (used for wakeup from deepsleep
 mode) and may be not available for use with higher-level classes like
