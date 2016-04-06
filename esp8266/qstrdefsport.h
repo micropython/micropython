@@ -150,6 +150,10 @@ Q(memory)
 Q(ADC)
 Q(read)
 
+// UART
+Q(UART)
+Q(init)
+
 // I2C
 Q(I2C)
 Q(init)

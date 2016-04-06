@@ -66,6 +66,7 @@ SRC_C = \
 	modpybpwm.c \
 	modpybrtc.c \
 	modpybadc.c \
+	modpybuart.c \
 	modpybi2c.c \
 	modpybspi.c \
 	modesp.c \
