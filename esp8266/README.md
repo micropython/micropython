@@ -70,3 +70,19 @@ $ make PORT=/dev/ttyUSB0 deploy
 ```
 
 The image produced is `firmware-combined.bin`, to be flashed at 0x00000.
+
+Troubleshooting
+---------------
+
+While the port is still in alpha, it's known to be generally stable. If you
+experience strange bootloops, crashes, lockups, here's a list to check against:
+
+- You didn't erase flash before programming MicroPython firmware.
+- Firmware can be occasionally flashed incorrectly. Just retry. Recent
+  esptool.py versions have --verify option.
+- Power supply you use doesn't provide enough power for ESP8266 or isn't
+  stable enough.
+- A module/flash may be defective (not unheard of for cheap modules).
+
+Please consult dedicated ESP8266 forums/resources for hardware-related
+problems.
