@@ -92,7 +92,7 @@ STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t 
     mp_printf(print, "<re %p>", self);
 }
 
-STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
@@ -116,12 +116,12 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
 }
 
 STATIC mp_obj_t re_match(size_t n_args, const mp_obj_t *args) {
-    return re_exec(true, n_args, args);
+    return ure_exec(true, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_match_obj, 2, 4, re_match);
 
 STATIC mp_obj_t re_search(size_t n_args, const mp_obj_t *args) {
-    return re_exec(false, n_args, args);
+    return ure_exec(false, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 
@@ -211,7 +211,7 @@ STATIC mp_obj_t mod_re_exec(bool is_anchored, uint n_args, const mp_obj_t *args)
     mp_obj_t self = mod_re_compile(1, args);
 
     const mp_obj_t args2[] = {self, args[1]};
-    mp_obj_t match = re_exec(is_anchored, 2, args2);
+    mp_obj_t match = ure_exec(is_anchored, 2, args2);
     return match;
 }
 
