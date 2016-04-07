@@ -758,7 +758,10 @@ void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label) {
     emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
 }
 
-void mp_emit_bc_with_cleanup(emit_t *emit) {
+void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
+    mp_emit_bc_pop_block(emit);
+    mp_emit_bc_load_const_tok(emit, MP_TOKEN_KW_NONE);
+    mp_emit_bc_label_assign(emit, label);
     emit_bc_pre(emit, -4);
     emit_write_bytecode_byte(emit, MP_BC_WITH_CLEANUP);
 }

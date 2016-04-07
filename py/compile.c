@@ -1640,10 +1640,7 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
         // compile additional pre-bits and the body
         compile_with_stmt_helper(comp, n - 1, nodes + 1, body);
         // finish this with block
-        EMIT(pop_block);
-        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-        EMIT_ARG(label_assign, l_end);
-        EMIT(with_cleanup);
+        EMIT_ARG(with_cleanup, l_end);
         compile_decrease_except_level(comp);
         EMIT(end_finally);
     }

@@ -1990,7 +1990,7 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     assert(0);
 }
 
-STATIC void emit_native_with_cleanup(emit_t *emit) {
+STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     (void)emit;
     assert(0);
 }
