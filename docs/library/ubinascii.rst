@@ -10,9 +10,15 @@ encodings of it in ASCII form (in both directions).
 Functions
 ---------
 
-.. function:: hexlify(data)
+.. function:: hexlify(data, [sep])
 
    Convert binary data to hexadecimal representation. Return bytes string.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      If additional argument, `sep` is supplied, it is used as a seperator
+      between hexadecimal values.
 
 .. function:: unhexlify(data)
 
