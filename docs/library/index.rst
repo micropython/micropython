@@ -158,6 +158,6 @@ library.
    .. toctree::
       :maxdepth: 2
 
-      pyb.rst
-      esp.rst
       network.rst
+      esp.rst
+      machine.rst

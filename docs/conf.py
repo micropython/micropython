@@ -317,5 +317,3 @@ exclude_patterns.extend([port + '*' for port in ports if port != micropy_port])
 # Exclude pyb module if the port is the WiPy
 if micropy_port == 'wipy':
     exclude_patterns.append('library/pyb*')
-else: # exclude machine
-    exclude_patterns.append('library/machine*')
