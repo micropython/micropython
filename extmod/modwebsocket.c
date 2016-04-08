@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/runtime.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_WEBSOCKET
@@ -50,7 +51,7 @@ typedef struct _mp_obj_websocket_t {
 } mp_obj_websocket_t;
 
 STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(n_args == 1);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_obj_websocket_t *o = m_new_obj(mp_obj_websocket_t);
     o->base.type = type;
     o->sock = args[0];
