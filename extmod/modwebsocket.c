@@ -68,7 +68,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
     while (1) {
         if (self->to_recv != 0) {
             mp_uint_t out_sz = stream_p->read(self->sock, self->buf + self->buf_pos, self->to_recv, errcode);
-            if (out_sz == MP_STREAM_ERROR) {
+            if (out_sz == 0 || out_sz == MP_STREAM_ERROR) {
                 return out_sz;
             }
             self->buf_pos += out_sz;
