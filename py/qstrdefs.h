@@ -761,3 +761,12 @@ Q(flush)
 #if MICROPY_PY_WEBSOCKET
 Q(websocket)
 #endif
+
+#if MICROPY_PY_FRAMEBUF
+Q(framebuf)
+Q(FrameBuffer1)
+Q(fill)
+Q(pixel)
+Q(scroll)
+Q(text)
+#endif
