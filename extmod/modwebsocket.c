@@ -37,6 +37,12 @@
 #if MICROPY_PY_WEBSOCKET
 
 enum { FRAME_HEADER, FRAME_OPT, PAYLOAD };
+#define FRAME_OPCODE_MASK 0x0f
+enum {
+    FRAME_CONT, FRAME_TXT, FRAME_BIN,
+    FRAME_CLOSE = 0x8, FRAME_PING, FRAME_PONG
+};
+
 enum { BLOCKING_WRITE = 1 };
 
 typedef struct _mp_obj_websocket_t {
@@ -50,6 +56,8 @@ typedef struct _mp_obj_websocket_t {
     byte buf_pos;
     byte buf[6];
     byte opts;
+    // Copy of current frame's flags
+    byte ws_flags;
 } mp_obj_websocket_t;
 
 STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -87,7 +95,23 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
         switch (self->state) {
             case FRAME_HEADER: {
+                // TODO: Split frame handling below is untested so far, so conservatively disable it
                 assert(self->buf[0] & 0x80);
+
+                // "Control frames MAY be injected in the middle of a fragmented message."
+                // So, they must be processed before data frames (and not alter
+                // self->ws_flags)
+                if ((self->buf[0] & FRAME_OPCODE_MASK) >= FRAME_CLOSE) {
+                    // TODO: implement
+                    assert(0);
+                }
+
+                if ((self->buf[0] & FRAME_OPCODE_MASK) == FRAME_CONT) {
+                    // Preserve previous frame type
+                    self->ws_flags = (self->ws_flags & FRAME_OPCODE_MASK) | (self->buf[0] & ~FRAME_OPCODE_MASK);
+                } else {
+                    self->ws_flags = self->buf[0];
+                }
 
                 // Reset mask in case someone will use "simplified" protocol
                 // without masks.
