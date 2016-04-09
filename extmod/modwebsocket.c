@@ -82,6 +82,11 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
         switch (self->state) {
             case FRAME_HEADER: {
                 assert(self->buf[0] & 0x80);
+
+                // Reset mask in case someone will use "simplified" protocol
+                // without masks.
+                memset(self->mask, 0, sizeof(self->mask));
+
                 int to_recv = 0;
                 size_t sz = self->buf[1] & 0x7f;
                 if (sz == 126) {
