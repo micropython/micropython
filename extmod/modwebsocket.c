@@ -43,7 +43,7 @@ enum {
     FRAME_CLOSE = 0x8, FRAME_PING, FRAME_PONG
 };
 
-enum { BLOCKING_WRITE = 1 };
+enum { BLOCKING_WRITE = 0x80 };
 
 typedef struct _mp_obj_websocket_t {
     mp_obj_base_t base;
@@ -69,7 +69,7 @@ STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
     o->to_recv = 2;
     o->mask_pos = 0;
     o->buf_pos = 0;
-    o->opts = 0;
+    o->opts = FRAME_TXT;
     if (n_args > 1 && args[1] == mp_const_true) {
         o->opts |= BLOCKING_WRITE;
     }
@@ -185,7 +185,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = self_in;
     assert(size < 126);
-    byte header[] = {0x81, size};
+    byte header[] = {0x80 | (self->opts & FRAME_OPCODE_MASK), size};
 
     mp_obj_t dest[3];
     if (self->opts & BLOCKING_WRITE) {
@@ -212,6 +212,11 @@ STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t 
     switch (request) {
         case MP_STREAM_GET_DATA_OPTS:
             return self->ws_flags & FRAME_OPCODE_MASK;
+        case MP_STREAM_SET_DATA_OPTS: {
+            int cur = self->opts & FRAME_OPCODE_MASK;
+            self->opts = (self->opts & ~FRAME_OPCODE_MASK) | (arg & FRAME_OPCODE_MASK);
+            return cur;
+        }
         default:
             *errcode = EINVAL;
             return MP_STREAM_ERROR;
