@@ -182,6 +182,7 @@ STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
     }
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(self_in, MP_STREAM_OP_WRITE);
@@ -228,6 +229,7 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
     return mp_stream_write(self_in, bufinfo.buf, bufinfo.len);
 }
+MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
 
 STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
@@ -256,6 +258,7 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 
 STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(self_in, MP_STREAM_OP_READ);
@@ -300,6 +303,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     vstr.len = total_size;
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
@@ -357,6 +361,7 @@ done:
 
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
 
 // TODO take an optional extra argument (what does it do exactly?)
 STATIC mp_obj_t stream_unbuffered_readlines(mp_obj_t self) {
@@ -432,9 +437,3 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_int(res);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
-MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj, 1, 2, stream_unbuffered_readline);
-MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
