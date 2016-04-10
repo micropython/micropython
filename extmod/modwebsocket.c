@@ -207,15 +207,28 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
     return out_sz;
 }
 
+STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (request) {
+        case MP_STREAM_GET_DATA_OPTS:
+            return self->ws_flags & FRAME_OPCODE_MASK;
+        default:
+            *errcode = EINVAL;
+            return MP_STREAM_ERROR;
+    }
+}
+
 STATIC const mp_map_elem_t websocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ioctl), (mp_obj_t)&mp_stream_ioctl_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
 
 STATIC const mp_stream_p_t websocket_stream_p = {
     .read = websocket_read,
     .write = websocket_write,
+    .ioctl = websocket_ioctl,
 };
 
 STATIC const mp_obj_type_t websocket_type = {
