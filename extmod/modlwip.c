@@ -288,9 +288,19 @@ STATIC err_t _lwip_tcp_connected(void *arg, struct tcp_pcb *tpcb, err_t err) {
     return ERR_OK;
 }
 
+// By default, a child socket of listen socket is created with recv
+// handler which discards incoming pbuf's. We don't want to do that,
+// so set this handler which requests lwIP to keep pbuf's and deliver
+// them later. We cannot cache pbufs in child socket on Python side,
+// until it is created in accept().
+STATIC err_t _lwip_tcp_recv_unaccepted(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err) {
+    return ERR_BUF;
+}
+
 // Callback for incoming tcp connections.
 STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
+    tcp_recv(newpcb, _lwip_tcp_recv_unaccepted);
 
     if (socket->incoming.connection != NULL) {
         // We need to handle this better. This single-level structure makes the
