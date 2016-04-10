@@ -423,7 +423,7 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_int_t res = stream_p->ioctl(args[0], mp_obj_get_int(args[1]), val, &error);
+    mp_uint_t res = stream_p->ioctl(args[0], mp_obj_get_int(args[1]), val, &error);
     if (res == MP_STREAM_ERROR) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
     }
