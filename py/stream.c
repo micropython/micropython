@@ -414,12 +414,14 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_IOCTL);
 
     mp_buffer_info_t bufinfo;
-    uintptr_t val;
-    if (MP_OBJ_IS_INT(args[2])) {
-        val = mp_obj_get_int(args[2]);
-    } else {
-        mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-        val = (uintptr_t)bufinfo.buf;
+    uintptr_t val = 0;
+    if (n_args > 2) {
+        if (MP_OBJ_IS_INT(args[2])) {
+            val = mp_obj_get_int(args[2]);
+        } else {
+            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
+            val = (uintptr_t)bufinfo.buf;
+        }
     }
 
     int error;
