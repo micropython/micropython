@@ -410,6 +410,28 @@ STATIC mp_obj_t stream_tell(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
+STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_IOCTL);
+
+    mp_buffer_info_t bufinfo;
+    uintptr_t val;
+    if (MP_OBJ_IS_INT(args[2])) {
+        val = mp_obj_get_int(args[2]);
+    } else {
+        mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+        val = (uintptr_t)bufinfo.buf;
+    }
+
+    int error;
+    mp_int_t res = stream_p->ioctl(args[0], mp_obj_get_int(args[1]), val, &error);
+    if (res == MP_STREAM_ERROR) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    }
+
+    return mp_obj_new_int(res);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj, 2, 3, stream_readinto);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
