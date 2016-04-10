@@ -416,11 +416,10 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     uintptr_t val = 0;
     if (n_args > 2) {
-        if (MP_OBJ_IS_INT(args[2])) {
-            val = mp_obj_get_int(args[2]);
-        } else {
-            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
+        if (mp_get_buffer(args[2], &bufinfo, MP_BUFFER_WRITE)) {
             val = (uintptr_t)bufinfo.buf;
+        } else {
+            val = mp_obj_get_int_truncated(args[2]);
         }
     }
 
