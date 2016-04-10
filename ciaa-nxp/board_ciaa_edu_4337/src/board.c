@@ -890,10 +890,10 @@ void UART0_IRQHandler (void)
                 {
                         uart3RxBufferData.timeoutCounter=uart3RxBufferData.timeout;
                 }
-                uart3RxBufferData.index++;
+                uart0RxBufferData.index++;
         }
         else
-                uart3RxBufferData.flagNewPacket=1;
+                uart0RxBufferData.flagNewPacket=1;
    }
 }
 
