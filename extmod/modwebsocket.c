@@ -33,15 +33,11 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "extmod/modwebsocket.h"
 
 #if MICROPY_PY_WEBSOCKET
 
 enum { FRAME_HEADER, FRAME_OPT, PAYLOAD };
-#define FRAME_OPCODE_MASK 0x0f
-enum {
-    FRAME_CONT, FRAME_TXT, FRAME_BIN,
-    FRAME_CLOSE = 0x8, FRAME_PING, FRAME_PONG
-};
 
 enum { BLOCKING_WRITE = 0x80 };
 
