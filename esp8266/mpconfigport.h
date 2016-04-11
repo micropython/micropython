@@ -12,6 +12,7 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (1)
+#define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
@@ -42,7 +43,11 @@
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
+#define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UJSON            (1)
+#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URE              (1)
+#define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
@@ -50,7 +55,9 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
+#define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_FROZEN       (1)
+#define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 
 #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
 
@@ -87,19 +94,24 @@ extern const struct _mp_obj_module_t utime_module;
 extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_machine;
+extern const struct _mp_obj_module_t onewire_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_lwip }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&onewire_module }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 

@@ -146,6 +146,8 @@ SECTIONS
         *.o(.rodata.mp_type_*) /* catches type: mp_obj_type_t */
         *.o(.rodata.*_locals_dict*) /* catches types: mp_obj_dict_t, mp_map_elem_t */
         *.o(.rodata.mp_module_*) /* catches types: mp_obj_module_t, mp_obj_dict_t, mp_map_elem_t */
+        */frozen.o(.rodata.mp_frozen_sizes) /* frozen modules */
+        */frozen.o(.rodata.mp_frozen_content) /* frozen modules */
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr

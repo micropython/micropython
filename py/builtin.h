@@ -105,6 +105,7 @@ extern const mp_obj_module_t mp_module_urandom;
 extern const mp_obj_module_t mp_module_ussl;
 extern const mp_obj_module_t mp_module_machine;
 extern const mp_obj_module_t mp_module_lwip;
+extern const mp_obj_module_t mp_module_websocket;
 
 // extmod functions
 MP_DECLARE_CONST_FUN_OBJ(pyb_mount_obj);

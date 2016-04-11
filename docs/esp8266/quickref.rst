@@ -82,11 +82,12 @@ Use the ``time`` module::
 Timers
 ------
 
-Use the ``machine.Timer`` class::
+Virtual (RTOS-based) timers are supported. Use the ``machine.Timer`` class
+with timer ID of -1::
 
     from machine import Timer
 
-    tim = Timer(0)
+    tim = Timer(-1)
     tim.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
     tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
 
@@ -112,6 +113,9 @@ Use the ``machine.Pin`` class::
 
 Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16.
 Note that Pin(1) and Pin(3) are REPL UART TX and RX respectively.
+Also note that Pin(16) is a special pin (used for wakeup from deepsleep
+mode) and may be not available for use with higher-level classes like
+``Neopixel``.
 
 PWM (pulse width modulation)
 ----------------------------

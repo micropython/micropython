@@ -607,6 +607,9 @@ Q(file)
 Q(mode)
 Q(r)
 Q(encoding)
+#if MICROPY_PY_IO_BUFFEREDWRITER
+Q(BufferedWriter)
+#endif
 #endif
 
 #if MICROPY_PY_GC
@@ -694,6 +697,8 @@ Q(AF_INET6)
 Q(SOCK_STREAM)
 Q(SOCK_DGRAM)
 Q(SOCK_RAW)
+Q(SOL_SOCKET)
+Q(SO_REUSEADDR)
 // for lwip.socket
 Q(close)
 Q(bind)
@@ -751,4 +756,8 @@ Q(uniform)
 #if MICROPY_VFS_FAT
 Q(VfsFat)
 Q(flush)
+#endif
+
+#if MICROPY_PY_WEBSOCKET
+Q(websocket)
 #endif

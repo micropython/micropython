@@ -235,16 +235,21 @@ For example::
     This class provides a driver for WiFi network processor in the ESP8266.  Example usage::
 
         import network
-        # setup as a station
-        nic = network.WLAN()
+        # enable station interface and connect to WiFi access point
+        nic = network.WLAN(network.STA_IF)
+        nic.active(True)
         nic.connect('your-ssid', 'your-password')
-        # now use socket as usual
+        # now use sockets as usual
 
     Constructors
     ------------
-    .. class:: WLAN()
+    .. class:: WLAN(interface_id)
 
-    Create a WLAN driver object.
+    Create a WLAN network interface object. Supported interfaces are
+    ``network.STA_IF`` (station aka client, connects to upstream WiFi access
+    points) and ``network.AP_IF`` (access point, allows other WiFi clients to
+    connect). Availability of the methods below depends on interface type.
+    For example, only STA interface may ``connect()`` to an access point.
 
     Methods
     -------

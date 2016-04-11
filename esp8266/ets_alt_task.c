@@ -24,7 +24,7 @@ static void (*idle_cb)(void *);
 static void *idle_arg;
 
 #if ESP_SDK_VERSION >= 010500
-# define FIRST_PRIO 3
+# define FIRST_PRIO 0
 #else
 # define FIRST_PRIO 0x14
 #endif

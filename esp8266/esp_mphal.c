@@ -51,7 +51,10 @@ void mp_hal_feed_watchdog(void) {
 }
 
 void mp_hal_delay_us(uint32_t us) {
-    ets_delay_us(us);
+    uint32_t start = system_get_time();
+    while (system_get_time() - start < us) {
+        ets_event_poll();
+    }
 }
 
 int mp_hal_stdin_rx_chr(void) {

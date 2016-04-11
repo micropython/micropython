@@ -44,6 +44,11 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 
+// For compatibilily with older lwIP versions.
+#ifndef ip_set_option
+#define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
+#endif
+
 #ifdef MICROPY_PY_LWIP_SLIP
 #include "netif/slipif.h"
 #include "lwip/sio.h"
@@ -360,6 +365,35 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 // Helper function for send/sendto to handle TCP packets
 STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     u16_t available = tcp_sndbuf(socket->pcb.tcp);
+
+    if (available == 0) {
+        // Non-blocking socket
+        if (socket->timeout == 0) {
+            *_errno = EAGAIN;
+            return -1;
+        }
+
+        mp_uint_t start = mp_hal_ticks_ms();
+        // Assume that STATE_PEER_CLOSED may mean half-closed connection, where peer closed it
+        // sending direction, but not receiving. Consequently, check for both STATE_CONNECTED
+        // and STATE_PEER_CLOSED as normal conditions and still waiting for buffers to be sent.
+        // If peer fully closed socket, we would have socket->state set to ERR_RST (connection
+        // reset) by error callback.
+        // Avoid sending too small packets, so wait until at least 16 bytes available
+        while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
+            if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
+                *_errno = ETIMEDOUT;
+                return -1;
+            }
+            poll_sockets();
+        }
+
+        if (socket->state < 0) {
+            *_errno = error_lookup_table[-socket->state];
+            return -1;
+        }
+    }
+
     u16_t write_len = MIN(available, len);
 
     err_t err = tcp_write(socket->pcb.tcp, buf, write_len, TCP_WRITE_FLAG_COPY);
@@ -876,7 +910,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblo
 
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
-    printf("Warning: lwip.setsockopt() not implemented\n");
+    lwip_socket_obj_t *socket = args[0];
+    mp_int_t val = mp_obj_get_int(args[3]);
+    switch (mp_obj_get_int(args[2])) {
+        case SOF_REUSEADDR:
+            // Options are common for UDP and TCP pcb's.
+            // TODO: handle val
+            ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+            break;
+        default:
+            printf("Warning: lwip.setsockopt() not implemented\n");
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
@@ -1076,6 +1120,9 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_DGRAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_RAW) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(1) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);

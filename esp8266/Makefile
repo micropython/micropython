@@ -55,16 +55,19 @@ SRC_C = \
 	main.c \
 	esp_mphal.c \
 	gccollect.c \
+	lexerstr32.c \
 	uart.c \
 	modpyb.c \
 	modpybpin.c \
 	modpybrtc.c \
 	modpybadc.c \
+	modpybi2c.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
 	modmachine.c \
+	modonewire.c \
 	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
