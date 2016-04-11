@@ -321,7 +321,6 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         }
         self->read_buf_tail = (self->read_buf_tail + 1) % self->read_buf_len;
         if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) { // May be stalled by flow ctrl: read UART
-            uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             #if defined(MCU_SERIES_F7)
             int data_dr = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
             #else
@@ -333,6 +332,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
             } else {
                 self->read_buf[self->read_buf_head] = data_dr;
             }
+            uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             self->read_buf_head = next_head;
             __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
         }
@@ -364,6 +364,8 @@ STATIC bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 
 STATIC HAL_StatusTypeDef uart_tx_data(pyb_uart_obj_t *self, uint8_t *data, uint16_t len) {
     if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+    // CTS can hold off transmission for an arbitrarily long time. Apply
+    // the overall timeout rather than the character timeout.
         return HAL_UART_Transmit(&self->uart, data, len, self->timeout);
     }
     // The timeout specified here is for waiting for the TX data register to
@@ -448,10 +450,10 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         }
         if (self->uart.Init.HwFlowCtl) {
             mp_printf(print, ", flow=");
-            if (self->uart.Init.HwFlowCtl & 256) {
-                mp_printf(print, "RTS%s", self->uart.Init.HwFlowCtl & 512 ? "/" : "");
+            if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                mp_printf(print, "RTS%s", self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS ? "|" : "");
             }
-            if (self->uart.Init.HwFlowCtl & 512) {
+            if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
                 mp_printf(print, "CTS");
             }
         }
@@ -886,14 +888,14 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
     HAL_StatusTypeDef status = uart_tx_data(self, (uint8_t*)buf, size >> self->char_width);
 
     if (status == HAL_OK) {
+        // return number of bytes written
         return size;
-    }
-    if (status == HAL_TIMEOUT) { // UART_WaitOnFlagUntilTimeout() disables RXNE interrupt on timeout
+    } else if (status == HAL_TIMEOUT) { // UART_WaitOnFlagUntilTimeout() disables RXNE interrupt on timeout
         if (self->read_buf_len > 0) {
             __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE); // re-enable RXNE
         }
         // return number of bytes written
-        if (self->char_width == 0) {
+        if (self->char_width == CHAR_WIDTH_8BIT) {
             return size - self->uart.TxXferCount -1;
         } else {
             int written = self->uart.TxXferCount * 2;
