@@ -180,8 +180,18 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = self_in;
-    assert(size < 126);
-    byte header[] = {0x80 | (self->opts & FRAME_OPCODE_MASK), size};
+    assert(size < 0x10000);
+    byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
+    int hdr_sz;
+    if (size < 126) {
+        header[1] = size;
+        hdr_sz = 2;
+    } else {
+        header[1] = 126;
+        header[2] = size >> 8;
+        header[3] = size & 0xff;
+        hdr_sz = 4;
+    }
 
     mp_obj_t dest[3];
     if (self->opts & BLOCKING_WRITE) {
@@ -190,7 +200,7 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         mp_call_method_n_kw(1, 0, dest);
     }
 
-    mp_uint_t out_sz = mp_stream_writeall(self->sock, header, sizeof(header), errcode);
+    mp_uint_t out_sz = mp_stream_writeall(self->sock, header, hdr_sz, errcode);
     if (out_sz != MP_STREAM_ERROR) {
         out_sz = mp_stream_writeall(self->sock, buf, size, errcode);
     }
