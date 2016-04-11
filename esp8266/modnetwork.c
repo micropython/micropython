@@ -259,6 +259,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.ssid_len = len;
                         break;
                     }
+                    case QS(MP_QSTR_authmode): {
+                        req_if = SOFTAP_IF;
+                        cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -294,6 +299,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case QS(MP_QSTR_essid):
             req_if = SOFTAP_IF;
             val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            break;
+        case QS(MP_QSTR_authmode):
+            req_if = SOFTAP_IF;
+            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
             break;
         default:
             goto unknown;
@@ -384,6 +393,17 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(PHY_MODE_11G) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
         MP_OBJ_NEW_SMALL_INT(PHY_MODE_11N) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
+        MP_OBJ_NEW_SMALL_INT(AUTH_OPEN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WEP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WPA_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WPA2_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WPA_WPA2_PSK) },
 #endif
 };
 
