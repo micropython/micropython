@@ -193,7 +193,7 @@ Flow Control
 
     On the Pyboard Lite only ``UART(2)`` supports flow control on these pins:
 
-        ``(TX, RX, nRTS, nCTS) = (X1, X2, X4, X3) = (PA0, PA1, PA3, PA2)``
+        ``(TX, RX, nRTS, nCTS) = (X1, X2, X4, X3) = (PA2, PA3, PA1, PA0)``
 
     In the following paragraphs the term "target" refers to the device connected to
     the UART.
