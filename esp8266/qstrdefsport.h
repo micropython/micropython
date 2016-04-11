@@ -126,6 +126,7 @@ Q(AUTH_WPA_WPA2_PSK)
 // config keys
 Q(essid)
 Q(authmode)
+Q(password)
 
 // Pin class
 Q(Pin)

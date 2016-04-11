@@ -264,6 +264,15 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case QS(MP_QSTR_password): {
+                        req_if = SOFTAP_IF;
+                        mp_uint_t len;
+                        const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                        len = MIN(len, sizeof(cfg.ap.password) - 1);
+                        memcpy(cfg.ap.password, s, len);
+                        cfg.ap.password[len] = 0;
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
