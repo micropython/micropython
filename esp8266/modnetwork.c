@@ -242,6 +242,8 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         error_check(wifi_softap_get_config(&cfg.ap), "can't get AP config");
     }
 
+    int req_if = -1;
+
     if (kwargs->used != 0) {
 
         for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
@@ -249,6 +251,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_essid): {
+                        req_if = SOFTAP_IF;
                         mp_uint_t len;
                         const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
                         len = MIN(len, sizeof(cfg.ap.ssid));
@@ -261,6 +264,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                 }
                 #undef QS
             }
+        }
+
+        // We post-check interface requirements to save on code size
+        if (req_if >= 0) {
+            require_if(args[0], req_if);
         }
 
         if (self->if_id == STATION_IF) {
@@ -279,12 +287,25 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             "can query only one param"));
     }
 
+    mp_obj_t val;
+
     #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
     switch ((uintptr_t)args[1]) {
         case QS(MP_QSTR_essid):
-            return mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            req_if = SOFTAP_IF;
+            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            break;
+        default:
+            goto unknown;
     }
     #undef QS
+
+    // We post-check interface requirements to save on code size
+    if (req_if >= 0) {
+        require_if(args[0], req_if);
+    }
+
+    return val;
 
 unknown:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
