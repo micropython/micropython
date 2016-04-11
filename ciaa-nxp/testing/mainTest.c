@@ -21,7 +21,8 @@ void startTesting(void)
 
 	// Uart Library
 	utest_startTest(testUart1,testUartSetup,"UART: TX test");
-	utest_startTest(testUart2,testUartSetup,"UART: RX buffer test");
+	utest_startTest(testUart2,testUartSetup,"UART: RX polling test");
+	utest_startTest(testUart3,testUartSetup,"UART: RX buffer test");
 
 
 	utest_printStatistics();

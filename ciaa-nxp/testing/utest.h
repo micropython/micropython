@@ -36,6 +36,19 @@
 #define utest_assertNull(A){ if(A!=0){ utest_print1("assert null failed. Value: '0x%x' \r\n",A); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 #define utest_assertNotNull(A){ if(A==0){ utest_print1("assert not null failed. Value: '0x%x' \r\n",A); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 
+#define utest_assertEqualsString(A,B,S) \
+{										\
+	utest_varAux=0;						\
+	while(utest_varAux<S)							\
+	{									\
+		if(A[utest_varAux]!=B[utest_varAux])	\
+		{										\
+			utest_print2("assert equals string. Value: '%s' != '%s' \r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return;	\
+		}										\
+		utest_varAux++;							\
+	}											\
+}
+
 void utest_startTest(void(*fncTest)(void),void(*fncBefore)(void),char* testName);
 
 void utest_init(void);

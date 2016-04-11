@@ -24,6 +24,7 @@ static int utest_lineTestError;
 static char* utest_fileTestError;
 static int utest_totalTestsCounter;
 static int utest_okTestsCounter;
+static int utest_varAux;
 
 void utest_init(void)
 {

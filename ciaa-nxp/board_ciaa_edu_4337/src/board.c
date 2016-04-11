@@ -724,6 +724,7 @@ void Board_UART_Init(LPC_USART_T *pUART)
 	}
 	/* Restart FIFOS: set Enable, Reset content, set trigger level */
    	Chip_UART_SetupFIFOS(pUART, UART_FCR_FIFO_EN | UART_FCR_TX_RS | UART_FCR_RX_RS | UART_FCR_TRG_LEV0);
+
    	/* dummy read */
    	Chip_UART_ReadByte(pUART);
    	/* enable rx interrupt */
