@@ -40,7 +40,8 @@ using the standard stream methods::
 
     To check if there is anything to be read, use::
 
-        uart.any()               # returns True if any characters waiting
+        uart.any()          # returns the number of characters waiting
+
 
     *Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
     Earlier versions use ``uart.send`` and ``uart.recv``.
