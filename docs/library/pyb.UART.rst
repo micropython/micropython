@@ -58,7 +58,7 @@ Constructors
        initialised (it has the settings from the last initialisation of
        the bus, if any).  If extra arguments are given, the bus is initialised.
        See ``init`` for parameters of initialisation.
-    
+
        The physical pins of the UART busses are:
     
          - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
@@ -66,6 +66,10 @@ Constructors
          - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
          - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
          - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
+
+       The Pyboard Lite supports UART(1), UART(2) and UART(6) only. Pins are as above except:
+
+         - ``UART(2)`` is on: ``(TX, RX) = (X1, X2) = (PA2, PA3)``
 
 Methods
 -------
