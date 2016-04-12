@@ -35,6 +35,10 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 #define mp_hal_delay_ms HAL_Delay
 #define mp_hal_ticks_ms HAL_GetTick
 
+// needed for machine.I2C
+#include "stmhal/systick.h"
+#define mp_hal_delay_us_fast(us) sys_tick_udelay(us)
+
 // C-level pin HAL
 #include "stmhal/pin.h"
 #define mp_hal_pin_obj_t pin_obj_t
