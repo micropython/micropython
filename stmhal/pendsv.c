@@ -55,7 +55,13 @@ void pendsv_init(void) {
 void pendsv_nlr_jump(void *o) {
     if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
         MP_STATE_VM(mp_pending_exception) = o;
+        #if MICROPY_PY_SOFTIRQ
+        MP_STATE_VM(mp_pending_ex_flags) |= PENDING_EX_EXCEPTION;
+        #endif
     } else {
+        #if MICROPY_PY_SOFTIRQ
+        MP_STATE_VM(mp_pending_ex_flags) &= ~PENDING_EX_EXCEPTION;
+        #endif
         MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
         pendsv_object = o;
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;

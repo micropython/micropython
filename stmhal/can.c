@@ -80,6 +80,8 @@ typedef struct _pyb_can_obj_t {
     mp_uint_t can_id : 8;
     bool is_enabled : 1;
     bool extframe : 1;
+    bool rxcallback0_is_soft : 1;
+    bool rxcallback1_is_soft : 1;
     byte rx_state0;
     byte rx_state1;
     CAN_HandleTypeDef can;
@@ -742,12 +744,19 @@ error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_setfilter_obj, 1, pyb_can_setfilter);
 
-STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t callback_in) {
+STATIC mp_obj_t pyb_can_rxcallback_helper(mp_obj_t self_in, mp_int_t fifo_in, mp_obj_t callback_in, bool is_soft) {
     pyb_can_obj_t *self = self_in;
-    mp_int_t fifo = mp_obj_get_int(fifo_in);
+    mp_int_t fifo = fifo_in;
     mp_obj_t *callback;
 
-    callback = (fifo == 0) ? &self->rxcallback0 : &self->rxcallback1;
+    if (fifo == 0) {
+        callback = &self->rxcallback0;
+        self->rxcallback0_is_soft = is_soft;
+    } else {
+        callback = &self->rxcallback1;
+        self->rxcallback1_is_soft = is_soft;
+    }
+
     if (callback_in == mp_const_none) {
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FF0 : CAN_IT_FF1);
@@ -773,7 +782,29 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_can_rxcallback_obj, pyb_can_rxcallback);
+//STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_can_rxcallback_obj, pyb_can_rxcallback);
+
+
+STATIC mp_obj_t pyb_can_rxcallback(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = CAN_FILTER_FIFO0} },
+        { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_soft,     MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    pyb_can_obj_t *self  = pos_args[0];
+    mp_int_t fifo        = args[0].u_int;
+    mp_obj_t callback_in = args[1].u_obj;
+    bool is_soft         = args[2].u_bool;
+
+    return pyb_can_rxcallback_helper(self, fifo, callback_in, is_soft);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_rxcallback_obj, 1, pyb_can_rxcallback);
+
+
 
 STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     // instance methods
@@ -828,15 +859,18 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
     pyb_can_obj_t *self;
     mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
     byte *state;
+    bool is_soft;
 
     self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
 
     if (fifo_id == CAN_FIFO0) {
         callback = self->rxcallback0;
         state = &self->rx_state0;
+        is_soft = self->rxcallback0_is_soft;
     } else {
         callback = self->rxcallback1;
         state = &self->rx_state1;
+        is_soft = self->rxcallback1_is_soft;
     }
 
     switch (*state) {
@@ -861,18 +895,24 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
     }
 
     if (callback != mp_const_none) {
-        gc_lock();
-        nlr_buf_t nlr;
-        if (nlr_push(&nlr) == 0) {
-            mp_call_function_2(callback, self, irq_reason);
-            nlr_pop();
+        if (is_soft) {
+            #if MICROPY_PY_SOFTIRQ
+            mp_add_softint(callback, self, irq_reason);
+            #endif
         } else {
-            // Uncaught exception; disable the callback so it doesn't run again.
-            pyb_can_rxcallback(self, MP_OBJ_NEW_SMALL_INT(fifo_id), mp_const_none);
-            printf("uncaught exception in CAN(%u) rx interrupt handler\n", self->can_id);
-            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            gc_lock();
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                mp_call_function_2(callback, self, irq_reason);
+                nlr_pop();
+            } else {
+                // Uncaught exception; disable the callback so it doesn't run again.
+                pyb_can_rxcallback_helper(self, fifo_id, mp_const_none, false);
+                printf("uncaught exception in CAN(%u) rx interrupt handler\n", self->can_id);
+                mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            }
+            gc_unlock();
         }
-        gc_unlock();
     }
 }
 

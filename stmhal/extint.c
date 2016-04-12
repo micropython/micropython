@@ -108,7 +108,12 @@ typedef struct {
     mp_int_t line;
 } extint_obj_t;
 
-STATIC uint32_t pyb_extint_mode[EXTI_NUM_VECTORS];
+typedef struct {
+    bool      is_soft : 1;
+    mp_uint_t mode    : 31;
+} pyb_extint_mode_t;
+
+STATIC pyb_extint_mode_t pyb_extint_mode[EXTI_NUM_VECTORS];
 
 #if !defined(ETH)
 #define ETH_WKUP_IRQn   62  // Some MCUs don't have ETH, but we want a value to put in our table
@@ -140,7 +145,7 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
 
 // Set override_callback_obj to true if you want to unconditionally set the
 // callback function.
-uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj) {
+uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool is_soft, bool override_callback_obj) {
     const pin_obj_t *pin = NULL;
     uint v_line;
 
@@ -184,8 +189,14 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
     extint_disable(v_line);
 
     *cb = callback_obj;
-    pyb_extint_mode[v_line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
+    pyb_extint_mode[v_line].mode = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
         EXTI_Mode_Interrupt : EXTI_Mode_Event;
+#if defined(MICROPY_PY_SOFTIRQ)
+    pyb_extint_mode[v_line].is_soft = is_soft;
+#else
+    pyb_extint_mode[v_line].is_soft = false;
+#endif
+
 
     if (*cb != mp_const_none) {
 
@@ -213,7 +224,7 @@ void extint_enable(uint line) {
     #if defined(MCU_SERIES_F7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
-    if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
+    if (pyb_extint_mode[line].mode == EXTI_Mode_Interrupt) {
         EXTI->IMR |= (1 << line);
     } else {
         EXTI->EMR |= (1 << line);
@@ -223,7 +234,7 @@ void extint_enable(uint line) {
     // Since manipulating IMR/EMR is a read-modify-write, and we want this to
     // be atomic, we use the bit-band area to just affect the bit we're
     // interested in.
-    EXTI_MODE_BB(pyb_extint_mode[line], line) = 1;
+    EXTI_MODE_BB(pyb_extint_mode[line].mode, line) = 1;
     #endif
 }
 
@@ -347,6 +358,7 @@ STATIC const mp_arg_t pyb_extint_make_new_args[] = {
     { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_pull,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_soft,     MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = false} },
 };
 #define PYB_EXTINT_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(pyb_extint_make_new_args)
 
@@ -359,7 +371,7 @@ STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
 
     extint_obj_t *self = m_new_obj(extint_obj_t);
     self->base.type = type;
-    self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
+    self->line = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, vals[4].u_bool, false);
 
     return self;
 }
@@ -401,7 +413,7 @@ const mp_obj_type_t extint_type = {
 void extint_init0(void) {
     for (int i = 0; i < PYB_EXTI_NUM_VECTORS; i++) {
         MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
-        pyb_extint_mode[i] = EXTI_Mode_Interrupt;
+        pyb_extint_mode[i].mode = EXTI_Mode_Interrupt;
    }
 }
 
@@ -412,21 +424,27 @@ void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
             if (*cb != mp_const_none) {
-                // When executing code within a handler we must lock the GC to prevent
-                // any memory allocations.  We must also catch any exceptions.
-                gc_lock();
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(*cb, MP_OBJ_NEW_SMALL_INT(line));
-                    nlr_pop();
+                if (pyb_extint_mode[line].is_soft) {
+                    #if MICROPY_PY_SOFTIRQ
+                    mp_add_softint(*cb, MP_OBJ_NEW_SMALL_INT(line), MP_OBJ_NULL);
+                    #endif
                 } else {
-                    // Uncaught exception; disable the callback so it doesn't run again.
-                    *cb = mp_const_none;
-                    extint_disable(line);
-                    printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
-                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                    // When executing code within a handler we must lock the GC to prevent
+                    // any memory allocations.  We must also catch any exceptions.
+                    gc_lock();
+                    nlr_buf_t nlr;
+                    if (nlr_push(&nlr) == 0) {
+                        mp_call_function_1(*cb, MP_OBJ_NEW_SMALL_INT(line));
+                        nlr_pop();
+                    } else {
+                        // Uncaught exception; disable the callback so it doesn't run again.
+                        *cb = mp_const_none;
+                        extint_disable(line);
+                        printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
+                        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+                    }
+                    gc_unlock();
                 }
-                gc_unlock();
             }
         }
     }

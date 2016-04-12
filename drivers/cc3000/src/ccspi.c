@@ -173,7 +173,11 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
     CS_HIGH();
 
     // register EXTI
+#if defined(MICROPY_PY_SOFTIRQ)
+    extint_register((mp_obj_t)PIN_IRQ, GPIO_MODE_IT_FALLING, GPIO_PULLUP, (mp_obj_t)&irq_callback_obj, false, true);
+#else
     extint_register((mp_obj_t)PIN_IRQ, GPIO_MODE_IT_FALLING, GPIO_PULLUP, (mp_obj_t)&irq_callback_obj, true);
+#endif
     extint_enable(PIN_IRQ->pin);
 
     DEBUG_printf("SpiOpen finished; IRQ.pin=%d IRQ_LINE=%d\n", PIN_IRQ->pin, PIN_IRQ->pin);
@@ -247,7 +251,7 @@ long SpiWrite(unsigned char *pUserBuffer, unsigned short usLength)
 
     unsigned char ucPad = 0;
 
-    // Figure out the total length of the packet in order to figure out if there 
+    // Figure out the total length of the packet in order to figure out if there
     // is padding or not
     if(!(usLength & 0x0001)) {
         ucPad++;

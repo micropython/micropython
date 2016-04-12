@@ -1,5 +1,6 @@
 from pyb import CAN
 import pyb
+import time
 
 # test we can correctly create by id or name
 for bus in (-1, 0, 1, 2, 3, "YA", "YB", "YC"):
@@ -121,7 +122,6 @@ def cb1a(bus, reason):
     if reason == 2:
         print('overflow')
 
-
 can.rxcallback(0, cb0)
 can.rxcallback(1, cb1)
 
@@ -217,3 +217,15 @@ bus2.send('',3,rtr=True)
 print(bus2.recv(0))
 bus2.send('',4,rtr=True)
 print(bus2.any(0))
+
+# Testing soft interrupts
+def soft_irq(bus, reason):
+    s = 'soft_irq'
+    print(s)
+    print(can.recv(0))
+
+can = CAN(1, CAN.LOOPBACK)
+can.setfilter(0, CAN.MASK16, 0, (0, 0, 0, 0))
+can.rxcallback(0, soft_irq, soft=True)
+can.send('soft', 0)
+time.sleep(0.5)

@@ -102,7 +102,7 @@ void mp_deinit(void) {
     //mp_obj_dict_free(&dict_main);
     mp_module_deinit();
 
-    // call port specific deinitialization if any 
+    // call port specific deinitialization if any
 #ifdef MICROPY_PORT_INIT_FUNC
     MICROPY_PORT_DEINIT_FUNC;
 #endif
@@ -1408,3 +1408,76 @@ NORETURN void mp_raise_TypeError(const char *msg) {
 NORETURN void mp_not_implemented(const char *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
+
+#if MICROPY_PY_SOFTIRQ
+
+#define MAX_STACK_DEPTH (5)
+
+typedef struct _stack_elem_t {
+    mp_obj_t irqfunc;
+    mp_obj_t arg1;
+    mp_obj_t arg2;
+} stack_elem_t;
+
+volatile bool softirq_enabled = false;
+volatile short sp = -1;
+stack_elem_t stack[MAX_STACK_DEPTH];
+
+void mp_enable_softirq(void) {
+    softirq_enabled = true;
+}
+
+void mp_disable_softirq(void) {
+    mp_uint_t irqstate = disable_irq();
+    softirq_enabled = false;
+    sp = -1;
+    MP_STATE_VM(mp_pending_ex_flags) &= ~PENDING_EX_SOFT_INT;
+    enable_irq(irqstate);
+}
+
+void mp_exec_softirq(void) {
+    stack_elem_t softirq;
+    mp_uint_t irqstate;
+    static bool busy = false;
+
+    if (sp >= 0 && busy == false && __get_IPSR() == 0) {
+        irqstate = disable_irq();
+        softirq = stack[sp--];
+        busy = true;
+        enable_irq(irqstate);
+        if (softirq.arg1 == MP_OBJ_NULL) {
+            mp_call_function_0(softirq.irqfunc);
+        } else if (softirq.arg2 == MP_OBJ_NULL) {
+            mp_call_function_1(softirq.irqfunc, softirq.arg1);
+        } else {
+            mp_call_function_2(softirq.irqfunc, softirq.arg1, softirq.arg2);
+        }
+        irqstate = disable_irq();
+        busy = false;
+        if (sp == -1) {
+            MP_STATE_VM(mp_pending_ex_flags) &= ~PENDING_EX_SOFT_INT;
+        }
+        enable_irq(irqstate);
+    }
+}
+
+mp_obj_t mp_add_softint(mp_obj_t function, mp_obj_t arg1, mp_obj_t arg2) {
+
+    if (sp < MAX_STACK_DEPTH - 1 && softirq_enabled) {
+        mp_uint_t irqstate = disable_irq();
+        sp++;
+        stack[sp].irqfunc = function;
+        stack[sp].arg1 = arg1;
+        stack[sp].arg2 = arg2;
+        MP_STATE_VM(mp_pending_ex_flags) |= PENDING_EX_SOFT_INT;
+        enable_irq(irqstate);
+    } else if (softirq_enabled) {
+        mp_disable_softirq();
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_RuntimeError,
+            "softint stack exhausted"));
+        return mp_const_false;
+    }
+
+    return mp_const_true;
+}
+#endif //MICROPY_PY_SOFTIRQ

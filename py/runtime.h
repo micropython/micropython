@@ -165,4 +165,9 @@ void mp_warning(const char *msg, ...);
 #define mp_warning(msg, ...)
 #endif
 
+void mp_enable_softirq(void);
+void mp_disable_softirq(void);
+mp_obj_t mp_add_softint(mp_obj_t, mp_obj_t, mp_obj_t);
+void mp_exec_softirq(void);
+
 #endif // __MICROPY_INCLUDED_PY_RUNTIME_H__

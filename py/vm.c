@@ -1237,12 +1237,27 @@ yield:
 
 pending_exception_check:
                 MICROPY_VM_HOOK_LOOP
+                #if MICROPY_PY_SOFTIRQ
+                if (MP_STATE_VM(mp_pending_ex_flags)) {
+                    if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+                        MARK_EXC_IP_SELECTIVE();
+                        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                        MP_STATE_VM(mp_pending_ex_flags) &= ~PENDING_EX_EXCEPTION;
+                        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                        RAISE(obj);
+                    } else if (MP_STATE_VM(mp_pending_ex_flags) & PENDING_EX_SOFT_INT) {
+                        mp_exec_softirq();
+
+                    }
+                }
+                #else
                 if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
                     MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
                     RAISE(obj);
                 }
+                #endif
 
                 // TODO make GIL release more efficient
                 MP_THREAD_GIL_EXIT();

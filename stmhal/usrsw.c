@@ -114,19 +114,43 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 /// \method callback(fun)
 /// Register the given function to be called when the switch is pressed down.
 /// If `fun` is `None`, then it disables the callback.
-mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
-    MP_STATE_PORT(pyb_switch_callback) = callback;
-    // Init the EXTI each time this function is called, since the EXTI
-    // may have been disabled by an exception in the interrupt, or the
-    // user disabling the line explicitly.
+//mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
+    //MP_STATE_PORT(pyb_switch_callback) = callback;
+    //// Init the EXTI each time this function is called, since the EXTI
+    //// may have been disabled by an exception in the interrupt, or the
+    //// user disabling the line explicitly.
+    //extint_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
+                    //MICROPY_HW_USRSW_EXTI_MODE,
+                    //MICROPY_HW_USRSW_PULL,
+                    //callback == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
+                    //false, // TODO is_soft argument
+                    //true);
+    //return mp_const_none;
+//}
+//STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
+
+
+STATIC mp_obj_t pyb_switch_callback(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_soft,     MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    MP_STATE_PORT(pyb_switch_callback) = args[0].u_obj;
     extint_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
                     MICROPY_HW_USRSW_EXTI_MODE,
                     MICROPY_HW_USRSW_PULL,
-                    callback == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
+                    args[0].u_obj == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
+                    args[1].u_bool,
                     true);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_switch_callback_obj, 1, pyb_switch_callback);
+
+
 
 STATIC const mp_map_elem_t pyb_switch_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_switch_callback_obj },
