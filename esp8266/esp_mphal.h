@@ -56,6 +56,10 @@ void dupterm_task_init();
 void ets_event_poll(void);
 #define ETS_POLL_WHILE(cond) { while (cond) ets_event_poll(); }
 
+// needed for machine.I2C
+#include "osapi.h"
+#define mp_hal_delay_us_fast(us) os_delay_us(us)
+
 // C-level pin HAL
 #include "etshal.h"
 #include "gpio.h"
