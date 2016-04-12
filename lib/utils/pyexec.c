@@ -121,8 +121,11 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
 #if MICROPY_REPL_EVENT_DRIVEN
 
 typedef struct _repl_t {
-    // XXX line holds a root pointer!
-    vstr_t line;
+    // This structure originally also held current REPL line,
+    // but it was moved to MP_STATE_VM(repl_line) as containing
+    // root pointer. Still keep structure in case more state
+    // will be added later.
+    //vstr_t line;
     bool cont_line;
 } repl_t;
 
@@ -132,9 +135,9 @@ STATIC int pyexec_raw_repl_process_char(int c);
 STATIC int pyexec_friendly_repl_process_char(int c);
 
 void pyexec_event_repl_init(void) {
-    vstr_init(&repl.line, 32);
+    MP_STATE_VM(repl_line) = vstr_new_size(32);
     repl.cont_line = false;
-    readline_init(&repl.line, ">>> ");
+    readline_init(MP_STATE_VM(repl_line), ">>> ");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
         pyexec_raw_repl_process_char(CHAR_CTRL_A);
     } else {
@@ -155,27 +158,27 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         return 0;
     } else if (c == CHAR_CTRL_C) {
         // clear line
-        vstr_reset(&repl.line);
+        vstr_reset(MP_STATE_VM(repl_line));
         return 0;
     } else if (c == CHAR_CTRL_D) {
         // input finished
     } else {
         // let through any other raw 8-bit value
-        vstr_add_byte(&repl.line, c);
+        vstr_add_byte(MP_STATE_VM(repl_line), c);
         return 0;
     }
 
     // indicate reception of command
     mp_hal_stdout_tx_str("OK");
 
-    if (repl.line.len == 0) {
+    if (MP_STATE_VM(repl_line)->len == 0) {
         // exit for a soft reset
         mp_hal_stdout_tx_str("\r\n");
-        vstr_clear(&repl.line);
+        vstr_clear(MP_STATE_VM(repl_line));
         return PYEXEC_FORCED_EXIT;
     }
 
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, repl.line.buf, repl.line.len, 0);
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, MP_STATE_VM(repl_line)->buf, MP_STATE_VM(repl_line)->len, 0);
     if (lex == NULL) {
         mp_hal_stdout_tx_str("\x04MemoryError\r\n\x04");
     } else {
@@ -186,7 +189,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
     }
 
 reset:
-    vstr_reset(&repl.line);
+    vstr_reset(MP_STATE_VM(repl_line));
     mp_hal_stdout_tx_str(">");
 
     return 0;
@@ -216,7 +219,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         } else if (ret == CHAR_CTRL_D) {
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
-            vstr_clear(&repl.line);
+            vstr_clear(MP_STATE_VM(repl_line));
             return PYEXEC_FORCED_EXIT;
         }
 
@@ -224,11 +227,11 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             return 0;
         }
 
-        if (!mp_repl_continue_with_input(vstr_null_terminated_str(&repl.line))) {
+        if (!mp_repl_continue_with_input(vstr_null_terminated_str(MP_STATE_VM(repl_line)))) {
             goto exec;
         }
 
-        vstr_add_byte(&repl.line, '\n');
+        vstr_add_byte(MP_STATE_VM(repl_line), '\n');
         repl.cont_line = true;
         readline_note_newline("... ");
         return 0;
@@ -249,14 +252,14 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             return 0;
         }
 
-        if (mp_repl_continue_with_input(vstr_null_terminated_str(&repl.line))) {
-            vstr_add_byte(&repl.line, '\n');
+        if (mp_repl_continue_with_input(vstr_null_terminated_str(MP_STATE_VM(repl_line)))) {
+            vstr_add_byte(MP_STATE_VM(repl_line), '\n');
             readline_note_newline("... ");
             return 0;
         }
 
 exec: ;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&repl.line), vstr_len(&repl.line), 0);
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(MP_STATE_VM(repl_line)), vstr_len(MP_STATE_VM(repl_line)), 0);
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
@@ -267,19 +270,24 @@ exec: ;
         }
 
 input_restart:
-        vstr_reset(&repl.line);
+        vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
-        readline_init(&repl.line, ">>> ");
+        readline_init(MP_STATE_VM(repl_line), ">>> ");
         return 0;
     }
 }
 
+uint8_t pyexec_repl_active;
 int pyexec_event_repl_process_char(int c) {
+    pyexec_repl_active = 1;
+    int res;
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-        return pyexec_raw_repl_process_char(c);
+        res = pyexec_raw_repl_process_char(c);
     } else {
-        return pyexec_friendly_repl_process_char(c);
+        res = pyexec_friendly_repl_process_char(c);
     }
+    pyexec_repl_active = 0;
+    return res;
 }
 
 #else // MICROPY_REPL_EVENT_DRIVEN

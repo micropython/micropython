@@ -213,6 +213,8 @@ nanbox:
 freedos:
 	$(MAKE) \
 	CC=i586-pc-msdosdjgpp-gcc \
+	STRIP=i586-pc-msdosdjgpp-strip \
+	SIZE=i586-pc-msdosdjgpp-size \
 	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_freedos.h>" -DMICROPY_NLR_SETJMP -Dtgamma=gamma -DMICROPY_EMIT_X86=0 -DMICROPY_NO_ALLOCA=1 -DMICROPY_PY_USELECT=0' \
 	BUILD=build-freedos \
 	PROG=micropython_freedos \

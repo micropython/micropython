@@ -5,7 +5,7 @@ MEMORY
     dport0_0_seg : org = 0x3ff00000, len = 0x10
     dram0_0_seg :  org = 0x3ffe8000, len = 0x14000
     iram1_0_seg :  org = 0x40100000, len = 0x8000
-    irom0_0_seg :  org = 0x40210000, len = 0x5A000
+    irom0_0_seg :  org = 0x40209000, len = 0x80000
 }
 
 /* define the top of RAM */
@@ -119,6 +119,7 @@ SECTIONS
 
         *extmod/*.o*(.literal* .text*)
 
+        *lib/fatfs/*.o*(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)
         *lib/netutils/*.o*(.literal*, .text*)
@@ -129,10 +130,16 @@ SECTIONS
 
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
+        *lexerstr32.o(.literal* .text*)
+        *utils.o(.literal* .text*)
         *modpyb.o(.literal*, .text*)
         *modpybpin.o(.literal*, .text*)
+        *modpybpwm.o(.literal*, .text*)
         *modpybrtc.o(.literal*, .text*)
         *modpybadc.o(.literal*, .text*)
+        *modpybuart.o(.literal*, .text*)
+        *modpybi2c.o(.literal*, .text*)
+        *modpybspi.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
         *modnetwork.o(.literal* .text*)
         *moduos.o(.literal* .text*)
@@ -148,6 +155,9 @@ SECTIONS
         *.o(.rodata.mp_module_*) /* catches types: mp_obj_module_t, mp_obj_dict_t, mp_map_elem_t */
         */frozen.o(.rodata.mp_frozen_sizes) /* frozen modules */
         */frozen.o(.rodata.mp_frozen_content) /* frozen modules */
+
+        /* for -mforce-l32 */
+        build/*.o(.rodata*)
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr

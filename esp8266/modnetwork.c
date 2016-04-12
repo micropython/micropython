@@ -32,12 +32,13 @@
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "netutils.h"
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"
-#include "utils.h"
+#include "ets_alt_task.h"
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
@@ -57,7 +58,7 @@ STATIC const wlan_if_obj_t wlan_objs[] = {
 STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(wlan_if);
     if (self->if_id != if_no) {
-        error_check(false, "STA required");
+        error_check(false, if_no == STATION_IF ? "STA required" : "AP required");
     }
 }
 
@@ -127,9 +128,15 @@ STATIC mp_obj_t esp_status(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_status_obj, esp_status);
 
+STATIC mp_obj_t *esp_scan_list = NULL;
+
 STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
-    struct bss_info *bs;
-    if (si->pbss) {
+    if (esp_scan_list == NULL) {
+        // called unexpectedly
+        return;
+    }
+    if (si->pbss && status == 0) {
+        struct bss_info *bs;
         STAILQ_FOREACH(bs, si->pbss, next) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
             t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
@@ -138,21 +145,30 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
             t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
             t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
             t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
-            call_function_1_protected(MP_STATE_PORT(scan_cb_obj), t);
+            mp_obj_list_append(*esp_scan_list, MP_OBJ_FROM_PTR(t));
         }
+    } else {
+        // indicate error
+        *esp_scan_list = MP_OBJ_NULL;
     }
+    esp_scan_list = NULL;
 }
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in, mp_obj_t cb_in) {
-    MP_STATE_PORT(scan_cb_obj) = cb_in;
+STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     if (wifi_get_opmode() == SOFTAP_MODE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, 
-            "Scan not supported in AP mode"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "scan unsupported in AP mode"));
     }
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    esp_scan_list = &list;
     wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
-    return mp_const_none;
+    ETS_POLL_WHILE(esp_scan_list != NULL);
+    if (list == MP_OBJ_NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "scan failed"));
+    }
+    return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_scan_obj, esp_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 
 /// \method isconnected()
 /// Return True if connected to an AP and an IP address has been assigned,
@@ -226,6 +242,8 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         error_check(wifi_softap_get_config(&cfg.ap), "can't get AP config");
     }
 
+    int req_if = -1;
+
     if (kwargs->used != 0) {
 
         for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
@@ -233,6 +251,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_essid): {
+                        req_if = SOFTAP_IF;
                         mp_uint_t len;
                         const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
                         len = MIN(len, sizeof(cfg.ap.ssid));
@@ -240,11 +259,30 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.ssid_len = len;
                         break;
                     }
+                    case QS(MP_QSTR_authmode): {
+                        req_if = SOFTAP_IF;
+                        cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
+                        break;
+                    }
+                    case QS(MP_QSTR_password): {
+                        req_if = SOFTAP_IF;
+                        mp_uint_t len;
+                        const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                        len = MIN(len, sizeof(cfg.ap.password) - 1);
+                        memcpy(cfg.ap.password, s, len);
+                        cfg.ap.password[len] = 0;
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
                 #undef QS
             }
+        }
+
+        // We post-check interface requirements to save on code size
+        if (req_if >= 0) {
+            require_if(args[0], req_if);
         }
 
         if (self->if_id == STATION_IF) {
@@ -263,12 +301,29 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             "can query only one param"));
     }
 
+    mp_obj_t val;
+
     #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
     switch ((uintptr_t)args[1]) {
         case QS(MP_QSTR_essid):
-            return mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            req_if = SOFTAP_IF;
+            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            break;
+        case QS(MP_QSTR_authmode):
+            req_if = SOFTAP_IF;
+            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
+            break;
+        default:
+            goto unknown;
     }
     #undef QS
+
+    // We post-check interface requirements to save on code size
+    if (req_if >= 0) {
+        require_if(args[0], req_if);
+    }
+
+    return val;
 
 unknown:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
@@ -340,6 +395,24 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
         MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
+        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11B) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
+        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11G) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
+        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11N) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
+        MP_OBJ_NEW_SMALL_INT(AUTH_OPEN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WEP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WPA_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WPA2_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
+        MP_OBJ_NEW_SMALL_INT(AUTH_WPA_WPA2_PSK) },
 #endif
 };
 

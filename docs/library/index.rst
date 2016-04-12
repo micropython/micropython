@@ -55,6 +55,17 @@ For additional libraries, please download them from the `micropython-lib reposit
        sys.rst
        time.rst
 
+.. only:: port_esp8266
+
+    .. toctree::
+       :maxdepth: 1
+
+       gc.rst
+       math.rst
+       struct.rst
+       sys.rst
+       time.rst
+
 Python micro-libraries
 ----------------------
 
@@ -83,6 +94,19 @@ library.
       ujson.rst
       ure.rst
       usocket.rst
+      uzlib.rst
+
+.. only:: port_esp8266
+
+   .. toctree::
+      :maxdepth: 1
+
+      ubinascii.rst
+      uctypes.rst
+      uhashlib.rst
+      uheapq.rst
+      ujson.rst
+      ure.rst
       uzlib.rst
 
 .. only:: port_pyboard
@@ -134,6 +158,6 @@ library.
    .. toctree::
       :maxdepth: 2
 
-      pyb.rst
-      esp.rst
       network.rst
+      esp.rst
+      machine.rst

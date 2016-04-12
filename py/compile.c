@@ -1624,6 +1624,11 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
         compile_node(comp, body);
     } else {
         uint l_end = comp_next_label(comp);
+        if (MICROPY_EMIT_NATIVE && comp->scope_cur->emit_options != MP_EMIT_OPT_BYTECODE) {
+            // we need to allocate an extra label for the native emitter
+            // it will use l_end+1 as an auxiliary label
+            comp_next_label(comp);
+        }
         if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes[0], PN_with_item)) {
             // this pre-bit is of the form "a as b"
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)nodes[0];
@@ -1640,10 +1645,7 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
         // compile additional pre-bits and the body
         compile_with_stmt_helper(comp, n - 1, nodes + 1, body);
         // finish this with block
-        EMIT(pop_block);
-        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-        EMIT_ARG(label_assign, l_end);
-        EMIT(with_cleanup);
+        EMIT_ARG(with_cleanup, l_end);
         compile_decrease_except_level(comp);
         EMIT(end_finally);
     }

@@ -118,11 +118,14 @@ void mp_map_clear(mp_map_t *map) {
 
 STATIC void mp_map_rehash(mp_map_t *map) {
     mp_uint_t old_alloc = map->alloc;
+    mp_uint_t new_alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
     mp_map_elem_t *old_table = map->table;
-    map->alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
+    mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
+    // If we reach this point, table resizing succeeded, now we can edit the old map.
+    map->alloc = new_alloc;
     map->used = 0;
     map->all_keys_are_qstrs = 1;
-    map->table = m_new0(mp_map_elem_t, map->alloc);
+    map->table = new_table;
     for (mp_uint_t i = 0; i < old_alloc; i++) {
         if (old_table[i].key != MP_OBJ_NULL && old_table[i].key != MP_OBJ_SENTINEL) {
             mp_map_lookup(map, old_table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = old_table[i].value;

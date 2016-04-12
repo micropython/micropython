@@ -263,12 +263,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         }
 
         // apply the exponent
-        for (; exp_val > 0; exp_val--) {
-            dec_val *= 10;
-        }
-        for (; exp_val < 0; exp_val++) {
-            dec_val *= 0.1;
-        }
+        dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
     }
 
     // negate value if needed

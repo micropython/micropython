@@ -19,20 +19,32 @@
 #include "user_interface.h"
 #include "esp_mphal.h"
 
-#define RX_BUF_SIZE (256)
 #define UART_REPL UART0
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
 
+// the uart to which OS messages go; -1 to disable
+static int uart_os = UART_OS;
+
+/* unused
 // circular buffer for RX buffering
+#define RX_BUF_SIZE (256)
 static uint16_t rx_buf_in;
 static uint16_t rx_buf_out;
 static uint8_t rx_buf[RX_BUF_SIZE];
+*/
 
+#if MICROPY_REPL_EVENT_DRIVEN
 static os_event_t uart_evt_queue[16];
+#endif
 
 static void uart0_rx_intr_handler(void *para);
+
+void soft_reset(void);
+void mp_keyboard_interrupt(void);
+
+int interrupt_char;
 
 /******************************************************************************
  * FunctionName : uart_config
@@ -83,9 +95,11 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
     // enable rx_interrupt
     SET_PERI_REG_MASK(UART_INT_ENA(uart_no), UART_RXFIFO_FULL_INT_ENA);
 
+    /* unused
     // init RX buffer
     rx_buf_in = 0;
     rx_buf_out = 0;
+    */
 }
 
 /******************************************************************************
@@ -123,13 +137,21 @@ void uart_flush(uint8 uart) {
 *******************************************************************************/
 static void ICACHE_FLASH_ATTR
 uart_os_write_char(char c) {
+    if (uart_os == -1) {
+        return;
+    }
     if (c == '\n') {
-        uart_tx_one_char(UART_OS, '\r');
-        uart_tx_one_char(UART_OS, '\n');
+        uart_tx_one_char(uart_os, '\r');
+        uart_tx_one_char(uart_os, '\n');
     } else if (c == '\r') {
     } else {
-        uart_tx_one_char(UART_OS, c);
+        uart_tx_one_char(uart_os, c);
     }
+}
+
+void ICACHE_FLASH_ATTR
+uart_os_config(int uart) {
+    uart_os = uart;
 }
 
 /******************************************************************************
@@ -159,7 +181,22 @@ static void uart0_rx_intr_handler(void *para) {
         read_chars:
 #if 1 //MICROPY_REPL_EVENT_DRIVEN is not available here
         ETS_UART_INTR_DISABLE();
-        system_os_post(UART_TASK_ID, 0, 0);
+
+        while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
+            uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
+            if (RcvChar == interrupt_char) {
+                mp_keyboard_interrupt();
+            } else {
+                ringbuf_put(&input_buf, RcvChar);
+            }
+        }
+
+        mp_hal_signal_input();
+
+        // Clear pending FIFO interrupts
+        WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
+        ETS_UART_INTR_ENABLE();
+
 #else
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
@@ -173,6 +210,7 @@ static void uart0_rx_intr_handler(void *para) {
     }
 }
 
+/* unused
 int uart0_rx(void) {
   if (rx_buf_out != rx_buf_in) {
       int chr = rx_buf[rx_buf_out];
@@ -182,6 +220,7 @@ int uart0_rx(void) {
       return -1;
   }
 }
+*/
 
 int uart_rx_one_char(uint8 uart_no) {
     if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
@@ -205,7 +244,7 @@ void ICACHE_FLASH_ATTR uart_init(UartBautRate uart0_br, UartBautRate uart1_br) {
     uart_config(UART1);
     ETS_UART_INTR_ENABLE();
 
-    // install uart1 putc callback
+    // install handler for "os" messages
     os_install_putc1((void *)uart_os_write_char);
 }
 
@@ -218,13 +257,21 @@ void ICACHE_FLASH_ATTR uart_reattach() {
 #include "py/obj.h"
 #include "lib/utils/pyexec.h"
 
-void soft_reset(void);
-void mp_keyboard_interrupt(void);
-
-int interrupt_char;
+#if MICROPY_REPL_EVENT_DRIVEN
 void uart_task_handler(os_event_t *evt) {
+    if (pyexec_repl_active) {
+        // TODO: Just returning here isn't exactly right.
+        // What really should be done is something like
+        // enquing delayed event to itself, for another
+        // chance to feed data to REPL. Otherwise, there
+        // can be situation when buffer has bunch of data,
+        // and sits unprocessed, because we consumed all
+        // processing signals like this.
+        return;
+    }
+
     int c, ret = 0;
-    while ((c = uart_rx_one_char(UART_REPL)) >= 0) {
+    while ((c = ringbuf_get(&input_buf)) >= 0) {
         if (c == interrupt_char) {
             mp_keyboard_interrupt();
         }
@@ -234,11 +281,6 @@ void uart_task_handler(os_event_t *evt) {
         }
     }
 
-    // Clear pending FIFO interrupts
-    WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
-    // Enable UART interrupts, so our task will receive events again from IRQ handler
-    ETS_UART_INTR_ENABLE();
-
     if (ret & PYEXEC_FORCED_EXIT) {
         soft_reset();
     }
@@ -247,3 +289,4 @@ void uart_task_handler(os_event_t *evt) {
 void uart_task_init() {
     system_os_task(uart_task_handler, UART_TASK_ID, uart_evt_queue, sizeof(uart_evt_queue) / sizeof(*uart_evt_queue));
 }
+#endif

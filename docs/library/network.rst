@@ -229,25 +229,51 @@ For example::
 
 .. only:: port_esp8266
 
+    Functions
+    =========
+
+    .. function:: phy_mode([mode])
+
+        Get or set the PHY mode.
+
+        If the ``mode`` parameter is provided, sets the mode to its value. If
+        the function is called wihout parameters, returns the current mode.
+
+        The possible modes are defined as constants:
+            * ``MODE_11B`` -- IEEE 802.11b,
+            * ``MODE_11G`` -- IEEE 802.11g,
+            * ``MODE_11N`` -- IEEE 802.11n.
+
     class WLAN
     ==========
 
     This class provides a driver for WiFi network processor in the ESP8266.  Example usage::
 
         import network
-        # setup as a station
-        nic = network.WLAN()
+        # enable station interface and connect to WiFi access point
+        nic = network.WLAN(network.STA_IF)
+        nic.active(True)
         nic.connect('your-ssid', 'your-password')
-        # now use socket as usual
+        # now use sockets as usual
 
     Constructors
     ------------
-    .. class:: WLAN()
+    .. class:: WLAN(interface_id)
 
-    Create a WLAN driver object.
+    Create a WLAN network interface object. Supported interfaces are
+    ``network.STA_IF`` (station aka client, connects to upstream WiFi access
+    points) and ``network.AP_IF`` (access point, allows other WiFi clients to
+    connect). Availability of the methods below depends on interface type.
+    For example, only STA interface may ``connect()`` to an access point.
 
     Methods
     -------
+
+    .. method:: wlan.active([is_active])
+
+        Activate ("up") or deactivate ("down") network interface, if boolean
+        argument is passed. Otherwise, query current state if no argument is
+        provided. Most other methods require active interface.
 
     .. method:: wlan.connect(ssid, password)
 
@@ -257,16 +283,20 @@ For example::
 
         Disconnect from the currently connected wireless network.
 
-    .. method:: wlan.scan(cb)
+    .. method:: wlan.mac([address])
 
-        Initiate scanning for the available wireless networks.
+        Get or set the network interface MAC address.
 
-        Scanning is only possible if the radio is in station or station+AP mode; if
-        called while in AP only mode, an OSError exception will be raised.
+        If the ``address`` parameter is provided, sets the address to its
+        value, which should be bytes object of length 6. If the function
+        is called wihout parameters, returns the current address.
 
-        Once the scanning is complete, the provided callback function ``cb`` will
-        be called once for each network found, and passed a tuple with information
-        about that network:
+    .. method:: wlan.scan()
+
+        Scan for the available wireless networks.
+
+        Scanning is only possible on STA interface. Returns list of tuples with
+        the information about WiFi access points:
 
             (ssid, bssid, channel, RSSI, authmode, hidden)
 
@@ -283,7 +313,7 @@ For example::
             * 0 -- visible
             * 1 -- hidden
 
-    .. method:: status()
+    .. method:: wlan.status()
 
         Return the current status of the wireless connection.
 

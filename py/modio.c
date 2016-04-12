@@ -24,12 +24,104 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+#include <string.h>
+
+#include "py/runtime.h"
 #include "py/builtin.h"
+#include "py/stream.h"
 
 #if MICROPY_PY_IO
 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
+
+#if MICROPY_PY_IO_BUFFEREDWRITER
+typedef struct _mp_obj_bufwriter_t {
+    mp_obj_base_t base;
+    mp_obj_t stream;
+    size_t alloc;
+    size_t len;
+    byte buf[0];
+} mp_obj_bufwriter_t;
+
+STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    size_t alloc = mp_obj_get_int(args[1]);
+    mp_obj_bufwriter_t *o = m_new_obj_var(mp_obj_bufwriter_t, byte, alloc);
+    o->base.type = type;
+    o->stream = args[0];
+    o->alloc = alloc;
+    o->len = 0;
+    return o;
+}
+
+STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+    mp_obj_bufwriter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_uint_t org_size = size;
+
+    while (size > 0) {
+        mp_uint_t rem = self->alloc - self->len;
+        if (size < rem) {
+            memcpy(self->buf + self->len, buf, size);
+            self->len += size;
+            return org_size;
+        }
+
+        // Buffer flushing policy here is to flush entire buffer all the time.
+        // This allows e.g. to have a block device as backing storage and write
+        // entire block to it. memcpy below is not ideal and could be optimized
+        // in some cases. But the way it is now it at least ensures that buffer
+        // is word-aligned, to guard against obscure cases when it matters, e.g.
+        // https://github.com/micropython/micropython/issues/1863
+        memcpy(self->buf + self->len, buf, rem);
+        buf = (byte*)buf + rem;
+        size -= rem;
+        mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->alloc, errcode);
+        if (out_sz == MP_STREAM_ERROR) {
+            return MP_STREAM_ERROR;
+        }
+        self->len = 0;
+    }
+
+    return org_size;
+}
+
+STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
+    mp_obj_bufwriter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->len != 0) {
+        int err;
+        mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->len, &err);
+        self->len = 0;
+        if (out_sz == MP_STREAM_ERROR) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bufwriter_flush_obj, bufwriter_flush);
+
+STATIC const mp_map_elem_t bufwriter_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&bufwriter_flush_obj },
+};
+STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
+
+STATIC const mp_stream_p_t bufwriter_stream_p = {
+    .write = bufwriter_write,
+};
+
+STATIC const mp_obj_type_t bufwriter_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_BufferedWriter,
+    .make_new = bufwriter_make_new,
+    .stream_p = &bufwriter_stream_p,
+    .locals_dict = (mp_obj_t)&bufwriter_locals_dict,
+};
+#endif // MICROPY_PY_IO_BUFFEREDWRITER
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__io) },
@@ -45,6 +137,9 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_StringIO), MP_ROM_PTR(&mp_type_stringio) },
     #if MICROPY_PY_IO_BYTESIO
     { MP_ROM_QSTR(MP_QSTR_BytesIO), MP_ROM_PTR(&mp_type_bytesio) },
+    #endif
+    #if MICROPY_PY_IO_BUFFEREDWRITER
+    { MP_ROM_QSTR(MP_QSTR_BufferedWriter), MP_ROM_PTR(&bufwriter_type) },
     #endif
 };
 

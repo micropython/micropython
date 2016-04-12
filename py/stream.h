@@ -28,6 +28,25 @@
 
 #include "py/obj.h"
 
+#define MP_STREAM_ERROR ((mp_uint_t)-1)
+
+// Stream ioctl request codes
+#define MP_STREAM_FLUSH (1)
+#define MP_STREAM_SEEK  (2)
+#define MP_STREAM_POLL  (3)
+//#define MP_STREAM_CLOSE       (4)  // Not yet implemented
+#define MP_STREAM_TIMEOUT       (5)  // Get/set timeout (single op)
+#define MP_STREAM_GET_OPTS      (6)  // Get stream options
+#define MP_STREAM_SET_OPTS      (7)  // Set stream options
+#define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
+#define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
+
+// Argument structure for MP_STREAM_SEEK
+struct mp_stream_seek_t {
+    mp_off_t offset;
+    int whence;
+};
+
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
@@ -36,6 +55,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readlines_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_ioctl_obj);
 
 // these are for mp_get_stream_raise and can be or'd together
 #define MP_STREAM_OP_READ (1)
@@ -48,6 +68,9 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len);
+
+// Helper function to write entire buf to *blocking* stream
+mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, int *errcode);
 
 #if MICROPY_STREAMS_NON_BLOCK
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,

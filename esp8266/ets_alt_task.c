@@ -42,6 +42,7 @@ static inline int prio2id(uint8_t prio) {
     return id;
 }
 
+#if DEBUG
 void dump_task(int prio, volatile struct task_entry *t) {
     printf("q for task %d: queue: %p, get ptr: %d, put ptr: %d, qlen: %d\n",
         prio, t->queue, t->i_get, t->i_put, t->qlen);
@@ -55,6 +56,7 @@ void dump_tasks(void) {
     }
     printf("====\n");
 }
+#endif
 
 bool ets_task(os_task_t task, uint8 prio, os_event_t *queue, uint8 qlen) {
     static unsigned cnt;
@@ -167,7 +169,9 @@ bool ets_run(void) {
     *(char*)0x3FFFC6FC = 0;
     ets_intr_lock();
     printf("ets_alt_task: ets_run\n");
+#if DEBUG
     dump_tasks();
+#endif
     ets_intr_unlock();
     while (1) {
         if (!ets_loop_iter()) {

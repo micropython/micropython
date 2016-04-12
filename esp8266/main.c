@@ -38,7 +38,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-STATIC char heap[16384];
+STATIC char heap[24 * 1024];
 
 STATIC void mp_reset(void) {
     mp_stack_set_top((void*)0x40000000);
@@ -48,9 +48,15 @@ STATIC void mp_reset(void) {
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
+    #if MICROPY_VFS_FAT
+    memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
+    #endif
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("boot");
+    pyexec_frozen_module("_boot");
+    pyexec_file("boot.py");
+    pyexec_file("main.py");
 #endif
 }
 
@@ -58,30 +64,73 @@ void soft_reset(void) {
     mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
+    #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
+    #endif
 }
 
 void init_done(void) {
+    #if MICROPY_REPL_EVENT_DRIVEN
+    uart_task_init();
+    #endif
     mp_reset();
     mp_hal_stdout_tx_str("\r\n");
+    #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
-    uart_task_init();
+    #endif
+    dupterm_task_init();
+
+    #if !MICROPY_REPL_EVENT_DRIVEN
+soft_reset:
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
+        }
+    }
+    soft_reset();
+    goto soft_reset;
+    #endif
 }
 
 void user_init(void) {
     system_init_done_cb(init_done);
 }
 
+mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
+mp_import_stat_t fat_vfs_import_stat(const char *path);
+
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    #if MICROPY_VFS_FAT
+    return fat_vfs_lexer_new_from_file(filename);
+    #else
+    (void)filename;
     return NULL;
+    #endif
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
+    #if MICROPY_VFS_FAT
+    return fat_vfs_import_stat(path);
+    #else
+    (void)path;
     return MP_IMPORT_STAT_NO_EXIST;
+    #endif
 }
 
+mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args);
 mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    #if MICROPY_VFS_FAT
+    // TODO: Handle kwargs!
+    return vfs_proxy_call(MP_QSTR_open, n_args, args);
+    #else
     return mp_const_none;
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 

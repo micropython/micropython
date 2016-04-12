@@ -336,7 +336,9 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
         self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + self->free));
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
-    mp_binary_set_val_array(self->typecode, self->items, self->len++, arg);
+    mp_binary_set_val_array(self->typecode, self->items, self->len, arg);
+    // only update length/free if set succeeded
+    self->len++;
     self->free--;
     return mp_const_none; // return None, as per CPython
 }

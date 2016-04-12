@@ -117,7 +117,7 @@ static int call_dupterm_read(void) {
         read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
         mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
         if (res == mp_const_none) {
-            return -1;
+            return -2;
         }
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
@@ -143,25 +143,32 @@ static int call_dupterm_read(void) {
 
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
-    #if MICROPY_PY_OS_DUPTERM
-    while (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
-        int c = call_dupterm_read();
+#if MICROPY_PY_OS_DUPTERM
+    if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
+        int c;
+        do {
+             c = call_dupterm_read();
+        } while (c == -2);
         if (c == -1) {
-            break;
+            goto main_term;
         }
         if (c == '\n') {
             c = '\r';
         }
         return c;
+    } else {
+        main_term:;
+#endif
+        int ret = read(0, &c, 1);
+        if (ret == 0) {
+            c = 4; // EOF, ctrl-D
+        } else if (c == '\n') {
+            c = '\r';
+        }
+        return c;
+#if MICROPY_PY_OS_DUPTERM
     }
-    #endif
-    int ret = read(0, &c, 1);
-    if (ret == 0) {
-        c = 4; // EOF, ctrl-D
-    } else if (c == '\n') {
-        c = '\r';
-    }
-    return c;
+#endif
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
