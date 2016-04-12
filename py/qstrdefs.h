@@ -681,6 +681,26 @@ Q(mem16)
 Q(mem32)
 #endif
 
+#if MICROPY_PY_MACHINE_I2C
+Q(I2C)
+Q(init)
+Q(scl)
+Q(sda)
+Q(freq)
+Q(scan)
+Q(start)
+Q(stop)
+Q(read)
+Q(readinto)
+Q(write)
+Q(readfrom)
+Q(readfrom_into)
+Q(writeto)
+Q(readfrom_mem)
+Q(readfrom_mem_into)
+Q(writeto_mem)
+#endif
+
 #if MICROPY_PY_USSL
 Q(ussl)
 Q(wrap_socket)
