@@ -170,6 +170,13 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STMHAL_SRC_C:.c=.o))
 
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
+
+
 include ../py/mkrules.mk
 
 .PHONY: test
