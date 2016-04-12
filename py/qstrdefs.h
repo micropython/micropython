@@ -699,6 +699,10 @@ Q(writeto)
 Q(readfrom_mem)
 Q(readfrom_mem_into)
 Q(writeto_mem)
+Q(addr)
+Q(memaddr)
+Q(n)
+Q(buf)
 #endif
 
 #if MICROPY_PY_USSL
