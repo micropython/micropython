@@ -134,6 +134,7 @@ STATIC void mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dat
             goto er;
         }
     }
+    mp_hal_i2c_stop(self);
     return;
 
 er:
@@ -141,7 +142,7 @@ er:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
 }
 
-STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val) {
+STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack) {
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_low(self);
     mp_hal_i2c_delay(self);
@@ -156,10 +157,15 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val) {
     }
     *val = data;
 
+    // send ack/nack bit
+    if (!nack) {
+        mp_hal_i2c_sda_low(self);
+    }
+    mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_release(self);
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_low(self);
-    mp_hal_i2c_delay(self);
+    mp_hal_i2c_sda_release(self);
 
     return 1; // success
 }
@@ -170,10 +176,11 @@ STATIC void mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *data
         goto er;
     }
     while (len--) {
-        if (!mp_hal_i2c_read_byte(self, data++)) {
+        if (!mp_hal_i2c_read_byte(self, data++, len == 0)) {
             goto er;
         }
     }
+    mp_hal_i2c_stop(self);
     return;
 
 er:
@@ -254,7 +261,7 @@ STATIC mp_obj_t machine_i2c_readinto(mp_obj_t self_in, mp_obj_t buf_in) {
     // do the read
     uint8_t *dest = bufinfo.buf;
     while (bufinfo.len--) {
-        if (!mp_hal_i2c_read_byte(self, dest++)) {
+        if (!mp_hal_i2c_read_byte(self, dest++, bufinfo.len == 0)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
         }
     }
