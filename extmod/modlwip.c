@@ -44,6 +44,12 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 
+#if 0 // print debugging info
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
 #define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
@@ -318,6 +324,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 
     if (p == NULL) {
         // Other side has closed connection.
+        DEBUG_printf("_lwip_tcp_recv[%p]: other side closed connection\n", socket);
         socket->state = STATE_PEER_CLOSED;
         return ERR_OK;
     } else if (socket->incoming.pbuf != NULL) {
