@@ -178,8 +178,8 @@ static int call_dupterm_read(void) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
         if (bufinfo.len == 0) {
-            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
             MP_STATE_PORT(term_obj) = NULL;
+            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
             return -1;
         }
         nlr_pop();
