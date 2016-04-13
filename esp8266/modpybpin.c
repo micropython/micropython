@@ -45,21 +45,21 @@
 //#define GPIO_PULL_DOWN (2)
 
 STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
-    {{&pyb_pin_type}, 0, 0, PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0},
-    {{&pyb_pin_type}, 1, 1, PERIPHS_IO_MUX_U0TXD_U, FUNC_GPIO1},
-    {{&pyb_pin_type}, 2, 2, PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2},
-    {{&pyb_pin_type}, 3, 3, PERIPHS_IO_MUX_U0RXD_U, FUNC_GPIO3},
-    {{&pyb_pin_type}, 4, 4, PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4},
-    {{&pyb_pin_type}, 5, 5, PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5},
-    {{&pyb_pin_type}, 9, 9, PERIPHS_IO_MUX_SD_DATA2_U, FUNC_GPIO9},
-    {{&pyb_pin_type}, 10, 10, PERIPHS_IO_MUX_SD_DATA3_U, FUNC_GPIO10},
-    {{&pyb_pin_type}, 12, 12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12},
-    {{&pyb_pin_type}, 13, 13, PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13},
-    {{&pyb_pin_type}, 14, 14, PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14},
-    {{&pyb_pin_type}, 15, 15, PERIPHS_IO_MUX_MTDO_U, FUNC_GPIO15},
+    {{&pyb_pin_type}, 0, FUNC_GPIO0, PERIPHS_IO_MUX_GPIO0_U},
+    {{&pyb_pin_type}, 1, FUNC_GPIO1, PERIPHS_IO_MUX_U0TXD_U},
+    {{&pyb_pin_type}, 2, FUNC_GPIO2, PERIPHS_IO_MUX_GPIO2_U},
+    {{&pyb_pin_type}, 3, FUNC_GPIO3, PERIPHS_IO_MUX_U0RXD_U},
+    {{&pyb_pin_type}, 4, FUNC_GPIO4, PERIPHS_IO_MUX_GPIO4_U},
+    {{&pyb_pin_type}, 5, FUNC_GPIO5, PERIPHS_IO_MUX_GPIO5_U},
+    {{&pyb_pin_type}, 9, FUNC_GPIO9, PERIPHS_IO_MUX_SD_DATA2_U},
+    {{&pyb_pin_type}, 10, FUNC_GPIO10, PERIPHS_IO_MUX_SD_DATA3_U},
+    {{&pyb_pin_type}, 12, FUNC_GPIO12, PERIPHS_IO_MUX_MTDI_U},
+    {{&pyb_pin_type}, 13, FUNC_GPIO13, PERIPHS_IO_MUX_MTCK_U},
+    {{&pyb_pin_type}, 14, FUNC_GPIO14, PERIPHS_IO_MUX_MTMS_U},
+    {{&pyb_pin_type}, 15, FUNC_GPIO15, PERIPHS_IO_MUX_MTDO_U},
     // GPIO16 is special, belongs to different register set, and
     // otherwise handled specially.
-    {{&pyb_pin_type}, 16, 16, -1, -1},
+    {{&pyb_pin_type}, 16, -1, -1},
 };
 
 STATIC uint8_t pin_mode[16 + 1];
@@ -130,7 +130,7 @@ STATIC void pyb_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     pyb_pin_obj_t *self = self_in;
 
     // pin name
-    mp_printf(print, "Pin(%u)", self->pin_id);
+    mp_printf(print, "Pin(%u)", self->phys_port);
 }
 
 // pin.init(mode, pull=Pin.PULL_NONE, af=-1)
@@ -202,7 +202,7 @@ STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
     int wanted_pin = mp_obj_get_int(args[0]);
     pyb_pin_obj_t *pin = NULL;
     for (int i = 0; i < MP_ARRAY_SIZE(pyb_pin_obj); i++) {
-        if (pyb_pin_obj[i].pin_id == wanted_pin) {
+        if (pyb_pin_obj[i].phys_port == wanted_pin) {
             pin = (pyb_pin_obj_t*)&pyb_pin_obj[i];
             break;
         }
