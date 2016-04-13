@@ -11,7 +11,7 @@ Reset related functions
 
 .. function:: reset()
 
-   Resets the WiPy in a manner similar to pushing the external RESET
+   Resets the device in a manner similar to pushing the external RESET
    button.
 
 .. function:: reset_cause()
@@ -87,7 +87,7 @@ Miscellaneous functions
 .. function:: unique_id()
 
    Returns a string of 6 bytes (48 bits), which is the unique ID of the MCU.
-   This also corresponds to the ``MAC address`` of the WiPy.
+   This also corresponds to the network ``MAC address``.
 
 .. _machine_constants:
 

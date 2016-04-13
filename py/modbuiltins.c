@@ -370,7 +370,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
             "ord expects a character"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "ord() expected a character, but string of length %d found", len));
+            "ord() expected a character, but string of length %d found", (int)len));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
@@ -439,6 +439,7 @@ STATIC mp_obj_t mp_builtin___repl_print__(mp_obj_t o) {
         mp_print_str(&mp_plat_print, "\n");
         #endif
         #if MICROPY_CAN_OVERRIDE_BUILTINS
+        // Set "_" special variable
         mp_obj_t dest[2] = {MP_OBJ_SENTINEL, o};
         mp_type_module.attr(MP_OBJ_FROM_PTR(&mp_module_builtins), MP_QSTR__, dest);
         #endif

@@ -25,14 +25,20 @@
  */
 
 #include <string.h>
+#include <errno.h>
 
 #include "py/mpconfig.h"
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
+#include "py/runtime.h"
+#include "extmod/misc.h"
 #include "genhdr/mpversion.h"
+#include "etshal.h"
 #include "user_interface.h"
+
+extern const mp_obj_type_t mp_fat_vfs_type;
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
@@ -65,9 +71,52 @@ STATIC mp_obj_t os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
-STATIC const mp_map_elem_t os_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uname),           (mp_obj_t)&os_uname_obj },
+#if MICROPY_VFS_FAT
+mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args) {
+    if (MP_STATE_PORT(fs_user_mount)[0] == NULL) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENODEV)));
+    }
+
+    mp_obj_t meth[n_args + 2];
+    mp_load_method(MP_STATE_PORT(fs_user_mount)[0], method_name, meth);
+    memcpy(meth + 2, args, n_args * sizeof(*args));
+    return mp_call_method_n_kw(n_args, 0, meth);
+}
+
+STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
+    return vfs_proxy_call(MP_QSTR_listdir, n_args, args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
+
+STATIC mp_obj_t os_remove(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_remove, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
+#endif
+
+STATIC mp_obj_t os_urandom(mp_obj_t num) {
+    mp_int_t n = mp_obj_get_int(num);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
+    for (int i = 0; i < n; i++) {
+        vstr.buf[i] = *WDEV_HWRNG;
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
+
+STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
+    { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
+    { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
+    #if MICROPY_PY_OS_DUPTERM
+    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    #endif
+    #if MICROPY_VFS_FAT
+    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

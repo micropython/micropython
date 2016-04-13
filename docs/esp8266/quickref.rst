@@ -82,11 +82,12 @@ Use the ``time`` module::
 Timers
 ------
 
-Use the ``machine.Timer`` class::
+Virtual (RTOS-based) timers are supported. Use the ``machine.Timer`` class
+with timer ID of -1::
 
     from machine import Timer
 
-    tim = Timer(0)
+    tim = Timer(-1)
     tim.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
     tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
 
@@ -110,8 +111,17 @@ Use the ``machine.Pin`` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
-Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16.
+Available pins are: 0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, which correspond
+to the actual GPIO pin numbers of ESP8266 chip. Note that many end-user
+boards use their own adhoc pin numbering (marked e.g. D0, D1, ...). As
+MicroPython supports different boards and modules, physical pin numbering
+was chosen as the lowest common denominator. For mapping between board
+logical pins and physical chip pins, consult your board documentation.
+
 Note that Pin(1) and Pin(3) are REPL UART TX and RX respectively.
+Also note that Pin(16) is a special pin (used for wakeup from deepsleep
+mode) and may be not available for use with higher-level classes like
+``Neopixel``.
 
 PWM (pulse width modulation)
 ----------------------------
@@ -183,14 +193,14 @@ The I2C driver is implemented in software and works on all pins::
     # construct an I2C bus
     i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
 
+    i2c.readfrom(0x3a, 4)   # read 4 bytes from slave device with address 0x3a
     i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
 
+    i2c.readfrom(0x3a, 4, stop=False) # don't send a stop bit after reading
     i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
-
-Note that reading is not yet implemented.
 
 OneWire driver
 --------------
@@ -227,7 +237,7 @@ NeoPixel driver
 Use the ``neopixel`` module::
 
     from machine import Pin
-    import neopixel
+    from neopixel import NeoPixel
 
     pin = Pin(0, Pin.OUT)   # set GPIO0 to output to drive NeoPixels
     np = NeoPixel(pin, 8)   # create NeoPixel driver on GPIO0 for 8 pixels
@@ -235,6 +245,7 @@ Use the ``neopixel`` module::
     np.write()              # write data to all pixels
     r, g, b = np[0]         # get first pixel colour
 
+    import neopixel
     neopixel.demo(np)       # run a demo
 
 For low-level driving of a NeoPixel::

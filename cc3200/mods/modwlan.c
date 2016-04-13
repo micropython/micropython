@@ -33,6 +33,7 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"

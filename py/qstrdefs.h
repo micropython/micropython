@@ -607,6 +607,9 @@ Q(file)
 Q(mode)
 Q(r)
 Q(encoding)
+#if MICROPY_PY_IO_BUFFEREDWRITER
+Q(BufferedWriter)
+#endif
 #endif
 
 #if MICROPY_PY_GC
@@ -678,6 +681,30 @@ Q(mem16)
 Q(mem32)
 #endif
 
+#if MICROPY_PY_MACHINE_I2C
+Q(I2C)
+Q(init)
+Q(scl)
+Q(sda)
+Q(freq)
+Q(scan)
+Q(start)
+Q(stop)
+Q(read)
+Q(readinto)
+Q(write)
+Q(readfrom)
+Q(readfrom_into)
+Q(writeto)
+Q(readfrom_mem)
+Q(readfrom_mem_into)
+Q(writeto_mem)
+Q(addr)
+Q(memaddr)
+Q(n)
+Q(buf)
+#endif
+
 #if MICROPY_PY_USSL
 Q(ussl)
 Q(wrap_socket)
@@ -694,6 +721,8 @@ Q(AF_INET6)
 Q(SOCK_STREAM)
 Q(SOCK_DGRAM)
 Q(SOCK_RAW)
+Q(SOL_SOCKET)
+Q(SO_REUSEADDR)
 // for lwip.socket
 Q(close)
 Q(bind)
@@ -751,4 +780,17 @@ Q(uniform)
 #if MICROPY_VFS_FAT
 Q(VfsFat)
 Q(flush)
+#endif
+
+#if MICROPY_PY_WEBSOCKET
+Q(websocket)
+#endif
+
+#if MICROPY_PY_FRAMEBUF
+Q(framebuf)
+Q(FrameBuffer1)
+Q(fill)
+Q(pixel)
+Q(scroll)
+Q(text)
 #endif

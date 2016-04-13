@@ -167,8 +167,11 @@ PY_O_BASENAME = \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
 	../extmod/machine_mem.o \
+	../extmod/machine_i2c.o \
 	../extmod/modussl.o \
 	../extmod/modurandom.o \
+	../extmod/modwebsocket.o \
+	../extmod/modframebuf.o \
 	../extmod/fsusermount.o \
 	../extmod/vfs_fat.o \
 	../extmod/vfs_fat_ffconf.o \

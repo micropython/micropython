@@ -398,6 +398,8 @@ typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
+// mp_fun_kw_t takes mp_map_t* (and not const mp_map_t*) to ease passing
+// this arg to mp_map_lookup().
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
 typedef enum {
@@ -425,7 +427,7 @@ typedef struct _mp_buffer_info_t {
     //int ver; // ?
 
     void *buf;      // can be NULL if len == 0
-    mp_uint_t len;  // in bytes
+    size_t len;     // in bytes
     int typecode;   // as per binary.h
 
     // Rationale: to load arbitrary-sized sprites directly to LCD
@@ -442,7 +444,6 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
 // Stream protocol
-#define MP_STREAM_ERROR ((mp_uint_t)-1)
 typedef struct _mp_stream_p_t {
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
@@ -451,17 +452,6 @@ typedef struct _mp_stream_p_t {
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
-
-// Stream ioctl request codes
-#define MP_STREAM_FLUSH (1)
-#define MP_STREAM_SEEK  (2)
-#define MP_STREAM_POLL  (3)
-
-// Argument structure for MP_STREAM_SEEK
-struct mp_stream_seek_t {
-    mp_off_t offset;
-    int whence;
-};
 
 struct _mp_obj_type_t {
     mp_obj_base_t base;

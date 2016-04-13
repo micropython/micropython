@@ -44,14 +44,6 @@
 // Removed in SDK 1.1.0
 //#define GPIO_PULL_DOWN (2)
 
-typedef struct _pyb_pin_obj_t {
-    mp_obj_base_t base;
-    uint16_t pin_id;
-    uint16_t phys_port;
-    uint32_t periph;
-    uint16_t func;
-} pyb_pin_obj_t;
-
 STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
     {{&pyb_pin_type}, 0, 0, PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0},
     {{&pyb_pin_type}, 1, 1, PERIPHS_IO_MUX_U0TXD_U, FUNC_GPIO1},
@@ -72,12 +64,16 @@ STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
 
 STATIC uint8_t pin_mode[16 + 1];
 
-uint mp_obj_get_pin(mp_obj_t pin_in) {
+pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
     if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "expecting a pin"));
     }
     pyb_pin_obj_t *self = pin_in;
-    return self->phys_port;
+    return self;
+}
+
+uint mp_obj_get_pin(mp_obj_t pin_in) {
+    return mp_obj_get_pin_obj(pin_in)->phys_port;
 }
 
 int pin_get(uint pin) {

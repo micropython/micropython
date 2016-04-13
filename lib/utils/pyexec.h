@@ -42,6 +42,7 @@ int pyexec_file(const char *filename);
 int pyexec_frozen_module(const char *name);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
+extern uint8_t pyexec_repl_active;
 
 MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);
 

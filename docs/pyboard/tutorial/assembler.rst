@@ -64,8 +64,8 @@ This code uses a few new concepts:
 Accepting arguments
 -------------------
 
-Inline assembler functions can accept up to 3 arguments.  If they are
-used, they must be named ``r0``, ``r1`` and ``r2`` to reflect the registers
+Inline assembler functions can accept up to 4 arguments.  If they are
+used, they must be named ``r0``, ``r1``, ``r2`` and ``r3`` to reflect the registers
 and the calling conventions.
 
 Here is a function that adds its arguments::

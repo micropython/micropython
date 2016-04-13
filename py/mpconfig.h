@@ -747,6 +747,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_IO_BYTESIO (1)
 #endif
 
+// Whether to provide "io.BufferedWriter" class
+#ifndef MICROPY_PY_IO_BUFFEREDWRITER
+#define MICROPY_PY_IO_BUFFEREDWRITER (0)
+#endif
+
 // Whether to provide "struct" module
 #ifndef MICROPY_PY_STRUCT
 #define MICROPY_PY_STRUCT (1)
@@ -832,8 +837,20 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE (0)
 #endif
 
+#ifndef MICROPY_PY_MACHINE_I2C
+#define MICROPY_PY_MACHINE_I2C (0)
+#endif
+
 #ifndef MICROPY_PY_USSL
 #define MICROPY_PY_USSL (0)
+#endif
+
+#ifndef MICROPY_PY_WEBSOCKET
+#define MICROPY_PY_WEBSOCKET (0)
+#endif
+
+#ifndef MICROPY_PY_FRAMEBUF
+#define MICROPY_PY_FRAMEBUF (0)
 #endif
 
 /*****************************************************************************/

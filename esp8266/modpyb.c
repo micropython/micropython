@@ -125,18 +125,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
-STATIC mp_obj_t pyb_hard_reset(void) {
-    system_restart();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_hard_reset_obj, pyb_hard_reset);
-
-STATIC mp_obj_t pyb_unique_id(void) {
-    uint32_t id = system_get_chip_id();
-    return mp_obj_new_bytes((byte *)&id, sizeof(id));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
-
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
@@ -149,7 +137,6 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hard_reset), (mp_obj_t)&pyb_hard_reset_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pyb_pin_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },

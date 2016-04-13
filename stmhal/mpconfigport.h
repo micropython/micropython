@@ -90,6 +90,8 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_FRAMEBUF         (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)

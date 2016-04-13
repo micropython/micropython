@@ -336,7 +336,9 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
         self->items = m_renew(byte, self->items, item_sz * self->len, item_sz * (self->len + self->free));
         mp_seq_clear(self->items, self->len + 1, self->len + self->free, item_sz);
     }
-    mp_binary_set_val_array(self->typecode, self->items, self->len++, arg);
+    mp_binary_set_val_array(self->typecode, self->items, self->len, arg);
+    // only update length/free if set succeeded
+    self->len++;
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
@@ -439,6 +441,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                         // TODO: alloc policy; at the moment we go conservative
                         o->items = m_renew(byte, o->items, (o->len + o->free) * item_sz, (o->len + len_adj) * item_sz);
                         o->free = 0;
+                        dest_items = o->items;
                     }
                     mp_seq_replace_slice_grow_inplace(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, len_adj, item_sz);

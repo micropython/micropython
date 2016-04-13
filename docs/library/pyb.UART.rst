@@ -40,7 +40,8 @@ using the standard stream methods::
 
     To check if there is anything to be read, use::
 
-        uart.any()               # returns True if any characters waiting
+        uart.any()          # returns the number of characters waiting
+
 
     *Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
     Earlier versions use ``uart.send`` and ``uart.recv``.
@@ -57,7 +58,7 @@ Constructors
        initialised (it has the settings from the last initialisation of
        the bus, if any).  If extra arguments are given, the bus is initialised.
        See ``init`` for parameters of initialisation.
-    
+
        The physical pins of the UART busses are:
     
          - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
@@ -66,12 +67,16 @@ Constructors
          - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
          - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
 
+       The Pyboard Lite supports UART(1), UART(2) and UART(6) only. Pins are as above except:
+
+         - ``UART(2)`` is on: ``(TX, RX) = (X1, X2) = (PA2, PA3)``
+
 Methods
 -------
 
 .. only:: port_pyboard
 
-    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=None, timeout_char=0, read_buf_len=64)
+    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=0, timeout_char=0, read_buf_len=64)
     
        Initialise the UART bus with the given parameters:
     
@@ -79,7 +84,7 @@ Methods
          - ``bits`` is the number of bits per character, 7, 8 or 9.
          - ``parity`` is the parity, ``None``, 0 (even) or 1 (odd).
          - ``stop`` is the number of stop bits, 1 or 2.
-         - ``flow`` sets the flow control type. Can be None, ``UART.RTS``, ``UART.CTS``
+         - ``flow`` sets the flow control type. Can be 0, ``UART.RTS``, ``UART.CTS``
            or ``UART.RTS | UART.CTS``.
          - ``timeout`` is the timeout in milliseconds to wait for the first character.
          - ``timeout_char`` is the timeout in milliseconds to wait between characters.
@@ -103,16 +108,18 @@ Methods
 
     .. method:: uart.any()
 
-       Return ``True`` if any characters waiting, else ``False``.
+       Returns the number of bytes waiting (may be 0).
 
     .. method:: uart.writechar(char)
 
       Write a single character on the bus.  ``char`` is an integer to write.
-      Return value: ``None``.
+      Return value: ``None``. See note below if CTS flow control is used.
 
 .. method:: uart.read([nbytes])
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
+   If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
+   when sufficient characters arrive or the timeout elapses.
 
    .. only:: port_pyboard
 
@@ -124,9 +131,9 @@ Methods
 
 .. method:: uart.readall()
 
-   Read as much data as possible.
+   Read as much data as possible. Returns after the timeout has elapsed.
 
-   Return value: a bytes object or ``None`` on timeout.
+   Return value: a bytes object or ``None`` if timeout prevents any data being read.
 
 .. method:: uart.readchar()
 
@@ -144,9 +151,11 @@ Methods
 
 .. method:: uart.readline()
 
-   Read a line, ending in a newline character.
+   Read a line, ending in a newline character. If such a line exists, return is
+   immediate. If the timeout elapses, all available data is returned regardless
+   of whether a newline exists.
 
-   Return value: the line read or ``None`` on timeout.
+   Return value: the line read or ``None`` on timeout if no data is available.
 
 .. method:: uart.write(buf)
 
@@ -157,7 +166,8 @@ Methods
       bytes are used for each character (little endian), and ``buf`` must contain
       an even number of bytes.
 
-      Return value: number of bytes written or ``None`` on timeout.
+      Return value: number of bytes written. If a timeout occurs and no bytes
+      were written returns ``None``.
 
 .. method:: uart.sendbreak()
 
@@ -173,4 +183,63 @@ Constants
     .. data:: UART.RTS
     .. data:: UART.CTS
 
-       to select the flow control type
+       to select the flow control type.
+
+Flow Control
+------------
+
+.. only:: port_pyboard
+
+    On Pyboards V1 and V1.1 ``UART(2)`` and ``UART(3)`` support RTS/CTS hardware flow control
+    using the following pins:
+
+        - ``UART(2)`` is on: ``(TX, RX, nRTS, nCTS) = (X3, X4, X2, X1) = (PA2, PA3, PA1, PA0)``
+        - ``UART(3)`` is on :``(TX, RX, nRTS, nCTS) = (Y9, Y10, Y7, Y6) = (PB10, PB11, PB14, PB13)``
+
+    On the Pyboard Lite only ``UART(2)`` supports flow control on these pins:
+
+        ``(TX, RX, nRTS, nCTS) = (X1, X2, X4, X3) = (PA2, PA3, PA1, PA0)``
+
+    In the following paragraphs the term "target" refers to the device connected to
+    the UART.
+
+    When the UART's ``init()`` method is called with ``flow`` set to one or both of
+    ``UART.RTS`` and ``UART.CTS`` the relevant flow control pins are configured.
+    ``nRTS`` is an active low output, ``nCTS`` is an active low input with pullup
+    enabled. To achieve flow control the Pyboard's ``nCTS`` signal should be connected
+    to the target's ``nRTS`` and the Pyboard's ``nRTS`` to the target's ``nCTS``.
+
+    CTS: target controls Pyboard transmitter
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    If CTS flow control is enabled the write behaviour is as follows:
+
+    If the Pyboard's ``uart.write(buf)`` method is called, transmission will stall for
+    any periods when ``nCTS`` is ``False``. This will result in a timeout if the entire
+    buffer was not transmitted in the timeout period. The method returns the number of
+    bytes written, enabling the user to write the remainder of the data if required. In
+    the event of a timeout, a character will remain in the UART pending ``nCTS``. The
+    number of bytes composing this character will be included in the return value.
+    
+    If ``uart.writechar()`` is called when ``nCTS`` is ``False`` the method will time
+    out unless the target asserts ``nCTS`` in time. If it times out ``OSError 116``
+    will be raised. The character will be transmitted as soon as the target asserts ``nCTS``.
+
+    RTS: Pyboard controls target's transmitter
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    If RTS flow control is enabled, behaviour is as follows:
+    
+    If buffered input is used (``read_buf_len`` > 0), incoming characters are buffered.
+    If the buffer becomes full, the next character to arrive will cause ``nRTS`` to go
+    ``False``: the target should cease transmission. ``nRTS`` will go ``True`` when
+    characters are read from the buffer.
+    
+    Note that the ``any()`` method returns the number of bytes in the buffer. Assume a
+    buffer length of ``N`` bytes. If the buffer becomes full, and another character arrives,
+    ``nRTS`` will be set False, and ``any()`` will return the count ``N``. When
+    characters are read the additional character will be placed in the buffer and will
+    be included in the result of a subsequent ``any()`` call.
+    
+    If buffered input is not used (``read_buf_len`` == 0) the arrival of a character will
+    cause ``nRTS`` to go ``False`` until the character is read.

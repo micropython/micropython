@@ -23,7 +23,9 @@ INC += -I../lib/timeutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
-UART_OS = 1
+# UART for "os" messages. 0 is normal UART as used by MicroPython REPL,
+# 1 is debug UART (tx only).
+UART_OS = 0
 
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
@@ -35,7 +37,7 @@ CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_
 	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip -lpp -lnet80211 -lwpa -lphy -lnet80211
+LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
@@ -46,7 +48,7 @@ CFLAGS += -g
 COPT = -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -DNDEBUG
+COPT += -Os -mforce-l32 -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
@@ -55,23 +57,35 @@ SRC_C = \
 	main.c \
 	esp_mphal.c \
 	gccollect.c \
+	lexerstr32.c \
 	uart.c \
+	esppwm.c \
+	espneopixel.c \
 	modpyb.c \
 	modpybpin.c \
+	modpybpwm.c \
 	modpybrtc.c \
 	modpybadc.c \
+	modpybuart.c \
+	modpybspi.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
 	modmachine.c \
+	modonewire.c \
 	utils.c \
+	ets_alt_task.c \
 	$(BUILD)/frozen.c \
-	../extmod/modlwip.o \
+	fatfs_port.o \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
 	)
+
+EXTMOD_SRC_C = $(addprefix extmod/,\
+	modlwip.o \
+        )
 
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
@@ -98,6 +112,8 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/printf.c \
+	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
 	)
 
 SRC_S = \
@@ -108,6 +124,7 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
@@ -132,8 +149,8 @@ $(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(CONFVARS_FILE)
 
 deploy: $(BUILD)/firmware-combined.bin
 	$(ECHO) "Writing $< to the board"
-	#$(Q)esptool.py --port $(PORT) write_flash 0 $<
-	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash 0 $(BUILD)/firmware.elf-0x00000.bin 0x10000 $(BUILD)/firmware.elf-0x10000.bin
+	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --flash_size=8m 0 $<
+	#$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --flash_size=8m 0 $(BUILD)/firmware.elf-0x00000.bin 0x9000 $(BUILD)/firmware.elf-0x0[1-f]000.bin
 
 reset:
 	echo -e "\r\nimport pyb; pyb.hard_reset()\r\n" >$(PORT)
@@ -141,7 +158,7 @@ reset:
 $(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)esptool.py elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x10000.bin $@
+	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x0[1-f]000.bin $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"

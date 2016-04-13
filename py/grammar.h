@@ -241,7 +241,7 @@ DEF_RULE(factor_2, c(factor_2), and(2), rule(factor_op), rule(factor))
 DEF_RULE(factor_op, nc, or(3), tok(OP_PLUS), tok(OP_MINUS), tok(OP_TILDE))
 DEF_RULE(power, c(power), and(3), rule(atom), opt_rule(power_trailers), opt_rule(power_dbl_star))
 DEF_RULE(power_trailers, c(power_trailers), one_or_more, rule(trailer))
-DEF_RULE(power_dbl_star, c(power_dbl_star), and(2), tok(OP_DBL_STAR), rule(factor))
+DEF_RULE(power_dbl_star, nc, ident | and(2), tok(OP_DBL_STAR), rule(factor))
 
 // atom: '(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']' | '{' [dictorsetmaker] '}' | NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False'
 // testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* [','] )

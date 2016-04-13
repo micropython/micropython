@@ -28,6 +28,7 @@
 #include <stdlib.h>
 
 #include "py/nlr.h"
+#include "py/parsenumbase.h"
 #include "py/parsenum.h"
 #include "py/smallint.h"
 
@@ -45,7 +46,7 @@ STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     nlr_raise(exc);
 }
 
-mp_obj_t mp_parse_num_integer(const char *restrict str_, mp_uint_t len, mp_uint_t base, mp_lexer_t *lex) {
+mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, mp_lexer_t *lex) {
     const byte *restrict str = (const byte *)str_;
     const byte *restrict top = str + len;
     bool neg = false;
@@ -80,7 +81,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, mp_uint_t len, mp_uint_
     for (; str < top; str++) {
         // get next digit as a value
         mp_uint_t dig = *str;
-        if (unichar_isdigit(dig) && dig - '0' < base) {
+        if (unichar_isdigit(dig) && (int)dig - '0' < base) {
             // 0-9 digit
             dig = dig - '0';
         } else if (base == 16) {
@@ -169,7 +170,7 @@ typedef enum {
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
-mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex) {
+mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex) {
 #if MICROPY_PY_BUILTINS_FLOAT
     const char *top = str + len;
     mp_float_t dec_val = 0;
@@ -262,12 +263,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, mp_uint_t len, bool allow_imag, b
         }
 
         // apply the exponent
-        for (; exp_val > 0; exp_val--) {
-            dec_val *= 10;
-        }
-        for (; exp_val < 0; exp_val++) {
-            dec_val *= 0.1;
-        }
+        dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
     }
 
     // negate value if needed

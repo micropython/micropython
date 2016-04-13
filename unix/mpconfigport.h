@@ -104,6 +104,9 @@
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
+#if MICROPY_PY_USSL
+#define MICROPY_PY_UHASHLIB_SHA1    (1)
+#endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_URANDOM          (1)
 #ifndef MICROPY_PY_USELECT

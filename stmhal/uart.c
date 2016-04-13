@@ -320,6 +320,10 @@ int uart_rx_char(pyb_uart_obj_t *self) {
             data = self->read_buf[self->read_buf_tail];
         }
         self->read_buf_tail = (self->read_buf_tail + 1) % self->read_buf_len;
+        if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
+            // UART was stalled by flow ctrl: re-enable IRQ now we have room in buffer
+            __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
+        }
         return data;
     } else {
         // no buffering
@@ -347,6 +351,11 @@ STATIC bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 }
 
 STATIC HAL_StatusTypeDef uart_tx_data(pyb_uart_obj_t *self, uint8_t *data, uint16_t len) {
+    if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+        // CTS can hold off transmission for an arbitrarily long time. Apply
+        // the overall timeout rather than the character timeout.
+        return HAL_UART_Transmit(&self->uart, data, len, self->timeout);
+    }
     // The timeout specified here is for waiting for the TX data register to
     // become empty (ie between chars), as well as for the final char to be
     // completely transferred.  The default value for timeout_char is long
@@ -385,25 +394,25 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 
     if (__HAL_UART_GET_FLAG(&self->uart, UART_FLAG_RXNE) != RESET) {
-        #if defined(MCU_SERIES_F7)
-        int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
-        #else
-        int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
-        #endif
-        data &= self->char_mask;
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
-                // only store data if room in buf
+                // only read data if room in buf
+                #if defined(MCU_SERIES_F7)
+                int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
+                #else
+                int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
+                #endif
+                data &= self->char_mask;
                 if (self->char_width == CHAR_WIDTH_9BIT) {
                     ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
                 } else {
                     self->read_buf[self->read_buf_head] = data;
                 }
                 self->read_buf_head = next_head;
+            } else { // No room: leave char in buf, disable interrupt
+                __HAL_UART_DISABLE_IT(&self->uart, UART_IT_RXNE);
             }
-        } else {
-            // TODO set flag for buffer overflow
         }
     }
 }
@@ -427,6 +436,15 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         } else {
             mp_printf(print, "%u", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
         }
+        if (self->uart.Init.HwFlowCtl) {
+            mp_printf(print, ", flow=");
+            if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                mp_printf(print, "RTS%s", self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS ? "|" : "");
+            }
+            if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                mp_printf(print, "CTS");
+            }
+        }
         mp_printf(print, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u)",
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2,
             self->timeout, self->timeout_char,
@@ -434,7 +452,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 }
 
-/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, read_buf_len=64)
+/// \method init(baudrate, bits=8, parity=None, stop=1, *, timeout=1000, timeout_char=0, flow=0, read_buf_len=64)
 ///
 /// Initialise the UART bus with the given parameters:
 ///
@@ -444,6 +462,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 ///   - `stop` is the number of stop bits, 1 or 2.
 ///   - `timeout` is the timeout in milliseconds to wait for the first character.
 ///   - `timeout_char` is the timeout in milliseconds to wait between characters.
+///   - `flow` is RTS | CTS where RTS == 256, CTS == 512
 ///   - `read_buf_len` is the character length of the read buffer (0 to disable).
 STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -847,7 +866,7 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
         return MP_STREAM_ERROR;
     }
 
-    // wait to be able to write the first character
+    // wait to be able to write the first character. EAGAIN causes write to return None
     if (!uart_tx_wait(self, self->timeout)) {
         *errcode = EAGAIN;
         return MP_STREAM_ERROR;
@@ -859,6 +878,17 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
     if (status == HAL_OK) {
         // return number of bytes written
         return size;
+    } else if (status == HAL_TIMEOUT) { // UART_WaitOnFlagUntilTimeout() disables RXNE interrupt on timeout
+        if (self->read_buf_len > 0) {
+            __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE); // re-enable RXNE
+        }
+        // return number of bytes written
+        if (self->char_width == CHAR_WIDTH_8BIT) {
+            return size - self->uart.TxXferCount - 1;
+        } else {
+            int written = self->uart.TxXferCount * 2;
+            return size - written - 2;
+        }
     } else {
         *errcode = mp_hal_status_to_errno_table[status];
         return MP_STREAM_ERROR;

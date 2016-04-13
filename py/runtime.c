@@ -788,7 +788,7 @@ too_short:
             "wrong number of values to unpack"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "need more than %d values to unpack", seq_len));
+            "need more than %d values to unpack", (int)seq_len));
     }
 too_long:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -796,7 +796,7 @@ too_long:
             "wrong number of values to unpack"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "too many values to unpack (expected %d)", num));
+            "too many values to unpack (expected %d)", (int)num));
     }
 }
 
@@ -863,7 +863,7 @@ too_short:
             "wrong number of values to unpack"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "need more than %d values to unpack", seq_len));
+            "need more than %d values to unpack", (int)seq_len));
     }
 }
 
