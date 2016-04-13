@@ -451,6 +451,9 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
         // Non-blocking socket
         if (socket->timeout == 0) {
+            if (socket->state == STATE_PEER_CLOSED) {
+                return 0;
+            }
             *_errno = EAGAIN;
             return -1;
         }
