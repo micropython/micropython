@@ -51,7 +51,9 @@
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_DEBUG_STDERR        (1)
+// Printing debug to stderr may give tests which
+// check stdout a chance to pass, etc.
+#define MICROPY_DEBUG_PRINTER_DEST  mp_stderr_print
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)

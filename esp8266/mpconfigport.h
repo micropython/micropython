@@ -9,6 +9,7 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
+#define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (0)
