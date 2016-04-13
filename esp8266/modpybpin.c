@@ -44,15 +44,19 @@
 // Removed in SDK 1.1.0
 //#define GPIO_PULL_DOWN (2)
 
-STATIC const pyb_pin_obj_t pyb_pin_obj[] = {
+STATIC const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 0, FUNC_GPIO0, PERIPHS_IO_MUX_GPIO0_U},
     {{&pyb_pin_type}, 1, FUNC_GPIO1, PERIPHS_IO_MUX_U0TXD_U},
     {{&pyb_pin_type}, 2, FUNC_GPIO2, PERIPHS_IO_MUX_GPIO2_U},
     {{&pyb_pin_type}, 3, FUNC_GPIO3, PERIPHS_IO_MUX_U0RXD_U},
     {{&pyb_pin_type}, 4, FUNC_GPIO4, PERIPHS_IO_MUX_GPIO4_U},
     {{&pyb_pin_type}, 5, FUNC_GPIO5, PERIPHS_IO_MUX_GPIO5_U},
+    {{NULL}, 0, 0, 0},
+    {{NULL}, 0, 0, 0},
+    {{NULL}, 0, 0, 0},
     {{&pyb_pin_type}, 9, FUNC_GPIO9, PERIPHS_IO_MUX_SD_DATA2_U},
     {{&pyb_pin_type}, 10, FUNC_GPIO10, PERIPHS_IO_MUX_SD_DATA3_U},
+    {{NULL}, 0, 0, 0},
     {{&pyb_pin_type}, 12, FUNC_GPIO12, PERIPHS_IO_MUX_MTDI_U},
     {{&pyb_pin_type}, 13, FUNC_GPIO13, PERIPHS_IO_MUX_MTCK_U},
     {{&pyb_pin_type}, 14, FUNC_GPIO14, PERIPHS_IO_MUX_MTMS_U},
@@ -198,16 +202,13 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
 STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // Run an argument through the mapper and return the result.
+    // get the wanted pin object
     int wanted_pin = mp_obj_get_int(args[0]);
     pyb_pin_obj_t *pin = NULL;
-    for (int i = 0; i < MP_ARRAY_SIZE(pyb_pin_obj); i++) {
-        if (pyb_pin_obj[i].phys_port == wanted_pin) {
-            pin = (pyb_pin_obj_t*)&pyb_pin_obj[i];
-            break;
-        }
+    if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(pyb_pin_obj)) {
+        pin = (pyb_pin_obj_t*)&pyb_pin_obj[wanted_pin];
     }
-    if (pin == NULL) {
+    if (pin == NULL || pin->base.type == NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid pin"));
     }
 
