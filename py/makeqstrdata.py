@@ -23,6 +23,7 @@ codepoint2name[ord('\'')] = 'squot'
 codepoint2name[ord(',')] = 'comma'
 codepoint2name[ord('.')] = 'dot'
 codepoint2name[ord(':')] = 'colon'
+codepoint2name[ord(';')] = 'semicolon'
 codepoint2name[ord('/')] = 'slash'
 codepoint2name[ord('%')] = 'percent'
 codepoint2name[ord('#')] = 'hash'
@@ -36,6 +37,13 @@ codepoint2name[ord('*')] = 'star'
 codepoint2name[ord('!')] = 'bang'
 codepoint2name[ord('\\')] = 'backslash'
 codepoint2name[ord('+')] = 'plus'
+codepoint2name[ord('$')] = 'dollar'
+codepoint2name[ord('=')] = 'equals'
+codepoint2name[ord('?')] = 'question'
+codepoint2name[ord('@')] = 'at_sign'
+codepoint2name[ord('^')] = 'caret'
+codepoint2name[ord('|')] = 'pipe'
+codepoint2name[ord('~')] = 'tilde'
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
@@ -46,7 +54,14 @@ def compute_hash(qstr, bytes_hash):
     return (hash & ((1 << (8 * bytes_hash)) - 1)) or 1
 
 def qstr_escape(qst):
-    return re.sub(r'[^A-Za-z0-9_]', lambda s: "_" + codepoint2name[ord(s.group(0))] + '_', qst)
+    def esc_char(m):
+        c = ord(m.group(0))
+        try:
+            name = codepoint2name[c]
+        except KeyError:
+            name = '0x%02x' % c
+        return "_" + name + '_'
+    return re.sub(r'[^A-Za-z0-9_]', esc_char, qst)
 
 def parse_input_headers(infiles):
     # read the qstrs in from the input files
