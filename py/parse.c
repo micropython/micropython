@@ -563,11 +563,10 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
             // this node is of the form <x> = <y>
             mp_parse_node_t pn0 = peek_result(parser, 1);
             if (MP_PARSE_NODE_IS_ID(pn0)
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_power)
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_atom_expr_normal)
                 && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pn1)->nodes[0])
                 && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn1)->nodes[0]) == MP_QSTR_const
                 && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pn1)->nodes[1], RULE_trailer_paren)
-                && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pn1)->nodes[2])
                 ) {
                 // code to assign dynamic constants: id = const(value)
 
@@ -599,13 +598,11 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
     #endif
 
     #if MICROPY_COMP_MODULE_CONST
-    } else if (rule->rule_id == RULE_power) {
-        mp_parse_node_t pn0 = peek_result(parser, 2);
-        mp_parse_node_t pn1 = peek_result(parser, 1);
-        mp_parse_node_t pn2 = peek_result(parser, 0);
+    } else if (rule->rule_id == RULE_atom_expr_normal) {
+        mp_parse_node_t pn0 = peek_result(parser, 1);
+        mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!(MP_PARSE_NODE_IS_ID(pn0)
-            && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_trailer_period)
-            && MP_PARSE_NODE_IS_NULL(pn2))) {
+            && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_trailer_period))) {
             return false;
         }
         // id1.id2
