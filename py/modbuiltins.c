@@ -705,6 +705,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_OverflowError), MP_ROM_PTR(&mp_type_OverflowError) },
     { MP_ROM_QSTR(MP_QSTR_RuntimeError), MP_ROM_PTR(&mp_type_RuntimeError) },
     { MP_ROM_QSTR(MP_QSTR_StopIteration), MP_ROM_PTR(&mp_type_StopIteration) },
+    #if MICROPY_ASYNC_SYNTAX
+    { MP_ROM_QSTR(MP_QSTR_StopAsyncIteration), MP_ROM_PTR(&mp_type_StopAsyncIteration) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_SyntaxError), MP_ROM_PTR(&mp_type_SyntaxError) },
     { MP_ROM_QSTR(MP_QSTR_SystemExit), MP_ROM_PTR(&mp_type_SystemExit) },
     { MP_ROM_QSTR(MP_QSTR_TypeError), MP_ROM_PTR(&mp_type_TypeError) },

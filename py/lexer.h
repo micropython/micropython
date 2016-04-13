@@ -90,6 +90,10 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_WHILE,
     MP_TOKEN_KW_WITH,
     MP_TOKEN_KW_YIELD,
+    #if MICROPY_ASYNC_SYNTAX
+    MP_TOKEN_KW_ASYNC,
+    MP_TOKEN_KW_AWAIT,
+    #endif
 
     MP_TOKEN_OP_PLUS,               // 47
     MP_TOKEN_OP_MINUS,

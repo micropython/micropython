@@ -198,6 +198,9 @@ MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
   MP_DEFINE_EXCEPTION_BASE(Exception)
   MP_DEFINE_EXCEPTION(StopIteration, Exception)
+  #if MICROPY_ASYNC_SYNTAX
+  MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
+  #endif
   MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
     MP_DEFINE_EXCEPTION_BASE(ArithmeticError)
     //MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)

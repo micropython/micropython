@@ -94,6 +94,14 @@ Q(__neg__)
 Q(__pos__)
 #endif
 
+#if MICROPY_ASYNC_SYNTAX
+Q(__aiter__)
+Q(__anext__)
+Q(__aenter__)
+Q(__aexit__)
+Q(StopAsyncIteration)
+#endif
+
 Q(micropython)
 Q(bytecode)
 Q(const)

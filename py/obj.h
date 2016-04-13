@@ -562,6 +562,9 @@ extern const mp_obj_type_t mp_type_TimeoutError;
 extern const mp_obj_type_t mp_type_OverflowError;
 extern const mp_obj_type_t mp_type_RuntimeError;
 extern const mp_obj_type_t mp_type_StopIteration;
+#if MICROPY_ASYNC_SYNTAX
+extern const mp_obj_type_t mp_type_StopAsyncIteration;
+#endif
 extern const mp_obj_type_t mp_type_SyntaxError;
 extern const mp_obj_type_t mp_type_SystemExit;
 extern const mp_obj_type_t mp_type_TypeError;
