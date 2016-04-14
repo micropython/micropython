@@ -128,6 +128,11 @@ Q(essid)
 Q(authmode)
 Q(password)
 
+// IRQ class
+Q(IRQ)
+Q(irq)
+Q(trigger)
+
 // Pin class
 Q(Pin)
 Q(init)
@@ -142,6 +147,8 @@ Q(OPEN_DRAIN)
 Q(PULL_NONE)
 Q(PULL_UP)
 Q(PULL_DOWN)
+Q(IRQ_RISING)
+Q(IRQ_FALLING)
 
 // PWM class
 Q(PWM)

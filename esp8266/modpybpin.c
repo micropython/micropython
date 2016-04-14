@@ -28,13 +28,23 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "etshal.h"
 #include "c_types.h"
 #include "user_interface.h"
 #include "gpio.h"
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "modpyb.h"
+#include "utils.h"
+
+#define GET_TRIGGER(phys_port) \
+    GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))
+#define SET_TRIGGER(phys_port, trig) \
+    (GPIO_REG_WRITE(GPIO_PIN_ADDR(phys_port), \
+        (GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)) & ~GPIO_PIN_INT_TYPE_MASK) \
+        | GPIO_PIN_INT_TYPE_SET(trig))) \
 
 #define GPIO_MODE_INPUT (0)
 #define GPIO_MODE_OUTPUT (1)
@@ -43,6 +53,11 @@
 #define GPIO_PULL_UP (1)
 // Removed in SDK 1.1.0
 //#define GPIO_PULL_DOWN (2)
+
+typedef struct _pin_irq_obj_t {
+    mp_obj_base_t base;
+    uint16_t phys_port;
+} pin_irq_obj_t;
 
 STATIC const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 0, FUNC_GPIO0, PERIPHS_IO_MUX_GPIO0_U},
@@ -67,6 +82,35 @@ STATIC const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
 };
 
 STATIC uint8_t pin_mode[16 + 1];
+
+// forward declaration
+STATIC const pin_irq_obj_t pin_irq_obj[16];
+
+void pin_init0(void) {
+    ETS_GPIO_INTR_DISABLE();
+    ETS_GPIO_INTR_ATTACH(pin_intr_handler_iram, NULL);
+    // disable all interrupts
+    memset(&MP_STATE_PORT(pin_irq_handler)[0], 0, 16 * sizeof(mp_obj_t));
+    for (int p = 0; p < 16; ++p) {
+        GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << p);
+        SET_TRIGGER(p, 0);
+    }
+    ETS_GPIO_INTR_ENABLE();
+}
+
+void pin_intr_handler(uint32_t status) {
+    gc_lock();
+    status &= 0xffff;
+    for (int p = 0; status; ++p, status >>= 1) {
+        if (status & 1) {
+            mp_obj_t handler = MP_STATE_PORT(pin_irq_handler)[p];
+            if (handler != MP_OBJ_NULL) {
+                call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+            }
+        }
+    }
+    gc_unlock();
+}
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
     if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
@@ -264,12 +308,39 @@ STATIC mp_obj_t pyb_pin_high(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_high_obj, pyb_pin_high);
 
+// pin.irq()
+STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *args) {
+    pyb_pin_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (self->phys_port >= 16) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "pin does not have IRQ capabilities"));
+    }
+
+    if (n_args > 1) {
+        // configure irq
+        int trig = mp_obj_get_int(args[1]);
+        mp_obj_t handler = args[2];
+        if (handler == mp_const_none) {
+            handler = MP_OBJ_NULL;
+        }
+        ETS_GPIO_INTR_DISABLE();
+        MP_STATE_PORT(pin_irq_handler)[self->phys_port] = handler;
+        SET_TRIGGER(self->phys_port, trig);
+        GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << self->phys_port);
+        ETS_GPIO_INTR_ENABLE();
+    }
+
+    // return the irq object
+    return MP_OBJ_FROM_PTR(&pin_irq_obj[self->phys_port]);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pin_irq_obj, 1, 3, pyb_pin_irq);
+
 STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pyb_pin_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value),   (mp_obj_t)&pyb_pin_value_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_low),     (mp_obj_t)&pyb_pin_low_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_high),    (mp_obj_t)&pyb_pin_high_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),     (mp_obj_t)&pyb_pin_irq_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_IN),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_INPUT) },
@@ -278,6 +349,10 @@ STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_NONE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULL_UP) },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_DOWN) },
+
+    // IRG triggers, can be or'd together
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING), MP_OBJ_NEW_SMALL_INT(GPIO_PIN_INTR_POSEDGE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_PIN_INTR_NEGEDGE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_pin_locals_dict, pyb_pin_locals_dict_table);
@@ -289,4 +364,60 @@ const mp_obj_type_t pyb_pin_type = {
     .make_new = pyb_pin_make_new,
     .call = pyb_pin_call,
     .locals_dict = (mp_obj_t)&pyb_pin_locals_dict,
+};
+
+/******************************************************************************/
+// Pin IRQ object
+
+STATIC const mp_obj_type_t pin_irq_type;
+
+STATIC const pin_irq_obj_t pin_irq_obj[16] = {
+    {{&pin_irq_type}, 0},
+    {{&pin_irq_type}, 1},
+    {{&pin_irq_type}, 2},
+    {{&pin_irq_type}, 3},
+    {{&pin_irq_type}, 4},
+    {{&pin_irq_type}, 5},
+    {{&pin_irq_type}, 6},
+    {{&pin_irq_type}, 7},
+    {{&pin_irq_type}, 8},
+    {{&pin_irq_type}, 9},
+    {{&pin_irq_type}, 10},
+    {{&pin_irq_type}, 11},
+    {{&pin_irq_type}, 12},
+    {{&pin_irq_type}, 13},
+    {{&pin_irq_type}, 14},
+    {{&pin_irq_type}, 15},
+};
+
+STATIC mp_obj_t pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    pin_irq_obj_t *self = self_in;
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    pin_intr_handler(1 << self->phys_port);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
+    pin_irq_obj_t *self = args[0];
+    uint32_t orig_trig = GET_TRIGGER(self->phys_port);
+    if (n_args == 2) {
+        // set trigger
+        SET_TRIGGER(self->phys_port, mp_obj_get_int(args[1]));
+    }
+    // return original trigger value
+    return MP_OBJ_NEW_SMALL_INT(orig_trig);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_irq_trigger_obj, 1, 2, pin_irq_trigger);
+
+STATIC const mp_rom_map_elem_t pin_irq_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_trigger),  MP_ROM_PTR(&pin_irq_trigger_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pin_irq_locals_dict, pin_irq_locals_dict_table);
+
+STATIC const mp_obj_type_t pin_irq_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_IRQ,
+    .call = pin_irq_call,
+    .locals_dict = (mp_obj_dict_t*)&pin_irq_locals_dict,
 };

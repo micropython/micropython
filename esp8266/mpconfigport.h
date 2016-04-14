@@ -141,6 +141,7 @@ extern const struct _mp_obj_module_t onewire_module;
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t mp_kbd_exception; \
+    mp_obj_t pin_irq_handler[16]; \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
