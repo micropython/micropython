@@ -309,6 +309,7 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     tcp_recv(newpcb, _lwip_tcp_recv_unaccepted);
 
     if (socket->incoming.connection != NULL) {
+        DEBUG_printf("_lwip_tcp_accept: Tried to queue >1 pcb waiting for accept\n");
         // We need to handle this better. This single-level structure makes the
         // backlog setting kind of pointless. FIXME
         return ERR_BUF;
@@ -579,6 +580,7 @@ STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
                 socket_is_listener = true;
             }
             if (tcp_close(socket->pcb.tcp) != ERR_OK) {
+                DEBUG_printf("lwip_close: had to call tcp_abort()\n");
                 tcp_abort(socket->pcb.tcp);
             }
             break;
