@@ -71,6 +71,10 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_repr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);
+// Defined by a port, but declared here for simplicity
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_help_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_input_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_open_obj);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 
