@@ -9,11 +9,15 @@ from __future__ import print_function
 import re
 import sys
 
-# codepoint2name is different in Python 2 to Python 3
+# Python 2/3 compatibility:
+#   - iterating through bytes is different
+#   - codepoint2name lives in a different module
 import platform
 if platform.python_version_tuple()[0] == '2':
+    ord_bytes = ord
     from htmlentitydefs import codepoint2name
 elif platform.python_version_tuple()[0] == '3':
+    ord_bytes = lambda x:x
     from html.entities import codepoint2name
 codepoint2name[ord('-')] = 'hyphen';
 
@@ -114,7 +118,7 @@ def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
         # qstr contains non-printable codes so render entire thing as hex pairs
         qbytes = qstr.encode('utf8')
         qlen = len(qbytes)
-        qdata = ''.join(('\\x%02x' % b) for b in qbytes)
+        qdata = ''.join(('\\x%02x' % ord_bytes(b)) for b in qbytes)
     if qlen >= (1 << (8 * cfg_bytes_len)):
         print('qstr is too long:', qstr)
         assert False
