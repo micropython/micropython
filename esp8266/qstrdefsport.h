@@ -27,6 +27,7 @@
 // qstrs specific to this port
 
 Q(help)
+Q(input)
 
 // pyb module
 Q(pyb)
