@@ -52,6 +52,7 @@ Q(release)
 Q(version)
 Q(machine)
 
+// esp module
 Q(esp)
 Q(socket)
 Q(usocket)
