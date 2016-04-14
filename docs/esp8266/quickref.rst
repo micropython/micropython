@@ -252,3 +252,26 @@ For low-level driving of a NeoPixel::
 
     import esp
     esp.neopixel_write(pin, grb_buf, is800khz)
+
+apa102 driver
+---------------
+
+Use the ``apa102`` module::
+
+    from machine import Pin
+    from apa102 import apa102
+
+    data_pin  = Pin(0, Pin.OUT)             # set GPIO0 to output to drive APA102 data
+    clock_pin = Pin(1, Pin.OUT)             # set GPIO1 to output to drive APA102 clock
+    apa102 = apa102(data_pin, clock_pin, 8) # create APA102 driver on GPIO0 and GPIO1 for 8 pixels
+    apa102[0] = (255, 255, 255, 255)        # set the first pixel to white
+    apa102.write()                          # write data to all pixels
+    brightness, r, g, b = apa102[0]         # get first pixel colour
+
+    import apa102
+    apa102.demo(apa102)                    # run a demo
+
+For low-level driving of a apa102::
+
+    import esp
+    esp.apa102_write(data_pin, clock_pin, irgb_buf)

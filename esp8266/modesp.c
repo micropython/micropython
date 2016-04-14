@@ -41,6 +41,7 @@
 #include "espconn.h"
 #include "spi_flash.h"
 #include "utils.h"
+#include "esp_apa102.h"
 #include "espneopixel.h"
 #include "modpyb.h"
 
@@ -607,6 +608,17 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
         MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
+
+STATIC mp_obj_t esp_apa102_write_(mp_obj_t data_pin, mp_obj_t clock_pin, mp_obj_t buf) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    esp_apa102_write(mp_obj_get_pin_obj(data_pin)->phys_port,
+                     mp_obj_get_pin_obj(clock_pin)->phys_port,
+                     (uint8_t*)bufinfo.buf,
+                     bufinfo.len);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
 
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
     mp_buffer_info_t bufinfo;

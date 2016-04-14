@@ -60,6 +60,7 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
+	esp_apa102.c \
 	espneopixel.c \
 	modpyb.c \
 	modpybpin.c \
