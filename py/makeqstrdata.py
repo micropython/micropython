@@ -106,9 +106,15 @@ def parse_input_headers(infiles):
 
 def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     qhash = compute_hash(qstr, cfg_bytes_hash)
-    # Calculate len of str, taking escapes into account
-    qlen = len(qstr.replace("\\\\", "-").replace("\\", ""))
-    qdata = qstr.replace('"', '\\"')
+    if all(32 <= ord(c) <= 126 and c != '\\' for c in qstr):
+        # qstr is all printable ASCII so render it as-is (for easier debugging)
+        qlen = len(qstr)
+        qdata = qstr
+    else:
+        # qstr contains non-printable codes so render entire thing as hex pairs
+        qbytes = qstr.encode('utf8')
+        qlen = len(qbytes)
+        qdata = ''.join(('\\x%02x' % b) for b in qbytes)
     if qlen >= (1 << (8 * cfg_bytes_len)):
         print('qstr is too long:', qstr)
         assert False
