@@ -14,9 +14,11 @@ Reset related functions
    Resets the device in a manner similar to pushing the external RESET
    button.
 
-.. function:: reset_cause()
+.. only:: port_wipy
 
-   Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
+    .. function:: reset_cause()
+
+       Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
 
 Interrupt related functions
 ---------------------------
@@ -41,10 +43,16 @@ Power related functions
 
 .. function:: freq()
 
-   Returns a tuple of clock frequencies: ``(sysclk,)``
-   These correspond to:
+    .. only:: not port_wipy
 
-      - sysclk: frequency of the CPU
+        Returns CPU frequency in hertz.
+
+    .. only:: port_wipy
+
+        Returns a tuple of clock frequencies: ``(sysclk,)``
+        These correspond to:
+
+        - sysclk: frequency of the CPU
 
 .. function:: idle()
 
