@@ -24,6 +24,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Python 2/3 compatibility code
+from __future__ import print_function
+import platform
+if platform.python_version_tuple()[0] == '2':
+    str_cons = lambda val, enc=None: val
+    bytes_cons = lambda val, enc=None: bytearray(val)
+    is_str_type = lambda o: type(o) is str
+    is_bytes_type = lambda o: type(o) is bytearray
+    is_int_type = lambda o: type(o) is int or type(o) is long
+else:
+    str_cons = str
+    bytes_cons = bytes
+    is_str_type = lambda o: type(o) is str
+    is_bytes_type = lambda o: type(o) is bytes
+    is_int_type = lambda o: type(o) is int
+# end compatibility code
+
 import sys
 from collections import namedtuple
 
@@ -67,7 +84,7 @@ def make_opcode_format():
     Q = 1
     V = 2
     O = 3
-    return bytes((
+    return bytes_cons((
     # this table is taken verbatim from py/bc.c
     OC4(U, U, U, U), # 0x00-0x03
     OC4(U, U, U, U), # 0x04-0x07
@@ -255,16 +272,16 @@ class RawCode:
         # generate constant objects
         for i, obj in enumerate(self.objs):
             obj_name = 'const_obj_%s_%u' % (self.escaped_name, i)
-            if type(obj) is str:
-                obj = bytes(obj, 'utf8')
+            if is_str_type(obj):
+                obj = bytes_cons(obj, 'utf8')
                 print('STATIC const mp_obj_str_t %s = '
                     '{{&mp_type_str}, 0, %u, (const byte*)"%s"};'
                     % (obj_name, len(obj), ''.join(('\\x%02x' % b) for b in obj)))
-            elif type(obj) is bytes:
+            elif is_bytes_type(obj):
                 print('STATIC const mp_obj_str_t %s = '
                     '{{&mp_type_bytes}, 0, %u, (const byte*)"%s"};'
                     % (obj_name, len(obj), ''.join(('\\x%02x' % b) for b in obj)))
-            elif type(obj) is int:
+            elif is_int_type(obj):
                 if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
                     # TODO check if we can actually fit this long-int into a small-int
                     raise FreezeError(self, 'target does not support long int')
@@ -327,7 +344,7 @@ class RawCode:
 def read_uint(f):
     i = 0
     while True:
-        b = f.read(1)[0]
+        b = bytes_cons(f.read(1))[0]
         i = (i << 7) | (b & 0x7f)
         if b & 0x80 == 0:
             break
@@ -337,7 +354,7 @@ global_qstrs = []
 qstr_type = namedtuple('qstr', ('str', 'qstr_esc', 'qstr_id'))
 def read_qstr(f):
     ln = read_uint(f)
-    data = str(f.read(ln), 'utf8')
+    data = str_cons(f.read(ln), 'utf8')
     qstr_esc = qstrutil.qstr_escape(data)
     global_qstrs.append(qstr_type(data, qstr_esc, 'MP_QSTR_' + qstr_esc))
     return len(global_qstrs) - 1
@@ -349,15 +366,15 @@ def read_obj(f):
     else:
         buf = f.read(read_uint(f))
         if obj_type == b's':
-            return str(buf, 'utf8')
+            return str_cons(buf, 'utf8')
         elif obj_type == b'b':
-            return buf
+            return bytes_cons(buf)
         elif obj_type == b'i':
-            return int(str(buf, 'ascii'), 10)
+            return int(str_cons(buf, 'ascii'), 10)
         elif obj_type == b'f':
-            return float(str(buf, 'ascii'))
+            return float(str_cons(buf, 'ascii'))
         elif obj_type == b'c':
-            return complex(str(buf, 'ascii'))
+            return complex(str_cons(buf, 'ascii'))
         else:
             assert 0
 
@@ -389,7 +406,7 @@ def read_raw_code(f):
 
 def read_mpy(filename):
     with open(filename, 'rb') as f:
-        header = f.read(4)
+        header = bytes_cons(f.read(4))
         if header[0] != ord('M'):
             raise Exception('not a valid .mpy file')
         if header[1] != 0:
