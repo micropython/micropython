@@ -193,8 +193,9 @@ PIPSRC = ../tools/pip-micropython
 PIPTARGET = pip-micropython
 
 install: micropython
-	install -D $(TARGET) $(BINDIR)/$(TARGET)
-	install -D $(PIPSRC) $(BINDIR)/$(PIPTARGET)
+	install -d $(BINDIR)
+	install $(TARGET) $(BINDIR)/$(TARGET)
+	install $(PIPSRC) $(BINDIR)/$(PIPTARGET)
 
 # uninstall micropython
 uninstall:
