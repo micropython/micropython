@@ -214,6 +214,7 @@ Q(time)
 
 // machine
 Q(reset)
+Q(reset_cause)
 Q(Timer)
 Q(callback)
 Q(deinit)
