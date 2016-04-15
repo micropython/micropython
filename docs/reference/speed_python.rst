@@ -67,10 +67,13 @@ to read data into an existing buffer.
 Floating Point
 ~~~~~~~~~~~~~~
 
-For the most speed critical sections of code it is worth noting that performing
-any kind of floating point operation involves heap allocation. Where possible use
-integer operations and restrict the use of floating point to sections of the code
-where performance is not paramount.
+Some MicroPython ports allocate floating point numbers on heap. Some other ports
+may lack dedicated floating-point coprocessor, and perform arithmetic operations
+on them in "software" at considerably lower speed than on integers. Where
+performance is important, use integer operations and restrict the use of floating
+point to sections of the code where performance is not paramount. For example,
+capture ADC readings as integers values to an array in one quick go, and only then
+convert them to floating-point numbers for signal processing.
 
 Arrays
 ~~~~~~
