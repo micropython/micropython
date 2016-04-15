@@ -99,7 +99,7 @@ of slice it points too.
 
 A ``memoryview`` can only be applied to objects supporting the buffer protocol - this
 includes arrays but not lists. Small caveat is that while memoryview object is live,
-it also keeps alive the original buffer object. So, memoryviews isn't universal
+it also keeps alive the original buffer object. So, a memoryview isn't a universal
 panacea. For instance, in the example above, if you are done with 10K buffer and
 just need those bytes 30:2000 from it, it may be better to make a slice, and let
 the 10K buffer go (be ready for garbage collection), instead of making a
