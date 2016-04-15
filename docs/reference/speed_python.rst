@@ -85,18 +85,31 @@ elements in contiguous memory locations. Once again to avoid memory allocation i
 code these should be pre-allocated and passed as arguments or as bound objects.
 
 When passing slices of objects such as ``bytearray`` instances, Python creates
-a copy which involves allocation. This can be avoided using a ``memoryview``
-object:
+a copy which involves allocation of the size proportional to the size of slice.
+This can be alleviated using a ``memoryview`` object. ``memoryview`` itself
+is allocated on heap, but is a small, fixed-size object, regardless of the size
+of slice it points too.
 
 .. code:: python
 
-    ba = bytearray(100)
-    func(ba[3:10]) # a copy is passed
-    mv = memoryview(ba)
-    func(mv[3:10]) # a pointer to memory is passed
+    ba = bytearray(10000)  # big array
+    func(ba[30:2000])      # a copy is passed, ~2K new allocation
+    mv = memoryview(ba)    # small object is allocated
+    func(mv[30:2000])      # a pointer to memory is passed
 
 A ``memoryview`` can only be applied to objects supporting the buffer protocol - this
-includes arrays but not lists.
+includes arrays but not lists. Small caveat is that while memoryview object is live,
+it also keeps alive the original buffer object. So, memoryviews isn't universal
+panacea. For instance, in the example above, if you are done with 10K buffer and
+just need those bytes 30:2000 from it, it may be better to make a slice, and let
+the 10K buffer go (be ready for garbage collection), instead of making a
+long-living memoryview and keeping 10K blocked for GC.
+
+Nonetheless, ``memoryview`` is indispensable for advanced preallocated buffer
+management. ``.readinto()`` method discussed above puts data at the beginning
+of buffer and fills in entire buffer. What if you need to put data in the
+middle of existing buffer? Just create a memoryview into the needed section
+of buffer and pass it to ``.readinto()``.
 
 Identifying the slowest section of code
 ---------------------------------------
