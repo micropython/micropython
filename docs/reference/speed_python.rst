@@ -59,12 +59,10 @@ An example of the above is the common case where a buffer is required, such as o
 used for communication with a device. A typical driver will create the buffer in the
 constructor and use it in its I/O methods which will be called repeatedly.
 
-The MicroPython libraries typically provide optional support for pre-allocated buffers.
-For example the ``uart.readinto()`` method allows two options for its argument, an integer
-or a buffer. If an integer is supplied it will read up to that number of bytes and
-return the outcome: this implies that a buffer is created with a corresponding
-memory allocation. Providing a pre-allocated buffer as the argument avoids this. See
-the code fragment in :ref:`Caching object references <Caching>` below.
+The MicroPython libraries typically provide support for pre-allocated buffers. For
+example, objects which support stream interface (e.g., file or UART) provide ``read()``
+method which allocate new buffer for read data, but also a ``readinto()`` method
+to read data into an existing buffer.
 
 Floating Point
 ~~~~~~~~~~~~~~
