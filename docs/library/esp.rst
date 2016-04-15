@@ -39,3 +39,9 @@ Functions
 .. function:: flash_id()
 
     Read the device ID of the flash memory.
+
+.. function:: flash_read(byte_offset, length_or_buffer)
+
+.. function:: flash_write(byte_offset, bytes)
+
+.. function:: flash_erase(sector_no)
