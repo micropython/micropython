@@ -465,6 +465,9 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
 // Helper function for recv/recvfrom to handle TCP packets
 STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+    // Check for any pending errors
+    STREAM_ERROR_CHECK(socket);
+
     if (socket->incoming.pbuf == NULL) {
 
         // Non-blocking socket
@@ -484,6 +487,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
             poll_sockets();
         }
+
         if (socket->state == STATE_PEER_CLOSED) {
             if (socket->incoming.pbuf == NULL) {
                 // socket closed and no data left in buffer
@@ -495,6 +499,8 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             return -1;
         }
     }
+
+    assert(socket->pcb.tcp != NULL);
 
     struct pbuf *p = socket->incoming.pbuf;
 
