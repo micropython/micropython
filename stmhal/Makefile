@@ -282,7 +282,8 @@ endif
 ifneq ($(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
-FROZEN_MPY_FILES := $(wildcard $(FROZEN_MPY_DIR)/*.py)
+FROZEN_MPY_PY_FILES := $(wildcard $(FROZEN_MPY_DIR)/*.py)
+FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 OBJ += $(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.o
@@ -293,9 +294,9 @@ $(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
 	@$(ECHO) "MPY $<"
 	$(Q)$(MPY_CROSS) -o $@ $^
 
-$(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.c: $(addprefix $(BUILD)/,$(FROZEN_MPY_FILES:.py=.mpy))
+$(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
 	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $^ > $@
+	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
 
 $(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.o: $(BUILD)/$(FROZEN_MPY_DIR)/frozen_mpy.c
 	$(call compile_c)
