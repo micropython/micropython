@@ -409,15 +409,27 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     return (mp_uint_t) result;
 }
 
+// For use in stream virtual methods
+#define STREAM_ERROR_CHECK(socket) \
+        if (socket->state < 0) { \
+            *_errno = error_lookup_table[-socket->state]; \
+            return MP_STREAM_ERROR; \
+        } \
+        assert(socket->pcb.tcp);
+
+
 // Helper function for send/sendto to handle TCP packets
 STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    // Check for any pending errors
+    STREAM_ERROR_CHECK(socket);
+
     u16_t available = tcp_sndbuf(socket->pcb.tcp);
 
     if (available == 0) {
         // Non-blocking socket
         if (socket->timeout == 0) {
             *_errno = EAGAIN;
-            return -1;
+            return MP_STREAM_ERROR;
         }
 
         mp_uint_t start = mp_hal_ticks_ms();
@@ -430,15 +442,13 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = ETIMEDOUT;
-                return -1;
+                return MP_STREAM_ERROR;
             }
             poll_sockets();
         }
 
-        if (socket->state < 0) {
-            *_errno = error_lookup_table[-socket->state];
-            return -1;
-        }
+        // While we waited, something could happen
+        STREAM_ERROR_CHECK(socket);
     }
 
     u16_t write_len = MIN(available, len);
@@ -447,7 +457,7 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     if (err != ERR_OK) {
         *_errno = error_lookup_table[-err];
-        return -1;
+        return MP_STREAM_ERROR;
     }
 
     return write_len;
