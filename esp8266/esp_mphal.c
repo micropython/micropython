@@ -194,6 +194,11 @@ static int call_dupterm_read(void) {
 }
 
 STATIC void dupterm_task_handler(os_event_t *evt) {
+    static byte lock;
+    if (lock) {
+        return;
+    }
+    lock = 1;
     while (1) {
         int c = call_dupterm_read();
         if (c < 0) {
@@ -202,6 +207,7 @@ STATIC void dupterm_task_handler(os_event_t *evt) {
         ringbuf_put(&input_buf, c);
     }
     mp_hal_signal_input();
+    lock = 0;
 }
 
 STATIC os_event_t dupterm_evt_queue[4];
