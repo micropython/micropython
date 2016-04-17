@@ -4,6 +4,7 @@
 #include "testsLeds.c"
 #include "testsSwitches.c"
 #include "testsUart.c"
+#include "testsEEPROM.c"
 
 void startTesting(void)
 {
@@ -23,6 +24,12 @@ void startTesting(void)
 	utest_startTest(testUart1,testUartSetup,"UART: TX test");
 	utest_startTest(testUart2,testUartSetup,"UART: RX polling test");
 	utest_startTest(testUart3,testUartSetup,"UART: RX buffer test");
+
+	// EEPROM Library
+	utest_startTest(testEEPROM1,0,"EEPROM: write/read byte Test");
+	utest_startTest(testEEPROM2,0,"EEPROM: write invalid address Test");
+	utest_startTest(testEEPROM3,0,"EEPROM: read invalid address Test");
+
 
 
 	utest_printStatistics();

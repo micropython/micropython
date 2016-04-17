@@ -125,8 +125,8 @@ void mp_hal_gotoXYLCD(uint8_t x,uint8_t y);
 void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff);
 
 //EEPROM
-void mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value);
-uint8_t mp_hal_readByteEEPROM(uint32_t addr);
+int32_t mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value);
+int32_t mp_hal_readByteEEPROM(uint32_t addr);
 
 //SPI
 void mp_hal_configSPI(uint8_t bits, uint8_t clockMode, uint32_t bitrate);
