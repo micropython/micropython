@@ -272,7 +272,7 @@ For low-level driving of a NeoPixel::
     esp.neopixel_write(pin, grb_buf, is800khz)
 
 APA102 driver
----------------
+-------------
 
 Use the ``apa102`` module::
 

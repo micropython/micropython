@@ -27,26 +27,26 @@ def test():
     # put a neopixel strip on GPIO14 as clock and GPIO13 as data pin
     c = machine.Pin(14, machine.Pin.OUT)
     d = machine.Pin(13, machine.Pin.OUT)
-    np = APA102(c, d, 8)
-    n = np.n
+    apa = APA102(c, d, 8)
+    n = apa.n
 
     # cycle
     for i in range(4 * n):
         for j in range(n):
-            np[j] = (0, 0, 0, 0)
-        np[i % n] = (255, 255, 255, 31)
-        np.write()
+            apa[j] = (0, 0, 0, 0)
+        apa[i % n] = (255, 255, 255, 31)
+        apa.write()
         time.sleep_ms(25)
 
     # bounce
     for i in range(4 * n):
         for j in range(n):
-            np[j] = (0, 0, 128, 31)
+            apa[j] = (0, 0, 128, 31)
         if (i // n) % 2 == 0:
-            np[i % n] = (0, 0, 0, 0)
+            apa[i % n] = (0, 0, 0, 0)
         else:
-            np[n - 1 - (i % n)] = (0, 0, 0, 0)
-        np.write()
+            apa[n - 1 - (i % n)] = (0, 0, 0, 0)
+        apa.write()
         time.sleep_ms(60)
 
     # fade in/out
@@ -56,12 +56,13 @@ def test():
                 val = i & 0xff
             else:
                 val = 255 - (i & 0xff)
-            np[j] = (val, 0, 0, 31)
-        np.write()
+            apa[j] = (val, 0, 0, 31)
+        apa.write()
 
     # clear
     for i in range(n):
-        np[i] = (0, 0, 0, 0)
-    np.write()
+        apa[i] = (0, 0, 0, 0)
+
+    apa.write()
 
 test()
