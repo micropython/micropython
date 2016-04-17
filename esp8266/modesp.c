@@ -537,10 +537,11 @@ STATIC mp_obj_t esp_sleep_type(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_sleep_type_obj, 0, 1, esp_sleep_type);
 
 STATIC mp_obj_t esp_deepsleep(mp_uint_t n_args, const mp_obj_t *args) {
+    system_deep_sleep_set_option(n_args > 1 ? mp_obj_get_int(args[1]) : 0);
     system_deep_sleep(n_args > 0 ? mp_obj_get_int(args[0]) : 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 1, esp_deepsleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 2, esp_deepsleep);
 
 STATIC mp_obj_t esp_flash_id() {
     return mp_obj_new_int(spi_flash_get_id());
