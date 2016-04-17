@@ -50,7 +50,8 @@ STATIC mp_lexer_t *mp_find_frozen_str(const char *str, size_t len) {
     for (int i = 0; *name != 0; i++) {
         size_t l = strlen(name);
         if (l == len && !memcmp(str, name, l)) {
-            mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(MP_QSTR_, mp_frozen_str_content + offset, mp_frozen_str_sizes[i], 0);
+            qstr source = qstr_from_strn(name, l);
+            mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, mp_frozen_str_content + offset, mp_frozen_str_sizes[i], 0);
             return lex;
         }
         name += l + 1;
