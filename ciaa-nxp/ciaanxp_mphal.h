@@ -83,7 +83,7 @@ bool mp_hal_enableIntCallbackGPIO(int gpioNumber,void(*function)(void*),void* ar
 void mp_hal_disableIntCallbackGPIO(int gpioNumber);
 
 //DAC
-void mp_hal_writeDAC(uint32_t value);
+int32_t mp_hal_writeDAC(uint32_t value);
 void mp_hal_setSampleRateDAC(uint32_t freq);
 int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic);
 

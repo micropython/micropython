@@ -1436,9 +1436,13 @@ void Board_DAC_setSampleRate(uint32_t freq)
 	Chip_DAC_SetDMATimeOut(LPC_DAC, value);
 }
 
-void Board_DAC_writeValue(uint32_t value)
+int32_t Board_DAC_writeValue(uint32_t value)
 {
+	if(value>=1024)
+		return -1;
+
 	Chip_DAC_UpdateValue(LPC_DAC,value);
+	return 0;
 }
 
 

@@ -240,9 +240,9 @@ void mp_hal_disableIntCallbackGPIO(int gpioNumber)
 }
 
 //DAC
-void mp_hal_writeDAC(uint32_t value)
+int32_t mp_hal_writeDAC(uint32_t value)
 {
-	Board_DAC_writeValue(value);
+	return Board_DAC_writeValue(value);
 }
 
 void mp_hal_setSampleRateDAC(uint32_t freq)

@@ -5,6 +5,7 @@
 #include "testsSwitches.c"
 #include "testsUart.c"
 #include "testsEEPROM.c"
+#include "testsDAC.c"
 
 void startTesting(void)
 {
@@ -32,6 +33,9 @@ void startTesting(void)
 
 	// DAC Library
 	utest_startTest(testDAC1,0,"DAC: write value Test");
+	utest_startTest(testDAC2,0,"DAC: write invalid value Test");
+	utest_startTest(testDAC3,0,"DAC: write table Test");
+	utest_startTest(testDAC4,0,"DAC: write invalid table Test");
 
 
 

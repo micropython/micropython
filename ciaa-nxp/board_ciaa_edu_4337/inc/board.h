@@ -445,9 +445,9 @@ void Board_GPIOs_disableIntCallback(int gpioNumber);
 /**
  * @brief       Writes a 10-bit-value to DAC output
  * @param       value
- * @return      void
+ * @return      0: OK. -1: value out of range.
  */
-void Board_DAC_writeValue(uint32_t value);
+int32_t Board_DAC_writeValue(uint32_t value);
 
 /**
  * @brief       Sets sampless' frecuency
