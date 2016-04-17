@@ -42,7 +42,7 @@ ECHO = @echo
 CP = cp
 MKDIR = mkdir
 SED = sed
-PYTHON = python
+PYTHON = python -s -S
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
