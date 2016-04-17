@@ -3,8 +3,8 @@ import esp
 class FlashBdev:
 
     SEC_SIZE = 4096
-    START_SEC = 0xa0000 // SEC_SIZE
-    NUM_BLK = 64
+    START_SEC = 0x89000 // SEC_SIZE
+    NUM_BLK = 0x73
 
     def __init__(self, blocks=NUM_BLK):
         self.blocks = blocks
