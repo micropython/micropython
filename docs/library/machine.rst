@@ -14,11 +14,9 @@ Reset related functions
    Resets the device in a manner similar to pushing the external RESET
    button.
 
-.. only:: port_wipy
+.. function:: reset_cause()
 
-    .. function:: reset_cause()
-
-       Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
+   Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
 
 Interrupt related functions
 ---------------------------
