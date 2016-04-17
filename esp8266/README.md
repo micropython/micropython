@@ -52,7 +52,7 @@ MicroPython to your module for the first time, or after installing any other
 firmware, you should erase flash completely:
 
 ```
-esptool.py --port /dev//ttyXXX erase_flash
+esptool.py --port /dev/ttyXXX erase_flash
 ```
 
 Erase flash also as a troubleshooting measure, if a module doesn't behave as
