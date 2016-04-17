@@ -30,6 +30,9 @@ void startTesting(void)
 	utest_startTest(testEEPROM2,0,"EEPROM: write invalid address Test");
 	utest_startTest(testEEPROM3,0,"EEPROM: read invalid address Test");
 
+	// DAC Library
+	utest_startTest(testDAC1,0,"DAC: write value Test");
+
 
 
 	utest_printStatistics();
