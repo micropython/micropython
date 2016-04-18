@@ -110,7 +110,9 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
         printf("took " UINT_FMT " ms\n", ticks);
+	#if MICROPY_ENABLE_GC
         gc_collect();
+	#endif
         // qstr info
         {
             mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
@@ -118,8 +120,10 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
             printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
         }
 
+        #if MICROPY_ENABLE_GC
         // GC info
         gc_dump_info();
+	#endif
     }
 
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
