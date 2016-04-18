@@ -26,4 +26,7 @@ class FlashBdev:
         if op == 5:  # BP_IOCTL_SEC_SIZE
             return self.SEC_SIZE
 
-bdev = FlashBdev()
+if esp.flash_size() < 1024*1024:
+    bdev = None
+else:
+    bdev = FlashBdev()

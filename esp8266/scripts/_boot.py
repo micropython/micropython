@@ -3,7 +3,8 @@ import builtins
 from flashbdev import bdev
 
 try:
-    vfs = uos.VfsFat(bdev, "")
+    if bdev:
+        vfs = uos.VfsFat(bdev, "")
 except OSError:
     import inisetup
     inisetup.check_bootsec()
