@@ -609,6 +609,23 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
+STATIC mp_obj_t esp_flash_size(void) {
+    extern char flashchip;
+    // For SDK 1.5.2, either address has shifted and not mirrored in
+    // eagle.rom.addr.v6.ld, or extra initial member was added.
+    SpiFlashChip *flash = (SpiFlashChip*)(&flashchip + 4);
+    #if 0
+    printf("deviceId: %x\n", flash->deviceId);
+    printf("chip_size: %u\n", flash->chip_size);
+    printf("block_size: %u\n", flash->block_size);
+    printf("sector_size: %u\n", flash->sector_size);
+    printf("page_size: %u\n", flash->page_size);
+    printf("status_mask: %u\n", flash->status_mask);
+    #endif
+    return mp_obj_new_int_from_uint(flash->chip_size);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
+
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -639,6 +656,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_read), (mp_obj_t)&esp_flash_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_write), (mp_obj_t)&esp_flash_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_erase), (mp_obj_t)&esp_flash_erase_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_size), (mp_obj_t)&esp_flash_size_obj },
     #if MODESP_ESPCONN
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
