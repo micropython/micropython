@@ -1702,6 +1702,11 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, const byte *n_pre, const 
         compile_node(comp, p_body);
     } else {
         uint l_end = comp_next_label(comp);
+        if (MICROPY_EMIT_NATIVE && comp->scope_cur->emit_options != MP_EMIT_OPT_BYTECODE) {
+            // we need to allocate an extra label for the native emitter
+            // it will use l_end+1 as an auxiliary label
+            comp_next_label(comp);
+        }
         if (pt_is_rule(n_pre, PN_with_item)) {
             // this pre-bit is of the form "a as b"
             const byte *p = pt_rule_first(n_pre);
@@ -1719,10 +1724,7 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, const byte *n_pre, const 
         // compile additional pre-bits and the body
         compile_with_stmt_helper(comp, n_pre, p_body);
         // finish this with block
-        EMIT(pop_block);
-        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-        EMIT_ARG(label_assign, l_end);
-        EMIT(with_cleanup);
+        EMIT_ARG(with_cleanup, l_end);
         compile_decrease_except_level(comp);
         EMIT(end_finally);
     }
@@ -2073,6 +2075,10 @@ STATIC void compile_power(compiler_t *comp, const byte *p, const byte *ptop) {
     comp->func_arg_is_super = pt_is_id(p, MP_QSTR_super);
 
     compile_generic_all_nodes(comp, p, ptop);
+
+    if (pt_num_nodes(p, ptop) == 3) {
+        EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
+    }
 }
 
 // if p_arglist==NULL then there are no arguments
@@ -2203,12 +2209,6 @@ STATIC void compile_power_trailers(compiler_t *comp, const byte *p, const byte *
         }
         comp->func_arg_is_super = false;
     }
-}
-
-STATIC void compile_power_dbl_star(compiler_t *comp, const byte *p, const byte *ptop) {
-    (void)ptop;
-    compile_node(comp, p);
-    EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
 }
 
 // p needs to point to 2 successive nodes, first is lhs of comprehension, second is PN_comp_for node
@@ -2493,7 +2493,23 @@ STATIC const byte *compile_node(compiler_t *comp, const byte *p) {
     } else if (pt_is_small_int(p)) {
         mp_int_t arg;
         p = pt_get_small_int(p, &arg);
+        #if MICROPY_DYNAMIC_COMPILER
+        mp_uint_t sign_mask = -(1 << (mp_dynamic_compiler.small_int_bits - 1));
+        if ((arg & sign_mask) == 0 || (arg & sign_mask) == sign_mask) {
+            // integer fits in target runtime's small-int
+            EMIT_ARG(load_const_small_int, arg);
+        } else {
+            // integer doesn't fit, so create a multi-precision int object
+            // (but only create the actual object on the last pass)
+            if (comp->pass != MP_PASS_EMIT) {
+                EMIT_ARG(load_const_obj, mp_const_none);
+            } else {
+                EMIT_ARG(load_const_obj, mp_obj_new_int_from_ll(arg));
+            }
+        }
+        #else
         EMIT_ARG(load_const_small_int, arg);
+        #endif
         return p;
     } else if (pt_is_any_tok(p)) {
         byte tok;
@@ -2970,7 +2986,25 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     p = pt_next(p); // skip the parameter list
-    p = pt_next(p); // skip the return type
+
+    // function return annotation is in the next node
+    mp_uint_t type_sig = MP_NATIVE_TYPE_INT;
+    if (!pt_is_null(p)) {
+        if (pt_is_any_id(p)) {
+            qstr ret_type;
+            pt_extract_id(p, &ret_type);
+            switch (ret_type) {
+                case MP_QSTR_object: type_sig = MP_NATIVE_TYPE_OBJ; break;
+                case MP_QSTR_bool: type_sig = MP_NATIVE_TYPE_BOOL; break;
+                case MP_QSTR_int: type_sig = MP_NATIVE_TYPE_INT; break;
+                case MP_QSTR_uint: type_sig = MP_NATIVE_TYPE_UINT; break;
+                default: compile_syntax_error(comp, p, "unknown type"); return;
+            }
+        } else {
+            compile_syntax_error(comp, p, "return annotation must be an identifier");
+        }
+    }
+    p = pt_next(p); // move past function return annotation
 
     // get the list of statements within the body of the function
     const byte *ptop = mp_parse_node_extract_list(&p, PN_suite_block_stmts);
@@ -3077,7 +3111,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        EMIT_INLINE_ASM_ARG(end_pass, 0);
+        EMIT_INLINE_ASM_ARG(end_pass, type_sig);
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {
