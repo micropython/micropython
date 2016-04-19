@@ -52,7 +52,7 @@ EMPTY_QSTRDEFS_GENERATED_H = $(BUILD)/tmp/genhdr/qstrdefs.generated.h
 # List all native flags since the current build system doesn't have
 # the micropython configuration available. However, these flags are
 # needed to extract all qstrings
-QSTR_GEN_EXTRA_CFLAGS += -P -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
+QSTR_GEN_EXTRA_CFLAGS += -D__QSTR_EXTRACT -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
 vpath %.c . $(TOP)
@@ -81,13 +81,13 @@ $(EMPTY_QSTRDEFS_GENERATED_H):
 # to get built before we try to compile any of them.
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 
-# This rule joins all generated qstr files
-$(QSTR_DEFS_COLLECTED): $(addprefix $(HEADER_BUILD)/,$(addsuffix .qstr,$(SRC_QSTR)))
+$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
 	$(ECHO) "GEN $@"
-	$(Q)cat $^ > $@
+	$(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last
 
-
-#
+$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.i.last
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 
 # $(sort $(var)) removes duplicates
 #

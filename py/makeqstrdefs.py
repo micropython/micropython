@@ -20,39 +20,85 @@ def debug(message):
     pass
 
 
+def write_out(fname, output):
+    if output:
+        fname = fname.replace("/", "__").replace("..", "@@")
+        with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
+            f.write("\n".join(output) + "\n")
+
 def process_file(f):
     output = []
+    last_fname = None
+    outf = None
     for line in f:
+        if line and line[0] == "#":
+            comp = line.split()
+            fname = comp[2]
+            assert fname[0] == '"' and fname[-1] == '"'
+            fname = fname[1:-1]
+            if fname[0] == "/" or not fname.endswith(".c"):
+                continue
+            if fname != last_fname:
+                write_out(last_fname, output)
+                output = []
+                last_fname = fname
+            continue
         for match in re.findall(r'MP_QSTR_[_a-zA-Z0-9]+', line):
             name = match.replace('MP_QSTR_', '')
             if name not in QSTRING_BLACK_LIST:
                 output.append('Q(' + name + ')')
 
-    # make sure there is a newline at the end of the output
-    output.append('')
+    write_out(last_fname, output)
+    return ""
 
-    return '\n'.join(output)
+
+def cat_together():
+    import glob
+    import hashlib
+    hasher = hashlib.md5()
+    all_lines = []
+    outf = open(args.output_dir + "/out", "wb")
+    for fname in glob.glob(args.output_dir + "/*.qstr"):
+        with open(fname, "rb") as f:
+            lines = f.readlines()
+            all_lines += lines
+    all_lines.sort()
+    all_lines = b"\n".join(all_lines)
+    outf.write(all_lines)
+    outf.close()
+    hasher.update(all_lines)
+    new_hash = hasher.hexdigest()
+    #print(new_hash)
+    old_hash = None
+    try:
+        with open(args.output_file + ".hash") as f:
+            old_hash = f.read()
+    except IOError:
+        pass
+    if old_hash != new_hash:
+        print("QSTR updated")
+        os.rename(args.output_dir + "/out", args.output_file)
+        with open(args.output_file + ".hash", "w") as f:
+            f.write(new_hash)
+    else:
+        print("QSTR not updated")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generates qstr definitions from a specified source')
 
-    parser.add_argument('-o', '--output-file', dest='output_filename',
-        help='Output filename (defaults to stdout)')
-    parser.add_argument('input_filename', nargs='?',
-        help='Name of the input file (when not specified, the script reads standard input')
-    parser.add_argument('-s', '--skip-write-when-same', dest='skip_write_when_same',
-        action='store_true', default=False,
-        help="Don't write the output file if it already exists and the contents have not changed (disabled by default)")
+    parser.add_argument('input_filename',
+        help='Name of the input file (when not specified, the script reads standard input)')
+    parser.add_argument('output_dir',
+        help='Output directory to store individual qstr files')
+    parser.add_argument('output_file',
+        help='Name of the output file with collected qstrs')
 
     args = parser.parse_args()
-
-    # Check if the file contents changed from last time
-    write_file = True
-
-    # By default write into STDOUT
-    outfile = sys.stdout
-    real_output_filename = 'STDOUT'
+    try:
+        os.makedirs(args.output_dir)
+    except OSError:
+        pass
 
     if args.input_filename:
         infile = open(args.input_filename, 'r')
@@ -61,24 +107,4 @@ if __name__ == "__main__":
 
     file_data = process_file(infile)
     infile.close()
-
-    # Detect custom output file name
-    if args.output_filename:
-        real_output_filename = args.output_filename
-        if os.path.isfile(args.output_filename) and args.skip_write_when_same:
-            with open(args.output_filename, 'r') as f:
-                existing_data = f.read()
-            if existing_data == file_data:
-                debug("Skip regeneration of: %s\n" % real_output_filename)
-                write_file = False
-            else:
-                debug("File HAS changed, overwriting\n")
-                outfile = open(args.output_filename, 'w')
-        else:
-            outfile = open(args.output_filename, 'w')
-
-    # Only write the file if we the data has changed
-    if write_file:
-        sys.stderr.write("QSTR %s\n" % real_output_filename)
-        outfile.write(file_data)
-        outfile.close()
+    cat_together()
