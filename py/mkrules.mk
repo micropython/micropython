@@ -83,7 +83,12 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
 	$(ECHO) "GEN $@"
-	$(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last
+	if [ "$?" == "" ]; then \
+	    echo "QSTR Looks like -B used, trying to emulate"; \
+	    $(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $^ >$(HEADER_BUILD)/qstr.i.last; \
+	else \
+	    $(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last; \
+	fi
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
