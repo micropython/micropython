@@ -87,6 +87,8 @@ def cat_together():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generates qstr definitions from a specified source')
 
+    parser.add_argument('command',
+        help='Command (split/cat)')
     parser.add_argument('input_filename',
         help='Name of the input file (when not specified, the script reads standard input)')
     parser.add_argument('output_dir',
@@ -100,11 +102,9 @@ if __name__ == "__main__":
     except OSError:
         pass
 
-    if args.input_filename:
-        infile = open(args.input_filename, 'r')
-    else:
-        infile = sys.stdin
+    if args.command == "split":
+        with open(args.input_filename) as infile:
+            process_file(infile)
 
-    file_data = process_file(infile)
-    infile.close()
-    cat_together()
+    if args.command == "cat":
+        cat_together()

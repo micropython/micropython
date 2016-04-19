@@ -90,9 +90,14 @@ $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
 	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last; \
 	fi
 
-$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.i.last
+$(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)touch $@
+
+$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 
 # $(sort $(var)) removes duplicates
 #
