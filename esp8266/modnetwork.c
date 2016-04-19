@@ -273,6 +273,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.password[len] = 0;
                         break;
                     }
+                    case QS(MP_QSTR_channel): {
+                        req_if = SOFTAP_IF;
+                        cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -312,6 +317,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case QS(MP_QSTR_authmode):
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
+            break;
+        case QS(MP_QSTR_channel):
+            req_if = SOFTAP_IF;
+            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
         default:
             goto unknown;
