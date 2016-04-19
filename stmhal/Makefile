@@ -372,7 +372,8 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
-$(BUILD)/main.o: $(GEN_CDCINF_HEADER)
+# main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
+main.c: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
