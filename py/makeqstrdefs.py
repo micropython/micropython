@@ -31,7 +31,7 @@ def process_file(f):
     last_fname = None
     outf = None
     for line in f:
-        if line and line[0] == "#":
+        if line and line[0:2] == "# ":
             comp = line.split()
             fname = comp[2]
             assert fname[0] == '"' and fname[-1] == '"'
