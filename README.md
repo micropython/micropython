@@ -65,7 +65,7 @@ as ARM and MIPS. Making full-featured port to another architecture requires
 writing some assembly code for the exception handling and garbage collection.
 Alternatively, fallback implementation based on setjmp/longjmp can be used.
 
-To build (*):
+To build (see section below for required dependencies):
 
     $ cd unix
     $ make

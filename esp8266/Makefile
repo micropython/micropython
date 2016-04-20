@@ -60,7 +60,9 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
+	esponewire.c \
 	espneopixel.c \
+	intr.c \
 	modpyb.c \
 	modpybpin.c \
 	modpybpwm.c \
@@ -77,14 +79,15 @@ SRC_C = \
 	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
-	fatfs_port.o \
+	fatfs_port.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
+	input.c \
 	)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
-	modlwip.o \
+	modlwip.c \
         )
 
 LIB_SRC_C = $(addprefix lib/,\
@@ -127,6 +130,11 @@ OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C)
+# Append any auto-generated sources that are needed by sources listed in SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
 
 all: $(BUILD)/firmware-combined.bin
 

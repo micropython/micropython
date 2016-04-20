@@ -41,10 +41,16 @@ Power related functions
 
 .. function:: freq()
 
-   Returns a tuple of clock frequencies: ``(sysclk,)``
-   These correspond to:
+    .. only:: not port_wipy
 
-      - sysclk: frequency of the CPU
+        Returns CPU frequency in hertz.
+
+    .. only:: port_wipy
+
+        Returns a tuple of clock frequencies: ``(sysclk,)``
+        These correspond to:
+
+        - sysclk: frequency of the CPU
 
 .. function:: idle()
 

@@ -34,9 +34,6 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void gc_collect(void) {
-}
-
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return NULL;
 }

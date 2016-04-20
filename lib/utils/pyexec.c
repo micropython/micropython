@@ -50,22 +50,33 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_PRINT_EOF (1)
 #define EXEC_FLAG_ALLOW_DEBUGGING (2)
 #define EXEC_FLAG_IS_REPL (4)
+#define EXEC_FLAG_SOURCE_IS_RAW_CODE (8)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
-STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, int exec_flags) {
+STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
     int ret = 0;
     uint32_t start = 0;
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        // parse and compile the script
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
+        mp_obj_t module_fun;
+        #if MICROPY_MODULE_FROZEN_MPY
+        if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
+            // source is a raw_code object, create the function
+            module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
+        } else
+        #endif
+        {
+            // source is a lexer, parse and compile the script
+            mp_lexer_t *lex = source;
+            qstr source_name = lex->source_name;
+            mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+            module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
+        }
 
         // execute code
         mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
@@ -99,7 +110,6 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
     if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
         printf("took " UINT_FMT " ms\n", ticks);
-        gc_collect();
         // qstr info
         {
             mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
@@ -107,8 +117,11 @@ STATIC int parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t input_ki
             printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
         }
 
-        // GC info
+        #if MICROPY_ENABLE_GC
+        // run collection and print GC info
+        gc_collect();
         gc_dump_info();
+        #endif
     }
 
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
@@ -488,14 +501,24 @@ int pyexec_file(const char *filename) {
 
 #if MICROPY_MODULE_FROZEN
 int pyexec_frozen_module(const char *name) {
-    mp_lexer_t *lex = mp_find_frozen_module(name, strlen(name));
+    void *frozen_data;
+    int frozen_type = mp_find_frozen_module(name, strlen(name), &frozen_data);
 
-    if (lex == NULL) {
-        printf("could not find module '%s'\n", name);
-        return false;
+    switch (frozen_type) {
+        #if MICROPY_MODULE_FROZEN_STR
+        case MP_FROZEN_STR:
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0);
+        #endif
+
+        #if MICROPY_MODULE_FROZEN_MPY
+        case MP_FROZEN_MPY:
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE);
+        #endif
+
+        default:
+            printf("could not find module '%s'\n", name);
+            return false;
     }
-
-    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0);
 }
 #endif
 

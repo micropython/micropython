@@ -155,7 +155,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
             case PAYLOAD: {
                 size_t sz = MIN(size, self->msg_sz);
                 mp_uint_t out_sz = stream_p->read(self->sock, buf, sz, errcode);
-                if (out_sz == MP_STREAM_ERROR) {
+                if (out_sz == 0 || out_sz == MP_STREAM_ERROR) {
                     return out_sz;
                 }
 

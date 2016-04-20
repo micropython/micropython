@@ -29,22 +29,22 @@
 #include "py/obj.h"
 #include "py/nlr.h"
 
-mp_obj_t call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
+void call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        return mp_call_function_1(fun, arg);
+        mp_call_function_1(fun, arg);
+        nlr_pop();
     } else {
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-        return (mp_obj_t)nlr.ret_val;
     }
 }
 
-mp_obj_t call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
+void call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        return mp_call_function_2(fun, arg1, arg2);
+        mp_call_function_2(fun, arg1, arg2);
+        nlr_pop();
     } else {
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-        return (mp_obj_t)nlr.ret_val;
     }
 }

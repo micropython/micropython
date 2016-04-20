@@ -50,6 +50,7 @@ SRC_C = \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+	$(BUILD)/_frozen_mpy.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
@@ -58,6 +59,10 @@ all: $(BUILD)/firmware.dfu
 else
 all: $(BUILD)/firmware.elf
 endif
+
+$(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
+	$(ECHO) "MISC freezing bytecode"
+	$(Q)../tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"

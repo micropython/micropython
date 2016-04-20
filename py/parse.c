@@ -56,8 +56,6 @@
 #define RULE_ARG_RULE           (0x2000)
 #define RULE_ARG_OPT_RULE       (0x3000)
 
-#define ADD_BLANK_NODE(rule) ((rule->act & RULE_ACT_ADD_BLANK) != 0)
-
 // (un)comment to use rule names; for debugging
 //#define USE_RULE_NAME (1)
 
@@ -80,10 +78,10 @@ enum {
     RULE_const_object, // special node for a constant, generic Python object
 };
 
-#define ident                   (RULE_ACT_ALLOW_IDENT)
-#define blank                   (RULE_ACT_ADD_BLANK)
 #define or(n)                   (RULE_ACT_OR | n)
 #define and(n)                  (RULE_ACT_AND | n)
+#define and_ident(n)            (RULE_ACT_AND | n | RULE_ACT_ALLOW_IDENT)
+#define and_blank(n)            (RULE_ACT_AND | n | RULE_ACT_ADD_BLANK)
 #define one_or_more             (RULE_ACT_LIST | 2)
 #define list                    (RULE_ACT_LIST | 1)
 #define list_with_end           (RULE_ACT_LIST | 3)
@@ -563,11 +561,10 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
             // this node is of the form <x> = <y>
             mp_parse_node_t pn0 = peek_result(parser, 1);
             if (MP_PARSE_NODE_IS_ID(pn0)
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_power)
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_atom_expr_normal)
                 && MP_PARSE_NODE_IS_ID(((mp_parse_node_struct_t*)pn1)->nodes[0])
                 && MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn1)->nodes[0]) == MP_QSTR_const
                 && MP_PARSE_NODE_IS_STRUCT_KIND(((mp_parse_node_struct_t*)pn1)->nodes[1], RULE_trailer_paren)
-                && MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t*)pn1)->nodes[2])
                 ) {
                 // code to assign dynamic constants: id = const(value)
 
@@ -599,13 +596,11 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
     #endif
 
     #if MICROPY_COMP_MODULE_CONST
-    } else if (rule->rule_id == RULE_power) {
-        mp_parse_node_t pn0 = peek_result(parser, 2);
-        mp_parse_node_t pn1 = peek_result(parser, 1);
-        mp_parse_node_t pn2 = peek_result(parser, 0);
+    } else if (rule->rule_id == RULE_atom_expr_normal) {
+        mp_parse_node_t pn0 = peek_result(parser, 1);
+        mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!(MP_PARSE_NODE_IS_ID(pn0)
-            && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_trailer_period)
-            && MP_PARSE_NODE_IS_NULL(pn2))) {
+            && MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_trailer_period))) {
             return false;
         }
         // id1.id2
@@ -833,25 +828,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // matched the rule, so now build the corresponding parse_node
 
-                // count number of arguments for the parse_node
-                i = 0;
-                bool emit_rule = false;
-                for (size_t x = 0; x < n; ++x) {
-                    if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
-                        mp_token_kind_t tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
-                        if (tok_kind >= MP_TOKEN_NAME) {
-                            emit_rule = true;
-                        }
-                        if (tok_kind == MP_TOKEN_NAME) {
-                            // only tokens which were names are pushed to stack
-                            i += 1;
-                        }
-                    } else {
-                        // rules are always pushed
-                        i += 1;
-                    }
-                }
-
                 #if !MICROPY_ENABLE_DOC_STRING
                 // this code discards lonely statements, such as doc strings
                 if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
@@ -871,35 +847,29 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 }
                 #endif
 
-                // always emit these rules, even if they have only 1 argument
-                if (rule->rule_id == RULE_expr_stmt || rule->rule_id == RULE_yield_stmt) {
-                    emit_rule = true;
-                }
-
-                // if a rule has the RULE_ACT_ALLOW_IDENT bit set then this
-                // rule should not be emitted if it has only 1 argument
-                if (rule->act & RULE_ACT_ALLOW_IDENT) {
-                    emit_rule = false;
-                }
-
-                // always emit these rules, and add an extra blank node at the end (to be used by the compiler to store data)
-                if (ADD_BLANK_NODE(rule)) {
-                    emit_rule = true;
-                    push_result_node(&parser, MP_PARSE_NODE_NULL);
-                    i += 1;
-                }
-
+                // count number of arguments for the parse node
+                i = 0;
                 size_t num_not_nil = 0;
-                for (size_t x = 0; x < i; ++x) {
-                    if (peek_result(&parser, x) != MP_PARSE_NODE_NULL) {
-                        num_not_nil += 1;
+                for (size_t x = n; x > 0;) {
+                    --x;
+                    if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
+                        mp_token_kind_t tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
+                        if (tok_kind == MP_TOKEN_NAME) {
+                            // only tokens which were names are pushed to stack
+                            i += 1;
+                            num_not_nil += 1;
+                        }
+                    } else {
+                        // rules are always pushed
+                        if (peek_result(&parser, i) != MP_PARSE_NODE_NULL) {
+                            num_not_nil += 1;
+                        }
+                        i += 1;
                     }
                 }
-                if (emit_rule || num_not_nil != 1) {
-                    // need to add rule when num_not_nil==0 for, eg, atom_paren, testlist_comp_3b
-                    push_result_rule(&parser, rule_src_line, rule, i);
-                } else {
-                    // single result, leave it on stack
+
+                if (num_not_nil == 1 && (rule->act & RULE_ACT_ALLOW_IDENT)) {
+                    // this rule has only 1 argument and should not be emitted
                     mp_parse_node_t pn = MP_PARSE_NODE_NULL;
                     for (size_t x = 0; x < i; ++x) {
                         mp_parse_node_t pn2 = pop_result(&parser);
@@ -908,6 +878,16 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         }
                     }
                     push_result_node(&parser, pn);
+                } else {
+                    // this rule must be emitted
+
+                    if (rule->act & RULE_ACT_ADD_BLANK) {
+                        // and add an extra blank node at the end (used by the compiler to store data)
+                        push_result_node(&parser, MP_PARSE_NODE_NULL);
+                        i += 1;
+                    }
+
+                    push_result_rule(&parser, rule_src_line, rule, i);
                 }
                 break;
             }

@@ -49,28 +49,6 @@
 mp_uint_t mp_verbose_flag = 0;
 #endif
 
-struct _mp_raw_code_t {
-    mp_raw_code_kind_t kind : 3;
-    mp_uint_t scope_flags : 7;
-    mp_uint_t n_pos_args : 11;
-    union {
-        struct {
-            const byte *bytecode;
-            const mp_uint_t *const_table;
-            #if MICROPY_PERSISTENT_CODE_SAVE
-            mp_uint_t bc_len;
-            uint16_t n_obj;
-            uint16_t n_raw_code;
-            #endif
-        } u_byte;
-        struct {
-            void *fun_data;
-            const mp_uint_t *const_table;
-            mp_uint_t type_sig; // for viper, compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
-        } u_native;
-    } data;
-};
-
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
     mp_raw_code_t *rc = m_new0(mp_raw_code_t, 1);
     rc->kind = MP_CODE_RESERVED;
@@ -135,7 +113,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 }
 #endif
 
-mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args) {
+mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args) {
     DEBUG_OP_printf("make_function_from_raw_code %p\n", rc);
     assert(rc != NULL);
 
@@ -179,7 +157,7 @@ mp_obj_t mp_make_function_from_raw_code(mp_raw_code_t *rc, mp_obj_t def_args, mp
     return fun;
 }
 
-mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args) {
+mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args) {
     DEBUG_OP_printf("make_closure_from_raw_code %p " UINT_FMT " %p\n", rc, n_closed_over, args);
     // make function object
     mp_obj_t ffun;
@@ -194,7 +172,7 @@ mp_obj_t mp_make_closure_from_raw_code(mp_raw_code_t *rc, mp_uint_t n_closed_ove
     return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
 }
 
-#if MICROPY_PERSISTENT_CODE
+#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #include "py/smallint.h"
 
@@ -251,7 +229,7 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
     }
 }
 
-#endif // MICROPY_PERSISTENT_CODE
+#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 #if MICROPY_PERSISTENT_CODE_LOAD
 

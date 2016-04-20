@@ -44,6 +44,12 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 
+#if 0 // print debugging info
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
+
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
 #define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
@@ -228,6 +234,7 @@ typedef struct _lwip_socket_obj_t {
         struct pbuf *pbuf;
         struct tcp_pcb *connection;
     } incoming;
+    mp_obj_t callback;
     byte peer[4];
     mp_uint_t peer_port;
     mp_uint_t timeout;
@@ -254,6 +261,12 @@ static inline void poll_sockets(void) {
 
 /*******************************************************************************/
 // Callback functions for the lwIP raw API.
+
+static inline void exec_user_callback(lwip_socket_obj_t *socket) {
+    if (socket->callback != MP_OBJ_NULL) {
+        mp_call_function_1(socket->callback, socket);
+    }
+}
 
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
@@ -303,11 +316,13 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     tcp_recv(newpcb, _lwip_tcp_recv_unaccepted);
 
     if (socket->incoming.connection != NULL) {
+        DEBUG_printf("_lwip_tcp_accept: Tried to queue >1 pcb waiting for accept\n");
         // We need to handle this better. This single-level structure makes the
         // backlog setting kind of pointless. FIXME
         return ERR_BUF;
     } else {
         socket->incoming.connection = newpcb;
+        exec_user_callback(socket);
         return ERR_OK;
     }
 }
@@ -318,13 +333,18 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 
     if (p == NULL) {
         // Other side has closed connection.
+        DEBUG_printf("_lwip_tcp_recv[%p]: other side closed connection\n", socket);
         socket->state = STATE_PEER_CLOSED;
+        exec_user_callback(socket);
         return ERR_OK;
     } else if (socket->incoming.pbuf != NULL) {
         // No room in the inn, let LWIP know it's still responsible for delivery later
         return ERR_BUF;
     }
     socket->incoming.pbuf = p;
+
+    exec_user_callback(socket);
+
     return ERR_OK;
 }
 
@@ -401,15 +421,27 @@ STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     return (mp_uint_t) result;
 }
 
+// For use in stream virtual methods
+#define STREAM_ERROR_CHECK(socket) \
+        if (socket->state < 0) { \
+            *_errno = error_lookup_table[-socket->state]; \
+            return MP_STREAM_ERROR; \
+        } \
+        assert(socket->pcb.tcp);
+
+
 // Helper function for send/sendto to handle TCP packets
 STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    // Check for any pending errors
+    STREAM_ERROR_CHECK(socket);
+
     u16_t available = tcp_sndbuf(socket->pcb.tcp);
 
     if (available == 0) {
         // Non-blocking socket
         if (socket->timeout == 0) {
             *_errno = EAGAIN;
-            return -1;
+            return MP_STREAM_ERROR;
         }
 
         mp_uint_t start = mp_hal_ticks_ms();
@@ -422,15 +454,13 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         while (socket->state >= STATE_CONNECTED && (available = tcp_sndbuf(socket->pcb.tcp)) < 16) {
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = ETIMEDOUT;
-                return -1;
+                return MP_STREAM_ERROR;
             }
             poll_sockets();
         }
 
-        if (socket->state < 0) {
-            *_errno = error_lookup_table[-socket->state];
-            return -1;
-        }
+        // While we waited, something could happen
+        STREAM_ERROR_CHECK(socket);
     }
 
     u16_t write_len = MIN(available, len);
@@ -439,7 +469,7 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     if (err != ERR_OK) {
         *_errno = error_lookup_table[-err];
-        return -1;
+        return MP_STREAM_ERROR;
     }
 
     return write_len;
@@ -447,10 +477,16 @@ STATIC mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
 // Helper function for recv/recvfrom to handle TCP packets
 STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+    // Check for any pending errors
+    STREAM_ERROR_CHECK(socket);
+
     if (socket->incoming.pbuf == NULL) {
 
         // Non-blocking socket
         if (socket->timeout == 0) {
+            if (socket->state == STATE_PEER_CLOSED) {
+                return 0;
+            }
             *_errno = EAGAIN;
             return -1;
         }
@@ -463,6 +499,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             }
             poll_sockets();
         }
+
         if (socket->state == STATE_PEER_CLOSED) {
             if (socket->incoming.pbuf == NULL) {
                 // socket closed and no data left in buffer
@@ -474,6 +511,8 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             return -1;
         }
     }
+
+    assert(socket->pcb.tcp != NULL);
 
     struct pbuf *p = socket->incoming.pbuf;
 
@@ -515,6 +554,7 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args
     socket->base.type = (mp_obj_t)&lwip_socket_type;
     socket->domain = MOD_NETWORK_AF_INET;
     socket->type = MOD_NETWORK_SOCK_STREAM;
+    socket->callback = MP_OBJ_NULL;
     if (n_args >= 1) {
         socket->domain = mp_obj_get_int(args[0]);
         if (n_args >= 2) {
@@ -569,6 +609,7 @@ STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
                 socket_is_listener = true;
             }
             if (tcp_close(socket->pcb.tcp) != ERR_OK) {
+                DEBUG_printf("lwip_close: had to call tcp_abort()\n");
                 tcp_abort(socket->pcb.tcp);
             }
             break;
@@ -689,6 +730,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     socket2->timeout = socket->timeout;
     socket2->state = STATE_CONNECTED;
     socket2->leftover_count = 0;
+    socket2->callback = MP_OBJ_NULL;
     tcp_arg(socket2->pcb.tcp, (void*)socket2);
     tcp_err(socket2->pcb.tcp, _lwip_tcp_error);
     tcp_recv(socket2->pcb.tcp, _lwip_tcp_recv);
@@ -950,8 +992,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblo
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
+
+    int opt = mp_obj_get_int(args[2]);
+    if (opt == 20) {
+        if (args[3] == mp_const_none) {
+            socket->callback = MP_OBJ_NULL;
+        } else {
+            socket->callback = args[3];
+        }
+        return mp_const_none;
+    }
+
+    // Integer options
     mp_int_t val = mp_obj_get_int(args[3]);
-    switch (mp_obj_get_int(args[2])) {
+    switch (opt) {
         case SOF_REUSEADDR:
             // Options are common for UDP and TCP pcb's.
             if (val) {

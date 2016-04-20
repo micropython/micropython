@@ -178,25 +178,27 @@ static int call_dupterm_read(void) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
         if (bufinfo.len == 0) {
-            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
             MP_STATE_PORT(term_obj) = NULL;
+            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
             return -1;
         }
         nlr_pop();
         return *(byte*)bufinfo.buf;
     } else {
-        // Temporarily disable dupterm to avoid infinite recursion
-        mp_obj_t save_term = MP_STATE_PORT(term_obj);
         MP_STATE_PORT(term_obj) = NULL;
-        mp_printf(&mp_plat_print, "dupterm: ");
+        mp_printf(&mp_plat_print, "dupterm: Exception in read() method, deactivating: ");
         mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
-        MP_STATE_PORT(term_obj) = save_term;
     }
 
     return -1;
 }
 
 STATIC void dupterm_task_handler(os_event_t *evt) {
+    static byte lock;
+    if (lock) {
+        return;
+    }
+    lock = 1;
     while (1) {
         int c = call_dupterm_read();
         if (c < 0) {
@@ -205,6 +207,7 @@ STATIC void dupterm_task_handler(os_event_t *evt) {
         ringbuf_put(&input_buf, c);
     }
     mp_hal_signal_input();
+    lock = 0;
 }
 
 STATIC os_event_t dupterm_evt_queue[4];

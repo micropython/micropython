@@ -3,10 +3,12 @@ import builtins
 from flashbdev import bdev
 
 try:
-    vfs = uos.VfsFat(bdev, "/")
+    if bdev:
+        vfs = uos.VfsFat(bdev, "")
 except OSError:
     import inisetup
     inisetup.check_bootsec()
+    print("Performing initial setup")
     uos.VfsFat.mkfs(bdev)
-    vfs = uos.VfsFat(bdev, "/")
+    vfs = uos.VfsFat(bdev, "")
     inisetup.wifi()

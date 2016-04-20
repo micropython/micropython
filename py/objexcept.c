@@ -197,6 +197,9 @@ MP_DEFINE_EXCEPTION(KeyboardInterrupt, BaseException)
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
   MP_DEFINE_EXCEPTION_BASE(Exception)
+  #if MICROPY_PY_ASYNC_AWAIT
+  MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
+  #endif
   MP_DEFINE_EXCEPTION(StopIteration, Exception)
   MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
     MP_DEFINE_EXCEPTION_BASE(ArithmeticError)
