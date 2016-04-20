@@ -259,6 +259,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.ssid_len = len;
                         break;
                     }
+                    case QS(MP_QSTR_hidden): {
+                        req_if = SOFTAP_IF;
+                        cfg.ap.ssid_hidden = mp_obj_is_true(kwargs->table[i].value);
+                        break;
+                    }
                     case QS(MP_QSTR_authmode): {
                         req_if = SOFTAP_IF;
                         cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
@@ -313,6 +318,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case QS(MP_QSTR_essid):
             req_if = SOFTAP_IF;
             val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            break;
+        case QS(MP_QSTR_hidden):
+            req_if = SOFTAP_IF;
+            val = mp_obj_new_bool(cfg.ap.ssid_hidden);
             break;
         case QS(MP_QSTR_authmode):
             req_if = SOFTAP_IF;
