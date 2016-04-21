@@ -51,12 +51,6 @@ void mp_hal_init(void) {
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
 }
 
-void mp_hal_feed_watchdog(void) {
-    //ets_wdt_disable(); // it's a pain while developing
-    //WRITE_PERI_REG(0x60000914, 0x73);
-    //wdt_feed(); // might also work
-}
-
 void mp_hal_delay_us(uint32_t us) {
     uint32_t start = system_get_time();
     while (system_get_time() - start < us) {
@@ -71,7 +65,6 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         mp_hal_delay_us(1);
-        mp_hal_feed_watchdog();
     }
 }
 

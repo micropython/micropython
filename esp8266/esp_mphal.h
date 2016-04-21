@@ -41,7 +41,6 @@ void mp_hal_signal_dupterm_input(void);
 
 void mp_hal_init(void);
 void mp_hal_rtc_init(void);
-void mp_hal_feed_watchdog(void);
 
 uint32_t mp_hal_ticks_us(void);
 void mp_hal_delay_us(uint32_t);
