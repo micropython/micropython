@@ -2,10 +2,6 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
-try:
-    import utime as time
-except ImportError:
-    import time
 import _thread
 
 def foo():
@@ -16,8 +12,14 @@ def thread_entry():
         foo()
     except RuntimeError:
         print('RuntimeError')
+    global finished
+    finished = True
+
+finished = False
 
 _thread.start_new_thread(thread_entry, ())
 
-time.sleep(0.2)
+# busy wait for thread to finish
+while not finished:
+    pass
 print('done')

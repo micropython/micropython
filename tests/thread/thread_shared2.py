@@ -3,10 +3,6 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
-try:
-    import utime as time
-except ImportError:
-    import time
 import _thread
 
 def foo(lst, i):
@@ -15,11 +11,22 @@ def foo(lst, i):
 def thread_entry(n, lst, idx):
     for i in range(n):
         foo(lst, idx)
+    with lock:
+        global n_finished
+        n_finished += 1
 
+lock = _thread.allocate_lock()
+n_thread = 2
+n_finished = 0
+
+# the shared data structure
 lst = [0, 0]
-_thread.start_new_thread(thread_entry, (10, lst, 0))
-_thread.start_new_thread(thread_entry, (20, lst, 1))
 
-# wait for threads to finish
-time.sleep(0.2)
+# spawn threads
+for i in range(n_thread):
+    _thread.start_new_thread(thread_entry, ((i + 1) * 10, lst, i))
+
+# busy wait for threads to finish
+while n_finished < n_thread:
+    pass
 print(lst)

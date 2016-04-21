@@ -2,10 +2,6 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
-try:
-    import utime as time
-except ImportError:
-    import time
 import _thread
 
 def foo():
@@ -16,9 +12,19 @@ def thread_entry():
         foo()
     except ValueError:
         pass
+    with lock:
+        global n_finished
+        n_finished += 1
 
-for i in range(4):
+lock = _thread.allocate_lock()
+n_thread = 4
+n_finished = 0
+
+# spawn threads
+for i in range(n_thread):
     _thread.start_new_thread(thread_entry, ())
 
-time.sleep(0.2)
+# busy wait for threads to finish
+while n_finished < n_thread:
+    pass
 print('done')
