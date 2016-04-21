@@ -30,105 +30,107 @@
 #include "mpconfigport.h"
 #include "py/misc.h"
 
-#if defined(MCU_SERIES_F7)
+typedef struct {
+    uint32_t base_address;
+    uint32_t sector_size;
+    uint32_t sector_count;
+} flash_organization_t;
 
+#if defined(MCU_SERIES_F4)
+static const flash_organization_t flash_organisation[]= {
+        {((uint32_t)0x08000000), 16384,   4 },
+        {((uint32_t)0x08010000), 0x10000, 1 },
+        {((uint32_t)0x08020000), 0x20000, 3 },
+#if defined(FLASH_SECTOR_8)
+        {((uint32_t)0x08080000), 0x20000, 4 },
+#endif
+#if defined(FLASH_SECTOR_12)
+        {((uint32_t)0x08100000), 16384,   4 },
+        {((uint32_t)0x08110000), 0x10000, 1 },
+        {((uint32_t)0x08120000), 0x20000, 7 }
+#endif
+};
+#elif defined(MCU_SERIES_F7)
 // FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
 // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
 #define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
 
-/* Base address of the Flash sectors */
-#define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08008000) /* Base @ of Sector 1, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_2     ((uint32_t)0x08010000) /* Base @ of Sector 2, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_3     ((uint32_t)0x08018000) /* Base @ of Sector 3, 32 Kbytes */
-#define ADDR_FLASH_SECTOR_4     ((uint32_t)0x08020000) /* Base @ of Sector 4, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_5     ((uint32_t)0x08040000) /* Base @ of Sector 5, 256 Kbytes */
-#define ADDR_FLASH_SECTOR_6     ((uint32_t)0x08080000) /* Base @ of Sector 6, 256 Kbytes */
-#define ADDR_FLASH_SECTOR_7     ((uint32_t)0x080C0000) /* Base @ of Sector 7, 256 Kbytes */
-#define ADDR_FLASH_END          ((uint32_t)0x08100000) /* 1 Mbytes total */
-
-#else
-
-/* Base address of the Flash sectors */
-#define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08004000) /* Base @ of Sector 1, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_2     ((uint32_t)0x08008000) /* Base @ of Sector 2, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_3     ((uint32_t)0x0800C000) /* Base @ of Sector 3, 16 Kbytes */
-#define ADDR_FLASH_SECTOR_4     ((uint32_t)0x08010000) /* Base @ of Sector 4, 64 Kbytes */
-#define ADDR_FLASH_SECTOR_5     ((uint32_t)0x08020000) /* Base @ of Sector 5, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_6     ((uint32_t)0x08040000) /* Base @ of Sector 6, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_7     ((uint32_t)0x08060000) /* Base @ of Sector 7, 128 Kbytes */
-#if !defined(FLASH_SECTOR_8)
-#define ADDR_FLASH_END          ((uint32_t)0x08080000) /* 512 Kbytes total */
-#else
-#define ADDR_FLASH_SECTOR_8     ((uint32_t)0x08080000) /* Base @ of Sector 8, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_9     ((uint32_t)0x080A0000) /* Base @ of Sector 9, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbytes */
-#if !defined(FLASH_SECTOR_12)
-#define ADDR_FLASH_END          ((uint32_t)0x08100000) /* 1 Mbytes total */
-#else
-#define ADDR_FLASH_SECTOR_12    ((uint32_t)0x08100000) /* Base @ of Sector 12,  16 Kbytes */
-#define ADDR_FLASH_SECTOR_13    ((uint32_t)0x08104000) /* Base @ of Sector 13,  16 Kbytes */
-#define ADDR_FLASH_SECTOR_14    ((uint32_t)0x08108000) /* Base @ of Sector 14,  16 Kbytes */
-#define ADDR_FLASH_SECTOR_15    ((uint32_t)0x0810C000) /* Base @ of Sector 15,  16 Kbytes */
-#define ADDR_FLASH_SECTOR_16    ((uint32_t)0x08110000) /* Base @ of Sector 16,  64 Kbytes */
-#define ADDR_FLASH_SECTOR_17    ((uint32_t)0x08120000) /* Base @ of Sector 17, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_18    ((uint32_t)0x08140000) /* Base @ of Sector 18, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_19    ((uint32_t)0x08160000) /* Base @ of Sector 19, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_20    ((uint32_t)0x08180000) /* Base @ of Sector 20, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_21    ((uint32_t)0x081A0000) /* Base @ of Sector 21, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_22    ((uint32_t)0x081C0000) /* Base @ of Sector 22, 128 Kbytes */
-#define ADDR_FLASH_SECTOR_23    ((uint32_t)0x081E0000) /* Base @ of Sector 23, 128 Kbytes */
-#define ADDR_FLASH_END          ((uint32_t)0x08200000) /* 2 Mbytes total */
-#endif
-#endif
-
-#endif // MCU_SERIES_F7
-
-static const uint32_t flash_info_table[] = {
-    ADDR_FLASH_SECTOR_0, FLASH_SECTOR_0,
-    ADDR_FLASH_SECTOR_1, FLASH_SECTOR_1,
-    ADDR_FLASH_SECTOR_2, FLASH_SECTOR_2,
-    ADDR_FLASH_SECTOR_3, FLASH_SECTOR_3,
-    ADDR_FLASH_SECTOR_4, FLASH_SECTOR_4,
-    ADDR_FLASH_SECTOR_5, FLASH_SECTOR_5,
-    ADDR_FLASH_SECTOR_6, FLASH_SECTOR_6,
-    ADDR_FLASH_SECTOR_7, FLASH_SECTOR_7,
-    #if defined(FLASH_SECTOR_8)
-    ADDR_FLASH_SECTOR_8, FLASH_SECTOR_8,
-    ADDR_FLASH_SECTOR_9, FLASH_SECTOR_9,
-    ADDR_FLASH_SECTOR_10, FLASH_SECTOR_10,
-    ADDR_FLASH_SECTOR_11, FLASH_SECTOR_11,
-    #endif
-    #if defined(FLASH_SECTOR_12)
-    ADDR_FLASH_SECTOR_12, FLASH_SECTOR_12,
-    ADDR_FLASH_SECTOR_13, FLASH_SECTOR_13,
-    ADDR_FLASH_SECTOR_14, FLASH_SECTOR_14,
-    ADDR_FLASH_SECTOR_15, FLASH_SECTOR_15,
-    ADDR_FLASH_SECTOR_16, FLASH_SECTOR_16,
-    ADDR_FLASH_SECTOR_17, FLASH_SECTOR_17,
-    ADDR_FLASH_SECTOR_18, FLASH_SECTOR_18,
-    ADDR_FLASH_SECTOR_19, FLASH_SECTOR_19,
-    ADDR_FLASH_SECTOR_20, FLASH_SECTOR_20,
-    ADDR_FLASH_SECTOR_21, FLASH_SECTOR_21,
-    ADDR_FLASH_SECTOR_22, FLASH_SECTOR_22,
-    ADDR_FLASH_SECTOR_23, FLASH_SECTOR_23,
-    #endif
-    ADDR_FLASH_END, 0,
+static const flash_organization_t flash_organisation[]= {
+        {((uint32_t)0x08000000), 32768,   4 },
+        {((uint32_t)0x08020000), 0x20000, 1 },
+        {((uint32_t)0x08040000), 0x40000, 3 },
 };
+#elif defined(MCU_SERIES_L4)
+static const flash_organization_t flash_organisation[]= {
+        {((const uint32_t)FLASH_BASE),((const uint32_t)FLASH_PAGE_SIZE),  512}
+};
+#else
+#error Unsupported processor
+#endif
+
+#if defined(MCU_SERIES_L4)
+/**
+  * @brief  Gets the bank of a given address
+  * @param  Addr: Address of the FLASH Memory
+  * @retval The bank of a given address
+  */
+static uint32_t get_bank(uint32_t Addr) {
+    uint32_t bank = 0;
+
+    if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0) {
+        /* No Bank swap */
+        if (Addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+            bank = FLASH_BANK_1;
+        } else {
+            bank = FLASH_BANK_2;
+        }
+    } else {
+        /* Bank swap */
+        if (Addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+            bank = FLASH_BANK_2;
+        } else {
+            bank = FLASH_BANK_1;
+        }
+    }
+
+    return bank;
+}
+/**
+  * @brief  Gets the page of a given address
+  * @param  Addr: Address of the FLASH Memory
+  * @retval The page of a given address
+  */
+static uint32_t get_page(uint32_t Addr) {
+    uint32_t page = 0;
+
+    if (Addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+        /* Bank 1 */
+        page = (Addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+    } else {
+        /* Bank 2 */
+        page = (Addr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
+    }
+
+    return page;
+}
+#endif
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
-    if (addr >= flash_info_table[0]) {
-        for (int i = 0; i < MP_ARRAY_SIZE(flash_info_table) - 2; i += 2) {
-            if (addr < flash_info_table[i + 2]) {
-                if (start_addr != NULL) {
-                    *start_addr = flash_info_table[i];
+    if (addr >= flash_organisation[0].base_address) {
+        uint32_t sector_index = 0;
+        for (int i = 0; i < MP_ARRAY_SIZE(flash_organisation); i++) {
+            for (int j = 0; j< flash_organisation[i].sector_count; j++) {
+                uint32_t sector_start_next =  flash_organisation[i].base_address+((j+1)*flash_organisation[i].sector_size);
+                if (addr < sector_start_next) {
+                    if (start_addr != NULL) {
+                        *start_addr = flash_organisation[i].base_address+j*flash_organisation[i].sector_size;
+                    }
+                    if (size != NULL) {
+                        *size = flash_organisation[i].sector_size;
+                    }
+                    return sector_index;
                 }
-                if (size != NULL) {
-                    *size = flash_info_table[i + 2] - flash_info_table[i];
-                }
-                return flash_info_table[i + 1];
+                sector_index++;
             }
         }
     }
@@ -136,6 +138,7 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
 }
 
 void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
+    FLASH_EraseInitTypeDef EraseInitStruct;
     // check there is something to write
     if (num_word32 == 0) {
         return;
@@ -144,16 +147,27 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
     // unlock
     HAL_FLASH_Unlock();
 
+#if defined(MCU_SERIES_L4)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+
+    // erase the sector(s)
+    // The sector returned by flash_get_sector_info can not be used
+    // as the flash has on each bank 0/1 pages 0..255
+    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
+    EraseInitStruct.Banks       = get_bank(flash_dest);
+    EraseInitStruct.Page        = get_page(flash_dest);
+    EraseInitStruct.NbPages     = get_page(flash_dest + 4 * num_word32 - 1) - EraseInitStruct.Page + 1;;
+#else
     // Clear pending flags (if any)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                            FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
 
     // erase the sector(s)
-    FLASH_EraseInitTypeDef EraseInitStruct;
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
     EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
     EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+#endif
     uint32_t SectorError = 0;
     if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
         // error occurred during sector erase
@@ -192,6 +206,28 @@ void flash_erase_it(uint32_t flash_dest, const uint32_t *src, uint32_t num_word3
 */
 
 void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
+#if defined(MCU_SERIES_L4)
+    // program the flash uint64 by uint64
+    for (int i = 0; i < (num_word32/2); i++) {
+        uint64_t val = *(uint64_t *)src;
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, flash_dest, val) != HAL_OK) {
+            // error occurred during flash write
+            HAL_FLASH_Lock(); // lock the flash
+            return;
+        }
+        flash_dest += 8;
+        src += 2;
+    }
+    if ((num_word32 & 0x01) == 1) {
+        uint64_t val = *(uint64_t *)flash_dest;
+        val = (val & 0xFFFFFFFF00000000uL) | (*src);
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, flash_dest, val) != HAL_OK) {
+            // error occurred during flash write
+            HAL_FLASH_Lock(); // lock the flash
+            return;
+        }
+    }
+#else
     // program the flash word by word
     for (int i = 0; i < num_word32; i++) {
         if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
@@ -202,6 +238,7 @@ void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
         flash_dest += 4;
         src += 1;
     }
+#endif
 
     // lock the flash
     HAL_FLASH_Lock();
