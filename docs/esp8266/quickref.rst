@@ -202,6 +202,28 @@ The I2C driver is implemented in software and works on all pins::
     i2c.readfrom(0x3a, 4, stop=False) # don't send a stop bit after reading
     i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
 
+Deep-sleep mode
+---------------
+
+Connect GPIO16 to the reset pin (RST on HUZZAH).  Then the following code
+can be used to sleep, wake and check the reset cause::
+
+    import machine
+
+    # configure RTC.ALARM0 to be able to wake the device
+    rtc = machine.RTC()
+    rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
+
+    # check if the device woke from a deep sleep
+    if machine.reset_cause() == machine.DEEPSLEEP_RESET:
+        print('woke from a deep sleep')
+
+    # set RTC.ALARM0 to fire after 10 seconds (waking the device)
+    rtc.alarm(rtc.ALARM0, 10000)
+
+    # put the device to sleep
+    machine.deepsleep()
+
 OneWire driver
 --------------
 
