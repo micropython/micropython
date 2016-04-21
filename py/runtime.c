@@ -704,7 +704,12 @@ void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const 
         assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
         for (mp_uint_t i = 0; i < map->alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                args2[args2_len++] = map->table[i].key;
+                // the key must be a qstr, so intern it if it's a string
+                mp_obj_t key = map->table[i].key;
+                if (MP_OBJ_IS_TYPE(key, &mp_type_str)) {
+                    key = mp_obj_str_intern(key);
+                }
+                args2[args2_len++] = key;
                 args2[args2_len++] = map->table[i].value;
             }
         }
@@ -726,7 +731,12 @@ void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const 
             }
             mp_obj_t *items;
             mp_obj_get_array_fixed_n(item, 2, &items);
-            args2[args2_len++] = items[0];
+            // the key must be a qstr, so intern it if it's a string
+            mp_obj_t key = items[0];
+            if (MP_OBJ_IS_TYPE(key, &mp_type_str)) {
+                key = mp_obj_str_intern(key);
+            }
+            args2[args2_len++] = key;
             args2[args2_len++] = items[1];
         }
     }
