@@ -63,7 +63,7 @@ void ets_event_poll(void);
 #include "etshal.h"
 #include "gpio.h"
 #include "esp8266/modpyb.h"
-#define mp_hal_pin_obj_t pyb_pin_obj_t
+#define mp_hal_pin_obj_t pyb_pin_obj_t*
 #define mp_hal_get_pin_obj(o) mp_obj_get_pin_obj(o)
 #define mp_hal_pin_config_od(p) do { \
         ETS_GPIO_INTR_DISABLE(); \

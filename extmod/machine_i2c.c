@@ -37,8 +37,8 @@
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
     uint32_t us_delay;
-    mp_hal_pin_obj_t *scl;
-    mp_hal_pin_obj_t *sda;
+    mp_hal_pin_obj_t scl;
+    mp_hal_pin_obj_t sda;
 } machine_i2c_obj_t;
 
 STATIC void mp_hal_i2c_delay(machine_i2c_obj_t *self) {
