@@ -42,11 +42,13 @@ Functions
       s = socket.socket()
       s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][4])
 
-Exceptions
-----------
+.. only:: port_wipy
 
-.. data:: socket.error
-.. data:: socket.timeout
+    Exceptions
+    ----------
+
+    .. data:: socket.error
+    .. data:: socket.timeout
 
 Constants
 ---------
