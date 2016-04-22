@@ -45,6 +45,7 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 #include "extmod/misc.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
@@ -379,6 +380,9 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 MP_NOINLINE int main_(int argc, char **argv);
 
 int main(int argc, char **argv) {
+    #if MICROPY_PY_THREAD
+    mp_thread_init();
+    #endif
     // We should capture stack top ASAP after start, and it should be
     // captured guaranteedly before any other stack variables are allocated.
     // For this, actual main (renamed main_) should not be inlined into
