@@ -75,5 +75,6 @@ void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
         else { gpio_output_set(1 << (p), 0, 1 << (p), 0); } \
     } while (0)
 #define mp_hal_pin_read(p) pin_get(p)
+#define mp_hal_pin_write(p, v) pin_set((p), (v))
 
 #endif // _INCLUDED_MPHAL_H_

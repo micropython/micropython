@@ -35,16 +35,16 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "modpyb.h"
+#include "py/mphal.h"
 
 typedef struct _pyb_spi_obj_t {
     mp_obj_base_t base;
     uint32_t baudrate;
     uint8_t polarity;
     uint8_t phase;
-    pyb_pin_obj_t *sck;
-    pyb_pin_obj_t *mosi;
-    pyb_pin_obj_t *miso;
+    mp_hal_pin_obj_t sck;
+    mp_hal_pin_obj_t mosi;
+    mp_hal_pin_obj_t miso;
 } pyb_spi_obj_t;
 
 STATIC void mp_hal_spi_transfer(pyb_spi_obj_t *self, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
@@ -59,20 +59,20 @@ STATIC void mp_hal_spi_transfer(pyb_spi_obj_t *self, size_t src_len, const uint8
         }
         uint8_t data_in = 0;
         for (int j = 0; j < 8; ++j, data_out <<= 1) {
-            pin_set(self->mosi->phys_port, (data_out >> 7) & 1);
+            mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
             if (self->phase == 0) {
                 ets_delay_us(delay_half);
-                pin_set(self->sck->phys_port, 1 - self->polarity);
+                mp_hal_pin_write(self->sck, 1 - self->polarity);
             } else {
-                pin_set(self->sck->phys_port, 1 - self->polarity);
+                mp_hal_pin_write(self->sck, 1 - self->polarity);
                 ets_delay_us(delay_half);
             }
-            data_in = (data_in << 1) | pin_get(self->miso->phys_port);
+            data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
             if (self->phase == 0) {
                 ets_delay_us(delay_half);
-                pin_set(self->sck->phys_port, self->polarity);
+                mp_hal_pin_write(self->sck, self->polarity);
             } else {
-                pin_set(self->sck->phys_port, self->polarity);
+                mp_hal_pin_write(self->sck, self->polarity);
                 ets_delay_us(delay_half);
             }
         }
@@ -90,7 +90,7 @@ STATIC void mp_hal_spi_transfer(pyb_spi_obj_t *self, size_t src_len, const uint8
 STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(baudrate=%u, polarity=%u, phase=%u, sck=%u, mosi=%u, miso=%u)",
-        self->baudrate, self->polarity, self->phase, self->sck->phys_port, self->mosi->phys_port, self->miso->phys_port);
+        self->baudrate, self->polarity, self->phase, self->sck, self->mosi, self->miso);
 }
 
 STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -116,13 +116,13 @@ STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj
         self->phase = args[ARG_phase].u_int;
     }
     if (args[ARG_sck].u_obj != MP_OBJ_NULL) {
-        self->sck = mp_obj_get_pin_obj(args[ARG_sck].u_obj);
+        self->sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
     }
     if (args[ARG_mosi].u_obj != MP_OBJ_NULL) {
-        self->mosi = mp_obj_get_pin_obj(args[ARG_mosi].u_obj);
+        self->mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
     }
     if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
-        self->miso = mp_obj_get_pin_obj(args[ARG_miso].u_obj);
+        self->miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
     }
 }
 
@@ -134,9 +134,9 @@ STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     self->baudrate = 500000;
     self->polarity = 0;
     self->phase = 0;
-    self->sck = NULL;
-    self->mosi = NULL;
-    self->miso = NULL;
+    self->sck = 14;
+    self->mosi = 13;
+    self->miso = 12;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     pyb_spi_init_helper(self, n_args, args, &kw_args);
