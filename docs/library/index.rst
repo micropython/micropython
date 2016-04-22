@@ -105,6 +105,7 @@ library.
       uheapq.rst
       ujson.rst
       ure.rst
+      usocket.rst
       ustruct.rst
       uzlib.rst
 
