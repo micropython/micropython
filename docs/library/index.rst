@@ -26,7 +26,6 @@ For additional libraries, please download them from the `micropython-lib reposit
        gc.rst
        math.rst
        os.rst
-       struct.rst
        sys.rst
        time.rst
 
@@ -40,7 +39,6 @@ For additional libraries, please download them from the `micropython-lib reposit
        math.rst
        os.rst
        select.rst
-       struct.rst
        sys.rst
        time.rst
 
@@ -62,7 +60,6 @@ For additional libraries, please download them from the `micropython-lib reposit
 
        gc.rst
        math.rst
-       struct.rst
        sys.rst
        time.rst
 
@@ -94,6 +91,7 @@ library.
       ujson.rst
       ure.rst
       usocket.rst
+      ustruct.rst
       uzlib.rst
 
 .. only:: port_esp8266
@@ -107,6 +105,7 @@ library.
       uheapq.rst
       ujson.rst
       ure.rst
+      ustruct.rst
       uzlib.rst
 
 .. only:: port_pyboard
