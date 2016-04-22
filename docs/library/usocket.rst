@@ -7,6 +7,9 @@
 
 This module provides access to the BSD socket interface.
 
+See corresponding `CPython module <https://docs.python.org/3/library/socket.html>`_ for
+comparison.
+
 Functions
 ---------
 
