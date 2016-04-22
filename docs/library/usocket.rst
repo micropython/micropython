@@ -10,6 +10,15 @@ This module provides access to the BSD socket interface.
 See corresponding `CPython module <https://docs.python.org/3/library/socket.html>`_ for
 comparison.
 
+Socket address format(s)
+------------------------
+
+Functions below which expect a network address, accept it in the format of
+`(ipv4_address, port)`, where `ipv4_address` is a string with dot-notation numeric
+IPv4 address, e.g. ``"8.8.8.8"``, and port is integer port number in the range
+1-65535. Note the domain names are not accepted as `ipv4_address`, they should be
+resolved first using ``socket.getaddrinfo()``.
+
 Functions
 ---------
 
@@ -85,8 +94,7 @@ Methods
 
     .. method:: socket.bind(address)
 
-       Bind the socket to address. The socket must not already be bound. The format of ``address``
-       is: ``(ipv4 address, port)``
+       Bind the socket to address. The socket must not already be bound.
 
     .. method:: socket.listen([backlog])
 
@@ -104,7 +112,7 @@ Methods
 
     .. method:: socket.connect(address)
 
-       Connect to a remote socket at address. The format of address is: ``(ipv4 address, port)``
+       Connect to a remote socket at address.
 
     .. method:: socket.send(bytes)
 
@@ -122,8 +130,7 @@ Methods
     .. method:: socket.sendto(bytes, address)
 
        Send data to the socket. The socket should not be connected to a remote socket, since the
-       destination socket is specified by address. The ``address`` has the same format as the
-       rest of the methods, see above.
+       destination socket is specified by `address`.
 
     .. method:: socket.recvfrom(bufsize)
 
