@@ -91,9 +91,6 @@ typedef struct _mp_state_vm_t {
     // this must start at the start of this structure
     //
 
-    // Note: nlr asm code has the offset of this hard-coded
-    nlr_buf_t *nlr_top;
-
     qstr_pool_t *last_pool;
 
     // non-heap memory for creating an exception if we can't allocate RAM
@@ -161,14 +158,6 @@ typedef struct _mp_state_vm_t {
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 
-    // Stack top at the start of program
-    // Note: this entry is used to locate the end of the root pointer section.
-    char *stack_top;
-
-    #if MICROPY_STACK_CHECK
-    mp_uint_t stack_limit;
-    #endif
-
     mp_uint_t mp_optimise_value;
 
     // size of the emergency exception buf, if it's dynamically allocated
@@ -177,7 +166,22 @@ typedef struct _mp_state_vm_t {
     #endif
 } mp_state_vm_t;
 
-// This structure combines the above 2 structures, and adds the local
+// This structure holds state that is specific to a given thread.
+// Everything in this structure is scanned for root pointers.
+typedef struct _mp_state_thread_t {
+    // Note: nlr asm code has the offset of this hard-coded
+    nlr_buf_t *nlr_top; // ROOT POINTER
+
+    // Stack top at the start of program
+    // Note: this entry is used to locate the end of the root pointer section.
+    char *stack_top;
+
+    #if MICROPY_STACK_CHECK
+    size_t stack_limit;
+    #endif
+} mp_state_thread_t;
+
+// This structure combines the above 3 structures, and adds the local
 // and global dicts.
 // Note: if this structure changes then revisit all nlr asm code since they
 // have the offset of nlr_top hard-coded.
@@ -185,7 +189,8 @@ typedef struct _mp_state_ctx_t {
     // these must come first for root pointer scanning in GC to work
     mp_obj_dict_t *dict_locals;
     mp_obj_dict_t *dict_globals;
-    // this must come next for root pointer scanning in GC to work
+    // these must come next in this order for root pointer scanning in GC to work
+    mp_state_thread_t thread;
     mp_state_vm_t vm;
     mp_state_mem_t mem;
 } mp_state_ctx_t;
@@ -195,5 +200,7 @@ extern mp_state_ctx_t mp_state_ctx;
 #define MP_STATE_CTX(x) (mp_state_ctx.x)
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
+
+#define MP_STATE_THREAD(x) (mp_state_ctx.thread.x)
 
 #endif // __MICROPY_INCLUDED_PY_MPSTATE_H__

@@ -279,7 +279,7 @@ void gc_collect_start(void) {
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
     // dict_globals, then the root pointer section of mp_state_vm.
     void **ptrs = (void**)(void*)&mp_state_ctx;
-    gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(void*));
+    gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.qstr_last_chunk) / sizeof(void*));
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
@@ -713,7 +713,7 @@ void gc_dump_alloc_table(void) {
                 }
                 if (c == 'h') {
                     ptrs = (void**)&c;
-                    len = ((mp_uint_t)MP_STATE_VM(stack_top) - (mp_uint_t)&c) / sizeof(mp_uint_t);
+                    len = ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&c) / sizeof(mp_uint_t);
                     for (mp_uint_t i = 0; i < len; i++) {
                         mp_uint_t ptr = (mp_uint_t)ptrs[i];
                         if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
