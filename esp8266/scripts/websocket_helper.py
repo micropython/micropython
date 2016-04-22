@@ -8,11 +8,12 @@ try:
 except:
     import hashlib
 
+DEBUG = 0
 
 def server_handshake(sock):
     clr = sock.makefile("rwb", 0)
     l = clr.readline()
-    sys.stdout.write(repr(l))
+    #sys.stdout.write(repr(l))
 
     webkey = None
 
@@ -24,20 +25,20 @@ def server_handshake(sock):
             break
     #    sys.stdout.write(l)
         h, v = [x.strip() for x in l.split(b":", 1)]
-        print((h, v))
+        if DEBUG:
+            print((h, v))
         if h == b'Sec-WebSocket-Key':
             webkey = v
 
     if not webkey:
         raise OSError("Not a websocket request")
 
-    print(webkey, len(webkey))
+    if DEBUG:
+        print("Sec-WebSocket-Key:", webkey, len(webkey))
 
     respkey = webkey + b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
     respkey = hashlib.sha1(respkey).digest()
-    print(repr(respkey))
     respkey = binascii.b2a_base64(respkey)[:-1]
-    print(repr(respkey))
 
     resp = b"""\
 HTTP/1.1 101 Switching Protocols\r
@@ -47,7 +48,8 @@ Sec-WebSocket-Accept: %s\r
 \r
 """ % respkey
 
-    print(resp)
+    if DEBUG:
+        print(resp)
     sock.send(resp)
 
 
