@@ -186,6 +186,7 @@ PY_O_BASENAME = \
 	modstruct.o \
 	modsys.o \
 	moduerrno.o \
+	modthread.o \
 	vm.o \
 	bc.o \
 	showbc.o \
