@@ -212,3 +212,15 @@ void dupterm_task_init() {
 void mp_hal_signal_dupterm_input(void) {
     system_os_post(DUPTERM_TASK_ID, 0, 0);
 }
+
+void mp_hal_pin_config_od(mp_hal_pin_obj_t pin_id) {
+    const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
+    ETS_GPIO_INTR_DISABLE();
+    PIN_FUNC_SELECT(pin->periph, pin->func);
+    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
+        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
+        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
+    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
+        GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
+    ETS_GPIO_INTR_ENABLE();
+}

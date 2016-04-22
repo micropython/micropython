@@ -18,6 +18,8 @@ typedef struct _pyb_pin_obj_t {
     uint32_t periph;
 } pyb_pin_obj_t;
 
+const pyb_pin_obj_t pyb_pin_obj[16 + 1];
+
 void pin_init0(void);
 void pin_intr_handler_iram(void *arg);
 void pin_intr_handler(uint32_t);

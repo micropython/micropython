@@ -59,7 +59,7 @@ typedef struct _pin_irq_obj_t {
     uint16_t phys_port;
 } pin_irq_obj_t;
 
-STATIC const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
+const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 0, FUNC_GPIO0, PERIPHS_IO_MUX_GPIO0_U},
     {{&pyb_pin_type}, 1, FUNC_GPIO1, PERIPHS_IO_MUX_U0TXD_U},
     {{&pyb_pin_type}, 2, FUNC_GPIO2, PERIPHS_IO_MUX_GPIO2_U},
