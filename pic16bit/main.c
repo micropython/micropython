@@ -113,6 +113,15 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 void nlr_jump_fail(void *val) {
 }
 
+// REPL says 'Type "help()" for more information,
+// so provide a minimal implementation without wasting too much space.
+STATIC mp_obj_t minimal_help(void)
+{
+  printf("See docs.micropython.org\n");
+  return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_builtin_help_obj, minimal_help);
+
 void NORETURN __fatal_error(const char *msg) {
     while (1);
 }
