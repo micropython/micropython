@@ -80,14 +80,15 @@ STATIC void *thread_entry(void *args_in) {
     } else {
         // uncaught exception
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
+        mp_obj_base_t *exc = (mp_obj_base_t*)nlr.ret_val;
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // swallow exception silently
         } else {
             // print exception out
             mp_printf(&mp_plat_print, "Unhandled exception in thread started by ");
             mp_obj_print_helper(&mp_plat_print, args->fun, PRINT_REPR);
             mp_printf(&mp_plat_print, "\n");
-            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(exc));
         }
     }
 
