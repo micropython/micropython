@@ -16,7 +16,8 @@ QSTRING_BLACK_LIST = {'NULL', 'number_of', }
 
 def write_out(fname, output):
     if output:
-        fname = fname.replace("/", "__").replace("..", "@@")
+        for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
+            fname = fname.replace(m, r)
         with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
             f.write("\n".join(output) + "\n")
 
@@ -24,11 +25,11 @@ def process_file(f):
     output = []
     last_fname = None
     for line in f:
-        if line and line[0:2] == "# ":
-            comp = line.split()
-            fname = comp[2]
-            assert fname[0] == '"' and fname[-1] == '"'
-            fname = fname[1:-1]
+        #match gcc-like output (# n "file") and msvc-like output (#line n "file")
+        if line and (line[0:2] == "# " or line[0:5] == "#line"):
+            m = re.match(r"#[line]*\s\d+\s\"([^\"]+)\"", line)
+            assert m is not None
+            fname = m.group(1)
             if fname[0] == "/" or not fname.endswith(".c"):
                 continue
             if fname != last_fname:
@@ -70,6 +71,11 @@ def cat_together():
         pass
     if old_hash != new_hash:
         print("QSTR updated")
+        try:
+            # Rename below might fail is file exists already
+            os.remove(args.output_file)
+        except:
+            pass
         os.rename(args.output_dir + "/out", args.output_file)
         with open(args.output_file + ".hash", "w") as f:
             f.write(new_hash)
