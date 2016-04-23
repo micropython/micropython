@@ -5,7 +5,6 @@ qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 This script works with Python 2.6, 2.7, 3.3 and 3.4.
 """
 
-import sys
 import re
 import argparse
 import os
@@ -13,11 +12,6 @@ import os
 # Blacklist of qstrings that are specially handled in further
 # processing and should be ignored
 QSTRING_BLACK_LIST = {'NULL', 'number_of', }
-
-
-def debug(message):
-    #sys.stderr.write("%s\n" % message)
-    pass
 
 
 def write_out(fname, output):
@@ -29,7 +23,6 @@ def write_out(fname, output):
 def process_file(f):
     output = []
     last_fname = None
-    outf = None
     for line in f:
         if line and line[0:2] == "# ":
             comp = line.split()
