@@ -47,6 +47,3 @@ def stop():
 def start():
     stop()
     setup_conn()
-
-
-start()
