@@ -415,7 +415,7 @@ uint8_t getAdcValueIndexFromNumber(uint8_t channelNumber)
         case 2: return 1;
         case 3: return 2;
     }
-    return 0;
+    return 0xFF;
 }
 void Board_ADC_Init(void)
 {
@@ -441,7 +441,7 @@ void Board_ADC_Init(void)
 	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH3, ENABLE);
 
 }
-void Board_ADC_EnableChannel(uint8_t channelNumber)
+int32_t Board_ADC_EnableChannel(uint8_t channelNumber)
 {
 	uint32_t index = 0; // always using ADC0
 	switch(channelNumber)
@@ -450,23 +450,26 @@ void Board_ADC_EnableChannel(uint8_t channelNumber)
 			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, ENABLE);
 			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
 			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
-			break;
+			return 0;
                 case 2:
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, ENABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
-                        break;
+                        return 0;
                 case 3:
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, ENABLE);
-                        break;
+                        return 0;
 	}
+	return -1;
 }
 
 uint16_t Board_ADC_readValue(uint8_t channelNumber)
 {
 	uint8_t index = getAdcValueIndexFromNumber(channelNumber);
+	if(index==0xFF)
+		return (uint16_t)-1;
 	return ADCValues[index];
 }
 

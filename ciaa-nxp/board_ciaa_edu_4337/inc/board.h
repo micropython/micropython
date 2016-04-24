@@ -610,9 +610,9 @@ void Board_ADC_Init(void);
 /**
  * @brief       Enable ADC channel mapped to ADC0 module
  * @param       channelNumber : Number of input channel (1, 2 or 3)
- * @return      void
+ * @return      0: OK. -1: invalid channel
  */
-void Board_ADC_EnableChannel(uint8_t channelNumber);
+int32_t Board_ADC_EnableChannel(uint8_t channelNumber);
 
 
 /**

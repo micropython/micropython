@@ -6,6 +6,7 @@
 #include "testsUart.c"
 #include "testsEEPROM.c"
 #include "testsDAC.c"
+#include "testsADC.c"
 
 void startTesting(void)
 {
@@ -36,6 +37,16 @@ void startTesting(void)
 	utest_startTest(testDAC2,0,"DAC: write invalid value Test");
 	utest_startTest(testDAC3,0,"DAC: write table Test");
 	utest_startTest(testDAC4,0,"DAC: write invalid table Test");
+
+	// ADC Library
+    utest_startTest(testADC1,0,"ADC: enable chn 1 Test");
+    utest_startTest(testADC2,0,"ADC: enable chn 2 Test");
+    utest_startTest(testADC3,0,"ADC: enable chn 3 Test");
+    utest_startTest(testADC4,0,"ADC: enable chn invalid Test");
+    utest_startTest(testADC5,0,"ADC: read chn 1 Test");
+    utest_startTest(testADC6,0,"ADC: read chn 2 Test");
+    utest_startTest(testADC7,0,"ADC: read chn 3 Test");
+    utest_startTest(testADC8,0,"ADC: read chn invalid Test");
 
 
 
