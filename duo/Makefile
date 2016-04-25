@@ -33,8 +33,8 @@ endif
 
 # Path
 ROOT = ..
-BUILD_PATH = ./build
-RELEASES_PATH = $(BUILD_PATH)/releases
+BUILD = ./build
+RELEASES_PATH = $(BUILD)/releases
 
 INCLUDE_PATH += \
     . \
@@ -135,7 +135,7 @@ endif
 # Sources and objects
 SOURCES = $(foreach PATH,$(SOURCE_PATH),$(wildcard $(PATH)/*.c))
 CPPSOURCES = $(foreach PATH,$(CPPSOURCE_PATH),$(wildcard $(PATH)/*.cpp))
-OBJS = $(addprefix $(BUILD_PATH)/,$(SOURCES:.c=.o))  $(addprefix $(BUILD_PATH)/,$(CPPSOURCES:.cpp=.cpp.o))
+OBJS = $(addprefix $(BUILD)/,$(SOURCES:.c=.o))  $(addprefix $(BUILD)/,$(CPPSOURCES:.cpp=.cpp.o))
 
 # Dependencies
 DEPS = $(OBJS:.o=.o.d)
@@ -164,17 +164,17 @@ export SILENT = @
 endif
 
 
-$(BUILD_PATH)/%.o: %.c $(DEPS_MAKEFILES)
+$(BUILD)/%.o: %.c $(DEPS_MAKEFILES)
 	$(SILENT)echo $(CC) $<
 	$(SILENT)$(MKDIR) $(dir $@)
 	$(SILENT)$(CC) $(CFLAGS) $< -o $@
 
-$(BUILD_PATH)/%.cpp.o: %.cpp $(DEPS_MAKEFILES)
+$(BUILD)/%.cpp.o: %.cpp $(DEPS_MAKEFILES)
 	$(SILENT)echo $(CPP) $<
 	$(SILENT)$(MKDIR) $(dir $@)  
 	$(SILENT)$(CPP) $(CPPFLAGS)  $< -o $@
 
-$(BUILD_PATH)/.s.o: %.s $(DEPS_MAKEFILES)
+$(BUILD)/.s.o: %.s $(DEPS_MAKEFILES)
 	$(SILENT)echo $(CC) $<
 	$(SILENT)$(MKDIR) $(dir $@)
 	$(SILENT)$(CC) $(CFLAGS) $< -o $@
@@ -224,8 +224,8 @@ else
 endif
 
 clean:
-	$(SILENT)echo Cleaning targets ¡£¡£¡£
-	$(SILENT)$(RMDIR) $(BUILD_PATH)
+	$(SILENT)echo Cleaning targets ...
+	$(SILENT)$(RMDIR) $(BUILD)
 	
 ifneq ("MAKECMDGOALS","clean")
 -include $(DEPS)
