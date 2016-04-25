@@ -35,7 +35,7 @@ void mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
         mp_call_function_1(fun, arg);
         nlr_pop();
     } else {
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
     }
 }
 
@@ -45,6 +45,6 @@ void mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
         mp_call_function_2(fun, arg1, arg2);
         nlr_pop();
     } else {
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+        mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
     }
 }
