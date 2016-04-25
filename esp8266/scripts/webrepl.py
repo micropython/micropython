@@ -1,6 +1,7 @@
 # This module should be imported from REPL, not run from command line.
 import socket
 import uos
+import network
 import websocket
 import websocket_helper
 
@@ -13,13 +14,15 @@ def setup_conn(port):
     listen_s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     ai = socket.getaddrinfo("0.0.0.0", port)
-    print("Bind address info:", ai)
     addr = ai[0][4]
 
     listen_s.bind(addr)
     listen_s.listen(1)
     listen_s.setsockopt(socket.SOL_SOCKET, 20, accept_conn)
-    print("WebREPL daemon started on port %d" % port)
+    for i in (network.AP_IF, network.STA_IF):
+        iface = network.WLAN(i)
+        if iface.active():
+            print("WebREPL daemon started on %s:%d" % (iface.ifconfig()[0], port))
 
 
 def accept_conn(listen_sock):
