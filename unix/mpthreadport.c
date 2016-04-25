@@ -76,4 +76,31 @@ er:
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ret)));
 }
 
+void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
+    pthread_mutex_init(mutex, NULL);
+}
+
+int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
+    int ret;
+    if (wait) {
+        ret = pthread_mutex_lock(mutex);
+        if (ret == 0) {
+            return 1;
+        }
+    } else {
+        ret = pthread_mutex_trylock(mutex);
+        if (ret == 0) {
+            return 1;
+        } else if (ret == EBUSY) {
+            return 0;
+        }
+    }
+    return -ret;
+}
+
+void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
+    pthread_mutex_unlock(mutex);
+    // TODO check return value
+}
+
 #endif // MICROPY_PY_THREAD

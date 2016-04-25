@@ -43,6 +43,73 @@
 #endif
 
 /****************************************************************/
+// Lock object
+
+STATIC const mp_obj_type_t mp_type_thread_lock;
+
+typedef struct _mp_obj_thread_lock_t {
+    mp_obj_base_t base;
+    mp_thread_mutex_t mutex;
+    bool locked;
+} mp_obj_thread_lock_t;
+
+STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
+    mp_obj_thread_lock_t *self = m_new_obj(mp_obj_thread_lock_t);
+    self->base.type = &mp_type_thread_lock;
+    mp_thread_mutex_init(&self->mutex);
+    self->locked = false;
+    return self;
+}
+
+STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
+    mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(args[0]);
+    bool wait = true;
+    if (n_args > 1) {
+        wait = mp_obj_get_int(args[1]);
+        // TODO support timeout arg
+    }
+    int ret = mp_thread_mutex_lock(&self->mutex, wait);
+    if (ret == 0) {
+        return mp_const_false;
+    } else if (ret == 1) {
+        self->locked = true;
+        return mp_const_true;
+    } else {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-ret)));
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(thread_lock_acquire_obj, 1, 3, thread_lock_acquire);
+
+STATIC mp_obj_t thread_lock_release(mp_obj_t self_in) {
+    mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(self_in);
+    // TODO check if already unlocked
+    self->locked = false;
+    mp_thread_mutex_unlock(&self->mutex);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(thread_lock_release_obj, thread_lock_release);
+
+STATIC mp_obj_t thread_lock_locked(mp_obj_t self_in) {
+    mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(self->locked);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(thread_lock_locked_obj, thread_lock_locked);
+
+STATIC const mp_rom_map_elem_t thread_lock_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_acquire), MP_ROM_PTR(&thread_lock_acquire_obj) },
+    { MP_ROM_QSTR(MP_QSTR_release), MP_ROM_PTR(&thread_lock_release_obj) },
+    { MP_ROM_QSTR(MP_QSTR_locked), MP_ROM_PTR(&thread_lock_locked_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(thread_lock_locals_dict, thread_lock_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_type_thread_lock = {
+    { &mp_type_type },
+    .name = MP_QSTR_lock,
+    .locals_dict = (mp_obj_dict_t*)&thread_lock_locals_dict,
+};
+
+/****************************************************************/
 // _thread module
 
 STATIC size_t thread_stack_size = 0;
@@ -149,12 +216,19 @@ STATIC mp_obj_t mod_thread_exit(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_exit_obj, mod_thread_exit);
 
+STATIC mp_obj_t mod_thread_allocate_lock(void) {
+    return MP_OBJ_FROM_PTR(mp_obj_new_thread_lock());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_allocate_lock_obj, mod_thread_allocate_lock);
+
 STATIC const mp_rom_map_elem_t mp_module_thread_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__thread) },
+    { MP_ROM_QSTR(MP_QSTR_LockType), MP_ROM_PTR(&mp_type_thread_lock) },
     { MP_ROM_QSTR(MP_QSTR_get_ident), MP_ROM_PTR(&mod_thread_get_ident_obj) },
     { MP_ROM_QSTR(MP_QSTR_stack_size), MP_ROM_PTR(&mod_thread_stack_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_new_thread), MP_ROM_PTR(&mod_thread_start_new_thread_obj) },
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mod_thread_exit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_allocate_lock), MP_ROM_PTR(&mod_thread_allocate_lock_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_thread_globals, mp_module_thread_globals_table);
