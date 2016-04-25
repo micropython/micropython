@@ -221,7 +221,7 @@ proj: $(TARGET_NAME).lst $(TARGET_NAME).bin $(TARGET_NAME).hex
 flash: all
 ifdef RBLINK
 	@echo "Using the RBLink to flash"
-	openocd -f $(ROOT)/targetlibs/duo/openocd/redbearduo.cfg -c "program $(TARGET_NAME).bin verify reset exit 0x80c0000"
+	openocd -f $(CWD)/libs/openocd/redbearduo.cfg -c "program $(TARGET_NAME).bin verify reset exit 0x80c0000"
 else
 	$(SUDO) dfu-util -d 2b04:d058 -a 0 -s 0x080C0000:leave -D $(TARGET_NAME).bin
 endif
@@ -235,8 +235,5 @@ clean:
 	@rm -f $(TARGET_NAME).lst
 	@rm -f $(TARGET_NAME).bin.crc_block
 	@rm -f $(TARGET_NAME).bin.no_crc
-	
-debug_print:
-	@echo $(LDFLAGS)
 	
 	
