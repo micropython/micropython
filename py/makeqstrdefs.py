@@ -5,6 +5,7 @@ qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 This script works with Python 2.6, 2.7, 3.3 and 3.4.
 """
 
+import sys
 import re
 import argparse
 import os
@@ -32,10 +33,9 @@ def process_file(f):
     for line in f:
         if line and line[0:2] == "# ":
             # There can be spaces in the filename - e.g. "<command line>" so we use regular expression to parse it:
-            match = re.match('#\s+\d+\s+(?P<fname>"[^"]*").*', line)
+            match = re.match('#\s+\d+\s+"(?P<fname>[^"]*)".*', line)
+            assert match, "Following line does not match the expected pattern: %s" % line.rstrip()
             fname = match.groupdict()["fname"]
-            assert fname[0] == '"' and fname[-1] == '"'
-            fname = fname[1:-1]
             if fname[0] == "/" or not fname.endswith(".c"):
                 continue
             if fname != last_fname:
