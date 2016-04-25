@@ -40,7 +40,6 @@
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"
-#include "utils.h"
 #include "espneopixel.h"
 #include "modpyb.h"
 

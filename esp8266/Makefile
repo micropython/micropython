@@ -76,7 +76,6 @@ SRC_C = \
 	moduos.c \
 	modmachine.c \
 	modonewire.c \
-	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
