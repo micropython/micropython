@@ -109,6 +109,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
+	utils/pyhelp.c \
 	utils/printf.c \
 	)
 
