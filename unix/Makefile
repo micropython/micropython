@@ -61,6 +61,7 @@ endif
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
 CC = clang
+CFLAGS += -Wno-shift-negative-value
 # Use clang syntax for map file
 LDFLAGS_ARCH = -Wl,-map,$@.map
 else
