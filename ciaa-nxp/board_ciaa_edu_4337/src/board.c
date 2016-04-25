@@ -1259,7 +1259,7 @@ void GPIO7_IRQHandler(void)
 }
 
 
-void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
+int32_t Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
 {
 	int32_t pullUpMode=SCU_MODE_INACT;
 	switch(pullup)
@@ -1273,7 +1273,12 @@ void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
 		case BOARD_GPIO_PULLDOWN:
 			pullUpMode=SCU_MODE_PULLDOWN;
 			break;
+		default: return -1;
 	}
+
+	if(gpioNumber>GPIO_MAX_NUMBER)
+		return -1;
+
 	Chip_SCU_PinMuxSet(gpiosInfo[gpioNumber].port, gpiosInfo[gpioNumber].portBit, (pullUpMode | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[gpioNumber].func));
 
         switch(mode)
@@ -1287,24 +1292,36 @@ void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
                 case BOARD_GPIO_MODE_OUTPUT_OD:
                         Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit); // Output
                         break;
+				default:return -1;
         }
+	return 0;
 }
 
 uint32_t Board_GPIOs_readValue(int32_t gpioNumber)
 {
+	if(gpioNumber>GPIO_MAX_NUMBER)
+		return -1;
 	return Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
 }
 
-void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
+int32_t Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
 {
+    if(gpioNumber>GPIO_MAX_NUMBER)
+        return -1;
+
 	if(value)
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
 	else
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+
+	return 0;
 }
 
 bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
 {
+    if(gpioNumber>GPIO_MAX_NUMBER)
+        return 0;
+
 	// check if gpio alerady has assigned int
 	for(uint8_t i=0; i<4 ; i++)
         {

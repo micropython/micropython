@@ -104,6 +104,7 @@ extern "C" {
 #define BOARD_GPIO_PULLUP		1
 #define BOARD_GPIO_PULLDOWN		2
 
+#define GPIO_MAX_NUMBER		8
 
 
 
@@ -400,9 +401,9 @@ void Board_GPIOs_Init(void);
  * @param       gpioNumber : 0 to 8
  * @param       mode : BOARD_GPIO_MODE_INPUT, BOARD_GPIO_MODE_OUTPUT_PP, BOARD_GPIO_MODE_OUTPUT_OD
  * @param       pullup : BOARD_GPIO_NOPULL, BOARD_GPIO_PULLUP, BOARD_GPIO_PULLDOWN
- * @return      void
+ * @return      0: OK. -1: error.
  */
-void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup);
+int32_t Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup);
 
 
 /**
@@ -417,9 +418,9 @@ uint32_t Board_GPIOs_readValue(int32_t gpioNumber);
  * @brief       Writes gpio's value.
  * @param       gpioNumber : 0 to 8
  * @param       value : 0 or 1
- * @return      void
+ * @return      0:OK. -1: Error
  */
-void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
+int32_t Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
 
 
 /**

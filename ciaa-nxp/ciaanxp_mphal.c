@@ -214,9 +214,9 @@ void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void
 }
 
 // GPIOs
-void mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup)
+int32_t mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup)
 {
-	Board_GPIOs_configure(gpioNumber,mode,pullup);
+	return Board_GPIOs_configure(gpioNumber,mode,pullup);
 }
 
 int32_t mp_hal_readGPIO(int32_t gpioNumber)
@@ -224,9 +224,9 @@ int32_t mp_hal_readGPIO(int32_t gpioNumber)
 	return Board_GPIOs_readValue(gpioNumber);
 }
 
-void mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value)
+int32_t mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value)
 {
-	Board_GPIOs_writeValue(gpioNumber,value);
+	return Board_GPIOs_writeValue(gpioNumber,value);
 }
 
 bool mp_hal_enableIntCallbackGPIO(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)

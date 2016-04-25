@@ -27,11 +27,11 @@
 
 #define utest_assertEqualsInt(A,B){ if(A!=B){ utest_print2("assert equals failed '%d' != '%d'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 #define utest_assertEqualsFloat(A,B){ if(A!=B){ utest_print2("assert equals failed '%f' != '%f'\r\n",(double)A,(double)B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
-#define utest_assertEqualsPointer(A,B){ if(A!=B){ utest_print2("assert equals failed '0x%x' != '0x%x'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
+#define utest_assertEqualsPointer(A,B){ if(A!=B){ utest_print2("assert equals failed '%p' != '%p'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 
 #define utest_assertNotEqualsInt(A,B){ if(A==B){ utest_print2("assert not equals failed '%d' != '%d'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 #define utest_assertNotEqualsFloat(A,B){ if(A==B){ utest_print2("assert not equals failed '%f' != '%f'\r\n",(double)A,(double)B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; $
-#define utest_assertNotEqualsPointer(A,B){ if(A==B){ utest_print2("assert not equals failed '0x%x' != '0x%x'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
+#define utest_assertNotEqualsPointer(A,B){ if(A==B){ utest_print2("assert not equals failed '%p' != '%p'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 
 #define utest_assertNull(A){ if(A!=0){ utest_print1("assert null failed. Value: '0x%x' \r\n",A); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 #define utest_assertNotNull(A){ if(A==0){ utest_print1("assert not null failed. Value: '0x%x' \r\n",A); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }

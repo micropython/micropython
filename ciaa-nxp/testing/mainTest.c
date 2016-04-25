@@ -7,6 +7,17 @@
 #include "testsEEPROM.c"
 #include "testsDAC.c"
 #include "testsADC.c"
+#include "testsGPIO.c"
+
+/* Hardware connections for testing:
+
+232_RX	->	R100 ohm	->	232_TX
+CH1    	->	GNDA
+CH2    	->	GNDA
+CH3    	->	GNDA
+GPIO8	->	R100 ohm	->	GPIO7
+
+*/
 
 void startTesting(void)
 {
@@ -48,6 +59,23 @@ void startTesting(void)
     utest_startTest(testADC7,0,"ADC: read chn 3 Test");
     utest_startTest(testADC8,0,"ADC: read chn invalid Test");
 
+
+	// GPIO
+    utest_startTest(testGPIO1,0,"GPIO: configure gpio0 input Test");
+    utest_startTest(testGPIO2,0,"GPIO: configure gpio8 input Test");
+    utest_startTest(testGPIO3,0,"GPIO: configure invalid gpio Test");
+    utest_startTest(testGPIO4,0,"GPIO: configure invalid mode Test");
+    utest_startTest(testGPIO5,0,"GPIO: configure invalid pull mode Test");
+    utest_startTest(testGPIO6,0,"GPIO: read with pullup Test");
+    utest_startTest(testGPIO7,0,"GPIO: read with pulldown Test");
+    utest_startTest(testGPIO8,0,"GPIO: read invalid gpio Test");
+    utest_startTest(testGPIO9,testGPIOwriteSetup,"GPIO: write 0 Test");
+    utest_startTest(testGPIO10,testGPIOwriteSetup,"GPIO: write 1 Test");
+    utest_startTest(testGPIO11,testGPIOwriteSetup,"GPIO: write invalid Test");
+
+    utest_startTest(testGPIO12,testGPIOcallbackSetup,"GPIO: enable callback Test");
+    utest_startTest(testGPIO13,testGPIOcallbackSetup,"GPIO: interrupt Test");
+    utest_startTest(testGPIO14,testGPIOcallbackSetup,"GPIO: enable invalid Test");
 
 
 	utest_printStatistics();
