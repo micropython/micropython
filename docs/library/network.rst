@@ -300,6 +300,9 @@ For example::
 
             (ssid, bssid, channel, RSSI, authmode, hidden)
 
+        `bssid` is hardware address of an access point, in binary form, returned as
+        bytes object. You can use ``ubinascii.hexlify()`` to convert it to ASCII form.
+
         There are five values for authmode:
 
             * 0 -- open
