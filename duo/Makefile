@@ -1,3 +1,4 @@
+# OS Environment
 ifeq ($(shell uname),Darwin)
 MACOSX=1
 CFLAGS+=-D__MACOSX__
@@ -9,7 +10,6 @@ STAT_FLAGS='-c ''%s'''
 MAKE_OS=LINUX
 SUDO=sudo
 endif
-
 ifeq ($(OS),Windows_NT)
 MINGW=1
 MAKE_OS=WINDOWS
@@ -30,82 +30,58 @@ ifndef SINGLETHREAD
 MAKEFLAGS=-j5 # multicore
 endif
 
-CWD = .
-ROOT = $(CWD)/..
-TARGET_NAME = micropython_duo_firmware
 
-SOURCES = 
-CPPSOURCES =
-INCLUDE_PATH=
-LIBS=
-DEFINES=
-CFLAGS= 
-CPPFLAGS=
-LDFLAGS=
+# Path
+ROOT = ..
+BUILD_PATH = ./build
+RELEASES_PATH = $(BUILD_PATH)/releases
 
-ifdef RELEASE
-DEFINES += -DNO_ASSERT -DRELEASE
-endif
+INCLUDE_PATH += \
+    . \
+    libs/CMSIS/Include \
+    libs/A_user/inc \
+    libs/E_rt-dynalib/inc \
+    libs/F_wiring/inc \
+    libs/H_platform/shared/inc \
+    libs/H_platform/MCU/shared/STM32/inc \
+    libs/H_platform/MCU/STM32F2xx/STM32_StdPeriph_Driver/inc \
+    libs/H_platform/MCU/STM32F2xx/SPARK_Firmware_Driver/inc \
+    libs/H_platform/MCU/STM32F2xx/STM32_USB_Device_Driver/inc \
+    libs/H_platform/MCU/STM32F2xx/STM32_USB_OTG_Driver/inc \
+    libs/H_platform/MCU/STM32F2xx/CMSIS/Device/ST/Include \
+    libs/I_modules/duo/user-part/inc \
+    libs/I_modules/shared/stm32f2xx/inc \
+    libs/X_define \
+    libs/X_hal/inc \
+    libs/X_hal/shared \
+    libs/X_hal/src/stm32f2xx \
+    libs/X_hal/src/stm32 \
+    libs/X_hal/src/duo \
+    libs/X_hal/src/duo/include \
+    libs/X_hal/src/duo/libraries/btstack/port \
+    libs/X_hal/src/duo/libraries/btstack/src \
+    libs/X_hal/src/duo/libraries/btstack/src/ble \
+    libs/X_hal/src/duo/libraries/btstack/src/classic \
+    libs/X_services/inc \
+    libs/X_system/inc \
+    libs/X_communication/src \
+    libs/X_dynalib/inc \
+    libs/X_lib \
+    libs/wiring_api
+    
+SOURCE_PATH += \
+    libs/I_modules/duo/user-part/src
+    
+CPPSOURCE_PATH += \
+    . \
+    libs/I_modules/duo/user-part/src \
+    libs/wiring_api
 
-ifdef DEBUG
-DEFINES+=-DDEBUG
-endif
 
-INCLUDE_PATH += -I$(CWD)/libs/CMSIS/Include
-INCLUDE_PATH += -I$(CWD)/libs/A_user/inc
-INCLUDE_PATH += -I$(CWD)/libs/E_rt-dynalib/inc
-INCLUDE_PATH += -I$(CWD)/libs/F_wiring/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/shared/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/MCU/shared/STM32/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/MCU/STM32F2xx/STM32_StdPeriph_Driver/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/MCU/STM32F2xx/SPARK_Firmware_Driver/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/MCU/STM32F2xx/STM32_USB_Device_Driver/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/MCU/STM32F2xx/STM32_USB_OTG_Driver/inc
-INCLUDE_PATH += -I$(CWD)/libs/H_platform/MCU/STM32F2xx/CMSIS/Device/ST/Include
-INCLUDE_PATH += -I$(CWD)/libs/I_modules/duo/user-part/inc
-INCLUDE_PATH += -I$(CWD)/libs/I_modules/shared/stm32f2xx/inc
-INCLUDE_PATH += -I$(CWD)/libs/X_define
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/inc
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/shared
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/stm32f2xx
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/stm32
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/duo
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/duo/include
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/duo/libraries/btstack/port
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/duo/libraries/btstack/src
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/duo/libraries/btstack/src/ble
-INCLUDE_PATH += -I$(CWD)/libs/X_hal/src/duo/libraries/btstack/src/classic
-INCLUDE_PATH += -I$(CWD)/libs/X_services/inc
-INCLUDE_PATH += -I$(CWD)/libs/X_system/inc
-INCLUDE_PATH += -I$(CWD)/libs/X_communication/src
-INCLUDE_PATH += -I$(CWD)/libs/X_dynalib/inc
-INCLUDE_PATH += -I$(CWD)/libs/X_lib
-INCLUDE_PATH += -I$(CWD)/libs/wiring_api
+# Platform configurations
+TARGET_NAME = $(RELEASES_PATH)/micropython_duo_firmware
 
-CPPSOURCES += \
-  $(CWD)/main.cpp \
-  $(CWD)/libs/I_modules/duo/user-part/src/newlib_stubs.cpp \
-  $(CWD)/libs/wiring_api/usartserial_api.cpp \
-  $(CWD)/libs/wiring_api/usbserial_api.cpp \
-  $(CWD)/libs/wiring_api/gpio_api.cpp \
-  $(CWD)/libs/wiring_api/servo_api.cpp \
-  $(CWD)/libs/wiring_api/ble_api.cpp \
-  $(CWD)/libs/wiring_api/i2c_api.cpp \
-  $(CWD)/libs/wiring_api/spi_api.cpp \
-  $(CWD)/libs/wiring_api/tone_api.cpp \
-  $(CWD)/libs/wiring_api/rgb_api.cpp \
-  $(CWD)/libs/wiring_api/wifi_api.cpp \
-  $(CWD)/libs/wiring_api/tcpserver_api.cpp \
-  $(CWD)/libs/wiring_api/tcpclient_api.cpp \
-  $(CWD)/libs/wiring_api/timer_api.cpp \
-  $(CWD)/libs/wiring_api/interrupt_api.cpp
-
-SOURCES += \
-  $(CWD)/libs/I_modules/duo/user-part/src/module_info.c \
-  $(CWD)/libs/I_modules/duo/user-part/src/user_export.c \
-  $(CWD)/libs/I_modules/duo/user-part/src/user_module.c 
-
-LINKER_FILE = $(CWD)/libs/linker_scripts/gcc/linker.ld
+LINKER_FILE = libs/linker_scripts/gcc/linker.ld
 
 # warnning flags
 WARNFLAGS += -Wall -Wextra -Wno-switch -Wno-error=deprecated-declarations -Werror=implicit-function-declaration -fno-strict-aliasing \
@@ -126,10 +102,10 @@ DEBUGFLAGS += -g3 -gdwarf-2
 LIBS_DEPS += -lcommunication-dynalib -lhal-dynalib -lplatform -lrt-dynalib -lservices-dynalib \
              -lsystem-dynalib -lwiring_globals -lwiring 
 
-LDFLAGS += -L$(CWD)/libs/linker_scripts/gcc
-LDFLAGS += -L$(CWD)/libs/linker_scripts/linker
-LDFLAGS += -L$(CWD)/libs/linker_scripts/linker/stm32f2xx
-LDFLAGS += -L$(CWD)/libs/X_lib
+LDFLAGS += -Llibs/linker_scripts/gcc
+LDFLAGS += -Llibs/linker_scripts/linker
+LDFLAGS += -Llibs/linker_scripts/linker/stm32f2xx
+LDFLAGS += -Llibs/X_lib
 LDFLAGS += -Wl,--whole-archive -lSTM32F2xx_Peripheral_Libraries -Wl,--no-whole-archive\
            -nostartfiles -Xlinker --gc-sections \
            -Wl,--whole-archive $(LIBS_DEPS) -Wl,--no-whole-archive\
@@ -140,20 +116,37 @@ LDFLAGS += -Wl,--whole-archive -lSTM32F2xx_Peripheral_Libraries -Wl,--no-whole-a
 #           -Wl,--start-group -lgcc -lg_nano -lc_nano -Wl,--end-group \
 #           -Wl,--start-group -lgcc -lc_nano -Wl,--end-group
 
-DEFINES += -DSTM32_DEVICE -DSTM32F2XX -DPLATFORM_THREADING=1 -DSTM32 -DUSE_STDPERIPH_DRIVER=1\
-           -DPLATFORM_ID=88 -DPLATFORM_NAME=duo -DREDBEARDUO\
-           -DUSBD_VID_SPARK=0x2B04 -DUSBD_PID_DFU=0xD058 -DUSBD_PID_CDC=0xC058 \
-           -DRELEASE_BUILD -DINCLUDE_PLATFORM=1 -DUSE_STDPERIPH_DRIVER -DDFU_BUILD_ENABLE \
-           -DSYSTEM_VERSION_STRING=0.2.3 \
-           -DUSER_FIRMWARE_IMAGE_SIZE=0x40000 -DUSER_FIRMWARE_IMAGE_LOCATION=0x80C0000 \
-           -DMODULAR_FIRMWARE=1 -DMODULE_FUNCTION=5 -DMODULE_INDEX=1 -DMODULE_VERSION=6 -DMODULE_DEPENDENCY=4,2,6 \
-           -DSPARK=1 
+GLOBAL_DEFINES += STM32_DEVICE STM32F2XX PLATFORM_THREADING=1 STM32 USE_STDPERIPH_DRIVER=1 \
+                  PLATFORM_ID=88 PLATFORM_NAME=duo REDBEARDUO \
+                  SPARK=1  USBD_VID_SPARK=0x2B04 USBD_PID_DFU=0xD058 USBD_PID_CDC=0xC058 \
+                  RELEASE_BUILD INCLUDE_PLATFORM=1 USE_STDPERIPH_DRIVER DFU_BUILD_ENABLE \
+                  SYSTEM_VERSION_STRING=0.2.3 MODULE_FUNCTION=5 MODULE_INDEX=1 MODULE_VERSION=6 MODULE_DEPENDENCY=4,2,6 \
+                  MODULAR_FIRMWARE=1 USER_FIRMWARE_IMAGE_SIZE=0x40000 USER_FIRMWARE_IMAGE_LOCATION=0x80C0000 
 
-OBJS = $(SOURCES:.c=.o) $(CPPSOURCES:.cpp=.cpp.o)
+ifdef RELEASE
+GLOBAL_DEFINES += NO_ASSERT -DRELEASE
+endif
 
-CFLAGS += $(OPTIMIZEFLAGS) -c $(ARCHFLAGS) $(DEFINES) $(INCLUDE_PATH) $(WARNFLAGS) $(DEBUGFLAGS)
+ifdef DEBUG
+GLOBAL_DEFINES += DEBUG
+endif                
+
+
+# Sources and objects
+SOURCES = $(foreach PATH,$(SOURCE_PATH),$(wildcard $(PATH)/*.c))
+CPPSOURCES = $(foreach PATH,$(CPPSOURCE_PATH),$(wildcard $(PATH)/*.cpp))
+OBJS = $(addprefix $(BUILD_PATH)/,$(SOURCES:.c=.o))  $(addprefix $(BUILD_PATH)/,$(CPPSOURCES:.cpp=.cpp.o))
+
+# Dependencies
+DEPS = $(OBJS:.o=.o.d)
+DEPS_MAKEFILES = ./makefile
+
+
+CFLAGS += $(OPTIMIZEFLAGS) -c $(ARCHFLAGS) $(WARNFLAGS) $(DEBUGFLAGS) $(addprefix -I,$(INCLUDE_PATH)) $(addprefix -D,$(GLOBAL_DEFINES))
+CFLAGS += -MD -MP -MF $@.d
 CPPFLAGS += $(CFLAGS) -std=gnu++11
 LDFLAGS += $(OPTIMIZEFLAGS) $(ARCHFLAGS) -T$(LINKER_FILE)
+
 
 export CC = arm-none-eabi-gcc
 export CPP = arm-none-eabi-g++
@@ -163,45 +156,49 @@ export AS = arm-none-eabi-as
 export OBJCOPY = arm-none-eabi-objcopy
 export OBJDUMP = arm-none-eabi-objdump
 export GDB = arm-none-eabi-gdb
+export MKDIR = mkdir -p
+export RMDIR = rm -f -r
+export RM = rm -f
+ifneq ("1","$(verbose)")
+export SILENT = @
+endif
 
-compile = $(CC) $(CFLAGS) $< -o $@
-cppcompile = $(CPP) $(CPPFLAGS)  $< -o $@
-link = $(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
-obj_dump = $(OBJDUMP) -x -S $(TARGET_NAME).elf > $(TARGET_NAME).lst
-obj_to_bin = $(OBJCOPY) -O $1 $(TARGET_NAME).elf $(TARGET_NAME).$2
 
+$(BUILD_PATH)/%.o: %.c $(DEPS_MAKEFILES)
+	$(SILENT)echo $(CC) $<
+	$(SILENT)$(MKDIR) $(dir $@)
+	$(SILENT)$(CC) $(CFLAGS) $< -o $@
 
-%.o: %.c 
-	@echo $(CC) $<
-	@$(call compile)
+$(BUILD_PATH)/%.cpp.o: %.cpp $(DEPS_MAKEFILES)
+	$(SILENT)echo $(CPP) $<
+	$(SILENT)$(MKDIR) $(dir $@)  
+	$(SILENT)$(CPP) $(CPPFLAGS)  $< -o $@
 
-%.cpp.o: %.cpp 
-	@echo $(CPP) $<
-	@$(call cppcompile)
+$(BUILD_PATH)/.s.o: %.s $(DEPS_MAKEFILES)
+	$(SILENT)echo $(CC) $<
+	$(SILENT)$(MKDIR) $(dir $@)
+	$(SILENT)$(CC) $(CFLAGS) $< -o $@
+	
 
-.s.o:
-	@echo $(CC) $<
-	@$(call compile)
-
-$(TARGET_NAME).elf: $(OBJS) $(LINKER_FILE)
-	@echo LD $@ ...
-	@$(call link)
-
-$(TARGET_NAME).lst : $(TARGET_NAME).elf
-	@echo GEN $(TARGET_NAME).lst 
-	@$(call obj_dump)
+$(TARGET_NAME).elf: $(OBJS) $(LINKER_FILE) 
+	$(SILENT)echo LD $@ ...
+	$(SILENT)$(MKDIR) $(dir $@)
+	$(SILENT)$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+ 
+$(TARGET_NAME).lst: $(TARGET_NAME).elf
+	$(SILENT)echo GEN $(TARGET_NAME).lst 
+	$(SILENT)$(MKDIR) $(dir $@)
+	$(SILENT)$(OBJDUMP) -x -S $(TARGET_NAME).elf > $(TARGET_NAME).lst
 
 $(TARGET_NAME).hex: $(TARGET_NAME).elf
-	@echo GEN $@
-	@$(call obj_to_bin,ihex,hex)
+	$(SILENT)echo GEN $@
+	$(SILENT)$(MKDIR) $(dir $@)
+	$(SILENT)$(OBJCOPY) -O ihex $(TARGET_NAME).elf $(TARGET_NAME).hex
 
-$(TARGET_NAME).srec : $(TARGET_NAME).elf
-	@echo GEN $@
-	@$(call obj_to_bin,srec,srec)
-
-$(TARGET_NAME).bin : $(TARGET_NAME).elf
-	@echo GEN $@
-	@$(call obj_to_bin,binary,bin)
+$(TARGET_NAME).bin: $(TARGET_NAME).elf
+	$(SILENT)echo GEN $@
+	$(SILENT)$(MKDIR) $(dir $@)
+	$(SILENT)$(OBJCOPY) -O binary $(TARGET_NAME).elf $(TARGET_NAME).bin
 	if [ -s $@ ]; then \
 	head -c $$(($(call filesize,$@) - 38)) $@ > $@.no_crc && \
 	tail -c 38 $@ > $@.crc_block && \
@@ -220,20 +217,17 @@ proj: $(TARGET_NAME).lst $(TARGET_NAME).bin $(TARGET_NAME).hex
 
 flash: all
 ifdef RBLINK
-	@echo "Using the RBLink to flash"
-	openocd -f $(CWD)/libs/openocd/redbearduo.cfg -c "program $(TARGET_NAME).bin verify reset exit 0x80c0000"
+	$(SILENT)echo "Using the RBLink to flash"
+	openocd -f libs/openocd/redbearduo.cfg -c "program $(TARGET_NAME).bin verify reset exit 0x80c0000"
 else
 	$(SUDO) dfu-util -d 2b04:d058 -a 0 -s 0x080C0000:leave -D $(TARGET_NAME).bin
 endif
 
 clean:
-	@echo Cleaning targets
-	@find . -name \*.o | grep -v libmbed | grep -v arm-bcm2708 | xargs rm -f
-	@rm -f $(TARGET_NAME).elf
-	@rm -f $(TARGET_NAME).hex
-	@rm -f $(TARGET_NAME).bin
-	@rm -f $(TARGET_NAME).lst
-	@rm -f $(TARGET_NAME).bin.crc_block
-	@rm -f $(TARGET_NAME).bin.no_crc
+	$(SILENT)echo Cleaning targets ¡£¡£¡£
+	$(SILENT)$(RMDIR) $(BUILD_PATH)
 	
+ifneq ("MAKECMDGOALS","clean")
+-include $(DEPS)
+endif	
 	
