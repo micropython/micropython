@@ -27,14 +27,20 @@ def write_out(fname, output):
             f.write("\n".join(output) + "\n")
 
 def process_file(f):
+    regex = re.compile(r"#\s\d+\s(\"[^\"]+\")")
     output = []
     last_fname = None
     outf = None
     for line in f:
         if line and line[0:2] == "# ":
-            comp = line.split()
-            fname = comp[2]
-            assert fname[0] == '"' and fname[-1] == '"'
+            #comp = line.split()
+            #fname = comp[2]
+            fname = regex.search(line).group(1)
+            try:
+                assert fname[0] == '"' and fname[-1] == '"'
+            except:
+                print(line)
+                raise
             fname = fname[1:-1]
             if fname[0] == "/" or not fname.endswith(".c"):
                 continue
