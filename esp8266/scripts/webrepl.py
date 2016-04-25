@@ -28,6 +28,7 @@ def setup_conn(port):
 def accept_conn(listen_sock):
     global client_s
     cl, remote_addr = listen_sock.accept()
+    print("\nWebREPL connection from:", remote_addr)
     client_s = cl
     websocket_helper.server_handshake(cl)
     ws = websocket.websocket(cl, True)
