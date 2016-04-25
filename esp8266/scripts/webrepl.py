@@ -7,19 +7,19 @@ import websocket_helper
 listen_s = None
 client_s = None
 
-def setup_conn():
+def setup_conn(port):
     global listen_s, client_s
     listen_s = socket.socket()
     listen_s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    ai = socket.getaddrinfo("0.0.0.0", 8266)
+    ai = socket.getaddrinfo("0.0.0.0", port)
     print("Bind address info:", ai)
     addr = ai[0][4]
 
     listen_s.bind(addr)
     listen_s.listen(1)
     listen_s.setsockopt(socket.SOL_SOCKET, 20, accept_conn)
-    print("WebREPL daemon started on port 8266")
+    print("WebREPL daemon started on port %d" % port)
 
 
 def accept_conn(listen_sock):
@@ -44,6 +44,6 @@ def stop():
         listen_s.close()
 
 
-def start():
+def start(port=8266):
     stop()
-    setup_conn()
+    setup_conn(port)
