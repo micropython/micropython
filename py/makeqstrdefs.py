@@ -26,16 +26,16 @@ def write_out(fname, output):
         with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
             f.write("\n".join(output) + "\n")
 
+
 def process_file(f):
     output = []
     last_fname = None
-    outf = None
     for line in f:
         if line and line[0:2] == "# ":
-            comp = line.split()
-            fname = comp[2]
-            assert fname[0] == '"' and fname[-1] == '"'
-            fname = fname[1:-1]
+            # There can be spaces in the filename - e.g. "<command line>" so we use regular expression to parse it:
+            match = re.match('#\s+\d+\s+"(?P<fname>[^"]*)".*', line)
+            assert match, "Following line does not match the expected pattern: %s" % line.rstrip()
+            fname = match.groupdict()["fname"]
             if fname[0] == "/" or not fname.endswith(".c"):
                 continue
             if fname != last_fname:
