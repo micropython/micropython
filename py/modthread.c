@@ -96,6 +96,7 @@ STATIC mp_obj_t thread_lock_locked(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(thread_lock_locked_obj, thread_lock_locked);
 
 STATIC mp_obj_t thread_lock___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args; // unused
     return thread_lock_release(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(thread_lock___exit___obj, 4, 4, thread_lock___exit__);
