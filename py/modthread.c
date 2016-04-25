@@ -45,10 +45,23 @@
 /****************************************************************/
 // _thread module
 
+STATIC size_t thread_stack_size = 0;
+
 STATIC mp_obj_t mod_thread_get_ident(void) {
     return mp_obj_new_int_from_uint((uintptr_t)mp_thread_get_state());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_get_ident_obj, mod_thread_get_ident);
+
+STATIC mp_obj_t mod_thread_stack_size(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t ret = mp_obj_new_int_from_uint(thread_stack_size);
+    if (n_args == 0) {
+        thread_stack_size = 0;
+    } else {
+        thread_stack_size = mp_obj_get_int(args[0]);
+    }
+    return ret;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_stack_size_obj, 0, 1, mod_thread_stack_size);
 
 typedef struct _thread_entry_args_t {
     mp_obj_t fun;
@@ -126,8 +139,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
         }
         th_args->args = all_args;
     }
-    // TODO implement setting thread stack size
-    mp_thread_create(thread_entry, th_args);
+    mp_thread_create(thread_entry, th_args, thread_stack_size);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3, mod_thread_start_new_thread);
@@ -135,6 +147,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3
 STATIC const mp_rom_map_elem_t mp_module_thread_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__thread) },
     { MP_ROM_QSTR(MP_QSTR_get_ident), MP_ROM_PTR(&mod_thread_get_ident_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stack_size), MP_ROM_PTR(&mod_thread_stack_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_new_thread), MP_ROM_PTR(&mod_thread_start_new_thread_obj) },
 };
 

@@ -46,9 +46,34 @@ void mp_thread_set_state(void *state) {
     pthread_setspecific(tls_key, state);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg) {
+void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size) {
+    // default stack size is 8k machine-words
+    if (stack_size == 0) {
+        stack_size = 8192 * BYTES_PER_WORD;
+    }
+
+    // set thread attributes
+    pthread_attr_t attr;
+    int ret = pthread_attr_init(&attr);
+    if (ret != 0) {
+        goto er;
+    }
+    ret = pthread_attr_setstacksize(&attr, stack_size);
+    if (ret != 0) {
+        goto er;
+    }
+
+    // create thread
     pthread_t id;
-    pthread_create(&id, NULL, entry, arg);
+    ret = pthread_create(&id, &attr, entry, arg);
+    if (ret != 0) {
+        goto er;
+    }
+
+    return;
+
+er:
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ret)));
 }
 
 #endif // MICROPY_PY_THREAD

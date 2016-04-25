@@ -38,7 +38,7 @@
 
 mp_state_thread_t *mp_thread_get_state(void);
 void mp_thread_set_state(void *state);
-void mp_thread_create(void *(*entry)(void*), void *arg);
+void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size);
 
 #endif // MICROPY_PY_THREAD
 
