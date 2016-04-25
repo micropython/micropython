@@ -60,7 +60,9 @@ if 22 >= size >= 18:
         machine.reset()
         while 1: time.sleep(1)
 
-if esp.flash_size() < 1024*1024:
+size = esp.flash_size()
+if size < 1024*1024:
     bdev = None
 else:
-    bdev = FlashBdev()
+    # 16K at the flash end is reserved for SDK params storage
+    bdev = FlashBdev((size - 16384) // FlashBdev.SEC_SIZE - FlashBdev.START_SEC)
