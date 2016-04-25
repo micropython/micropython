@@ -264,7 +264,7 @@ static inline void poll_sockets(void) {
 
 static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     if (socket->callback != MP_OBJ_NULL) {
-        mp_call_function_1(socket->callback, socket);
+        mp_call_function_1_protected(socket->callback, socket);
     }
 }
 
