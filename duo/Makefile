@@ -36,6 +36,10 @@ ROOT = ..
 BUILD = ./build
 RELEASES_PATH = $(BUILD)/releases
 
+CROSS_COMPILE = arm-none-eabi-
+
+include ../py/mkenv.mk
+
 INCLUDE_PATH += \
     . \
     libs/CMSIS/Include \
