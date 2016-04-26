@@ -99,6 +99,17 @@ library.
       ustruct.rst
       uzlib.rst
 
+.. only:: port_wipy
+
+   .. toctree::
+      :maxdepth: 1
+
+      ubinascii.rst
+      ujson.rst
+      ure.rst
+      usocket.rst
+      ussl.rst
+
 .. only:: port_esp8266
 
    .. toctree::
@@ -124,17 +135,6 @@ library.
       :maxdepth: 2
 
       pyb.rst
-
-.. only:: port_wipy
-
-   .. toctree::
-      :maxdepth: 1
-
-      ubinascii.rst
-      ujson.rst
-      ure.rst
-      usocket.rst
-      ussl.rst
 
 .. only:: port_wipy
 
