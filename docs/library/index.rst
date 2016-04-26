@@ -85,7 +85,7 @@ library.
     directory ``json`` and load that package if it is found.  If nothing is found,
     it will fallback to loading the built-in ``ujson`` module.
 
-.. only:: port_pyboard or port_unix
+.. only:: port_unix or port_pyboard or port_esp8266
 
    .. toctree::
       :maxdepth: 1
@@ -109,20 +109,6 @@ library.
       ure.rst
       usocket.rst
       ussl.rst
-
-.. only:: port_esp8266
-
-   .. toctree::
-      :maxdepth: 1
-
-      ubinascii.rst
-      uhashlib.rst
-      uheapq.rst
-      ujson.rst
-      ure.rst
-      usocket.rst
-      ustruct.rst
-      uzlib.rst
 
 .. only:: port_pyboard
 
