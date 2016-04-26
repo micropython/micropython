@@ -1,6 +1,11 @@
 MicroPython libraries
 =====================
 
+The following standard Python libraries are built in to MicroPython.
+
+For additional libraries, please download them from the `micropython-lib repository
+<https://github.com/micropython/micropython-lib>`_.
+
 MicroPython-specific libraries
 ------------------------------
 
@@ -15,62 +20,8 @@ the following libraries.
    network.rst
    uctypes.rst
 
-Python standard libraries
--------------------------
-
-The following standard Python libraries are built in to MicroPython.
-
-For additional libraries, please download them from the `micropython-lib repository
-<https://github.com/micropython/micropython-lib>`_.
-
-.. only:: port_unix
-
-    .. toctree::
-       :maxdepth: 1
-    
-       cmath.rst
-       gc.rst
-       math.rst
-       os.rst
-       sys.rst
-       time.rst
-
-.. only:: port_pyboard
-
-    .. toctree::
-       :maxdepth: 1
-    
-       cmath.rst
-       gc.rst
-       math.rst
-       os.rst
-       select.rst
-       sys.rst
-       time.rst
-
-.. only:: port_wipy
-
-    .. toctree::
-       :maxdepth: 1
-    
-       gc.rst
-       os.rst
-       select.rst
-       sys.rst
-       time.rst
-
-.. only:: port_esp8266
-
-    .. toctree::
-       :maxdepth: 1
-
-       gc.rst
-       math.rst
-       sys.rst
-       time.rst
-
-Python micro-libraries
-----------------------
+Python standard libraries and micro-libraries
+---------------------------------------------
 
 The following standard Python libraries have been "micro-ified" to fit in with
 the philosophy of MicroPython.  They provide the core functionality of that
@@ -85,30 +36,83 @@ library.
     directory ``json`` and load that package if it is found.  If nothing is found,
     it will fallback to loading the built-in ``ujson`` module.
 
-.. only:: port_unix or port_pyboard or port_esp8266
+.. only:: port_unix
 
-   .. toctree::
-      :maxdepth: 1
-    
-      ubinascii.rst
-      uhashlib.rst
-      uheapq.rst
-      ujson.rst
-      ure.rst
-      usocket.rst
-      ustruct.rst
-      uzlib.rst
+    .. toctree::
+       :maxdepth: 1
+
+       cmath.rst
+       gc.rst
+       math.rst
+       os.rst
+       select.rst
+       sys.rst
+       ubinascii.rst
+       uhashlib.rst
+       uheapq.rst
+       ujson.rst
+       ure.rst
+       usocket.rst
+       ustruct.rst
+       utime.rst
+       uzlib.rst
+
+.. only:: port_pyboard
+
+    .. toctree::
+       :maxdepth: 1
+
+       cmath.rst
+       gc.rst
+       math.rst
+       os.rst
+       select.rst
+       sys.rst
+       ubinascii.rst
+       uhashlib.rst
+       uheapq.rst
+       ujson.rst
+       ure.rst
+       usocket.rst
+       ustruct.rst
+       utime.rst
+       uzlib.rst
 
 .. only:: port_wipy
 
-   .. toctree::
-      :maxdepth: 1
+    .. toctree::
+       :maxdepth: 1
 
-      ubinascii.rst
-      ujson.rst
-      ure.rst
-      usocket.rst
-      ussl.rst
+       gc.rst
+       os.rst
+       select.rst
+       sys.rst
+       ubinascii.rst
+       ujson.rst
+       ure.rst
+       usocket.rst
+       ussl.rst
+       utime.rst
+
+.. only:: port_esp8266
+
+    .. toctree::
+       :maxdepth: 1
+
+       gc.rst
+       math.rst
+       os.rst
+       sys.rst
+       ubinascii.rst
+       uhashlib.rst
+       uheapq.rst
+       ujson.rst
+       ure.rst
+       usocket.rst
+       ustruct.rst
+       utime.rst
+       uzlib.rst
+
 
 .. only:: port_pyboard
 
