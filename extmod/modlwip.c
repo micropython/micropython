@@ -43,6 +43,7 @@
 #include "lwip/udp.h"
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
+#include "lwip/tcp_impl.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -1200,6 +1201,14 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_getaddrinfo_obj, lwip_getaddrinfo);
 
+// Debug functions
+
+STATIC mp_obj_t lwip_print_pcbs() {
+    tcp_debug_print_pcbs();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
+
 #ifdef MICROPY_PY_LWIP
 
 STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
@@ -1207,6 +1216,7 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset), (mp_obj_t)&mod_lwip_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_lwip_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&lwip_getaddrinfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_print_pcbs), (mp_obj_t)&lwip_print_pcbs_obj },
     // objects
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&lwip_socket_type },
 #ifdef MICROPY_PY_LWIP_SLIP
