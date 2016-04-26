@@ -24,6 +24,12 @@ The ``machine`` module::
     machine.freq()          # get the current frequency of the CPU
     machine.freq(160000000) # set the CPU frequency to 160 MHz
 
+In case you mistyped your wi-fi router's password while configuring
+wlan connection, the underlying wi-fi sub-system will keep trying
+to reconnect, flooding your REPL. In this situation, you can turn
+off vendor O/S debugging messages (see the snippet below), fix the
+error, and enable debugging messages.
+
 The ``esp`` module::
 
     import esp
