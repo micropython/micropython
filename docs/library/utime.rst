@@ -1,10 +1,10 @@
-:mod:`time` -- time related functions
+:mod:`utime` -- time related functions
 =====================================
 
-.. module:: time
+.. module:: utime
    :synopsis: time related functions
 
-The ``time`` module provides functions for getting the current time and date,
+The ``utime`` module provides functions for getting the current time and date,
 and for sleeping.
 
 Functions
