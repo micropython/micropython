@@ -30,7 +30,7 @@ UART_OS = 0
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
 	-fno-inline-functions \
-	-Wl,-EL -mlongcalls -mtext-section-literals \
+	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
@@ -48,7 +48,7 @@ CFLAGS += -g
 COPT = -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -mforce-l32 -DNDEBUG
+COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
@@ -199,3 +199,9 @@ $(BUILD)/firmware.elf: $(OBJ)
 #	$(call compile_c)
 
 include ../py/mkrules.mk
+
+axtls:
+	cd ../lib/axtls; cp config/upyconfig config/.config
+	cd ../lib/axtls; make oldconfig -B
+	cd ../lib/axtls; make clean
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" CFLAGS_EXTRA="$(CFLAGS_XTENSA)"
