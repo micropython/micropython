@@ -1,13 +1,19 @@
 MicroPython libraries
 =====================
 
+MicroPython-specific libraries
+------------------------------
+
 Functionality specific to the MicroPython implementation is available in
-the following library.
+the following libraries.
 
 .. toctree::
    :maxdepth: 1
 
+   machine.rst
    micropython.rst
+   network.rst
+   uctypes.rst
 
 Python standard libraries
 -------------------------
@@ -85,7 +91,6 @@ library.
       :maxdepth: 1
     
       ubinascii.rst
-      uctypes.rst
       uhashlib.rst
       uheapq.rst
       ujson.rst
@@ -100,7 +105,6 @@ library.
       :maxdepth: 1
 
       ubinascii.rst
-      uctypes.rst
       uhashlib.rst
       uheapq.rst
       ujson.rst
@@ -120,7 +124,6 @@ library.
       :maxdepth: 2
 
       pyb.rst
-      network.rst
 
 .. only:: port_wipy
 
@@ -143,8 +146,6 @@ library.
    .. toctree::
       :maxdepth: 2
 
-      machine.rst
-      network.rst
       wipy.rst
 
 
@@ -158,6 +159,4 @@ library.
    .. toctree::
       :maxdepth: 2
 
-      network.rst
       esp.rst
-      machine.rst
