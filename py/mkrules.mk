@@ -58,14 +58,14 @@ $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
 
-# The following rule uses | to create an order only prereuisite. Order only
+# The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
 # checking to be performed.
 #
 # We don't know which source files actually need the generated.h (since
 # it is #included from str.h). The compiler generated dependencies will cause
 # the right .o's to get recompiled if the generated.h file changes. Adding
-# an order-only dependendency to all of the .o's will cause the generated .h
+# an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 
