@@ -30,13 +30,13 @@ library.
        cmath.rst
        gc.rst
        math.rst
-       os.rst
        select.rst
        sys.rst
        ubinascii.rst
        uhashlib.rst
        uheapq.rst
        ujson.rst
+       uos.rst
        ure.rst
        usocket.rst
        ustruct.rst
@@ -51,13 +51,13 @@ library.
        cmath.rst
        gc.rst
        math.rst
-       os.rst
        select.rst
        sys.rst
        ubinascii.rst
        uhashlib.rst
        uheapq.rst
        ujson.rst
+       uos.rst
        ure.rst
        usocket.rst
        ustruct.rst
@@ -70,11 +70,11 @@ library.
        :maxdepth: 1
 
        gc.rst
-       os.rst
        select.rst
        sys.rst
        ubinascii.rst
        ujson.rst
+       uos.rst
        ure.rst
        usocket.rst
        ussl.rst
@@ -87,12 +87,12 @@ library.
 
        gc.rst
        math.rst
-       os.rst
        sys.rst
        ubinascii.rst
        uhashlib.rst
        uheapq.rst
        ujson.rst
+       uos.rst
        ure.rst
        usocket.rst
        ustruct.rst
