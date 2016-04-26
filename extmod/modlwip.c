@@ -379,7 +379,10 @@ STATIC mp_uint_t lwip_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     pbuf_free(p);
 
-    if (err != ERR_OK) {
+    // udp_sendto can return 1 on occasion for ESP8266 port.  It's not known why
+    // but it seems that the send actually goes through without error in this case.
+    // So we treat such cases as a success until further investigation.
+    if (err != ERR_OK && err != 1) {
         *_errno = error_lookup_table[-err];
         return -1;
     }
