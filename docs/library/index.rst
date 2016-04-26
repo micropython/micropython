@@ -6,20 +6,6 @@ The following standard Python libraries are built in to MicroPython.
 For additional libraries, please download them from the `micropython-lib repository
 <https://github.com/micropython/micropython-lib>`_.
 
-MicroPython-specific libraries
-------------------------------
-
-Functionality specific to the MicroPython implementation is available in
-the following libraries.
-
-.. toctree::
-   :maxdepth: 1
-
-   machine.rst
-   micropython.rst
-   network.rst
-   uctypes.rst
-
 Python standard libraries and micro-libraries
 ---------------------------------------------
 
@@ -112,6 +98,21 @@ library.
        ustruct.rst
        utime.rst
        uzlib.rst
+
+
+MicroPython-specific libraries
+------------------------------
+
+Functionality specific to the MicroPython implementation is available in
+the following libraries.
+
+.. toctree::
+   :maxdepth: 1
+
+   machine.rst
+   micropython.rst
+   network.rst
+   uctypes.rst
 
 
 .. only:: port_pyboard
