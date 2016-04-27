@@ -43,7 +43,7 @@ TARGET_NAME = $(RELEASES_PATH)/micropython_duo_firmware
 include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
 # include MicroPython make definitions
 include ../py/py.mk
