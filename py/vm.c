@@ -1144,7 +1144,8 @@ yield:
                     if (ret_kind == MP_VM_RETURN_NORMAL) {
                         // Pop exhausted gen
                         sp--;
-                        if (ret_value == MP_OBJ_NULL) {
+                        // TODO: When ret_value can be MP_OBJ_NULL here??
+                        if (ret_value == MP_OBJ_NULL || ret_value == MP_OBJ_STOP_ITERATION) {
                             // Optimize StopIteration
                             // TODO: get StopIteration's value
                             PUSH(mp_const_none);
