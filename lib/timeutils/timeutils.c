@@ -32,7 +32,7 @@
 // LEAPOCH corresponds to 2000-03-01, which is a mod-400 year, immediately
 // after Feb 29. We calculate seconds as a signed integer relative to that.
 //
-// Our timebase is is relative to 2000-01-01.
+// Our timebase is relative to 2000-01-01.
 
 #define LEAPOCH ((31 + 29) * 86400)
 
