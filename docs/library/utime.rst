@@ -100,9 +100,10 @@ Functions
    if you need calendar time, ``localtime()`` without argument is the best possibility
    to get it.
 
-   .. note::
+   .. admonition:: Difference to CPython
+      :class: attention
 
-      **CPython difference:** In CPython, this function returns number of
+      In CPython, this function returns number of
       seconds since Unix epoch, 1970-01-01 00:00 UTC, as a floating-point,
       usually having microsecond precision. With MicroPython, only Unix port
       uses the same reference point, and if floating-point precision allows,
