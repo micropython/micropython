@@ -204,4 +204,4 @@ axtls:
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" CFLAGS_EXTRA="$(CFLAGS_XTENSA)"
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_"
