@@ -36,7 +36,9 @@ Functions
     .. function:: sleep(seconds)
     
        Sleep for the given number of seconds.  Seconds can be a floating-point number to
-       sleep for a fractional number of seconds.
+       sleep for a fractional number of seconds. Note that other MicroPython ports may
+       not accept floating-point argument, for compatibility with them use ``sleep_ms()``
+       and ``sleep_us()`` functions.
 
 .. only:: port_wipy
 
