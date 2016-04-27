@@ -1,5 +1,5 @@
 :mod:`utime` -- time related functions
-=====================================
+======================================
 
 .. module:: utime
    :synopsis: time related functions

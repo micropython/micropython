@@ -1,5 +1,5 @@
 :mod:`uos` -- basic "operating system" services
-==============================================
+===============================================
 
 .. module:: uos
    :synopsis: basic "operating system" services
