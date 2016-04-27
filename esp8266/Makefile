@@ -79,6 +79,7 @@ SRC_C = \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
+	axtls_helpers.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
