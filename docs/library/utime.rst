@@ -90,4 +90,23 @@ Functions
 
 .. function:: time()
 
-   Returns the number of seconds, as an integer, since 1/1/2000.
+   Returns the number of seconds, as an integer, since a port-specific reference point
+   in time (for embedded boards without RTC, usually since power up or reset). If you
+   want to develop portable MicroPython application, you should not rely on this
+   function to provide higher than second precision, or on a specific reference time
+   point. If you need higher precision, use ``ticks_ms()`` and ``ticks_us()`` functions,
+   if you need calendar time, ``localtime()`` without argument is the best possibility
+   to get it.
+
+   .. note::
+
+      **CPython difference:** In CPython, this function returns number of
+      seconds since Unix epoch, 1970-01-01 00:00 UTC, as a floating-point,
+      usually having microsecond precision. With MicroPython, only Unix port
+      uses the same reference point, and if floating-point precision allows,
+      returns sub-second precision. Embedded hardware usually doesn't have
+      floating-point precision to represent both long time ranges and subsecond
+      precision, so use integer value with second precision. Most embedded
+      hardware also lacks battery-powered RTC, so returns number of seconds
+      since last power-up or from other relative, hardware-specific point
+      (e.g. reset).
