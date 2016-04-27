@@ -335,6 +335,14 @@ For example::
         point and has a valid IP address.  In AP mode returns ``True`` when a
         station is connected. Returns ``False`` otherwise.
 
+    .. method:: wlan.ifconfig([(ip, subnet, gateway, dns)])
+
+       Get/set IP-level network interface paremeters: IP address, subnet mask,
+       gateway and DNS server. When called with no arguments, this method returns
+       a 4-tuple with the above information. To set the above values, pass a
+       4-tuple with the required information.  For example::
+
+        nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
 .. only:: port_wipy
 
