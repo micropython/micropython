@@ -31,20 +31,20 @@ Functions
    which expresses a time as per localtime. It returns an integer which is
    the number of seconds since Jan 1, 2000.
 
-.. only:: port_pyboard
+.. only:: port_unix or port_pyboard or port_esp8266
 
     .. function:: sleep(seconds)
     
        Sleep for the given number of seconds.  Seconds can be a floating-point number to
        sleep for a fractional number of seconds.
 
-.. only:: port_esp8266 or port_wipy
+.. only:: port_wipy
 
     .. function:: sleep(seconds)
     
        Sleep for the given number of seconds.
 
-.. only:: port_wipy or port_pyboard
+.. only:: port_unix or port_pyboard or port_wipy or port_esp8266
 
     .. function::  sleep_ms(ms)
 
@@ -64,9 +64,13 @@ Functions
 
        Just like ``ticks_ms`` above, but in microseconds.
 
+.. only:: port_wipy or port_pyboard
+
     .. function::  ticks_cpu()
 
        Similar to ``ticks_ms`` and ``ticks_us``, but with higher resolution (usually CPU clocks).
+
+.. only:: port_unix or port_pyboard or port_wipy or port_esp8266
 
     .. function::  ticks_diff(old, new)
 
