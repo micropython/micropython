@@ -171,9 +171,10 @@ Methods
        The socket must be in blocking mode; it can have a timeout, but the file object’s internal buffer
        may end up in a inconsistent state if a timeout occurs.
 
-       .. note::
+       .. admonition:: Difference to CPython
+          :class: attention
 
-          **CPython difference:** closing the file object returned by makefile() WILL close the 
+          Closing the file object returned by makefile() WILL close the
           original socket as well.
 
     .. method:: socket.read(size)

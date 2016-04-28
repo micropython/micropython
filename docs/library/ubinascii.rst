@@ -12,7 +12,7 @@ Functions
 
 .. function:: hexlify(data, [sep])
 
-   Convert binary data to hexadecimal representation. Return bytes string.
+   Convert binary data to hexadecimal representation. Returns bytes string.
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -22,13 +22,13 @@ Functions
 
 .. function:: unhexlify(data)
 
-   Convert hexadecimal data to binary representation. Return bytes string.
+   Convert hexadecimal data to binary representation. Returns bytes string.
    (i.e. inverse of hexlify)
 
 .. function:: a2b_base64(data)
 
-   Convert Base64-encoded data to binary representation. Return bytes string.
+   Convert Base64-encoded data to binary representation. Returns bytes string.
 
 .. function:: b2a_base64(data)
 
-   Encode binary data in Base64 format. Return string.
+   Encode binary data in Base64 format. Returns string.

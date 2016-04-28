@@ -43,6 +43,7 @@
 #include "lwip/udp.h"
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
+#include "lwip/tcp_impl.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -264,7 +265,7 @@ static inline void poll_sockets(void) {
 
 static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     if (socket->callback != MP_OBJ_NULL) {
-        mp_call_function_1(socket->callback, socket);
+        mp_call_function_1_protected(socket->callback, socket);
     }
 }
 
@@ -379,7 +380,10 @@ STATIC mp_uint_t lwip_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 
     pbuf_free(p);
 
-    if (err != ERR_OK) {
+    // udp_sendto can return 1 on occasion for ESP8266 port.  It's not known why
+    // but it seems that the send actually goes through without error in this case.
+    // So we treat such cases as a success until further investigation.
+    if (err != ERR_OK && err != 1) {
         *_errno = error_lookup_table[-err];
         return -1;
     }
@@ -966,7 +970,7 @@ STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     if (timeout_in == mp_const_none) {
         timeout = -1;
     } else {
-        #if MICROPY_PY_BUILTIN_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         timeout = 1000 * mp_obj_get_float(timeout_in);
         #else
         timeout = 1000 * mp_obj_get_int(timeout_in);
@@ -1197,6 +1201,14 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_getaddrinfo_obj, lwip_getaddrinfo);
 
+// Debug functions
+
+STATIC mp_obj_t lwip_print_pcbs() {
+    tcp_debug_print_pcbs();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
+
 #ifdef MICROPY_PY_LWIP
 
 STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
@@ -1204,6 +1216,7 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset), (mp_obj_t)&mod_lwip_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_lwip_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&lwip_getaddrinfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_print_pcbs), (mp_obj_t)&lwip_print_pcbs_obj },
     // objects
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&lwip_socket_type },
 #ifdef MICROPY_PY_LWIP_SLIP

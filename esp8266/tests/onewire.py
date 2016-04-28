@@ -1,5 +1,3 @@
-import time
-import pyb
 import _onewire as _ow
 
 class OneWire:
@@ -127,7 +125,9 @@ class DS18B20:
 
 # connect 1-wire temp sensors to GPIO12 for this test
 def test():
-    dat = pyb.Pin(12)
+    import time
+    import machine
+    dat = machine.Pin(12)
     ow = OneWire(dat)
 
     ds = DS18B20(ow)
@@ -141,7 +141,3 @@ def test():
         for rom in roms:
             print(ds.get_temp(rom), end=' ')
         print()
-
-#pyb.freq(80000000)
-#pyb.freq(160000000)
-test()

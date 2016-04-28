@@ -5,7 +5,6 @@ qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 This script works with Python 2.6, 2.7, 3.3 and 3.4.
 """
 
-import sys
 import re
 import argparse
 import os
@@ -15,27 +14,22 @@ import os
 QSTRING_BLACK_LIST = {'NULL', 'number_of', }
 
 
-def debug(message):
-    #sys.stderr.write("%s\n" % message)
-    pass
-
-
 def write_out(fname, output):
     if output:
-        fname = fname.replace("/", "__").replace("..", "@@")
+        for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
+            fname = fname.replace(m, r)
         with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
             f.write("\n".join(output) + "\n")
 
 def process_file(f):
     output = []
     last_fname = None
-    outf = None
     for line in f:
-        if line and line[0:2] == "# ":
-            comp = line.split()
-            fname = comp[2]
-            assert fname[0] == '"' and fname[-1] == '"'
-            fname = fname[1:-1]
+        # match gcc-like output (# n "file") and msvc-like output (#line n "file")
+        if line and (line[0:2] == "# " or line[0:5] == "#line"):
+            m = re.match(r"#[line]*\s\d+\s\"([^\"]+)\"", line)
+            assert m is not None
+            fname = m.group(1)
             if fname[0] == "/" or not fname.endswith(".c"):
                 continue
             if fname != last_fname:
@@ -77,6 +71,11 @@ def cat_together():
         pass
     if old_hash != new_hash:
         print("QSTR updated")
+        try:
+            # rename below might fail if file exists
+            os.remove(args.output_file)
+        except:
+            pass
         os.rename(args.output_dir + "/out", args.output_file)
         with open(args.output_file + ".hash", "w") as f:
             f.write(new_hash)

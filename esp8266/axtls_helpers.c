@@ -1,10 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Josef Gajdusek
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +24,43 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/obj.h"
-#include "py/nlr.h"
+#include <stdint.h>
+#include <stdio.h>
+#include "py/mphal.h"
+#include "py/gc.h"
 
-void call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_call_function_1(fun, arg);
-        nlr_pop();
-    } else {
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-    }
+// Functions for axTLS
+
+void *malloc(size_t size) {
+    return gc_alloc(size, false);
+}
+void free(void *ptr) {
+    gc_free(ptr);
+}
+void *calloc(size_t nmemb, size_t size) {
+    return m_malloc0(nmemb * size);
+}
+void *realloc(void *ptr, size_t size) {
+    return gc_realloc(ptr, size, true);
+}
+void abort_(void) {
+    printf("Aborted\n");
 }
 
-void call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_call_function_2(fun, arg1, arg2);
-        nlr_pop();
-    } else {
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-    }
+#define PLATFORM_HTONL(_n) ((uint32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+#undef htonl
+#undef ntohl
+uint32_t ntohl(uint32_t netlong) {
+    return PLATFORM_HTONL(netlong);
+}
+uint32_t htonl(uint32_t netlong) {
+    return PLATFORM_HTONL(netlong);
+}
+
+time_t time(time_t *t) {
+    return mp_hal_ticks_ms() / 1000;
+}
+
+time_t mktime(void *tm) {
+    return 0;
 }

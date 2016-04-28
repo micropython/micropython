@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_i2c.h"
-#include "utils.h"
 #include "modpyb.h"
 #include "modpybrtc.h"
 
@@ -137,7 +136,7 @@ STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, 
 
 STATIC void esp_timer_cb(void *arg) {
     esp_timer_obj_t *self = arg;
-    call_function_1_protected(self->callback, self);
+    mp_call_function_1_protected(self->callback, self);
 }
 
 STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

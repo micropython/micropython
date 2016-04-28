@@ -1,7 +1,7 @@
-:mod:`os` -- basic "operating system" services
-==============================================
+:mod:`uos` -- basic "operating system" services
+===============================================
 
-.. module:: os
+.. module:: uos
    :synopsis: basic "operating system" services
 
 The ``os`` module contains functions for filesystem access and ``urandom``

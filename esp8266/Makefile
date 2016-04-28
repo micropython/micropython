@@ -3,6 +3,8 @@ include ../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
+MICROPY_PY_USSL = 1
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -30,14 +32,14 @@ UART_OS = 0
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
 	-fno-inline-functions \
-	-Wl,-EL -mlongcalls -mtext-section-literals \
+	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
-	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
+	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
+LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
@@ -48,7 +50,7 @@ CFLAGS += -g
 COPT = -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -mforce-l32 -DNDEBUG
+COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
@@ -76,10 +78,10 @@ SRC_C = \
 	moduos.c \
 	modmachine.c \
 	modonewire.c \
-	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
+	axtls_helpers.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
@@ -200,3 +202,9 @@ $(BUILD)/firmware.elf: $(OBJ)
 #	$(call compile_c)
 
 include ../py/mkrules.mk
+
+axtls:
+	cd ../lib/axtls; cp config/upyconfig config/.config
+	cd ../lib/axtls; make oldconfig -B
+	cd ../lib/axtls; make clean
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_"

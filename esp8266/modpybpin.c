@@ -37,7 +37,6 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "modpyb.h"
-#include "utils.h"
 
 #define GET_TRIGGER(phys_port) \
     GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))
@@ -105,7 +104,7 @@ void pin_intr_handler(uint32_t status) {
         if (status & 1) {
             mp_obj_t handler = MP_STATE_PORT(pin_irq_handler)[p];
             if (handler != MP_OBJ_NULL) {
-                call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
+                mp_call_function_1_protected(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
             }
         }
     }

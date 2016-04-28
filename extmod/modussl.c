@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -54,21 +55,18 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock) {
     o->sock = sock;
 
     uint32_t options = SSL_SERVER_VERIFY_LATER;
-    if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL)
-    {
-        fprintf(stderr, "Error: Client context is invalid\n");
-        assert(0);
+    if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
     }
 
     o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0);
 
     int res;
     /* check the return status */
-    if ((res = ssl_handshake_status(o->ssl_sock)) != SSL_OK)
-    {
+    if ((res = ssl_handshake_status(o->ssl_sock)) != SSL_OK) {
         printf("ssl_handshake_status: %d\n", res);
         ssl_display_error(res);
-        assert(0);
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EIO)));
     }
 
     return o;

@@ -300,6 +300,9 @@ For example::
 
             (ssid, bssid, channel, RSSI, authmode, hidden)
 
+        `bssid` is hardware address of an access point, in binary form, returned as
+        bytes object. You can use ``ubinascii.hexlify()`` to convert it to ASCII form.
+
         There are five values for authmode:
 
             * 0 -- open
@@ -331,6 +334,45 @@ For example::
         In case of STA mode, returns ``True`` if connected to a wifi access
         point and has a valid IP address.  In AP mode returns ``True`` when a
         station is connected. Returns ``False`` otherwise.
+
+    .. method:: wlan.ifconfig([(ip, subnet, gateway, dns)])
+
+       Get/set IP-level network interface paremeters: IP address, subnet mask,
+       gateway and DNS server. When called with no arguments, this method returns
+       a 4-tuple with the above information. To set the above values, pass a
+       4-tuple with the required information.  For example::
+
+        nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+
+    .. method:: wlan.config('param')
+    .. method:: wlan.config(param=value, ...)
+
+       Get or set general network interface parameters. These methods allow to work
+       with additional parameters beyond standard IP configuration (as dealt with by
+       ``wlan.ifconfig()``). These include network-specific and hardware-specific
+       parameters. For setting parameters, keyword argument syntax should be used,
+       multiple parameters can be set at once. For querying, paremeters name should
+       be quoted as a string, and only one paramter can be queries at time::
+
+        # Set WiFi access point name (formally known as ESSID) and WiFi channel
+        ap.config(essid='My AP', channel=11)
+        # Queey params one by one
+        print(ap.config('essid'))
+        print(ap.config('channel'))
+
+       Following are commonly supported parameters (availability of a specific parameter
+       depends on network technology type, driver, and MicroPython port).
+
+       =========  ===========
+       Parameter  Description
+       =========  ===========
+       essid      WiFi access point name (string)
+       channel    WiFi channel (integer)
+       hidden     Whether ESSID is hidden (boolean)
+       authmode   Authentication mode supported (enumeration, see module constants)
+       password   Access password (string)
+       =========  ===========
+
 
 
 .. only:: port_wipy

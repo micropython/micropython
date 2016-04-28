@@ -100,6 +100,7 @@ PY_O_BASENAME = \
 	parsenum.o \
 	emitglue.o \
 	runtime.o \
+	runtime_utils.o \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \

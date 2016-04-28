@@ -1,10 +1,10 @@
-:mod:`time` -- time related functions
-=====================================
+:mod:`utime` -- time related functions
+======================================
 
-.. module:: time
+.. module:: utime
    :synopsis: time related functions
 
-The ``time`` module provides functions for getting the current time and date,
+The ``utime`` module provides functions for getting the current time and date,
 and for sleeping.
 
 Functions
@@ -31,20 +31,22 @@ Functions
    which expresses a time as per localtime. It returns an integer which is
    the number of seconds since Jan 1, 2000.
 
-.. only:: port_pyboard
+.. only:: port_unix or port_pyboard or port_esp8266
 
     .. function:: sleep(seconds)
     
        Sleep for the given number of seconds.  Seconds can be a floating-point number to
-       sleep for a fractional number of seconds.
+       sleep for a fractional number of seconds. Note that other MicroPython ports may
+       not accept floating-point argument, for compatibility with them use ``sleep_ms()``
+       and ``sleep_us()`` functions.
 
-.. only:: port_esp8266 or port_wipy
+.. only:: port_wipy
 
     .. function:: sleep(seconds)
     
        Sleep for the given number of seconds.
 
-.. only:: port_wipy or port_pyboard
+.. only:: port_unix or port_pyboard or port_wipy or port_esp8266
 
     .. function::  sleep_ms(ms)
 
@@ -64,9 +66,13 @@ Functions
 
        Just like ``ticks_ms`` above, but in microseconds.
 
+.. only:: port_wipy or port_pyboard
+
     .. function::  ticks_cpu()
 
        Similar to ``ticks_ms`` and ``ticks_us``, but with higher resolution (usually CPU clocks).
+
+.. only:: port_unix or port_pyboard or port_wipy or port_esp8266
 
     .. function::  ticks_diff(old, new)
 
@@ -86,4 +92,24 @@ Functions
 
 .. function:: time()
 
-   Returns the number of seconds, as an integer, since 1/1/2000.
+   Returns the number of seconds, as an integer, since a port-specific reference point
+   in time (for embedded boards without RTC, usually since power up or reset). If you
+   want to develop portable MicroPython application, you should not rely on this
+   function to provide higher than second precision, or on a specific reference time
+   point. If you need higher precision, use ``ticks_ms()`` and ``ticks_us()`` functions,
+   if you need calendar time, ``localtime()`` without argument is the best possibility
+   to get it.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      In CPython, this function returns number of
+      seconds since Unix epoch, 1970-01-01 00:00 UTC, as a floating-point,
+      usually having microsecond precision. With MicroPython, only Unix port
+      uses the same reference point, and if floating-point precision allows,
+      returns sub-second precision. Embedded hardware usually doesn't have
+      floating-point precision to represent both long time ranges and subsecond
+      precision, so use integer value with second precision. Most embedded
+      hardware also lacks battery-powered RTC, so returns number of seconds
+      since last power-up or from other relative, hardware-specific point
+      (e.g. reset).
