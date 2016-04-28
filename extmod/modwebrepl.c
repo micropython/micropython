@@ -54,6 +54,8 @@ struct webrepl_file {
     char fname[64];
 } __attribute__((packed));
 
+enum { PUT_FILE = 1, GET_FILE, LIST_DIR };
+
 typedef struct _mp_obj_webrepl_t {
     mp_obj_base_t base;
     mp_obj_t sock;
@@ -96,6 +98,52 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return o;
 }
 
+STATIC void handle_op(mp_obj_webrepl_t *self) {
+    mp_obj_t open_args[2] = {
+        mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname), false),
+        MP_OBJ_NEW_QSTR(MP_QSTR_rb)
+    };
+
+    if (self->hdr.type == PUT_FILE) {
+        open_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_wb);
+    }
+
+    self->cur_file = mp_builtin_open(2, open_args, (mp_map_t*)&mp_const_empty_map);
+    const mp_stream_p_t *file_stream =
+        mp_get_stream_raise(self->cur_file, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+
+    #if 0
+    struct mp_stream_seek_t seek = { .offset = self->hdr.offset, .whence = 0 };
+    int err;
+    mp_uint_t res = file_stream->ioctl(self->cur_file, MP_STREAM_SEEK, (uintptr_t)&seek, &err);
+    assert(res != MP_STREAM_ERROR);
+    #endif
+
+    write_webrepl_resp(self->sock, 0);
+
+    if (self->hdr.type == PUT_FILE) {
+        self->data_to_recv = self->hdr.size;
+    } else if (self->hdr.type == GET_FILE) {
+        byte readbuf[256];
+        int err;
+        // TODO: It's not ideal that we block connection while sending file
+        // and don't process any input.
+        while (1) {
+            mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf, sizeof(readbuf), &err);
+            assert(out_sz != MP_STREAM_ERROR);
+            write_webrepl(self->sock, &out_sz, 2);
+            if (out_sz == 0) {
+                break;
+            }
+            DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
+            write_webrepl(self->sock, readbuf, out_sz);
+        }
+
+        write_webrepl_resp(self->sock, 0);
+        self->hdr_to_recv = sizeof(struct webrepl_file);
+    }
+}
+
 STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     // We know that os.dupterm always calls with size = 1
     assert(size == 1);
@@ -130,21 +178,7 @@ STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *
 
         DEBUG_printf("webrepl: op: %d, file: %s, chunk @%x, sz=%d\n", self->hdr.type, self->hdr.fname, (uint32_t)self->hdr.offset, self->hdr.size);
 
-        // Process header
-        mp_obj_t open_args[2] = {
-            mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname), false),
-            MP_OBJ_NEW_QSTR(MP_QSTR_wb)
-        };
-
-        self->cur_file = mp_builtin_open(2, open_args, (mp_map_t*)&mp_const_empty_map);
-        const mp_stream_p_t *file_stream = mp_get_stream_raise(self->cur_file, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
-        struct mp_stream_seek_t seek = { .offset = self->hdr.offset, .whence = 0 };
-        int err;
-        mp_uint_t res = file_stream->ioctl(self->cur_file, MP_STREAM_SEEK, (uintptr_t)&seek, &err);
-        assert(res != MP_STREAM_ERROR);
-
-        write_webrepl_resp(self->sock, 0);
-        self->data_to_recv = self->hdr.size;
+        handle_op(self);
 
         *errcode = EAGAIN;
         return MP_STREAM_ERROR;
