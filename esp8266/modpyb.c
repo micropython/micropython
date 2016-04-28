@@ -26,13 +26,14 @@
 
 #include <stdio.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
 #include "py/gc.h"
-#include "py/mphal.h"
 #include "gccollect.h"
-#include "user_interface.h"
 #include "modpyb.h"
+
+// The pyb module no longer exists since all functionality now appears
+// elsewhere, in more standard places (eg time, machine modules).  The
+// only remaining function is pyb.info() which has been moved to the
+// esp module, pending deletion/renaming/moving elsewher.
 
 STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
     // print info about memory
@@ -75,78 +76,4 @@ STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
-
-STATIC mp_obj_t pyb_sync(void) {
-    //storage_flush();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
-
-STATIC mp_obj_t pyb_millis(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
-
-STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
-    uint32_t startMillis = mp_obj_get_int(start);
-    uint32_t currMillis = mp_hal_ticks_ms();
-    return MP_OBJ_NEW_SMALL_INT((currMillis - startMillis) & 0x3fffffff);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
-
-STATIC mp_obj_t pyb_micros(void) {
-    return MP_OBJ_NEW_SMALL_INT(system_get_time());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
-
-STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
-    uint32_t startMicros = mp_obj_get_int(start);
-    uint32_t currMicros = system_get_time();
-    return MP_OBJ_NEW_SMALL_INT((currMicros - startMicros) & 0x3fffffff);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
-
-STATIC mp_obj_t pyb_delay(mp_obj_t ms_in) {
-    mp_int_t ms = mp_obj_get_int(ms_in);
-    if (ms >= 0) {
-        mp_hal_delay_ms(ms);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_delay_obj, pyb_delay);
-
-STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
-    mp_int_t usec = mp_obj_get_int(usec_in);
-    if (usec >= 0) {
-        mp_hal_delay_us(usec);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
-
-STATIC const mp_map_elem_t pyb_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&pyb_micros_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros), (mp_obj_t)&pyb_elapsed_micros_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&pyb_delay_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&pyb_udelay_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&pyb_sync_obj },
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin), (mp_obj_t)&pyb_pin_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pyb_adc_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC), (mp_obj_t)&pyb_rtc_type },
-};
-
-STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
-
-const mp_obj_module_t pyb_module = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_pyb,
-    .globals = (mp_obj_dict_t*)&pyb_module_globals,
-};
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
