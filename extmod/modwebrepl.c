@@ -144,7 +144,17 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     }
 }
 
+STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode);
+
 STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+    mp_uint_t out_sz;
+    do {
+        out_sz = _webrepl_read(self_in, buf, size, errcode);
+    } while (out_sz == -2);
+    return out_sz;
+}
+
+STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     // We know that os.dupterm always calls with size = 1
     assert(size == 1);
     mp_obj_webrepl_t *self = self_in;
@@ -171,8 +181,7 @@ STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *
             }
             self->hdr_to_recv -= hdr_sz;
             if (self->hdr_to_recv != 0) {
-                *errcode = EAGAIN;
-                return MP_STREAM_ERROR;
+                return -2;
             }
         }
 
@@ -180,8 +189,7 @@ STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *
 
         handle_op(self);
 
-        *errcode = EAGAIN;
-        return MP_STREAM_ERROR;
+        return -2;
     }
 
     if (self->data_to_recv != 0) {
@@ -213,8 +221,7 @@ STATIC mp_uint_t webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *
         }
     }
 
-    *errcode = EAGAIN;
-    return MP_STREAM_ERROR;
+    return -2;
 }
 
 STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
