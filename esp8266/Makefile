@@ -57,6 +57,7 @@ endif
 SRC_C = \
 	strtoll.c \
 	main.c \
+	help.c \
 	esp_mphal.c \
 	gccollect.c \
 	lexerstr32.c \
@@ -116,6 +117,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/pyhelp.c \
 	utils/printf.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
