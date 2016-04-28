@@ -93,19 +93,21 @@ INC += -I../lib/timeutils
 LINKER_FILE = libs/linker_scripts/gcc/linker.ld
 
 # warnning flags
-WARNFLAGS += -Wall -Wextra -Wno-switch -Wno-error=deprecated-declarations -Werror=implicit-function-declaration -fno-strict-aliasing \
-             -Wno-conversion -Wno-unused-variable -Wno-unused-parameter -Wno-unused-function -Wno-unused-value
+WARNFLAGS += -Wall -Wno-switch -Wno-error=deprecated-declarations -Werror=implicit-function-declaration -fno-strict-aliasing \
+             -Wno-conversion -Wno-unused-variable -Wno-unused-parameter -Wno-unused-function -Wno-unused-value -Wdouble-promotion
 
 # optimize flags
 OPTIMIZEFLAGS += -Os -ffunction-sections -fdata-sections -fno-builtin-malloc -fno-builtin-free -fno-builtin-realloc \
                  -fno-builtin -fmessage-length=0 -fno-strict-aliasing -fno-common -fno-exceptions -flto -fno-fat-lto-objects \
-                 -Wl,--allow-multiple-definition --param inline-unit-growth=6
+                 -Wl,--allow-multiple-definition --param inline-unit-growth=6 -fsingle-precision-constant
 
 # achitecture flags
 ARCHFLAGS += -mtune=cortex-m3 -mcpu=cortex-m3 -mthumb
 
 # debug flags
+ifdef DEBUG
 DEBUGFLAGS += -g3 -gdwarf-2
+endif 
 
 # libs and search path
 LIBS_DEPS += -lcommunication-dynalib -lhal-dynalib -lplatform -lrt-dynalib -lservices-dynalib \
@@ -207,8 +209,7 @@ DEPS_MAKEFILES = ./Makefile
 
 
 CFLAGS += $(OPTIMIZEFLAGS) $(ARCHFLAGS) $(WARNFLAGS) $(DEBUGFLAGS) $(INC) $(addprefix -D,$(GLOBAL_DEFINES))
-#CFLAGS += -MD -MP -MF $@.d
-CFLAGS += -std=gnu99
+CFLAGS += -std=gnu99 -nostdlib
 CPPFLAGS += $(filter-out -std=gnu99, $(CFLAGS)) -std=gnu++11
 LDFLAGS += $(OPTIMIZEFLAGS) $(ARCHFLAGS) -T$(LINKER_FILE) -Wl,-Map=$(@:.elf=.map),--cref
 
