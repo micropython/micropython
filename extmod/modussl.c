@@ -47,7 +47,7 @@ typedef struct _mp_obj_ssl_socket_t {
 
 STATIC const mp_obj_type_t ussl_socket_type;
 
-STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock) {
+STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
     o->base.type = &ussl_socket_type;
     o->buf = NULL;
@@ -59,14 +59,18 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
     }
 
-    o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0);
+    if (server_side) {
+        o->ssl_sock = ssl_server_new(o->ssl_ctx, (long)sock);
+    } else {
+        o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0);
 
-    int res;
-    /* check the return status */
-    if ((res = ssl_handshake_status(o->ssl_sock)) != SSL_OK) {
-        printf("ssl_handshake_status: %d\n", res);
-        ssl_display_error(res);
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EIO)));
+        int res;
+        /* check the return status */
+        if ((res = ssl_handshake_status(o->ssl_sock)) != SSL_OK) {
+            printf("ssl_handshake_status: %d\n", res);
+            ssl_display_error(res);
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EIO)));
+        }
     }
 
     return o;
@@ -151,14 +155,24 @@ STATIC const mp_obj_type_t ussl_socket_type = {
     .locals_dict = (mp_obj_t)&ussl_socket_locals_dict,
 };
 
-STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
-    assert(n_args == 1);
-    mp_obj_t sock = args[0];
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+
     // TODO: Check that sock implements stream protocol
-    return socket_new(sock);
+    mp_obj_t sock = pos_args[0];
+
+    struct {
+        mp_arg_val_t server_side;
+    } args;
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+
+    return socket_new(sock, args.server_side.u_bool);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ssl_wrap_socket_obj, 1, 6, mod_ssl_wrap_socket);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 
 STATIC const mp_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ussl) },
