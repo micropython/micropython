@@ -39,6 +39,8 @@ Major components in this repository:
   with an STM32F405RG (using ST's Cube HAL drivers).
 - minimal/ -- a minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
+- tests/ -- test framework and test scripts.
+- docs/ -- user documentation in Sphinx reStructuredText format.
 
 Additional components:
 - bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
@@ -48,10 +50,8 @@ Additional components:
 - pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
 - cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
 - esp8266/ -- an experimental port for ESP8266 WiFi modules.
-- tests/ -- test framework and test scripts.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
-- docs/ -- official documentation in RST format.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
 You will also need bash and Python (at least 2.7 or 3.3).
