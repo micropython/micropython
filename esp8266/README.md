@@ -41,6 +41,7 @@ dependencies.
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ cd esp8266
+$ make axtls
 $ make
 ```
 This will produce binary images in the `build/` subdirectory. If you install
