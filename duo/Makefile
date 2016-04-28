@@ -193,12 +193,6 @@ MP_SOURCE = \
     mphalport.c \
     pin.c \
     pin_defs_stmhal.c
-#    pin_named_pins.c \
-#    i2c.c \
-#    bufhelper.c \
-#    dma.c \
-#    irq.c \
-#    lcd.c
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/,$(HAL_SOURCES:.c=.o))
@@ -320,7 +314,7 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
-$(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
+$(HEADER_BUILD)/qstrdefs.generated.h: boards/mpconfigboard.h
 
 # Call make-pins.py to generate both pins_gen.c and pins.h
 $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR) $(GEN_PINS_AF_CONST): $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
