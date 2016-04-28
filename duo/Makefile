@@ -206,7 +206,7 @@ OBJ += $(BUILD)/pins.o
 DEPS_MAKEFILES = ./Makefile
 
 
-CFLAGS += $(OPTIMIZEFLAGS) -c $(ARCHFLAGS) $(WARNFLAGS) $(DEBUGFLAGS) $(INC) $(addprefix -D,$(GLOBAL_DEFINES))
+CFLAGS += $(OPTIMIZEFLAGS) $(ARCHFLAGS) $(WARNFLAGS) $(DEBUGFLAGS) $(INC) $(addprefix -D,$(GLOBAL_DEFINES))
 #CFLAGS += -MD -MP -MF $@.d
 CFLAGS += -std=gnu99
 CPPFLAGS += $(filter-out -std=gnu99, $(CFLAGS)) -std=gnu++11
@@ -258,7 +258,7 @@ endif
 $(BUILD)/%.cpp.o: %.cpp
 	$(Q)echo $(CXX) $<
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(CXX) $(CPPFLAGS)  $< -o $@
+	$(Q)$(CXX) $(CPPFLAGS) -c $< -o $@
 
 $(TARGET_NAME).elf: $(OBJ) $(LINKER_FILE) $(DEPS_MAKEFILES)
 	$(Q)echo LD $@ ...
