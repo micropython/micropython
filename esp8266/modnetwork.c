@@ -39,6 +39,7 @@
 #include "espconn.h"
 #include "spi_flash.h"
 #include "ets_alt_task.h"
+#include "../lib/lwip/src/include/lwip/dns.h"
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
@@ -210,19 +211,58 @@ STATIC mp_obj_t esp_mac(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_mac_obj, 1, 2, esp_mac);
 
-STATIC mp_obj_t esp_ifconfig(mp_obj_t self_in) {
-    wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     struct ip_info info;
+    ip_addr_t dns_addr;
     wifi_get_ip_info(self->if_id, &info);
-    mp_obj_t ifconfig[4] = {
+    if (n_args == 1) {
+        // get
+        dns_addr = dns_getserver(0);
+        mp_obj_t tuple[4] = {
             netutils_format_ipv4_addr((uint8_t*)&info.ip, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&info.netmask, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&info.gw, NETUTILS_BIG),
-            MP_OBJ_NEW_QSTR(MP_QSTR_), // no DNS server
-    };
-    return mp_obj_new_tuple(4, ifconfig);
+            netutils_format_ipv4_addr((uint8_t*)&dns_addr, NETUTILS_BIG),
+        };
+        return mp_obj_new_tuple(4, tuple);
+    } else {
+        // set
+        mp_obj_t *items;
+        bool restart_dhcp_server = false;
+        mp_obj_get_array_fixed_n(args[1], 4, &items);
+        netutils_parse_ipv4_addr(items[0], (void*)&info.ip, NETUTILS_BIG);
+        if (mp_obj_is_integer(items[1])) {
+            // allow numeric netmask, i.e.:
+            // 24 -> 255.255.255.0
+            // 16 -> 255.255.0.0
+            // etc...
+            uint32_t* m = (uint32_t*)&info.netmask;
+            *m = htonl(0xffffffff << (32 - mp_obj_get_int(items[1])));
+        } else {
+            netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
+        }
+        netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], (void*)&dns_addr, NETUTILS_BIG);
+        // To set a static IP we have to disable DHCP first
+        if (self->if_id == STATION_IF) {
+            wifi_station_dhcpc_stop();
+        } else {
+            restart_dhcp_server = wifi_softap_dhcps_status();
+            wifi_softap_dhcps_stop();
+        }
+        if (!wifi_set_ip_info(self->if_id, &info)) {
+          nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "wifi_set_ip_info() failed"));
+        }
+        dns_setserver(0, &dns_addr);
+        if (restart_dhcp_server) {
+            wifi_softap_dhcps_start();
+        }
+        return mp_const_none;
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_ifconfig_obj, esp_ifconfig);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
