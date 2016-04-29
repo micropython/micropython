@@ -58,6 +58,7 @@ struct webrepl_file {
 } __attribute__((packed));
 
 enum { PUT_FILE = 1, GET_FILE, LIST_DIR };
+enum { STATE_PASSWD, STATE_NORMAL };
 
 typedef struct _mp_obj_webrepl_t {
     mp_obj_base_t base;
@@ -69,6 +70,12 @@ typedef struct _mp_obj_webrepl_t {
     mp_obj_t cur_file;
 } mp_obj_webrepl_t;
 
+// These get passed to functions which aren't force-l32, so can't be const
+STATIC char passwd_prompt[] = "Password: ";
+STATIC char connected_prompt[] = "\r\nWebREPL connected\r\n>>> ";
+STATIC char denied_prompt[] = "\r\nAccess denied\r\n";
+
+STATIC char webrepl_passwd[10];
 
 static inline void close_meth(mp_obj_t stream) {
     mp_obj_t dest[2];
@@ -82,6 +89,13 @@ STATIC void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
     int old_opts = sock_stream->ioctl(websock, MP_STREAM_SET_DATA_OPTS, FRAME_BIN, &err);
     sock_stream->write(websock, buf, len, &err);
     sock_stream->ioctl(websock, MP_STREAM_SET_DATA_OPTS, old_opts, &err);
+}
+
+#define SSTR(s) s, sizeof(s) - 1
+STATIC void write_webrepl_str(mp_obj_t websock, const char *str, int sz) {
+    int err;
+    const mp_stream_p_t *sock_stream = mp_get_stream_raise(websock, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    sock_stream->write(websock, str, sz, &err);
 }
 
 STATIC void write_webrepl_resp(mp_obj_t websock, uint16_t code) {
@@ -98,6 +112,8 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     o->sock = args[0];
     o->hdr_to_recv = sizeof(struct webrepl_file);
     o->data_to_recv = 0;
+    o->state = STATE_PASSWD;
+    write_webrepl_str(args[0], SSTR(passwd_prompt));
     return o;
 }
 
@@ -168,6 +184,27 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
     if (out_sz == 0 || out_sz == MP_STREAM_ERROR) {
         return out_sz;
     }
+
+    if (self->state == STATE_PASSWD) {
+        char c = *(char*)buf;
+        if (c == '\r' || c == '\n') {
+            self->hdr.fname[self->data_to_recv] = 0;
+            DEBUG_printf("webrepl: entered password: %s\n", self->hdr.fname);
+
+            if (strcmp(self->hdr.fname, webrepl_passwd) != 0) {
+                write_webrepl_str(self->sock, SSTR(denied_prompt));
+                return 0;
+            }
+
+            self->state = STATE_NORMAL;
+            self->data_to_recv = 0;
+            write_webrepl_str(self->sock, SSTR(connected_prompt));
+        } else if (self->data_to_recv < 10) {
+            self->hdr.fname[self->data_to_recv++] = c;
+        }
+        return -2;
+    }
+
     // If last read data belonged to text record (== REPL)
     int err;
     if (sock_stream->ioctl(self->sock, MP_STREAM_GET_DATA_OPTS, 0, &err) == 1) {
@@ -239,9 +276,20 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
 
 STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_webrepl_t *self = self_in;
+    if (self->state == STATE_PASSWD) {
+        // Don't forward output until passwd is entered
+        return size;
+    }
     const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock, MP_STREAM_OP_WRITE);
     return stream_p->write(self->sock, buf, size, errcode);
 }
+
+STATIC mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
+    const char *passwd = mp_obj_str_get_str(passwd_in);
+    strncpy(webrepl_passwd, passwd, sizeof(webrepl_passwd));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_set_password_obj, webrepl_set_password);
 
 STATIC const mp_map_elem_t webrepl_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
@@ -265,6 +313,7 @@ STATIC const mp_obj_type_t webrepl_type = {
 STATIC const mp_map_elem_t webrepl_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_websocket) },
     { MP_OBJ_NEW_QSTR(MP_QSTR__webrepl), (mp_obj_t)&webrepl_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_password), (mp_obj_t)&webrepl_set_password_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(webrepl_module_globals, webrepl_module_globals_table);
