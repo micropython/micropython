@@ -36,7 +36,6 @@ def accept_conn(listen_sock):
     # notify REPL on socket incoming data
     cl.setsockopt(socket.SOL_SOCKET, 20, uos.dupterm_notify)
     uos.dupterm(ws)
-    print("WebREPL connected\n>>> ", end="")
 
 
 def stop():
