@@ -1,5 +1,4 @@
 import uos
-import builtins
 from flashbdev import bdev
 
 try:
