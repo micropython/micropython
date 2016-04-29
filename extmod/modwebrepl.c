@@ -124,19 +124,20 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     if (self->hdr.type == PUT_FILE) {
         self->data_to_recv = self->hdr.size;
     } else if (self->hdr.type == GET_FILE) {
-        byte readbuf[256];
+        byte readbuf[2 + 256];
         int err;
         // TODO: It's not ideal that we block connection while sending file
         // and don't process any input.
         while (1) {
-            mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf, sizeof(readbuf), &err);
+            mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf + 2, sizeof(readbuf) - 2, &err);
             assert(out_sz != MP_STREAM_ERROR);
-            write_webrepl(self->sock, &out_sz, 2);
+            readbuf[0] = out_sz;
+            readbuf[1] = out_sz >> 8;
+            DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
+            write_webrepl(self->sock, readbuf, 2 + out_sz);
             if (out_sz == 0) {
                 break;
             }
-            DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
-            write_webrepl(self->sock, readbuf, out_sz);
         }
 
         write_webrepl_resp(self->sock, 0);
