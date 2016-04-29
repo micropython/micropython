@@ -34,6 +34,9 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/builtin.h"
+#ifdef MICROPY_PY_WEBREPL_DELAY
+#include "py/mphal.h"
+#endif
 #include "extmod/modwebsocket.h"
 
 #if MICROPY_PY_WEBREPL
@@ -221,6 +224,14 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             DEBUG_printf("webrepl: Finished writing file\n");
             write_webrepl_resp(self->sock, 0);
         }
+
+        #ifdef MICROPY_PY_WEBREPL_DELAY
+        // Some platforms may have broken drivers and easily gets
+        // overloaded with modest traffic WebREPL file transfers
+        // generate. The basic workaround is a crude rate control
+        // done in such way.
+        mp_hal_delay_ms(MICROPY_PY_WEBREPL_DELAY);
+        #endif
     }
 
     return -2;
