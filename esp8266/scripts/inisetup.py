@@ -37,4 +37,10 @@ def setup():
     wifi()
     uos.VfsFat.mkfs(bdev)
     vfs = uos.VfsFat(bdev, "")
+    with open("/boot.py", "w") as f:
+        f.write("""\
+# This file is executed on every boot (including wake-boot from deepsleep)
+import webrepl
+#webrepl.start()
+""")
     return vfs
