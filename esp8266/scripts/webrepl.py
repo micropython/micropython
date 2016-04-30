@@ -4,6 +4,7 @@ import uos
 import network
 import websocket
 import websocket_helper
+import _webrepl
 
 listen_s = None
 client_s = None
@@ -32,6 +33,7 @@ def accept_conn(listen_sock):
     client_s = cl
     websocket_helper.server_handshake(cl)
     ws = websocket.websocket(cl, True)
+    ws = _webrepl._webrepl(ws)
     cl.setblocking(False)
     # notify REPL on socket incoming data
     cl.setsockopt(socket.SOL_SOCKET, 20, uos.dupterm_notify)
