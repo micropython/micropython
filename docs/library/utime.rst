@@ -5,7 +5,7 @@
    :synopsis: time related functions
 
 The ``utime`` module provides functions for getting the current time and date,
-and for sleeping.
+measuring time intervals, and for delays.
 
 **Time Epoch**: Unix port uses standard for POSIX systems epoch of
 1970-01-01 00:00:00 UTC. However, embedded ports use epoch of
