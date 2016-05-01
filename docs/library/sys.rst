@@ -33,6 +33,11 @@ Constants
 
    the byte order of the system ("little" or "big")
 
+.. data:: modules
+
+   Dictionary of loaded modules. On some ports, it may not include builtin
+   modules.
+
 .. data:: path
 
    a mutable list of directories to search for imported modules
