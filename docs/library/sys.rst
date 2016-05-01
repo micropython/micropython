@@ -13,9 +13,9 @@ Functions
    function raise as ``SystemExit`` exception. If an argument is given, its
    value given as an argument to ``SystemExit``.
 
-.. function:: print_exception(exc, [file])
+.. function:: print_exception(exc, file=sys.stdout)
 
-   Print exception with a traceback to a file-like object ``file`` (or
+   Print exception with a traceback to a file-like object `file` (or
    ``sys.stdout`` by default).
 
    .. admonition:: Difference to CPython
