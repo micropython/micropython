@@ -8,6 +8,8 @@
 #include "testsDAC.c"
 #include "testsADC.c"
 #include "testsGPIO.c"
+#include "tests485.c"
+
 
 /* Hardware connections for testing:
 
@@ -16,7 +18,7 @@ CH1    	->	GNDA
 CH2    	->	GNDA
 CH3    	->	GNDA
 GPIO8	->	R100 ohm	->	GPIO7
-
+RS485	-> echo terminal
 */
 
 void startTesting(void)
@@ -76,6 +78,12 @@ void startTesting(void)
     utest_startTest(testGPIO12,testGPIOcallbackSetup,"GPIO: enable callback Test");
     utest_startTest(testGPIO13,testGPIOcallbackSetup,"GPIO: interrupt Test");
     utest_startTest(testGPIO14,testGPIOcallbackSetup,"GPIO: enable invalid Test");
+
+
+    // rs485 Uart Library
+    utest_startTest(test485Uart1,testUartSetup,"485 UART: TX test");
+    utest_startTest(test485Uart2,testUartSetup,"485 UART: RX polling test");
+    utest_startTest(test485Uart3,testUartSetup,"485 UART: RX buffer test");
 
 
 	utest_printStatistics();
