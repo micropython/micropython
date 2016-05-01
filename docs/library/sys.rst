@@ -50,15 +50,15 @@ Constants
 
 .. data:: stderr
 
-   standard error (connected to USB VCP, and optional UART object)
+   standard error stream
 
 .. data:: stdin
 
-   standard input (connected to USB VCP, and optional UART object)
+   standard input stream
 
 .. data:: stdout
 
-   standard output (connected to USB VCP, and optional UART object)
+   standard output stream
 
 .. data:: version
 
