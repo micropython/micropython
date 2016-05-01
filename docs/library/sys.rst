@@ -34,6 +34,24 @@ Constants
 
    The byte order of the system ("little" or "big").
 
+.. data:: implementation
+
+   Object with information about the current Python implementation. For
+   MicroPython, it has following attributes:
+
+   * `name` - string "micropython"
+   * `version` - tuple (major, minor, micro), e.g. (1, 7, 0)
+
+   This object is the recommended way to distinguish MicroPython from other
+   Python implementations (note that it still may not exist in the very
+   minimal ports).
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      CPython mandates more attributes for this object, but the actual useful
+      bare minimum is implemented in MicroPython.
+
 .. data:: modules
 
    Dictionary of loaded modules. On some ports, it may not include builtin
