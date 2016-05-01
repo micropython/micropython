@@ -30,6 +30,7 @@ library.
        cmath.rst
        _collections.rst
        gc.rst
+       _io.rst
        math.rst
        select.rst
        sys.rst
@@ -52,6 +53,7 @@ library.
        cmath.rst
        _collections.rst
        gc.rst
+       _io.rst
        math.rst
        select.rst
        sys.rst
@@ -89,6 +91,7 @@ library.
 
        _collections.rst
        gc.rst
+       _io.rst
        math.rst
        sys.rst
        ubinascii.rst
