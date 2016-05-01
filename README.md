@@ -22,11 +22,12 @@ WARNING: this project is in beta stage and is subject to changes of the
 code-base, including project-wide name changes and API changes.
 
 MicroPython implements the entire Python 3.4 syntax (including exceptions,
-"with", "yield from", etc.).  The following core datatypes are provided:
-str (including basic Unicode support), bytes, bytearray, tuple, list, dict,
-set, frozenset, array.array, collections.namedtuple, classes and instances.
-Builtin modules include sys, time, and struct.  Note that only subset of
-Python 3.4 functionality implemented for the data types and modules.
+"with", "yield from", etc., and additionally "async" keyword from Python 3.5).
+The following core datatypes are provided: str (including basic Unicode
+support), bytes, bytearray, tuple, list, dict, set, frozenset, array.array,
+collections.namedtuple, classes and instances. Builtin modules include sys,
+time, and struct.  Note that only subset of Python 3.4 functionality
+implemented for the data types and modules.
 
 See the repository www.github.com/micropython/pyboard for the Micro
 Python board, the officially supported reference electronic circuit board.
@@ -39,6 +40,8 @@ Major components in this repository:
   with an STM32F405RG (using ST's Cube HAL drivers).
 - minimal/ -- a minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
+- tests/ -- test framework and test scripts.
+- docs/ -- user documentation in Sphinx reStructuredText format.
 
 Additional components:
 - bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
@@ -48,10 +51,8 @@ Additional components:
 - pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
 - cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
 - esp8266/ -- an experimental port for ESP8266 WiFi modules.
-- tests/ -- test framework and test scripts.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
-- docs/ -- official documentation in RST format.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
 You will also need bash and Python (at least 2.7 or 3.3).

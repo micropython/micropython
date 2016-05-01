@@ -30,3 +30,17 @@ factory reprogramming of MicroPython firmware (completely erase flash, followed
 by firmware programming).
 """)
         time.sleep(3)
+
+def setup():
+    check_bootsec()
+    print("Performing initial setup")
+    wifi()
+    uos.VfsFat.mkfs(bdev)
+    vfs = uos.VfsFat(bdev, "")
+    with open("/boot.py", "w") as f:
+        f.write("""\
+# This file is executed on every boot (including wake-boot from deepsleep)
+import webrepl
+#webrepl.start()
+""")
+    return vfs

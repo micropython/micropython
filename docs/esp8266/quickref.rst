@@ -235,10 +235,10 @@ The OneWire driver is implemented in software and works on all pins::
     ow = onewire.OneWire(Pin(12)) # create a OneWire bus on GPIO12
     ow.scan()               # return a list of devices on the bus
     ow.reset()              # reset the bus
-    ow.read_byte()          # read a byte
-    ow.read_bytes(5)        # read 5 bytes
-    ow.write_byte(0x12)     # write a byte on the bus
-    ow.write_bytes('123')   # write bytes on the bus
+    ow.readbyte()           # read a byte
+    ow.read(5)              # read 5 bytes
+    ow.writebyte(0x12)      # write a byte on the bus
+    ow.write('123')         # write bytes on the bus
     ow.select_rom(b'12345678') # select a specific device by its ROM code
 
 There is a specific driver for DS18B20 devices::
@@ -246,12 +246,14 @@ There is a specific driver for DS18B20 devices::
     import time
     ds = onewire.DS18B20(ow)
     roms = ds.scan()
-    ds.start_measure()
+    ds.convert_temp()
     time.sleep_ms(750)
     for rom in roms:
-        print(ds.get_temp(rom))
+        print(ds.read_temp(rom))
 
-Be sure to put a 4.7k pull-up resistor on the data line.
+Be sure to put a 4.7k pull-up resistor on the data line.  Note that
+the ``convert_temp()`` method must be called each time you want to
+sample the temperature.
 
 NeoPixel driver
 ---------------
@@ -267,10 +269,36 @@ Use the ``neopixel`` module::
     np.write()              # write data to all pixels
     r, g, b = np[0]         # get first pixel colour
 
-    import neopixel
-    neopixel.demo(np)       # run a demo
-
 For low-level driving of a NeoPixel::
 
     import esp
     esp.neopixel_write(pin, grb_buf, is800khz)
+
+WebREPL (web browser interactive prompt)
+----------------------------------------
+
+WebREPL (REPL over WebSockets, accessible via a web browser) is an
+experimental feature available in ESP8266 port. Download web client
+from https://github.com/micropython/webrepl , and start daemon using::
+
+    import webrepl
+    webrepl.start()
+
+(Release version will have it started on boot by default.)
+
+On a first connection, you will be prompted to set password for future
+sessions to use.
+
+The supported way to use WebREPL is by connecting to ESP8266 access point,
+but the daemon is also started on STA interface if it is active, so if your
+routers is set up and works correctly, you may also use it while connecting
+to your normal Internet access point (use ESP8266 AP connection method if
+face any issues).
+
+WebREPL is an experimental feature and a work in progress, and has known
+issues. There's also provision to transfer (both upload and download)
+files over WebREPL connection, but it has unstable status (be ready to
+reboot a module in case of issues). It still may be a practical way to
+get script files onto ESP8266, so give it a try using ``webrepl_cli.py``
+from the repository above. See forum for other community-supported
+alternatives to transfer files to ESP8266.

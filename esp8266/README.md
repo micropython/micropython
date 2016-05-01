@@ -18,6 +18,7 @@ Currently implemented features include:
 - GPIO and bit-banging I2C, SPI support.
 - 1-Wire and WS2812 (aka Neopixel) protocols support.
 - Internal filesystem using the flash.
+- WebREPL over WiFi from a browser (clients at https://github.com/micropython/webrepl).
 
 Work-in-progress documentation is available at
 http://docs.micropython.org/en/latest/esp8266/ .
@@ -41,6 +42,7 @@ dependencies.
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ cd esp8266
+$ make axtls
 $ make
 ```
 This will produce binary images in the `build/` subdirectory. If you install

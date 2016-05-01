@@ -110,6 +110,7 @@ extern const mp_obj_module_t mp_module_ussl;
 extern const mp_obj_module_t mp_module_machine;
 extern const mp_obj_module_t mp_module_lwip;
 extern const mp_obj_module_t mp_module_websocket;
+extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 
 // extmod functions

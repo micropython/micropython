@@ -5,18 +5,42 @@
    :synopsis: time related functions
 
 The ``utime`` module provides functions for getting the current time and date,
-and for sleeping.
+measuring time intervals, and for delays.
+
+**Time Epoch**: Unix port uses standard for POSIX systems epoch of
+1970-01-01 00:00:00 UTC. However, embedded ports use epoch of
+2000-01-01 00:00:00 UTC.
+
+**Maintaining actual calendar date/time**: This requires a
+Real Time Clock (RTC). On systems with underlying OS (including some
+RTOS), an RTC may be implicit. Setting and maintaining actual calendar
+time is responsibility of OS/RTOS and is done outside of MicroPython,
+it just uses OS API to query date/time. On baremetal ports however
+system time depends on ``machine.RTC()`` object. The current calendar time
+may be set using ``machine.RTC().datetime(tuple)`` function, and maintained
+by following means:
+
+* By a backup battery (which may be an additional, optional component for
+  a particular board).
+* Using networked time protocol (requires setup by a port/user).
+* Set manually by a user on each power-up (many boards then maintain
+  RTC time across hard resets, though some may require setting it again
+  in such case).
+
+If actual calendar time is not maintained with a system/MicroPython RTC,
+functions below which require reference to current absolute time may
+behave not as expected.
 
 Functions
 ---------
 
 .. function:: localtime([secs])
 
-   Convert a time expressed in seconds since Jan 1, 2000 into an 8-tuple which
+   Convert a time expressed in seconds since the Epoch (see above) into an 8-tuple which
    contains: (year, month, mday, hour, minute, second, weekday, yearday)
    If secs is not provided or None, then the current time from the RTC is used.
-   year includes the century (for example 2014).
 
+   * year includes the century (for example 2014).
    * month   is 1-12
    * mday    is 1-31
    * hour    is 0-23
@@ -92,13 +116,13 @@ Functions
 
 .. function:: time()
 
-   Returns the number of seconds, as an integer, since a port-specific reference point
-   in time (for embedded boards without RTC, usually since power up or reset). If you
-   want to develop portable MicroPython application, you should not rely on this
-   function to provide higher than second precision, or on a specific reference time
-   point. If you need higher precision, use ``ticks_ms()`` and ``ticks_us()`` functions,
-   if you need calendar time, ``localtime()`` without argument is the best possibility
-   to get it.
+   Returns the number of seconds, as an integer, since the Epoch, assuming that underlying
+   RTC is set and maintained as decsribed above. If an RTC is not set, this function returns
+   number of seconds since a port-specific reference point in time (for embedded boards without
+   a battery-backed RTC, usually since power up or reset). If you want to develop portable
+   MicroPython application, you should not rely on this function to provide higher than second
+   precision. If you need higher precision, use ``ticks_ms()`` and ``ticks_us()`` functions,
+   if you need calendar time, ``localtime()`` without an argument is a better choice.
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -106,10 +130,10 @@ Functions
       In CPython, this function returns number of
       seconds since Unix epoch, 1970-01-01 00:00 UTC, as a floating-point,
       usually having microsecond precision. With MicroPython, only Unix port
-      uses the same reference point, and if floating-point precision allows,
+      uses the same Epoch, and if floating-point precision allows,
       returns sub-second precision. Embedded hardware usually doesn't have
       floating-point precision to represent both long time ranges and subsecond
-      precision, so use integer value with second precision. Most embedded
+      precision, so they use integer value with second precision. Some embedded
       hardware also lacks battery-powered RTC, so returns number of seconds
       since last power-up or from other relative, hardware-specific point
       (e.g. reset).

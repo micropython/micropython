@@ -57,6 +57,7 @@ endif
 SRC_C = \
 	strtoll.c \
 	main.c \
+	help.c \
 	esp_mphal.c \
 	gccollect.c \
 	lexerstr32.c \
@@ -116,6 +117,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/pyhelp.c \
 	utils/printf.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
@@ -163,7 +165,7 @@ deploy: $(BUILD)/firmware-combined.bin
 	#$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --flash_size=8m 0 $(BUILD)/firmware.elf-0x00000.bin 0x9000 $(BUILD)/firmware.elf-0x0[1-f]000.bin
 
 reset:
-	echo -e "\r\nimport pyb; pyb.hard_reset()\r\n" >$(PORT)
+	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
 $(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -207,4 +209,4 @@ axtls:
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_"
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
