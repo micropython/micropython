@@ -27,11 +27,11 @@ Constants
 
 .. data:: argv
 
-   a mutable list of arguments this program started with
+   A mutable list of arguments the current program was started with.
 
 .. data:: byteorder
 
-   the byte order of the system ("little" or "big")
+   The byte order of the system ("little" or "big").
 
 .. data:: modules
 
@@ -40,7 +40,7 @@ Constants
 
 .. data:: path
 
-   a mutable list of directories to search for imported modules
+   A mutable list of directories to search for imported modules.
 
 .. data:: platform
 
@@ -50,20 +50,20 @@ Constants
 
 .. data:: stderr
 
-   standard error stream
+   Standard error stream.
 
 .. data:: stdin
 
-   standard input stream
+   Standard input stream.
 
 .. data:: stdout
 
-   standard output stream
+   Standard output stream.
 
 .. data:: version
 
-   Python language version that this implementation conforms to, as a string
+   Python language version that this implementation conforms to, as a string.
 
 .. data:: version_info
 
-   Python language version that this implementation conforms to, as a tuple of ints
+   Python language version that this implementation conforms to, as a tuple of ints.
