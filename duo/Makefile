@@ -183,7 +183,6 @@ LIB_SOURCES = $(addprefix lib/,\
 	libm/wf_lgamma.c \
 	libm/wf_tgamma.c \
 	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
@@ -194,7 +193,8 @@ LIB_SOURCES = $(addprefix lib/,\
 MP_SOURCE = \
     mphalport.c \
     pin.c \
-    pin_defs_stmhal.c
+    pin_defs_stmhal.c \
+    wiring.c \
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/,$(HAL_SOURCES:.c=.o))
