@@ -28,6 +28,7 @@ library.
        :maxdepth: 1
 
        cmath.rst
+       _collections.rst
        gc.rst
        math.rst
        select.rst
@@ -49,6 +50,7 @@ library.
        :maxdepth: 1
 
        cmath.rst
+       _collections.rst
        gc.rst
        math.rst
        select.rst
@@ -85,6 +87,7 @@ library.
     .. toctree::
        :maxdepth: 1
 
+       _collections.rst
        gc.rst
        math.rst
        sys.rst
