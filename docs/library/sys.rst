@@ -52,6 +52,31 @@ Constants
       CPython mandates more attributes for this object, but the actual useful
       bare minimum is implemented in MicroPython.
 
+.. data:: maxsize
+
+   Maximum value which a native integer type can hold on the current platform,
+   or maximum value representable by MicroPython integer type, if it's smaller
+   than platform max value (that is the case for MicroPython ports without
+   long int support).
+
+   This attribute is useful for detecting "bitness" of a platform (32-bit vs
+   64-bit, etc.). It's recommended to not compare this attribute to some
+   value directly, but instead count number of bits in it::
+
+    bits = 0
+    v = sys.maxsize
+    while v:
+        bits += 1
+        v >>= 1
+    if bits > 32:
+        # 64-bit (or more) platform
+        ...
+    else:
+        # 32-bit (or less) platform
+        # Note that on 32-bit platform, value of bits may be less than 32
+        # (e.g. 31) due to peculiarities described above, so use "> 16",
+        # "> 32", "> 64" style of comparisons.
+
 .. data:: modules
 
    Dictionary of loaded modules. On some ports, it may not include builtin
