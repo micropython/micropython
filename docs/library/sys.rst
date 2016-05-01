@@ -88,9 +88,12 @@ Constants
 
 .. data:: platform
 
-   The platform that MicroPython is running on.  This is "pyboard" on the
-   pyboard and provides a robust way of determining if a script is running
-   on the pyboard or not.
+   The platform that MicroPython is running on. For OS/RTOS ports, this is
+   usually an identifier of the OS, e.g. ``"linux"``. For baremetal ports it
+   is an identifier of a board, e.g. "pyboard" for the original MicroPython
+   reference board. It thus can be used to distinguish one board from another.
+   If you need to check whether your program runs on MicroPython (vs other
+   Python implementation), use ``sys.implementation`` instead.
 
 .. data:: stderr
 
