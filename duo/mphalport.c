@@ -5,6 +5,8 @@
 #include "py/mphal.h"
 #include "stm32f2xx_hal_def.h"
 
+#include "wiring.h"
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
@@ -22,19 +24,26 @@ void mp_hal_set_interrupt_char(int c) {
 }
 
 int mp_hal_stdin_rx_chr(void) {
-    return 0;
+    return usartserial1_read();
 }
 
 void mp_hal_stdout_tx_str(const char *str) {
-
+    mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-
+    while(len--) {
+        usartserial1_putc(*str++);
+    }
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-
+    while (len--) {
+        if (*str == '\n') {
+            mp_hal_stdout_tx_strn("\r", 1);
+        }
+        mp_hal_stdout_tx_strn(str++, 1);
+    }
 }
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {

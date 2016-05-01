@@ -1,7 +1,6 @@
-#define STM32F4DISC
 
-#define MICROPY_HW_BOARD_NAME       "REDBEARDUO"
-#define MICROPY_HW_MCU_NAME         "STM32F205"
+#define MICROPY_HW_BOARD_NAME       "RedBear Duo"
+#define MICROPY_HW_MCU_NAME         "STM32F205RG"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)

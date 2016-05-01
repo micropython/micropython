@@ -48,6 +48,8 @@ void mp_setup() {
 #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
 #endif
+
+    usartserial1_begin(9600);
 }
 
 static bool pyexec_exit = false;
