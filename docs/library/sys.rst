@@ -7,10 +7,11 @@
 Functions
 ---------
 
-.. function:: exit([retval])
+.. function:: exit(retval=0)
 
-   Raise a ``SystemExit`` exception.  If an argument is given, it is the
-   value given to ``SystemExit``.
+   Terminate current program with a given exit code. Underlyingly, this
+   function raise as ``SystemExit`` exception. If an argument is given, its
+   value given as an argument to ``SystemExit``.
 
 .. function:: print_exception(exc, [file])
 
