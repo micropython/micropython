@@ -30,3 +30,29 @@ following design and implementation decision were made:
   board may expose only subset of pins. Consult your board reference manual.
 * Some boards may lack external pins/internal connectivity to support
   ESP8266 deepsleep mode.
+
+
+Technical specifications and SoC datasheets
+-------------------------------------------
+
+The datasheets and other reference material for ESP8266 chip are available
+from the vendor site: http://bbs.espressif.com/viewtopic.php?f=67&t=225 .
+The are primary reference for the chip technical specifications, capabilities,
+operating modes, internal functioning, etc.
+
+For your convinience, some of technical specifications are provided below:
+
+* Architecture: Xtensa lx106
+* CPU frequency: 80MHz overclockable to 160MHz
+* Total RAM available: 96KB (part of it reserved for system)
+* BootROM: 64KB
+* Internal FlashROM: None
+* External FlashROM: code and data, via SPI Flash. Normal sizes 512KB-4MB.
+* GPIO: 16 + 1 (GPIOs are multiplexed with other functions, including
+  external FlashROM, UART, deep sleep wake-up, etc.)
+* UART: One RX/TX UART (no hardware handshaking), one TX-only UART.
+* SPI: 2 SPI interfaces (one used for FlashROM).
+* I2C: No native extenal I2C (bitbang implementation available on any pins).
+* I2S: 1.
+* Programming: using BootROM bootloader from UART. Due to external FlashROM
+  and always-available BootROM bootloader, ESP8266 is not brickable.
