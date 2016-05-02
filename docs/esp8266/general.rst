@@ -56,3 +56,38 @@ For your convinience, some of technical specifications are provided below:
 * I2S: 1.
 * Programming: using BootROM bootloader from UART. Due to external FlashROM
   and always-available BootROM bootloader, ESP8266 is not brickable.
+
+
+Boot process
+------------
+
+On boot, MicroPython EPS8266 port executes ``_boot.py`` script from internal
+frozen modules. It mounts filesystem in FlashROM, or if it's not available,
+performs first-time setup of the module and creates the filesystem. This
+part of boot process is considered fixed, and not available for customization
+for end users (even if you build from source, please refrain from changes to
+it; customization of early boot process is available only to advanced users
+and developers, who can diagnose themselves any issues arising from
+modifying the standard process).
+
+Once filesystem is mounted, ``boot.py`` is executed from it. The standard
+version of this file is created during first-time module set up and by
+defaults starts up a WebREPL daemon to handle incoming connections. This
+file is customizable by end users (for example, you may want to disable
+WebREPL for extra security, or add other services which should be run on
+module start-up). But keep in mind that incorrect modifications to boot.py
+may still lead to boot loops or lock ups, requiring to reflash a module
+from scratch.
+
+As a final step of boot procedure, ``main.py`` is executed from filesystem,
+if exists. This file is a hook to start up a user application each time
+on boot (instead of going to REPL). For small test applications, you may
+name them directly as ``main.py``, and upload to module, but instead it's
+recommended to keep your application(s) in separate files, and have just
+the following in ``main.py``::
+
+    import my_app
+    my_app.main()
+
+This will allow to keep structure of your application clear, as well as
+allow to install multiple applications on a board, and switch among them.
