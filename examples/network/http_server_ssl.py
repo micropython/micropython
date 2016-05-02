@@ -17,7 +17,7 @@ def main(use_stream=True):
     # Binding to all interfaces - server will be accessible to other hosts!
     ai = socket.getaddrinfo("0.0.0.0", 8443)
     print("Bind address info:", ai)
-    addr = ai[0][4]
+    addr = ai[0][-1]
 
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(addr)
