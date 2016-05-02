@@ -18,17 +18,15 @@ To make a generic ESP8266 port and support as many boards as possible,
 following design and implementation decision were made:
 
 * GPIO pin numbering is based on ESP8266 chip numbering, not some "logical"
-numbering of a particular board. Please have manual/pin diagram of your board
-handy to find correspondce between your board pins and actual ESP8266 pins.
-We also encourage users of various boards to share this mapping via MicroPython
-forum, with the idea to collect community-maintained reference materials
-eventually.
-
+  numbering of a particular board. Please have manual/pin diagram of your board
+  handy to find correspondce between your board pins and actual ESP8266 pins.
+  We also encourage users of various boards to share this mapping via MicroPython
+  forum, with the idea to collect community-maintained reference materials
+  eventually.
 * All pins which make sense to support, are supported by MicroPython
-(for example, we don't expose pins which are used to connect SPI flash
-are not exposed, as they're unlikely useful for anything else, and
-operating on them will lead to board lock-up). However, any particular
-board may expose only subset of pins. Consult your board reference manual.
-
+  (for example, we don't expose pins which are used to connect SPI flash
+  are not exposed, as they're unlikely useful for anything else, and
+  operating on them will lead to board lock-up). However, any particular
+  board may expose only subset of pins. Consult your board reference manual.
 * Some boards may lack external pins/internal connectivity to support
-ESP8266 deepsleep mode.
+  ESP8266 deepsleep mode.
