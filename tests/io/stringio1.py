@@ -1,4 +1,4 @@
-import _io as io
+import uio as io
 
 a = io.StringIO()
 print('io.StringIO' in repr(a))

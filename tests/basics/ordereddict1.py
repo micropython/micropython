@@ -2,7 +2,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     try:
-        from _collections import OrderedDict
+        from ucollections import OrderedDict
     except ImportError:
         print("SKIP")
         import sys

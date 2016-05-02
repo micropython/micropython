@@ -1,4 +1,4 @@
-import _io as io
+import uio as io
 
 # test __enter__/__exit__
 with io.StringIO() as b:
