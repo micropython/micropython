@@ -1,7 +1,7 @@
-:mod:`_io` -- input/output streams
+:mod:`uio` -- input/output streams
 ==================================
 
-.. module:: _io
+.. module:: uio
    :synopsis: input/output streams
 
 This module contains additional types of stream (file-like) objects

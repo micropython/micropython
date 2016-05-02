@@ -28,15 +28,15 @@ library.
        :maxdepth: 1
 
        cmath.rst
-       _collections.rst
        gc.rst
-       _io.rst
        math.rst
        select.rst
        sys.rst
        ubinascii.rst
+       ucollections.rst
        uhashlib.rst
        uheapq.rst
+       uio.rst
        ujson.rst
        uos.rst
        ure.rst
@@ -51,15 +51,15 @@ library.
        :maxdepth: 1
 
        cmath.rst
-       _collections.rst
        gc.rst
-       _io.rst
        math.rst
        select.rst
        sys.rst
        ubinascii.rst
+       ucollections.rst
        uhashlib.rst
        uheapq.rst
+       uio.rst
        ujson.rst
        uos.rst
        ure.rst
@@ -89,14 +89,14 @@ library.
     .. toctree::
        :maxdepth: 1
 
-       _collections.rst
        gc.rst
-       _io.rst
        math.rst
        sys.rst
        ubinascii.rst
+       ucollections.rst
        uhashlib.rst
        uheapq.rst
+       uio.rst
        ujson.rst
        uos.rst
        ure.rst

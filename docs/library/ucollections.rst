@@ -1,7 +1,7 @@
-:mod:`_collections` -- collection and container types
+:mod:`ucollections` -- collection and container types
 =====================================================
 
-.. module:: _collections
+.. module:: ucollections
    :synopsis: collection and container types
 
 This module implements advanced collection and container types to
@@ -20,7 +20,7 @@ Classes
     a string with space-separated field named (but this is less efficient).
     Example of use::
 
-        from _collections import namedtuple
+        from ucollections import namedtuple
 
         MyTuple = namedtuple("MyTuple", ("id", "name"))
         t1 = MyTuple(1, "foo")
@@ -34,7 +34,7 @@ Classes
     added. When ordered dict is iterated over, keys/items are returned in
     the order they were added::
 
-        from _collections import OrderedDict
+        from ucollections import OrderedDict
 
         # To make benefit of ordered keys, OrderedDict should be initialized
         # from sequence of (key, value) pairs.
