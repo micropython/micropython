@@ -41,6 +41,6 @@ def setup():
         f.write("""\
 # This file is executed on every boot (including wake-boot from deepsleep)
 import webrepl
-#webrepl.start()
+webrepl.start()
 """)
     return vfs
