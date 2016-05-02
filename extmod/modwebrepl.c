@@ -285,8 +285,11 @@ STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size
 }
 
 STATIC mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
-    const char *passwd = mp_obj_str_get_str(passwd_in);
-    strncpy(webrepl_passwd, passwd, sizeof(webrepl_passwd));
+    mp_uint_t len;
+    const char *passwd = mp_obj_str_get_data(passwd_in, &len);
+    len = MIN(len, sizeof(webrepl_passwd) - 1);
+    memcpy(webrepl_passwd, passwd, len);
+    webrepl_passwd[len] = 0;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_set_password_obj, webrepl_set_password);
