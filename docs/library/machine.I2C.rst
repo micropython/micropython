@@ -106,7 +106,7 @@ Methods
 
 .. method:: i2c.scan()
 
-   Scan all I2C addresses from 0x01 to 0x7f and return a list of those that respond.
+   Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of those that respond.
    Only valid when in master mode.
 
 Constants
