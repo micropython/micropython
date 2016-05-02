@@ -409,16 +409,6 @@ const mp_obj_type_t wlan_if_type = {
     .locals_dict = (mp_obj_t)&wlan_if_locals_dict,
 };
 
-STATIC mp_obj_t esp_wifi_mode(mp_uint_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        return mp_obj_new_int(wifi_get_opmode());
-    } else {
-        wifi_set_opmode(mp_obj_get_int(args[0]));
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_wifi_mode_obj, 0, 1, esp_wifi_mode);
-
 STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_phy_mode());
@@ -432,7 +422,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode)
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_wlan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wifi_mode), (mp_obj_t)&esp_wifi_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
