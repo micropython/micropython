@@ -34,21 +34,20 @@ WebREPL - a prompt over WiFi
 ----------------------------
 
 WebREPL allows you to use the Python prompt over WiFi, connecting through a
-browser.
+browser. The latest versions of Firefox and Chrome are supported.
 
-The first thing you need to do is get the WebREPL client loaded in your
-favourite browser.  The client can be found in the GitHub repository
-`<https://github.com/micropython/webrepl>`__ .  It is called webrepl.html.
-The latest versions of Firefox and Chrome are supported.
+For your convinience, WebREPL client is hosted at
+`<http://micropython.org/webrepl>`__ . Alternatively, you can install it
+locally from the the GitHub repository
+`<https://github.com/micropython/webrepl>`__ .
 
 To use WebREPL connect your computer to the ESP8266's access point
 (MicroPython-xxxxxx, see the previous section about this).  If you have
 already reconfigured your ESP8266 to connect to a router then you can
 skip this part.
 
-Once you are on the same network as the ESP8266 you should then open
-open webrepl.html in your browser and click the "Connect" button (if
-you are connecting via a router then you may need to change the IP address,
+Once you are on the same network as the ESP8266 you click the "Connect" button
+(if you are connecting via a router then you may need to change the IP address,
 by default the IP address is correct when connected to the ESP8266's access
 point).  If the connection succeeds then you should see a welcome message.
 
