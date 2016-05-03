@@ -18,7 +18,7 @@ class NeoPixel:
 
     def __getitem__(self, index):
         i = index * 3
-        return self.buf[i], self.buf[i + 1], self.buf[i + 2]
+        return self.buf[i + 1], self.buf[i], self.buf[i + 2]
 
     def write(self):
         neopixel_write(self.pin, self.buf, True)
