@@ -52,9 +52,12 @@ by default the IP address is correct when connected to the ESP8266's access
 point).  If the connection succeeds then you should see a welcome message.
 
 On the first connection you need to set a password.  Make sure that the
-terminal widget is selected by clicking on it, and then type it your password
-twice (they should match each other).  Then ESP8266 will then reboot with
-the password applied (the WiFi will go down but come back up again).
+terminal widget is selected by clicking on it, and then follow prompts to
+type in your password twice (they should match each other).  Then ESP8266
+will then reboot with the password applied (the WiFi will go down but come
+back up again). Note that some modules may have troubles rebooting
+automatically and need reset button press or power cycle (do this if
+you don't see ESP8266 access point appearing in a minute or so).
 
 You should then click the "Connect" button again, and enter your password
 to connect.  If you type in the correct password you should get a prompt
