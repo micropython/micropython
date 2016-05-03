@@ -215,6 +215,9 @@ def extract_prelude(bytecode):
     return ip, ip2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args, code_info_size)
 
 class RawCode:
+    # a set of all escaped names, to make sure they are unique
+    escaped_names = set()
+
     def __init__(self, bytecode, qstrs, objs, raw_codes):
         # set core variables
         self.bytecode = bytecode
@@ -239,6 +242,13 @@ class RawCode:
 
     def freeze(self, parent_name):
         self.escaped_name = parent_name + self.simple_name.qstr_esc
+
+        # make sure the escaped name is unique
+        i = 2
+        while self.escaped_name in RawCode.escaped_names:
+            self.escaped_name = parent_name + self.simple_name.qstr_esc + str(i)
+            i += 1
+        RawCode.escaped_names.add(self.escaped_name)
 
         # emit children first
         for rc in self.raw_codes:
