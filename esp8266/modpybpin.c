@@ -182,6 +182,7 @@ STATIC void pyb_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 
 // pin.init(mode, pull=Pin.PULL_NONE, af=-1)
 STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_mode, ARG_pull, ARG_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_pull, MP_ARG_INT, {.u_int = GPIO_PULL_NONE}},
@@ -189,24 +190,21 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
     };
 
     // parse args
-    struct {
-        mp_arg_val_t mode, pull, value;
-    } args;
-    mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get io mode
-    uint mode = args.mode.u_int;
+    uint mode = args[ARG_mode].u_int;
 
     // get pull mode
-    uint pull = args.pull.u_int;
+    uint pull = args[ARG_pull].u_int;
 
     // get initial value
     int value;
-    if (args.value.u_obj == MP_OBJ_NULL) {
+    if (args[ARG_value].u_obj == MP_OBJ_NULL) {
         value = -1;
     } else {
-        value = mp_obj_is_true(args.value.u_obj);
+        value = mp_obj_is_true(args[ARG_value].u_obj);
     }
 
     // save the mode
