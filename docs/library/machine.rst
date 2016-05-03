@@ -59,20 +59,17 @@ Power related functions
    Gates the clock to the CPU, useful to reduce power consumption at any time during
    short or long periods. Peripherals continue working and execution resumes as soon
    as any interrupt is triggered (including the systick which has a period of 1ms).
-   Current consumption is reduced to ~12mA (in WLAN STA mode)
 
 .. function:: sleep()
 
    Stops the CPU and disables all peripherals except for WLAN. Execution is resumed from
    the point where the sleep was requested. Wake sources are ``Pin``, ``RTC`` and ``WLAN``.
-   Current consumption is reduced to 950uA (in WLAN STA mode).
 
 .. function:: deepsleep()
 
    Stops the CPU and all peripherals including WLAN. Execution is resumed from main, just
    as with a reset. The reset cause can be checked to know that we are coming from
-   ``machine.DEEPSLEEP``. Wake sources are ``Pin`` and ``RTC``. Current consumption 
-   is reduced to ~5uA.
+   ``machine.DEEPSLEEP``. Wake sources are ``Pin`` and ``RTC``.
 
 .. only:: port_wipy
 
