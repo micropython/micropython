@@ -63,13 +63,15 @@ Power related functions
 .. function:: sleep()
 
    Stops the CPU and disables all peripherals except for WLAN. Execution is resumed from
-   the point where the sleep was requested. Wake sources are ``Pin``, ``RTC`` and ``WLAN``.
+   the point where the sleep was requested. For wake up to actually happen, wake sources
+   should be configured first.
 
 .. function:: deepsleep()
 
-   Stops the CPU and all peripherals including WLAN. Execution is resumed from main, just
-   as with a reset. The reset cause can be checked to know that we are coming from
-   ``machine.DEEPSLEEP``. Wake sources are ``Pin`` and ``RTC``.
+   Stops the CPU and all peripherals (including networking interfaces, if any). Execution
+   is resumed from the main script, just as with a reset. The reset cause can be checked
+   to know that we are coming from ``machine.DEEPSLEEP``. For wake up to actually happen,
+   wake sources should be configured first, like ``Pin`` change or ``RTC`` timeout.
 
 .. only:: port_wipy
 
