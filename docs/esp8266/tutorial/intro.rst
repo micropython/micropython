@@ -51,7 +51,13 @@ For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
 Currently we only support esptool.py to copy across the firmware.  You can find
-this tool here: `<https://github.com/themadinventor/esptool/>`__ .  Any other
+this tool here: `<https://github.com/themadinventor/esptool/>`__, or install it
+using pip::
+
+    pip install esptool
+
+It requires Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in
+the command above.  Any other
 flashing program should work, so feel free to try them out, or refer to the
 documentation for your board to see its recommendations.
 
