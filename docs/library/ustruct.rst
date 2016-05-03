@@ -12,11 +12,11 @@ Functions
 
 .. function:: calcsize(fmt)
 
-   Return the number of bytes needed to store the given ``fmt``.
+   Return the number of bytes needed to store the given `fmt`.
 
 .. function:: pack(fmt, v1, v2, ...)
 
-   Pack the values ``v1``, ``v2``, ... according to the format string ``fmt``.
+   Pack the values `v1`, `v2`, ... according to the format string `fmt`.
    The return value is a bytes object encoding the values.
 
 .. function:: pack_into(fmt, buffer, offset, v1, v2, ...)
@@ -27,7 +27,7 @@ Functions
 
 .. function:: unpack(fmt, data)
 
-   Unpack from the ``data`` according to the format string ``fmt``.
+   Unpack from the `data` according to the format string `fmt`.
    The return value is a tuple of the unpacked values.
 
 .. function:: unpack_from(fmt, data, offset=0)

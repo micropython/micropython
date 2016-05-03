@@ -33,8 +33,10 @@ library.
        select.rst
        sys.rst
        ubinascii.rst
+       ucollections.rst
        uhashlib.rst
        uheapq.rst
+       uio.rst
        ujson.rst
        uos.rst
        ure.rst
@@ -54,8 +56,10 @@ library.
        select.rst
        sys.rst
        ubinascii.rst
+       ucollections.rst
        uhashlib.rst
        uheapq.rst
+       uio.rst
        ujson.rst
        uos.rst
        ure.rst
@@ -89,8 +93,10 @@ library.
        math.rst
        sys.rst
        ubinascii.rst
+       ucollections.rst
        uhashlib.rst
        uheapq.rst
+       uio.rst
        ujson.rst
        uos.rst
        ure.rst

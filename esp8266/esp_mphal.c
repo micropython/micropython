@@ -234,3 +234,25 @@ void mp_hal_pin_config_od(mp_hal_pin_obj_t pin_id) {
         GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
     ETS_GPIO_INTR_ENABLE();
 }
+
+// Get pointer to esf_buf bookkeeping structure
+void *ets_get_esf_buf_ctlblk(void) {
+    // Get literal ptr before start of esf_rx_buf_alloc func
+    extern void *esf_rx_buf_alloc();
+    return ((void**)esf_rx_buf_alloc)[-1];
+}
+
+// Get number of esf_buf free buffers of given type, as encoded by index
+// idx 0 corresponds to buf types 1, 2; 1 - 4; 2 - 5; 3 - 7; 4 - 8
+// Only following buf types appear to be used:
+// 1 - tx buffer, 5 - management frame tx buffer; 8 - rx buffer
+int ets_esf_free_bufs(int idx) {
+    uint32_t *p = ets_get_esf_buf_ctlblk();
+    uint32_t *b = (uint32_t*)p[idx];
+    int cnt = 0;
+    while (b) {
+        b = (uint32_t*)b[0x20 / 4];
+        cnt++;
+    }
+    return cnt;
+}

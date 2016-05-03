@@ -49,7 +49,7 @@ Functions
    The following example shows how to connect to a given url::
 
       s = socket.socket()
-      s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][4])
+      s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][-1])
 
 .. only:: port_wipy
 

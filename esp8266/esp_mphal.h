@@ -77,4 +77,7 @@ void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
 #define mp_hal_pin_read(p) pin_get(p)
 #define mp_hal_pin_write(p, v) pin_set((p), (v))
 
+void *ets_get_esf_buf_ctlblk(void);
+int ets_esf_free_bufs(int idx);
+
 #endif // _INCLUDED_MPHAL_H_
