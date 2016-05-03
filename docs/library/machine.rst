@@ -58,7 +58,8 @@ Power related functions
 
    Gates the clock to the CPU, useful to reduce power consumption at any time during
    short or long periods. Peripherals continue working and execution resumes as soon
-   as any interrupt is triggered (including the systick which has a period of 1ms).
+   as any interrupt is triggered (on many ports this includes system timer
+   interrupt occuring at regular intervals on the order of millisecond).
 
 .. function:: sleep()
 
