@@ -29,8 +29,14 @@
 
 extern uint16_t esp_rcswitch_timings[9];
 
-int esp_rcswitch_reset(uint pin);
+int esp_rcswitch_send(uint pin);
 int esp_rcswitch_readbit(uint pin);
 void esp_rcswitch_writebit(uint pin, int value);
+void send_pulse(uint pin, int highs, int lows);
+void send1(uint pin);
+void send0(uint pin);
+void sendsync(uint pin);
+void sendterm(uint pin);
+void send(const char* sCodeWord, uint pin);
 
 #endif // __MICROPY_INCLUDED_ESP8266_ESPrcswitch_H__

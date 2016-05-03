@@ -1,7 +1,7 @@
 # 1-Wire driver for MicroPython on ESP8266
 # MIT license; Copyright (c) 2016 Damien P. George
 
-import _rcswitch as _ow
+import _rcswitch as _rc
 
 class RCswitchError(Exception):
     pass
@@ -16,29 +16,29 @@ class RCswitch:
         self.pin.init(pin.OPEN_DRAIN, pin.PULL_NONE)
 
     def reset(self):
-        return _ow.reset(self.pin)
+        return _rc.send(self.pin)
 
     def readbit(self):
-        return _ow.readbit(self.pin)
+        return _rc.readbit(self.pin)
 
     def readbyte(self):
-        return _ow.readbyte(self.pin)
+        return _rc.readbyte(self.pin)
 
     def read(self, count):
         buf = bytearray(count)
         for i in range(count):
-            buf[i] = _ow.readbyte(self.pin)
+            buf[i] = _rc.readbyte(self.pin)
         return buf
 
     def writebit(self, value):
-        return _ow.writebit(self.pin, value)
+        return _rc.writebit(self.pin, value)
 
     def writebyte(self, value):
-        return _ow.writebyte(self.pin, value)
+        return _rc.writebyte(self.pin, value)
 
     def write(self, buf):
         for b in buf:
-            _ow.writebyte(self.pin, b)
+            _rc.writebyte(self.pin, b)
 
     def select_rom(self, rom):
         self.reset()
@@ -86,7 +86,7 @@ class RCswitch:
         return rom, next_diff
 
     def crc8(self, data):
-        return _ow.crc8(data)
+        return _rc.crc8(data)
 
 class DS18B20:
     CONVERT = const(0x44)
