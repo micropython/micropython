@@ -67,16 +67,17 @@ Using esptool.py you can erase the flash with the command::
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m 0 mp-esp8266-firmware.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m 0 esp8266-2016-05-03-v1.8.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
-(eg down to 115200).
+(eg down to 115200).  The filename of the firmware should also match the file
+that you have.
 
 If you have a NodeMCU board, you may need to use the following command to deploy
 the firmware (note the "-fm dio" option)::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m -fm dio 0 mp-esp8266-firmware.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m -fm dio 0 esp8266-2016-05-03-v1.8.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
