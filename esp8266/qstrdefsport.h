@@ -25,3 +25,7 @@
  */
 
 // qstrs specific to this port, only needed if they aren't auto-generated
+
+// Entries for sys.path
+Q(/)
+Q(/lib)
