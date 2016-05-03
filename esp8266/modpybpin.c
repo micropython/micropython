@@ -308,23 +308,30 @@ STATIC mp_obj_t pyb_pin_high(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_high_obj, pyb_pin_high);
 
-// pin.irq()
-STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *args) {
-    pyb_pin_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+// pin.irq(*, trigger, handler=None)
+STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_trigger, ARG_handler };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    pyb_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     if (self->phys_port >= 16) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "pin does not have IRQ capabilities"));
     }
 
-    if (n_args > 1) {
+    if (args[ARG_trigger].u_int != 0) {
         // configure irq
-        int trig = mp_obj_get_int(args[1]);
-        mp_obj_t handler = args[2];
+        mp_obj_t handler = args[ARG_handler].u_obj;
         if (handler == mp_const_none) {
             handler = MP_OBJ_NULL;
         }
         ETS_GPIO_INTR_DISABLE();
         MP_STATE_PORT(pin_irq_handler)[self->phys_port] = handler;
-        SET_TRIGGER(self->phys_port, trig);
+        SET_TRIGGER(self->phys_port, args[ARG_trigger].u_int);
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << self->phys_port);
         ETS_GPIO_INTR_ENABLE();
     }
@@ -332,7 +339,7 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *args) {
     // return the irq object
     return MP_OBJ_FROM_PTR(&pin_irq_obj[self->phys_port]);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pin_irq_obj, 1, 3, pyb_pin_irq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_pin_irq_obj, 1, pyb_pin_irq);
 
 STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
