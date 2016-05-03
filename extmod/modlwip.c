@@ -964,6 +964,48 @@ STATIC mp_obj_t lwip_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_recvfrom_obj, lwip_socket_recvfrom);
 
+STATIC mp_obj_t lwip_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
+    lwip_socket_obj_t *socket = self_in;
+    lwip_socket_check_connected(socket);
+
+    int _errno;
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    mp_uint_t ret = 0;
+    switch (socket->type) {
+        case MOD_NETWORK_SOCK_STREAM: {
+            if (socket->timeout == 0) {
+                // Behavior of sendall() for non-blocking sockets isn't explicitly specified.
+                // But it's specified that "On error, an exception is raised, there is no
+                // way to determine how much data, if any, was successfully sent." Then, the
+                // most useful behavior is: check whether we will be able to send all of input
+                // data without EAGAIN, and if won't be, raise it without sending any.
+                if (bufinfo.len > tcp_sndbuf(socket->pcb.tcp)) {
+                    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EAGAIN)));
+                }
+            }
+            // TODO: In CPython3.5, socket timeout should apply to the
+            // entire sendall() operation, not to individual send() chunks.
+            while (bufinfo.len != 0) {
+                ret = lwip_tcp_send(socket, bufinfo.buf, bufinfo.len, &_errno);
+                if (ret == -1) {
+                    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
+                }
+                bufinfo.len -= ret;
+                bufinfo.buf = (char*)bufinfo.buf + ret;
+            }
+            break;
+        }
+        case MOD_NETWORK_SOCK_DGRAM:
+            mp_not_implemented("");
+            break;
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_sendall_obj, lwip_socket_sendall);
+
 STATIC mp_obj_t lwip_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     lwip_socket_obj_t *socket = self_in;
     mp_uint_t timeout;
@@ -1068,6 +1110,7 @@ STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&lwip_socket_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&lwip_socket_sendto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&lwip_socket_recvfrom_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sendall), (mp_obj_t)&lwip_socket_sendall_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settimeout), (mp_obj_t)&lwip_socket_settimeout_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&lwip_socket_setblocking_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&lwip_socket_setsockopt_obj },
