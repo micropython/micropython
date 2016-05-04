@@ -23,83 +23,61 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __DMA_H__
+#define __DMA_H__
+typedef struct _dma_descr_t dma_descr_t;
 
-// These are ordered by DMAx_Stream number, and within a stream by channel
-// number. The duplicate streams are ok as long as they aren't used at the
-// same time.
-//
-// Currently I2C and SPI are synchronous and they call dma_init/dma_deinit
-// around each transfer.
-
-// DMA1 streams
-
-#define DMA_STREAM_I2C1_RX      DMA1_Stream0
-#define DMA_CHANNEL_I2C1_RX                     DMA_CHANNEL_1
-
-#define DMA_STREAM_SPI3_RX      DMA1_Stream2
-#define DMA_CHANNEL_SPI3_RX                     DMA_CHANNEL_0
-
-#define DMA_STREAM_I2C3_RX      DMA1_Stream2
-#define DMA_CHANNEL_I2C3_RX                     DMA_CHANNEL_3
-
-#define DMA_STREAM_I2C2_RX      DMA1_Stream2
-#define DMA_CHANNEL_I2C2_RX                     DMA_CHANNEL_7
-
-#define DMA_STREAM_SPI2_RX      DMA1_Stream3
-#define DMA_CHANNEL_SPI2_RX                     DMA_CHANNEL_0
-
-#define DMA_STREAM_SPI2_TX      DMA1_Stream4
-#define DMA_CHANNEL_SPI2_TX                     DMA_CHANNEL_0
-
-#define DMA_STREAM_I2C3_TX      DMA1_Stream4
-#define DMA_CHANNEL_I2C3_TX                     DMA_CHANNEL_3
-
-#define DMA_STREAM_DAC1         DMA1_Stream5
-#define DMA_CHANNEL_DAC1                        DMA_CHANNEL_7
-
-#define DMA_STREAM_DAC2         DMA1_Stream6
-#define DMA_CHANNEL_DAC2                        DMA_CHANNEL_7
-
-#define DMA_STREAM_SPI3_TX      DMA1_Stream7
-#define DMA_CHANNEL_SPI3_TX                     DMA_CHANNEL_0
-
-#define DMA_STREAM_I2C1_TX      DMA1_Stream7
-#define DMA_CHANNEL_I2C1_TX                     DMA_CHANNEL_1
-
-#define DMA_STREAM_I2C2_TX      DMA1_Stream7
-#define DMA_CHANNEL_I2C2_TX                     DMA_CHANNEL_7
-
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+extern const dma_descr_t dma_I2C_1_RX;
+extern const dma_descr_t dma_SPI_3_RX;
+extern const dma_descr_t dma_I2C_3_RX;
+extern const dma_descr_t dma_I2C_2_RX;
+extern const dma_descr_t dma_SPI_2_RX;
+extern const dma_descr_t dma_SPI_2_TX;
+extern const dma_descr_t dma_I2C_3_TX;
+extern const dma_descr_t dma_DAC_1_TX;
+extern const dma_descr_t dma_DAC_2_TX;
+extern const dma_descr_t dma_SPI_3_TX;
+extern const dma_descr_t dma_I2C_1_TX;
+extern const dma_descr_t dma_I2C_2_TX;
+extern const dma_descr_t dma_SPI_1_RX;
+extern const dma_descr_t dma_SPI_5_RX;
+#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+extern dma_descr_t dma_SDIO_0_RX;
+#endif
+extern const dma_descr_t dma_SPI_4_RX;
+extern const dma_descr_t dma_SPI_5_TX;
+extern const dma_descr_t dma_SPI_4_TX;
+extern const dma_descr_t dma_SPI_6_TX;
+extern const dma_descr_t dma_SPI_1_TX;
+extern const dma_descr_t dma_SPI_6_RX;
+#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+extern const dma_descr_t dma_SDIO_0_TX;
+#endif
+#elif defined(MCU_SERIES_L4)
+extern const dma_descr_t dma_ADC_1_RX;
+extern const dma_descr_t dma_ADC_2_RX;
+extern const dma_descr_t dma_SPI_1_RX;
+extern const dma_descr_t dma_I2C_3_TX;
+extern const dma_descr_t dma_ADC_3_RX;
+extern const dma_descr_t dma_SPI_1_TX;
+extern const dma_descr_t dma_I2C_3_RX;
+extern const dma_descr_t dma_DAC_1_TX;
+extern const dma_descr_t dma_SPI_2_RX;
+extern const dma_descr_t dma_I2C_2_TX;
+extern const dma_descr_t dma_DAC_2_TX;
+extern const dma_descr_t dma_SPI_2_TX;
+extern const dma_descr_t dma_I2C_2_RX;
+extern const dma_descr_t dma_I2C_1_TX;
+extern const dma_descr_t dma_I2C_1_RX;
 // DMA2 streams
+extern const dma_descr_t dma_SPI_3_RX;
+extern const dma_descr_t dma_SPI_3_TX;
+#if MICROPY_HW_HAS_SDCARD
+extern const dma_descr_t dma_SDIO_1_TX;
+#endif
+#endif
 
-#define DMA_STREAM_SPI1_RX      DMA2_Stream2
-#define DMA_CHANNEL_SPI1_RX                     DMA_CHANNEL_3
-
-#define DMA_STREAM_SPI5_RX      DMA2_Stream3
-#define DMA_CHANNEL_SPI5_RX                     DMA_CHANNEL_2
-
-#define DMA_STREAM_SDIO_RX      DMA2_Stream3
-#define DMA_CHANNEL_SDIO_RX                     DMA_CHANNEL_4
-
-#define DMA_STREAM_SPI4_RX      DMA2_Stream3
-#define DMA_CHANNEL_SPI4_RX                     DMA_CHANNEL_5
-
-#define DMA_STREAM_SPI5_TX      DMA2_Stream4
-#define DMA_CHANNEL_SPI5_TX                     DMA_CHANNEL_2
-
-#define DMA_STREAM_SPI4_TX      DMA2_Stream4
-#define DMA_CHANNEL_SPI4_TX                     DMA_CHANNEL_5
-
-#define DMA_STREAM_SPI6_TX      DMA2_Stream5
-#define DMA_CHANNEL_SPI6_TX                     DMA_CHANNEL_1
-
-#define DMA_STREAM_SPI1_TX      DMA2_Stream5
-#define DMA_CHANNEL_SPI1_TX                     DMA_CHANNEL_3
-
-#define DMA_STREAM_SPI6_RX      DMA2_Stream6
-#define DMA_CHANNEL_SPI6_RX                     DMA_CHANNEL_1
-
-#define DMA_STREAM_SDIO_TX      DMA2_Stream6
-#define DMA_CHANNEL_SDIO_TX                     DMA_CHANNEL_4
 
 typedef union {
     uint16_t    enabled;    // Used to test if both counters are == 0
@@ -113,9 +91,10 @@ extern volatile dma_idle_count_t dma_idle;
 #define DMA_IDLE_TICK_MAX           (8)     // 128 msec
 #define DMA_IDLE_TICK(tick)         (((tick) & DMA_SYSTICK_MASK) == 0)
 
-extern const DMA_InitTypeDef dma_init_struct_spi_i2c;
 
-void dma_init(DMA_HandleTypeDef *dma, DMA_Stream_TypeDef *dma_stream, const DMA_InitTypeDef *dma_init, uint32_t dma_channel, uint32_t direction, void *data);
-void dma_deinit(DMA_HandleTypeDef *dma);
-void dma_invalidate_channel(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel);
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t * dma_descr, void *data);
+void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t * dma_descr, void *data);
+void dma_deinit(const dma_descr_t * dma_descr);
+void dma_invalidate_channel(const dma_descr_t * dma_descr);
 void dma_idle_handler(int controller);
+#endif //__DMA_H__
