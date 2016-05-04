@@ -142,7 +142,7 @@ typedef struct _thread_entry_args_t {
     mp_obj_t fun;
     size_t n_args;
     size_t n_kw;
-    const mp_obj_t *args;
+    mp_obj_t args[];
 } thread_entry_args_t;
 
 STATIC void *thread_entry(void *args_in) {
@@ -186,35 +186,49 @@ STATIC void *thread_entry(void *args_in) {
 }
 
 STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args) {
+    // This structure holds the Python function and arguments for thread entry.
+    // We copy all arguments into this structure to keep ownership of them.
+    // We must be very careful about root pointers because this pointer may
+    // disappear from our address space before the thread is created.
+    thread_entry_args_t *th_args;
+
+    // get positional arguments
     mp_uint_t pos_args_len;
     mp_obj_t *pos_args_items;
     mp_obj_get_array(args[1], &pos_args_len, &pos_args_items);
-    thread_entry_args_t *th_args = m_new_obj(thread_entry_args_t);
-    th_args->fun = args[0];
+
+    // check for keyword arguments
     if (n_args == 2) {
         // just position arguments
-        th_args->n_args = pos_args_len;
+        th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len);
         th_args->n_kw = 0;
-        th_args->args = pos_args_items;
     } else {
         // positional and keyword arguments
         if (mp_obj_get_type(args[2]) != &mp_type_dict) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "expecting a dict for keyword args"));
         }
         mp_map_t *map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[2]))->map;
-        th_args->n_args = pos_args_len;
+        th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
         th_args->n_kw = map->used;
-        mp_obj_t *all_args = m_new(mp_obj_t, th_args->n_args + 2 * th_args->n_kw);
-        memcpy(all_args, pos_args_items, pos_args_len * sizeof(mp_obj_t));
+        // copy across the keyword arguments
         for (size_t i = 0, n = pos_args_len; i < map->alloc; ++i) {
             if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                all_args[n++] = map->table[i].key;
-                all_args[n++] = map->table[i].value;
+                th_args->args[n++] = map->table[i].key;
+                th_args->args[n++] = map->table[i].value;
             }
         }
-        th_args->args = all_args;
     }
+
+    // copy agross the positional arguments
+    th_args->n_args = pos_args_len;
+    memcpy(th_args->args, pos_args_items, pos_args_len * sizeof(mp_obj_t));
+
+    // set the function for thread entry
+    th_args->fun = args[0];
+
+    // spawn the thread!
     mp_thread_create(thread_entry, th_args, thread_stack_size);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3, mod_thread_start_new_thread);
