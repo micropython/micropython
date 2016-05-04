@@ -594,12 +594,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     // get first block
     size_t block = BLOCK_FROM_PTR(ptr);
 
+    GC_ENTER();
+
     // sanity check the ptr is pointing to the head of a block
     if (ATB_GET_KIND(block) != AT_HEAD) {
+        GC_EXIT();
         return NULL;
     }
-
-    GC_ENTER();
 
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         GC_EXIT();
@@ -682,6 +683,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         return ptr_in;
     }
 
+    #if MICROPY_ENABLE_FINALISER
+    bool ftb_state = FTB_GET(block);
+    #else
+    bool ftb_state = false;
+    #endif
+
     GC_EXIT();
 
     if (!allow_move) {
@@ -690,13 +697,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     // can't resize inplace; try to find a new contiguous chain
-    void *ptr_out = gc_alloc(n_bytes,
-#if MICROPY_ENABLE_FINALISER
-        FTB_GET(block)
-#else
-        false
-#endif
-    );
+    void *ptr_out = gc_alloc(n_bytes, ftb_state);
 
     // check that the alloc succeeded
     if (ptr_out == NULL) {
