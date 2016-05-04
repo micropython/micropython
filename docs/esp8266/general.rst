@@ -19,7 +19,7 @@ following design and implementation decision were made:
 
 * GPIO pin numbering is based on ESP8266 chip numbering, not some "logical"
   numbering of a particular board. Please have the manual/pin diagram of your board
-  handy to find diversions between your board pins and actual ESP8266 pins.
+  at hand to find diversions between your board pins and actual ESP8266 pins.
   We also encourage users of various boards to share this mapping via MicroPython
   forum, with the idea to collect community-maintained reference materials
   eventually.
