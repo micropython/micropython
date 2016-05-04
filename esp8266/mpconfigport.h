@@ -119,6 +119,7 @@ extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t onewire_module;
+extern const struct _mp_obj_module_t rcswitch_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
@@ -130,7 +131,7 @@ extern const struct _mp_obj_module_t onewire_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&onewire_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__rcswitch), (mp_obj_t)&onewire_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__rcswitch), (mp_obj_t)&rcswitch_module }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \

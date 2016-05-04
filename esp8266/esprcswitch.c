@@ -61,37 +61,23 @@ static void mp_hal_delay_us_no_irq(uint32_t us) {
 #define DELAY_US mp_hal_delay_us_no_irq
 
 int esp_rcswitch_send(uint pin) {
-	pin_set(pin, 0);
 	uint32_t i = disable_irq();
-	send("001110101011011100000001",pin);
+//	send("001110101011011100000001",pin);
 	enable_irq(i);
+	pin_set(pin,0);
 	return 0;
 }
 
 int esp_rcswitch_readbit(uint pin) {
-	pin_set(pin, 1);
-	uint32_t i = disable_irq();
-	pin_set(pin, 0);
-	DELAY_US(esp_rcswitch_timings[TIMING_READ1]);
-	pin_set(pin, 1);
-	DELAY_US(esp_rcswitch_timings[TIMING_READ2]);
-	int value = pin_get(pin);
-	enable_irq(i);
-	DELAY_US(esp_rcswitch_timings[TIMING_READ3]);
-	return value;
+//	uint32_t i = disable_irq();
+//	send("001110101011011100000001",pin);
+//	enable_irq(i);
+	pin_set(pin,0);
+	return 0;
 }
 
 void esp_rcswitch_writebit(uint pin, int value) {
-	uint32_t i = disable_irq();
-	pin_set(pin, 0);
-	DELAY_US(esp_rcswitch_timings[TIMING_WRITE1]);
-	if (value) {
-		pin_set(pin, 1);
-	}
-	DELAY_US(esp_rcswitch_timings[TIMING_WRITE2]);
 	pin_set(pin, 1);
-	DELAY_US(esp_rcswitch_timings[TIMING_WRITE3]);
-	enable_irq(i);
 }
 
 void send_pulse(uint pin, int highs, int lows)
