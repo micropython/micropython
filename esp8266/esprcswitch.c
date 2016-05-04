@@ -62,7 +62,7 @@ static void mp_hal_delay_us_no_irq(uint32_t us) {
 
 int esp_rcswitch_send(uint pin) {
 	uint32_t i = disable_irq();
-//	send("001110101011011100000001",pin);
+	send("001110101011011100000001",pin);
 	enable_irq(i);
 	pin_set(pin,0);
 	return 0;
@@ -72,12 +72,12 @@ int esp_rcswitch_readbit(uint pin) {
 //	uint32_t i = disable_irq();
 //	send("001110101011011100000001",pin);
 //	enable_irq(i);
-	pin_set(pin,0);
+	pin_set(pin,1);
 	return 0;
 }
 
 void esp_rcswitch_writebit(uint pin, int value) {
-	pin_set(pin, 1);
+	pin_set(pin, 0);
 }
 
 void send_pulse(uint pin, int highs, int lows)
