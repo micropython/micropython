@@ -88,6 +88,14 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     }
     #endif
     mp_int_t r = write(o->fd, buf, size);
+    while (r == -1 && errno == EINTR) {
+        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(obj);
+        }
+        r = write(o->fd, buf, size);
+    }
     if (r == -1) {
         *errcode = errno;
         return MP_STREAM_ERROR;
