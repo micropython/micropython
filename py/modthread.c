@@ -154,6 +154,9 @@ STATIC void *thread_entry(void *args_in) {
     mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
     mp_stack_set_limit(16 * 1024); // fixed stack limit for now
 
+    // signal that we are set up and running
+    mp_thread_start();
+
     // TODO set more thread-specific state here:
     //  mp_pending_exception? (root pointer)
     //  cur_exception (root pointer)
@@ -181,6 +184,9 @@ STATIC void *thread_entry(void *args_in) {
     }
 
     DEBUG_printf("[thread] finish ts=%p\n", &ts);
+
+    // signal that we are finished
+    mp_thread_finish();
 
     return NULL;
 }
