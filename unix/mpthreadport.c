@@ -57,6 +57,8 @@ STATIC volatile int thread_signal_done;
 
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
+    (void)info; // unused
+    (void)context; // unused
     if (signo == SIGUSR1) {
         void gc_collect_regs_and_stack(void);
         gc_collect_regs_and_stack();
