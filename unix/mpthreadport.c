@@ -56,10 +56,14 @@ STATIC thread_t *thread;
 STATIC volatile int thread_signal_done;
 
 // this signal handler is used to scan the regs and stack of a thread
-STATIC void mp_thread_gc(int signo) {
+STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
     if (signo == SIGUSR1) {
         void gc_collect_regs_and_stack(void);
         gc_collect_regs_and_stack();
+        // We have access to the context (regs, stack) of the thread but it seems
+        // that we don't need the extra information, enough is captured by the
+        // gc_collect_regs_and_stack function above
+        //gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
         thread_signal_done = 1;
     }
 }
@@ -77,8 +81,8 @@ void mp_thread_init(void) {
 
     // enable signal handler for garbage collection
     struct sigaction sa;
-    sa.sa_flags = 0;
-    sa.sa_handler = mp_thread_gc;
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = mp_thread_gc;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGUSR1, &sa, NULL);
 }
