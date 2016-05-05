@@ -167,8 +167,10 @@ const dma_descr_t dma_I2C_2_RX = { DMA1_Stream2, DMA_CHANNEL_7, DMA_PERIPH_TO_ME
 const dma_descr_t dma_SPI_2_RX = { DMA1_Stream3, DMA_CHANNEL_0, DMA_PERIPH_TO_MEMORY, dma_id_3,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { DMA1_Stream4, DMA_CHANNEL_0, DMA_MEMORY_TO_PERIPH, dma_id_4,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_3_TX = { DMA1_Stream4, DMA_CHANNEL_3, DMA_MEMORY_TO_PERIPH, dma_id_4,   &dma_init_struct_spi_i2c };
+#if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
 const dma_descr_t dma_DAC_1_TX = { DMA1_Stream5, DMA_CHANNEL_7, DMA_MEMORY_TO_PERIPH, dma_id_5,   &dma_init_struct_dac };
 const dma_descr_t dma_DAC_2_TX = { DMA1_Stream6, DMA_CHANNEL_7, DMA_MEMORY_TO_PERIPH, dma_id_6,   &dma_init_struct_dac };
+#endif
 const dma_descr_t dma_SPI_3_TX = { DMA1_Stream7, DMA_CHANNEL_0, DMA_MEMORY_TO_PERIPH, dma_id_7,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_1_TX = { DMA1_Stream7, DMA_CHANNEL_1, DMA_MEMORY_TO_PERIPH, dma_id_7,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_2_TX = { DMA1_Stream7, DMA_CHANNEL_7, DMA_MEMORY_TO_PERIPH, dma_id_7,   &dma_init_struct_spi_i2c };
