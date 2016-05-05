@@ -434,11 +434,12 @@ found:
         ATB_FREE_TO_TAIL(bl);
     }
 
-    GC_EXIT();
-
     // get pointer to first block
+    // we must create this pointer before unlocking the GC so a collection can find it
     void *ret_ptr = (void*)(MP_STATE_MEM(gc_pool_start) + start_block * BYTES_PER_BLOCK);
     DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
+
+    GC_EXIT();
 
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
