@@ -8,7 +8,7 @@ class NeoPixel:
         self.pin = pin
         self.n = n
         self.buf = bytearray(n * 3)
-        self.pin.init(pin.OUT, pin.PULL_NONE)
+        self.pin.init(pin.OUT)
 
     def __setitem__(self, index, val):
         r, g, b = val
