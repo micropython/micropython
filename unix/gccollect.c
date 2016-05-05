@@ -136,6 +136,9 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 
 #endif // MICROPY_GCREGS_SETJMP
 
+// this function is used by mpthreadport.c
+void gc_collect_regs_and_stack(void);
+
 void gc_collect_regs_and_stack(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
