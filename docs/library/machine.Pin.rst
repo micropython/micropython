@@ -39,6 +39,21 @@ Usage Model:
     All pin objects go through the pin mapper to come up with one of the
     gpio pins.
 
+.. only:: port_esp8266
+
+   ::
+
+    from machine import Pin
+
+    # create an output pin on GPIO0
+    p0 = Pin(0, Pin.OUT)
+    p0.value(0)
+    p0.value(1)
+
+    # create an input pin on GPIO2
+    p2 = Pin(2, Pin.IN, Pin.PULL_UP)
+    print(p2.value())
+
 Constructors
 ------------
 
@@ -86,6 +101,25 @@ Methods
 
        Get the pin id.
 
+.. only:: port_esp8266
+
+    .. method:: pin.init(mode, pull=None, \*, value)
+
+       Initialise the pin:
+
+         - `mode` can be one of:
+
+            - ``Pin.IN``  - input pin.
+            - ``Pin.OUT`` - output pin in push-pull mode.
+
+         - `pull` can be one of:
+
+            - ``None`` - no pull up or down resistor.
+            - ``Pin.PULL_UP`` - pull up resistor enabled.
+
+         - if `value` is given then it is the output value to set the pin
+           if it is in output mode.
+
 .. method:: pin.value([value])
 
    Get or set the digital logic level of the pin:
@@ -95,17 +129,19 @@ Methods
        anything that converts to a boolean.  If it converts to ``True``, the pin
        is set high, otherwise it is set low.
 
+.. method:: pin([value])
+
+   Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
+   See **pin.value** for more details.
+
 .. method:: pin.alt_list()
 
     Returns a list of the alternate functions supported by the pin. List items are
     a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
 
+    Availability: WiPy.
+
 .. only:: port_wipy
-
-    .. method:: pin([value])
-
-       Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
-       See **pin.value** for more details.
 
     .. method:: pin.toggle()
 
@@ -155,6 +191,23 @@ Methods
 
             Returns a callback object.
 
+.. only:: port_esp8266
+
+    .. method:: pin.irq(\*, trigger, handler=None)
+
+        Create a callback to be triggered when the input level at the pin changes.
+
+            - ``trigger`` configures the pin level which can generate an interrupt. Possible values are:
+
+                - ``Pin.IRQ_FALLING`` interrupt on falling edge.
+                - ``Pin.IRQ_RISING`` interrupt on rising edge.
+
+              The values can be OR'ed together to trigger on multiple events.
+
+            - ``handler`` is an optional function to be called when the interrupt triggers.
+
+            Returns a callback object.
+
 Attributes
 ----------
 
@@ -166,44 +219,36 @@ Attributes
         led = Pin(Pin.board.GP25, mode=Pin.OUT)
         Pin.board.GP2.alt_list()
 
+    Availability: WiPy.
 
 Constants
 ---------
 
-.. only:: port_wipy
+The following constants are used to configure the pin objects.  Note that
+not all constants are available on all ports.
 
-    .. data:: Pin.IN
+.. data:: IN
+          OUT
+          OPEN_DRAIN
+          ALT
+          ALT_OPEN_DRAIN
 
-    .. data:: Pin.OUT
-    
-    .. data:: Pin.OPEN_DRAIN
+   Selects the pin mode.
 
-    .. data:: Pin.ALT
+.. data:: PULL_UP
+          PULL_DOWN
 
-    .. data:: Pin.ALT_OPEN_DRAIN
+   Selects the whether there is a pull up/down resistor.
 
-       Selects the pin mode.
+.. data:: LOW_POWER
+          MED_POWER
+          HIGH_POWER
 
-    .. data:: Pin.PULL_UP
+   Selects the pin drive strength.
 
-    .. data:: Pin.PULL_DOWN
-    
-       Selectes the wether there's pull up/down resistor.
+.. data:: IRQ_FALLING
+          IRQ_RISING
+          IRQ_LOW_LEVEL
+          IRQ_HIGH_LEVEL
 
-    .. data:: Pin.LOW_POWER
-
-    .. data:: Pin.MED_POWER
-
-    .. data:: Pin.HIGH_POWER
-
-        Selects the drive strength.
-
-    .. data:: Pin.IRQ_FALLING
-
-    .. data:: Pin.IRQ_RISING
-
-    .. data:: Pin.IRQ_LOW_LEVEL
-
-    .. data:: Pin.IRQ_HIGH_LEVEL
-
-        Selects the IRQ trigger type.
+   Selects the IRQ trigger type.

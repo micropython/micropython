@@ -317,6 +317,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 #endif
 #endif
 
+// note: returned value in *items may point to the interior of a GC block
 void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
         mp_obj_tuple_get(o, len, items);
@@ -333,6 +334,7 @@ void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
     }
 }
 
+// note: returned value in *items may point to the interior of a GC block
 void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
     mp_uint_t seq_len;
     mp_obj_get_array(o, &seq_len, items);

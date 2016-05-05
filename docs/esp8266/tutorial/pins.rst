@@ -16,9 +16,9 @@ it.  To make an input pin use::
 
     >>> pin = machine.Pin(0, machine.Pin.OUT, machine.Pin.PULL_UP)
 
-You can either use PULL_UP or PULL_NONE for the input pull-mode.  If it's
-not specified then it defaults to PULL_NONE.  You can read the value on
-the pin using::
+You can either use PULL_UP or None for the input pull-mode.  If it's
+not specified then it defaults to None, which is no pull resistor.
+You can read the value on the pin using::
 
     >>> pin.value()
     0
@@ -61,8 +61,8 @@ Next we will create two pins and configure them as inputs::
 An finally we need to tell the pins when to trigger, and the function to call
 when they detect an event::
 
-    >>> p0.irq(Pin.IRQ_FALLING, callback)
-    >>> p2.irq(Pin.IRQ_RISING | Pin.IRQ_FALLING, callback)
+    >>> p0.irq(trigger=Pin.IRQ_FALLING, handler=callback)
+    >>> p2.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=callback)
 
 We set pin 0 to trigger only on a falling edge of the input (when it goes from
 high to low), and set pin 2 to trigger on both a rising and falling edge.  After
