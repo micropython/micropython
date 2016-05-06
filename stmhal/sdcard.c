@@ -244,8 +244,8 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
-\
-        dma_init(&sd_rx_dma, &dma_SDIO_0_TX, &sd_handle);
+
+        dma_init(&sd_tx_dma, &dma_SDIO_0_TX, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
 
         err = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
