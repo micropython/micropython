@@ -54,7 +54,6 @@ CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
 
-#CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
@@ -225,7 +224,7 @@ INC += $(foreach d, $(GFXINC), -I$d)
 SRC_C += ugfx.c
 SRC_UGFX += $(GFXSRC)
 endif
-	
+
 ifeq ($(MICROPY_PY_WIZNET5K),1)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
@@ -351,7 +350,7 @@ deploy-stlink: $(BUILD)/firmware.dfu
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
-	
+
 deploy-stlinkcli: $(BUILD)/firmware.hex
 	$(ECHO) "Writing $(BUILD)/firmware.hex to the board via ST-LINK"
 	$(Q)$(STLINK) -P $(BUILD)/firmware.hex -Rst
