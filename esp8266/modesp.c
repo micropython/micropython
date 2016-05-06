@@ -637,6 +637,16 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 
+STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    esp_apa102_write(mp_obj_get_pin_obj(clockPin)->phys_port,
+        mp_obj_get_pin_obj(dataPin)->phys_port,
+        (uint8_t*)bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
+
 STATIC mp_obj_t esp_freemem() {
     return MP_OBJ_NEW_SMALL_INT(system_get_free_heap_size());
 }
@@ -664,16 +674,6 @@ STATIC mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 
-STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    esp_apa102_write(mp_obj_get_pin_obj(clockPin)->phys_port,
-        mp_obj_get_pin_obj(dataPin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
-
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
@@ -690,13 +690,13 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
     #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&esp_neopixel_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_apa102_write), (mp_obj_t)&esp_apa102_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freemem), (mp_obj_t)&esp_freemem_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_meminfo), (mp_obj_t)&esp_meminfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj }, // TODO delete/rename/move elsewhere
     { MP_OBJ_NEW_QSTR(MP_QSTR_malloc), (mp_obj_t)&esp_malloc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_free), (mp_obj_t)&esp_free_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_esf_free_bufs), (mp_obj_t)&esp_esf_free_bufs_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_apa102_write), (mp_obj_t)&esp_apa102_write_obj },
 
 #if MODESP_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_NONE),
