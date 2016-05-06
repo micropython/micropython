@@ -32,18 +32,6 @@
 #include "modpyb.h"
 #include "esprcswitch.h"
 
-#define TIMING_RESET1 (0)
-#define TIMING_RESET2 (1)
-#define TIMING_RESET3 (2)
-#define TIMING_READ1 (3)
-#define TIMING_READ2 (4)
-#define TIMING_READ3 (5)
-#define TIMING_WRITE1 (6)
-#define TIMING_WRITE2 (7)
-#define TIMING_WRITE3 (8)
-
-uint16_t esp_rcswitch_timings[9] = {480, 40, 420, 5, 5, 40, 10, 50, 10};
-
 static uint32_t disable_irq(void) {
 	ets_intr_lock();
 	return 0;
@@ -63,40 +51,42 @@ static void mp_hal_delay_us_no_irq(uint32_t us) {
 
 int esp_rcswitch_send(uint pin, int val) {
 	uint32_t i = disable_irq();
-//	send("001110101011011100000001",pin);
-
-//	pin_set(pin,0);
-//	int val = 3847937;
 	int nRepeat=0;
 	for (nRepeat=0; nRepeat<10; nRepeat++) {
-//		unsigned int mask = 2147483648;
 		unsigned int mask = 16777216;
 		while (mask >>= 1)
 		{
 			if (!!(mask & val)==0)
 			{
-//				printf("0");
 				send0(pin);
 			}
 			if (!!(mask & val)==1)
 			{
-//				printf("1");
 				send1(pin);
 			}
-//			printf("sending:%u	mask: %u\n",!!(mask & val),mask);
 		}
 		sendsync(pin);
-//		printf("repeat!\n");
 	}
 	sendterm(pin);
 	enable_irq(i);
 	return 0;
 }
 
+/* possible better alternative:
+int main()
+{
+        int val = 3847937;
+        int i = 0;
+        for(i = 0; i < 32; i++)
+        {
+                printf("%i, %i\n",i,val%2);
+                val >>= 1;
+        }
+        return 0;
+}
+*/
+
 int esp_rcswitch_readbit(uint pin) {
-//	uint32_t i = disable_irq();
-//	send("001110101011011100000001",pin);
-//	enable_irq(i);
 	pin_set(pin,1);
 	return 0;
 }

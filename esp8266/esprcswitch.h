@@ -27,8 +27,6 @@
 #ifndef __MICROPY_INCLUDED_ESP8266_ESPrcswitch_H__
 #define __MICROPY_INCLUDED_ESP8266_ESPrcswitch_H__
 
-extern uint16_t esp_rcswitch_timings[9];
-
 int esp_rcswitch_send(uint pin, int val);
 int esp_rcswitch_readbit(uint pin);
 void esp_rcswitch_writebit(uint pin, int value);
