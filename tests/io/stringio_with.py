@@ -1,4 +1,7 @@
-import uio as io
+try:
+    import uio as io
+except ImportError:
+    import io
 
 # test __enter__/__exit__
 with io.StringIO() as b:

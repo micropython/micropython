@@ -57,6 +57,9 @@ some boards, you may need to press reset button or reconnect power.\r
 
     while 1:
         passwd1 = getpass(ws, "New password: ")
+        if len(passwd1) < 4:
+            ws.write("Password too short\r\n")
+            continue
         passwd2 = getpass(ws, "Confirm password: ")
         if passwd1 == passwd2:
             break

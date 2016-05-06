@@ -9,7 +9,7 @@ def main(use_stream=False):
 
     ai = socket.getaddrinfo("google.com", 80)
     print("Address infos:", ai)
-    addr = ai[0][4]
+    addr = ai[0][-1]
 
     print("Connect address:", addr)
     s.connect(addr)

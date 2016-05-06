@@ -190,27 +190,6 @@ STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_isconnected_obj, esp_isconnected);
 
-STATIC mp_obj_t esp_mac(mp_uint_t n_args, const mp_obj_t *args) {
-    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint8_t mac[6];
-    if (n_args == 1) {
-        wifi_get_macaddr(self->if_id, mac);
-        return mp_obj_new_bytes(mac, sizeof(mac));
-    } else {
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
-
-        if (bufinfo.len != 6) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "invalid buffer length"));
-        }
-
-        wifi_set_macaddr(self->if_id, bufinfo.buf);
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_mac_obj, 1, 2, esp_mac);
-
 STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     struct ip_info info;
@@ -290,6 +269,16 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
                 #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
                 switch ((uintptr_t)kwargs->table[i].key) {
+                    case QS(MP_QSTR_mac): {
+                        mp_buffer_info_t bufinfo;
+                        mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+                        if (bufinfo.len != 6) {
+                            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                                "invalid buffer length"));
+                        }
+                        wifi_set_macaddr(self->if_id, bufinfo.buf);
+                        break;
+                    }
                     case QS(MP_QSTR_essid): {
                         req_if = SOFTAP_IF;
                         mp_uint_t len;
@@ -355,6 +344,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
     switch ((uintptr_t)args[1]) {
+        case QS(MP_QSTR_mac): {
+            uint8_t mac[6];
+            wifi_get_macaddr(self->if_id, mac);
+            return mp_obj_new_bytes(mac, sizeof(mac));
+        }
         case QS(MP_QSTR_essid):
             req_if = SOFTAP_IF;
             val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
@@ -396,7 +390,6 @@ STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mac), (mp_obj_t)&esp_mac_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_config), (mp_obj_t)&esp_config_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
 };
@@ -408,16 +401,6 @@ const mp_obj_type_t wlan_if_type = {
     .name = MP_QSTR_WLAN,
     .locals_dict = (mp_obj_t)&wlan_if_locals_dict,
 };
-
-STATIC mp_obj_t esp_wifi_mode(mp_uint_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        return mp_obj_new_int(wifi_get_opmode());
-    } else {
-        wifi_set_opmode(mp_obj_get_int(args[0]));
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_wifi_mode_obj, 0, 1, esp_wifi_mode);
 
 STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -432,7 +415,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode)
 STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_wlan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wifi_mode), (mp_obj_t)&esp_wifi_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS

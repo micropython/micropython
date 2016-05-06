@@ -283,14 +283,6 @@ For example::
 
         Disconnect from the currently connected wireless network.
 
-    .. method:: wlan.mac([address])
-
-        Get or set the network interface MAC address.
-
-        If the ``address`` parameter is provided, sets the address to its
-        value, which should be bytes object of length 6. If the function
-        is called wihout parameters, returns the current address.
-
     .. method:: wlan.scan()
 
         Scan for the available wireless networks.
@@ -366,6 +358,7 @@ For example::
        =========  ===========
        Parameter  Description
        =========  ===========
+       mac        MAC address (bytes)
        essid      WiFi access point name (string)
        channel    WiFi channel (integer)
        hidden     Whether ESSID is hidden (boolean)

@@ -180,33 +180,34 @@ STATIC void pyb_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     mp_printf(print, "Pin(%u)", self->phys_port);
 }
 
-// pin.init(mode, pull=Pin.PULL_NONE, af=-1)
+// pin.init(mode, pull=None, *, value)
 STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_mode, ARG_pull, ARG_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_pull, MP_ARG_INT, {.u_int = GPIO_PULL_NONE}},
+        { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = mp_const_none}},
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
     };
 
     // parse args
-    struct {
-        mp_arg_val_t mode, pull, value;
-    } args;
-    mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get io mode
-    uint mode = args.mode.u_int;
+    uint mode = args[ARG_mode].u_int;
 
     // get pull mode
-    uint pull = args.pull.u_int;
+    uint pull = GPIO_PULL_NONE;
+    if (args[ARG_pull].u_obj != mp_const_none) {
+        pull = mp_obj_get_int(args[ARG_pull].u_obj);
+    }
 
     // get initial value
     int value;
-    if (args.value.u_obj == MP_OBJ_NULL) {
+    if (args[ARG_value].u_obj == MP_OBJ_NULL) {
         value = -1;
     } else {
-        value = mp_obj_is_true(args.value.u_obj);
+        value = mp_obj_is_true(args[ARG_value].u_obj);
     }
 
     // save the mode
@@ -307,23 +308,30 @@ STATIC mp_obj_t pyb_pin_high(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_high_obj, pyb_pin_high);
 
-// pin.irq()
-STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *args) {
-    pyb_pin_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+// pin.irq(*, trigger, handler=None)
+STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_trigger, ARG_handler };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_handler, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    pyb_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     if (self->phys_port >= 16) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "pin does not have IRQ capabilities"));
     }
 
-    if (n_args > 1) {
+    if (args[ARG_trigger].u_int != 0) {
         // configure irq
-        int trig = mp_obj_get_int(args[1]);
-        mp_obj_t handler = args[2];
+        mp_obj_t handler = args[ARG_handler].u_obj;
         if (handler == mp_const_none) {
             handler = MP_OBJ_NULL;
         }
         ETS_GPIO_INTR_DISABLE();
         MP_STATE_PORT(pin_irq_handler)[self->phys_port] = handler;
-        SET_TRIGGER(self->phys_port, trig);
+        SET_TRIGGER(self->phys_port, args[ARG_trigger].u_int);
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << self->phys_port);
         ETS_GPIO_INTR_ENABLE();
     }
@@ -331,7 +339,7 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *args) {
     // return the irq object
     return MP_OBJ_FROM_PTR(&pin_irq_obj[self->phys_port]);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pin_irq_obj, 1, 3, pyb_pin_irq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_pin_irq_obj, 1, pyb_pin_irq);
 
 STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
@@ -345,7 +353,6 @@ STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_IN),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_INPUT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_OUT),       MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OPEN_DRAIN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_NONE), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_NONE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULL_UP) },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_DOWN) },
 
