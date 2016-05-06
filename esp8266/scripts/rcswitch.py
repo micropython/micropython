@@ -15,7 +15,7 @@ class RCswitch:
 	'''
 	def __init__(self, pin):
 		self.pin = pin
-		self.pin.init(pin.OPEN_DRAIN, pin.PULL_NONE)
+		self.pin.init(pin.OPEN_DRAIN)#, pin.PULL_NONE)
 
 ##3847937
 	def send(self,value):
