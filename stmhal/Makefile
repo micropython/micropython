@@ -262,6 +262,26 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	)
 endif
 
+# for CC3100 module
+ifeq ($(MICROPY_PY_CC3100),1)
+CC3100_DIR=drivers/cc3100
+INC += -I$(TOP)/$(CC3100_DIR)/include
+CFLAGS_MOD += -DMICROPY_PY_CC3100=1
+SRC_MOD += modnwcc3100.c
+SRC_MOD += $(addprefix $(CC3100_DIR)/source/,\
+	device.c \
+	driver.c \
+	flowcont.c \
+	fs.c \
+	netapp.c \
+	netcfg.c \
+	nonos.c \
+	socket.c \
+	spawn.c \
+	wlan.c \
+	)
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
