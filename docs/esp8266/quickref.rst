@@ -289,7 +289,7 @@ Use the ``apa102`` module::
 For low-level driving of an APA102::
 
     import esp
-    esp.neopixel_write(clock_pin, data_pin, rgbi_buf)
+    esp.apa102_write(clock_pin, data_pin, rgbi_buf)
 
 WebREPL (web browser interactive prompt)
 ----------------------------------------
