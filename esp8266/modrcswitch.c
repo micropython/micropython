@@ -37,25 +37,9 @@ STATIC mp_obj_t rcswitch_send(mp_obj_t pin_in, mp_obj_t value_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(rcswitch_send_obj, rcswitch_send);
 
-
-STATIC mp_obj_t rcswitch_readbit(mp_obj_t pin_in) {
-    return MP_OBJ_NEW_SMALL_INT(esp_rcswitch_readbit(mp_obj_get_pin(pin_in)));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(rcswitch_readbit_obj, rcswitch_readbit);
-
-
-STATIC mp_obj_t rcswitch_writebit(mp_obj_t pin_in, mp_obj_t value_in) {
-    esp_rcswitch_writebit(mp_obj_get_pin(pin_in), mp_obj_get_int(value_in));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(rcswitch_writebit_obj, rcswitch_writebit);
-
-
 STATIC const mp_map_elem_t rcswitch_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_rcswitch) },
-    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR((mp_obj_t)&rcswitch_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readbit), MP_ROM_PTR((mp_obj_t)&rcswitch_readbit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writebit), MP_ROM_PTR((mp_obj_t)&rcswitch_writebit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR((mp_obj_t)&rcswitch_send_obj) }
 };
 
 STATIC MP_DEFINE_CONST_DICT(rcswitch_module_globals, rcswitch_module_globals_table);

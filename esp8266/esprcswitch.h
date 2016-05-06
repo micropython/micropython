@@ -27,10 +27,9 @@
 #ifndef __MICROPY_INCLUDED_ESP8266_ESPrcswitch_H__
 #define __MICROPY_INCLUDED_ESP8266_ESPrcswitch_H__
 
+//The only method that gets called from the python module. 
 int esp_rcswitch_send(uint pin, int val);
-int esp_rcswitch_readbit(uint pin);
-void esp_rcswitch_writebit(uint pin, int value);
-void esp_rcswitch_send_str(uint pin, const char* val);
+//Supporting methods to keep the above method concise. 
 void send_pulse(uint pin, int highs, int lows);
 void send1(uint pin);
 void send0(uint pin);

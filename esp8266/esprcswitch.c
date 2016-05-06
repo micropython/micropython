@@ -32,69 +32,20 @@
 #include "modpyb.h"
 #include "esprcswitch.h"
 
+//The following are the supporting methods and aren't exposed to the python module.
 static uint32_t disable_irq(void) {
 	ets_intr_lock();
 	return 0;
 }
-
 static void enable_irq(uint32_t i) {
 	ets_intr_unlock();
 }
-
 static void mp_hal_delay_us_no_irq(uint32_t us) {
 	uint32_t start = system_get_time();
 	while (system_get_time() - start < us) {
 	}
 }
-
 #define DELAY_US mp_hal_delay_us_no_irq
-
-int esp_rcswitch_send(uint pin, int val) {
-	uint32_t i = disable_irq();
-	int nRepeat=0;
-	for (nRepeat=0; nRepeat<10; nRepeat++) {
-		unsigned int mask = 16777216;
-		while (mask >>= 1)
-		{
-			if (!!(mask & val)==0)
-			{
-				send0(pin);
-			}
-			if (!!(mask & val)==1)
-			{
-				send1(pin);
-			}
-		}
-		sendsync(pin);
-	}
-	sendterm(pin);
-	enable_irq(i);
-	return 0;
-}
-
-/* possible better alternative:
-int main()
-{
-        int val = 3847937;
-        int i = 0;
-        for(i = 0; i < 32; i++)
-        {
-                printf("%i, %i\n",i,val%2);
-                val >>= 1;
-        }
-        return 0;
-}
-*/
-
-int esp_rcswitch_readbit(uint pin) {
-	pin_set(pin,1);
-	return 0;
-}
-
-void esp_rcswitch_writebit(uint pin, int value) {
-	pin_set(pin, 0);
-}
-
 void send_pulse(uint pin, int highs, int lows)
 {
 	pin_set(pin,1);
@@ -139,3 +90,42 @@ void send(const char* sCodeWord, uint pin)
 	}
 	sendterm(pin);
 }
+
+
+//The method that is actually doing the heavy lifting.
+int esp_rcswitch_send(uint pin, int val) {
+	uint32_t i = disable_irq();
+	int nRepeat=0;
+	for (nRepeat=0; nRepeat<10; nRepeat++) 
+	{
+		/* possible better alternative:
+		int j;
+		for(j=0;j<24;j++)
+		{
+			if(val%2)
+				send1(pin);
+			else
+				send0(pin);
+			val >>= 1;
+		}*/
+		unsigned int mask = 16777216;
+		while (mask >>= 1)
+		{
+			if (!!(mask & val)==0)
+			{
+				send0(pin);
+			}
+			if (!!(mask & val)==1)
+			{
+				send1(pin);
+			}
+		}
+		sendsync(pin);
+	}
+	sendterm(pin);
+	enable_irq(i);
+	return 0;
+}
+
+
+
