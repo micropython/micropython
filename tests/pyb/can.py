@@ -8,6 +8,7 @@ for bus in (-1, 0, 1, 2, 3, "YA", "YB", "YC"):
         print("CAN", bus)
     except ValueError:
         print("ValueError", bus)
+CAN(1).deinit()
 
 CAN.initfilterbanks(14)
 can = CAN(1)
