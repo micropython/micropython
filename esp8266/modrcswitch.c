@@ -42,10 +42,10 @@ STATIC mp_obj_t rcswitch_timings(mp_obj_t timings_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rcswitch_timings_obj, rcswitch_timings);
 
-STATIC mp_obj_t rcswitch_send(mp_obj_t pin_in) {
-    return mp_obj_new_bool(esp_rcswitch_send(mp_obj_get_pin(pin_in)));
+STATIC mp_obj_t rcswitch_send(mp_obj_t pin_in, mp_obj_t value_in) {
+    return mp_obj_new_bool(esp_rcswitch_send(mp_obj_get_pin(pin_in),mp_obj_get_int(value_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(rcswitch_send_obj, rcswitch_send);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(rcswitch_send_obj, rcswitch_send);
 
 STATIC mp_obj_t rcswitch_readbit(mp_obj_t pin_in) {
     return MP_OBJ_NEW_SMALL_INT(esp_rcswitch_readbit(mp_obj_get_pin(pin_in)));

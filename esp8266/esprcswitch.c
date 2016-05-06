@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "etshal.h"
 #include "user_interface.h"
@@ -60,11 +61,35 @@ static void mp_hal_delay_us_no_irq(uint32_t us) {
 
 #define DELAY_US mp_hal_delay_us_no_irq
 
-int esp_rcswitch_send(uint pin) {
+int esp_rcswitch_send(uint pin, int val) {
 	uint32_t i = disable_irq();
-	send("001110101011011100000001",pin);
+//	send("001110101011011100000001",pin);
+
+//	pin_set(pin,0);
+//	int val = 3847937;
+	int nRepeat=0;
+	for (nRepeat=0; nRepeat<10; nRepeat++) {
+//		unsigned int mask = 2147483648;
+		unsigned int mask = 16777216;
+		while (mask >>= 1)
+		{
+			if (!!(mask & val)==0)
+			{
+//				printf("0");
+				send0(pin);
+			}
+			if (!!(mask & val)==1)
+			{
+//				printf("1");
+				send1(pin);
+			}
+//			printf("sending:%u	mask: %u\n",!!(mask & val),mask);
+		}
+		sendsync(pin);
+//		printf("repeat!\n");
+	}
+	sendterm(pin);
 	enable_irq(i);
-	pin_set(pin,0);
 	return 0;
 }
 

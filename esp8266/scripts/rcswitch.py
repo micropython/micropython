@@ -16,7 +16,7 @@ class RCswitch:
         self.pin.init(pin.OPEN_DRAIN, pin.PULL_NONE)
 
     def send(self):
-        return _rc.send(self.pin)
+        return _rc.send(self.pin,3847937)
 
     def readbit(self):
         return _rc.readbit(self.pin)
