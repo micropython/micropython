@@ -1,5 +1,5 @@
 /*
- * flowcont.h - CC31xx/CC32xx Host Driver Implementation
+ * flowcont.c - CC31xx/CC32xx Host Driver Implementation
  *
  * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
@@ -34,28 +34,40 @@
  *
 */
 
-#ifndef __FLOWCONT_H__
-#define __FLOWCONT_H__
 
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
 
 /*****************************************************************************/
-/* Macro declarations                                                        */
+/* Include files                                                             */
 /*****************************************************************************/
-#define FLOW_CONT_MIN 1
+#include "simplelink.h"
+#include "protocol.h"
+#include "driver.h"
+#include "flowcont.h"
+
 
 /*****************************************************************************/
-/* Function prototypes                                                       */
+/* _SlDrvFlowContInit */
 /*****************************************************************************/
-extern void _SlDrvFlowContInit(void);
-extern void _SlDrvFlowContDeinit(void);
+#if 0
+void _SlDrvFlowContInit(void)
+{
+    g_pCB->FlowContCB.TxPoolCnt = FLOW_CONT_MIN;
 
-#ifdef  __cplusplus
+    OSI_RET_OK_CHECK(sl_LockObjCreate(&g_pCB->FlowContCB.TxLockObj, "TxLockObj"));
+
+    OSI_RET_OK_CHECK(sl_SyncObjCreate(&g_pCB->FlowContCB.TxSyncObj, "TxSyncObj"));
 }
-#endif /* __cplusplus */
 
-#endif /* __FLOWCONT_H__ */
+/*****************************************************************************/
+/* _SlDrvFlowContDeinit */
+/*****************************************************************************/
+void _SlDrvFlowContDeinit(void)
+{
+    g_pCB->FlowContCB.TxPoolCnt = 0;
+
+    OSI_RET_OK_CHECK(sl_LockObjDelete(&g_pCB->FlowContCB.TxLockObj));
+
+    OSI_RET_OK_CHECK(sl_SyncObjDelete(&g_pCB->FlowContCB.TxSyncObj));
+}
+#endif
 

@@ -51,14 +51,26 @@ extern "C" {
 /*****************************************************************************/
 
 #define SL_SYNC_SCAN_THRESHOLD  (( _u32 )2000)
+  
+#define _SlDrvAssert(line )  { while(1); }          
 
-#define _SL_ASSERT(expr)            { ASSERT(expr); }
+#define _SL_ASSERT(expr)            { if(!(expr)){_SlDrvAssert(__LINE__); } }
 #define _SL_ERROR(expr, error)      { if(!(expr)){return (error); } }
 
 #define SL_HANDLING_ASSERT          2
 #define SL_HANDLING_ERROR           1
 #define SL_HANDLING_NONE            0
 
+
+#ifndef SL_TINY_EXT
+#define SL_SELF_COND_HANDLING       SL_HANDLING_ASSERT
+#define SL_PROTOCOL_HANDLING        SL_HANDLING_ASSERT
+#define SL_DRV_RET_CODE_HANDLING    SL_HANDLING_ASSERT
+#define SL_NWP_IF_HANDLING          SL_HANDLING_ASSERT
+#define SL_OSI_RET_OK_HANDLING      SL_HANDLING_ASSERT
+#define SL_MALLOC_OK_HANDLING       SL_HANDLING_ASSERT
+#define SL_USER_ARGS_HANDLING       SL_HANDLING_ASSERT
+#else
 #define SL_SELF_COND_HANDLING       SL_HANDLING_NONE
 #define SL_PROTOCOL_HANDLING        SL_HANDLING_NONE
 #define SL_DRV_RET_CODE_HANDLING    SL_HANDLING_NONE
@@ -66,6 +78,8 @@ extern "C" {
 #define SL_OSI_RET_OK_HANDLING      SL_HANDLING_NONE
 #define SL_MALLOC_OK_HANDLING       SL_HANDLING_NONE
 #define SL_USER_ARGS_HANDLING       SL_HANDLING_NONE
+#endif
+
 
 #if (SL_DRV_RET_CODE_HANDLING == SL_HANDLING_ASSERT)
 #define VERIFY_RET_OK(Func)                     {_SlReturnVal_t _RetVal = (Func); _SL_ASSERT((_SlReturnVal_t)SL_OS_RET_CODE_OK == _RetVal)}
@@ -132,6 +146,21 @@ extern "C" {
 #define ARG_CHECK_PTR(Ptr)
 #endif
 
+#define SL_DBG_TRACE_ENABLE
+#ifdef SL_DBG_TRACE_ENABLE
+int printf(const char *fmt, ...);
+#define SL_TRACE0(level,msg_id,str) printf("Trace %s\n",str)
+#define SL_TRACE1(level,msg_id,str,p1) printf("Trace %s p1: %d\n",str,p1)
+#define SL_TRACE2(level,msg_id,str,p1,p2) printf("Trace %s p1: %d p2: %d\n",str,p1,p2)
+#define SL_TRACE3(level,msg_id,str,p1,p2,p3) printf("Trace %s p1: %d p2: %d p3: %d\n",str,p1,p2,p3)
+#define SL_TRACE4(level,msg_id,str,p1,p2,p3,p4) printf("Trace %s p1: %d p2: %d p3: %d p4: %d\n",str,p1,p2,p3,p4)
+#define SL_ERROR_TRACE(msg_id,str)                      printf(str)
+#define SL_ERROR_TRACE1(msg_id,str,p1)                  printf(str,(p1))
+#define SL_ERROR_TRACE2(msg_id,str,p1,p2)               printf(str,(p1),(p2))
+#define SL_ERROR_TRACE3(msg_id,str,p1,p2,p3)            printf(str,(p1),(p2),(p3))
+#define SL_ERROR_TRACE4(msg_id,str,p1,p2,p3,p4)         printf(str,(p1),(p2),(p3),(p4))
+#define SL_TRACE_FLUSH()
+#else
 #define SL_TRACE0(level,msg_id,str)
 #define SL_TRACE1(level,msg_id,str,p1)
 #define SL_TRACE2(level,msg_id,str,p1,p2)
@@ -143,6 +172,7 @@ extern "C" {
 #define SL_ERROR_TRACE3(msg_id,str,p1,p2,p3)
 #define SL_ERROR_TRACE4(msg_id,str,p1,p2,p3,p4)
 #define SL_TRACE_FLUSH()
+#endif
 
 /* #define SL_DBG_CNT_ENABLE */
 #ifdef SL_DBG_CNT_ENABLE

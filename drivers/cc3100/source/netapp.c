@@ -1297,7 +1297,7 @@ void _SlDrvNetAppEventHandler(void* pArgs)
 
         
         default:
-            SL_ERROR_TRACE2(MSG_305, "ASSERT: _SlDrvNetAppEventHandler : invalid opcode = 0x%x = %1", pHdr->GenHeader.Opcode, pHdr->GenHeader.Opcode);
+            SL_ERROR_TRACE2(MSG_305, "ASSERT: _SlDrvNetAppEventHandler : invalid opcode = 0x%x = %x", pHdr->GenHeader.Opcode, pHdr->GenHeader.Opcode);
             VERIFY_PROTOCOL(0);
     }
 }

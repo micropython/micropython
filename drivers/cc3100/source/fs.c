@@ -53,6 +53,8 @@
 /* Internal functions                                                        */
 /*****************************************************************************/
 
+#ifndef SL_TINY
+
 /*****************************************************************************/
 /* _sl_Strlen                                                                */
 /*****************************************************************************/
@@ -85,6 +87,8 @@ _u32 _sl_GetCreateFsMode(_u32 maxSizeInBytes,_u32 accessFlags)
 
    return _FS_MODE(_FS_MODE_OPEN_WRITE_CREATE_IF_NOT_EXIST,  granIdx, granNum, accessFlags);
 }
+
+#endif
 
 /*****************************************************************************/
 /* API functions                                                        */
@@ -168,7 +172,7 @@ const _SlCmdCtrl_t _SlFsCloseCmdCtrl =
 
 _i16 sl_FsClose(const _i32 FileHdl, const _u8*  pCeritificateFileName,const _u8*  pSignature ,const _u32 SignatureLen)
 {
-    _SlFsCloseMsg_u Msg = {{0, 0}};
+    _SlFsCloseMsg_u Msg = {0};
     _SlCmdExt_t         ExtCtrl;
     
     Msg.Cmd.FileHandle             = FileHdl;

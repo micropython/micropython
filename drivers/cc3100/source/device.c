@@ -480,7 +480,7 @@ void _SlDrvDeviceEventHandler(void* pArgs)
 #endif
         break;
     default:
-        SL_ERROR_TRACE2(MSG_306, "ASSERT: _SlDrvDeviceEventHandler : invalid opcode = 0x%x = %1", pHdr->GenHeader.Opcode, pHdr->GenHeader.Opcode);
+        SL_ERROR_TRACE2(MSG_306, "ASSERT: _SlDrvDeviceEventHandler : invalid opcode = 0x%x = %x", pHdr->GenHeader.Opcode, pHdr->GenHeader.Opcode);
     }
 }
 

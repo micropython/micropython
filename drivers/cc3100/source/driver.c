@@ -368,7 +368,7 @@ void _SlDrvHandleSockEvents(SlSockEvent_t *slSockEvent)
 #endif
 
 
-#if (SL_MEMORY_MGMT != SL_MEMORY_MGMT_DYNAMIC)
+#ifndef SL_MEMORY_MGMT_DYNAMIC
 typedef struct
 {
     _u32 Align;
@@ -490,7 +490,7 @@ void _SlDrvDriverCBInit(void)
 {
     _u8          Idx =0;
 
-#if (SL_MEMORY_MGMT == SL_MEMORY_MGMT_DYNAMIC)
+#ifdef SL_MEMORY_MGMT_DYNAMIC
     g_pCB = sl_Malloc(sizeof(_SlDriverCb_t));
 #else
     g_pCB = &(g_StatMem.DriverCB);
@@ -560,7 +560,7 @@ void _SlDrvDriverCBDeinit()
     g_pCB->PendingPoolIdx = MAX_CONCURRENT_ACTIONS;
     g_pCB->ActivePoolIdx = MAX_CONCURRENT_ACTIONS;
 
-#if (SL_MEMORY_MGMT == SL_MEMORY_MGMT_DYNAMIC)
+#ifdef SL_MEMORY_MGMT_DYNAMIC
     sl_Free(g_pCB);
 #else
     g_pCB = NULL;
@@ -919,7 +919,7 @@ _SlReturnVal_t _SlDrvMsgRead(void)
 
             VERIFY_PROTOCOL(NULL == pAsyncBuf);
 
-#if (SL_MEMORY_MGMT == SL_MEMORY_MGMT_DYNAMIC)
+#ifdef SL_MEMORY_MGMT_DYNAMIC
         g_pCB->FunctionParams.AsyncExt.pAsyncBuf = sl_Malloc(SL_ASYNC_MAX_MSG_LEN);
 #else
         g_pCB->FunctionParams.AsyncExt.pAsyncBuf = g_StatMem.AsyncRespBuf;
@@ -1232,7 +1232,7 @@ _SlReturnVal_t _SlDrvMsgReadCmdCtx(void)
                 _SlAsyncEventGenericHandler();
                 
                 
-#if (SL_MEMORY_MGMT == SL_MEMORY_MGMT_DYNAMIC)
+#ifdef SL_MEMORY_MGMT_DYNAMIC
                 sl_Free(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);
 #else
                 g_pCB->FunctionParams.AsyncExt.pAsyncBuf = NULL;
@@ -1312,7 +1312,7 @@ _SlReturnVal_t _SlDrvMsgReadSpawnCtx(void *pValue)
    
         _SlAsyncEventGenericHandler();        
         
-#if (SL_MEMORY_MGMT == SL_MEMORY_MGMT_DYNAMIC)
+#ifdef SL_MEMORY_MGMT_DYNAMIC
         sl_Free(g_pCB->FunctionParams.AsyncExt.pAsyncBuf);
 #else
         g_pCB->FunctionParams.AsyncExt.pAsyncBuf = NULL;
@@ -1517,7 +1517,7 @@ typedef union
 #ifndef SL_TINY_EXT
 _i16 _SlDrvBasicCmd(_SlOpcode_t Opcode)
 {
-    _SlBasicCmdMsg_u       Msg = {{0, 0}};
+    _SlBasicCmdMsg_u       Msg = {0};
     _SlCmdCtrl_t           CmdCtrl;
 
     CmdCtrl.Opcode = Opcode;

@@ -58,7 +58,7 @@
  Listed below are the various modules in the SimpleLink CC31xx/CC32xx driver:
      -# \ref device - controls the behaviour of the CC31xx/CC32xx device (start/stop, events masking and obtaining specific device status)
      -# \ref wlan - controls the use of the WiFi WLAN module including:
-       - Connection features, such as: profiles, policies, SmartConfig�
+       - Connection features, such as: profiles, policies, SmartConfig&trade;
        - Advanced WLAN features, such as: scans, rx filters and rx statistics collection
      -# \ref socket - controls standard client/server sockets programming options and capabilities 
      -# \ref netapp - activates networking applications, such as: HTTP Server, DHCP Server, Ping, DNS and mDNS.
@@ -216,7 +216,7 @@
 #ifndef __SIMPLELINK_H__
 #define    __SIMPLELINK_H__
 
-#include "user.h"
+#include "../user.h"
 
 #ifdef    __cplusplus
 extern "C"
@@ -262,6 +262,7 @@ extern "C"
 /*****************************************************************************/
 
 #ifdef SL_TINY
+
 #undef SL_INC_ARG_CHECK
 #undef SL_INC_EXT_API
 #undef SL_INC_SOCK_SERVER_SIDE_API
@@ -269,12 +270,14 @@ extern "C"
 #undef SL_INC_NET_CFG_PKG
 #undef SL_INC_FS_PKG
 #undef SL_INC_SET_UART_MODE
-#undef SL_INC_STD_BSD_API_NAMING
-#undef SL_INC_SOCK_CLIENT_SIDE_API
-#undef SL_INC_NET_APP_PKG
-#undef SL_INC_SOCK_RECV_API
-#undef SL_INC_SOCK_SEND_API
-#undef SL_INC_SOCKET_PKG
+#undef SL_INC_NVMEM_PKG
+#define SL_INC_STD_BSD_API_NAMING
+#define SL_INC_SOCK_CLIENT_SIDE_API
+#define SL_INC_SOCK_RECV_API
+#define SL_INC_SOCK_SEND_API
+#define SL_INC_SOCKET_PKG
+#define SL_INC_NET_APP_PKG
+
 #endif
 
 #ifdef SL_SMALL
@@ -325,10 +328,11 @@ extern "C"
 #endif
 
 
+
+  
 /*****************************************************************************/
-/* Types definitions                                                          */
-/*****************************************************************************/
-typedef void (*_SlSpawnEntryFunc_t)(void* pValue);
+/* Types definitions                                                                                                                */
+/*****************************************************************************/  
 
 #ifndef NULL
 #define NULL        (0)
@@ -356,7 +360,7 @@ typedef void (*_SlSpawnEntryFunc_t)(void* pValue);
       typedef unsigned long  _u32;
       typedef signed long    _i32;
       #define _volatile volatile
-      #define _const    const
+	  #define _const    const
 #endif
 
 typedef _u16  _SlOpcode_t;
@@ -391,19 +395,13 @@ typedef _i16   _SlReturnVal_t;
 /* Include files                                                             */
 /*****************************************************************************/
 
-#ifdef SL_PLATFORM_MULTI_THREADED
-    #include "spawn.h"
-#else
-    #include "nonos.h"
-#endif
-
 
 /* 
    objInclusion.h and user.h must be included before all api header files 
    objInclusion.h must be the last arrangement just before including the API header files 
    since it based on the other configurations to decide which object should be included 
 */
-#include "objInclusion.h"
+#include "../source/objInclusion.h"
 #include "trace.h"
 #include "fs.h"
 #include "socket.h"
@@ -445,9 +443,8 @@ typedef _i16   _SlReturnVal_t;
 #endif
 
 
-#ifndef __CONCAT
+#undef __CONCAT
 #define __CONCAT(x,y)	x ## y
-#endif
 #define __CONCAT2(x,y)	__CONCAT(x,y)
 
 
@@ -730,6 +727,13 @@ extern void _SlDrvHandleSockEvents(SlSockEvent_t *slSockEvent);
 
 
 typedef void (*_SlSpawnEntryFunc_t)(void* pValue);
+
+#ifdef SL_PLATFORM_MULTI_THREADED
+    #include "../source/spawn.h"
+#else
+    #include "../source/nonos.h"
+#endif
+
 
 
 /* Async functions description*/

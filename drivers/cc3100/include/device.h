@@ -162,6 +162,8 @@ typedef enum
     The SimpleLink device send asynchronous events. Each event has a group 
     classification according to its nature.
 */
+
+#if 1
 /* SL_EVENT_CLASS_WLAN connection user events */
 #define SL_WLAN_CONNECT_EVENT                     (1)
 #define SL_WLAN_DISCONNECT_EVENT                  (2)
@@ -191,6 +193,7 @@ typedef enum
 /* Server Events */
 #define SL_NETAPP_HTTPGETTOKENVALUE_EVENT          (1)
 #define SL_NETAPP_HTTPPOSTTOKENVALUE_EVENT         (2)
+#endif
 
 
 /*
