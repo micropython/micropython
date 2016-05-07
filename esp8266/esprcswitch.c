@@ -49,9 +49,9 @@ static void mp_hal_delay_us_no_irq(uint32_t us) {
 void send_pulse(uint pin, int highs, int lows)
 {
 	pin_set(pin,1);
-	DELAY_US(350*highs);
+	DELAY_US(400*highs);
 	pin_set(pin,0);
-	DELAY_US(350*lows);
+	DELAY_US(400*lows);
 }
 void send1(uint pin)
 {
