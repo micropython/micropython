@@ -553,15 +553,24 @@ MP_DEFINE_CONST_FUN_OBJ_3(mp_builtin_setattr_obj, mp_builtin_setattr);
 
 STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
     qstr attr = mp_obj_str_get_qstr(attr_in);
-
     mp_obj_t dest[2];
-    // TODO: https://docs.python.org/3/library/functions.html?highlight=hasattr#hasattr
-    // explicitly says "This is implemented by calling getattr(object, name) and seeing
-    // whether it raises an AttributeError or not.", so we should explicitly wrap this
-    // in nlr_push and handle exception.
-    mp_load_method_maybe(object_in, attr, dest);
-
-    return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_load_method_maybe(object_in, attr, dest);
+        nlr_pop();
+        return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);
+    }
+    else {
+        // an exception was raised
+        mp_obj_type_t *t = (mp_obj_type_t*)((mp_obj_base_t*)nlr.ret_val)->type;
+        if (t == &mp_type_AttributeError) {
+            return mp_obj_new_bool(0);
+        }
+        else {
+            // re-raise exception
+            nlr_jump(nlr.ret_val);
+        }
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
 
