@@ -561,11 +561,7 @@ STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
         return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);
     }
     else {
-        // an exception was raised
-        mp_obj_type_t *t = (mp_obj_type_t*)((mp_obj_base_t*)nlr.ret_val)->type;
-        if (t == &mp_type_AttributeError) {
-            return mp_obj_new_bool(0);
-        }
+        return mp_obj_new_bool(0);
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);
