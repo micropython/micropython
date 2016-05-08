@@ -16,11 +16,11 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
-// HSE is 8MHz
-#define MICROPY_HW_CLK_PLLM (2)
+// MSI is used and is 4MHz
+#define MICROPY_HW_CLK_PLLM (1)
 #define MICROPY_HW_CLK_PLLN (40)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV7)
-#define MICROPY_HW_CLK_PLLR (RCC_PLLP_DIV7)
+#define MICROPY_HW_CLK_PLLR (RCC_PLLR_DIV2)
 #define MICROPY_HW_CLK_PLLQ (RCC_PLLQ_DIV2)
 
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
@@ -32,6 +32,8 @@
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B7)
+#define MICROPY_HW_I2C2_SCL (pin_B10)
+#define MICROPY_HW_I2C2_SDA (pin_B11)
 // We use an array of baudrates and corresponding TIMINGR values.
 //
 // The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
