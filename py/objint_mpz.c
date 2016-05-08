@@ -239,12 +239,6 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 }
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
-                if (zlhs->neg != zrhs->neg) {
-                    if (!mpz_is_zero(&rem)) {
-                        mpz_t mpzone; mpz_init_from_int(&mpzone, -1);
-                        mpz_add_inpl(&res->mpz, &res->mpz, &mpzone);
-                    }
-                }
                 mpz_deinit(&rem);
                 break;
             }
@@ -256,10 +250,6 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_t quo; mpz_init_zero(&quo);
                 mpz_divmod_inpl(&quo, &res->mpz, zlhs, zrhs);
                 mpz_deinit(&quo);
-                // Check signs and do Python style modulo
-                if (zlhs->neg != zrhs->neg) {
-                    mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
-                }
                 break;
             }
 
@@ -303,10 +293,6 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 }
                 mp_obj_int_t *quo = mp_obj_int_new_mpz();
                 mpz_divmod_inpl(&quo->mpz, &res->mpz, zlhs, zrhs);
-                // Check signs and do Python style modulo
-                if (zlhs->neg != zrhs->neg) {
-                    mpz_add_inpl(&res->mpz, &res->mpz, zrhs);
-                }
                 mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
                 return mp_obj_new_tuple(2, tuple);
             }

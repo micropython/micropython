@@ -1509,8 +1509,14 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
     //rhs->dig[rhs->len] = 0;
     mpn_div(dest_rem->dig, &dest_rem->len, rhs->dig, rhs->len, dest_quo->dig, &dest_quo->len);
 
+    // check signs and do Python style modulo
     if (lhs->neg != rhs->neg) {
         dest_quo->neg = 1;
+        if (!mpz_is_zero(dest_rem)) {
+            mpz_t mpzone; mpz_init_from_int(&mpzone, -1);
+            mpz_add_inpl(dest_quo, dest_quo, &mpzone);
+            mpz_add_inpl(dest_rem, dest_rem, rhs);
+        }
     }
 }
 
