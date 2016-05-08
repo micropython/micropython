@@ -10,7 +10,7 @@ listen_s = None
 client_s = None
 
 def setup_conn(port, accept_handler):
-    global listen_s, client_s
+    global listen_s
     listen_s = socket.socket()
     listen_s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -19,11 +19,13 @@ def setup_conn(port, accept_handler):
 
     listen_s.bind(addr)
     listen_s.listen(1)
-    listen_s.setsockopt(socket.SOL_SOCKET, 20, accept_handler)
+    if accept_handler:
+        listen_s.setsockopt(socket.SOL_SOCKET, 20, accept_handler)
     for i in (network.AP_IF, network.STA_IF):
         iface = network.WLAN(i)
         if iface.active():
             print("WebREPL daemon started on ws://%s:%d" % (iface.ifconfig()[0], port))
+    return listen_s
 
 
 def accept_conn(listen_sock):
@@ -65,3 +67,9 @@ def start(port=8266, password=None):
         _webrepl.password(password)
         setup_conn(port, accept_conn)
         print("Started webrepl in normal mode")
+
+
+def start_foreground(port=8266):
+    stop()
+    s = setup_conn(port, None)
+    accept_conn(s)
