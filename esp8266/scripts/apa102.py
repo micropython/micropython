@@ -1,4 +1,5 @@
 # APA102 driver for MicroPython on ESP8266
+# MIT license; Copyright (c) 2016 Robert Foss, Daniel Busch
 
 from esp import apa102_write
 
