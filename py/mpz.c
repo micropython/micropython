@@ -491,7 +491,7 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, 
     for (mpz_dig_t *den = den_dig, carry = 0; den < den_dig + den_len; ++den) {
         mpz_dig_t d = *den;
         *den = ((d << norm_shift) | carry) & DIG_MASK;
-        carry = d >> (DIG_SIZE - norm_shift);
+        carry = (mpz_dbl_dig_t)d >> (DIG_SIZE - norm_shift);
     }
 
     // now need to shift numerator by same amount as denominator
@@ -501,7 +501,7 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, 
     for (mpz_dig_t *num = num_dig, carry = 0; num < num_dig + *num_len; ++num) {
         mpz_dig_t n = *num;
         *num = ((n << norm_shift) | carry) & DIG_MASK;
-        carry = n >> (DIG_SIZE - norm_shift);
+        carry = (mpz_dbl_dig_t)n >> (DIG_SIZE - norm_shift);
     }
 
     // cache the leading digit of the denominator
@@ -618,14 +618,14 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, mpz_dig_t *den_dig, 
     for (mpz_dig_t *den = den_dig + den_len - 1, carry = 0; den >= den_dig; --den) {
         mpz_dig_t d = *den;
         *den = ((d >> norm_shift) | carry) & DIG_MASK;
-        carry = d << (DIG_SIZE - norm_shift);
+        carry = (mpz_dbl_dig_t)d << (DIG_SIZE - norm_shift);
     }
 
     // unnormalise numerator (remainder now)
     for (mpz_dig_t *num = orig_num_dig + *num_len - 1, carry = 0; num >= orig_num_dig; --num) {
         mpz_dig_t n = *num;
         *num = ((n >> norm_shift) | carry) & DIG_MASK;
-        carry = n << (DIG_SIZE - norm_shift);
+        carry = (mpz_dbl_dig_t)n << (DIG_SIZE - norm_shift);
     }
 
     // strip trailing zeros
@@ -1509,8 +1509,14 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
     //rhs->dig[rhs->len] = 0;
     mpn_div(dest_rem->dig, &dest_rem->len, rhs->dig, rhs->len, dest_quo->dig, &dest_quo->len);
 
+    // check signs and do Python style modulo
     if (lhs->neg != rhs->neg) {
         dest_quo->neg = 1;
+        if (!mpz_is_zero(dest_rem)) {
+            mpz_t mpzone; mpz_init_from_int(&mpzone, -1);
+            mpz_add_inpl(dest_quo, dest_quo, &mpzone);
+            mpz_add_inpl(dest_rem, dest_rem, rhs);
+        }
     }
 }
 

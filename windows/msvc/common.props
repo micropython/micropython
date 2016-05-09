@@ -16,6 +16,8 @@
       <SDLCheck>false</SDLCheck>
       <WarningLevel>Level1</WarningLevel>
       <ExceptionHandling>false</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

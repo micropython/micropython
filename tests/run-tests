@@ -351,14 +351,15 @@ def main():
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    if args.target in ('pyboard', 'wipy', 'esp8266'):
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266')
+    if args.target in EXTERNAL_TARGETS:
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
     elif args.target == 'unix':
         pyb = None
     else:
-        raise ValueError('target must be either unix, pyboard or wipy')
+        raise ValueError('target must be either %s or unix' % ", ".join(EXTERNAL_TARGETS))
 
     if len(args.files) == 0:
         if args.test_dirs is None:
