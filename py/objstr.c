@@ -1043,7 +1043,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             // recursively call the formatter to format any nested specifiers
             MP_STACK_CHECK();
             vstr_t format_spec_vstr = mp_obj_str_format_helper(format_spec, str, arg_i, n_args, args, kwargs);
-            const char *s = format_spec_vstr.buf;
+            const char *s = vstr_null_terminated_str(&format_spec_vstr);
             const char *stop = s + format_spec_vstr.len;
             if (isalignment(*s)) {
                 align = *s++;
@@ -1083,7 +1083,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             if (istype(*s)) {
                 type = *s++;
             }
-            if (s != stop) {
+            if (*s) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
