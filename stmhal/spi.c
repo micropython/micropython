@@ -61,20 +61,6 @@
 ///     spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
 ///     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
 
-// Possible DMA configurations for SPI busses:
-// SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
-// SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
-// SPI2_TX: DMA1_Stream4.CHANNEL_0
-// SPI2_RX: DMA1_Stream3.CHANNEL_0
-// SPI3_TX: DMA1_Stream5.CHANNEL_0 or DMA1_Stream7.CHANNEL_0
-// SPI3_RX: DMA1_Stream0.CHANNEL_0 or DMA1_Stream2.CHANNEL_0
-// SPI4_TX: DMA2_Stream4.CHANNEL_5 or DMA2_Stream1.CHANNEL_4
-// SPI4_RX: DMA2_Stream3.CHANNEL_5 or DMA2_Stream0.CHANNEL_4
-// SPI5_TX: DMA2_Stream4.CHANNEL_2 or DMA2_Stream6.CHANNEL_7
-// SPI5_RX: DMA2_Stream3.CHANNEL_2 or DMA2_Stream5.CHANNEL_7
-// SPI6_TX: DMA2_Stream5.CHANNEL_1
-// SPI6_RX: DMA2_Stream6.CHANNEL_1
-
 typedef struct _pyb_spi_obj_t {
     mp_obj_base_t base;
     SPI_HandleTypeDef *spi;
@@ -364,6 +350,7 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         if (self->spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED) {
             mp_printf(print, ", crc=0x%x", self->spi->Init.CRCPolynomial);
         }
+        mp_printf(print, ", dir=%u", self->spi->Init.Direction);
         mp_print_str(print, ")");
     }
 }
@@ -560,6 +547,11 @@ STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         }
         dma_deinit(self->tx_dma_descr);
     }
+    #if defined(MCU_SERIES_L4)
+    // See STM TECH018409 on my.st.com
+    // >> SPI is not disabled after a one wire transmit on L4. <<
+    __HAL_SPI_DISABLE(self->spi);
+    #endif
 
     if (status != HAL_OK) {
         mp_hal_raise(status);
@@ -724,6 +716,38 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_send_recv_obj, 1, pyb_spi_send_recv);
 
+/// \method dir(dir=None)
+///
+/// Set\Get direction configuration
+///
+///   - `dir` must be either
+///           DIRECTION_TWO_LINES for normal MOSI/MISO mode or
+///           DIRECTION_ONE_LINE for bidirectional MOSI line in Master mode or
+///           bidirectional MISO line in slave mode.
+///
+/// Return value: current direction if dir in function call is None.
+STATIC mp_obj_t pyb_spi_dir(mp_uint_t n_args, const mp_obj_t *args) {
+
+    pyb_spi_obj_t *self = args[0];
+    if (n_args == 1) {
+        // Get current dir configuration
+        return MP_OBJ_NEW_SMALL_INT(self->spi->Init.Direction );
+    } else {
+        uint32_t new_value = mp_obj_get_int(args[1]);
+
+        if ( (new_value != SPI_DIRECTION_2LINES) &&
+             (new_value != SPI_DIRECTION_1LINE) ) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid direction %d", new_value));
+        }
+
+        self->spi->Init.Direction = new_value;
+        HAL_SPI_Init(self->spi); /* To write BiDi mode to control register */
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_spi_dir_obj, 1, 2, pyb_spi_dir);
+
 STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_spi_init_obj },
@@ -731,20 +755,23 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_spi_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_spi_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_spi_send_recv_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_dir), (mp_obj_t)&pyb_spi_dir_obj },
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode
     /// \constant SLAVE - for initialising the bus to slave mode
     /// \constant MSB - set the first bit to MSB
     /// \constant LSB - set the first bit to LSB
+    /// \constant DIRECTION_2LINES - Normal 4 wire interface with MOSI/MISO
+    /// \constant DIRECTION_1LINE - Use MOSI (Master mode) or MISO (Slave mode) as bidirectional pin.
     { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER), MP_OBJ_NEW_SMALL_INT(SPI_MODE_MASTER) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLAVE),  MP_OBJ_NEW_SMALL_INT(SPI_MODE_SLAVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MSB),    MP_OBJ_NEW_SMALL_INT(SPI_FIRSTBIT_MSB) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LSB),    MP_OBJ_NEW_SMALL_INT(SPI_FIRSTBIT_LSB) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_TWO_LINES), MP_OBJ_NEW_SMALL_INT(SPI_DIRECTION_2LINES) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_ONE_LINE), MP_OBJ_NEW_SMALL_INT(SPI_DIRECTION_1LINE) },
     /* TODO
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_2LINES             ((uint32_t)0x00000000)
     { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_2LINES_RXONLY      SPI_CR1_RXONLY
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIRECTION_1LINE              SPI_CR1_BIDIMODE
     { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_SOFT                    SPI_CR1_SSM
     { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_HARD_INPUT              ((uint32_t)0x00000000)
     { MP_OBJ_NEW_QSTR(MP_QSTR_NSS_HARD_OUTPUT             ((uint32_t)0x00040000)
