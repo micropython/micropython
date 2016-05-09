@@ -181,8 +181,14 @@ char *vstr_add_len(vstr_t *vstr, size_t len) {
 
 // Doesn't increase len, just makes sure there is a null byte at the end
 char *vstr_null_terminated_str(vstr_t *vstr) {
-    if (vstr->had_error || !vstr_ensure_extra(vstr, 1)) {
+    if (vstr->had_error) {
         return NULL;
+    }
+    // If there's no more room, add single byte
+    if (vstr->alloc == vstr->len) {
+        if (vstr_extend(vstr, 1) == NULL) {
+            return NULL;
+        }
     }
     vstr->buf[vstr->len] = '\0';
     return vstr->buf;
