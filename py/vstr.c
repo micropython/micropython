@@ -151,7 +151,7 @@ STATIC bool vstr_ensure_extra(vstr_t *vstr, size_t size) {
         if (vstr->fixed_buf) {
             return false;
         }
-        size_t new_alloc = ROUND_ALLOC((vstr->len + size) * 2);
+        size_t new_alloc = ROUND_ALLOC((vstr->len + size) + 16);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         if (new_buf == NULL) {
             vstr->had_error = true;
