@@ -27,12 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "bufhelper.h"
 #include "can.h"
@@ -817,7 +817,7 @@ mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *err
             ret |= MP_IOCTL_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = -1;
     }
     return ret;

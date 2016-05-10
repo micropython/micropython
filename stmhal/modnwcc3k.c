@@ -26,7 +26,6 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
