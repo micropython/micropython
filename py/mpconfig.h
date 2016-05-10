@@ -814,6 +814,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #endif
 
+// Whether to provide "uerrno" module
+#ifndef MICROPY_PY_UERRNO
+#define MICROPY_PY_UERRNO (0)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_UCTYPES
