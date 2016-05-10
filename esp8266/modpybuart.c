@@ -27,13 +27,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
 
 #include "ets_sys.h"
 #include "uart.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/mperrno.h"
 #include "modpyb.h"
 
 // baudrate is currently fixed to this value
@@ -136,7 +136,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
 
     // wait for first char to become available
     if (!uart_rx_wait(self->timeout * 1000)) {
-        *errcode = EAGAIN;
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
 
@@ -173,7 +173,7 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
 }
 
 STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    *errcode = EINVAL;
+    *errcode = MP_EINVAL;
     return MP_STREAM_ERROR;
 }
 
