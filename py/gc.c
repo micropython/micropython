@@ -768,7 +768,7 @@ void gc_dump_alloc_table(void) {
                 }
                 break;
             }
-            case AT_TAIL: c = 't'; break;
+            case AT_TAIL: c = '-'; break;
             case AT_MARK: c = 'm'; break;
         }
         mp_printf(&mp_plat_print, "%c", c);
