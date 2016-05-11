@@ -88,7 +88,7 @@ bool mp_repl_continue_with_input(const char *input) {
             } else if (in_quote == Q_NONE || in_quote == Q_1_DOUBLE) {
                 in_quote = Q_1_DOUBLE - in_quote;
             }
-        } else if (*i == '\\' && (i[1] == '\'' || i[1] == '"')) {
+        } else if (*i == '\\' && (i[1] == '\'' || i[1] == '"' || i[1] == '\\')) {
             if (in_quote != Q_NONE) {
                 i++;
             }
