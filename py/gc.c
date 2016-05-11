@@ -735,7 +735,12 @@ void gc_dump_alloc_table(void) {
                 else if (*ptr == &mp_type_list) { c = 'L'; }
                 else if (*ptr == &mp_type_dict) { c = 'D'; }
                 else if (*ptr == &mp_type_str || *ptr == &mp_type_bytes) { c = 'S'; }
-                else if (*ptr == &mp_type_bytearray || *ptr == &mp_type_array) { c = 'A'; }
+                #if MICROPY_PY_BUILTINS_BYTEARRAY
+                else if (*ptr == &mp_type_bytearray) { c = 'A'; }
+                #endif
+                #if MICROPY_PY_ARRAY
+                else if (*ptr == &mp_type_array) { c = 'A'; }
+                #endif
                 #if MICROPY_PY_BUILTINS_FLOAT
                 else if (*ptr == &mp_type_float) { c = 'F'; }
                 #endif
