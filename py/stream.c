@@ -104,7 +104,7 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     return stream_p;
 }
 
-STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
 
     // What to do if sz < -1?  Python docs don't specify this case.
@@ -207,7 +207,7 @@ STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
     vstr_init_len(&vstr, sz);
     int error;
-    mp_uint_t out_sz = mp_stream_read_exactly(args[0], vstr.buf, sz, &error);
+    mp_uint_t out_sz = mp_stream_rw(args[0], vstr.buf, sz, &error, flags);
     if (error != 0) {
         vstr_clear(&vstr);
         if (mp_is_nonblocking_error(error)) {
@@ -224,7 +224,16 @@ STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
     }
 }
+
+STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
+    return stream_read_generic(n_args, args, OP_READ);
+}
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
+
+STATIC mp_obj_t stream_read1(size_t n_args, const mp_obj_t *args) {
+    return stream_read_generic(n_args, args, OP_READ | OP_ONCE);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj, 1, 2, stream_read1);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(self_in, MP_STREAM_OP_WRITE);

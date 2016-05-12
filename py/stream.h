@@ -48,6 +48,7 @@ struct mp_stream_seek_t {
 };
 
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_read1_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);
