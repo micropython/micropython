@@ -133,8 +133,8 @@ STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
             }
             int error;
-            mp_uint_t out_sz = stream_p->read(args[0], p, more_bytes, &error);
-            if (out_sz == MP_STREAM_ERROR) {
+            mp_uint_t out_sz = mp_stream_read_exactly(args[0], p, more_bytes, &error);
+            if (error != 0) {
                 vstr_cut_tail_bytes(&vstr, more_bytes);
                 if (mp_is_nonblocking_error(error)) {
                     // With non-blocking streams, we read as much as we can.
@@ -204,8 +204,8 @@ STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
     vstr_init_len(&vstr, sz);
     int error;
-    mp_uint_t out_sz = stream_p->read(args[0], vstr.buf, sz, &error);
-    if (out_sz == MP_STREAM_ERROR) {
+    mp_uint_t out_sz = mp_stream_read_exactly(args[0], vstr.buf, sz, &error);
+    if (error != 0) {
         vstr_clear(&vstr);
         if (mp_is_nonblocking_error(error)) {
             // https://docs.python.org/3.4/library/io.html#io.RawIOBase.read
@@ -256,7 +256,7 @@ STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
 
 STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
-    const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
+    mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
 
@@ -272,8 +272,8 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     }
 
     int error;
-    mp_uint_t out_sz = stream_p->read(args[0], bufinfo.buf, len, &error);
-    if (out_sz == MP_STREAM_ERROR) {
+    mp_uint_t out_sz = mp_stream_read_exactly(args[0], bufinfo.buf, len, &error);
+    if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
         }
