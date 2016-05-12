@@ -70,9 +70,12 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len);
 
 // C-level helper functions
-mp_uint_t mp_stream_rw_exactly(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode, bool is_write);
-#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw_exactly(stream, (byte*)buf, size, err, true)
-#define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw_exactly(stream, buf, size, err, false)
+#define OP_READ  0
+#define OP_WRITE 2
+#define OP_ONCE  1
+mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode, byte flags);
+#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte*)buf, size, err, OP_WRITE)
+#define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, OP_READ)
 
 #if MICROPY_STREAMS_NON_BLOCK
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,

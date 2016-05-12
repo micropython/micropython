@@ -52,12 +52,12 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 // Returns error condition in *errcode, if non-zero, return value is number of bytes written
 // before error condition occured. If *errcode == 0, returns total bytes written (which will
 // be equal to input size).
-mp_uint_t mp_stream_rw_exactly(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode, bool is_write) {
+mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode, byte flags) {
     byte *buf = buf_;
     mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
     typedef mp_uint_t (*io_func_t)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     io_func_t io_func;
-    if (is_write) {
+    if (flags & OP_WRITE) {
         io_func = (io_func_t)s->type->stream_p->write;
     } else {
         io_func = s->type->stream_p->read;
@@ -79,6 +79,9 @@ mp_uint_t mp_stream_rw_exactly(mp_obj_t stream, void *buf_, mp_uint_t size, int 
                 *errcode = 0;
             }
             return done;
+        }
+        if (flags & OP_ONCE) {
+            return out_sz;
         }
 
         buf += out_sz;
