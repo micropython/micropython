@@ -235,18 +235,16 @@ STATIC mp_obj_t stream_read1(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj, 1, 2, stream_read1);
 
-mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
-    const mp_stream_p_t *stream_p = mp_get_stream_raise(self_in, MP_STREAM_OP_WRITE);
+mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte flags) {
+    mp_get_stream_raise(self_in, MP_STREAM_OP_WRITE);
 
     int error;
-    mp_uint_t out_sz = stream_p->write(self_in, buf, len, &error);
-    if (out_sz == MP_STREAM_ERROR) {
+    mp_uint_t out_sz = mp_stream_rw(self_in, (void*)buf, len, &error, flags);
+    if (error != 0) {
         if (mp_is_nonblocking_error(error)) {
             // http://docs.python.org/3/library/io.html#io.RawIOBase.write
             // "None is returned if the raw stream is set not to block and
             // no single byte could be readily written to it."
-            // This is for consistency with read() behavior, still weird,
-            // see abobe.
             return mp_const_none;
         }
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
@@ -257,15 +255,22 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
 
 // XXX hack
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
-    mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len);
+    mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len, OP_WRITE);
 }
 
 STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len);
+    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, OP_WRITE);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
+
+STATIC mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, OP_WRITE | OP_ONCE);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
 
 STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
