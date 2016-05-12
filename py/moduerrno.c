@@ -32,12 +32,27 @@
 
 #if MICROPY_PY_UERRNO
 
+// This list could be defined per port in mpconfigport.h to tailor it to a
+// specific port's needs.  But for now we have a common list.
 #define ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(EIO) \
+    X(EBADF) \
     X(EAGAIN) \
+    X(ENOMEM) \
+    X(ENODEV) \
+    X(EINVAL) \
+    X(EOPNOTSUPP) \
+    X(EADDRINUSE) \
+    X(ECONNABORTED) \
+    X(ECONNRESET) \
+    X(ENOBUFS) \
+    X(ENOTCONN) \
     X(ETIMEDOUT) \
+    X(EHOSTUNREACH) \
+    X(EALREADY) \
+    X(EINPROGRESS) \
 
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
     #define X(e) { MP_ROM_INT(MP_ ## e), MP_ROM_QSTR(MP_QSTR_## e) },
