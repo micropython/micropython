@@ -66,9 +66,18 @@
 #define MP_EPIPE             (32) // Broken pipe
 #define MP_EDOM              (33) // Math argument out of domain of func
 #define MP_ERANGE            (34) // Math result not representable
+#define MP_EWOULDBLOCK  MP_EAGAIN // Operation would block
+#define MP_EOPNOTSUPP        (95) // Operation not supported on transport endpoint
 #define MP_EAFNOSUPPORT      (97) // Address family not supported by protocol
+#define MP_EADDRINUSE        (98) // Address already in use
+#define MP_ECONNABORTED     (103) // Software caused connection abort
+#define MP_ECONNRESET       (104) // Connection reset by peer
+#define MP_ENOBUFS          (105) // No buffer space available
 #define MP_ENOTCONN         (107) // Transport endpoint is not connected
 #define MP_ETIMEDOUT        (110) // Connection timed out
+#define MP_EHOSTUNREACH     (113) // No route to host
+#define MP_EALREADY         (114) // Operation already in progress
+#define MP_EINPROGRESS      (115) // Operation now in progress
 
 #else
 
@@ -110,9 +119,18 @@
 #define MP_EPIPE            EPIPE
 #define MP_EDOM             EDOM
 #define MP_ERANGE           ERANGE
+#define MP_EWOULDBLOCK      EAGAIN
+#define MP_EOPNOTSUPP       EOPNOTSUPP
 #define MP_EAFNOSUPPORT     EAFNOSUPPORT
+#define MP_EADDRINUSE       EADDRINUSE
+#define MP_ECONNABORTED     ECONNABORTED
+#define MP_ECONNRESET       ECONNRESET
+#define MP_ENOBUFS          ENOBUFS
 #define MP_ENOTCONN         ENOTCONN
 #define MP_ETIMEDOUT        ETIMEDOUT
+#define MP_EHOSTUNREACH     EHOSTUNREACH
+#define MP_EALREADY         EALREADY
+#define MP_EINPROGRESS      EINPROGRESS
 
 #endif
 
