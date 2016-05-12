@@ -41,6 +41,7 @@
     X(EBADF) \
     X(EAGAIN) \
     X(ENOMEM) \
+    X(EACCES) \
     X(ENODEV) \
     X(EINVAL) \
     X(EOPNOTSUPP) \
