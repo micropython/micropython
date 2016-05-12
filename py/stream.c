@@ -49,6 +49,25 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
+// Returns error condition in *errcode, if non-zero, return value is number of bytes written
+// before error condition occured. If *errcode == 0, returns total bytes written (which will
+// be equal to input size).
+mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, int *errcode) {
+    mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    *errcode = 0;
+    mp_uint_t written = 0;
+    while (size > 0) {
+        mp_uint_t out_sz = s->type->stream_p->write(stream, buf, size, errcode);
+        if (out_sz == MP_STREAM_ERROR) {
+            return written;
+        }
+        buf += out_sz;
+        size -= out_sz;
+        written += out_sz;
+    }
+    return written;
+}
+
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     mp_obj_base_t *o = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *stream_p = o->type->stream_p;
@@ -207,21 +226,6 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len) {
 // XXX hack
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
     mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len);
-}
-
-// Works only with blocking streams
-mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, int *errcode) {
-    mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
-    mp_uint_t org_size = size;
-    while (size > 0) {
-        mp_uint_t out_sz = s->type->stream_p->write(stream, buf, size, errcode);
-        if (out_sz == MP_STREAM_ERROR) {
-            return MP_STREAM_ERROR;
-        }
-        buf += out_sz;
-        size -= out_sz;
-    }
-    return org_size;
 }
 
 STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {

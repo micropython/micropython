@@ -79,7 +79,7 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         buf = (byte*)buf + rem;
         size -= rem;
         mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->alloc, errcode);
-        if (out_sz == MP_STREAM_ERROR) {
+        if (*errcode != 0) {
             return MP_STREAM_ERROR;
         }
         self->len = 0;
@@ -95,7 +95,7 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
         int err;
         mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->len, &err);
         self->len = 0;
-        if (out_sz == MP_STREAM_ERROR) {
+        if (err != 0) {
             nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
         }
     }
