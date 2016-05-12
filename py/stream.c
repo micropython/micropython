@@ -52,20 +52,40 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 // Returns error condition in *errcode, if non-zero, return value is number of bytes written
 // before error condition occured. If *errcode == 0, returns total bytes written (which will
 // be equal to input size).
-mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, int *errcode) {
+mp_uint_t mp_stream_rw_exactly(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode, bool is_write) {
+    byte *buf = buf_;
     mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    typedef mp_uint_t (*io_func_t)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
+    io_func_t io_func;
+    if (is_write) {
+        io_func = (io_func_t)s->type->stream_p->write;
+    } else {
+        io_func = s->type->stream_p->read;
+    }
+
     *errcode = 0;
-    mp_uint_t written = 0;
+    mp_uint_t done = 0;
     while (size > 0) {
-        mp_uint_t out_sz = s->type->stream_p->write(stream, buf, size, errcode);
-        if (out_sz == MP_STREAM_ERROR) {
-            return written;
+        mp_uint_t out_sz = io_func(stream, buf, size, errcode);
+        // For read, out_sz == 0 means EOF. For write, it's unspecified
+        // what it means, but we don't make any progress, so returning
+        // is still the best option.
+        if (out_sz == 0) {
+            return done;
         }
+        if (out_sz == MP_STREAM_ERROR) {
+            // If we read something before getting EAGAIN, don't leak it
+            if (mp_is_nonblocking_error(*errcode) && done != 0) {
+                *errcode = 0;
+            }
+            return done;
+        }
+
         buf += out_sz;
         size -= out_sz;
-        written += out_sz;
+        done += out_sz;
     }
-    return written;
+    return done;
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
