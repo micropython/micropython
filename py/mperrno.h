@@ -135,9 +135,7 @@
 #endif
 
 #if MICROPY_PY_UERRNO
-mp_obj_t mp_errno_to_str(mp_obj_t errno_val);
-#else
-static inline mp_obj_t mp_errno_to_str(mp_obj_t errno_val) { return errno_val; }
+qstr mp_errno_to_str(mp_obj_t errno_val);
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_MPERRNO_H__
