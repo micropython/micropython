@@ -89,4 +89,13 @@ const mp_obj_module_t mp_module_uerrno = {
     .globals = (mp_obj_dict_t*)&mp_module_uerrno_globals,
 };
 
+mp_obj_t mp_errno_to_str(mp_obj_t errno_val) {
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t*)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
+    if (elem == NULL) {
+        return errno_val;
+    } else {
+        return elem->value;
+    }
+}
+
 #endif //MICROPY_PY_UERRNO

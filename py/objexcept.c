@@ -36,6 +36,7 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 
 // Instance of MemoryError exception - needed by mp_malloc_fail
 const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
@@ -288,6 +289,10 @@ mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
 
 // "Optimized" version for common(?) case of having 1 exception arg
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    // try to provide a nice string instead of numeric value for errno's
+    if (exc_type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(arg)) {
+        arg = mp_errno_to_str(arg);
+    }
     return mp_obj_new_exception_args(exc_type, 1, &arg);
 }
 
