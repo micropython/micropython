@@ -199,9 +199,6 @@ The I2C driver is implemented in software and works on all pins::
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
 
-    i2c.readfrom(0x3a, 4, stop=False) # don't send a stop bit after reading
-    i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
-
 Deep-sleep mode
 ---------------
 
