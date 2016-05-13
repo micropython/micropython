@@ -240,9 +240,9 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         mp_call_method_n_kw(1, 0, dest);
     }
 
-    mp_uint_t out_sz = mp_stream_writeall(self->sock, header, hdr_sz, errcode);
+    mp_uint_t out_sz = mp_stream_write_exactly(self->sock, header, hdr_sz, errcode);
     if (*errcode == 0) {
-        out_sz = mp_stream_writeall(self->sock, buf, size, errcode);
+        out_sz = mp_stream_write_exactly(self->sock, buf, size, errcode);
     }
 
     if (self->opts & BLOCKING_WRITE) {
