@@ -1,5 +1,12 @@
 # test string.splitlines() method
 
+try:
+    str.splitlines
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
+
 # test \n as newline
 print("foo\nbar".splitlines())
 print("foo\nbar\n".splitlines())
