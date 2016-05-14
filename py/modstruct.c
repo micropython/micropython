@@ -120,8 +120,9 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
             if (sz == 0) {
                 sz = (mp_uint_t)mp_binary_get_size(fmt_type, *fmt, &align);
             }
-            // TODO
-            assert(sz != (mp_uint_t)-1);
+            if (sz == 0) {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "unsupported format"));
+            }
             // Apply alignment
             size = (size + align - 1) & ~(align - 1);
             size += sz;
