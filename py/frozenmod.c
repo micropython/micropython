@@ -43,6 +43,24 @@ extern const char mp_frozen_str_names[];
 extern const uint32_t mp_frozen_str_sizes[];
 extern const char mp_frozen_str_content[];
 
+mp_import_stat_t mp_frozen_stat(const char *str) {
+    size_t len = strlen(str);
+    const char *name = mp_frozen_str_names;
+
+    for (int i = 0; *name != 0; i++) {
+        size_t l = strlen(name);
+        if (l >= len && !memcmp(str, name, len)) {
+            if (name[len] == 0) {
+                return MP_IMPORT_STAT_FILE;
+            } else if (name[len] == '/') {
+                return MP_IMPORT_STAT_DIR;
+            }
+        }
+        name += l + 1;
+    }
+    return MP_IMPORT_STAT_NO_EXIST;
+}
+
 STATIC mp_lexer_t *mp_find_frozen_str(const char *str, size_t len) {
     const char *name = mp_frozen_str_names;
 
