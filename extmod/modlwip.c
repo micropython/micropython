@@ -311,6 +311,17 @@ STATIC err_t _lwip_tcp_recv_unaccepted(void *arg, struct tcp_pcb *pcb, struct pb
     return ERR_BUF;
 }
 
+// "Poll" (idle) callback to be called ASAP after accept callback
+// to execute Python callback function, as it can't be executed
+// from accept callback itself.
+STATIC err_t _lwip_tcp_accept_finished(void *arg, struct tcp_pcb *pcb)
+{
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
+    tcp_poll(pcb, NULL, 0);
+    exec_user_callback(socket);
+    return ERR_OK;
+}
+
 // Callback for incoming tcp connections.
 STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
     lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
@@ -323,7 +334,12 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
         return ERR_BUF;
     } else {
         socket->incoming.connection = newpcb;
-        exec_user_callback(socket);
+        if (socket->callback != MP_OBJ_NULL) {
+            // Schedule accept callback to be called when lwIP is done
+            // with processing this incoming connection on its side and
+            // is idle.
+            tcp_poll(newpcb, _lwip_tcp_accept_finished, 1);
+        }
         return ERR_OK;
     }
 }
