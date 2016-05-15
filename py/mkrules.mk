@@ -92,7 +92,7 @@ $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
 # The net effect of this, is it causes the objects to depend on the
 # object directories (but only for existence), and the object directories
 # will be created if they don't exist.
-OBJ_DIRS = $(sort $(dir $(OBJ)))
+OBJ_DIRS = $(sort $(dir $(OBJ) $(LIBOBJ)))
 $(OBJ): | $(OBJ_DIRS)
 $(OBJ_DIRS):
 	$(MKDIR) -p $@
@@ -115,7 +115,7 @@ ifndef DEBUG
 endif
 	$(Q)$(SIZE) $(PROG)
 
-lib: $(OBJ)
+lib: $(LIBOBJ)
 	$(AR) rcs libmicropython.a $^
 
 clean: clean-prog
