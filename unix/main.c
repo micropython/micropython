@@ -50,7 +50,6 @@
 #include "input.h"
 
 // Command line options, with their defaults
-STATIC bool compile_only = false;
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -92,7 +91,7 @@ STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
 // Returns standard error codes: 0 for success, 1 for all other errors,
 // except if FORCED_EXIT bit is set then script raised SystemExit and the
 // value of the exit is in the lower 8 bits of the return value
-STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
+STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, uint emit_opt, bool is_repl) {
     if (lex == NULL) {
         printf("MemoryError: lexer could not allocate memory\n");
         return 1;
@@ -120,16 +119,16 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
 
-        if (!compile_only) {
-            // execute it
-            mp_call_function_0(module_fun);
-            // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
-            }
+
+        // execute it
+        mp_call_function_0(module_fun);
+        // check for pending exception
+        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(obj);
         }
+
 
         mp_hal_set_interrupt_char(-1);
         nlr_pop();
@@ -237,7 +236,7 @@ STATIC int do_repl(void) {
         mp_hal_stdio_mode_orig();
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, false);
-        ret = execute_from_lexer(lex, parse_input_kind, true);
+        ret = execute_from_lexer(lex, parse_input_kind, emit_opt, true);
         if (ret & FORCED_EXIT) {
             return ret;
         }
@@ -265,7 +264,7 @@ STATIC int do_repl(void) {
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        int ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        int ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, emit_opt, true);
         if (ret & FORCED_EXIT) {
             return ret;
         }
@@ -275,14 +274,14 @@ STATIC int do_repl(void) {
     #endif
 }
 
-STATIC int do_file(const char *file) {
+STATIC int do_file(const char *file, uint emit_opt) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
-    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, emit_opt, false);
 }
 
-STATIC int do_str(const char *str) {
+STATIC int do_str(const char *str, uint emit_opt) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
-    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, emit_opt, false);
 }
 
 STATIC int usage(char **argv) {
@@ -296,7 +295,6 @@ STATIC int usage(char **argv) {
 );
     int impl_opts_cnt = 0;
     printf(
-"  compile-only                 -- parse and compile only\n"
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
 );
     impl_opts_cnt++;
@@ -323,8 +321,6 @@ STATIC void pre_process_options(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 if (0) {
-                } else if (strcmp(argv[a + 1], "compile-only") == 0) {
-                    compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
@@ -483,7 +479,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 if (a + 1 >= argc) {
                     return usage(argv);
                 }
-                ret = do_str(argv[a + 1]);
+                ret = do_str(argv[a + 1], emit_opt);
                 if (ret & FORCED_EXIT) {
                     break;
                 }
@@ -517,7 +513,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 if (mp_obj_is_package(mod)) {
                     // TODO
-                    mp_printf(&mp_stderr_print, "%s: -m for packages not yet implemented\n", argv[0]);
+                    printf("%s: -m for packages not yet implemented\n", argv[0]);
                     exit(1);
                 }
                 ret = 0;
@@ -542,7 +538,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             char *pathbuf = malloc(PATH_MAX);
             char *basedir = realpath(argv[a], pathbuf);
             if (basedir == NULL) {
-                mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
+                printf("%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
@@ -554,7 +550,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);
-            ret = do_file(argv[a]);
+            ret = do_file(argv[a], emit_opt);
             break;
         }
     }
@@ -566,7 +562,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             prompt_write_history();
         } else {
             mp_lexer_t *lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
-            ret = execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+            ret = execute_from_lexer(lex, MP_PARSE_FILE_INPUT, emit_opt, false);
         }
     }
 
