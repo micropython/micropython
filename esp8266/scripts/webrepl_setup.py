@@ -60,6 +60,9 @@ some boards, you may need to press reset button or reconnect power.\r
         if len(passwd1) < 4:
             ws.write("Password too short\r\n")
             continue
+        elif len(passwd1) > 9:
+            ws.write("Password too long\r\n")
+            continue
         passwd2 = getpass(ws, "Confirm password: ")
         if passwd1 == passwd2:
             break
