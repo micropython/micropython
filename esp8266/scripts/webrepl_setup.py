@@ -26,7 +26,7 @@ def getpass(stream, prompt):
             stream.write("\r\n")
             return passwd
         passwd += c
-#        stream.write("*")
+        stream.write("*")
 
 def handle_conn(listen_sock):
     cl, remote_addr = listen_sock.accept()
