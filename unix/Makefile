@@ -260,7 +260,7 @@ freedos:
 
 # build an interpreter for coverage testing and do the testing
 coverage:
-	$(MAKE) COPT="-O0" CFLAGS_EXTRA='-fprofile-arcs -ftest-coverage -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wshadow -Wsign-compare -Wuninitialized -Wunused-parameter -DMICROPY_UNIX_COVERAGE -DMICROPY_PY_URANDOM_EXTRA_FUNCS' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
+	$(MAKE) COPT="-O0" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_coverage.h>" -fprofile-arcs -ftest-coverage -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wshadow -Wsign-compare -Wuninitialized -Wunused-parameter -DMICROPY_UNIX_COVERAGE' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
 
 coverage_test: coverage
 	$(eval DIRNAME=$(notdir $(CURDIR)))
