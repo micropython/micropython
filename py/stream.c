@@ -57,7 +57,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
     mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
     typedef mp_uint_t (*io_func_t)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     io_func_t io_func;
-    if (flags & OP_WRITE) {
+    if (flags & MP_STREAM_RW_WRITE) {
         io_func = (io_func_t)s->type->stream_p->write;
     } else {
         io_func = s->type->stream_p->read;
@@ -80,7 +80,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
             }
             return done;
         }
-        if (flags & OP_ONCE) {
+        if (flags & MP_STREAM_RW_ONCE) {
             return out_sz;
         }
 
@@ -226,12 +226,12 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
 }
 
 STATIC mp_obj_t stream_read(size_t n_args, const mp_obj_t *args) {
-    return stream_read_generic(n_args, args, OP_READ);
+    return stream_read_generic(n_args, args, MP_STREAM_RW_READ);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj, 1, 2, stream_read);
 
 STATIC mp_obj_t stream_read1(size_t n_args, const mp_obj_t *args) {
-    return stream_read_generic(n_args, args, OP_READ | OP_ONCE);
+    return stream_read_generic(n_args, args, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj, 1, 2, stream_read1);
 
@@ -255,20 +255,20 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte fla
 
 // XXX hack
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
-    mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len, OP_WRITE);
+    mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len, MP_STREAM_RW_WRITE);
 }
 
 STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, OP_WRITE);
+    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, MP_STREAM_RW_WRITE);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
 
 STATIC mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, OP_WRITE | OP_ONCE);
+    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, MP_STREAM_RW_WRITE | MP_STREAM_RW_ONCE);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
 
