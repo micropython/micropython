@@ -27,11 +27,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "netutils.h"
 #include "modnetwork.h"
@@ -93,20 +93,20 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
         return 0;
     } else {
         // failure
-        return ENOENT;
+        return MP_ENOENT;
     }
 }
 
 STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     if (socket->u_param.domain != MOD_NETWORK_AF_INET) {
-        *_errno = EAFNOSUPPORT;
+        *_errno = MP_EAFNOSUPPORT;
         return -1;
     }
 
     switch (socket->u_param.type) {
         case MOD_NETWORK_SOCK_STREAM: socket->u_param.type = Sn_MR_TCP; break;
         case MOD_NETWORK_SOCK_DGRAM: socket->u_param.type = Sn_MR_UDP; break;
-        default: *_errno = EINVAL; return -1;
+        default: *_errno = MP_EINVAL; return -1;
     }
 
     if (socket->u_param.fileno == -1) {
@@ -120,7 +120,7 @@ STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
         }
         if (socket->u_param.fileno == -1) {
             // too many open sockets
-            *_errno = EMFILE;
+            *_errno = MP_EMFILE;
             return -1;
         }
     }
@@ -199,7 +199,7 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
         }
         if (sr == SOCK_CLOSED || sr == SOCK_CLOSE_WAIT) {
             wiznet5k_socket_close(socket);
-            *_errno = ENOTCONN; // ??
+            *_errno = MP_ENOTCONN; // ??
             return -1;
         }
         HAL_Delay(1);
@@ -277,13 +277,13 @@ STATIC mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte
 
 STATIC int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
     // TODO
-    *_errno = EINVAL;
+    *_errno = MP_EINVAL;
     return -1;
 }
 
 STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
     // TODO
-    *_errno = EINVAL;
+    *_errno = MP_EINVAL;
     return -1;
 
     /*
@@ -297,7 +297,7 @@ STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
 
 STATIC int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
     // TODO
-    *_errno = EINVAL;
+    *_errno = MP_EINVAL;
     return -1;
 }
 

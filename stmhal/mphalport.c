@@ -1,7 +1,7 @@
-#include <errno.h>
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
@@ -9,9 +9,9 @@
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
-    [HAL_ERROR] = EIO,
-    [HAL_BUSY] = EBUSY,
-    [HAL_TIMEOUT] = ETIMEDOUT,
+    [HAL_ERROR] = MP_EIO,
+    [HAL_BUSY] = MP_EBUSY,
+    [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
@@ -104,15 +104,15 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     } else if (gpio == GPIOH) {
         __GPIOH_CLK_ENABLE();
     #endif
-    #ifdef __GPIOI_CLK_ENABLE
+    #if defined(GPIOI) && defined(__GPIOI_CLK_ENABLE)
     } else if (gpio == GPIOI) {
         __GPIOI_CLK_ENABLE();
     #endif
-    #ifdef __GPIOJ_CLK_ENABLE
+    #if defined(GPIOJ) && defined(__GPIOJ_CLK_ENABLE)
     } else if (gpio == GPIOJ) {
         __GPIOJ_CLK_ENABLE();
     #endif
-    #ifdef __GPIOK_CLK_ENABLE
+    #if defined(GPIOK) && defined(__GPIOK_CLK_ENABLE)
     } else if (gpio == GPIOK) {
         __GPIOK_CLK_ENABLE();
     #endif

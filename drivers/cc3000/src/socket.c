@@ -587,7 +587,7 @@ INT32 CC3000_EXPORT(connect)(INT32 sd, const sockaddr *addr, INT32 addrlen)
 //*****************************************************************************
 
 INT16 CC3000_EXPORT(select)(INT32 nfds, fd_set *readsds, fd_set *writesds, fd_set *exceptsds, 
-struct timeval *timeout)
+struct cc3000_timeval *timeout)
 {
 	UINT8 *ptr, *args;
 	tBsdSelectRecvParams tParams;

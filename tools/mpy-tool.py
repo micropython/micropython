@@ -215,6 +215,9 @@ def extract_prelude(bytecode):
     return ip, ip2, (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args, code_info_size)
 
 class RawCode:
+    # a set of all escaped names, to make sure they are unique
+    escaped_names = set()
+
     def __init__(self, bytecode, qstrs, objs, raw_codes):
         # set core variables
         self.bytecode = bytecode
@@ -239,6 +242,13 @@ class RawCode:
 
     def freeze(self, parent_name):
         self.escaped_name = parent_name + self.simple_name.qstr_esc
+
+        # make sure the escaped name is unique
+        i = 2
+        while self.escaped_name in RawCode.escaped_names:
+            self.escaped_name = parent_name + self.simple_name.qstr_esc + str(i)
+            i += 1
+        RawCode.escaped_names.add(self.escaped_name)
 
         # emit children first
         for rc in self.raw_codes:
@@ -439,6 +449,23 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print('#include "py/objstr.h"')
     print('#include "py/emitglue.h"')
     print()
+
+    print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE')
+    print('#error "MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE not supported with frozen mpy files"')
+    print('#endif')
+    print()
+
+    print('#if MICROPY_LONGINT_IMPL != %u' % config.MICROPY_LONGINT_IMPL)
+    print('#error "incompatible MICROPY_LONGINT_IMPL"')
+    print('#endif')
+    print()
+
+    if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
+        print('#if MPZ_DIG_SIZE != %u' % config.MPZ_DIG_SIZE)
+        print('#error "incompatible MPZ_DIG_SIZE"')
+        print('#endif')
+        print()
+
 
     print('#if MICROPY_PY_BUILTINS_FLOAT')
     print('typedef struct _mp_obj_float_t {')

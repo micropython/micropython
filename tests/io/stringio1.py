@@ -1,4 +1,7 @@
-import _io as io
+try:
+    import uio as io
+except ImportError:
+    import io
 
 a = io.StringIO()
 print('io.StringIO' in repr(a))

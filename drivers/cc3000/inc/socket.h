@@ -416,7 +416,7 @@ extern INT32 CC3000_EXPORT(connect)(INT32 sd, const sockaddr *addr, INT32 addrle
 //
 //*****************************************************************************
 extern INT16 CC3000_EXPORT(select)(INT32 nfds, fd_set *readsds, fd_set *writesds,
-                  fd_set *exceptsds, struct timeval *timeout);
+                  fd_set *exceptsds, struct cc3000_timeval *timeout);
 
 //*****************************************************************************
 //

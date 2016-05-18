@@ -26,7 +26,6 @@
 
 #include <stdarg.h>
 #include <string.h>
-#include <errno.h>
 
 #include "usbd_core.h"
 #include "usbd_desc.h"
@@ -37,6 +36,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/mperrno.h"
 #include "bufhelper.h"
 #include "usb.h"
 #include "pybioctl.h"
@@ -483,7 +483,7 @@ STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
     int ret = USBD_CDC_Rx((byte*)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
-        *errcode = EAGAIN;
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
     return ret;
@@ -493,7 +493,7 @@ STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     int ret = USBD_CDC_Tx((const byte*)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
-        *errcode = EAGAIN;
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
     return ret;
@@ -511,7 +511,7 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
             ret |= MP_IOCTL_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
     }
     return ret;
@@ -600,7 +600,7 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
             ret |= MP_IOCTL_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
     }
     return ret;

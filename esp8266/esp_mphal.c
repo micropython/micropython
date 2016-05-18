@@ -51,12 +51,6 @@ void mp_hal_init(void) {
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
 }
 
-void mp_hal_feed_watchdog(void) {
-    //ets_wdt_disable(); // it's a pain while developing
-    //WRITE_PERI_REG(0x60000914, 0x73);
-    //wdt_feed(); // might also work
-}
-
 void mp_hal_delay_us(uint32_t us) {
     uint32_t start = system_get_time();
     while (system_get_time() - start < us) {
@@ -71,7 +65,6 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         mp_hal_delay_us(1);
-        mp_hal_feed_watchdog();
     }
 }
 
@@ -218,4 +211,48 @@ void dupterm_task_init() {
 
 void mp_hal_signal_dupterm_input(void) {
     system_os_post(DUPTERM_TASK_ID, 0, 0);
+}
+
+void mp_hal_pin_config_od(mp_hal_pin_obj_t pin_id) {
+    const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
+
+    if (pin->phys_port == 16) {
+        // configure GPIO16 as input with output register holding 0
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); // input
+        WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1)); // out=0
+        return;
+    }
+
+    ETS_GPIO_INTR_DISABLE();
+    PIN_FUNC_SELECT(pin->periph, pin->func);
+    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
+        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
+        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
+    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
+        GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
+    ETS_GPIO_INTR_ENABLE();
+}
+
+// Get pointer to esf_buf bookkeeping structure
+void *ets_get_esf_buf_ctlblk(void) {
+    // Get literal ptr before start of esf_rx_buf_alloc func
+    extern void *esf_rx_buf_alloc();
+    return ((void**)esf_rx_buf_alloc)[-1];
+}
+
+// Get number of esf_buf free buffers of given type, as encoded by index
+// idx 0 corresponds to buf types 1, 2; 1 - 4; 2 - 5; 3 - 7; 4 - 8
+// Only following buf types appear to be used:
+// 1 - tx buffer, 5 - management frame tx buffer; 8 - rx buffer
+int ets_esf_free_bufs(int idx) {
+    uint32_t *p = ets_get_esf_buf_ctlblk();
+    uint32_t *b = (uint32_t*)p[idx];
+    int cnt = 0;
+    while (b) {
+        b = (uint32_t*)b[0x20 / 4];
+        cnt++;
+    }
+    return cnt;
 }

@@ -4,6 +4,11 @@
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define MICROPY_ALLOC_PATH_MAX      (128)
+#define MICROPY_ALLOC_LEXER_INDENT_INIT (8)
+#define MICROPY_ALLOC_PARSE_RULE_INIT   (48)
+#define MICROPY_ALLOC_PARSE_RULE_INC    (8)
+#define MICROPY_ALLOC_PARSE_RESULT_INC  (8)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT  (64)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -19,6 +24,7 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
@@ -40,6 +46,7 @@
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
+#define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UHASHLIB         (1)
@@ -53,6 +60,8 @@
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_WEBSOCKET        (1)
+#define MICROPY_PY_WEBREPL          (1)
+#define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_OS_DUPTERM       (1)
@@ -105,11 +114,11 @@ typedef uint32_t sys_prot_t; // for modlwip
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t esp_module;
 extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t utime_module;
@@ -119,7 +128,6 @@ extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t onewire_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_lwip }, \
@@ -134,6 +142,7 @@ extern const struct _mp_obj_module_t onewire_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -151,6 +160,6 @@ extern const struct _mp_obj_module_t onewire_module;
 #define MICROPY_MPHALPORT_H "esp_mphal.h"
 #define MICROPY_HW_BOARD_NAME "ESP module"
 #define MICROPY_HW_MCU_NAME "ESP8266"
-#define MICROPY_PY_SYS_PLATFORM "ESP8266"
+#define MICROPY_PY_SYS_PLATFORM "esp8266"
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))

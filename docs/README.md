@@ -21,7 +21,7 @@ preferably in a virtualenv:
 
 In `micropython/docs`, build the docs:
 
-    make MICROPY_PORT=<port_name> BUILDDIR=build/<port_name> html
+    make MICROPY_PORT=<port_name> html
 
 Where `<port_name>` can be `unix`, `pyboard`, `wipy` or `esp8266`.
 

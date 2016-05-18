@@ -88,7 +88,7 @@ bool mp_repl_continue_with_input(const char *input) {
             } else if (in_quote == Q_NONE || in_quote == Q_1_DOUBLE) {
                 in_quote = Q_1_DOUBLE - in_quote;
             }
-        } else if (*i == '\\' && (i[1] == '\'' || i[1] == '"')) {
+        } else if (*i == '\\' && (i[1] == '\'' || i[1] == '"' || i[1] == '\\')) {
             if (in_quote != Q_NONE) {
                 i++;
             }
@@ -126,6 +126,7 @@ bool mp_repl_continue_with_input(const char *input) {
 
 mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t *print, const char **compl_str) {
     // scan backwards to find start of "a.b.c" chain
+    const char *org_str = str;
     const char *top = str + len;
     for (const char *s = top; --s >= str;) {
         if (!(unichar_isalpha(*s) || unichar_isdigit(*s) || *s == '_' || *s == '.')) {
@@ -219,6 +220,16 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
 
             // nothing found
             if (n_found == 0) {
+                // If there're no better alternatives, and if it's first word
+                // in the line, try to complete "import".
+                if (s_start == org_str) {
+                    static char import_str[] = "import ";
+                    if (memcmp(s_start, import_str, s_len) == 0) {
+                        *compl_str = import_str + s_len;
+                        return sizeof(import_str) - 1 - s_len;
+                    }
+                }
+
                 return 0;
             }
 

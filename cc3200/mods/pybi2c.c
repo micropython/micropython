@@ -377,7 +377,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_i2c_deinit_obj, pyb_i2c_deinit);
 STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     pyb_i2c_check_init(&pyb_i2c_obj);
     mp_obj_t list = mp_obj_new_list(0, NULL);
-    for (uint addr = 1; addr <= 127; addr++) {
+    for (uint addr = 0x08; addr <= 0x77; addr++) {
         for (int i = 0; i < 3; i++) {
             if (pyb_i2c_scan_device(addr)) {
                 mp_obj_list_append(list, mp_obj_new_int(addr));

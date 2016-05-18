@@ -1208,7 +1208,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
                     break;
                 case VTYPE_INT:
                 case VTYPE_UINT:
-                    ASM_MOV_IMM_TO_LOCAL_USING(emit->as, (si->data.u_imm << 1) | 1, emit->stack_start + emit->stack_size - 1 - i, reg_dest);
+                    ASM_MOV_IMM_TO_LOCAL_USING(emit->as, (uintptr_t)MP_OBJ_NEW_SMALL_INT(si->data.u_imm), emit->stack_start + emit->stack_size - 1 - i, reg_dest);
                     si->vtype = VTYPE_PYOBJ;
                     break;
                 default:

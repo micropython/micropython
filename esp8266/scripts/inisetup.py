@@ -5,7 +5,7 @@ from flashbdev import bdev
 def wifi():
     import ubinascii
     ap_if = network.WLAN(network.AP_IF)
-    essid = b"MicroPython-%s" % ubinascii.hexlify(ap_if.mac()[-3:])
+    essid = b"MicroPython-%s" % ubinascii.hexlify(ap_if.config("mac")[-3:])
     ap_if.config(essid=essid, authmode=network.AUTH_WPA_WPA2_PSK, password=b"micropythoN")
 
 def check_bootsec():
@@ -30,3 +30,17 @@ factory reprogramming of MicroPython firmware (completely erase flash, followed
 by firmware programming).
 """)
         time.sleep(3)
+
+def setup():
+    check_bootsec()
+    print("Performing initial setup")
+    wifi()
+    uos.VfsFat.mkfs(bdev)
+    vfs = uos.VfsFat(bdev, "")
+    with open("/boot.py", "w") as f:
+        f.write("""\
+# This file is executed on every boot (including wake-boot from deepsleep)
+#import webrepl
+#webrepl.start()
+""")
+    return vfs

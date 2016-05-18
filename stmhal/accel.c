@@ -89,13 +89,15 @@ STATIC void accel_start(void) {
 
     HAL_StatusTypeDef status;
 
-    //printf("IsDeviceReady\n");
     for (int i = 0; i < 10; i++) {
         status = HAL_I2C_IsDeviceReady(&I2CHandle1, MMA_ADDR, 10, 200);
-        //printf("  got %d\n", status);
         if (status == HAL_OK) {
             break;
         }
+    }
+
+    if (status != HAL_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "accelerometer not found"));
     }
 
     // set MMA to active mode

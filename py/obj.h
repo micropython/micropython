@@ -83,7 +83,7 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 1) != 0); }
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 3) == 2); }
@@ -109,7 +109,7 @@ static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
 static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 3) == 1); }
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 2)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 2) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 2) | 1))
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 3) == 3); }
@@ -135,7 +135,7 @@ static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
 static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 1) != 0); }
 #define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_int_t)(small_int)) << 1) | 1))
+#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)((((mp_uint_t)(small_int)) << 1) | 1))
 
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
@@ -651,8 +651,8 @@ mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
 //qstr mp_obj_get_qstr(mp_obj_t arg);
-void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items);
-void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items);
+void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items); // *items may point inside a GC block
+void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items); // *items may point inside a GC block
 mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_id(mp_obj_t o_in);
 mp_obj_t mp_obj_len(mp_obj_t o_in);

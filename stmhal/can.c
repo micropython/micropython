@@ -27,12 +27,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "bufhelper.h"
 #include "can.h"
@@ -343,44 +343,61 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // create object
-    pyb_can_obj_t *o = m_new_obj(pyb_can_obj_t);
-    o->base.type = &pyb_can_type;
-    o->is_enabled = false;
-
     // work out port
-    o->can_id = 0;
+    mp_uint_t can_idx;
     if (MP_OBJ_IS_STR(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
         #ifdef MICROPY_HW_CAN1_NAME
         } else if (strcmp(port, MICROPY_HW_CAN1_NAME) == 0) {
-            o->can_id = PYB_CAN_1;
+            can_idx = PYB_CAN_1;
         #endif
         #ifdef MICROPY_HW_CAN2_NAME
         } else if (strcmp(port, MICROPY_HW_CAN2_NAME) == 0) {
-            o->can_id = PYB_CAN_2;
+            can_idx = PYB_CAN_2;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN port %s does not exist", port));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%s) does not exist", port));
         }
     } else {
-        o->can_id = mp_obj_get_int(args[0]);
+        can_idx = mp_obj_get_int(args[0]);
     }
-    o->rxcallback0 = mp_const_none;
-    o->rxcallback1 = mp_const_none;
-    MP_STATE_PORT(pyb_can_obj_all)[o->can_id - 1] = o;
-    o->rx_state0 = RX_STATE_FIFO_EMPTY;
-    o->rx_state1 = RX_STATE_FIFO_EMPTY;
-
-    if (n_args > 1 || n_kw > 0) {
-        // start the peripheral
-        mp_map_t kw_args;
-        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        pyb_can_init_helper(o, n_args - 1, args + 1, &kw_args);
+    if (can_idx < 1 || can_idx > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all))) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) does not exist", can_idx));
     }
 
-    return o;
+    pyb_can_obj_t *self;
+    if (MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] == NULL) {
+        self = m_new_obj(pyb_can_obj_t);
+        self->base.type = &pyb_can_type;
+        self->can_id = can_idx;
+        self->is_enabled = false;
+        MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] = self;
+    } else {
+        self = MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1];
+    }
+
+    if (!self->is_enabled || n_args > 1) {
+        if (self->is_enabled) {
+            // The caller is requesting a reconfiguration of the hardware
+            // this can only be done if the hardware is in init mode
+            pyb_can_deinit(self);
+        }
+
+        self->rxcallback0 = mp_const_none;
+        self->rxcallback1 = mp_const_none;
+        self->rx_state0 = RX_STATE_FIFO_EMPTY;
+        self->rx_state1 = RX_STATE_FIFO_EMPTY;
+
+        if (n_args > 1 || n_kw > 0) {
+            // start the peripheral
+            mp_map_t kw_args;
+            mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+            pyb_can_init_helper(self, n_args - 1, args + 1, &kw_args);
+        }
+    }
+
+    return self;
 }
 
 STATIC mp_obj_t pyb_can_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -800,7 +817,7 @@ mp_uint_t can_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *err
             ret |= MP_IOCTL_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = -1;
     }
     return ret;

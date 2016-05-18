@@ -11,12 +11,16 @@ extern const mp_obj_type_t pyb_uart_type;
 extern const mp_obj_type_t pyb_i2c_type;
 extern const mp_obj_type_t pyb_spi_type;
 
+MP_DECLARE_CONST_FUN_OBJ(pyb_info_obj);
+
 typedef struct _pyb_pin_obj_t {
     mp_obj_base_t base;
     uint16_t phys_port;
     uint16_t func;
     uint32_t periph;
 } pyb_pin_obj_t;
+
+const pyb_pin_obj_t pyb_pin_obj[16 + 1];
 
 void pin_init0(void);
 void pin_intr_handler_iram(void *arg);

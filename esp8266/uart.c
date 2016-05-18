@@ -27,14 +27,6 @@ extern UartDevice UartDev;
 // the uart to which OS messages go; -1 to disable
 static int uart_os = UART_OS;
 
-/* unused
-// circular buffer for RX buffering
-#define RX_BUF_SIZE (256)
-static uint16_t rx_buf_in;
-static uint16_t rx_buf_out;
-static uint8_t rx_buf[RX_BUF_SIZE];
-*/
-
 #if MICROPY_REPL_EVENT_DRIVEN
 static os_event_t uart_evt_queue[16];
 #endif
@@ -94,12 +86,6 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
     WRITE_PERI_REG(UART_INT_CLR(uart_no), 0xffff);
     // enable rx_interrupt
     SET_PERI_REG_MASK(UART_INT_ENA(uart_no), UART_RXFIFO_FULL_INT_ENA);
-
-    /* unused
-    // init RX buffer
-    rx_buf_in = 0;
-    rx_buf_out = 0;
-    */
 }
 
 /******************************************************************************
@@ -179,7 +165,6 @@ static void uart0_rx_intr_handler(void *para) {
         goto read_chars;
     } else if (UART_RXFIFO_TOUT_INT_ST == (READ_PERI_REG(UART_INT_ST(uart_no)) & UART_RXFIFO_TOUT_INT_ST)) {
         read_chars:
-#if 1 //MICROPY_REPL_EVENT_DRIVEN is not available here
         ETS_UART_INTR_DISABLE();
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
@@ -196,31 +181,28 @@ static void uart0_rx_intr_handler(void *para) {
         // Clear pending FIFO interrupts
         WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
         ETS_UART_INTR_ENABLE();
-
-#else
-        while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
-            uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            uint16_t rx_buf_in_next = (rx_buf_in + 1) % RX_BUF_SIZE;
-            if (rx_buf_in_next != rx_buf_out) {
-                rx_buf[rx_buf_in] = RcvChar;
-                rx_buf_in = rx_buf_in_next;
-            }
-        }
-#endif
     }
 }
 
-/* unused
-int uart0_rx(void) {
-  if (rx_buf_out != rx_buf_in) {
-      int chr = rx_buf[rx_buf_out];
-      rx_buf_out = (rx_buf_out + 1) % RX_BUF_SIZE;
-      return chr;
-  } else {
-      return -1;
-  }
+// Waits at most timeout microseconds for at least 1 char to become ready for reading.
+// Returns true if something available, false if not.
+bool uart_rx_wait(uint32_t timeout_us) {
+    uint32_t start = system_get_time();
+    for (;;) {
+        if (input_buf.iget != input_buf.iput) {
+            return true; // have at least 1 char ready for reading
+        }
+        if (system_get_time() - start >= timeout_us) {
+            return false; // timeout
+        }
+        ets_event_poll();
+    }
 }
-*/
+
+// Returns char from the input buffer, else -1 if buffer is empty.
+int uart_rx_char(void) {
+    return ringbuf_get(&input_buf);
+}
 
 int uart_rx_one_char(uint8 uart_no) {
     if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {

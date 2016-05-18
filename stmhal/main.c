@@ -367,13 +367,15 @@ int main(void) {
     __GPIOC_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
 
-    #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
-    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
-    // which behaves more or less like normal SRAM.
-    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-    #else
-    // enable the CCM RAM
-    __CCMDATARAMEN_CLK_ENABLE();
+    #if defined(MCU_SERIES_F4) ||  defined(MCU_SERIES_F7)
+        #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+        // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+        // which behaves more or less like normal SRAM.
+        __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+        #else
+        // enable the CCM RAM
+        __CCMDATARAMEN_CLK_ENABLE();
+        #endif
     #endif
 
     #if defined(MICROPY_BOARD_EARLY_INIT)

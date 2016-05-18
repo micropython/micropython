@@ -26,7 +26,6 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
@@ -36,6 +35,7 @@
 #include "py/objlist.h"
 #include "py/stream.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
@@ -126,7 +126,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
 
     if (ip == 0) {
         // unknown host
-        return ENOENT;
+        return MP_ENOENT;
     }
 
     out_ip[0] = ip >> 24;
@@ -139,7 +139,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
 
 STATIC int cc3k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     if (socket->u_param.domain != MOD_NETWORK_AF_INET) {
-        *_errno = EAFNOSUPPORT;
+        *_errno = MP_EAFNOSUPPORT;
         return -1;
     }
 
@@ -148,7 +148,7 @@ STATIC int cc3k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
         case MOD_NETWORK_SOCK_STREAM: type = SOCK_STREAM; break;
         case MOD_NETWORK_SOCK_DGRAM: type = SOCK_DGRAM; break;
         case MOD_NETWORK_SOCK_RAW: type = SOCK_RAW; break;
-        default: *_errno = EINVAL; return -1;
+        default: *_errno = MP_EINVAL; return -1;
     }
 
     // open socket
@@ -202,7 +202,7 @@ STATIC int cc3k_socket_accept(mod_network_socket_obj_t *socket, mod_network_sock
     socklen_t addr_len = sizeof(addr);
     if ((fd = CC3000_EXPORT(accept)(socket->u_state, &addr, &addr_len)) < 0) {
         if (fd == SOC_IN_PROGRESS) {
-            *_errno = EAGAIN;
+            *_errno = MP_EAGAIN;
         } else {
             *_errno = -fd;
         }
@@ -240,7 +240,7 @@ STATIC int cc3k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_ui
 STATIC mp_uint_t cc3k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     if (cc3k_get_fd_closed_state(socket->u_state)) {
         CC3000_EXPORT(closesocket)(socket->u_state);
-        *_errno = EPIPE;
+        *_errno = MP_EPIPE;
         return -1;
     }
 
@@ -267,7 +267,7 @@ STATIC mp_uint_t cc3k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, m
         fd_set rfds;
         FD_ZERO(&rfds);
         FD_SET(socket->u_state, &rfds);
-        timeval tv;
+        cc3000_timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
         int nfds = CC3000_EXPORT(select)(socket->u_state + 1, &rfds, NULL, NULL, &tv);
@@ -383,7 +383,7 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
         }
 
         // call cc3000 select with minimum timeout
-        timeval tv;
+        cc3000_timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
         int nfds = CC3000_EXPORT(select)(fd + 1, &rfds, &wfds, &xfds, &tv);
@@ -405,7 +405,7 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
             ret |= MP_IOCTL_POLL_HUP;
         }
     } else {
-        *_errno = EINVAL;
+        *_errno = MP_EINVAL;
         ret = -1;
     }
     return ret;

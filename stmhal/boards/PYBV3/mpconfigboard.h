@@ -66,10 +66,13 @@
 #define MICROPY_HW_USRSW_PRESSED    (0)
 
 // LEDs
+#define MICROPY_HW_LED_INVERTED     (1) // LEDs are on when pin is driven low
 #define MICROPY_HW_LED1             (pin_A8)  // R1 - red
 #define MICROPY_HW_LED2             (pin_A10) // R2 - red
 #define MICROPY_HW_LED3             (pin_C4)  // G1 - green
 #define MICROPY_HW_LED4             (pin_C5)  // G2 - green
+#define MICROPY_HW_LED1_PWM         { TIM1, 1, TIM_CHANNEL_1, GPIO_AF1_TIM1 }
+#define MICROPY_HW_LED2_PWM         { TIM1, 1, TIM_CHANNEL_3, GPIO_AF1_TIM1 }
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRH = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRL = pin->pin_mask)

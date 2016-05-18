@@ -1,5 +1,5 @@
 import bench
-from _collections import namedtuple
+from ucollections import namedtuple
 
 T = namedtuple("Tup", ["foo1", "foo2", "foo3", "foo4", "num"])
 

@@ -100,6 +100,7 @@ PY_O_BASENAME = \
 	parsenum.o \
 	emitglue.o \
 	runtime.o \
+	runtime_utils.o \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \
@@ -159,6 +160,7 @@ PY_O_BASENAME = \
 	modmicropython.o \
 	modstruct.o \
 	modsys.o \
+	moduerrno.o \
 	vm.o \
 	bc.o \
 	showbc.o \
@@ -177,6 +179,7 @@ PY_O_BASENAME = \
 	../extmod/modussl.o \
 	../extmod/modurandom.o \
 	../extmod/modwebsocket.o \
+	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
 	../extmod/fsusermount.o \
 	../extmod/vfs_fat.o \

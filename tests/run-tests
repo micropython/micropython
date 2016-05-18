@@ -241,7 +241,7 @@ def run_tests(pyb, tests, args):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
         skip_tests.update({'basics/async_%s.py' % t for t in 'await await2 for for2 with with2'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
@@ -351,14 +351,15 @@ def main():
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    if args.target in ('pyboard', 'wipy', 'esp8266'):
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266')
+    if args.target in EXTERNAL_TARGETS:
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
     elif args.target == 'unix':
         pyb = None
     else:
-        raise ValueError('target must be either unix, pyboard or wipy')
+        raise ValueError('target must be either %s or unix' % ", ".join(EXTERNAL_TARGETS))
 
     if len(args.files) == 0:
         if args.test_dirs is None:

@@ -20,4 +20,8 @@ void ets_timer_arm_new(os_timer_t *tim, uint32_t millis, bool repeat, bool is_mi
 void ets_timer_setfn(os_timer_t *tim, ETSTimerFunc callback, void *cb_data);
 void ets_timer_disarm(os_timer_t *tim);
 
+// These prototypes are for recent SDKs with "malloc tracking"
+void *pvPortMalloc(unsigned sz, const char *fname, int line);
+void vPortFree(void *p, const char *fname, int line);
+
 #endif // _INCLUDED_ETSHAL_H_

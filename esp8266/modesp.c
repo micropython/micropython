@@ -27,12 +27,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
+#include "py/mphal.h"
 #include "netutils.h"
 #include "queue.h"
 #include "ets_sys.h"
@@ -40,7 +41,7 @@
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"
-#include "utils.h"
+#include "mem.h"
 #include "espneopixel.h"
 #include "modpyb.h"
 
@@ -576,7 +577,7 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     if (alloc_buf) {
         m_del(byte, buf, len);
     }
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
 
@@ -593,7 +594,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     }
     nlr_raise(mp_obj_new_exception_arg1(
         &mp_type_OSError,
-        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
 
@@ -605,7 +606,7 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     }
     nlr_raise(mp_obj_new_exception_arg1(
         &mp_type_OSError,
-        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? ETIMEDOUT : EIO)));
+        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
@@ -646,6 +647,22 @@ STATIC mp_obj_t esp_meminfo() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_meminfo_obj, esp_meminfo);
 
+STATIC mp_obj_t esp_malloc(mp_obj_t size_in) {
+    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)os_malloc(mp_obj_get_int(size_in)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_malloc_obj, esp_malloc);
+
+STATIC mp_obj_t esp_free(mp_obj_t addr_in) {
+    os_free((void*)mp_obj_get_int(addr_in));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_free_obj, esp_free);
+
+STATIC mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
+    return MP_OBJ_NEW_SMALL_INT(ets_esf_free_bufs(mp_obj_get_int(idx_in)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
+
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
@@ -664,6 +681,10 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&esp_neopixel_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freemem), (mp_obj_t)&esp_freemem_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_meminfo), (mp_obj_t)&esp_meminfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj }, // TODO delete/rename/move elsewhere
+    { MP_OBJ_NEW_QSTR(MP_QSTR_malloc), (mp_obj_t)&esp_malloc_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_free), (mp_obj_t)&esp_free_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_esf_free_bufs), (mp_obj_t)&esp_esf_free_bufs_obj },
 
 #if MODESP_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_NONE),

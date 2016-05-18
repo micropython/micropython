@@ -41,7 +41,6 @@ void mp_hal_signal_dupterm_input(void);
 
 void mp_hal_init(void);
 void mp_hal_rtc_init(void);
-void mp_hal_feed_watchdog(void);
 
 uint32_t mp_hal_ticks_us(void);
 void mp_hal_delay_us(uint32_t);
@@ -64,20 +63,21 @@ void ets_event_poll(void);
 #include "etshal.h"
 #include "gpio.h"
 #include "esp8266/modpyb.h"
-#define mp_hal_pin_obj_t pyb_pin_obj_t
-#define mp_hal_get_pin_obj(o) mp_obj_get_pin_obj(o)
-#define mp_hal_pin_config_od(p) do { \
-        ETS_GPIO_INTR_DISABLE(); \
-        PIN_FUNC_SELECT((p)->periph, (p)->func); \
-        GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN((p)->phys_port)), \
-            GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN((p)->phys_port))) \
-            | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); /* open drain */ \
-        GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS, \
-            GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << (p)->phys_port)); \
-        ETS_GPIO_INTR_ENABLE(); \
+#define mp_hal_pin_obj_t uint32_t
+#define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
+void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
+#define mp_hal_pin_low(p) do { \
+        if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); } \
+        else { gpio_output_set(0, 1 << (p), 1 << (p), 0); } \
     } while (0)
-#define mp_hal_pin_low(p) gpio_output_set(0, 1 << (p)->phys_port, 1 << (p)->phys_port, 0)
-#define mp_hal_pin_od_high(p) gpio_output_set(1 << (p)->phys_port, 0, 1 << (p)->phys_port, 0)
-#define mp_hal_pin_read(p) GPIO_INPUT_GET(GPIO_ID_PIN((p)->phys_port))
+#define mp_hal_pin_od_high(p) do { \
+        if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); } \
+        else { gpio_output_set(1 << (p), 0, 1 << (p), 0); } \
+    } while (0)
+#define mp_hal_pin_read(p) pin_get(p)
+#define mp_hal_pin_write(p, v) pin_set((p), (v))
+
+void *ets_get_esf_buf_ctlblk(void);
+int ets_esf_free_bufs(int idx);
 
 #endif // _INCLUDED_MPHAL_H_

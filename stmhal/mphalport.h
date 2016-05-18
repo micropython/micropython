@@ -8,13 +8,15 @@
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #elif defined(MCU_SERIES_F7)
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
+#elif defined(MCU_SERIES_L4)
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
 #else
 #error mphalport.h: Unrecognized MCU_SERIES
 #endif
 
 // Basic GPIO functions
 #define GPIO_read_pin(gpio, pin)        (((gpio)->IDR >> (pin)) & 1)
-#if defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
 #define GPIO_set_pin(gpio, pin_mask)    (((gpio)->BSRR) = (pin_mask))
 #define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->BSRR) = ((pin_mask) << 16))
 #else
@@ -41,7 +43,7 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // C-level pin HAL
 #include "stmhal/pin.h"
-#define mp_hal_pin_obj_t pin_obj_t
+#define mp_hal_pin_obj_t pin_obj_t*
 #define mp_hal_get_pin_obj(o) (pin_obj_t*)pin_find(o)
 #define mp_hal_pin_config_od(p) mp_hal_gpio_config((p)->gpio, (p)->pin, 5, 0, 0)
 #define mp_hal_pin_low(p) GPIO_clear_pin((p)->gpio, (p)->pin_mask)

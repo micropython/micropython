@@ -26,10 +26,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
 #include "py/obj.h"
 #include "py/stream.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 
 // TODO make stdin, stdout and stderr writable objects so they can
@@ -69,7 +69,7 @@ STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *er
         }
         return size;
     } else {
-        *errcode = EPERM;
+        *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
 }
@@ -80,7 +80,7 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
         mp_hal_stdout_tx_strn_cooked(buf, size);
         return size;
     } else {
-        *errcode = EPERM;
+        *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
 }

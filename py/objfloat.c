@@ -41,6 +41,14 @@
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
+// M_E and M_PI are not part of the math.h standard and may not be defined
+#ifndef M_E
+#define M_E (2.7182818284590452354)
+#endif
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;

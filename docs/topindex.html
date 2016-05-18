@@ -25,7 +25,7 @@
 
   <table class="contentstable"><tr>
     <td width="40%" style="padding-left:2em;">
-      {% if port == "pyboard" or port == "wipy" %}
+      {% if port in ("pyboard", "wipy", "esp8266") %}
         <p class="biglink">
           <a class="biglink" href="{{ pathto(port + "/quickref") }}">Quick reference for {{ port_name }}</a><br/>
           <span class="linkdescr">pinout for {{ port_name }} and snippets of useful code</span>
