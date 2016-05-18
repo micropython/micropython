@@ -25,6 +25,7 @@ tags
 # Build directory
 ######################
 build/
+.ropeproject/
 
 # Test failure outputs
 ######################
