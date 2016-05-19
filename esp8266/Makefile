@@ -65,6 +65,7 @@ SRC_C = \
 	esppwm.c \
 	esponewire.c \
 	espneopixel.c \
+	espdht.c \
 	intr.c \
 	modpyb.c \
 	modpybpin.c \
@@ -79,6 +80,7 @@ SRC_C = \
 	moduos.c \
 	modmachine.c \
 	modonewire.c \
+	moddht.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
