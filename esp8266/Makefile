@@ -65,6 +65,7 @@ SRC_C = \
 	esppwm.c \
 	esponewire.c \
 	espneopixel.c \
+	espapa102.c \
 	intr.c \
 	modpyb.c \
 	modpybpin.c \
