@@ -464,9 +464,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
 
-enum {SPLIT = 0, KEEP = 1, SPLITLINES = 2};
-
-STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args, int type) {
+mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     mp_int_t splits = -1;
     mp_obj_t sep = mp_const_none;
@@ -527,13 +525,7 @@ STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args
                 }
                 s++;
             }
-            mp_uint_t sub_len = s - start;
-            if (MP_LIKELY(!(sub_len == 0 && s == top && (type && SPLITLINES)))) {
-                if (start + sub_len != top && (type & KEEP)) {
-                    sub_len++;
-                }
-                mp_obj_list_append(res, mp_obj_new_str_of_type(self_type, start, sub_len));
-            }
+            mp_obj_list_append(res, mp_obj_new_str_of_type(self_type, start, s - start));
             if (s >= top) {
                 break;
             }
@@ -547,25 +539,49 @@ STATIC inline mp_obj_t str_split_internal(mp_uint_t n_args, const mp_obj_t *args
     return res;
 }
 
-mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
-    return str_split_internal(n_args, args, SPLIT);
-}
-
 #if MICROPY_PY_BUILTINS_STR_SPLITLINES
 STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_keepends };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_keepends, MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
-    struct {
-        mp_arg_val_t keepends;
-    } args;
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t new_args[2] = {pos_args[0], MP_OBJ_NEW_QSTR(MP_QSTR__0x0a_)};
-    return str_split_internal(2, new_args, SPLITLINES | (args.keepends.u_bool ? KEEP : 0));
+    const mp_obj_type_t *self_type = mp_obj_get_type(pos_args[0]);
+    mp_obj_t res = mp_obj_new_list(0, NULL);
+
+    GET_STR_DATA_LEN(pos_args[0], s, len);
+    const byte *top = s + len;
+
+    while (s < top) {
+        const byte *start = s;
+        size_t match = 0;
+        while (s < top) {
+            if (*s == '\n') {
+                match = 1;
+                break;
+            } else if (*s == '\r') {
+                if (s[1] == '\n') {
+                    match = 2;
+                } else {
+                    match = 1;
+                }
+                break;
+            }
+            s++;
+        }
+        size_t sub_len = s - start;
+        if (args[ARG_keepends].u_bool) {
+            sub_len += match;
+        }
+        mp_obj_list_append(res, mp_obj_new_str_of_type(self_type, start, sub_len));
+        s += match;
+    }
+
+    return res;
 }
 #endif
 

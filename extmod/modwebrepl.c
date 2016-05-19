@@ -250,8 +250,8 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
 
         DEBUG_printf("webrepl: Writing %lu bytes to file\n", buf_sz);
         int err;
-        mp_uint_t res = mp_stream_writeall(self->cur_file, filebuf, buf_sz, &err);
-        if(res == MP_STREAM_ERROR) {
+        mp_uint_t res = mp_stream_write_exactly(self->cur_file, filebuf, buf_sz, &err);
+        if (err != 0 || res != buf_sz) {
             assert(0);
         }
 

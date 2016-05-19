@@ -381,7 +381,7 @@ mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
 // here we define mp_raw_code_load_file depending on the port
 // TODO abstract this away properly
 
-#if defined(__i386__) || defined(__x86_64__) || (defined(__arm__) && (defined(__unix__)))
+#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || (defined(__arm__) && (defined(__unix__)))
 // unix file reader
 
 #include <sys/stat.h>

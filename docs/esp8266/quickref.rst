@@ -43,7 +43,7 @@ The ``network`` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.mac()              # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC adddress
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
@@ -198,9 +198,6 @@ The I2C driver is implemented in software and works on all pins::
 
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
-
-    i2c.readfrom(0x3a, 4, stop=False) # don't send a stop bit after reading
-    i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
 
 Deep-sleep mode
 ---------------

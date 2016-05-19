@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,10 @@
  * THE SOFTWARE.
  */
 
-// use this for OwnAddress1 to configure I2C in master mode
-#define PYB_I2C_MASTER_ADDRESS (0xfe)
+// Default unix config while intended to be comprehensive, may still not enable
+// all the features, this config should enable more (testable) options.
 
-extern I2C_HandleTypeDef I2CHandle1;
-extern I2C_HandleTypeDef I2CHandle2;
-extern I2C_HandleTypeDef I2CHandle3;
-extern const mp_obj_type_t pyb_i2c_type;
+#include <mpconfigport.h>
 
-void i2c_init0(void);
-void i2c_init(I2C_HandleTypeDef *i2c);
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_IO_BUFFEREDWRITER (1)

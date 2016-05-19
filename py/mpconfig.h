@@ -555,6 +555,11 @@ typedef double mp_float_t;
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
 #endif
 
+// Whether to use internally defined errno's (otherwise system provided ones)
+#ifndef MICROPY_USE_INTERNAL_ERRNO
+#define MICROPY_USE_INTERNAL_ERRNO (0)
+#endif
+
 // Support for user-space VFS mount (selected ports)
 #ifndef MICROPY_FSUSERMOUNT
 #define MICROPY_FSUSERMOUNT (0)
@@ -807,6 +812,11 @@ typedef double mp_float_t;
 // This is implemented per-port
 #ifndef MICROPY_PY_SYS_STDIO_BUFFER
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
+#endif
+
+// Whether to provide "uerrno" module
+#ifndef MICROPY_PY_UERRNO
+#define MICROPY_PY_UERRNO (0)
 #endif
 
 // Extended modules

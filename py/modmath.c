@@ -31,6 +31,11 @@
 
 #include <math.h>
 
+// M_PI is not part of the math.h standard and may not be defined
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 /// \module math - mathematical functions
 ///
 /// The `math` module provides some basic mathematical funtions for

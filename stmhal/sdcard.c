@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
@@ -192,17 +194,30 @@ void SDIO_IRQHandler(void) {
 }
 
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
-    // check that dest pointer is aligned on a 4-byte boundary
-    if (((uint32_t)dest & 3) != 0) {
-        return SD_ERROR;
-    }
-
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
         return SD_ERROR;
     }
 
     HAL_SD_ErrorTypedef err = SD_OK;
+
+    // check that dest pointer is aligned on a 4-byte boundary
+    uint8_t *orig_dest = NULL;
+    uint32_t saved_word;
+    if (((uint32_t)dest & 3) != 0) {
+        // Pointer is not aligned so it needs fixing.
+        // We could allocate a temporary block of RAM (as sdcard_write_blocks
+        // does) but instead we are going to use the dest buffer inplace.  We
+        // are going to align the pointer, save the initial word at the aligned
+        // location, read into the aligned memory, move the memory back to the
+        // unaligned location, then restore the initial bytes at the aligned
+        // location.  We should have no trouble doing this as those initial
+        // bytes at the aligned location should be able to be changed for the
+        // duration of this function call.
+        orig_dest = dest;
+        dest = (uint8_t*)((uint32_t)dest & ~3);
+        saved_word = *(uint32_t*)dest;
+    }
 
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
@@ -225,21 +240,40 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         err = HAL_SD_ReadBlocks_BlockNumber(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
     }
 
+    if (orig_dest != NULL) {
+        // move the read data to the non-aligned position, and restore the initial bytes
+        memmove(orig_dest, dest, num_blocks * SDCARD_BLOCK_SIZE);
+        memcpy(dest, &saved_word, orig_dest - dest);
+    }
+
     return err;
 }
 
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-    // check that src pointer is aligned on a 4-byte boundary
-    if (((uint32_t)src & 3) != 0) {
-        return SD_ERROR;
-    }
-
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
         return SD_ERROR;
     }
 
     HAL_SD_ErrorTypedef err = SD_OK;
+
+    // check that src pointer is aligned on a 4-byte boundary
+    if (((uint32_t)src & 3) != 0) {
+        // pointer is not aligned, so allocate a temporary block to do the write
+        uint8_t *src_aligned = m_new_maybe(uint8_t, SDCARD_BLOCK_SIZE);
+        if (src_aligned == NULL) {
+            return SD_ERROR;
+        }
+        for (size_t i = 0; i < num_blocks; ++i) {
+            memcpy(src_aligned, src + i * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE);
+            err = sdcard_write_blocks(src_aligned, block_num + i, 1);
+            if (err != SD_OK) {
+                break;
+            }
+        }
+        m_del(uint8_t, src_aligned, SDCARD_BLOCK_SIZE);
+        return err;
+    }
 
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
