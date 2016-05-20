@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/objstr.h"
 #include "py/stream.h"
+#include "py/runtime.h"
 
 #if MICROPY_STREAMS_NON_BLOCK
 #include <errno.h>
@@ -102,6 +103,13 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "stream operation not supported"));
     }
     return stream_p;
+}
+
+mp_obj_t mp_stream_close(mp_obj_t stream) {
+    // TODO: Still consider using ioctl for close
+    mp_obj_t dest[2];
+    mp_load_method(stream, MP_QSTR_close, dest);
+    return mp_call_method_n_kw(0, 0, dest);
 }
 
 STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
