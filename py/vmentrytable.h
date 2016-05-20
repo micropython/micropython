@@ -29,7 +29,7 @@
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif // __clang__
 
-static void* entry_table[256] = {
+static const void *const entry_table[256] = {
     [0 ... 255] = &&entry_default,
     [MP_BC_LOAD_CONST_FALSE] = &&entry_MP_BC_LOAD_CONST_FALSE,
     [MP_BC_LOAD_CONST_NONE] = &&entry_MP_BC_LOAD_CONST_NONE,

@@ -223,7 +223,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
                 // If there're no better alternatives, and if it's first word
                 // in the line, try to complete "import".
                 if (s_start == org_str) {
-                    static char import_str[] = "import ";
+                    static const char import_str[] = "import ";
                     if (memcmp(s_start, import_str, s_len) == 0) {
                         *compl_str = import_str + s_len;
                         return sizeof(import_str) - 1 - s_len;

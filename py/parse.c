@@ -104,7 +104,7 @@ enum {
 #undef one_or_more
 #undef DEF_RULE
 
-STATIC const rule_t *rules[] = {
+STATIC const rule_t *const rules[] = {
 #define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
 #include "py/grammar.h"
 #undef DEF_RULE
