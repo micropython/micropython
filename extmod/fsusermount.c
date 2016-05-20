@@ -32,7 +32,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
-#include "fsusermount.h"
+#include "extmod/fsusermount.h"
 
 fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs) {
     static const mp_arg_t allowed_args[] = {

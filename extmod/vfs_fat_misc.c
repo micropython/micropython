@@ -35,7 +35,7 @@
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "extmod/vfs_fat_file.h"
-#include "fsusermount.h"
+#include "extmod/fsusermount.h"
 #include "py/lexer.h"
 
 #if _USE_LFN
