@@ -171,16 +171,13 @@ static int call_dupterm_read(void) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
         if (bufinfo.len == 0) {
-            MP_STATE_PORT(term_obj) = NULL;
-            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
+            mp_uos_deactivate("dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
             return -1;
         }
         nlr_pop();
         return *(byte*)bufinfo.buf;
     } else {
-        MP_STATE_PORT(term_obj) = NULL;
-        mp_printf(&mp_plat_print, "dupterm: Exception in read() method, deactivating: ");
-        mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
+        mp_uos_deactivate("dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
     }
 
     return -1;
