@@ -54,8 +54,16 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
 void mp_hal_delay_ms(mp_uint_t ms);
 #endif
 
+#ifndef mp_hal_delay_us
+void mp_hal_delay_us(mp_uint_t us);
+#endif
+
 #ifndef mp_hal_ticks_ms
 mp_uint_t mp_hal_ticks_ms(void);
+#endif
+
+#ifndef mp_hal_ticks_us
+mp_uint_t mp_hal_ticks_us(void);
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_MPHAL_H__
