@@ -18,25 +18,23 @@ Reset related functions
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
 
-.. only:: port_wipy
+Interrupt related functions
+---------------------------
 
-    Interrupt related functions
-    ---------------------------
+.. function:: disable_irq()
 
-    .. function:: disable_irq()
+   Disable interrupt requests.
+   Returns the previous IRQ state: ``False``/``True`` for disabled/enabled IRQs
+   respectively.  This return value can be passed to enable_irq to restore
+   the IRQ to its original state.
 
-       Disable interrupt requests.
-       Returns the previous IRQ state: ``False``/``True`` for disabled/enabled IRQs
-       respectively.  This return value can be passed to enable_irq to restore
-       the IRQ to its original state.
+.. function:: enable_irq(state=True)
 
-    .. function:: enable_irq(state=True)
-
-       Enable interrupt requests.
-       If ``state`` is ``True`` (the default value) then IRQs are enabled.
-       If ``state`` is ``False`` then IRQs are disabled.  The most common use of
-       this function is to pass it the value returned by ``disable_irq`` to
-       exit a critical section.
+   Enable interrupt requests.
+   If ``state`` is ``True`` (the default value) then IRQs are enabled.
+   If ``state`` is ``False`` then IRQs are disabled.  The most common use of
+   this function is to pass it the value returned by ``disable_irq`` to
+   exit a critical section.
 
 Power related functions
 -----------------------
