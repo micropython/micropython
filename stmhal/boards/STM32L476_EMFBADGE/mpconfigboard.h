@@ -12,7 +12,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
-#define MICROPY_HW_HAS_UGFX         (0)
+#define MICROPY_HW_HAS_UGFX         (1)
 #define MICROPY_HW_HAS_CC3100       (0)
 
 #define MICROPY_BOARD_EARLY_INIT    STM32L476_EMFBADGE_board_early_init
@@ -29,8 +29,8 @@ void STM32L476_EMFBADGE_board_early_init(void);
 #define MICROPY_HW_UGFX_INTERFACE SPI
 
 //used for selecting SPI/parallel mode
-#define MICROPY_HW_UGFX_PORT_MODE GPIOB
-#define MICROPY_HW_UGFX_PIN_MODE GPIO_PIN_7
+#define MICROPY_HW_UGFX_PORT_MODE GPIOE
+#define MICROPY_HW_UGFX_PIN_MODE GPIO_PIN_6
 #define MICROPY_HW_UGFX_PORT_BL GPIOE
 #define MICROPY_HW_UGFX_PIN_BL GPIO_PIN_1
 
@@ -45,12 +45,12 @@ void STM32L476_EMFBADGE_board_early_init(void);
 	
 	#define MICROPY_HW_UGFX_SPI SPIHandle3
 	
-	#define MICROPY_HW_UGFX_SET_MODE GPIO_set_pin(self->gpio, self->pin_mask)
+	#define MICROPY_HW_UGFX_SET_MODE GPIO_set_pin(MICROPY_HW_UGFX_PORT_MODE, MICROPY_HW_UGFX_PIN_MODE)
 
 #elif MICROPY_HW_UGFX_INTERFACE == PARALLEL
 
 
-	#define MICROPY_HW_UGFX_SET_MODE GPIO_clear_pin(self->gpio, self->pin_mask)
+	#define MICROPY_HW_UGFX_SET_MODE GPIO_clear_pin(MICROPY_HW_UGFX_PORT_MODE, MICROPY_HW_UGFX_PIN_MODE)
 
 #endif
 
