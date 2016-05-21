@@ -209,7 +209,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_ENABLE_COMPILER
     {
         void *modref;
+        #if MICROPY_MODULE_FROZEN
         int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
+        #else
+        int frozen_type = MP_FROZEN_NONE;
+        #endif
         #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
         if (frozen_type == MP_FROZEN_MPY) {
             do_execute_raw_code(module_obj, modref);
