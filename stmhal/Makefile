@@ -30,6 +30,7 @@ PYDFU ?= ../tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 STFLASH ?= st-flash
+STLINK ?= ST-Link_CLI
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
@@ -317,6 +318,11 @@ deploy-stlink: $(BUILD)/firmware.dfu
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
+	
+deploy-stlinkcli: $(BUILD)/firmware.hex
+	$(ECHO) "Writing $(BUILD)/firmware.hex to the board via ST-LINK"
+	$(Q)$(STLINK) -P $(BUILD)/firmware.hex -Rst
+
 
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
