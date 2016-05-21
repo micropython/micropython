@@ -152,9 +152,11 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         // but some attributes of native types may be handled using .load_attr method,
         // so make sure we try to lookup those too.
         if (lookup->obj != NULL && !lookup->is_type && mp_obj_is_native_type(type) && type != &mp_type_object /* object is not a real type */) {
-            mp_load_method_maybe(lookup->obj->subobj[0], lookup->attr, lookup->dest);
-            if (lookup->dest[0] != MP_OBJ_NULL) {
-                return;
+            if (lookup->obj->subobj[0] != NULL) {
+                mp_load_method_maybe(lookup->obj->subobj[0], lookup->attr, lookup->dest);
+                if (lookup->dest[0] != MP_OBJ_NULL) {
+                    return;
+                }
             }
         }
 
@@ -888,6 +890,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_obj_tuple_get(bases_tuple, &len, &items);
     for (uint i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+#if 0
         mp_obj_type_t *t = MP_OBJ_TO_PTR(items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
@@ -899,6 +902,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
                     "type '%q' is not an acceptable base type", t->name));
             }
         }
+#endif
     }
 
     mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
@@ -914,7 +918,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->getiter = instance_getiter;
     //o->iternext = ; not implemented
     o->buffer_p.get_buffer = instance_get_buffer;
-    //o->stream_p = ; not implemented
+    o->stream_p = ((mp_obj_type_t*)MP_OBJ_TO_PTR(items[0]))->stream_p;
     o->bases_tuple = MP_OBJ_TO_PTR(bases_tuple);
     o->locals_dict = MP_OBJ_TO_PTR(locals_dict);
 
