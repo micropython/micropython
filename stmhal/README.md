@@ -81,6 +81,15 @@ and set the `STLINK_DEVICE` environment variable accordingly, using the format
     $ export STLINK_DEVICE="002:0035"
     $ make BOARD=STM32F4DISC deploy-stlink
 
+On windows you can use the official ST-LINK utility (STSW-LINK004) from 
+[ST](http://www.st.com/content/st_com/en/products/embedded-software/development-tool-software/stsw-link004.html).
+To do so, connect the board
+with a mini USB cable to its ST-LINK USB port and then use the make target
+`deploy-stlinkcli`. For example, if you have the STM32F4DISCOVERY board, you can
+run:
+
+    $ make BOARD=STM32F4DISC deploy-stlinkcli
+
 
 ### Flashing the Firmware with OpenOCD
 
