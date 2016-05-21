@@ -376,11 +376,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_get_height_obj, pyb_ugfx_get_height);
 
 STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     // instance methods
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_command), (mp_obj_t)&pyb_lcd_command_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_contrast), (mp_obj_t)&pyb_lcd_contrast_obj },
- //   { MP_OBJ_NEW_QSTR(MP_QSTR_light), (mp_obj_t)&pyb_lcd_light_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_lcd_write_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_fill), (mp_obj_t)&pyb_lcd_fill_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&pyb_ugfx_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&pyb_ugfx_line_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_thickline), (mp_obj_t)&pyb_ugfx_thickline_obj },
