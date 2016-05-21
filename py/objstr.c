@@ -821,7 +821,7 @@ STATIC mp_obj_t str_rstrip(size_t n_args, const mp_obj_t *args) {
 STATIC mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
     GET_STR_DATA_LEN(str_in, str, str_len);
     int width = mp_obj_get_int(width_in);
-    if (str_len >= width) {
+    if ((int)str_len >= width) {
         return str_in;
     }
 
