@@ -36,7 +36,7 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
-#if 0 // print debugging info
+#if 1 // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -60,22 +60,32 @@ bool mp_obj_is_package(mp_obj_t module) {
     return dest[0] != MP_OBJ_NULL;
 }
 
+mp_import_stat_t mp_frozen_stat(const char *str);
+
+mp_import_stat_t _mp_import_stat(const char *path) {
+    mp_import_stat_t st = mp_frozen_stat(path);
+    if (st != MP_IMPORT_STAT_NO_EXIST) {
+        return st;
+    }
+    return mp_import_stat(path);
+}
+
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
-    mp_import_stat_t stat = mp_import_stat(vstr_null_terminated_str(path));
+    mp_import_stat_t stat = _mp_import_stat(vstr_null_terminated_str(path));
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
 
     vstr_add_str(path, ".py");
-    stat = mp_import_stat(vstr_null_terminated_str(path));
+    stat = _mp_import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
 
     #if MICROPY_PERSISTENT_CODE_LOAD
     vstr_ins_byte(path, path->len - 2, 'm');
-    stat = mp_import_stat(vstr_null_terminated_str(path));
+    stat = _mp_import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -196,7 +206,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
 
     #if MICROPY_ENABLE_COMPILER
     {
-        mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
+        mp_lexer_t *lex;
+        int frozen_type = mp_find_frozen_module(file_str, file->len, (void**)&lex);
+        if (frozen_type == MP_FROZEN_NONE) {
+            lex = mp_lexer_new_from_file(file_str);
+        }
         do_load_from_lexer(module_obj, lex, file_str);
     }
     #else
@@ -340,9 +354,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     }
     DEBUG_printf("Module not yet loaded\n");
 
-    #if MICROPY_MODULE_FROZEN
+    #if MICROPY_MODULE_FROZEN_
     void *frozen_data;
     int frozen_type = mp_find_frozen_module(mod_str, mod_len, &frozen_data);
+    DEBUG_printf("Trying to find frozen module: %.*s, result: %d\n", mod_len, mod_str, frozen_type);
     if (frozen_type != MP_FROZEN_NONE) {
         module_obj = mp_obj_new_module(module_name_qstr);
         // if args[3] (fromtuple) has magic value False, set up
@@ -445,7 +460,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
-                    if (mp_import_stat(vstr_null_terminated_str(&path)) != MP_IMPORT_STAT_FILE) {
+                    if (_mp_import_stat(vstr_null_terminated_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                         mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {
@@ -453,6 +468,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                     }
                 } else { // MP_IMPORT_STAT_FILE
+printf("About to import file\n");
                     do_load(module_obj, &path);
                     // TODO: We cannot just break here, at the very least, we must execute
                     // trailer code below. But otherwise if there're remaining components,
