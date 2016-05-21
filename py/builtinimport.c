@@ -63,10 +63,12 @@ bool mp_obj_is_package(mp_obj_t module) {
 // Stat either frozen or normal module by a given path
 // (whatever is available, if at all).
 STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
+    #if MICROPY_MODULE_FROZEN_STR
     mp_import_stat_t st = mp_frozen_stat(path);
     if (st != MP_IMPORT_STAT_NO_EXIST) {
         return st;
     }
+    #endif
     return mp_import_stat(path);
 }
 
@@ -208,7 +210,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     {
         void *modref;
         int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
-        #if MICROPY_PERSISTENT_CODE_LOAD
+        #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
         if (frozen_type == MP_FROZEN_MPY) {
             do_execute_raw_code(module_obj, modref);
             return;
