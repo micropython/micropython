@@ -817,6 +817,23 @@ STATIC mp_obj_t str_rstrip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(RSTRIP, n_args, args);
 }
 
+#if MICROPY_PY_BUILTINS_STR_CENTER
+STATIC mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
+    GET_STR_DATA_LEN(str_in, str, str_len);
+    int width = mp_obj_get_int(width_in);
+    if (str_len >= width) {
+        return str_in;
+    }
+
+    vstr_t vstr;
+    vstr_init_len(&vstr, width);
+    memset(vstr.buf, ' ', width);
+    int left = (width - str_len) / 2;
+    memcpy(vstr.buf + left, str, str_len);
+    return mp_obj_new_str_from_vstr(mp_obj_get_type(str_in), &vstr);
+}
+#endif
+
 // Takes an int arg, but only parses unsigned numbers, and only changes
 // *num if at least one digit was parsed.
 STATIC const char *str_to_int(const char *str, const char *top, int *num) {
@@ -1846,6 +1863,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, mp_obj_str_split);
 #if MICROPY_PY_BUILTINS_STR_SPLITLINES
 MP_DEFINE_CONST_FUN_OBJ_KW(str_splitlines_obj, 1, str_splitlines);
 #endif
+#if MICROPY_PY_BUILTINS_STR_CENTER
+MP_DEFINE_CONST_FUN_OBJ_2(str_center_obj, str_center);
+#endif
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
@@ -1897,6 +1917,7 @@ STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_partition), MP_ROM_PTR(&str_partition_obj) },
     { MP_ROM_QSTR(MP_QSTR_rpartition), MP_ROM_PTR(&str_rpartition_obj) },
+    { MP_ROM_QSTR(MP_QSTR_center), MP_ROM_PTR(&str_center_obj) },
     { MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj) },
     { MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj) },
     { MP_ROM_QSTR(MP_QSTR_isspace), MP_ROM_PTR(&str_isspace_obj) },
