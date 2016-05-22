@@ -17,7 +17,7 @@
 
 SPI_HandleTypeDef ili_spi;
 
-#if MICROPY_HW_UGFX_INTERFACE == PARALLEL
+#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_PARALLEL
 
 __IO uint8_t LCD_REG;
 __IO uint8_t LCD_RAM;
@@ -73,7 +73,7 @@ static void HAL_FMC_MspInit(void){
 static GFXINLINE void init_board(GDisplay *g) {
 	// As we are not using multiple displays we set g->board to NULL as we don't use it.
 
-	#if MICROPY_HW_UGFX_INTERFACE == SPI
+	#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_SPI
 	ili_spi = MICROPY_HW_UGFX_SPI;
 	
 	// init the SPI bus
@@ -224,7 +224,7 @@ static GFXINLINE void release_bus(GDisplay *g) {
 	GPIO_set_pin(MICROPY_HW_UGFX_PORT_CS, MICROPY_HW_UGFX_PIN_CS);  //CS high
 }
 
-#if MICROPY_HW_UGFX_INTERFACE == SPI
+#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_SPI
 static GFXINLINE void write_index(GDisplay *g, uint16_t index) {
 	(void) g;
 	
@@ -237,7 +237,7 @@ static GFXINLINE void write_data(GDisplay *g, uint16_t data) {
 	(void) g;
 	HAL_SPI_Transmit(&ili_spi, &data, 1, 1000);
 }
-#elif MICROPY_HW_UGFX_INTERFACE == PARALLEL
+#elif MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_PARALLEL
 static GFXINLINE void write_index(GDisplay *g, uint16_t index) {
 	(void) g;	
 	GPIO_clear_pin(MICROPY_HW_UGFX_PORT_CS, MICROPY_HW_UGFX_PIN_CS);  //CS low
@@ -247,6 +247,8 @@ static GFXINLINE void write_data(GDisplay *g, uint16_t data) {
 	(void) g;
 	LCD_RAM = data;
 }
+#else
+#error "Select SPI or PARALLEL for UGFX driver type"
 #endif
 
 
