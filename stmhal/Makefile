@@ -205,6 +205,13 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/stm32$(MCU_SERIES)xx_,\
 	ll_usb.c \
 	)
 
+ifeq ($(MCU_SERIES),l4)
+SRC_HAL += $(addprefix $(HAL_DIR)/src/stm32$(MCU_SERIES)xx_,\
+	ll_fmc.c \
+	hal_sram.c \
+	)
+endif
+
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
 	core/src/usbd_ctlreq.c \

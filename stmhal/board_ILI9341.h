@@ -14,23 +14,26 @@
 #include "genhdr/pins.h"
 #include "spi.h"
 
-
 SPI_HandleTypeDef ili_spi;
 
 #if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_PARALLEL
 
-__IO uint8_t LCD_REG;
-__IO uint8_t LCD_RAM;
+#define FMC_WRITE_FIFO_ENABLE_BODGE FMC_BCR1_WFDIS
+//this line appears to be missing from stm32l476xx.h
+#define  FMC_BCR1_WFDIS                     ((uint32_t)0x00200000)        /*!<Write FIFO Disable         */
+
+#define LCD_RAM (*((volatile uint8_t *)(FMC_BASE_ADDR + (1<<FMC_ADDR_PIN))))
+#define LCD_REG (*((volatile uint8_t *)(FMC_BASE_ADDR)))
 
 static void HAL_FMC_MspInit(void){
   /* USER CODE BEGIN FMC_MspInit 0 */
 
   /* USER CODE END FMC_MspInit 0 */
   GPIO_InitTypeDef GPIO_InitStruct;
-  if (FMC_Initialized) {
-    return;
-  }
-  FMC_Initialized = 1;
+  //if (FMC_Initialized) {
+  //  return;
+  //}
+  //FMC_Initialized = 1;
   /* Peripheral clock enable */
   __FMC_CLK_ENABLE();
   
@@ -73,6 +76,14 @@ static void HAL_FMC_MspInit(void){
 static GFXINLINE void init_board(GDisplay *g) {
 	// As we are not using multiple displays we set g->board to NULL as we don't use it.
 
+	GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+	
+
+	
+	
 	#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_SPI
 	ili_spi = MICROPY_HW_UGFX_SPI;
 	
@@ -120,31 +131,21 @@ static GFXINLINE void init_board(GDisplay *g) {
     GPIO_set_pin(MICROPY_HW_UGFX_PORT_A0, MICROPY_HW_UGFX_PIN_A0);
     GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);
 
-    // init the pins to be push/pull outputs
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
+    // init the pins to be push/pull outputs   
 
     GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_CS;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_CS, &GPIO_InitStructure);
 
-    GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_RST;
-    HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_RST, &GPIO_InitStructure);
-
     GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_A0;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_A0, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_BL;
-    HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_BL, &GPIO_InitStructure);
 	
 	#else
-		#error "Parallel not yet implemented"
-	
+			
 	FMC_NORSRAM_TimingTypeDef Timing;
 
 	/** Perform the SRAM1 memory initialization sequence
 	*/
+	SRAM_HandleTypeDef hsram1;
 	hsram1.Instance = FMC_NORSRAM_DEVICE;
 	hsram1.Extended = FMC_NORSRAM_EXTENDED_DEVICE;
 	/* hsram1.Init */
@@ -161,23 +162,33 @@ static GFXINLINE void init_board(GDisplay *g) {
 	hsram1.Init.AsynchronousWait = FMC_ASYNCHRONOUS_WAIT_DISABLE;
 	hsram1.Init.WriteBurst = FMC_WRITE_BURST_DISABLE;
 	hsram1.Init.ContinuousClock = FMC_CONTINUOUS_CLOCK_SYNC_ONLY;
-	hsram1.Init.WriteFifo = FMC_WRITE_FIFO_ENABLE;
+	hsram1.Init.WriteFifo = FMC_WRITE_FIFO_ENABLE_BODGE;
 	hsram1.Init.PageSize = FMC_PAGE_SIZE_NONE;
 	/* Timing */
-	Timing.AddressSetupTime = 15;
-	Timing.AddressHoldTime = 15;
-	Timing.DataSetupTime = 255;
-	Timing.BusTurnAroundDuration = 15;
-	Timing.CLKDivision = 16;
-	Timing.DataLatency = 17;
+	//TODO: check these against the datasheet
+	Timing.AddressSetupTime = 1;
+	Timing.AddressHoldTime = 0;
+	Timing.DataSetupTime = 5;
+	Timing.BusTurnAroundDuration = 0;
+	Timing.CLKDivision = 0;
+	Timing.DataLatency = 0;
 	Timing.AccessMode = FMC_ACCESS_MODE_A;
 	/* ExtTiming */
 
 	HAL_FMC_MspInit();
-	HAL_SRAM_Init(&hsram1, &Timing, NULL);
-	
-	
+	HAL_SRAM_Init(&hsram1, &Timing, NULL);		
 	#endif
+	
+	
+    GPIO_set_pin(MICROPY_HW_UGFX_PORT_RST, MICROPY_HW_UGFX_PIN_RST);
+    GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);
+	
+	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_RST;
+    HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_RST, &GPIO_InitStructure);
+
+    GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_BL;
+    HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_BL, &GPIO_InitStructure);
+	
 	
 	#ifdef MICROPY_HW_UGFX_PIN_MODE
 	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_MODE;
@@ -219,12 +230,13 @@ static GFXINLINE void acquire_bus(GDisplay *g) {
 	(void) g;
 }
 
+
+
+#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_SPI
 static GFXINLINE void release_bus(GDisplay *g) {
 	(void) g;
 	GPIO_set_pin(MICROPY_HW_UGFX_PORT_CS, MICROPY_HW_UGFX_PIN_CS);  //CS high
 }
-
-#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_SPI
 static GFXINLINE void write_index(GDisplay *g, uint16_t index) {
 	(void) g;
 	
@@ -238,9 +250,11 @@ static GFXINLINE void write_data(GDisplay *g, uint16_t data) {
 	HAL_SPI_Transmit(&ili_spi, &data, 1, 1000);
 }
 #elif MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_PARALLEL
+static GFXINLINE void release_bus(GDisplay *g) {
+	(void) g;
+}
 static GFXINLINE void write_index(GDisplay *g, uint16_t index) {
 	(void) g;	
-	GPIO_clear_pin(MICROPY_HW_UGFX_PORT_CS, MICROPY_HW_UGFX_PIN_CS);  //CS low
 	LCD_REG = index;
 }
 static GFXINLINE void write_data(GDisplay *g, uint16_t data) {
