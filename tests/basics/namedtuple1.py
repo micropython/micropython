@@ -62,8 +62,13 @@ except TypeError:
     print("TypeError")
 
 # Try single string
-T3 = namedtuple("TupComma", "foo bar")
+T3 = namedtuple("TupString", "foo bar")
 t = T3(1, 2)
+print(t.foo, t.bar)
+
+# Try tuple
+T4 = namedtuple("TupTuple", ("foo",  "bar"))
+t = T4(1, 2)
 print(t.foo, t.bar)
 
 # Try single string with comma field seperator
