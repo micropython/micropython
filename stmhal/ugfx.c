@@ -61,6 +61,8 @@
 
 font_t default_font;
 
+GWidgetInit	wi;
+
 systemticks_t gfxSystemTicks(void)
 {
 	return HAL_GetTick();
@@ -475,6 +477,78 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_ball_demo_obj, pyb_ugfx_ball_demo);
 
 
 
+/// \method widget_demo()
+///
+STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+	
+	GHandle		ghLabel1;
+	GHandle		ghList1;
+	GHandle   ghButton1;
+	
+
+ 
+	
+	gwinSetDefaultFont(default_font);
+	gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
+
+	
+	
+	
+	// Apply some default values for GWIN
+	gwinWidgetClearInit(&wi);
+	wi.g.show = TRUE;
+	
+ 
+	// Apply some default values for GWIN
+	wi.customDraw = 0;
+	wi.customParam = 0;
+	wi.customStyle = 0;
+	wi.g.show = TRUE; 
+	// Apply the label parameters	
+	wi.g.y = 10;
+	wi.g.x = 10;
+	wi.g.width = 100;
+	wi.g.height = 20;
+	wi.text = "Label 1"; 
+	// Create the actual label
+	ghLabel1 = gwinLabelCreate(NULL, &wi);
+	
+	
+
+	// Apply the button parameters	
+	wi.g.width = 100;
+	wi.g.height = 30;
+	wi.g.y = 50;
+	wi.g.x = 10;
+	wi.text = "Push Button"; 
+	// Create the actual button
+	ghButton1 = gwinButtonCreate(NULL, &wi);
+	
+	
+
+	
+	// The first list widget
+	wi.g.width = 150;
+	wi.g.height = 100;
+	wi.g.y = 100;
+	wi.g.x = 10;
+	wi.text = "Name of list 1";
+	ghList1 = gwinListCreate(NULL, &wi, FALSE);
+
+	gwinListAddItem(ghList1, "Item 0", FALSE);
+	gwinListAddItem(ghList1, "Item 1", FALSE);
+	
+	gwinSetVisible(ghList1, TRUE);
+
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_widget_demo_obj, pyb_ugfx_widget_demo);
+
+
+
 /// \method set_orientation(a)
 ///
 /// Set orientation to 0, 90, 180 or 270 degrees
@@ -555,6 +629,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_width), (mp_obj_t)&pyb_ugfx_get_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_height), (mp_obj_t)&pyb_ugfx_get_height_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&pyb_ugfx_ball_demo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&pyb_ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&pyb_ugfx_get_pixel_obj },
 	
 	//class constants
@@ -564,6 +639,8 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_BLACK),      MP_OBJ_NEW_SMALL_INT(Black) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WHITE),      MP_OBJ_NEW_SMALL_INT(White) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_YELLOW),     MP_OBJ_NEW_SMALL_INT(Yellow) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PURPLE),     MP_OBJ_NEW_SMALL_INT(Purple) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_GREY),       MP_OBJ_NEW_SMALL_INT(Grey) },
 
 };
 

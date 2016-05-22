@@ -30,7 +30,7 @@ void STM32L476_EMFBADGE_board_early_init(void);
 // uGFX PinDefs
 #define UGFX_DRIVER_SPI 1
 #define UGFX_DRIVER_PARALLEL 2
-#define MICROPY_HW_UGFX_INTERFACE UGFX_DRIVER_SPI
+#define MICROPY_HW_UGFX_INTERFACE UGFX_DRIVER_PARALLEL
 
 //used for selecting SPI/parallel mode
 #define MICROPY_HW_UGFX_PORT_MODE GPIOE
