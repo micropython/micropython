@@ -510,6 +510,8 @@ STATIC mp_obj_t pyb_ugfx_get_width(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_get_width_obj, pyb_ugfx_get_width);
 
+
+
 /// \method get_height()
 ///
 /// Gets current width of the screen in pixels
@@ -520,6 +522,22 @@ STATIC mp_obj_t pyb_ugfx_get_height(mp_obj_t self_in) {
     return mp_obj_new_int(gdispGetHeight());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_get_height_obj, pyb_ugfx_get_height);
+
+
+/// \method get_pixel()
+///
+/// Gets the colour of the given pixel at (x,y)
+///
+STATIC mp_obj_t pyb_ugfx_get_pixel(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+	int x = mp_obj_get_int(x_in);
+	int y = mp_obj_get_int(y_in);
+	return mp_obj_new_int(0);
+	//needs sorting, currently returns somewhat dodgy values
+    //return mp_obj_new_int(gdispGetPixelColor(x,y)); 
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_ugfx_get_pixel_obj, pyb_ugfx_get_pixel);
 
 
 STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
@@ -537,6 +555,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_width), (mp_obj_t)&pyb_ugfx_get_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_height), (mp_obj_t)&pyb_ugfx_get_height_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&pyb_ugfx_ball_demo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&pyb_ugfx_get_pixel_obj },
 	
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
