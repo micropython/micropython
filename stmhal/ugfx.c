@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include STM32_HAL_H
 
@@ -283,7 +284,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_fill_circle_obj, 5, 5, pyb_u
 
 
 
-
 /// \method ellipse(x1, y1, a, b, colour)
 ///
 /// Draw a ellipse having a centre point at (x1,y1), lengths a,b, using the given colour.
@@ -325,6 +325,154 @@ STATIC mp_obj_t pyb_ugfx_fill_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_fill_ellipse_obj, 6, 6, pyb_ugfx_fill_ellipse);
+
+/// \method area(x1, y1, a, b, colour)
+///
+/// Fill area from (x,y), with lengths x1,y1, using the given colour.
+///
+STATIC mp_obj_t pyb_ugfx_area(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+    int x0 = mp_obj_get_int(args[1]);
+    int y0 = mp_obj_get_int(args[2]);
+	int a = mp_obj_get_int(args[3]);
+	int b = mp_obj_get_int(args[4]);
+    int col = mp_obj_get_int(args[5]);
+
+
+	gdispFillArea(x0, y0, a, b, col);	
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_area_obj, 6, 6, pyb_ugfx_area);
+
+/// \method box(x1, y1, a, b, colour)
+///
+/// Draw a box from (x,y), with lengths x1,y1, using the given colour.
+///
+STATIC mp_obj_t pyb_ugfx_box(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+    int x0 = mp_obj_get_int(args[1]);
+    int y0 = mp_obj_get_int(args[2]);
+	int a = mp_obj_get_int(args[3]);
+	int b = mp_obj_get_int(args[4]);
+    int col = mp_obj_get_int(args[5]);
+
+
+	gdispDrawBox(x0, y0, a, b, col);	
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_box_obj, 6, 6, pyb_ugfx_box);
+
+
+/// \method ball_demo()
+///
+/// BALL DEMO!!!
+///
+STATIC mp_obj_t pyb_ugfx_ball_demo(mp_obj_t self_in) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+	
+	/*
+	 * Copyright (c) 2012, 2013, Joel Bodenmann aka Tectu <joel@unormal.org>
+	 * Copyright (c) 2012, 2013, Andrew Hannam aka inmarket
+	 * Derived from the 2011 IOCCC submission by peter.eastman@gmail.com
+	 *
+	 */
+	 
+ #define BALLCOLOR1		Red
+#define BALLCOLOR2		Yellow
+#define WALLCOLOR		HTML2COLOR(0x303030)
+#define BACKCOLOR		HTML2COLOR(0xC0C0C0)
+#define FLOORCOLOR		HTML2COLOR(0x606060)
+#define SHADOWALPHA		(255-255*0.2)
+	
+	coord_t		width, height, x, y, radius, ballx, bally, dx, floor;
+	coord_t		minx, miny, maxx, maxy;
+	coord_t		ballcx, ballcy;
+	color_t		colour;
+	float		ii, spin, dy, spinspeed, h, f, g;
+
+	width = gdispGetWidth();
+	height = gdispGetHeight();
+
+	radius=height/5+height%2+1;	// The ball radius
+	ii = 1.0/radius;			// radius as easy math
+	floor=height/5-1;			// floor position
+	spin=0.0;					// current spin angle on the ball
+	spinspeed=0.1;				// current spin speed of the ball
+	ballx=width/2;				// ball x position (relative to the ball center)
+	bally=height/4;				// ball y position (relative to the ball center)
+	dx=.01*width;				// motion in the x axis
+	dy=0.0;						// motion in the y axis
+	ballcx = 12*radius/5;		// ball x diameter including the shadow
+	ballcy = 21*radius/10;		// ball y diameter including the shadow
+
+
+	minx = miny = 0; maxx = width; maxy = height;		// The clipping window for this frame.
+
+	while(1) {
+		// Draw one frame
+		gdispStreamStart(minx, miny, maxx-minx, maxy-miny);
+		for (y=miny; h = (bally-y)*ii, y<maxy; y++) {
+			for (x=minx; x < maxx; x++) {
+				g=(ballx-x)*ii;
+				f=-.3*g+.954*h;
+				if (g*g < 1-h*h) {
+					/* The inside of the ball */
+					if ((((int)(9-spin+(.954*g+.3*h)*invsqrt(1-f*f))+(int)(2+f*2))&1))
+						colour = BALLCOLOR1;
+					else
+						colour = BALLCOLOR2;
+				} else {
+					// The background (walls and floor)
+					if (y > height-floor) {
+						if (x < height-y || height-y > width-x)
+							colour = WALLCOLOR;
+						else
+							colour = FLOORCOLOR;
+					} else if (x<floor || x>width-floor)
+						colour = WALLCOLOR;
+					else
+						colour = BACKCOLOR;
+
+					// The ball shadow is darker
+					if (g*(g+.4)+h*(h+.1) < 1)
+						colour = gdispBlendColor(colour, Black, SHADOWALPHA);
+				}
+				gdispStreamColor(colour);	/* pixel to the LCD */
+			}
+		}
+		gdispStreamStop();
+
+		// Force a display update if the controller supports it
+		gdispFlush();
+
+		// Calculate the new frame size (note this is a drawing optimisation only)
+		minx = ballx - radius; miny = bally - radius;
+		maxx = minx + ballcx; maxy = miny + ballcy;
+		if (dx > 0) maxx += dx; else minx += dx;
+		if (dy > 0) maxy += dy; else miny += dy;
+		if (minx < 0) minx = 0;
+		if (maxx > width) maxx = width;
+		if (miny < 0) miny = 0;
+		if (maxy > height) maxy = height;
+
+		// Motion
+		spin += spinspeed;
+		ballx += dx; bally += dy;
+		dx = ballx < radius || ballx > width-radius ? spinspeed=-spinspeed,-dx : dx;
+		dy = bally > height-1.75*floor ? -.04*height : dy+.002*height;
+	}
+	
+		
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_ball_demo_obj, pyb_ugfx_ball_demo);
+
 
 
 /// \method set_orientation(a)
@@ -378,6 +526,8 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&pyb_ugfx_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&pyb_ugfx_line_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_box), (mp_obj_t)&pyb_ugfx_box_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_area), (mp_obj_t)&pyb_ugfx_area_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_thickline), (mp_obj_t)&pyb_ugfx_thickline_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_circle), (mp_obj_t)&pyb_ugfx_circle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_circle), (mp_obj_t)&pyb_ugfx_fill_circle_obj },
@@ -386,6 +536,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_orientation), (mp_obj_t)&pyb_ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_width), (mp_obj_t)&pyb_ugfx_get_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_height), (mp_obj_t)&pyb_ugfx_get_height_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&pyb_ugfx_ball_demo_obj },
 	
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
