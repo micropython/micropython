@@ -358,7 +358,7 @@ GEN_FLASH_HDRS = $(addprefix $(HEADER_BUILD)/,\
 SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
-SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
+SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_FILE)
 
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -371,10 +371,8 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: boards/$(BOARD)/mpconfigboard.h
 
-# main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
-main.c: $(GEN_CDCINF_HEADER)
-
-$(BUILD)/main.o: $(GEN_FLASH_HDRS)
+# main.c can't be even preprocessed without $(GEN_CDCINF_FILE)
+main.c: $(GEN_FLASH_HDRS)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
