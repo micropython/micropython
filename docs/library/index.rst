@@ -101,6 +101,7 @@ library.
        uos.rst
        ure.rst
        usocket.rst
+       ussl.rst
        ustruct.rst
        utime.rst
        uzlib.rst
