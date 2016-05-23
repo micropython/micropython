@@ -1,5 +1,6 @@
 import esp
 import uctypes
+import network
 import lwip
 
 
@@ -18,6 +19,8 @@ def main():
     print("Byte @3: %02x (Flash size: %s Flash freq: %s)" % (ROM[3], SZ_MAP.get(ROM[3] >> 4, "?"), FREQ_MAP.get(ROM[3] & 0xf)))
 
     print("\nNetworking:")
+    print("STA ifconfig:", network.WLAN(network.STA_IF).ifconfig())
+    print("AP ifconfig:", network.WLAN(network.AP_IF).ifconfig())
     print("Free WiFi driver buffers of type:")
     for i in range(5):
         print("%d: %d" % (i, esp.esf_free_bufs(i)))
