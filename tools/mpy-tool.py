@@ -503,9 +503,6 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print('const char mp_frozen_mpy_names[] = {')
     for rc in raw_codes:
         module_name = rc.source_file.str
-        slash = module_name.rfind('/')
-        if slash != -1:
-            module_name = module_name[slash + 1:]
         print('"%s\\0"' % module_name)
     print('"\\0"};')
 
