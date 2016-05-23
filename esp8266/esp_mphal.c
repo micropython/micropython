@@ -176,6 +176,10 @@ static int call_dupterm_read(void) {
             mp_uos_deactivate("dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
             return -1;
         }
+        if (*(byte*)bufinfo.buf == interrupt_char) {
+            mp_keyboard_interrupt();
+            return -2;
+        }
         return *(byte*)bufinfo.buf;
     } else {
         mp_uos_deactivate("dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
