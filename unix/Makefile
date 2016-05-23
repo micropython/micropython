@@ -181,7 +181,7 @@ ifneq ($(FROZEN_MPY_DIR),)
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
-FROZEN_MPY_PY_FILES := $(wildcard $(FROZEN_MPY_DIR)/*.py)
+FROZEN_MPY_PY_FILES := $(shell find $(FROZEN_MPY_DIR)/ -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
@@ -189,14 +189,11 @@ CFLAGS += -DMICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE=0 # not supported
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 OBJ += $(BUILD)/$(BUILD)/frozen_mpy.o
 
-# to create output directory for .mpy files
-$(BUILD)/$(FROZEN_MPY_DIR):
-	$(MKDIR) -p $@
-
 # to build .mpy files from .py files
-$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py | $(BUILD)/$(FROZEN_MPY_DIR)
+$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
 	@$(ECHO) "MPY $<"
-	$(Q)$(MPY_CROSS) -o $@ $^
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $^
 
 # to build frozen_mpy.c from all .mpy files
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
