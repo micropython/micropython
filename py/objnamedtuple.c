@@ -165,10 +165,7 @@ STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
         fields_in = mp_obj_str_split(1, &fields_in);
     }
     #endif
-    if (!MP_OBJ_IS_TYPE(fields_in, &mp_type_list)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "list required"));
-    }
-    mp_obj_list_get(fields_in, &n_fields, &fields);
+    mp_obj_get_array(fields_in, &n_fields, &fields);
     return mp_obj_new_namedtuple_type(name, n_fields, fields);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_namedtuple_obj, new_namedtuple_type);
