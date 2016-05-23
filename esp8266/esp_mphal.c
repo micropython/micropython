@@ -166,15 +166,16 @@ static int call_dupterm_read(void) {
         read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
         mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
         if (res == mp_const_none) {
+            nlr_pop();
             return -2;
         }
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
+        nlr_pop();
         if (bufinfo.len == 0) {
             mp_uos_deactivate("dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
             return -1;
         }
-        nlr_pop();
         return *(byte*)bufinfo.buf;
     } else {
         mp_uos_deactivate("dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
