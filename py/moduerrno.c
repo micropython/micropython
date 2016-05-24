@@ -42,7 +42,9 @@
     X(EAGAIN) \
     X(ENOMEM) \
     X(EACCES) \
+    X(EEXIST) \
     X(ENODEV) \
+    X(EISDIR) \
     X(EINVAL) \
     X(EOPNOTSUPP) \
     X(EADDRINUSE) \
