@@ -171,11 +171,12 @@ static int call_dupterm_read(void) {
         }
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
-        nlr_pop();
         if (bufinfo.len == 0) {
             mp_uos_deactivate("dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
+            nlr_pop();
             return -1;
         }
+        nlr_pop();
         if (*(byte*)bufinfo.buf == interrupt_char) {
             mp_keyboard_interrupt();
             return -2;
