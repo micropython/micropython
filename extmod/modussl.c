@@ -195,6 +195,8 @@ const mp_obj_module_t mp_module_ussl = {
 
 // These functions might be split to stream_posix.c. They are referenced by
 // axtls os_port.h .
+ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len);
+ssize_t mp_stream_posix_read(void *sock_obj, void *buf, size_t len);
 
 int mp_stream_errno;
 
