@@ -38,6 +38,7 @@
 #include "esp_mphal.h"
 #include "user_interface.h"
 
+
 extern const mp_obj_type_t mp_fat_vfs_type;
 
 STATIC const qstr os_uname_info_fields[] = {
@@ -93,6 +94,11 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
+STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_chdir, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
+
 STATIC mp_obj_t os_remove(mp_obj_t path_in) {
     return vfs_proxy_call(MP_QSTR_remove, 1, &path_in);
 }
@@ -106,6 +112,10 @@ STATIC mp_obj_t os_rename(mp_obj_t path_old, mp_obj_t path_new) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 
+STATIC mp_obj_t os_stat(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_stat, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 #endif
 
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
@@ -138,8 +148,11 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&os_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&os_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&os_rename_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_stat_obj) },
     #endif
 };
 
