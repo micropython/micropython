@@ -38,7 +38,6 @@
 #include "esp_mphal.h"
 #include "user_interface.h"
 
-
 extern const mp_obj_type_t mp_fat_vfs_type;
 
 STATIC const qstr os_uname_info_fields[] = {

@@ -34,7 +34,6 @@
 #include "lib/fatfs/diskio.h"
 #include "extmod/vfs_fat_file.h"
 #include "extmod/fsusermount.h"
-
 #include "timeutils.h"
 
 
@@ -139,7 +138,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_chdir_obj, fat_vfs_chdir);
 //   path_equal(/, /) -> true
 // second argument must be in canonical form (meaning no trailing slash, unless it's just /)
 STATIC bool path_equal(const char *path, const char *path_canonical) {
-    for (; *path_canonical != '\0' && *path == *path_canonical; ++path, ++path_canonical) {
+    while (*path_canonical != '\0' && *path == *path_canonical) {
+        ++path;
+        ++path_canonical;
     }
     if (*path_canonical != '\0') {
         return false;
