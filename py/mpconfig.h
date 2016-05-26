@@ -829,6 +829,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_THREAD (0)
 #endif
 
+// Whether to make the VM/runtime thread-safe using a global lock
+// If not enabled then thread safety must be provided at the Python level
+#ifndef MICROPY_PY_THREAD_GIL
+#define MICROPY_PY_THREAD_GIL (MICROPY_PY_THREAD)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_UCTYPES

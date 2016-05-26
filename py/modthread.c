@@ -146,6 +146,8 @@ typedef struct _thread_entry_args_t {
 } thread_entry_args_t;
 
 STATIC void *thread_entry(void *args_in) {
+    // Execution begins here for a new thread.  We do not have the GIL.
+
     thread_entry_args_t *args = (thread_entry_args_t*)args_in;
 
     mp_state_thread_t ts;
@@ -153,6 +155,8 @@ STATIC void *thread_entry(void *args_in) {
 
     mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
     mp_stack_set_limit(16 * 1024); // fixed stack limit for now
+
+    MP_THREAD_GIL_ENTER();
 
     // signal that we are set up and running
     mp_thread_start();
@@ -187,6 +191,8 @@ STATIC void *thread_entry(void *args_in) {
 
     // signal that we are finished
     mp_thread_finish();
+
+    MP_THREAD_GIL_EXIT();
 
     return NULL;
 }

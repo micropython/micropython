@@ -38,6 +38,14 @@
 
 struct _mp_state_thread_t;
 
+#if MICROPY_PY_THREAD_GIL
+#define MP_THREAD_GIL_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(gil_mutex), 1)
+#define MP_THREAD_GIL_EXIT() mp_thread_mutex_unlock(&MP_STATE_VM(gil_mutex))
+#else
+#define MP_THREAD_GIL_ENTER()
+#define MP_THREAD_GIL_EXIT()
+#endif
+
 struct _mp_state_thread_t *mp_thread_get_state(void);
 void mp_thread_set_state(void *state);
 void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size);

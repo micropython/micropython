@@ -175,6 +175,11 @@ typedef struct _mp_state_vm_t {
     #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0
     mp_int_t mp_emergency_exception_buf_size;
     #endif
+
+    #if MICROPY_PY_THREAD_GIL
+    // This is a global mutex used to make the VM/runtime thread-safe.
+    mp_thread_mutex_t gil_mutex;
+    #endif
 } mp_state_vm_t;
 
 // This structure holds state that is specific to a given thread.

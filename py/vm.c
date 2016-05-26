@@ -1263,6 +1263,10 @@ pending_exception_check:
                     RAISE(obj);
                 }
 
+                // TODO make GIL release more efficient
+                MP_THREAD_GIL_EXIT();
+                MP_THREAD_GIL_ENTER();
+
             } // for loop
 
         } else {
