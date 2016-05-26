@@ -216,7 +216,7 @@ void mp_hal_signal_dupterm_input(void) {
     system_os_post(DUPTERM_TASK_ID, 0, 0);
 }
 
-void mp_hal_pin_config_od(mp_hal_pin_obj_t pin_id) {
+void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
     const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
 
     if (pin->phys_port == 16) {

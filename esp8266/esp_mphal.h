@@ -70,8 +70,8 @@ void ets_event_poll(void);
 #define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
 void mp_hal_pin_input(mp_hal_pin_obj_t pin);
 void mp_hal_pin_output(mp_hal_pin_obj_t pin);
-void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
-#define mp_hal_pin_low(p) do { \
+void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
+#define mp_hal_pin_od_low(p) do { \
         if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); } \
         else { gpio_output_set(0, 1 << (p), 1 << (p), 0); } \
     } while (0)
