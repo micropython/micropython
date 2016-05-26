@@ -272,10 +272,19 @@ STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t 
     }
 }
 
+STATIC mp_obj_t websocket_close(mp_obj_t self_in) {
+    mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
+    // TODO: Send close signaling to the other side, otherwise it's
+    // abrupt close (connection abort).
+    return mp_stream_close(self->sock);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(websocket_close_obj, websocket_close);
+
 STATIC const mp_map_elem_t websocket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ioctl), (mp_obj_t)&mp_stream_ioctl_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&websocket_close_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
 

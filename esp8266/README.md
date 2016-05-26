@@ -69,6 +69,34 @@ $ make PORT=/dev/ttyUSB0 deploy
 
 The image produced is `firmware-combined.bin`, to be flashed at 0x00000.
 
+First start
+-----------
+
+__Serial prompt__
+
+You can access the REPL (Python prompt) over UART (the same as used for
+programming).
+- Baudrate: 115200
+
+__WiFi__
+
+Initally, the device configures itself as a WiFi access point (AP).
+- ESSID: MicroPython-xxxxxx (x’s are replaced with part of the MAC address).
+- Password: micropythoN (note the upper-case N).
+- IP address of the board: 192.168.4.1.
+- DHCP-server is activated.
+
+__WebREPL__
+
+Python prompt over WiFi, connecting through a browser.
+- Hosted at http://micropython.org/webrepl.
+- GitHub repository https://github.com/micropython/webrepl.
+
+Please follow the instructions there.
+
+More detailed instructions can be found at
+http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html
+
 Troubleshooting
 ---------------
 

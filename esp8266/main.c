@@ -58,7 +58,7 @@ STATIC void mp_reset(void) {
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     pin_init0();
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("_boot");
+    pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
     pyexec_file("main.py");
 #endif

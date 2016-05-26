@@ -33,7 +33,7 @@
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "extmod/vfs_fat_file.h"
-#include "fsusermount.h"
+#include "extmod/fsusermount.h"
 
 #define mp_obj_fat_vfs_t fs_user_mount_t
 

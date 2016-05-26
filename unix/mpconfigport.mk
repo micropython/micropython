@@ -22,7 +22,7 @@ MICROPY_PY_SOCKET = 1
 MICROPY_PY_FFI = 1
 
 # ussl module requires axtls
-MICROPY_PY_USSL = 0
+MICROPY_PY_USSL = 1
 
 # jni module requires JVM/JNI
 MICROPY_PY_JNI = 0

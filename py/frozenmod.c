@@ -85,6 +85,43 @@ STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t len) {
 
 #if MICROPY_MODULE_FROZEN
 
+STATIC mp_import_stat_t mp_frozen_stat_helper(const char *name, const char *str) {
+    size_t len = strlen(str);
+
+    for (int i = 0; *name != 0; i++) {
+        size_t l = strlen(name);
+        if (l >= len && !memcmp(str, name, len)) {
+            if (name[len] == 0) {
+                return MP_IMPORT_STAT_FILE;
+            } else if (name[len] == '/') {
+                return MP_IMPORT_STAT_DIR;
+            }
+        }
+        name += l + 1;
+    }
+    return MP_IMPORT_STAT_NO_EXIST;
+}
+
+mp_import_stat_t mp_frozen_stat(const char *str) {
+    mp_import_stat_t stat;
+
+    #if MICROPY_MODULE_FROZEN_STR
+    stat = mp_frozen_stat_helper(mp_frozen_str_names, str);
+    if (stat != MP_IMPORT_STAT_NO_EXIST) {
+        return stat;
+    }
+    #endif
+
+    #if MICROPY_MODULE_FROZEN_MPY
+    stat = mp_frozen_stat_helper(mp_frozen_mpy_names, str);
+    if (stat != MP_IMPORT_STAT_NO_EXIST) {
+        return stat;
+    }
+    #endif
+
+    return MP_IMPORT_STAT_NO_EXIST;
+}
+
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
     #if MICROPY_MODULE_FROZEN_STR
     mp_lexer_t *lex = mp_find_frozen_str(str, len);

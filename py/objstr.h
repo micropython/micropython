@@ -92,6 +92,7 @@ MP_DECLARE_CONST_FUN_OBJ(str_replace_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_count_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_partition_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_rpartition_obj);
+MP_DECLARE_CONST_FUN_OBJ(str_center_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_lower_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_upper_obj);
 MP_DECLARE_CONST_FUN_OBJ(str_isspace_obj);

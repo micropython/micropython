@@ -23,7 +23,7 @@ import os
 
 
 def module_name(f):
-    return f[:-len(".py")]
+    return f
 
 modules = []
 
@@ -40,7 +40,7 @@ print("#include <stdint.h>")
 print("const char mp_frozen_str_names[] = {")
 for f, st in modules:
     m = module_name(f)
-    print('"%s\\0"' % m.replace("/", "."))
+    print('"%s\\0"' % m)
 print('"\\0"};')
 
 print("const uint32_t mp_frozen_str_sizes[] = {")

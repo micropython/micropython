@@ -190,7 +190,7 @@ STATIC void indent_pop(mp_lexer_t *lex) {
 //     c<op> = continue with <op>, if this opchar matches then continue matching
 // this means if the start of two ops are the same then they are equal til the last char
 
-STATIC const char *tok_enc =
+STATIC const char *const tok_enc =
     "()[]{},:;@~" // singles
     "<e=c<e="     // < <= << <<=
     ">e=c>e="     // > >= >> >>=
@@ -227,7 +227,7 @@ STATIC const uint8_t tok_enc_kind[] = {
 };
 
 // must have the same order as enum in lexer.h
-STATIC const char *tok_kw[] = {
+STATIC const char *const tok_kw[] = {
     "False",
     "None",
     "True",

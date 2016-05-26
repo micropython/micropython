@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2016 Robert Foss, Daniel Busch
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,5 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPHAL_H__
-#define __MICROPY_INCLUDED_PY_MPHAL_H__
 
-#include "py/mpconfig.h"
-
-#ifdef MICROPY_MPHALPORT_H
-#include MICROPY_MPHALPORT_H
-#else
-#include <mphalport.h>
-#endif
-
-#ifndef mp_hal_stdin_rx_chr
-int mp_hal_stdin_rx_chr(void);
-#endif
-
-#ifndef mp_hal_stdout_tx_str
-void mp_hal_stdout_tx_str(const char *str);
-#endif
-
-#ifndef mp_hal_stdout_tx_strn
-void mp_hal_stdout_tx_strn(const char *str, size_t len);
-#endif
-
-#ifndef mp_hal_stdout_tx_strn_cooked
-void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
-#endif
-
-#ifndef mp_hal_delay_ms
-void mp_hal_delay_ms(mp_uint_t ms);
-#endif
-
-#ifndef mp_hal_delay_us
-void mp_hal_delay_us(mp_uint_t us);
-#endif
-
-#ifndef mp_hal_ticks_ms
-mp_uint_t mp_hal_ticks_ms(void);
-#endif
-
-#ifndef mp_hal_ticks_us
-mp_uint_t mp_hal_ticks_us(void);
-#endif
-
-#endif // __MICROPY_INCLUDED_PY_MPHAL_H__
+void esp_apa102_write(uint8_t clockPin, uint8_t dataPin, uint8_t *pixels, uint32_t numBytes);

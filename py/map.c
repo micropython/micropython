@@ -49,7 +49,7 @@ const mp_map_t mp_const_empty_map = {
 // The first set of sizes are chosen so the allocation fits exactly in a
 // 4-word GC block, and it's not so important for these small values to be
 // prime.  The latter sizes are prime and increase at an increasing rate.
-STATIC uint16_t hash_allocation_sizes[] = {
+STATIC const uint16_t hash_allocation_sizes[] = {
     0, 2, 4, 6, 8, 10, 12, // +2
     17, 23, 29, 37, 47, 59, 73, // *1.25
     97, 127, 167, 223, 293, 389, 521, 691, 919, 1223, 1627, 2161, // *1.33
