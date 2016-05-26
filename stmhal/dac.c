@@ -246,6 +246,21 @@ STATIC mp_obj_t pyb_dac_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *k
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_init_obj, 1, pyb_dac_init);
 
+/// \method deinit()
+/// Turn off the DAC, enable other use of pin.
+STATIC mp_obj_t pyb_dac_deinit(mp_obj_t self_in) {
+    pyb_dac_obj_t *self = self_in;
+    if (self->dac_channel == DAC_CHANNEL_1) {
+        DAC_Handle.Instance->CR &= ~DAC_CR_EN1;
+        DAC_Handle.Instance->CR |= DAC_CR_BOFF1;
+    } else {
+        DAC_Handle.Instance->CR &= ~DAC_CR_EN2;
+        DAC_Handle.Instance->CR |= DAC_CR_BOFF2;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_dac_deinit_obj, pyb_dac_deinit);
+
 #if defined(TIM6)
 /// \method noise(freq)
 /// Generate a pseudo-random noise signal.  A new random sample is written
@@ -461,6 +476,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_write_timed_obj, 1, pyb_dac_write_time
 STATIC const mp_map_elem_t pyb_dac_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_dac_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_dac_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_dac_write_obj },
     #if defined(TIM6)
     { MP_OBJ_NEW_QSTR(MP_QSTR_noise), (mp_obj_t)&pyb_dac_noise_obj },
