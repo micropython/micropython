@@ -145,7 +145,8 @@ STATIC bool path_equal(const char *path, const char *path_canonical) {
     if (*path_canonical != '\0') {
         return false;
     }
-    for (; *path == '/'; ++path) {
+    while (*path == '/') {
+        ++path;
     }
     return *path == '\0';
 }
