@@ -29,6 +29,8 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
+#include "py/mphal.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_i2c.h"
 #include "modpyb.h"
@@ -189,6 +191,35 @@ const mp_obj_type_t esp_timer_type = {
     .locals_dict = (mp_obj_t)&esp_timer_locals_dict,
 };
 
+STATIC mp_obj_t time_pulse_us(size_t n_args, const mp_obj_t *args) {
+    mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(args[0]);
+    int state = 0;
+    if (mp_obj_is_true(args[1])) {
+        state = 1;
+    }
+    uint32_t timeout = 1000000;
+    if (n_args > 2) {
+        timeout = mp_obj_get_int(args[2]);
+    }
+    uint32_t start = mp_hal_ticks_us();
+    while (mp_hal_pin_read(pin) != state) {
+        if ((uint32_t)(mp_hal_ticks_us() - start) >= timeout) {
+            goto timeout;
+        }
+    }
+    start = mp_hal_ticks_us();
+    while (mp_hal_pin_read(pin) == state) {
+        if ((uint32_t)(mp_hal_ticks_us() - start) >= timeout) {
+            goto timeout;
+        }
+    }
+    return mp_obj_new_int(mp_hal_ticks_us() - start);
+
+timeout:
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ETIMEDOUT)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_pulse_us_obj, 2, 3, time_pulse_us);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
@@ -200,6 +231,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&time_pulse_us_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },
