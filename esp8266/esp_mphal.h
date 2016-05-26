@@ -68,6 +68,8 @@ void ets_event_poll(void);
 #include "esp8266/modpyb.h"
 #define mp_hal_pin_obj_t uint32_t
 #define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
+void mp_hal_pin_input(mp_hal_pin_obj_t pin);
+void mp_hal_pin_output(mp_hal_pin_obj_t pin);
 void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
 #define mp_hal_pin_low(p) do { \
         if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); } \
