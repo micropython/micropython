@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "xtirq.h"
 #include "osapi.h"
 #include "os_type.h"
 #include "ets_sys.h"
@@ -108,6 +109,9 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
 }
 
 bool ets_loop_iter(void) {
+    if (query_irq() != 0) {
+        return false;
+    }
     //static unsigned cnt;
     bool progress = false;
     for (volatile struct task_entry *t = emu_tasks; t < &emu_tasks[MP_ARRAY_SIZE(emu_tasks)]; t++) {
