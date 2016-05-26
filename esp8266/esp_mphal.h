@@ -28,6 +28,7 @@
 #define _INCLUDED_MPHAL_H_
 
 #include "py/ringbuf.h"
+#include "xtirq.h"
 
 void mp_keyboard_interrupt(void);
 extern int interrupt_char;
@@ -61,6 +62,9 @@ void ets_event_poll(void);
 // needed for machine.I2C
 #include "osapi.h"
 #define mp_hal_delay_us_fast(us) os_delay_us(us)
+
+#define mp_hal_quiet_timing_enter() disable_irq()
+#define mp_hal_quiet_timing_exit(irq_state) enable_irq(irq_state)
 
 // C-level pin HAL
 #include "etshal.h"
