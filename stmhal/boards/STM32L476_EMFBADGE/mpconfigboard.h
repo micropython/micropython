@@ -20,10 +20,11 @@ void STM32L476_EMFBADGE_board_early_init(void);
 
 
 //cc3100 stuff
-#define MICROPY_HW_CC3100_PORT_HIB GPIOC
-#define MICROPY_HW_CC3100_PIN_HIB GPIO_PIN_6
-
-
+// defined as the const pin_objs
+#define MICROPY_HW_CC3100_HIB       pin_C6
+#define MICROPY_HW_CC3100_IRQ       pin_E4
+#define MICROPY_HW_CC3100_CS        pin_A4
+#define MICROPY_HW_CC3100_SPI       SPIHandle1
 
 // uGFX PinDefs
 #define MICROPY_HW_UGFX_INTERFACE SPI

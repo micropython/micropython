@@ -363,7 +363,14 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     
     //If no args given, we setup from coded defaults
     if (n_args == 0) {
-      
+#ifdef MICROPY_HW_CC3100_SPI
+      SPI_HANDLE = &MICROPY_HW_CC3100_SPI;
+      PIN_CS = &MICROPY_HW_CC3100_CS;
+      PIN_EN = &MICROPY_HW_CC3100_HIB;
+      PIN_IRQ = &MICROPY_HW_CC3100_IRQ;
+#else
+      nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "No Default CC3100 definition"));
+#endif
     } else {
     //Else we use the given args
        //TODO should verify the argument types
@@ -398,7 +405,7 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
         if(ROLE_STA != mode)
         {
             LOG_ERR("not in station mode");
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Failed to init cc3100 module"));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed to init cc3100 module"));
         }
     }
 
