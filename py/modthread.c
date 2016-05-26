@@ -44,19 +44,24 @@
 
 /****************************************************************/
 // Lock object
+// Note: with the GIL enabled we can easily synthesise a lock object
 
 STATIC const mp_obj_type_t mp_type_thread_lock;
 
 typedef struct _mp_obj_thread_lock_t {
     mp_obj_base_t base;
+    #if !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_t mutex;
-    bool locked;
+    #endif
+    volatile bool locked;
 } mp_obj_thread_lock_t;
 
 STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
     mp_obj_thread_lock_t *self = m_new_obj(mp_obj_thread_lock_t);
     self->base.type = &mp_type_thread_lock;
+    #if !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&self->mutex);
+    #endif
     self->locked = false;
     return self;
 }
@@ -68,6 +73,19 @@ STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
         wait = mp_obj_get_int(args[1]);
         // TODO support timeout arg
     }
+    #if MICROPY_PY_THREAD_GIL
+    if (self->locked) {
+        if (!wait) {
+            return mp_const_false;
+        }
+        do {
+            MP_THREAD_GIL_EXIT();
+            MP_THREAD_GIL_ENTER();
+        } while (self->locked);
+    }
+    self->locked = true;
+    return mp_const_true;
+    #else
     int ret = mp_thread_mutex_lock(&self->mutex, wait);
     if (ret == 0) {
         return mp_const_false;
@@ -77,6 +95,7 @@ STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
     } else {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-ret)));
     }
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(thread_lock_acquire_obj, 1, 3, thread_lock_acquire);
 
@@ -84,7 +103,9 @@ STATIC mp_obj_t thread_lock_release(mp_obj_t self_in) {
     mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(self_in);
     // TODO check if already unlocked
     self->locked = false;
+    #if !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_unlock(&self->mutex);
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(thread_lock_release_obj, thread_lock_release);
