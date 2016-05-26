@@ -72,6 +72,14 @@
     #error unimplemented qstr length decoding
 #endif
 
+#if MICROPY_PY_THREAD
+#define QSTR_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(qstr_mutex), 1)
+#define QSTR_EXIT() mp_thread_mutex_unlock(&MP_STATE_VM(qstr_mutex))
+#else
+#define QSTR_ENTER()
+#define QSTR_EXIT()
+#endif
+
 // this must match the equivalent function in makeqstrdata.py
 mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
@@ -111,6 +119,10 @@ extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
 void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t*)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
+
+    #if MICROPY_PY_THREAD
+    mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));
+    #endif
 }
 
 STATIC const byte *find_qstr(qstr q) {
@@ -125,12 +137,17 @@ STATIC const byte *find_qstr(qstr q) {
     return 0;
 }
 
+// qstr_mutex must be taken while in this function
 STATIC qstr qstr_add(const byte *q_ptr) {
     DEBUG_printf("QSTR: add hash=%d len=%d data=%.*s\n", Q_GET_HASH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_LENGTH(q_ptr), Q_GET_DATA(q_ptr));
 
     // make sure we have room in the pool for a new qstr
     if (MP_STATE_VM(last_pool)->len >= MP_STATE_VM(last_pool)->alloc) {
-        qstr_pool_t *pool = m_new_obj_var(qstr_pool_t, const char*, MP_STATE_VM(last_pool)->alloc * 2);
+        qstr_pool_t *pool = m_new_obj_var_maybe(qstr_pool_t, const char*, MP_STATE_VM(last_pool)->alloc * 2);
+        if (pool == NULL) {
+            QSTR_EXIT();
+            m_malloc_fail(MP_STATE_VM(last_pool)->alloc * 2);
+        }
         pool->prev = MP_STATE_VM(last_pool);
         pool->total_prev_len = MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len;
         pool->alloc = MP_STATE_VM(last_pool)->alloc * 2;
@@ -169,6 +186,7 @@ qstr qstr_from_str(const char *str) {
 
 qstr qstr_from_strn(const char *str, size_t len) {
     assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
+    QSTR_ENTER();
     qstr q = qstr_find_strn(str, len);
     if (q == 0) {
         // qstr does not exist in interned pool so need to add it
@@ -198,7 +216,11 @@ qstr qstr_from_strn(const char *str, size_t len) {
             MP_STATE_VM(qstr_last_chunk) = m_new_maybe(byte, al);
             if (MP_STATE_VM(qstr_last_chunk) == NULL) {
                 // failed to allocate a large chunk so try with exact size
-                MP_STATE_VM(qstr_last_chunk) = m_new(byte, n_bytes);
+                MP_STATE_VM(qstr_last_chunk) = m_new_maybe(byte, n_bytes);
+                if (MP_STATE_VM(qstr_last_chunk) == NULL) {
+                    QSTR_EXIT();
+                    m_malloc_fail(n_bytes);
+                }
                 al = n_bytes;
             }
             MP_STATE_VM(qstr_last_alloc) = al;
@@ -217,6 +239,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
         q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
         q = qstr_add(q_ptr);
     }
+    QSTR_EXIT();
     return q;
 }
 
@@ -228,6 +251,7 @@ byte *qstr_build_start(size_t len, byte **q_ptr) {
 }
 
 qstr qstr_build_end(byte *q_ptr) {
+    QSTR_ENTER();
     qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
     if (q == 0) {
         size_t len = Q_GET_LENGTH(q_ptr);
@@ -238,6 +262,7 @@ qstr qstr_build_end(byte *q_ptr) {
     } else {
         m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));
     }
+    QSTR_EXIT();
     return q;
 }
 
@@ -263,6 +288,7 @@ const byte *qstr_data(qstr q, size_t *len) {
 }
 
 void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, size_t *n_total_bytes) {
+    QSTR_ENTER();
     *n_pool = 0;
     *n_qstr = 0;
     *n_str_data_bytes = 0;
@@ -280,14 +306,17 @@ void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, si
         #endif
     }
     *n_total_bytes += *n_str_data_bytes;
+    QSTR_EXIT();
 }
 
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 void qstr_dump_data(void) {
+    QSTR_ENTER();
     for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL && pool != &CONST_POOL; pool = pool->prev) {
         for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
             mp_printf(&mp_plat_print, "Q(%s)\n", Q_GET_DATA(*q));
         }
     }
+    QSTR_EXIT();
 }
 #endif
