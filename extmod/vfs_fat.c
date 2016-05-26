@@ -154,6 +154,7 @@ STATIC bool path_equal(const char *path, const char *path_canonical) {
 /// \function stat(path)
 /// Get the status of a file or directory.
 STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
+    (void)vfs_in;
     const char *path = mp_obj_str_get_str(path_in);
 
     FILINFO fno;
@@ -192,7 +193,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         }
     }
 
-    mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     mp_int_t mode = 0;
     if (fno.fattrib & AM_DIR) {
         mode |= 0x4000; // stat.S_IFDIR
