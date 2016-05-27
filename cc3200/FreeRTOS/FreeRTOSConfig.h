@@ -151,4 +151,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 version. */
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
+/* We provide a definition of ucHeap so it can go in a special segment. */
+#define configAPPLICATION_ALLOCATED_HEAP 1
+
 #endif /* FREERTOS_CONFIG_H */

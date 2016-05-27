@@ -56,6 +56,9 @@
 OsiTaskHandle   mpTaskHandle;
 #endif
 
+// This is the FreeRTOS heap, defined here so we can put it in a special segment
+uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
+
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
