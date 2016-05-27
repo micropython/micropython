@@ -219,7 +219,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[8] = MP_OBJ_NEW_SMALL_INT(seconds); // st_mtime
     t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
 
-    return t;
+    return (mp_obj_t)t;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_stat_obj, fat_vfs_stat);
