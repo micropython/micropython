@@ -161,8 +161,20 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
-    wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
-    ETS_POLL_WHILE(esp_scan_list != NULL);
+    {
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);        
+            ETS_POLL_WHILE(esp_scan_list != NULL);
+            nlr_pop();
+        } else {
+            // Uncaught exception; ensure that esp_scan_cb does not
+            // do something bad, if it has not yet come back.
+            esp_scan_list = NULL;
+            // Re-raise the exception
+            nlr_raise( (mp_obj_t)nlr.ret_val);
+        }
+    }
     if (list == MP_OBJ_NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "scan failed"));
     }
