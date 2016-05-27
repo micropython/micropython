@@ -116,6 +116,11 @@ void TASK_Micropython (void *pvParameters) {
 
 soft_reset:
 
+    // Thread init
+    #if MICROPY_PY_THREAD
+    mp_thread_init();
+    #endif
+
     // GC init
     gc_init(&_boot, &_eheap);
 

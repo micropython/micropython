@@ -102,6 +102,8 @@
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
+#define MICROPY_PY_THREAD                           (1)
+#define MICROPY_PY_THREAD_GIL                       (0)
 #define MICROPY_PY_UBINASCII                        (0)
 #define MICROPY_PY_UCTYPES                          (0)
 #define MICROPY_PY_UZLIB                            (0)

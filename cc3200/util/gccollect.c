@@ -30,6 +30,7 @@
 
 #include "py/mpconfig.h"
 #include "py/gc.h"
+#include "py/mpthread.h"
 #include "gccollect.h"
 #include "gchelper.h"
 
@@ -56,6 +57,11 @@ void gc_collect(void) {
 
     // trace the stack, including the registers (since they live on the stack in this function)
     gc_collect_root((void**)sp, (stackend - sp) / sizeof(uint32_t));
+
+    // trace root pointers from any threads
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
 
     // end the GC
     gc_collect_end();
