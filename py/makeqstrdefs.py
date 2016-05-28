@@ -83,11 +83,21 @@ def cat_together():
         print("QSTR not updated")
 
 
+def do_filter(in_f, out_f):
+    output = []
+    for line in in_f:
+        for match in re.findall(r'MP_QSTR_[_a-zA-Z0-9]+', line):
+            name = match.replace('MP_QSTR_', '')
+            if name not in QSTRING_BLACK_LIST:
+                output.append('Q(' + name + ')')
+    out_f.write("\n".join(output) + "\n")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generates qstr definitions from a specified source')
 
     parser.add_argument('command',
-        help='Command (split/cat)')
+        help='Command (split/cat/filter)')
     parser.add_argument('input_filename',
         help='Name of the input file (when not specified, the script reads standard input)')
     parser.add_argument('output_dir',
@@ -107,3 +117,8 @@ if __name__ == "__main__":
 
     if args.command == "cat":
         cat_together()
+
+    if args.command == "filter":
+        with open(args.input_filename) as infile:
+            with open(args.output_file, "w") as outfile:
+                do_filter(infile, outfile)
