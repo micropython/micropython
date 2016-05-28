@@ -217,15 +217,25 @@ BINDIR = $(PREFIX)/bin
 PIPSRC = ../tools/pip-micropython
 PIPTARGET = pip-micropython
 
-install: micropython
+micropython.pc: micropython.pc.in
+	$(eval VERSION := $(shell grep -Po 'VERSION_STRING "\K.*[^"]' build/genhdr/mpversion.h))
+	sed -e 's![@]prefix[@]!$(PREFIX)!g' \
+		-e 's![@]version[@]!$(VERSION)!g' \
+ 		micropython.pc.in > $@
+
+install: micropython lib micropython.pc
 	install -d $(BINDIR)
 	install $(TARGET) $(BINDIR)/$(TARGET)
 	install $(PIPSRC) $(BINDIR)/$(PIPTARGET)
+	install -D micropython.pc $(PREFIX)/lib/pkgconfig
+	install libmicropython.a $(PREFIX)/lib
 
 # uninstall micropython
 uninstall:
 	-rm $(BINDIR)/$(TARGET)
 	-rm $(BINDIR)/$(PIPTARGET)
+	-rm $(PREFIX)/lib/pkgconfig/micropython.pc 
+	-rm $(PREFIX)/lib/libmicropython.a
 
 # build synthetically fast interpreter for benchmarking
 fast:

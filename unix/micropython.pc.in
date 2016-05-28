@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}  
+libdir=${exec_prefix}/lib
+includedir=${prefix}/micropython/include
+
+Name: micropython
+Description: Lightweight python implementation
+Version: @version@
+Libs: -lmicropython
+Cflags: -I${includedir}
+
