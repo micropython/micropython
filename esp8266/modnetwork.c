@@ -155,9 +155,10 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
 }
 
 STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
-    if (wifi_get_opmode() == SOFTAP_MODE) {
+    require_if(self_in, STATION_IF);
+    if ((wifi_get_opmode() & STATION_MODE) == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "scan unsupported in AP mode"));
+            "STA must be active"));
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
