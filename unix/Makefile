@@ -302,8 +302,12 @@ libffi:
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
 	make install-exec-recursive; make -C include install-data-am
 
-axtls:
+axtls: ../lib/axtls/README
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
 	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+
+../lib/axtls/README:
+	@echo "You cloned without --recursive, fetching submodules for you."
+	(cd ..; git submodule update --init --recursive)
