@@ -71,7 +71,7 @@ Alternatively, fallback implementation based on setjmp/longjmp can be used.
 To build (see section below for required dependencies):
 
     $ cd unix
-    $ make deplibs
+    $ make axtls
     $ make
 
 Then to give it a try:
