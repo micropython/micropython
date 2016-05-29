@@ -136,16 +136,25 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
         return;
     }
     if (si->pbss && status == 0) {
-        struct bss_info *bs;
-        STAILQ_FOREACH(bs, si->pbss, next) {
-            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-            t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
-            t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
-            t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
-            t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
-            t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
-            t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
-            mp_obj_list_append(*esp_scan_list, MP_OBJ_FROM_PTR(t));
+        // we need to catch any memory errors
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            struct bss_info *bs;
+            STAILQ_FOREACH(bs, si->pbss, next) {
+                mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
+                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
+                t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
+                t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
+                t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
+                t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
+                t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
+                mp_obj_list_append(*esp_scan_list, MP_OBJ_FROM_PTR(t));
+            }
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            // indicate error
+            *esp_scan_list = MP_OBJ_NULL;
         }
     } else {
         // indicate error
