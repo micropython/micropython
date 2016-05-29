@@ -28,6 +28,7 @@
 #include "py/mpconfig.h"
 #if MICROPY_VFS_FAT
 
+#include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
@@ -136,12 +137,26 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_chdir_obj, fat_vfs_chdir);
 
+/// Get the current directory.
+STATIC mp_obj_t fat_vfs_getcwd(void) {
+    char buf[MICROPY_ALLOC_PATH_MAX + 1];
+    FRESULT res = f_getcwd(buf, sizeof buf);
+
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    }
+
+    return mp_obj_new_str(buf, strlen(buf), false);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(fat_vfs_getcwd_obj, fat_vfs_getcwd);
+
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&fat_vfs_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&fat_vfs_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&fat_vfs_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&fat_vfs_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&fat_vfs_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&fat_vfs_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&fat_vfs_rename_obj) },
 };
