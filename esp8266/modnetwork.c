@@ -172,7 +172,17 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
     wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
-    ETS_POLL_WHILE(esp_scan_list != NULL);
+    while (esp_scan_list != NULL) {
+        // our esp_scan_cb is called via ets_loop_iter so it's safe to set the
+        // esp_scan_list variable to NULL without disabling interrupts
+        if (MP_STATE_VM(mp_pending_exception) != NULL) {
+            esp_scan_list = NULL;
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(obj);
+        }
+        ets_loop_iter();
+    }
     if (list == MP_OBJ_NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "scan failed"));
     }
