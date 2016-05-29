@@ -79,7 +79,9 @@ mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args
 
     mp_obj_t meth[n_args + 2];
     mp_load_method(MP_STATE_PORT(fs_user_mount)[0], method_name, meth);
-    memcpy(meth + 2, args, n_args * sizeof(*args));
+    if (args != NULL) {
+        memcpy(meth + 2, args, n_args * sizeof(*args));
+    }
     return mp_call_method_n_kw(n_args, 0, meth);
 }
 
@@ -92,6 +94,16 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_in) {
     return vfs_proxy_call(MP_QSTR_mkdir, 1, &path_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
+
+STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_chdir, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
+
+STATIC mp_obj_t os_getcwd(void) {
+    return vfs_proxy_call(MP_QSTR_getcwd, 0, NULL);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 
 STATIC mp_obj_t os_remove(mp_obj_t path_in) {
     return vfs_proxy_call(MP_QSTR_remove, 1, &path_in);
@@ -138,6 +150,8 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&os_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&os_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&os_rename_obj) },
     #endif
