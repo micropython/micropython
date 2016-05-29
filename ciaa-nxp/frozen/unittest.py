@@ -46,7 +46,6 @@ class TestCase (object):
     @staticmethod
     def run(o):
         i=1
-        o.setUp()
         while True:
             mName = "test_"+str(i)
             if hasattr(o,mName):
@@ -54,16 +53,17 @@ class TestCase (object):
                 print("Testing "+mName+" ... ")
                 TestCase.testCounter+=1
                 try:
+                    o.setUp()
                     m()
+                    o.tearDown()
                     print("OK")
                     TestCase.testOKCounter+=1
                 except Exception as e:
-                    print(e)
+                    print("ASSERT ERROR:"+str(e))
                     break
             else:
                 break
             i+=1
-        o.tearDown()
 
 
     @staticmethod
