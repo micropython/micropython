@@ -116,11 +116,32 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
 
+/// Change current directory.
+STATIC mp_obj_t fat_vfs_chdir(mp_obj_t path_in) {
+    const char *path;
+    path = mp_obj_str_get_str(path_in);
+
+    FRESULT res = f_chdrive(path);
+
+    if (res == FR_OK) {
+        res = f_chdir(path);
+    }
+
+    if (res != FR_OK) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
+            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_chdir_obj, fat_vfs_chdir);
+
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&fat_vfs_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&fat_vfs_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&fat_vfs_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&fat_vfs_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&fat_vfs_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&fat_vfs_rename_obj) },
 };
