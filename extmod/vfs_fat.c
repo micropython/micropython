@@ -118,7 +118,8 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
 
 /// Change current directory.
-STATIC mp_obj_t fat_vfs_chdir(mp_obj_t path_in) {
+STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
+    (void)vfs_in;
     const char *path;
     path = mp_obj_str_get_str(path_in);
 
@@ -135,10 +136,11 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t path_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_chdir_obj, fat_vfs_chdir);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_chdir_obj, fat_vfs_chdir);
 
 /// Get the current directory.
-STATIC mp_obj_t fat_vfs_getcwd(void) {
+STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
+    (void)vfs_in;
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
     FRESULT res = f_getcwd(buf, sizeof buf);
 
@@ -148,7 +150,7 @@ STATIC mp_obj_t fat_vfs_getcwd(void) {
 
     return mp_obj_new_str(buf, strlen(buf), false);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(fat_vfs_getcwd_obj, fat_vfs_getcwd);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
 
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
