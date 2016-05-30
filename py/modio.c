@@ -33,6 +33,11 @@
 
 #if MICROPY_PY_IO
 
+#if MICROPY_VFS_FAT
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+#endif
+ 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
 
