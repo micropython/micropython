@@ -15,6 +15,7 @@ include ../py/py.mk
 
 INC +=  -I.
 INC +=  -I..
+INC += -I../lib/timeutils
 INC += -I$(BUILD)
 
 # compiler settings
@@ -163,6 +164,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	utils/printf.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
+	timeutils/timeutils.c \
 	)
 
 OBJ = $(PY_O)
