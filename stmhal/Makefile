@@ -230,6 +230,8 @@ include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
 INC += $(foreach d, $(GFXINC), -I$d)
 SRC_C += ugfx.c
 SRC_UGFX += $(GFXSRC)
+# Add Toggle driver
+SRC_UGFX += ugfx_ginput_lld_toggle.c
 endif
 
 ifeq ($(MICROPY_PY_WIZNET5K),1)
