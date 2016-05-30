@@ -133,10 +133,12 @@ void mp_thread_start(void) {
     pthread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size) {
-    // default stack size is 8k machine-words
-    if (stack_size == 0) {
-        stack_size = 8192 * BYTES_PER_WORD;
+void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+    // default stack size is 8k machine-words, minimum is 2k
+    if (*stack_size == 0) {
+        *stack_size = 8192 * BYTES_PER_WORD;
+    } else if (*stack_size < 2048 * BYTES_PER_WORD) {
+        *stack_size = 2048 * BYTES_PER_WORD;
     }
 
     // set thread attributes
@@ -145,7 +147,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size) {
     if (ret != 0) {
         goto er;
     }
-    ret = pthread_attr_setstacksize(&attr, stack_size);
+    ret = pthread_attr_setstacksize(&attr, *stack_size);
     if (ret != 0) {
         goto er;
     }
@@ -159,6 +161,9 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size) {
         pthread_mutex_unlock(&thread_mutex);
         goto er;
     }
+
+    // adjust stack_size to provide room to recover from hitting the limit
+    *stack_size -= 1024 * BYTES_PER_WORD;
 
     // add thread to linked list of all threads
     thread_t *th = malloc(sizeof(thread_t));

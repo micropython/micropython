@@ -160,6 +160,7 @@ STATIC mp_obj_t mod_thread_stack_size(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_stack_size_obj, 0, 1, mod_thread_stack_size);
 
 typedef struct _thread_entry_args_t {
+    size_t stack_size;
     mp_obj_t fun;
     size_t n_args;
     size_t n_kw;
@@ -175,7 +176,7 @@ STATIC void *thread_entry(void *args_in) {
     mp_thread_set_state(&ts);
 
     mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
-    mp_stack_set_limit(16 * 1024); // fixed stack limit for now
+    mp_stack_set_limit(args->stack_size);
 
     MP_THREAD_GIL_ENTER();
 
@@ -256,11 +257,14 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     th_args->n_args = pos_args_len;
     memcpy(th_args->args, pos_args_items, pos_args_len * sizeof(mp_obj_t));
 
+    // set the stack size to use
+    th_args->stack_size = thread_stack_size;
+
     // set the function for thread entry
     th_args->fun = args[0];
 
     // spawn the thread!
-    mp_thread_create(thread_entry, th_args, thread_stack_size);
+    mp_thread_create(thread_entry, th_args, &th_args->stack_size);
 
     return mp_const_none;
 }

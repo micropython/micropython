@@ -107,24 +107,29 @@ STATIC void freertos_entry(void *arg) {
     }
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size) {
+void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
-    if (stack_size == 0) {
-        stack_size = 2048; // default stack size
+    if (*stack_size == 0) {
+        *stack_size = 4096; // default stack size
+    } else if (*stack_size < 2048) {
+        *stack_size = 2048; // minimum stack size
     }
 
     mp_thread_mutex_lock(&thread_mutex, 1);
 
     // create thread
-    StackType_t *stack = m_new(StackType_t, stack_size / sizeof(StackType_t));
+    StackType_t *stack = m_new(StackType_t, *stack_size / sizeof(StackType_t));
     StaticTask_t *task_buf = m_new(StaticTask_t, 1);
-    TaskHandle_t id = xTaskCreateStatic(freertos_entry, "Thread", stack_size / sizeof(void*), arg, 2, stack, task_buf);
+    TaskHandle_t id = xTaskCreateStatic(freertos_entry, "Thread", *stack_size / sizeof(void*), arg, 2, stack, task_buf);
     if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, "can't create thread"));
     }
+
+    // adjust stack_size to provide room to recover from hitting the limit
+    *stack_size -= 512;
 
     // add thread to linked list of all threads
     thread_t *th = m_new_obj(thread_t);
@@ -132,7 +137,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t stack_size) {
     th->ready = 0;
     th->arg = arg;
     th->stack = stack;
-    th->stack_len = stack_size / sizeof(StackType_t);
+    th->stack_len = *stack_size / sizeof(StackType_t);
     th->next = thread;
     thread = th;
 
