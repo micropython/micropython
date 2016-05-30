@@ -12,11 +12,11 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
-#define MICROPY_HW_HAS_UGFX         (1)
+#define MICROPY_HW_HAS_UGFX         (0)
 #define MICROPY_HW_HAS_CC3100       (0)
 
 #define MICROPY_BOARD_EARLY_INIT    STM32L475_EMFBADGE_board_early_init
-void STM32L476_EMFBADGE_board_early_init(void);
+void STM32L475_EMFBADGE_board_early_init(void);
 
 
 //cc3100 stuff
