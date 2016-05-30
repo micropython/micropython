@@ -24,7 +24,7 @@ following design and implementation decision were made:
   forum, with the idea to collect community-maintained reference materials
   eventually.
 * All pins which make sense to support, are supported by MicroPython
-  (for example, we don't expose pins which are used to connect SPI flash
+  (for example, pins which are used to connect SPI flash
   are not exposed, as they're unlikely useful for anything else, and
   operating on them will lead to board lock-up). However, any particular
   board may expose only subset of pins. Consult your board reference manual.
