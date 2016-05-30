@@ -125,7 +125,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     TaskHandle_t id = xTaskCreateStatic(freertos_entry, "Thread", *stack_size / sizeof(void*), arg, 2, stack, task_buf);
     if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, "can't create thread"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't create thread"));
     }
 
     // adjust stack_size to provide room to recover from hitting the limit
