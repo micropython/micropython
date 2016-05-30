@@ -1,1 +1,4 @@
+getcwd: /ramdisk
 hello!
+getcwd: /ramdisk/foo_dir
+getcwd: /ramdisk
