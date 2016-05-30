@@ -1,7 +1,10 @@
+#include STM32_HAL_H
+#include "py/mphal.h"
+#include "pin.h"
+#include "genhdr/pins.h"
+
 #ifndef _GDISP_LLD_TOGGLE_BOARD_H
 #define _GDISP_LLD_TOGGLE_BOARD_H
-
-#error "GINPUT Toggle Pal Driver: You need to define your board definitions"
 
 // The below are example values
 
@@ -18,50 +21,26 @@
 #define GINPUT_TOGGLE_CENTER  7				// Joystick Center
 
 /*
-PD3 - RIGHT
-PD6 - UP
-PD8 - A
-PD9 - B
-PD10 - MENU
-PD11 - DOWN
-PE0 - CENTRE
-PA15 - LEFT
+PD3 - RIGHT - AH
+PD6 - UP - AH
+PD8 - A - AL
+PD9 - B - AL
+PD10 - MENU - AL
+PD11 - DOWN - AH 
+PE0 - CENTRE - AH
+PA15 - LEFT - AH
 */
 
 #define GINPUT_TOGGLE_DECLARE_STRUCTURE()											\
 const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {   \
-    {GPIOD,       \
-     GPIO_PIN_3,  \
-     GPIO_PIN_3,  \
-     0},          \
-    {GPIOD,       \
-     GPIO_PIN_6,  \
-     GPIO_PIN_6,  \
-     0},          \
-    {GPIOD,       \
-     GGPIO_PIN_8, \
-     GPIO_PIN_8,  \
-     0},          \
-    {GPIOD,       \
-     GPIO_PIN_9,  \
-     GPIO_PIN_9,  \
-     0},          \
-    {GPIOD,       \
-     GPIO_PIN_10, \
-     GPIO_PIN_10, \
-     0},          \
-    {GPIOD,       \
-     GPIO_PIN_11, \
-     GPIO_PIN_11, \
-     0},          \
-    {GPIOE,       \
-     GPIO_PIN_0,  \
-     GPIO_PIN_0,  \
-     0},          \
-    {GPIOA,       \
-     GPIO_PIN_15, \
-     GPIO_PIN_15, \
-     0},          \
+    {GPIOD, GPIO_PIN_3,  0, 0}, /* PD3  - Joy Right */   \
+    {GPIOD, GPIO_PIN_6,  0, 0}, /* PD6  - Joy Up */      \
+    {GPIOD, GPIO_PIN_8,  GPIO_PIN_8, 0}, /* PD8  - A Button */    \
+    {GPIOD, GPIO_PIN_9,  0, 0}, /* PD9  - B Button */    \
+    {GPIOD, GPIO_PIN_10, 0, 0}, /* PD10 - Menu Button */ \
+    {GPIOD, GPIO_PIN_11, GPIO_PIN_11, 0}, /* PD11 - Joy Down */    \
+    {GPIOE, GPIO_PIN_0,  GPIO_PIN_0, 0}, /* PE0  - Joy Centre */  \
+    {GPIOA, GPIO_PIN_15, GPIO_PIN_15, 0}, /* PA15 - Joy Left */    \
 }
 
 #endif /* _GDISP_LLD_TOGGLE_BOARD_H */

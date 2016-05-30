@@ -526,7 +526,7 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 	// Create the actual button
 	ghButton1 = gwinButtonCreate(NULL, &wi);
 	
-	
+	//gwinAttachToggle(ghButton1,1,GINPUT_TOGGLE_A);
 
 	
 	// The first list widget
