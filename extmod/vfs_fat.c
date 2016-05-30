@@ -79,12 +79,11 @@ STATIC mp_obj_t fat_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     // TODO check that path is actually a file before trying to unlink it
     FRESULT res = f_unlink(path);
-    switch (res) {
-        case FR_OK:
-            return mp_const_none;
-        default:
-            // TODO: standard errno's
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error removing file '%s'", path));
+    if (res == FR_OK) {
+        return mp_const_none;
+    } else {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
+            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_remove_obj, fat_vfs_remove);
@@ -94,11 +93,11 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
     FRESULT res = f_rename(old_path, new_path);
-    switch (res) {
-        case FR_OK:
-            return mp_const_none;
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error renaming file '%s' to '%s'", old_path, new_path));
+    if (res == FR_OK) {
+        return mp_const_none;
+    } else {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
+            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
     }
 
 }
@@ -108,14 +107,11 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     (void)vfs_in;
     const char *path = mp_obj_str_get_str(path_o);
     FRESULT res = f_mkdir(path);
-    switch (res) {
-        case FR_OK:
-            return mp_const_none;
-        case FR_EXIST:
-            // TODO should be FileExistsError
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "File exists: '%s'", path));
-        default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error creating directory '%s'", path));
+    if (res == FR_OK) {
+        return mp_const_none;
+    } else {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
+            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
