@@ -30,6 +30,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "modpyb.h"
 #include "modpybrtc.h"
@@ -215,6 +216,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },
