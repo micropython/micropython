@@ -23,6 +23,7 @@
 # Build directory
 ######################
 build/
+ugfx/
 
 # Test failure outputs
 ######################
