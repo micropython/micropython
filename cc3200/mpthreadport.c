@@ -66,16 +66,16 @@ void mp_thread_init(void) {
 
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
-    gc_collect_root((void**)&thread, 1);
     for (thread_t *th = thread; th != NULL; th = th->next) {
-        gc_collect_root(&th->arg, 1);
+        gc_collect_root((void**)&th, 1);
+        gc_collect_root(&th->arg, 1); // probably not needed
         if (th->id == xTaskGetCurrentTaskHandle()) {
             continue;
         }
         if (!th->ready) {
             continue;
         }
-        gc_collect_root(th->stack, th->stack_len);
+        gc_collect_root(th->stack, th->stack_len); // probably not needed
     }
     mp_thread_mutex_unlock(&thread_mutex);
 }
