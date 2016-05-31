@@ -67,6 +67,8 @@ static volatile bool sleep_sockets = false;
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
+StaticTask_t svTaskTCB;
+StackType_t svTaskStack[SERVERS_STACK_LEN] __attribute__((aligned (8)));
 char servers_user[SERVERS_USER_PASS_LEN_MAX + 1];
 char servers_pass[SERVERS_USER_PASS_LEN_MAX + 1];
 

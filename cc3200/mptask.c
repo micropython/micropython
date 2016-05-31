@@ -69,6 +69,7 @@
 #include "updater.h"
 #include "moduos.h"
 #include "antenna.h"
+#include "task.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -277,15 +278,12 @@ STATIC void mptask_pre_init (void) {
 
     //CRYPTOHASH_Init();
 
-#ifdef DEBUG
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, &svTaskHandle));
-#else
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, NULL));
+#ifndef DEBUG
+    OsiTaskHandle svTaskHandle;
 #endif
+    svTaskHandle = xTaskCreateStatic(TASK_Servers, "Servers",
+        SERVERS_STACK_LEN, NULL, SERVERS_PRIORITY, svTaskStack, &svTaskTCB);
+    ASSERT(svTaskHandle != NULL);
 }
 
 STATIC void mptask_init_sflash_filesystem (void) {

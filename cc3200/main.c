@@ -36,6 +36,7 @@
 #include "debug.h"
 #include "antenna.h"
 #include "mperror.h"
+#include "task.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -59,6 +60,10 @@ OsiTaskHandle   mpTaskHandle;
 // This is the FreeRTOS heap, defined here so we can put it in a special segment
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
 
+// This is the static memory (TCB and stack) for the main MicroPython task
+StaticTask_t mpTaskTCB;
+StackType_t mpTaskStack[MICROPY_TASK_STACK_LEN] __attribute__((aligned (8)));
+
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
@@ -77,15 +82,12 @@ int main (void) {
     // Init the watchdog
     pybwdt_init0();
 
-#ifdef DEBUG
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Micropython,
-                                     (const signed char *)"MicroPy",
-                                     MICROPY_TASK_STACK_SIZE, NULL, MICROPY_TASK_PRIORITY, &mpTaskHandle));
-#else
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Micropython,
-                                     (const signed char *)"MicroPy",
-                                     MICROPY_TASK_STACK_SIZE, NULL, MICROPY_TASK_PRIORITY, NULL));
+#ifndef DEBUG
+    OsiTaskHandle mpTaskHandle;
 #endif
+    mpTaskHandle = xTaskCreateStatic(TASK_Micropython, "MicroPy",
+        MICROPY_TASK_STACK_LEN, NULL, MICROPY_TASK_PRIORITY, mpTaskStack, &mpTaskTCB);
+    ASSERT(mpTaskHandle != NULL);
 
     osi_start();
 
