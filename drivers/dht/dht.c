@@ -29,23 +29,8 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "extmod/machine_pulse.h"
 #include "drivers/dht/dht.h"
-
-STATIC mp_uint_t time_pulse_us(mp_hal_pin_obj_t pin, int pulse_value, mp_uint_t timeout) {
-    mp_uint_t start = mp_hal_ticks_us();
-    while (mp_hal_pin_read(pin) != pulse_value) {
-        if ((mp_uint_t)(mp_hal_ticks_us() - start) >= timeout) {
-            return (mp_uint_t)-1;
-        }
-    }
-    start = mp_hal_ticks_us();
-    while (mp_hal_pin_read(pin) == pulse_value) {
-        if ((mp_uint_t)(mp_hal_ticks_us() - start) >= timeout) {
-            return (mp_uint_t)-1;
-        }
-    }
-    return mp_hal_ticks_us() - start;
-}
 
 STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
@@ -79,7 +64,7 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     }
 
     // time pulse, should be 80us
-    ticks = time_pulse_us(pin, 1, 150);
+    ticks = machine_time_pulse_us(pin, 1, 150);
     if (ticks == (mp_uint_t)-1) {
         goto timeout;
     }
@@ -87,7 +72,7 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     // time 40 pulses for data (either 26us or 70us)
     uint8_t *buf = bufinfo.buf;
     for (int i = 0; i < 40; ++i) {
-        ticks = time_pulse_us(pin, 1, 100);
+        ticks = machine_time_pulse_us(pin, 1, 100);
         if (ticks == (mp_uint_t)-1) {
             goto timeout;
         }
