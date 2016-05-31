@@ -30,6 +30,7 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
+#include "mptask.h"
 #include "task.h"
 
 #if MICROPY_PY_THREAD
@@ -55,9 +56,11 @@ void mp_thread_init(void) {
 
     // create first entry in linked list of all threads
     thread = &thread_entry0;
-    thread->id = NULL; // TODO
+    thread->id = xTaskGetCurrentTaskHandle();
     thread->ready = 1;
     thread->arg = NULL;
+    thread->stack = mpTaskStack;
+    thread->stack_len = MICROPY_TASK_STACK_LEN;
     thread->next = NULL;
 }
 
