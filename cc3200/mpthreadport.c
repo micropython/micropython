@@ -157,19 +157,16 @@ void mp_thread_finish(void) {
 }
 
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
-    *mutex = xSemaphoreCreateMutex();
-    if (*mutex == NULL) {
-        // error!
-    }
+    mutex->handle = xSemaphoreCreateMutexStatic(&mutex->buffer);
 }
 
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    int ret = xSemaphoreTake(*mutex, wait ? portMAX_DELAY : 0);
+    int ret = xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0);
     return ret == pdTRUE;
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
-    xSemaphoreGive(*mutex);
+    xSemaphoreGive(mutex->handle);
     // TODO check return value
 }
 

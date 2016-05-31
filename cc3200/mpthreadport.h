@@ -28,7 +28,10 @@
 
 #include "FreeRTOS.h"
 
-typedef SemaphoreHandle_t mp_thread_mutex_t;
+typedef struct _mp_thread_mutex_t {
+    SemaphoreHandle_t handle;
+    StaticSemaphore_t buffer;
+} mp_thread_mutex_t;
 
 void mp_thread_init(void);
 void mp_thread_gc_others(void);
