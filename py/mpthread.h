@@ -50,6 +50,7 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 #endif // MICROPY_PY_THREAD
 
 #if MICROPY_PY_THREAD && MICROPY_PY_THREAD_GIL
+#include "py/mpstate.h"
 #define MP_THREAD_GIL_ENTER() mp_thread_mutex_lock(&MP_STATE_VM(gil_mutex), 1)
 #define MP_THREAD_GIL_EXIT() mp_thread_mutex_unlock(&MP_STATE_VM(gil_mutex))
 #else
