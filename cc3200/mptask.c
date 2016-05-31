@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#include "py/stackctrl.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -104,9 +105,8 @@ static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
  ******************************************************************************/
 
 void TASK_Micropython (void *pvParameters) {
-    // initialize the garbage collector with the top of our stack
+    // get the top of the stack to initialize the garbage collector
     uint32_t sp = gc_helper_get_sp();
-    gc_collect_init (sp);
 
     bool safeboot = false;
     mptask_pre_init();
@@ -121,6 +121,9 @@ soft_reset:
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
+
+    // initialise the stack pointer for the main thread (must be done after mp_thread_init)
+    mp_stack_set_top((void*)sp);
 
     // GC init
     gc_init(&_boot, &_eheap);
