@@ -22,10 +22,11 @@ def th(base, n):
 lock = _thread.allocate_lock()
 n_thread = 4
 n_finished = 0
+n_qstr_per_thread = 100 # make 1000 for a more stressful test (uses more heap)
 
 # spawn threads
 for i in range(n_thread):
-    _thread.start_new_thread(th, (i * 1000, 1000))
+    _thread.start_new_thread(th, (i * n_qstr_per_thread, n_qstr_per_thread))
 
 # busy wait for threads to finish
 while n_finished < n_thread:
