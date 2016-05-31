@@ -6,7 +6,7 @@ import sys
 import _thread
 
 # different implementations have different minimum sizes
-if sys.implementation == 'micropython':
+if sys.implementation.name == 'micropython':
     sz = 2 * 1024
 else:
     sz = 32 * 1024
@@ -19,6 +19,9 @@ def thread_entry():
     with lock:
         global n_finished
         n_finished += 1
+
+# reset stack size to default
+_thread.stack_size()
 
 # test set/get of stack size
 print(_thread.stack_size())
