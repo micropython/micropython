@@ -173,6 +173,7 @@ STATIC bool path_equal(const char *path, const char *path_canonical) {
 /// \function stat(path)
 /// Get the status of a file or directory.
 STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
+    (void)vfs_in;
     const char *path = mp_obj_str_get_str(path_in);
 
     FILINFO fno;
