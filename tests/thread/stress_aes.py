@@ -252,4 +252,4 @@ if __name__ == '__main__':
     for i in range(n_thread):
         _thread.start_new_thread(thread_entry, ())
     while count.value < n_thread:
-        time.sleep(0.1)
+        time.sleep(1)

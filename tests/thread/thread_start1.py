@@ -19,5 +19,5 @@ _thread.start_new_thread(thread_entry, (10,))
 _thread.start_new_thread(thread_entry, (20,))
 
 # wait for threads to finish
-time.sleep(0.2)
+time.sleep(1)
 print('done')

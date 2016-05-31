@@ -15,5 +15,5 @@ def thread_entry(a0, a1, a2, a3):
 _thread.start_new_thread(thread_entry, (10, 20), {'a2': 0, 'a3': 1})
 
 # wait for thread to finish
-time.sleep(0.2)
+time.sleep(1)
 print('done')

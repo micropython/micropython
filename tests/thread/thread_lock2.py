@@ -20,5 +20,5 @@ for i in range(4):
     _thread.start_new_thread(thread_entry, ())
 
 # wait for threads to finish
-time.sleep(0.2)
+time.sleep(1)
 print('done')
