@@ -101,6 +101,19 @@ Miscellaneous functions
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.
 
+.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000)
+
+   Time a pulse on the given `pin`, and return the duration of the pulse in
+   microseconds.  The `pulse_level` argument should be 0 to time a low pulse
+   or 1 to time a high pulse.
+
+   The function first waits while the pin input is different to the `pulse_level`
+   parameter, then times the duration that the pin is equal to `pulse_level`.
+   If the pin is already equal to `pulse_level` then timing starts straight away.
+
+   The function will raise an OSError with ETIMEDOUT if either of the waits is
+   longer than the given timeout value (which is in microseconds).
+
 .. _machine_constants:
 
 Constants
