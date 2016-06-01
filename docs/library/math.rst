@@ -4,7 +4,7 @@
 .. module:: math
    :synopsis: mathematical functions
 
-The ``math`` module provides some basic mathematical funtions for
+The ``math`` module provides some basic mathematical functions for
 working with floating-point numbers.
 
 *Note:* On the pyboard, floating-point numbers have 32-bit precision.
