@@ -3,7 +3,7 @@
 Quick reference for the ESP8266
 ===============================
 
-.. image:: https://learn.adafruit.com/system/assets/assets/000/028/689/medium640/adafruit_products_pinoutstop.jpg
+.. image:: img/adafruit_products_pinoutstop.jpg
     :alt: Adafruit Feather HUZZAH board
     :width: 640px
 
