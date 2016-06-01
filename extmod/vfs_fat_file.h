@@ -24,9 +24,15 @@
  * THE SOFTWARE.
  */
 
+struct _fs_user_mount_t;
+
 extern const byte fresult_to_errno_table[20];
 
+struct _fs_user_mount_t *ff_get_vfs(const char **path);
+
 mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t fatfs_builtin_open_self(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
 mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type);
+mp_obj_t fat_vfs_listdir2(struct _fs_user_mount_t *vfs, const char *path, bool is_str_type);

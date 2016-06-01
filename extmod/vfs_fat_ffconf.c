@@ -30,10 +30,13 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#if MICROPY_FATFS_OO
+#include "lib/oofatfs/ff.h"
+#else
 #include "lib/fatfs/ff.h"
-#include "lib/fatfs/ffconf.h"
-#include "lib/fatfs/diskio.h"
+#endif
 #include "extmod/fsusermount.h"
+#include "extmod/vfs_fat_file.h"
 
 STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_t mount_point_len) {
     if (strncmp(*path, mount_point_str, mount_point_len) == 0) {
@@ -47,6 +50,37 @@ STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_
     }
     return false;
 }
+
+#if MICROPY_FATFS_OO
+
+STATIC fs_user_mount_t *vfs_cur_obj = NULL;
+
+// "path" is the path to lookup; will advance this pointer beyond the volume name.
+// Returns a pointer to the VFS object, NULL means path not found.
+fs_user_mount_t *ff_get_vfs(const char **path) {
+    if (!(*path)) {
+        return NULL;
+    }
+
+    if (**path != '/') {
+        #if _FS_RPATH
+        return vfs_cur_obj;
+        #else
+        return NULL;
+        #endif
+    }
+
+    for (size_t i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
+        fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
+        if (vfs != NULL && check_path(path, vfs->str, vfs->len)) {
+            return vfs;
+        }
+    }
+
+    return NULL;
+}
+
+#else
 
 // "path" is the path to lookup; will advance this pointer beyond the volume name.
 // Returns logical drive number (-1 means invalid path).
@@ -78,5 +112,7 @@ void ff_get_volname(BYTE vol, TCHAR **dest) {
     memcpy(*dest, vfs->str, vfs->len);
     *dest += vfs->len;
 }
+
+#endif
 
 #endif // MICROPY_FSUSERMOUNT

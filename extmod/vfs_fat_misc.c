@@ -32,27 +32,39 @@
 #include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
+#if MICROPY_FATFS_OO
+#include "lib/oofatfs/ff.h"
+#else
 #include "lib/fatfs/ff.h"
-#include "lib/fatfs/diskio.h"
+#endif
 #include "extmod/vfs_fat_file.h"
 #include "extmod/fsusermount.h"
 #include "py/lexer.h"
 
-#if _USE_LFN
+#if !MICROPY_FATFS_OO && _USE_LFN
 STATIC char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
 #endif
 
 // TODO: actually, the core function should be ilistdir()
+
 mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
+    return fat_vfs_listdir2(NULL, path, is_str_type);
+}
+
+mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_type) {
     FRESULT res;
     FILINFO fno;
     DIR dir;
-#if _USE_LFN
+#if !MICROPY_FATFS_OO && _USE_LFN
     fno.lfname = lfn;
     fno.lfsize = sizeof lfn;
 #endif
 
+    #if MICROPY_FATFS_OO
+    res = f_opendir(&vfs->fatfs, &dir, path);
+    #else
     res = f_opendir(&dir, path);                       /* Open the directory */
+    #endif
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -65,7 +77,7 @@ mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
         if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;             /* Ignore . entry */
         if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
 
-#if _USE_LFN
+#if !MICROPY_FATFS_OO && _USE_LFN
         char *fn = *fno.lfname ? fno.lfname : fno.fname;
 #else
         char *fn = fno.fname;
@@ -100,11 +112,19 @@ mp_import_stat_t fat_vfs_import_stat(const char *path);
 
 mp_import_stat_t fat_vfs_import_stat(const char *path) {
     FILINFO fno;
-#if _USE_LFN
+#if !MICROPY_FATFS_OO && _USE_LFN
     fno.lfname = NULL;
     fno.lfsize = 0;
 #endif
+    #if MICROPY_FATFS_OO
+    fs_user_mount_t *vfs = ff_get_vfs(&path);
+    if (vfs == NULL) {
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+    FRESULT res = f_stat(&vfs->fatfs, path, &fno);
+    #else
     FRESULT res = f_stat(path, &fno);
+    #endif
     if (res == FR_OK) {
         if ((fno.fattrib & AM_DIR) != 0) {
             return MP_IMPORT_STAT_DIR;

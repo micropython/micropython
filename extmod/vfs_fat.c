@@ -28,12 +28,15 @@
 #include "py/mpconfig.h"
 #if MICROPY_VFS_FAT
 
+#if !MICROPY_FATFS_OO
+#error "with MICROPY_VFS_FAT enabled, must also enable MICROPY_FATFS_OO"
+#endif
+
 #include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "lib/fatfs/ff.h"
-#include "lib/fatfs/diskio.h"
+#include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat_file.h"
 #include "extmod/fsusermount.h"
 #include "timeutils.h"
@@ -55,13 +58,10 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_mkfs_fun_obj, fat_vfs_mkfs);
 STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(fat_vfs_mkfs_obj, MP_ROM_PTR(&fat_vfs_mkfs_fun_obj));
 
-STATIC mp_obj_t fat_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    // Skip self
-    return fatfs_builtin_open(n_args - 1, args + 1, kwargs);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(fat_vfs_open_obj, 2, fat_vfs_open);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(fat_vfs_open_obj, 2, fatfs_builtin_open_self);
 
 STATIC mp_obj_t fat_vfs_listdir_func(size_t n_args, const mp_obj_t *args) {
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(args[0]);
     bool is_str_type = true;
     const char *path;
     if (n_args == 2) {
@@ -73,19 +73,16 @@ STATIC mp_obj_t fat_vfs_listdir_func(size_t n_args, const mp_obj_t *args) {
         path = "";
     }
 
-    return fat_vfs_listdir(path, is_str_type);
+    return fat_vfs_listdir2(self, path, is_str_type);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_listdir_obj, 1, 2, fat_vfs_listdir_func);
 
-STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t path_in, mp_int_t attr) {
+STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t vfs_in, mp_obj_t path_in, mp_int_t attr) {
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_in);
 
     FILINFO fno;
-#if _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
-    FRESULT res = f_stat(path, &fno);
+    FRESULT res = f_stat(&self->fatfs, path, &fno);
 
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
@@ -93,7 +90,7 @@ STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t path_in, mp_int_t attr) {
 
     // check if path is a file or directory
     if ((fno.fattrib & AM_DIR) == attr) {
-        res = f_unlink(path);
+        res = f_unlink(&self->fatfs, path);
 
         if (res != FR_OK) {
             mp_raise_OSError(fresult_to_errno_table[res]);
@@ -105,27 +102,25 @@ STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t path_in, mp_int_t attr) {
 }
 
 STATIC mp_obj_t fat_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
-    (void)vfs_in;
-    return fat_vfs_remove_internal(path_in, 0); // 0 == file attribute
+    return fat_vfs_remove_internal(vfs_in, path_in, 0); // 0 == file attribute
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_remove_obj, fat_vfs_remove);
 
 STATIC mp_obj_t fat_vfs_rmdir(mp_obj_t vfs_in, mp_obj_t path_in) {
-    (void) vfs_in;
-    return fat_vfs_remove_internal(path_in, AM_DIR);
+    return fat_vfs_remove_internal(vfs_in, path_in, AM_DIR);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_rmdir_obj, fat_vfs_rmdir);
 
 STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_out) {
-    (void)vfs_in;
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
-    FRESULT res = f_rename(old_path, new_path);
+    FRESULT res = f_rename(&self->fatfs, old_path, new_path);
     if (res == FR_EXIST) {
         // if new_path exists then try removing it (but only if it's a file)
-        fat_vfs_remove_internal(path_out, 0); // 0 == file attribute
+        fat_vfs_remove_internal(vfs_in, path_out, 0); // 0 == file attribute
         // try to rename again
-        res = f_rename(old_path, new_path);
+        res = f_rename(&self->fatfs, old_path, new_path);
     }
     if (res == FR_OK) {
         return mp_const_none;
@@ -137,9 +132,9 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_rename_obj, fat_vfs_rename);
 
 STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
-    (void)vfs_in;
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_o);
-    FRESULT res = f_mkdir(path);
+    FRESULT res = f_mkdir(&self->fatfs, path);
     if (res == FR_OK) {
         return mp_const_none;
     } else {
@@ -150,15 +145,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
 
 /// Change current directory.
 STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
-    (void)vfs_in;
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path;
     path = mp_obj_str_get_str(path_in);
 
-    FRESULT res = f_chdrive(path);
-
-    if (res == FR_OK) {
-        res = f_chdir(path);
-    }
+    FRESULT res = f_chdir(&self->fatfs, path);
 
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
@@ -170,14 +161,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_chdir_obj, fat_vfs_chdir);
 
 /// Get the current directory.
 STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
-    (void)vfs_in;
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
-    FRESULT res = f_getcwd(buf, sizeof buf);
-
+    memcpy(buf, self->str, self->len);
+    FRESULT res = f_getcwd(&self->fatfs, buf + self->len, sizeof(buf) - self->len);
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
-
+    // remove trailing / if in root dir, because we prepended the mount point
+    size_t l = strlen(buf);
+    if (res == FR_OK && buf[l - 1] == '/') {
+        buf[l - 1] = 0;
+    }
     return mp_obj_new_str(buf, strlen(buf), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
@@ -202,14 +197,10 @@ STATIC bool path_equal(const char *path, const char *path_canonical) {
 /// \function stat(path)
 /// Get the status of a file or directory.
 STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
-    (void)vfs_in;
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_in);
 
     FILINFO fno;
-#if _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
     FRESULT res;
 
     if (path_equal(path, "/")) {
@@ -233,7 +224,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         }
         if (res == FR_NO_PATH) {
             // stat normal file
-            res = f_stat(path, &fno);
+            res = f_stat(&self->fatfs, path, &fno);
         }
         if (res != FR_OK) {
             mp_raise_OSError(fresult_to_errno_table[res]);
@@ -272,12 +263,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_stat_obj, fat_vfs_stat);
 
 // Get the status of a VFS.
 STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
-    (void)vfs_in;
-    const char *path = mp_obj_str_get_str(path_in);
+    mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    (void)path_in;
 
-    FATFS *fatfs;
     DWORD nclst;
-    FRESULT res = f_getfree(path, &nclst, &fatfs);
+    FATFS *fatfs = &self->fatfs;
+    FRESULT res = f_getfree(fatfs, &nclst);
     if (FR_OK != res) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }

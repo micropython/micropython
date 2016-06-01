@@ -32,7 +32,12 @@
 
 #if MICROPY_READER_FATFS
 
+#if MICROPY_FATFS_OO
+#include "lib/oofatfs/ff.h"
+#else
 #include "lib/fatfs/ff.h"
+#endif
+#include "extmod/fsusermount.h"
 #include "extmod/vfs_fat_file.h"
 
 typedef struct _mp_reader_fatfs_t {
@@ -71,7 +76,15 @@ int mp_reader_new_file(mp_reader_t *reader, const char *filename) {
     if (rf == NULL) {
         return MP_ENOMEM;
     }
+    #if MICROPY_FATFS_OO
+    fs_user_mount_t *vfs = ff_get_vfs(&filename);
+    if (vfs == NULL) {
+        return MP_ENOENT;
+    }
+    FRESULT res = f_open(&vfs->fatfs, &rf->fp, filename, FA_READ);
+    #else
     FRESULT res = f_open(&rf->fp, filename, FA_READ);
+    #endif
     if (res != FR_OK) {
         return fresult_to_errno_table[res];
     }

@@ -36,8 +36,13 @@
 #include "py/mphal.h"
 
 #include "py/runtime.h"
+#if MICROPY_FATFS_OO
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
+#else
 #include "lib/fatfs/ff.h"        /* FatFs lower layer API */
 #include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
+#endif
 #include "extmod/fsusermount.h"
 
 #if _MAX_SS == _MIN_SS
@@ -46,6 +51,13 @@
 #define SECSIZE(fs) ((fs)->ssize)
 #endif
 
+#if MICROPY_FATFS_OO
+typedef void *bdev_t;
+STATIC fs_user_mount_t *disk_get_device(void *bdev) {
+    return (fs_user_mount_t*)bdev;
+}
+#else
+typedef BYTE bdev_t;
 STATIC fs_user_mount_t *disk_get_device(uint id) {
     if (id < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
         return MP_STATE_PORT(fs_user_mount)[id];
@@ -53,13 +65,17 @@ STATIC fs_user_mount_t *disk_get_device(uint id) {
         return NULL;
     }
 }
+#endif
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/
 
+#if MICROPY_FATFS_OO
+STATIC
+#endif
 DSTATUS disk_initialize (
-    BYTE pdrv                /* Physical drive nmuber (0..) */
+    bdev_t pdrv              /* Physical drive nmuber (0..) */
 )
 {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
@@ -89,8 +105,11 @@ DSTATUS disk_initialize (
 /* Get Disk Status                                                       */
 /*-----------------------------------------------------------------------*/
 
+#if MICROPY_FATFS_OO
+STATIC
+#endif
 DSTATUS disk_status (
-    BYTE pdrv        /* Physical drive nmuber (0..) */
+    bdev_t pdrv      /* Physical drive nmuber (0..) */
 )
 {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
@@ -110,7 +129,7 @@ DSTATUS disk_status (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_read (
-    BYTE pdrv,        /* Physical drive nmuber (0..) */
+    bdev_t pdrv,      /* Physical drive nmuber (0..) */
     BYTE *buff,        /* Data buffer to store read data */
     DWORD sector,    /* Sector address (LBA) */
     UINT count        /* Number of sectors to read (1..128) */
@@ -140,9 +159,9 @@ DRESULT disk_read (
 /* Write Sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
 
-#if _USE_WRITE
+#if MICROPY_FATFS_OO || _USE_WRITE
 DRESULT disk_write (
-    BYTE pdrv,            /* Physical drive nmuber (0..) */
+    bdev_t pdrv,          /* Physical drive nmuber (0..) */
     const BYTE *buff,    /* Data to be written */
     DWORD sector,        /* Sector address (LBA) */
     UINT count            /* Number of sectors to write (1..128) */
@@ -179,9 +198,9 @@ DRESULT disk_write (
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-#if _USE_IOCTL
+#if MICROPY_FATFS_OO || _USE_IOCTL
 DRESULT disk_ioctl (
-    BYTE pdrv,        /* Physical drive nmuber (0..) */
+    bdev_t pdrv,      /* Physical drive nmuber (0..) */
     BYTE cmd,        /* Control code */
     void *buff        /* Buffer to send/receive control data */
 )
@@ -218,12 +237,26 @@ DRESULT disk_ioctl (
                 } else {
                     *((WORD*)buff) = mp_obj_get_int(ret);
                 }
+                #if MICROPY_FATFS_OO && _MAX_SS != _MIN_SS
+                // need to store ssize because we use it in disk_read/disk_write
+                vfs->fatfs.ssize = *((WORD*)buff);
+                #endif
                 return RES_OK;
             }
 
             case GET_BLOCK_SIZE:
                 *((DWORD*)buff) = 1; // erase block size in units of sector size
                 return RES_OK;
+
+            #if MICROPY_FATFS_OO
+            case IOCTL_INIT:
+                *((DSTATUS*)buff) = disk_initialize(pdrv);
+                return RES_OK;
+
+            case IOCTL_STATUS:
+                *((DSTATUS*)buff) = disk_status(pdrv);
+                return RES_OK;
+            #endif
 
             default:
                 return RES_PARERR;
@@ -245,11 +278,25 @@ DRESULT disk_ioctl (
 
             case GET_SECTOR_SIZE:
                 *((WORD*)buff) = 512; // old protocol had fixed sector size
+                #if MICROPY_FATFS_OO && _MAX_SS != _MIN_SS
+                // need to store ssize because we use it in disk_read/disk_write
+                vfs->fatfs.ssize = 512;
+                #endif
                 return RES_OK;
 
             case GET_BLOCK_SIZE:
                 *((DWORD*)buff) = 1; // erase block size in units of sector size
                 return RES_OK;
+
+            #if MICROPY_FATFS_OO
+            case IOCTL_INIT:
+                *((DSTATUS*)buff) = disk_initialize(pdrv);
+                return RES_OK;
+
+            case IOCTL_STATUS:
+                *((DSTATUS*)buff) = disk_status(pdrv);
+                return RES_OK;
+            #endif
 
             default:
                 return RES_PARERR;

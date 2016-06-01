@@ -32,7 +32,11 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#if MICROPY_FATFS_OO
+#include "lib/oofatfs/ff.h"
+#else
 #include "lib/fatfs/ff.h"
+#endif
 #include "extmod/fsusermount.h"
 
 fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs) {
@@ -57,7 +61,11 @@ fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         for (size_t i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount)); ++i) {
             fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
             if (vfs != NULL && !memcmp(mnt_str, vfs->str, mnt_len + 1)) {
+                #if MICROPY_FATFS_OO
+                res = f_umount(&vfs->fatfs);
+                #else
                 res = f_mount(NULL, vfs->str, 0);
+                #endif
                 if (vfs->flags & FSUSER_FREE_OBJ) {
                     m_del_obj(fs_user_mount_t, vfs);
                 }
@@ -86,6 +94,9 @@ fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         vfs->str = mnt_str;
         vfs->len = mnt_len;
         vfs->flags = FSUSER_FREE_OBJ;
+        #if MICROPY_FATFS_OO
+        vfs->fatfs.drv = vfs;
+        #endif
 
         // load block protocol methods
         mp_load_method(device, MP_QSTR_readblocks, vfs->readblocks);
@@ -114,15 +125,30 @@ fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         MP_STATE_PORT(fs_user_mount)[i] = vfs;
 
         // mount the block device (if mkfs, only pre-mount)
-        FRESULT res = f_mount(&vfs->fatfs, vfs->str, !mkfs);
+        FRESULT res;
+        #if MICROPY_FATFS_OO
+        if (mkfs) {
+            res = FR_OK;
+        } else {
+            res = f_mount(&vfs->fatfs);
+        }
+        #else
+        res = f_mount(&vfs->fatfs, vfs->str, !mkfs);
+        #endif
+
         // check the result
         if (res == FR_OK) {
             if (mkfs) {
                 goto mkfs;
             }
         } else if (res == FR_NO_FILESYSTEM && args[1].u_bool) {
-mkfs:
+mkfs:;
+            #if MICROPY_FATFS_OO
+            uint8_t working_buf[_MAX_SS];
+            res = f_mkfs(&vfs->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
+            #else
             res = f_mkfs(vfs->str, 1, 0);
+            #endif
             if (res != FR_OK) {
 mkfs_error:
                 MP_STATE_PORT(fs_user_mount)[i] = NULL;
@@ -130,7 +156,11 @@ mkfs_error:
             }
             if (mkfs) {
                 // If requested to only mkfs, unmount pre-mounted device
+                #if MICROPY_FATFS_OO
+                res = FR_OK;
+                #else
                 res = f_mount(NULL, vfs->str, 0);
+                #endif
                 if (res != FR_OK) {
                     goto mkfs_error;
                 }
@@ -188,7 +218,12 @@ mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
     }
 
     fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];
-    FRESULT res = f_mount(NULL, vfs->str, 0);
+    FRESULT res;
+    #if MICROPY_FATFS_OO
+    res = f_umount(&vfs->fatfs);
+    #else
+    res = f_mount(NULL, vfs->str, 0);
+    #endif
     if (vfs->flags & FSUSER_FREE_OBJ) {
         m_del_obj(fs_user_mount_t, vfs);
     }
