@@ -157,8 +157,8 @@ LIB_SRC_C = $(addprefix lib/,\
 
 # FatFS VFS support
 LIB_SRC_C += $(addprefix lib/,\
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	)
 
 OBJ = $(PY_O)
