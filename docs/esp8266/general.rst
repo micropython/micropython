@@ -72,10 +72,10 @@ modifying the standard process).
 
 Once the filesystem is mounted, ``boot.py`` is executed from it. The standard
 version of this file is created during first-time module set up and by
-defaults starts up a WebREPL daemon to handle incoming connections. This
+default starts up a WebREPL daemon to handle incoming connections. This
 file is customizable by end users (for example, you may want to disable
 WebREPL for extra security, or add other services which should be run on
-module start-up). But keep in mind that incorrect modifications to boot.py
+a module start-up). But keep in mind that incorrect modifications to boot.py
 may still lead to boot loops or lock ups, requiring to reflash a module
 from scratch.
 
