@@ -1,9 +1,33 @@
 MicroPython libraries
 =====================
 
-The following standard Python libraries are built in to MicroPython.
+This chapter described modules (function and class libraries) which are built
+into MicroPython. There are few categories of modules:
 
-For additional libraries, please download them from the `micropython-lib repository
+* Modules which implement subset of standard Python functionality and are not
+  intended to be extended by a user.
+* Modules which are implement subset of Python functionality, with a provision
+  for extension by a user (via Python code).
+* Modules which implement MicroPython extensions to Python standard libraries.
+* Modules specific to a particular port and thus not portable.
+
+Note about the availability of modules and their contents: This documentation
+in general aspires to describe all modules and functions/classes which are
+implemented in MicroPython. However, MicroPython is highly configurable, and
+each port to a particular board/embedded system makes available only a subset
+of MicroPython libraries. For officially supported ports, there is an effort
+to either filter out non-applicable items, or mark individual descriptions
+with "Availability:" clauses describing which ports provide a given feature.
+With that in mind, please still be ready to a fact that some function/class
+in a module, or even entire module, described in this documentation, may be
+not available in a particular build of MicroPython on a particular board. The
+best place to find a general information of the availability/non-availability
+of a particular feature is "General Information" secton which contains
+information pertaining to a specific port.
+
+Beyond the built-in libraries described in this documentation, many more
+modules from the Python standard library, as well as further MicroPython
+extensions to it, can be found in the `micropython-lib repository
 <https://github.com/micropython/micropython-lib>`_.
 
 Python standard libraries and micro-libraries
