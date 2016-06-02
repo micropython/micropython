@@ -191,13 +191,21 @@ const mp_obj_type_t esp_timer_type = {
     .locals_dict = (mp_obj_t)&esp_timer_locals_dict,
 };
 
+// this bit is unused in the Xtensa PS register
+#define ETS_LOOP_ITER_BIT (12)
+
 STATIC mp_obj_t machine_disable_irq(void) {
-    return mp_obj_new_int(disable_irq());
+    uint32_t state = disable_irq();
+    state = (state & ~(1 << ETS_LOOP_ITER_BIT)) | (ets_loop_iter_disable << ETS_LOOP_ITER_BIT);
+    ets_loop_iter_disable = 1;
+    return mp_obj_new_int(state);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
-STATIC mp_obj_t machine_enable_irq(mp_obj_t state) {
-    enable_irq(mp_obj_get_int(state));
+STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
+    uint32_t state = mp_obj_get_int(state_in);
+    ets_loop_iter_disable = (state >> ETS_LOOP_ITER_BIT) & 1;
+    enable_irq(state & ~(1 << ETS_LOOP_ITER_BIT));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);

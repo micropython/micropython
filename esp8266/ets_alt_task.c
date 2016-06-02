@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include "xtirq.h"
 #include "osapi.h"
 #include "os_type.h"
 #include "ets_sys.h"
 #include <esp_sdk_ver.h>
 #include "etshal.h"
 #include "user_interface.h"
+#include "ets_alt_task.h"
 
 // Use standard ets_task or alternative impl
 #define USE_ETS_TASK 0
@@ -108,8 +108,10 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
 #endif
 }
 
+int ets_loop_iter_disable = 0;
+
 bool ets_loop_iter(void) {
-    if (query_irq() != 0) {
+    if (ets_loop_iter_disable) {
         return false;
     }
     //static unsigned cnt;
