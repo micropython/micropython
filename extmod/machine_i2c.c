@@ -48,7 +48,7 @@ STATIC void mp_hal_i2c_delay(machine_i2c_obj_t *self) {
 }
 
 STATIC void mp_hal_i2c_scl_low(machine_i2c_obj_t *self) {
-    mp_hal_pin_low(self->scl);
+    mp_hal_pin_od_low(self->scl);
 }
 
 STATIC void mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
@@ -56,7 +56,7 @@ STATIC void mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
 }
 
 STATIC void mp_hal_i2c_sda_low(machine_i2c_obj_t *self) {
-    mp_hal_pin_low(self->sda);
+    mp_hal_pin_od_low(self->sda);
 }
 
 STATIC void mp_hal_i2c_sda_release(machine_i2c_obj_t *self) {
@@ -91,8 +91,8 @@ STATIC void mp_hal_i2c_init(machine_i2c_obj_t *self, uint32_t freq) {
     if (self->us_delay == 0) {
         self->us_delay = 1;
     }
-    mp_hal_pin_config_od(self->scl);
-    mp_hal_pin_config_od(self->sda);
+    mp_hal_pin_open_drain(self->scl);
+    mp_hal_pin_open_drain(self->sda);
     mp_hal_i2c_stop(self);
 }
 

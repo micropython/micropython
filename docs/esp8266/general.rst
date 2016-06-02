@@ -24,7 +24,7 @@ following design and implementation decision were made:
   forum, with the idea to collect community-maintained reference materials
   eventually.
 * All pins which make sense to support, are supported by MicroPython
-  (for example, we don't expose pins which are used to connect SPI flash
+  (for example, pins which are used to connect SPI flash
   are not exposed, as they're unlikely useful for anything else, and
   operating on them will lead to board lock-up). However, any particular
   board may expose only subset of pins. Consult your board reference manual.
@@ -72,10 +72,10 @@ modifying the standard process).
 
 Once the filesystem is mounted, ``boot.py`` is executed from it. The standard
 version of this file is created during first-time module set up and by
-defaults starts up a WebREPL daemon to handle incoming connections. This
+default starts up a WebREPL daemon to handle incoming connections. This
 file is customizable by end users (for example, you may want to disable
 WebREPL for extra security, or add other services which should be run on
-module start-up). But keep in mind that incorrect modifications to boot.py
+a module start-up). But keep in mind that incorrect modifications to boot.py
 may still lead to boot loops or lock ups, requiring to reflash a module
 from scratch.
 

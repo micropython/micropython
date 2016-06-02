@@ -136,16 +136,25 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
         return;
     }
     if (si->pbss && status == 0) {
-        struct bss_info *bs;
-        STAILQ_FOREACH(bs, si->pbss, next) {
-            mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-            t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
-            t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
-            t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
-            t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
-            t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
-            t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
-            mp_obj_list_append(*esp_scan_list, MP_OBJ_FROM_PTR(t));
+        // we need to catch any memory errors
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            struct bss_info *bs;
+            STAILQ_FOREACH(bs, si->pbss, next) {
+                mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
+                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
+                t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
+                t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
+                t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
+                t->items[4] = MP_OBJ_NEW_SMALL_INT(bs->authmode);
+                t->items[5] = MP_OBJ_NEW_SMALL_INT(bs->is_hidden);
+                mp_obj_list_append(*esp_scan_list, MP_OBJ_FROM_PTR(t));
+            }
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            // indicate error
+            *esp_scan_list = MP_OBJ_NULL;
         }
     } else {
         // indicate error
@@ -155,14 +164,25 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
 }
 
 STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
-    if (wifi_get_opmode() == SOFTAP_MODE) {
+    require_if(self_in, STATION_IF);
+    if ((wifi_get_opmode() & STATION_MODE) == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "scan unsupported in AP mode"));
+            "STA must be active"));
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
     wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
-    ETS_POLL_WHILE(esp_scan_list != NULL);
+    while (esp_scan_list != NULL) {
+        // our esp_scan_cb is called via ets_loop_iter so it's safe to set the
+        // esp_scan_list variable to NULL without disabling interrupts
+        if (MP_STATE_VM(mp_pending_exception) != NULL) {
+            esp_scan_list = NULL;
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(obj);
+        }
+        ets_loop_iter();
+    }
     if (list == MP_OBJ_NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "scan failed"));
     }

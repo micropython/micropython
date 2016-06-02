@@ -64,6 +64,8 @@ void mp_hal_rtc_init(void) {
         int64_t delta = 0;
         system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
         system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+        uint32_t len = 0;
+        system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
     }
 
     // reset ALARM0 state
@@ -145,20 +147,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_d
 STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     uint8_t rtcram[MEM_USER_MAXLEN];
     uint32_t len;
-    uint32_t magic;
 
     if (n_args == 1) {
-
-        system_rtc_mem_read(MEM_USER_MAGIC_ADDR, &magic, sizeof(magic));
-        if (magic != MEM_MAGIC) {
-            return mp_const_none;
-        }
+        // read RTC memory
 
         system_rtc_mem_read(MEM_USER_LEN_ADDR, &len, sizeof(len));
         system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
 
         return mp_obj_new_bytes(rtcram, len);
     } else {
+        // write RTC memory
+
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
@@ -167,8 +166,6 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
                 "buffer too long"));
         }
 
-        magic = MEM_MAGIC;
-        system_rtc_mem_write(MEM_USER_MAGIC_ADDR, &magic, sizeof(magic));
         len = bufinfo.len;
         system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
 

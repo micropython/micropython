@@ -36,6 +36,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "modpyb.h"
 
 #define GET_TRIGGER(phys_port) \
@@ -121,6 +122,34 @@ pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
 
 uint mp_obj_get_pin(mp_obj_t pin_in) {
     return mp_obj_get_pin_obj(pin_in)->phys_port;
+}
+
+void mp_hal_pin_input(mp_hal_pin_obj_t pin_id) {
+    pin_mode[pin_id] = GPIO_MODE_INPUT;
+    if (pin_id == 16) {
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); // input
+    } else {
+        const pyb_pin_obj_t *self = &pyb_pin_obj[pin_id];
+        PIN_FUNC_SELECT(self->periph, self->func);
+        PIN_PULLUP_DIS(self->periph);
+        gpio_output_set(0, 0, 0, 1 << self->phys_port);
+    }
+}
+
+void mp_hal_pin_output(mp_hal_pin_obj_t pin_id) {
+    pin_mode[pin_id] = GPIO_MODE_OUTPUT;
+    if (pin_id == 16) {
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); // output
+    } else {
+        const pyb_pin_obj_t *self = &pyb_pin_obj[pin_id];
+        PIN_FUNC_SELECT(self->periph, self->func);
+        PIN_PULLUP_DIS(self->periph);
+        gpio_output_set(0, 0, 1 << self->phys_port, 0);
+    }
 }
 
 int pin_get(uint pin) {

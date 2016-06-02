@@ -75,6 +75,7 @@
 #define MP_ENOBUFS          (105) // No buffer space available
 #define MP_ENOTCONN         (107) // Transport endpoint is not connected
 #define MP_ETIMEDOUT        (110) // Connection timed out
+#define MP_ECONNREFUSED     (111) // Connection refused
 #define MP_EHOSTUNREACH     (113) // No route to host
 #define MP_EALREADY         (114) // Operation already in progress
 #define MP_EINPROGRESS      (115) // Operation now in progress
@@ -128,6 +129,7 @@
 #define MP_ENOBUFS          ENOBUFS
 #define MP_ENOTCONN         ENOTCONN
 #define MP_ETIMEDOUT        ETIMEDOUT
+#define MP_ECONNREFUSED     ECONNREFUSED
 #define MP_EHOSTUNREACH     EHOSTUNREACH
 #define MP_EALREADY         EALREADY
 #define MP_EINPROGRESS      EINPROGRESS

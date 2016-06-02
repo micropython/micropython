@@ -123,6 +123,12 @@ STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj
     if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
         self->miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
     }
+
+    // configure pins
+    mp_hal_pin_write(self->sck, self->polarity);
+    mp_hal_pin_output(self->sck);
+    mp_hal_pin_output(self->mosi);
+    mp_hal_pin_input(self->miso);
 }
 
 STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
