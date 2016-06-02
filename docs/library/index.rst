@@ -1,14 +1,14 @@
 MicroPython libraries
 =====================
 
-This chapter described modules (function and class libraries) which are built
-into MicroPython. There are few categories of modules:
+This chapter describes modules (function and class libraries) which are built
+into MicroPython. There are a few categories of modules:
 
-* Modules which implement subset of standard Python functionality and are not
-  intended to be extended by a user.
-* Modules which are implement subset of Python functionality, with a provision
-  for extension by a user (via Python code).
-* Modules which implement MicroPython extensions to Python standard libraries.
+* Modules which implement a subset of standard Python functionality and are not
+  intended to be extended by the user.
+* Modules which implement a subset of Python functionality, with a provision
+  for extension by the user (via Python code).
+* Modules which implement MicroPython extensions to the Python standard libraries.
 * Modules specific to a particular port and thus not portable.
 
 Note about the availability of modules and their contents: This documentation
@@ -18,11 +18,11 @@ each port to a particular board/embedded system makes available only a subset
 of MicroPython libraries. For officially supported ports, there is an effort
 to either filter out non-applicable items, or mark individual descriptions
 with "Availability:" clauses describing which ports provide a given feature.
-With that in mind, please still be ready to a fact that some function/class
-in a module, or even entire module, described in this documentation, may be
-not available in a particular build of MicroPython on a particular board. The
-best place to find a general information of the availability/non-availability
-of a particular feature is "General Information" secton which contains
+With that in mind, please still be warned that some functions/classes
+in a module (or even the entire module) described in this documentation may be
+unavailable in a particular build of MicroPython on a particular board. The
+best place to find general information of the availability/non-availability
+of a particular feature is the "General Information" section which contains
 information pertaining to a specific port.
 
 Beyond the built-in libraries described in this documentation, many more
