@@ -58,10 +58,14 @@ endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
 # The unix port of micropython on OSX must be compiled with clang,
-# while cross-compile ports require gcc, so we test here for OSX and 
+# while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
+ifeq ($(MICROPY_FORCE_32BIT),1)
+CC = clang -m32
+else
 CC = clang
+endif
 # Use clang syntax for map file
 LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
 else
