@@ -68,12 +68,13 @@
 /* #define HAL_HCD_MODULE_ENABLED */
 /* #define HAL_NAND_MODULE_ENABLED */
 /* #define HAL_NOR_MODULE_ENABLED */
-/* #define HAL_SRAM_MODULE_ENABLED */
+#define HAL_SRAM_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
 /* #define HAL_IRDA_MODULE_ENABLED */
 /* #define HAL_IWDG_MODULE_ENABLED */
 /* #define HAL_LCD_MODULE_ENABLED */
+#define HAL_FMC_MODULE_ENABLED */
 /* #define HAL_LPTIM_MODULE_ENABLED */
 /* #define HAL_OPAMP_MODULE_ENABLED */
 #define HAL_PCD_MODULE_ENABLED
@@ -265,6 +266,10 @@
 #ifdef HAL_LCD_MODULE_ENABLED
  #include "stm32l4xx_hal_lcd.h"
 #endif /* HAL_LCD_MODULE_ENABLED */
+
+#ifdef HAL_FMC_MODULE_ENABLED
+ #include "stm32l4xx_ll_fmc.h"
+#endif /* HAL_FMC_MODULE_ENABLED */
 
 #ifdef HAL_LPTIM_MODULE_ENABLED
 #include "stm32l4xx_hal_lptim.h"
