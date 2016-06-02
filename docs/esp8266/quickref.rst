@@ -296,26 +296,30 @@ WebREPL (web browser interactive prompt)
 
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
 experimental feature available in ESP8266 port. Download web client
-from https://github.com/micropython/webrepl , and start daemon using::
+from https://github.com/micropython/webrepl (hosted version available
+at http://micropython.org/webrepl), and start the daemon on a device
+using::
 
     import webrepl
     webrepl.start()
 
-(Release version will have it started on boot by default.)
+(Release versions have it started on boot by default.)
 
 On a first connection, you will be prompted to set password for future
 sessions to use.
 
 The supported way to use WebREPL is by connecting to ESP8266 access point,
 but the daemon is also started on STA interface if it is active, so if your
-routers is set up and works correctly, you may also use it while connecting
-to your normal Internet access point (use ESP8266 AP connection method if
-face any issues).
+router is set up and works correctly, you may also use WebREPL while connected
+to your normal Internet access point (use the ESP8266 AP connection method
+if you face any issues).
 
 WebREPL is an experimental feature and a work in progress, and has known
-issues. There's also provision to transfer (both upload and download)
-files over WebREPL connection, but it has unstable status (be ready to
-reboot a module in case of issues). It still may be a practical way to
+issues.
+
+There's also provision to transfer (both upload and download)
+files over WebREPL connection, but it has even more experimental status
+than the WebREPL terminal mode. It is still a practical way to
 get script files onto ESP8266, so give it a try using ``webrepl_cli.py``
-from the repository above. See forum for other community-supported
-alternatives to transfer files to ESP8266.
+from the repository above. See the MicroPython forum for other
+community-supported alternatives to transfer files to ESP8266.
