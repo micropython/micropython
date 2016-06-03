@@ -579,11 +579,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     } else {
         actual_baudrate = HAL_RCC_GetPCLK1Freq();
     }
-    #if defined(MCU_SERIES_L4)
-    actual_baudrate = (actual_baudrate << 5) / (self->uart.Instance->BRR >> 3);
-    #else
     actual_baudrate /= self->uart.Instance->BRR;
-    #endif
 
     // check we could set the baudrate within 5%
     uint32_t baudrate_diff;
