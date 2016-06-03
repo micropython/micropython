@@ -58,9 +58,12 @@ mp_uint_t timeutils_days_in_month(mp_uint_t year, mp_uint_t month) {
 // compute the day of the year, between 1 and 366
 // month should be between 1 and 12, date should start at 1
 mp_uint_t timeutils_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
-    mp_uint_t yday = days_since_jan1[month - 1] + date;
-    if (month >= 3 && timeutils_is_leap_year(year)) {
-        yday += 1;
+    mp_uint_t yday = 0;
+    if (month > 0) {
+        yday = days_since_jan1[month - 1] + date;
+        if (month >= 3 && timeutils_is_leap_year(year)) {
+            yday += 1;
+        }
     }
     return yday;
 }
