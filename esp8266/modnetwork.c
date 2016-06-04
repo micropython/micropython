@@ -142,7 +142,7 @@ STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
             struct bss_info *bs;
             STAILQ_FOREACH(bs, si->pbss, next) {
                 mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
-                t->items[0] = mp_obj_new_bytes(bs->ssid, strlen((char*)bs->ssid));
+                t->items[0] = mp_obj_new_bytes(bs->ssid, bs->ssid_len);
                 t->items[1] = mp_obj_new_bytes(bs->bssid, sizeof(bs->bssid));
                 t->items[2] = MP_OBJ_NEW_SMALL_INT(bs->channel);
                 t->items[3] = MP_OBJ_NEW_SMALL_INT(bs->rssi);
