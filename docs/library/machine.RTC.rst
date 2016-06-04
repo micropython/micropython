@@ -60,6 +60,19 @@ Methods
       - ``wake`` specifies the sleep mode from where this interrupt can wake
         up the system.
 
+.. method:: rtc.memory([data]))
+
+    Store ``data`` in rtc memory (RAM), where it will be retained on reset 
+    or deep-sleep (but probably not after loss of power). 
+    
+    data must be a bytes-like object.
+    
+    If ``data`` is not provided, returns the current data, or an empty
+    bytes (0 bytes) at power-on.
+    
+    There is a limited amount (<512 bytes) of rtc memory, exceeding the
+    allowed amount will raise ValueError.
+
 Constants
 ---------
 
