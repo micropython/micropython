@@ -273,7 +273,6 @@ OsiReturnVal_e osi_LockObjCreate(OsiLockObj_t* pLockObj)
 	\note
 	\warning
 */
-__attribute__ ((section (".boot")))
 OsiReturnVal_e osi_TaskCreate(P_OSI_TASK_ENTRY pEntry,const signed char * const pcName,
                               unsigned short usStackDepth, void *pvParameters,
                               unsigned long uxPriority,OsiTaskHandle* pTaskHandle)
