@@ -50,6 +50,10 @@
  DECLARE PRIVATE DATA
  ******************************************************************************/
 
+// This is the static memory (TCB and stack) for the idle task
+static StaticTask_t xIdleTaskTCB __attribute__ ((section (".rtos_heap")));
+static StackType_t uxIdleTaskStack[configMINIMAL_STACK_SIZE] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
+
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
@@ -61,8 +65,8 @@ OsiTaskHandle   mpTaskHandle;
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
 
 // This is the static memory (TCB and stack) for the main MicroPython task
-StaticTask_t mpTaskTCB;
-StackType_t mpTaskStack[MICROPY_TASK_STACK_LEN] __attribute__((aligned (8)));
+StaticTask_t mpTaskTCB __attribute__ ((section (".rtos_heap")));
+StackType_t mpTaskStack[MICROPY_TASK_STACK_LEN] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -105,9 +109,6 @@ void stoupper (char *str) {
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     StackType_t **ppxIdleTaskStackBuffer,
                                     uint32_t *pulIdleTaskStackSize ) {
-    static StaticTask_t xIdleTaskTCB;
-    static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
-
     *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;

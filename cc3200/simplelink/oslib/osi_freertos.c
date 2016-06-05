@@ -62,8 +62,8 @@ TaskHandle_t xSimpleLinkSpawnTaskHndl = NULL;
 #define SL_SPAWN_MAX_WAIT_MS        ( 200 )
 
 // This is the static memory (TCB and stack) for the SL spawn task
-static StaticTask_t spawnTaskTCB;
-static portSTACK_TYPE spawnTaskStack[896 / sizeof(portSTACK_TYPE)] __attribute__((aligned (8)));
+static StaticTask_t spawnTaskTCB __attribute__ ((section (".rtos_heap")));
+static portSTACK_TYPE spawnTaskStack[896 / sizeof(portSTACK_TYPE)] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
 
 /*!
 	\brief 	This function registers an interrupt in NVIC table
