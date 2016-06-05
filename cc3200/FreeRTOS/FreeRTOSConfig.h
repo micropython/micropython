@@ -154,9 +154,11 @@ version. */
 /* We provide a definition of ucHeap so it can go in a special segment. */
 #define configAPPLICATION_ALLOCATED_HEAP 1
 
+/* We use static versions of functions (like xTaskCreateStatic) */
+#define configSUPPORT_STATIC_ALLOCATION 1
+
 /* For threading */
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 1
-#define configSUPPORT_STATIC_ALLOCATION 1
 #undef configUSE_MUTEXES
 #define configUSE_MUTEXES 1
 #undef INCLUDE_vTaskDelete
