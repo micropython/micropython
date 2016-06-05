@@ -1,5 +1,7 @@
 from unittest import TestCase
 from testing_TestLeds import TestLeds
+from testing_TestSwitches import TestSwitches
+
 
 class MainTest (object):
 
@@ -11,6 +13,10 @@ class MainTest (object):
 
         print("LEDs Tests")
         TestCase.run(TestLeds())
+        print("____________________")
+
+        print("LEDs Switches")
+        TestCase.run(TestSwitches())
         print("____________________")
 
 
