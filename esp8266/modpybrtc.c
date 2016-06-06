@@ -120,6 +120,12 @@ uint64_t pyb_rtc_get_us_since_2000() {
     return (((uint64_t)rtc_ticks * cal) >> 12) + delta;
 };
 
+void rtc_prepare_deepsleep(uint64_t sleep_us) {
+    // RTC time will reset at wake up. Let's be preared for this.
+    int64_t delta = pyb_rtc_get_us_since_2000() + sleep_us;
+    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+}
+
 STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // Get time
