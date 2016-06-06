@@ -41,11 +41,11 @@ For example::
 
     Example::
 
-    import network
-    server = network.Server()
-    server.deinit() # disable the server
-    # enable the server again with new settings
-    server.init(login=('user', 'password'), timeout=600)
+        import network
+        server = network.Server()
+        server.deinit() # disable the server
+        # enable the server again with new settings
+        server.init(login=('user', 'password'), timeout=600)
 
     Constructors
     ------------
