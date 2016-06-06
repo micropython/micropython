@@ -48,6 +48,9 @@ html_context = {
         (ver, url_pattern % (ver, micropy_port))
             for ver in micropy_all_versions
     ],
+    'downloads':[
+        ('PDF', url_pattern % (micropy_version, 'micropython-%s.pdf' % micropy_port)),
+    ],
 }
 
 
