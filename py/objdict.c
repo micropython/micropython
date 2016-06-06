@@ -119,8 +119,21 @@ STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_EQUAL: {
             #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
             if (MP_UNLIKELY(MP_OBJ_IS_TYPE(lhs_in, &mp_type_ordereddict) && MP_OBJ_IS_TYPE(rhs_in, &mp_type_ordereddict))) {
-                //TODO: implement
-                return MP_OBJ_NULL;
+                mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+                if (o->map.used != rhs->map.used) {
+                    return mp_const_false;
+                }
+                
+                // Go through the tables of both maps sequentially and compare both keys and elements.
+                mp_map_t *m1 = &o->map;
+                mp_map_t *m2 = &rhs->map;
+                mp_map_elem_t *t1 = &m1->table[m1->used];
+                for (mp_map_elem_t *e1 = &m1->table[0], *e2 = &m2->table[0]; e1 < t1; e1++, e2++) {
+                    if (!mp_obj_equal(e1->key, e2->key) || !mp_obj_equal(e1->value, e2->value)) {
+                        return mp_const_false;
+                    }
+                }
+                return mp_const_true; 
             } else
             #endif
             if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
