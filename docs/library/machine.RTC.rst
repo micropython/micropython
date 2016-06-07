@@ -24,35 +24,35 @@ Constructors
 Methods
 -------
 
-.. method:: rtc.init(datetime)
+.. method:: RTC.init(datetime)
 
    Initialise the RTC. Datetime is a tuple of the form:
    
       ``(year, month, day[, hour[, minute[, second[, microsecond[, tzinfo]]]]])``
 
-.. method:: rtc.now()
+.. method:: RTC.now()
 
    Get get the current datetime tuple.
 
-.. method:: rtc.deinit()
+.. method:: RTC.deinit()
 
    Resets the RTC to the time of January 1, 2015 and starts running it again.
 
-.. method:: rtc.alarm(id, time, /*, repeat=False)
+.. method:: RTC.alarm(id, time, /*, repeat=False)
 
    Set the RTC alarm. Time might be either a milllisecond value to program the alarm to
    current time + time_in_ms in the future, or a datetimetuple. If the time passed is in
    milliseconds, repeat can be set to ``True`` to make the alarm periodic.
 
-.. method:: rtc.alarm_left(alarm_id=0)
+.. method:: RTC.alarm_left(alarm_id=0)
 
    Get the number of milliseconds left before the alarm expires.
 
-.. method:: rtc.cancel(alarm_id=0)
+.. method:: RTC.cancel(alarm_id=0)
 
    Cancel a running alarm.
 
-.. method:: rtc.irq(\*, trigger, handler=None, wake=machine.IDLE)
+.. method:: RTC.irq(\*, trigger, handler=None, wake=machine.IDLE)
 
    Create an irq object triggered by a real time clock alarm.
 
