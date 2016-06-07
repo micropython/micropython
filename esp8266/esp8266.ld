@@ -142,6 +142,8 @@ SECTIONS
         *modpybuart.o(.literal*, .text*)
         *modpybi2c.o(.literal*, .text*)
         *modpybspi.o(.literal*, .text*)
+        *modpybhspi.o(.literal*, .text*)
+        *hspi.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
         *modnetwork.o(.literal* .text*)
         *moduos.o(.literal* .text*)
