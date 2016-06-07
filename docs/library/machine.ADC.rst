@@ -1,3 +1,4 @@
+.. currentmodule:: machine
 .. _machine.ADC:
 
 class ADC -- analog to digital conversion
