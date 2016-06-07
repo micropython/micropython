@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.RTC:
 
 class RTC -- real time clock

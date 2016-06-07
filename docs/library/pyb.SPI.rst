@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.SPI:
 
 class SPI -- a master-driven serial protocol

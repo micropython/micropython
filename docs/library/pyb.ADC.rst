@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.ADC:
 
 class ADC -- analog to digital conversion
