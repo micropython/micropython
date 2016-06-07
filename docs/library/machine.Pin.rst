@@ -1,7 +1,8 @@
+.. currentmodule:: machine
 .. _machine.Pin:
 
-class Pin -- control I/O pins
-=============================
+class machine.Pin -- control I/O pins
+=====================================
 
 A pin is the basic object to control I/O pins (also known as GPIO -
 general-purpose input/output). It has methods to set
