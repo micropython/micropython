@@ -228,28 +228,28 @@ Constants
 The following constants are used to configure the pin objects.  Note that
 not all constants are available on all ports.
 
-.. data:: IN
-          OUT
-          OPEN_DRAIN
-          ALT
-          ALT_OPEN_DRAIN
+.. data:: Pin.IN
+          Pin.OUT
+          Pin.OPEN_DRAIN
+          Pin.ALT
+          Pin.ALT_OPEN_DRAIN
 
    Selects the pin mode.
 
-.. data:: PULL_UP
-          PULL_DOWN
+.. data:: Pin.PULL_UP
+          Pin.PULL_DOWN
 
    Selects the whether there is a pull up/down resistor.
 
-.. data:: LOW_POWER
-          MED_POWER
-          HIGH_POWER
+.. data:: Pin.LOW_POWER
+          Pin.MED_POWER
+          Pin.HIGH_POWER
 
    Selects the pin drive strength.
 
-.. data:: IRQ_FALLING
-          IRQ_RISING
-          IRQ_LOW_LEVEL
-          IRQ_HIGH_LEVEL
+.. data:: Pin.IRQ_FALLING
+          Pin.IRQ_RISING
+          Pin.IRQ_LOW_LEVEL
+          Pin.IRQ_HIGH_LEVEL
 
    Selects the IRQ trigger type.
