@@ -189,6 +189,20 @@ The SPI driver is implemented in software and works on all pins::
     spi.write_readinto(b'1234', buf) # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf) # write buf to MOSI and read MISO back into buf
 
+
+Hardware SPI
+------------
+
+The hardware SPI is faster (up to 80Mhz), but only works on following pins:
+``MISO`` is gpio2, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
+methods as SPI, except for the pin parameters for the constructor and init
+(as those are fixed).
+
+    from machine import Pin, HSPI
+
+    hspi = HSPI(baudrate=800000000, polarity=0, phase=0)
+
+
 I2C bus
 -------
 
