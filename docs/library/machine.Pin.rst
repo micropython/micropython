@@ -3,7 +3,8 @@
 class Pin -- control I/O pins
 =============================
 
-A pin is the basic object to control I/O pins.  It has methods to set
+A pin is the basic object to control I/O pins (also known as GPIO -
+general-purpose input/output). It has methods to set
 the mode of the pin (input, output, etc) and methods to get and set the
 digital logic level. For analog control of a pin, see the ADC class.
 
@@ -132,7 +133,7 @@ Methods
 .. method:: pin([value])
 
    Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
-   See **pin.value** for more details.
+   See :func:`pin.value` for more details.
 
 .. method:: pin.alt_list()
 
