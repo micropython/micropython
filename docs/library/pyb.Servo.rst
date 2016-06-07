@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.Servo:
 
 class Servo -- 3-wire hobby servo driver

@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.DAC:
 
 class DAC -- digital to analog conversion

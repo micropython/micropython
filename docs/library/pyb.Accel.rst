@@ -1,3 +1,5 @@
+.. currentmodule:: pyb
+
 class Accel -- accelerometer control
 ====================================
 

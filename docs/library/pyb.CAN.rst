@@ -1,3 +1,5 @@
+.. currentmodule:: pyb
+
 class CAN -- controller area network communication bus
 ======================================================
 

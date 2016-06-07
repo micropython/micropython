@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.I2C:
 
 class I2C -- a two-wire serial protocol

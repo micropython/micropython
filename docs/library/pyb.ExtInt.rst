@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.ExtInt:
 
 class ExtInt -- configure I/O pins to interrupt on external events
