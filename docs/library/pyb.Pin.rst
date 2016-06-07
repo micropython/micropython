@@ -1,7 +1,7 @@
 .. currentmodule:: pyb
 .. _pyb.Pin:
 
-class Pin -- control I/O pins
+class pyb.Pin -- control I/O pins
 =============================
 
 A pin is the basic object to control I/O pins.  It has methods to set
