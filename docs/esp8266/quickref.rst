@@ -183,6 +183,27 @@ The SPI driver is implemented in software and works on all pins::
     spi.write_readinto(b'1234', buf) # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf) # write buf to MOSI and read MISO back into buf
 
+
+Hardware SPI
+------------
+
+The hardware SPI is faster (up to 80Mhz), but only works on following pins:
+``MISO``=12, ``MOSI``=13, ``SCK``=14, ``CS``=15 (you may be handling ``CS``
+yourself on a different pin)::
+
+    from machine import Pin, HSPI
+
+    spi = HSPI(baudrate=800000000, polarity=0, phase=0)
+    spi.init(baudrate=20000000) # set the baudrate
+
+    spi.read(10)            # read 10 bytes on MISO
+
+    buf = bytearray(50)     # create a buffer
+    spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
+
+    spi.write(b'12345')     # write 5 bytes on MOSI
+
+
 I2C bus
 -------
 
