@@ -32,11 +32,11 @@ Constructors
 Methods
 -------
 
-.. method:: sd.init(id=0, pins=('GP10', 'GP11', 'GP15'))
+.. method:: SD.init(id=0, pins=('GP10', 'GP11', 'GP15'))
 
    Enable the SD card. In order to initalize the card, give it a 3-tuple:
    ``(clk_pin, cmd_pin, dat0_pin)``.
 
-.. method:: sd.deinit()
+.. method:: SD.deinit()
 
    Disable the SD card.

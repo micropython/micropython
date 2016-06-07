@@ -72,7 +72,7 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: timer.init(mode, \*, width=16)
+    .. method:: Timer.init(mode, \*, width=16)
 
        Initialise the timer. Example::
 
@@ -93,14 +93,14 @@ Methods
            (or large periods), 32-bit timers should be used. 32-bit mode is only available
            for ``ONE_SHOT`` AND ``PERIODIC`` modes.
 
-.. method:: timer.deinit()
+.. method:: Timer.deinit()
 
    Deinitialises the timer. Disables all channels and associated IRQs.
    Stops the timer, and disables the timer peripheral.
 
 .. only:: port_wipy
 
-    .. method:: timer.channel(channel, \**, freq, period, polarity=Timer.POSITIVE, duty_cycle=0)
+    .. method:: Timer.channel(channel, \**, freq, period, polarity=Timer.POSITIVE, duty_cycle=0)
     
        If only a channel identifier passed, then a previously initialized channel
        object is returned (or ``None`` if there is no previous channel).

@@ -70,7 +70,7 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: uart.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
+    .. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
     
        Initialise the UART bus with the given parameters:
     
@@ -86,28 +86,28 @@ Methods
 
 .. only:: not port_esp8266
 
-    .. method:: uart.deinit()
+    .. method:: UART.deinit()
 
        Turn off the UART bus.
 
-    .. method:: uart.any()
+    .. method:: UART.any()
 
        Return the number of characters available for reading.
 
-.. method:: uart.read([nbytes])
+.. method:: UART.read([nbytes])
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
 
    Return value: a bytes object containing the bytes read in.  Returns ``None``
    on timeout.
 
-.. method:: uart.readall()
+.. method:: UART.readall()
 
    Read as much data as possible.
 
    Return value: a bytes object or ``None`` on timeout.
 
-.. method:: uart.readinto(buf[, nbytes])
+.. method:: UART.readinto(buf[, nbytes])
 
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
    that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -115,13 +115,13 @@ Methods
    Return value: number of bytes read and stored into ``buf`` or ``None`` on
    timeout.
 
-.. method:: uart.readline()
+.. method:: UART.readline()
 
    Read a line, ending in a newline character.
 
    Return value: the line read or ``None`` on timeout.
 
-.. method:: uart.write(buf)
+.. method:: UART.write(buf)
 
    Write the buffer of bytes to the bus.
 
@@ -129,7 +129,7 @@ Methods
 
 .. only:: not port_esp8266
 
-    .. method:: uart.sendbreak()
+    .. method:: UART.sendbreak()
 
        Send a break condition on the bus.  This drives the bus low for a duration
        of 13 bits.
@@ -137,7 +137,7 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: uart.irq(trigger, priority=1, handler=None, wake=machine.IDLE)
+    .. method:: UART.irq(trigger, priority=1, handler=None, wake=machine.IDLE)
 
        Create a callback to be triggered when data is received on the UART.
 

@@ -32,7 +32,7 @@ Constructors
 Methods
 -------
 
-.. method:: adc.channel(id, \*, pin)
+.. method:: ADC.channel(id, \*, pin)
 
    Create an analog pin. If only channel ID is given, the correct pin will
    be selected. Alternatively, only the pin can be passed and the correct
@@ -43,11 +43,11 @@ Methods
       apin = adc.channel(pin='GP3')
       apin = adc.channel(id=1, pin='GP3')
 
-.. method:: adc.init()
+.. method:: ADC.init()
 
    Enable the ADC block.
 
-.. method:: adc.deinit()
+.. method:: ADC.deinit()
 
    Disable the ADC block.
 
