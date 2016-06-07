@@ -37,7 +37,7 @@ using the standard stream methods::
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
 
-.. only:: port_machineoard
+.. only:: port_pyboard
 
     Individual characters can be read/written using::
 
@@ -47,9 +47,6 @@ using the standard stream methods::
     To check if there is anything to be read, use::
 
         uart.any()               # returns True if any characters waiting
-
-    *Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
-    Earlier versions use ``uart.send`` and ``uart.recv``.
 
 .. only:: port_wipy
 
