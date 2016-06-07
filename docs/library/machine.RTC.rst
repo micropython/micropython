@@ -1,3 +1,4 @@
+.. currentmodule:: machine
 .. _machine.RTC:
 
 class RTC -- real time clock

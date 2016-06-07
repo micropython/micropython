@@ -1,3 +1,4 @@
+.. currentmodule:: machine
 .. _machine.UART:
 
 class UART -- duplex serial communication bus
