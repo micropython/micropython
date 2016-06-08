@@ -104,7 +104,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: pin.init(mode, pull=Pin.PULL_NONE, af=-1)
+    .. method:: Pin.init(mode, pull=Pin.PULL_NONE, af=-1)
     
        Initialise the pin:
        
@@ -128,7 +128,7 @@ Methods
        
        Returns: ``None``.
 
-.. method:: pin.value([value])
+.. method:: Pin.value([value])
 
    Get or set the digital logic level of the pin:
 
@@ -139,39 +139,39 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: pin.__str__()
+    .. method:: Pin.__str__()
     
        Return a string describing the pin object.
     
-    .. method:: pin.af()
+    .. method:: Pin.af()
     
        Returns the currently configured alternate-function of the pin. The
        integer returned will match one of the allowed constants for the af
        argument to the init function.
     
-    .. method:: pin.gpio()
+    .. method:: Pin.gpio()
     
        Returns the base address of the GPIO block associated with this pin.
     
-    .. method:: pin.mode()
+    .. method:: Pin.mode()
     
        Returns the currently configured mode of the pin. The integer returned
        will match one of the allowed constants for the mode argument to the init
        function.
     
-    .. method:: pin.name()
+    .. method:: Pin.name()
 
        Get the pin name.
 
-    .. method:: pin.names()
+    .. method:: Pin.names()
     
        Returns the cpu and board names for this pin.
     
-    .. method:: pin.pin()
+    .. method:: Pin.pin()
     
        Get the pin number.
     
-    .. method:: pin.port()
+    .. method:: Pin.port()
     
        Get the pin port.
     
@@ -179,7 +179,7 @@ Methods
 
        Returns an array of alternate functions available for this pin.
 
-.. method:: pin.pull()
+.. method:: Pin.pull()
 
     Returns the currently configured pull of the pin. The integer returned
     will match one of the allowed constants for the pull argument to the init
