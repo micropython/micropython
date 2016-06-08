@@ -86,15 +86,15 @@ Constructors
     Class methods
     -------------
 
-    .. method:: Pin.debug([state])
+    .. classmethod:: Pin.debug([state])
     
        Get or set the debugging state (``True`` or ``False`` for on or off).
     
-    .. method:: Pin.dict([dict])
+    .. classmethod:: Pin.dict([dict])
     
        Get or set the pin mapper dictionary.
     
-    .. method:: Pin.mapper([fun])
+    .. classmethod:: Pin.mapper([fun])
     
        Get or set the pin mapper function.
 

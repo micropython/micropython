@@ -72,7 +72,7 @@ Constructors
 Class methods
 -------------
 
-.. method:: ExtInt.regs()
+.. classmethod:: ExtInt.regs()
 
    Dump the values of the EXTI registers.
 
