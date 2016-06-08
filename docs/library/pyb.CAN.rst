@@ -36,7 +36,7 @@ Constructors
 
 Class Methods
 -------------
-.. method:: CAN.initfilterbanks(nr)
+.. classmethod:: CAN.initfilterbanks(nr)
 
    Reset and disable all filter banks and assign how many banks should be available for CAN(1).
 
