@@ -148,6 +148,10 @@ Methods
        Returns the currently configured alternate-function of the pin. The
        integer returned will match one of the allowed constants for the af
        argument to the init function.
+
+    .. method:: Pin.af_list()
+
+       Returns an array of alternate functions available for this pin.
     
     .. method:: Pin.gpio()
     
@@ -174,10 +178,6 @@ Methods
     .. method:: Pin.port()
     
        Get the pin port.
-    
-    .. method:: Pin.af_list()
-
-       Returns an array of alternate functions available for this pin.
 
 .. method:: Pin.pull()
 
