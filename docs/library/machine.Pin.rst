@@ -130,7 +130,7 @@ Methods
        anything that converts to a boolean.  If it converts to ``True``, the pin
        is set high, otherwise it is set low.
 
-.. method:: pin([value])
+.. method:: Pin.__call__([value])
 
    Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
    See :func:`Pin.value` for more details.
