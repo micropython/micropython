@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.ADC:
 
 class ADC -- analog to digital conversion
 =========================================
@@ -15,7 +14,7 @@ Usage::
 Constructors
 ------------
 
-.. class:: machine.ADC(id=0, \*, bits=12)
+.. class:: ADC(id=0, \*, bits=12)
 
    Create an ADC object associated with the given pin.
    This allows you to then read analog values on that pin.

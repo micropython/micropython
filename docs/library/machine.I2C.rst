@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.I2C:
 
 class I2C -- a two-wire serial protocol
 =======================================
@@ -45,14 +44,14 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: machine.I2C(bus, ...)
+    .. class:: I2C(bus, ...)
 
        Construct an I2C object on the given bus.  `bus` can only be 0.
        If the bus is not given, the default one will be selected (0).
 
 .. only:: port_esp8266
 
-    .. class:: machine.I2C(scl, sda, \*, freq=400000)
+    .. class:: I2C(scl, sda, \*, freq=400000)
 
        Construct and return a new I2C object.
        See the init method below for a description of the arguments.

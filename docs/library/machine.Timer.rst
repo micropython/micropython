@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.Timer:
 
 class Timer -- control internal timers
 ======================================
@@ -60,7 +59,7 @@ class Timer -- control internal timers
 Constructors
 ------------
 
-.. class:: machine.Timer(id, ...)
+.. class:: Timer(id, ...)
 
     .. only:: port_wipy
 
