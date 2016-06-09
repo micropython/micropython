@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.SPI:
 
 class SPI -- a master-driven serial protocol
 ============================================
@@ -24,7 +23,7 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: machine.SPI(id, ...)
+    .. class:: SPI(id, ...)
 
        Construct an SPI object on the given bus.  ``id`` can be only 0.
        With no additional parameters, the SPI object is created but not

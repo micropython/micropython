@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.RTC:
 
 class RTC -- real time clock
 ============================
@@ -17,7 +16,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: machine.RTC(id=0, ...)
+.. class:: RTC(id=0, ...)
 
    Create an RTC object. See init for parameters of initialization.
 

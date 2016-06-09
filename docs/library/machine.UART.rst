@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.UART:
 
 class UART -- duplex serial communication bus
 =============================================
@@ -59,7 +58,7 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: machine.UART(bus, ...)
+    .. class:: UART(bus, ...)
     
        Construct a UART object on the given bus.  ``bus`` can be 0 or 1.
        If the bus is not given, the default one will be selected (0) or the selection

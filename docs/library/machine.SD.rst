@@ -1,5 +1,4 @@
 .. currentmodule:: machine
-.. _machine.SD:
 
 class SD -- secure digital memory card
 ======================================
@@ -25,7 +24,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: machine.SD(id,... )
+.. class:: SD(id,... )
 
    Create a SD card object. See ``init()`` for parameters if initialization. 
 
