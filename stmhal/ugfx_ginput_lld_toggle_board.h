@@ -36,11 +36,11 @@ const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {   
     {GPIOD, GPIO_PIN_3,  0, 0}, /* PD3  - Joy Right */   \
     {GPIOD, GPIO_PIN_6,  0, 0}, /* PD6  - Joy Up */      \
     {GPIOD, GPIO_PIN_8,  GPIO_PIN_8, 0}, /* PD8  - A Button */    \
-    {GPIOD, GPIO_PIN_9,  0, 0}, /* PD9  - B Button */    \
-    {GPIOD, GPIO_PIN_10, 0, 0}, /* PD10 - Menu Button */ \
-    {GPIOD, GPIO_PIN_11, GPIO_PIN_11, 0}, /* PD11 - Joy Down */    \
-    {GPIOE, GPIO_PIN_0,  GPIO_PIN_0, 0}, /* PE0  - Joy Centre */  \
-    {GPIOA, GPIO_PIN_15, GPIO_PIN_15, 0}, /* PA15 - Joy Left */    \
+    {GPIOD, GPIO_PIN_9,  GPIO_PIN_9, 0}, /* PD9  - B Button */    \
+    {GPIOD, GPIO_PIN_10, GPIO_PIN_10, 0}, /* PD10 - Menu Button */ \
+    {GPIOD, GPIO_PIN_11, 0, 0}, /* PD11 - Joy Down */    \
+    {GPIOE, GPIO_PIN_0,  0, 0}, /* PE0  - Joy Centre */  \
+    {GPIOA, GPIO_PIN_15, 0, 0}, /* PA15 - Joy Left */    \
 }
 
 #endif /* _GDISP_LLD_TOGGLE_BOARD_H */
