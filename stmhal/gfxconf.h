@@ -281,6 +281,7 @@
 //    #define GKEYBOARD_LAYOUT_OFF                     FALSE
 //        #define GKEYBOARD_LAYOUT_SCANCODE2_US        FALSE
 #define GINPUT_NEED_TOGGLE                           TRUE
+#define GINPUT_TOGGLE_POLL_PERIOD    40
 //#define GINPUT_NEED_DIAL                             FALSE
 
 

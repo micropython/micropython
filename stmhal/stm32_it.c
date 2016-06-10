@@ -79,6 +79,7 @@
 #include "storage.h"
 #include "can.h"
 #include "dma.h"
+#include "gfx.h"
 
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef pcd_fs_handle;
@@ -285,6 +286,7 @@ void SysTick_Handler(void) {
     if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
         dma_idle_handler(uwTick);
     }
+    gfxYield();
 }
 
 /******************************************************************************/

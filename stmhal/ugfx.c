@@ -62,6 +62,7 @@
 font_t default_font;
 
 GWidgetInit	wi;
+GTimer GT2;
 
 systemticks_t gfxSystemTicks(void)
 {
@@ -323,7 +324,7 @@ STATIC mp_obj_t pyb_ugfx_fill_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
 
 
 	gdispFillEllipse(x0, y0, a, b, col);	
-
+gfxSleepMilliseconds(500);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_fill_ellipse_obj, 6, 6, pyb_ugfx_fill_ellipse);
@@ -526,7 +527,7 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 	// Create the actual button
 	ghButton1 = gwinButtonCreate(NULL, &wi);
 	
-	//gwinAttachToggle(ghButton1,1,GINPUT_TOGGLE_A);
+	gwinAttachToggle(ghButton1,0,GINPUT_TOGGLE_A);
 
 	
 	// The first list widget
@@ -573,6 +574,10 @@ STATIC mp_obj_t pyb_ugfx_set_orientation(mp_obj_t self_in, mp_obj_t value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_orientation_obj, pyb_ugfx_set_orientation);
 
 
+void callback2(void* arg){
+	gdispDrawEllipse(40, 40, 10, 12, 0xFFFF);
+}
+
 /// \method get_width()
 ///
 /// Gets current width of the screen in pixels
@@ -580,6 +585,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_orientation_obj, pyb_ugfx_set_orie
 STATIC mp_obj_t pyb_ugfx_get_width(mp_obj_t self_in) {
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
+	gtimerInit(&GT2);
+gtimerStart(&GT2, callback2, NULL, FALSE, 1000);
     return mp_obj_new_int(gdispGetWidth());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_get_width_obj, pyb_ugfx_get_width);
