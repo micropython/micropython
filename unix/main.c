@@ -48,9 +48,9 @@
 #include "extmod/misc.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+#include "unixport.h"
 
 // Command line options, with their defaults
-STATIC bool compile_only = false;
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -58,89 +58,6 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
 #endif
-
-STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
-    (void)env;
-    ssize_t dummy = write(STDERR_FILENO, str, len);
-    mp_uos_dupterm_tx_strn(str, len);
-    (void)dummy;
-}
-
-const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
-
-#define FORCED_EXIT (0x100)
-// If exc is SystemExit, return value where FORCED_EXIT bit set,
-// and lower 8 bits are SystemExit value. For all other exceptions,
-// return 1.
-STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
-    // check for SystemExit
-    if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-        // None is an exit value of 0; an int is its value; anything else is 1
-        mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
-        mp_int_t val = 0;
-        if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
-            val = 1;
-        }
-        return FORCED_EXIT | (val & 255);
-    }
-
-    // Report all other exceptions
-    mp_obj_print_exception(&mp_stderr_print, MP_OBJ_FROM_PTR(exc));
-    return 1;
-}
-
-// Returns standard error codes: 0 for success, 1 for all other errors,
-// except if FORCED_EXIT bit is set then script raised SystemExit and the
-// value of the exit is in the lower 8 bits of the return value
-STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind, bool is_repl) {
-    if (lex == NULL) {
-        printf("MemoryError: lexer could not allocate memory\n");
-        return 1;
-    }
-
-    mp_hal_set_interrupt_char(CHAR_CTRL_C);
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
-
-        #if MICROPY_PY___FILE__
-        if (input_kind == MP_PARSE_FILE_INPUT) {
-            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-        }
-        #endif
-
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-
-        /*
-        printf("----------------\n");
-        mp_parse_node_print(parse_tree.root, 0);
-        printf("----------------\n");
-        */
-
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
-
-        if (!compile_only) {
-            // execute it
-            mp_call_function_0(module_fun);
-            // check for pending exception
-            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                nlr_raise(obj);
-            }
-        }
-
-        mp_hal_set_interrupt_char(-1);
-        nlr_pop();
-        return 0;
-
-    } else {
-        // uncaught exception
-        mp_hal_set_interrupt_char(-1);
-        return handle_uncaught_exception(nlr.ret_val);
-    }
-}
 
 #if MICROPY_USE_READLINE == 1
 #include "lib/mp-readline/readline.h"
@@ -237,7 +154,7 @@ STATIC int do_repl(void) {
         mp_hal_stdio_mode_orig();
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, false);
-        ret = execute_from_lexer(lex, parse_input_kind, true);
+        ret = execute_from_lexer(lex, parse_input_kind, emit_opt, true);
         if (ret & FORCED_EXIT) {
             return ret;
         }
@@ -265,7 +182,7 @@ STATIC int do_repl(void) {
         }
 
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        int ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, true);
+        int ret = execute_from_lexer(lex, MP_PARSE_SINGLE_INPUT, emit_opt, true);
         if (ret & FORCED_EXIT) {
             return ret;
         }
@@ -275,15 +192,7 @@ STATIC int do_repl(void) {
     #endif
 }
 
-STATIC int do_file(const char *file) {
-    mp_lexer_t *lex = mp_lexer_new_from_file(file);
-    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
-}
 
-STATIC int do_str(const char *str) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, str, strlen(str), false);
-    return execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
-}
 
 STATIC int usage(char **argv) {
     printf(
@@ -296,7 +205,6 @@ STATIC int usage(char **argv) {
 );
     int impl_opts_cnt = 0;
     printf(
-"  compile-only                 -- parse and compile only\n"
 "  emit={bytecode,native,viper} -- set the default code emitter\n"
 );
     impl_opts_cnt++;
@@ -323,8 +231,6 @@ STATIC void pre_process_options(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 if (0) {
-                } else if (strcmp(argv[a + 1], "compile-only") == 0) {
-                    compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
                 } else if (strcmp(argv[a + 1], "emit=native") == 0) {
@@ -483,7 +389,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 if (a + 1 >= argc) {
                     return usage(argv);
                 }
-                ret = do_str(argv[a + 1]);
+                ret = do_str(argv[a + 1], emit_opt);
                 if (ret & FORCED_EXIT) {
                     break;
                 }
@@ -517,7 +423,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 if (mp_obj_is_package(mod)) {
                     // TODO
-                    mp_printf(&mp_stderr_print, "%s: -m for packages not yet implemented\n", argv[0]);
+                    printf("%s: -m for packages not yet implemented\n", argv[0]);
                     exit(1);
                 }
                 ret = 0;
@@ -542,7 +448,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             char *pathbuf = malloc(PATH_MAX);
             char *basedir = realpath(argv[a], pathbuf);
             if (basedir == NULL) {
-                mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
+                printf("%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
@@ -554,7 +460,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);
-            ret = do_file(argv[a]);
+            ret = do_file(argv[a], emit_opt);
             break;
         }
     }
@@ -566,7 +472,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             prompt_write_history();
         } else {
             mp_lexer_t *lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
-            ret = execute_from_lexer(lex, MP_PARSE_FILE_INPUT, false);
+            ret = execute_from_lexer(lex, MP_PARSE_FILE_INPUT, emit_opt, false);
         }
     }
 
@@ -588,19 +494,4 @@ MP_NOINLINE int main_(int argc, char **argv) {
     return ret & 0xff;
 }
 
-uint mp_import_stat(const char *path) {
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        if (S_ISDIR(st.st_mode)) {
-            return MP_IMPORT_STAT_DIR;
-        } else if (S_ISREG(st.st_mode)) {
-            return MP_IMPORT_STAT_FILE;
-        }
-    }
-    return MP_IMPORT_STAT_NO_EXIST;
-}
 
-void nlr_jump_fail(void *val) {
-    printf("FATAL: uncaught NLR %p\n", val);
-    exit(1);
-}

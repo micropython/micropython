@@ -133,9 +133,10 @@ CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 SRC_MOD += modjni.c
 endif
 
+MAIN_SRC_C = main.c
 # source files
 SRC_C = \
-	main.c \
+	unixport.c \
 	gccollect.c \
 	unix_mphal.c \
 	input.c \
@@ -171,6 +172,12 @@ OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STMHAL_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(MAIN_SRC_C:.c=.o))
+
+LIBOBJ = $(PY_O)
+LIBOBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+LIBOBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+LIBOBJ += $(addprefix $(BUILD)/, $(STMHAL_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
