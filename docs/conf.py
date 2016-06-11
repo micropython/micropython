@@ -19,7 +19,7 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('.'))
 
 # Work out the port to generate the docs for
 from collections import OrderedDict
@@ -71,6 +71,9 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
+    'sphinx_selective_exclude.modindex_exclude',
+    'sphinx_selective_exclude.eager_only',
+    'sphinx_selective_exclude.search_auto_exclude',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -316,6 +319,20 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 # Append the other ports' specific folders/files to the exclude pattern
 exclude_patterns.extend([port + '*' for port in ports if port != micropy_port])
-# Exclude pyb module if the port is the WiPy
-if micropy_port == 'wipy':
-    exclude_patterns.append('library/pyb*')
+
+modules_port_specific = {
+    'pyboard': ['pyb'],
+    'wipy': ['wipy'],
+    'esp8266': ['esp'],
+}
+
+modindex_exclude = []
+
+for p, l in modules_port_specific.items():
+    if p != micropy_port:
+        modindex_exclude += l
+
+# Exclude extra modules per port
+modindex_exclude += {
+    'esp8266': ['cmath', 'select'],
+}.get(micropy_port, [])
