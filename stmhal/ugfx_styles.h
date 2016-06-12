@@ -24,9 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "gfx.h"
-#include "ugfx_widgets.h"
-#include "ugfx_containers.h"
-#include "ugfx_styles.h"
+extern const mp_obj_type_t pyb_ugfx_font_type;
 
-extern const mp_obj_type_t pyb_ugfx_type;
+typedef struct _pyb_ugfx_font_t {
+    mp_obj_base_t base;
+
+    font_t font;
+
+} pyb_ugfx_font_obj_t;

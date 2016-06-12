@@ -59,7 +59,8 @@
 ///     lcd.write('Hello world!\n',10,10)     # print text to the screen
 ///
 
-font_t default_font;
+font_t ui2;
+font_t *default_font;
 
 GWidgetInit	wi;
 GTimer GT2;
@@ -68,7 +69,7 @@ systemticks_t gfxSystemTicks(void)
 {
 	return HAL_GetTick();
 }
- 
+
 systemticks_t gfxMillisecondsToTicks(delaytime_t ms)
 {
 	return ms;
@@ -76,8 +77,8 @@ systemticks_t gfxMillisecondsToTicks(delaytime_t ms)
 
 typedef struct _pyb_ugfx_obj_t {
     mp_obj_base_t base;
-	
-	
+
+
 
     // hardware control for the LCD
 	// configured in headers - makes things faster
@@ -105,13 +106,14 @@ STATIC mp_obj_t pyb_ugfx_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     pyb_ugfx_obj_t *ugfx = m_new_obj(pyb_ugfx_obj_t);
     ugfx->base.type = &pyb_ugfx_type;
 
-	
-	default_font = gdispOpenFont("ui2");  //TODO: allow to be changed
+
+	ui2 = gdispOpenFont("ui2");  //TODO: allow to be changed
+	default_font = &ui2;
 	//gdispCloseFont(font);
 
-        gwinSetDefaultFont(default_font);
+        gwinSetDefaultFont(*default_font);
         gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
-	
+
 	gfxInit();
 
 	return ugfx;
@@ -199,7 +201,7 @@ STATIC mp_obj_t pyb_ugfx_text(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[4]);
 
     //font_t font = gdispOpenFont("ui2");  //TODO: save fotn handle globally or in lcd object
-	gdispDrawString(x0, y0, data, default_font, col);	
+	gdispDrawString(x0, y0, data, *default_font, col);	
 	//gdispCloseFont(font);
     return mp_const_none;
 }
@@ -616,6 +618,25 @@ STATIC mp_obj_t pyb_ugfx_get_pixel(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_i
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_ugfx_get_pixel_obj, pyb_ugfx_get_pixel);
 
 
+
+/// \method set_default_font()
+///
+/// Sets the default font used by widgets
+///
+STATIC mp_obj_t pyb_ugfx_set_default_font(mp_obj_t self_in, mp_obj_t font_obj) {
+	pyb_ugfx_font_obj_t *fo = font_obj; 
+	if (MP_OBJ_IS_TYPE(font_obj, &pyb_ugfx_font_type)){
+		gwinSetDefaultFont(fo->font);
+		default_font = &(fo->font);
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_default_font_obj, pyb_ugfx_set_default_font);
+
+
+
+
 STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&pyb_ugfx_text_obj },
@@ -633,6 +654,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&pyb_ugfx_ball_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&pyb_ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&pyb_ugfx_get_pixel_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&pyb_ugfx_set_default_font_obj },
 	
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
