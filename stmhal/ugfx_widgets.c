@@ -36,7 +36,7 @@
 #if MICROPY_HW_HAS_UGFX
 
 #include "pin.h"
-#include "ugfx_widgets.h"
+#include "ugfx.h"
 #include "gfx.h"
 
 #include "genhdr/pins.h"
@@ -72,6 +72,17 @@ STATIC mp_obj_t pyb_ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_
 	int y = mp_obj_get_int(args[2]);
 	int a = mp_obj_get_int(args[3]);
 	int b = mp_obj_get_int(args[4]);
+	
+	GHandle parent;
+
+	pyb_ugfx_container_obj_t *container = args[0];
+
+	if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_type)) {
+		parent = NULL; //(default anyway)
+	}
+	else if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_container_type)) {
+		parent = container->ghContainer;
+	}
 
     // create button object
     pyb_ugfx_button_obj_t *btn = m_new_obj(pyb_ugfx_button_obj_t);
@@ -80,22 +91,22 @@ STATIC mp_obj_t pyb_ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_
 	
 	//setup button options
 	GWidgetInit	wi;
- 
+
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
 	wi.g.show = TRUE;
- 
+
 	// Apply the button parameters	
 	wi.g.width = a;
 	wi.g.height = b;
 	wi.g.y = y;
 	wi.g.x = x;
-	//wi.g.parent = ;
+	wi.g.parent = parent;
 	wi.text = text;
- 
+
 	// Create the actual button
 	btn->ghButton = gwinButtonCreate(NULL, &wi);
-	
+
 
 	return btn;
 }

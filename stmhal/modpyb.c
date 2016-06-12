@@ -228,6 +228,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if MICROPY_HW_HAS_UGFX
     { MP_OBJ_NEW_QSTR(MP_QSTR_UGFX), (mp_obj_t)&pyb_ugfx_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&pyb_ugfx_button_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&pyb_ugfx_container_type },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_Checkbox), (mp_obj_t)&ugfx_checkbox_type },
 #endif
 };

@@ -217,8 +217,8 @@
 //    #define GWIN_FLAT_STYLING                        TRUE
 //    #define GWIN_WIDGET_TAGS                         TRUE
 
-//#define GWIN_NEED_CONTAINERS                         TRUE
-//    #define GWIN_NEED_CONTAINER                      TRUE
+#define GWIN_NEED_CONTAINERS                         TRUE
+    #define GWIN_NEED_CONTAINER                      TRUE
 //    #define GWIN_NEED_FRAME                          TRUE
 //    #define GWIN_NEED_TABSET                         TRUE
 //        #define GWIN_TABSET_TABHEIGHT                18

@@ -24,8 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "gfx.h"
-#include "ugfx_widgets.h"
-#include "ugfx_containers.h"
+extern const mp_obj_type_t pyb_ugfx_container_type;
 
-extern const mp_obj_type_t pyb_ugfx_type;
+typedef struct _pyb_ugfx_container_t {
+    mp_obj_base_t base;
+
+        GHandle ghContainer;
+
+} pyb_ugfx_container_obj_t;

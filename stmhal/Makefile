@@ -231,6 +231,7 @@ INC += $(foreach d, $(GFXINC), -I$d)
 SRC_C += ugfx.c
 SRC_UGFX += $(GFXSRC)
 SRC_C += ugfx_widgets.c
+SRC_C += ugfx_containers.c
 # Add Toggle driver
 SRC_UGFX += ugfx_ginput_lld_toggle.c
 endif
