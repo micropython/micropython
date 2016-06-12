@@ -24,5 +24,5 @@
  * THE SOFTWARE.
  */
 
-extern const mp_obj_type_t ugfx_button_type;
-extern const mp_obj_type_t ugfx_checkbox_type;
+extern const mp_obj_type_t pyb_ugfx_button_type;
+extern const mp_obj_type_t pyb_ugfx_checkbox_type;

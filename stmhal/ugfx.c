@@ -104,9 +104,13 @@ STATIC mp_obj_t pyb_ugfx_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     // create lcd object
     pyb_ugfx_obj_t *ugfx = m_new_obj(pyb_ugfx_obj_t);
     ugfx->base.type = &pyb_ugfx_type;
+
 	
 	default_font = gdispOpenFont("ui2");  //TODO: allow to be changed
 	//gdispCloseFont(font);
+
+        gwinSetDefaultFont(default_font);
+        gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
 	
 	gfxInit();
 
@@ -487,22 +491,14 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 	GHandle		ghLabel1;
 	GHandle		ghList1;
 	GHandle   ghButton1;
-	
 
- 
-	
-	gwinSetDefaultFont(default_font);
-	gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
 
-	
-	
-	
+
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
 	wi.g.show = TRUE;
-	
- 
-	// Apply some default values for GWIN
+
+ 	// Apply some default values for GWIN
 	wi.customDraw = 0;
 	wi.customParam = 0;
 	wi.customStyle = 0;
@@ -527,8 +523,6 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 	// Create the actual button
 	ghButton1 = gwinButtonCreate(NULL, &wi);
 	
-	gwinAttachToggle(ghButton1,0,GINPUT_TOGGLE_A);
-
 	
 	// The first list widget
 	wi.g.width = 150;
@@ -542,8 +536,9 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 	gwinListAddItem(ghList1, "Item 1", FALSE);
 	
 	gwinSetVisible(ghList1, TRUE);
-
-
+gwinAttachToggle(ghList1,0,GINPUT_TOGGLE_B);
+gwinAttachToggle(ghList1,1,GINPUT_TOGGLE_A);
+gwinAttachToggle(ghButton1,0,GINPUT_TOGGLE_UP);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_widget_demo_obj, pyb_ugfx_widget_demo);

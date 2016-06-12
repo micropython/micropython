@@ -24,4 +24,6 @@
  * THE SOFTWARE.
  */
 
+#include "ugfx_widgets.h"
+
 extern const mp_obj_type_t pyb_ugfx_type;
