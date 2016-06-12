@@ -64,7 +64,7 @@
 /// Construct an Container object.
 STATIC mp_obj_t pyb_ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 7, 7, false);
+    mp_arg_check_num(n_args, n_kw, 7, 8, false);
 
 
     const char *text = mp_obj_str_get_str(args[5]);
@@ -83,7 +83,15 @@ STATIC mp_obj_t pyb_ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t
  
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
-	wi.g.show = TRUE;
+
+	if (n_args == 8){
+		if (mp_obj_get_int(args[7]) > 0)
+			wi.g.show = TRUE;
+		else
+			wi.g.show = FALSE;
+	}
+	else
+		wi.g.show = TRUE;
  
 	// Apply the container parameters	
 	wi.g.width = a;
@@ -112,11 +120,38 @@ STATIC mp_obj_t pyb_ugfx_container_destroy(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_container_destroy_obj, pyb_ugfx_container_destroy);
 
+/// \method show()
+///
+/// shows the container and all its children
+STATIC mp_obj_t pyb_ugfx_container_show(mp_obj_t self_in) {
+    pyb_ugfx_container_obj_t *self = self_in;
+    
+        gwinShow(self->ghContainer);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_container_show_obj, pyb_ugfx_container_show);
+
+/// \method hide()
+///
+/// shows the container and all its children
+STATIC mp_obj_t pyb_ugfx_container_hide(mp_obj_t self_in) {
+    pyb_ugfx_container_obj_t *self = self_in;
+    
+        gwinHide(self->ghContainer);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_container_hide_obj, pyb_ugfx_container_hide);
+ 
+ 
+
 
 STATIC const mp_map_elem_t pyb_ugfx_container_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&pyb_ugfx_container_destroy_obj},
-
+    { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&pyb_ugfx_container_show_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_hide), (mp_obj_t)&pyb_ugfx_container_hide_obj},
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
 

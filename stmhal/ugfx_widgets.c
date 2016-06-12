@@ -73,7 +73,7 @@ STATIC mp_obj_t pyb_ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_
 	int a = mp_obj_get_int(args[3]);
 	int b = mp_obj_get_int(args[4]);
 	
-	GHandle parent;
+	GHandle parent = NULL;
 
 	pyb_ugfx_container_obj_t *container = args[0];
 
