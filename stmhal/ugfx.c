@@ -59,8 +59,6 @@
 ///     lcd.write('Hello world!\n',10,10)     # print text to the screen
 ///
 
-font_t fhandle;
-font_t *default_font;
 
 GWidgetInit	wi;
 GTimer GT2;
@@ -107,12 +105,8 @@ STATIC mp_obj_t pyb_ugfx_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     ugfx->base.type = &pyb_ugfx_type;
 
 
-	fhandle = gdispOpenFont("ui2");
-	default_font = &fhandle;
-	//gdispCloseFont(font);
-
-        gwinSetDefaultFont(*default_font);
-        gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
+	gwinSetDefaultFont(gdispOpenFont("ui2"));
+	gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
 
 	gfxInit();
 
@@ -201,7 +195,7 @@ STATIC mp_obj_t pyb_ugfx_text(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[4]);
 
     //font_t font = gdispOpenFont("ui2");  //TODO: save fotn handle globally or in lcd object
-	gdispDrawString(x0, y0, data, *default_font, col);	
+	gdispDrawString(x0, y0, data, gwinGetDefaultFont(), col);	
 	//gdispCloseFont(font);
     return mp_const_none;
 }
@@ -621,17 +615,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_ugfx_get_pixel_obj, pyb_ugfx_get_pixel);
 
 /// \method set_default_font()
 ///
-/// Sets the default font used by widgets
+/// Sets the default font used by widgets.
+/// Note, it is only necessary to use a font object if font scaling is used, since
+///  in this case memory will need to be cleared once the scaled font is no longer required 
 ///
 STATIC mp_obj_t pyb_ugfx_set_default_font(mp_obj_t self_in, mp_obj_t font_obj) {
 	pyb_ugfx_font_obj_t *fo = font_obj; 
 	if (MP_OBJ_IS_TYPE(font_obj, &pyb_ugfx_font_type)){
 		gwinSetDefaultFont(fo->font);
-		default_font = &(fo->font);
 	}else if (MP_OBJ_IS_STR(font_obj)){
 		const char *file = mp_obj_str_get_str(font_obj);
-		fhandle =  gdispOpenFont(file);
-		default_font = &fhandle;
+		gwinSetDefaultFont(gdispOpenFont(file));
 	}
 
     return mp_const_none;
