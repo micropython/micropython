@@ -31,9 +31,6 @@ Wrapper to setup HSPI/SPI GPIO pins and default SPI clock
 Not used in Micropython.
 */
 void spi_init(uint8_t spi_no) {
-    if (spi_no > 1) {
-        return; // Only SPI and HSPI are valid spi modules.
-    }
     spi_init_gpio(spi_no, SPI_CLK_USE_DIV);
     spi_clock(spi_no, SPI_CLK_PREDIV, SPI_CLK_CNTDIV);
     spi_tx_byte_order(spi_no, SPI_BYTE_ORDER_HIGH_TO_LOW);
@@ -85,14 +82,14 @@ void spi_init_gpio(uint8_t spi_no, uint8_t sysclk_as_spiclk) {
     if (sysclk_as_spiclk) {
         clock_div_flag = 0x0001;
     }
-    if (spi_no==SPI) {
+    if (spi_no == SPI) {
         // Set bit 8 if 80MHz sysclock required
         WRITE_PERI_REG(PERIPHS_IO_MUX, 0x005 | (clock_div_flag<<8));
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_CLK_U, 1);
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_CMD_U, 1);
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA0_U, 1);
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_SD_DATA1_U, 1);
-    } else if (spi_no==HSPI) {
+    } else if (spi_no == HSPI) {
         // Set bit 9 if 80MHz sysclock required
         WRITE_PERI_REG(PERIPHS_IO_MUX, 0x105 | (clock_div_flag<<9));
         // GPIO12 is HSPI MISO pin (Master Data In)
@@ -116,10 +113,7 @@ Set up the control registers for the SPI clock
 Set either divider to 0 to disable all division (80MHz sysclock)
 */
 void spi_clock(uint8_t spi_no, uint16_t prediv, uint8_t cntdiv) {
-    if (spi_no > 1) {
-        return;
-    }
-    if ((prediv==0)|(cntdiv==0)) {
+    if (prediv == 0 || cntdiv == 0) {
         WRITE_PERI_REG(SPI_CLOCK(spi_no), SPI_CLK_EQU_SYSCLK);
     } else {
         WRITE_PERI_REG(SPI_CLOCK(spi_no),
@@ -129,14 +123,6 @@ void spi_clock(uint8_t spi_no, uint16_t prediv, uint8_t cntdiv) {
            ((0 & SPI_CLKCNT_L) << SPI_CLKCNT_L_S)
         );
     }
-
-    /*
- 	WRITE_PERI_REG(SPI_CLOCK(spi_no),
-            ((clock_div&SPI_CLKDIV_PRE)<<SPI_CLKDIV_PRE_S)|
-            ((1&SPI_CLKCNT_N)<<SPI_CLKCNT_N_S)|
-            ((0&SPI_CLKCNT_H)<<SPI_CLKCNT_H_S)|
-            ((1&SPI_CLKCNT_L)<<SPI_CLKCNT_L_S))
-    */
 }
 
 
@@ -153,9 +139,6 @@ Setup the byte order for shifting data out of buffer
             BYTE, from MSB to LSB 0xABCDEFGH would be sent as 0xGHEFCDAB.
 */
 void spi_tx_byte_order(uint8_t spi_no, uint8_t byte_order) {
-    if (spi_no > 1) {
-        return;
-    }
     if (byte_order) {
         SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_WR_BYTE_ORDER);
     } else {
@@ -177,9 +160,6 @@ Setup the byte order for shifting data into buffer
             BYTE, from MSB to LSB 0xABCDEFGH would be read as 0xGHEFCDAB
 */
 void spi_rx_byte_order(uint8_t spi_no, uint8_t byte_order) {
-    if (spi_no > 1) {
-        return;
-    }
     if (byte_order) {
         SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_RD_BYTE_ORDER);
     } else {
@@ -208,9 +188,6 @@ uint32_t spi_transaction(uint8_t spi_no, uint8_t cmd_bits, uint16_t cmd_data,
                          uint32_t addr_bits, uint32_t addr_data,
                          uint32_t dout_bits, uint32_t dout_data,
                          uint32_t din_bits, uint32_t dummy_bits) {
-    if (spi_no > 1) {
-        return 0;  // Check for a valid SPI
-    }
     while (spi_busy(spi_no)) {};  // Wait for SPI to be ready
 
 // Enable SPI Functions
@@ -320,9 +297,6 @@ uint32_t spi_transaction(uint8_t spi_no, uint8_t cmd_bits, uint16_t cmd_data,
 Just do minimal work needed to send 8 bits.
 */
 inline void spi_tx8fast(uint8_t spi_no, uint8_t dout_data) {
-    if (spi_no > 1) {
-        return;  // Check for a valid SPI
-    }
     while (spi_busy(spi_no)) {};  // Wait for SPI to be ready
 
 // Enable SPI Functions
