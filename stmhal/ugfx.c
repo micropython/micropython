@@ -59,7 +59,7 @@
 ///     lcd.write('Hello world!\n',10,10)     # print text to the screen
 ///
 
-font_t ui2;
+font_t fhandle;
 font_t *default_font;
 
 GWidgetInit	wi;
@@ -107,8 +107,8 @@ STATIC mp_obj_t pyb_ugfx_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     ugfx->base.type = &pyb_ugfx_type;
 
 
-	ui2 = gdispOpenFont("ui2");  //TODO: allow to be changed
-	default_font = &ui2;
+	fhandle = gdispOpenFont("ui2");
+	default_font = &fhandle;
 	//gdispCloseFont(font);
 
         gwinSetDefaultFont(*default_font);
@@ -628,6 +628,10 @@ STATIC mp_obj_t pyb_ugfx_set_default_font(mp_obj_t self_in, mp_obj_t font_obj) {
 	if (MP_OBJ_IS_TYPE(font_obj, &pyb_ugfx_font_type)){
 		gwinSetDefaultFont(fo->font);
 		default_font = &(fo->font);
+	}else if (MP_OBJ_IS_STR(font_obj)){
+		const char *file = mp_obj_str_get_str(font_obj);
+		fhandle =  gdispOpenFont(file);
+		default_font = &fhandle;
 	}
 
     return mp_const_none;
