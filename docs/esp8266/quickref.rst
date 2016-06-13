@@ -194,8 +194,9 @@ Hardware SPI
 ------------
 
 The hardware SPI is faster (up to 80Mhz), but only works on following pins:
-``MISO``=12, ``MOSI``=13, ``SCK``=14. It has the same methods as SPI, except
-for the pin parameters for the constructor and init.
+``MISO`` is gpio2, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
+methods as SPI, except for the pin parameters for the constructor and init
+(as those are fixed).
 
     from machine import Pin, HSPI
 
