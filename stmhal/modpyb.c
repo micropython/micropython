@@ -230,6 +230,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&pyb_ugfx_button_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&pyb_ugfx_container_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Font), (mp_obj_t)&pyb_ugfx_font_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_List), (mp_obj_t)&pyb_ugfx_list_type },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_Checkbox), (mp_obj_t)&ugfx_checkbox_type },
 #endif
 };

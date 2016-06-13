@@ -635,6 +635,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_default_font_obj, pyb_ugfx_set_def
 
 
 
+/// \method html_color()
+///
+/// Converts a 0xRRGGBB into ugfx colour format
+///
+/// this doesnt actually work currently, the function probably isnt defined properly
+///  as a staticmethod function
+STATIC mp_obj_t pyb_ugfx_html_color(mp_obj_t rgb) {
+	int rgb_ = mp_obj_get_int(rgb);
+    return mp_obj_new_int(HTML2COLOR(rgb_));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_html_color_obj, pyb_ugfx_html_color);
+
+
+
+
 STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&pyb_ugfx_text_obj },
@@ -653,6 +668,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&pyb_ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&pyb_ugfx_get_pixel_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&pyb_ugfx_set_default_font_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_html_color), (mp_obj_t)&pyb_ugfx_html_color_obj },
 	
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
