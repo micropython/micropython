@@ -633,6 +633,19 @@ STATIC mp_obj_t pyb_ugfx_set_default_font(mp_obj_t self_in, mp_obj_t font_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_default_font_obj, pyb_ugfx_set_default_font);
 
 
+/// \method set_default_style()
+///
+/// Sets the default style used by widgets.
+///
+STATIC mp_obj_t pyb_ugfx_set_default_style(mp_obj_t self_in, mp_obj_t style_obj) {
+	pyb_ugfx_style_obj_t *st = style_obj; 
+	if (MP_OBJ_IS_TYPE(style_obj, &pyb_ugfx_style_type))
+		gwinSetDefaultStyle(&(st->style),FALSE);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_default_style_obj, pyb_ugfx_set_default_style);
+
+
 
 
 /// \method html_color()
@@ -668,6 +681,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&pyb_ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&pyb_ugfx_get_pixel_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&pyb_ugfx_set_default_font_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_style), (mp_obj_t)&pyb_ugfx_set_default_style_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_html_color), (mp_obj_t)&pyb_ugfx_html_color_obj },
 	
 	//class constants
