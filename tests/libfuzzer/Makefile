@@ -80,9 +80,15 @@ prepare:
 	echo -e "\xf0\x9f\x92\xa9" > ./manual_tests/poo.py
 	echo "print('Hello World!')" > ./manual_tests/hello_world.py
 	echo "import math\n1 + 1 == 3" > ./manual_tests/math.py
-	# maybe also use existing tests as seed here?
-	# some do crash though...
+	
+	# use existing tests as seed
 	find ../../tests -name \*.py -exec cp {} ./tests/ \;
+	# some do crash though...
+	# manually remove them until the fuzzer is improved
+	rm ./tests/rge_sm.py
+	rm ./tests/memoryerror.py
+	rm ./tests/run-tests-exp.py
+
 
 run:
 	# max. 3 seconds for one input
@@ -92,11 +98,8 @@ run:
 	# only generate ascii files
 	# write "artifacts" aka crashes to the ./crashes directory
 	# disable stdout for fuzzers, as it will only spam the console/logs (especially once they discover multiplication on strings...)
-	# load test cases from ./corpus and ./manual_tests
-	./python_fuzzer -timeout=3 -report_slow_units=2 -use_traces=1 -jobs=2048 -only_ascii=1 -artifact_prefix=./crashes/ -close_fd_mask=1 ./corpus/ ./manual_tests/
-
-	# for later...
-	#./python_fuzzer -timeout=3 -report_slow_units=1 -use_traces=1 -jobs=128 -only_ascii=1 -artifact_prefix=./crashes/ -close_fd_mask=1 ./corpus/ ./manual_tests/ ./tests/
+	# load test cases from ./corpus, ./tests and ./manual_tests
+	./python_fuzzer -timeout=3 -report_slow_units=1 -use_traces=1 -jobs=128 -only_ascii=1 -artifact_prefix=./crashes/ -close_fd_mask=1 ./corpus/ ./manual_tests/ ./tests/
 
 coverage:
 	mkdir -p cov/
@@ -110,8 +113,7 @@ consolidate:
 	mv ./corpus ./corpus_old
 	mkdir -p ./corpus
 	# merges all relevant tests (using higher timeouts to catch relatively slow ones too) into the first folder
-	./python_fuzzer -timeout=10 -report_slow_units=5 -artifact_prefix=./crashes/ -close_fd_mask=1 -runs=0 -merge=1 ./corpus/ ./corpus_old/ ./manual_tests/
-	#./python_fuzzer -timeout=10 -report_slow_units=5 -artifact_prefix=./crashes/ -close_fd_mask=1 -runs=0 -merge=1 ./corpus/ ./corpus_old/ ./manual_tests/ ./tests/
+	./python_fuzzer -timeout=10 -report_slow_units=5 -artifact_prefix=./crashes/ -close_fd_mask=1 -runs=0 -merge=1 ./corpus/ ./corpus_old/ ./manual_tests/ ./tests/
 	rm -rf ./corpus_old
 
 clean:

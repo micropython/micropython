@@ -21,6 +21,7 @@ extern "C" {
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/obj.h"
 #include "lib/utils/pyexec.h"
 #include "py/stackctrl.h"
 }
@@ -44,6 +45,12 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
     #endif
 
     mp_init();
+
+    char *fakeargv[] = {"fuzzer", "foo", "bar"};
+    mp_obj_list_init((mp_obj_list_t*)MP_OBJ_TO_PTR(mp_sys_argv), 0);
+    for (int i = 0; i < 3; i++) {
+        mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(fakeargv[i])));
+    }
 
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, (const char*)data, size, 0);
 
