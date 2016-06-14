@@ -59,29 +59,31 @@ typedef struct _pyb_ugfx_button_t {
 
 } pyb_ugfx_button_obj_t;
 
-/// \classmethod \constructor(parent, x, y, a, b, text, style)
+/// \classmethod \constructor(x, y, a, b, text, {parent})
 ///
 /// Construct an Button object.
 STATIC mp_obj_t pyb_ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 7, 7, false);
+    mp_arg_check_num(n_args, n_kw, 5, 6, false);
 
 	
-    const char *text = mp_obj_str_get_str(args[5]);
-	int x = mp_obj_get_int(args[1]);
-	int y = mp_obj_get_int(args[2]);
-	int a = mp_obj_get_int(args[3]);
-	int b = mp_obj_get_int(args[4]);
+    const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
 	
 	GHandle parent = NULL;
 
-	pyb_ugfx_container_obj_t *container = args[0];
+	if (n_args > 5){
+		pyb_ugfx_container_obj_t *container = args[5];
 
-	if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_type)) {
-		parent = NULL; //(default anyway)
-	}
-	else if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_container_type)) {
-		parent = container->ghContainer;
+		if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_type)) {
+			parent = NULL; //(default anyway)
+		}
+		else if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_container_type)) {
+			parent = container->ghContainer;
+		}
 	}
 
     // create button object
@@ -178,29 +180,31 @@ typedef struct _pyb_ugfx_list_t {
 
 } pyb_ugfx_list_obj_t;
 
-/// \classmethod \constructor(parent, x, y, a, b, text, style)
+/// \classmethod \constructor(x, y, a, b, text, {parent})
 ///
 /// Construct an List object.
 STATIC mp_obj_t pyb_ugfx_list_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 7, 7, false);
+    mp_arg_check_num(n_args, n_kw, 5, 6, false);
 
 	
-    const char *text = mp_obj_str_get_str(args[5]);
-	int x = mp_obj_get_int(args[1]);
-	int y = mp_obj_get_int(args[2]);
-	int a = mp_obj_get_int(args[3]);
-	int b = mp_obj_get_int(args[4]);
+    const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
 	
 	GHandle parent = NULL;
+	
+	if (n_args > 5){
+		pyb_ugfx_container_obj_t *container = args[5];
 
-	pyb_ugfx_container_obj_t *container = args[0];
-
-	if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_type)) {
-		parent = NULL; //(default anyway)
-	}
-	else if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_container_type)) {
-		parent = container->ghContainer;
+		if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_type)) {
+			parent = NULL; //(default anyway)
+		}
+		else if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_container_type)) {
+			parent = container->ghContainer;
+		}
 	}
 
     // create list object

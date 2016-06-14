@@ -59,19 +59,19 @@
 //
 //} pyb_ugfx_container_obj_t;
 
-/// \classmethod \constructor(parent, x, y, a, b, text, style)
+/// \classmethod \constructor(x, y, a, b, text, {parent})
 ///
-/// Construct an Container object.
+/// Construct an Container object. Need to call .show() after creation
 STATIC mp_obj_t pyb_ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 7, 8, false);
+    mp_arg_check_num(n_args, n_kw, 5, 5, false);
 
 
-    const char *text = mp_obj_str_get_str(args[5]);
-	int x = mp_obj_get_int(args[1]);
-	int y = mp_obj_get_int(args[2]);
+    const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
 	int a = mp_obj_get_int(args[3]);
-	int b = mp_obj_get_int(args[4]);
+	int b = mp_obj_get_int(args[3]);
 
     // create container object
     pyb_ugfx_container_obj_t *ctr = m_new_obj(pyb_ugfx_container_obj_t);
@@ -84,14 +84,7 @@ STATIC mp_obj_t pyb_ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
 
-	if (n_args == 8){
-		if (mp_obj_get_int(args[7]) > 0)
-			wi.g.show = TRUE;
-		else
-			wi.g.show = FALSE;
-	}
-	else
-		wi.g.show = TRUE;
+	wi.g.show = FALSE;
  
 	// Apply the container parameters	
 	wi.g.width = a;
