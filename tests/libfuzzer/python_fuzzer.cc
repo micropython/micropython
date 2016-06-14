@@ -63,12 +63,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
         nlr_pop();
     } else {
         // uncaught exception
-        //mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-        mp_deinit();
-        #if MICROPY_ENABLE_GC && !defined(NDEBUG)
-        free(heap);
-        #endif
-        return 0;
+        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
     mp_deinit();
     #if MICROPY_ENABLE_GC && !defined(NDEBUG)

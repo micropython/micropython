@@ -4,6 +4,7 @@ all:
 	@echo
 	@echo '  make build    -  build micropython unix port with libfuzzer instrumentation'
 	@echo '  make prepare  -  generate test cases and set up folders for the fuzzer'
+	@echo '  make consolidate  -  run all imported and generated tests cases, keep relevant ones'
 	@echo '  make run      -  run the fuzzer'
 	@echo
 	@echo 'Run "make clean" to really clean up - this also deletes the test cases and crashes!'
@@ -89,7 +90,6 @@ prepare:
 	rm ./tests/memoryerror.py
 	rm ./tests/run-tests-exp.py
 
-
 run:
 	# max. 3 seconds for one input
 	# consider it "slow" if it takes more than 2 seconds
@@ -98,8 +98,8 @@ run:
 	# only generate ascii files
 	# write "artifacts" aka crashes to the ./crashes directory
 	# disable stdout for fuzzers, as it will only spam the console/logs (especially once they discover multiplication on strings...)
-	# load test cases from ./corpus, ./tests and ./manual_tests
-	./python_fuzzer -timeout=3 -report_slow_units=1 -use_traces=1 -jobs=128 -only_ascii=1 -artifact_prefix=./crashes/ -close_fd_mask=1 ./corpus/ ./manual_tests/ ./tests/
+	# load test cases from ./corpus and ./manual_tests - if you want to include ./tests, just run "make consolidate"
+	./python_fuzzer -timeout=3 -report_slow_units=2 -use_traces=1 -jobs=128 -only_ascii=1 -artifact_prefix=./crashes/ -close_fd_mask=1 ./corpus/ ./manual_tests/
 
 coverage:
 	mkdir -p cov/
@@ -112,8 +112,8 @@ coverage:
 consolidate:
 	mv ./corpus ./corpus_old
 	mkdir -p ./corpus
-	# merges all relevant tests (using higher timeouts to catch relatively slow ones too) into the first folder
-	./python_fuzzer -timeout=10 -report_slow_units=5 -artifact_prefix=./crashes/ -close_fd_mask=1 -runs=0 -merge=1 ./corpus/ ./corpus_old/ ./manual_tests/ ./tests/
+	# merges all relevant tests into the first folder
+	./python_fuzzer -timeout=3 -report_slow_units=2 -use_traces=1 -artifact_prefix=./crashes/ -close_fd_mask=1 -runs=0 -merge=1 ./corpus/ ./corpus_old/ ./manual_tests/ ./tests/
 	rm -rf ./corpus_old
 
 clean:
