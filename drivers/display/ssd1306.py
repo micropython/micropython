@@ -25,8 +25,8 @@ SET_CHARGE_PUMP     = const(0x8d)
 
 
 class SSD1306:
-    def __init__(self, height, external_vcc):
-        self.width = 128
+    def __init__(self, width, height, external_vcc):
+        self.width = width
         self.height = height
         self.external_vcc = external_vcc
         self.pages = self.height // 8
@@ -73,9 +73,15 @@ class SSD1306:
         self.write_cmd(SET_NORM_INV | (invert & 1))
 
     def show(self):
+        x0 = 0
+        x1 = self.width - 1
+        if self.width == 64:
+            # displays with width of 64 pixels are shifted by 32
+            x0 += 32
+            x1 += 32
         self.write_cmd(SET_COL_ADDR)
-        self.write_cmd(0)
-        self.write_cmd(self.width - 1)
+        self.write_cmd(x0)
+        self.write_cmd(x1)
         self.write_cmd(SET_PAGE_ADDR)
         self.write_cmd(0)
         self.write_cmd(self.pages - 1)
@@ -95,11 +101,11 @@ class SSD1306:
 
 
 class SSD1306_I2C(SSD1306):
-    def __init__(self, height, i2c, addr=0x3c, external_vcc=False):
+    def __init__(self, width, height, i2c, addr=0x3c, external_vcc=False):
         self.i2c = i2c
         self.addr = addr
         self.temp = bytearray(2)
-        super().__init__(height, external_vcc)
+        super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
         self.temp[0] = 0x80 # Co=1, D/C#=0
@@ -119,7 +125,7 @@ class SSD1306_I2C(SSD1306):
 
 
 class SSD1306_SPI(SSD1306):
-    def __init__(self, height, spi, dc, res, cs, external_vcc=False):
+    def __init__(self, width, height, spi, dc, res, cs, external_vcc=False):
         self.rate = 10 * 1024 * 1024
         dc.init(dc.OUT, value=0)
         res.init(res.OUT, value=0)
@@ -128,7 +134,7 @@ class SSD1306_SPI(SSD1306):
         self.dc = dc
         self.res = res
         self.cs = cs
-        super().__init__(height, external_vcc)
+        super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
         self.spi.init(baudrate=self.rate, polarity=0, phase=0)
