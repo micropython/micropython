@@ -9,6 +9,9 @@ MICROPY_FORCE_32BIT = 0
 #  2 - use GNU readline (causes binary to be licensed under GPL)
 MICROPY_USE_READLINE = 1
 
+# Whether to enable FatFs VFS
+MICROPY_FATFS = 1
+
 # Subset of CPython time module
 MICROPY_PY_TIME = 1
 
