@@ -92,8 +92,13 @@ STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     key.data = (void*)mp_obj_str_get_data(args[1], &key.size);
     int res = __bt_get(self->db, &key, &val, 0);
     if (res == RET_SPECIAL) {
-        return mp_const_none;
+        if (n_args > 2) {
+            return args[2];
+        } else {
+            return mp_const_none;
+        }
     }
+    CHECK_ERROR(res);
     return mp_obj_new_bytes(val.data, val.size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_get_obj, 2, 3, btree_get);
