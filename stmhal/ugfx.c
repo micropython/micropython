@@ -648,7 +648,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_default_style_obj, pyb_ugfx_set_de
 
 
 
-/// \method html_color()
+/// \method html_color(rgb)
 ///
 /// Converts a 0xRRGGBB into ugfx colour format
 ///
@@ -659,6 +659,41 @@ STATIC mp_obj_t pyb_ugfx_html_color(mp_obj_t rgb) {
     return mp_obj_new_int(HTML2COLOR(rgb_));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_html_color_obj, pyb_ugfx_html_color);
+
+
+/// \method print_fonts()
+///
+/// Prints the list of installed fonts
+///
+STATIC mp_obj_t pyb_ugfx_print_fonts(void) {
+	//TODO: THIS
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_ugfx_print_fonts_obj, pyb_ugfx_print_fonts);
+
+
+/// \method send_tab()
+///
+/// Sends a 'tab' signal to cycle through focus.
+///
+STATIC mp_obj_t pyb_ugfx_send_tab(mp_obj_t self_in) {
+	
+	GSourceListener	*psl=0;
+	GEventKeyboard	*pe;
+	
+	while ((psl = geventGetSourceListener(ginputGetKeyboard(GKEYBOARD_ALL_INSTANCES), psl))){
+		pe = (GEventKeyboard *)geventGetEventBuffer(psl);
+		
+		
+		pe->type = GEVENT_KEYBOARD;
+		pe->bytecount = 1;
+		pe->c[0] = GKEY_TAB;
+		geventSendEvent(psl);
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_send_tab_obj, pyb_ugfx_send_tab);
 
 
 
@@ -683,6 +718,8 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&pyb_ugfx_set_default_font_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_style), (mp_obj_t)&pyb_ugfx_set_default_style_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_html_color), (mp_obj_t)&pyb_ugfx_html_color_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_print_fonts), (mp_obj_t)&pyb_ugfx_print_fonts_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send_tab), (mp_obj_t)&pyb_ugfx_send_tab_obj },
 	
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
