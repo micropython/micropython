@@ -93,7 +93,7 @@ const qstr_pool_t mp_qstr_const_pool = {
     10,                 // set so that the first dynamically allocated pool is twice this size; must be <= the len (just below)
     MP_QSTRnumber_of,   // corresponds to number of strings in array just below
     {
-#ifndef __QSTR_EXTRACT
+#ifndef NO_QSTR
 #define QDEF(id, str) str,
 #include "genhdr/qstrdefs.generated.h"
 #undef QDEF
