@@ -115,9 +115,6 @@ ifndef DEBUG
 endif
 	$(Q)$(SIZE) $(PROG)
 
-lib: $(OBJ)
-	$(AR) rcs libmicropython.a $^
-
 clean: clean-prog
 clean-prog:
 	$(RM) -f $(PROG)
@@ -125,6 +122,9 @@ clean-prog:
 
 .PHONY: clean-prog
 endif
+
+lib: $(OBJ)
+	$(AR) rcs libmicropython.a $^
 
 clean:
 	$(RM) -rf $(BUILD)
