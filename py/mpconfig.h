@@ -1031,6 +1031,11 @@ typedef double mp_float_t;
 #define MP_WEAK __attribute__((weak))
 #endif
 
+// Modifier for functions which should be never inlined
+#ifndef MP_NOINLINE
+#define MP_NOINLINE __attribute__((noinline))
+#endif
+
 // Condition is likely to be true, to help branch prediction
 #ifndef MP_LIKELY
 #define MP_LIKELY(x) __builtin_expect((x), 1)
