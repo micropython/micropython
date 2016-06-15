@@ -304,6 +304,131 @@ const mp_obj_type_t pyb_ugfx_list_type = {
 
 
 
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+/////////////////      KEYBOARD    //////////////////
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+typedef struct _pyb_ugfx_keyboard_t {
+    mp_obj_base_t base;
+	
+	GHandle ghKeyboard;
+
+} pyb_ugfx_keyboard_obj_t;
+
+/// \classmethod \constructor(x, y, a, b, text, {parent})
+///
+/// Construct an Keyboard object.
+STATIC mp_obj_t pyb_ugfx_keyboard_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 5, 6, false);
+
+	
+    const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
+	
+	GHandle parent = NULL;
+
+	if (n_args > 5){
+		pyb_ugfx_container_obj_t *container = args[5];
+
+		if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_type)) {
+			parent = NULL; //(default anyway)
+		}
+		else if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_container_type)) {
+			parent = container->ghContainer;
+		}
+	}
+
+    // create keyboard object
+    pyb_ugfx_keyboard_obj_t *kbd = m_new_obj(pyb_ugfx_keyboard_obj_t);
+    kbd->base.type = &pyb_ugfx_keyboard_type;
+	
+	
+	//setup button options
+	GWidgetInit	wi;
+
+	// Apply some default values for GWIN
+	gwinWidgetClearInit(&wi);
+	wi.g.show = TRUE;
+
+	// Apply the button parameters	
+	wi.g.width = a;
+	wi.g.height = b;
+	wi.g.y = y;
+	wi.g.x = x;
+	wi.g.parent = parent;
+	wi.text = text;
+
+	// Create the actual button
+	kbd->ghKeyboard = gwinKeyboardCreate(NULL, &wi);
+
+
+	return kbd;
+}
+
+/// \method destroy()
+///
+/// frees up all resources
+STATIC mp_obj_t pyb_ugfx_keyboard_destroy(mp_obj_t self_in) {
+    pyb_ugfx_keyboard_obj_t *self = self_in;
+    
+	gwinDestroy(self->ghKeyboard);
+	
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_keyboard_destroy_obj, pyb_ugfx_keyboard_destroy);
+
+
+
+/// \method attach_input(input, function)
+///
+STATIC mp_obj_t pyb_ugfx_keyboard_attach_input(mp_obj_t self_in, mp_obj_t input, mp_obj_t function) {
+    pyb_ugfx_keyboard_obj_t *self = self_in;
+    int fun = mp_obj_get_int(function);	
+	int i = mp_obj_get_int(input);
+	
+	gwinAttachToggle(self->ghKeyboard,fun,i);
+	
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_ugfx_keyboard_attach_input_obj, pyb_ugfx_keyboard_attach_input);
+
+
+
+STATIC const mp_map_elem_t pyb_ugfx_keyboard_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&pyb_ugfx_keyboard_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&pyb_ugfx_keyboard_attach_input_obj },
+
+	//class constants
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(pyb_ugfx_keyboard_locals_dict, pyb_ugfx_keyboard_locals_dict_table);
+
+const mp_obj_type_t pyb_ugfx_keyboard_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Keyboard,
+    .make_new = pyb_ugfx_keyboard_make_new,
+    .locals_dict = (mp_obj_t)&pyb_ugfx_keyboard_locals_dict,
+};
+
+
+
+
+
+
+
+
+
 /*
 
 /////////////////////////////////////////////////////

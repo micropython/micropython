@@ -102,7 +102,7 @@
 //    #define GDISP_INCLUDE_FONT_DEJAVUSANS24_AA       FALSE
 //    #define GDISP_INCLUDE_FONT_DEJAVUSANS32_AA       FALSE
 //    #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12_AA   FALSE
-//    #define GDISP_INCLUDE_USER_FONTS                 FALSE
+    #define GDISP_INCLUDE_USER_FONTS                 TRUE
 
 //#define GDISP_NEED_IMAGE                             FALSE
 //    #define GDISP_NEED_IMAGE_NATIVE                  FALSE
@@ -210,7 +210,7 @@
 //        #define GWIN_NEED_LIST_IMAGES                TRUE
 //    #define GWIN_NEED_PROGRESSBAR                    TRUE
 //        #define GWIN_PROGRESSBAR_AUTO                TRUE
-//    #define GWIN_NEED_KEYBOARD                       TRUE
+    #define GWIN_NEED_KEYBOARD                       TRUE
 //        #define GWIN_KEYBOARD_DEFAULT_LAYOUT         VirtualKeyboard_English1
 //        #define GWIN_NEED_KEYBOARD_ENGLISH1          TRUE
 //    #define GWIN_NEED_TEXTEDIT                       TRUE
@@ -275,7 +275,7 @@
 //    #define GINPUT_TOUCH_USER_CALIBRATION_LOAD       FALSE
 //    #define GINPUT_TOUCH_USER_CALIBRATION_SAVE       FALSE
 //    #define GMOUSE_DRIVER_LIST                       GMOUSEVMT_Win32, GMOUSEVMT_Win32
-//#define GINPUT_NEED_KEYBOARD                         FALSE
+//#define GINPUT_NEED_KEYBOARD                         TRUE
 //    #define GINPUT_KEYBOARD_POLL_PERIOD              200
 //    #define GKEYBOARD_DRIVER_LIST                    GKEYBOARDVMT_Win32, GKEYBOARDVMT_Win32
 //    #define GKEYBOARD_LAYOUT_OFF                     FALSE
