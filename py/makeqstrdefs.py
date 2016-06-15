@@ -30,7 +30,7 @@ def process_file(f):
             m = re.match(r"#[line]*\s\d+\s\"([^\"]+)\"", line)
             assert m is not None
             fname = m.group(1)
-            if fname[0] == "/" or not fname.endswith(".c"):
+            if not fname.endswith(".c"):
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
