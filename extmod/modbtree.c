@@ -153,6 +153,16 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     }
     CHECK_ERROR(res);
 
+    if (self->end_key != mp_const_none) {
+        DBT end_key;
+        end_key.data = (void*)mp_obj_str_get_data(self->end_key, &end_key.size);
+        BTREE *t = self->db->internal;
+        if (t->bt_cmp(&key, &end_key) >= 0) {
+            self->end_key = MP_OBJ_NULL;
+            return MP_OBJ_STOP_ITERATION;
+        }
+    }
+
     mp_obj_tuple_t *pair = mp_obj_new_tuple(2, NULL);
     pair->items[0] = mp_obj_new_bytes(key.data, key.size);
     pair->items[1] = mp_obj_new_bytes(val.data, val.size);
