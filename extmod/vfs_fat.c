@@ -186,7 +186,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     if (path_equal(path, "/")) {
         // stat root directory
         fno.fsize = 0;
-        fno.fdate = 0;
+        fno.fdate = 0x2821; // Jan 1, 2000
         fno.ftime = 0;
         fno.fattrib = AM_DIR;
     } else {
@@ -196,7 +196,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
             if (vfs != NULL && path_equal(path, vfs->str)) {
                 // stat mounted device directory
                 fno.fsize = 0;
-                fno.fdate = 0;
+                fno.fdate = 0x2821; // Jan 1, 2000
                 fno.ftime = 0;
                 fno.fattrib = AM_DIR;
                 res = FR_OK;
