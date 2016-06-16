@@ -132,6 +132,33 @@ STATIC mp_obj_t btree_range(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_range_obj, 3, 4, btree_range);
 
+STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
+    mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    DBT key, val;
+    int res;
+    if (self->start_key != MP_OBJ_NULL) {
+        int flags = R_FIRST;
+        if (self->start_key != mp_const_none) {
+            key.data = (void*)mp_obj_str_get_data(self->start_key, &key.size);
+            flags = R_CURSOR;
+        }
+        res = __bt_seq(self->db, &key, &val, flags);
+        self->start_key = MP_OBJ_NULL;
+    } else {
+        res = __bt_seq(self->db, &key, &val, R_NEXT);
+    }
+
+    if (res == RET_SPECIAL) {
+        return MP_OBJ_STOP_ITERATION;
+    }
+    CHECK_ERROR(res);
+
+    mp_obj_tuple_t *pair = mp_obj_new_tuple(2, NULL);
+    pair->items[0] = mp_obj_new_bytes(key.data, key.size);
+    pair->items[1] = mp_obj_new_bytes(val.data, val.size);
+    return pair;
+}
+
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     if (value == MP_OBJ_NULL) {
@@ -170,7 +197,7 @@ STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&btree_put_obj) },
     { MP_ROM_QSTR(MP_QSTR_seq), MP_ROM_PTR(&btree_seq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_range), MP_ROM_PTR(&btree_range_obj) },
+    { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&btree_range_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
@@ -180,8 +207,8 @@ STATIC const mp_obj_type_t btree_type = {
     // Save on qstr's, reuse same as for module
     .name = MP_QSTR_btree,
     .print = btree_print,
-    .getiter = NULL,
-    .iternext = NULL,
+    .getiter = mp_identity,
+    .iternext = btree_iternext,
     .subscr = btree_subscr,
     .locals_dict = (void*)&btree_locals_dict,
 };
