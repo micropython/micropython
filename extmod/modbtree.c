@@ -244,7 +244,10 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    const char *fname = mp_obj_str_get_str(pos_args[0]);
+    const char *fname = NULL;
+    if (pos_args[0] != mp_const_none) {
+        fname = mp_obj_str_get_str(pos_args[0]);
+    }
 
     struct {
         mp_arg_val_t server_side;
