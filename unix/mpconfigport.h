@@ -234,6 +234,11 @@ void mp_unix_free_exec(void *ptr, mp_uint_t size);
 void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
+#ifndef MICROPY_FORCE_PLAT_ALLOC_EXEC
+// Use MP_PLAT_ALLOC_EXEC for any executable memory allocation, including for FFI
+// (overriding libffi own implementation)
+#define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
+#endif
 
 #if MICROPY_PY_OS_DUPTERM
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
