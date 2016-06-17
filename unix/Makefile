@@ -156,12 +156,11 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	)
 
-ifeq ($(MICROPY_FATFS),1)
+# FatFS VFS support
 LIB_SRC_C += $(addprefix lib/,\
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
 	)
-endif
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
