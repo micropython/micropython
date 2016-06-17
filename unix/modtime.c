@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_PY_UTIME
+
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -190,3 +193,5 @@ const mp_obj_module_t mp_module_time = {
     .name = MP_QSTR_utime,
     .globals = (mp_obj_dict_t*)&mp_module_time_globals,
 };
+
+#endif // MICROPY_PY_UTIME

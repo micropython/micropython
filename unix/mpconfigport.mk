@@ -11,9 +11,6 @@ MICROPY_USE_READLINE = 1
 # Whether to enable FatFs VFS
 MICROPY_FATFS = 1
 
-# Subset of CPython time module
-MICROPY_PY_TIME = 1
-
 # Subset of CPython termios module
 MICROPY_PY_TERMIOS = 1
 

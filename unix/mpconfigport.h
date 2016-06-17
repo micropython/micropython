@@ -103,6 +103,7 @@
 #define MICROPY_STACKLESS_STRICT    (0)
 
 #define MICROPY_PY_OS_STATVFS       (1)
+#define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)
@@ -170,10 +171,10 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #else
 #define MICROPY_PY_JNI_DEF
 #endif
-#if MICROPY_PY_TIME
-#define MICROPY_PY_TIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
+#if MICROPY_PY_UTIME
+#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
 #else
-#define MICROPY_PY_TIME_DEF
+#define MICROPY_PY_UTIME_DEF
 #endif
 #if MICROPY_PY_TERMIOS
 #define MICROPY_PY_TERMIOS_DEF { MP_ROM_QSTR(MP_QSTR_termios), MP_ROM_PTR(&mp_module_termios) },
@@ -194,7 +195,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #define MICROPY_PORT_BUILTIN_MODULES \
     MICROPY_PY_FFI_DEF \
     MICROPY_PY_JNI_DEF \
-    MICROPY_PY_TIME_DEF \
+    MICROPY_PY_UTIME_DEF \
     MICROPY_PY_SOCKET_DEF \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \

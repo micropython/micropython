@@ -85,10 +85,6 @@ INC +=  -I../lib/mp-readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 LIB_SRC_C_EXTRA += mp-readline/readline.c
 endif
-ifeq ($(MICROPY_PY_TIME),1)
-CFLAGS_MOD += -DMICROPY_PY_TIME=1
-SRC_MOD += modtime.c
-endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
 CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
 SRC_MOD += modtermios.c
@@ -136,6 +132,7 @@ SRC_C = \
 	file.c \
 	modmachine.c \
 	modos.c \
+	modtime.c \
 	moduselect.c \
 	alloc.c \
 	coverage.c \
@@ -234,7 +231,7 @@ fast:
 
 # build a minimal interpreter
 minimal:
-	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' BUILD=build-minimal PROG=micropython_minimal MICROPY_PY_TIME=0 MICROPY_PY_TERMIOS=0 MICROPY_PY_SOCKET=0 MICROPY_PY_FFI=0 MICROPY_USE_READLINE=0 MICROPY_FATFS=0
+	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' BUILD=build-minimal PROG=micropython_minimal MICROPY_PY_TERMIOS=0 MICROPY_PY_SOCKET=0 MICROPY_PY_FFI=0 MICROPY_USE_READLINE=0 MICROPY_FATFS=0
 
 # build interpreter with nan-boxing as object model
 nanbox:

@@ -77,6 +77,7 @@
 #define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_UCTYPES          (0)
+#define MICROPY_PY_UTIME            (0)
 #define MICROPY_PY_UZLIB            (0)
 #define MICROPY_PY_UJSON            (0)
 #define MICROPY_PY_URE              (0)
