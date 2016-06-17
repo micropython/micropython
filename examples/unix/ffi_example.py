@@ -5,9 +5,9 @@ print("libc:", libc)
 print()
 
 # Declare few functions
-perror = libc.func("v", "perror", ["s"])
+perror = libc.func("v", "perror", "s")
 time = libc.func("i", "time", "p")
-open = libc.func("i", "open", ["s", "i"])
+open = libc.func("i", "open", "si")
 qsort = libc.func("v", "qsort", "piip")
 # And one variable
 errno = libc.var("i", "errno")
