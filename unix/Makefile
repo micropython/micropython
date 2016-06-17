@@ -297,7 +297,7 @@ libffi:
 	cd ../lib/libffi; git clean -d -x -f
 	cd ../lib/libffi; ./autogen.sh
 	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
-	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
+	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	make install-exec-recursive; make -C include install-data-am
 
 axtls: ../lib/axtls/README
