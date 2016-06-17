@@ -86,6 +86,12 @@ void mp_unix_mark_exec(void) {
 }
 
 #if MICROPY_FORCE_PLAT_ALLOC_EXEC
+// Provide implementation of libffi ffi_closure_* functions in terms
+// of the functions above. On a normal Linux system, this save a lot
+// of code size.
+void *ffi_closure_alloc(size_t size, void **code);
+void ffi_closure_free(void *ptr);
+
 void *ffi_closure_alloc(size_t size, void **code) {
     mp_uint_t dummy;
     mp_unix_alloc_exec(size, code, &dummy);
@@ -93,6 +99,7 @@ void *ffi_closure_alloc(size_t size, void **code) {
 }
 
 void ffi_closure_free(void *ptr) {
+    (void)ptr;
     // TODO
 }
 #endif
