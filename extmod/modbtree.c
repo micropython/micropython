@@ -43,7 +43,8 @@ typedef struct _mp_obj_btree_t {
     mp_obj_t start_key;
     mp_obj_t end_key;
     #define FLAG_END_KEY_INCL 1
-    bool flags;
+    #define FLAG_DESC 2
+    byte flags;
 } mp_obj_btree_t;
 
 STATIC const mp_obj_type_t btree_type;
@@ -141,16 +142,19 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     DBT key, val;
     int res;
+    bool desc = self->flags & FLAG_DESC;
     if (self->start_key != MP_OBJ_NULL) {
         int flags = R_FIRST;
         if (self->start_key != mp_const_none) {
             key.data = (void*)mp_obj_str_get_data(self->start_key, &key.size);
             flags = R_CURSOR;
+        } else if (desc) {
+            flags = R_LAST;
         }
         res = __bt_seq(self->db, &key, &val, flags);
         self->start_key = MP_OBJ_NULL;
     } else {
-        res = __bt_seq(self->db, &key, &val, R_NEXT);
+        res = __bt_seq(self->db, &key, &val, desc ? R_PREV : R_NEXT);
     }
 
     if (res == RET_SPECIAL) {
@@ -163,6 +167,9 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
         end_key.data = (void*)mp_obj_str_get_data(self->end_key, &end_key.size);
         BTREE *t = self->db->internal;
         int cmp = t->bt_cmp(&key, &end_key);
+        if (desc) {
+            cmp = -cmp;
+        }
         if (self->flags & FLAG_END_KEY_INCL) {
             cmp--;
         }
@@ -254,6 +261,7 @@ STATIC const mp_rom_map_elem_t mp_module_btree_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_btree) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_btree_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_INCL), MP_OBJ_NEW_SMALL_INT(FLAG_END_KEY_INCL) },
+    { MP_ROM_QSTR(MP_QSTR_DESC), MP_OBJ_NEW_SMALL_INT(FLAG_DESC) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_table);
