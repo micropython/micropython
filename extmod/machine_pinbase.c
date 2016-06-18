@@ -51,7 +51,7 @@ STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, size_
     (void)n_args;
     (void)n_kw;
     (void)args;
-    return MP_ROM_PTR(&pinbase_singleton);
+    return MP_OBJ_FROM_PTR(&pinbase_singleton);
 }
 
 mp_uint_t pinbase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
