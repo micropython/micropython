@@ -317,7 +317,7 @@ STATIC const mp_obj_type_t webrepl_type = {
     { &mp_type_type },
     .name = MP_QSTR__webrepl,
     .make_new = webrepl_make_new,
-    .stream_p = &webrepl_stream_p,
+    .protocol = &webrepl_stream_p,
     .locals_dict = (mp_obj_t)&webrepl_locals_dict,
 };
 

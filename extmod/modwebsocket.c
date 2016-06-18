@@ -298,7 +298,7 @@ STATIC const mp_obj_type_t websocket_type = {
     { &mp_type_type },
     .name = MP_QSTR_websocket,
     .make_new = websocket_make_new,
-    .stream_p = &websocket_stream_p,
+    .protocol = &websocket_stream_p,
     .locals_dict = (mp_obj_t)&websocket_locals_dict,
 };
 

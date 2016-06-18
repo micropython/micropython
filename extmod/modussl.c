@@ -156,7 +156,7 @@ STATIC const mp_obj_type_t ussl_socket_type = {
     .print = socket_print,
     .getiter = NULL,
     .iternext = NULL,
-    .stream_p = &ussl_socket_stream_p,
+    .protocol = &ussl_socket_stream_p,
     .locals_dict = (void*)&ussl_socket_locals_dict,
 };
 
@@ -202,7 +202,8 @@ int mp_stream_errno;
 
 ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)sock_obj;
-    mp_uint_t out_sz = o->type->stream_p->write(o, buf, len, &mp_stream_errno);
+    const mp_stream_p_t *stream_p = o->type->protocol;
+    mp_uint_t out_sz = stream_p->write(o, buf, len, &mp_stream_errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
     } else {
@@ -212,7 +213,8 @@ ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len) {
 
 ssize_t mp_stream_posix_read(void *sock_obj, void *buf, size_t len) {
     struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)sock_obj;
-    mp_uint_t out_sz = o->type->stream_p->read(o, buf, len, &mp_stream_errno);
+    const mp_stream_p_t *stream_p = o->type->protocol;
+    mp_uint_t out_sz = stream_p->read(o, buf, len, &mp_stream_errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
     } else {

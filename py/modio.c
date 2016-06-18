@@ -124,7 +124,7 @@ STATIC const mp_obj_type_t bufwriter_type = {
     { &mp_type_type },
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
-    .stream_p = &bufwriter_stream_p,
+    .protocol = &bufwriter_stream_p,
     .locals_dict = (mp_obj_t)&bufwriter_locals_dict,
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER

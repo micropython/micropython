@@ -58,10 +58,11 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
     mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
     typedef mp_uint_t (*io_func_t)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     io_func_t io_func;
+    const mp_stream_p_t *stream_p = s->type->protocol;
     if (flags & MP_STREAM_RW_WRITE) {
-        io_func = (io_func_t)s->type->stream_p->write;
+        io_func = (io_func_t)stream_p->write;
     } else {
-        io_func = s->type->stream_p->read;
+        io_func = stream_p->read;
     }
 
     *errcode = 0;
@@ -94,7 +95,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     mp_obj_base_t *o = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    const mp_stream_p_t *stream_p = o->type->stream_p;
+    const mp_stream_p_t *stream_p = o->type->protocol;
     if (stream_p == NULL
         || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
         || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)

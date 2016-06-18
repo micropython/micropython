@@ -1148,7 +1148,7 @@ STATIC const mp_obj_type_t lwip_socket_type = {
     .name = MP_QSTR_socket,
     .print = lwip_socket_print,
     .make_new = lwip_socket_make_new,
-    .stream_p = &lwip_socket_stream_p,
+    .protocol = &lwip_socket_stream_p,
     .locals_dict = (mp_obj_t)&lwip_socket_locals_dict,
 };
 
