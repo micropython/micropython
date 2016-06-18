@@ -2,6 +2,8 @@
 
 ## UGFX
 
+Tilda's screen has the dimensions of 240x320
+
 ```python
 l=pyb.UGFX()
 l.area(0,0,30,30,pyb.UGFX.RED)
@@ -14,11 +16,12 @@ l = pyb.List(0,50,100,100,"",win)
 l.add_item("hello")
 ```
 
-
 ### ```pyb.UGFX()```
-returns context
+returns lcd
 
-### ```context.area(x, y, width, height, color)```
+### ```lcd.area(x, y, width, height, color)```
+
+### ```lcd.line(x1, y1, x2, y2, color)```
 
 ### ```pyb.Button(x, y, width, height, text)```
 
