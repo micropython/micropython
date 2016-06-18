@@ -29,6 +29,8 @@
 
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/pin.h"
+#include "py/runtime.h"
 
 #include "extmod/machine_mem.h"
 
@@ -72,12 +74,46 @@ uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     return addr;
 }
 
+// PinBase class
+
+mp_uint_t pinbase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
+    switch (request) {
+        case MP_PIN_READ: {
+            mp_obj_t dest[2];
+            mp_load_method(obj, MP_QSTR_value, dest);
+            return mp_obj_get_int(mp_call_method_n_kw(0, 0, dest));
+        }
+        case MP_PIN_WRITE: {
+            mp_obj_t dest[3];
+            mp_load_method(obj, MP_QSTR_value, dest);
+            dest[2] = (arg == 0 ? mp_const_false : mp_const_true);
+            mp_call_method_n_kw(1, 0, dest);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+STATIC const mp_pin_p_t pinbase_pin_p = {
+    .ioctl = pinbase_ioctl,
+};
+
+STATIC const mp_obj_type_t pinbase_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_PinBase,
+//    .make_new = websocket_make_new,
+    .stream_p = (const mp_stream_p_t*)&pinbase_pin_p,
+//    .locals_dict = (mp_obj_t)&websocket_locals_dict,
+};
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&pinbase_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
