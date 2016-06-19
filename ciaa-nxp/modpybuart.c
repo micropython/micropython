@@ -139,12 +139,18 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 		if(self->bufferEnabled) {
 			mp_hal_rs485_setRxBuffer(self->bufferRx,size,timeout, endChar);
 		}
+        else {
+            mp_hal_rs485_resetRxBufferConfig();
+        }
 	}
 	else {
 		mp_hal_rs232_setConfig(baudrate,stopBits,parity);
 		if(self->bufferEnabled) {
 			mp_hal_rs232_setRxBuffer(self->bufferRx,size,timeout, endChar);
 		}
+        else {
+            mp_hal_rs232_resetRxBufferConfig();
+        }
 	}
 
 	return mp_const_none;

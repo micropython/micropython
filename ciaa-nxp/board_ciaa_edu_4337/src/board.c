@@ -777,6 +777,27 @@ void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,ui
     }
 }
 
+void Board_UART_resetRxBufferConfig(LPC_USART_T *pUART)
+{
+    if(pUART==LPC_USART0)
+    {
+        uart0RxBufferData.buffer = NULL;
+        uart0RxBufferData.size=0;
+        uart0RxBufferData.index=0;
+        uart0RxBufferData.flagNewPacket=0;
+        uart0RxBufferData.timeoutCounter=0;
+        NVIC_DisableIRQ(USART0_IRQn);
+    }else if(pUART==LPC_USART3)
+    {
+        uart3RxBufferData.buffer = NULL;
+        uart3RxBufferData.size=0;
+        uart3RxBufferData.index=0;
+        uart3RxBufferData.flagNewPacket=0;
+        uart3RxBufferData.timeoutCounter=0;
+        NVIC_DisableIRQ(USART3_IRQn);
+    }
+}
+
 void Board_UART_setConfig(LPC_USART_T *pUART,int32_t baud,int32_t stopBits,int32_t parity)
 {
 	Chip_UART_SetBaud(pUART, baud);

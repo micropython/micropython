@@ -336,6 +336,14 @@ uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint
  */
 void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
 
+
+/**
+ * @brief       Resets RX buffer configuration
+ * @return      void
+ */
+void Board_UART_resetRxBufferConfig(LPC_USART_T *pUART);
+
+
 /**
  * @brief       This function must be called each millisecond for uart rx timeout calculation
  * @return      void

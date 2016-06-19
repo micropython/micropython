@@ -125,6 +125,11 @@ void mp_hal_rs232_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, u
 	Board_UART_setRxBuffer(LPC_USART3,pBuffer,size,timeout,finalByte);
 }
 
+void mp_hal_rs232_resetRxBufferConfig(void)
+{
+    Board_UART_resetRxBufferConfig(LPC_USART3);
+}
+
 void mp_hal_rs232_setConfig(int32_t baud,int32_t stopBits,int32_t parity)
 {
 	Board_UART_setConfig(LPC_USART3,baud,stopBits,parity);
@@ -175,6 +180,11 @@ uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t size, uint32_
 void mp_hal_rs485_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte)
 {
         Board_UART_setRxBuffer(LPC_USART0,pBuffer,size,timeout,finalByte);
+}
+
+void mp_hal_rs485_resetRxBufferConfig(void)
+{
+    Board_UART_resetRxBufferConfig(LPC_USART0);
 }
 
 void mp_hal_rs485_setConfig(int32_t baud,int32_t stopBits,int32_t parity)
