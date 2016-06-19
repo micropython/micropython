@@ -3,6 +3,7 @@ from testing_TestLeds import TestLeds
 from testing_TestSwitches import TestSwitches
 from testing_TestUart import TestUart
 from testing_TestEEPROM import TestEEPROM
+from testing_TestDAC import TestDAC
 
 
 class MainTest (object):
@@ -27,6 +28,10 @@ class MainTest (object):
 
         print("EEPROM Tests")
         TestCase.run(TestEEPROM())
+        print("____________________")
+
+        print("DAC Tests")
+        TestCase.run(TestDAC())
         print("____________________")
 
 
