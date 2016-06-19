@@ -695,7 +695,45 @@ STATIC mp_obj_t pyb_ugfx_send_tab(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_send_tab_obj, pyb_ugfx_send_tab);
 
+/// \method stream_start(x1, y1, w, h)
+///
+/// Starts a display stream
+///
+STATIC mp_obj_t pyb_ugfx_stream_start(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+    int x = mp_obj_get_int(args[1]);
+    int y = mp_obj_get_int(args[2]);
+    int w = mp_obj_get_int(args[3]);
+    int h = mp_obj_get_int(args[4]);
 
+    gdispStreamStart(x, y, w, h);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_stream_start_obj, 5, 5, pyb_ugfx_stream_start);
+
+/// \method stream_color(color)
+///
+/// Sets a pixel. Needs to be called after stream_start
+///
+STATIC mp_obj_t pyb_ugfx_stream_color(mp_obj_t self_in, mp_obj_t color) {
+    gdispStreamColor(mp_obj_get_int(color));
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_stream_color_obj, pyb_ugfx_stream_color);
+
+/// \method stream_stop()
+///
+/// Ends stream
+///
+STATIC mp_obj_t pyb_ugfx_stream_stop(mp_obj_t self_in) {
+    gdispStreamStop();
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_stream_stop_obj, pyb_ugfx_stream_stop);
 
 
 STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
@@ -720,6 +758,11 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_html_color), (mp_obj_t)&pyb_ugfx_html_color_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_print_fonts), (mp_obj_t)&pyb_ugfx_print_fonts_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_tab), (mp_obj_t)&pyb_ugfx_send_tab_obj },
+
+    // instance methods: stream
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stream_start), (mp_obj_t)&pyb_ugfx_stream_start_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stream_color), (mp_obj_t)&pyb_ugfx_stream_color_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stream_stop), (mp_obj_t)&pyb_ugfx_stream_stop_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
