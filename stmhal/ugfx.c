@@ -45,10 +45,10 @@
 /// \moduleref pyb
 /// \class UGFX - uGFX based driver for LCDs
 ///
-/// The UGFX class is used to control a wide range of LCDs, as defined in 
+/// The UGFX class is used to control a wide range of LCDs, as defined in
 /// the config headers.
 ///
-/// The connections must also be configured in the configuration 
+/// The connections must also be configured in the configuration
 /// header files
 ///
 ///     lcd = pyb.UGFX()     # if pyskin is in the Y position
@@ -195,7 +195,7 @@ STATIC mp_obj_t pyb_ugfx_text(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[4]);
 
     //font_t font = gdispOpenFont("ui2");  //TODO: save fotn handle globally or in lcd object
-	gdispDrawString(x0, y0, data, gwinGetDefaultFont(), col);	
+	gdispDrawString(x0, y0, data, gwinGetDefaultFont(), col);
 	//gdispCloseFont(font);
     return mp_const_none;
 }
@@ -215,7 +215,7 @@ STATIC mp_obj_t pyb_ugfx_line(mp_uint_t n_args, const mp_obj_t *args) {
     int y1 = mp_obj_get_int(args[4]);
     int col = mp_obj_get_int(args[5]);
 
-	gdispDrawLine(x0, y0, x1, y1, col);	
+	gdispDrawLine(x0, y0, x1, y1, col);
 
     return mp_const_none;
 }
@@ -238,7 +238,7 @@ STATIC mp_obj_t pyb_ugfx_thickline(mp_uint_t n_args, const mp_obj_t *args) {
     int width = mp_obj_get_int(args[6]);
     bool rnd = (mp_obj_get_int(args[7]) != 0);
 
-	gdispDrawThickLine(x0, y0, x1, y1, col, width, rnd);	
+	gdispDrawThickLine(x0, y0, x1, y1, col, width, rnd);
 
     return mp_const_none;
 }
@@ -259,7 +259,7 @@ STATIC mp_obj_t pyb_ugfx_circle(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[4]);
 
 
-	gdispDrawCircle(x0, y0, r, col);	
+	gdispDrawCircle(x0, y0, r, col);
 
     return mp_const_none;
 }
@@ -279,7 +279,7 @@ STATIC mp_obj_t pyb_ugfx_fill_circle(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[4]);
 
 
-	gdispFillCircle(x0, y0, r, col);	
+	gdispFillCircle(x0, y0, r, col);
 
     return mp_const_none;
 }
@@ -302,7 +302,7 @@ STATIC mp_obj_t pyb_ugfx_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[5]);
 
 
-	gdispDrawEllipse(x0, y0, a, b, col);	
+	gdispDrawEllipse(x0, y0, a, b, col);
 
     return mp_const_none;
 }
@@ -323,7 +323,7 @@ STATIC mp_obj_t pyb_ugfx_fill_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[5]);
 
 
-	gdispFillEllipse(x0, y0, a, b, col);	
+	gdispFillEllipse(x0, y0, a, b, col);
 gfxSleepMilliseconds(500);
     return mp_const_none;
 }
@@ -343,7 +343,7 @@ STATIC mp_obj_t pyb_ugfx_area(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[5]);
 
 
-	gdispFillArea(x0, y0, a, b, col);	
+	gdispFillArea(x0, y0, a, b, col);
 
     return mp_const_none;
 }
@@ -363,7 +363,7 @@ STATIC mp_obj_t pyb_ugfx_box(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[5]);
 
 
-	gdispDrawBox(x0, y0, a, b, col);	
+	gdispDrawBox(x0, y0, a, b, col);
 
     return mp_const_none;
 }
@@ -377,21 +377,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_ugfx_box_obj, 6, 6, pyb_ugfx_box)
 STATIC mp_obj_t pyb_ugfx_ball_demo(mp_obj_t self_in) {
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
-	
+
 	/*
 	 * Copyright (c) 2012, 2013, Joel Bodenmann aka Tectu <joel@unormal.org>
 	 * Copyright (c) 2012, 2013, Andrew Hannam aka inmarket
 	 * Derived from the 2011 IOCCC submission by peter.eastman@gmail.com
 	 *
 	 */
-	 
+
  #define BALLCOLOR1		Red
 #define BALLCOLOR2		Yellow
 #define WALLCOLOR		HTML2COLOR(0x303030)
 #define BACKCOLOR		HTML2COLOR(0xC0C0C0)
 #define FLOORCOLOR		HTML2COLOR(0x606060)
 #define SHADOWALPHA		(255-255*0.2)
-	
+
 	coord_t		width, height, x, y, radius, ballx, bally, dx, floor;
 	coord_t		minx, miny, maxx, maxy;
 	coord_t		ballcx, ballcy;
@@ -469,8 +469,8 @@ STATIC mp_obj_t pyb_ugfx_ball_demo(mp_obj_t self_in) {
 		dx = ballx < radius || ballx > width-radius ? spinspeed=-spinspeed,-dx : dx;
 		dy = bally > height-1.75*floor ? -.04*height : dy+.002*height;
 	}
-	
-		
+
+
 
     return mp_const_none;
 }
@@ -483,7 +483,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_ball_demo_obj, pyb_ugfx_ball_demo);
 STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
-	
+
 	GHandle		ghLabel1;
 	GHandle		ghList1;
 	GHandle   ghButton1;
@@ -498,28 +498,28 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 	wi.customDraw = 0;
 	wi.customParam = 0;
 	wi.customStyle = 0;
-	wi.g.show = TRUE; 
-	// Apply the label parameters	
+	wi.g.show = TRUE;
+	// Apply the label parameters
 	wi.g.y = 10;
 	wi.g.x = 10;
 	wi.g.width = 100;
 	wi.g.height = 20;
-	wi.text = "Label 1"; 
+	wi.text = "Label 1";
 	// Create the actual label
 	ghLabel1 = gwinLabelCreate(NULL, &wi);
-	
-	
 
-	// Apply the button parameters	
+
+
+	// Apply the button parameters
 	wi.g.width = 100;
 	wi.g.height = 30;
 	wi.g.y = 50;
 	wi.g.x = 10;
-	wi.text = "Push Button"; 
+	wi.text = "Push Button";
 	// Create the actual button
 	ghButton1 = gwinButtonCreate(NULL, &wi);
-	
-	
+
+
 	// The first list widget
 	wi.g.width = 150;
 	wi.g.height = 100;
@@ -530,7 +530,7 @@ STATIC mp_obj_t pyb_ugfx_widget_demo(mp_obj_t self_in) {
 
 	gwinListAddItem(ghList1, "Item 0", FALSE);
 	gwinListAddItem(ghList1, "Item 1", FALSE);
-	
+
 	gwinSetVisible(ghList1, TRUE);
 gwinAttachToggle(ghList1,0,GINPUT_TOGGLE_B);
 gwinAttachToggle(ghList1,1,GINPUT_TOGGLE_A);
@@ -558,7 +558,7 @@ STATIC mp_obj_t pyb_ugfx_set_orientation(mp_obj_t self_in, mp_obj_t value) {
 		gdispSetOrientation(GDISP_ROTATE_180);
 	else if (a == 270)
 		gdispSetOrientation(GDISP_ROTATE_270);
-		
+
 
     return mp_const_none;
 }
@@ -607,7 +607,7 @@ STATIC mp_obj_t pyb_ugfx_get_pixel(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_i
 	int y = mp_obj_get_int(y_in);
 	return mp_obj_new_int(0);
 	//needs sorting, currently returns somewhat dodgy values
-    //return mp_obj_new_int(gdispGetPixelColor(x,y)); 
+    //return mp_obj_new_int(gdispGetPixelColor(x,y));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_ugfx_get_pixel_obj, pyb_ugfx_get_pixel);
 
@@ -617,10 +617,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_ugfx_get_pixel_obj, pyb_ugfx_get_pixel);
 ///
 /// Sets the default font used by widgets.
 /// Note, it is only necessary to use a font object if font scaling is used, since
-///  in this case memory will need to be cleared once the scaled font is no longer required 
+///  in this case memory will need to be cleared once the scaled font is no longer required
 ///
 STATIC mp_obj_t pyb_ugfx_set_default_font(mp_obj_t self_in, mp_obj_t font_obj) {
-	pyb_ugfx_font_obj_t *fo = font_obj; 
+	pyb_ugfx_font_obj_t *fo = font_obj;
 	if (MP_OBJ_IS_TYPE(font_obj, &pyb_ugfx_font_type)){
 		gwinSetDefaultFont(fo->font);
 	}else if (MP_OBJ_IS_STR(font_obj)){
@@ -638,7 +638,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_set_default_font_obj, pyb_ugfx_set_def
 /// Sets the default style used by widgets.
 ///
 STATIC mp_obj_t pyb_ugfx_set_default_style(mp_obj_t self_in, mp_obj_t style_obj) {
-	pyb_ugfx_style_obj_t *st = style_obj; 
+	pyb_ugfx_style_obj_t *st = style_obj;
 	if (MP_OBJ_IS_TYPE(style_obj, &pyb_ugfx_style_type))
 		gwinSetDefaultStyle(&(st->style),FALSE);
     return mp_const_none;
@@ -677,14 +677,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_ugfx_print_fonts_obj, pyb_ugfx_print_fonts)
 /// Sends a 'tab' signal to cycle through focus.
 ///
 STATIC mp_obj_t pyb_ugfx_send_tab(mp_obj_t self_in) {
-	
+
 	GSourceListener	*psl=0;
 	GEventKeyboard	*pe;
-	
+
 	while ((psl = geventGetSourceListener(ginputGetKeyboard(GKEYBOARD_ALL_INSTANCES), psl))){
 		pe = (GEventKeyboard *)geventGetEventBuffer(psl);
-		
-		
+
+
 		pe->type = GEVENT_KEYBOARD;
 		pe->bytecount = 1;
 		pe->c[0] = GKEY_TAB;
@@ -720,7 +720,7 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_html_color), (mp_obj_t)&pyb_ugfx_html_color_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_print_fonts), (mp_obj_t)&pyb_ugfx_print_fonts_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_tab), (mp_obj_t)&pyb_ugfx_send_tab_obj },
-	
+
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BLUE),       MP_OBJ_NEW_SMALL_INT(Blue) },
@@ -730,16 +730,16 @@ STATIC const mp_map_elem_t pyb_ugfx_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_YELLOW),     MP_OBJ_NEW_SMALL_INT(Yellow) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PURPLE),     MP_OBJ_NEW_SMALL_INT(Purple) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_GREY),       MP_OBJ_NEW_SMALL_INT(Grey) },
-	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_RIGHT),  MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_RIGHT) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_LEFT),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_LEFT) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_UP),     MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_UP) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_DOWN),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_DOWN) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_CENTER), MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_CENTER) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_A),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_B) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_B),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_A) },	
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_MENU),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_MENU) },	
-	
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_RIGHT),  MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_RIGHT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_LEFT),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_LEFT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_UP),     MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_UP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_DOWN),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_DOWN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_CENTER), MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_CENTER) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_A),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_B) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_B),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_A) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_MENU),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_MENU) },
+
 
 };
 
