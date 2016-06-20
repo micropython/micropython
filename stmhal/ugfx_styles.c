@@ -36,7 +36,7 @@
 #if MICROPY_HW_HAS_UGFX
 
 #include "pin.h"
-#include "ugfx.h"
+#include "modugfx.h"
 
 #include "genhdr/pins.h"
 #include "bufhelper.h"
@@ -56,7 +56,7 @@
 /// \classmethod \constructor("font name")
 ///
 /// Construct an Font object.
-STATIC mp_obj_t pyb_ugfx_font_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ugfx_font_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -64,8 +64,8 @@ STATIC mp_obj_t pyb_ugfx_font_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
     const char *font_text = mp_obj_str_get_str(args[0]);
 
     // create font object
-    pyb_ugfx_font_obj_t *fnt = m_new_obj(pyb_ugfx_font_obj_t);
-    fnt->base.type = &pyb_ugfx_font_type;
+    ugfx_font_obj_t *fnt = m_new_obj(ugfx_font_obj_t);
+    fnt->base.type = &ugfx_font_type;
 
 	fnt->font = gdispOpenFont(font_text);
 	if (fnt->font == NULL)
@@ -78,32 +78,33 @@ STATIC mp_obj_t pyb_ugfx_font_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 /// \method destroy()
 ///
 /// frees up all resources
-STATIC mp_obj_t pyb_ugfx_font_destroy(mp_obj_t self_in) {
-    pyb_ugfx_font_obj_t *self = self_in;
+STATIC mp_obj_t ugfx_font_destroy(mp_obj_t self_in) {
+    ugfx_font_obj_t *self = self_in;
     
 	gdispCloseFont(self->font);
 	
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_ugfx_font_destroy_obj, pyb_ugfx_font_destroy);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_font_destroy_obj, ugfx_font_destroy);
 
 
-STATIC const mp_map_elem_t pyb_ugfx_font_locals_dict_table[] = {
+STATIC const mp_map_elem_t ugfx_font_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&pyb_ugfx_font_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_font_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_font_destroy_obj},
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
 
 
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_ugfx_font_locals_dict, pyb_ugfx_font_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(ugfx_font_locals_dict, ugfx_font_locals_dict_table);
 
-const mp_obj_type_t pyb_ugfx_font_type = {
+const mp_obj_type_t ugfx_font_type = {
     { &mp_type_type },
     .name = MP_QSTR_Font,
-    .make_new = pyb_ugfx_font_make_new,
-    .locals_dict = (mp_obj_t)&pyb_ugfx_font_locals_dict,
+    .make_new = ugfx_font_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_font_locals_dict,
 };
 
 
@@ -119,19 +120,19 @@ const mp_obj_type_t pyb_ugfx_font_type = {
 ///
 /// Construct an Style object. Can copy an inputted style, overwise 
 ///   initialises with a copy of the default style
-STATIC mp_obj_t pyb_ugfx_style_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ugfx_style_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
 
     // create style object
-    pyb_ugfx_style_obj_t *sty = m_new_obj(pyb_ugfx_style_obj_t);
-    sty->base.type = &pyb_ugfx_style_type;
+    ugfx_style_obj_t *sty = m_new_obj(ugfx_style_obj_t);
+    sty->base.type = &ugfx_style_type;
 
 	sty->style = *gwinGetDefaultStyle();
 	if (n_args == 1){
-		if (MP_OBJ_IS_TYPE(args[0], &pyb_ugfx_font_type)) {
-			pyb_ugfx_style_obj_t *in_sty = args[0];
+		if (MP_OBJ_IS_TYPE(args[0], &ugfx_font_type)) {
+			ugfx_style_obj_t *in_sty = args[0];
 			sty->style =  in_sty->style;
 		}
 	}
@@ -144,8 +145,8 @@ STATIC mp_obj_t pyb_ugfx_style_make_new(const mp_obj_type_t *type, mp_uint_t n_a
 /// \method set_disabled([text_colour, edge_colour, fill_colour, progress_colour])
 ///
 /// set the colours to use when the widget is disabled 
-STATIC mp_obj_t pyb_ugfx_style_set_disabled(mp_obj_t self_in, mp_obj_t colours) {
-    pyb_ugfx_style_obj_t *self = self_in;
+STATIC mp_obj_t ugfx_style_set_disabled(mp_obj_t self_in, mp_obj_t colours) {
+    ugfx_style_obj_t *self = self_in;
     
 	mp_obj_t *items;
 	mp_uint_t len;
@@ -166,14 +167,14 @@ STATIC mp_obj_t pyb_ugfx_style_set_disabled(mp_obj_t self_in, mp_obj_t colours) 
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_style_set_disabled_obj, pyb_ugfx_style_set_disabled);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_style_set_disabled_obj, ugfx_style_set_disabled);
 
 
 /// \method set_pressed([text_colour, edge_colour, fill_colour, progress_colour])
 ///
 /// set the colours to use when the widget is pressed 
-STATIC mp_obj_t pyb_ugfx_style_set_pressed(mp_obj_t self_in, mp_obj_t colours) {
-    pyb_ugfx_style_obj_t *self = self_in;
+STATIC mp_obj_t ugfx_style_set_pressed(mp_obj_t self_in, mp_obj_t colours) {
+    ugfx_style_obj_t *self = self_in;
     
 	mp_obj_t *items;
 	mp_uint_t len;
@@ -194,7 +195,7 @@ STATIC mp_obj_t pyb_ugfx_style_set_pressed(mp_obj_t self_in, mp_obj_t colours) {
 
 	return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_style_set_pressed_obj, pyb_ugfx_style_set_pressed);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_style_set_pressed_obj, ugfx_style_set_pressed);
 
 
 
@@ -202,8 +203,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_style_set_pressed_obj, pyb_ugfx_style_
 /// \method set_enabled([text_colour, edge_colour, fill_colour, progress_colour])
 ///
 /// set the colours to use when the widget is enabled 
-STATIC mp_obj_t pyb_ugfx_style_set_enabled(mp_obj_t self_in, mp_obj_t colours) {
-    pyb_ugfx_style_obj_t *self = self_in;
+STATIC mp_obj_t ugfx_style_set_enabled(mp_obj_t self_in, mp_obj_t colours) {
+    ugfx_style_obj_t *self = self_in;
     
 	mp_obj_t *items;
 	mp_uint_t len;
@@ -225,55 +226,55 @@ STATIC mp_obj_t pyb_ugfx_style_set_enabled(mp_obj_t self_in, mp_obj_t colours) {
 	
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_style_set_enabled_obj, pyb_ugfx_style_set_enabled);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_style_set_enabled_obj, ugfx_style_set_enabled);
 
 
 /// \method set_focus(focus_colour)
 ///
 /// set the focus colour
-STATIC mp_obj_t pyb_ugfx_style_set_focus(mp_obj_t self_in, mp_obj_t colour) {
-    pyb_ugfx_style_obj_t *self = self_in;
+STATIC mp_obj_t ugfx_style_set_focus(mp_obj_t self_in, mp_obj_t colour) {
+    ugfx_style_obj_t *self = self_in;
 
 	self->style.focus = mp_obj_get_int(colour);
 		
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_style_set_focus_obj, pyb_ugfx_style_set_focus);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_style_set_focus_obj, ugfx_style_set_focus);
 
 /// \method set_background(background_colour)
 ///
 /// set the background colour
-STATIC mp_obj_t pyb_ugfx_style_set_background(mp_obj_t self_in, mp_obj_t colour) {
-    pyb_ugfx_style_obj_t *self = self_in;
+STATIC mp_obj_t ugfx_style_set_background(mp_obj_t self_in, mp_obj_t colour) {
+    ugfx_style_obj_t *self = self_in;
 
 	self->style.background = mp_obj_get_int(colour);
 		
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_ugfx_style_set_background_obj, pyb_ugfx_style_set_background);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_style_set_background_obj, ugfx_style_set_background);
 
 
 
-STATIC const mp_map_elem_t pyb_ugfx_style_locals_dict_table[] = {
+STATIC const mp_map_elem_t ugfx_style_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_enabled), (mp_obj_t)&pyb_ugfx_style_set_enabled_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_disabled), (mp_obj_t)&pyb_ugfx_style_set_disabled_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_pressed), (mp_obj_t)&pyb_ugfx_style_set_pressed_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_focus), (mp_obj_t)&pyb_ugfx_style_set_focus_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_background), (mp_obj_t)&pyb_ugfx_style_set_background_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_enabled), (mp_obj_t)&ugfx_style_set_enabled_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_disabled), (mp_obj_t)&ugfx_style_set_disabled_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_pressed), (mp_obj_t)&ugfx_style_set_pressed_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_focus), (mp_obj_t)&ugfx_style_set_focus_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_background), (mp_obj_t)&ugfx_style_set_background_obj},
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
 
 
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_ugfx_style_locals_dict, pyb_ugfx_style_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(ugfx_style_locals_dict, ugfx_style_locals_dict_table);
 
-const mp_obj_type_t pyb_ugfx_style_type = {
+const mp_obj_type_t ugfx_style_type = {
     { &mp_type_type },
     .name = MP_QSTR_Style,
-    .make_new = pyb_ugfx_style_make_new,
-    .locals_dict = (mp_obj_t)&pyb_ugfx_style_locals_dict,
+    .make_new = ugfx_style_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_style_locals_dict,
 };
 
 

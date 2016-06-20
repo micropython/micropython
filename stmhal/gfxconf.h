@@ -189,7 +189,7 @@
 //    #define GWIN_CONSOLE_ESCSEQ                      FALSE
 //    #define GWIN_CONSOLE_USE_BASESTREAM              FALSE
 //    #define GWIN_CONSOLE_USE_FLOAT                   FALSE
-//#define GWIN_NEED_GRAPH                              TRUE
+#define GWIN_NEED_GRAPH                              TRUE
 //#define GWIN_NEED_GL3D                               FALSE
 
 #define GWIN_NEED_WIDGET                             TRUE

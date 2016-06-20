@@ -107,6 +107,7 @@
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t ugfx_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t mp_module_ubinascii;
 extern const struct _mp_obj_module_t mp_module_ure;
@@ -129,7 +130,8 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uselect), (mp_obj_t)&mp_module_uselect }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
-
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_ugfx), (mp_obj_t)&ugfx_module }, \
+	
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re), (mp_obj_t)&mp_module_ure }, \
@@ -144,6 +146,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_ustruct }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
+
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \

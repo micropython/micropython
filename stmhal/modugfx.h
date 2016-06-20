@@ -29,4 +29,4 @@
 #include "ugfx_containers.h"
 #include "ugfx_styles.h"
 
-extern const mp_obj_type_t pyb_ugfx_type;
+extern const mp_obj_type_t ugfx_type;
