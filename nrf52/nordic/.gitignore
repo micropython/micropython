@@ -1,0 +1,7 @@
+# Ignore everything in this directory
+*
+
+# Except
+!.gitignore
+!build.mk
+!gcc_startup_nrf52.S
