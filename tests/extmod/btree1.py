@@ -54,3 +54,6 @@ for k, v in db.items(None, None, btree.DESC):
 
 print(list(db.keys()))
 print(list(db.values()))
+
+for k in db:
+    print(k)
