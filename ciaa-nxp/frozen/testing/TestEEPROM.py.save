@@ -1,0 +1,41 @@
+nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));from unittest import TestCase
+import pyb
+  
+class TestEEPROM (TestCase):
+
+    def test_1(self):
+        eeprom = pyb.EEPROM()
+        eeprom.write_byte(0x0000,0x55)
+        val = eeprom.read_byte(0x0000)
+        self.assertEqual(0x55,val,"EEPROM addr 0x0000")        
+
+
+    def test_2(self):
+        eeprom = pyb.EEPROM()
+        eeprom.write_byte(0x2000,0xC3)
+        val = eeprom.read_byte(0x2000)
+        self.assertEqual(0xC3,val,"EEPROM addr 0x2000")
+
+
+    def test_3(self):
+        eeprom = pyb.EEPROM()
+        eeprom.write_byte(0x3FFF,0x11)
+        val = eeprom.read_byte(0x3FFF)
+        self.assertEqual(0x11,val,"EEPROM addr 0x3FFF")
+
+
+    def test_4(self):
+        flagOk=False
+        try:
+            eeprom = pyb.EEPROM()
+            eeprom.write_byte(0xFFFF,0xFF)
+            flagOk=True
+        except:
+            pass
+
+        self.assertEqual(False,flagOk,"EEPROM invalid addr")
+
+
+
+
+
