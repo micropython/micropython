@@ -5,6 +5,7 @@ from testing_TestUart import TestUart
 from testing_TestEEPROM import TestEEPROM
 from testing_TestDAC import TestDAC
 from testing_TestADC import TestADC
+from testing_TestGPIO import TestGPIO
 
 
 class MainTest (object):
@@ -38,6 +39,11 @@ class MainTest (object):
 
         print("ADC Tests")
         TestCase.run(TestADC())
+        print("____________________")
+
+
+        print("GPIOs Tests")
+        TestCase.run(TestGPIO())
         print("____________________")
 
 
