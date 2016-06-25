@@ -63,12 +63,12 @@ endif
 ifeq ($(UNAME_S),Darwin)
 CC = clang
 # Use clang syntax for map file
-LDFLAGS_ARCH = -Wl,-map,$@.map
+LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
 else
 # Use gcc syntax for map file
-LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
+LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -Wl,--gc-sections
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 # Note: you may need to install i386 versions of dependency packages,
