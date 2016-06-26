@@ -56,11 +56,11 @@ class TestCase (object):
                     o.setUp()
                     m()
                     o.tearDown()
-                    print("OK")
+                    #print("OK")
                     TestCase.testOKCounter+=1
                 except Exception as e:
                     print("ASSERT ERROR:"+str(e))
-                    break
+                    #break
             else:
                 break
             i+=1

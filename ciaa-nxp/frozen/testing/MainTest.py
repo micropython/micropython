@@ -6,6 +6,7 @@ from testing_TestEEPROM import TestEEPROM
 from testing_TestDAC import TestDAC
 from testing_TestADC import TestADC
 from testing_TestGPIO import TestGPIO
+from testing_TestRS485 import TestRS485
 
 
 class MainTest (object):
@@ -41,10 +42,14 @@ class MainTest (object):
         TestCase.run(TestADC())
         print("____________________")
 
-
         print("GPIOs Tests")
         TestCase.run(TestGPIO())
         print("____________________")
+
+        print("RS485 Tests")
+        TestCase.run(TestRS485())
+        print("____________________")
+
 
 
         print("Statistics:")

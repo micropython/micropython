@@ -23,7 +23,7 @@ RS485	-> echo terminal
 
 void startTesting(void)
 {
-    utest_print("starting testings...\r\n");
+    utest_print("Starting C testings...\r\n");
 
 	utest_init();
 
@@ -31,25 +31,30 @@ void startTesting(void)
 	utest_startTest(testLeds1,0,"LEDS: On Off Test");
 	utest_startTest(testLeds2,0,"LEDS: Pwm Test");
 	utest_startTest(testLeds3,0,"LEDS: Toogle Test");
+    utest_print("____________________\r\n");
 
 	// Switches Library
 	utest_startTest(testSwitches1,0,"SW: idle status check");
+    utest_print("____________________\r\n");
 
 	// Uart Library
 	utest_startTest(testUart1,testUartSetup,"UART: TX test");
 	utest_startTest(testUart2,testUartSetup,"UART: RX polling test");
 	utest_startTest(testUart3,testUartSetup,"UART: RX buffer test");
+    utest_print("____________________\r\n");
 
 	// EEPROM Library
 	utest_startTest(testEEPROM1,0,"EEPROM: write/read byte Test");
 	utest_startTest(testEEPROM2,0,"EEPROM: write invalid address Test");
 	utest_startTest(testEEPROM3,0,"EEPROM: read invalid address Test");
+    utest_print("____________________\r\n");
 
 	// DAC Library
 	utest_startTest(testDAC1,0,"DAC: write value Test");
 	utest_startTest(testDAC2,0,"DAC: write invalid value Test");
 	utest_startTest(testDAC3,0,"DAC: write table Test");
 	utest_startTest(testDAC4,0,"DAC: write invalid table Test");
+    utest_print("____________________\r\n");
 
 	// ADC Library
     utest_startTest(testADC1,0,"ADC: enable chn 1 Test");
@@ -60,6 +65,7 @@ void startTesting(void)
     utest_startTest(testADC6,0,"ADC: read chn 2 Test");
     utest_startTest(testADC7,0,"ADC: read chn 3 Test");
     utest_startTest(testADC8,0,"ADC: read chn invalid Test");
+    utest_print("____________________\r\n");
 
 
 	// GPIO
@@ -78,12 +84,14 @@ void startTesting(void)
     utest_startTest(testGPIO12,testGPIOcallbackSetup,"GPIO: enable callback Test");
     utest_startTest(testGPIO13,testGPIOcallbackSetup,"GPIO: interrupt Test");
     utest_startTest(testGPIO14,testGPIOcallbackSetup,"GPIO: enable invalid Test");
+    utest_print("____________________\r\n");
 
 
     // rs485 Uart Library
     utest_startTest(test485Uart1,testUartSetup,"485 UART: TX test");
     utest_startTest(test485Uart2,testUartSetup,"485 UART: RX polling test");
     utest_startTest(test485Uart3,testUartSetup,"485 UART: RX buffer test");
+    utest_print("____________________\r\n");
 
 
 	utest_printStatistics();

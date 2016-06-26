@@ -62,10 +62,10 @@ void utest_startTest(void(*fncTest)(void),void(*fncBefore)(void),char* testName)
 		}
 		else
 		{
-			utest_print("TEST OK\r\n");
+			//utest_print("TEST OK\r\n");
 			utest_okTestsCounter++;
 		}
-		utest_print("________________________________________\r\n");
+		//utest_print("________________________________________\r\n");
 	}
 }
 
