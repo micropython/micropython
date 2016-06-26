@@ -38,6 +38,7 @@
 #include "lib/utils/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
+#include "readline.h"
 
 STATIC char heap[28 * 1024];
 
