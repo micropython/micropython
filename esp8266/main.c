@@ -37,6 +37,7 @@
 #include "lib/utils/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
+#include "readline.h"
 
 STATIC char heap[28 * 1024];
 
@@ -57,6 +58,7 @@ STATIC void mp_reset(void) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     pin_init0();
+    readline_init0();
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
