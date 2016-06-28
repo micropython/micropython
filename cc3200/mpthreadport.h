@@ -26,11 +26,15 @@
 #ifndef __MICROPY_INCLUDED_CC3200_MPTHREADPORT_H__
 #define __MICROPY_INCLUDED_CC3200_MPTHREADPORT_H__
 
+#ifndef BOOTLOADER
 #include "FreeRTOS.h"
+#endif
 
 typedef struct _mp_thread_mutex_t {
+    #ifndef BOOTLOADER
     SemaphoreHandle_t handle;
     StaticSemaphore_t buffer;
+    #endif
 } mp_thread_mutex_t;
 
 void mp_thread_init(void);
