@@ -237,6 +237,12 @@ void ICACHE_FLASH_ATTR uart_reattach() {
     uart_init(UART_BIT_RATE_74880, UART_BIT_RATE_74880);
 }
 
+void ICACHE_FLASH_ATTR uart_setup(uint8 uart) {
+    ETS_UART_INTR_DISABLE();
+    uart_config(uart);
+    ETS_UART_INTR_ENABLE();
+}
+
 // Task-based UART interface
 
 #include "py/obj.h"
