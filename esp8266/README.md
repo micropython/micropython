@@ -39,6 +39,12 @@ $ git submodule update --init
 See the README in the repository root for more information about external
 dependencies.
 
+The MicroPython cross-compiler must be built to pre-compile some of the
+built-in scripts to bytecode.  This can be done using:
+```bash
+$ make -C mpy-cross
+```
+
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ cd esp8266
