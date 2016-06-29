@@ -362,10 +362,6 @@ deploy-stlink: $(BUILD)/firmware.dfu
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
-	
-deploy-stlinkcli: $(BUILD)/firmware.hex
-	$(ECHO) "Writing $(BUILD)/firmware.hex to the board via ST-LINK"
-	$(Q)$(STLINK) -P $(BUILD)/firmware.hex -Rst
 
 deploy-stlinkcli: $(BUILD)/firmware.hex
 	$(ECHO) "Writing $(BUILD)/firmware.hex to the board via ST-LINK"
