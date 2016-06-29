@@ -267,8 +267,10 @@ const dma_descr_t dma_ADC_2_RX = { DMA2_Channel4, DMA_REQUEST_0, DMA_PERIPH_TO_M
 const dma_descr_t dma_DAC_1_TX = { DMA2_Channel4, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_dac };
 const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, DMA_REQUEST_4, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_spi_i2c };
 */
-#if MICROPY_HW_HAS_SDCARD
+#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+// defined twice as L4 HAL only needs one channel and can correctly switch direction but sdcard.c needs two channels
 const dma_descr_t dma_SDIO_0_TX= { DMA2_Channel4, DMA_REQUEST_7, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_sdio };
+const dma_descr_t dma_SDIO_0_RX= { DMA2_Channel4, DMA_REQUEST_7, DMA_PERIPH_TO_MEMORY, dma_id_10,  &dma_init_struct_sdio };
 #endif
 /* not preferred streams
 const dma_descr_t dma_ADC_3_RX = { DMA2_Channel5, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_11,  NULL };
