@@ -4,6 +4,9 @@ should be separate from any other changes and should be listed here, most
 recent commit at the top of the list.  This makes it easier to upgrade to
 a new HAL version.
 
+e2becb4a0509df52f0f055ee7a63d02f4c6e8583
+stmhal: Port of f4 hal commit 1d7fb82 to l4 hal
+
 d4c33499579eb8f4febec2f5f01f5021f719fdaf
 stmhal: L4: Adapt UART HAL to avoid 64-bit integer division.
 
