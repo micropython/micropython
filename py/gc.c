@@ -327,18 +327,9 @@ void gc_info(gc_info_t *info) {
     info->num_1block = 0;
     info->num_2block = 0;
     info->max_block = 0;
-    for (size_t block = 0, len = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+    bool finish = false;
+    for (size_t block = 0, len = 0; !finish;) {
         size_t kind = ATB_GET_KIND(block);
-        if (kind == AT_FREE || kind == AT_HEAD) {
-            if (len == 1) {
-                info->num_1block += 1;
-            } else if (len == 2) {
-                info->num_2block += 1;
-            }
-            if (len > info->max_block) {
-                info->max_block = len;
-            }
-        }
         switch (kind) {
             case AT_FREE:
                 info->free += 1;
@@ -358,6 +349,24 @@ void gc_info(gc_info_t *info) {
             case AT_MARK:
                 // shouldn't happen
                 break;
+        }
+
+        block++;
+        finish = (block == MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
+        // Get next block type if possible
+        if (!finish) {
+            kind = ATB_GET_KIND(block);
+        }
+
+        if (finish || kind == AT_FREE || kind == AT_HEAD) {
+            if (len == 1) {
+                info->num_1block += 1;
+            } else if (len == 2) {
+                info->num_2block += 1;
+            }
+            if (len > info->max_block) {
+                info->max_block = len;
+            }
         }
     }
 
