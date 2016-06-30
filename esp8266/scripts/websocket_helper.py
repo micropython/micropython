@@ -41,7 +41,7 @@ def server_handshake(sock):
     respkey = d.digest()
     respkey = binascii.b2a_base64(respkey)[:-1]
     if DEBUG:
-        print("respkey:", resp)
+        print("respkey:", respkey)
 
     sock.send(b"""\
 HTTP/1.1 101 Switching Protocols\r
