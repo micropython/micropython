@@ -9,6 +9,7 @@
 #include "eagle_soc.h"
 #include "user_interface.h"
 #include "espneopixel.h"
+#include "py/mphal.h"
 
 #define NEO_KHZ400 (1)
 
@@ -47,6 +48,7 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
   }
 #endif
 
+  mp_uint_t irq_state = mp_hal_quiet_timing_enter();
   for(t = time0;; t = time0) {
     if(pix & mask) t = time1;                             // Bit high duration
     while(((c = _getCycleCount()) - startTime) < period); // Wait for bit start
@@ -61,4 +63,5 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
     }
   }
   while((_getCycleCount() - startTime) < period); // Wait for last bit
+  mp_hal_quiet_timing_exit(irq_state);
 }
