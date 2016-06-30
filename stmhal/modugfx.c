@@ -556,6 +556,89 @@ STATIC mp_obj_t ugfx_fill_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_fill_ellipse_obj, 5, 5, ugfx_fill_ellipse);
 
+
+
+
+/// \method polygon(x1, y1, array, colour)
+///
+/// Draw a polygon starting at (x1,y1), using the aarray of points, using the given colour.
+/// Option to round the ends
+///
+STATIC mp_obj_t ugfx_polygon(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //ugfx_obj_t *self = args[0];
+    int x0 = mp_obj_get_int(args[0]);
+    int y0 = mp_obj_get_int(args[1]);
+	int col = mp_obj_get_int(args[3]);
+	
+	point ar[20];
+	
+	mp_obj_t *mp_arr;
+	mp_obj_t *mp_arr2;
+	uint len;
+	uint len2;
+	mp_obj_get_array(args[2], &len, &mp_arr);
+	
+	if (len <= 20){
+		int i,j;
+		j = 0;
+		for (i = 0; i < len; i++){
+			mp_obj_get_array(mp_arr[i], &len2, &mp_arr2);
+			if (len2 == 2){
+				point p = {mp_obj_get_int(mp_arr2[0]), mp_obj_get_int(mp_arr2[1])};
+				ar[j++] = p;
+			}
+		}
+		gdispDrawPoly(x0, y0, ar, j, col);	
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_polygon_obj, 4, 4, ugfx_polygon);
+
+
+
+
+/// \method fill_polygon(x1, y1, array, colour)
+///
+/// Draw a polygon starting at (x1,y1), using the aarray of points, using the given colour.
+/// Option to round the ends
+///
+STATIC mp_obj_t ugfx_fill_polygon(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //ugfx_obj_t *self = args[0];
+    int x0 = mp_obj_get_int(args[0]);
+    int y0 = mp_obj_get_int(args[1]);
+	int col = mp_obj_get_int(args[3]);
+	
+	point ar[20];
+	
+	mp_obj_t *mp_arr;
+	mp_obj_t *mp_arr2;
+	uint len;
+	uint len2;
+	mp_obj_get_array(args[2], &len, &mp_arr);
+	
+	if (len <= 20){
+		int i,j;
+		j = 0;
+		for (i = 0; i < len; i++){
+			mp_obj_get_array(mp_arr[i], &len2, &mp_arr2);
+			if (len2 == 2){
+				point p = {mp_obj_get_int(mp_arr2[0]), mp_obj_get_int(mp_arr2[1])};
+				ar[j++] = p;
+			}
+		}
+		gdispFillConvexPoly(x0, y0, ar, i, col);	
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_fill_polygon_obj, 4, 4, ugfx_fill_polygon);
+
+
+
+
 /// \method area(x1, y1, a, b, colour)
 ///
 /// Fill area from (x,y), with lengths x1,y1, using the given colour.
@@ -609,6 +692,8 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_circle), (mp_obj_t)&ugfx_fill_circle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ellipse), (mp_obj_t)&ugfx_ellipse_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_ellipse), (mp_obj_t)&ugfx_fill_ellipse_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_get_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_get_height_obj },
