@@ -58,7 +58,7 @@
 #include "servo.h"
 #include "dac.h"
 #include "lcd.h"
-#include "ugfx.h"
+//#include "modugfx.h"
 #include "usb.h"
 #include "portmodules.h"
 #include "modmachine.h"
@@ -224,17 +224,19 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if MICROPY_HW_HAS_LCD
     { MP_OBJ_NEW_QSTR(MP_QSTR_LCD), (mp_obj_t)&pyb_lcd_type },
 #endif
-
+/*
 #if MICROPY_HW_HAS_UGFX
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UGFX), (mp_obj_t)&pyb_ugfx_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&pyb_ugfx_button_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&pyb_ugfx_container_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Font), (mp_obj_t)&pyb_ugfx_font_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_List), (mp_obj_t)&pyb_ugfx_list_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Style), (mp_obj_t)&pyb_ugfx_style_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Keyboard), (mp_obj_t)&pyb_ugfx_keyboard_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_UGFX), (mp_obj_t)&ugfx_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&ugfx_button_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&ugfx_container_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Graph), (mp_obj_t)&ugfx_graph_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Font), (mp_obj_t)&ugfx_font_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_List), (mp_obj_t)&ugfx_list_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Style), (mp_obj_t)&ugfx_style_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Keyboard), (mp_obj_t)&ugfx_keyboard_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Label), (mp_obj_t)&ugfx_label_type },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_Checkbox), (mp_obj_t)&ugfx_checkbox_type },
-#endif
+#endif*/
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);

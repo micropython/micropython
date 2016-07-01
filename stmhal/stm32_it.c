@@ -286,7 +286,10 @@ void SysTick_Handler(void) {
     if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
         dma_idle_handler(uwTick);
     }
+	
+#if MICROPY_HW_HAS_UGFX
     gfxYield();
+#endif
 }
 
 /******************************************************************************/

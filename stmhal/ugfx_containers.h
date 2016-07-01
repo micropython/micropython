@@ -24,11 +24,13 @@
  * THE SOFTWARE.
  */
 
-extern const mp_obj_type_t pyb_ugfx_container_type;
+extern const mp_obj_type_t ugfx_container_type;
+extern const mp_obj_type_t ugfx_graph_type;
 
-typedef struct _pyb_ugfx_container_t {
+typedef struct _ugfx_container_t {
     mp_obj_base_t base;
 
-        GHandle ghContainer;
+    GHandle ghContainer;
+	GWidgetStyle *style;
 
-} pyb_ugfx_container_obj_t;
+} ugfx_container_obj_t;

@@ -24,20 +24,20 @@
  * THE SOFTWARE.
  */
 
-extern const mp_obj_type_t pyb_ugfx_font_type;
-extern const mp_obj_type_t pyb_ugfx_style_type;
+extern const mp_obj_type_t ugfx_font_type;
+extern const mp_obj_type_t ugfx_style_type;
 
-typedef struct _pyb_ugfx_font_t {
+typedef struct _ugfx_font_t {
     mp_obj_base_t base;
 
     font_t font;
 
-} pyb_ugfx_font_obj_t;
+} ugfx_font_obj_t;
 
-typedef struct _pyb_ugfx_style_t {
+typedef struct _ugfx_style_t {
     mp_obj_base_t base;
 
 	GWidgetStyle style;
 
 
-} pyb_ugfx_style_obj_t;
+} ugfx_style_obj_t;

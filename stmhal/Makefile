@@ -228,7 +228,7 @@ GFXLIB=../../ugfx
 include $(GFXLIB)/gfx.mk
 include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
 INC += $(foreach d, $(GFXINC), -I$d)
-SRC_C += ugfx.c
+SRC_C += modugfx.c
 SRC_UGFX += $(GFXSRC)
 SRC_C += ugfx_widgets.c
 SRC_C += ugfx_containers.c
