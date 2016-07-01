@@ -222,25 +222,25 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_set_orientation_obj, 0, 1, ugfx_
 
 
 
-/// \method get_width()
+/// \method width()
 ///
 /// Gets current width of the screen in pixels
 ///
-STATIC mp_obj_t ugfx_get_width(void) {
+STATIC mp_obj_t ugfx_width(void) {
     return mp_obj_new_int(gdispGetWidth());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_get_width_obj, ugfx_get_width);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_width_obj, ugfx_width);
 
 
 
-/// \method get_height()
+/// \method height()
 ///
 /// Gets current width of the screen in pixels
 ///
-STATIC mp_obj_t ugfx_get_height(void) {
+STATIC mp_obj_t ugfx_height(void) {
     return mp_obj_new_int(gdispGetHeight());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_get_height_obj, ugfx_get_height);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_height_obj, ugfx_height);
 
 
 /// \method get_pixel()
@@ -695,8 +695,8 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_get_width_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_get_height_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_height_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&ugfx_ball_demo_obj },
  //   { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&ugfx_get_pixel_obj },
