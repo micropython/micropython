@@ -740,12 +740,6 @@ const mp_obj_type_t ugfx_label_type = {
 ///
 
 
-typedef struct _ugfx_image_obj_t {
-    mp_obj_base_t base;
-	
-	gdispImage thisImage; 
-
-} ugfx_image_obj_t;
 
 /// \classmethod \constructor(file_path, cache)
 ///
@@ -770,13 +764,21 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	
 	//we'll open the file initially to fill the gdispImage struct
 	//when the draw function is used, will need to check the image handle is open
-	gdispImageOpenFile(&(image->thisImage), img_str);
-	if (cache)
-		gdispImageCache	(&(image->thisImage));
-	//gdispImageClose(&(image->thisImage));  //TODO: delete this, currently for debugging reasons
-	//TODO: error handling and reporting
-
-	return image;
+	gdispImageError er = gdispImageOpenFile(&(image->thisImage), img_str);
+	
+	if (er == 0){
+		if (cache)
+			gdispImageCache	(&(image->thisImage));
+		//gdispImageClose(&(image->thisImage));  //TODO: delete this, currently for debugging reasons
+		//TODO: error handling and reporting
+		return image;
+	}
+	else{
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
+		return mp_const_none;
+	}
+		
+	
 }
 
 
@@ -794,6 +796,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_close_obj, ugfx_image_close);
 STATIC const mp_map_elem_t ugfx_image_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&ugfx_image_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_image_close_obj },
 	
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
