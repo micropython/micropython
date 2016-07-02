@@ -89,8 +89,12 @@ STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
-    key.data = (void*)mp_obj_str_get_data(args[1], &key.size);
-    val.data = (void*)mp_obj_str_get_data(args[2], &val.size);
+    // Different ports may have different type sizes
+    mp_uint_t v;
+    key.data = (void*)mp_obj_str_get_data(args[1], &v);
+    key.size = v;
+    val.data = (void*)mp_obj_str_get_data(args[2], &v);
+    val.size = v;
     return MP_OBJ_NEW_SMALL_INT(__bt_put(self->db, &key, &val, 0));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
@@ -98,7 +102,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
 STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
-    key.data = (void*)mp_obj_str_get_data(args[1], &key.size);
+    // Different ports may have different type sizes
+    mp_uint_t v;
+    key.data = (void*)mp_obj_str_get_data(args[1], &v);
+    key.size = v;
     int res = __bt_get(self->db, &key, &val, 0);
     if (res == RET_SPECIAL) {
         if (n_args > 2) {
@@ -117,7 +124,10 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     int flags = MP_OBJ_SMALL_INT_VALUE(args[1]);
     DBT key, val;
     if (n_args > 2) {
-        key.data = (void*)mp_obj_str_get_data(args[2], &key.size);
+        // Different ports may have different type sizes
+        mp_uint_t v;
+        key.data = (void*)mp_obj_str_get_data(args[2], &v);
+        key.size = v;
     }
 
     int res = __bt_seq(self->db, &key, &val, flags);
@@ -125,10 +135,11 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
-    mp_obj_tuple_t *pair = mp_obj_new_tuple(2, NULL);
+    mp_obj_t pair_o = mp_obj_new_tuple(2, NULL);
+    mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(pair_o);
     pair->items[0] = mp_obj_new_bytes(key.data, key.size);
     pair->items[1] = mp_obj_new_bytes(val.data, val.size);
-    return pair;
+    return pair_o;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_seq_obj, 2, 4, btree_seq);
 
@@ -185,11 +196,14 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     DBT key, val;
     int res;
+    // Different ports may have different type sizes
+    mp_uint_t v;
     bool desc = self->flags & FLAG_DESC;
     if (self->start_key != MP_OBJ_NULL) {
         int flags = R_FIRST;
         if (self->start_key != mp_const_none) {
-            key.data = (void*)mp_obj_str_get_data(self->start_key, &key.size);
+            key.data = (void*)mp_obj_str_get_data(self->start_key, &v);
+            key.size = v;
             flags = R_CURSOR;
         } else if (desc) {
             flags = R_LAST;
@@ -207,7 +221,8 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 
     if (self->end_key != mp_const_none) {
         DBT end_key;
-        end_key.data = (void*)mp_obj_str_get_data(self->end_key, &end_key.size);
+        end_key.data = (void*)mp_obj_str_get_data(self->end_key, &v);
+        end_key.size = v;
         BTREE *t = self->db->internal;
         int cmp = t->bt_cmp(&key, &end_key);
         if (desc) {
@@ -228,20 +243,24 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
         case FLAG_ITER_VALUES:
             return mp_obj_new_bytes(val.data, val.size);
         default: {
-            mp_obj_tuple_t *pair = mp_obj_new_tuple(2, NULL);
+            mp_obj_t pair_o = mp_obj_new_tuple(2, NULL);
+            mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(pair_o);
             pair->items[0] = mp_obj_new_bytes(key.data, key.size);
             pair->items[1] = mp_obj_new_bytes(val.data, val.size);
-            return pair;
+            return pair_o;
         }
     }
 }
 
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    // Different ports may have different type sizes
+    mp_uint_t v;
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;
-        key.data = (void*)mp_obj_str_get_data(index, &key.size);
+        key.data = (void*)mp_obj_str_get_data(index, &v);
+        key.size = v;
         int res = __bt_delete(self->db, &key, 0);
         if (res == RET_SPECIAL) {
             nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
@@ -251,7 +270,8 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         DBT key, val;
-        key.data = (void*)mp_obj_str_get_data(index, &key.size);
+        key.data = (void*)mp_obj_str_get_data(index, &v);
+        key.size = v;
         int res = __bt_get(self->db, &key, &val, 0);
         if (res == RET_SPECIAL) {
             nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
@@ -261,8 +281,10 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else {
         // store
         DBT key, val;
-        key.data = (void*)mp_obj_str_get_data(index, &key.size);
-        val.data = (void*)mp_obj_str_get_data(value, &val.size);
+        key.data = (void*)mp_obj_str_get_data(index, &v);
+        key.size = v;
+        val.data = (void*)mp_obj_str_get_data(value, &v);
+        val.size = v;
         int res = __bt_put(self->db, &key, &val, 0);
         CHECK_ERROR(res);
         return mp_const_none;
@@ -316,8 +338,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
 STATIC const mp_rom_map_elem_t mp_module_btree_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_btree) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_btree_open_obj) },
-    { MP_ROM_QSTR(MP_QSTR_INCL), MP_OBJ_NEW_SMALL_INT(FLAG_END_KEY_INCL) },
-    { MP_ROM_QSTR(MP_QSTR_DESC), MP_OBJ_NEW_SMALL_INT(FLAG_DESC) },
+    { MP_ROM_QSTR(MP_QSTR_INCL), MP_ROM_INT(FLAG_END_KEY_INCL) },
+    { MP_ROM_QSTR(MP_QSTR_DESC), MP_ROM_INT(FLAG_DESC) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_table);
