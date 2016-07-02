@@ -30,3 +30,11 @@ extern const mp_obj_type_t ugfx_list_type;
 extern const mp_obj_type_t ugfx_keyboard_type;
 extern const mp_obj_type_t ugfx_label_type;
 extern const mp_obj_type_t ugfx_image_type;
+
+
+typedef struct _ugfx_image_obj_t {
+    mp_obj_base_t base;
+	
+	gdispImage thisImage; 
+
+} ugfx_image_obj_t;

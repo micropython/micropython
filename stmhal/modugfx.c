@@ -686,11 +686,11 @@ STATIC mp_obj_t ugfx_display_image(mp_uint_t n_args, const mp_obj_t *args) {
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
 	mp_uint_t len;
-	mp_obj_t img_obj = args[1];
-	int x = mp_obj_get_int(args[2]);
-	int y = mp_obj_get_int(args[3]);
+	mp_obj_t img_obj = args[2];
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
 	
-/*
+
 	if (img_obj != mp_const_none) {
 		if (!MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "img argument needs to be be a Image type"));
@@ -705,10 +705,10 @@ STATIC mp_obj_t ugfx_display_image(mp_uint_t n_args, const mp_obj_t *args) {
 		
 		gdispImageDraw(&(image->thisImage), x, y, swidth, sheight, 0, 0);
 	}
-*/
+
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_obj, 4, 4, ugfx_display_image);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_obj, 3, 3, ugfx_display_image);
 
 
 
