@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/putc.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_putc</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_putc</h2>
+<p>ファイルに文字を書き込みます。</p>
+<pre>
+int f_putc (
+  TCHAR <span class="arg">chr</span>,  <span class="c">/* [IN] 書き込む文字 */</span>
+  FIL* <span class="arg">fp</span>     <span class="c">/* [IN] ファイル・オブジェクト */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>chr</dt>
+<dd>書き込む文字を指定します。</dd>
+<dt>fp</dt>
+<dd>ファイル・オブジェクト構造体へのポインタを指定します。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>文字が正常に書き込まれると書き込んだ文字数が返されます。ディスクが満杯またはエラーにより書き込まれなかったときは<tt>EOF (-1)</tt>が返されます。</p>
+<p>APIにUnicodeが選択(<tt>_LFN_UNICODE</tt>が1)されているときは、<tt class="arg">chr</tt>はUTF-16文字になりますが、ファイル上のエンコードは、<tt>_STRF_ENCODE</tt>オプションで選択できます。それ以外の時は無変換(1バイト/1文字)で書き込みます。</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>1文字をファイルに書き込みます。この関数は<a href="write.html"><tt>f_write()</tt></a>のラッパー関数です。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_USE_STRFUNC</tt>が 1または 2のとき使用可能です。2を指定すると、<tt>'\n'</tt>は<tt>'\r'+'\n'</tt>に展開されてファイルに書き込まれます。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="puts.html">f_puts</a>, <a href="printf.html">f_printf</a>, <a href="gets.html">f_gets</a>, <a href="close.html">f_close</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

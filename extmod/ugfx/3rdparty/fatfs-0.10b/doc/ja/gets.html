@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/gets.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_gets</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_gets</h2>
+<p>ファイルから文字列を読み出します。</p>
+<pre>
+TCHAR* f_gets (
+  TCHAR* <span class="arg">buff</span>, <span class="c">/* [OUT] バッファ */</span>
+  int <span class="arg">len</span>,     <span class="c">/* [IN] バッファのサイズ */</span>
+  FIL* <span class="arg">fp</span>      <span class="c">/* [IN] ファイル・オブジェクト */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>文字列を読み出すバッファを指すポインタを指定します。</dd>
+<dt>len</dt>
+<dd>バッファのサイズを要素数で指定します。</dd>
+<dt>fp</dt>
+<dd>ファイル・オブジェクト構造体へのポインタを指定します。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>関数が成功すると<tt class="arg">buff</tt>が返されます。</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>この関数は<a href="read.html"><tt>f_read()</tt></a>のラッパー関数です。読み出し動作は、最初の<tt>'\n'</tt>を読み込むか、ファイル終端に達するか、<tt class="arg">len</tt> - 1文字を読み出すまで続きます。読み込まれた文字列の終端には<tt>'\0'</tt>が付加されます。既にファイル終端で1文字も読み込まれなかったとき、または何らかのエラーが発生したときは関数は失敗しヌル・ポインタを返します。ファイル終端かエラーかは<tt>f_eof()</tt>,<tt>f_error()</tt>マクロで調べられます。</p>
+<p>Unicode API構成(<tt>_LFN_UNICODE == 1</tt>)が選択されているときは、<tt class="arg">buff</tt>はUTF-16文字列になりますが、ファイル上のエンコードは、<tt>_STRF_ENCODE</tt>オプションで選択できます。それ以外の時は無変換(1バイト/1文字)で読み出します。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_USE_STRFUNC</tt>が1または2のとき使用可能です。2のときは、ファイルに含まれる<tt>'\r'</tt>が取り除かれてバッファに読み込まれます。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="read.html">f_read</a>, <a href="putc.html">f_putc</a>, <a href="puts.html">f_puts</a>, <a href="printf.html">f_printf</a>, <a href="close.html">f_close</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

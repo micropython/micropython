@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/sfileinfo.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - FILINFO</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>FILINFO</h2>
+<p>The <tt>FILINFO</tt> structure holds a file information returned by <tt>f_readdir()</tt> and <tt>f_stat()</tt> function.</p>
+<pre>
+<span class="k">typedef struct</span> {
+    DWORD fsize;      <span class="c">/* File size */</span>
+    WORD  fdate;      <span class="c">/* Last modified date */</span>
+    WORD  ftime;      <span class="c">/* Last modified time */</span>
+    BYTE  fattrib;    <span class="c">/* Attribute */</span>
+    TCHAR fname[13];  <span class="c">/* Short file name (8.3 format) */</span>
+<span class="k">#if</span> _USE_LFN
+    TCHAR* lfname;    <span class="c">/* Pointer to the LFN buffer */</span>
+    int   lfsize;     <span class="c">/* Size of the LFN buffer in unit of TCHAR */</span>
+<span class="k">#endif</span>
+} FILINFO;
+</pre>
+</div>
+
+<h4>Members</h4>
+<dl>
+<dt>fsize</dt>
+<dd>Indicates size of the file in unit of byte. Always zero for directories.</dd>
+<dt>fdate</dt>
+<dd>Indicates the date that the file was modified or the directory was created.<br>
+<dl>
+<dt>bit15:9</dt>
+<dd>Year origin from 1980 (0..127)</dd>
+<dt>bit8:5</dt>
+<dd>Month (1..12)</dd>
+<dt>bit4:0</dt>
+<dd>Day (1..31)</dd>
+</dl>
+</dd>
+<dt>ftime</dt>
+<dd>Indicates the time that the file was modified or the directory was created.<br>
+<dl>
+<dt>bit15:11</dt>
+<dd>Hour (0..23)</dd>
+<dt>bit10:5</dt>
+<dd>Minute (0..59)</dd>
+<dt>bit4:0</dt>
+<dd>Second / 2 (0..29)</dd>
+</dl>
+</dd>
+<dt>fattrib</dt>
+<dd>Indicates the file/directory attribute in combination of <tt>AM_DIR</tt>, <tt>AM_RDO</tt>, <tt>AM_HID</tt>, <tt>AM_SYS</tt> and <tt>AM_ARC</tt>.</dd>
+<dt>fname[]</dt>
+<dd>Indicates the file/directory name in 8.3 format null-terminated string. It is always returnd with upper case in non-LFN configuration but it can be returned with lower case in LFN configuration.</dd>
+<dt>lfname</dt>
+<dd>Pointer to the LFN buffer to store the read LFN. This member must be initialized by application prior to use this structure. Set null pointer if LFN is not needed. Not available in non-LFN configuration.</dd>
+<dt>lfsize</dt>
+<dd>Size of the LFN buffer in unit of TCHAR. This member must be initialized by application prior to use this structure. Not available in non-LFN configuration.</dd>
+</dl>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

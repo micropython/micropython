@@ -1,0 +1,20 @@
+BeOS support for TinyGL, 1998 Peder Blekken
+
+I implemented (a limited version of) the BGLView class. There is 
+no DirectWindow support, and some other funtions are missing too,
+but it should work ok for most uses. Feel free to use and modify 
+GLView.cpp and GLView.h in any way you desire.
+
+You will need to take a look in Makefile to compile the library
+under BeOS. For those of you not familiar with using makefiles: too bad :)
+
+Also, you will probably need to remove  /boot/develop/headers/be/opengl 
+from the BEINCLUDES environment variable. Unfortunately, this means 
+editing the /boot/beos/system/boot/SetupEnvironment. It might be possible 
+to just make sure the TinyGL path is before Be's  OpenGL in the include-paths 
+though. But I prefer to remove /boot/develop/headers/be/opengl, since I 
+often use Mesa as well. It is a better to add the OpenGL include path in your 
+makefile; or BeIDE project if that is what you use.
+
+Contact me for any reason: <pederb@sim.no>
+

@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/sfileinfo.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - FILINFO</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>FILINFO</h2>
+<p><tt>FILINFO</tt>構造体は、<tt>f_stat(), f_readdir()</tt>で返されるファイル情報を保持します。</p>
+<pre>
+<span class="k">typedef</span> <span class="k">struct</span> {
+    DWORD fsize;     <span class="c">/* ファイル・サイズ */</span>
+    WORD fdate;      <span class="c">/* 最後に更新された日付 */</span>
+    WORD ftime;      <span class="c">/* 最後に更新された時刻  */</span>
+    BYTE fattrib;    <span class="c">/* アトリビュート */</span>
+    TCHAR fname[13]; <span class="c">/* 短いファイル名 (8.3フォーマット) */</span>
+<span class="k">#if</span> _USE_LFN
+    TCHAR* lfname;   <span class="c">/* 長いファイル名のバッファへのポインタ */</span>
+    int lfsize;      <span class="c">/* 長いファイル名のバッファのサイズ [文字数] */</span>
+<span class="k">#endif</span>
+} FILINFO;
+</pre>
+</div>
+
+<h4>メンバ</h4>
+<dl>
+<dt>fsize</dt>
+<dd>ファイルのバイト単位のサイズが格納されます。ディレクトリの場合は常に0です。</dd>
+<dt>fdate</dt>
+<dd>ファイルの変更された日付、またはディレクトリの作成された日付が格納されます。<br>
+<dl>
+<dt>bit15:9</dt>
+<dd>1980年を起点とした年が 0..127 で入ります。</dd>
+<dt>bit8:5</dt>
+<dd>月が 1..12 の値で入ります。</dd>
+<dt>bit4:0</dt>
+<dd>日が 1..31 の値で入ります。</dd>
+</dl>
+</dd>
+<dt>ftime</dt>
+<dd>ファイルの変更された時刻、またはディレクトリの作成された時刻が格納されます。<br>
+<dl>
+<dt>bit15:11</dt>
+<dd>時が 0..23 の値で入ります。</dd>
+<dt>bit10:5</dt>
+<dd>分が 0..59 の値で入ります。</dd>
+<dt>bit4:0</dt>
+<dd>秒/2が 0..29 の値で入ります。</dd>
+</dl>
+</dd>
+<dt>fattrib</dt>
+<dd>属性フラグが格納されます。フラグは<tt>AM_DIR, AM_RDO, AM_HID, AM_SYS, AM_ARC</tt>の組み合わせとなります。</dd>
+<dt>fname[]</dt>
+<dd>8.3形式の名前が<tt>'\0'</tt>で終わる文字列として格納されます。非LFN構成のときは、常に大文字で返されます。LFN構成のときは短い名前が返されますが、ASCII英字が小文字になる場合があります。</dd>
+<dt>lfname</dt>
+<dd>返される長いファイル名を格納するバッファへのポインタ。この構造体を使用する前にアプリケーションにより初期化されなければなりません。このメンバにNULLが設定されるとLFNは返されません。非LFN構成のときはこのメンバは存在しません。</dd>
+<dt>lfsize</dt>
+<dd>長いファイル名を格納するバッファのサイズ(要素数)。この構造体を使用する前にアプリケーションにより初期化されなければなりません。非LFN構成のときはこのメンバは存在しません。</dd>
+</dl>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

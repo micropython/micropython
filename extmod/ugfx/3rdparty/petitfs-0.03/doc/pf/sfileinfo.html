@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - FILINFO</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>FILINFO</h2>
+<p>The <tt>FILINFO</tt> structure holds a file information returned by pf_readdir function.</p>
+<pre>
+typedef struct {
+    DWORD   fsize;        <span class="c">/* File size */</span>
+    WORD    fdate;        <span class="c">/* Last modified date */</span>
+    WORD    ftime;        <span class="c">/* Last modified time */</span>
+    BYTE    fattrib;      <span class="c">/* Attribute */</span>
+    char    fname[13];    <span class="c">/* File name */</span>
+} FILINFO;
+</pre>
+</div>
+
+<h4>Members</h4>
+<dl>
+<dt>fsize</dt>
+<dd>Indicates size of the file in unit of byte. This is always zero when it is a directory.</dd>
+<dt>fdate</dt>
+<dd>Indicates the date that the file was modified or the directory was created.<br>
+<dl>
+<dt>bit15:9</dt>
+<dd>Year origin from 1980 (0..127)</dd>
+<dt>bit8:5</dt>
+<dd>Month (1..12)</dd>
+<dt>bit4:0</dt>
+<dd>Day (1..31)</dd>
+</dl>
+</dd>
+<dt>ftime</dt>
+<dd>Indicates the time that the file was modified or the directory was created.<br>
+<dl>
+<dt>bit15:11</dt>
+<dd>Hour (0..23)</dd>
+<dt>bit10:5</dt>
+<dd>Minute (0..59)</dd>
+<dt>bit4:0</dt>
+<dd>Second / 2 (0..29)</dd>
+</dl>
+</dd>
+<dt>fattrib</dt>
+<dd>Indicates the file/directory attribute in combination of <tt>AM_DIR</tt>, <tt>AM_RDO</tt>, <tt>AM_HID</tt>, <tt>AM_SYS</tt> and <tt>AM_ARC</tt>.</dd>
+<dt>fname[]</dt>
+<dd>Indicates the file/directory name in 8.3 format null-terminated string.</dd>
+</dl>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

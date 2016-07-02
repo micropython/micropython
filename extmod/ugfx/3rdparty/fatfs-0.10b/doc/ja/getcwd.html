@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/getcwd.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_getcwd</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_getcwd</h2>
+<p>カレント・ディレクトリを得ます。</p>
+<pre>
+FRESULT f_getcwd (
+  TCHAR* <span class="arg">buff</span>, <span class="c">/* [OUT] バッファ */</span>
+  UINT <span class="arg">len</span>     <span class="c">/* [IN] バッファ・サイズ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>カレント・ディレクトリのパス名文字列を格納するバッファ</dd>
+<dt>len</dt>
+<dd><tt>TCHAR</tt>単位のバッファ・サイズ</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>カレント・ドライブのカレント・ディレクトリのフル・パス文字列を取得します。<tt>_VOLUMES</tt>が2以上のときは、論理ドライブ番号の付加されたパス名となります。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_RPATH == 2</tt>のとき使用可能です。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="chdrive.html">f_chdrive</a>, <a href="chdir.html">f_chdir</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/getfree.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_getfree</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_getfree</h2>
+<p>ボリューム上の空き領域のサイズを取得します。</p>
+<pre>
+FRESULT f_getfree (
+  const TCHAR* <span class="arg">path</span>,  <span class="c">/* [IN] 対象ドライブを指定します */</span>
+  DWORD* <span class="arg">nclst</span>,       <span class="c">/* [OUT] 空きクラスタ数を格納する変数へのポインタ */</span>
+  FATFS** <span class="arg">fatfs</span>       <span class="c">/* [OUT] ファイル・システム・オブジェクトを指すポインタへのポインタ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>調べる対象の論理ドライブを示す<a href="filename.html">パス名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。ヌル文字列はカレント・ドライブを意味します。</dd>
+<dt>nclst</dt>
+<dd>空きクラスタ数を格納する<tt>DWORD</tt>型変数へのポインタを指定します。</dd>
+<dt>fatfs</dt>
+<dd>対象ドライブのファイル・システム・オブジェクトを指すポインタが返されます。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>論理ドライブ上の空き領域のサイズをクラスタ単位で取得します。返されたファイル・システム・オブジェクトの<tt>csize</tt>メンバがクラスタあたりのセクタ数を示しているので、これを元にセクタ単位の空きサイズが計算できます。FAT32ボリュームにおいては、FSINFOの情報が実際の空きクラスタ数と同期していない場合、不正確な値を返す可能性があります。この問題を避けるため、<tt>_FS_NOFSINFO</tt>オプションでマウント後の初回は必ずフルFATスキャンをするように構成することもできます。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_FS_MINIMIZE == 0</tt>のとき使用可能です。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    FATFS *fs;
+    DWORD fre_clust, fre_sect, tot_sect;
+
+
+    <span class="c">/* ドライブ1のボリューム情報と空きクラスタ数を得る */</span>
+    res = f_getfree("1:", &amp;fre_clust, &amp;fs);
+    if (res) die(res);
+
+    <span class="c">/* 全セクタ数と空きセクタ数を計算 */</span>
+    tot_sect = (fs->n_fatent - 2) * fs->csize;
+    fre_sect = fre_clust * fs->csize;
+
+    <span class="c">/* ボリューム全体のサイズと空きのサイズを表示 (512バイト/セクタと仮定) */</span>
+    printf("%10lu KiB total drive space.\n%10lu KiB available.\n",
+           tot_sect / 2, fre_sect / 2);
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<tt><a href="sfatfs.html">FATFS</a></tt>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

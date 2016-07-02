@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - disk_writep</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>disk_writep</h2>
+<p>The disk_writep function writes data to the sector.</p>
+<pre>
+DRESULT disk_writep (
+  BYTE* <span class="arg">buff</span>,  <span class="c">/* [IN] Pointer to the data to be written */</span>
+  DWORD <span class="arg">sc</span>,    <span class="c">/* [IN] Sector number or Number of bytes to wtite */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>Pointer to the data to be written to the sector. If a NULL is given, the function initiate/finalize a write transaction to the sector.</dd>
+<dt>sc</dt>
+<dd>Specifies nubmer of bytes to write if <tt class="arg">buff</tt> is not a NULL. If <tt class="arg">buff</tt> is a NULL and <tt class="arg">sc</tt> is not a zero, the function initiates a write transactin to the sector. If  <tt class="arg">buff</tt> and <tt class="arg">sc</tt> are zero, the function finalize the current sector write transactin.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Value</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>Any hard error occured during the write operation and could not recover it or the medium is write protected.</dd>
+<dt>RES_PARERR</dt>
+<dd>Invalid parameter.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The device has not been initialized.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>A sector write operation is done in following sequence.</p>
+<ol>
+<li><tt>disk_writep(0, sector_number);</tt> Initiate a sector write transaction.</li>
+<li><tt>disk_writep(data, byte_to_write);</tt> Start to write data to the sector.</li>
+<li><tt>disk_writep(data, byte_to_write);</tt> And data can be written upto 512 bytes with one or more calls.</li>
+<li><tt>disk_writep(data, byte_to_write);</tt> ...</li>
+<li><tt>disk_writep(0, 0);</tt> Finalize the write transaction. If number of bytes sent is less than 512, left bytes in the sector is filled by zero.</li>
+</ol>
+<p>If a write transaction is in progress, <tt>disk_readp()</tt> function will fail and <tt>disk_initialize()</tt> function finalize the current write transaction.</p>
+</div>
+
+
+<div class="para">
+<h4>Remarks</h4>
+<p>This funciton is needed when <tt>_USE_WRITE == 1</tt>.</p>
+</div>
+
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

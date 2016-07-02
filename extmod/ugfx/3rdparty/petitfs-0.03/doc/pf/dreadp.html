@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - disk_readp</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>disk_readp</h2>
+<p>The disk_readp function reads a partial sector of the device.</p>
+<pre>
+DRESULT disk_readp (
+  BYTE* <span class="arg">buff</span>,    <span class="c">/* [OUT] Pointer to the read buffer */</span>
+  DWORD <span class="arg">sector</span>,  <span class="c">/* [IN]  Sector number */</span>
+  UINT <span class="arg">offset</span>,   <span class="c">/* [IN]  Byte offset in the sector to start to read */</span>
+  UINT <span class="arg">count</span>     <span class="c">/* [IN]  Number of bytes to read */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>Pointer to the read buffer to store the read data. If a NULL is given, read bytes will be forwarded to the outgoing stream instead of the memory.</dd>
+<dt>sector</dt>
+<dd>Specifies the sector number to be read in logical block address (LBA).</dd>
+<dt>offset</dt>
+<dd>Specifies the byte offset in the sector to start to read. The value can be 0 to 511.</dd>
+<dt>count</dt>
+<dd>Specifies number of bytes to read. The value can be 0 to 512 and <tt class="arg">offset</tt> + <tt class="arg">count</tt> must not exceed 512.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Value</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>Any hard error occured during the disk read operation and could not recover it.</dd>
+<dt>RES_PARERR</dt>
+<dd>Invalid parameter.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The device has not been initialized.</dd>
+</dl>
+</div>
+
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/filename.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - パス名のフォーマット</title>
+</head>
+
+<body>
+<h1>パス名のフォーマット</h1>
+<div class="para" id="nam">
+<h3>ファイル・ディレクトリ名</h3>
+<p>FatFsモジュールでのファイル、ディレクトリ、ドライブの指定方法はDOS/Windows APIとほぼ同じです。パス名のフォーマットは次の通りです。</p>
+<pre>"[論理ドライブ番号:][/]ディレクトリ名/ファイル名"</pre>
+<p>FatFsモジュールは長いファイル名(LFN)および8.3形式ファイル名(SFN)に対応しています。LFNは、(<tt>_USE_LFN &gt; 0</tt>)のとき使用可能になります。ディレクトリ・セパレータにはDOS/Windows APIと同じく<tt>'/'</tt>と<tt>'\'</tt>を使用します。連続したセパレータは無視され1個として扱われます。唯一の違いは、論理ドライブの指定だけです。論理ドライブ番号は、<tt>'0'</tt>～<tt>'9'</tt>の一文字の数字とコロンで指定し、省略した場合は<em>デフォルト・ドライブ</em>(0またはカレント・ドライブ)が選択されます。</p>
+<p>ヌル文字や制御文字(<tt>'\0'</tt>～<tt>'\x1F'</tt>)は、パス名の終端として認識されます。パス名に先行あるいは中に含まれるスペースは、LFN構成では名前の一部として有効ですが、非LFN構成ではスペースはパス名の終端として認識されます。</p>
+<p>標準構成(<tt>_FS_RPATH == 0</tt>)のときは、全てのオブジェクトがルート・ディレクトリから辿る絶対パスで指定されます。OS指向なカレント・ディレクトリという概念は無く、またドット・ディレクトリ(&quot;.&quot;や&quot;..&quot;)は使用できません。パス名先頭のセパレータは無視されます。デフォルト・ドライブ番号は常に0になります。</p>
+<p>相対パスを有効(<tt>_FS_RPATH == 1</tt>)にしたときは、先行するセパレータの有無によって検索開始ディレクトリが変わり、セパレータがある場合はルート・ディレクトリから、無い場合は<a href="chdir.html"><tt>f_chdir()</tt></a>で設定されるカレント・ディレクトリからになります。またパス名にドット・ディレクトリが使用できます。デフォルト・ドライブ番号は<a href="chdrive.html"><tt>f_chdrive()</tt></a>で設定された値となります。</p>
+<table class="lst2">
+<tr><td>パス名の例</td><td>_FS_RPATH == 0</td><td>_FS_RPATH == 1</td></tr>
+<tr class="lst3"><td>file.txt</td><td>ドライブ0のルート・ディレクトリ下のファイル</td><td>カレント・ドライブのカレント・ディレクトリ下のファイル</td></tr>
+<tr><td>/file.txt</td><td>ドライブ0のルート・ディレクトリ下のファイル</td><td>カレント・ドライブのルート・ディレクトリ下のファイル</td></tr>
+<tr><td></td><td>ドライブ0のルート・ディレクトリ</td><td>カレント・ドライブのカレント・ディレクトリ</td></tr>
+<tr><td>2:</td><td>ドライブ2のルート・ディレクトリ</td><td>ドライブ2のカレント・ディレクトリ</td></tr>
+<tr><td>2:file1.txt</td><td>ドライブ2のルート・ディレクトリ下のファイル</td><td>ドライブ2のカレント・ディレクトリ下のファイル</td></tr>
+<tr><td>2:/</td><td>ドライブ2のルート・ディレクトリ</td><td>ドライブ2のルート・ディレクトリ</td></tr>
+<tr><td>../file.txt</td><td>無効</td><td>親ディレクトリ下のファイル</td></tr>
+<tr><td>.</td><td>無効</td><td>このディレクトリ</td></tr>
+<tr><td>..</td><td>無効</td><td>カレント・ディレクトリの親ディレクトリ</td></tr>
+<tr><td>dir1/..</td><td>無効</td><td>カレント・ディレクトリ</td></tr>
+<tr><td>/..</td><td>無効</td><td>ルート・ディレクトリ(その上は辿れない)</td></tr>
+</table>
+<p>また、<tt>_STR_VOLUME_ID</tt>オプションを有効にすることでドライブ番号の識別には数字のほか、任意の文字列を使用することも可能になります。</p>
+</div>
+
+<p><br></p>
+<div class="para" id="uni">
+<h3>Unicode API</h3>
+<p>ファイル関数の入出力のうちファイル名やパス名を指定する引数の型は、<tt>TCHAR</tt>で定義されていますが、これは通常は<tt>char</tt>のエリアスになっています。そして、<tt>_CODE_PAGE</tt>で指定されるANSI/OEMコード(SBCSまたはDBCS)の文字列として扱われます。ファイル名入出力をUnicodeとする構成(<tt>_LFN_UNICODE == 1</tt>)にしたときは、<tt>TCHAR</tt>はワイド文字(<tt>WCHAR, unsigned short</tt>)に切り替わり、パス名の入出力にUnicodeを使用するようになります。これによりLFN規格に完全対応となり、ANSI/OEMコードにない文字(たとえば ✝☪✡☸☭など)も使用できます。この設定は文字列入出力関数のデータ型とファイル上のエンコーディングにも影響を与えます。リテラル文字列を定義するとき、次に示すように<tt>_T(s)</tt>および<tt>_TEXT(s)</tt>マクロを使ってANSI/OEMとUnicodeを自動切り替えすることができます。</p>
+<pre>
+ f_open(fp, "filename.txt", FA_READ);      <span class="c">/* ANSI/OEM専用コード */</span>
+ f_open(fp, L"filename.txt", FA_READ);     <span class="c">/* Unicode専用コード */</span>
+ f_open(fp, _T("filename.txt"), FA_READ);  <span class="c">/* 両用コード(自動切り替え) */</span>
+</pre>
+</div>
+
+<p><br></p>
+<div class="para" id="vol">
+<h3>ボリューム管理</h3>
+<p>デフォルトの構成では、それぞれの論理ドライブは同じ番号の物理ドライブに1:1で結びつけられていて、自動検出機能によりその物理ドライブ上の一つのFATボリュームがマウントされます。FATボリュームの検出は、セクタ0、第一区画～第四区画の順に行われます。</p>
+<p><tt>_MULTI_PARTITION</tt>に1を指定すると、それぞれの論理ドライブに対して個別に物理ドライブ番号と区画を指定できるようになります。この構成では、論理ドライブと区画の対応を解決するためのテーブルを次に示すように定義する必要があります。</p>
+<pre>
+例:論理ドライブ0～2を物理ドライブ0(非リムーバブル)の3つの基本区画に割り当て、
+   論理ドライブ3を物理ドライブ1(リムーバブル)に割り当てる場合。
+
+PARTITION VolToPart[] = {
+    {0, 1},     <span class="c">/* 論理ドライブ 0 ==> 物理ドライブ 0, 第1区画 */</span>
+    {0, 2},     <span class="c">/* 論理ドライブ 1 ==> 物理ドライブ 0, 第2区画 */</span>
+    {0, 3},     <span class="c">/* 論理ドライブ 2 ==> 物理ドライブ 0, 第3区画 */</span>
+    {1, 0}      <span class="c">/* 論理ドライブ 3 ==> 物理ドライブ 1, 自動検出 */</span>
+};
+
+<img src="../img/f7.png" width="828" height="288" alt="論理ドライブと物理ドライブの関係">
+</pre>
+<p>複数区画指定を使用する場合、次の点に注意しなければなりません。
+<ul>
+<li>マウント可能な区画は基本区画のみで、拡張区画内には対応しない。</li>
+<li>複数のマウントされた区画を持つ物理ドライブは、非リムーバブルでなければならず、システム動作中のメディア交換は禁止。</li>
+</ul>
+</div>
+
+</body>
+</html>

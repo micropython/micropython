@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dioctl.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_ioctl</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_ioctl</h2>
+<p>The disk_ioctl function cntrols device specific features and miscellaneous functions other than generic read/write.</p>
+<pre>
+DRESULT disk_ioctl (
+  BYTE <span class="arg">pdrv</span>,     <span class="c">/* [IN] Drive number */</span>
+  BYTE <span class="arg">cmd</span>,      <span class="c">/* [IN] Control command code */</span>
+  void* <span class="arg">buff</span>     <span class="c">/* [I/O] Parameter and data buffer */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Physical drive number to identify the target device.</dd>
+<dt>cmd</dt>
+<dd>Command code.</dd>
+<dt>buff</dt>
+<dd>Pointer to the parameter depends on the command code. Do not care if no parameter to be passed.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Value</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>An error occured.</dd>
+<dt>RES_PARERR</dt>
+<dd>The command code or parameter is invalid.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The device has not been initialized.</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The FatFs module requires only five device independent commands described below.</p>
+<table class="lst">
+<caption>Standard ioctl command used by FatFs</caption>
+<tr><th>Command</th><th>Description</th></tr>
+<tr><td>CTRL_SYNC</td><td>Make sure that the device has finished pending write process. If the disk I/O module has a write back cache, the dirty buffers must be written back to the media immediately. Nothing to do for this command if each write operation to the media is completed within the <tt>disk_write()</tt> function. Required at <tt>_FS_READONLY == 0</tt>.</td></tr>
+<tr><td>GET_SECTOR_COUNT</td><td>Returns number of available sectors on the drive into the <tt>DWORD</tt> variable pointed by <tt class="arg">buff</tt>. This command is used by only <tt>f_mkfs()</tt> and <tt>f_fdisk()</tt> function to determine the volume/partition size to be created. Required at <tt>_USE_MKFS == 1</tt> or <tt>_MULTI_PARTITION == 1</tt>.</td></tr>
+<tr><td>GET_SECTOR_SIZE</td><td>Returns sector size of the media into the <tt>WORD</tt> variable pointed by <tt class="arg">buff</tt>. Valid return values of this command are 512, 1024, 2048 or 4096. This command is required at variable sector size configuration, <tt>_MAX_SS &gt; _MIN_SS</tt>. Never used at fixed sector size configuration, <tt>_MAX_SS == _MIN_SS</tt>, and it must work at that sector size.</td></tr>
+<tr><td>GET_BLOCK_SIZE</td><td>Returns erase block size of the flash memory in unit of sector into the <tt>DWORD</tt> variable pointed by <tt class="arg">buff</tt>. The allowable value is from 1 to 32768 in power of 2. Return 1 if the erase block size is unknown or disk media. This command is used by only <tt>f_mkfs()</tt> function and it attempts to align data area to the erase block boundary. Required at <tt>_USE_MKFS == 1</tt>.</td></tr>
+<tr><td>CTRL_ERASE_SECTOR</td><td>Informs device that the data on the block of sectors specified by a <tt>DWORD</tt> array {&lt;start sector&gt;, &lt;end sector&gt;} pointed by <tt class="arg">buff</tt> is no longer needed and may be erased. The device would force erased the memory block. This is a command similar to Trim command of ATA device. When this feature is not supported or not a flash memory media, nothing to do for this command. The FatFs does not check the result code and the file function is not affected even if the sectors ware not erased well. This command is called on removing a cluster chain and <tt>f_mkfs()</tt> function. Required at <tt>_USE_ERASE == 1</tt>.</td></tr>
+</table>
+
+<p>FatFs never uses any device dependent command and user defined command. Following table shows an example of non-standard commands usable for some applications.</p>
+<table class="lst">
+<caption>Example of optional ioctl command</caption>
+<tr><th>Command</th><th>Description</th></tr>
+<tr><td>CTRL_FORMAT</td><td>Create a physical format on the media. If <tt class="arg">buff</tt> is not null, it is pointer to the call-back function for progress notification.</td></tr>
+<tr><td>CTRL_POWER_IDLE</td><td>Put the device idle state. <tt>STA_NOINIT</tt> in status flag may not be set if the device would go active state by generic read/write function.</td></tr>
+<tr><td>CTRL_POWER_OFF</td><td>Put the device off state. Shut-down the power to the device and deinitialize the device interface if needed. <tt>STA_NOINIT</tt> in status flag must be set. The device goes active state by <tt>disk_initialize()</tt> function.</td></tr>
+<tr><td>CTRL_LOCK</td><td>Lock media eject mechanism.</td></tr>
+<tr><td>CTRL_UNLOCK</td><td>Unlock media eject mechanism.</td></tr>
+<tr><td>CTRL_EJECT</td><td>Eject media cartridge. <tt>STA_NOINIT</tt> and <tt>STA_NODISK</tt> in status flag are set after the function succeeded.</td></tr>
+<tr><td>MMC_GET_TYPE</td><td>Get card type. The type flags, bit0:MMCv3, bit1:SDv1, bit2:SDv2+ and bit3:LBA, is stored to a BYTE variable pointed by <tt class="arg">buff</tt>. (MMC/SDC specific command)</td></tr>
+<tr><td>MMC_GET_CSD</td><td>Get CSD register into a 16-byte buffer pointed by <tt class="arg">buff</tt>. (MMC/SDC specific command)</td></tr>
+<tr><td>MMC_GET_CID</td><td>Get CID register into a 16-byte buffer pointed by <tt class="arg">buff</tt>. (MMC/SDC specific command)</td></tr>
+<tr><td>MMC_GET_OCR</td><td>Get OCR register into a 4-byte buffer pointed by <tt class="arg">buff</tt>. (MMC/SDC specific command)</td></tr>
+<tr><td>MMC_GET_SDSTAT</td><td>Get SDSTATUS register into a 64-byte buffer pointed by <tt class="arg">buff</tt>. (SDC specific command)</td></tr>
+<tr><td>ATA_GET_REV</td><td>Get the revision string into a 16-byte buffer pointed by <tt class="arg">buff</tt>. (ATA/CFC specific command)</td></tr>
+<tr><td>ATA_GET_MODEL</td><td>Get the model string into a 40-byte buffer pointed by <tt class="arg">buff</tt>. (ATA/CFC specific command)</td></tr>
+<tr><td>ATA_GET_SN</td><td>Get the serial number string into a 20-byte buffer pointed by <tt class="arg">buff</tt>. (ATA/CFC specific command)</td></tr>
+</table>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

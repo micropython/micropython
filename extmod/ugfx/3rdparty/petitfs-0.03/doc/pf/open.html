@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - pf_open</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>pf_open</h2>
+<p>The pf_open function opens an existing file.</p>
+<pre>
+FRESULT pf_open (
+  const char* <span class="arg">path</span>  <span class="c">/* [IN] Pointer to the file neme */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>Pointer to a null-terminated string that specifies the <a href="filename.html">file name</a> to open.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>FR_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>FR_NO_FILE</dt>
+<dd>Could not find the file or path.</dd>
+<dt>FR_DISK_ERR</dt>
+<dd>The function failed due to a hard error in the disk function, a wrong FAT structure or an internal error.</dd>
+<dt>FR_NOT_ENABLED</dt>
+<dd>The volume has not been mounted.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>The file must be opend prior to use <tt>pf_read()</tt> and <tt>pf_lseek()</tt> function. The open file is valid until next open.</p>
+</div>
+
+
+<div class="para">
+<h4>Example</h4>
+<pre>
+int main (void)
+{
+    FATFS fs;          <span class="c">/* Work area (file system object) for the volume */</span>
+    BYTE buff[16];     <span class="c">/* File read buffer */</span>
+    UINT br;           <span class="c">/* File read count */</span>
+    FRESULT res;       <span class="c">/* Petit FatFs function common result code */</span>
+
+
+    <span class="c">/* Mount the volume */</span>
+    pf_mount(&amp;fs);
+    if (res) die(res);
+
+    <span class="c">/* Open a file */</span>
+    res = pf_open("srcfile.dat");
+    if (res) die(res);
+
+    <span class="c">/* Read data to the memory */</span>
+    res = pf_read(buff, 16, &amp;br);    <span class="c">/* Read data to the buff[] */</span>
+    if (res) die(res);               <span class="c">/* Check error */</span>
+    if (br != 16) die(255);          <span class="c">/* Check EOF */</span>
+
+    ....
+
+    <span class="c">/* Forward data to the outgoing stream */</span>
+    do
+        res = pf_read(0, 512, &amp;br);  <span class="c">/* Send data to the stream */</span>
+    while (res || br != 512);        <span class="c">/* Break on error or eof */</span>
+
+    ....
+
+}
+</pre>
+</div>
+
+<div class="para">
+<h4>QuickInfo</h4>
+<p>Always available.</p>
+</div>
+
+<div class="para">
+<h4>References</h4>
+<p><tt><a href="read.html">pf_read</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

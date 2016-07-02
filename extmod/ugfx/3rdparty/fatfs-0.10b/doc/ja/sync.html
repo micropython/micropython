@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/sync.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_sync</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_sync</h2>
+<p>書き込み中のファイルのキャッシュされた情報をフラッシュします。</p>
+<pre>
+FRESULT f_sync (
+  FIL* <span class="arg">fp</span>     <span class="c">/* [IN] ファイル・オブジェクト構造体へのポインタ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>syncするファイルのファイル・オブジェクト構造体へのポインタを指定します。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>この関数は<tt>f_close()</tt>と同じ処理を実行しますが、ファイルは引き続き開かれたままになり、読み書きを続行できます。ロギングなど、書き込みモードで長時間ファイルが開かれているアプリケーションにおいて、定期的または区切りの良いところでこの関数を使用することにより、不意の電源断やメディアの取り外しにより失われるデータを最小にすることができます。この背景については、<a href="appnote.html#critical">アプリケーション・ノート</a>も参照してください。</p>
+<p>実際のところ、<tt>f_close()</tt>内ではこの関数を呼び出した後ファイル・オブジェクトを無効化しているだけなので、<tt>f_close()</tt>直前に<tt>f_sync()</tt>を置くことは無意味です。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>のときに使用可能です。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="close.html">f_close</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>
