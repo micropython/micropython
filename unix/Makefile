@@ -235,7 +235,11 @@ fast:
 
 # build a minimal interpreter
 minimal:
-	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' BUILD=build-minimal PROG=micropython_minimal MICROPY_PY_TERMIOS=0 MICROPY_PY_SOCKET=0 MICROPY_PY_FFI=0 MICROPY_USE_READLINE=0 MICROPY_FATFS=0
+	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
+	    BUILD=build-minimal PROG=micropython_minimal \
+	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
+	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
+	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
 
 # build interpreter with nan-boxing as object model
 nanbox:
