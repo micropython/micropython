@@ -730,6 +730,92 @@ const mp_obj_type_t ugfx_label_type = {
 
 
 
+/// \class image - provides a wrapper for uGFX images
+///
+/// This class is used to hold a uGFX image handle, and can also be
+/// used to cache images if used multiple times
+///
+///     lcd = pyb.image(filepath, cache)
+///        where cache = TRUE/FALSE
+///
+
+
+typedef struct _ugfx_image_obj_t {
+    mp_obj_base_t base;
+	
+	gdispImage thisImage; 
+
+} ugfx_image_obj_t;
+
+/// \classmethod \constructor(file_path, cache)
+///
+/// Construct an uGFX image object.
+STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+
+	int cache;
+	if (n_args == 1)
+		cache = false;
+	else
+		cache = mp_obj_get_int(args[1]);
+	
+	const char *img_str = mp_obj_str_get_str(args[0]);
+
+
+    // create lcd object
+    ugfx_image_obj_t *image = m_new_obj(ugfx_image_obj_t);
+    image->base.type = &ugfx_image_type;
+	
+	
+	//we'll open the file initially to fill the gdispImage struct
+	//when the draw function is used, will need to check the image handle is open
+	gdispImageOpenFile(&(image->thisImage), img_str);
+	if (cache)
+		gdispImageCache	(&(image->thisImage));
+	//gdispImageClose(&(image->thisImage));  //TODO: delete this, currently for debugging reasons
+	//TODO: error handling and reporting
+
+	return image;
+}
+
+
+/// \method close()
+///
+/// Frees up memory if cache was used, and closes the file
+STATIC mp_obj_t ugfx_image_close(mp_obj_t self_in) {
+    ugfx_image_obj_t *self = self_in;
+    gdispImageClose(&(self->thisImage));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_close_obj, ugfx_image_close);
+
+
+STATIC const mp_map_elem_t ugfx_image_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&ugfx_image_close_obj },
+	
+	//class constants
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(ugfx_image_locals_dict, ugfx_image_locals_dict_table);
+
+const mp_obj_type_t ugfx_image_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Image,
+    .make_new = ugfx_image_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_image_locals_dict,
+};
+
+
+
+
+
+
+
 /*
 
 /////////////////////////////////////////////////////

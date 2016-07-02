@@ -770,6 +770,66 @@ STATIC mp_obj_t ugfx_box(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_box_obj, 5, 5, ugfx_box);
 
 
+//TODO: combine these two functions
+
+/// \method display_image(image_object,x,y)
+///
+STATIC mp_obj_t ugfx_display_image(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+	mp_uint_t len;
+	mp_obj_t img_obj = args[1];
+	int x = mp_obj_get_int(args[2]);
+	int y = mp_obj_get_int(args[3]);
+	
+/*
+	if (img_obj != mp_const_none) {
+		if (!MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type)) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "img argument needs to be be a Image type"));
+        }
+		const ugfx_image_obj_t *image = img_obj;
+	
+		coord_t	swidth, sheight;
+	  
+		// Get the display dimensions
+		swidth = gdispGetWidth();
+		sheight = gdispGetHeight();	 
+		
+		gdispImageDraw(&(image->thisImage), x, y, swidth, sheight, 0, 0);
+	}
+*/
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_obj, 4, 4, ugfx_display_image);
+
+
+
+/// \method display_image_file(file_name,x,y)
+///
+STATIC mp_obj_t ugfx_display_image_file(mp_uint_t n_args, const mp_obj_t *args) {
+
+	mp_uint_t len;
+	const char *file = mp_obj_str_get_data(args[2], &len);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	
+	gdispImage myImage; 	
+	coord_t	swidth, sheight;
+  
+	// Get the display dimensions
+	swidth = gdispGetWidth();
+	sheight = gdispGetHeight();
+ 
+	// Set up IO for our image
+	gdispImageOpenFile(&myImage, file);
+	gdispImageDraw(&myImage, x, y, swidth, sheight, 0, 0);
+	gdispImageClose(&myImage);
+ 
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_file_obj, 3, 3, ugfx_display_image_file);
+
 
 
 STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
@@ -786,6 +846,8 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_ellipse), (mp_obj_t)&ugfx_fill_ellipse_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
@@ -795,7 +857,6 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_tear), (mp_obj_t)&ugfx_enable_tear_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_tear_line), (mp_obj_t)&ugfx_set_tear_line_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&ugfx_ball_demo_obj },
- //   { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&ugfx_get_pixel_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&ugfx_set_default_font_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_style), (mp_obj_t)&ugfx_set_default_style_obj },
@@ -844,6 +905,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Style), (mp_obj_t)&ugfx_style_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Keyboard), (mp_obj_t)&ugfx_keyboard_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Label), (mp_obj_t)&ugfx_label_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Image), (mp_obj_t)&ugfx_image_type },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_Checkbox), (mp_obj_t)&ugfx_checkbox_type },
 
 

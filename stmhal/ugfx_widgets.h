@@ -29,3 +29,4 @@ extern const mp_obj_type_t ugfx_checkbox_type;
 extern const mp_obj_type_t ugfx_list_type;
 extern const mp_obj_type_t ugfx_keyboard_type;
 extern const mp_obj_type_t ugfx_label_type;
+extern const mp_obj_type_t ugfx_image_type;
