@@ -899,6 +899,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_FRAMEBUF (0)
 #endif
 
+#ifndef MICROPY_PY_BTREE
+#define MICROPY_PY_BTREE (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
