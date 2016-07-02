@@ -86,6 +86,7 @@ STATIC mp_obj_t btree_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_close_obj, btree_close);
 
 STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
     key.data = (void*)mp_obj_str_get_data(args[1], &key.size);
