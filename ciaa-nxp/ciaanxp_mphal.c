@@ -278,19 +278,19 @@ uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
 }
 
 //TIMERs
-void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+int32_t mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
 {
-	Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
+	return Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
 }
 
-void mp_hal_disableTimer(uint8_t timerNum)
+int32_t mp_hal_disableTimer(uint8_t timerNum)
 {
-	Board_TIMER_DisableTimer(timerNum);
+	return Board_TIMER_DisableTimer(timerNum);
 }
 
-void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+int32_t mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg)
 {
-	Board_TIMER_SetCallback(timerNum,function,arg);
+	return Board_TIMER_SetCallback(timerNum,function,arg);
 }
 
 uint32_t mp_hal_getTimerClockFrequency(void)
@@ -298,9 +298,9 @@ uint32_t mp_hal_getTimerClockFrequency(void)
 	return Board_TIMER_getClockFrequency();
 }
 
-void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value)
+int32_t mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value)
 {
-	Board_TIMER_SetTimerCounter(timerNum,value);
+	return Board_TIMER_SetTimerCounter(timerNum,value);
 }
 
 uint32_t mp_hal_getTimerCounter(uint8_t timerNum)
@@ -308,9 +308,9 @@ uint32_t mp_hal_getTimerCounter(uint8_t timerNum)
 	return Board_TIMER_GetTimerCounter(timerNum);
 }
 
-void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value)
+int32_t mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value)
 {
-	Board_TIMER_SetTimerPrescaler(timerNum,value);
+	return Board_TIMER_SetTimerPrescaler(timerNum,value);
 }
 
 uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum)
@@ -318,9 +318,9 @@ uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum)
 	return Board_TIMER_GetTimerPrescaler(timerNum);
 }
 
-void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value)
+int32_t mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value)
 {
-	Board_TIMER_SetTimerMatch(timerNum,value);
+	return Board_TIMER_SetTimerMatch(timerNum,value);
 }
 
 uint32_t mp_hal_getTimerMatch(uint8_t timerNum)

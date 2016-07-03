@@ -613,37 +613,46 @@ void Board_TIMER_Init(void)
 	NVIC_EnableIRQ(TIMER3_IRQn);
 }
 
-void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+int32_t Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
 {
 	// always using match0
 	int8_t match=0;
 	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
 
         Chip_TIMER_PrescaleSet(t, presc);
         Chip_TIMER_SetMatch(t, match, matchValue);
         Chip_TIMER_MatchEnableInt(t, match); // enable int for match 0
         if(flagOnce==1)
-        { 
+        {
 			Board_TIMER_DisableTimer(timerNum);
 			Board_TIMER_SetTimerCounter(timerNum,0);
 			Chip_TIMER_ResetOnMatchDisable(t, match); // reset count on match0
 		}
-		else 
+		else
 		{
 			Chip_TIMER_ResetOnMatchEnable(t, match); // reset count on match0
 		}
 	Chip_TIMER_Enable(t);
+    return 0;
 }
 
-void Board_TIMER_DisableTimer(uint8_t timerNum)
+int32_t Board_TIMER_DisableTimer(uint8_t timerNum)
 {
+    if(timerNum>=4)
+        return -1;
 	Chip_TIMER_Disable(getTimerFomIndex(timerNum));
+    return 0;
 }
 
-void Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+int32_t Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg)
 {
+    if(timerNum>=4)
+        return -1;
 	timersInfo[timerNum].callback = function;
 	timersInfo[timerNum].callbackArg = arg;
+    return 0;
 }
 
 uint32_t Board_TIMER_getClockFrequency(void)
@@ -651,33 +660,52 @@ uint32_t Board_TIMER_getClockFrequency(void)
 	return Chip_Clock_GetMainPLLHz();
 }
 
-void Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value)
+int32_t Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value)
 {
 	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
 	t->TC = value;
+    return 0;
 }
 uint32_t Board_TIMER_GetTimerCounter(uint8_t timerNum)
 {
-	return Chip_TIMER_ReadCount(getTimerFomIndex(timerNum));
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return 0;
+	return Chip_TIMER_ReadCount(t);
 }
 
-void Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value)
+int32_t Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value)
 {
-	Chip_TIMER_PrescaleSet(getTimerFomIndex(timerNum), value);
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
+	Chip_TIMER_PrescaleSet(t, value);
+    return 0;
 }
 uint32_t Board_TIMER_GetTimerPrescaler(uint8_t timerNum)
 {
-	return Chip_TIMER_ReadPrescale(getTimerFomIndex(timerNum));
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return 0;
+	return Chip_TIMER_ReadPrescale(t);
 }
 
-void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value)
+int32_t Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value)
 {
-	Chip_TIMER_SetMatch(getTimerFomIndex(timerNum), 0, value); // always match 0
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
+	Chip_TIMER_SetMatch(t, 0, value); // always match 0
+    return 0;
 }
 uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum)
 {
-	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
-        return t->MR[0]; // always match 0
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return 0;
+    return t->MR[0]; // always match 0
 }
 
 //============================================================================================================================

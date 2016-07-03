@@ -36,6 +36,8 @@
 #define utest_assertNull(A){ if(A!=0){ utest_print1("assert null failed. Value: '0x%x' \r\n",A); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 #define utest_assertNotNull(A){ if(A==0){ utest_print1("assert not null failed. Value: '0x%x' \r\n",A); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
 
+#define utest_assertGTInt(A,B){ if(A<=B){ utest_print2("assert GT failed '%d' <= '%d'\r\n",A,B); utest_flagTestError=1; utest_lineTestError = __LINE__;  utest_fileTestError = __FILE__;return; } }
+
 #define utest_assertEqualsString(A,B,S) \
 {										\
 	utest_varAux=0;						\

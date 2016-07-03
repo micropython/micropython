@@ -9,6 +9,7 @@
 #include "testsADC.c"
 #include "testsGPIO.c"
 #include "tests485.c"
+#include "testsTimers.c"
 
 
 /* Hardware connections for testing:
@@ -93,6 +94,32 @@ void startTesting(void)
     utest_startTest(test485Uart3,testUartSetup,"485 UART: RX buffer test");
     utest_print("____________________\r\n");
 
+    // Timers Library
+    utest_startTest(testTimers1,0,"TIMERS: configure timer Test");
+    utest_startTest(testTimers2,0,"TIMERS: configure invalid timer Test");
+    utest_startTest(testTimers3,testTimersSetup,"TIMERS: set callback Test");
+    utest_startTest(testTimers4,testTimersSetup,"TIMERS: callback arg Test");
+    utest_startTest(testTimers5,testTimersSetup,"TIMERS: set callback invalid Test");
+    utest_startTest(testTimers6,testTimersSetup,"TIMERS: disable timer Test");
+    utest_startTest(testTimers7,0,"TIMERS: disable timer invalid Test");
+
+    utest_startTest(testTimers8,testTimersSetup,"TIMERS: set counter Test");
+    utest_startTest(testTimers9,testTimersSetup,"TIMERS: set counter invalid Test");
+
+    utest_startTest(testTimers10,testTimersSetup,"TIMERS: set prescaler Test");
+    utest_startTest(testTimers11,testTimersSetup,"TIMERS: set prescaler invalid Test");
+
+    utest_startTest(testTimers12,testTimersSetup,"TIMERS: get prescaler Test");
+    utest_startTest(testTimers13,testTimersSetup,"TIMERS: get prescaler invalid Test");
+
+    utest_startTest(testTimers14,testTimersSetup,"TIMERS: get counter Test");
+    utest_startTest(testTimers15,testTimersSetup,"TIMERS: get counter invalid Test");
+
+    utest_startTest(testTimers16,testTimersSetup,"TIMERS: set match Test");
+    utest_startTest(testTimers17,testTimersSetup,"TIMERS: set match invalid Test");
+
+    utest_startTest(testTimers18,testTimersSetup,"TIMERS: get match Test");
+    utest_startTest(testTimers19,testTimersSetup,"TIMERS: get match invalid Test");
 
 	utest_printStatistics();
 }
