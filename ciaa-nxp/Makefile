@@ -90,7 +90,7 @@ all: $(BUILD)/firmware.elf
 # Frozen ####################################################################
 
 OBJ += $(BUILD)/frozen-files.o
-MAKE_FROZEN = ../tools/make-frozen.py
+MAKE_FROZEN = tools/make-frozen.py
 
 ifeq ($(FROZEN_DIR),)
 FROZEN_DIR = frozen

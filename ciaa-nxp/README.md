@@ -679,3 +679,195 @@ Once spi object is created, it can be used for reading and writing data.
 In this example two functions are written, the first one allows to write a byte in a specified address in the memory and the second one reads a specified amont of
 bytes from the specified address.
 
+
+## Modbus module
+
+### Modbus master support with Instrument class.
+
+Example:Reading register 0x0001 from slave 0x55 using uart 3
+
+```python
+import pyb
+import ModBus
+
+uart = pyb.UART(3)
+uart.init(115200)
+
+instrument = ModBus.Instrument(uart,0x55,mode=ModBus.MODE_ASCII)
+print(instrument)
+
+while True:
+    try:
+        v = instrument.read_register(1)
+        print("Register 1 value :"+str(v))
+    except Exception as e:
+        print(e)
+    pyb.delay(1000)
+```
+Instrument class needs an uart object that represents a serial interface in the board, the slave address -0x55 in this example- and the modbus mode
+constans allowed are:
+- ModBus.MODE_ASCII
+- ModBus.MODE_RTU
+
+instrument object can be used to read and write registers through the serial interface in the defined slave using modbus protocol. 
+Supported methods are:
+
+- read_bit(self, registeraddress, functioncode=2)
+Read one bit from the slave.
+
+        Args:
+            * registeraddress (int): The slave register address (use decimal numbers, not hex).
+            * functioncode (int): Modbus function code. Can be 1 or 2.
+
+        Returns:
+            The bit value 0 or 1 (int).
+
+        Raises:
+            ValueError, TypeError, IOError
+
+
+- write_bit(self, registeraddress, value, functioncode=5)
+Write one bit to the slave.
+
+        Args:
+            * registeraddress (int): The slave register address (use decimal numbers, not hex).
+            * value (int): 0 or 1
+            * functioncode (int): Modbus function code. Can be 5 or 15.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError, TypeError, IOError
+
+
+- read_register(self, registeraddress, numberOfDecimals=0, functioncode=3, signed=False)
+Read an integer from one 16-bit register in the slave, possibly scaling it.
+
+        The slave register can hold integer values in the range 0 to 65535 ("Unsigned INT16").
+
+        Args:
+            * registeraddress (int): The slave register address (use decimal numbers, not hex).
+            * numberOfDecimals (int): The number of decimals for content conversion.
+            * functioncode (int): Modbus function code. Can be 3 or 4.
+            * signed (bool): Whether the data should be interpreted as unsigned or signed.
+
+        If a value of 77.0 is stored internally in the slave register as 770, then use ``numberOfDecimals=1``
+        which will divide the received data by 10 before returning the value.
+
+        Similarly ``numberOfDecimals=2`` will divide the received data by 100 before returning the value.
+
+        Returns:
+            The register data in numerical value (int or float).
+
+        Raises:
+            ValueError, TypeError, IOError
+
+
+- write_register(self, registeraddress, value, numberOfDecimals=0, functioncode=16, signed=False)
+Write an integer to one 16-bit register in the slave, possibly scaling it.
+
+        The slave register can hold integer values in the range 0 to 65535 ("Unsigned INT16").
+
+        Args:
+            * registeraddress (int): The slave register address  (use decimal numbers, not hex).
+            * value (int or float): The value to store in the slave register (might be scaled before sending).
+            * numberOfDecimals (int): The number of decimals for content conversion.
+            * functioncode (int): Modbus function code. Can be 6 or 16.
+            * signed (bool): Whether the data should be interpreted as unsigned or signed.
+
+        To store for example ``value=77.0``, use ``numberOfDecimals=1`` if the slave register will hold it as 770 internally.
+        This will multiply ``value`` by 10 before sending it to the slave register.
+
+        Similarly ``numberOfDecimals=2`` will multiply ``value`` by 100 before sending it to the slave register.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError, TypeError, IOError
+
+
+- read_registers(self, registeraddress, numberOfRegisters, functioncode=3)
+Read integers from 16-bit registers in the slave.
+
+        The slave registers can hold integer values in the range 0 to 65535 ("Unsigned INT16").
+
+        Args:
+            * registeraddress (int): The slave register start address (use decimal numbers, not hex).
+            * numberOfRegisters (int): The number of registers to read.
+            * functioncode (int): Modbus function code. Can be 3 or 4.
+
+        Any scaling of the register data, or converting it to negative number (two's complement)
+        must be done manually.
+
+        Returns:
+            The register data (a list of int).
+
+        Raises:
+            ValueError, TypeError, IOError
+
+
+- write_registers(self, registeraddress, values)
+Write integers to 16-bit registers in the slave.
+
+        The slave register can hold integer values in the range 0 to 65535 ("Unsigned INT16").
+
+        Uses Modbus function code 16.
+
+        The number of registers that will be written is defined by the length of the ``values`` list.
+
+        Args:
+            * registeraddress (int): The slave register start address (use decimal numbers, not hex).
+            * values (list of int): The values to store in the slave registers.
+
+        Any scaling of the register data, or converting it to negative number (two's complement)
+        must be done manually.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError, TypeError, IOError
+
+
+
+### Modbus slave support with Slave class.
+
+Example:
+
+```python
+import pyb
+import ModBus
+
+uart = pyb.UART(3)
+uart.init(115200)
+led1 = pyb.LED(1)
+
+mappedRegs = {0x4000 : 0x0000 , 0x4001 : 0x0000}
+
+modbus = ModBus.Slave(uart,0x55,mappedRegs,mode=ModBus.MODE_ASCII)
+print(modbus)
+
+print(mappedRegs)
+
+while True:
+    if modbus.receive():
+        print(mappedRegs)
+        if mappedRegs[0x4000]==0:
+            led1.off()
+        else:
+            led1.on() 
+```
+
+In slave mode, a dictionary is required. This object will represent slave's registers. Dictionary keys are register addresses, in this example
+the defined slave has two registers in address 0x4000 and 0x4001 with 0x0000 values.
+Read and write registers modbus packets are supported, write commands will modify dictionary values, and read commands will read them.
+
+Slave object is created passing a uart object, slave address (0x55 in this example), the dictionary and modbus mode (ascii or rtu).
+"receive" method must be call constantly to receive modbus packets through uart object. This method will return True if a packet was received.
+
+
+
+
+
