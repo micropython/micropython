@@ -1081,7 +1081,7 @@ typedef double mp_float_t;
 #endif
 
 #ifndef MP_SSIZE_MAX
-#define MP_SSIZE_MAX SSIZE_MAX
+#define MP_SSIZE_MAX 4096
 #endif
 
 // printf format spec to use for mp_int_t and friends
