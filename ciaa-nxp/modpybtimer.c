@@ -91,9 +91,13 @@ STATIC void pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, const
 		presc = 0;
 		self->freq = freq;
     }
-    else
+    else{
+        if(freq!=-1 && presc==0 && period==0)
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid Frecuency range"));
+
 		self->freq = 0;
-		
+	}
+
 	mp_hal_enableTimerAsTimer(TIMER_ID(self), presc,period,0);
 }
 
@@ -193,7 +197,7 @@ STATIC mp_obj_t pyb_timer_counter(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_timer_counter);
 
 /// \method deinit()
-STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in, mp_obj_t callback) {
+STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
     pyb_timer_obj_t *self = self_in;
 
     mp_hal_disableTimer(TIMER_ID(self));
@@ -202,7 +206,7 @@ STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in, mp_obj_t callback) {
 		
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_timer_deinit_obj, pyb_timer_deinit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 
 /// \method freq([value])
 /// Get or set the timer frequency:

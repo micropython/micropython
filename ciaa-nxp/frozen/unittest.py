@@ -43,6 +43,11 @@ class TestCase (object):
         if isinstance(o,c) == True:
             raise TestException(m)
 
+    def assertGT(self,v1,v2,m):
+        if v1 <= v2:
+            raise TestException(m)
+
+
     @staticmethod
     def run(o):
         i=1

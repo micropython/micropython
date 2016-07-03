@@ -7,6 +7,7 @@ from testing_TestDAC import TestDAC
 from testing_TestADC import TestADC
 from testing_TestGPIO import TestGPIO
 from testing_TestRS485 import TestRS485
+from testing_TestTimers import TestTimers
 
 
 class MainTest (object):
@@ -48,6 +49,10 @@ class MainTest (object):
 
         print("RS485 Tests")
         TestCase.run(TestRS485())
+        print("____________________")
+
+        print("Timers Tests")
+        TestCase.run(TestTimers())
         print("____________________")
 
 

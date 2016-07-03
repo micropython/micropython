@@ -153,6 +153,8 @@ void testTimers19(void)
 {
     int32_t r = mp_hal_getTimerMatch(99);
     utest_assertEqualsInt(0,(int)r);
+
+    mp_hal_disableTimer(0);
 }
 
 
