@@ -39,6 +39,8 @@
 #include "modugfx.h"
 #include "gfx.h"
 
+#include "board_ILI9341.h"
+
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 
@@ -299,8 +301,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_set_default_style_obj, ugfx_set_default_st
 ///
 /// Converts a 0xRRGGBB into ugfx colour format
 ///
-/// this doesnt actually work currently, the function probably isnt defined properly
-///  as a staticmethod function
 STATIC mp_obj_t ugfx_html_color(mp_obj_t rgb) {
 	int rgb_ = mp_obj_get_int(rgb);
     return mp_obj_new_int(HTML2COLOR(rgb_));
@@ -342,6 +342,38 @@ STATIC mp_obj_t ugfx_send_tab(void) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_send_tab_obj, ugfx_send_tab);
+
+
+/// \method write_command(register, data)
+///
+/// Sends data to a given register on the screen
+/// Example: ugfx.write_command(0x35,0) turns on TEAR output
+///
+STATIC mp_obj_t ugfx_write_command(mp_uint_t n_args, const mp_obj_t *args) {
+
+	uint16_t regw = mp_obj_get_int(args[0]);
+	uint len;
+	mp_obj_t * data_array;
+	
+	write_index(0, regw);
+	
+	if (n_args > 1){
+		if (MP_OBJ_IS_INT(args[1]))
+			write_data(0, (uint8_t)mp_obj_get_int(args[1]));
+		else
+		{
+			mp_obj_get_array(args[1], &len, &data_array);	
+			for (int i = 0; i < len; i++){
+				write_data(0, (uint8_t)mp_obj_get_int(data_array[i]));
+			}
+		}
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_write_command_obj, 1, 2, ugfx_write_command);
+
+
 
 /// \method stream_start(x1, y1, w, h)
 ///
@@ -695,6 +727,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_height_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&ugfx_ball_demo_obj },
