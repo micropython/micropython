@@ -31,7 +31,7 @@ PE0 - CENTRE - AH
 PA15 - LEFT - AH
 */
 
-#if MICROPY_HW_MCU_NAME  == STM32L476
+#if defined(STM32L476xx)
 
 	#define GINPUT_TOGGLE_DECLARE_STRUCTURE()											 \
 	const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {    \
