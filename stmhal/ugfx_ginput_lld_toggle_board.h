@@ -49,14 +49,14 @@ PA15 - LEFT - AH
 	
 	#define GINPUT_TOGGLE_DECLARE_STRUCTURE()											 \
 	const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {    \
-		{GPIOD, GPIO_PIN_6,  0, 0}, /* PD6  - Joy Right */    \
-		{GPIOD, GPIO_PIN_8,  0, 0}, /* PD8  - Joy Up */       \
+		{GPIOD, GPIO_PIN_9, 0, 0}, /* PD9  - Joy Right */    \
+		{GPIOD, GPIO_PIN_10, 0, 0},/* PD10 - Joy Up */       \
 		{GPIOA, GPIO_PIN_15, GPIO_PIN_15, 0}, /* PD15  - A Button */     \
 		{GPIOD, GPIO_PIN_11, GPIO_PIN_11, 0}, /* PD11  - B Button */     \
 		{GPIOD, GPIO_PIN_3,  GPIO_PIN_3, 0}, /* PD3 - Menu Button */  \
-		{GPIOD, GPIO_PIN_10, 0, 0}, /* PD10 - Joy Down */     \
-		{GPIOD, GPIO_PIN_9, 0, 0},  /* PD9  - Joy Left */     \
-		{GPIOE, GPIO_PIN_0,  0, 0}, /* PE0  - Joy Centre */   \
+		{GPIOD, GPIO_PIN_8,  0, 0},  /* PD8 - Joy Down */     \
+		{GPIOD, GPIO_PIN_6,  0, 0},  /* PD6  - Joy Left */     \
+		{GPIOE, GPIO_PIN_0,  0, 0},  /* PE0  - Joy Centre */   \
 	}
 
 #endif
