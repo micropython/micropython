@@ -8,13 +8,13 @@ class TestTimers (TestCase):
         t0 =  pyb.Timer(0)
         t0.init(prescaler=1000, period=2000)
         
-        self.assertGT(1000,t0.prescaler(),"Init prescaler")        
-        self.assertEqual(2000,t0.period(),"Init period")        
+        self.assertGT(1000,t0.prescaler(),"init prescaler")        
+        self.assertEqual(2000,t0.period(),"init period")        
 
     def test_2(self):
         t0 =  pyb.Timer(0)
         t0.init(freq=1000)
-        self.assertEqual(1000,t0.freq(),"Init freq")
+        self.assertEqual(1000,t0.freq(),"init freq")
 
     def test_3(self):
         flagOk=False
@@ -25,7 +25,7 @@ class TestTimers (TestCase):
         except:
             pass
 
-        self.assertEqual(False,flagOk,"Init freq invalid")
+        self.assertEqual(False,flagOk,"init freq invalid")
 
 
     def test_4(self):
@@ -110,3 +110,14 @@ class TestTimers (TestCase):
             pass
 
         self.assertEqual(False,flagOk,"callback timeout invalid")
+
+
+    def test_11(self):
+        flagOk=False
+        try:
+            t0 =  pyb.Timer(99)
+            flagOk=True
+        except:
+            pass
+
+        self.assertEqual(False,flagOk,"create timer invalid")
