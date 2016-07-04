@@ -305,8 +305,8 @@ STATIC mp_obj_t ugfx_html_color(mp_obj_t rgb) {
 	int rgb_ = mp_obj_get_int(rgb);
     return mp_obj_new_int(HTML2COLOR(rgb_));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_html_color_fun_obj, ugfx_html_color);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(ugfx_html_color_obj, (mp_obj_t)&ugfx_html_color_fun_obj);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_html_color_obj, ugfx_html_color);
+//STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(ugfx_html_color_obj, (mp_obj_t)&ugfx_html_color_fun_obj);
 
 
 /// \method print_fonts()
