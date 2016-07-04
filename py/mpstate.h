@@ -143,6 +143,7 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_PY_OS_DUPTERM
     mp_obj_t term_obj;
+    mp_obj_t dupterm_arr_obj;
     #endif
 
     #if MICROPY_PY_LWIP_SLIP

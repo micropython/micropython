@@ -69,9 +69,12 @@ STATIC mp_obj_t mp_uos_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(term_obj) = NULL;
+            MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
         } else {
             MP_STATE_PORT(term_obj) = args[0];
+            if (MP_STATE_PORT(dupterm_arr_obj) == MP_OBJ_NULL) {
+                MP_STATE_PORT(dupterm_arr_obj) = mp_obj_new_bytearray(1, "");
+            }
         }
         return mp_const_none;
     }
