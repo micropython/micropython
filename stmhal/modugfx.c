@@ -245,6 +245,21 @@ STATIC mp_obj_t ugfx_height(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_height_obj, ugfx_height);
 
 
+/// \method poll()
+///
+/// calls gfxYield, which will handle widget redrawing when for inputs.
+/// Register as follows:
+/// tim = pyb.Timer(3)
+/// tim.init(freq=60)
+/// tim.callback(lambda t:ugfx.poll())
+///
+STATIC mp_obj_t ugfx_poll(void) {
+	gfxYield();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_poll_obj, ugfx_poll);
+
+
 /// \method get_pixel()
 ///
 /// Gets the colour of the given pixel at (x,y)
@@ -730,6 +745,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_height_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&ugfx_poll_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&ugfx_ball_demo_obj },
  //   { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&ugfx_get_pixel_obj },
