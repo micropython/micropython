@@ -24,7 +24,9 @@ void mp_hal_set_interrupt_char(int c) {
 }
 
 int mp_hal_stdin_rx_chr(void) {
-    return usartserial1_read();
+    while (! usbserial_available()) {
+    }
+    return usbserial_read();
 }
 
 void mp_hal_stdout_tx_str(const char *str) {
@@ -33,7 +35,7 @@ void mp_hal_stdout_tx_str(const char *str) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     while(len--) {
-        usartserial1_putc(*str++);
+        usbserial_putc(*str++);
     }
 }
 

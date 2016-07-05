@@ -190,11 +190,13 @@ LIB_SOURCES = $(addprefix lib/,\
 	utils/pyhelp.c \
 	utils/printf.c \
 	)
+
 MP_SOURCE = \
     mphalport.c \
     pin.c \
     pin_defs_stmhal.c \
     wiring.c \
+	stmhal/pybstdio.c \
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/,$(HAL_SOURCES:.c=.o))
@@ -340,4 +342,4 @@ $(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py |
 
 
 include ../py/mkrules.mk
-	
+
