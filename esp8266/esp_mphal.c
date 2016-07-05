@@ -169,13 +169,13 @@ static int call_dupterm_read(void) {
             nlr_pop();
             return -2;
         }
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(MP_STATE_PORT(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
-        if (bufinfo.len == 0) {
+        if (res == MP_OBJ_NEW_SMALL_INT(0)) {
             mp_uos_deactivate("dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
             nlr_pop();
             return -1;
         }
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(MP_STATE_PORT(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
         nlr_pop();
         if (*(byte*)bufinfo.buf == interrupt_char) {
             mp_keyboard_interrupt();
