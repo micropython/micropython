@@ -8,7 +8,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "lib/utils/pyexec.h"
-
+#include "readline.h"
 #include "wiring.h"
 
 
@@ -33,7 +33,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 
 static char *stack_top;
-static char heap[2048];
+static char heap[16*1024];
 
 void mp_setup() {
     int stack_dummy;
@@ -44,12 +44,13 @@ void mp_setup() {
 #endif
 
     mp_init();
+    readline_init0(); 
 
 #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
 #endif
 
-    usartserial1_begin(9600);
+    usbserial_begin(9600);
 }
 
 static bool pyexec_exit = false;
@@ -68,7 +69,7 @@ void mp_loop() {
 #endif
 
         mp_deinit();
-        pyexec_exit = true;
+        // pyexec_exit = true;
     }
 }
 

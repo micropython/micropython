@@ -6,11 +6,11 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 
 void setup()
 {
-	mp_setup();
 }
 
 void loop()
 {
+	mp_setup();
 	mp_loop();
 }
 
