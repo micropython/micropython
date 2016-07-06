@@ -5,6 +5,8 @@
 *** Changes after 2.5 ***
 FIX:		Fixing bug where the list item count wasn't decremented when an item was removed
 FEATURE:	Add options GFILE_FATFS_EXTERNAL_LIB and GFILE_PETITFSFS_EXTERNAL_LIB
+FEATURE:	Added FT6x06 driver
+FIX:		Fixing issue in STM32F746G-Discovery board file that resulted in bad color reproduction
 
 
 *** Release 2.5 ***
