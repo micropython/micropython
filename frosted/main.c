@@ -314,7 +314,6 @@ STATIC int usage(char **argv) {
 
     return 1;
 }
-#if 0
 // Process options which set interpreter init options
 STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
@@ -364,7 +363,6 @@ STATIC void pre_process_options(int argc, char **argv) {
         }
     }
 }
-#endif
 
 STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
@@ -389,14 +387,14 @@ int main(int argc, char **argv) {
     // For this, actual main (renamed main_) should not be inlined into
     // this function. main_() itself may have other functions inlined (with
     // their own stack variables), that's why we need this main/main_ split.
-    //mp_stack_ctrl_init();
+    mp_stack_ctrl_init();
     return main_(argc, argv);
 }
 
 MP_NOINLINE int main_(int argc, char **argv) {
-    //mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
 
-    //pre_process_options(argc, argv);
+    pre_process_options(argc, argv);
 
 #if MICROPY_ENABLE_GC
     char *heap = malloc(heap_size);
@@ -408,7 +406,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // create keyboard interrupt object
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
-    char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
         #ifdef MICROPY_PY_SYS_PATH_DEFAULT
@@ -435,15 +432,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         if (p1 == NULL) {
             p1 = p + strlen(p);
         }
-        if (p[0] == '~' && p[1] == '/' && home != NULL) {
-            // Expand standalone ~ to $HOME
-            CHECKBUF(buf, PATH_MAX);
-            CHECKBUF_APPEND(buf, home, strlen(home));
-            CHECKBUF_APPEND(buf, p + 1, (size_t)(p1 - p - 1));
-            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
-        } else {
-            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
-        }
+        path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
         p = p1 + 1;
     }
     }

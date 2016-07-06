@@ -85,7 +85,7 @@
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
-    #define MICROPY_PY_SYS_PLATFORM  "linux"
+    #define MICROPY_PY_SYS_PLATFORM  "frosted"
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)

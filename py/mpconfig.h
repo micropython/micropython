@@ -185,7 +185,7 @@
 // Maximum length of a path in the filesystem
 // So we can allocate a buffer on the stack for path manipulation in import
 #ifndef MICROPY_ALLOC_PATH_MAX
-#define MICROPY_ALLOC_PATH_MAX (512)
+#define MICROPY_ALLOC_PATH_MAX (256)
 #endif
 
 // Initial size of module dict
