@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/fdisk.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_fdisk</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_fdisk</h2>
+<p>The f_fdisk fucntion divides a physical drive.</p>
+<pre>
+FRESULT f_fdisk (
+  BYTE  <span class="arg">pdrv</span>,         <span class="c">/* [IN] Physical drive number */</span>
+  const DWORD <span class="arg">part[]</span>, <span class="c">/* [IN] Partition size */</span>
+  void* <span class="arg">work</span>          <span class="c">/* [IN] Work area */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Specifies the <em>physical drive</em> to be divided.</dd>
+<dt>part[]</dt>
+<dd>Partition map table. It must have four items.</dd>
+<dt>work</dt>
+<dd>Pointer to the function work area. The size must be at least <tt>_MAX_SS</tt> bytes.</dd>
+</dl>
+</div>
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#ip">FR_INVALID_PARAMETER</a>
+</p>
+</div>
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_fdisk()</tt> function creates a partition table into the MBR of the physical drive. The partitioning rule is in generic FDISK format, so that it can create upto four primary partitions. Logical volumes in the extended partition is not supported. The <tt class="arg">part[]</tt> with four items specifies how to divide the physical drive. The first item specifies the size of first primary partition and fourth item specifies the fourth primary partition. If the value is less than or equal to 100, it specifies percentage of the partition in the entire disk space. If it is larger than 100, it specifies the partition size in unit of sector.</p>
+</div>
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_READOLNY == 0</tt>, <tt>_USE_MKFS == 1</tt> and <tt>_MULTI_PARTITION == 1</tt>.</p>
+</div>
+
+<div class="para use">
+<h4>Example</h4>
+<pre>
+    <span class="c">/* Volume management table defined by user (required when _MULTI_PARTITION == 1) */</span>
+
+    PARTITION VolToPart[] = {
+        {0, 1},    <span class="c">/* Logical drive 0 ==> Physical drive 0, 1st partition */</span>
+        {0, 2},    <span class="c">/* Logical drive 1 ==> Physical drive 0, 2nd partition */</span>
+        {1, 0}     <span class="c">/* Logical drive 2 ==> Physical drive 1, auto detection */</span>
+    };
+</pre>
+<pre>
+    <span class="c">/* Initialize a brand-new disk drive mapped to physical drive 0 */</span>
+
+    FATFS fs;
+    DWORD plist[] = {50, 50, 0, 0};  <span class="c">/* Divide drive into two partitions */</span>
+    BYTE work[_MAX_SS];
+
+    f_fdisk(0, plist, work);    <span class="c">/* Divide physical drive 0 */</span>
+
+    f_mount(&amp;fs, "0:", 0);      <span class="c">/* Register work area to the logical drive 0 */</span>
+    f_mkfs("0:", 0, 0);         <span class="c">/* Create FAT volume on the logical drive 0. 2nd argument is ignored. */</span>
+    f_mount(0, "0:", 0);        <span class="c">/* Unregister work area from the logical drive 0 */</span>
+
+    f_mount(&amp;fs, "1:", 0);      <span class="c">/* Register a work area to the logical drive 1 */</span>
+    f_mkfs("1:", 0, 0);         <span class="c">/* Create FAT volume on the logical drive 1. 2nd argument is ignored. */</span>
+    f_mount(0, "1:", 0);        <span class="c">/* Unregister work area from the logical drive 1 */</span>
+
+</pre>
+</div>
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><a href="filename.html#vol">Volume management</a>, <a href="mkfs.html"><tt>f_mkfs</tt></a></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

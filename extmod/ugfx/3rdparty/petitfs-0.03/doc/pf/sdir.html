@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - DIR</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>DIR</h2>
+<p>The <tt>DIR</tt> structure is used for the work area to read a directory by pf_oepndir, pf_readdir function.</p>
+<pre>
+typedef struct {
+    WORD    index;     <span class="c">/* Current read/write index number */</span>
+    BYTE*   fn;        <span class="c">/* Pointer to the SFN (in/out) {file[8],ext[3],status[1]} */</span>
+    CLUST   sclust;    <span class="c">/* Table start cluster (0:Static table) */</span>
+    CLUST   clust;     <span class="c">/* Current cluster */</span>
+    DWORD   sect;      <span class="c">/* Current sector */</span>
+} DIR;
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

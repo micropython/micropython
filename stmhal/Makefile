@@ -224,7 +224,7 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 
 # for uGFX driver module
 ifeq ($(MICROPY_PY_UGFX),1)
-GFXLIB=../../ugfx
+GFXLIB=../extmod/ugfx
 include $(GFXLIB)/gfx.mk
 include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
 INC += $(foreach d, $(GFXINC), -I$d)

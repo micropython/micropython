@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/open.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_open</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_open</h2>
+<p>The f_open function creates a <em>file object</em> to be used to access the file.</p>
+<pre>
+FRESULT f_open (
+  FIL* <span class="arg">fp</span>,           <span class="c">/* [OUT] Pointer to the file object structure */</span>
+  const TCHAR* <span class="arg">path</span>, <span class="c">/* [IN] File name */</span>
+  BYTE <span class="arg">mode</span>          <span class="c">/* [IN] Mode flags */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>Pointer to the blank file object structure to be created.</dd>
+<dt>path</dt>
+<dd>Pointer to a null-terminated string that specifies the <a href="filename.html">file name</a> to open or create.</dd>
+<dt>mode</dt>
+<dd>Mode flags that specifies the type of access and open method for the file. It is specified by a combination of following flags.<br>
+<table class="lst">
+<tr><th>Value</th><th>Description</th></tr>
+<tr><td>FA_READ</td><td>Specifies read access to the object. Data can be read from the file. Combine with <tt>FA_WRITE</tt> for read-write access.</td></tr>
+<tr><td>FA_WRITE</td><td>Specifies write access to the object. Data can be written to the file. Combine with <tt>FA_READ</tt> for read-write access.</td></tr>
+<tr><td>FA_OPEN_EXISTING</td><td>Opens the file. The function fails if the file is not existing. (Default)</td></tr>
+<tr><td>FA_OPEN_ALWAYS</td><td>Opens the file if it is existing. If not, a new file is created.<br>
+To append data to the file, use <a href="lseek.html"><tt>f_lseek()</tt></a> function after file open in this method.</td></tr>
+<tr><td>FA_CREATE_NEW</td><td>Creates a new file. The function fails with <tt>FR_EXIST</tt> if the file is existing.</td></tr>
+<tr><td>FA_CREATE_ALWAYS</td><td>Creates a new file. If the file is existing, it will be truncated and overwritten.</td></tr>
+</table>
+</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ok">FR_NO_FILE</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#de">FR_DENIED</a>,
+<a href="rc.html#ex">FR_EXIST</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#lo">FR_LOCKED</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>,
+<a href="rc.html#tf">FR_TOO_MANY_OPEN_FILES</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>After <tt>f_open()</tt> function succeeded, the file object is valid. The file object is used for subsequent read/write functions to identify the file. To close an open file, use <a href="close.html"><tt>f_close()</tt></a> function. If the file is modified and not closed properly, the file data will be collapsed.</p>
+<p>If duplicated file open is needed, read <a href="appnote.html#dup">here</a> carefully. However duplicated open of a file with write mode flag is always prohibited.</p>
+<p>Before using any file function, a work area (file system object) must be registered to the logical drive with <a href="mount.html"><tt>f_mount()</tt></a> function. All API functions except for <a href="fdisk.html"><tt>f_fdisk()</tt></a> function can work after this procedure.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Always available. The mode flags, <tt>FA_WRITE, FA_CREATE_ALWAYS, FA_CREATE_NEW and FA_OPEN_ALWAYS</tt>, are not available when <tt>_FS_READONLY == 1</tt>.</p>
+</div>
+
+
+<div class="para use">
+<h4>Example</h4>
+<pre>
+<span class="c">/* Read a text file and display it */</span>
+
+FATFS FatFs;   <span class="c">/* Work area (file system object) for logical drive */</span>
+
+int main (void)
+{
+    FIL fil;       <span class="c">/* File object */</span>
+    char line[82]; <span class="c">/* Line buffer */</span>
+    FRESULT fr;    <span class="c">/* FatFs return code */</span>
+
+
+    <span class="c">/* Register work area to the default drive */</span>
+    f_mount(&amp;FatFs, "", 0);
+
+    <span class="c">/* Open a text file */</span>
+    fr = f_open(&amp;fil, "message.txt", FA_READ);
+    if (fr) return (int)fr;
+
+    <span class="c">/* Read all lines and display it */</span>
+    while (f_gets(line, sizeof line, &amp;fil))
+        printf(line);
+
+    <span class="c">/* Close the file */</span>
+    f_close(&amp;fil);
+
+    return 0;
+}
+</pre>
+<pre>
+<span class="c">/* Copy a file "file.bin" on the drive 1 to drive 0 */</span>
+
+int main (void)
+{
+    FATFS fs[2];         <span class="c">/* Work area (file system object) for logical drives */</span>
+    FIL fsrc, fdst;      <span class="c">/* File objects */</span>
+    BYTE buffer[4096];   <span class="c">/* File copy buffer */</span>
+    FRESULT fr;          <span class="c">/* FatFs function common result code */</span>
+    UINT br, bw;         <span class="c">/* File read/write count */</span>
+
+
+    <span class="c">/* Register work area for each logical drive */</span>
+    f_mount(&amp;fs[0], "0:", 0);
+    f_mount(&amp;fs[1], "1:", 0);
+
+    <span class="c">/* Open source file on the drive 1 */</span>
+    fr = f_open(&amp;fsrc, "1:file.bin", FA_OPEN_EXISTING | FA_READ);
+    if (fr) return (int)fr;
+
+    <span class="c">/* Create destination file on the drive 0 */</span>
+    fr = f_open(&amp;fdst, "0:file.bin", FA_CREATE_ALWAYS | FA_WRITE);
+    if (fr) return (int)fr;
+
+    <span class="c">/* Copy source to destination */</span>
+    for (;;) {
+        fr = f_read(&amp;fsrc, buffer, sizeof buffer, &amp;br);  <span class="c">/* Read a chunk of source file */</span>
+        if (fr || br == 0) break; <span class="c">/* error or eof */</span>
+        fr = f_write(&amp;fdst, buffer, br, &amp;bw);            <span class="c">/* Write it to the destination file */</span>
+        if (fr || bw &lt; br) break; <span class="c">/* error or disk full */</span>
+    }
+
+    <span class="c">/* Close open files */</span>
+    f_close(&amp;fsrc);
+    f_close(&amp;fdst);
+
+    <span class="c">/* Unregister work area prior to discard it */</span>
+    f_mount(NULL, "0:", 0);
+    f_mount(NULL, "1:", 0);
+
+    return (int)fr;
+}
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="read.html">f_read</a>, <a href="write.html">f_write</a>, <a href="close.html">f_close</a>, <a href="sfile.html">FIL</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

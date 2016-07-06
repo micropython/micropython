@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/close.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_close</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_close</h2>
+<p>The f_close function closes an open file.</p>
+<pre>
+FRESULT f_close (
+  FIL* <span class="arg">fp</span>     <span class="c">/* [IN] Pointer to the file object */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameter</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>Pointer to the open file object structure to be closed.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_close()</tt> function closes an open file object. If any data has been written to the file, the cached information of the file is written back to the volume. After the function succeeded, the file object is no longer valid and it can be discarded.</p>
+<p>Note that if the file object is in read-only mode and <tt>_FS_LOCK</tt> option is not enabled, the file object can also be discarded without this process. However this is not recommended for future compatibility.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Always available.</p>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="read.html">f_read</a>, <a href="write.html">f_write</a>,  <a href="sync.html">f_sync</a>, <a href="sfile.html">FIL</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

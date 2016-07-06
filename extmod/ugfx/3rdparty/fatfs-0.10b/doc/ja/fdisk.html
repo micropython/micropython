@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/fdisk.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_fdisk</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_fdisk</h2>
+<p>物理ドライブを分割します。</p>
+<pre>
+FRESULT f_fdisk (
+  BYTE  <span class="arg">pdrv</span>,         <span class="c">/* [IN] 物理ドライブ番号 */</span>
+  const DWORD <span class="arg">part[]</span>, <span class="c">/* [IN] 区画マップ・テーブル */</span>
+  void* <span class="arg">work</span>          <span class="c">/* [-] ワークエリア */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>分割する<em>物理ドライブ</em>のドライブ番号を指定します。</dd>
+<dt>part[]</dt>
+<dd>区画マップ・テーブルへのポインタを指定します。</dd>
+<dt>work</dt>
+<dd>ワークエリアへのポインタを指定します。サイズは<tt>_MAX_SS</tt>バイト必要です。</dd>
+</dl>
+</div>
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#ip">FR_INVALID_PARAMETER</a>
+</p>
+</div>
+
+<div class="para desc">
+<h4>説明</h4>
+<p>この関数は、指定された物理ドライブのMBRに区画テーブルを作成します。区画分けは一般的なFDISK形式で行うため、最大4つの基本区画を作成することができます。拡張区画には対応していません。区画マップテーブル<tt class="arg">part[]</tt>にはドライブをどのように分割するか指定して渡します。この配列は4つの項目から成り、先頭の項目が1番目の、最後の項目が4番目の区画のサイズを示します。値が100以下の場合、ドライブの総容量に対する割合をパーセント単位で指定します。100を超える値の場合はセクタ数の直接指定になります。</p>
+</div>
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READOLNY == 0</tt> で <tt>_USE_MKFS == 1</tt> で <tt>_MULTI_PARTITION == 1</tt> のとき使用可能です。</p>
+</div>
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    <span class="c">/* ユーザ定義のボリューム管理テーブル (_MULTI_PARTITION == 1 のとき必要) */</span>
+
+    PARTITION VolToPart[] = {
+        {0, 1},    <span class="c">/* 論理ドライブ 0 ==> 物理ドライブ 0, 第1区画 */</span>
+        {0, 2},    <span class="c">/* 論理ドライブ 1 ==> 物理ドライブ 0, 第2区画 */</span>
+        {1, 0}     <span class="c">/* 論理ドライブ 2 ==> 物理ドライブ 1, 自動検出 */</span>
+    };
+</pre>
+<pre>
+    <span class="c">/* 新しい物理ドライブ(0)の初期化 */</span>
+
+    FATFS fs;
+    DWORD plist[] = {50, 50, 0, 0};  <span class="c">/* 2分割 */</span>
+    BYTE work[_MAX_SS];
+
+    f_fdisk(0, plist, work);  <span class="c">/* 物理ドライブ 0 の分割 */</span>
+
+    f_mount(&amp;fs "0:", 0);
+    f_mkfs("0:", 0, 0);       <span class="c">/* 論理ドライブ 0 のフォーマット. 第二引数は無視される.  */</span>
+    f_mount(0, "0:", 0);
+
+    f_mount(&amp;fs, "1:", 0);
+    f_mkfs("1:", 0, 0);       <span class="c">/* 論理ドライブ 0 のフォーマット. 第二引数は無視される.  */</span>
+    f_mount(0, "1:", 0);
+
+</pre>
+</div>
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="filename.html#vol">Volume management</a>, <a href="mkfs.html">f_mkfs</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">Return</a></p>
+</body>
+</html>

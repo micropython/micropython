@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/fattime.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - get_fattime</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>get_fattime</h2>
+<p>現在時刻を取得します。</p>
+<pre>
+DWORD get_fattime (void);
+</pre>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>現在のローカル・タイムを<tt>DWORD</tt>値にパックして返します。ビット・フィールドは次に示すようになります。</p>
+<dl>
+<dt>bit31:25</dt>
+<dd>1980年を起点とした年を 0..127 でセット。</dd>
+<dt>bit24:21</dt>
+<dd>月を 1..12 の値でセット。</dd>
+<dt>bit20:16</dt>
+<dd>日を 1..31 の値でセット。</dd>
+<dt>bit15:11</dt>
+<dd>時を 0..23 の値でセット。</dd>
+<dt>bit10:5</dt>
+<dd>分を 0..59 の値でセット。</dd>
+<dt>bit4:0</dt>
+<dd>秒/2を 0..29 の値でセット</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>RTCをサポートしないシステムでも、ダミーとして何らかの日付として有効な値を返すべきです。0などを返した場合、そのファイルのタイムスタンプは無効になります。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p>リード・オンリー構成(<tt>_FS_READONLY == 1</tt>)ではこの関数は必要とされません。</p>
+</div>
+
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

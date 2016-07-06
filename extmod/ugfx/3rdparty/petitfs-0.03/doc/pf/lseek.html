@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - pf_lseek</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>pf_lseek</h2>
+<p>The pf_lseek function moves the file read/write pointer of the open file.</p>
+
+<pre>
+FRESULT pf_lseek (
+  DWORD <span class="arg">ofs</span>       <span class="c">/* [IN] File offset in unit of byte */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>ofs</dt>
+<dd>Number of bytes where from start of the file</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>FR_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>FR_DISK_ERR</dt>
+<dd>The function failed due to an error in the disk function, a wrong FAT structure or an internal error.</dd>
+<dt>FR_NOT_OPENED</dt>
+<dd>The file has not been opened.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>The <tt>pf_lseek()</tt> function moves the file read/write pointer of the open file. The <tt class="arg">offset</tt> can be specified in only origin from top of the file.</p>
+</div>
+
+
+<div class="para">
+<h4>Example</h4>
+<pre>
+    <span class="c">/* Move to offset of 5000 from top of the file */</span>
+    res = pf_lseek(5000);
+
+    <span class="c">/* Forward 3000 bytes */</span>
+    res = pf_lseek(fs.fptr + 3000);
+
+    <span class="c">/* Rewind 2000 bytes (take care on wraparound) */</span>
+    res = pf_lseek(fs.fptr - 2000);
+</pre>
+</div>
+
+<div class="para">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_USE_LSEEK == 1</tt>.</p>
+</div>
+
+<div class="para">
+<h4>References</h4>
+<p><tt><a href="open.html">pf_open</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

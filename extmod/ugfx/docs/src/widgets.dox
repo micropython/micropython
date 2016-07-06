@@ -1,0 +1,32 @@
+/*
+ * This file is subject to the terms of the GFX License. If a copy of
+ * the license was not distributed with this file, you can obtain one at:
+ *
+ *              http://ugfx.com/license.html
+ */
+
+/**
+ * @file    	src/gwin/gwin.h
+ *
+ * @defgroup 	Widgets Widgets
+ * @ingroup 	GWIN
+ *
+ * @brief		Widgets extend the @ref Windows adding capabilities such as user input.
+ *
+ * @details		Widgets are a "super-class" of a window that provides the
+ *				following extra features:
+ *				<ul>
+ *					<li>Widgets can always redraw themselves
+ *					<li>Widgets are able to accept user input such as from a touchscreen/toggle/dial/keyboard
+ *					<li>Widgets can have their drawing routine overwritten to provide fancier versions of
+ *						the object. For example, their are predefined drawing routines for round buttons,
+ *						image buttons, arrow buttons etc. along with the normal button drawing routine.
+ *					<li>Widgets support a "style". By changing the style you can affect the colours
+ *						used to draw the widget similar to the way you can apply color schemes
+ *						in Windows and Linux.
+ *				</ul>
+ *
+ *				For the common window API, please see @ref Widget.
+ *
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ */

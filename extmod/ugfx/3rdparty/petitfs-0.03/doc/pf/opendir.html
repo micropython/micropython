@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - pf_opendir</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>pf_opendir</h2>
+<p>The pf_opendir function opens a directory.</p>
+<pre>
+FRESULT pf_opendir (
+  DIR* <span class="arg">dp</span>,          <span class="c">/* [OUT] Pointer to the blank directory object structure */</span>
+  const char* <span class="arg">path</span>  <span class="c">/* [IN]  Pointer to the directory name */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>dp</dt>
+<dd>Pointer to the blank directory object to be created.</dd>
+<dt>path</dt>
+<dd>Pinter to the null-terminated string that specifies the <a href="filename.html">directory name</a> to be opened.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>FR_OK (0)</dt>
+<dd>The function succeeded and the directory object is created. It is used for subsequent calls to read the directory entries.</dd>
+<dt>FR_NO_FILE</dt>
+<dd>Could not find the path.</dd>
+<dt>FR_NOT_READY</dt>
+<dd>The disk drive cannot work due to no medium in the drive or any other reason.</dd>
+<dt>FR_DISK_ERR</dt>
+<dd>The function failed due to a hard error in the disk function, a wrong FAT structure or an internal error.</dd>
+<dt>FR_NOT_ENABLED</dt>
+<dd>The volume has no work area.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>The <tt>pf_opendir()</tt> function opens an exsisting directory and creates the directory object for subsequent calls. The directory object structure can be discarded at any time without any procedure.</p>
+</div>
+
+
+<div class="para">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_USE_DIR == 1</tt>.</p>
+</div>
+
+
+<div class="para">
+<h4>References</h4>
+<p><tt><a href="readdir.html">f_readdir</a>, <a href="sdir.html">DIR</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

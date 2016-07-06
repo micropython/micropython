@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/rc.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - Return Codes</title>
+</head>
+
+<body>
+<h1>Return Code of the File Functions</h1>
+<p>On the FatFs API, most of file functions return common result code as enum type <tt>FRESULT</tt>. When a function succeeded, it returns zero, otherwise returns non-zero value that indicates type of error.</p>
+
+<dl class="ret">
+<dt id="ok">FR_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt id="de">FR_DISK_ERR</dt>
+<dd>An unrecoverable hard error occured in the lower layer, <tt>disk_read()</tt>, <tt>disk_write()</tt> or <tt>disk_ioctl()</tt> function.<br>Note that if once this error occured at any operation to an open file, the file object is aborted and all operations to the file except for close will be rejected.</dd>
+<dt id="ie">FR_INT_ERR</dt>
+<dd>Assertion failed. An insanity is detected in the internal process. One of the following possibilities is suspected.
+<ul>
+<li>Work area (file system object, file object or etc...) is broken by stack overflow or any other application. This is the reason in most case.</li>
+<li>There is any error of the FAT structure on the volume.</li>
+</ul>
+Note that if once this error occured at any operation to an open file, the file object is aborted and all operations to the file except for close will be rejected.
+</dd>
+<dt id="nr">FR_NOT_READY</dt>
+<dd>The disk drive cannot work due to incorrect medium removal or <tt>disk_initialize()</tt> function failed.</dd>
+<dt id="nf">FR_NO_FILE</dt>
+<dd>Could not find the file.</dd>
+<dt id="np">FR_NO_PATH</dt>
+<dd>Could not find the path.</dd>
+<dt id="in">FR_INVALID_NAME</dt>
+<dd>The given string is invalid as the <a href="filename.html">path name</a>.</dd>
+<dt id="dn">FR_DENIED</dt>
+<dd>The required access was denied due to one of the following reasons:
+<ul>
+<li>Write mode open against the read-only file.</li>
+<li>Deleting the read-only file or directory.</li>
+<li>Deleting the non-empty directory or current directory.</li>
+<li>Reading the file opened without <tt>FA_READ</tt> flag.</li>
+<li>Any modification to the file opened without <tt>FA_WRITE</tt> flag.</li>
+<li>Could not create the file or directory due to the directory table is full.</li>
+<li>Could not create the directory due to the volume is full.</li>
+</ul>
+</dd>
+<dt id="ex">FR_EXIST</dt>
+<dd>Name collision. Any object that has the same name is already existing.</dd>
+<dt id="io">FR_INVALID_OBJECT</dt>
+<dd>The file/directory object structure is invalid or a null pointer is given. All open objects of the logical drive are invalidated by the voulme mount process.</dd>
+<dt id="wp">FR_WRITE_PROTECTED</dt>
+<dd>Any write mode action against the write-protected media.</dd>
+<dt id="id">FR_INVALID_DRIVE</dt>
+<dd>Invalid drive number is specified in the path name. A null pointer is given as the path name. (Related option: <tt>_VOLUMES</tt>)</dd>
+<dt id="ne">FR_NOT_ENABLED</dt>
+<dd>Work area for the logical drive has not been registered by <tt>f_mount()</tt> function.</dd>
+<dt id="ns">FR_NO_FILESYSTEM</dt>
+<dd>There is no valid FAT volume on the drive.</dd>
+<dt id="ma">FR_MKFS_ABORTED</dt>
+<dd>The <tt>f_mkfs()</tt> function aborted before start in format due to a reason as follows:
+<ul>
+<li>The disk/partition size is too small.</li>
+<li>Not allowable cluster size for this disk. This can occure when number of clusters gets near the boundaries of FAT sub-types.</li>
+<li>There is no partition related to the logical drive. (Related option: <tt>_MULTI_PARTITION</tt>)</li>
+</ul>
+</dd>
+<dt id="tm">FR_TIMEOUT</dt>
+<dd>The function was canceled due to a timeout of <a href="appnote.html#reentrant">thread-safe control</a>. (Related option: <tt>_TIMEOUT</tt>)</dd>
+<dt id="lo">FR_LOCKED</dt>
+<dd>The operation to the object was rejected by <a href="appnote.html#dup">file sharing control</a>. (Related option: <tt>_FS_LOCK</tt>)</dd>
+<dt id="nc">FR_NOT_ENOUGH_CORE</dt>
+<dd>Not enough memory for the operation. There is one of the following reasons:
+<ul>
+<li>Could not allocate a memory for LFN working buffer. (Related option: <tt>_USE_LFN</tt>)</li>
+<li>Size of the given CLMT buffer is insufficient for the file fragments.</li>
+</ul>
+</dd>
+<dt id="tf">FR_TOO_MANY_OPEN_FILES</dt>
+<dd>Number of open objects has been reached maximum value and no more object can be opened. (Related option: <tt>_FS_LOCK</tt>)</dd>
+<dt id="ip">FR_INVALID_PARAMETER</dt>
+<dd>The given parameter is invalid or there is any inconsistent.</dd>
+</dl>
+
+</body>
+</html>

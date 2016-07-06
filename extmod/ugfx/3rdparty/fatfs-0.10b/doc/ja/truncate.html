@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/truncate.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_truncate</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_truncate</h2>
+<p>ファイル長を切り詰めます。</p>
+<pre>
+FRESULT f_truncate (
+  FIL* <span class="arg">fp</span>     <span class="c">/* [IN] ファイル・オブジェクトへのポインタ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>切り詰め対象ファイルのファイル・オブジェクトへのポインタ</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#de">FR_DENIED</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>ファイルの長さが現在のリード/ライト・ポインタに切り詰められます。リード/ライト・ポインタが既にファイルの終端を指しているときは、この関数は何の効果も持ちません。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_FS_MINIMIZE == 0</tt>のときに使用可能です。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="lseek.html">f_lseek</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+
+<p class="foot"><a href="../00index_j.html">Return</a></p>
+</body>
+</html>

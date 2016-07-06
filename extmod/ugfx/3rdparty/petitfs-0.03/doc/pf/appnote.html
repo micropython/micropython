@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs Module Application Note</title>
+</head>
+
+<body>
+<h1>Petit FatFs Module Application Note</h1>
+<hr>
+
+<h3>Basic Considerations</h3>
+<p>The FatFs module is assuming following conditions on portability.</p>
+<ul>
+<li>ANSI C<br>
+The FatFs module is a middleware written in ANSI C (C89). There is no platform dependence, so long as the compiler is in compliance with ANSI C.</li>
+<li>Size of integer types<br>
+The FatFs module assumes that size of char/short/long are 8/16/32 bit and int is 16 or 32 bit. These correspondence are defined in <tt>integer.h</tt>. This will not be a problem on most compilers. When any conflict with existing definitions is occured, you must resolve it with care.</li>
+</ul>
+</div>
+
+<div class="para">
+<h3>Memory Usage (R0.03)</h3>
+<table class="lst2">
+<tr><th></th><th>AVR</th><th>x86</th></tr>
+<tr><td>Compiler</td><td>gcc(WinAVR)</td><td>VC6</td></tr>
+<tr><td>_WORD_ACCESS</td><td>1</td><td>1</td></tr>
+<tr class="lst3"><td>Code (default)</td><td>2100</td><td>1720</td></tr>
+<tr><td>Code (!_USE_READ)</td><td>-444</td><td>-246</td></tr>
+<tr><td>Code (_USE_DIR)</td><td>+1002</td><td>+420</td></tr>
+<tr><td>Code (_USE_LSEEK)</td><td>+490</td><td>+228</td></tr>
+<tr><td>Code (_USE_WRITE)</td><td>+518</td><td>+351</td></tr>
+<tr><td>RAM (bss)</td><td>2</td><td>4</td></tr>
+<tr><td>RAM (work)</td><td>42</td><td>44</td></tr>
+</table>
+<p>This is the size of the Petit FatFs module itself. In addition to this, a low level disk I/O module will be required for a complete function. The size of MMC/SDC module on AVR becomes approximate 620 bytes without write function and 840 bytes with write function.</p>
+</div>
+
+<div class="para">
+<h3>Module Size Reduction</h3>
+<p>Follwing table shows which function is removed by configuration options for the module size reduction.</p>
+<table class="lst2">
+<tr><td rowspan="2">Function</td><td>_USE_READ</td><td>_USE_DIR</td><td>_USE_LSEEK</td><td>_USE_WRITE</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr class="lst3"><td>pf_mount</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>pf_open</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>pf_read</td><td>x</td><td></td><td></td><td></td></tr>
+<tr><td>pf_lseek</td><td></td><td></td><td>x</td><td></td></tr>
+<tr><td>pf_opendir</td><td></td><td>x</td><td></td><td></td></tr>
+<tr><td>pf_readdir</td><td></td><td>x</td><td></td><td></td></tr>
+<tr><td>pf_write</td><td></td><td></td><td></td><td>x</td></tr>
+</table>
+</div>
+
+<div class="para">
+<h3>Performance effective file access</h3>
+<p>For good performance on reading a file on the small embedded system, application programmer should consider what process is done in the file system module.</p>
+<p>The Petit FatFs reads the disk sectors without a sector buffer. This means the file system reads a part of the sector contains the required data every reference point even if they are in the same sector. However the generic storage device are not byte addressable so that the disk I/O layer will read the entire sector and pick up the data bytes from the read data steram.</p>
+<p>When read 512 byte data from a file at a time, the data sector will be read only a time. When read that data in byte-by-byte, the data sector will be read 512 times. Therefore the byte-by-byte read request will <a href="../img/rwtest3.png">drastically decrease</a> the read performance. To avoid this stupid read controls, the file data should be read in long block as possible. Sector alignment access is not impotant on the Petit FatFs.</p>
+<p>The tiny microcontrollers targeted by Petit FatFs has a limited size of RAM. It may not able to allocate a certain size of read buffer and most type of text processing will require byte-by-byte read operation. The Petit FatFs supports data forwarding feature for such purpose.</p>
+
+</div>
+
+<div class="para">
+<h3>About FatFs License</h3>
+<p>Petit FatFs has being developped as a personal project of author, ChaN. It is free from the code anyone else wrote. Following code block shows a copy of the license document that included in the source files.</p>
+<pre>/*----------------------------------------------------------------------------/
+/  Petit FatFs - FAT file system module  R0.03                  (C)ChaN, 2014
+/-----------------------------------------------------------------------------/
+/ Petit FatFs module is a generic FAT file system module for small embedded
+/ systems. This is a free software that opened for education, research and
+/ commercial developments under license policy of following trems.
+/
+/  Copyright (C) 2014, ChaN, all right reserved.
+/
+/ * The Petit FatFs module is a free software and there is NO WARRANTY.
+/ * No restriction on use. You can use, modify and redistribute it for
+/   personal, non-profit or commercial products UNDER YOUR RESPONSIBILITY.
+/ * Redistributions of source code must retain the above copyright notice.
+/
+/-----------------------------------------------------------------------------/</pre>
+<p>Therefore FatFs license is one of the BSD-style licenses but there is a significant feature. Because FatFs is for embedded projects, the conditions of redistributions in binary form, such as embedded code, hex file, binary library and any form without source code, are not specified in order to extend usability to commercial use. The documentation of the distributions need not include about Petit FatFs and its license document, and it may also. This is equivalent to the BSD 1-Clause License. Of course Petit FatFs is compatible with the projects under GNU GPL. When redistribute the Petit FatFs with any modification, the license can also be changed to GNU GPL or BSD-style license.</p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

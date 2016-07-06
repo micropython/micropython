@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - pf_read</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>pf_read</h2>
+<p>The pf_read function reads data from the file.</p>
+<pre>
+FRESULT pf_read (
+  void* <span class="arg">buff</span>,  <span class="c">/* [OUT] Pointer to the read buffer */</span>
+  UINT <span class="arg">btr</span>,    <span class="c">/* [IN]  Number of bytes to read */</span>
+  UINT* <span class="arg">br</span>     <span class="c">/* [OUT] Number of bytes read */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>Pointer to the buffer to store the read data. A NULL specifies the destination is an outgoing stream.</dd>
+<dt>btr</dt>
+<dd>Number of bytes to read.</dd>
+<dt>br</dt>
+<dd>Pointer to the variable to return number of bytes read.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>FR_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>FR_DISK_ERR</dt>
+<dd>The function failed due to a hard error in the disk function, a wrong FAT structure or an internal error.</dd>
+<dt>FR_NOT_OPENED</dt>
+<dd>The file has not been opened.</dd>
+<dt>FR_NOT_ENABLED</dt>
+<dd>The volume has not been mounted.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>The file read/write pointer in the file system object advances in number of bytes read. After the function succeeded, <tt>*br</tt> should be checked to detect end of file. In case of <tt>*br &lt; btr</tt>, it means the read pointer reached end of file during read operation.</p>
+<p>If a NULL is given to the <tt class="arg">buff</tt>, the read bytes will be forwarded to the outgoing stream instead of the memory. The streaming function will be typically built-in the <tt>disk_readp()</tt> function.</p>
+</div>
+
+<div class="para">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_USE_READ == 1</tt>.</p>
+</div>
+
+
+<div class="para">
+<h4>References</h4>
+<p><tt><a href="open.html">pf_open</a>, <a href="write.html">pf_write</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

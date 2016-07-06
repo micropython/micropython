@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/printf.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_printf</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_printf</h2>
+<p>ファイルに書式化文字列を書き込みます。</p>
+<pre>
+int f_printf (
+  FIL* <span class="arg">fp</span>,           <span class="c">/* [IN] ファイル・オブジェクト */</span>
+  const TCHAR* <span class="arg">fmt</span>,  <span class="c">/* [IN] 書式制御文字列 */</span>
+  ...
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>fp</dt>
+<dd>ファイル・オブジェクト構造体へのポインタを指定します。</dd>
+<dt>fmt</dt>
+<dd>ヌル文字<tt>'\0'</tt>終端の書式制御文字列を指すポインタを指定します。ヌル文字は書き込まれません。</dd>
+<dt>...</dt>
+<dd>オプションの引数。</dd>
+
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>文字列が正常に書き込まれると、書き込まれた文字数が返されます。ディスクが満杯またはその他エラーにより正常に書き込まれなかったときは、関数は失敗し<tt>EOF (-1)</tt>が返されます。</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>この関数は、<a href="putc.html"><tt>f_putc()</tt></a>および<a href="puts.html"><tt>f_puts()</tt></a>のラッパー関数です。書式制御機能はC標準ライブラリのサブセットとなっていて、書式制御文字は次に示すものが使用可能です。</p>
+<ul>
+<li>タイプ: <tt>c C s S d D u U x X b B</tt></li>
+<li>精度指定: <tt>l L</tt></li>
+<li>フラグ: <tt>0 -</tt></li>
+</ul>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_USE_STRFUNC</tt>が1または2のとき使用可能になります。2の時は、出力に含まれる<tt>'\n'</tt>が<tt>'\r'+'\n'</tt>に展開されてファイルに書き込まれます。</p>
+<p>APIにUnicodeが選択(<tt>_LFN_UNICODE</tt>が1)されているときは、<tt class="arg">fmt</tt>はUnicode文字列になりますが、ファイル上のエンコードは、<tt>_STRF_ENCODE</tt>オプションで選択できます。それ以外の時は無変換(1バイト/1文字)で書き込みます。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    f_printf(&amp;fil, "%d", 1234);            <span class="c">/* "1234" */</span>
+    f_printf(&amp;fil, "%6d,%3d%%", -200, 5);  <span class="c">/* "  -200,  5%" */</span>
+    f_printf(&amp;fil, "%ld", 12345L);         <span class="c">/* "12345" */</span>
+    f_printf(&amp;fil, "%06d", 25);            <span class="c">/* "000025" */</span>
+    f_printf(&amp;fil, "%06d", -25);           <span class="c">/* "000-25" */</span>
+    f_printf(&amp;fil, "%-6d", 25);            <span class="c">/* "25    " */</span>
+    f_printf(&amp;fil, "%u", -1);              <span class="c">/* "65535" or "4294967295" */</span>
+    f_printf(&amp;fil, "%04x", 0xAB3);         <span class="c">/* "0ab3" */</span>
+    f_printf(&amp;fil, "%08LX", 0x123ABCL);    <span class="c">/* "00123ABC" */</span>
+    f_printf(&amp;fil, "%016b", 0x550F);       <span class="c">/* "0101010100001111" */</span>
+    f_printf(&amp;fil, "%s", "String");        <span class="c">/* "String" */</span>
+    f_printf(&amp;fil, "%8s", "abc");          <span class="c">/* "     abc" */</span>
+    f_printf(&amp;fil, "%-8s", "abc");         <span class="c">/* "abc     " */</span>
+    f_printf(&amp;fil, "%c", 'a');             <span class="c">/* "a" */</span>
+    f_printf(&amp;fil, "%f", 10.0);            <span class="c">/* 浮動小数点は未サポート */</span>
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="open.html">f_open</a>, <a href="putc.html">f_putc</a>, <a href="puts.html">f_puts</a>, <a href="gets.html">f_gets</a>, <a href="close.html">f_close</a>, <a href="sfile.html">FIL</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>
