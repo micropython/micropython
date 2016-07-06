@@ -389,6 +389,51 @@ STATIC mp_obj_t ugfx_write_command(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_write_command_obj, 1, 2, ugfx_write_command);
 
 
+/// \method enable_tear()
+///
+/// Enables tear output, connected to pin "TEAR" on the board
+///
+STATIC mp_obj_t ugfx_enable_tear(void) {
+
+	write_index(0, 0x35);
+	write_data(0, 0);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_enable_tear_obj, ugfx_enable_tear);
+
+
+/// \method disable_tear()
+///
+/// Disables tear output
+///
+STATIC mp_obj_t ugfx_disable_tear(void) {
+
+	write_index(0, 0x34);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_disable_tear_obj, ugfx_disable_tear);
+
+/// \method set_tear_line()
+///
+/// Sets the line (0->319) which causes tear output to go high
+///
+STATIC mp_obj_t ugfx_set_tear_line(mp_obj_t line_in) {
+
+	int l = mp_obj_get_int(line_in);
+
+	write_index(0, 0x44);
+	write_data(0, (l&0x100) >> 16);
+	write_data(0, l&0xFF);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_set_tear_line_obj, ugfx_set_tear_line);
+
+
+
+
 
 /// \method stream_start(x1, y1, w, h)
 ///
@@ -746,6 +791,9 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_height_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&ugfx_poll_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_tear), (mp_obj_t)&ugfx_disable_tear_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_tear), (mp_obj_t)&ugfx_enable_tear_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_tear_line), (mp_obj_t)&ugfx_set_tear_line_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&ugfx_ball_demo_obj },
  //   { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&ugfx_get_pixel_obj },

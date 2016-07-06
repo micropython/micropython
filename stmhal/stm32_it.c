@@ -79,7 +79,6 @@
 #include "storage.h"
 #include "can.h"
 #include "dma.h"
-#include "gfx.h"
 
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef pcd_fs_handle;
