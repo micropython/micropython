@@ -2,54 +2,50 @@ sudo: required
 dist: trusty
 language: c
 compiler:
-  - gcc
-
+- gcc
 before_script:
-# Extra CPython versions
-#  - sudo add-apt-repository -y ppa:fkrull/deadsnakes
-# Extra gcc versions
-#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
-  - sudo dpkg --add-architecture i386
-  - sudo apt-get update -qq || true
-  - sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system mingw32
-  - sudo apt-get install -y --force-yes gcc-arm-none-eabi
-  # For teensy build
-  - sudo apt-get install realpath
-  # For coverage testing
-  - sudo pip install cpp-coveralls
-  - gcc --version
-  - arm-none-eabi-gcc --version
-  - python3 --version
-
+- sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
+- sudo dpkg --add-architecture i386
+- sudo apt-get update -qq || true
+- sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386
+  qemu-system mingw32
+- sudo apt-get install -y --force-yes gcc-arm-none-eabi
+- sudo apt-get install realpath
+- sudo pip install cpp-coveralls
+- gcc --version
+- arm-none-eabi-gcc --version
+- python3 --version
 script:
-  - make -C minimal test
-  - make -C unix deplibs
-  - make -C unix
-  - make -C unix nanbox
-  - make -C bare-arm
-  - make -C qemu-arm test
-  - make -C stmhal BOARD=STM32L475_EMFBADGE
-  #- make -C stmhal # ToDo: make this work again
-  #- make -C stmhal -B MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1 # ToDo: make this work again
-  #- make -C stmhal BOARD=STM32F4DISC # ToDo: make this work again 
-  - make -C teensy
-  #- make -C cc3200 BTARGET=application BTYPE=release # ToDo: make this work again
-  #- make -C cc3200 BTARGET=bootloader  BTYPE=release # ToDo: make this work again
-  - make -C windows CROSS_COMPILE=i586-mingw32msvc-
-
-  # run tests without coverage info
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
-
-  # run tests with coverage info
-  - make -C unix coverage
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
-
+- make -C minimal test
+- make -C unix deplibs
+- make -C unix
+- make -C unix nanbox
+- make -C bare-arm
+- make -C qemu-arm test
+- make -C stmhal BOARD=STM32L475_EMFBADGE
+- make -C teensy
+- make -C windows CROSS_COMPILE=i586-mingw32msvc-
+- make -C unix coverage
+- "(cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage
+  ./run-tests)"
+- "(cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage
+  ./run-tests --emit native)"
 after_success:
-  - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
-
+- "(cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options
+  '\\-o build-coverage/' --include py --include extmod)"
 after_failure:
-  - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
-  - (grep "FAIL" qemu-arm/build/console.out)
+- (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE
+  $testbase"; diff -u $testbase.exp $testbase.out; done)
+- (grep "FAIL" qemu-arm/build/console.out)
+deploy:
+  provider: s3
+  access_key_id: AKIAIODULWTQVWYP3QLQ
+  secret_access_key:
+    secure: l6bc7LqUHweIafMeK+4DlHE9Qrs3OvMf3eyqC3UjYuiNrxM0UmSii9+8+e8Da3aTWY9WdjVZO00BwXkWM7tOKHsS1MbLyI8Ersx4gyvOoQFn2y+2/JGo2gTx+w1rPQludyonNKH1nns+MCS566b+X4Wu34EkRak0NjzD96TDlx+ZAvdpArMzeaNzokKx0fQAE1AkJRpTiaaa2Rh3dXK/dWwx/Spv4RdHIPT28lYeFK+w4XRtkm7tQlxGmE/B3nZTUHp+8MhpYx+WlUjFfgreTYU7HsjzxFS/cW3zFTrww/VZmknA84mU7EJfbDOgKDjnLH0B0t4HL2uM4yru8PSd5hHdVTBVNdeNpc9ONEUgWWBHDPdJ622uQi0oeMVaGyGEzOe9dZMcJjpFGF3ExofLxhCwMNscArS42So/GFAEZtvX4r3pT6NUtOH2Yr3oSx45ox/BAThCGhq3zEjhiI3OFQ9UggBd6rqejw0MvJ5pgtNZcaCpJ4oPwfEaBSww8JEDFTZ19H1L8W7xL5ia7/na3O8YulkY6a705FrZmCXZUuFEIywsFAfhlg7OU+8zi+y7XSp1oRQMFYSpDPSLGHDB9l6CMvRqeimNCavkshXmvRPfce3skH4svoSD6+xNqygc76M/YYj/3ig1eQhD7pLsrhZsHw+xbHhYB92WUHNoQno=
+  bucket: tilda-badge
+  local-dir: stmhal/build-STM32L475_EMFBADGE
+  acl: public_read
+  skip_cleanup: true
+  on:
+    repo: emfcamp/micropython
+    branch: tilda-master
