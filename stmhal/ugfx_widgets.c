@@ -523,6 +523,17 @@ STATIC mp_obj_t ugfx_clear_keyboard_callback(mp_obj_t self_in, mp_obj_t callback
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_clear_keyboard_callback_obj, ugfx_clear_keyboard_callback);
 
 
+/// \method selected_key()
+///
+STATIC mp_obj_t ugfx_keyboard_selected_key(mp_obj_t self_in) {
+    ugfx_keyboard_obj_t *self = self_in;
+	const char utf8_str[9];	
+	uint8_t len = gwinKeyboardGetSelected(self->ghKeyboard, (uint8_t*)utf8_str);
+//	utf8_str[len] = 0;	
+    return mp_obj_new_str(utf8_str, len, TRUE);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_keyboard_selected_key_obj, ugfx_keyboard_selected_key);
+
 
 
 /// \method destroy()
@@ -585,6 +596,7 @@ STATIC const mp_map_elem_t ugfx_keyboard_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_keyboard_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_keyboard_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_keyboard_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_selected_key), (mp_obj_t)&ugfx_keyboard_selected_key_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&ugfx_keyboard_callback_obj },
 
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_set_keyboard_callback), (mp_obj_t)&ugfx_set_keyboard_callback_obj },
