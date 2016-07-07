@@ -6,4 +6,3 @@
  */
 #include "romfs_img_ugfx.h"
 #include "romfs_img_yesno.h"
-#include "romfs_img_chibios.h"

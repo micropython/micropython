@@ -183,6 +183,9 @@ static void sendListEvent(GWidgetObject *gw, int item) {
 		const gfxQueueASyncItem	*	qi;
 		const gfxQueueASyncItem	*	qix;
 		int							i;
+		
+		coord_t		iheight;
+		iheight = gdispGetFontMetric(gw->g.font, fontHeight) + LST_VERT_PAD;
 
 		switch (role) {
 			// select down
@@ -193,6 +196,12 @@ static void sendListEvent(GWidgetObject *gw, int item) {
 						if (qix) {
 							qi2li->flags &=~ GLIST_FLG_SELECTED;
 							qix2li->flags |= GLIST_FLG_SELECTED;
+
+							//if we need to scroll down
+							if (((i+2)*iheight - gw2obj->top) > gw->g.height){
+								gw2obj->top += iheight;
+							}
+
 							_gwinUpdate(&gw->g);
 						}
 						break;
@@ -210,6 +219,14 @@ static void sendListEvent(GWidgetObject *gw, int item) {
 						if (qix) {
 							qi2li->flags &=~ GLIST_FLG_SELECTED;
 							qix2li->flags |= GLIST_FLG_SELECTED;
+
+							//if we need to scroll up
+							if (((i-1)*iheight) < gw2obj->top){
+								gw2obj->top -= iheight;
+								if (gw2obj->top < 0)
+									gw2obj->top = 0;
+							}
+
 							_gwinUpdate(&gw->g);
 						}
 						break;
