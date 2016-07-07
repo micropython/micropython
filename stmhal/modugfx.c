@@ -774,13 +774,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_box_obj, 5, 5, ugfx_box);
 
 /// \method display_image(image_object,x,y)
 ///
-STATIC mp_obj_t ugfx_display_image(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
 	mp_uint_t len;
-	mp_obj_t img_obj = args[2];
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
+	mp_obj_t img_obj = imin;
+	int x = mp_obj_get_int(xin);
+	int y = mp_obj_get_int(yin);
 	
 
 	if (img_obj != mp_const_none) {
