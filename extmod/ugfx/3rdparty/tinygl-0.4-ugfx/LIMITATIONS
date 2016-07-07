@@ -1,0 +1,206 @@
+
+Here are listed the functions that TinyGL understands with the known
+limitations. The non mentionned functions are *not* implemented and
+must not be used.
+
+
+************ glEnable / glDisable
+
+- The following flags are handled:
+
+GL_CULL_FACE, GL_LIGHTING, GL_COLOR_MATERIAL, GL_TEXTURE_2D, GL_NORMALIZE,
+GL_LIGHTx, GL_POLYGON_OFFSET_FILL, GL_POLYGON_OFFSET_POINT,
+GL_POLYGON_OFFSET_LINE
+
+
+- GL_DEPTH_TEST is accepted, but it is only used for lines. For all
+  other primitives, Z buffer use is assumed.  The DepthMode is
+  hardcoded as GL_LESS (OpenGL default).
+
+************ glShadeModel
+
+OK.
+
+************ glCullFace
+
+OK.
+
+************ glPolygonMode
+
+OK.
+
+************ glBegin
+
+No tests are performed to prevent some functions of being executed
+between glBegin/glEnd.
+
+************ glEnd
+
+OK.
+
+************ glVertex
+
+Some prototypes are not implemented.
+
+
+************ glColor
+
+Some prototypes are not implemented.
+
+************ glNormal
+
+Some prototypes are not implemented.
+
+************ glTexCoord
+
+- Some prototypes are not implemented.
+
+- The Matrix transformation is not applied yet.
+
+************ glEdgeFlag
+
+OK. The edge handling has to be tested, although it is not much useful
+in TinyGL.
+
+************ glMatrixMode / glLoadMatrixf / glLoadIdentity / glMultMatrixf /
+             glPushMatrix / glPopMatrix / glRotatef / glTranslatef / glScalef /
+             glFrustum
+
+- The prototypes with doubles are not implemented.
+
+************ glViewport
+
+GlViewport calls a function pointers to tell glx (or another display
+system) to resize the Z buffer and the ximage. Made optional in
+version 0.2.
+
+************ glGenLists / glIsList / glNewList / glEndList / glCallList
+
+OK.
+
+************ glClear / glClearColor / glClearDepth
+
+The whole zbuffer and the colors are cleared in any case. The clear color
+can be redefined, by *not* the initial z value.
+
+************ glRenderMode
+
+Only the modes GL_RENDER and GL_SELECT are implemented.
+
+************ glSelectBuffer / glInitNames / glPushName / glPopName / glLoadName
+
+OK.
+
+************ glGenTextures / glDeleteTextures / glBindTexture 
+
+OK. These functions should be used to get the maximum performance with
+TinyGL. 
+
+************ glTexImage2D
+
+The function accepts only RGB UNSIGNED_BYTES bitmaps. They are
+internally resized to 256x256 so you'd better use that size. No
+mipmapping is implemented although it will come if asked. No borders
+are implemented.
+
+************ glTexEnvi
+
+The only supported mode is GL_DECAL, although others are planned if
+asked.
+
+
+************ glTexParameteri
+
+The other prototypes are not implemented. Only the follwing mode are
+implemented:
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+************ glPixelStorei
+
+The pixels are alware byte aligned.
+
+************ glMaterialfv / glMaterialf / glColorMaterial
+
+OK.
+
+
+************ glLightfv / glLightf / glLightModeli / glLightModelfv
+
+OK. The OpenGL lightening is implemented but not optimized.
+
+
+************ glFlush
+
+Ignored.
+
+************ glHint
+
+Ignored.
+
+************ glGetIntegerv
+
+- only GL_VIEWPORT, GL_MAX_MODELVIEW_STACK_DEPTH, 
+GL_MAX_PROJECTION_STACK_DEPTH, GL_MAX_LIGHTS, GL_MAX_TEXTURE_SIZE,
+GL_MAX_TEXTURE_STACK_DEPTH
+
+************ glGetIntegerv
+
+- only GL_TEXTURE_MATRIX, GL_PROJECTION_MATRIX, GL_MODELVIEW_MATRIX,
+GL_LINE_WIDTH, GL_LINE_WIDTH_RANGE, GL_POINT_SIZE, GL_POINT_SIZE_RANGE
+
+************ glPolygonOffset
+
+- only API implemented.
+
+************ glEnableClientState, glDisableClientState,
+             
+- No support for GL_INDEX_ARRAY_POINTER or GL_EDGE_FLAG_ARRAY_POINTER
+
+************ glVertexPointer, glNormalPointer, 
+             glColorPointer, glTexureCoordPointer
+
+- OK
+
+------------------------------------------------------------------------------
+
+TinyGL GLX emulation:
+
+
+************ glXQueryExtension
+
+Returns always True
+
+************ glXChooseVisual
+
+Only 8 bit Pseudocolor or 16 bit Truecolor Visual are accepted. The
+attribute list is ignored.
+
+************ glXCreateContext
+
+The sharing is not implemented although the code could handle it.
+
+************ glXDestroyContext
+
+OK.
+
+************ glXMakeCurrent
+
+Not all the syntax is supported yet, in particular with the 'NULL' or
+'None' parameters.
+
+
+************ glXSwapBuffers
+
+OK.
+
+************ glXWaitGL / glXWaitX
+
+Ignored.
+
+
+See README.BEOS for BeOS limitations.
+

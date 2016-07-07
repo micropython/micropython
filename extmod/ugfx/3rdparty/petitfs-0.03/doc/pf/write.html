@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - pf_write</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>pf_write</h2>
+<p>The pf_write function writes data to the file.</p>
+<pre>
+FRESULT pf_write (
+  const void* <span class="arg">buff</span>, <span class="c">/* [IN]  Pointer to the data to be written */</span>
+  UINT <span class="arg">btw</span>,         <span class="c">/* [IN]  Number of bytes to write */</span>
+  UINT* <span class="arg">bw</span>          <span class="c">/* [OUT] Pointer to the variable to return number of bytes written */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>buff</dt>
+<dd>Pointer to the data to be wtitten. A NULL specifies to finalize the current write operation.</dd>
+<dt>btw</dt>
+<dd>Number of bytes to write.</dd>
+<dt>bw</dt>
+<dd>Pointer to the variable to return number of bytes read.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>FR_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>FR_DISK_ERR</dt>
+<dd>The function failed due to a hard error in the disk function, write protected, a wrong FAT structure or an internal error.</dd>
+<dt>FR_NOT_OPENED</dt>
+<dd>The file has not been opened.</dd>
+<dt>FR_NOT_ENABLED</dt>
+<dd>The volume has not been mounted.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>The write function has some restrictions listed below:</p>
+<ul>
+<li>Cannot create file. Only existing file can be written.</li>
+<li>Cannot expand file size.</li>
+<li>Cannot update time stamp of the file.</li>
+<li>Write operation can start/stop on the sector boundary.</li>
+<li>Read-only attribute of the file cannot block write operation.</li>
+</ul>
+<p>File write operation must be done in following sequence.</p>
+<ol>
+<li><tt>pf_lseek(ofs);</tt> read/write pointer must be moved to sector bundary prior to initiate write operation or it will be rounded-down to the sector boundary.</li>
+<li><tt>pf_write(buff, btw, &amp;bw);</tt> Initiate write operation. Write first data to the file.</li>
+<li><tt>pf_write(buff, btw, &amp;bw);</tt> Write next data. Any other file function cannot be used while a write operation is in progress.</li>
+<li><tt>pf_write(0, 0, &amp;bw);</tt> Finalize the write operation. If read/write pointer is not on the sector boundary, left bytes in the sector will be filled with zero.</li>
+</ol>
+<p>The read/write pointer in the file system object advances in number of bytes written. After the function succeeded, <tt>*bw</tt> should be checked to detect end of file. In case of <tt>*bw &lt; btw</tt>, it means the read/write pointer reached end of file during the write operation. Once a write operation is initiated, it must be finalized or the written data can be lost.</p>
+</div>
+
+<div class="para">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_USE_WRITE == 1</tt>.</p>
+</div>
+
+<div class="para">
+<h4>References</h4>
+<p><tt><a href="open.html">pf_open</a>, <a href="sfatfs.html">FATFS</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/rc.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - 戻り値</title>
+</head>
+
+<body>
+<h1>ファイル関数の戻り値</h1>
+<p>FatFsのAPIでは、一部の関数を除き結果に応じた共通のリザルト・コード(FRESULT型(enum))を返します。関数が成功した場合は0を返します。失敗した場合は0以外の値を返し、値はエラーの種類を示します。</p>
+
+<dl class="ret">
+<dt id="ok">FR_OK (0)</dt>
+<dd>関数は成功した。</dd>
+<dt id="de">FR_DISK_ERR</dt>
+<dd>下位レイヤ(<tt>disk_read(), disk_write(), disk_ioctl()</tt>関数)で回復不能なエラーが発生した。<br>※開かれたファイルの操作においてこのエラーが発生すると、そのファイル・オブジェクトはアボート状態となり、クローズ以外のの操作ができなくなります。</dd>
+<dt id="ie">FR_INT_ERR</dt>
+<dd>内部処理の健全性に異常が検出された。原因としては次のようなことが考えられます。
+<ul>
+<li>ボリューム上のFAT構造にエラーがある。</li>
+<li>スタック不足や不正なメモリ操作等によるワーク・エリアの破壊。多くはこれが原因。</li>
+</ul>
+※開かれたファイルの操作においてこのエラーが発生すると、そのファイル・オブジェクトはアボート状態となり、クローズ以外の操作ができなくなります。</dd>
+<dt id="nr">FR_NOT_READY</dt>
+<dd>物理ドライブが動作可能な状態にない。または、ドライブの初期化に失敗した。</dd>
+<dt id="nf">FR_NO_FILE</dt>
+<dd>指定されたファイルが見つからなかった。</dd>
+<dt id="np">FR_NO_PATH</dt>
+<dd>指定されたパスが見つからなかった。</dd>
+<dt id="in">FR_INVALID_NAME</dt>
+<dd>指定された文字列が<a href="filename.html">パス名のフォーマット</a>として無効。</dd>
+<dt id="dn">FR_DENIED</dt>
+<dd>そのオブジェクトに対する操作の拒否。原因としては次のようなことが考えられます。
+<ul>
+<li>書き込み禁止属性(<tt>AM_RDO</tt>)を持つファイルを書き込みモードで開こうとした。</li>
+<li>書き込み禁止属性を持つファイルやディレクトリを削除しようとした。</li>
+<li>空でないディレクトリまたはカレント・ディレクトリを削除しようとした。</li>
+<li><tt>FA_READ</tt>フラグを付けずに開いたファイルに対して読み出しを行った。</li>
+<li><tt>FA_WRITE</tt>フラグを付けずに開いたファイルに対して書き込みまたはそれに類する操作を行った。</li>
+<li>ボリュームまたはディレクトリ・テーブルが満杯でファイルやディレクトリを作成できなかった。</li>
+</ul>
+</dd>
+<dt id="ex">FR_EXIST</dt>
+<dd>新しく作成しようとしたオブジェクトと同じ名前のオブジェクトが既に存在する。</dd>
+<dt id="io">FR_INVALID_OBJECT</dt>
+<dd>指定されたファイル・オブジェクトやディレクトリ・オブジェクトが無効(オープンされていない、既に閉じられた、破損しているなど)、またはヌル・ポインタが渡された。また、開かれたままのオブジェクトは、それの属するボリュームのマウント動作により無効となります。</dd>
+<dt id="wp">FR_WRITE_PROTECTED</dt>
+<dd>物理ドライブが書き込み禁止状態のとき、書き込みを伴う操作を行おうとした。</dd>
+<dt id="id">FR_INVALID_DRIVE</dt>
+<dd>パス名中に指定されたドライブ番号が無効、またはパス名にヌル・ポインタが渡された。(関連オプション: <tt>_VOLUMES</tt>)</dd>
+<dt id="ne">FR_NOT_ENABLED</dt>
+<dd>そのボリュームの操作に必要なワーク・エリア(ファイル・システム・オブジェクト構造体)が与えられていない。</dd>
+<dt id="ns">FR_NO_FILESYSTEM</dt>
+<dd>物理ドライブ上に有効なFATボリュームが見つからなかった。</dd>
+<dt id="ma">FR_MKFS_ABORTED</dt>
+<dd><tt>f_mkfs()</tt>の処理が開始前に中断された。原因としては次のようなことが考えられます。
+<ul>
+<li>ボリュームが小さすぎる。</li>
+<li>FATタイプの計算に矛盾が見つかった。クラスタ数がFATタイプの境界付近になるときに発生する場合があります。</li>
+<li>その論理ドライブに対応する区画が見つからなかった。(関連オプション: <tt>_MULTI_PARTITION</tt>)</li>
+</ul>
+</dd>
+<dt id="tm">FR_TIMEOUT</dt>
+<dd><a href="appnote.html#reentrant">再入制御</a>による待ち時間が定義された時間を越えたため、関数は実行されなかった。(関連オプション: <tt>_TIMEOUT</tt>)</dd>
+<dt id="lo">FR_LOCKED</dt>
+<dd><a href="appnote.html#dup">多重アクセス排他機能</a>により、そのファイルやディレクトリに対して行おうとしたアクセスが拒否された。(関連オプション: <tt>_FS_LOCK</tt>)</dd>
+<dt id="nc">FR_NOT_ENOUGH_CORE</dt>
+<dd>メモリ不足による失敗。原因としては次のようなことが考えられます。
+<ul>
+<li>LFN操作バッファの動的確保に失敗した。(関連オプション: <tt>_USE_LFN</tt>)</li>
+<li>与えられた配列のサイズが実際に必要なサイズに対して不足している。</li>
+</ul>
+</dd>
+<dt id="tf">FR_TOO_MANY_OPEN_FILES</dt>
+<dd>同時オープン可能なファイル数を越えてファイルを開こうとした。(関連オプション: <tt>_FS_LOCK</tt>)</dd>
+<dt id="ip">FR_INVALID_PARAMETER</dt>
+<dd>与えられたパラメータが無効または矛盾している。</dd>
+</dl>
+
+</body>
+</html>

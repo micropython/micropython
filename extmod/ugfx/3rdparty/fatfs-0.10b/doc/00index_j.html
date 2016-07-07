@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="cache-control" content="no-cache">
+<meta name="description" content="組み込みシステム向け汎用FATファイル・システム">
+<link rel="start" title="Site Top" href="../../index_j.html">
+<link rel="up" title="Freewares" href="../../fsw.html">
+<link rel="alternate" hreflang="en" title="英文" href="00index_e.html">
+<link rel="stylesheet" href="css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs 汎用FATファイルシステム・モジュール</title>
+</head>
+
+<body>
+<h1>FatFs 汎用FATファイルシステム・モジュール</h1>
+<hr>
+
+<div class="abst">
+<img src="img/layers.png" class="rset" width="245" height="255" alt="layer">
+<p>FatFsは小規模な組み込みシステム向けの汎用FATファイルシステム・モジュールです。ANSI C準拠でハードウェア・アーキテクチャには依存しないので、必要なワーク・エリアが確保できれば、8051, PIC, AVR, SH, Z80, 68k, H8, ARMなど安価なマイコンでも使用可能です。FatFsをシュリンクした<a href="http://elm-chan.org/fsw/ff/00index_p.html">ぷちFatFs</a>↗もあります。</p>
+<h4>FatFsモジュールの特徴</h4>
+<ul>
+ <li>Windows互換 FATファイル・システム</li>
+ <li>プラットフォーム非依存</li>
+ <li>コンパクトなコードとRAM使用量</li>
+ <li>多くの構成オプション:
+  <ul>
+   <li>複数のボリューム(物理ドライブ・区画)</li>
+   <li>DBCSを含む複数のANSI/OEMコード・ページ</li>
+   <li>長いファイル名(LFN) (Unicode APIも選択可)</li>
+   <li>マルチタスク関連</li>
+   <li>マルチ・セクタ・サイズ</li>
+   <li>リード・オンリー構成、一部APIの削除、バッファ構成、その他…</li>
+  </ul>
+ </li>
+</ul>
+</div>
+
+
+<div class="para">
+<h3>上位レイヤ・インターフェース</h3>
+<p>FatFsモジュールは、アプリケーション・レイヤに対し、次のファイル操作関数(API)を提供します。つまり、このリストはFatFsにできることをシンプルに示しています。</p>
+<ul>
+ <li><a href="ja/mount.html">f_mount</a> - ワークエリアの登録・抹消</li>
+ <li><a href="ja/open.html">f_open</a> - ファイルのオープン・作成</li>
+ <li><a href="ja/close.html">f_close</a> - ファイルのクローズ</li>
+ <li><a href="ja/read.html">f_read</a> - ファイルの読み出し</li>
+ <li><a href="ja/write.html">f_write</a> - ファイルの書き込み</li>
+ <li><a href="ja/lseek.html">f_lseek</a> - リード/ライト・ポインタの移動, ファイルの拡張</li>
+ <li><a href="ja/truncate.html">f_truncate</a> - ファイル・サイズの切り詰め</li>
+ <li><a href="ja/sync.html">f_sync</a> - キャッシュされたデータのフラッシュ</li>
+ <li><a href="ja/forward.html">f_forward</a> - ファイル・データをストリーム関数に転送</li>
+ <li><a href="ja/stat.html">f_stat</a> - ファイル/サブ・ディレクトリの存在チェックと情報の取得</li>
+ <li><a href="ja/opendir.html">f_opendir</a> - ディレクトリのオープン</li>
+ <li><a href="ja/closedir.html">f_closedir</a> - ディレクトリのクローズ</li>
+ <li><a href="ja/readdir.html">f_readdir</a> - ディレクトリの読み出し</li>
+ <li><a href="ja/mkdir.html">f_mkdir</a> - サブ・ディレクトリの作成</li>
+ <li><a href="ja/unlink.html">f_unlink</a> - ファイル/サブ・ディレクトリの削除</li>
+ <li><a href="ja/chmod.html">f_chmod</a> - ファイル/サブ・ディレクトリの属性の変更</li>
+ <li><a href="ja/utime.html">f_utime</a> - ファイル/サブ・ディレクトリのタイムスタンプの変更</li>
+ <li><a href="ja/rename.html">f_rename</a> - ファイル/サブ・ディレクトリの名前の変更・移動</li>
+ <li><a href="ja/chdir.html">f_chdir</a> - カレント・ディレクトリの変更</li>
+ <li><a href="ja/chdrive.html">f_chdrive</a> - カレント・ドライブの変更</li>
+ <li><a href="ja/getcwd.html">f_getcwd</a> - カレント・ディレクトリの取得</li>
+ <li><a href="ja/getfree.html">f_getfree</a> - ボリューム空き領域の取得</li>
+ <li><a href="ja/getlabel.html">f_getlabel</a> - ボリューム・ラベルの取得</li>
+ <li><a href="ja/setlabel.html">f_setlabel</a> - ボリューム・ラベルの設定</li>
+ <li><a href="ja/mkfs.html">f_mkfs</a> - 論理ドライブのフォーマット</li>
+ <li><a href="ja/fdisk.html">f_fdisk</a> - 物理ドライブの分割</li>
+ <li><a href="ja/gets.html">f_gets</a> - 文字列の読み出し</li>
+ <li><a href="ja/putc.html">f_putc</a> - 文字の書き込み</li>
+ <li><a href="ja/puts.html">f_puts</a> - 文字列の書き込み</li>
+ <li><a href="ja/printf.html">f_printf</a> - 書式化文字列の書き込み</li>
+ <li><a href="ja/tell.html">f_tell</a> - 現在のリード/ライト・ポインタの取得</li>
+ <li><a href="ja/eof.html">f_eof</a> - ファイル終端の有無の取得</li>
+ <li><a href="ja/size.html">f_size</a> - ファイル・サイズの取得</li>
+ <li><a href="ja/error.html">f_error</a> - ファイルのエラーの有無の取得</li>
+</ul>
+</div>
+
+
+<div class="para">
+<h3>下位レイヤ・インターフェース</h3>
+<p>FatFsモジュールは、単なるファイル・システム・レイヤなので、ストレージ・デバイス制御レイヤは含まれません。使用するストレージに対応した制御関数は、ユーザによって提供される必要があります。FatFsモジュールは、下位レイヤに対し少なくとも次のインターフェースを要求します。OS関連機能を有効にしたときは、これに加えてプロセス/メモリ関連関数も必要になります。サンプル・プロジェクトに下位レイヤの実装例を示します。</p>
+<ul>
+ <li><a href="ja/dstat.html">disk_status</a> - デバイスの状態取得</li>
+ <li><a href="ja/dinit.html">disk_initialize</a> - デバイスの初期化</li>
+ <li><a href="ja/dread.html">disk_read</a> - データの読み出し</li>
+ <li><a href="ja/dwrite.html">disk_write</a> - データの書き込み</li>
+ <li><a href="ja/dioctl.html">disk_ioctl</a> - その他のデバイス制御</li>
+ <li><a href="ja/fattime.html">get_fattime</a> - 日付・時刻の取得</li>
+</ul>
+</div>
+
+
+<div class="para">
+<h3>資料</h3>
+<p>FatFsモジュールはフリー・ソフトウェアとして教育・研究・開発用に公開しています。どのような利用目的（個人利用から商用まで）でも使用・改変・配布について一切の制限はありませんが、全て利用者の責任の下での利用とします。詳しくはアプリケーション・ノートを参照してください。</p>
+<ul>
+ <li><a href="http://elm-chan.org/fsw/ff/bd/"><em>FatFsユーザ・フォーラム</em></a>↗</li>
+ <li>最初に読め: <a href="ja/appnote.html">FatFsモジュール・アプリケーション・ノート</a></li>
+ <li>最新版: <a href="http://elm-chan.org/fsw/ff/00index_j.html">http://elm-chan.org/fsw/ff/00index_j.html</a>↗</li>
+ <li><a href="http://nemuisan.blog.bai.ne.jp/">ねむいさんのぶろぐ</a>↗ (Well written implementations for STM32F/SDIO and LPC2300/MCI)</li>
+ <li><a href="http://www.siwawi.arubi.uni-kl.de/avr_projects/arm_projects/arm_memcards/index.html">ARM-Projects by Martin THOMAS</a>↗ (Examples for LPC2000, AT91SAM and STM32)</li>
+ <li><a href="http://www.microsoft.com/whdc/system/platform/firmware/fatgen.mspx">FATファイル・システム仕様書 by Microsoft</a>↗ (The reference document on FAT file system)</li>
+ <li><a href="http://elm-chan.org/docs/fat.html">FATファイル・システム概要</a>↗ (↑を読むためのガイド)</li>
+ <li><a href="http://elm-chan.org/docs/mmc/mmc.html">MMCの使いかた</a>↗</li>
+ <li><a href="img/rwtest.png">パフォーマンス・テスト1</a> (ATmega64/9.2MHz with MMC via SPI, HDD/CFC via GPIO)</li>
+ <li><a href="img/rwtest2.png">パフォーマンス・テスト2</a> (LPC2368/72MHz with MMC via MCI)</li>
+</ul>
+</div>
+
+
+<hr>
+<p class="foot"><a href="../../fsw.html">戻る</a></p>
+</body>
+</html>

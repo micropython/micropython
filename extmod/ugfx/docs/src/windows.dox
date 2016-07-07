@@ -1,0 +1,35 @@
+/*
+ * This file is subject to the terms of the GFX License. If a copy of
+ * the license was not distributed with this file, you can obtain one at:
+ *
+ *              http://ugfx.com/license.html
+ */
+
+/**
+ * @file		src/gwin/gwin.h
+ *
+ * @defgroup	Windows Windows
+ * @ingroup		GWIN
+ *
+ * @brief		Windows are the most basic element in the @p GWIN module.
+ *
+ * @details		The window is the most basic GWIN element. All the other windows,
+ *				widgets and containers are based on this class.
+ *
+ *				A window implements the following properties and attributes:
+ *				<ul>
+ *					<li>Position</li>
+ *					<li>Size</li>
+ *					<li>Foreground color</li>
+ *					<li>Background color</li>
+ *				</ul>
+ *
+ *				Each Window can either be created statically or dynamically.
+ *				Like any other good window system, uGFX provide some standard window
+ *				types such as graphs, consoles, buttons, containers etc. This is done
+ *				through "super-classing" basic windows to provide the extended capabilities.
+ *
+ *				For the common window API, please see @ref Window.
+ *
+ * @pre			GFX_USE_GWIN must be set to TRUE in your gfxconf.h
+ */

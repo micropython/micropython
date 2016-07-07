@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/getlabel.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_getlabel</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_getlabel</h2>
+<p>ボリューム・ラベルを取得します。</p>
+<pre>
+FRESULT f_getlabel (
+  const TCHAR* <span class="arg">path</span>,  <span class="c">/* [IN] 対象ドライブ */</span>
+  TCHAR* <span class="arg">label</span>,       <span class="c">/* [OUT] ボリューム名を格納するバッファ */</span>
+  DWORD* <span class="arg">vsn</span>          <span class="c">/* [OUT] ボリューム・シリアル番号を格納する変数 */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>対象となる論理ドライブの<a href="filename.html">パス名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。ヌル文字列の場合は、デフォルト・ドライブを指定したことになります。</dd>
+<dt>label</dt>
+<dd>ボリューム名を格納する配列へのポインタを指定します。少なくとも12要素のサイズが必要です。ボリューム名がない場合はヌル文字列が返されます。この情報が不要なときはヌル・ポインタを指定してください。</dd>
+<dt>vsn</dt>
+<dd>ボリューム・シリアル番号を格納する<tt>DWORD</tt>型変数へのポインタを指定します。この情報が不要なときはヌル・ポインタを指定してください。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>
+</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_USE_LABEL == 1</tt>のときに使用可能です。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    char str[12];
+
+    <span class="c">/* デフォルト・ドライブのボリューム名を得る */</span>
+    f_getlabel("", str, 0);
+
+    <span class="c">/* ドライブ2のボリューム名を得る */</span>
+    f_getlabel("2:", str, 0);
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<tt><a href="setlabel.html">f_setlabel</a></tt>
+</div>
+
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

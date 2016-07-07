@@ -1,0 +1,44 @@
+ARCH     = i686-pc-mingw32-
+CXXFLAGS = -O2 -Wall -Werror -Wno-unused-function -Wno-sign-compare -std=c++0x
+CXXFLAGS += -ggdb
+LDFLAGS += -pthread --static
+
+# Libfreetype
+CXXFLAGS += $(shell freetype-config --cflags)
+LDFLAGS += $(shell freetype-config --libs)
+#FREETYPE2_LIB = ../ugfx/3rdparty/freetype-2.6.1
+#CXXFLAGS += -I$(FREETYPE2_LIB)/include
+#LDFLAGS += -I$(FREETYPE2_LIB)/lib -lfreetype
+
+# compiler fixes for mingw32
+CXXFLAGS += -DNEED_STRING_FIXES -DNEED_THREAD_FIXES
+
+# Class to represent font data internally
+OBJS = datafile.o
+
+# Utility functions
+OBJS += importtools.o exporttools.o
+
+# Import formats
+OBJS += bdf_import.o freetype_import.o
+
+# rlefont export format
+OBJS += encode_rlefont.o optimize_rlefont.o export_rlefont.o
+
+# bwfont export format
+OBJS += export_bwfont.o
+
+
+all: mcufont
+
+strip: mcufont.exe
+	strip mcufont.exe
+
+clean:
+	rm -f mcufont $(OBJS)
+
+mcufont: main.o $(OBJS)
+	$(ARCH)g++ $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.o: %.cc *.hh
+	$(ARCH)g++ $(CXXFLAGS) -c $<

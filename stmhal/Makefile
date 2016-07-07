@@ -8,6 +8,7 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+
 include ../py/mkenv.mk
 -include mpconfigport.mk
 include boards/$(BOARD)/mpconfigboard.mk
@@ -30,6 +31,7 @@ PYDFU ?= ../tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 STFLASH ?= st-flash
+STLINK ?= ST-Link_CLI
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
@@ -47,12 +49,12 @@ INC += -I../lib/mp-readline
 INC += -I../lib/netutils
 INC += -I../lib/timeutils
 
-CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
+CFLAGS_CORTEX_M = -mthumb -g -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -203,6 +205,13 @@ SRC_HAL = $(addprefix $(HAL_DIR)/src/stm32$(MCU_SERIES)xx_,\
 	ll_usb.c \
 	)
 
+ifeq ($(MCU_SERIES),l4)
+SRC_HAL += $(addprefix $(HAL_DIR)/src/stm32$(MCU_SERIES)xx_,\
+	ll_fmc.c \
+	hal_sram.c \
+	)
+endif
+
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
 	core/src/usbd_ctlreq.c \
@@ -212,6 +221,21 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_scsi.c \
 	class/src/usbd_msc_data.c \
 	)
+
+# for uGFX driver module
+ifeq ($(MICROPY_PY_UGFX),1)
+GFXLIB=../extmod/ugfx
+include $(GFXLIB)/gfx.mk
+include $(GFXLIB)/drivers/gdisp/ILI9341/driver.mk
+INC += $(foreach d, $(GFXINC), -I$d)
+SRC_C += modugfx.c
+SRC_UGFX += $(GFXSRC)
+SRC_C += ugfx_widgets.c
+SRC_C += ugfx_containers.c
+SRC_C += ugfx_styles.c
+# Add Toggle driver
+SRC_UGFX += ugfx_ginput_lld_toggle.c
+endif
 
 ifeq ($(MICROPY_PY_WIZNET5K),1)
 WIZNET5K_DIR=drivers/wiznet5k
@@ -249,6 +273,26 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	)
 endif
 
+# for CC3100 module
+ifeq ($(MICROPY_PY_CC3100),1)
+CC3100_DIR=drivers/cc3100
+INC += -I$(TOP)/$(CC3100_DIR)/include
+CFLAGS_MOD += -DMICROPY_PY_CC3100=1
+SRC_MOD += modnwcc3100.c
+SRC_MOD += $(addprefix $(CC3100_DIR)/source/,\
+	device.c \
+	driver.c \
+	flowcont.c \
+	fs.c \
+	netapp.c \
+	netcfg.c \
+	nonos.c \
+	socket.c \
+	spawn.c \
+	wlan.c \
+	)
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
@@ -257,6 +301,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_UGFX:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
 # We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
@@ -317,6 +362,11 @@ deploy-stlink: $(BUILD)/firmware.dfu
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
+
+deploy-stlinkcli: $(BUILD)/firmware.hex
+	$(ECHO) "Writing $(BUILD)/firmware.hex to the board via ST-LINK"
+	$(Q)$(STLINK) -P $(BUILD)/firmware.hex -Rst
+
 
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"

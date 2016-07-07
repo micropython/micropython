@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="cache-control" content="no-cache">
+<meta name="description" content="A tiny FAT file system for embedded projects">
+<link rel="start" title="Site Top" href="../../">
+<link rel="up" title="Freewares" href="../../fsw_e.html">
+<link rel="stylesheet" href="css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FAT File System Module</title>
+</head>
+
+<body>
+<h1>Petit FAT File System Module</h1>
+<hr>
+
+<div class="abst">
+<img src="img/layers3.png" class="rset" width="245" height="255" alt="layer">
+<p>Petit FatFs is a sub-set of FatFs module for tiny 8-bit microcontrollers. It is written in compliance with ANSI C and completely separated from the disk I/O layer. It can be incorporated into the tiny microcontrollers with limited memory even if the RAM size is less than sector size. Also full featured FAT file system module is available <a href="http://elm-chan.org/fsw/ff/00index_e.html">here</a>↗.</p>
+
+<h4>Features</h4>
+<ul>
+ <li>Very small RAM consumption (44 bytes work area + certain stack).</li>
+ <li>Very small code size (2K-4K bytes).</li>
+ <li>FAT12, FAT16 and FAT32.</li>
+ <li>Single volume and Single file.</li>
+ <li>File write function with some restrictions.</li>
+</ul>
+</div>
+
+
+<div class="para">
+<h3>Application Interface</h3>
+<p>Petit FatFs module provides following functions.</p>
+<ul>
+<li><a href="pf/mount.html">pf_mount</a> - Mount a Volume</li>
+<li><a href="pf/open.html">pf_open</a> - Open a File</li>
+<li><a href="pf/read.html">pf_read</a> - Read File</li>
+<li><a href="pf/write.html">pf_write</a> - Write File</li>
+<li><a href="pf/lseek.html">pf_lseek</a> - Move read/write Pointer</li>
+<li><a href="pf/opendir.html">pf_opendir</a> - Open a Directory</li>
+<li><a href="pf/readdir.html">pf_readdir</a> - Read a Directory Item</li>
+</ul>
+</div>
+
+
+<div class="para">
+<h3>Disk I/O Interface</h3>
+<p>Since the Petit FatFs module is completely separated from disk I/O layer, it requires following functions to lower layer to read data from storage device. The low level disk I/O module is not a part of Petit FatFs module and it must be provided by user. The sample drivers are also available in the resources.</p>
+<ul>
+<li><a href="pf/dinit.html">disk_initialize</a> - Initialize storage device</li>
+<li><a href="pf/dreadp.html">disk_readp</a> - Read a partial sector</li>
+<li><a href="pf/dwritep.html">disk_writep</a> - Divided write to a sector</li>
+</ul>
+</div>
+
+
+<div class="para">
+<h3>Resources</h3>
+<p>The Petit FatFs module is a free software and is opened for education, research and development. You can use, modify and/or redistribute it for personal, non-profit or commercial use without any restriction under your responsibility. For further information, refer to the application note.</p>
+<ul>
+<li><a href="http://elm-chan.org/fsw/ff/bd/"><em>FatFs User Forum</em></a>↗</li>
+<li>Read first: <a href="pf/appnote.html">Petit FatFs module application note</a> <span class="mfd">June 10, 2014</span></li>
+ <li>Latest Information: <a href="http://elm-chan.org/fsw/ff/00index_p.html">http://elm-chan.org/fsw/ff/00index_p.html</a>↗</li>
+<li><a href="http://www.microsoft.com/whdc/system/platform/firmware/fatgen.mspx">FAT32 Specification by Microsoft</a>↗ (The reference document on FAT file system)</li>
+<li><a href="http://elm-chan.org/docs/mmc/mmc_e.html">How to Use MMC/SDC</a>↗</li>
+<li><a href="img/rwtest3.png">Benchmark 3</a> (ATtiny85/8MHz with MMC via USI)</li>
+</ul>
+</div>
+
+
+<hr>
+<p class="foot"><a href="../../fsw_e.html">Return</a></p>
+</body>
+</html>

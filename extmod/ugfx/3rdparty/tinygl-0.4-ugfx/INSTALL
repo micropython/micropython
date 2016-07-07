@@ -1,0 +1,10 @@
+Installation:
+
+- Edit config.mk and change what is needed. You can also look at
+src/zfeatures.h to change very specific details (only useful to tune
+TinyGL to your needs). You can link the examples with either OpenGL,
+Mesa or TinyGL.
+
+- Type 'make'. The library 'libTinyGL.a' is copied into './lib'. The
+examples are build in './examples'. Only the directories './lib' and
+'./include' are needed to use TinyGL from another program.

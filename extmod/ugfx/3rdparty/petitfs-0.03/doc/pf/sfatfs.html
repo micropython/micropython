@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - FATFS</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>FATFS</h2>
+<p>The <tt>FATFS</tt> structure holds dynamic work area of the logical drive and a file. It is given by application program and registerd/unregisterd to the Petit FatFs module with pf_mount function. There is no member that can be changed by application programs.</p>
+<pre>
+typedef struct {
+    BYTE    fs_type;     <span class="c">/* FAT sub type */</span>
+    BYTE    csize;       <span class="c">/* Number of sectors per cluster */</span>
+    BYTE    flag;        <span class="c">/* File status flags */</span>
+    BYTE    pad1;
+    WORD    n_rootdir;   <span class="c">/* Number of root directory entries (0 on FAT32) */</span>
+    CLUST   n_fatent;    <span class="c">/* Number of FAT entries (= number of clusters + 2) */</span>
+    DWORD   fatbase;     <span class="c">/* FAT start sector */</span>
+    DWORD   dirbase;     <span class="c">/* Root directory start sector (Cluster# on FAT32) */</span>
+    DWORD   database;    <span class="c">/* Data start sector */</span>
+    DWORD   fptr;        <span class="c">/* File read/write pointer */</span>
+    DWORD   fsize;       <span class="c">/* File size */</span>
+    CLUST   org_clust;   <span class="c">/* File start cluster */</span>
+    CLUST   curr_clust;  <span class="c">/* File current cluster */</span>
+    DWORD   dsect;       <span class="c">/* File current data sector */</span>
+} FATFS;
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>
