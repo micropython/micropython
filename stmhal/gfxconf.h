@@ -49,7 +49,7 @@
 	#define CORTEX_USE_FPU                           TRUE
 //    #define GFX_CPU_NO_ALIGNMENT_FAULTS              FALSE
 //    #define GFX_CPU_ENDIAN                           GFX_CPU_ENDIAN_UNKNOWN
-    #define GFX_OS_HEAP_SIZE                         16384
+    #define GFX_OS_HEAP_SIZE                         30720 //16384
 //    #define GFX_OS_NO_INIT                           FALSE
     #define GFX_OS_INIT_NO_WARNING                   TRUE
 //    #define GFX_OS_PRE_INIT_FUNCTION                 myHardwareInitRoutine
@@ -106,7 +106,7 @@
 
 #define GDISP_NEED_IMAGE                             TRUE
 //    #define GDISP_NEED_IMAGE_NATIVE                  FALSE
-//    #define GDISP_NEED_IMAGE_GIF                     FALSE
+    #define GDISP_NEED_IMAGE_GIF                     TRUE
     #define GDISP_NEED_IMAGE_BMP                     TRUE
         #define GDISP_NEED_IMAGE_BMP_1               TRUE
         #define GDISP_NEED_IMAGE_BMP_4               TRUE
@@ -117,7 +117,7 @@
         #define GDISP_NEED_IMAGE_BMP_24              TRUE
 //        #define GDISP_NEED_IMAGE_BMP_32              TRUE
 //    #define GDISP_NEED_IMAGE_JPG                     FALSE
-//    #define GDISP_NEED_IMAGE_PNG                     FALSE
+//    #define GDISP_NEED_IMAGE_PNG                     TRUE
 //        #define GDISP_NEED_IMAGE_PNG_INTERLACED      FALSE
 //        #define GDISP_NEED_IMAGE_PNG_TRANSPARENCY    TRUE
 //        #define GDISP_NEED_IMAGE_PNG_BACKGROUND      TRUE
@@ -203,8 +203,8 @@
 //        #define GWIN_SLIDER_DEAD_BAND                5
 //        #define GWIN_SLIDER_TOGGLE_INC               20
 //    #define GWIN_NEED_CHECKBOX                       TRUE
-//    #define GWIN_NEED_IMAGE                          TRUE
-//        #define GWIN_NEED_IMAGE_ANIMATION            TRUE
+    #define GWIN_NEED_IMAGE                          TRUE
+        #define GWIN_NEED_IMAGE_ANIMATION            TRUE
 //    #define GWIN_NEED_RADIO                          TRUE
     #define GWIN_NEED_LIST                           TRUE
 //        #define GWIN_NEED_LIST_IMAGES                TRUE

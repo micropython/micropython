@@ -770,9 +770,26 @@ STATIC mp_obj_t ugfx_box(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_box_obj, 5, 5, ugfx_box);
 
 
-//TODO: combine these two functions
 
 /// \method display_image(image_object,x,y)
+///
+STATIC mp_obj_t ugfx_image_next(mp_obj_t img_obj) {
+	if (img_obj != mp_const_none) {
+		if (!MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type)) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image type"));
+			return mp_const_none;
+	   }
+		ugfx_image_obj_t *image = img_obj;
+		gdispImageNext(&(image->thisImage));
+	}
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_next_obj, ugfx_image_next);
+
+
+//TODO: combine these two functions
+
+/// \method display_image(x, y, image_object)
 ///
 STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
     // extract arguments
@@ -781,30 +798,72 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 	mp_obj_t img_obj = imin;
 	int x = mp_obj_get_int(xin);
 	int y = mp_obj_get_int(yin);
-	
+	gdispImage imo;
+	gdispImage *iptr;
 
 	if (img_obj != mp_const_none) {
-		if (!MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "img argument needs to be be a Image type"));
-        }
-		const ugfx_image_obj_t *image = img_obj;
-	
+		if (MP_OBJ_IS_STR(img_obj)){
+			const char *img_str = mp_obj_str_get_str(img_obj);
+			gdispImageError er = gdispImageOpenFile(&imo, img_str);
+			if (er != 0){
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
+				return mp_const_none;
+			}
+			iptr = &imo;
+		}
+		else if (MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type))
+			iptr = &(((ugfx_image_obj_t*)img_obj)->thisImage);	
+		else{
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image or String type"));
+			return mp_const_none;
+		}
+		
+
 		coord_t	swidth, sheight;
 	  
 		// Get the display dimensions
 		swidth = gdispGetWidth();
 		sheight = gdispGetHeight();	 
 		
-		gdispImageDraw(&(image->thisImage), x, y, swidth, sheight, 0, 0);
+		int err = gdispImageDraw(iptr, x, y, swidth, sheight, 0, 0);
+		
+		if (MP_OBJ_IS_STR(img_obj))
+			gdispImageClose(&imo);
+		
+		switch(err){
+			case GDISP_IMAGE_ERR_UNRECOVERABLE:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNRECOVERABLE"));
+				break;
+			case GDISP_IMAGE_ERR_BADFORMAT:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADFORMAT"));
+				break;
+			case GDISP_IMAGE_ERR_BADDATA:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADDATA"));
+				break;
+			case GDISP_IMAGE_ERR_UNSUPPORTED:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED"));
+				break;
+			case GDISP_IMAGE_ERR_UNSUPPORTED_OK:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED_OK"));
+				break;
+			case GDISP_IMAGE_ERR_NOMEMORY:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOMEMORY"));
+				break;
+			case GDISP_IMAGE_ERR_NOSUCHFILE:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOSUCHFILE"));
+				break;
+			default: break;				
+		}	
+		
 	}
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_obj, 3, 3, ugfx_display_image);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_display_image_obj, ugfx_display_image);
 
 
-
-/// \method display_image_file(file_name,x,y)
+/*
+/// \method display_image_file(x,y,file_name)
 ///
 STATIC mp_obj_t ugfx_display_image_file(mp_uint_t n_args, const mp_obj_t *args) {
 
@@ -829,7 +888,7 @@ STATIC mp_obj_t ugfx_display_image_file(mp_uint_t n_args, const mp_obj_t *args) 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_file_obj, 3, 3, ugfx_display_image_file);
-
+*/
 
 
 STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
@@ -847,7 +906,8 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_image_next), (mp_obj_t)&ugfx_image_next_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
