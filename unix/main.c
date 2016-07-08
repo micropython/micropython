@@ -444,10 +444,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
         }
         if (p[0] == '~' && p[1] == '/' && home != NULL) {
             // Expand standalone ~ to $HOME
-            CHECKBUF(buf, PATH_MAX);
-            CHECKBUF_APPEND(buf, home, strlen(home));
-            CHECKBUF_APPEND(buf, p + 1, (size_t)(p1 - p - 1));
-            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(buf, CHECKBUF_LEN(buf)));
+            int home_l = strlen(home);
+            vstr_t vstr;
+            vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+            vstr_add_strn(&vstr, home, home_l);
+            vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+            path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
         } else {
             path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
         }
