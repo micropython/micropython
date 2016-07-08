@@ -53,9 +53,6 @@ OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ_TEST += $(BUILD)/tinytest.o
 
-# we can't use LTO for nlrthumb.c because it contains inline assembler
-$(PY_BUILD)/nlrthumb.o: CFLAGS += -fno-lto
-
 all: run
 
 run: $(BUILD)/firmware.elf
