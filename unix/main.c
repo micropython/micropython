@@ -293,7 +293,7 @@ STATIC int usage(char **argv) {
 "-v : verbose (trace various operations); can be multiple\n"
 "-O[N] : apply bytecode optimizations of level N\n"
 "\n"
-"Implementation specific options:\n", argv[0]
+"Implementation specific options (-X):\n", argv[0]
 );
     int impl_opts_cnt = 0;
     printf(
@@ -303,7 +303,7 @@ STATIC int usage(char **argv) {
     impl_opts_cnt++;
 #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
+"  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
 , heap_size);
     impl_opts_cnt++;
 #endif
