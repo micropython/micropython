@@ -47,6 +47,62 @@
 
 
 
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+//////////////////      COMMON    ///////////////////
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+static GHandle get_ugfx_handle(mp_obj_t in);
+
+/// \method text()
+///
+/// Gets or sets widget text
+STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
+	
+	GHandle gh = get_ugfx_handle(args[0]);
+	
+	if (n_args == 1){
+		const char * s = gwinGetText(gh);
+		return mp_obj_new_str(s, strlen(s), TRUE);
+	}
+	else
+	{
+		const char *s = mp_obj_str_get_str(args[1]);
+		gwinSetText(gh, s, TRUE);
+		return mp_const_none;
+	}
+	   
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_text_obj, 1, 2, ugfx_widget_text);
+
+
+
+/// \method attach_input(input, function)
+///
+STATIC mp_obj_t ugfx_widget_attach_input(mp_obj_t self_in, mp_obj_t input, mp_obj_t function) {
+    int fun = mp_obj_get_int(function);
+	int i = mp_obj_get_int(input);
+
+	gwinAttachToggle(get_ugfx_handle(self_in),fun,i);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_widget_attach_input_obj, ugfx_widget_attach_input);
+
+
+/// \method detach_input(function)
+///
+STATIC mp_obj_t ugfx_widget_detach_input(mp_obj_t self_in, mp_obj_t function) {
+    int fun = mp_obj_get_int(function);
+
+	gwinDetachToggle(get_ugfx_handle(self_in),fun);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_widget_detach_input_obj, ugfx_widget_detach_input);
+
+
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -128,26 +184,14 @@ STATIC mp_obj_t ugfx_button_destroy(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_button_destroy_obj, ugfx_button_destroy);
 
 
-/// \method attach_input(input)
-///
-STATIC mp_obj_t ugfx_button_attach_input(mp_obj_t self_in, mp_obj_t input) {
-    ugfx_button_obj_t *self = self_in;
-
-	int i = mp_obj_get_int(input);
-
-	gwinAttachToggle(self->ghButton,0,i);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_button_attach_input_obj, ugfx_button_attach_input);
-
-
 
 STATIC const mp_map_elem_t ugfx_button_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_button_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_button_destroy_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_button_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -164,6 +208,112 @@ const mp_obj_type_t ugfx_button_type = {
     .locals_dict = (mp_obj_t)&ugfx_button_locals_dict,
 };
 
+
+
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+//////////////////     TEXTBOX    ///////////////////
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+typedef struct _ugfx_textbox_t {
+    mp_obj_base_t base;
+
+	GHandle ghTextbox;
+
+} ugfx_textbox_obj_t;
+
+/// \classmethod \constructor(x, y, a, b, text, {parent})
+///
+/// Construct an Textbox object.
+/// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 5, 6, false);
+
+
+ //   const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
+	int maxlen = mp_obj_get_int(args[4]);
+
+	GHandle parent = NULL;
+
+
+    // create textbox object
+    ugfx_textbox_obj_t *btn = m_new_obj(ugfx_textbox_obj_t);
+    btn->base.type = &ugfx_textbox_type;
+
+
+	//setup textbox options
+	GWidgetInit	wi;
+
+	// Apply some default values for GWIN
+	gwinWidgetClearInit(&wi);
+	wi.g.show = TRUE;
+
+	// Apply the textbox parameters
+	wi.g.width = a;
+	wi.g.height = b;
+	wi.g.y = y;
+	wi.g.x = x;
+//	wi.text = text;
+
+	if (n_args > 5){
+		ugfx_container_obj_t *container = args[5];
+
+		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
+			parent = container->ghContainer;
+			wi.customStyle = container->style;
+		}
+	}
+	wi.g.parent = parent;
+
+	// Create the actual textbox
+	btn->ghTextbox = gwinTexteditCreate(NULL, &wi, maxlen);
+
+	return btn;
+}
+
+
+/// \method destroy()
+///
+/// frees up all resources
+STATIC mp_obj_t ugfx_textbox_destroy(mp_obj_t self_in) {
+    ugfx_textbox_obj_t *self = self_in;
+
+	gwinDestroy(self->ghTextbox);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_textbox_destroy_obj, ugfx_textbox_destroy);
+
+
+STATIC const mp_map_elem_t ugfx_textbox_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_textbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_textbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
+
+	//class constants
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(ugfx_textbox_locals_dict, ugfx_textbox_locals_dict_table);
+
+const mp_obj_type_t ugfx_textbox_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Textbox,
+    .make_new = ugfx_textbox_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_textbox_locals_dict,
+};
 
 
 
@@ -255,34 +405,6 @@ STATIC mp_obj_t ugfx_list_destroy(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_destroy_obj, ugfx_list_destroy);
 
 
-/// \method attach_input(input, function)
-///
-STATIC mp_obj_t ugfx_list_attach_input(mp_obj_t self_in, mp_obj_t input, mp_obj_t function) {
-    ugfx_list_obj_t *self = self_in;
-    int fun = mp_obj_get_int(function);
-	int i = mp_obj_get_int(input);
-
-	gwinAttachToggle(self->ghList,fun,i);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_list_attach_input_obj, ugfx_list_attach_input);
-
-
-/// \method detach_input(function)
-///
-STATIC mp_obj_t ugfx_list_detach_input(mp_obj_t self_in, mp_obj_t function) {
-    ugfx_list_obj_t *self = self_in;
-    int fun = mp_obj_get_int(function);
-
-	gwinDetachToggle(self->ghList,fun);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_list_detach_input_obj, ugfx_list_detach_input);
-
-
-
 /// \method add_item(input)
 ///
 STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
@@ -352,14 +474,15 @@ STATIC const mp_map_elem_t ugfx_list_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_list_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_list_destroy_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_list_attach_input_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_list_detach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_add_item), (mp_obj_t)&ugfx_list_add_item_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove_item), (mp_obj_t)&ugfx_list_remove_item_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_selected_text), (mp_obj_t)&ugfx_list_get_selected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_selected_index), (mp_obj_t)&ugfx_list_get_selected_index_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_selected_index), (mp_obj_t)&ugfx_list_set_selected_index_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&ugfx_list_count_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_ROLES),        MP_OBJ_NEW_SMALL_INT(2) },
@@ -576,28 +699,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_keyboard_callback_obj, ugfx_keyboard_callb
 */
 
 
-/// \method attach_input(input, function)
-///
-STATIC mp_obj_t ugfx_keyboard_attach_input(mp_obj_t self_in, mp_obj_t input, mp_obj_t function) {
-    ugfx_keyboard_obj_t *self = self_in;
-    int fun = mp_obj_get_int(function);
-	int i = mp_obj_get_int(input);
-
-	gwinAttachToggle(self->ghKeyboard,fun,i);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_keyboard_attach_input_obj, ugfx_keyboard_attach_input);
-
-
 
 STATIC const mp_map_elem_t ugfx_keyboard_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_keyboard_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_keyboard_destroy_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_keyboard_attach_input_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_selected_key), (mp_obj_t)&ugfx_keyboard_selected_key_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&ugfx_keyboard_callback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_set_keyboard_callback), (mp_obj_t)&ugfx_set_keyboard_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_clear_keyboard_callback), (mp_obj_t)&ugfx_clear_keyboard_callback_obj },
@@ -687,19 +797,6 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 }
 
 
-/// \method set_text(text)
-///
-STATIC mp_obj_t ugfx_label_set_text(mp_obj_t self_in, mp_obj_t str) {
-    ugfx_label_obj_t *self = self_in;
-    const char *s = mp_obj_str_get_str(str);
-
-	gwinSetText(self->ghLabel, s, TRUE);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_label_set_text_obj, ugfx_label_set_text);
-
-
 /// \method destroy()
 ///
 /// frees up all resources
@@ -717,7 +814,7 @@ STATIC const mp_map_elem_t ugfx_label_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_label_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_label_destroy_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_text), (mp_obj_t)&ugfx_label_set_text_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -735,6 +832,95 @@ const mp_obj_type_t ugfx_label_type = {
 };
 
 
+
+
+
+
+
+
+
+/// \class image - provides a wrapper for uGFX images
+///
+/// This class is used to hold a uGFX image handle, and can also be
+/// used to cache images if used multiple times
+///
+///     lcd = pyb.image(filepath, cache)
+///        where cache = TRUE/FALSE
+///
+
+
+
+/// \classmethod \constructor(file_path, cache)
+///
+/// Construct an uGFX image object.
+STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+
+	int cache;
+	if (n_args == 1)
+		cache = false;
+	else
+		cache = mp_obj_get_int(args[1]);
+	
+	const char *img_str = mp_obj_str_get_str(args[0]);
+
+
+    // create lcd object
+    ugfx_image_obj_t *image = m_new_obj(ugfx_image_obj_t);
+    image->base.type = &ugfx_image_type;
+	
+	
+	//we'll open the file initially to fill the gdispImage struct
+	//when the draw function is used, will need to check the image handle is open
+	gdispImageError er = gdispImageOpenFile(&(image->thisImage), img_str);
+	
+	if (er == 0){
+		if (cache)
+			gdispImageCache	(&(image->thisImage));
+		//gdispImageClose(&(image->thisImage));  //TODO: delete this, currently for debugging reasons
+		//TODO: error handling and reporting
+		return image;
+	}
+	else{
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
+		return mp_const_none;
+	}
+		
+	
+}
+
+
+/// \method close()
+///
+/// Frees up memory if cache was used, and closes the file
+STATIC mp_obj_t ugfx_image_close(mp_obj_t self_in) {
+    ugfx_image_obj_t *self = self_in;
+    gdispImageClose(&(self->thisImage));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_close_obj, ugfx_image_close);
+
+
+STATIC const mp_map_elem_t ugfx_image_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&ugfx_image_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_image_close_obj },
+	
+	//class constants
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(ugfx_image_locals_dict, ugfx_image_locals_dict_table);
+
+const mp_obj_type_t ugfx_image_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Image,
+    .make_new = ugfx_image_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_image_locals_dict,
+};
 
 
 
@@ -811,21 +997,6 @@ STATIC mp_obj_t ugfx_check_destroy(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_check_destroy_obj, ugfx_check_destroy);
 
 
-/// \method attach_input(pin)
-///
-/// attach a button to make button be pressable
-STATIC mp_obj_t ugfx_check_attach_input(mp_obj_t self_in, mp_obj_t input) {
-    ugfx_checkbox_obj_t *self = self_in;
-
-	int i = mp_obj_get_int(input);
-
-	gwinAttachToggle(self->ghCheckbox,0,i);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_check_attach_input_obj, ugfx_check_attach_input);
-
-
 
 STATIC const mp_map_elem_t ugfx_checkbox_locals_dict_table[] = {
     // instance methods
@@ -848,6 +1019,24 @@ const mp_obj_type_t ugfx_checkbox_type = {
 };
 
 */
+
+static GHandle get_ugfx_handle(mp_obj_t in){
+	if (MP_OBJ_IS_TYPE(in,&ugfx_button_type))
+		return ((ugfx_button_obj_t *)in)->ghButton;
+//	else if (MP_OBJ_IS_TYPE(in,&ugfx_checkbox_type))
+//		return ((ugfx_checkbox_obj_t *)in)->ghCheckbox;
+	else if (MP_OBJ_IS_TYPE(in,&ugfx_list_type))
+		return ((ugfx_list_obj_t *)in)->ghList;
+	else if (MP_OBJ_IS_TYPE(in,&ugfx_textbox_type))
+		return ((ugfx_textbox_obj_t *)in)->ghTextbox;
+	else if (MP_OBJ_IS_TYPE(in,&ugfx_keyboard_type))
+		return ((ugfx_keyboard_obj_t *)in)->ghKeyboard;
+	else if (MP_OBJ_IS_TYPE(in,&ugfx_label_type))
+		return ((ugfx_label_obj_t *)in)->ghLabel;
+	//else if (MP_OBJ_IS_TYPE(in,&ugfx_label_type))
+	//	return ((ugfx_container_obj_t *)in)->ghContainer;
+	return 0;
+}
 
 
 #endif // MICROPY_HW_HAS_UGFX

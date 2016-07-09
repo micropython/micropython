@@ -771,6 +771,125 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_box_obj, 5, 5, ugfx_box);
 
 
 
+/// \method display_image(image_object,x,y)
+///
+STATIC mp_obj_t ugfx_image_next(mp_obj_t img_obj) {
+	if (img_obj != mp_const_none) {
+		if (!MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type)) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image type"));
+			return mp_const_none;
+	   }
+		ugfx_image_obj_t *image = img_obj;
+		gdispImageNext(&(image->thisImage));
+	}
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_next_obj, ugfx_image_next);
+
+
+//TODO: combine these two functions
+
+/// \method display_image(x, y, image_object)
+///
+STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
+    // extract arguments
+    //pyb_ugfx_obj_t *self = args[0];
+	mp_uint_t len;
+	mp_obj_t img_obj = imin;
+	int x = mp_obj_get_int(xin);
+	int y = mp_obj_get_int(yin);
+	gdispImage imo;
+	gdispImage *iptr;
+
+	if (img_obj != mp_const_none) {
+		if (MP_OBJ_IS_STR(img_obj)){
+			const char *img_str = mp_obj_str_get_str(img_obj);
+			gdispImageError er = gdispImageOpenFile(&imo, img_str);
+			if (er != 0){
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
+				return mp_const_none;
+			}
+			iptr = &imo;
+		}
+		else if (MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type))
+			iptr = &(((ugfx_image_obj_t*)img_obj)->thisImage);	
+		else{
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image or String type"));
+			return mp_const_none;
+		}
+		
+
+		coord_t	swidth, sheight;
+	  
+		// Get the display dimensions
+		swidth = gdispGetWidth();
+		sheight = gdispGetHeight();	 
+		
+		int err = gdispImageDraw(iptr, x, y, swidth, sheight, 0, 0);
+		
+		if (MP_OBJ_IS_STR(img_obj))
+			gdispImageClose(&imo);
+		
+		switch(err){
+			case GDISP_IMAGE_ERR_UNRECOVERABLE:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNRECOVERABLE"));
+				break;
+			case GDISP_IMAGE_ERR_BADFORMAT:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADFORMAT"));
+				break;
+			case GDISP_IMAGE_ERR_BADDATA:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADDATA"));
+				break;
+			case GDISP_IMAGE_ERR_UNSUPPORTED:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED"));
+				break;
+			case GDISP_IMAGE_ERR_UNSUPPORTED_OK:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED_OK"));
+				break;
+			case GDISP_IMAGE_ERR_NOMEMORY:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOMEMORY"));
+				break;
+			case GDISP_IMAGE_ERR_NOSUCHFILE:
+				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOSUCHFILE"));
+				break;
+			default: break;				
+		}	
+		
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_display_image_obj, ugfx_display_image);
+
+
+/*
+/// \method display_image_file(x,y,file_name)
+///
+STATIC mp_obj_t ugfx_display_image_file(mp_uint_t n_args, const mp_obj_t *args) {
+
+	mp_uint_t len;
+	const char *file = mp_obj_str_get_data(args[2], &len);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	
+	gdispImage myImage; 	
+	coord_t	swidth, sheight;
+  
+	// Get the display dimensions
+	swidth = gdispGetWidth();
+	sheight = gdispGetHeight();
+ 
+	// Set up IO for our image
+	gdispImageOpenFile(&myImage, file);
+	gdispImageDraw(&myImage, x, y, swidth, sheight, 0, 0);
+	gdispImageClose(&myImage);
+ 
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_file_obj, 3, 3, ugfx_display_image_file);
+*/
+
 
 STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     // instance methods
@@ -786,6 +905,9 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_ellipse), (mp_obj_t)&ugfx_fill_ellipse_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_image_next), (mp_obj_t)&ugfx_image_next_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
@@ -795,7 +917,6 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_tear), (mp_obj_t)&ugfx_enable_tear_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_tear_line), (mp_obj_t)&ugfx_set_tear_line_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ball_demo), (mp_obj_t)&ugfx_ball_demo_obj },
- //   { MP_OBJ_NEW_QSTR(MP_QSTR_widget_demo), (mp_obj_t)&ugfx_widget_demo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&ugfx_get_pixel_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&ugfx_set_default_font_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_style), (mp_obj_t)&ugfx_set_default_style_obj },
@@ -841,9 +962,11 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Graph), (mp_obj_t)&ugfx_graph_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Font), (mp_obj_t)&ugfx_font_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_List), (mp_obj_t)&ugfx_list_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Textbox), (mp_obj_t)&ugfx_textbox_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Style), (mp_obj_t)&ugfx_style_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Keyboard), (mp_obj_t)&ugfx_keyboard_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Label), (mp_obj_t)&ugfx_label_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Image), (mp_obj_t)&ugfx_image_type },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_Checkbox), (mp_obj_t)&ugfx_checkbox_type },
 
 
