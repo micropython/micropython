@@ -70,6 +70,7 @@ STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
 	{
 		const char *s = mp_obj_str_get_str(args[1]);
 		gwinSetText(gh, s, TRUE);
+		return mp_const_none;
 	}
 	   
 }
