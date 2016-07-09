@@ -208,7 +208,9 @@ GHandle gwinGTexteditCreate(GDisplay* g, GTexteditObject* wt, GWidgetInit* pInit
 	if (!(wt->w.g.flags & GWIN_FLG_ALLOCTXT)) {
 		if (!(p = gfxAlloc(wt->maxSize+1)))
 			return 0;
-		strncpy(p, wt->w.text, wt->maxSize);
+		if (wt->maxSize > strlen(wt->w.text))
+			strcpy(p, wt->w.text);
+		//strncpy(p, wt->w.text, wt->maxSize);
 		wt->w.text = p;
 		wt->w.g.flags |= GWIN_FLG_ALLOCTXT;
 	}
