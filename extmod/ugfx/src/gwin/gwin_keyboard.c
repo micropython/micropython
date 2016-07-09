@@ -450,7 +450,30 @@ static void SendKeyboardEvent(GKeyboardObject *gk) {
 			default: return gk->t_press; break;
 		}		
 	}
-#undef gk
+
+	#undef gk
+	
+	uint8_t gwinKeyboardGetSelected(GHandle gh, uint8_t *utf8_str){
+		#define gk		((GKeyboardObject *)gh)
+		uint8_t             len;
+		const GVSpecialKey	*skey;
+		unsigned			i;
+		const utf8 *krow = (const utf8 *)gk->keyset[gk->keyrow];
+		gk->key = UTF8CharAt(krow, gk->keycol);
+		if (gk->key < 0x20) {
+			skey = &gk->keytable->skeys[gk->key-1];
+			for(i=0; skey->sendkey[i]; i++)
+				utf8_str[i] = skey->sendkey[i];
+		} else
+			i = UCode2UTF8((utf8 *)utf8_str, gk->key);
+		len = i;
+		for(; i < 4; i++)
+			utf8_str[i] = 0;
+		
+		return len;
+	}
+	
+	#undef gk
 #endif
 
 extern const GVKeyTable GWIN_KEYBOARD_DEFAULT_LAYOUT;

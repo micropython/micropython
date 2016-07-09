@@ -29,10 +29,10 @@
 /*===========================================================================*/
 
 #ifndef GDISP_SCREEN_HEIGHT
-	#define GDISP_SCREEN_HEIGHT		320
+	#define GDISP_SCREEN_HEIGHT		240
 #endif
 #ifndef GDISP_SCREEN_WIDTH
-	#define GDISP_SCREEN_WIDTH		240
+	#define GDISP_SCREEN_WIDTH		320
 #endif
 #ifndef GDISP_INITIAL_CONTRAST
 	#define GDISP_INITIAL_CONTRAST	50
@@ -55,13 +55,13 @@
 #define delayms(ms)					gfxSleepMilliseconds(ms)
 
 static void set_viewport(GDisplay *g) {
-	write_index(g, 0x2A);
+	write_index(g, 0x2B); //write_index(g, 0x2A);
 	write_data(g, (g->p.x >> 8));
 	write_data(g, (uint8_t) g->p.x);
 	write_data(g, (g->p.x + g->p.cx - 1) >> 8);
 	write_data(g, (uint8_t) (g->p.x + g->p.cx - 1));
 
-	write_index(g, 0x2B);
+	write_index(g, 0x2A); //write_index(g, 0x2B);
 	write_data(g, (g->p.y >> 8));
 	write_data(g, (uint8_t) g->p.y);
 	write_data(g, (g->p.y + g->p.cy - 1) >> 8);
@@ -94,9 +94,13 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	// display off
 	//---------------------------------------------------------
 	// magic?
+	//////////////////////////////
+	//////////////////////////////
+
+	
 	write_index(g, 0xcf);
 	write_data(g, 0x00);
-	write_data(g, 0x83);
+	write_data(g, 0xc3);  // write_data(g, 0x83);  //0xc3 in BD example
 	write_data(g, 0x30);
 
 	write_index(g, 0xed);
@@ -104,43 +108,52 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	write_data(g, 0x03);
 	write_data(g, 0x12);
 	write_data(g, 0x81);
+	
 	write_index(g, 0xe8);
 	write_data(g, 0x85);
-	write_data(g, 0x01);
+	write_data(g, 0x10); //write_data(g, 0x01);  //0x10 in BD example
 	write_data(g, 0x79);
+	
 	write_index(g, 0xcb);
 	write_data(g, 0x39);
 	write_data(g, 0x2c);
 	write_data(g, 0x00);
 	write_data(g, 0x34);
 	write_data(g, 0x02);
+	
 	write_index(g, 0xf7);
 	write_data(g, 0x20);
+	
 	write_index(g, 0xea);
 	write_data(g, 0x00);
 	write_data(g, 0x00);
 	//------------power control------------------------------
 	write_index(g, 0xc0); //power control
-	write_data(g, 0x26);
+	write_data(g, 0x22); //write_data(g, 0x26);  //0x22 in BD example
 	write_index(g, 0xc1); //power control
 	write_data(g, 0x11);
 	//--------------VCOM
 	write_index(g, 0xc5); //vcom control
-	write_data(g, 0x35);//35
-	write_data(g, 0x3e);//3E
+	write_data(g, 0x3d);  // write_data(g, 0x35);//35  //3d in BD example
+	write_data(g, 0x3e);  // write_data(g, 0x3e);//3E  //20 in BD example    <- this one affects brightness quite a lot
+	
 	write_index(g, 0xc7); //vcom control
-	write_data(g, 0xbe); // 0x94
+	write_data(g, 0xaa); //write_data(g, 0xbe); // 0x94 //0xaa in BD example   <- this one affects brightness quite a lot and the streaky-ness
 	//------------memory access control------------------------
 	write_index(g, 0x36);
 	// memory access control
-	write_data(g, 0x48); //0048 my,mx,mv,ml,BGR,mh,0.0
+	write_data(g, 0x08); //write_data(g, 0x48);   //0048 my,mx,mv,ml,BGR,mh,0.0  //0x08 in BD example 
 	write_index(g, 0x3a); // pixel format set
 	write_data(g, 0x55);//16bit /pixel
 	//----------------- frame rate------------------------------
 	write_index(g, 0xb1);
 	// frame rate
 	write_data(g, 0x00);
-	write_data(g, 0x1B); //70
+	write_data(g, 0x1F); //0x1B in BD example //70
+	
+	
+	
+	/////////////////////////////
 	//----------------Gamma---------------------------------
 	write_index(g, 0xf2); // 3Gamma Function Disable
 	write_data(g, 0x08);

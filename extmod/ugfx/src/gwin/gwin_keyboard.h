@@ -122,6 +122,17 @@ GSourceHandle gwinKeyboardGetEventSource(GHandle gh);
 void gwinKeyboardSetLayout(GHandle gh, const struct GVKeyTable *layout);
 
 /**
+ * @brief   Get the selected key when using toggle
+ *
+ * @param[in] gh		The GWIN virtual keyboard
+ * @param[in] utf8_str	Up to 4 bytes of utf8 data
+ * @return              The number of bytes written
+ *
+ * @note	Returns 0 for an invalid selection
+ */
+uint8_t gwinKeyboardGetSelected(GHandle gh, uint8_t *utf8_str);
+
+/**
  * @defgroup Renderings_Keyboard Renderings
  *
  * @brief				Built-in rendering functions for the keyboard widget.

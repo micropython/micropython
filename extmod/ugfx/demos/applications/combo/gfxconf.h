@@ -41,6 +41,7 @@
 #define GDISP_NEED_STREAMING	TRUE
 
 #define GDISP_NEED_IMAGE                             TRUE
+    #define GDISP_NEED_IMAGE_BMP                     TRUE
     #define GDISP_NEED_IMAGE_GIF                     TRUE
 
 #define GDISP_DEFAULT_ORIENTATION                    GDISP_ROTATE_LANDSCAPE

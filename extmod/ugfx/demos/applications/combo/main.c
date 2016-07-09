@@ -84,7 +84,7 @@ static GHandle		ghLabelSlider1, ghLabelSlider2, ghLabelSlider3, ghLabelSlider4, 
 static GHandle		ghRadio1, ghRadio2;
 static GHandle		ghRadioBlack, ghRadioWhite, ghRadioYellow;
 static GHandle		ghList1, ghList2, ghList3, ghList4;
-static GHandle		ghImage1, ghImage2;
+static GHandle		ghImage1;
 static GHandle		ghProgressbar1;
 static gdispImage	imgYesNo;
 
@@ -328,10 +328,7 @@ static void createWidgets(void) {
 	wi.g.parent = ghPgImages;
 	wi.g.x = wi.g.y = 0; wi.g.width = pagewidth; wi.g.height = gwinGetInnerHeight(ghPgImages)/2;
 	ghImage1 = gwinImageCreate(0, &wi.g);
-	gwinImageOpenFile(ghImage1, "ugfx.gif");
-	wi.g.y += wi.g.height;
-	ghImage2 = gwinImageCreate(0, &wi.g);
-	gwinImageOpenFile(ghImage2, "chibios.gif");
+	gwinImageOpenFile(ghImage1, "ugfx.bmp");
 }
 
 /**
