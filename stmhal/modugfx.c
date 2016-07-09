@@ -962,6 +962,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Graph), (mp_obj_t)&ugfx_graph_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Font), (mp_obj_t)&ugfx_font_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_List), (mp_obj_t)&ugfx_list_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Textbox), (mp_obj_t)&ugfx_textbox_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Style), (mp_obj_t)&ugfx_style_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Keyboard), (mp_obj_t)&ugfx_keyboard_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Label), (mp_obj_t)&ugfx_label_type },

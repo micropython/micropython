@@ -213,7 +213,7 @@
     #define GWIN_NEED_KEYBOARD                       TRUE
 //        #define GWIN_KEYBOARD_DEFAULT_LAYOUT         VirtualKeyboard_English1
 //        #define GWIN_NEED_KEYBOARD_ENGLISH1          TRUE
-//    #define GWIN_NEED_TEXTEDIT                       TRUE
+    #define GWIN_NEED_TEXTEDIT                       TRUE
 //    #define GWIN_FLAT_STYLING                        TRUE
 //    #define GWIN_WIDGET_TAGS                         TRUE
 
