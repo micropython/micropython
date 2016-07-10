@@ -74,7 +74,7 @@ class TestUart (TestCase):
 
     def test_7(self):
         self.uart = pyb.UART(3)
-        self.uart.init(9600,bits=8, parity=None, stop=1,timeout=100, timeout_char=10, read_buf_len=32)
+        self.uart.init(9600,bits=8, parity=None, stop=1,timeout=100, timeout_char=10, read_buf_len=32,packet_mode=True)
 
         self.uart.write("Test string")
 
@@ -82,6 +82,7 @@ class TestUart (TestCase):
         while to > 0:
             if self.uart.any():
                 break
+            pyb.delay(1)
             to-=1
 
         self.assertNotEqual(0,to,"any() method in packet mode")

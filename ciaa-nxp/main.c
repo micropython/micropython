@@ -110,7 +110,7 @@ soft_reset:
         startTesting();
         // Run Python tests
         do_str("import testing_MainTest\r\nm=testing_MainTest.MainTest()\r\nm.run()\r\n\0",MP_PARSE_FILE_INPUT);
-        //return 0;
+        return 0;
     #endif
 
 	// check new script from IDE

@@ -170,17 +170,17 @@ STATIC bool uart_rx_any(pyb_uart_obj_t *self)
     uint32_t any;
     if(self->uartNumber==0)
     {
- 	if(self->bufferEnabled==0)
+ 	    if(self->bufferEnabled==0)
             any = mp_hal_rs485_charAvailable();
-	else
-	    any= mp_hal_rs485_isNewPacketAvailable();
+	    else
+	        any= mp_hal_rs485_isNewPacketAvailable();
     }
     else
     {
-	if(self->bufferEnabled==0)
+	    if(self->bufferEnabled==0)
             any = mp_hal_rs232_charAvailable();
-	else
-	    any = mp_hal_rs232_isNewPacketAvailable();
+	    else
+	        any = mp_hal_rs232_isNewPacketAvailable();
     }
     return any;
 }

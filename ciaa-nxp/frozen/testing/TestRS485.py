@@ -7,9 +7,11 @@ class TestRS485 (TestCase):
         self.uart = None
 
     def setUp(self):
+        pyb.delay(250)
         if self.uart!=None:
             while self.uart.any():
                 self.uart.readall()
+        pyb.delay(250)
 
     def test_1(self):
         flagOk=False
@@ -63,7 +65,7 @@ class TestRS485 (TestCase):
         self.uart.init(9600,bits=8, parity=None, stop=1)
 
         self.uart.write("A")
-        pyb.delay(100)
+        pyb.delay(150)
         any = self.uart.any()
         self.assertEqual(True,any,"any() method in char mode")
 
@@ -74,14 +76,15 @@ class TestRS485 (TestCase):
 
     def test_7(self):
         self.uart = pyb.UART(0)
-        self.uart.init(9600,bits=8, parity=None, stop=1,timeout=100, timeout_char=10, read_buf_len=32)
+        self.uart.init(9600,bits=8, parity=None, stop=1,timeout=100, timeout_char=0, read_buf_len=32,packet_mode=True)
 
         self.uart.write("Test string")
 
-        to  = 150
+        to  = 400
         while to > 0:
             if self.uart.any():
                 break
+            pyb.delay(1)
             to-=1
 
         self.assertNotEqual(0,to,"any() method in packet mode")

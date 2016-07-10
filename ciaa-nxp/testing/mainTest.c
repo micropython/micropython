@@ -28,6 +28,7 @@ void startTesting(void)
 
 	utest_init();
 
+
 	// LEDS Library
 	utest_startTest(testLeds1,0,"LEDS: On Off Test");
 	utest_startTest(testLeds2,0,"LEDS: Pwm Test");
@@ -37,6 +38,7 @@ void startTesting(void)
 	// Switches Library
 	utest_startTest(testSwitches1,0,"SW: idle status check");
     utest_print("____________________\r\n");
+   
 
 	// Uart Library
 	utest_startTest(testUart1,testUartSetup,"UART: TX test");
@@ -44,6 +46,7 @@ void startTesting(void)
 	utest_startTest(testUart3,testUartSetup,"UART: RX buffer test");
     utest_print("____________________\r\n");
 
+    
 	// EEPROM Library
 	utest_startTest(testEEPROM1,0,"EEPROM: write/read byte Test");
 	utest_startTest(testEEPROM2,0,"EEPROM: write invalid address Test");
@@ -89,9 +92,9 @@ void startTesting(void)
 
 
     // rs485 Uart Library
-    utest_startTest(test485Uart1,testUartSetup,"485 UART: TX test");
-    utest_startTest(test485Uart2,testUartSetup,"485 UART: RX polling test");
-    utest_startTest(test485Uart3,testUartSetup,"485 UART: RX buffer test");
+    utest_startTest(test485Uart1,test485UartSetup,"485 UART: TX test");
+    utest_startTest(test485Uart2,test485UartSetup,"485 UART: RX polling test");
+    utest_startTest(test485Uart3,test485UartSetup,"485 UART: RX buffer test");
     utest_print("____________________\r\n");
 
     // Timers Library
