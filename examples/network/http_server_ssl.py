@@ -42,8 +42,13 @@ def main(use_stream=True):
             # next request they issue will likely be more well-behaving and
             # will succeed.
             try:
-                req = client_s.read(4096)
+                req = client_s.readline()
                 print(req)
+                while True:
+                    h = client_s.readline()
+                    if h == b"" or h == b"\r\n":
+                        break
+                    print(h)
                 if req:
                     client_s.write(CONTENT % counter)
             except Exception as e:
