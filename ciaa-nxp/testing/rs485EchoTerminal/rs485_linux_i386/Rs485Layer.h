@@ -1,6 +1,6 @@
 /*
-    Unit Tests for EDU-CIAA Hardware library.
-    Copyright (C) 2016  Ernesto gigliotti. ernestogigliotti@gmail.com
+    <Rs485 Dinamic Library>
+    Copyright (C) <2013>  <Ernesto Gigliotti>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,34 +14,22 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 */
 
-void testDAC1(void)
+#ifndef RS485LAYER_H_
+#define RS485LAYER_H_
+
+typedef struct
 {
-	int32_t r = mp_hal_writeDAC(512);
-	utest_assertEqualsInt(0,(int)r);
-}
+	int cport_nr;
+	int bdrate;
+}Port;
 
-void testDAC2(void)
-{
-    int32_t r = mp_hal_writeDAC(2000); // invalid value
-    utest_assertEqualsInt(-1,(int)r);
-}
+int rs485OpenPort(Port * pPort);
+int rs485SendPacket(Port * pPort,unsigned char * buff,int size);
+int rs485Receive(Port * pPort,unsigned char * buff,int size);
+int rs485ReceiveWithTimeout(Port * pPort,unsigned char * bufferRx,int size,int timeout);
+void rs485ClosePort(Port * pPort);
 
-void testDAC3(void)
-{
-	const uint16_t TEST_TABLE[4] = {0,8,16,2};
-
-	mp_hal_setSampleRateDAC(10000); // 10Khz
-
-    int32_t r = mp_hal_writeDMADAC((uint16_t*)TEST_TABLE, 4, 1);
-	utest_assertEqualsInt(8,(int)r);
-}
-
-void testDAC4(void)
-{
-    int32_t r = mp_hal_writeDMADAC(0, 0, 1);
-    utest_assertEqualsInt(-1,(int)r);
-}
-
-
+#endif /* RS485LAYER_H_ */

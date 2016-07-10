@@ -21,6 +21,23 @@ EDU-CIAA board support package
 - Open a terminal on serial USB converter 2 (/dev/ttyUSB1 usualy)
 - A python REPL interpreter is available via USB UART (DEBUG connector) into SERIAL2
 
+## Execute software unit tests
+
+Hardware connections for testing:
+
+232_RX  ->  R100 ohm    ->  232_TX
+CH1     ->  GNDA
+CH2     ->  GNDA
+CH3     ->  GNDA
+GPIO8   ->  R100 ohm    ->  GPIO7
+RS485   -> echo terminal (Use testing/rs485EchoTerminal)
+
+- Execute:
+`make clean`
+`make test`
+`make download`
+
+
 ##### Keybindings
 ###### Fancy REPL (aka `>>>` promt)
 - CTRL+D restart interpreter (not board) aka soft reset

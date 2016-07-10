@@ -1,3 +1,21 @@
+/*
+    Unit Tests for EDU-CIAA Hardware library.
+    Copyright (C) 2016  Ernesto gigliotti. ernestogigliotti@gmail.com
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "utest.h"
 #include "utest.c"
 
@@ -38,7 +56,6 @@ void startTesting(void)
 	// Switches Library
 	utest_startTest(testSwitches1,0,"SW: idle status check");
     utest_print("____________________\r\n");
-   
 
 	// Uart Library
 	utest_startTest(testUart1,testUartSetup,"UART: TX test");
@@ -46,7 +63,6 @@ void startTesting(void)
 	utest_startTest(testUart3,testUartSetup,"UART: RX buffer test");
     utest_print("____________________\r\n");
 
-    
 	// EEPROM Library
 	utest_startTest(testEEPROM1,0,"EEPROM: write/read byte Test");
 	utest_startTest(testEEPROM2,0,"EEPROM: write invalid address Test");
@@ -70,7 +86,6 @@ void startTesting(void)
     utest_startTest(testADC7,0,"ADC: read chn 3 Test");
     utest_startTest(testADC8,0,"ADC: read chn invalid Test");
     utest_print("____________________\r\n");
-
 
 	// GPIO
     utest_startTest(testGPIO1,0,"GPIO: configure gpio0 input Test");
