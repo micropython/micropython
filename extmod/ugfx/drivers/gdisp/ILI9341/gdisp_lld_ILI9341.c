@@ -55,13 +55,19 @@
 #define delayms(ms)					gfxSleepMilliseconds(ms)
 
 static void set_viewport(GDisplay *g) {
-	write_index(g, 0x2B); //write_index(g, 0x2A);
+	if (g->g.Width > g->g.Height)		//needed to ensure data is written in the same direction as vsync
+		write_index(g, 0x2B);
+	else
+		write_index(g, 0x2A);
 	write_data(g, (g->p.x >> 8));
 	write_data(g, (uint8_t) g->p.x);
 	write_data(g, (g->p.x + g->p.cx - 1) >> 8);
 	write_data(g, (uint8_t) (g->p.x + g->p.cx - 1));
 
-	write_index(g, 0x2A); //write_index(g, 0x2B);
+	if (g->g.Width > g->g.Height)
+		write_index(g, 0x2A);
+	else
+		write_index(g, 0x2B);
 	write_data(g, (g->p.y >> 8));
 	write_data(g, (uint8_t) g->p.y);
 	write_data(g, (g->p.y + g->p.cy - 1) >> 8);
@@ -311,28 +317,28 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 			switch((orientation_t)g->p.ptr) {
 			case GDISP_ROTATE_0:
 				acquire_bus(g);
-				write_reg(g, 0x36, 0x48);	/* X and Y axes non-inverted */
+				write_reg(g, 0x36, 0x08);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
 			case GDISP_ROTATE_90:
 				acquire_bus(g);
-				write_reg(g, 0x36, 0xE8);	/* Invert X and Y axes */
+				write_reg(g, 0x36, 0x98);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_WIDTH;
 				g->g.Width = GDISP_SCREEN_HEIGHT;
 				break;
 			case GDISP_ROTATE_180:
 				acquire_bus(g);
-				write_reg(g, 0x36, 0x88);		/* X and Y axes non-inverted */
+				write_reg(g, 0x36, 0xD8);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_HEIGHT;
 				g->g.Width = GDISP_SCREEN_WIDTH;
 				break;
 			case GDISP_ROTATE_270:
 				acquire_bus(g);
-				write_reg(g, 0x36, 0x28);	/* Invert X and Y axes */
+				write_reg(g, 0x36, 0x48);
 				release_bus(g);
 				g->g.Height = GDISP_SCREEN_WIDTH;
 				g->g.Width = GDISP_SCREEN_HEIGHT;
