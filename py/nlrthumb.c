@@ -125,7 +125,6 @@ NORETURN __attribute__((naked)) void nlr_jump(void *val) {
     "bx     lr                  \n" // return
     :                               // output operands
     : "r"(top)                      // input operands
-    :                               // clobbered registers
     );
 
     for (;;); // needed to silence compiler warning
