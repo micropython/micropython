@@ -414,7 +414,7 @@ STATIC mp_obj_t ugfx_list_enable_draw(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_enable_draw_obj, ugfx_list_enable_draw);
-/// \method enable_draw()
+/// \method disable_draw()
 ///
 /// The list is not drawn, so it can be updated while keeping the display static
 STATIC mp_obj_t ugfx_list_disable_draw(mp_obj_t self_in) {
