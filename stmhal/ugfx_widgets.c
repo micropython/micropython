@@ -405,6 +405,28 @@ STATIC mp_obj_t ugfx_list_destroy(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_destroy_obj, ugfx_list_destroy);
 
 
+/// \method enable_draw()
+///
+/// The list is redrawn as required
+STATIC mp_obj_t ugfx_list_enable_draw(mp_obj_t self_in) {
+    ugfx_list_obj_t *self = self_in;
+	gwinListEnableRender(self->ghList, TRUE);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_enable_draw_obj, ugfx_list_enable_draw);
+/// \method enable_draw()
+///
+/// The list is not drawn, so it can be updated while keeping the display static
+STATIC mp_obj_t ugfx_list_disable_draw(mp_obj_t self_in) {
+    ugfx_list_obj_t *self = self_in;
+	gwinListEnableRender(self->ghList, FALSE);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_disable_draw_obj, ugfx_list_disable_draw);
+
+
+
+
 /// \method add_item(input)
 ///
 STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
@@ -483,6 +505,8 @@ STATIC const mp_map_elem_t ugfx_list_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_selected_index), (mp_obj_t)&ugfx_list_set_selected_index_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&ugfx_list_count_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_draw), (mp_obj_t)&ugfx_list_disable_draw_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_draw), (mp_obj_t)&ugfx_list_enable_draw_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_ROLES),        MP_OBJ_NEW_SMALL_INT(2) },
