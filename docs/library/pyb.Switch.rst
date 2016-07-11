@@ -1,3 +1,5 @@
+.. currentmodule:: pyb
+
 class Switch -- switch object
 =============================
 
@@ -27,11 +29,12 @@ Constructors
 Methods
 -------
 
-.. method:: switch()
+.. method:: Switch.__call__()
 
-   Return the switch state: ``True`` if pressed down, ``False`` otherwise.
+   Call switch object directly to get its state: ``True`` if pressed down,
+   ``False`` otherwise.
 
-.. method:: switch.callback(fun)
+.. method:: Switch.callback(fun)
 
    Register the given function to be called when the switch is pressed down.
    If ``fun`` is ``None``, then it disables the callback.

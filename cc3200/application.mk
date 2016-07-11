@@ -142,6 +142,7 @@ APP_UTIL_SRC_S = $(addprefix util/,\
 APP_MAIN_SRC_C = \
 	main.c \
 	mptask.c \
+	mpthreadport.c \
 	serverstask.c
 	
 APP_LIB_SRC_C = $(addprefix lib/,\

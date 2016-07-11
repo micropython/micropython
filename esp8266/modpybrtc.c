@@ -53,6 +53,9 @@ STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 uint32_t pyb_rtc_alarm0_wake; // see MACHINE_WAKE_xxx constants
 uint64_t pyb_rtc_alarm0_expiry; // in microseconds
 
+// RTC overflow checking
+STATIC uint32_t rtc_last_ticks;
+
 void mp_hal_rtc_init(void) {
     uint32_t magic;
 
@@ -67,6 +70,8 @@ void mp_hal_rtc_init(void) {
         uint32_t len = 0;
         system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
     }
+    // system_get_rtc_time() is always 0 after reset/deepsleep
+    rtc_last_ticks = system_get_rtc_time();
 
     // reset ALARM0 state
     pyb_rtc_alarm0_wake = 0;
@@ -81,13 +86,11 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
-STATIC uint64_t pyb_rtc_raw_us(uint64_t cal) {
-    return (system_get_rtc_time() * cal) >> 12;
-};
-
 void pyb_rtc_set_us_since_2000(uint64_t nowus) {
     uint32_t cal = system_rtc_clock_cali_proc();
-    int64_t delta = nowus - pyb_rtc_raw_us(cal);
+    // Save RTC ticks for overflow detection.
+    rtc_last_ticks = system_get_rtc_time();
+    int64_t delta = nowus - (((uint64_t)rtc_last_ticks * cal) >> 12);
 
     // As the calibration value jitters quite a bit, to make the
     // clock at least somewhat practially usable, we need to store it
@@ -98,12 +101,30 @@ void pyb_rtc_set_us_since_2000(uint64_t nowus) {
 uint64_t pyb_rtc_get_us_since_2000() {
     uint32_t cal;
     int64_t delta;
+    uint32_t rtc_ticks;
 
     system_rtc_mem_read(MEM_CAL_ADDR, &cal, sizeof(cal));
     system_rtc_mem_read(MEM_DELTA_ADDR, &delta, sizeof(delta));
 
-    return pyb_rtc_raw_us(cal) + delta;
+    // ESP-SDK system_get_rtc_time() only returns uint32 and therefore
+    // overflow about every 7:45h.  Thus, we have to check for
+    // overflow and handle it.
+    rtc_ticks = system_get_rtc_time();
+    if (rtc_ticks < rtc_last_ticks) {
+        // Adjust delta because of RTC overflow.
+        delta += (uint64_t)cal << 20;
+        system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+    }
+    rtc_last_ticks = rtc_ticks;
+
+    return (((uint64_t)rtc_ticks * cal) >> 12) + delta;
 };
+
+void rtc_prepare_deepsleep(uint64_t sleep_us) {
+    // RTC time will reset at wake up. Let's be preared for this.
+    int64_t delta = pyb_rtc_get_us_since_2000() + sleep_us;
+    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+}
 
 STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {

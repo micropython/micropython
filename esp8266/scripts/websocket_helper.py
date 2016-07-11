@@ -36,21 +36,20 @@ def server_handshake(sock):
     if DEBUG:
         print("Sec-WebSocket-Key:", webkey, len(webkey))
 
-    respkey = webkey + b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-    respkey = hashlib.sha1(respkey).digest()
+    d = hashlib.sha1(webkey)
+    d.update(b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+    respkey = d.digest()
     respkey = binascii.b2a_base64(respkey)[:-1]
+    if DEBUG:
+        print("respkey:", respkey)
 
-    resp = b"""\
+    sock.send(b"""\
 HTTP/1.1 101 Switching Protocols\r
 Upgrade: websocket\r
 Connection: Upgrade\r
-Sec-WebSocket-Accept: %s\r
-\r
-""" % respkey
-
-    if DEBUG:
-        print(resp)
-    sock.send(resp)
+Sec-WebSocket-Accept: """)
+    sock.send(respkey)
+    sock.send("\r\n\r\n")
 
 
 # Very simplified client handshake, works for MicroPython's

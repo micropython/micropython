@@ -123,7 +123,7 @@ STATIC const mp_obj_type_t stdio_obj_type = {
     .print = stdio_obj_print,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &stdio_obj_stream_p,
+    .protocol = &stdio_obj_stream_p,
     .locals_dict = (mp_obj_t)&stdio_locals_dict,
 };
 
@@ -156,7 +156,7 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     .print = stdio_obj_print,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &stdio_buffer_obj_stream_p,
+    .protocol = &stdio_buffer_obj_stream_p,
     .locals_dict = (mp_obj_t)&stdio_locals_dict,
 };
 

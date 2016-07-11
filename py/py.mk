@@ -16,6 +16,7 @@ endif
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
+INC += -I../lib
 INC += -I../lib/netutils
 
 ifeq ($(MICROPY_PY_USSL),1)
@@ -61,6 +62,30 @@ ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_MOD += -DMICROPY_PY_LWIP_SLIP=1
 SRC_MOD += $(LWIP_DIR)/netif/slipif.c
 endif
+endif
+
+ifeq ($(MICROPY_PY_BTREE),1)
+BTREE_DIR = lib/berkeley-db-1.xx
+CFLAGS_MOD += -D__DBINTERFACE_PRIVATE=1
+INC += -I../$(BTREE_DIR)/PORT/include
+SRC_MOD += extmod/modbtree.c
+SRC_MOD += $(addprefix $(BTREE_DIR)/,\
+btree/bt_close.c \
+btree/bt_conv.c \
+btree/bt_debug.c \
+btree/bt_delete.c \
+btree/bt_get.c \
+btree/bt_open.c \
+btree/bt_overflow.c \
+btree/bt_page.c \
+btree/bt_put.c \
+btree/bt_search.c \
+btree/bt_seq.c \
+btree/bt_split.c \
+btree/bt_utils.c \
+mpool/mpool.c \
+	)
+CFLAGS_MOD += -DMICROPY_PY_BTREE=1
 endif
 
 # py object files
@@ -161,6 +186,7 @@ PY_O_BASENAME = \
 	modstruct.o \
 	modsys.o \
 	moduerrno.o \
+	modthread.o \
 	vm.o \
 	bc.o \
 	showbc.o \
@@ -176,6 +202,7 @@ PY_O_BASENAME = \
 	../extmod/modubinascii.o \
 	../extmod/virtpin.o \
 	../extmod/machine_mem.o \
+	../extmod/machine_pinbase.o \
 	../extmod/machine_pulse.o \
 	../extmod/machine_i2c.o \
 	../extmod/modussl.o \

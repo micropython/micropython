@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.UART:
 
 class UART -- duplex serial communication bus
@@ -76,7 +77,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: uart.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=0, timeout_char=0, read_buf_len=64)
+    .. method:: UART.init(baudrate, bits=8, parity=None, stop=1, \*, timeout=1000, flow=0, timeout_char=0, read_buf_len=64)
     
        Initialise the UART bus with the given parameters:
     
@@ -100,22 +101,22 @@ Methods
        *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
        only 7 and 8 bits are supported.
 
-.. method:: uart.deinit()
+.. method:: UART.deinit()
 
    Turn off the UART bus.
 
 .. only:: port_pyboard
 
-    .. method:: uart.any()
+    .. method:: UART.any()
 
        Returns the number of bytes waiting (may be 0).
 
-    .. method:: uart.writechar(char)
+    .. method:: UART.writechar(char)
 
       Write a single character on the bus.  ``char`` is an integer to write.
       Return value: ``None``. See note below if CTS flow control is used.
 
-.. method:: uart.read([nbytes])
+.. method:: UART.read([nbytes])
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
    If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
@@ -129,19 +130,19 @@ Methods
       Return value: a bytes object containing the bytes read in.  Returns ``None``
       on timeout.
 
-.. method:: uart.readall()
+.. method:: UART.readall()
 
    Read as much data as possible. Returns after the timeout has elapsed.
 
    Return value: a bytes object or ``None`` if timeout prevents any data being read.
 
-.. method:: uart.readchar()
+.. method:: UART.readchar()
 
    Receive a single character on the bus.
 
    Return value: The character read, as an integer.  Returns -1 on timeout.
 
-.. method:: uart.readinto(buf[, nbytes])
+.. method:: UART.readinto(buf[, nbytes])
 
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
    that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -149,7 +150,7 @@ Methods
    Return value: number of bytes read and stored into ``buf`` or ``None`` on
    timeout.
 
-.. method:: uart.readline()
+.. method:: UART.readline()
 
    Read a line, ending in a newline character. If such a line exists, return is
    immediate. If the timeout elapses, all available data is returned regardless
@@ -157,7 +158,7 @@ Methods
 
    Return value: the line read or ``None`` on timeout if no data is available.
 
-.. method:: uart.write(buf)
+.. method:: UART.write(buf)
 
    .. only:: port_pyboard
 
@@ -169,7 +170,7 @@ Methods
       Return value: number of bytes written. If a timeout occurs and no bytes
       were written returns ``None``.
 
-.. method:: uart.sendbreak()
+.. method:: UART.sendbreak()
 
    Send a break condition on the bus.  This drives the bus low for a duration
    of 13 bits.
@@ -214,14 +215,14 @@ Flow Control
 
     If CTS flow control is enabled the write behaviour is as follows:
 
-    If the Pyboard's ``uart.write(buf)`` method is called, transmission will stall for
+    If the Pyboard's ``UART.write(buf)`` method is called, transmission will stall for
     any periods when ``nCTS`` is ``False``. This will result in a timeout if the entire
     buffer was not transmitted in the timeout period. The method returns the number of
     bytes written, enabling the user to write the remainder of the data if required. In
     the event of a timeout, a character will remain in the UART pending ``nCTS``. The
     number of bytes composing this character will be included in the return value.
     
-    If ``uart.writechar()`` is called when ``nCTS`` is ``False`` the method will time
+    If ``UART.writechar()`` is called when ``nCTS`` is ``False`` the method will time
     out unless the target asserts ``nCTS`` in time. If it times out ``OSError 116``
     will be raised. The character will be transmitted as soon as the target asserts ``nCTS``.
 

@@ -31,3 +31,7 @@
 
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
+#undef MICROPY_FSUSERMOUNT
+#undef MICROPY_VFS_FAT
+#define MICROPY_FSUSERMOUNT            (1)
+#define MICROPY_VFS_FAT                (1)

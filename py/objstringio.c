@@ -174,7 +174,7 @@ const mp_obj_type_t mp_type_stringio = {
     .make_new = stringio_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &stringio_stream_p,
+    .protocol = &stringio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
 };
 
@@ -186,7 +186,7 @@ const mp_obj_type_t mp_type_bytesio = {
     .make_new = stringio_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &bytesio_stream_p,
+    .protocol = &bytesio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
 };
 #endif

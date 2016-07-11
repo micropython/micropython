@@ -303,6 +303,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_set_password_obj, webrepl_set_password)
 
 STATIC const mp_map_elem_t webrepl_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&webrepl_close_obj },
 };
@@ -317,7 +318,7 @@ STATIC const mp_obj_type_t webrepl_type = {
     { &mp_type_type },
     .name = MP_QSTR__webrepl,
     .make_new = webrepl_make_new,
-    .stream_p = &webrepl_stream_p,
+    .protocol = &webrepl_stream_p,
     .locals_dict = (mp_obj_t)&webrepl_locals_dict,
 };
 

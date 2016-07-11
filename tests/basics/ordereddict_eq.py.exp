@@ -1,0 +1,15 @@
+OrderedDict({'a': 1, 'b': 2})
+OrderedDict({'a': 1, 'b': 2})
+True
+OrderedDict({'a': 1, 'b': 2})
+OrderedDict({'b': 2, 'a': 1})
+False
+OrderedDict({'a': 1, 'b': 2})
+OrderedDict({'a': 1, 'b': 2})
+True
+OrderedDict({'b': 2})
+OrderedDict({'b': 2})
+True
+OrderedDict({})
+OrderedDict({'a': 1})
+False

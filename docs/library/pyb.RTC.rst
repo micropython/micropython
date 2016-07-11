@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.RTC:
 
 class RTC -- real time clock
@@ -24,7 +25,7 @@ Constructors
 Methods
 -------
 
-.. method:: rtc.datetime([datetimetuple])
+.. method:: RTC.datetime([datetimetuple])
 
    Get or set the date and time of the RTC.
    
@@ -44,7 +45,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: rtc.wakeup(timeout, callback=None)
+    .. method:: RTC.wakeup(timeout, callback=None)
     
        Set the RTC wakeup timer to trigger repeatedly at every ``timeout``
        milliseconds.  This trigger can wake the pyboard from both the sleep
@@ -55,7 +56,7 @@ Methods
        If ``callback`` is given then it is executed at every trigger of the
        wakeup timer.  ``callback`` must take exactly one argument.
     
-    .. method:: rtc.info()
+    .. method:: RTC.info()
     
        Get information about the startup time and reset source.
        
@@ -64,7 +65,7 @@ Methods
         - Bit 0x10000 is set if a power-on reset occurred.
         - Bit 0x20000 is set if an external reset occurred
     
-    .. method:: rtc.calibration(cal)
+    .. method:: RTC.calibration(cal)
     
        Get or set RTC calibration.
     

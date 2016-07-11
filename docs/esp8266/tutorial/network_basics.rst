@@ -19,7 +19,7 @@ You can check if the interfaces are active by::
 
 You can also check the network settings of the interface by::
 
-    >>> ap.ifconfig()
+    >>> ap_if.ifconfig()
     ('192.168.4.1', '255.255.255.0', '192.168.4.1', '8.8.8.8')
 
 The returned values are: IP address, netmask, gateway, DNS.
