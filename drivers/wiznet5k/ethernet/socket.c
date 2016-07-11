@@ -157,7 +157,7 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
    setSn_PORT(sn,port);	
    setSn_CR(sn,Sn_CR_OPEN);
    while(getSn_CR(sn));
-	sock_io_mode |= ((flag & SF_IO_NONBLOCK) << sn);   
+   sock_io_mode |= ((flag & SF_IO_NONBLOCK) << sn);
    sock_is_sending &= ~(1<<sn);
    sock_remained_size[sn] = 0;
    sock_pack_info[sn] = 0;
