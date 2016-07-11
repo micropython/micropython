@@ -38,5 +38,4 @@ extern uint32_t _eheap;
 extern uint32_t _stack;
 extern uint32_t _estack;
 
-void gc_collect_init (uint32_t sp);
 void gc_collect(void);

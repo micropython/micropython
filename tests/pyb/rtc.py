@@ -2,6 +2,7 @@ import pyb, stm
 from pyb import RTC
 
 rtc = RTC()
+rtc.init()
 print(rtc)
 
 # make sure that 1 second passes correctly

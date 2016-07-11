@@ -91,3 +91,12 @@ the following in ``main.py``::
 
 This will allow to keep the structure of your application clear, as well as
 allow to install multiple applications on a board, and switch among them.
+
+
+Real-time clock
+---------------
+
+Due to limitations of the ESP8266 chip the internal real-time clock (RTC)
+will overflow every 7:45h.  If a long-term working RTC time is required then
+``time()`` or ``localtime()`` must be called at least once within 7 hours.
+MicroPython will then handle the overflow.

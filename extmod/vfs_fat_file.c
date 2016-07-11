@@ -259,7 +259,7 @@ const mp_obj_type_t mp_type_fileio = {
     .make_new = file_obj_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &fileio_stream_p,
+    .protocol = &fileio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 #endif
@@ -278,7 +278,7 @@ const mp_obj_type_t mp_type_textio = {
     .make_new = file_obj_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &textio_stream_p,
+    .protocol = &textio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 

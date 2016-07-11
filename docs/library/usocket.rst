@@ -74,6 +74,7 @@ Constants
 .. data:: socket.IPPROTO_UDP
 .. data:: socket.IPPROTO_TCP
 .. only:: port_wipy
+
    .. data:: socket.IPPROTO_SEC
 
       protocol numbers
@@ -100,7 +101,7 @@ Methods
 
        Enable a server to accept connections. If backlog is specified, it must be at least 0 
        (if it's lower, it will be set to 0); and specifies the number of unaccepted connections
-       tha the system will allow before refusing new connections. If not specified, a default
+       that the system will allow before refusing new connections. If not specified, a default
        reasonable value is chosen.
 
     .. method:: socket.accept()

@@ -28,7 +28,7 @@ ifdef DEBUG
 CFLAGS += -g
 COPT = -O0
 else
-COPT = -Os #-DNDEBUG
+COPT = -Os -fdata-sections -ffunction-sections #-DNDEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
@@ -63,10 +63,10 @@ endif
 ifeq ($(UNAME_S),Darwin)
 CC = clang
 # Use clang syntax for map file
-LDFLAGS_ARCH = -Wl,-map,$@.map
+LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
 else
 # Use gcc syntax for map file
-LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
+LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
@@ -85,16 +85,6 @@ INC +=  -I../lib/mp-readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 LIB_SRC_C_EXTRA += mp-readline/readline.c
 endif
-ifeq ($(MICROPY_USE_READLINE),2)
-CFLAGS_MOD += -DMICROPY_USE_READLINE=2
-LDFLAGS_MOD += -lreadline
-# the following is needed for BSD
-#LDFLAGS_MOD += -ltermcap
-endif
-ifeq ($(MICROPY_PY_TIME),1)
-CFLAGS_MOD += -DMICROPY_PY_TIME=1
-SRC_MOD += modtime.c
-endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
 CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
 SRC_MOD += modtermios.c
@@ -102,6 +92,10 @@ endif
 ifeq ($(MICROPY_PY_SOCKET),1)
 CFLAGS_MOD += -DMICROPY_PY_SOCKET=1
 SRC_MOD += modsocket.c
+endif
+ifeq ($(MICROPY_PY_THREAD),1)
+CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
+LDFLAGS_MOD += -lpthread
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
@@ -138,10 +132,12 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 	unix_mphal.c \
+	mpthreadport.c \
 	input.c \
 	file.c \
 	modmachine.c \
 	modos.c \
+	modtime.c \
 	moduselect.c \
 	alloc.c \
 	coverage.c \
@@ -162,9 +158,13 @@ endif
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	utils/printf.c \
+	timeutils/timeutils.c \
+	)
+
+# FatFS VFS support
+LIB_SRC_C += $(addprefix lib/,\
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
-	timeutils/timeutils.c \
 	)
 
 OBJ = $(PY_O)
@@ -235,7 +235,11 @@ fast:
 
 # build a minimal interpreter
 minimal:
-	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' BUILD=build-minimal PROG=micropython_minimal MICROPY_PY_TIME=0 MICROPY_PY_TERMIOS=0 MICROPY_PY_SOCKET=0 MICROPY_PY_FFI=0 MICROPY_USE_READLINE=0
+	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
+	    BUILD=build-minimal PROG=micropython_minimal \
+	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
+	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
+	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
 
 # build interpreter with nan-boxing as object model
 nanbox:
@@ -260,7 +264,7 @@ freedos:
 
 # build an interpreter for coverage testing and do the testing
 coverage:
-	$(MAKE) COPT="-O0" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_coverage.h>" -fprofile-arcs -ftest-coverage -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wshadow -Wsign-compare -Wuninitialized -Wunused-parameter -DMICROPY_UNIX_COVERAGE' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
+	$(MAKE) COPT="-O0" MICROPY_PY_BTREE=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_coverage.h>" -fprofile-arcs -ftest-coverage -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wshadow -Wsign-compare -Wuninitialized -Wunused-parameter -DMICROPY_UNIX_COVERAGE' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
 
 coverage_test: coverage
 	$(eval DIRNAME=$(notdir $(CURDIR)))
@@ -301,7 +305,7 @@ libffi:
 	cd ../lib/libffi; git clean -d -x -f
 	cd ../lib/libffi; ./autogen.sh
 	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
-	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
+	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	make install-exec-recursive; make -C include install-data-am
 
 axtls: ../lib/axtls/README

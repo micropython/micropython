@@ -669,6 +669,6 @@ const mp_obj_type_t pyb_uart_type = {
     .make_new = pyb_uart_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &uart_stream_p,
+    .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
 };

@@ -201,6 +201,13 @@ def run_tests(pyb, tests, args):
         skip_tests.add('float/true_value.py')
         skip_tests.add('float/types.py')
 
+    # Some tests shouldn't be run on a PC
+    if pyb is None:
+        # unix build does not have the GIL so can't run thread mutation tests
+        for t in tests:
+            if t.startswith('thread/mutate_'):
+                skip_tests.add(t)
+
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
         skip_tests.add('basics/exception_chain.py') # warning is not printed

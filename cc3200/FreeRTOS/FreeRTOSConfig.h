@@ -84,7 +84,13 @@
 #define configCPU_CLOCK_HZ				        ( ( unsigned long ) 80000000 )
 #define configTICK_RATE_HZ				        ( ( TickType_t ) 1000 )
 #define configMINIMAL_STACK_SIZE		        ( ( unsigned short ) 72 )
-#define configTOTAL_HEAP_SIZE			        ( ( size_t ) ( 16384 ) )
+#define configTOTAL_HEAP_SIZE			        ( ( size_t ) ( \
+    16384 /* 16kbytes for FreeRTOS data structures and heap */ \
+    - sizeof(StaticTask_t) - configMINIMAL_STACK_SIZE * sizeof(StackType_t) /* TCB+stack for idle task */ \
+    - sizeof(StaticTask_t) - 1024 /* TCB+stack for servers task */ \
+    - sizeof(StaticTask_t) - 6656 /* TCB+stack for main MicroPython task */ \
+    - sizeof(StaticTask_t) - 896 /* TCB+stack for simplelink spawn task */ \
+    ) )
 #define configMAX_TASK_NAME_LEN			        ( 8 )
 #define configUSE_TRACE_FACILITY		        0
 #define configUSE_16_BIT_TICKS			        0
@@ -150,5 +156,18 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 /* Use the Cortex-M3 optimised task selection rather than the generic C code
 version. */
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+
+/* We provide a definition of ucHeap so it can go in a special segment. */
+#define configAPPLICATION_ALLOCATED_HEAP 1
+
+/* We use static versions of functions (like xTaskCreateStatic) */
+#define configSUPPORT_STATIC_ALLOCATION 1
+
+/* For threading */
+#define configNUM_THREAD_LOCAL_STORAGE_POINTERS 1
+#undef configUSE_MUTEXES
+#define configUSE_MUTEXES 1
+#undef INCLUDE_vTaskDelete
+#define INCLUDE_vTaskDelete 1
 
 #endif /* FREERTOS_CONFIG_H */

@@ -1,9 +1,10 @@
-.. _machine.Pin:
+.. currentmodule:: machine
 
 class Pin -- control I/O pins
 =============================
 
-A pin is the basic object to control I/O pins.  It has methods to set
+A pin is the basic object to control I/O pins (also known as GPIO -
+general-purpose input/output). It has methods to set
 the mode of the pin (input, output, etc) and methods to get and set the
 digital logic level. For analog control of a pin, see the ADC class.
 
@@ -57,17 +58,17 @@ Usage Model:
 Constructors
 ------------
 
-.. class:: machine.Pin(id, ...)
+.. class:: Pin(id, ...)
 
    Create a new Pin object associated with the id.  If additional arguments are given,
-   they are used to initialise the pin.  See :meth:`pin.init`.
+   they are used to initialise the pin.  See :meth:`Pin.init`.
 
 Methods
 -------
 
 .. only:: port_wipy
 
-    .. method:: pin.init(mode, pull, \*, drive, alt)
+    .. method:: Pin.init(mode, pull, \*, drive, alt)
     
        Initialise the pin:
 
@@ -97,13 +98,13 @@ Methods
 
        Returns: ``None``.
 
-    .. method:: pin.id()
+    .. method:: Pin.id()
 
        Get the pin id.
 
 .. only:: port_esp8266
 
-    .. method:: pin.init(mode, pull=None, \*, value)
+    .. method:: Pin.init(mode, pull=None, \*, value)
 
        Initialise the pin:
 
@@ -120,7 +121,7 @@ Methods
          - if `value` is given then it is the output value to set the pin
            if it is in output mode.
 
-.. method:: pin.value([value])
+.. method:: Pin.value([value])
 
    Get or set the digital logic level of the pin:
 
@@ -129,12 +130,12 @@ Methods
        anything that converts to a boolean.  If it converts to ``True``, the pin
        is set high, otherwise it is set low.
 
-.. method:: pin([value])
+.. method:: Pin.__call__([value])
 
    Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
-   See **pin.value** for more details.
+   See :func:`Pin.value` for more details.
 
-.. method:: pin.alt_list()
+.. method:: Pin.alt_list()
 
     Returns a list of the alternate functions supported by the pin. List items are
     a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
@@ -143,23 +144,23 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: pin.toggle()
+    .. method:: Pin.toggle()
 
         Toggle the value of the pin.
 
-    .. method:: pin.mode([mode])
+    .. method:: Pin.mode([mode])
 
         Get or set the pin mode.
 
-    .. method:: pin.pull([pull])
+    .. method:: Pin.pull([pull])
 
         Get or set the pin pull.
 
-    .. method:: pin.drive([drive])
+    .. method:: Pin.drive([drive])
 
         Get or set the pin drive strength.
 
-    .. method:: pin.irq(\*, trigger, priority=1, handler=None, wake=None)
+    .. method:: Pin.irq(\*, trigger, priority=1, handler=None, wake=None)
 
         Create a callback to be triggered when the input level at the pin changes.
 
@@ -193,7 +194,7 @@ Methods
 
 .. only:: port_esp8266
 
-    .. method:: pin.irq(\*, trigger, handler=None)
+    .. method:: Pin.irq(\*, trigger, handler=None)
 
         Create a callback to be triggered when the input level at the pin changes.
 
@@ -227,28 +228,28 @@ Constants
 The following constants are used to configure the pin objects.  Note that
 not all constants are available on all ports.
 
-.. data:: IN
-          OUT
-          OPEN_DRAIN
-          ALT
-          ALT_OPEN_DRAIN
+.. data:: Pin.IN
+          Pin.OUT
+          Pin.OPEN_DRAIN
+          Pin.ALT
+          Pin.ALT_OPEN_DRAIN
 
    Selects the pin mode.
 
-.. data:: PULL_UP
-          PULL_DOWN
+.. data:: Pin.PULL_UP
+          Pin.PULL_DOWN
 
    Selects the whether there is a pull up/down resistor.
 
-.. data:: LOW_POWER
-          MED_POWER
-          HIGH_POWER
+.. data:: Pin.LOW_POWER
+          Pin.MED_POWER
+          Pin.HIGH_POWER
 
    Selects the pin drive strength.
 
-.. data:: IRQ_FALLING
-          IRQ_RISING
-          IRQ_LOW_LEVEL
-          IRQ_HIGH_LEVEL
+.. data:: Pin.IRQ_FALLING
+          Pin.IRQ_RISING
+          Pin.IRQ_LOW_LEVEL
+          Pin.IRQ_HIGH_LEVEL
 
    Selects the IRQ trigger type.

@@ -94,6 +94,7 @@ extern const mp_obj_module_t mp_module_micropython;
 extern const mp_obj_module_t mp_module_ustruct;
 extern const mp_obj_module_t mp_module_sys;
 extern const mp_obj_module_t mp_module_gc;
+extern const mp_obj_module_t mp_module_thread;
 
 extern const mp_obj_dict_t mp_module_builtins_globals;
 
@@ -113,6 +114,7 @@ extern const mp_obj_module_t mp_module_lwip;
 extern const mp_obj_module_t mp_module_websocket;
 extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
+extern const mp_obj_module_t mp_module_btree;
 
 // extmod functions
 MP_DECLARE_CONST_FUN_OBJ(pyb_mount_obj);

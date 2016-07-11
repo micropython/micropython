@@ -73,7 +73,7 @@ void gc_collect(void) {
     void *sp = (void*)&dummy;
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_VM(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
 
     gc_collect_end();
 }

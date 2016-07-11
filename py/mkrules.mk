@@ -49,7 +49,7 @@ $(BUILD)/%.o: %.c
 # List all native flags since the current build system doesn't have
 # the micropython configuration available. However, these flags are
 # needed to extract all qstrings
-QSTR_GEN_EXTRA_CFLAGS += -D__QSTR_EXTRACT -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
+QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
 vpath %.c . $(TOP)
@@ -115,9 +115,6 @@ ifndef DEBUG
 endif
 	$(Q)$(SIZE) $(PROG)
 
-lib: $(OBJ)
-	$(AR) rcs libmicropython.a $^
-
 clean: clean-prog
 clean-prog:
 	$(RM) -f $(PROG)
@@ -125,6 +122,9 @@ clean-prog:
 
 .PHONY: clean-prog
 endif
+
+lib: $(OBJ)
+	$(AR) rcs libmicropython.a $^
 
 clean:
 	$(RM) -rf $(BUILD)

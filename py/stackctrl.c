@@ -32,23 +32,23 @@
 
 void mp_stack_ctrl_init(void) {
     volatile int stack_dummy;
-    MP_STATE_VM(stack_top) = (char*)&stack_dummy;
+    MP_STATE_THREAD(stack_top) = (char*)&stack_dummy;
 }
 
 void mp_stack_set_top(void *top) {
-    MP_STATE_VM(stack_top) = top;
+    MP_STATE_THREAD(stack_top) = top;
 }
 
 mp_uint_t mp_stack_usage(void) {
     // Assumes descending stack
     volatile int stack_dummy;
-    return MP_STATE_VM(stack_top) - (char*)&stack_dummy;
+    return MP_STATE_THREAD(stack_top) - (char*)&stack_dummy;
 }
 
 #if MICROPY_STACK_CHECK
 
 void mp_stack_set_limit(mp_uint_t limit) {
-    MP_STATE_VM(stack_limit) = limit;
+    MP_STATE_THREAD(stack_limit) = limit;
 }
 
 void mp_exc_recursion_depth(void) {
@@ -57,7 +57,7 @@ void mp_exc_recursion_depth(void) {
 }
 
 void mp_stack_check(void) {
-    if (mp_stack_usage() >= MP_STATE_VM(stack_limit)) {
+    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
         mp_exc_recursion_depth();
     }
 }

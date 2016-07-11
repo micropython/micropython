@@ -381,7 +381,7 @@ STATIC const mp_obj_type_t usocket_type = {
     .make_new = socket_make_new,
     .getiter = NULL,
     .iternext = NULL,
-    .stream_p = &usocket_stream_p,
+    .protocol = &usocket_stream_p,
     .locals_dict = (mp_obj_dict_t*)&usocket_locals_dict,
 };
 

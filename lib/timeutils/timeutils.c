@@ -158,8 +158,8 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
         + (year - 2000) * 31536000;
 }
 
-mp_uint_t timeutils_mktime(mp_uint_t year, mp_uint_t month, mp_uint_t mday,
-    mp_uint_t hours, mp_uint_t minutes, mp_uint_t seconds) {
+mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
+    mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
 
     // Normalize the tuple. This allows things like:
     //
@@ -204,7 +204,7 @@ mp_uint_t timeutils_mktime(mp_uint_t year, mp_uint_t month, mp_uint_t mday,
         }
         mday += timeutils_days_in_month(year, month);
     }
-    while (mday > timeutils_days_in_month(year, month)) {
+    while ((mp_uint_t)mday > timeutils_days_in_month(year, month)) {
         mday -= timeutils_days_in_month(year, month);
         if (++month == 13) {
             month = 1;

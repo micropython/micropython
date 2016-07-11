@@ -34,7 +34,13 @@ def main(use_stream=False):
         if use_stream:
             # MicroPython socket objects support stream (aka file) interface
             # directly.
-            print(client_s.read(4096))
+            req = client_s.readline()
+            print(req)
+            while True:
+                h = client_s.readline()
+                if h == b"" or h == b"\r\n":
+                    break
+                print(h)
             client_s.write(CONTENT % counter)
         else:
             print(client_s.recv(4096))

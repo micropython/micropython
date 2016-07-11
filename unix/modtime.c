@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_PY_UTIME
+
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -118,7 +121,9 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     tv.tv_sec = ipart;
     int res;
     while (1) {
+        MP_THREAD_GIL_EXIT();
         res = sleep_select(0, NULL, NULL, NULL, &tv);
+        MP_THREAD_GIL_ENTER();
         #if MICROPY_SELECT_REMAINING_TIME
         // TODO: This assumes Linux behavior of modifying tv to the remaining
         // time.
@@ -136,20 +141,26 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     RAISE_ERRNO(res, errno);
 #else
     // TODO: Handle EINTR
+    MP_THREAD_GIL_EXIT();
     sleep(mp_obj_get_int(arg));
+    MP_THREAD_GIL_ENTER();
 #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
 STATIC mp_obj_t mod_time_sleep_ms(mp_obj_t arg) {
+    MP_THREAD_GIL_EXIT();
     usleep(mp_obj_get_int(arg) * 1000);
+    MP_THREAD_GIL_ENTER();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_ms_obj, mod_time_sleep_ms);
 
 STATIC mp_obj_t mod_time_sleep_us(mp_obj_t arg) {
+    MP_THREAD_GIL_EXIT();
     usleep(mp_obj_get_int(arg));
+    MP_THREAD_GIL_ENTER();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_us_obj, mod_time_sleep_us);
@@ -190,3 +201,5 @@ const mp_obj_module_t mp_module_time = {
     .name = MP_QSTR_utime,
     .globals = (mp_obj_dict_t*)&mp_module_time_globals,
 };
+
+#endif // MICROPY_PY_UTIME

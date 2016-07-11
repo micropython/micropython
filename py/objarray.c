@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/objstr.h"
+#include "py/objarray.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 
@@ -57,16 +58,6 @@
 #else
 #define TYPECODE_MASK (~(mp_uint_t)0)
 #endif
-
-typedef struct _mp_obj_array_t {
-    mp_obj_base_t base;
-    mp_uint_t typecode : 8;
-    // free is number of unused elements after len used elements
-    // alloc size = len + free
-    mp_uint_t free : (8 * sizeof(mp_uint_t) - 8);
-    mp_uint_t len; // in elements
-    void *items;
-} mp_obj_array_t;
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
