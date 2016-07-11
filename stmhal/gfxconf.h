@@ -202,7 +202,7 @@
 //        #define GWIN_SLIDER_NOSNAP                   TRUE
 //        #define GWIN_SLIDER_DEAD_BAND                5
 //        #define GWIN_SLIDER_TOGGLE_INC               20
-//    #define GWIN_NEED_CHECKBOX                       TRUE
+    #define GWIN_NEED_CHECKBOX                       TRUE
     #define GWIN_NEED_IMAGE                          TRUE
         #define GWIN_NEED_IMAGE_ANIMATION            TRUE
 //    #define GWIN_NEED_RADIO                          TRUE
