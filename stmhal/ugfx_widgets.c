@@ -419,6 +419,30 @@ STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_list_add_item_obj, ugfx_list_add_item);
 
 
+
+/// \method assign_image(index, img_obj)
+///
+STATIC mp_obj_t ugfx_list_assign_image(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t image_in) {
+    ugfx_list_obj_t *self = self_in;
+
+	int i = mp_obj_get_int(index_in);
+	if (image_in == mp_const_none){
+		gwinListItemSetImage(self->ghList,i,0);
+	}
+	else if (!MP_OBJ_IS_TYPE(image_in, &ugfx_image_type)) {
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image type or NULL"));
+		return mp_const_none;
+	}
+	else
+	{
+		ugfx_image_obj_t *image = image_in;
+		gwinListItemSetImage(self->ghList,i,&(image->thisImage));
+	}
+	
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_list_assign_image_obj, ugfx_list_assign_image);
+
 /// \method remove_item(index)
 ///
 STATIC mp_obj_t ugfx_list_remove_item(mp_obj_t self_in, mp_obj_t index) {
@@ -477,6 +501,7 @@ STATIC const mp_map_elem_t ugfx_list_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_add_item), (mp_obj_t)&ugfx_list_add_item_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_assign_image), (mp_obj_t)&ugfx_list_assign_image_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove_item), (mp_obj_t)&ugfx_list_remove_item_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_selected_text), (mp_obj_t)&ugfx_list_get_selected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_selected_index), (mp_obj_t)&ugfx_list_get_selected_index_obj },
