@@ -948,17 +948,12 @@ const mp_obj_type_t ugfx_image_type = {
 
 
 
-
-
-
-
-/*
-
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 /////////////////      CHECKBOX    //////////////////
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
+
 
 typedef struct _ugfx_checkbox_t {
     mp_obj_base_t base;
@@ -967,65 +962,98 @@ typedef struct _ugfx_checkbox_t {
 
 } ugfx_checkbox_obj_t;
 
-/// \classmethod \constructor(parent, x, y, a, b, text, style)
+/// \classmethod \constructor(x, y, a, b, text, {parent})
 ///
-/// Construct an Button object.
+/// Construct an Checkbox object.
+/// Will take the style from the parent, if the parents style is set. Otherwise uses default style
 STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 7, 7, false);
+    mp_arg_check_num(n_args, n_kw, 5, 6, false);
 
 
-    const char *text = mp_obj_str_get_str(args[5]);
-	int x = mp_obj_get_int(args[1]);
-	int y = mp_obj_get_int(args[2]);
-	int a = mp_obj_get_int(args[3]);
-	int b = mp_obj_get_int(args[4]);
+    const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
 
-    // create button object
-    ugfx_checkbox_obj_t *chk = m_new_obj(ugfx_checkbox_obj_t);
-    chk->base.type = &ugfx_checkbox_type;
+	GHandle parent = NULL;
 
 
-	//setup button options
+    // create checkbox object
+    ugfx_checkbox_obj_t *btn = m_new_obj(ugfx_checkbox_obj_t);
+    btn->base.type = &ugfx_checkbox_type;
+
+
+	//setup checkbox options
 	GWidgetInit	wi;
 
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
 	wi.g.show = TRUE;
 
-	// Apply the button parameters
+	// Apply the checkbox parameters
 	wi.g.width = a;
 	wi.g.height = b;
 	wi.g.y = y;
 	wi.g.x = x;
-	//wi.g.parent = ;
 	wi.text = text;
 
-	// Create the actual button
-	chk->ghCheckbox = gwinCheckboxCreate(NULL, &wi);
+	if (n_args > 5){
+		ugfx_container_obj_t *container = args[5];
+
+		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
+			parent = container->ghContainer;
+			wi.customStyle = container->style;
+		}
+	}
+	wi.g.parent = parent;
+
+	// Create the actual checkbox
+	btn->ghCheckbox = gwinCheckboxCreate(NULL, &wi);
 
 
-	return chk;
+	return btn;
 }
 
 /// \method destroy()
 ///
-/// clears up all associated memory
-STATIC mp_obj_t ugfx_check_destroy(mp_obj_t self_in) {
+/// frees up all resources
+STATIC mp_obj_t ugfx_checkbox_destroy(mp_obj_t self_in) {
     ugfx_checkbox_obj_t *self = self_in;
 
 	gwinDestroy(self->ghCheckbox);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_check_destroy_obj, ugfx_check_destroy);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_checkbox_destroy_obj, ugfx_checkbox_destroy);
+
+/// \method checked()
+///
+/// Gets or sets the checked state
+STATIC mp_obj_t ugfx_checkbox_checked(mp_uint_t n_args, const mp_obj_t *args) {
+	
+	GHandle gh = get_ugfx_handle(args[0]);
+	
+	if (n_args == 1)
+		return mp_obj_new_int(gwinCheckboxIsChecked(gh));
+	else
+		gwinCheckboxCheck(gh, mp_obj_get_int(args[1]));
+	return mp_const_none;
+	   
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_checkbox_checked_obj, 1, 2, ugfx_checkbox_checked);
 
 
 
 STATIC const mp_map_elem_t ugfx_checkbox_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chk_destroy), (mp_obj_t)&ugfx_check_destroy_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chk_attach_input), (mp_obj_t)&ugfx_check_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_checkbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_checkbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_checked), (mp_obj_t)&ugfx_checkbox_checked_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -1042,13 +1070,14 @@ const mp_obj_type_t ugfx_checkbox_type = {
     .locals_dict = (mp_obj_t)&ugfx_checkbox_locals_dict,
 };
 
-*/
+
+
 
 static GHandle get_ugfx_handle(mp_obj_t in){
 	if (MP_OBJ_IS_TYPE(in,&ugfx_button_type))
 		return ((ugfx_button_obj_t *)in)->ghButton;
-//	else if (MP_OBJ_IS_TYPE(in,&ugfx_checkbox_type))
-//		return ((ugfx_checkbox_obj_t *)in)->ghCheckbox;
+	else if (MP_OBJ_IS_TYPE(in,&ugfx_checkbox_type))
+		return ((ugfx_checkbox_obj_t *)in)->ghCheckbox;
 	else if (MP_OBJ_IS_TYPE(in,&ugfx_list_type))
 		return ((ugfx_list_obj_t *)in)->ghList;
 	else if (MP_OBJ_IS_TYPE(in,&ugfx_textbox_type))
