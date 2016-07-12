@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#if MICROPY_PY_USSL
+#if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
 
 #include "ssl.h"
 
