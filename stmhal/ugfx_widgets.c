@@ -755,6 +755,127 @@ const mp_obj_type_t ugfx_keyboard_type = {
 
 
 
+
+
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+////////////////      IMAGEBOX     //////////////////
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+
+typedef struct _ugfx_imagebox_t {
+    mp_obj_base_t base;
+
+	GHandle ghImagebox;
+
+} ugfx_imagebox_obj_t;
+
+/// \classmethod \constructor(x, y, a, b, text, cache {parent})
+///
+/// Construct an imagebox object.
+/// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 6, 7, false);
+
+
+    const char *file = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
+	int cache = mp_obj_get_int(args[5]);
+
+	GHandle parent = NULL;
+
+    // create imagebox object
+    ugfx_imagebox_obj_t *img = m_new_obj(ugfx_imagebox_obj_t);
+    img->base.type = &ugfx_imagebox_type;
+
+
+	//setup imagebox options
+	GWidgetInit	wi;
+
+	// Apply some default values for GWIN
+	gwinWidgetClearInit(&wi);
+	wi.g.show = TRUE;
+
+	// Apply the imagebox parameters
+	wi.g.width = a;
+	wi.g.height = b;
+	wi.g.y = y;
+	wi.g.x = x;
+	
+	
+	if (n_args > 6){
+		ugfx_container_obj_t *container = args[6];
+		if (MP_OBJ_IS_TYPE(args[6], &ugfx_container_type)) {
+			parent = container->ghContainer;
+			wi.customStyle = container->style;
+		}
+	}
+	wi.g.parent = parent;
+
+	// Create the actual imagebox
+	img->ghImagebox = gwinImageCreate(NULL, &wi.g);
+	
+	//we'll open the file initially to fill the gdispImage struct
+	//when the draw function is used, will need to check the image handle is open
+	int suc = gwinImageOpenFile(img->ghImagebox, file);
+	
+	if (suc){
+		if (cache)
+			gwinImageCache(img->ghImagebox);
+		//TODO: error handling and reporting
+	}
+	else{
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
+		return mp_const_none;
+	}
+
+	
+	return img;
+}
+
+
+/// \method destroy()
+///
+/// frees up all resources
+STATIC mp_obj_t ugfx_imagebox_destroy(mp_obj_t self_in) {
+    ugfx_imagebox_obj_t *self = self_in;
+
+	gwinDestroy(self->ghImagebox);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_imagebox_destroy_obj, ugfx_imagebox_destroy);
+
+
+STATIC const mp_map_elem_t ugfx_imagebox_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_imagebox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_imagebox_destroy_obj},
+
+	//class constants
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(ugfx_imagebox_locals_dict, ugfx_imagebox_locals_dict_table);
+
+const mp_obj_type_t ugfx_imagebox_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Imagebox,
+    .make_new = ugfx_imagebox_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_imagebox_locals_dict,
+};
+
+
+
+
+
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 /////////////////       LABEL      //////////////////
@@ -891,7 +1012,7 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	const char *img_str = mp_obj_str_get_str(args[0]);
 
 
-    // create lcd object
+    // create object
     ugfx_image_obj_t *image = m_new_obj(ugfx_image_obj_t);
     image->base.type = &ugfx_image_type;
 	

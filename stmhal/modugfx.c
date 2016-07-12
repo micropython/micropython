@@ -771,7 +771,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_box_obj, 5, 5, ugfx_box);
 
 
 
-/// \method display_image(image_object,x,y)
+/// \method next()
 ///
 STATIC mp_obj_t ugfx_image_next(mp_obj_t img_obj) {
 	if (img_obj != mp_const_none) {
@@ -787,7 +787,6 @@ STATIC mp_obj_t ugfx_image_next(mp_obj_t img_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_next_obj, ugfx_image_next);
 
 
-//TODO: combine these two functions
 
 /// \method display_image(x, y, image_object)
 ///
@@ -968,6 +967,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Label), (mp_obj_t)&ugfx_label_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Image), (mp_obj_t)&ugfx_image_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Checkbox), (mp_obj_t)&ugfx_checkbox_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Imagebox), (mp_obj_t)&ugfx_imagebox_type },
 
 
 };
