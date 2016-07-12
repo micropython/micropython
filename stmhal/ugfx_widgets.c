@@ -826,9 +826,10 @@ STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	int suc = gwinImageOpenFile(img->ghImagebox, file);
 	
 	if (suc){
-		if (cache)
-			gwinImageCache(img->ghImagebox);
-		//TODO: error handling and reporting
+		if (cache){
+			int err = gwinImageCache(img->ghImagebox);
+			print_image_error(err);
+		}
 	}
 	else{
 		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
@@ -872,8 +873,32 @@ const mp_obj_type_t ugfx_imagebox_type = {
     .locals_dict = (mp_obj_t)&ugfx_imagebox_locals_dict,
 };
 
-
-
+void print_image_error(gdispImageError err){
+	switch(err){
+		case GDISP_IMAGE_ERR_UNRECOVERABLE:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNRECOVERABLE"));
+			break;
+		case GDISP_IMAGE_ERR_BADFORMAT:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADFORMAT"));
+			break;
+		case GDISP_IMAGE_ERR_BADDATA:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADDATA"));
+			break;
+		case GDISP_IMAGE_ERR_UNSUPPORTED:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED"));
+			break;
+		case GDISP_IMAGE_ERR_UNSUPPORTED_OK:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED_OK"));
+			break;
+		case GDISP_IMAGE_ERR_NOMEMORY:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOMEMORY"));
+			break;
+		case GDISP_IMAGE_ERR_NOSUCHFILE:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOSUCHFILE"));
+			break;
+		default: break;				
+	}	
+}
 
 
 /////////////////////////////////////////////////////

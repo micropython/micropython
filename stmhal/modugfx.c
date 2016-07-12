@@ -770,7 +770,7 @@ STATIC mp_obj_t ugfx_box(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_box_obj, 5, 5, ugfx_box);
 
 
-
+/*
 /// \method next()
 ///
 STATIC mp_obj_t ugfx_image_next(mp_obj_t img_obj) {
@@ -785,7 +785,7 @@ STATIC mp_obj_t ugfx_image_next(mp_obj_t img_obj) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_next_obj, ugfx_image_next);
-
+*/
 
 
 /// \method display_image(x, y, image_object)
@@ -829,30 +829,7 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 		if (MP_OBJ_IS_STR(img_obj))
 			gdispImageClose(&imo);
 		
-		switch(err){
-			case GDISP_IMAGE_ERR_UNRECOVERABLE:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNRECOVERABLE"));
-				break;
-			case GDISP_IMAGE_ERR_BADFORMAT:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADFORMAT"));
-				break;
-			case GDISP_IMAGE_ERR_BADDATA:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADDATA"));
-				break;
-			case GDISP_IMAGE_ERR_UNSUPPORTED:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED"));
-				break;
-			case GDISP_IMAGE_ERR_UNSUPPORTED_OK:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED_OK"));
-				break;
-			case GDISP_IMAGE_ERR_NOMEMORY:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOMEMORY"));
-				break;
-			case GDISP_IMAGE_ERR_NOSUCHFILE:
-				nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOSUCHFILE"));
-				break;
-			default: break;				
-		}	
+		print_image_error(err);
 		
 	}
 
@@ -905,7 +882,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_image_next), (mp_obj_t)&ugfx_image_next_obj },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_image_next), (mp_obj_t)&ugfx_image_next_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
