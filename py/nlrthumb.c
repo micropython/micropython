@@ -29,6 +29,8 @@
 
 #if (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 
+#undef nlr_push
+
 // We only need the functions here if we are on arm/thumb, and we are not
 // using setjmp/longjmp.
 //
