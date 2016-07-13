@@ -110,6 +110,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_widget_detach_input_obj, ugfx_widget_detac
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
+#define BUTTON_RECT 0
+#define BUTTON_ROUNDED 1
+#define BUTTON_ELLIPSE 2
+#define ARROW_UP 3
+#define ARROW_DOWN 4
+#define ARROW_LEFT 5
+#define ARROW_RIGHT 6
+
 typedef struct _ugfx_button_t {
     mp_obj_base_t base;
 
@@ -117,24 +125,33 @@ typedef struct _ugfx_button_t {
 
 } ugfx_button_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, {parent})
+STATIC const mp_arg_t ugfx_button_make_new_args[] = {
+{ MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+{ MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+{ MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+{ MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+{ MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+{ MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+{ MP_QSTR_shape, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BUTTON_RECT} },
+};
+#define UGFX_BUTTON_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_button_make_new_args)
+
+/// \classmethod \constructor(x, y, a, b, text, *, parent=None, shape=ugfx.RECTANGLE)
 ///
 /// Construct an Button object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
 STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 5, 6, false);
+	mp_arg_val_t vals[UGFX_BUTTON_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_BUTTON_MAKE_NEW_NUM_ARGS, ugfx_button_make_new_args, vals);
 
+    const char *text = mp_obj_str_get_str(vals[4].u_obj);
+	int x = vals[0].u_int;
+	int y = vals[1].u_int;
+	int a = vals[2].u_int;
+	int b = vals[3].u_int;
 
-    const char *text = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
-
-	GHandle parent = NULL;
-
-
+	
     // create button object
     ugfx_button_obj_t *btn = m_new_obj(ugfx_button_obj_t);
     btn->base.type = &ugfx_button_type;
@@ -153,15 +170,39 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 	wi.g.y = y;
 	wi.g.x = x;
 	wi.text = text;
-
-	if (n_args > 5){
-		ugfx_container_obj_t *container = args[5];
-
-		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
-			parent = container->ghContainer;
-			wi.customStyle = container->style;
-		}
+	
+	switch (vals[6].u_int){
+		case BUTTON_ROUNDED:
+			wi.customDraw = gwinButtonDraw_Rounded;
+			break;
+		case BUTTON_ELLIPSE:
+			wi.customDraw = gwinButtonDraw_Ellipse;
+			break;
+		case ARROW_UP:
+			wi.customDraw = gwinButtonDraw_ArrowUp;
+			break;
+		case ARROW_DOWN:
+			wi.customDraw = gwinButtonDraw_ArrowDown;
+			break;
+		case ARROW_LEFT:
+			wi.customDraw = gwinButtonDraw_ArrowLeft;
+			break;
+		case ARROW_RIGHT:
+			wi.customDraw = gwinButtonDraw_ArrowRight;
+			break;
+		default:			
+			break;
 	}
+	
+	
+
+	GHandle parent = NULL;
+	if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
+		ugfx_container_obj_t *container = vals[5].u_obj;
+		parent = container->ghContainer;
+		wi.customStyle = container->style;
+	}
+
 	wi.g.parent = parent;
 
 	// Create the actual button
@@ -194,8 +235,13 @@ STATIC const mp_map_elem_t ugfx_button_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	//class constants
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
-
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RECT),          MP_OBJ_NEW_SMALL_INT(BUTTON_RECT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ROUNDED),       MP_OBJ_NEW_SMALL_INT(BUTTON_ROUNDED) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ELLIPSE),       MP_OBJ_NEW_SMALL_INT(BUTTON_ELLIPSE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_UP),      MP_OBJ_NEW_SMALL_INT(ARROW_UP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_DOWN),    MP_OBJ_NEW_SMALL_INT(ARROW_DOWN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_LEFT),    MP_OBJ_NEW_SMALL_INT(ARROW_LEFT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_RIGHT),   MP_OBJ_NEW_SMALL_INT(ARROW_RIGHT) },
 
 };
 
@@ -224,7 +270,7 @@ typedef struct _ugfx_textbox_t {
 
 } ugfx_textbox_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, {parent})
+/// \classmethod \constructor(x, y, a, b, maxlen, {parent})
 ///
 /// Construct an Textbox object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
@@ -730,6 +776,8 @@ const mp_obj_type_t ugfx_keyboard_type = {
 
 
 
+
+
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 /////////////////       LABEL      //////////////////
@@ -979,6 +1027,8 @@ STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 
 	// Create the actual button
 	chk->ghCheckbox = gwinCheckboxCreate(NULL, &wi);
+
+
 
 
 	return chk;
