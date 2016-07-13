@@ -238,9 +238,9 @@ static const GColorSet *getButtonColors(GWidgetObject *gw) {
 		pcol = getButtonColors(gw);
 
 		gdispGFillArea(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, gw->pstyle->background);
-		gdispGFillEllipse(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width/2-1, gw->g.height/2-1, pcol->fill);
+		gdispGFillEllipse(gw->g.display, gw->g.x+gw->g.width/2, gw->g.y+gw->g.height/2, gw->g.width/2-2, gw->g.height/2-2, pcol->fill);
 		gdispGDrawStringBox(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2, gw->text, gw->g.font, pcol->text, justifyCenter);
-		gdispGDrawEllipse(gw->g.display, gw->g.x, gw->g.y, gw->g.width/2, gw->g.height/2, pcol->edge);
+		gdispGDrawEllipse(gw->g.display, gw->g.x+gw->g.width/2, gw->g.y+gw->g.height/2, gw->g.width/2-1, gw->g.height/2-1, pcol->edge);
 	}
 #endif
 
