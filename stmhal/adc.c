@@ -147,16 +147,17 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
     adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
     adcHandle->Init.NbrOfConversion       = 1;
-    adcHandle->Init.DMAContinuousRequests = DISABLE;
-    adcHandle->Init.EOCSelection          = DISABLE;
+    adcHandle->Init.DMAContinuousRequests = DISABLE;    
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+	adcHandle->Init.EOCSelection          = DISABLE;
     adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
 #elif defined(MCU_SERIES_L4)
+	adcHandle->Init.EOCSelection          = DISABLE; //= ADC_EOC_SINGLE_CONV;
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIG_T1_CC1;
+    adcHandle->Init.ExternalTrigConv     = ADC_EXTERNALTRIG_T1_CC1;  /// = ADC_SOFTWARE_START; //= ADC_EXTERNALTRIG_T1_CC1;  ///!!?
     adcHandle->Init.LowPowerAutoWait      = DISABLE;
     adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
     adcHandle->Init.OversamplingMode      = DISABLE;
@@ -176,6 +177,8 @@ STATIC void adc_config_channel(pyb_obj_adc_t *adc_obj) {
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(MCU_SERIES_L4)
     sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+	sConfig.SingleDiff = ADC_SINGLE_ENDED;
+	sConfig.OffsetNumber = ADC_OFFSET_NONE;
 #else
     #error Unsupported processor
 #endif
@@ -188,9 +191,16 @@ STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
     uint32_t rawValue = 0;
 
     HAL_ADC_Start(adcHandle);
-    if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK && HAL_ADC_GetState(adcHandle) == HAL_ADC_STATE_EOC_REG) {
-        rawValue = HAL_ADC_GetValue(adcHandle);
+	#if defined(MCU_SERIES_L4)
+    if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK){// && HAL_ADC_GetState(adcHandle) == HAL_ADC_STATE_EOC_REG) {
+		if ((HAL_ADC_GetState(adcHandle) & HAL_ADC_STATE_REG_EOC) == HAL_ADC_STATE_REG_EOC)
+			rawValue = HAL_ADC_GetValue(adcHandle);
     }
+	#else
+	if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK && HAL_ADC_GetState(adcHandle) == HAL_ADC_STATE_EOC_REG) {
+			rawValue = HAL_ADC_GetValue(adcHandle);
+    }
+	#endif
     HAL_ADC_Stop(adcHandle);
 
     return rawValue;
