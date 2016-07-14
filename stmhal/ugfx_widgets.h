@@ -31,7 +31,9 @@ extern const mp_obj_type_t ugfx_textbox_type;
 extern const mp_obj_type_t ugfx_keyboard_type;
 extern const mp_obj_type_t ugfx_label_type;
 extern const mp_obj_type_t ugfx_image_type;
+extern const mp_obj_type_t ugfx_imagebox_type;
 
+void print_image_error(gdispImageError err);
 
 typedef struct _ugfx_image_obj_t {
     mp_obj_base_t base;
