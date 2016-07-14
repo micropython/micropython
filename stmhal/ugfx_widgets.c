@@ -1071,8 +1071,10 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	gdispImageError er = gdispImageOpenFile(&(image->thisImage), img_str);
 	
 	if (er == 0){
-		if (cache)
-			gdispImageCache	(&(image->thisImage));
+		if (cache){
+			int err = gdispImageCache(&(image->thisImage));
+			print_image_error(err);
+		}
 		//gdispImageClose(&(image->thisImage));  //TODO: delete this, currently for debugging reasons
 		//TODO: error handling and reporting
 		return image;
