@@ -369,15 +369,15 @@ STATIC mp_obj_t ugfx_write_command(mp_uint_t n_args, const mp_obj_t *args) {
 	uint16_t regw = mp_obj_get_int(args[0]);
 	uint len;
 	mp_obj_t * data_array;
-	
+
 	write_index(0, regw);
-	
+
 	if (n_args > 1){
 		if (MP_OBJ_IS_INT(args[1]))
 			write_data(0, (uint8_t)mp_obj_get_int(args[1]));
 		else
 		{
-			mp_obj_get_array(args[1], &len, &data_array);	
+			mp_obj_get_array(args[1], &len, &data_array);
 			for (int i = 0; i < len; i++){
 				write_data(0, (uint8_t)mp_obj_get_int(data_array[i]));
 			}
@@ -519,7 +519,7 @@ STATIC mp_obj_t ugfx_text(mp_uint_t n_args, const mp_obj_t *args) {
     int col = mp_obj_get_int(args[3]);
 
     gdispDrawString(x0, y0, data, gwinGetDefaultFont(), col);
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_text_obj, 4, 4, ugfx_text);
@@ -562,7 +562,7 @@ STATIC mp_obj_t ugfx_thickline(mp_uint_t n_args, const mp_obj_t *args) {
     bool rnd = (mp_obj_get_int(args[6]) != 0);
 
 	gdispDrawThickLine(x0, y0, x1, y1, col, width, rnd);
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_thickline_obj, 7, 7, ugfx_thickline);
@@ -662,15 +662,15 @@ STATIC mp_obj_t ugfx_polygon(mp_uint_t n_args, const mp_obj_t *args) {
     int x0 = mp_obj_get_int(args[0]);
     int y0 = mp_obj_get_int(args[1]);
 	int col = mp_obj_get_int(args[3]);
-	
+
 	point ar[20];
-	
+
 	mp_obj_t *mp_arr;
 	mp_obj_t *mp_arr2;
 	uint len;
 	uint len2;
 	mp_obj_get_array(args[2], &len, &mp_arr);
-	
+
 	if (len <= 20){
 		int i,j;
 		j = 0;
@@ -681,7 +681,7 @@ STATIC mp_obj_t ugfx_polygon(mp_uint_t n_args, const mp_obj_t *args) {
 				ar[j++] = p;
 			}
 		}
-		gdispDrawPoly(x0, y0, ar, j, col);	
+		gdispDrawPoly(x0, y0, ar, j, col);
 	}
 
     return mp_const_none;
@@ -702,15 +702,15 @@ STATIC mp_obj_t ugfx_fill_polygon(mp_uint_t n_args, const mp_obj_t *args) {
     int x0 = mp_obj_get_int(args[0]);
     int y0 = mp_obj_get_int(args[1]);
 	int col = mp_obj_get_int(args[3]);
-	
+
 	point ar[20];
-	
+
 	mp_obj_t *mp_arr;
 	mp_obj_t *mp_arr2;
 	uint len;
 	uint len2;
 	mp_obj_get_array(args[2], &len, &mp_arr);
-	
+
 	if (len <= 20){
 		int i,j;
 		j = 0;
@@ -721,7 +721,7 @@ STATIC mp_obj_t ugfx_fill_polygon(mp_uint_t n_args, const mp_obj_t *args) {
 				ar[j++] = p;
 			}
 		}
-		gdispFillConvexPoly(x0, y0, ar, i, col);	
+		gdispFillConvexPoly(x0, y0, ar, i, col);
 	}
 
     return mp_const_none;
@@ -811,26 +811,26 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 			iptr = &imo;
 		}
 		else if (MP_OBJ_IS_TYPE(img_obj, &ugfx_image_type))
-			iptr = &(((ugfx_image_obj_t*)img_obj)->thisImage);	
+			iptr = &(((ugfx_image_obj_t*)img_obj)->thisImage);
 		else{
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image or String type"));
 			return mp_const_none;
 		}
-		
+
 
 		coord_t	swidth, sheight;
-	  
+
 		// Get the display dimensions
 		swidth = gdispGetWidth();
-		sheight = gdispGetHeight();	 
-		
+		sheight = gdispGetHeight();
+
 		int err = gdispImageDraw(iptr, x, y, swidth, sheight, 0, 0);
-		
+
 		if (MP_OBJ_IS_STR(img_obj))
 			gdispImageClose(&imo);
-		
+
 		print_image_error(err);
-		
+
 	}
 
     return mp_const_none;
@@ -847,19 +847,19 @@ STATIC mp_obj_t ugfx_display_image_file(mp_uint_t n_args, const mp_obj_t *args) 
 	const char *file = mp_obj_str_get_data(args[2], &len);
 	int x = mp_obj_get_int(args[0]);
 	int y = mp_obj_get_int(args[1]);
-	
-	gdispImage myImage; 	
+
+	gdispImage myImage;
 	coord_t	swidth, sheight;
-  
+
 	// Get the display dimensions
 	swidth = gdispGetWidth();
 	sheight = gdispGetHeight();
- 
+
 	// Set up IO for our image
 	gdispImageOpenFile(&myImage, file);
 	gdispImageDraw(&myImage, x, y, swidth, sheight, 0, 0);
 	gdispImageClose(&myImage);
- 
+
 
     return mp_const_none;
 }
@@ -896,15 +896,15 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&ugfx_get_pixel_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_font), (mp_obj_t)&ugfx_set_default_font_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_default_style), (mp_obj_t)&ugfx_set_default_style_obj },
-      
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_print_fonts), (mp_obj_t)&ugfx_print_fonts_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_tab), (mp_obj_t)&ugfx_send_tab_obj },
-	
+
 	//static methods
 	//{ MP_OBJ_NEW_QSTR(MP_QSTR_set_default_back_color), (mp_obj_t)&ugfx_container_set_default_back_color_obj },
 	//{ MP_OBJ_NEW_QSTR(MP_QSTR_get_default_back_color), (mp_obj_t)&ugfx_container_get_default_back_color_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_html_color), (mp_obj_t)&ugfx_html_color_obj },
-	
+
     // instance methods: stream
     { MP_OBJ_NEW_QSTR(MP_QSTR_stream_start), (mp_obj_t)&ugfx_stream_start_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stream_color), (mp_obj_t)&ugfx_stream_color_obj },
@@ -928,11 +928,11 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_UP),     MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_UP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_DOWN),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_DOWN) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_JOY_CENTER), MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_CENTER) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_A),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_B),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_A) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_A),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_A) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_B),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_B) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_MENU),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_MENU) },
-	
-	
+
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&ugfx_button_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&ugfx_container_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Graph), (mp_obj_t)&ugfx_graph_type },
