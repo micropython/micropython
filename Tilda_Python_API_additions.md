@@ -50,8 +50,9 @@ nic.connect("<<SSID>>","<<PASSWORD>>")
 while (not nic.is_connected()):
     nic.update()
     pyb.delay(100)
-    s=socket.socket()
-    s.connect(socket.getaddrinfo('bowerham.net',80)[0][4])
-    s.send("GET /hello_badge HTTP/1.1\r\nHost:bowerham.net\r\n\r\n")
-    s.recv(1500)
+s=socket.socket()
+s.connect(socket.getaddrinfo('bowerham.net',80)[0][4])
+s.send("GET /hello_badge HTTP/1.1\r\nHost:bowerham.net\r\n\r\n")
+s.recv(1500)
+s.close()
 ```

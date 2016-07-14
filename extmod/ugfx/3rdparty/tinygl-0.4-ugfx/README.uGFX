@@ -1,0 +1,4 @@
+uGFX support for TinyGL, 2014 Andrew Hannam
+
+Some files have been modified to remove references to non-embedded
+functions such as fprintf, exit and assert.

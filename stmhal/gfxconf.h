@@ -49,7 +49,7 @@
 	#define CORTEX_USE_FPU                           TRUE
 //    #define GFX_CPU_NO_ALIGNMENT_FAULTS              FALSE
 //    #define GFX_CPU_ENDIAN                           GFX_CPU_ENDIAN_UNKNOWN
-    #define GFX_OS_HEAP_SIZE                         16384
+    #define GFX_OS_HEAP_SIZE                         30720 //16384
 //    #define GFX_OS_NO_INIT                           FALSE
     #define GFX_OS_INIT_NO_WARNING                   TRUE
 //    #define GFX_OS_PRE_INIT_FUNCTION                 myHardwareInitRoutine
@@ -69,7 +69,7 @@
 #define GDISP_NEED_CLIP                              TRUE
 #define GDISP_NEED_CIRCLE                            TRUE
 #define GDISP_NEED_ELLIPSE                           TRUE
-//#define GDISP_NEED_ARC                               FALSE
+#define GDISP_NEED_ARC                               TRUE
 //#define GDISP_NEED_ARCSECTORS                        FALSE
 #define GDISP_NEED_CONVEX_POLYGON                    TRUE
 //#define GDISP_NEED_SCROLL                            TRUE
@@ -104,20 +104,20 @@
 //    #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12_AA   FALSE
     #define GDISP_INCLUDE_USER_FONTS                 TRUE
 
-//#define GDISP_NEED_IMAGE                             FALSE
+#define GDISP_NEED_IMAGE                             TRUE
 //    #define GDISP_NEED_IMAGE_NATIVE                  FALSE
-//    #define GDISP_NEED_IMAGE_GIF                     FALSE
-//    #define GDISP_NEED_IMAGE_BMP                     FALSE
-//        #define GDISP_NEED_IMAGE_BMP_1               TRUE
-//        #define GDISP_NEED_IMAGE_BMP_4               TRUE
-//        #define GDISP_NEED_IMAGE_BMP_4_RLE           TRUE
-//        #define GDISP_NEED_IMAGE_BMP_8               TRUE
-//        #define GDISP_NEED_IMAGE_BMP_8_RLE           TRUE
+    #define GDISP_NEED_IMAGE_GIF                     TRUE
+    #define GDISP_NEED_IMAGE_BMP                     TRUE
+        #define GDISP_NEED_IMAGE_BMP_1               TRUE
+        #define GDISP_NEED_IMAGE_BMP_4               TRUE
+        #define GDISP_NEED_IMAGE_BMP_4_RLE           TRUE
+        #define GDISP_NEED_IMAGE_BMP_8               TRUE
+        #define GDISP_NEED_IMAGE_BMP_8_RLE           TRUE
 //        #define GDISP_NEED_IMAGE_BMP_16              TRUE
-//        #define GDISP_NEED_IMAGE_BMP_24              TRUE
+        #define GDISP_NEED_IMAGE_BMP_24              TRUE
 //        #define GDISP_NEED_IMAGE_BMP_32              TRUE
 //    #define GDISP_NEED_IMAGE_JPG                     FALSE
-//    #define GDISP_NEED_IMAGE_PNG                     FALSE
+//    #define GDISP_NEED_IMAGE_PNG                     TRUE
 //        #define GDISP_NEED_IMAGE_PNG_INTERLACED      FALSE
 //        #define GDISP_NEED_IMAGE_PNG_TRANSPARENCY    TRUE
 //        #define GDISP_NEED_IMAGE_PNG_BACKGROUND      TRUE
@@ -203,8 +203,8 @@
 //        #define GWIN_SLIDER_DEAD_BAND                5
 //        #define GWIN_SLIDER_TOGGLE_INC               20
 //    #define GWIN_NEED_CHECKBOX                       TRUE
-//    #define GWIN_NEED_IMAGE                          TRUE
-//        #define GWIN_NEED_IMAGE_ANIMATION            TRUE
+    #define GWIN_NEED_IMAGE                          TRUE
+        #define GWIN_NEED_IMAGE_ANIMATION            TRUE
 //    #define GWIN_NEED_RADIO                          TRUE
     #define GWIN_NEED_LIST                           TRUE
 //        #define GWIN_NEED_LIST_IMAGES                TRUE
@@ -213,7 +213,7 @@
     #define GWIN_NEED_KEYBOARD                       TRUE
 //        #define GWIN_KEYBOARD_DEFAULT_LAYOUT         VirtualKeyboard_English1
 //        #define GWIN_NEED_KEYBOARD_ENGLISH1          TRUE
-//    #define GWIN_NEED_TEXTEDIT                       TRUE
+    #define GWIN_NEED_TEXTEDIT                       TRUE
 //    #define GWIN_FLAT_STYLING                        TRUE
 //    #define GWIN_WIDGET_TAGS                         TRUE
 
@@ -288,26 +288,27 @@
 ///////////////////////////////////////////////////////////////////////////
 // GFILE                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-//#define GFX_USE_GFILE                                FALSE
+#define GFX_USE_GFILE                                TRUE
 
 //#define GFILE_NEED_PRINTG                            FALSE
 //#define GFILE_NEED_SCANG                             FALSE
 //#define GFILE_NEED_STRINGS                           FALSE
 //#define GFILE_NEED_FILELISTS                         FALSE
 //#define GFILE_NEED_STDIO                             FALSE
-//#define GFILE_NEED_NOAUTOMOUNT                       FALSE
+#define GFILE_NEED_NOAUTOMOUNT                       TRUE
 //#define GFILE_NEED_NOAUTOSYNC                        FALSE
 
 //#define GFILE_NEED_MEMFS                             FALSE
 //#define GFILE_NEED_ROMFS                             FALSE
 //#define GFILE_NEED_RAMFS                             FALSE
-//#define GFILE_NEED_FATFS                             FALSE
+#define GFILE_NEED_FATFS                             TRUE
+#define GFILE_FATFS_EXTERNAL_LIB                     TRUE
 //#define GFILE_NEED_NATIVEFS                          FALSE
 //#define GFILE_NEED_CHBIOSFS                          FALSE
 
 //#define GFILE_ALLOW_FLOATS                           FALSE
 //#define GFILE_ALLOW_DEVICESPECIFIC                   FALSE
-//#define GFILE_MAX_GFILES                             3
+#define GFILE_MAX_GFILES                             10
 
 ///////////////////////////////////////////////////////////////////////////
 // GADC                                                                  //

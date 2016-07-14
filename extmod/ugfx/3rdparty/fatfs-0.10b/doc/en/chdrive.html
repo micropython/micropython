@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/chdrive.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_chdrive</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_chdrive</h2>
+<p>The f_chdrive function changes the current drive.</p>
+<pre>
+FRESULT f_chdrive (
+  const TCHAR* <span class="arg">path</span>  <span class="c">/* [IN] Logical drive number */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>Specifies the <a href="filename.html">logical drive number</a> to be set as the current drive.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_chdrive()</tt> function changes the current drive. The initial value of the current drive number is 0. Note that the current drive is retained in a static variable so that it also affects other tasks that using the file functions.</p>
+</div>
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_RPATH >= 1</tt> and <tt>_VOLUMES >= 2</tt>.</p>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="chdir.html">f_chdir</a>, <a href="getcwd.html">f_getcwd</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

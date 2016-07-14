@@ -1,0 +1,162 @@
+		             uGFX coding style
+
+
+This is a short document describing the preferred coding style for uGFX.
+
+	 	Chapter 1: Indentation
+
+Tabs are 4 characters, and thus indentations are also 4 characters. 
+
+Rationale: We like 4 character tabs much better than 8 character tabs.
+It is more readable.
+
+		Chapter 2: Placing Braces
+
+The preferred way, as shown to us by the prophets Kernighan and Ritchie,
+is to put the opening brace last on the line, and put the closing brace first,
+thusly:
+
+	if (x is true) {
+		we do y
+	}
+
+However, there is one special case, namely functions: they have the
+opening brace at the beginning of the next line, thus:
+
+	int function(int x)
+	{
+		body of function
+	}
+
+We will however accept braces in the general block style for functions
+but not the other way around. General blocks MUST have their opening brace
+on the same line as the conditional statement.
+
+Note that the closing brace is empty on a line of its own, _except_ in
+the cases where it is followed by a continuation of the same statement,
+ie a "while" in a do-statement or an "else" in an if-statement, like
+this:
+
+	do {
+		body of do-loop
+	} while (condition);
+
+and
+
+	if (x == y) {
+		..
+	} else if (x > y) {
+		...
+	} else {
+		....
+	}
+
+Note that closing brace is indented to the level of the start of the block.
+Structure definitions are an optional exception. Both of the below style are
+acceptable:
+
+	typedef struct {			
+		int	a;
+		...
+		} mytype;
+
+	struct mystruct {
+		int	a;
+		...
+	}
+
+		Chapter 3: Naming
+
+C is a Spartan language, and so should your naming be.  Unlike Modula-2
+and Pascal programmers, C programmers do not use cute names like
+ThisVariableIsATemporaryCounter.  A C programmer would call that
+variable "tmp", which is much easier to write, and a lot less
+difficult to understand. 
+
+HOWEVER, while long mixed-case names are frowned upon, descriptive names for
+global variables are a must.  To call a global function "foo" is a
+shooting offense. 
+
+GLOBAL variables (to be used only if you _really_ need them) need to
+have descriptive names, as do global functions.  If you have a function
+that counts the number of active users, you should call that
+"countActiveUsers()" or similar, you should _not_ call it "cntusr()".
+
+WHERE long names are required as described above, we prefer the use of
+capitalisation on subsequent words (but not the first) rather than underscores
+to seperate the words. For example "countActiveUsers()" is preferred to
+"count_active_users()" as it is at least as readable and is shorter.
+
+Encoding the type of a function into the name (so-called Hungarian
+notation) is brain damaged - the compiler knows the types anyway and can
+check those, and it only confuses the programmer. 
+
+LOCAL variable names should be short, and to the point.  If you have
+some random integer loop counter, it should probably be called "i". 
+Calling it "loopCounter" is non-productive, if there is no chance of it
+being mis-understood.  Similarly, "tmp" can be just about any type of
+variable that is used to hold a temporary value. 
+
+		Chapter 4: Functions
+
+Functions should be short and sweet, and do just one thing.
+
+The maximum length of a function is inversely proportional to the
+complexity and indentation level of that function.  So, if you have a
+conceptually simple function that is just one long (but simple)
+case-statement, where you have to do lots of small things for a lot of
+different cases, it's OK to have a longer function. 
+
+However, if you have a complex function, and you suspect that a
+less-than-gifted first-year high-school student might not even
+understand what the function is all about, you should adhere to the
+maximum limits all the more closely.  Use helper functions with
+descriptive names (you can ask the compiler to in-line them if you think
+it's performance-critical, and it will probably do a better job of it
+that you would have done). 
+
+Another measure of the function is the number of local variables.  They
+shouldn't exceed 5-10, or you're possibly doing something wrong. Re-think the
+function, and split it into smaller pieces.  A human brain can
+generally easily keep track of about 7 different things, anything more
+and it gets confused. You need to understand what you did 2 weeks from now.
+
+Because uGFX is intended for embedded platforms there are other considerations
+that may cause exceptions or emphasise the above. For example, stack space is
+a premium. This means that the number of local variables should be minimised as
+should the number of parameters. Passing through multiple levels of functions
+with lots of parameters is very bad indeed and this can override the desire to
+keep functions short and sweet. Clarity however is still essential.
+
+
+		Chapter 5: Commenting
+
+Comments are good, but there is also a danger of over-commenting.  NEVER
+try to explain HOW your code works in a comment: it's much better to
+write the code so that the _working_ is obvious, and it's a waste of
+time to explain badly written code. Generally, you want your comments to tell
+WHAT your code does, not HOW.
+
+We use doxygen to document the system. That means that most public functions
+are documented in the header defintion file. We do not put doxygen comments in
+the source file itself.
+
+Within the source file, comments should be used to seperate blocks of functions
+or definitions within the file. This is to provide clarity to the structure of
+the source file itself. An example could be:
+	/***************************
+	 * Drawing Functions
+	 ***************************/
+
+Single line comments using "//" to start the comment should be used for just that
+purpose, to assist in the understanding of that single line. Mutliple single line
+comments should never be used to create a block comment. For example,
+	// This is a very long
+	// comment spanning several
+	// lines
+is a very bad use of comments.
+ 
+Comments within function bodies should be small comments to note or warn
+about something particularly clever (or ugly), but try to avoid excess.
+Instead, put the comments at the head of a block of code to explain the block
+rather than a comment on each line.

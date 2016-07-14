@@ -9,7 +9,7 @@
 *.dis
 *.exe
 
-# Packages 
+# Packages
 ############
 
 # Logs and Databases
@@ -23,7 +23,7 @@
 # Build directory
 ######################
 build/
-ugfx/
+stmhal/extmod/ugfx
 
 # Test failure outputs
 ######################

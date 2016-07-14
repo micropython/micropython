@@ -1,0 +1,13 @@
+docs/html
+build
+.build
+.dep
+.cproject
+.project
+*.sublime*
+*.stackdump
+*.lst
+*.o
+*.map
+src/gdisp/fonts/*.dat
+docs/html.zip

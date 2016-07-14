@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/rename.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_rename</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_rename</h2>
+<p>ファイルまたはサブ・ディレクトリの名前の変更または移動します。</p>
+<pre>
+FRESULT f_rename (
+  const TCHAR* <span class="arg">old_name</span>, <span class="c">/* [IN] 古いオブジェクト名 */</span>
+  const TCHAR* <span class="arg">new_name</span>  <span class="c">/* [IN] 新しいオブジェクト名 */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>old_name</dt>
+<dd>変更対象のファイルまたはサブ・ディレクトリの<a href="filename.html">パス名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。</dd>
+<dt>new_name</dt>
+<dd>新しいパス名を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。既に存在するオブジェクトと同じ名前は使えません。また、ドライブ番号は指定しても無視され、<tt class="arg">old_name</tt>で決められた論理ドライブ上のオブジェクトとして扱われます。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ok">FR_NO_FILE</a>,
+<a href="rc.html#np">FR_NO_PATH</a>,
+<a href="rc.html#in">FR_INVALID_NAME</a>,
+<a href="rc.html#ex">FR_EXIST</a>,
+<a href="rc.html#wp">FR_WRITE_PROTECTED</a>,
+<a href="rc.html#id">FR_INVALID_DRIVE</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ns">FR_NO_FILESYSTEM</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#lo">FR_LOCKED</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p>ファイルまたはサブ・ディレクトリの名前を変更します。また、同時に別のディレクトリへの移動も可能ですが、異なるドライブへの移動はできません。<em>開かれているオブジェクトに対して使用してはなりません</em>。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_FS_MINIMIZE == 0</tt>のときに使用可能です。</p>
+</div>
+
+
+<div class="para use">
+<h4>使用例</h4>
+<pre>
+    <span class="c">/* ファイルまたはサブディレクトリの名前を変更する */</span>
+    f_rename("oldname.txt", "newname.txt");
+
+    <span class="c">/* ファイルまたはサブディレクトリの名前の変更と別のディレクトリへの移動 */</span>
+    f_rename("oldname.txt", "dir1/newname.txt");
+</pre>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

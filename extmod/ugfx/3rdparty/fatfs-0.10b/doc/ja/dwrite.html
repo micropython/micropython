@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/dwrite.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_write</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_write</h2>
+<p>ストレージ・デバイスにデータを書き込みます。</p>
+<pre>
+DRESULT disk_write (
+  BYTE <span class="arg">pdrv</span>,        <span class="c">/* [IN] 物理ドライブ番号 */</span>
+  const BYTE* <span class="arg">buff</span>, <span class="c">/* [IN] 書き込むデータへのポインタ */</span>
+  DWORD <span class="arg">sector</span>,     <span class="c">/* [IN] 書き込み開始セクタ番号 */</span>
+  UINT <span class="arg">count</span>        <span class="c">/* [IN] 書き込むセクタ数 */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>対象のデバイスを示す物理ドライブ番号(0-9)が指定されます。</dd>
+<dt>buff</dt>
+<dd>ストレージ・デバイスに書き込むセクタ・データが格納された<em>バイト配列</em>が指定されます。バイト数は、セクタ・サイズ*<tt class="arg">count</tt>となります。</dd>
+<dt>sector</dt>
+<dd>書き込みを開始するセクタ番号。LBAで指定されます。</dd>
+<dt>count</dt>
+<dd>書き込むセクタ数。FatFsからの呼び出しでは1～128の範囲に限られます。</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>戻り値</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>正常終了。</dd>
+<dt>RES_ERROR</dt>
+<dd>書き込み中にエラーが発生し、その回復にも失敗した。</dd>
+<dt>RES_WRPRT</dt>
+<dd>メディアが書き込み禁止状態。</dd>
+<dt>RES_PARERR</dt>
+<dd>パラメータが不正。</dd>
+<dt>RES_NOTRDY</dt>
+<dd>デバイスが動作可能状態ではない（初期化されていない）。</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>解説</h4>
+<p><tt class="arg">buff</tt>に指定されるアドレスは<em>常にワード・アライメントされているとは限りません</em>。詳細は、<a href="dread.html"><tt>disk_read()</tt></a>の解説を参照してください。</p>
+<p>一般的に、複数セクタの転送要求は、デバイスに対して可能な限りマルチ・セクタ転送しなければなりません。複数のシングル・セクタ書き込みに分解された場合、スループットが著しく低下することがあります。</p>
+<p>FatFsはディスク関数が遅延書き込み機能を持つことも想定しています。この関数から戻るとき、デバイスが書き込み中とかキャッシュに書き込まれただけなど、必ずしもデータの書き込みが完了している必要はありません。ただし、<tt class="arg">buff</tt>のデータは、この関数から戻ると無効となります。書き込み完了の要求は、<tt><a href="dioctl.html">disk_ioctl()</a></tt>の<tt>CTRL_SYNC</tt>コマンドによって行われます。このような遅延書き込み機能が実装された場合、スループットをさらに向上させることができます。</p>
+<p><em>アプリケーションからはこの関数を呼び出してはなりません。さもないと、FATボリュームが破壊される可能性があります。</em></p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p>リード・オンリー構成(<tt>_FS_READONLY == 1</tt>)ではこの関数は必要とされません。</p>
+</div>
+
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

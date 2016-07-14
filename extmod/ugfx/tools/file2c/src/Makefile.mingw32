@@ -1,0 +1,10 @@
+
+CC = i686-pc-mingw32-gcc
+CFLAGS = -Wall -O2
+
+all:
+	$(CC) $(CFLAGS) -o file2c.exe file2c.c
+
+clean:
+	@rm file2c.exe
+

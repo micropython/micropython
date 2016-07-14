@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_j.html">
+<link rel="alternate" hreflang="en" title="English" href="../en/mkfs.html">
+<link rel="stylesheet" href="../css_j.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_mkfs</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_mkfs</h2>
+<p>論理ドライブ上にFATボリュームを作成(フォーマット)します。</p>
+<pre>
+FRESULT f_mkfs (
+  const TCHAR* <span class="arg">path</span>, <span class="c">/* [IN] 論理ドライブ番号 */</span>
+  BYTE  <span class="arg">sfd</span>,         <span class="c">/* [IN] 区画作成方法 */</span>
+  UINT  <span class="arg">au</span>           <span class="c">/* [IN] クラス・タサイズ */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>引数</h4>
+<dl class="par">
+<dt>path</dt>
+<dd>フォーマット対象の論理ドライブを示す<a href="filename.html">パス名</a>を示すヌル文字<tt>'\0'</tt>終端の文字列へのポインタを指定します。ドライブ番号を含まない場合は、カレント・ドライブを意味します。</dd>
+<dt>sfd</dt>
+<dd>パーテーション形式。(0(FDISK) または 1(SFD))</dd>
+<dt>au</dt>
+<dd>クラスタ・サイズをバイト単位で指定します。値は対象ドライブのセクタ・サイズのn倍(n = 1～128で、2の累乗)でなければなりません。0などの無効値を指定した場合、ボリュームのサイズに応じたデフォルトのクラスタ・サイズが選択されます。</dd>
+</dl>
+</div>
+
+<div class="para ret">
+<h4>戻り値</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#ne">FR_NOT_ENABLED</a>,
+<a href="rc.html#ma">FR_MKFS_ABORTED</a>,
+<a href="rc.html#ip">FR_INVALID_PARAMETER</a>
+</p>
+</div>
+
+<div class="para desc">
+<h4>説明</h4>
+<p>物理ドライブ上にFATボリュームを作成します。FDISK形式が指定された場合は、物理ドライブ全体を占める基本区画(パーテーション)が作成され、その中にFATボリュームが作成されます。SFD形式では、FATボリュームが物理ドライブの先頭セクタからベタで作成されます。</p>
+<p>フォーマットする論理ドライブがマルチ・パーテーション機能(<tt>_MULTI_PARTITION</tt>)によって特定の区画(1～4)に結び付けられている場合は、その区画の中にFATボリュームが作成されます。<tt class="arg">sfd</tt>は無視され、また対応する物理ドライブはこれに先立ち、<tt>f_fdisk()</tt>または他のツールで適切に区画設定されている必要があります。</p>
+<p>パーテーション形式には、FDISK形式とSFD形式の二通りあります。FDISK形式は、ハードディスク、MMC、SDC、CFC、U Diskなどで標準的に使用されます。FDISK形式では一台の物理ドライブ上に一つまたは複数の区画を作成することができます。区画管理情報はMBR(物理ドライブの先頭セクタ)に記録されます。SFD形式は単に何の分割も行わない形式で、ボリュームは物理ドライブの先頭セクタから開始します。SFD形式は、フロッピー・ディスク、マイクロドライブ、光学ディスク、およびその他スーパー・フロッピー・メディアで標準的に使用されています。</p>
+<p>FATタイプ(FAT12/FAT16/FAT32)は、そのボリューム上の<em>クラスタ数によってのみ決定</em>される決まり[FAT仕様書より]になっていて、それ以外の要因はありません。したがって、どのFATタイプになるかはボリューム・サイズとクラスタ・サイズに依存します。クラスタ・サイズは大きくするほど性能が上がります。</p>
+<p>クラスタ数がFATタイプの境界に近くなるときは、<tt>FR_MKFS_ABORTED</tt>で関数が失敗する可能性があります。</p>
+</div>
+
+
+<div class="para comp">
+<h4>対応情報</h4>
+<p><tt>_FS_READONLY == 0</tt>で、且つ<tt>_USE_MKFS == 1</tt>のとき使用可能です。</p>
+</div>
+
+
+<div class="para ref">
+<h4>参照</h4>
+<p><tt><a href="filename.html#vol">ボリューム管理</a>, <a href="fdisk.html">f_fdisk</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_j.html">戻る</a></p>
+</body>
+</html>

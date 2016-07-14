@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - disk_initialize</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>disk_initialize</h2>
+<p>The disk_initialize function initializes the disk drive.</p>
+<pre>
+DSTATUS disk_initialize (void)
+</pre>
+</div>
+
+<div class="para">
+<h4>Return Values</h4>
+<p>The disk status is returned in combination of following flags.</p>
+<dl class="ret">
+<dt>STA_NOINIT</dt>
+<dd>Indicates that the disk drive has not been initialized. This flag is set on: system reset, disk removal and disk_initialize function failed, and cleared on: disk_initialize function succeeded.</dd>
+<dt>STA_NODISK</dt>
+<dd>Indicates that no medium in the drive. This is always cleared on fixed disk drive. This flag is not referred by Petit FatFs.</dd>
+</dl>
+</div>
+
+<div class="para">
+<h4>Description</h4>
+<p>The disk_initialize function initializes the storage device. If the function succeeded, <tt>STA_NOINIT</tt> flag in the return value is cleared.</p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

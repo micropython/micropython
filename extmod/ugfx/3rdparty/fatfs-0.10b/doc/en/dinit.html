@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dinit.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_initialize</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_initialize</h2>
+<p>The disk_initialize function initializes the storage device.</p>
+<pre>
+DSTATUS disk_initialize (
+  BYTE <span class="arg">pdrv</span>           <span class="c">/* [IN] Physical drive number */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameter</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Physical drive number to identify the target device.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>This function returns a disk status as the result. For details of the disk status, refer to the <a href="dstat.html">disk_status()</a> function.</p>
+</div>
+
+<div class="para desc">
+<h4>Description</h4>
+<p>This function initializes a storage device and put it ready to generic read/write data. When the function succeeded, <tt>STA_NOINIT</tt> flag in the return value is cleared.</p>
+<p><em>Application program MUST NOT call this function, or FAT structure on the volume can be broken. To re-initialize the file system, use <tt>f_mount()</tt> function instead.</em> This function is called at volume mount process by FatFs module to manage the media change.</p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="Petit FatFs" href="../00index_p.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<link rel="stylesheet" href="../css_p.css" type="text/css" media="screen" title="ELM Default">
+<title>Petit FatFs - pf_readdir</title>
+</head>
+
+<body>
+
+<div class="para">
+<h2>pf_readdir</h2>
+<p>The pf_readdir function reads directory entries.</p>
+<pre>
+FRESULT pf_readdir (
+  DIR* <span class="arg">dp</span>,      <span class="c">/* [IN]  Pointer to the open directory object */</span>
+  FILINFO* <span class="arg">fno</span>  <span class="c">/* [OUT] Pointer to the file information structure */</span>
+);
+</pre>
+</div>
+
+<div class="para">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>dp</dt>
+<dd>Pointer to the open directory object.</dd>
+<dt>fno</dt>
+<dd>Pointer to the file information structure to store the read item.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>FR_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>FR_DISK_ERR</dt>
+<dd>The function failed due to an error in the disk function, a wrong FAT structure or an internal error.</dd>
+<dt>FR_NOT_OPENED</dt>
+<dd>The directory object has not been opened.</dd>
+</dl>
+</div>
+
+
+<div class="para">
+<h4>Description</h4>
+<p>The <tt>pf_readdir()</tt> function reads directory entries in sequence. All items in the directory can be read by calling this function repeatedly. When all directory entries have been read and no item to read, the function returns a null string into member <tt>f_name[]</tt> in the file information structure without error. When a null pointer is given to the <tt class="arg">fno</tt>, the read index of the directory object will be rewinded.</p>
+</div>
+
+
+<div class="para">
+<h4>Sample Code</h4>
+<pre>
+FRESULT scan_files (char* path)
+{
+    FRESULT res;
+    FILINFO fno;
+    DIR dir;
+    int i;
+
+
+    res = pf_opendir(&amp;dir, path);
+    if (res == FR_OK) {
+        i = strlen(path);
+        for (;;) {
+            res = pf_readdir(&amp;dir, &amp;fno);
+            if (res != FR_OK || fno.fname[0] == 0) break;
+            if (fno.fattrib &amp; AM_DIR) {
+                sprintf(&amp;path[i], "/%s", fno.fname);
+                res = scan_files(path);
+                if (res != FR_OK) break;
+                path[i] = 0;
+            } else {
+                printf("%s/%s\n", path, fno.fname);
+            }
+        }
+    }
+
+    return res;
+}
+</pre>
+</div>
+
+<div class="para">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_USE_DIR == 1</tt>.</p>
+</div>
+
+<div class="para">
+<h4>References</h4>
+<p><tt><a href="opendir.html">pf_opendir</a>, <a href="sfileinfo.html">FILINFO</a>, <a href="sdir.html">DIR</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_p.html">Return</a></p>
+</body>
+</html>

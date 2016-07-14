@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/dwrite.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - disk_write</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>disk_write</h2>
+<p>The disk_write writes sector(s) to the storage device.</p>
+<pre>
+DRESULT disk_write (
+  BYTE <span class="arg">drv</span>,         <span class="c">/* [IN] Physical drive number */</span>
+  const BYTE* <span class="arg">buff</span>, <span class="c">/* [IN] Pointer to the data to be written */</span>
+  DWORD <span class="arg">sector</span>,     <span class="c">/* [IN] Sector number to write from */</span>
+  UINT <span class="arg">count</span>        <span class="c">/* [IN] Number of sectors to write */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>pdrv</dt>
+<dd>Physical drive number to identify the target device.</dd>
+<dt>buff</dt>
+<dd>Pointer to the <em>byte array</em> to be written. The size of data to be written is sector size * <tt class="arg">count</tt> bytes.</dd>
+<dt>sector</dt>
+<dd>Start sector number in logical block address (LBA).</dd>
+<dt>count</dt>
+<dd>Number of sectors to write. FatFs specifis it in range of from 1 to 128.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>RES_OK (0)</dt>
+<dd>The function succeeded.</dd>
+<dt>RES_ERROR</dt>
+<dd>Any hard error occured during the write operation and could not recover it.</dd>
+<dt>RES_WRPRT</dt>
+<dd>The medium is write protected.</dd>
+<dt>RES_PARERR</dt>
+<dd>Invalid parameter.</dd>
+<dt>RES_NOTRDY</dt>
+<dd>The device has not been initialized.</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The specified memory address is not that always aligned to word boundary because the type of pointer is defined as <tt>BYTE*</tt>. For more information, refer to the description of <a href="dread.html"><tt>disk_read()</tt></a> function.</p>
+<p>Generally, a multiple sector transfer request must not be split into single sector transactions to the storage device, or you will never get good write throughput.</p>
+<p>FatFs expects delayed write feature of the disk functions. The write operation to the media need not to be completed due to write operation is in progress or only stored it into the cache buffer when return from this function. But data on the <tt class="arg">buff</tt> is invalid after return from this function. The write completion request is done by <tt>CTRL_SYNC</tt> command of <tt><a href="dioctl.html">disk_ioctl()</a></tt> function. Therefore, if delayed write feature is implemented, the write throughput may be improved.</p>
+<p><em>Application program MUST NOT call this function, or FAT structure on the volume can be collapsed.</em></p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>This function is not needed when <tt>_FS_READONLY == 1</tt>.</p>
+</div>
+
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>

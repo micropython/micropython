@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="FatFs" href="../00index_e.html">
+<link rel="alternate" hreflang="ja" title="Japanese" href="../ja/readdir.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>FatFs - f_readdir</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>f_readdir</h2>
+<p>The f_readdir function reads directory entries.</p>
+<pre>
+FRESULT f_readdir (
+  DIR* <span class="arg">dp</span>,      <span class="c">/* [IN] Directory object */</span>
+  FILINFO* <span class="arg">fno</span>  <span class="c">/* [OUT] File information structure */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>dp</dt>
+<dd>Pointer to the open directory object.</dd>
+<dt>fno</dt>
+<dd>Pointer to the file information structure to store the read item.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>
+<a href="rc.html#ok">FR_OK</a>,
+<a href="rc.html#de">FR_DISK_ERR</a>,
+<a href="rc.html#ie">FR_INT_ERR</a>,
+<a href="rc.html#nr">FR_NOT_READY</a>,
+<a href="rc.html#io">FR_INVALID_OBJECT</a>,
+<a href="rc.html#tm">FR_TIMEOUT</a>,
+<a href="rc.html#nc">FR_NOT_ENOUGH_CORE</a>
+</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>f_readdir()</tt> function reads directory items, file and directory, in sequence. All items in the directory can be read by calling <tt>f_readdir()</tt> function repeatedly. When relative path feature is enabled (<tt>_FS_RPATH &gt;= 1</tt>), dot entries ("." and "..") are not filtered out and they will appear in the read items. When all directory items have been read and no item to read, a null string is returned into the <tt>fname[]</tt> without any error. When a null pointer is given to the <tt class="arg">fno</tt>, the read index of the directory object is rewinded.</p>
+<p>When LFN feature is enabled, <tt>lfname</tt> and <tt>lfsize</tt> in the file information structure must be initialized with valid value prior to use it. The <tt>lfname</tt> is a pointer to the LFN read buffer. The <tt>lfsize</tt> is size of the LFN read buffer in unit of <tt>TCHAR</tt>. If the LFN is not needed, set a null pointer to the <tt>lfname</tt> and the LFN is not returned. A null string will be returned into the LFN read buffer in case of following conditions.</p>
+<ul>
+<li>The directory item has no LFN information.</li>
+<li>Either the size of read buffer or LFN working buffer is insufficient for the LFN.</li>
+<li>The LFN contains any Unicode character that cannot be converted to OEM code. (not the case at Unicode API cfg.)</li>
+</ul>
+<p>When the directory item has no LFN information, lower case characters can be contained in the <tt>fname[]</tt>.</p>
+</div>
+
+
+<div class="para comp">
+<h4>QuickInfo</h4>
+<p>Available when <tt>_FS_MINIMIZE &lt;= 1</tt>.</p>
+</div>
+
+
+<div class="para use">
+<h4>Sample Code</h4>
+<pre>
+FRESULT scan_files (
+    char* path        <span class="c">/* Start node to be scanned (also used as work area) */</span>
+)
+{
+    FRESULT res;
+    FILINFO fno;
+    DIR dir;
+    int i;
+    char *fn;   <span class="c">/* This function is assuming non-Unicode cfg. */</span>
+<span class="k">#if</span> _USE_LFN
+    static char lfn[_MAX_LFN + 1];   <span class="c">/* Buffer to store the LFN */</span>
+    fno.lfname = lfn;
+    fno.lfsize = sizeof lfn;
+<span class="k">#endif</span>
+
+
+    res = f_opendir(&amp;dir, path);                       <span class="c">/* Open the directory */</span>
+    if (res == FR_OK) {
+        i = strlen(path);
+        for (;;) {
+            res = f_readdir(&amp;dir, &amp;fno);                   <span class="c">/* Read a directory item */</span>
+            if (res != FR_OK || fno.fname[0] == 0) break;  <span class="c">/* Break on error or end of dir */</span>
+            if (fno.fname[0] == '.') continue;             <span class="c">/* Ignore dot entry */</span>
+<span class="k">#if</span> _USE_LFN
+            fn = *fno.lfname ? fno.lfname : fno.fname;
+<span class="k">#else</span>
+            fn = fno.fname;
+<span class="k">#endif</span>
+            if (fno.fattrib &amp; AM_DIR) {                    <span class="c">/* It is a directory */</span>
+                sprintf(&amp;path[i], "/%s", fn);
+                res = scan_files(path);
+                if (res != FR_OK) break;
+                path[i] = 0;
+            } else {                                       <span class="c">/* It is a file. */</span>
+                printf("%s/%s\n", path, fn);
+            }
+        }
+        f_closedir(&amp;dir)
+    }
+
+    return res;
+}
+</pre>
+</div>
+
+
+<div class="para ref">
+<h4>See Also</h4>
+<p><tt><a href="opendir.html">f_opendir</a>, <a href="closedir.html">f_closedir</a>, <a href="stat.html">f_stat</a>, <a href="sfileinfo.html">FILINFO</a>, <a href="sdir.html">DIR</a></tt></p>
+</div>
+
+<p class="foot"><a href="../00index_e.html">Return</a></p>
+</body>
+</html>
