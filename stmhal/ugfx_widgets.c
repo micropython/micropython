@@ -59,9 +59,9 @@ static GHandle get_ugfx_handle(mp_obj_t in);
 ///
 /// Gets or sets widget text
 STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
-	
+
 	GHandle gh = get_ugfx_handle(args[0]);
-	
+
 	if (n_args == 1){
 		const char * s = gwinGetText(gh);
 		return mp_obj_new_str(s, strlen(s), TRUE);
@@ -72,7 +72,7 @@ STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
 		gwinSetText(gh, s, TRUE);
 		return mp_const_none;
 	}
-	   
+
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_text_obj, 1, 2, ugfx_widget_text);
 
@@ -151,7 +151,7 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 	int a = vals[2].u_int;
 	int b = vals[3].u_int;
 
-	
+
     // create button object
     ugfx_button_obj_t *btn = m_new_obj(ugfx_button_obj_t);
     btn->base.type = &ugfx_button_type;
@@ -170,7 +170,7 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 	wi.g.y = y;
 	wi.g.x = x;
 	wi.text = text;
-	
+
 	switch (vals[6].u_int){
 		case BUTTON_ROUNDED:
 			wi.customDraw = gwinButtonDraw_Rounded;
@@ -190,11 +190,11 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 		case ARROW_RIGHT:
 			wi.customDraw = gwinButtonDraw_ArrowRight;
 			break;
-		default:			
+		default:
 			break;
 	}
-	
-	
+
+
 
 	GHandle parent = NULL;
 	if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
@@ -451,6 +451,28 @@ STATIC mp_obj_t ugfx_list_destroy(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_destroy_obj, ugfx_list_destroy);
 
 
+/// \method enable_draw()
+///
+/// The list is redrawn as required
+STATIC mp_obj_t ugfx_list_enable_draw(mp_obj_t self_in) {
+    ugfx_list_obj_t *self = self_in;
+	gwinListEnableRender(self->ghList, TRUE);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_enable_draw_obj, ugfx_list_enable_draw);
+/// \method disable_draw()
+///
+/// The list is not drawn, so it can be updated while keeping the display static
+STATIC mp_obj_t ugfx_list_disable_draw(mp_obj_t self_in) {
+    ugfx_list_obj_t *self = self_in;
+	gwinListEnableRender(self->ghList, FALSE);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_list_disable_draw_obj, ugfx_list_disable_draw);
+
+
+
+
 /// \method add_item(input)
 ///
 STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
@@ -464,6 +486,30 @@ STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_list_add_item_obj, ugfx_list_add_item);
 
+
+
+/// \method assign_image(index, img_obj)
+///
+STATIC mp_obj_t ugfx_list_assign_image(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t image_in) {
+    ugfx_list_obj_t *self = self_in;
+
+	int i = mp_obj_get_int(index_in);
+	if (image_in == mp_const_none){
+		gwinListItemSetImage(self->ghList,i,0);
+	}
+	else if (!MP_OBJ_IS_TYPE(image_in, &ugfx_image_type)) {
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "img argument needs to be be a Image type or NULL"));
+		return mp_const_none;
+	}
+	else
+	{
+		ugfx_image_obj_t *image = image_in;
+		gwinListItemSetImage(self->ghList,i,&(image->thisImage));
+	}
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_list_assign_image_obj, ugfx_list_assign_image);
 
 /// \method remove_item(index)
 ///
@@ -523,12 +569,15 @@ STATIC const mp_map_elem_t ugfx_list_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_add_item), (mp_obj_t)&ugfx_list_add_item_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_assign_image), (mp_obj_t)&ugfx_list_assign_image_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remove_item), (mp_obj_t)&ugfx_list_remove_item_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_selected_text), (mp_obj_t)&ugfx_list_get_selected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_selected_index), (mp_obj_t)&ugfx_list_get_selected_index_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_selected_index), (mp_obj_t)&ugfx_list_set_selected_index_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_count), (mp_obj_t)&ugfx_list_count_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_draw), (mp_obj_t)&ugfx_list_disable_draw_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_draw), (mp_obj_t)&ugfx_list_enable_draw_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_ROLES),        MP_OBJ_NEW_SMALL_INT(2) },
@@ -696,9 +745,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_clear_keyboard_callback_obj, ugfx_clear_ke
 ///
 STATIC mp_obj_t ugfx_keyboard_selected_key(mp_obj_t self_in) {
     ugfx_keyboard_obj_t *self = self_in;
-	const char utf8_str[9];	
+	const char utf8_str[9];
 	uint8_t len = gwinKeyboardGetSelected(self->ghKeyboard, (uint8_t*)utf8_str);
-//	utf8_str[len] = 0;	
+//	utf8_str[len] = 0;
     return mp_obj_new_str(utf8_str, len, TRUE);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_keyboard_selected_key_obj, ugfx_keyboard_selected_key);
@@ -775,6 +824,148 @@ const mp_obj_type_t ugfx_keyboard_type = {
 };
 
 
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+////////////////      IMAGEBOX     //////////////////
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+
+typedef struct _ugfx_imagebox_t {
+    mp_obj_base_t base;
+
+	GHandle ghImagebox;
+
+} ugfx_imagebox_obj_t;
+
+/// \classmethod \constructor(x, y, a, b, text, cache {parent})
+///
+/// Construct an imagebox object.
+/// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+    // check arguments
+    mp_arg_check_num(n_args, n_kw, 6, 7, false);
+
+
+    const char *file = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
+	int cache = mp_obj_get_int(args[5]);
+
+	GHandle parent = NULL;
+
+    // create imagebox object
+    ugfx_imagebox_obj_t *img = m_new_obj(ugfx_imagebox_obj_t);
+    img->base.type = &ugfx_imagebox_type;
+
+
+	//setup imagebox options
+	GWidgetInit	wi;
+
+	// Apply some default values for GWIN
+	gwinWidgetClearInit(&wi);
+	wi.g.show = TRUE;
+
+	// Apply the imagebox parameters
+	wi.g.width = a;
+	wi.g.height = b;
+	wi.g.y = y;
+	wi.g.x = x;
+
+
+	if (n_args > 6){
+		ugfx_container_obj_t *container = args[6];
+		if (MP_OBJ_IS_TYPE(args[6], &ugfx_container_type)) {
+			parent = container->ghContainer;
+			wi.customStyle = container->style;
+		}
+	}
+	wi.g.parent = parent;
+
+	// Create the actual imagebox
+	img->ghImagebox = gwinImageCreate(NULL, &wi.g);
+
+	//we'll open the file initially to fill the gdispImage struct
+	//when the draw function is used, will need to check the image handle is open
+	int suc = gwinImageOpenFile(img->ghImagebox, file);
+
+	if (suc){
+		if (cache){
+			int err = gwinImageCache(img->ghImagebox);
+			print_image_error(err);
+		}
+	}
+	else{
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
+		return mp_const_none;
+	}
+
+
+	return img;
+}
+
+
+/// \method destroy()
+///
+/// frees up all resources
+STATIC mp_obj_t ugfx_imagebox_destroy(mp_obj_t self_in) {
+    ugfx_imagebox_obj_t *self = self_in;
+
+	gwinDestroy(self->ghImagebox);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_imagebox_destroy_obj, ugfx_imagebox_destroy);
+
+
+STATIC const mp_map_elem_t ugfx_imagebox_locals_dict_table[] = {
+    // instance methods
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_imagebox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_imagebox_destroy_obj},
+
+	//class constants
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+
+};
+
+STATIC MP_DEFINE_CONST_DICT(ugfx_imagebox_locals_dict, ugfx_imagebox_locals_dict_table);
+
+const mp_obj_type_t ugfx_imagebox_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_Imagebox,
+    .make_new = ugfx_imagebox_make_new,
+    .locals_dict = (mp_obj_t)&ugfx_imagebox_locals_dict,
+};
+
+void print_image_error(gdispImageError err){
+	switch(err){
+		case GDISP_IMAGE_ERR_UNRECOVERABLE:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNRECOVERABLE"));
+			break;
+		case GDISP_IMAGE_ERR_BADFORMAT:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADFORMAT"));
+			break;
+		case GDISP_IMAGE_ERR_BADDATA:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_BADDATA"));
+			break;
+		case GDISP_IMAGE_ERR_UNSUPPORTED:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED"));
+			break;
+		case GDISP_IMAGE_ERR_UNSUPPORTED_OK:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_UNSUPPORTED_OK"));
+			break;
+		case GDISP_IMAGE_ERR_NOMEMORY:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOMEMORY"));
+			break;
+		case GDISP_IMAGE_ERR_NOSUCHFILE:
+			nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Failed with error: ERR_NOSUCHFILE"));
+			break;
+		default: break;
+	}
+}
 
 
 
@@ -914,7 +1105,7 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	const char *img_str = mp_obj_str_get_str(args[0]);
 
 
-    // create lcd object
+    // create object
     ugfx_image_obj_t *image = m_new_obj(ugfx_image_obj_t);
     image->base.type = &ugfx_image_type;
 	
@@ -922,10 +1113,12 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	//we'll open the file initially to fill the gdispImage struct
 	//when the draw function is used, will need to check the image handle is open
 	gdispImageError er = gdispImageOpenFile(&(image->thisImage), img_str);
-	
+
 	if (er == 0){
-		if (cache)
-			gdispImageCache	(&(image->thisImage));
+		if (cache){
+			int err = gdispImageCache(&(image->thisImage));
+			print_image_error(err);
+		}
 		//gdispImageClose(&(image->thisImage));  //TODO: delete this, currently for debugging reasons
 		//TODO: error handling and reporting
 		return image;
@@ -934,8 +1127,8 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error opening file"));
 		return mp_const_none;
 	}
-		
-	
+
+
 }
 
 
@@ -954,7 +1147,7 @@ STATIC const mp_map_elem_t ugfx_image_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&ugfx_image_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_image_close_obj },
-	
+
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
 
@@ -972,17 +1165,12 @@ const mp_obj_type_t ugfx_image_type = {
 
 
 
-
-
-
-
-/*
-
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 /////////////////      CHECKBOX    //////////////////
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
+
 
 typedef struct _ugfx_checkbox_t {
     mp_obj_base_t base;
@@ -991,67 +1179,98 @@ typedef struct _ugfx_checkbox_t {
 
 } ugfx_checkbox_obj_t;
 
-/// \classmethod \constructor(parent, x, y, a, b, text, style)
+/// \classmethod \constructor(x, y, a, b, text, {parent})
 ///
-/// Construct an Button object.
+/// Construct an Checkbox object.
+/// Will take the style from the parent, if the parents style is set. Otherwise uses default style
 STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 7, 7, false);
+	// check arguments
+	mp_arg_check_num(n_args, n_kw, 5, 6, false);
 
 
-    const char *text = mp_obj_str_get_str(args[5]);
-	int x = mp_obj_get_int(args[1]);
-	int y = mp_obj_get_int(args[2]);
-	int a = mp_obj_get_int(args[3]);
-	int b = mp_obj_get_int(args[4]);
+	const char *text = mp_obj_str_get_str(args[4]);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	int a = mp_obj_get_int(args[2]);
+	int b = mp_obj_get_int(args[3]);
 
-    // create button object
-    ugfx_checkbox_obj_t *chk = m_new_obj(ugfx_checkbox_obj_t);
-    chk->base.type = &ugfx_checkbox_type;
+	GHandle parent = NULL;
 
 
-	//setup button options
+	// create checkbox object
+	ugfx_checkbox_obj_t *btn = m_new_obj(ugfx_checkbox_obj_t);
+	btn->base.type = &ugfx_checkbox_type;
+
+
+	//setup checkbox options
 	GWidgetInit	wi;
 
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
 	wi.g.show = TRUE;
 
-	// Apply the button parameters
+	// Apply the checkbox parameters
 	wi.g.width = a;
 	wi.g.height = b;
 	wi.g.y = y;
 	wi.g.x = x;
-	//wi.g.parent = ;
 	wi.text = text;
 
-	// Create the actual button
-	chk->ghCheckbox = gwinCheckboxCreate(NULL, &wi);
+	if (n_args > 5){
+		ugfx_container_obj_t *container = args[5];
+
+		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
+			parent = container->ghContainer;
+			wi.customStyle = container->style;
+		}
+	}
+	wi.g.parent = parent;
+
+	// Create the actual checkbox
+	btn->ghCheckbox = gwinCheckboxCreate(NULL, &wi);
 
 
-
-
-	return chk;
+	return btn;
 }
 
 /// \method destroy()
 ///
-/// clears up all associated memory
-STATIC mp_obj_t ugfx_check_destroy(mp_obj_t self_in) {
+/// frees up all resources
+STATIC mp_obj_t ugfx_checkbox_destroy(mp_obj_t self_in) {
     ugfx_checkbox_obj_t *self = self_in;
 
 	gwinDestroy(self->ghCheckbox);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_check_destroy_obj, ugfx_check_destroy);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_checkbox_destroy_obj, ugfx_checkbox_destroy);
+
+/// \method checked()
+///
+/// Gets or sets the checked state
+STATIC mp_obj_t ugfx_checkbox_checked(mp_uint_t n_args, const mp_obj_t *args) {
+
+	GHandle gh = get_ugfx_handle(args[0]);
+
+	if (n_args == 1)
+		return mp_obj_new_int(gwinCheckboxIsChecked(gh));
+	else
+		gwinCheckboxCheck(gh, mp_obj_get_int(args[1]));
+	return mp_const_none;
+ 
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_checkbox_checked_obj, 1, 2, ugfx_checkbox_checked);
 
 
 
 STATIC const mp_map_elem_t ugfx_checkbox_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chk_destroy), (mp_obj_t)&ugfx_check_destroy_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chk_attach_input), (mp_obj_t)&ugfx_check_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_checkbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_checkbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_checked), (mp_obj_t)&ugfx_checkbox_checked_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -1068,13 +1287,14 @@ const mp_obj_type_t ugfx_checkbox_type = {
     .locals_dict = (mp_obj_t)&ugfx_checkbox_locals_dict,
 };
 
-*/
+
+
 
 static GHandle get_ugfx_handle(mp_obj_t in){
 	if (MP_OBJ_IS_TYPE(in,&ugfx_button_type))
 		return ((ugfx_button_obj_t *)in)->ghButton;
-//	else if (MP_OBJ_IS_TYPE(in,&ugfx_checkbox_type))
-//		return ((ugfx_checkbox_obj_t *)in)->ghCheckbox;
+	else if (MP_OBJ_IS_TYPE(in,&ugfx_checkbox_type))
+		return ((ugfx_checkbox_obj_t *)in)->ghCheckbox;
 	else if (MP_OBJ_IS_TYPE(in,&ugfx_list_type))
 		return ((ugfx_list_obj_t *)in)->ghList;
 	else if (MP_OBJ_IS_TYPE(in,&ugfx_textbox_type))

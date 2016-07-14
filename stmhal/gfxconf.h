@@ -202,12 +202,12 @@
 //        #define GWIN_SLIDER_NOSNAP                   TRUE
 //        #define GWIN_SLIDER_DEAD_BAND                5
 //        #define GWIN_SLIDER_TOGGLE_INC               20
-//    #define GWIN_NEED_CHECKBOX                       TRUE
+    #define GWIN_NEED_CHECKBOX                       TRUE
     #define GWIN_NEED_IMAGE                          TRUE
         #define GWIN_NEED_IMAGE_ANIMATION            TRUE
 //    #define GWIN_NEED_RADIO                          TRUE
     #define GWIN_NEED_LIST                           TRUE
-//        #define GWIN_NEED_LIST_IMAGES                TRUE
+        #define GWIN_NEED_LIST_IMAGES                TRUE
 //    #define GWIN_NEED_PROGRESSBAR                    TRUE
 //        #define GWIN_PROGRESSBAR_AUTO                TRUE
     #define GWIN_NEED_KEYBOARD                       TRUE
@@ -299,7 +299,7 @@
 //#define GFILE_NEED_NOAUTOSYNC                        FALSE
 
 //#define GFILE_NEED_MEMFS                             FALSE
-//#define GFILE_NEED_ROMFS                             FALSE
+#define GFILE_NEED_ROMFS                             TRUE
 //#define GFILE_NEED_RAMFS                             FALSE
 #define GFILE_NEED_FATFS                             TRUE
 #define GFILE_FATFS_EXTERNAL_LIB                     TRUE
