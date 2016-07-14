@@ -76,6 +76,23 @@ STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_text_obj, 1, 2, ugfx_widget_text);
 
+/// \method visible([value])
+///
+/// Gets or sets visibility of a widget
+STATIC mp_obj_t ugfx_widget_visible(mp_uint_t n_args, const mp_obj_t *args) {
+    GHandle gh = get_ugfx_handle(args[0]);
+
+    if (n_args == 1) {
+        return mp_obj_new_bool(gwinGetVisible(gh));
+    }
+    else
+    {
+        const char visibility = mp_obj_is_true(args[1]);
+        gwinSetVisible(gh, visibility ? TRUE : FALSE);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_visible_obj, 1, 2, ugfx_widget_visible);
 
 
 /// \method attach_input(input, function)
@@ -125,37 +142,30 @@ typedef struct _ugfx_button_t {
 
 } ugfx_button_obj_t;
 
-STATIC const mp_arg_t ugfx_button_make_new_args[] = {
-{ MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-{ MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-{ MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-{ MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-{ MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-{ MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-{ MP_QSTR_shape, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BUTTON_RECT} },
-};
-#define UGFX_BUTTON_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_button_make_new_args)
-
-/// \classmethod \constructor(x, y, a, b, text, *, parent=None, shape=ugfx.RECTANGLE)
+/// \classmethod \constructor(x, y, a, b, text, *, parent=None, trigger=None, shape=ugfx.RECTANGLE)
 ///
 /// Construct an Button object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC const mp_arg_t ugfx_button_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_shape, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = BUTTON_RECT} },
+};
+#define UGFX_BUTTON_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_button_make_new_args)
+
 STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
 	mp_arg_val_t vals[UGFX_BUTTON_MAKE_NEW_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_BUTTON_MAKE_NEW_NUM_ARGS, ugfx_button_make_new_args, vals);
 
-    const char *text = mp_obj_str_get_str(vals[4].u_obj);
-	int x = vals[0].u_int;
-	int y = vals[1].u_int;
-	int a = vals[2].u_int;
-	int b = vals[3].u_int;
-
-
     // create button object
     ugfx_button_obj_t *btn = m_new_obj(ugfx_button_obj_t);
     btn->base.type = &ugfx_button_type;
-
 
 	//setup button options
 	GWidgetInit	wi;
@@ -165,13 +175,13 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 	wi.g.show = TRUE;
 
 	// Apply the button parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
-	wi.text = text;
+	wi.g.width = vals[2].u_int;
+    wi.g.height = vals[3].u_int;
+    wi.g.y = vals[1].u_int;
+    wi.g.x = vals[0].u_int;
+	wi.text = mp_obj_str_get_str(vals[4].u_obj);
 
-	switch (vals[6].u_int){
+	switch (vals[7].u_int){
 		case BUTTON_ROUNDED:
 			wi.customDraw = gwinButtonDraw_Rounded;
 			break;
@@ -194,20 +204,21 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 			break;
 	}
 
-
-
-	GHandle parent = NULL;
-	if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
-		ugfx_container_obj_t *container = vals[5].u_obj;
-		parent = container->ghContainer;
-		wi.customStyle = container->style;
-	}
-
-	wi.g.parent = parent;
+	// Apply parent
+    wi.g.parent = NULL;
+    if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
+        ugfx_container_obj_t *container = vals[5].u_obj;
+        wi.g.parent = container->ghContainer;
+        wi.customStyle = container->style;
+    }
 
 	// Create the actual button
 	btn->ghButton = gwinButtonCreate(NULL, &wi);
 
+    // input
+    if (MP_OBJ_IS_INT(vals[6].u_obj)) {
+        gwinAttachToggle(btn->ghButton, 0, mp_obj_get_int(vals[6].u_obj));
+    }
 
 	return btn;
 }
@@ -227,9 +238,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_button_destroy_obj, ugfx_button_destroy);
 
 
 STATIC const mp_map_elem_t ugfx_button_locals_dict_table[] = {
-    // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_button_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_button_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
@@ -254,9 +265,6 @@ const mp_obj_type_t ugfx_button_type = {
     .locals_dict = (mp_obj_t)&ugfx_button_locals_dict,
 };
 
-
-
-
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 //////////////////     TEXTBOX    ///////////////////
@@ -270,24 +278,25 @@ typedef struct _ugfx_textbox_t {
 
 } ugfx_textbox_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, maxlen, {parent})
+/// \classmethod \constructor(x, y, a, b, text=None, parent=None, maxlen=255})
 ///
 /// Construct an Textbox object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC const mp_arg_t ugfx_textbox_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_text, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_maxlen, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
+};
+#define UGFX_TEXTBOX_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_textbox_make_new_args)
+
 STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 5, 6, false);
-
-
- //   const char *text = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
-	int maxlen = mp_obj_get_int(args[4]);
-
-	GHandle parent = NULL;
-
+    mp_arg_val_t vals[UGFX_TEXTBOX_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_TEXTBOX_MAKE_NEW_NUM_ARGS, ugfx_textbox_make_new_args, vals);
 
     // create textbox object
     ugfx_textbox_obj_t *btn = m_new_obj(ugfx_textbox_obj_t);
@@ -302,24 +311,29 @@ STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_arg
 	wi.g.show = TRUE;
 
 	// Apply the textbox parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
-//	wi.text = text;
+	wi.g.width = vals[2].u_int;
+    wi.g.height = vals[3].u_int;
+    wi.g.y = vals[1].u_int;
+    wi.g.x = vals[0].u_int;
+    wi.text = 0;
 
-	if (n_args > 5){
-		ugfx_container_obj_t *container = args[5];
-
-		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
-			parent = container->ghContainer;
-			wi.customStyle = container->style;
-		}
-	}
-	wi.g.parent = parent;
+	// Apply parent
+    wi.g.parent = NULL;
+    if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
+        ugfx_container_obj_t *container = vals[5].u_obj;
+        wi.g.parent = container->ghContainer;
+        wi.customStyle = container->style;
+    }
 
 	// Create the actual textbox
-	btn->ghTextbox = gwinTexteditCreate(NULL, &wi, maxlen);
+	btn->ghTextbox = gwinTexteditCreate(NULL, &wi, vals[6].u_int);
+
+    // text
+    if (MP_OBJ_IS_STR(vals[4].u_obj)) {
+        gwinSetText(btn->ghTextbox, mp_obj_str_get_str(vals[4].u_obj), TRUE);
+    } else {
+        gwinSetText(btn->ghTextbox, "", TRUE);
+    }
 
 	return btn;
 }
@@ -342,6 +356,7 @@ STATIC const mp_map_elem_t ugfx_textbox_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_textbox_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_textbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
@@ -360,9 +375,6 @@ const mp_obj_type_t ugfx_textbox_type = {
     .make_new = ugfx_textbox_make_new,
     .locals_dict = (mp_obj_t)&ugfx_textbox_locals_dict,
 };
-
-
-
 
 
 
@@ -566,6 +578,7 @@ STATIC const mp_map_elem_t ugfx_list_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_list_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_list_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_add_item), (mp_obj_t)&ugfx_list_add_item_obj },
@@ -615,27 +628,32 @@ typedef struct _ugfx_keyboard_t {
 
 } ugfx_keyboard_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, {parent})
+/// \classmethod \constructor(x, y, a, b, parent=None)
 ///
 /// Construct an Keyboard object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC const mp_arg_t ugfx_keyboard_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_up, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_UP} },
+    { MP_QSTR_down, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_DOWN} },
+    { MP_QSTR_right, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_RIGHT} },
+    { MP_QSTR_left, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_LEFT} },
+    { MP_QSTR_select, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_CENTER} },
+};
+#define UGFX_KEYBOARD_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_keyboard_make_new_args)
+
 STATIC mp_obj_t ugfx_keyboard_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 4, 5, false);
-
-
-    //const char *text = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
-
-	GHandle parent = NULL;
+    mp_arg_val_t vals[UGFX_KEYBOARD_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_KEYBOARD_MAKE_NEW_NUM_ARGS, ugfx_keyboard_make_new_args, vals);
 
     // create keyboard object
     ugfx_keyboard_obj_t *kbd = m_new_obj(ugfx_keyboard_obj_t);
     kbd->base.type = &ugfx_keyboard_type;
-
 
 	//setup keyboard options
 	GWidgetInit	wi;
@@ -645,26 +663,30 @@ STATIC mp_obj_t ugfx_keyboard_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	wi.g.show = TRUE;
 
 	// Apply the keyboard parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
-	wi.text = 0; //text;
+	wi.g.width = vals[2].u_int;
+    wi.g.height = vals[3].u_int;
+    wi.g.y = vals[1].u_int;
+    wi.g.x = vals[0].u_int;
+    wi.text = 0;
 
-	if (n_args > 4){
-		ugfx_container_obj_t *container = args[4];
-		if (MP_OBJ_IS_TYPE(args[4], &ugfx_container_type)) {
-			parent = container->ghContainer;
-			wi.customStyle = container->style;
-		}
-	}
-	wi.g.parent = parent;
+	// Apply parent
+    wi.g.parent = NULL;
+    if (MP_OBJ_IS_TYPE(vals[4].u_obj, &ugfx_container_type)) {
+        ugfx_container_obj_t *container = vals[4].u_obj;
+        wi.g.parent = container->ghContainer;
+        wi.customStyle = container->style;
+    }
 
 	// Create the actual keyboard
 	kbd->ghKeyboard = gwinKeyboardCreate(NULL, &wi);
 
 	kbd->kb_callback = mp_const_none;
 
+    gwinAttachToggle(kbd->ghKeyboard, 0, vals[5].u_int);
+    gwinAttachToggle(kbd->ghKeyboard, 1, vals[6].u_int);
+    gwinAttachToggle(kbd->ghKeyboard, 2, vals[7].u_int);
+    gwinAttachToggle(kbd->ghKeyboard, 3, vals[8].u_int);
+    gwinAttachToggle(kbd->ghKeyboard, 4, vals[9].u_int);
 
 	return kbd;
 }
@@ -799,6 +821,7 @@ STATIC const mp_map_elem_t ugfx_keyboard_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_keyboard_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_keyboard_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&ugfx_keyboard_callback_obj },
@@ -983,22 +1006,24 @@ typedef struct _ugfx_label_t {
 
 } ugfx_label_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, {parent})
+/// \classmethod \constructor(x, y, a, b, text, parent=None)
 ///
 /// Construct an label object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC const mp_arg_t ugfx_label_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+};
+#define UGFX_LABEL_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_label_make_new_args)
+
 STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 5, 6, false);
-
-
-    const char *text = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
-
-	GHandle parent = NULL;
+    mp_arg_val_t vals[UGFX_LABEL_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_LABEL_MAKE_NEW_NUM_ARGS, ugfx_label_make_new_args, vals);
 
     // create label object
     ugfx_label_obj_t *btn = m_new_obj(ugfx_label_obj_t);
@@ -1013,24 +1038,22 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	wi.g.show = TRUE;
 
 	// Apply the label parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
-	wi.text = text;
+	wi.g.width = vals[2].u_int;
+    wi.g.height = vals[3].u_int;
+    wi.g.y = vals[1].u_int;
+    wi.g.x = vals[0].u_int;
+	wi.text = mp_obj_str_get_str(vals[4].u_obj);
 
-	if (n_args > 5){
-		ugfx_container_obj_t *container = args[5];
-		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
-			parent = container->ghContainer;
-			wi.customStyle = container->style;
-		}
-	}
-	wi.g.parent = parent;
+	// Apply parent
+    wi.g.parent = NULL;
+    if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
+        ugfx_container_obj_t *container = vals[5].u_obj;
+        wi.g.parent = container->ghContainer;
+        wi.customStyle = container->style;
+    }
 
 	// Create the actual label
 	btn->ghLabel = gwinLabelCreate(NULL, &wi);
-
 
 	return btn;
 }
@@ -1052,6 +1075,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_label_destroy_obj, ugfx_label_destroy);
 STATIC const mp_map_elem_t ugfx_label_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_label_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_label_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
@@ -1069,13 +1093,6 @@ const mp_obj_type_t ugfx_label_type = {
     .make_new = ugfx_label_make_new,
     .locals_dict = (mp_obj_t)&ugfx_label_locals_dict,
 };
-
-
-
-
-
-
-
 
 
 /// \class image - provides a wrapper for uGFX images
@@ -1101,15 +1118,15 @@ STATIC mp_obj_t ugfx_image_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 		cache = false;
 	else
 		cache = mp_obj_get_int(args[1]);
-	
+
 	const char *img_str = mp_obj_str_get_str(args[0]);
 
 
     // create object
     ugfx_image_obj_t *image = m_new_obj(ugfx_image_obj_t);
     image->base.type = &ugfx_image_type;
-	
-	
+
+
 	//we'll open the file initially to fill the gdispImage struct
 	//when the draw function is used, will need to check the image handle is open
 	gdispImageError er = gdispImageOpenFile(&(image->thisImage), img_str);
@@ -1147,6 +1164,7 @@ STATIC const mp_map_elem_t ugfx_image_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&ugfx_image_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_image_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -1179,23 +1197,25 @@ typedef struct _ugfx_checkbox_t {
 
 } ugfx_checkbox_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, {parent})
+/// \classmethod \constructor(x, y, a, b, text=None, parent=None)
 ///
 /// Construct an Checkbox object.
 /// Will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC const mp_arg_t ugfx_checkbox_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_text, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+};
+#define UGFX_CHECKBOX_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_checkbox_make_new_args)
+
 STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-	// check arguments
-	mp_arg_check_num(n_args, n_kw, 5, 6, false);
-
-
-	const char *text = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
-
-	GHandle parent = NULL;
-
+    // check arguments
+    mp_arg_val_t vals[UGFX_CHECKBOX_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_CHECKBOX_MAKE_NEW_NUM_ARGS, ugfx_checkbox_make_new_args, vals);
 
 	// create checkbox object
 	ugfx_checkbox_obj_t *btn = m_new_obj(ugfx_checkbox_obj_t);
@@ -1210,25 +1230,31 @@ STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	wi.g.show = TRUE;
 
 	// Apply the checkbox parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
-	wi.text = text;
+	wi.g.width = vals[2].u_int;
+    wi.g.height = vals[3].u_int;
+    wi.g.y = vals[1].u_int;
+    wi.g.x = vals[0].u_int;
+    if (MP_OBJ_IS_STR(vals[4].u_obj)) {
+	    wi.text = mp_obj_str_get_str(vals[4].u_obj);
+    } else {
+        wi.text = "";
+    }
 
-	if (n_args > 5){
-		ugfx_container_obj_t *container = args[5];
-
-		if (MP_OBJ_IS_TYPE(args[5], &ugfx_container_type)) {
-			parent = container->ghContainer;
-			wi.customStyle = container->style;
-		}
-	}
-	wi.g.parent = parent;
+	// Apply parent
+    wi.g.parent = NULL;
+    if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
+        ugfx_container_obj_t *container = vals[5].u_obj;
+        wi.g.parent = container->ghContainer;
+        wi.customStyle = container->style;
+    }
 
 	// Create the actual checkbox
 	btn->ghCheckbox = gwinCheckboxCreate(NULL, &wi);
 
+    // input
+    if (MP_OBJ_IS_INT(vals[6].u_obj)) {
+        gwinAttachToggle(btn->ghCheckbox, 0, mp_obj_get_int(vals[6].u_obj));
+    }
 
 	return btn;
 }
@@ -1257,7 +1283,6 @@ STATIC mp_obj_t ugfx_checkbox_checked(mp_uint_t n_args, const mp_obj_t *args) {
 	else
 		gwinCheckboxCheck(gh, mp_obj_get_int(args[1]));
 	return mp_const_none;
- 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_checkbox_checked_obj, 1, 2, ugfx_checkbox_checked);
 
@@ -1267,6 +1292,7 @@ STATIC const mp_map_elem_t ugfx_checkbox_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_checkbox_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_checkbox_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_attach_input), (mp_obj_t)&ugfx_widget_attach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },

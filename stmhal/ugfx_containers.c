@@ -74,11 +74,11 @@ STATIC mp_obj_t ugfx_text(mp_uint_t n_args, const mp_obj_t *args) {
     int y0 = mp_obj_get_int(args[3]);
     int col = mp_obj_get_int(args[4]);
 
-   
+
 	GHandle gh = get_ugfx_handle(args[0]);
 	gwinSetColor(gh,col);
 	gwinDrawString(gh,x0, y0, data);
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_text_obj, 5, 5, ugfx_text);
@@ -100,7 +100,7 @@ STATIC mp_obj_t ugfx_line(mp_uint_t n_args, const mp_obj_t *args) {
 	GHandle gh = get_ugfx_handle(args[0]);
 	gwinSetColor(gh,col);
 	gwinDrawLine(gh,x0, y0, x1, y1);
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_line_obj, 6, 6, ugfx_line);
@@ -278,15 +278,15 @@ STATIC mp_obj_t ugfx_polygon(mp_uint_t n_args, const mp_obj_t *args) {
     int x0 = mp_obj_get_int(args[1]);
     int y0 = mp_obj_get_int(args[2]);
 	int col = mp_obj_get_int(args[4]);
-	
+
 	point ar[20];
-	
+
 	mp_obj_t *mp_arr;
 	mp_obj_t *mp_arr2;
 	uint len;
 	uint len2;
 	mp_obj_get_array(args[3], &len, &mp_arr);
-	
+
 	if (len <= 20){
 		int i,j;
 		j = 0;
@@ -299,7 +299,7 @@ STATIC mp_obj_t ugfx_polygon(mp_uint_t n_args, const mp_obj_t *args) {
 		}
 		GHandle gh = get_ugfx_handle(args[0]);
 		gwinSetColor(gh,col);
-		gwinDrawPoly(gh, x0, y0, ar, i);	
+		gwinDrawPoly(gh, x0, y0, ar, i);
 	}
 
     return mp_const_none;
@@ -318,15 +318,15 @@ STATIC mp_obj_t ugfx_fill_polygon(mp_uint_t n_args, const mp_obj_t *args) {
     int x0 = mp_obj_get_int(args[1]);
     int y0 = mp_obj_get_int(args[2]);
 	int col = mp_obj_get_int(args[4]);
-	
+
 	point ar[20];
-	
+
 	mp_obj_t *mp_arr;
 	mp_obj_t *mp_arr2;
 	uint len;
 	uint len2;
 	mp_obj_get_array(args[3], &len, &mp_arr);
-	
+
 	if (len <= 20){
 		int i,j;
 		j = 0;
@@ -339,7 +339,7 @@ STATIC mp_obj_t ugfx_fill_polygon(mp_uint_t n_args, const mp_obj_t *args) {
 		}
 		GHandle gh = get_ugfx_handle(args[0]);
 		gwinSetColor(gh,col);
-		gwinFillConvexPoly(gh, x0, y0, ar, i);	
+		gwinFillConvexPoly(gh, x0, y0, ar, i);
 	}
 
     return mp_const_none;
@@ -394,39 +394,39 @@ STATIC mp_obj_t ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t n_a
     // create container object
     ugfx_container_obj_t *ctr = m_new_obj(ugfx_container_obj_t);
     ctr->base.type = &ugfx_container_type;
-	
-	
+
+
 	//setup container options
 	GWidgetInit	wi;
- 
+
 	// Apply some default values for GWIN
 	gwinWidgetClearInit(&wi);
 
 	wi.g.show = FALSE;
- 
-	// Apply the container parameters	
+
+	// Apply the container parameters
 	wi.g.width = a;
 	wi.g.height = b;
 	wi.g.y = y;
 	wi.g.x = x;
 	//wi.g.parent = ;
 	wi.text = 0;//text;
-	
+
 	if (n_args == 5){
-		ugfx_style_obj_t *st = args[4]; 
+		ugfx_style_obj_t *st = args[4];
 		if (MP_OBJ_IS_TYPE(args[4], &ugfx_style_type)){
 			wi.customStyle = &(st->style);
 			ctr->style = &(st->style);
-		}		
+		}
 		else
 			nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Requires a 'Style' object as input"));
 	}
 	else
 		ctr->style = 0;
- 
+
 	// Create the actual container
 	ctr->ghContainer = gwinContainerCreate(NULL, &wi, GWIN_CONTAINER_BORDER);
-	
+
 
 	return ctr;
 }
@@ -437,8 +437,8 @@ STATIC mp_obj_t ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t n_a
 /// sets the style used to draw new objects
 STATIC mp_obj_t ugfx_container_set_style(mp_obj_t self_in, mp_obj_t style) {
     ugfx_container_obj_t *self = self_in;
-	ugfx_style_obj_t *st = style; 
-	
+	ugfx_style_obj_t *st = style;
+
 	if (MP_OBJ_IS_TYPE(style, &ugfx_style_type)){
 		GWidgetObject *gw = &(GWidgetObject)(self->ghContainer);
 		gw->pstyle = &(st->style);
@@ -456,9 +456,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_container_set_style_obj, ugfx_container_se
 /// frees up all resources
 STATIC mp_obj_t ugfx_container_destroy(mp_obj_t self_in) {
     ugfx_container_obj_t *self = self_in;
-    
+
 	gwinDestroy(self->ghContainer);
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_container_destroy_obj, ugfx_container_destroy);
@@ -468,7 +468,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_container_destroy_obj, ugfx_container_dest
 /// shows the container and all its children
 STATIC mp_obj_t ugfx_container_show(mp_obj_t self_in) {
     ugfx_container_obj_t *self = self_in;
-    
+
         gwinShow(self->ghContainer);
 
     return mp_const_none;
@@ -477,10 +477,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_container_show_obj, ugfx_container_show);
 
 /// \method hide()
 ///
-/// shows the container and all its children
+/// hides the container and all its children
 STATIC mp_obj_t ugfx_container_hide(mp_obj_t self_in) {
     ugfx_container_obj_t *self = self_in;
-    
+
         gwinHide(self->ghContainer);
 
     return mp_const_none;
@@ -496,7 +496,7 @@ STATIC const mp_map_elem_t ugfx_container_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_hide), (mp_obj_t)&ugfx_container_hide_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_containers_get_height_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_containers_get_width_obj},
-	
+
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&ugfx_line_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_box), (mp_obj_t)&ugfx_box_obj },
@@ -508,8 +508,8 @@ STATIC const mp_map_elem_t ugfx_container_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_ellipse), (mp_obj_t)&ugfx_fill_ellipse_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
-	
-	
+
+
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_set_style), (mp_obj_t)&ugfx_container_set_style_obj},
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -537,7 +537,7 @@ const mp_obj_type_t ugfx_container_type = {
 
 typedef struct _ugfx_graph_t {
     mp_obj_base_t base;
-	
+
 	GHandle ghGraph;
 	GGraphStyle gStyle;
 	GGraphObject gGObject;
@@ -554,19 +554,19 @@ STATIC mp_obj_t ugfx_graph_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     // create graph object
     ugfx_graph_obj_t *ctr = m_new_obj(ugfx_graph_obj_t);
     ctr->base.type = &ugfx_graph_type;
-		
+
 	//const char *text = mp_obj_str_get_str(args[4]);
 	int x = mp_obj_get_int(args[0]);
 	int y = mp_obj_get_int(args[1]);
 	int a = mp_obj_get_int(args[2]);
 	int b = mp_obj_get_int(args[3]);
-	
+
 	//setup graph options
-	GWindowInit	wi; 
+	GWindowInit	wi;
 
 	wi.show = FALSE;
- 
-	// Apply the graph parameters	
+
+	// Apply the graph parameters
 	wi.width = a;
 	wi.height = b;
 	wi.y = y;
@@ -582,16 +582,16 @@ STATIC mp_obj_t ugfx_graph_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 		{ GGRAPH_LINE_DOT, 7, Gray, 50 },     // Y grid
 		GWIN_GRAPH_STYLE_POSITIVE_AXIS_ARROWS   // Flags
 	};
-	
+
 	ctr->gStyle = gs;
 
- 
+
 	// Create the actual graph
 	ctr->ghGraph = gwinGraphCreate(&(ctr->gGObject), &wi);
 
 	gwinGraphSetOrigin(ctr->ghGraph, mp_obj_get_int(args[4]), mp_obj_get_int(args[5]));
     gwinGraphSetStyle(ctr->ghGraph, &ctr->gStyle);
-    	
+
 	return ctr;
 }
 
@@ -601,9 +601,9 @@ STATIC mp_obj_t ugfx_graph_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 /// sets the origin, in pixels relative to the top right corner
 STATIC mp_obj_t ugfx_graph_set_origin(mp_obj_t self_in, mp_obj_t x, mp_obj_t y) {
     ugfx_graph_obj_t *self = self_in;
-    
+
 	gwinGraphSetOrigin(self->ghGraph, mp_obj_get_int(x), mp_obj_get_int(y));
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_graph_set_origin_obj, ugfx_graph_set_origin);
@@ -615,9 +615,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_graph_set_origin_obj, ugfx_graph_set_origi
 /// frees up all resources
 STATIC mp_obj_t ugfx_graph_destroy(mp_obj_t self_in) {
     ugfx_graph_obj_t *self = self_in;
-    
+
 	gwinDestroy(self->ghGraph);
-	
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_graph_destroy_obj, ugfx_graph_destroy);
@@ -627,10 +627,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_graph_destroy_obj, ugfx_graph_destroy);
 /// shows the graph and all its children
 STATIC mp_obj_t ugfx_graph_show(mp_obj_t self_in) {
     ugfx_graph_obj_t *self = self_in;
-    
+
     gwinShow(self->ghGraph);
 	gwinGraphDrawAxis(self->ghGraph);
-	
+
 
     return mp_const_none;
 }
@@ -641,7 +641,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_graph_show_obj, ugfx_graph_show);
 /// shows the graph and all its children
 STATIC mp_obj_t ugfx_graph_hide(mp_obj_t self_in) {
     ugfx_graph_obj_t *self = self_in;
-    
+
         gwinHide(self->ghGraph);
 
     return mp_const_none;
@@ -651,14 +651,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_graph_hide_obj, ugfx_graph_hide);
 /// \method set_arrows(flags)
 ///
 /// Sets which axes have arrows and what direction
-/// 
+///
 /// Avaliable flags: ARROWS_X_POS, ARROWS_Y_POS, ARROWS_X_NEG, ARROWS_Y_NEG
 ///
 /// Example usage: set_arrows(ARROWS_X_POS | ARROWS_X_NEG)
 ///
 STATIC mp_obj_t ugfx_graph_set_arrows(mp_obj_t self_in, mp_obj_t flags) {
     ugfx_graph_obj_t *self = self_in;
-    
+
     self->gStyle.flags = mp_obj_get_int(flags);
 	gwinGraphSetStyle(self->ghGraph, &self->gStyle);
 
@@ -675,29 +675,29 @@ STATIC mp_obj_t ugfx_graph_plot(mp_uint_t n_args, const mp_obj_t *args) {
 	if (n_args < 3)
 		return mp_const_none;
     ugfx_graph_obj_t *self = args[0];
-    
+
 	mp_obj_t *itemsx;
 	mp_obj_t *itemsy;
 	mp_uint_t len1;
 	mp_uint_t len2;
-	
+
 	if (n_args == 4){
 		if (mp_obj_get_int(args[3]))
 			gwinGraphStartSet(self->ghGraph);
 	}
-	
+
 	//if is array...
 	if (MP_OBJ_IS_INT(args[1]) && MP_OBJ_IS_INT(args[2]))
 		gwinGraphDrawPoint(self->ghGraph, mp_obj_get_int(args[1]),mp_obj_get_int(args[2]));
 	else
-	{	
+	{
 		mp_obj_get_array(args[1], &len1, &itemsx);
 		mp_obj_get_array(args[2], &len2, &itemsy);
-		
+
 		if (len1 != len2)
 			nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Requires x and y to be the same length"));
-			
-		int i;	
+
+		int i;
 		for (i = 0; i < len1; i++){
 			gwinGraphDrawPoint(self->ghGraph, mp_obj_get_int(itemsx[i]), mp_obj_get_int(itemsy[i]));
 		}
@@ -726,27 +726,27 @@ STATIC mp_obj_t ugfx_graph_set_style(mp_uint_t n_args, const mp_obj_t *args) {
 	if (n_args < 5)
 		return mp_const_none;
     ugfx_graph_obj_t *self = args[0];
-	
+
 	GGraphLineStyle ls;
 	GGraphGridStyle gds;
 	GGraphPointStyle gps;
-	
+
 	gps.type = ls.type = gds.type = mp_obj_get_int(args[2]);
 	gps.size = ls.size = gds.size = mp_obj_get_int(args[3]);
 	gps.color = ls.color = gds.color = mp_obj_get_int(args[4]);
-		
+
 	int item = mp_obj_get_int(args[1]);
-	
+
 	switch(item){
-		case 0:  //point			
+		case 0:  //point
 			self->gStyle.point = gps;
 			gwinGraphSetStyle(self->ghGraph, &self->gStyle);
 			break;
-		case 1:	  //line	
+		case 1:	  //line
 			self->gStyle.line = ls;
 			gwinGraphSetStyle(self->ghGraph, &self->gStyle);
 			break;
-		case 2:	  //x axis		
+		case 2:	  //x axis
 			self->gStyle.xaxis = ls;
 			gwinGraphSetStyle(self->ghGraph, &self->gStyle);
 			break;
@@ -769,7 +769,7 @@ STATIC mp_obj_t ugfx_graph_set_style(mp_uint_t n_args, const mp_obj_t *args) {
 			gwinGraphSetStyle(self->ghGraph, &self->gStyle);
 			break;
 		default:
-			break;		
+			break;
 	}
 
     return mp_const_none;
@@ -801,22 +801,22 @@ STATIC const mp_map_elem_t ugfx_graph_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_STYLE_YAXIS),        MP_OBJ_NEW_SMALL_INT(3) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_STYLE_XGRID),        MP_OBJ_NEW_SMALL_INT(4) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_STYLE_YGRID),        MP_OBJ_NEW_SMALL_INT(5) },
-	
+
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_POINT_NONE),         MP_OBJ_NEW_SMALL_INT(GGRAPH_POINT_NONE) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_POINT_DOT),          MP_OBJ_NEW_SMALL_INT(GGRAPH_POINT_DOT) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_POINT_SQUARE),       MP_OBJ_NEW_SMALL_INT(GGRAPH_POINT_SQUARE) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_POINT_CIRCLE),       MP_OBJ_NEW_SMALL_INT(GGRAPH_POINT_CIRCLE) },
-		
+
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_LINE_NONE),          MP_OBJ_NEW_SMALL_INT(GGRAPH_LINE_NONE) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_LINE_SOLID),         MP_OBJ_NEW_SMALL_INT(GGRAPH_LINE_SOLID) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_LINE_DOT),           MP_OBJ_NEW_SMALL_INT(GGRAPH_LINE_DOT) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_LINE_DASH),          MP_OBJ_NEW_SMALL_INT(GGRAPH_LINE_DASH) },
-		
+
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_ARROWS_X_POS),       MP_OBJ_NEW_SMALL_INT(GWIN_GRAPH_STYLE_XAXIS_POSITIVE_ARROWS) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_ARROWS_Y_POS),       MP_OBJ_NEW_SMALL_INT(GWIN_GRAPH_STYLE_YAXIS_POSITIVE_ARROWS) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_ARROWS_X_NEG),       MP_OBJ_NEW_SMALL_INT(GWIN_GRAPH_STYLE_XAXIS_NEGATIVE_ARROWS) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_ARROWS_Y_NEG),       MP_OBJ_NEW_SMALL_INT(GWIN_GRAPH_STYLE_YAXIS_NEGATIVE_ARROWS) },
-	
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(ugfx_graph_locals_dict, ugfx_graph_locals_dict_table);
