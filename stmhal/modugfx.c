@@ -260,6 +260,21 @@ STATIC mp_obj_t ugfx_poll(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_poll_obj, ugfx_poll);
 
 
+/// \method backlight(100)
+///
+/// Returns or sets backlight (in %)
+STATIC mp_obj_t ugfx_backlight(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        gdispSetBacklight(mp_obj_get_int(args[0]));
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int(gdispGetBacklight());
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_backlight_obj, 0, 1, ugfx_backlight);
+
+
+
 /// \method get_pixel()
 ///
 /// Gets the colour of the given pixel at (x,y)
@@ -881,6 +896,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_file_obj, 3, 3, ug
 STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&ugfx_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_backlight), (mp_obj_t)&ugfx_backlight_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&ugfx_line_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_box), (mp_obj_t)&ugfx_box_obj },
