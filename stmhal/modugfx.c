@@ -750,6 +750,17 @@ STATIC mp_obj_t ugfx_area(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_area_obj, 5, 5, ugfx_area);
 
+/// \method clear(color=ugfx.WHITE)
+///
+/// Clear screen
+///
+STATIC mp_obj_t ugfx_clear(mp_uint_t n_args, const mp_obj_t *args) {
+    int color = n_args == 0 ? White : mp_obj_get_int(args[0]);
+    gdispFillArea(0, 0, gdispGetWidth(), gdispGetHeight(), color);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_clear_obj, 0, 1, ugfx_clear);
+
 /// \method box(x1, y1, a, b, colour)
 ///
 /// Draw a box from (x,y), with lengths x1,y1, using the given colour.
@@ -874,6 +885,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&ugfx_line_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_box), (mp_obj_t)&ugfx_box_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_area), (mp_obj_t)&ugfx_area_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&ugfx_clear_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_thickline), (mp_obj_t)&ugfx_thickline_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_circle), (mp_obj_t)&ugfx_circle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_circle), (mp_obj_t)&ugfx_fill_circle_obj },
