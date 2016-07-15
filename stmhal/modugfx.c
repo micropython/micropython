@@ -228,7 +228,19 @@ STATIC mp_obj_t ugfx_set_orientation(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_set_orientation_obj, 0, 1, ugfx_set_orientation);
 
-
+/// \method power_mode(mode)
+///
+/// mode can be any of those options: ugfx.POWER_ON, ugfx.POWER_OFF, ugfx.POWER_DEEP_SLEEP, ugfx.POWER_SLEEP
+///
+STATIC mp_obj_t ugfx_power_mode(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args > 0){
+        gdispSetPowerMode(mp_obj_get_int(args[0]));
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int(gdispGetPowerMode());
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_power_mode_obj, 0, 1, ugfx_power_mode);
 
 /// \method width()
 ///
@@ -888,6 +900,7 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&ugfx_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&ugfx_deinit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_power_mode), (mp_obj_t)&ugfx_power_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&ugfx_line_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_box), (mp_obj_t)&ugfx_box_obj },
@@ -951,6 +964,10 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_B),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_B) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_MENU),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_MENU) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),   MP_OBJ_NEW_SMALL_INT(powerOn) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_OFF),   MP_OBJ_NEW_SMALL_INT(powerOff) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_SLEEP),   MP_OBJ_NEW_SMALL_INT(powerSleep) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_DEEP_SLEEP),   MP_OBJ_NEW_SMALL_INT(powerDeepSleep) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&ugfx_button_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&ugfx_container_type },
