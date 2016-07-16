@@ -42,6 +42,8 @@
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 
+#include "../extmod/ugfx/src/gwin/gwin_class.h"
+
 /// \moduleref ugfx
 /// UPDATE ME
 
@@ -316,6 +318,9 @@ STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_arg
     wi.g.y = vals[1].u_int;
     wi.g.x = vals[0].u_int;
     wi.text = 0;
+	// text
+    if (MP_OBJ_IS_STR(vals[4].u_obj))
+        wi.text =  mp_obj_str_get_str(vals[4].u_obj);
 
 	// Apply parent
     wi.g.parent = NULL;
@@ -328,14 +333,7 @@ STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_arg
 	// Create the actual textbox
 	btn->ghTextbox = gwinTexteditCreate(NULL, &wi, vals[6].u_int);
 
-    // text
-    if (MP_OBJ_IS_STR(vals[4].u_obj)) {
-        gwinSetText(btn->ghTextbox, mp_obj_str_get_str(vals[4].u_obj), TRUE);
-    } else {
-        gwinSetText(btn->ghTextbox, "", TRUE);
-    }
-
-	return btn;
+    return btn;
 }
 
 
