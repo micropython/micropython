@@ -308,11 +308,14 @@ libffi:
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	make install-exec-recursive; make -C include install-data-am
 
-axtls: ../lib/axtls/README
+axtls: $(BUILD)/libaxtls.a
+
+$(BUILD)/libaxtls.a: ../lib/axtls/README | $(OBJ_DIRS)
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
 	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+	cp ../lib/axtls/_stage/libaxtls.a $@
 
 ../lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
