@@ -154,7 +154,7 @@ SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/firmware-combined.bin
+all: $(BUILD)/libaxtls.a $(BUILD)/firmware-combined.bin
 
 CONFVARS_FILE = $(BUILD)/confvars
 
@@ -230,8 +230,11 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 include ../py/mkrules.mk
 
-axtls:
+axtls: $(BUILD)/libaxtls.a
+
+$(BUILD)/libaxtls.a:
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
 	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
+	cp ../lib/axtls/_stage/libaxtls.a $@
