@@ -121,6 +121,8 @@ STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
     }
     lcd_delay();
     HAL_SPI_Transmit(lcd->spi, &i, 1, 1000);
+    lcd_delay();
+    lcd->pin_cs1->gpio->BSRRL = lcd->pin_cs1->pin_mask; // CS=1; disable
 }
 
 // write a string to the LCD at the current cursor location
