@@ -29,19 +29,20 @@
 			{ "\015", "\r", 0, 0 },							// \007 (7)	= Enter 2 (Short keycap)
 			{ "Sym", 0, GVKEY_LOCKSET, 4 },					// \010 (8)	= Change to Symbols
 			{ "aA", 0, GVKEY_LOCKSET, 0 },					// \011 (9)	= Change to Lower Alpha
-			{ ">", "\203", 0, 0  },						// \012 (10) = Nagivate right
-			{ "<", "\204", 0, 0  },							// \013 (11) = Nagivate Left
+			{ "<", "\203", 0, 0  },						// \012 (10) = Nagivate left
+			{ ">", "\204", 0, 0  },							// \013 (11) = Nagivate right
 	};
-	static const char Eng1Set0Row3[] = "\004  .\012\013\006\006";
+	static const char Eng1Set0Row3[] = "\004   .\012\013";
 	static const char Eng1Set1Row0[] = "QWERTYUIOP";
-	static const char Eng1Set1Row1[] = "ASDFGHJKL";
-	static const char *Eng1Set0[] = { "qwertyuiop",	"asdfghjkl",	"\001zxcvbnm\005",	Eng1Set0Row3,		0 };
-	static const char *Eng1Set1[] = { Eng1Set1Row0,	Eng1Set1Row1,	"\002ZXCVBNM\005",	Eng1Set0Row3,		0 };
-	static const char *Eng1Set2[] = { Eng1Set1Row0,	Eng1Set1Row1,	"\003ZXCVBNM\005",	Eng1Set0Row3,		0 };
+	static const char Eng1Set1Row1[] = "ASDFGHJKL\005";
+	static const char *Eng1Set0[] = { "qwertyuiop",	"asdfghjkl\005",	"\001zxcvbnm\006\006",	Eng1Set0Row3,		0 };
+	static const char *Eng1Set1[] = { Eng1Set1Row0,	Eng1Set1Row1,	"\002ZXCVBNM\006\006",	Eng1Set0Row3,		0 };
+	static const char *Eng1Set2[] = { Eng1Set1Row0,	Eng1Set1Row1,	"\003ZXCVBNM\006\006",	Eng1Set0Row3,		0 };
 	static const char *Eng1Set3[] = { "+-*/",		"@789",			"\007456",		"\010123",			"\01100.",	0 };
 	static const char *Eng1Set4[] = { "#$%^&*()",	"~`:;\"'{}",	"<>?/\\|[]",	"\011\004,!  .@",	0 };
 	static const GVKeySet Eng1Sets[] = { Eng1Set0, Eng1Set1, Eng1Set2, Eng1Set3, Eng1Set4, 0 };
 	const GVKeyTable VirtualKeyboard_English1 = { Eng1SKeys, Eng1Sets };
+
 #endif // GWIN_NEED_KEYBOARD_ENGLISH1
 
 #endif // GFX_USE_GWIN && GWIN_NEED_KEYBOARD
