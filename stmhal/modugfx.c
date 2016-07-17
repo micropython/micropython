@@ -77,7 +77,16 @@ typedef struct _ugfx_obj_t {
     mp_obj_base_t base;
 } ugfx_obj_t;
 
-
+static orientation_t get_orientation(int a){
+	if (a == 90)
+		return GDISP_ROTATE_90;
+	else if (a == 180)
+		return GDISP_ROTATE_180;
+	else if (a == 270)
+		return GDISP_ROTATE_270;
+	else
+		return GDISP_ROTATE_0;
+}
 
 /// \method init()
 ///
@@ -92,7 +101,13 @@ STATIC mp_obj_t ugfx_init(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_init_obj, ugfx_init);
 
-
+/// \method deinit()
+///
+STATIC mp_obj_t ugfx_deinit(void) {
+    gfxDeinit();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_deinit_obj, ugfx_deinit);
 
 /// \method ball_demo()
 ///
@@ -208,21 +223,27 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_ball_demo_obj, ugfx_ball_demo);
 STATIC mp_obj_t ugfx_set_orientation(mp_uint_t n_args, const mp_obj_t *args) {
 	if (n_args > 0){
 		int a = mp_obj_get_int(args[0]);
-		if (a == 0)
-			gdispSetOrientation(GDISP_ROTATE_0);
-		else if (a == 90)
-			gdispSetOrientation(GDISP_ROTATE_90);
-		else if (a == 180)
-			gdispSetOrientation(GDISP_ROTATE_180);
-		else if (a == 270)
-			gdispSetOrientation(GDISP_ROTATE_270);
+		gdispSetOrientation(get_orientation(a));
+
 	}
 
     return mp_obj_new_int(gdispGetOrientation());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_set_orientation_obj, 0, 1, ugfx_set_orientation);
 
-
+/// \method power_mode(mode)
+///
+/// mode can be any of those options: ugfx.POWER_ON, ugfx.POWER_OFF, ugfx.POWER_DEEP_SLEEP, ugfx.POWER_SLEEP
+///
+STATIC mp_obj_t ugfx_power_mode(mp_uint_t n_args, const mp_obj_t *args) {
+    if (n_args > 0){
+        gdispSetPowerMode(mp_obj_get_int(args[0]));
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int(gdispGetPowerMode());
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_power_mode_obj, 0, 1, ugfx_power_mode);
 
 /// \method width()
 ///
@@ -750,6 +771,17 @@ STATIC mp_obj_t ugfx_area(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_area_obj, 5, 5, ugfx_area);
 
+/// \method clear(color=ugfx.WHITE)
+///
+/// Clear screen
+///
+STATIC mp_obj_t ugfx_clear(mp_uint_t n_args, const mp_obj_t *args) {
+    int color = n_args == 0 ? White : mp_obj_get_int(args[0]);
+    gdispFillArea(0, 0, gdispGetWidth(), gdispGetHeight(), color);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_clear_obj, 0, 1, ugfx_clear);
+
 /// \method box(x1, y1, a, b, colour)
 ///
 /// Draw a box from (x,y), with lengths x1,y1, using the given colour.
@@ -788,15 +820,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_next_obj, ugfx_image_next);
 */
 
 
-/// \method display_image(x, y, image_object)
+/// \method display_image(x, y, image_object, {rotation})
 ///
-STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
+STATIC mp_obj_t ugfx_display_image(mp_uint_t n_args, const mp_obj_t *args){
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
-	mp_uint_t len;
-	mp_obj_t img_obj = imin;
-	int x = mp_obj_get_int(xin);
-	int y = mp_obj_get_int(yin);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	mp_obj_t img_obj = args[2];
 	gdispImage imo;
 	gdispImage *iptr;
 
@@ -824,7 +855,12 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 		swidth = gdispGetWidth();
 		sheight = gdispGetHeight();
 
+		if (n_args > 3)
+			set_blit_rotation(get_orientation(mp_obj_get_int(args[3])));
+
 		int err = gdispImageDraw(iptr, x, y, swidth, sheight, 0, 0);
+
+		set_blit_rotation(GDISP_ROTATE_0);
 
 		if (MP_OBJ_IS_STR(img_obj))
 			gdispImageClose(&imo);
@@ -835,7 +871,7 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_display_image_obj, ugfx_display_image);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_obj, 3, 4, ugfx_display_image);
 
 
 /*
@@ -870,10 +906,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_file_obj, 3, 3, ug
 STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&ugfx_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&ugfx_deinit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_power_mode), (mp_obj_t)&ugfx_power_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_line), (mp_obj_t)&ugfx_line_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_box), (mp_obj_t)&ugfx_box_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_area), (mp_obj_t)&ugfx_area_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&ugfx_clear_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_thickline), (mp_obj_t)&ugfx_thickline_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_circle), (mp_obj_t)&ugfx_circle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_circle), (mp_obj_t)&ugfx_fill_circle_obj },
@@ -882,8 +921,6 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_image_next), (mp_obj_t)&ugfx_image_next_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },
@@ -932,6 +969,10 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_B),      MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_B) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BTN_MENU),   MP_OBJ_NEW_SMALL_INT(GINPUT_TOGGLE_MENU) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),   MP_OBJ_NEW_SMALL_INT(powerOn) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_OFF),   MP_OBJ_NEW_SMALL_INT(powerOff) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_SLEEP),   MP_OBJ_NEW_SMALL_INT(powerSleep) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_DEEP_SLEEP),   MP_OBJ_NEW_SMALL_INT(powerDeepSleep) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&ugfx_button_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&ugfx_container_type },

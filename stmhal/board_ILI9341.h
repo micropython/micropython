@@ -16,6 +16,8 @@
 
 SPI_HandleTypeDef ili_spi;
 
+extern orientation_t blit_rotation;
+
 #if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_PARALLEL
 
 #define FMC_WRITE_FIFO_ENABLE_BODGE FMC_BCR1_WFDIS
@@ -36,8 +38,8 @@ static void HAL_FMC_MspInit(void){
   //FMC_Initialized = 1;
   /* Peripheral clock enable */
   __FMC_CLK_ENABLE();
-  
-  /** FMC GPIO Configuration  
+
+  /** FMC GPIO Configuration
   PE7   ------> FMC_D4
   PE8   ------> FMC_D5
   PE9   ------> FMC_D6
@@ -50,14 +52,14 @@ static void HAL_FMC_MspInit(void){
   PD5   ------> FMC_NWE
   PD7   ------> FMC_NE1
   */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9 
+  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9
                           |GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-  
+
   GPIO_InitStruct.Pin = MICROPY_HW_UGFX_PIN_A0;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -65,7 +67,7 @@ static void HAL_FMC_MspInit(void){
   GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
   HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_A0, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1 
+  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1
                           |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -86,13 +88,13 @@ static GFXINLINE void init_board(GDisplay *g) {
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
-	
 
-	
-	
+
+
+
 	#if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_SPI
 	ili_spi = MICROPY_HW_UGFX_SPI;
-	
+
 	// init the SPI bus
     ili_spi.Init.Mode = SPI_MODE_MASTER;
 
@@ -135,16 +137,16 @@ static GFXINLINE void init_board(GDisplay *g) {
     GPIO_set_pin(MICROPY_HW_UGFX_PORT_CS, MICROPY_HW_UGFX_PIN_CS);
 	GPIO_set_pin(MICROPY_HW_UGFX_PORT_A0, MICROPY_HW_UGFX_PIN_A0);
 
-    // init the pins to be push/pull outputs   
+    // init the pins to be push/pull outputs
     GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_CS;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_CS, &GPIO_InitStructure);
-	
+
 	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_A0;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_A0, &GPIO_InitStructure);
 
-	
+
 	#else
-			
+
 	FMC_NORSRAM_TimingTypeDef Timing;
 
 	/** Perform the SRAM1 memory initialization sequence
@@ -180,32 +182,36 @@ static GFXINLINE void init_board(GDisplay *g) {
 
 	HAL_FMC_MspInit();
 
-	HAL_SRAM_Init(&hsram1, &Timing, NULL);		
+	HAL_SRAM_Init(&hsram1, &Timing, NULL);
 	#endif
-	
-	
+
+
 	//configure the RST and backlight pins
     GPIO_set_pin(MICROPY_HW_UGFX_PORT_RST, MICROPY_HW_UGFX_PIN_RST);
-    GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);	
-	
+    GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);
+
 	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_RST;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_RST, &GPIO_InitStructure);
     GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_BL;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_BL, &GPIO_InitStructure);
-	
 
-	
+
+
 	#ifdef MICROPY_HW_UGFX_PIN_MODE
 	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_MODE;
 	HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_MODE, &GPIO_InitStructure);
 	MICROPY_HW_UGFX_SET_MODE;
 	#endif
 
-	
+
 }
 
 static GFXINLINE void post_init_board(GDisplay *g) {
 	(void) g;
+}
+
+static inline void set_blit_rotation(orientation_t o){
+    blit_rotation = o;
 }
 
 static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
@@ -244,7 +250,7 @@ static GFXINLINE void release_bus(GDisplay *g) {
 }
 static GFXINLINE void write_index(GDisplay *g, uint16_t index) {
 	(void) g;
-	
+
 	GPIO_clear_pin(MICROPY_HW_UGFX_PORT_CS, MICROPY_HW_UGFX_PIN_CS);  //CS low
 	GPIO_clear_pin(MICROPY_HW_UGFX_PORT_A0, MICROPY_HW_UGFX_PIN_A0);  //CMD low
 	HAL_SPI_Transmit(&ili_spi, &index, 1, 1000);
@@ -265,7 +271,7 @@ static GFXINLINE void release_bus(GDisplay *g) {
 	(void) g;
 }
 static GFXINLINE void write_index(GDisplay *g, uint16_t index) {
-	(void) g;	
+	(void) g;
 	LCD_REG = index;
 }
 static GFXINLINE void write_data(GDisplay *g, uint8_t data) {
