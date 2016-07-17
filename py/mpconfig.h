@@ -107,6 +107,12 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
 #endif
 
+// Support automatic GC when reaching allocation threshold,
+// configurable by gc.threshold().
+#ifndef MICROPY_GC_ALLOC_THRESHOLD
+#define MICROPY_GC_ALLOC_THRESHOLD (1)
+#endif
+
 // Number of bytes to allocate initially when creating new chunks to store
 // interned string data.  Smaller numbers lead to more chunks being needed
 // and more wastage at the end of the chunk.  Larger numbers lead to wasted
