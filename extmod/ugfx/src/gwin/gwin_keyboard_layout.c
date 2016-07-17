@@ -29,8 +29,8 @@
 			{ "\015", "\r", 0, 0 },							// \007 (7)	= Enter 2 (Short keycap)
 			{ "Sym", 0, GVKEY_LOCKSET, 4 },					// \010 (8)	= Change to Symbols
 			{ "aA", 0, GVKEY_LOCKSET, 0 },					// \011 (9)	= Change to Lower Alpha
-			{ GKEY_RIGHT, 0, 0, 0  },						// \012 (10) = Nagivate right
-			{ GKEY_LEFT, 0, 0, 0  }							// \013 (11) = Nagivate Left
+			{ ">", "\203", 0, 0  },						// \012 (10) = Nagivate right
+			{ "<", "\204", 0, 0  },							// \013 (11) = Nagivate Left
 	};
 	static const char Eng1Set0Row3[] = "\004  .\012\013\006\006";
 	static const char Eng1Set1Row0[] = "QWERTYUIOP";
