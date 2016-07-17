@@ -179,7 +179,7 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
     wi.g.height = vals[3].u_int;
     wi.g.y = vals[1].u_int;
     wi.g.x = vals[0].u_int;
-	wi.text = mp_obj_str_get_str(vals[4].u_obj);
+	wi.text = 0;
 
 	switch (vals[7].u_int){
 		case BUTTON_ROUNDED:
@@ -214,6 +214,9 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 
 	// Create the actual button
 	btn->ghButton = gwinButtonCreate(NULL, &wi);
+
+	//text
+	gwinSetText(btn->ghButton,mp_obj_str_get_str(vals[4].u_obj),TRUE);
 
     // input
     if (MP_OBJ_IS_INT(vals[6].u_obj)) {
@@ -1042,7 +1045,6 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     wi.g.height = vals[3].u_int;
     wi.g.y = vals[1].u_int;
     wi.g.x = vals[0].u_int;
-	wi.text = mp_obj_str_get_str(vals[4].u_obj);
 
 	// Apply parent
     wi.g.parent = NULL;
@@ -1054,6 +1056,9 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 
 	// Create the actual label
 	btn->ghLabel = gwinLabelCreate(NULL, &wi);
+
+	//text
+	gwinSetText(btn->ghLabel,mp_obj_str_get_str(vals[4].u_obj),TRUE);
 
 	return btn;
 }
