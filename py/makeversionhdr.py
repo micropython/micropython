@@ -10,6 +10,7 @@ import sys
 import os
 import datetime
 import subprocess
+from email.utils import parsedate_tz, mktime_tz
 
 def get_version_info_from_git():
     # Python 2.6 doesn't have check_output, so check for that
@@ -35,6 +36,13 @@ def get_version_info_from_git():
         git_hash = "unknown"
     except OSError:
         return None
+    # Retrieve date of last commit, or fall back to today's date
+    try:
+        ver_date = subprocess.check_output(["git", "show", "--date=short", "--format=%cd", "-s"], stderr=subprocess.STDOUT, universal_newlines=True).strip()
+    except subprocess.CalledProcessError:
+        ver_date = datetime.date.today().strftime("%Y-%m-%d")
+    except OSError:
+        return None
 
     try:
         # Check if there are any modified files.
@@ -43,6 +51,7 @@ def get_version_info_from_git():
         subprocess.check_call(["git", "diff-index", "--cached", "--quiet", "HEAD", "--"], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
         git_hash += "-dirty"
+        ver_date = datetime.date.today().strftime("%Y-%m-%d")
     except OSError:
         return None
 
@@ -54,9 +63,29 @@ def get_version_info_from_git():
     else:
         ver = ["0", "0", "1"]
 
-    return git_tag, git_hash, ver
+    return git_tag, git_hash, ver, ver_date
+
+def get_version_info_from_changelog():
+    try:
+        with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "CHANGELOG.txt")) as f:
+            git_tag = None
+            ver_date = None
+            for line in f:
+                if line.startswith(",", 3):    # Match RFC2822 date
+                    ver_date = datetime.date.fromtimestamp(mktime_tz(parsedate_tz(line))).strftime('%Y-%m-%d')
+                elif line.startswith("v"):     # Match version
+                    git_tag = line.split(" ")[0]
+                    ver = git_tag.strip("v").split(".")
+                    if len(ver) == 2:
+                        ver.append("0")
+                if ver_date and git_tag:
+                    return git_tag, "<no hash>", ver, ver_date
+    except IOError:
+        pass
+    return None
 
 def get_version_info_from_docs_conf():
+    ver_date = datetime.date.today().strftime("%Y-%m-%d")
     with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "docs", "conf.py")) as f:
         for line in f:
             if line.startswith("release = '"):
@@ -65,16 +94,18 @@ def get_version_info_from_docs_conf():
                 ver = ver.split(".")
                 if len(ver) == 2:
                     ver.append("0")
-                return git_tag, "<no hash>", ver
+                return git_tag, "<no hash>", ver, ver_date
     return None
 
 def make_version_header(filename):
-    # Get version info using git, with fallback to docs/conf.py
+    # Get version info using git, or fall back to CHANGELOG.txt or docs/conf.py
     info = get_version_info_from_git()
+    if info is None:
+        info = get_version_info_from_changelog()
     if info is None:
         info = get_version_info_from_docs_conf()
 
-    git_tag, git_hash, ver = info
+    git_tag, git_hash, ver, ver_date = info
 
     # Generate the file with the git and version info
     file_data = """\
@@ -86,7 +117,7 @@ def make_version_header(filename):
 #define MICROPY_VERSION_MINOR (%s)
 #define MICROPY_VERSION_MICRO (%s)
 #define MICROPY_VERSION_STRING "%s.%s.%s"
-""" % (git_tag, git_hash, datetime.date.today().strftime("%Y-%m-%d"),
+""" % (git_tag, git_hash, ver_date,
     ver[0], ver[1], ver[2], ver[0], ver[1], ver[2])
 
     # Check if the file contents changed from last time
