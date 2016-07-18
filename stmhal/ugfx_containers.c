@@ -131,11 +131,54 @@ STATIC mp_obj_t ugfx_thickline(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_thickline_obj, 8, 8, ugfx_thickline);
 
+/// \method arc(x1, y1, r, angle1, angle2, colour)
+///
+/// Draw an arc having a centre point at (x1,y1), radius r, using the given colour.
+///
+STATIC mp_obj_t ugfx_arc(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //ugfx_obj_t *self = args[0];
+    int x0 = mp_obj_get_int(args[1]);
+    int y0 = mp_obj_get_int(args[2]);
+	int r = mp_obj_get_int(args[3]);
+    int col = mp_obj_get_int(args[6]);
+    int a1 = mp_obj_get_int(args[4]);
+    int a2 = mp_obj_get_int(args[5]);
+
+	GHandle gh = get_ugfx_handle(args[0]);
+	gwinSetColor(gh,col);
+	gwinDrawArc(gh,x0, y0, r, a1, a2);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_arc_obj, 7, 7, ugfx_arc);
+
+/// \method fill_arc(x1, y1, r, angle1, angle2, colour)
+///
+/// Fill an arc having a centre point at (x1,y1), radius r, using the given colour.
+///
+STATIC mp_obj_t ugfx_fill_arc(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    //ugfx_obj_t *self = args[0];
+    int x0 = mp_obj_get_int(args[1]);
+    int y0 = mp_obj_get_int(args[2]);
+	int r = mp_obj_get_int(args[3]);
+	int col = mp_obj_get_int(args[6]);
+    int a1 = mp_obj_get_int(args[4]);
+    int a2 = mp_obj_get_int(args[5]);
+
+	GHandle gh = get_ugfx_handle(args[0]);
+	gwinSetColor(gh,col);
+	gwinFillArc(gh,x0, y0, r, a1, a2);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_fill_arc_obj, 7, 7, ugfx_fill_arc);
+
 
 /// \method circle(x1, y1, r, colour)
 ///
 /// Draw a circle having a centre point at (x1,y1), radius r, using the given colour.
-/// Option to round the ends
 ///
 STATIC mp_obj_t ugfx_circle(mp_uint_t n_args, const mp_obj_t *args) {
     // extract arguments
@@ -156,7 +199,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_circle_obj, 5, 5, ugfx_circle);
 /// \method fill_circle(x1, y1, r, colour)
 ///
 /// Fill a circle having a centre point at (x1,y1), radius r, using the given colour.
-/// Option to round the ends
 ///
 STATIC mp_obj_t ugfx_fill_circle(mp_uint_t n_args, const mp_obj_t *args) {
     // extract arguments
@@ -180,7 +222,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_fill_circle_obj, 5, 5, ugfx_fill
 /// \method ellipse(x1, y1, a, b, colour)
 ///
 /// Draw a ellipse having a centre point at (x1,y1), lengths a,b, using the given colour.
-/// Option to round the ends
 ///
 STATIC mp_obj_t ugfx_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
     // extract arguments
@@ -203,7 +244,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_ellipse_obj, 6, 6, ugfx_ellipse)
 /// \method fill_ellipse(x1, y1, a, b, colour)
 ///
 /// Fill a ellipse having a centre point at (x1,y1), lengths a,b, using the given colour.
-/// Option to round the ends
 ///
 STATIC mp_obj_t ugfx_fill_ellipse(mp_uint_t n_args, const mp_obj_t *args) {
     // extract arguments
@@ -504,8 +544,10 @@ STATIC const mp_map_elem_t ugfx_container_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_thickline), (mp_obj_t)&ugfx_thickline_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_circle), (mp_obj_t)&ugfx_circle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_circle), (mp_obj_t)&ugfx_fill_circle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ellipse), (mp_obj_t)&ugfx_ellipse_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_ellipse), (mp_obj_t)&ugfx_ellipse_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_ellipse), (mp_obj_t)&ugfx_fill_ellipse_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_arc), (mp_obj_t)&ugfx_arc_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_fill_arc), (mp_obj_t)&ugfx_fill_arc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
 

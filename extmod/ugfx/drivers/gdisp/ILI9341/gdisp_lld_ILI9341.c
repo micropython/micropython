@@ -103,7 +103,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	//////////////////////////////
 	//////////////////////////////
 
-	
+
 	write_index(g, 0xcf);
 	write_data(g, 0x00);
 	write_data(g, 0xc3);  // write_data(g, 0x83);  //0xc3 in BD example
@@ -114,22 +114,22 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	write_data(g, 0x03);
 	write_data(g, 0x12);
 	write_data(g, 0x81);
-	
+
 	write_index(g, 0xe8);
 	write_data(g, 0x85);
 	write_data(g, 0x10); //write_data(g, 0x01);  //0x10 in BD example
 	write_data(g, 0x79);
-	
+
 	write_index(g, 0xcb);
 	write_data(g, 0x39);
 	write_data(g, 0x2c);
 	write_data(g, 0x00);
 	write_data(g, 0x34);
 	write_data(g, 0x02);
-	
+
 	write_index(g, 0xf7);
 	write_data(g, 0x20);
-	
+
 	write_index(g, 0xea);
 	write_data(g, 0x00);
 	write_data(g, 0x00);
@@ -142,13 +142,13 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	write_index(g, 0xc5); //vcom control
 	write_data(g, 0x3d);  // write_data(g, 0x35);//35  //3d in BD example
 	write_data(g, 0x3e);  // write_data(g, 0x3e);//3E  //20 in BD example    <- this one affects brightness quite a lot
-	
+
 	write_index(g, 0xc7); //vcom control
 	write_data(g, 0xaa); //write_data(g, 0xbe); // 0x94 //0xaa in BD example   <- this one affects brightness quite a lot and the streaky-ness
 	//------------memory access control------------------------
 	write_index(g, 0x36);
 	// memory access control
-	write_data(g, 0x08); //write_data(g, 0x48);   //0048 my,mx,mv,ml,BGR,mh,0.0  //0x08 in BD example 
+	write_data(g, 0x08); //write_data(g, 0x48);   //0048 my,mx,mv,ml,BGR,mh,0.0  //0x08 in BD example
 	write_index(g, 0x3a); // pixel format set
 	write_data(g, 0x55);//16bit /pixel
 	//----------------- frame rate------------------------------
@@ -156,9 +156,9 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	// frame rate
 	write_data(g, 0x00);
 	write_data(g, 0x1F); //0x1B in BD example //70
-	
-	
-	
+
+
+
 	/////////////////////////////
 	//----------------Gamma---------------------------------
 	write_index(g, 0xf2); // 3Gamma Function Disable
@@ -238,7 +238,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
  	// Release the bus
 	release_bus(g);
-	
+
 	/* Turn on the back-light */
 	set_backlight(g, GDISP_INITIAL_BACKLIGHT);
 
@@ -251,6 +251,64 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	g->g.Contrast = GDISP_INITIAL_CONTRAST;
 	return TRUE;
 }
+
+//This isn't any more efficient than the streaming method, but it does
+// allow the driver to control the write direction to avoid tearing.
+// However, DMA should be added here...
+#if GDISP_HARDWARE_BITFILLS // && GDISP_USE_DMA
+	#if GDISP_PIXELFORMAT != GDISP_LLD_PIXELFORMAT
+		#error "GDISP: BitBlit is only available in RGB565 pixel format"
+	#endif
+	LLDSPEC void gdisp_lld_blit_area(GDisplay* g) {
+		pixel_t* buffer;
+		pixel_t* b1;
+		coord_t srcx; coord_t srcy; coord_t srccx;
+		coord_t x; coord_t y; coord_t cx; coord_t cy;
+
+		acquire_bus(g);
+		set_viewport(g);
+		write_index(g, 0x2C);
+
+
+		buffer = g->p.ptr;
+		srcx = g->p.x1;
+		srcy = g->p.y1;
+		srccx = g->p.x2;
+		cx = g->p.cx;
+		cy = g->p.cy;
+
+
+
+		b1 = buffer+srcy*srccx+srcx;
+
+		if (g->g.Width > g->g.Height){
+	        for (x = 0; x < cx; x++){
+	            buffer = b1;
+	            for (y = 0; y < cy; y++){
+	                g->p.color = *buffer;
+	                gdisp_lld_write_color(g);
+	                buffer += srccx;
+	            }
+	            b1++;
+	        }
+	    }
+	    else
+	    {
+	        srccx -= cx;
+	        for (y = 0; y < cy; y++){
+	            for (x = 0; x < cx; x++){
+	              g->p.color = *buffer++;
+	              gdisp_lld_write_color(g);
+	              buffer += srccx;
+	            }
+	            buffer += srccx;
+	        }
+	    }
+
+
+		release_bus(g);
+	}
+#endif
 
 #if GDISP_HARDWARE_STREAM_WRITE
 	LLDSPEC	void gdisp_lld_write_start(GDisplay *g) {
