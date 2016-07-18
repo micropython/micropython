@@ -586,6 +586,46 @@ STATIC mp_obj_t ugfx_thickline(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_thickline_obj, 7, 7, ugfx_thickline);
 
 
+/// \method arc(x1, y1, r, angle1, angle2, colour)
+///
+/// Draw an arc having a centre point at (x1,y1), radius r, using the given colour.
+///
+STATIC mp_obj_t ugfx_arc(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    int x0 = mp_obj_get_int(args[0]);
+    int y0 = mp_obj_get_int(args[1]);
+	int r = mp_obj_get_int(args[2]);
+    int col = mp_obj_get_int(args[5]);
+    int a1 = mp_obj_get_int(args[3]);
+    int a2 = mp_obj_get_int(args[4]);
+
+	gdispDrawArc(x0, y0, r, a1, a2,col);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_arc_obj, 6, 6, ugfx_arc);
+
+/// \method fill_arc(x1, y1, r, angle1, angle2, colour)
+///
+/// Fill an arc having a centre point at (x1,y1), radius r, using the given colour.
+///
+STATIC mp_obj_t ugfx_fill_arc(mp_uint_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    int x0 = mp_obj_get_int(args[0]);
+    int y0 = mp_obj_get_int(args[1]);
+	int r = mp_obj_get_int(args[2]);
+	int col = mp_obj_get_int(args[5]);
+    int a1 = mp_obj_get_int(args[3]);
+    int a2 = mp_obj_get_int(args[4]);
+
+	gdispFillArc(x0, y0, r, a1, a2,col);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_fill_arc_obj, 6, 6, ugfx_fill_arc);
+
+
+
 /// \method circle(x1, y1, r, colour)
 ///
 /// Draw a circle having a centre point at (x1,y1), radius r, using the given colour.
@@ -911,6 +951,8 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_circle), (mp_obj_t)&ugfx_fill_circle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ellipse), (mp_obj_t)&ugfx_ellipse_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_ellipse), (mp_obj_t)&ugfx_fill_ellipse_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_arc), (mp_obj_t)&ugfx_arc_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fill_arc), (mp_obj_t)&ugfx_fill_arc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
