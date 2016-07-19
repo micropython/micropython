@@ -90,6 +90,17 @@ SECTIONS
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM AT> FLASH_TEXT
             
+    /* UGFX heap data section */
+    .bss.heap :
+    {
+        . = ALIGN(4);
+        _bss_heap = .;         /* define a global symbol at ugfx start */
+        *(.bss.heap)
+
+        . = ALIGN(4);
+        _ebss_heap = .;         /* define a global symbol at ugfx end */
+    } >SRAM2
+
     /* Uninitialized data section */
     .bss :
     {
