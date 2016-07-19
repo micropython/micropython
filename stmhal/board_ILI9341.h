@@ -92,7 +92,7 @@ static void pwm_timer_init(void)
 	htim.Init.Prescaler = 2000;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
 	htim.Init.Period = 100;
-	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.RepetitionCounter = 0;
 	HAL_TIM_Base_Init(&htim);
 
