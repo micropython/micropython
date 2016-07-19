@@ -256,9 +256,16 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
     if (!is_adcx_channel(channel)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel));
     }
-    if (pin_adc1[channel] == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel));
-    }
+	
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    if (channel < 16){
+#elif defined(MCU_SERIES_L4)
+    if ((channel > 0) && (channel < 17)){
+#endif
+		if (pin_adc1[channel] == NULL) {
+			nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel));
+		}
+	}
 
     pyb_obj_adc_t *o = m_new_obj(pyb_obj_adc_t);
     memset(o, 0, sizeof(*o));
