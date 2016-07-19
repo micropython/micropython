@@ -91,6 +91,11 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_SECTOR_SIZE_MAX (0x00800)         // 2k max
 #define FLASH_MEM_SEG1_START_ADDR (0x08000800)  // sector 1
 #define FLASH_MEM_SEG1_NUM_BLOCKS (252)         // 1 Block=512 Bytes Reserve 126 kBytes
+// on the STM32L47xxG we have 1MB of flash so can enable a bigger FS
+#if defined(MICROPY_HW_L4_512_FS) && MICROPY_HW_L4_512_FS
+#define FLASH_MEM_SEG2_START_ADDR (0x080A0000) // sector 320
+#define FLASH_MEM_SEG2_NUM_BLOCKS (768) // 384 kBytes
+#endif
 
 #else
 #error "no storage support for this MCU"
