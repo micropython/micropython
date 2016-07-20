@@ -303,7 +303,7 @@ class Pins(object):
     def print_adc(self, adc_num):
         print('');
         print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
-        for channel in range(16):
+        for channel in range(17):
             adc_found = False
             for named_pin in self.cpu_pins:
                 pin = named_pin.pin()
