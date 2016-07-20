@@ -550,6 +550,7 @@ gdispImageError gdispImageOpen_GIF(gdispImage *img) {
 	priv->frame.flags = 0;
 	priv->cache = 0;
 	priv->curcache = 0;
+	priv->decode = 0;
 
 	/* Process the Screen Descriptor structure */
 

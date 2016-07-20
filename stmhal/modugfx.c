@@ -77,7 +77,16 @@ typedef struct _ugfx_obj_t {
     mp_obj_base_t base;
 } ugfx_obj_t;
 
-
+static orientation_t get_orientation(int a){
+	if (a == 90)
+		return GDISP_ROTATE_90;
+	else if (a == 180)
+		return GDISP_ROTATE_180;
+	else if (a == 270)
+		return GDISP_ROTATE_270;
+	else
+		return GDISP_ROTATE_0;
+}
 
 /// \method init()
 ///
@@ -214,14 +223,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(ugfx_ball_demo_obj, ugfx_ball_demo);
 STATIC mp_obj_t ugfx_set_orientation(mp_uint_t n_args, const mp_obj_t *args) {
 	if (n_args > 0){
 		int a = mp_obj_get_int(args[0]);
-		if (a == 0)
-			gdispSetOrientation(GDISP_ROTATE_0);
-		else if (a == 90)
-			gdispSetOrientation(GDISP_ROTATE_90);
-		else if (a == 180)
-			gdispSetOrientation(GDISP_ROTATE_180);
-		else if (a == 270)
-			gdispSetOrientation(GDISP_ROTATE_270);
+		gdispSetOrientation(get_orientation(a));
+
 	}
 
     return mp_obj_new_int(gdispGetOrientation());
@@ -872,15 +875,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_image_next_obj, ugfx_image_next);
 */
 
 
-/// \method display_image(x, y, image_object)
+/// \method display_image(x, y, image_object, {rotation})
 ///
-STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
+STATIC mp_obj_t ugfx_display_image(mp_uint_t n_args, const mp_obj_t *args){
     // extract arguments
     //pyb_ugfx_obj_t *self = args[0];
-	mp_uint_t len;
-	mp_obj_t img_obj = imin;
-	int x = mp_obj_get_int(xin);
-	int y = mp_obj_get_int(yin);
+	int x = mp_obj_get_int(args[0]);
+	int y = mp_obj_get_int(args[1]);
+	mp_obj_t img_obj = args[2];
 	gdispImage imo;
 	gdispImage *iptr;
 
@@ -908,7 +910,12 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 		swidth = gdispGetWidth();
 		sheight = gdispGetHeight();
 
+		if (n_args > 3)
+			set_blit_rotation(get_orientation(mp_obj_get_int(args[3])));
+
 		int err = gdispImageDraw(iptr, x, y, swidth, sheight, 0, 0);
+
+		set_blit_rotation(GDISP_ROTATE_0);
 
 		if (MP_OBJ_IS_STR(img_obj))
 			gdispImageClose(&imo);
@@ -919,7 +926,7 @@ STATIC mp_obj_t ugfx_display_image(mp_obj_t xin, mp_obj_t yin, mp_obj_t imin) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_display_image_obj, ugfx_display_image);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_display_image_obj, 3, 4, ugfx_display_image);
 
 
 /*
@@ -972,8 +979,6 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_polygon), (mp_obj_t)&ugfx_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_fill_polygon), (mp_obj_t)&ugfx_fill_polygon_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_display_image), (mp_obj_t)&ugfx_display_image_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_image_next), (mp_obj_t)&ugfx_image_next_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_display_image_file), (mp_obj_t)&ugfx_display_image_file_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_orientation), (mp_obj_t)&ugfx_set_orientation_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write_command), (mp_obj_t)&ugfx_write_command_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_width_obj },

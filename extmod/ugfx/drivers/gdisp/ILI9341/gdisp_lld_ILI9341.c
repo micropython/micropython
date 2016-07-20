@@ -54,6 +54,8 @@
 #define delay(us)					gfxSleepMicroseconds(us)
 #define delayms(ms)					gfxSleepMilliseconds(ms)
 
+orientation_t blit_rotation;
+
 static void set_viewport(GDisplay *g) {
 	if (g->g.Width > g->g.Height)		//needed to ensure data is written in the same direction as vsync
 		write_index(g, 0x2B);
@@ -278,31 +280,106 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 		cy = g->p.cy;
 
 
-
-		b1 = buffer+srcy*srccx+srcx;
-
 		if (g->g.Width > g->g.Height){
-	        for (x = 0; x < cx; x++){
-	            buffer = b1;
-	            for (y = 0; y < cy; y++){
-	                g->p.color = *buffer;
-	                gdisp_lld_write_color(g);
-	                buffer += srccx;
-	            }
-	            b1++;
-	        }
-	    }
+			if (blit_rotation == GDISP_ROTATE_0){
+				b1 = buffer+srcy*srccx+srcx;
+				for (x = 0; x < cx; x++){
+					buffer = b1;
+					for (y = 0; y < cy; y++){
+						g->p.color = *buffer;
+						gdisp_lld_write_color(g);
+						buffer += srccx;
+					}
+					b1++;
+				}
+			}
+			else if (blit_rotation == GDISP_ROTATE_90){
+				buffer += (srcy+cy-1)*srccx+srcx;
+		        srccx += cx;
+		        for (y = 0; y < cy; y++){
+		            for (x = 0; x < cx; x++){
+		              g->p.color = *buffer++;
+		              gdisp_lld_write_color(g);
+		            }
+		            buffer -= srccx;
+		        }
+			}
+			else if (blit_rotation == GDISP_ROTATE_180){
+				b1 = buffer+(srcy+cy-1)*srccx+srcx+srccx-1;
+				for (x = 0; x < cx; x++){
+					buffer = b1;
+					for (y = 0; y < cy; y++){
+						g->p.color = *buffer;
+						gdisp_lld_write_color(g);
+						buffer -= srccx;
+					}
+					b1--;
+				}
+			}
+			else //if rotation == 270
+			{
+				buffer += srcy*srccx+srcx+cy;
+		        srccx += cx;
+		        for (y = 0; y < cy; y++){
+		            for (x = 0; x < cx; x++){
+		              g->p.color = *buffer--;
+		              gdisp_lld_write_color(g);
+		            }
+		            buffer += srccx;
+		        }
+			}
+
+		}
 	    else
 	    {
-	        srccx -= cx;
-	        for (y = 0; y < cy; y++){
-	            for (x = 0; x < cx; x++){
-	              g->p.color = *buffer++;
-	              gdisp_lld_write_color(g);
-	              buffer += srccx;
-	            }
-	            buffer += srccx;
-	        }
+			if (blit_rotation == GDISP_ROTATE_0){
+				buffer += srcy*srccx+srcx;
+				srccx -= cx;
+				for (y = 0; y < cy; y++){
+					for (x = 0; x < cx; x++){
+					  g->p.color = *buffer++;
+					  gdisp_lld_write_color(g);
+					}
+					buffer += srccx;
+				}
+			}
+			else if (blit_rotation == GDISP_ROTATE_90){
+				b1 = buffer+(srcy+cy-1)*srccx+srcx;
+				for (x = 0; x < cx; x++){				
+					buffer = b1;
+					for (y = 0; y < cy; y++){					
+					  g->p.color = *buffer;
+					  gdisp_lld_write_color(g);
+					  buffer -= srccx;
+					}
+					b1++;
+					buffer = b1;
+				}
+			}
+			else if (blit_rotation == GDISP_ROTATE_180){
+				buffer += (srcy+cy-1)*srccx+srcx+cx-1;
+				srccx -= cx;
+				for (y = 0; y < cy; y++){
+					for (x = 0; x < cx; x++){
+					  g->p.color = *buffer--;
+					  gdisp_lld_write_color(g);
+					}
+					buffer -= srccx;
+				}
+			}
+			else {// if (blit_rotation == GDISP_ROTATE_270){
+				b1 = buffer+srcy*srccx+srcx+cx-1;
+				for (x = 0; x < cx; x++){				
+					buffer = b1;
+					for (y = 0; y < cy; y++){					
+					  g->p.color = *buffer;
+					  gdisp_lld_write_color(g);
+					  buffer += srccx;
+					}
+					b1--;
+					buffer = b1;
+				}
+			}
 	    }
 
 
