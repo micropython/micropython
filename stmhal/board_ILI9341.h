@@ -14,6 +14,7 @@
 #include "genhdr/pins.h"
 #include "spi.h"
 
+
 SPI_HandleTypeDef ili_spi;
 
 #if MICROPY_HW_UGFX_INTERFACE == UGFX_DRIVER_PARALLEL
@@ -75,9 +76,49 @@ static void HAL_FMC_MspInit(void){
 
   /* USER CODE BEGIN FMC_MspInit 1 */
 
+
   /* USER CODE END FMC_MspInit 1 */
 }
 #endif
+
+static void pwm_timer_init(void)
+{
+	__TIM17_CLK_ENABLE();
+	TIM_HandleTypeDef htim;
+	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
+	TIM_OC_InitTypeDef sConfigOC;
+
+	htim.Instance = TIM17;
+	htim.Init.Prescaler = 2000;
+	htim.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim.Init.Period = 100;
+	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim.Init.RepetitionCounter = 0;
+	HAL_TIM_Base_Init(&htim);
+
+	HAL_TIM_PWM_Init(&htim);
+
+	sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+	sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+	sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+	sBreakDeadTimeConfig.DeadTime = 0;
+	sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+	sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+	sBreakDeadTimeConfig.BreakFilter = 0;
+	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+	HAL_TIMEx_ConfigBreakDeadTime(&htim, &sBreakDeadTimeConfig);
+
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 100;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, TIM_CHANNEL_1);//MICROPY_HW_UGFX_TIMER_CHANNEL);
+	HAL_TIM_PWM_Start(&htim, TIM_CHANNEL_1);
+
+}
 
 static GFXINLINE void init_board(GDisplay *g) {
 	// As we are not using multiple displays we set g->board to NULL as we don't use it.
@@ -186,20 +227,23 @@ static GFXINLINE void init_board(GDisplay *g) {
 	
 	//configure the RST and backlight pins
     GPIO_set_pin(MICROPY_HW_UGFX_PORT_RST, MICROPY_HW_UGFX_PIN_RST);
-    GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);	
+    //GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);	
 	
 	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_RST;
     HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_RST, &GPIO_InitStructure);
-    GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_BL;
-    HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_BL, &GPIO_InitStructure);
-	
-
-	
+   
 	#ifdef MICROPY_HW_UGFX_PIN_MODE
 	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_MODE;
 	HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_MODE, &GPIO_InitStructure);
 	MICROPY_HW_UGFX_SET_MODE;
 	#endif
+	
+	GPIO_InitStructure.Pin = MICROPY_HW_UGFX_PIN_BL;
+	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
+	GPIO_InitStructure.Alternate = GPIO_AF14_TIM17;
+    HAL_GPIO_Init(MICROPY_HW_UGFX_PORT_BL, &GPIO_InitStructure);
+	pwm_timer_init();
 
 	
 }
@@ -221,14 +265,16 @@ static GFXINLINE void setpin_reset(GDisplay *g, bool_t state) {
 
 static GFXINLINE void set_backlight(GDisplay *g, uint8_t percent) {
 	(void) g;
-	// TODO: can probably pwm this
-	if(percent) {
+	
+	TIM17->CCR1 = percent;
+	/*
 		// turn back light on
 		GPIO_set_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);
 	} else {
 		// turn off
 		GPIO_clear_pin(MICROPY_HW_UGFX_PORT_BL, MICROPY_HW_UGFX_PIN_BL);
 	}
+	*/
 }
 
 static GFXINLINE void acquire_bus(GDisplay *g) {
@@ -289,6 +335,7 @@ static GFXINLINE void setreadmode(GDisplay *g) {
 static GFXINLINE void setwritemode(GDisplay *g) {
 	(void) g;
 }
+
 
 
 
