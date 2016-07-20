@@ -49,7 +49,7 @@
 	#define CORTEX_USE_FPU                           TRUE
 //    #define GFX_CPU_NO_ALIGNMENT_FAULTS              FALSE
 //    #define GFX_CPU_ENDIAN                           GFX_CPU_ENDIAN_UNKNOWN
-    #define GFX_OS_HEAP_SIZE                         30720 //16384
+    #define GFX_OS_HEAP_SIZE                         30720
 //    #define GFX_OS_NO_INIT                           FALSE
     #define GFX_OS_INIT_NO_WARNING                   TRUE
 //    #define GFX_OS_PRE_INIT_FUNCTION                 myHardwareInitRoutine

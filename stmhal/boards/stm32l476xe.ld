@@ -10,7 +10,8 @@ MEMORY
     FLASH_FS (r)    : ORIGIN = 0x08000800, LENGTH = 0x001F800 /* sectors 1-63 (2K each = 126 KiB) */
     FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x0060000 /* Sector starting @ 64 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 96K
-    SRAM2 (xrw)     : ORIGIN = 0x10000000, LENGTH = 32K
+    SRAM2_FS_BUF (xrw) : ORIGIN = 0x10000000, LENGTH = 0x0000800 /* 2K, do not touch used directly by storage.c */
+    SRAM2 (xrw)        : ORIGIN = 0x10000800, LENGTH = 0x0007800 /* 30K */
 }
 
 ENTRY(Reset_Handler)
@@ -89,6 +90,17 @@ SECTIONS
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM AT> FLASH_TEXT
             
+    /* UGFX heap data section */
+    .bss.heap :
+    {
+        . = ALIGN(4);
+        _bss_heap = .;         /* define a global symbol at ugfx start */
+        *(.bss.heap)
+
+        . = ALIGN(4);
+        _ebss_heap = .;         /* define a global symbol at ugfx end */
+    } >SRAM2
+
     /* Uninitialized data section */
     .bss :
     {

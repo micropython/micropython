@@ -80,7 +80,7 @@ static void TextEditMouseDown(GWidgetObject* gw, coord_t x, coord_t y) {
 			return;
 
 		// Is it a special key?
-		if (pke->keystate & GKEYSTATE_SPECIAL) {
+		//if (pke->keystate & GKEYSTATE_SPECIAL) {
 
 			// Arrow keys to move the cursor
 			switch ((uint8_t)pke->c[0]) {
@@ -104,14 +104,14 @@ static void TextEditMouseDown(GWidgetObject* gw, coord_t x, coord_t y) {
 					return;
 				gw2obj->cursorPos = strlen(gw->text);
 				break;
-			default:
-				return;
-			}
+			//default:
+			//	return;
+			//}
 
-		} else {
+		//} else {
 
 			// Normal key press
-			switch((uint8_t)pke->c[0]) {
+			//switch((uint8_t)pke->c[0]) {
 			case GKEY_BACKSPACE:
 				// Backspace
 				if (!gw2obj->cursorPos)
@@ -148,7 +148,7 @@ static void TextEditMouseDown(GWidgetObject* gw, coord_t x, coord_t y) {
 				gw2obj->cursorPos += pke->bytecount;
 				break;
 			}
-		}
+		//}
 
 		_gwinUpdate((GHandle)gw);
 	}
