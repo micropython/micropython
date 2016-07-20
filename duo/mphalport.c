@@ -49,7 +49,20 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
 }
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
-
+	if (0) {
+	    #ifdef __GPIOA_CLK_ENABLE
+	    } else if (gpio == GPIOA) {
+	        __GPIOA_CLK_ENABLE();
+	    #endif
+	    #ifdef __GPIOB_CLK_ENABLE
+	    } else if (gpio == GPIOB) {
+	        __GPIOB_CLK_ENABLE();
+	    #endif
+        #ifdef __GPIOC_CLK_ENABLE
+	    } else if (gpio == GPIOC) {
+	    	__GPIOC_CLK_ENABLE();
+		#endif
+	    }
 }
 
 void mp_hal_gpio_config(GPIO_TypeDef *gpio, uint32_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
