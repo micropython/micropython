@@ -26,7 +26,7 @@ PD6 - UP - AH
 PD8 - A - AL
 PD9 - B - AL
 PD10 - MENU - AL
-PD11 - DOWN - AH 
+PD11 - DOWN - AH
 PE0 - CENTRE - AH
 PA15 - LEFT - AH
 */
@@ -46,15 +46,15 @@ PA15 - LEFT - AH
 	}
 
 #else
-	
+
 	#define GINPUT_TOGGLE_DECLARE_STRUCTURE()											 \
 	const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {    \
-		{GPIOD, GPIO_PIN_9, 0, 0}, /* PD9  - Joy Right */    \
-		{GPIOD, GPIO_PIN_10, 0, 0},/* PD10 - Joy Up */       \
+		{GPIOD, GPIO_PIN_10, 0, 0}, /* PD10  - Joy Right */    \
+		{GPIOD, GPIO_PIN_8, 0, 0},  /* PD8 - Joy Up */       \
 		{GPIOA, GPIO_PIN_15, GPIO_PIN_15, 0}, /* PD15  - A Button */     \
 		{GPIOD, GPIO_PIN_11, GPIO_PIN_11, 0}, /* PD11  - B Button */     \
 		{GPIOD, GPIO_PIN_3,  GPIO_PIN_3, 0}, /* PD3 - Menu Button */  \
-		{GPIOD, GPIO_PIN_8,  0, 0},  /* PD8 - Joy Down */     \
+		{GPIOD, GPIO_PIN_9,  0, 0},  /* PD9 - Joy Down */     \
 		{GPIOD, GPIO_PIN_6,  0, 0},  /* PD6  - Joy Left */     \
 		{GPIOE, GPIO_PIN_0,  0, 0},  /* PE0  - Joy Centre */   \
 	}
@@ -63,16 +63,16 @@ PA15 - LEFT - AH
 
 //this could be used if the const is removed...
 
-//#define GINPUT_TOGGLE_DECLARE_STRUCTURE()											
-//const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {   
-//    {pyb_pin_JOY_RIGHT.gpio, pyb_pin_JOY_RIGHT.pin_mask,  0, 0}, /* PD3  - Joy Right */   
-//    {pyb_pin_JOY_UP.gpio, pyb_pin_JOY_RIGHT.pin_mask,  0, 0}, /* PD6  - Joy Up */      
-//    {pyb_pin_BTN_A.gpio, pyb_pin_BTN_A.pin_mask,  pyb_pin_BTN_A.pin_mask, 0}, /* PD8  - A Button */    
-//    {pyb_pin_BTN_B.gpio, pyb_pin_BTN_B.pin_mask,  pyb_pin_BTN_B.pin_mask, 0}, /* PD9  - B Button */    
-//    {pyb_pin_BTN_MENU.gpio, pyb_pin_BTN_MENU.pin_mask, pyb_pin_BTN_MENU.pin_mask, 0}, /* PD10 - Menu Button */ 
-//    {pyb_pin_JOY_DOWN.gpio, pyb_pin_JOY_DOWN.pin_mask, 0, 0}, /* PD11 - Joy Down */    
-//	{pyb_pin_JOY_LEFT.gpio, pyb_pin_JOY_LEFT.pin_mask, 0, 0}, /* PA15 - Joy Left */   
-//    {pyb_pin_JOY_CENTER.gpio, pyb_pin_JOY_CENTER.pin_mask,  0, 0}, /* PE0  - Joy Centre */  
+//#define GINPUT_TOGGLE_DECLARE_STRUCTURE()
+//const GToggleConfig GInputToggleConfigTable[GINPUT_TOGGLE_CONFIG_ENTRIES] = {
+//    {pyb_pin_JOY_RIGHT.gpio, pyb_pin_JOY_RIGHT.pin_mask,  0, 0}, /* PD3  - Joy Right */
+//    {pyb_pin_JOY_UP.gpio, pyb_pin_JOY_RIGHT.pin_mask,  0, 0}, /* PD6  - Joy Up */
+//    {pyb_pin_BTN_A.gpio, pyb_pin_BTN_A.pin_mask,  pyb_pin_BTN_A.pin_mask, 0}, /* PD8  - A Button */
+//    {pyb_pin_BTN_B.gpio, pyb_pin_BTN_B.pin_mask,  pyb_pin_BTN_B.pin_mask, 0}, /* PD9  - B Button */
+//    {pyb_pin_BTN_MENU.gpio, pyb_pin_BTN_MENU.pin_mask, pyb_pin_BTN_MENU.pin_mask, 0}, /* PD10 - Menu Button */
+//    {pyb_pin_JOY_DOWN.gpio, pyb_pin_JOY_DOWN.pin_mask, 0, 0}, /* PD11 - Joy Down */
+//	{pyb_pin_JOY_LEFT.gpio, pyb_pin_JOY_LEFT.pin_mask, 0, 0}, /* PA15 - Joy Left */
+//    {pyb_pin_JOY_CENTER.gpio, pyb_pin_JOY_CENTER.pin_mask,  0, 0}, /* PE0  - Joy Centre */
 //}
 
 #endif /* _GDISP_LLD_TOGGLE_BOARD_H */
