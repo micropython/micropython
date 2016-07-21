@@ -590,6 +590,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Support for async/await/async for/async with
+#ifndef MICROPY_PY_STR_BYTES_CMP_WARN
+#define MICROPY_PY_STR_BYTES_CMP_WARN (0)
+#endif
+
 // Whether str object is proper unicode
 #ifndef MICROPY_PY_BUILTINS_STR_UNICODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
