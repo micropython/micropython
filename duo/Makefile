@@ -198,6 +198,7 @@ MP_SOURCE = \
     wiring.c \
 	stmhal/pybstdio.c \
 	modpyb.c \
+	adc.c \
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/,$(HAL_SOURCES:.c=.o))
