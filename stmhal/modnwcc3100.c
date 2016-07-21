@@ -108,25 +108,30 @@ int spi_Close(Fd_t Fd)
 
 int spi_Read(Fd_t Fd, unsigned char* pBuff, int Len)
 {
-    int retval;
+    HAL_StatusTypeDef status;
     memset(pBuff, 0xFF, Len);
     extint_disable(PIN_IRQ->pin);
     GPIO_clear_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    retval = HAL_SPI_Receive(SPI_HANDLE, pBuff, Len, 20);
+    status = HAL_SPI_Receive(SPI_HANDLE, pBuff, Len, 20);
     GPIO_set_pin(PIN_CS->gpio, PIN_CS->pin_mask);
     extint_enable(PIN_IRQ->pin);
-    if(retval < 0)
+    if(status != HAL_OK)
       return(0);
       
     return Len;
 }
 
-int spi_Write(Fd_t Fd, unsigned char* pBuff, int Len){
+int spi_Write(Fd_t Fd, unsigned char* pBuff, int Len)
+{
+    HAL_StatusTypeDef status;
     extint_disable(PIN_IRQ->pin);
     GPIO_clear_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    HAL_SPI_Transmit(SPI_HANDLE, pBuff, Len, 20);
+    status = HAL_SPI_Transmit(SPI_HANDLE, pBuff, Len, 20);
     GPIO_set_pin(PIN_CS->gpio, PIN_CS->pin_mask);
     extint_enable(PIN_IRQ->pin);
+    if(status != HAL_OK)
+      return(0);
+
     return Len;
 }
 
