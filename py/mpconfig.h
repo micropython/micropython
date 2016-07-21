@@ -590,7 +590,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
-// Support for async/await/async for/async with
+// Issue a warning when comparing str and bytes objects
 #ifndef MICROPY_PY_STR_BYTES_CMP_WARN
 #define MICROPY_PY_STR_BYTES_CMP_WARN (0)
 #endif
