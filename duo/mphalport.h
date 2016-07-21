@@ -15,10 +15,10 @@
 //#endif
 
 // Basic GPIO functions
-#define GPIO_read_pin(gpio, pin)        digitalRead(pin)
-#define GPIO_set_pin(gpio, pin_mask)    digitalWrite(pin_mask, 1)
-#define GPIO_clear_pin(gpio, pin_mask)  digitalWrite(pin_mask, 0)
-#define GPIO_read_output_pin(gpio, pin) digitalRead(pin)
+//#define GPIO_read_pin(gpio, pin)        digitalRead(pin)
+////#define GPIO_set_pin(gpio, pin_mask)    digitalWrite(pin_mask, 1)
+////#define GPIO_clear_pin(gpio, pin_mask)  digitalWrite(pin_mask, 0)
+//#define GPIO_read_output_pin(gpio, pin) digitalRead(pin)
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 void mp_hal_gpio_config(GPIO_TypeDef *gpio, uint32_t pin, uint32_t mode, uint32_t pull, uint32_t alt);

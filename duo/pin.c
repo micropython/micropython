@@ -92,6 +92,16 @@
 
 // Pin class variables
 STATIC bool pin_class_debug;
+STATIC uint16_t board_pin_mapping_tableA[] = {A7, A6, A1, A0, A2, A3, A4, A5, 0, TX, RX, 0, 0, D7, D6, D5};
+STATIC uint16_t board_pin_mapping_tableB[] = {0, 0, 0, D4, D3, D2, D1, D0};
+
+STATIC uint16_t pin_mapping(const pin_obj_t *self){
+	if(self->gpio == GPIOA){
+		return board_pin_mapping_tableA[self->pin];
+	} else {
+		return board_pin_mapping_tableB[self->pin];
+	}
+}
 
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
@@ -266,13 +276,16 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
     pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(GPIO_read_pin(self->gpio, self->pin));
+    	const uint16_t pin = pin_mapping(self);
+        return MP_OBJ_NEW_SMALL_INT(digitalRead(pin));
     } else {
         // set pin
         if (mp_obj_is_true(args[0])) {
-            GPIO_set_pin(self->gpio, self->pin_mask);
+            pinMode(self->port, OUTPUT);
+            digitalWrite(self->port, 1);
         } else {
-            GPIO_clear_pin(self->gpio, self->pin_mask);
+            pinMode(self->port, OUTPUT);
+            digitalWrite(self->port, 0);
         }
         return mp_const_none;
     }
@@ -372,9 +385,12 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
     // if given, set the pin value before initialising to prevent glitches
     if (args[3].u_obj != MP_OBJ_NULL) {
         if (mp_obj_is_true(args[3].u_obj)) {
-            GPIO_set_pin(self->gpio, self->pin_mask);
+            const uint16_t pin = pin_mapping(self);
+            pinMode(pin, OUTPUT);
+            digitalWrite(pin, 1);
         } else {
-            GPIO_clear_pin(self->gpio, self->pin_mask);
+            pinMode(self->port, OUTPUT);
+            digitalWrite(self->port, 0);
         }
     }
 
@@ -410,7 +426,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 /// Set the pin to a low logic level.
 STATIC mp_obj_t pin_low(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    GPIO_clear_pin(self->gpio, self->pin_mask);;
+    uint16_t pin = pin_mapping(self);
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, 0);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
@@ -419,7 +437,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
 /// Set the pin to a high logic level.
 STATIC mp_obj_t pin_high(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    GPIO_set_pin(self->gpio, self->pin_mask);;
+    uint16_t pin = pin_mapping(self);
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, 1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);
@@ -480,7 +500,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_gpio_obj, pin_gpio);
 /// will match one of the allowed constants for the mode argument to the init
 /// function.
 STATIC mp_obj_t pin_mode(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(pin_get_mode(self_in));
+	pin_obj_t *self = self_in;
+	uint16_t pin = pin_mapping(self);
+    return MP_OBJ_NEW_SMALL_INT(getPinMode(pin));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_mode_obj, pin_mode);
 
@@ -501,6 +523,44 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(pin_get_af(self_in));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
+
+STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    pin_named_pins_obj_t *self = self_in;
+    mp_printf(print, "<Pin.%q>", self->name);
+}
+
+const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
+    mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != NULL) {
+        return named_elem->value;
+    }
+    return NULL;
+}
+
+const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx) {
+    const pin_af_obj_t *af = pin->af;
+    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
+        if (af->idx == af_idx) {
+            return af;
+        }
+    }
+    return NULL;
+}
+
+const mp_obj_type_t pin_cpu_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_cpu,
+    .print = pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&pin_cpu_pins_locals_dict,
+};
+
+const mp_obj_type_t pin_board_pins_obj_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_board,
+    .print = pin_named_pins_obj_print,
+    .locals_dict = (mp_obj_t)&pin_board_pins_locals_dict,
+};
 
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
