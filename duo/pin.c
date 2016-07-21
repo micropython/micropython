@@ -92,10 +92,11 @@
 
 // Pin class variables
 STATIC bool pin_class_debug;
-STATIC uint16_t board_pin_mapping_tableA[] = {A7, A6, A1, A0, A2, A3, A4, A5, 0, TX, RX, 0, 0, D7, D6, D5};
-STATIC uint16_t board_pin_mapping_tableB[] = {0, 0, 0, D4, D3, D2, D1, D0};
 
-STATIC uint16_t pin_mapping(const pin_obj_t *self){
+STATIC const uint16_t board_pin_mapping_tableA[] = {A7, A6, A1, A0, A2, A3, A4, A5, 0, TX, RX, 0, 0, D7, D6, D5};
+STATIC const uint16_t board_pin_mapping_tableB[] = {0, 0, 0, D4, D3, D2, D1, D0};
+
+const uint16_t pin_mapping(const pin_obj_t *self){
 	if(self->gpio == GPIOA){
 		return board_pin_mapping_tableA[self->pin];
 	} else {
