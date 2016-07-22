@@ -49,6 +49,10 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 
+ifeq ($(OS),Windows_NT)
+SRC_C += windows/fmode.c
+endif
+
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
