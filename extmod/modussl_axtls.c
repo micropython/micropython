@@ -136,10 +136,7 @@ STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
     ssl_free(self->ssl_sock);
     ssl_ctx_free(self->ssl_ctx);
-
-    mp_obj_t dest[2];
-    mp_load_method(self->sock, MP_QSTR_close, dest);
-    return mp_call_method_n_kw(0, 0, dest);
+    return mp_stream_close(self->sock);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
