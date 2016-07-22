@@ -4,7 +4,7 @@
 #include "py/mphal.h"
 
 /*
- * Extra UART functions
+ * Extra stdout functions
  * These can be either optimized for a particular port, or reference
  * implementation below can be used.
  */
