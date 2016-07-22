@@ -27,9 +27,10 @@ def rm_f(fname):
         os.remove(fname)
 
 def run_micropython(pyb, args, test_file):
+    special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py')
     if pyb is None:
         # run on PC
-        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file == 'micropython/meminfo.py':
+        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests :
             # special handling for tests of the unix cmdline program
 
             # check for any cmdline options needed for this test
