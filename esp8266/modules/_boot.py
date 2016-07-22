@@ -1,4 +1,5 @@
 import gc
+gc.threshold((gc.mem_free() + gc.mem_alloc()) // 2)
 import uos
 from flashbdev import bdev
 
