@@ -77,12 +77,6 @@ STATIC char denied_prompt[] = "\r\nAccess denied\r\n";
 
 STATIC char webrepl_passwd[10];
 
-static inline void close_meth(mp_obj_t stream) {
-    mp_obj_t dest[2];
-    mp_load_method(stream, MP_QSTR_close, dest);
-    mp_call_method_n_kw(0, 0, dest);
-}
-
 STATIC void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
     const mp_stream_p_t *sock_stream = mp_get_stream_raise(websock, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     int err;
@@ -256,7 +250,7 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
         }
 
         if (self->data_to_recv == 0) {
-            close_meth(self->cur_file);
+            mp_stream_close(self->cur_file);
             self->hdr_to_recv = sizeof(struct webrepl_file);
             DEBUG_printf("webrepl: Finished writing file\n");
             write_webrepl_resp(self->sock, 0);
