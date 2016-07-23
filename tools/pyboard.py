@@ -116,6 +116,92 @@ class TelnetToSerial:
         else:
             return n_waiting
 
+plat = sys.platform.lower()
+if plat[:5] == 'linux':
+    import os
+
+    class SerialFileLock:
+        LOCK_DIR = '/var/lock'
+
+        def __init__(self, dev_name):
+            self._dev_name = dev_name
+            self._lockname = self.lockname()
+
+        def lockname(self):
+            os.stat(SerialFileLock.LOCK_DIR)   # throws an exception if the directory doesn't exist
+            dev_name = self._dev_name
+            if dev_name.startswith('/dev/'):
+                dev_name = dev_name[5:]
+            return '{}/LCK..{}'.format(SerialFileLock.LOCK_DIR, dev_name.replace('/', '_'))
+
+        def lock(self):
+            try:
+                with open(self._lockname, 'rb') as file:
+                    data = file.read(16)
+                    if len(data) == 4:
+                        # old-style - pid is binary
+                        pid = struct.unpack('@i', data)[0]
+                    else:
+                        try:
+                            pid = int(data)
+                        except:
+                            pid = 0
+                    if pid > 0:
+                        try:
+                            os.kill(pid, 0)
+                            self._lockname = None
+                            raise PyboardError("{} is already open by pid {}".format(self._dev_name, pid))
+                        except OSError:
+                            # Process doesn't exist - stale lock file
+                            print('Removing stale lock:', self._lockname)
+                            time.sleep(1)
+                            os.unlink(self._lockname)
+            except IOError:
+                # This is the normal path - the lockfile doesn't exist
+                pass
+            with open(self._lockname, 'w') as file:
+                file.write('{}\n'.format(os.getpid()))
+
+        def unlock(self):
+            if self._lockname:
+                os.unlink(self._lockname)
+
+else:
+    class SerialFileLock:
+        def __init__(self, dev_name):
+            pass
+        def lock(self):
+            pass
+        def unlock(self):
+            pass
+
+if plat[:6] == 'darwin':
+    import fcntl
+
+    class SerialFlock:
+
+        def __init__(self, file, dev_name):
+            self.file = file
+            self.dev_name = dev_name
+
+        def lock(self):
+            try:
+                fcntl.flock(self.file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except IOError:
+                raise PyboardError("{} is already open".format(self.dev_name))
+
+        def unlock(self):
+            fcntl.flock(self.file.fileno(), fcntl.LOCK_UN)
+else:
+    class SerialFlock:
+        def __init__(self, file, dev_name):
+            pass
+        def lock(self):
+            pass
+        def unlock(self):
+            pass
+
+
 class Pyboard:
     def __init__(self, device, baudrate=115200, user='micro', password='python', wait=0):
         if device and device[0].isdigit() and device[-1].isdigit() and device.count('.') == 3:
@@ -123,6 +209,8 @@ class Pyboard:
             self.serial = TelnetToSerial(device, user, password, read_timeout=10)
         else:
             import serial
+            self.file_lock = SerialFileLock(device)
+            self.file_lock.lock()
             delayed = False
             for attempt in range(wait + 1):
                 try:
@@ -143,9 +231,13 @@ class Pyboard:
                 raise PyboardError('failed to access ' + device)
             if delayed:
                 print('')
+            self.flock = SerialFlock(self.serial, device)
+            self.flock.lock()
 
     def close(self):
+        self.flock.unlock()
         self.serial.close()
+        self.file_lock.unlock()
 
     def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
         data = self.serial.read(min_num_bytes)
