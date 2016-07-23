@@ -331,6 +331,9 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
     DB *db = __bt_open(fname, /*flags*/O_CREAT | O_RDWR, /*mode*/0770, /*openinfo*/NULL, /*dflags*/0);
+    if (db == NULL) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+    }
     return MP_OBJ_FROM_PTR(btree_new(db));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
