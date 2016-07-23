@@ -57,3 +57,5 @@ print(list(db.values()))
 
 for k in db:
     print(k)
+
+db.close()
