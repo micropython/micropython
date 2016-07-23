@@ -57,8 +57,10 @@ STATIC mp_obj_t pyb_dac_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 
 mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t valObj) {
     uint16_t value = (uint16_t) mp_obj_get_int(valObj);
-    mp_hal_writeDAC(value);
-    return mp_const_none;
+    int32_t r = mp_hal_writeDAC(value);
+    if(r==0)
+        return mp_const_true;
+    return mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 
@@ -115,10 +117,9 @@ STATIC mp_obj_t pyb_dac_write_timed_helper(const pyb_dac_obj_t *self, mp_uint_t 
     uint8_t mode = vals[2].u_int;
 
     mp_hal_setSampleRateDAC(freq);
-    mp_hal_writeDMADAC((uint16_t*)bufinfo.buf, bufinfo.len/2, mode);
+    int32_t r = mp_hal_writeDMADAC((uint16_t*)bufinfo.buf, bufinfo.len/2, mode);
 
-
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(r);
 }
 
 STATIC mp_obj_t pyb_dac_write_timed(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {

@@ -145,4 +145,11 @@ openocd:
 debug: $(BUILD)/firmware.elf
 	$(CROSS_COMPILE)gdb $(BUILD)/firmware.elf -ex "target remote :3333" -ex "mon reset halt" -ex "load"
 
+
+test: CFLAGS += -DTESTING
+
+test: export MP_INCLUDE_TESTS = true
+
+test: all
+
 include ../py/mkrules.mk

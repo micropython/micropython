@@ -7,6 +7,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/parse.h"
 #include "py/mphal.h"
 #include "lib/utils/pyexec.h"
 
@@ -80,6 +81,11 @@ void init_flash_fs(uint reset_mode) {
     f_chdrive("/flash");
 }
 
+#ifdef TESTING
+    #include "testing/mainTest.c"
+    #include "testing/pythonTest.c" // do_str function
+#endif
+
 int main(int argc, char **argv) {
     int stack_dummy;
 soft_reset:
@@ -99,11 +105,18 @@ soft_reset:
 
     init_flash_fs(0);
 
+    #ifdef TESTING
+        // Run C tests
+        startTesting();
+        // Run Python tests
+        do_str("import testing_MainTest\r\nm=testing_MainTest.MainTest()\r\nm.run()\r\n\0",MP_PARSE_FILE_INPUT);
+        return 0;
+    #endif
 
 	// check new script from IDE
 	boot();
 	//__________________________
-	
+
 
     if (!pyexec_file("/flash/Main.py")) {
         mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 0);

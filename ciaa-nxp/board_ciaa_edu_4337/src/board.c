@@ -342,8 +342,11 @@ uint32_t Board_SSP_transfer(uint8_t *bufferTx, uint8_t *bufferRx, uint32_t buffe
 
 //================================================[EEPROM Management]========================================================
 
-void Board_EEPROM_writeByte(uint32_t addr,uint8_t value)
+int32_t Board_EEPROM_writeByte(uint32_t addr,uint8_t value)
 {
+	if(addr>=(16*1024))
+		return -1;
+
 	uint32_t addr4 = addr/4;
 	uint32_t pageAddr = addr4/EEPROM_PAGE_SIZE;
 	uint32_t pageOffset = addr4 - pageAddr*EEPROM_PAGE_SIZE;
@@ -361,24 +364,28 @@ void Board_EEPROM_writeByte(uint32_t addr,uint8_t value)
 	//write auxValue back in eeprom
 	pEepromMem[0] = auxValue;
 	Chip_EEPROM_WaitForIntStatus(LPC_EEPROM, EEPROM_INT_ENDOFPROG);
+	return 0;
 }
 
-uint8_t Board_EEPROM_readByte(uint32_t addr)
+int32_t Board_EEPROM_readByte(uint32_t addr)
 {
+    if(addr>=(16*1024))
+        return -1;
+
 	uint32_t addr4 = addr/4;
 	uint32_t pageAddr = addr4/EEPROM_PAGE_SIZE;
 	uint32_t pageOffset = addr4 - pageAddr*EEPROM_PAGE_SIZE;
 
 	uint32_t *pEepromMem = (uint32_t*)EEPROM_ADDRESS(pageAddr,pageOffset*4);
-	
+
 	// read 4 bytes in auxValue
 	uint32_t auxValue = pEepromMem[0];
 	uint8_t* pAuxValue = (uint8_t*)&auxValue;
-	
+
 	// modify auxValue with new Byte value
 	uint32_t indexInBlock = addr % 4;
-	return pAuxValue[indexInBlock];
-		
+	return (int32_t) pAuxValue[indexInBlock];
+
 }
 void Board_EEPROM_init(void)
 {
@@ -408,7 +415,7 @@ uint8_t getAdcValueIndexFromNumber(uint8_t channelNumber)
         case 2: return 1;
         case 3: return 2;
     }
-    return 0;
+    return 0xFF;
 }
 void Board_ADC_Init(void)
 {
@@ -434,7 +441,7 @@ void Board_ADC_Init(void)
 	Chip_ADC_Int_SetChannelCmd(adcsData[0].adc, ADC_CH3, ENABLE);
 
 }
-void Board_ADC_EnableChannel(uint8_t channelNumber)
+int32_t Board_ADC_EnableChannel(uint8_t channelNumber)
 {
 	uint32_t index = 0; // always using ADC0
 	switch(channelNumber)
@@ -443,23 +450,26 @@ void Board_ADC_EnableChannel(uint8_t channelNumber)
 			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, ENABLE);
 			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
 			Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
-			break;
+			return 0;
                 case 2:
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, ENABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, DISABLE);
-                        break;
+                        return 0;
                 case 3:
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH1, DISABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH2, DISABLE);
                         Chip_ADC_EnableChannel(adcsData[index].adc, ADC_CH3, ENABLE);
-                        break;
+                        return 0;
 	}
+	return -1;
 }
 
 uint16_t Board_ADC_readValue(uint8_t channelNumber)
 {
 	uint8_t index = getAdcValueIndexFromNumber(channelNumber);
+	if(index==0xFF)
+		return (uint16_t)-1;
 	return ADCValues[index];
 }
 
@@ -603,37 +613,46 @@ void Board_TIMER_Init(void)
 	NVIC_EnableIRQ(TIMER3_IRQn);
 }
 
-void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+int32_t Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
 {
 	// always using match0
 	int8_t match=0;
 	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
 
         Chip_TIMER_PrescaleSet(t, presc);
         Chip_TIMER_SetMatch(t, match, matchValue);
         Chip_TIMER_MatchEnableInt(t, match); // enable int for match 0
         if(flagOnce==1)
-        { 
+        {
 			Board_TIMER_DisableTimer(timerNum);
 			Board_TIMER_SetTimerCounter(timerNum,0);
 			Chip_TIMER_ResetOnMatchDisable(t, match); // reset count on match0
 		}
-		else 
+		else
 		{
 			Chip_TIMER_ResetOnMatchEnable(t, match); // reset count on match0
 		}
 	Chip_TIMER_Enable(t);
+    return 0;
 }
 
-void Board_TIMER_DisableTimer(uint8_t timerNum)
+int32_t Board_TIMER_DisableTimer(uint8_t timerNum)
 {
+    if(timerNum>=4)
+        return -1;
 	Chip_TIMER_Disable(getTimerFomIndex(timerNum));
+    return 0;
 }
 
-void Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+int32_t Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg)
 {
+    if(timerNum>=4)
+        return -1;
 	timersInfo[timerNum].callback = function;
 	timersInfo[timerNum].callbackArg = arg;
+    return 0;
 }
 
 uint32_t Board_TIMER_getClockFrequency(void)
@@ -641,33 +660,52 @@ uint32_t Board_TIMER_getClockFrequency(void)
 	return Chip_Clock_GetMainPLLHz();
 }
 
-void Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value)
+int32_t Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value)
 {
 	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
 	t->TC = value;
+    return 0;
 }
 uint32_t Board_TIMER_GetTimerCounter(uint8_t timerNum)
 {
-	return Chip_TIMER_ReadCount(getTimerFomIndex(timerNum));
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return 0;
+	return Chip_TIMER_ReadCount(t);
 }
 
-void Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value)
+int32_t Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value)
 {
-	Chip_TIMER_PrescaleSet(getTimerFomIndex(timerNum), value);
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
+	Chip_TIMER_PrescaleSet(t, value);
+    return 0;
 }
 uint32_t Board_TIMER_GetTimerPrescaler(uint8_t timerNum)
 {
-	return Chip_TIMER_ReadPrescale(getTimerFomIndex(timerNum));
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return 0;
+	return Chip_TIMER_ReadPrescale(t);
 }
 
-void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value)
+int32_t Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value)
 {
-	Chip_TIMER_SetMatch(getTimerFomIndex(timerNum), 0, value); // always match 0
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return -1;
+	Chip_TIMER_SetMatch(t, 0, value); // always match 0
+    return 0;
 }
 uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum)
 {
-	LPC_TIMER_T* t = getTimerFomIndex(timerNum);
-        return t->MR[0]; // always match 0
+    LPC_TIMER_T* t = getTimerFomIndex(timerNum);
+    if(t==NULL)
+        return 0;
+    return t->MR[0]; // always match 0
 }
 
 //============================================================================================================================
@@ -724,6 +762,7 @@ void Board_UART_Init(LPC_USART_T *pUART)
 	}
 	/* Restart FIFOS: set Enable, Reset content, set trigger level */
    	Chip_UART_SetupFIFOS(pUART, UART_FCR_FIFO_EN | UART_FCR_TX_RS | UART_FCR_RX_RS | UART_FCR_TRG_LEV0);
+
    	/* dummy read */
    	Chip_UART_ReadByte(pUART);
    	/* enable rx interrupt */
@@ -763,6 +802,27 @@ void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,ui
         uart3RxBufferData.finalByte=finalByte;
 	NVIC_SetPriority(USART3_IRQn, 1);
         NVIC_EnableIRQ(USART3_IRQn);
+    }
+}
+
+void Board_UART_resetRxBufferConfig(LPC_USART_T *pUART)
+{
+    if(pUART==LPC_USART0)
+    {
+        uart0RxBufferData.buffer = NULL;
+        uart0RxBufferData.size=0;
+        uart0RxBufferData.index=0;
+        uart0RxBufferData.flagNewPacket=0;
+        uart0RxBufferData.timeoutCounter=0;
+        NVIC_DisableIRQ(USART0_IRQn);
+    }else if(pUART==LPC_USART3)
+    {
+        uart3RxBufferData.buffer = NULL;
+        uart3RxBufferData.size=0;
+        uart3RxBufferData.index=0;
+        uart3RxBufferData.flagNewPacket=0;
+        uart3RxBufferData.timeoutCounter=0;
+        NVIC_DisableIRQ(USART3_IRQn);
     }
 }
 
@@ -888,12 +948,12 @@ void UART0_IRQHandler (void)
                 }
                 else
                 {
-                        uart3RxBufferData.timeoutCounter=uart3RxBufferData.timeout;
+                        uart0RxBufferData.timeoutCounter=uart0RxBufferData.timeout;
                 }
-                uart3RxBufferData.index++;
+                uart0RxBufferData.index++;
         }
         else
-                uart3RxBufferData.flagNewPacket=1;
+                uart0RxBufferData.flagNewPacket=1;
    }
 }
 
@@ -1248,7 +1308,7 @@ void GPIO7_IRQHandler(void)
 }
 
 
-void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
+int32_t Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
 {
 	int32_t pullUpMode=SCU_MODE_INACT;
 	switch(pullup)
@@ -1262,7 +1322,12 @@ void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
 		case BOARD_GPIO_PULLDOWN:
 			pullUpMode=SCU_MODE_PULLDOWN;
 			break;
+		default: return -1;
 	}
+
+	if(gpioNumber>GPIO_MAX_NUMBER)
+		return -1;
+
 	Chip_SCU_PinMuxSet(gpiosInfo[gpioNumber].port, gpiosInfo[gpioNumber].portBit, (pullUpMode | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | gpiosInfo[gpioNumber].func));
 
         switch(mode)
@@ -1276,24 +1341,36 @@ void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup)
                 case BOARD_GPIO_MODE_OUTPUT_OD:
                         Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit); // Output
                         break;
+				default:return -1;
         }
+	return 0;
 }
 
 uint32_t Board_GPIOs_readValue(int32_t gpioNumber)
 {
+	if(gpioNumber>GPIO_MAX_NUMBER)
+		return -1;
 	return Chip_GPIO_GetPinState(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
 }
 
-void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
+int32_t Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value)
 {
+    if(gpioNumber>GPIO_MAX_NUMBER)
+        return -1;
+
 	if(value)
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
 	else
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT, gpiosInfo[gpioNumber].gpio, gpiosInfo[gpioNumber].gpioBit);
+
+	return 0;
 }
 
 bool Board_GPIOs_enableIntCallback(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
 {
+    if(gpioNumber>GPIO_MAX_NUMBER)
+        return 0;
+
 	// check if gpio alerady has assigned int
 	for(uint8_t i=0; i<4 ; i++)
         {
@@ -1428,9 +1505,13 @@ void Board_DAC_setSampleRate(uint32_t freq)
 	Chip_DAC_SetDMATimeOut(LPC_DAC, value);
 }
 
-void Board_DAC_writeValue(uint32_t value)
+int32_t Board_DAC_writeValue(uint32_t value)
 {
+	if(value>=1024)
+		return -1;
+
 	Chip_DAC_UpdateValue(LPC_DAC,value);
+	return 0;
 }
 
 

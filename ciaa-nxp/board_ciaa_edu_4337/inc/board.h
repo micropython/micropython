@@ -104,6 +104,7 @@ extern "C" {
 #define BOARD_GPIO_PULLUP		1
 #define BOARD_GPIO_PULLDOWN		2
 
+#define GPIO_MAX_NUMBER		8
 
 
 
@@ -335,6 +336,14 @@ uint32_t Board_UART_Write(LPC_USART_T *pUART, uint8_t const * const buffer, uint
  */
 void Board_UART_setRxBuffer(LPC_USART_T *pUART,uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
 
+
+/**
+ * @brief       Resets RX buffer configuration
+ * @return      void
+ */
+void Board_UART_resetRxBufferConfig(LPC_USART_T *pUART);
+
+
 /**
  * @brief       This function must be called each millisecond for uart rx timeout calculation
  * @return      void
@@ -400,9 +409,9 @@ void Board_GPIOs_Init(void);
  * @param       gpioNumber : 0 to 8
  * @param       mode : BOARD_GPIO_MODE_INPUT, BOARD_GPIO_MODE_OUTPUT_PP, BOARD_GPIO_MODE_OUTPUT_OD
  * @param       pullup : BOARD_GPIO_NOPULL, BOARD_GPIO_PULLUP, BOARD_GPIO_PULLDOWN
- * @return      void
+ * @return      0: OK. -1: error.
  */
-void Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup);
+int32_t Board_GPIOs_configure(int32_t gpioNumber,int32_t mode, int32_t pullup);
 
 
 /**
@@ -417,9 +426,9 @@ uint32_t Board_GPIOs_readValue(int32_t gpioNumber);
  * @brief       Writes gpio's value.
  * @param       gpioNumber : 0 to 8
  * @param       value : 0 or 1
- * @return      void
+ * @return      0:OK. -1: Error
  */
-void Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
+int32_t Board_GPIOs_writeValue(int32_t gpioNumber,uint8_t value);
 
 
 /**
@@ -445,9 +454,9 @@ void Board_GPIOs_disableIntCallback(int gpioNumber);
 /**
  * @brief       Writes a 10-bit-value to DAC output
  * @param       value
- * @return      void
+ * @return      0: OK. -1: value out of range.
  */
-void Board_DAC_writeValue(uint32_t value);
+int32_t Board_DAC_writeValue(uint32_t value);
 
 /**
  * @brief       Sets sampless' frecuency
@@ -504,25 +513,25 @@ void Board_TIMER_Init(void);
  * @param       presc : Prescaler value (0 to 0xFFFFFFFF)
  * @param       matchValue : Match value (0 to 0xFFFFFFFF). Timer's interrupt will happen when timer counter equals this value.
  * @param       flagOnce : 1: when timer reaches the match value, it stops. 0: Timer keeps counting
- * @return      void
+ * @return      0:OK. -1:ERROR
  */
-void Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
+int32_t Board_TIMER_EnableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
 
 /**
  * @brief       Disable timer module.
  * @param       timerNum : Number of timer (0 to 3)
- * @return      void
+ * @return      0:OK. -1:ERROR
  */
-void Board_TIMER_DisableTimer(uint8_t timerNum);
+int32_t Board_TIMER_DisableTimer(uint8_t timerNum);
 
 /**
  * @brief       Sets the function that will be called by timer's interupt
  * @param       timerNum : Number of timer (0 to 3)
  * @param       function : calback to be called. prototype: void function(void* arg);
  * @param       arg : argument passed to callback function when it is called
- * @return      void
+ * @return      0:OK. -1:ERROR
  */
-void Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg);
+int32_t Board_TIMER_SetCallback(uint8_t timerNum,void(*function)(void*),void* arg);
 
 /**
  * @brief       Returns Timer's base clock frequency in Hertz.
@@ -534,9 +543,9 @@ uint32_t Board_TIMER_getClockFrequency(void);
  * @brief       Load current timer's counter value
  * @param       timerNum : Number of timer (0 to 3)
  * @param       value : Value to be loaded in Counter register
- * @return      void
+ * @return      0:OK. -1:ERROR
  */
-void Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value);
+int32_t Board_TIMER_SetTimerCounter(uint8_t timerNum,uint32_t value);
 
 
 /**
@@ -550,9 +559,9 @@ uint32_t Board_TIMER_GetTimerCounter(uint8_t timerNum);
  * @brief       Load current timer's prescaller value
  * @param       timerNum : Number of timer (0 to 3)
  * @param       value : Value to be loaded in Prescaler register
- * @return      void
+ * @return      0:OK. -1:ERROR
  */
-void Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value);
+int32_t Board_TIMER_SetTimerPrescaler(uint8_t timerNum,uint32_t value);
 
 /**
  * @brief       Returns Timer's prescaler value.
@@ -565,9 +574,9 @@ uint32_t Board_TIMER_GetTimerPrescaler(uint8_t timerNum);
  * @brief       Load current timer's match value
  * @param       timerNum : Number of timer (0 to 3)
  * @param       value : Value to be loaded in Match register
- * @return      void
+ * @return      0:OK. -1:ERROR
  */
-void Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value);
+int32_t Board_TIMER_SetTimerMatch(uint8_t timerNum,uint32_t value);
 
 /**
  * @brief       Returns Timer's match value.
@@ -610,9 +619,9 @@ void Board_ADC_Init(void);
 /**
  * @brief       Enable ADC channel mapped to ADC0 module
  * @param       channelNumber : Number of input channel (1, 2 or 3)
- * @return      void
+ * @return      0: OK. -1: invalid channel
  */
-void Board_ADC_EnableChannel(uint8_t channelNumber);
+int32_t Board_ADC_EnableChannel(uint8_t channelNumber);
 
 
 /**
@@ -633,16 +642,16 @@ uint16_t Board_ADC_readValue(uint8_t channelNumber);
  * @brief       Write a byte in EEPROM memory
  * @param       addr : Address relative to eeprom start (0x0000 to 0x3F7F)
  * @param       value : Byte to be written in specified address
- * @return      void
+ * @return      0: OK, -1: invalid address
  */
-void Board_EEPROM_writeByte(uint32_t addr,uint8_t value);
+int32_t Board_EEPROM_writeByte(uint32_t addr,uint8_t value);
 
 /**
  * @brief       Read a byte from EEPROM memory
  * @param       addr : Address relative to eeprom start (0x0000 to 0x3F7F)
- * @return      byte value read
+ * @return      byte value read or -1 if address is invalid
  */
-uint8_t Board_EEPROM_readByte(uint32_t addr);
+int32_t Board_EEPROM_readByte(uint32_t addr);
 
 
 

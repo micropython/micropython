@@ -15,6 +15,23 @@ Table of context
 - Puede usar una linea de comandos python REPL en la UART del puerto USB de DEBUG.
 
 
+## Ejecutar software unit tests
+
+Conexiones de Hardware para testing:
+
+232_RX  ->  R100 ohm    ->  232_TX
+CH1     ->  GNDA
+CH2     ->  GNDA
+CH3     ->  GNDA
+GPIO8   ->  R100 ohm    ->  GPIO7
+RS485   -> echo terminal (Usar testing/rs485EchoTerminal)
+
+- Ejecutar: 
+`make clean`
+`make test`
+`make download`
+
+
 ## Soporte de hardware
 
 ### Modulo pyb:

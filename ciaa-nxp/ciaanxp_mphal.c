@@ -125,6 +125,11 @@ void mp_hal_rs232_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, u
 	Board_UART_setRxBuffer(LPC_USART3,pBuffer,size,timeout,finalByte);
 }
 
+void mp_hal_rs232_resetRxBufferConfig(void)
+{
+    Board_UART_resetRxBufferConfig(LPC_USART3);
+}
+
 void mp_hal_rs232_setConfig(int32_t baud,int32_t stopBits,int32_t parity)
 {
 	Board_UART_setConfig(LPC_USART3,baud,stopBits,parity);
@@ -177,6 +182,11 @@ void mp_hal_rs485_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, u
         Board_UART_setRxBuffer(LPC_USART0,pBuffer,size,timeout,finalByte);
 }
 
+void mp_hal_rs485_resetRxBufferConfig(void)
+{
+    Board_UART_resetRxBufferConfig(LPC_USART0);
+}
+
 void mp_hal_rs485_setConfig(int32_t baud,int32_t stopBits,int32_t parity)
 {
         Board_UART_setConfig(LPC_USART0,baud,stopBits,parity);
@@ -214,9 +224,9 @@ void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void
 }
 
 // GPIOs
-void mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup)
+int32_t mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup)
 {
-	Board_GPIOs_configure(gpioNumber,mode,pullup);
+	return Board_GPIOs_configure(gpioNumber,mode,pullup);
 }
 
 int32_t mp_hal_readGPIO(int32_t gpioNumber)
@@ -224,9 +234,9 @@ int32_t mp_hal_readGPIO(int32_t gpioNumber)
 	return Board_GPIOs_readValue(gpioNumber);
 }
 
-void mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value)
+int32_t mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value)
 {
-	Board_GPIOs_writeValue(gpioNumber,value);
+	return Board_GPIOs_writeValue(gpioNumber,value);
 }
 
 bool mp_hal_enableIntCallbackGPIO(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow)
@@ -240,9 +250,9 @@ void mp_hal_disableIntCallbackGPIO(int gpioNumber)
 }
 
 //DAC
-void mp_hal_writeDAC(uint32_t value)
+int32_t mp_hal_writeDAC(uint32_t value)
 {
-	Board_DAC_writeValue(value);
+	return Board_DAC_writeValue(value);
 }
 
 void mp_hal_setSampleRateDAC(uint32_t freq)
@@ -268,19 +278,19 @@ uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
 }
 
 //TIMERs
-void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
+int32_t mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce)
 {
-	Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
+	return Board_TIMER_EnableTimerAsTimer(timerNum,presc,matchValue,flagOnce);
 }
 
-void mp_hal_disableTimer(uint8_t timerNum)
+int32_t mp_hal_disableTimer(uint8_t timerNum)
 {
-	Board_TIMER_DisableTimer(timerNum);
+	return Board_TIMER_DisableTimer(timerNum);
 }
 
-void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg)
+int32_t mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg)
 {
-	Board_TIMER_SetCallback(timerNum,function,arg);
+	return Board_TIMER_SetCallback(timerNum,function,arg);
 }
 
 uint32_t mp_hal_getTimerClockFrequency(void)
@@ -288,9 +298,9 @@ uint32_t mp_hal_getTimerClockFrequency(void)
 	return Board_TIMER_getClockFrequency();
 }
 
-void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value)
+int32_t mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value)
 {
-	Board_TIMER_SetTimerCounter(timerNum,value);
+	return Board_TIMER_SetTimerCounter(timerNum,value);
 }
 
 uint32_t mp_hal_getTimerCounter(uint8_t timerNum)
@@ -298,9 +308,9 @@ uint32_t mp_hal_getTimerCounter(uint8_t timerNum)
 	return Board_TIMER_GetTimerCounter(timerNum);
 }
 
-void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value)
+int32_t mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value)
 {
-	Board_TIMER_SetTimerPrescaler(timerNum,value);
+	return Board_TIMER_SetTimerPrescaler(timerNum,value);
 }
 
 uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum)
@@ -308,9 +318,9 @@ uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum)
 	return Board_TIMER_GetTimerPrescaler(timerNum);
 }
 
-void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value)
+int32_t mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value)
 {
-	Board_TIMER_SetTimerMatch(timerNum,value);
+	return Board_TIMER_SetTimerMatch(timerNum,value);
 }
 
 uint32_t mp_hal_getTimerMatch(uint8_t timerNum)
@@ -336,9 +346,9 @@ void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty)
 }
 
 //ADC
-void mp_hal_enableADCchannel(uint8_t channelNumber)
+int32_t mp_hal_enableADCchannel(uint8_t channelNumber)
 {
-	Board_ADC_EnableChannel(channelNumber);
+	return Board_ADC_EnableChannel(channelNumber);
 }
 
 void mp_hal_startADCconversion(void)
@@ -385,12 +395,12 @@ void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff)
 }
 
 //EEPROM
-void mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value)
+int32_t mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value)
 {
-	Board_EEPROM_writeByte(addr,value);
+	return Board_EEPROM_writeByte(addr,value);
 }
 
-uint8_t mp_hal_readByteEEPROM(uint32_t addr)
+int32_t mp_hal_readByteEEPROM(uint32_t addr)
 {
 	return Board_EEPROM_readByte(addr);
 }

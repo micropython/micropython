@@ -56,7 +56,10 @@ STATIC mp_obj_t pyb_eeprom_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
 // read_byte method
 mp_obj_t pyb_eeprom_read_byte(mp_obj_t self_in,mp_obj_t mpAddr) {
     uint32_t addr = mp_obj_get_int(mpAddr);
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_readByteEEPROM(addr));
+    int32_t r =  mp_hal_readByteEEPROM(addr);
+    if(r == -1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    return MP_OBJ_NEW_SMALL_INT((uint8_t)r);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_eeprom_read_byte_obj, pyb_eeprom_read_byte);
 
@@ -65,7 +68,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_eeprom_read_byte_obj, pyb_eeprom_read_byte)
 mp_obj_t pyb_eeprom_write_byte(mp_obj_t self_in,mp_obj_t mpAddr,mp_obj_t mpValue) {
     uint32_t addr = mp_obj_get_int(mpAddr);
     uint8_t value = (uint8_t)mp_obj_get_int(mpValue);
-    mp_hal_writeByteEEPROM(addr,value);
+    int32_t r = mp_hal_writeByteEEPROM(addr,value);
+    if(r == -1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
     return MP_OBJ_NEW_SMALL_INT(1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_eeprom_write_byte_obj, pyb_eeprom_write_byte);
@@ -75,10 +80,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_eeprom_write_byte_obj, pyb_eeprom_write_byt
 mp_obj_t pyb_eeprom_read_int(mp_obj_t self_in,mp_obj_t mpAddr) {
     uint32_t addr = mp_obj_get_int(mpAddr);
     uint8_t valArray[4];
-    valArray[0] = mp_hal_readByteEEPROM(addr);
-    valArray[1] = mp_hal_readByteEEPROM(addr+1);
-    valArray[2] = mp_hal_readByteEEPROM(addr+2);
-    valArray[3] = mp_hal_readByteEEPROM(addr+3);
+    int32_t r;
+    r = mp_hal_readByteEEPROM(addr);
+    if(r == -1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    valArray[0] = (uint8_t)r;
+
+    r = mp_hal_readByteEEPROM(addr+1);
+    if(r == -1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    valArray[1] = (uint8_t)r;
+
+    r = mp_hal_readByteEEPROM(addr+2);
+    if(r == -1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    valArray[2] = (uint8_t)r;
+
+    r = mp_hal_readByteEEPROM(addr+3);
+    if(r == -1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    valArray[3] = (uint8_t)r;
 
     return MP_OBJ_NEW_SMALL_INT(valArray[3]<<24 | valArray[2]<<16 | valArray[1]<<8 | valArray[0]);
 }
@@ -94,10 +115,14 @@ mp_obj_t pyb_eeprom_write_int(mp_obj_t self_in,mp_obj_t mpAddr,mp_obj_t mpValue)
     valArray[2] = (value>>16)&0x000000FF;
     valArray[3] = (value>>24)&0x000000FF;
 
-    mp_hal_writeByteEEPROM(addr,valArray[0]);
-    mp_hal_writeByteEEPROM(addr+1,valArray[1]);
-    mp_hal_writeByteEEPROM(addr+2,valArray[2]);
-    mp_hal_writeByteEEPROM(addr+3,valArray[3]);
+    int32_t r = 0;
+    r|=mp_hal_writeByteEEPROM(addr,valArray[0]);
+    r|=mp_hal_writeByteEEPROM(addr+1,valArray[1]);
+    r|=mp_hal_writeByteEEPROM(addr+2,valArray[2]);
+    r|=mp_hal_writeByteEEPROM(addr+3,valArray[3]);
+
+    if(r==-1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
 
     return MP_OBJ_NEW_SMALL_INT(4);
 }
@@ -109,10 +134,27 @@ mp_obj_t pyb_eeprom_read_float(mp_obj_t self_in,mp_obj_t mpAddr) {
     uint32_t addr = mp_obj_get_int(mpAddr);
     float val;
     uint8_t* pFloat = (uint8_t*)&val;
-    pFloat[0] = mp_hal_readByteEEPROM(addr);
-    pFloat[1] = mp_hal_readByteEEPROM(addr+1);
-    pFloat[2] = mp_hal_readByteEEPROM(addr+2);
-    pFloat[3] = mp_hal_readByteEEPROM(addr+3);
+    int32_t r;
+
+    r = mp_hal_readByteEEPROM(addr);
+    if(r==-1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    pFloat[0] = (uint8_t)r;
+
+    r = mp_hal_readByteEEPROM(addr+1);
+    if(r==-1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    pFloat[1] = (uint8_t)r;
+
+    r = mp_hal_readByteEEPROM(addr+2);
+    if(r==-1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    pFloat[2] = (uint8_t)r;
+
+    r = mp_hal_readByteEEPROM(addr+3);
+    if(r==-1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
+    pFloat[3] = (uint8_t)r;
 
     return mp_obj_new_float(val);
 }
@@ -128,10 +170,14 @@ mp_obj_t pyb_eeprom_write_float(mp_obj_t self_in,mp_obj_t mpAddr,mp_obj_t mpValu
 
     uint8_t* pFloat = (uint8_t*)&value;
 
-    mp_hal_writeByteEEPROM(addr,pFloat[0]);
-    mp_hal_writeByteEEPROM(addr+1,pFloat[1]);
-    mp_hal_writeByteEEPROM(addr+2,pFloat[2]);
-    mp_hal_writeByteEEPROM(addr+3,pFloat[3]);
+    int32_t r=0;
+    r|=mp_hal_writeByteEEPROM(addr,pFloat[0]);
+    r|=mp_hal_writeByteEEPROM(addr+1,pFloat[1]);
+    r|=mp_hal_writeByteEEPROM(addr+2,pFloat[2]);
+    r|=mp_hal_writeByteEEPROM(addr+3,pFloat[3]);
+
+    if(r==-1)
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid address"));
 
     return MP_OBJ_NEW_SMALL_INT(4);
 }

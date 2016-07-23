@@ -80,6 +80,17 @@ mp_obj_t pyb_led_toggle(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_led_toggle_obj, pyb_led_toggle);
 
+mp_obj_t pyb_led_value(mp_obj_t self_in) {
+    pyb_led_obj_t *self = self_in;
+    uint8_t val = Board_LED_Test(LED_ID(self)-1);
+    if(val==0)
+        val=1;
+    else
+        val=0;
+    return MP_OBJ_NEW_SMALL_INT(val);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_led_value_obj, pyb_led_value);
+
 /// \method intensity([value])
 /// Get or set the led intensity:
 ///
@@ -112,6 +123,7 @@ STATIC const mp_map_elem_t pyb_led_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_off), (mp_obj_t)&pyb_led_off_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_toggle), (mp_obj_t)&pyb_led_toggle_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_intensity), (mp_obj_t)&pyb_led_intensity_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&pyb_led_value_obj },
 
 };
 

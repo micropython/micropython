@@ -45,6 +45,7 @@ void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_rs232_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
 void mp_hal_rs232_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
 void mp_hal_rs232_setConfig(int32_t baud,int32_t stopBits,int32_t parity);
+void mp_hal_rs232_resetRxBufferConfig(void);
 int32_t mp_hal_rs232_isNewPacketAvailable(void);
 uint32_t mp_hal_rs232_getPacketSize(void);
 int32_t mp_hal_rs232_getChar(void);
@@ -55,6 +56,7 @@ void mp_hal_rs232_resetRxPacket(void);
 uint32_t mp_hal_rs485_write(uint8_t const * const buffer, uint32_t size, uint32_t delay);
 void mp_hal_rs485_setRxBuffer(uint8_t* pBuffer,uint32_t size,uint32_t timeout, uint8_t finalByte);
 void mp_hal_rs485_setConfig(int32_t baud,int32_t stopBits,int32_t parity);
+void mp_hal_rs485_resetRxBufferConfig(void);
 int32_t mp_hal_rs485_isNewPacketAvailable(void);
 uint32_t mp_hal_rs485_getPacketSize(void);
 int32_t mp_hal_rs485_getChar(void);
@@ -76,14 +78,14 @@ void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void
 #define GPIO_MODE_IT_FALLING 1
 #define GPIO_MODE_IT_RISING_FALLING 2
 
-void mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup);
+int32_t  mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup);
 int32_t mp_hal_readGPIO(int32_t gpioNumber);
-void mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value);
+int32_t mp_hal_writeGPIO(int32_t gpioNumber, uint8_t value);
 bool mp_hal_enableIntCallbackGPIO(int gpioNumber,void(*function)(void*),void* arg, uint8_t flagEdgeLevel, uint8_t flagHighLow);
 void mp_hal_disableIntCallbackGPIO(int gpioNumber);
 
 //DAC
-void mp_hal_writeDAC(uint32_t value);
+int32_t mp_hal_writeDAC(uint32_t value);
 void mp_hal_setSampleRateDAC(uint32_t freq);
 int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic);
 
@@ -92,15 +94,15 @@ void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value);
 uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber);
 
 //TIMERs
-void mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
-void mp_hal_disableTimer(uint8_t timerNum);
-void mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg);
+int32_t mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
+int32_t mp_hal_disableTimer(uint8_t timerNum);
+int32_t mp_hal_setTimerCallback(uint8_t timerNum,void(*function)(void*),void* arg);
 uint32_t mp_hal_getTimerClockFrequency(void);
-void mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value);
+int32_t mp_hal_setTimerCounter(uint8_t timerNum,uint32_t value);
 uint32_t mp_hal_getTimerCounter(uint8_t timerNum);
-void mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value);
+int32_t mp_hal_setTimerPrescaler(uint8_t timerNum,uint32_t value);
 uint32_t mp_hal_getTimerPrescaler(uint8_t timerNum);
-void mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value);
+int32_t mp_hal_setTimerMatch(uint8_t timerNum,uint32_t value);
 uint32_t mp_hal_getTimerMatch(uint8_t timerNum);
 
 //PWM
@@ -109,7 +111,7 @@ void mp_hal_configurePWMOut(uint8_t outNumber);
 void mp_hal_setPWMDutyCycle(uint8_t outNumber, uint8_t duty);
 
 //ADC
-void mp_hal_enableADCchannel(uint8_t channelNumber);
+int32_t mp_hal_enableADCchannel(uint8_t channelNumber);
 void mp_hal_startADCconversion(void);
 uint16_t mp_hal_readADCchannel(uint8_t channelNumber);
 
@@ -125,8 +127,8 @@ void mp_hal_gotoXYLCD(uint8_t x,uint8_t y);
 void mp_hal_configCursorLCD(uint8_t onOff,uint8_t blinkOnOff);
 
 //EEPROM
-void mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value);
-uint8_t mp_hal_readByteEEPROM(uint32_t addr);
+int32_t mp_hal_writeByteEEPROM(uint32_t addr,uint8_t value);
+int32_t mp_hal_readByteEEPROM(uint32_t addr);
 
 //SPI
 void mp_hal_configSPI(uint8_t bits, uint8_t clockMode, uint32_t bitrate);

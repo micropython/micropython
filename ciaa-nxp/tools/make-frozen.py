@@ -33,17 +33,22 @@ modules = []
 root = sys.argv[1].rstrip("/")
 root_len = len(root)
 
+flagIncludeTests = os.environ.has_key("MP_INCLUDE_TESTS")
+
 for dirpath, dirnames, filenames in os.walk(root):
     for f in filenames:
         if f.endswith( ('.py','.PY') ):
             fullpath = dirpath + "/" + f
+            if flagIncludeTests==False and dirpath==root+"/testing":
+                continue #skip test classes if MP_INCLUDE_TESTS is not defined
             st = os.stat(fullpath)
             modules.append((fullpath[root_len + 1:], st))
+
 
 print("#include <stdint.h>")
 print("const char mp_frozen_names[] = {")
 for f, st in modules:
-    m = module_name(f)
+    m = module_name(f.replace("/","_"))
     print('"%s\\0"' % m)
 print('"\\0"};')
 
