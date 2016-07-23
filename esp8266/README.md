@@ -64,7 +64,7 @@ esptool.py --port /dev/ttyXXX erase_flash
 Erase flash also as a troubleshooting measure, if a module doesn't behave as
 expected.
 
-To flash MicroPython image to your ESP8266, use:
+To flash MicroPython image to your ESP8266, make sure you are in the ESP8266 directory and use:
 ```bash
 $ make deploy
 ```
