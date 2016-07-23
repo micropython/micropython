@@ -61,7 +61,7 @@ static GHandle get_ugfx_handle(mp_obj_t in){
 		return 0;
 }
 
-/// \method text(str, x, y, colour)
+/// \method text(x, y, str, colour)
 ///
 /// Draw the given text to the position `(x, y)` using the given colour.
 ///
@@ -69,9 +69,9 @@ STATIC mp_obj_t ugfx_text(mp_uint_t n_args, const mp_obj_t *args) {
     // extract arguments
     //ugfx_obj_t *self = args[0];
     mp_uint_t len;
-    const char *data = mp_obj_str_get_data(args[1], &len);
-    int x0 = mp_obj_get_int(args[2]);
-    int y0 = mp_obj_get_int(args[3]);
+    const char *data = mp_obj_str_get_data(args[3], &len);
+    int x0 = mp_obj_get_int(args[1]);
+    int y0 = mp_obj_get_int(args[2]);
     int col = mp_obj_get_int(args[4]);
 
 
