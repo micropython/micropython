@@ -80,6 +80,8 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte*)buf, size, err, MP_STREAM_RW_WRITE)
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
+void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
+
 #if MICROPY_STREAMS_NON_BLOCK
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,
 // and anything else just emulates it, right?)
@@ -89,4 +91,3 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_STREAM_H__
-void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
