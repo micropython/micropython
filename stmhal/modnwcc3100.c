@@ -297,13 +297,14 @@ STATIC int cc3100_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, u
 
 
 // Additional interface functions
-// method connect(ssid, key=None, *, security=WPA2, bssid=None)
+// method connect(ssid, key=None, *, security=WPA2, bssid=None, timeout=90)
 STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SL_SEC_TYPE_WPA_WPA2} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(90) } },
     };
 
     // parse args
@@ -329,6 +330,11 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         bssid = mp_obj_str_get_str(args[3].u_obj);
     }
 
+    mp_int_t timeout = -1;
+    if (MP_OBJ_IS_INT(args[4].u_obj)) {
+      timeout = mp_obj_get_int(args[4].u_obj) * 1000;
+    }
+
     SlSecParams_t sec_params;
     sec_params.Type = sec;
     sec_params.Key = (int8_t*)key;
@@ -339,6 +345,18 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, NULL)!= 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
           "could not connect to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
+    }
+
+    if (timeout >= 0) {
+      // Wait until connected or timeout, calling simplelink loop
+      uint32_t start = HAL_GetTick();
+      while (!(ip_obtained && wlan_connected) && ((HAL_GetTick() - start) < timeout) ){
+        _SlNonOsMainLoopTask();
+      }
+      if (!wlan_connected || !ip_obtained) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+          "timed out connecting to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
+      }
     }
 
     return mp_const_none;
