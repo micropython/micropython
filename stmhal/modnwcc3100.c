@@ -39,6 +39,8 @@
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
+#include "dma.h"
+#include "irq.h"
 #include "spi.h"
 #include "pybioctl.h"
 
@@ -63,7 +65,7 @@ Fd_t spi_Open(char* pIfName, unsigned long flags)
 {
     mp_uint_t spi_clock, br_prescale;
     spi_clock = HAL_RCC_GetPCLK1Freq();
-    br_prescale = spi_clock / 2000000; //2MHz
+    br_prescale = spi_clock / 10000000; //10MHz
     if (br_prescale <= 2) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
     else if (br_prescale <= 4) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
     else if (br_prescale <= 8) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
@@ -106,31 +108,67 @@ int spi_Close(Fd_t Fd)
     return 0;
 }
 
+HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t timeout) {
+    // Note: we can't use WFI to idle in this loop because the DMA completion
+    // interrupt may occur before the WFI.  Hence we miss it and have to wait
+    // until the next sys-tick (up to 1ms).
+    uint32_t start = HAL_GetTick();
+    while (HAL_SPI_GetState(spi) != HAL_SPI_STATE_READY) {
+        if (HAL_GetTick() - start >= timeout) {
+            return HAL_TIMEOUT;
+        }
+    }
+    return HAL_OK;
+}
+
+int spi_TransmitReceive(unsigned char* txBuff, unsigned char* rxBuff, int Len)
+{
+    HAL_StatusTypeDef status;
+    extint_disable(PIN_IRQ->pin);
+    GPIO_clear_pin(PIN_CS->gpio, PIN_CS->pin_mask);
+    if (Len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+        status = HAL_SPI_TransmitReceive(SPI_HANDLE, txBuff, rxBuff, Len, 0x1000);
+    } else {
+        DMA_HandleTypeDef tx_dma, rx_dma;
+        dma_init(&tx_dma, &dma_SPI_1_TX, SPI_HANDLE);
+        SPI_HANDLE->hdmatx = &tx_dma;
+        dma_init(&rx_dma, &dma_SPI_1_RX, SPI_HANDLE);
+        SPI_HANDLE->hdmarx = &rx_dma;
+
+        status = HAL_SPI_TransmitReceive_DMA(SPI_HANDLE, txBuff, rxBuff, Len);
+        if (status == HAL_OK) {
+            status = spi_wait_dma_finished(SPI_HANDLE, 0x1000);
+        }
+        dma_deinit(&dma_SPI_1_TX);
+        dma_deinit(&dma_SPI_1_RX);
+    }
+    GPIO_set_pin(PIN_CS->gpio, PIN_CS->pin_mask);
+    extint_enable(PIN_IRQ->pin);
+    return status;
+}
+
 int spi_Read(Fd_t Fd, unsigned char* pBuff, int Len)
 {
     HAL_StatusTypeDef status;
-    memset(pBuff, 0xFF, Len);
-    extint_disable(PIN_IRQ->pin);
-    GPIO_clear_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    status = HAL_SPI_Receive(SPI_HANDLE, pBuff, Len, 20);
-    GPIO_set_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    extint_enable(PIN_IRQ->pin);
-    if(status != HAL_OK)
-      return(0);
-      
+    unsigned char* dummy;
+    dummy = malloc(sizeof(unsigned char)*Len);
+    status = spi_TransmitReceive(dummy, pBuff, Len);
+    free(dummy);
+    if (status != HAL_OK)
+        return(0);
+
     return Len;
 }
 
 int spi_Write(Fd_t Fd, unsigned char* pBuff, int Len)
 {
     HAL_StatusTypeDef status;
-    extint_disable(PIN_IRQ->pin);
-    GPIO_clear_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    status = HAL_SPI_Transmit(SPI_HANDLE, pBuff, Len, 20);
-    GPIO_set_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    extint_enable(PIN_IRQ->pin);
-    if(status != HAL_OK)
-      return(0);
+    unsigned char* dummy;
+    dummy = malloc(sizeof(unsigned char)*Len);
+    status = spi_TransmitReceive(pBuff, dummy, Len);
+    free(dummy);
+    if (status != HAL_OK)
+        return(0);
 
     return Len;
 }
