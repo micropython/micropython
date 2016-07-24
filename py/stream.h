@@ -83,8 +83,6 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
 
 #if MICROPY_STREAMS_NON_BLOCK
-// TODO: This is POSIX-specific (but then POSIX is the only real thing,
-// and anything else just emulates it, right?)
 #define mp_is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
 #else
 #define mp_is_nonblocking_error(errno) (0)
