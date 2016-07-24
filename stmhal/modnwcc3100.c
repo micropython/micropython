@@ -169,7 +169,7 @@ int spi_Write(Fd_t Fd, unsigned char* pBuff, int Len)
     free(dummy);
     if (status != HAL_OK)
         return(0);
-    
+
     return Len;
 }
 
