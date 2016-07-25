@@ -301,3 +301,6 @@ void mp_unix_mark_exec(void);
 #ifndef _DIRENT_HAVE_D_INO
 #define _DIRENT_HAVE_D_INO (1)
 #endif
+
+// For debugging purposes, make printf() available to any source file.
+#include <stdio.h>
