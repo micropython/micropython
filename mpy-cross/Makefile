@@ -50,7 +50,9 @@ SRC_C = \
 	gccollect.c \
 
 ifeq ($(OS),Windows_NT)
-SRC_C += windows/fmode.c
+    ifeq (,$(findstring MSYS,$(UNAME_S)))
+        SRC_C += windows/fmode.c
+    endif
 endif
 
 OBJ = $(PY_O)
