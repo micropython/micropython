@@ -116,7 +116,14 @@ STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice) {
-    (void)type;
+    // All str functions also handle bytes objects, and they call str_index_to_ptr(),
+    // so it must handle bytes.
+    if (type == &mp_type_bytes) {
+        // Taken from objstr.c:str_index_to_ptr()
+        mp_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
+        return self_data + index_val;
+    }
+
     mp_int_t i;
     // Copied from mp_get_index; I don't want bounds checking, just give me
     // the integer as-is. (I can't bounds-check without scanning the whole
