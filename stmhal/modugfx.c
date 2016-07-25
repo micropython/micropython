@@ -60,8 +60,7 @@
 ///
 
 
-//GWidgetInit	wi;
-//GTimer GT2;
+const char * font_list[] = {"DejaVuSans12","ralewaybold24","ralewayextrabold48","DejaVuSans16","ralewayextrabold16"};
 
 systemticks_t gfxSystemTicks(void)
 {
@@ -92,7 +91,7 @@ static orientation_t get_orientation(int a){
 ///
 STATIC mp_obj_t ugfx_init(void) {
 
-	gwinSetDefaultFont(gdispOpenFont("ui2"));
+	gwinSetDefaultFont(gdispOpenFont(font_list[0]));
 	gwinSetDefaultStyle(&WhiteWidgetStyle, FALSE);
 
 	gfxInit();
@@ -326,8 +325,13 @@ STATIC mp_obj_t ugfx_set_default_font(mp_obj_t font_obj) {
 	}else if (MP_OBJ_IS_STR(font_obj)){
 		const char *file = mp_obj_str_get_str(font_obj);
 		gwinSetDefaultFont(gdispOpenFont(file));
+	}else if (MP_OBJ_IS_INT(font_obj)){
+		if (mp_obj_get_int(font_obj) < sizeof(font_list)/sizeof(char*)){
+			gwinSetDefaultFont(gdispOpenFont(font_list[mp_obj_get_int(font_obj)]));
+		}
+		else
+			nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Invalid font index"));
 	}
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_set_default_font_obj, ugfx_set_default_font);
@@ -1031,6 +1035,12 @@ STATIC const mp_map_elem_t ugfx_module_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_OFF),   MP_OBJ_NEW_SMALL_INT(powerOff) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_SLEEP),   MP_OBJ_NEW_SMALL_INT(powerSleep) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_DEEP_SLEEP),   MP_OBJ_NEW_SMALL_INT(powerDeepSleep) },
+	
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_FONT_TINY),   MP_OBJ_NEW_SMALL_INT(0) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_FONT_TITLE),   MP_OBJ_NEW_SMALL_INT(1) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_FONT_NAME),   MP_OBJ_NEW_SMALL_INT(2) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_FONT_MEDIUM),   MP_OBJ_NEW_SMALL_INT(3) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_FONT_MEDIUM_BOLD),   MP_OBJ_NEW_SMALL_INT(4) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Button), (mp_obj_t)&ugfx_button_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Container), (mp_obj_t)&ugfx_container_type },
