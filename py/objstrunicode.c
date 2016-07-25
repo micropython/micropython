@@ -149,25 +149,28 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
             }
         }
         ++s;
-    } else if (!i) {
-        return self_data; // Shortcut - str[0] is its base pointer
     } else {
         // Positive indexing, correspondingly, counts from the start of the string.
         // It's assumed that negative indexing will generally be used with small
         // absolute values (eg str[-1], not str[-1000000]), which means it'll be
         // more efficient this way.
-        for (s = self_data; true; ++s) {
+        s = self_data;
+        while (1) {
+            // First check out-of-bounds
             if (s >= top) {
                 if (is_slice) {
                     return top;
                 }
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
             }
+            // Then check completion
+            if (i-- == 0) {
+                break;
+            }
+            // Then skip UTF-8 char
+            ++s;
             while (UTF8_IS_CONT(*s)) {
                 ++s;
-            }
-            if (!i--) {
-                return s;
             }
         }
     }
