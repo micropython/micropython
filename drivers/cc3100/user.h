@@ -42,6 +42,9 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
+
+#include "modnwcc3100.h"
+
 /*!
 
     \addtogroup Porting
