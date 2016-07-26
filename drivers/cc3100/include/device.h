@@ -1,7 +1,7 @@
 /*
  * device.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
  * 
  *  Redistribution and use in source and binary forms, with or without 
@@ -85,6 +85,9 @@ extern "C" {
 /* Failed to open interface  */
 #define SL_BAD_INTERFACE    (-2004)
 
+/* API has been aborted due to an error detected by host driver */
+#define SL_API_ABORTED      (-100)
+
 /* End of SL internal Error codes */
 
 
@@ -114,6 +117,20 @@ typedef enum
 }SlErrorSender_e; 
 
 
+typedef enum
+{
+    SL_DRIVER_API_DEVICE_SL_START = 0,
+    SL_DRIVER_API_DEVICE_SL_STOP,
+    SL_DRIVER_API_NETAPP_PING_START,
+    SL_DRIVER_API_SOCKET_CONNECT,
+    SL_DRIVER_API_SOCKET_ACCEPT,
+    SL_DRIVER_API_SOCKET_SELECT,
+    SL_DRIVER_API_SOCKET_RECV,
+    SL_DRIVER_API_SOCKET_RECVFROM
+   
+} SlDriverAPIWithTimeout_e;
+
+
 /* Error codes */
 #define SL_ERROR_STATIC_ADDR_SUBNET_ERROR                   (-60)  /* network stack error*/
 #define SL_ERROR_ILLEGAL_CHANNEL                            (-61)  /* supplicant error */
@@ -133,17 +150,17 @@ typedef enum
 #define SL_ERROR_PREFERRED_NETWORKS_FILE_WRITE_FAILED       (-94)  /* supplicant error  */
 #define SL_ERROR_DHCP_CLIENT_RENEW_FAILED                   (-100) /* DHCP client error */
 /* WLAN Connection management status */
-#define SL_ERROR_CON_MGMT_STATUS_UNSPECIFIED                (-102)  
-#define SL_ERROR_CON_MGMT_STATUS_AUTH_REJECT                (-103)  
-#define SL_ERROR_CON_MGMT_STATUS_ASSOC_REJECT               (-104)  
-#define SL_ERROR_CON_MGMT_STATUS_SECURITY_FAILURE           (-105)  
-#define SL_ERROR_CON_MGMT_STATUS_AP_DEAUTHENTICATE          (-106)  
-#define SL_ERROR_CON_MGMT_STATUS_AP_DISASSOCIATE            (-107)  
-#define SL_ERROR_CON_MGMT_STATUS_ROAMING_TRIGGER            (-108)  
-#define SL_ERROR_CON_MGMT_STATUS_DISCONNECT_DURING_CONNECT  (-109)  
-#define SL_ERROR_CON_MGMT_STATUS_SG_RESELECT                (-110)  
-#define SL_ERROR_CON_MGMT_STATUS_ROC_FAILURE                (-111)  
-#define SL_ERROR_CON_MGMT_STATUS_MIC_FAILURE                (-112)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_UNSPECIFIED                (-102)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_AUTH_REJECT                (-103)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_ASSOC_REJECT               (-104)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_SECURITY_FAILURE           (-105)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_AP_DEAUTHENTICATE          (-106)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_AP_DISASSOCIATE            (-107)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_ROAMING_TRIGGER            (-108)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_DISCONNECT_DURING_CONNECT  (-109)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_SG_RESELECT                (-110)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_ROC_FAILURE                (-111)  
+#define SL_GENERAL_ERROR_CON_MGMT_STATUS_MIC_FAILURE                (-112)  
 /* end of WLAN connection management error statuses */
 #define SL_ERROR_WAKELOCK_ERROR_PREFIX                      (-115)  /* Wake lock expired */
 #define SL_ERROR_LENGTH_ERROR_PREFIX                        (-116)  /* Uart header length error */
@@ -163,7 +180,6 @@ typedef enum
     classification according to its nature.
 */
 
-#if 1
 /* SL_EVENT_CLASS_WLAN connection user events */
 #define SL_WLAN_CONNECT_EVENT                     (1)
 #define SL_WLAN_DISCONNECT_EVENT                  (2)
@@ -177,9 +193,18 @@ typedef enum
 #define SL_WLAN_P2P_DEV_FOUND_EVENT               (7)
 #define    SL_WLAN_P2P_NEG_REQ_RECEIVED_EVENT     (8)
 #define SL_WLAN_CONNECTION_FAILED_EVENT           (9)
-/* SL_EVENT_CLASS_DEVICE user events */
-#define SL_DEVICE_FATAL_ERROR_EVENT               (1)
-#define SL_DEVICE_ABORT_ERROR_EVENT               (2)
+
+typedef enum
+{
+    SL_DEVICE_GENERAL_ERROR_EVENT = 1,
+    SL_DEVICE_ABORT_ERROR_EVENT,
+    SL_DEVICE_DRIVER_ASSERT_ERROR_EVENT,
+    SL_DEVICE_DRIVER_TIMEOUT_CMD_COMPLETE,
+    SL_DEVICE_DRIVER_TIMEOUT_SYNC_PATTERN,
+    SL_DEVICE_DRIVER_TIMEOUT_ASYNC_EVENT,
+    SL_DEVICE_ERROR_MAX
+} 
+SlDeviceDriverError_e;
 
 /* SL_EVENT_CLASS_BSD user events */               
 #define    SL_SOCKET_TX_FAILED_EVENT              (1) 
@@ -193,7 +218,6 @@ typedef enum
 /* Server Events */
 #define SL_NETAPP_HTTPGETTOKENVALUE_EVENT          (1)
 #define SL_NETAPP_HTTPPOSTTOKENVALUE_EVENT         (2)
-#endif
 
 
 /*
@@ -235,11 +259,28 @@ typedef enum
   
 
 
+
+/********************************************
+For backward compatability (version 1.0.0.10)
+*********************************************/
+#define SL_ERROR_CON_MGMT_STATUS_UNSPECIFIED				SL_GENERAL_ERROR_CON_MGMT_STATUS_UNSPECIFIED
+#define SL_ERROR_CON_MGMT_STATUS_AUTH_REJECT				SL_GENERAL_ERROR_CON_MGMT_STATUS_AUTH_REJECT
+#define SL_ERROR_CON_MGMT_STATUS_ASSOC_REJECT				SL_GENERAL_ERROR_CON_MGMT_STATUS_ASSOC_REJECT
+#define SL_ERROR_CON_MGMT_STATUS_SECURITY_FAILURE			SL_GENERAL_ERROR_CON_MGMT_STATUS_SECURITY_FAILURE
+#define SL_ERROR_CON_MGMT_STATUS_AP_DEAUTHENTICATE			SL_GENERAL_ERROR_CON_MGMT_STATUS_AP_DEAUTHENTICATE
+#define SL_ERROR_CON_MGMT_STATUS_AP_DISASSOCIATE			SL_GENERAL_ERROR_CON_MGMT_STATUS_AP_DISASSOCIATE
+#define SL_ERROR_CON_MGMT_STATUS_ROAMING_TRIGGER			SL_GENERAL_ERROR_CON_MGMT_STATUS_ROAMING_TRIGGER
+#define SL_ERROR_CON_MGMT_STATUS_DISCONNECT_DURING_CONNECT	SL_GENERAL_ERROR_CON_MGMT_STATUS_DISCONNECT_DURING_CONNECT
+#define SL_ERROR_CON_MGMT_STATUS_SG_RESELECT                SL_GENERAL_ERROR_CON_MGMT_STATUS_SG_RESELECT
+#define SL_ERROR_CON_MGMT_STATUS_ROC_FAILURE				SL_GENERAL_ERROR_CON_MGMT_STATUS_ROC_FAILURE
+#define SL_ERROR_CON_MGMT_STATUS_MIC_FAILURE				SL_GENERAL_ERROR_CON_MGMT_STATUS_MIC_FAILURE
+#define SL_DEVICE_FATAL_ERROR_EVENT							SL_DEVICE_GENERAL_ERROR_EVENT  
+
+
 /*****************************************************************************/
 /* Structure/Enum declarations                                               */
 /*****************************************************************************/
 
-#define ROLE_UNKNOWN_ERR                      (-1)
 
 #ifdef SL_IF_TYPE_UART
 typedef struct  
@@ -265,7 +306,6 @@ typedef struct
     _u16               Padding;
 }SlVersionFull;
 
-
 typedef struct
 {
     _u32 				AbortType;
@@ -279,16 +319,21 @@ typedef struct
     SlErrorSender_e        sender;
 }sl_DeviceReport;
 
+typedef struct
+{
+    _u32  info;
+}sl_DeviceDriverErrorReport;
 typedef union
 {
   sl_DeviceReport           deviceEvent; 
   sl_DeviceReportAbort		deviceReport;  
-} _SlDeviceEventData_u;
+  sl_DeviceDriverErrorReport deviceDriverReport;
+} SlDeviceEventData_u;
 
 typedef struct
 {
-   _u32                 Event;
-   _SlDeviceEventData_u EventData;
+   SlDeviceDriverError_e Event;
+   SlDeviceEventData_u  EventData;
 } SlDeviceEvent_t;
 
 typedef struct  
@@ -305,7 +350,6 @@ typedef struct
     _u32                sl_tm_year_day; /* not required */ 
     _u32                reserved[3];  
 }SlDateTime_t;
-
 
 /******************************************************************************/
 /* Type declarations                                                          */
@@ -527,7 +571,7 @@ _i32 sl_DevGet(const _u8 DeviceGetId,_u8 *pOption,_u8 *pConfigLen, _u8 *pValues)
                                           - SL_WLAN_CONNECT_EVENT                     
                                           - SL_WLAN_DISCONNECT_EVENT
                                         - SL_EVENT_CLASS_DEVICE user events
-                                          - SL_DEVICE_FATAL_ERROR_EVENT
+                                          - SL_DEVICE_GENERAL_ERROR_EVENT
                                         - SL_EVENT_CLASS_BSD user events
                                           - SL_SOCKET_TX_FAILED_EVENT     
                                           - SL_SOCKET_ASYNC_EVENT 

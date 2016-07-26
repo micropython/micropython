@@ -1,7 +1,7 @@
 /*
  * simplelink.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
  * 
  *  Redistribution and use in source and binary forms, with or without 
@@ -216,6 +216,19 @@
 #ifndef __SIMPLELINK_H__
 #define    __SIMPLELINK_H__
 
+/* define the default types
+ * If user wants to overwrite it,
+ * he need to undef and define again */
+#define _u8  unsigned char
+#define _i8  signed char
+#define _u16 unsigned short
+#define _i16 signed short
+#define _u32 unsigned long
+#define _i32 signed long
+
+#define _volatile volatile
+#define _const    const
+
 #include "../user.h"
 
 #ifdef    __cplusplus
@@ -250,11 +263,11 @@ extern "C"
 /*****************************************************************************/
 /* Macro declarations for Host Driver version                                */
 /*****************************************************************************/
-#define SL_DRIVER_VERSION   "1.0.0.10"
+#define SL_DRIVER_VERSION   "1.0.1.6"
 #define SL_MAJOR_VERSION_NUM    1L
 #define SL_MINOR_VERSION_NUM    0L
-#define SL_VERSION_NUM          0L
-#define SL_SUB_VERSION_NUM      10L
+#define SL_VERSION_NUM          1L
+#define SL_SUB_VERSION_NUM      6L
 
 
 /*****************************************************************************/
@@ -310,24 +323,24 @@ extern "C"
 #define SL_INC_SET_UART_MODE
 #endif
 
-#define SL_RET_CODE_OK                          (0)
-#define SL_RET_CODE_INVALID_INPUT               (-2)
-#define SL_RET_CODE_SELF_ERROR                  (-3)
-#define SL_RET_CODE_NWP_IF_ERROR                (-4)
-#define SL_RET_CODE_MALLOC_ERROR                (-5)
+#define SL_RET_CODE_OK                     (0)
+#define SL_RET_CODE_INVALID_INPUT          (-2)
+#define SL_RET_CODE_SELF_ERROR             (-3)
+#define SL_RET_CODE_NWP_IF_ERROR           (-4)
+#define SL_RET_CODE_MALLOC_ERROR           (-5)
+#define SL_RET_CODE_ABORT                  (-6)
+#define SL_RET_CODE_PROTOCOL_ERROR         (-7)  
 
-#define sl_Memcpy       memcpy
-#define sl_Memset       memset
 
-#define sl_SyncObjClear(pObj)     sl_SyncObjWait(pObj,SL_OS_NO_WAIT)
-
+/* #define sl_Memcpy       memcpy */
+#define sl_Memset(addr, val, len)      memset(addr, val, (size_t)len)
+#define sl_Memcpy(dest, src, len)      memcpy(dest, src, (size_t)len)
+  
 #ifndef SL_TINY_EXT
-#define SL_MAX_SOCKETS      (8)
+#define SL_MAX_SOCKETS      (_u8)(8)
 #else
-#define SL_MAX_SOCKETS      (2)
+#define SL_MAX_SOCKETS      (_u8)(2)
 #endif
-
-
 
   
 /*****************************************************************************/
@@ -348,19 +361,6 @@ extern "C"
 
 #ifndef OK
 #define OK          (0)
-#endif
-
-#ifndef _SL_USER_TYPES
-      typedef unsigned char _u8;
-      typedef signed char   _i8;
- 
-      typedef unsigned short _u16;
-      typedef signed short   _i16;
- 
-      typedef unsigned long  _u32;
-      typedef signed long    _i32;
-      #define _volatile volatile
-	  #define _const    const
 #endif
 
 typedef _u16  _SlOpcode_t;
@@ -443,7 +443,7 @@ typedef _i16   _SlReturnVal_t;
 #endif
 
 
-#undef __CONCAT
+
 #define __CONCAT(x,y)	x ## y
 #define __CONCAT2(x,y)	__CONCAT(x,y)
 
@@ -726,7 +726,9 @@ extern void _SlDrvHandleSockEvents(SlSockEvent_t *slSockEvent);
 #endif
 
 
-typedef void (*_SlSpawnEntryFunc_t)(void* pValue);
+typedef short (*_SlSpawnEntryFunc_t)(void* pValue);
+
+#define SL_SPAWN_FLAG_FROM_SL_IRQ_HANDLER    (0X1)
 
 #ifdef SL_PLATFORM_MULTI_THREADED
     #include "../source/spawn.h"
@@ -771,9 +773,7 @@ typedef void (*_SlSpawnEntryFunc_t)(void* pValue);
 
     \endcode
 */
-#if (defined(sl_GeneralEvtHdlr))
 extern void sl_GeneralEvtHdlr(SlDeviceEvent_t *pSlDeviceEvent);
-#endif
 
 
 /*!
@@ -937,6 +937,23 @@ extern void sl_SockEvtHdlr(SlSockEvent_t* pSlSockEvent);
 #if (defined(sl_HttpServerCallback))
 extern void sl_HttpServerCallback(SlHttpServerEvent_t *pSlHttpServerEvent, SlHttpServerResponse_t *pSlHttpServerResponse);
 #endif
+
+
+
+
+/*!
+    \brief SL get timestamp routine.
+           It returns the timer counter value in ticks unit.
+           The counter must count from zero to its max value
+
+    \par
+          Parameters: \n
+ 
+*/
+#if defined (sl_GetTimestamp)
+extern _u32 sl_GetTimestamp(void);
+#endif
+
 /*!
 
  Close the Doxygen group.

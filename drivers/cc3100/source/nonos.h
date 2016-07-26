@@ -1,7 +1,7 @@
 /*
  * nonos.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
  * 
  *  Redistribution and use in source and binary forms, with or without 
@@ -52,6 +52,25 @@ extern "C" {
 #define _SlSyncWaitLoopCallback  UserSleepFunction
 */
 
+#ifndef SL_TINY_EXT
+#define NONOS_MAX_SPAWN_ENTRIES     5
+#else
+#define NONOS_MAX_SPAWN_ENTRIES     1
+#endif
+
+
+
+typedef struct
+{
+    _SlSpawnEntryFunc_t 		pEntry;
+    void* 						pValue;
+	_u8                         IsAllocated;
+}_SlNonOsSpawnEntry_t;
+
+typedef struct
+{
+    _SlNonOsSpawnEntry_t	SpawnEntries[NONOS_MAX_SPAWN_ENTRIES];
+}_SlNonOsCB_t;
 
 
 #define NONOS_WAIT_FOREVER   							0xFF
@@ -74,7 +93,7 @@ typedef _i8 _SlNonOsRetVal_t;
 /*!
 	\brief type definition for a time value
 */
-typedef _u8 _SlNonOsTime_t;
+typedef _u32 _SlNonOsTime_t;
 
 /*!
 	\brief 	type definition for a sync object container
@@ -270,11 +289,10 @@ _SlNonOsRetVal_t _SlNonOsMainLoopTask(void);
 extern _SlNonOsRetVal_t _SlNonOsSemGet(_SlNonOsSemObj_t* pSyncObj, _SlNonOsSemObj_t WaitValue, _SlNonOsSemObj_t SetValue, _SlNonOsTime_t Timeout);
 extern _SlNonOsRetVal_t _SlNonOsSemSet(_SlNonOsSemObj_t* pSemObj , _SlNonOsSemObj_t Value);
 extern _SlNonOsRetVal_t _SlNonOsSpawn(_SlSpawnEntryFunc_t pEntry , void* pValue , _u32 flags);
-  
+
 #if (defined(_SlSyncWaitLoopCallback))
 extern void _SlSyncWaitLoopCallback(void);
 #endif
-
 
 /*****************************************************************************
 
@@ -315,6 +333,7 @@ extern void _SlSyncWaitLoopCallback(void);
 
 #undef _SlTaskEntry
 #define _SlTaskEntry                                _SlNonOsMainLoopTask
+
 
 #endif /* !SL_PLATFORM_MULTI_THREADED */
 

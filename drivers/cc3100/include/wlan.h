@@ -1,7 +1,7 @@
 /*
  * wlan.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
  * 
  *  Redistribution and use in source and binary forms, with or without 
@@ -61,46 +61,50 @@ extern "C" {
 
 */
 
-#define SL_BSSID_LENGTH                                                                                    (6)
-#define MAXIMAL_SSID_LENGTH                                                                                (32)
+#define SL_BSSID_LENGTH           (6)
+#define MAXIMAL_SSID_LENGTH       (32)
 
-#define NUM_OF_RATE_INDEXES                                                                             (20)
-#define SIZE_OF_RSSI_HISTOGRAM                                                                          (6)
+#define NUM_OF_RATE_INDEXES       (20)
+#define SIZE_OF_RSSI_HISTOGRAM    (6)
  
 /* WLAN Disconnect Reason Codes */
-#define  SL_DISCONNECT_RESERVED_0                                                                       (0)
-#define  SL_DISCONNECT_UNSPECIFIED_REASON                                                               (1)
-#define  SL_PREVIOUS_AUTHENTICATION_NO_LONGER_VALID                                                     (2)
-#define  SL_DEAUTHENTICATED_BECAUSE_SENDING_STATION_IS_LEAVING                                          (3)
-#define  SL_DISASSOCIATED_DUE_TO_INACTIVITY                                                             (4)
-#define  SL_DISASSOCIATED_BECAUSE_AP_IS_UNABLE_TO_HANDLE_ALL_CURRENTLY_ASSOCIATED_STATIONS              (5)
-#define  SL_CLASS_2_FRAME_RECEIVED_FROM_NONAUTHENTICATED_STATION                                        (6)
-#define  SL_CLASS_3_FRAME_RECEIVED_FROM_NONASSOCIATED_STATION                                           (7)
-#define  SL_DISASSOCIATED_BECAUSE_SENDING_STATION_IS_LEAVING_BSS                                        (8)
-#define  SL_STATION_REQUESTING_ASSOCIATION_IS_NOT_AUTHENTICATED_WITH_RESPONDING_STATION                 (9)
-#define  SL_DISASSOCIATED_BECAUSE_THE_INFORMATION_IN_THE_POWER_CAPABILITY_ELEMENT_IS_UNACCEPTABLE       (10)
-#define  SL_DISASSOCIATED_BECAUSE_THE_INFORMATION_IN_THE_SUPPORTED_CHANNELS_ELEMENT_IS_UNACCEPTABLE     (11)
-#define  SL_DISCONNECT_RESERVED_1                                                                       (12)
-#define  SL_INVALID_INFORMATION_ELEMENT                                                                 (13)
-#define  SL_MESSAGE_INTEGRITY_CODE_MIC_FAILURE                                                          (14)
-#define  SL_FOUR_WAY_HANDSHAKE_TIMEOUT                                                                  (15)
-#define  SL_GROUP_KEY_HANDSHAKE_TIMEOUT                                                                 (16)
-#define  SL_RE_ASSOCIATION_REQUEST_PROBE_RESPONSE_BEACON_FRAME                                          (17)
-#define  SL_INVALID_GROUP_CIPHER                                                                        (18)
-#define  SL_INVALID_PAIRWISE_CIPHER                                                                     (19)
-#define  SL_INVALID_AKMP                                                                                (20)
-#define  SL_UNSUPPORTED_RSN_INFORMATION_ELEMENT_VERSION                                                 (21)
-#define  SL_INVALID_RSN_INFORMATION_ELEMENT_CAPABILITIES                                                (22)
-#define  SL_IEEE_802_1X_AUTHENTICATION_FAILED                                                           (23)
-#define  SL_CIPHER_SUITE_REJECTED_BECAUSE_OF_THE_SECURITY_POLICY                                        (24)
-#define  SL_DISCONNECT_RESERVED_2                                                                       (25)
-#define  SL_DISCONNECT_RESERVED_3                                                                       (26)
-#define  SL_DISCONNECT_RESERVED_4                                                                       (27)
-#define  SL_DISCONNECT_RESERVED_5                                                                       (28)
-#define  SL_DISCONNECT_RESERVED_6                                                                       (29)
-#define  SL_DISCONNECT_RESERVED_7                                                                       (30)
-#define  SL_DISCONNECT_RESERVED_8                                                                       (31)
-#define  SL_USER_INITIATED_DISCONNECTION                                                                (200)
+#define  SL_WLAN_DISCONNECT_UNSPECIFIED_REASON                             (1)
+#define  SL_WLAN_DISCONNECT_PREV_AUTH_NOT_VALID                            (2)
+#define  SL_WLAN_DISCONNECT_DEAUTH_LEAVING                                 (3)
+#define  SL_WLAN_DISCONNECT_DISASSOC_DUE_TO_INACTIVITY                     (4)
+#define  SL_WLAN_DISCONNECT_DISASSOC_AP_BUSY                               (5)
+#define  SL_WLAN_DISCONNECT_CLASS2_FRAME_FROM_NONAUTH_STA                  (6)
+#define  SL_WLAN_DISCONNECT_CLASS3_FRAME_FROM_NONASSOC_STA                 (7)
+#define  SL_WLAN_DISCONNECT_DISASSOC_STA_HAS_LEFT                          (8)
+#define  SL_WLAN_DISCONNECT_STA_REQ_ASSOC_WITHOUT_AUTH                     (9)
+#define  SL_WLAN_DISCONNECT_PWR_CAPABILITY_NOT_VALID                       (10)
+#define  SL_WLAN_DISCONNECT_SUPPORTED_CHANNEL_NOT_VALID                    (11)
+#define  SL_WLAN_DISCONNECT_INVALID_IE                                     (13)
+#define  SL_WLAN_DISCONNECT_MIC_FAILURE                                    (14)
+#define  SL_WLAN_DISCONNECT_4WAY_HANDSHAKE_TIMEOUT                         (15)
+#define  SL_WLAN_DISCONNECT_GROUP_KEY_UPDATE_TIMEOUT                       (16)
+#define  SL_WLAN_DISCONNECT_IE_IN_4WAY_DIFFERS                             (17)
+#define  SL_WLAN_DISCONNECT_GROUP_CIPHER_NOT_VALID                         (18)
+#define  SL_WLAN_DISCONNECT_PAIRWISE_CIPHER_NOT_VALID                      (19)
+#define  SL_WLAN_DISCONNECT_AKMP_NOT_VALID                                 (20)
+#define  SL_WLAN_DISCONNECT_UNSUPPORTED_RSN_IE_VERSION                     (21)
+#define  SL_WLAN_DISCONNECT_INVALID_RSN_IE_CAPAB                           (22)
+#define  SL_WLAN_DISCONNECT_IEEE_802_1X_AUTH_FAILED                        (23)
+#define  SL_WLAN_DISCONNECT_CIPHER_SUITE_REJECTED                          (24)
+#define  SL_WLAN_DISCONNECT_DISASSOC_LOW_ACK                               (34)
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_NONE                           (100)                             
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_LOW_TX_RATE                    (104)         
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_LOW_SNR                        (105)               
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_LOW_QUALITY                    (106)               
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_TSPEC_REJECTED                 (107)        
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_MAX_TX_RETRIES                 (108)         
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_BSS_LOSS                       (109)         
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_BSS_LOSS_DUE_TO_MAX_TX_RETRY   (110)
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_SWITCH_CHANNEL                 (111)         
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_AP_DISCONNECT                  (112)               
+#define  SL_WLAN_DISCONNECT_ROAMING_TRIGGER_SECURITY_ATTACK                (113)         
+#define  SL_WLAN_DISCONNECT_USER_INITIATED_DISCONNECTION                   (200)
+
 
 /* Wlan error codes */
 #define  SL_ERROR_KEY_ERROR                                                                             (-3)
@@ -142,7 +146,6 @@ extern "C" {
 #define SL_SCAN_SEC_TYPE_WPA                                                                            (2) 
 #define SL_SCAN_SEC_TYPE_WPA2                                                                           (3)
 
-  
   
 #define TLS                                (0x1)
 #define MSCHAP                             (0x0)
@@ -285,6 +288,53 @@ extern "C" {
 #define INFO_ELEMENT_DEFAULT_OUI_2           (0x28)
 
 #define INFO_ELEMENT_DEFAULT_OUI             (0x000000)  /* 08, 00, 28 will be used */
+
+
+
+
+/**************************************************
+For backward compatability (version 1.0.0.10)
+**************************************************/
+#define SL_DISCONNECT_UNSPECIFIED_REASON															SL_WLAN_DISCONNECT_UNSPECIFIED_REASON                                                   
+#define SL_PREVIOUS_AUTHENTICATION_NO_LONGER_VALID													SL_WLAN_DISCONNECT_PREV_AUTH_NOT_VALID                                     
+#define SL_DEAUTHENTICATED_BECAUSE_SENDING_STATION_IS_LEAVING										SL_WLAN_DISCONNECT_DEAUTH_LEAVING                
+#define SL_DISASSOCIATED_DUE_TO_INACTIVITY															SL_WLAN_DISCONNECT_DISASSOC_DUE_TO_INACTIVITY                     
+#define SL_DISASSOCIATED_BECAUSE_AP_IS_UNABLE_TO_HANDLE_ALL_CURRENTLY_ASSOCIATED_STATIONS			SL_WLAN_DISCONNECT_DISASSOC_AP_BUSY   
+#define SL_CLASS_2_FRAME_RECEIVED_FROM_NONAUTHENTICATED_STATION										SL_WLAN_DISCONNECT_CLASS2_FRAME_FROM_NONAUTH_STA      
+#define SL_CLASS_3_FRAME_RECEIVED_FROM_NONASSOCIATED_STATION										SL_WLAN_DISCONNECT_CLASS3_FRAME_FROM_NONASSOC_STA
+#define SL_DISASSOCIATED_BECAUSE_SENDING_STATION_IS_LEAVING_BSS										SL_WLAN_DISCONNECT_DISASSOC_STA_HAS_LEFT
+#define SL_STATION_REQUESTING_ASSOCIATION_IS_NOT_AUTHENTICATED_WITH_RESPONDING_STATION				SL_WLAN_DISCONNECT_STA_REQ_ASSOC_WITHOUT_AUTH
+#define SL_DISASSOCIATED_BECAUSE_THE_INFORMATION_IN_THE_POWER_CAPABILITY_ELEMENT_IS_UNACCEPTABLE    SL_WLAN_DISCONNECT_PWR_CAPABILITY_NOT_VALID
+#define SL_DISASSOCIATED_BECAUSE_THE_INFORMATION_IN_THE_SUPPORTED_CHANNELS_ELEMENT_IS_UNACCEPTABLE  SL_WLAN_DISCONNECT_SUPPORTED_CHANNEL_NOT_VALID
+#define SL_INVALID_INFORMATION_ELEMENT																SL_WLAN_DISCONNECT_INVALID_IE
+#define SL_MESSAGE_INTEGRITY_CODE_MIC_FAILURE														SL_WLAN_DISCONNECT_MIC_FAILURE
+#define SL_FOUR_WAY_HANDSHAKE_TIMEOUT																SL_WLAN_DISCONNECT_4WAY_HANDSHAKE_TIMEOUT
+#define SL_GROUP_KEY_HANDSHAKE_TIMEOUT																SL_WLAN_DISCONNECT_GROUP_KEY_UPDATE_TIMEOUT 
+#define SL_RE_ASSOCIATION_REQUEST_PROBE_RESPONSE_BEACON_FRAME										SL_WLAN_DISCONNECT_IE_IN_4WAY_DIFFERS
+#define SL_INVALID_GROUP_CIPHER																		SL_WLAN_DISCONNECT_GROUP_CIPHER_NOT_VALID    
+#define SL_INVALID_PAIRWISE_CIPHER																	SL_WLAN_DISCONNECT_PAIRWISE_CIPHER_NOT_VALID
+#define SL_INVALID_AKMP																				SL_WLAN_DISCONNECT_AKMP_NOT_VALID
+#define SL_UNSUPPORTED_RSN_INFORMATION_ELEMENT_VERSION												SL_WLAN_DISCONNECT_UNSUPPORTED_RSN_IE_VERSION
+#define SL_INVALID_RSN_INFORMATION_ELEMENT_CAPABILITIES												SL_WLAN_DISCONNECT_INVALID_RSN_IE_CAPAB
+#define SL_IEEE_802_1X_AUTHENTICATION_FAILED														SL_WLAN_DISCONNECT_IEEE_802_1X_AUTH_FAILED
+#define SL_CIPHER_SUITE_REJECTED_BECAUSE_OF_THE_SECURITY_POLICY										SL_WLAN_DISCONNECT_CIPHER_SUITE_REJECTED
+#define SL_USER_INITIATED_DISCONNECTION																SL_WLAN_DISCONNECT_USER_INITIATED_DISCONNECTION
+
+
+#define SL_DISCONNECT_RESERVED_0    (0)
+#define SL_DISCONNECT_RESERVED_1	(12)
+#define SL_DISCONNECT_RESERVED_2	(26)
+#define SL_DISCONNECT_RESERVED_3    (27)
+#define SL_DISCONNECT_RESERVED_4	(28)
+#define SL_DISCONNECT_RESERVED_5	(29)
+#define SL_DISCONNECT_RESERVED_6	(30)
+#define SL_DISCONNECT_RESERVED_7	(31)
+#define SL_DISCONNECT_RESERVED_8	(32)
+
+/******************************
+End of backward compatability.
+*******************************/
+
 
 /*****************************************************************************/
 /* Structure/Enum declarations                                               */
@@ -443,13 +493,16 @@ typedef struct
 
 typedef enum
 {
-    ROLE_STA   =   0,
-    ROLE_AP    =   2,
-    ROLE_P2P     =   3,
-    ROLE_STA_ERR =  -1,         /* Failure to load MAC/PHY in STA role */
-    ROLE_AP_ERR  =  -ROLE_AP,   /* Failure to load MAC/PHY in AP role */
-    ROLE_P2P_ERR =  -ROLE_P2P   /* Failure to load MAC/PHY in P2P role */
-}SlWlanMode_t;
+    ROLE_STA       =   0,
+    ROLE_UNKNOWN   =   1,
+    ROLE_AP        =   2,
+    ROLE_P2P     =     3,
+    ROLE_STA_ERR =    -1,    /* Failure to load MAC/PHY in STA role */
+    ROLE_AP_ERR  =    -2,    /* Failure to load MAC/PHY in AP role */
+    ROLE_P2P_ERR =    -3,    /* Failure to load MAC/PHY in P2P role */
+    INIT_CALIB_FAIL = -4     /* Failure of calibration */
+}SlWlanMode_e;
+
 
 typedef struct
 {
