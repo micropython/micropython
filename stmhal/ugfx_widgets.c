@@ -74,9 +74,23 @@ STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
 		gwinSetText(gh, s, TRUE);
 		return mp_const_none;
 	}
-
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_text_obj, 1, 2, ugfx_widget_text);
+
+/// \method enabled({0,1})
+///
+/// Gets or sets widget enabled
+STATIC mp_obj_t ugfx_widget_enabled(mp_uint_t n_args, const mp_obj_t *args) {
+	GHandle gh = get_ugfx_handle(args[0]);
+	if (n_args == 1)
+		return mp_obj_new_int(gwinGetEnabled(gh));
+	else
+	{
+		gwinSetEnabled(gh, mp_obj_get_int(args[1]));
+		return mp_const_none;
+	}
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_enabled_obj, 1, 2, ugfx_widget_enabled);
 
 
 /// \method style()
@@ -284,6 +298,7 @@ STATIC const mp_map_elem_t ugfx_button_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RECT),          MP_OBJ_NEW_SMALL_INT(BUTTON_RECT) },
@@ -404,6 +419,7 @@ STATIC const mp_map_elem_t ugfx_textbox_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_detach_input), (mp_obj_t)&ugfx_widget_detach_input_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -637,6 +653,7 @@ STATIC const mp_map_elem_t ugfx_list_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_draw), (mp_obj_t)&ugfx_list_disable_draw_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_draw), (mp_obj_t)&ugfx_list_enable_draw_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_ROLES),        MP_OBJ_NEW_SMALL_INT(2) },
@@ -877,6 +894,7 @@ STATIC const mp_map_elem_t ugfx_keyboard_locals_dict_table[] = {
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&ugfx_keyboard_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 //	{ MP_OBJ_NEW_QSTR(MP_QSTR_set_keyboard_callback), (mp_obj_t)&ugfx_set_keyboard_callback_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_keyboard_callback), (mp_obj_t)&ugfx_clear_keyboard_callback_obj },
@@ -1009,6 +1027,7 @@ STATIC const mp_map_elem_t ugfx_imagebox_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_imagebox_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_imagebox_destroy_obj},
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -1236,6 +1255,7 @@ STATIC const mp_map_elem_t ugfx_image_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_image_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_visible), (mp_obj_t)&ugfx_widget_visible_obj},
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
@@ -1376,6 +1396,7 @@ STATIC const mp_map_elem_t ugfx_checkbox_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_checked), (mp_obj_t)&ugfx_checkbox_checked_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },

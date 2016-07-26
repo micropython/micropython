@@ -504,6 +504,22 @@ STATIC mp_obj_t ugfx_container_destroy(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_container_destroy_obj, ugfx_container_destroy);
 
+/// \method enabled({0,1})
+///
+/// Gets or sets container enabled
+STATIC mp_obj_t ugfx_container_enabled(mp_uint_t n_args, const mp_obj_t *args) {
+	GHandle gh = get_ugfx_handle(args[0]);
+	if (n_args == 1)
+		return mp_obj_new_int(gwinGetEnabled(gh));
+	else
+	{
+		gwinSetEnabled(gh, mp_obj_get_int(args[1]));
+		return mp_const_none;
+	}
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_container_enabled_obj, 1, 2, ugfx_container_enabled);
+
+
 /// \method show()
 ///
 /// shows the container and all its children
@@ -533,6 +549,7 @@ STATIC const mp_map_elem_t ugfx_container_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_container_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_container_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_container_enabled_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&ugfx_container_show_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_hide), (mp_obj_t)&ugfx_container_hide_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_containers_get_height_obj},
