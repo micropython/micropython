@@ -105,7 +105,7 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 
 STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
-    check_fd_is_open(o_in);
+    check_fd_is_open(o);
     switch (request) {
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
