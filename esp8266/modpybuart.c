@@ -112,9 +112,11 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
     if (args[ARG_parity].u_obj != MP_OBJ_NULL) {
         if (args[ARG_parity].u_obj == mp_const_none) {
             UartDev.parity = UART_NONE_BITS;
+            UartDev.exist_parity = UART_STICK_PARITY_DIS;
             self->parity = 0;
         } else {
             mp_int_t parity = mp_obj_get_int(args[ARG_parity].u_obj);
+            UartDev.exist_parity = UART_STICK_PARITY_EN;
             if (parity & 1) {
                 UartDev.parity = UART_ODD_BITS;
                 self->parity = 1;
