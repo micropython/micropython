@@ -65,7 +65,7 @@ Fd_t spi_Open(char* pIfName, unsigned long flags)
 {
     mp_uint_t spi_clock, br_prescale;
     spi_clock = HAL_RCC_GetPCLK1Freq();
-    br_prescale = spi_clock / 10000000; //10MHz
+    br_prescale = spi_clock / 40000000; //40MHz
     if (br_prescale <= 2) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
     else if (br_prescale <= 4) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
     else if (br_prescale <= 8) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
@@ -583,8 +583,10 @@ STATIC int cc3100_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
 }
 
 STATIC void cc3100_socket_close(mod_network_socket_obj_t *socket) {
-    sl_Close(socket->u_state);
-    cc3100_set_fd_closed_state(socket->u_state);
+    if (!cc3100_get_fd_closed_state(socket->u_state)) {
+      sl_Close(socket->u_state);
+      cc3100_set_fd_closed_state(socket->u_state);
+    }
 }
 
 STATIC int cc3100_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
