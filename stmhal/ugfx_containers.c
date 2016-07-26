@@ -417,19 +417,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_containers_get_height_obj, ugfx_containers
 /////////////////////////////////////////////////////
 
 
-/// \classmethod \constructor(x, y, a, b, text, {style})
+/// \classmethod \constructor(x, y, a, b, text, *, style=None)
 ///
 /// Construct an Container object. Need to call .show() after creation
+STATIC const mp_arg_t ugfx_container_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_style, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+};
+#define UGFX_CONTAINER_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_container_make_new_args)
+
 STATIC mp_obj_t ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 4, 5, false);
+    mp_arg_val_t vals[UGFX_CONTAINER_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_CONTAINER_MAKE_NEW_NUM_ARGS, ugfx_container_make_new_args, vals);
 
 
-    //const char *text = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
 
     // create container object
     ugfx_container_obj_t *ctr = m_new_obj(ugfx_container_obj_t);
@@ -445,21 +450,17 @@ STATIC mp_obj_t ugfx_container_make_new(const mp_obj_type_t *type, mp_uint_t n_a
 	wi.g.show = FALSE;
 
 	// Apply the container parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
+	wi.g.width = vals[2].u_int;
+    wi.g.height = vals[3].u_int;
+    wi.g.y = vals[1].u_int;
+    wi.g.x = vals[0].u_int;
 	//wi.g.parent = ;
 	wi.text = 0;//text;
 
-	if (n_args == 5){
-		ugfx_style_obj_t *st = args[4];
-		if (MP_OBJ_IS_TYPE(args[4], &ugfx_style_type)){
-			wi.customStyle = &(st->style);
-			ctr->style = &(st->style);
-		}
-		else
-			nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Requires a 'Style' object as input"));
+	if (MP_OBJ_IS_TYPE(vals[4].u_obj, &ugfx_style_type)) {
+		ugfx_style_obj_t *st = vals[4].u_obj;
+		wi.customStyle = &(st->style);
+		ctr->style = &(st->style);
 	}
 	else
 		ctr->style = 0;
@@ -503,6 +504,22 @@ STATIC mp_obj_t ugfx_container_destroy(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_container_destroy_obj, ugfx_container_destroy);
 
+/// \method enabled({0,1})
+///
+/// Gets or sets container enabled
+STATIC mp_obj_t ugfx_container_enabled(mp_uint_t n_args, const mp_obj_t *args) {
+	GHandle gh = get_ugfx_handle(args[0]);
+	if (n_args == 1)
+		return mp_obj_new_int(gwinGetEnabled(gh));
+	else
+	{
+		gwinSetEnabled(gh, mp_obj_get_int(args[1]));
+		return mp_const_none;
+	}
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_container_enabled_obj, 1, 2, ugfx_container_enabled);
+
+
 /// \method show()
 ///
 /// shows the container and all its children
@@ -532,6 +549,7 @@ STATIC const mp_map_elem_t ugfx_container_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&ugfx_container_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_container_destroy_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_container_enabled_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&ugfx_container_show_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_hide), (mp_obj_t)&ugfx_container_hide_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_containers_get_height_obj},
@@ -586,7 +604,7 @@ typedef struct _ugfx_graph_t {
 
 } ugfx_graph_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, {style})
+/// \classmethod \constructor(x, y, a, b, origin_x, origin_y)
 ///
 /// Construct an Graph object. Need to call .show() after creation
 STATIC mp_obj_t ugfx_graph_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -638,18 +656,17 @@ STATIC mp_obj_t ugfx_graph_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 }
 
 
-/// \method set_origin()
+/// \method origin()
 ///
 /// sets the origin, in pixels relative to the top right corner
-STATIC mp_obj_t ugfx_graph_set_origin(mp_obj_t self_in, mp_obj_t x, mp_obj_t y) {
+STATIC mp_obj_t ugfx_graph_origin(mp_obj_t self_in, mp_obj_t x, mp_obj_t y) {
     ugfx_graph_obj_t *self = self_in;
 
 	gwinGraphSetOrigin(self->ghGraph, mp_obj_get_int(x), mp_obj_get_int(y));
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_graph_set_origin_obj, ugfx_graph_set_origin);
-
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_graph_origin_obj, ugfx_graph_origin);
 
 
 /// \method destroy()
@@ -828,12 +845,12 @@ STATIC const mp_map_elem_t ugfx_graph_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_graph_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&ugfx_graph_show_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_hide), (mp_obj_t)&ugfx_graph_hide_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_origin), (mp_obj_t)&ugfx_graph_set_origin_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_origin), (mp_obj_t)&ugfx_graph_origin_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_plot), (mp_obj_t)&ugfx_graph_plot_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_style), (mp_obj_t)&ugfx_graph_set_style_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_arrows), (mp_obj_t)&ugfx_graph_set_arrows_obj},
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_get_height), (mp_obj_t)&ugfx_containers_get_height},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get_width), (mp_obj_t)&ugfx_containers_get_width},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_appearance), (mp_obj_t)&ugfx_graph_set_style_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_arrows), (mp_obj_t)&ugfx_graph_set_arrows_obj},
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_containers_get_height},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_containers_get_width},
 
 
 	//class constants
