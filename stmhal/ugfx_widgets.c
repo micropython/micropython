@@ -949,8 +949,8 @@ STATIC const mp_arg_t ugfx_imagebox_make_new_args[] = {
 
 STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_val_t vals[UGFX_BUTTON_MAKE_NEW_NUM_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_BUTTON_MAKE_NEW_NUM_ARGS, ugfx_button_make_new_args, vals);
+    mp_arg_val_t vals[UGFX_IMAGEBOX_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_IMAGEBOX_MAKE_NEW_NUM_ARGS, ugfx_imagebox_make_new_args, vals);
 
 
     const char *file = mp_obj_str_get_str(vals[4].u_obj);
