@@ -1,6 +1,8 @@
 #ifndef _INCLUDED_UART_H_
 #define _INCLUDED_UART_H_
 
+#include <eagle_soc.h>
+
 #define UART0 (0)
 #define UART1 (1)
 
@@ -18,14 +20,14 @@ typedef enum {
 } UartStopBitsNum;
 
 typedef enum {
-    UART_NONE_BITS = 0,
-    UART_ODD_BITS   = 0,
-    UART_EVEN_BITS = BIT4
+    UART_NONE_BITS  = 0,
+    UART_ODD_BITS   = BIT0,
+    UART_EVEN_BITS  = 0
 } UartParityMode;
 
 typedef enum {
     UART_STICK_PARITY_DIS   = 0,
-    UART_STICK_PARITY_EN    = BIT3 | BIT5
+    UART_STICK_PARITY_EN    = BIT1
 } UartExistParity;
 
 typedef enum {
