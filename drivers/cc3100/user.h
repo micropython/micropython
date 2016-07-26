@@ -878,10 +878,7 @@ typedef OsiLockObj_t                            _SlLockObj_t;
     \warning
 */
 
-#define SL_MEMORY_MGMT_DYNAMIC 	1
-#define SL_MEMORY_MGMT_STATIC  0
-
-#define SL_MEMORY_MGMT  SL_MEMORY_MGMT_DYNAMIC
+#undef SL_MEMORY_MGMT_DYNAMIC
 
 #ifdef SL_MEMORY_MGMT_DYNAMIC
 
