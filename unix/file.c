@@ -105,18 +105,26 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 
 STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
-    if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
-        off_t off = lseek(o->fd, s->offset, s->whence);
-        if (off == (off_t)-1) {
-            *errcode = errno;
-            return MP_STREAM_ERROR;
+    switch (request) {
+        case MP_STREAM_SEEK: {
+            struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+            off_t off = lseek(o->fd, s->offset, s->whence);
+            if (off == (off_t)-1) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            s->offset = off;
+            return 0;
         }
-        s->offset = off;
-        return 0;
-    } else {
-        *errcode = EINVAL;
-        return MP_STREAM_ERROR;
+        case MP_STREAM_FLUSH:
+            if (fsync(o->fd) < 0) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            return 0;
+        default:
+            *errcode = EINVAL;
+            return MP_STREAM_ERROR;
     }
 }
 
