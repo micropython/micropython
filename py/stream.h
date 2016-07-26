@@ -27,6 +27,7 @@
 #define __MICROPY_INCLUDED_PY_STREAM_H__
 
 #include "py/obj.h"
+#include "py/mperrno.h"
 
 #define MP_STREAM_ERROR ((mp_uint_t)-1)
 
