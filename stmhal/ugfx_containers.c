@@ -420,7 +420,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_containers_get_height_obj, ugfx_containers
 /// \classmethod \constructor(x, y, a, b, text, *, style=None)
 ///
 /// Construct an Container object. Need to call .show() after creation
-STATIC const mp_arg_t ugfx_button_make_new_args[] = {
+STATIC const mp_arg_t ugfx_container_make_new_args[] = {
     { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },

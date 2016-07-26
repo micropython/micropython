@@ -259,7 +259,7 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[8].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[8].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual button
@@ -387,7 +387,7 @@ STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_arg
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual textbox
@@ -501,7 +501,7 @@ STATIC mp_obj_t ugfx_list_make_new(const mp_obj_type_t *type, mp_uint_t n_args, 
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual list
@@ -740,7 +740,7 @@ STATIC mp_obj_t ugfx_keyboard_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[10].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[10].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual keyboard
@@ -935,7 +935,7 @@ typedef struct _ugfx_imagebox_t {
 ///
 /// Construct an imagebox object.
 /// If the style input is not set, will take the style from the parent, if the parents style is set. Otherwise uses default style
-STATIC const mp_arg_t ugfx_keyboard_make_new_args[] = {
+STATIC const mp_arg_t ugfx_imagebox_make_new_args[] = {
     { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -983,7 +983,7 @@ STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual imagebox
@@ -1135,7 +1135,7 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[6].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[6].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual label
@@ -1343,7 +1343,7 @@ STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
-        wi.customStyle = &(st->style);
+        wi.customStyle = &(sty->style);
     }
 
 	// Create the actual checkbox
