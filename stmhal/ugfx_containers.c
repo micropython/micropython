@@ -638,18 +638,17 @@ STATIC mp_obj_t ugfx_graph_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 }
 
 
-/// \method set_origin()
+/// \method origin()
 ///
 /// sets the origin, in pixels relative to the top right corner
-STATIC mp_obj_t ugfx_graph_set_origin(mp_obj_t self_in, mp_obj_t x, mp_obj_t y) {
+STATIC mp_obj_t ugfx_graph_origin(mp_obj_t self_in, mp_obj_t x, mp_obj_t y) {
     ugfx_graph_obj_t *self = self_in;
 
 	gwinGraphSetOrigin(self->ghGraph, mp_obj_get_int(x), mp_obj_get_int(y));
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_graph_set_origin_obj, ugfx_graph_set_origin);
-
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ugfx_graph_origin_obj, ugfx_graph_origin);
 
 
 /// \method destroy()
@@ -828,12 +827,12 @@ STATIC const mp_map_elem_t ugfx_graph_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&ugfx_graph_destroy_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&ugfx_graph_show_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_hide), (mp_obj_t)&ugfx_graph_hide_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_origin), (mp_obj_t)&ugfx_graph_set_origin_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_origin), (mp_obj_t)&ugfx_graph_origin_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_plot), (mp_obj_t)&ugfx_graph_plot_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_style), (mp_obj_t)&ugfx_graph_set_style_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_arrows), (mp_obj_t)&ugfx_graph_set_arrows_obj},
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_get_height), (mp_obj_t)&ugfx_containers_get_height},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get_width), (mp_obj_t)&ugfx_containers_get_width},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_appearance), (mp_obj_t)&ugfx_graph_set_style_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_arrows), (mp_obj_t)&ugfx_graph_set_arrows_obj},
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&ugfx_containers_get_height},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&ugfx_containers_get_width},
 
 
 	//class constants
