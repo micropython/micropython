@@ -489,6 +489,7 @@ void gwinListDeleteAll(GHandle gh) {
 void gwinListItemDelete(GHandle gh, int item) {
 	const gfxQueueASyncItem	*	qi;
 	int							i;
+	bool_t						s;
 
 	// is it a valid handle?
 	if (gh->vmt != (gwinVMT *)&listVMT)
@@ -497,9 +498,12 @@ void gwinListItemDelete(GHandle gh, int item) {
 	// watch out for an invalid item
 	if (item < 0 || item >= gh2obj->cnt)
 		return;
-
+	
+	s = FALSE;
 	for(qi = gfxQueueASyncPeek(&gh2obj->list_head), i = 0; qi; qi = gfxQueueASyncNext(qi), i++) {
 		if (i == item) {
+			if (qi2li->flags & GLIST_FLG_SELECTED)
+				s = TRUE;
 			gfxQueueASyncRemove(&gh2obj->list_head, (gfxQueueASyncItem*)qi);
 			gfxFree((void *)qi);
 			gh2obj->cnt--;
@@ -509,6 +513,9 @@ void gwinListItemDelete(GHandle gh, int item) {
 			break;
 		}
 	}
+	
+	if (s)
+		gwinListSetSelected(gh,item,TRUE);
 }
 
 uint16_t gwinListItemGetParam(GHandle gh, int item) {
@@ -572,7 +579,8 @@ const char* gwinListGetSelectedText(GHandle gh) {
 void gwinListSetSelected(GHandle gh, int item, bool_t doSelect) {
 	const gfxQueueASyncItem   *   qi;
 	int                     i;
-
+	coord_t					iheight;
+	
 	// is it a valid handle?
 	if (gh->vmt != (gwinVMT *)&listVMT)
 		return;
@@ -600,6 +608,22 @@ void gwinListSetSelected(GHandle gh, int item, bool_t doSelect) {
 				qi2li->flags &= ~GLIST_FLG_SELECTED;
 			break;
 		}
+	}
+	
+	//make sure selected item is on screen
+	iheight = gdispGetFontMetric(gh->font, fontHeight) + LST_VERT_PAD;
+	i = item;
+	//if we need to scroll down
+	if (((i+2)*iheight - gh2obj->top) > gh->height){
+		//gh2obj->top += iheight;
+		gh2obj->top = (i+2)*iheight - gh->height;
+	}
+	//if we need to scroll up
+	if (((i-1)*iheight) < gh2obj->top){
+		gh2obj->top = (i-1)*iheight;
+		//gh2obj->top -= iheight;
+		//if (gh2obj->top < 0)
+		//	gh2obj->top = 0;
 	}
 	_gwinUpdate(gh);
 }
