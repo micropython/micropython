@@ -26,12 +26,35 @@ def rm_f(fname):
     if os.path.exists(fname):
         os.remove(fname)
 
+
+# unescape wanted regex chars and escape unwanted ones
+def convert_regex_escapes(line):
+    cs = []
+    escape = False
+    for c in str(line, 'utf8'):
+        if escape:
+            escape = False
+            cs.append(c)
+        elif c == '\\':
+            escape = True
+        elif c in ('(', ')', '[', ']', '{', '}', '.', '*', '+', '^', '$'):
+            cs.append('\\' + c)
+        else:
+            cs.append(c)
+    # accept carriage-return(s) before final newline
+    if cs[-1] == '\n':
+        cs[-1] = '\r*\n'
+    return bytes(''.join(cs), 'utf8')
+
+
 def run_micropython(pyb, args, test_file):
     special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py')
+    is_special = False
     if pyb is None:
         # run on PC
-        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests :
+        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
             # special handling for tests of the unix cmdline program
+            is_special = True
 
             # check for any cmdline options needed for this test
             args = [MICROPYTHON]
@@ -81,63 +104,6 @@ def run_micropython(pyb, args, test_file):
             except subprocess.CalledProcessError:
                 return b'CRASH'
 
-            # unescape wanted regex chars and escape unwanted ones
-            def convert_regex_escapes(line):
-                cs = []
-                escape = False
-                for c in str(line, 'utf8'):
-                    if escape:
-                        escape = False
-                        cs.append(c)
-                    elif c == '\\':
-                        escape = True
-                    elif c in ('(', ')', '[', ']', '{', '}', '.', '*', '+', '^', '$'):
-                        cs.append('\\' + c)
-                    else:
-                        cs.append(c)
-                # accept carriage-return(s) before final newline
-                if cs[-1] == '\n':
-                    cs[-1] = '\r*\n'
-                return bytes(''.join(cs), 'utf8')
-
-            # convert parts of the output that are not stable across runs
-            with open(test_file + '.exp', 'rb') as f:
-                lines_exp = []
-                for line in f.readlines():
-                    if line == b'########\n':
-                        line = (line,)
-                    else:
-                        line = (line, re.compile(convert_regex_escapes(line)))
-                    lines_exp.append(line)
-            lines_mupy = [line + b'\n' for line in output_mupy.split(b'\n')]
-            if output_mupy.endswith(b'\n'):
-                lines_mupy = lines_mupy[:-1] # remove erroneous last empty line
-            i_mupy = 0
-            for i in range(len(lines_exp)):
-                if lines_exp[i][0] == b'########\n':
-                    # 8x #'s means match 0 or more whole lines
-                    line_exp = lines_exp[i + 1]
-                    skip = 0
-                    while i_mupy + skip < len(lines_mupy) and not line_exp[1].match(lines_mupy[i_mupy + skip]):
-                        skip += 1
-                    if i_mupy + skip >= len(lines_mupy):
-                        lines_mupy[i_mupy] = b'######## FAIL\n'
-                        break
-                    del lines_mupy[i_mupy:i_mupy + skip]
-                    lines_mupy.insert(i_mupy, b'########\n')
-                    i_mupy += 1
-                else:
-                    # a regex
-                    if lines_exp[i][1].match(lines_mupy[i_mupy]):
-                        lines_mupy[i_mupy] = lines_exp[i][0]
-                    else:
-                        #print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
-                        pass
-                    i_mupy += 1
-                if i_mupy >= len(lines_mupy):
-                    break
-            output_mupy = b''.join(lines_mupy)
-
         else:
             # a standard test
             try:
@@ -159,6 +125,45 @@ def run_micropython(pyb, args, test_file):
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
+
+    if is_special or test_file in special_tests:
+        # convert parts of the output that are not stable across runs
+        with open(test_file + '.exp', 'rb') as f:
+            lines_exp = []
+            for line in f.readlines():
+                if line == b'########\n':
+                    line = (line,)
+                else:
+                    line = (line, re.compile(convert_regex_escapes(line)))
+                lines_exp.append(line)
+        lines_mupy = [line + b'\n' for line in output_mupy.split(b'\n')]
+        if output_mupy.endswith(b'\n'):
+            lines_mupy = lines_mupy[:-1] # remove erroneous last empty line
+        i_mupy = 0
+        for i in range(len(lines_exp)):
+            if lines_exp[i][0] == b'########\n':
+                # 8x #'s means match 0 or more whole lines
+                line_exp = lines_exp[i + 1]
+                skip = 0
+                while i_mupy + skip < len(lines_mupy) and not line_exp[1].match(lines_mupy[i_mupy + skip]):
+                    skip += 1
+                if i_mupy + skip >= len(lines_mupy):
+                    lines_mupy[i_mupy] = b'######## FAIL\n'
+                    break
+                del lines_mupy[i_mupy:i_mupy + skip]
+                lines_mupy.insert(i_mupy, b'########\n')
+                i_mupy += 1
+            else:
+                # a regex
+                if lines_exp[i][1].match(lines_mupy[i_mupy]):
+                    lines_mupy[i_mupy] = lines_exp[i][0]
+                else:
+                    #print("don't match: %r %s" % (lines_exp[i][1], lines_mupy[i_mupy])) # DEBUG
+                    pass
+                i_mupy += 1
+            if i_mupy >= len(lines_mupy):
+                break
+        output_mupy = b''.join(lines_mupy)
 
     return output_mupy
 
