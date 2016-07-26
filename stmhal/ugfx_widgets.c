@@ -913,23 +913,28 @@ typedef struct _ugfx_imagebox_t {
 
 } ugfx_imagebox_obj_t;
 
-/// \classmethod \constructor(x, y, a, b, text, cache, {parent})
+/// \classmethod \constructor(x, y, a, b, text, *, cache=0, parent=None, style=None)
 ///
 /// Construct an imagebox object.
 /// If the style input is not set, will take the style from the parent, if the parents style is set. Otherwise uses default style
+STATIC const mp_arg_t ugfx_keyboard_make_new_args[] = {
+    { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_a, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+    { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+	{ MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    { MP_QSTR_cache, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },	
+	{ MP_QSTR_style, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
+};
+
 STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 6, 7, false);
+    mp_arg_val_t vals[UGFX_BUTTON_MAKE_NEW_NUM_ARGS];
+    mp_arg_parse_all_kw_array(n_args, n_kw, args, UGFX_BUTTON_MAKE_NEW_NUM_ARGS, ugfx_button_make_new_args, vals);
 
 
-    const char *file = mp_obj_str_get_str(args[4]);
-	int x = mp_obj_get_int(args[0]);
-	int y = mp_obj_get_int(args[1]);
-	int a = mp_obj_get_int(args[2]);
-	int b = mp_obj_get_int(args[3]);
-	int cache = mp_obj_get_int(args[5]);
-
-	GHandle parent = NULL;
+    const char *file = mp_obj_str_get_str(vals[4].u_obj);
 
     // create imagebox object
     ugfx_imagebox_obj_t *img = m_new_obj(ugfx_imagebox_obj_t);
@@ -944,26 +949,23 @@ STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	wi.g.show = TRUE;
 
 	// Apply the imagebox parameters
-	wi.g.width = a;
-	wi.g.height = b;
-	wi.g.y = y;
-	wi.g.x = x;
+	wi.g.width = vals[2].u_int;
+	wi.g.height = vals[3].u_int;
+	wi.g.y = vals[1].u_int;
+	wi.g.x = vals[0].u_int;
 
-
-	if (n_args > 6){
-		ugfx_container_obj_t *container = args[6];
-		if (MP_OBJ_IS_TYPE(args[6], &ugfx_container_type)) {
-			parent = container->ghContainer;
-			wi.customStyle = container->style;
-		}
-	}
-	wi.g.parent = parent;
+	wi.g.parent = NULL;
+    if (MP_OBJ_IS_TYPE(vals[5].u_obj, &ugfx_container_type)) {
+        ugfx_container_obj_t *container = vals[5].u_obj;
+        wi.g.parent = container->ghContainer;
+        wi.customStyle = container->style;
+    }
 	
-	//// Apply style
-   // if (MP_OBJ_IS_TYPE(vals[8].u_obj, &ugfx_style_type)) {
-    //    ugfx_style_obj_t *sty = vals[8].u_obj;
-    //    wi.customStyle = &(st->style);
-    //}
+	// Apply style
+    if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
+        ugfx_style_obj_t *sty = vals[7].u_obj;
+        wi.customStyle = &(st->style);
+    }
 
 	// Create the actual imagebox
 	img->ghImagebox = gwinImageCreate(NULL, &wi.g);
@@ -973,7 +975,7 @@ STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 	int suc = gwinImageOpenFile(img->ghImagebox, file);
 
 	if (suc){
-		if (cache){
+		if (vals[6].u_int){
 			int err = gwinImageCache(img->ghImagebox);
 			print_image_error(err);
 		}
