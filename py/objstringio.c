@@ -90,6 +90,18 @@ STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, 
     return size;
 }
 
+STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)errcode;
+//    mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
+    switch (request) {
+        case MP_STREAM_FLUSH:
+            return 0;
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
+}
+
 #define STREAM_TO_CONTENT_TYPE(o) (((o)->base.type == &mp_type_stringio) ? &mp_type_str : &mp_type_bytes)
 
 STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
@@ -148,6 +160,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readall), MP_ROM_PTR(&mp_stream_readall_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&stringio_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
@@ -159,12 +172,14 @@ STATIC MP_DEFINE_CONST_DICT(stringio_locals_dict, stringio_locals_dict_table);
 STATIC const mp_stream_p_t stringio_stream_p = {
     .read = stringio_read,
     .write = stringio_write,
+    .ioctl = stringio_ioctl,
     .is_text = true,
 };
 
 STATIC const mp_stream_p_t bytesio_stream_p = {
     .read = stringio_read,
     .write = stringio_write,
+    .ioctl = stringio_ioctl,
 };
 
 const mp_obj_type_t mp_type_stringio = {
