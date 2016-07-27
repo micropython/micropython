@@ -58,7 +58,7 @@
 #include "servo.h"
 #include "dac.h"
 #include "lcd.h"
-//#include "modugfx.h"
+#include "neopix.h"
 #include "usb.h"
 #include "portmodules.h"
 #include "modmachine.h"
@@ -224,6 +224,11 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
 #if MICROPY_HW_HAS_LCD
     { MP_OBJ_NEW_QSTR(MP_QSTR_LCD), (mp_obj_t)&pyb_lcd_type },
 #endif
+
+#if MICROPY_HW_HAS_NEOPIX
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Neopix), (mp_obj_t)&pyb_neopix_type },
+#endif
+
 /*
 #if MICROPY_HW_HAS_UGFX
     { MP_OBJ_NEW_QSTR(MP_QSTR_UGFX), (mp_obj_t)&ugfx_type },
