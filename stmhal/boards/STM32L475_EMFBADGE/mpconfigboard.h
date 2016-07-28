@@ -15,6 +15,7 @@
 #define MICROPY_HW_HAS_UGFX         (1)
 #define MICROPY_HW_HAS_CC3100       (1)
 #define MICROPY_HW_L4_512_FS        (1)
+#define MICROPY_HW_HAS_NEOPIX       (1)
 
 #define MICROPY_BOARD_EARLY_INIT    STM32L475_EMFBADGE_board_early_init
 void STM32L475_EMFBADGE_board_early_init(void);

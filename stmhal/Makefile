@@ -138,6 +138,7 @@ SRC_C = \
 	i2c.c \
 	spi.c \
 	uart.c \
+	neopix.c \
 	can.c \
 	usb.c \
 	gccollect.c \
