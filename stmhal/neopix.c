@@ -115,10 +115,10 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	oc_config.Pulse = 0;
 	
 	oc_config.OCPolarity   = TIM_OCPOLARITY_HIGH;
-	oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+	oc_config.OCNPolarity  = TIM_OCNPOLARITY_LOW;
 	oc_config.OCFastMode   = TIM_OCFAST_DISABLE;
 	oc_config.OCIdleState  = TIM_OCIDLESTATE_SET;
-	oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
+	oc_config.OCNIdleState = TIM_OCNIDLESTATE_RESET;
 	
 	HAL_TIM_PWM_ConfigChannel(&tim, &oc_config, 0); //TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&tim, 0);
@@ -163,17 +163,22 @@ STATIC mp_obj_t pyb_neopix_display(mp_obj_t self_in, mp_obj_t rgb) {
 		tx = ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | (val & 0xFF);
 		while (mask){
 			
+			tim.Instance->SR =  ~TIM_SR_CC1IF;
+			while (!(TIM15->SR & TIM_SR_CC1IF));
+			
 			if (mask & tx)
 				tim.Instance->CCR1 = 64;
 			else
 				tim.Instance->CCR1 = 32;
 			
-			tim.Instance->SR =  ~TIM_SR_CC1IF;
-			while (!(TIM15->SR & TIM_SR_CC1IF));
+			
 				
 			mask = mask >> 1;
 		}
 	}
+	
+	tim.Instance->SR =  ~TIM_SR_CC1IF;
+	while (!(TIM15->SR & TIM_SR_CC1IF));
 	
 	tim.Instance->CCR1 = 0;
 	
