@@ -58,7 +58,7 @@ typedef struct _pyb_neopix_t {
 
 /// \classmethod \constructor(pin)
 ///
-/// Construct an Neopix object. Needs a pin object as input. Pin has to have a TIM15 CH1 output
+/// Construct an Neopix object. Needs a pin object as input. Pin has to have a TIM15 CH1N output
 STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
@@ -86,9 +86,9 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin argument needs to be be a Pin type"));
 	}
 	const pin_obj_t *pin = pin_obj;
-	const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
+	const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, 15);
 	if (af == NULL) {
-		nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q doesn't have an af for TIM%d", pin->name, self->tim_id));
+		nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q doesn't have an af for TIM%d", pin->name, 15));
 	}
 	const mp_obj_t args2[6] = {
 		(mp_obj_t)&pin_init_obj,
