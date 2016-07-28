@@ -47,54 +47,7 @@
 /// \moduleref Neopix
 /// UPDATE ME
 
-TIM_HandleTypeDef htim15;
-
-static void neo_timer_init(void)
-{
-	TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_MasterConfigTypeDef sMasterConfig;
-  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
-  TIM_OC_InitTypeDef sConfigOC;
-
-  htim15.Instance = TIM15;
-  htim15.Init.Prescaler = 100;
-  htim15.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim15.Init.Period = 110;
-  htim15.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim15.Init.RepetitionCounter = 0;
-  HAL_TIM_Base_Init(&htim15);
-
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  HAL_TIM_ConfigClockSource(&htim15, &sClockSourceConfig);
-
-  HAL_TIM_PWM_Init(&htim15);
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim15, &sMasterConfig);
-
-  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
-  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
-  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-  sBreakDeadTimeConfig.DeadTime = 0;
-  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
-  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
-  sBreakDeadTimeConfig.BreakFilter = 0;
-  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-  HAL_TIMEx_ConfigBreakDeadTime(&htim15, &sBreakDeadTimeConfig);
-
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 20;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  HAL_TIM_PWM_ConfigChannel(&htim15, &sConfigOC, TIM_CHANNEL_1);
-HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
-TIM15->CR1 |= TIM_CR1_CEN;
-}
-
+TIM_HandleTypeDef tim;
 
 
 
@@ -115,20 +68,46 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     neo->base.type = &pyb_neopix_type;
 	
 	GPIO_InitTypeDef GPIO_InitStruct;
-	 
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
+	     
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF14_TIM15;
+	GPIO_InitStruct.Pin = GPIO_PIN_1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = GPIO_PIN_2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = GPIO_PIN_13;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-	
-	neo_timer_init();
 
+	
+	tim.Instance = TIM15;
+	tim.Init.Prescaler = 0;
+	tim.Init.Period = 99;
+	tim.Init.CounterMode = TIM_COUNTERMODE_UP;
+	tim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	tim.Init.RepetitionCounter = 0;
+	__TIM15_CLK_ENABLE();
+
+	
+	HAL_TIM_Base_Init(&tim);
+
+	
+	TIM_OC_InitTypeDef oc_config;
+	oc_config.OCMode = TIM_OCMODE_PWM1;
+	oc_config.Pulse = 0;
+	
+	oc_config.OCPolarity   = TIM_OCPOLARITY_HIGH;
+	oc_config.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+	oc_config.OCFastMode   = TIM_OCFAST_DISABLE;
+	oc_config.OCIdleState  = TIM_OCIDLESTATE_SET;
+	oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
+	
+	HAL_TIM_PWM_ConfigChannel(&tim, &oc_config, 0); //TIM_CHANNEL_1);
+	//HAL_TIM_PWM_Start(&tim, 0);
+	HAL_TIMEx_PWMN_Start(&tim, 0);
+	
+	
 	return neo;
 }
 
@@ -139,23 +118,27 @@ STATIC mp_obj_t pyb_neopix_display(mp_obj_t self_in, mp_obj_t rgb) {
 	pyb_neopix_obj_t *self = self_in;
 	int val = mp_obj_get_int(rgb);
 	
+	int tx = ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | (val & 0xFF);
 
-
-	TIM15->CCR1 = 30;
-	HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
+	int mask = (1<<23);
 	
-	while (!(TIM15->SR & TIM_SR_CC1IF));
-	TIM15->CCR1 = 60;
+	int c = 24+1;
 	
+	while (mask){
+		
+		if (mask & tx)
+			tim.Instance->CCR1 = 64;
+		else
+			tim.Instance->CCR1 = 32;
+		
+		tim.Instance->SR =  ~TIM_SR_CC1IF;
+		while (!(TIM15->SR & TIM_SR_CC1IF));
+			
+		mask = mask >> 1;
+	}
 	
-	while (!(TIM15->SR & TIM_SR_CC1IF));
-	TIM15->CCR1 = 90;
+	tim.Instance->CCR1 = 0;
 	
-	while (!(TIM15->SR & TIM_SR_CC1IF));
-	TIM15->CCR1 = 45;
-	
-	while (!(TIM15->SR & TIM_SR_CC1IF));
-	HAL_TIM_PWM_Stop(&htim15, TIM_CHANNEL_1);
 	
 	
 	return mp_const_none;
