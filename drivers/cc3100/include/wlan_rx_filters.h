@@ -1,7 +1,7 @@
 /*
  * wlan_rx_filters.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
  * 
  *  Redistribution and use in source and binary forms, with or without 
@@ -845,10 +845,10 @@ typedef _u8 SLrxFilterOperation_t;
   \return       On success, zero is returned. Otherwise error code is returned
  */
 #if _SL_INCLUDE_FUNC(sl_WlanRxFilterAdd)
-SlrxFilterID_t sl_WlanRxFilterAdd(    SlrxFilterRuleType_t                 RuleType,
-                                    SlrxFilterFlags_t                     FilterFlags,
-                                    const SlrxFilterRule_t* const         Rule,
-                                    const SlrxFilterTrigger_t* const     Trigger,
+_i16 sl_WlanRxFilterAdd(    SlrxFilterRuleType_t                        RuleType,
+                                    SlrxFilterFlags_t                   FilterFlags,
+                                    const SlrxFilterRule_t* const       Rule,
+                                    const SlrxFilterTrigger_t* const    Trigger,
                                     const SlrxFilterAction_t* const     Action,
                                     SlrxFilterID_t*                     pFilterId);
 

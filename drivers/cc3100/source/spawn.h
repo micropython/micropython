@@ -1,7 +1,7 @@
 /*
  * spawn.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
+ * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/ 
  * 
  * 
  *  Redistribution and use in source and binary forms, with or without 
@@ -34,8 +34,8 @@
  *
 */
 
-#ifndef __NONOS_H__
-#define	__NONOS_H__
+#ifndef __SPAWN_H__
+#define	__SPAWN_H__
 
 #ifdef	__cplusplus
 extern "C" {
