@@ -56,19 +56,19 @@ typedef struct _pyb_neopix_t {
 } pyb_neopix_obj_t;
 
 
-/// \classmethod \constructor()
+/// \classmethod \constructor(pin)
 ///
-/// Construct an Container object. Need to call .show() after creation
+/// Construct an Neopix object. Needs a pin object as input. Pin has to have a TIM15 CH1 output
 STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // create object
     pyb_neopix_obj_t *neo = m_new_obj(pyb_neopix_obj_t);
     neo->base.type = &pyb_neopix_type;
 	
 	GPIO_InitTypeDef GPIO_InitStruct;
-	     
+/*
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
@@ -79,7 +79,24 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = GPIO_PIN_13;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+*/
 
+	mp_obj_t pin_obj = args[0];
+	if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
+		nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin argument needs to be be a Pin type"));
+	}
+	const pin_obj_t *pin = pin_obj;
+	const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
+	if (af == NULL) {
+		nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q doesn't have an af for TIM%d", pin->name, self->tim_id));
+	}
+	const mp_obj_t args2[6] = {
+		(mp_obj_t)&pin_init_obj,
+		pin_obj,
+		MP_OBJ_NEW_QSTR(MP_QSTR_mode),  MP_OBJ_NEW_SMALL_INT(GPIO_MODE_AF_PP),
+		MP_OBJ_NEW_QSTR(MP_QSTR_af),    MP_OBJ_NEW_SMALL_INT(af->idx)
+	};
+	mp_call_method_n_kw(0, 2, args2);
 	
 	tim.Instance = TIM15;
 	tim.Init.Prescaler = 0;
@@ -104,7 +121,7 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	oc_config.OCNIdleState = TIM_OCNIDLESTATE_SET;
 	
 	HAL_TIM_PWM_ConfigChannel(&tim, &oc_config, 0); //TIM_CHANNEL_1);
-	//HAL_TIM_PWM_Start(&tim, 0);
+	HAL_TIM_PWM_Start(&tim, 0);
 	HAL_TIMEx_PWMN_Start(&tim, 0);
 	
 	
@@ -114,30 +131,53 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 
 /// \method display()
 ///
+/// Takes an array of RGB values, or a single one.
+/// Uses the 0xRRGGBB format
 STATIC mp_obj_t pyb_neopix_display(mp_obj_t self_in, mp_obj_t rgb) {
 	pyb_neopix_obj_t *self = self_in;
-	int val = mp_obj_get_int(rgb);
 	
-	int tx = ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | (val & 0xFF);
-
-	int mask = (1<<23);
+	int len;
+	int tx;
+	int mask;
+	int val;
 	
-	int c = 24+1;
+	mp_obj_t *items;
 	
-	while (mask){
+	if (MP_OBJ_IS_INT(rgb))
+		len = 1;
+	else
+		mp_obj_get_array(rgb, &len, &items);
+	
+	//this is obviously a bit crap, needs replacing with DMA
+	__disable_irq();
+	
+	while(len){
+		len--;
 		
-		if (mask & tx)
-			tim.Instance->CCR1 = 64;
+		if (MP_OBJ_IS_INT(rgb))
+			val = mp_obj_get_int(rgb);
 		else
-			tim.Instance->CCR1 = 32;
+			val = mp_obj_get_int(items[len]);
 		
-		tim.Instance->SR =  ~TIM_SR_CC1IF;
-		while (!(TIM15->SR & TIM_SR_CC1IF));
+		mask = (1<<23);
+		tx = ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | (val & 0xFF);
+		while (mask){
 			
-		mask = mask >> 1;
+			if (mask & tx)
+				tim.Instance->CCR1 = 64;
+			else
+				tim.Instance->CCR1 = 32;
+			
+			tim.Instance->SR =  ~TIM_SR_CC1IF;
+			while (!(TIM15->SR & TIM_SR_CC1IF));
+				
+			mask = mask >> 1;
+		}
 	}
 	
 	tim.Instance->CCR1 = 0;
+	
+	__enable_irq();
 	
 	
 	
@@ -145,13 +185,21 @@ STATIC mp_obj_t pyb_neopix_display(mp_obj_t self_in, mp_obj_t rgb) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_neopix_display_obj, pyb_neopix_display);
 
+/// \method destroy()
+///
+/// Stops the timer
+STATIC mp_obj_t pyb_neopix_destroy(mp_obj_t self_in) {
+	tim.State = HAL_TIM_STATE_RESET;
+	tim.Instance->CCER = 0x0000; // disable all capture/compare outputs
+	tim.Instance->CR1 = 0x0000; // disable the timer and reset its state
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_neopix_destroy_obj, pyb_neopix_destroy);	
 
 STATIC const mp_map_elem_t pyb_neopix_locals_dict_table[] = {
     // instance methods
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&pyb_container_destroy_obj},
-   
-    
+    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&pyb_neopix_destroy_obj},    
     { MP_OBJ_NEW_QSTR(MP_QSTR_display), (mp_obj_t)&pyb_neopix_display_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_destroy), (mp_obj_t)&pyb_neopix_destroy_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
