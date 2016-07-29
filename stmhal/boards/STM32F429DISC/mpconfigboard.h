@@ -29,8 +29,6 @@
 #define MICROPY_HW_UART2_PINS (GPIO_PIN_8 | GPIO_PIN_9)
 
 // I2C busses
-#define MICROPY_HW_I2C1_SCL (pin_B6)
-#define MICROPY_HW_I2C1_SDA (pin_B7)
 #define MICROPY_HW_I2C3_SCL (pin_A8)
 #define MICROPY_HW_I2C3_SDA (pin_C9)
 
