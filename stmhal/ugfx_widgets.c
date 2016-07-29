@@ -1088,6 +1088,11 @@ typedef struct _ugfx_label_t {
 
 } ugfx_label_obj_t;
 
+void gwinLabelDrawJustifiedCustom(GWidgetObject *gw, void *param) {
+	int * j = (int *)param;	
+	gwinLabelDraw(gw, j);
+}
+
 /// \classmethod \constructor(x, y, a, b, text, parent=None)
 ///
 /// Construct an label object.
@@ -1142,7 +1147,7 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     }
 	
 	
-	btn->justification = vals[7].u_int
+	btn->justification = vals[7].u_int;
 	wi.customParam = &(btn->justification);
 	wi.customDraw = gwinLabelDrawJustifiedCustom;
 
@@ -1153,13 +1158,6 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	gwinSetText(btn->ghLabel,mp_obj_str_get_str(vals[4].u_obj),TRUE);
 
 	return btn;
-}
-
-
-void gwinLabelDrawJustifiedCustom(GWidgetObject *gw, void *param) {
-	int * j = (int *)param;
-	
-	gwinLabelDraw(gw, j);
 }
 
 
@@ -1184,7 +1182,12 @@ STATIC const mp_map_elem_t ugfx_label_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	//class constants
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LEFT),        MP_OBJ_NEW_SMALL_INT(0) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),        MP_OBJ_NEW_SMALL_INT(2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTER),        MP_OBJ_NEW_SMALL_INT(1) },
+	 { MP_OBJ_NEW_QSTR(MP_QSTR_LEFTTOP),        MP_OBJ_NEW_SMALL_INT(0+4) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHTTOP),        MP_OBJ_NEW_SMALL_INT(1+4) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTERTOP),        MP_OBJ_NEW_SMALL_INT(2+4) },
 
 
 };
