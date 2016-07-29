@@ -60,7 +60,7 @@ typedef struct point {
 typedef enum justify {
 	justifyLeft = 0,		   /**< Justify Left */
 	justifyCenter = 1,		   /**< Justify Center */
-	justifyRight = 2		   /**< Justify Right */
+	justifyRight = 2,		   /**< Justify Right */
 	justifyLeftTop = 0 + 4,	   /**< Justify Left */
 	justifyCenterTop = 1 + 4,  /**< Justify Center */
 	justifyRightTop = 2 + 4	   /**< Justify Right */
