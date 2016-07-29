@@ -221,6 +221,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_lexer.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/moduos_dupterm.o \
+	../lib/embed/abort_.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
