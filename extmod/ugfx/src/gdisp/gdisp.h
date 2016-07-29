@@ -58,9 +58,12 @@ typedef struct point {
  * @brief   Type for the text justification.
  */
 typedef enum justify {
-	justifyLeft = 0,		/**< Justify Left */
-	justifyCenter = 1,		/**< Justify Center */
-	justifyRight = 2		/**< Justify Right */
+	justifyLeft = 0,		   /**< Justify Left */
+	justifyCenter = 1,		   /**< Justify Center */
+	justifyRight = 2		   /**< Justify Right */
+	justifyLeftTop = 0 + 4,	   /**< Justify Left */
+	justifyCenterTop = 1 + 4,  /**< Justify Center */
+	justifyRightTop = 2 + 4	   /**< Justify Right */
 } justify_t;
 
 /**
@@ -935,7 +938,10 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	 */
 	void gdispGDrawStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, justify_t justify);
 	#define	gdispDrawStringBox(x,y,cx,cy,s,f,c,j)			gdispGDrawStringBox(GDISP,x,y,cx,cy,s,f,c,j)
+	void gdispGDrawStringBoxNoWrap(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, justify_t justify);
+	#define	gdispDrawStringBoxNoWrap(x,y,cx,cy,s,f,c,j)		gdispGDrawStringBoxNoWrap(GDISP,x,y,cx,cy,s,f,c,j)
 
+	
 	/**
 	 * @brief   Draw a text string vertically centered within the specified box. The box background is filled with the specified background color.
 	 * @pre		GDISP_NEED_TEXT must be TRUE in your gfxconf.h

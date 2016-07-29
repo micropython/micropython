@@ -3311,6 +3311,48 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 		autoflush(g);
 		MUTEX_EXIT(g);
 	}
+	
+	void gdispGFillStringBoxNoWrap(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgcolor, justify_t justify) {
+
+		MUTEX_ENTER(g);
+
+		g->p.cx = cx;
+		g->p.cy = cy;
+		g->t.font = font;
+		g->t.clipx0 = g->p.x = x;
+		g->t.clipy0 = g->p.y = y;
+		g->t.clipx1 = x+cx;
+		g->t.clipy1 = y+cy;
+		g->t.color = color;
+		g->t.bgcolor = g->p.color = bgcolor;
+
+		TEST_CLIP_AREA(g) {
+
+			// background fill
+			fillarea(g);
+
+			/* Select the anchor position */
+			switch(justify & 0x3) {
+			case justifyCenter:
+				x += (cx + 1) / 2;
+				break;
+			case justifyRight:
+				x += cx;
+				break;
+			default:	// justifyLeft
+				x += font->baseline_x;
+				break;
+			}
+
+			/* Render */			
+			y += (cy+1 - font->height)/2;
+			mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
+
+		}
+		
+		autoflush(g);
+		MUTEX_EXIT(g);
+	}
 
 	void gdispGFillStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgcolor, justify_t justify) {
 		#if GDISP_NEED_TEXT_WORDWRAP
@@ -3336,7 +3378,7 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 			fillarea(g);
 
 			/* Select the anchor position */
-			switch(justify) {
+			switch(justify & 0x3) {
 			case justifyCenter:
 				x += (cx + 1) / 2;
 				break;
@@ -3360,7 +3402,8 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 				// Count the number of lines
 				nbrLines = 0;
 				mf_wordwrap(font, cx, str, mf_countline_callback, &nbrLines);
-				wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
+				if (!(justify & 4))
+					wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
 
 				mf_wordwrap(font, cx, str, mf_fillline_callback, &wrapParameters);
 			#else

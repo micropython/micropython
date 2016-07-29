@@ -97,6 +97,7 @@ typedef struct ListItem {
 
 	uint16_t			flags;
 		#define GLIST_FLG_SELECTED			0x0001
+		#define GLIST_FLG_NOWRAP			0x0002
 	uint16_t			param;		// A parameter the user can specify himself
 	const char*			text;
 	#if GWIN_NEED_LIST_IMAGES
@@ -177,6 +178,7 @@ void gwinListSetScroll(GHandle gh, scroll_t flag);
  * @api
  */
 int gwinListAddItem(GHandle gh, const char* item, bool_t useAlloc);
+int gwinListAddItemFlags(GHandle gh, const char* item_name, bool_t useAlloc, int flags);
 
 /**
  * @brief				Get the name behind an item with a given ID

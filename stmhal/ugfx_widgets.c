@@ -558,7 +558,7 @@ STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
 
 	const char *s = mp_obj_str_get_str(str);
 
-	gwinListAddItem(self->ghList,s,TRUE);
+	gwinListAddItemFlags(self->ghList,s,TRUE,GLIST_FLG_NOWRAP);
 
     return mp_const_none;
 }
@@ -1081,6 +1081,8 @@ void print_image_error(gdispImageError err){
 
 typedef struct _ugfx_label_t {
     mp_obj_base_t base;
+	
+	int justification;
 
 	GHandle ghLabel;
 
@@ -1098,6 +1100,7 @@ STATIC const mp_arg_t ugfx_label_make_new_args[] = {
     { MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 	{ MP_QSTR_style, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+	{ MP_QSTR_justification, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 };
 #define UGFX_LABEL_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_label_make_new_args)
 
@@ -1137,6 +1140,11 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
         ugfx_style_obj_t *sty = vals[6].u_obj;
         wi.customStyle = &(sty->style);
     }
+	
+	
+	btn->justification = vals[7].u_int
+	wi.customParam = &(btn->justification);
+	wi.customDraw = gwinLabelDrawJustifiedCustom;
 
 	// Create the actual label
 	btn->ghLabel = gwinLabelCreate(NULL, &wi);
@@ -1145,6 +1153,13 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 	gwinSetText(btn->ghLabel,mp_obj_str_get_str(vals[4].u_obj),TRUE);
 
 	return btn;
+}
+
+
+void gwinLabelDrawJustifiedCustom(GWidgetObject *gw, void *param) {
+	int * j = (int *)param;
+	
+	gwinLabelDraw(gw, j);
 }
 
 
