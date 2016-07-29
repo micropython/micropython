@@ -78,6 +78,7 @@ SRC_C = \
 	modpybadc.c \
 	modpybuart.c \
 	modpybspi.c \
+	modpybhspi.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
@@ -88,6 +89,8 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
 	axtls_helpers.c \
+	esp_spi.c \
+	esp_iomux.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
