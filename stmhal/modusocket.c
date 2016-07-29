@@ -56,8 +56,11 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
         s->u_param.domain = mp_obj_get_int(args[0]);
         if (n_args >= 2) {
             s->u_param.type = mp_obj_get_int(args[1]);
-            if (n_args >= 4) {
-                s->u_param.fileno = mp_obj_get_int(args[3]);
+            if (n_args >= 3) {
+                s->u_param.proto = mp_obj_get_int(args[2]);
+                if (n_args >= 4) {
+                    s->u_param.fileno = mp_obj_get_int(args[3]);
+                }
             }
         }
     }
@@ -297,8 +300,10 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         optlen = bufinfo.len;
     }
 
+    // check if we need to select a NIC
+    socket_select_nic(self, 0);
     int _errno;
-    if (self->nic_type->setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
+    if (self->nic_type->setsockopt(self, level, opt,  optval, optlen, &_errno) != 0) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
     }
 
@@ -427,6 +432,9 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_DGRAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_RAW) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_DEFAULT), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_IPPROTO_DEFAULT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IPV4SSL), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_IPPROTO_IPV4SSL) },
 
     /*
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_IPPROTO_IP) },

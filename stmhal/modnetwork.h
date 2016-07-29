@@ -33,6 +33,9 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
+#define MOD_NETWORK_IPPROTO_DEFAULT (1)
+#define MOD_NETWORK_IPPROTO_IPV4SSL (2)
+
 struct _mod_network_socket_obj_t;
 
 typedef struct _mod_network_nic_type_t {
@@ -65,6 +68,7 @@ typedef struct _mod_network_socket_obj_t {
         struct {
             uint8_t domain;
             uint8_t type;
+            uint8_t proto;
             int8_t fileno;
         } u_param;
         mp_uint_t u_state;
