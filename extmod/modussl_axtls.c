@@ -200,34 +200,4 @@ const mp_obj_module_t mp_module_ussl = {
     .globals = (mp_obj_dict_t*)&mp_module_ssl_globals,
 };
 
-
-// These functions might be split to stream_posix.c. They are referenced by
-// axtls os_port.h .
-ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len);
-ssize_t mp_stream_posix_read(void *sock_obj, void *buf, size_t len);
-
-int mp_stream_errno;
-
-ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)sock_obj;
-    const mp_stream_p_t *stream_p = o->type->protocol;
-    mp_uint_t out_sz = stream_p->write(o, buf, len, &mp_stream_errno);
-    if (out_sz == MP_STREAM_ERROR) {
-        return -1;
-    } else {
-        return out_sz;
-    }
-}
-
-ssize_t mp_stream_posix_read(void *sock_obj, void *buf, size_t len) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)sock_obj;
-    const mp_stream_p_t *stream_p = o->type->protocol;
-    mp_uint_t out_sz = stream_p->read(o, buf, len, &mp_stream_errno);
-    if (out_sz == MP_STREAM_ERROR) {
-        return -1;
-    } else {
-        return out_sz;
-    }
-}
-
 #endif // MICROPY_PY_USSL
