@@ -1080,18 +1080,12 @@ void print_image_error(gdispImageError err){
 
 
 typedef struct _ugfx_label_t {
-    mp_obj_base_t base;
-	
-	int justification;
-
+    mp_obj_base_t base;	
+	justify_t justification;
 	GHandle ghLabel;
-
 } ugfx_label_obj_t;
 
-void gwinLabelDrawJustifiedCustom(GWidgetObject *gw, void *param) {
-	int * j = (int *)param;	
-	gwinLabelDraw(gw, j);
-}
+
 
 /// \classmethod \constructor(x, y, a, b, text, parent=None)
 ///
@@ -1185,7 +1179,7 @@ STATIC const mp_map_elem_t ugfx_label_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_LEFT),        MP_OBJ_NEW_SMALL_INT(0) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),        MP_OBJ_NEW_SMALL_INT(2) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_CENTER),        MP_OBJ_NEW_SMALL_INT(1) },
-	 { MP_OBJ_NEW_QSTR(MP_QSTR_LEFTTOP),        MP_OBJ_NEW_SMALL_INT(0+4) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_LEFTTOP),        MP_OBJ_NEW_SMALL_INT(0+4) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHTTOP),        MP_OBJ_NEW_SMALL_INT(1+4) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_CENTERTOP),        MP_OBJ_NEW_SMALL_INT(2+4) },
 
