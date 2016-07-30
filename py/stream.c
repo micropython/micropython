@@ -511,6 +511,7 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
 
+#if MICROPY_STREAMS_POSIX_API
 /*
  * POSIX-like functions
  *
@@ -518,7 +519,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
  * first argument instead of "int fd"). They are useful to port existing
  * POSIX-compatible software to work with MicroPython streams.
  */
-
 
 // errno-like variable. If any of the functions below returned with error
 // status, this variable will contain error no.
@@ -568,3 +568,5 @@ int mp_stream_posix_fsync(mp_obj_t stream) {
     }
     return res;
 }
+
+#endif

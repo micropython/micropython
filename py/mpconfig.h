@@ -522,6 +522,12 @@ typedef double mp_float_t;
 #define MICROPY_STREAMS_NON_BLOCK (0)
 #endif
 
+// Whether to provide stream functions with POSIX-like signatures
+// (useful for porting existing libraries to MicroPython).
+#ifndef MICROPY_STREAMS_POSIX_API
+#define MICROPY_STREAMS_POSIX_API (0)
+#endif
+
 // Whether to call __init__ when importing builtin modules for the first time
 #ifndef MICROPY_MODULE_BUILTIN_INIT
 #define MICROPY_MODULE_BUILTIN_INIT (0)
