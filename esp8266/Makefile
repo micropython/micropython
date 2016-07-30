@@ -5,6 +5,7 @@ QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
 MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
+MICROPY_PY_BTREE = 1
 
 # include py core make definitions
 include ../py/py.mk
@@ -88,6 +89,7 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
 	axtls_helpers.c \
+	$(SRC_MOD)
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \

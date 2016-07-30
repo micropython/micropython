@@ -121,6 +121,7 @@ SECTIONS
 
         *lib/fatfs/*.o*(.literal*, .text*)
         */libaxtls.a:(.literal*, .text*)
+        *lib/berkeley-db-1.xx/*.o(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)
         *lib/netutils/*.o*(.literal*, .text*)
