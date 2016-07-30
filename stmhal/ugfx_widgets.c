@@ -701,7 +701,7 @@ STATIC const mp_arg_t ugfx_keyboard_make_new_args[] = {
     { MP_QSTR_down, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_DOWN} },
     { MP_QSTR_right, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_RIGHT} },
     { MP_QSTR_left, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_LEFT} },
-    { MP_QSTR_select, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_CENTER} },
+    { MP_QSTR_select, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = GINPUT_TOGGLE_A} },
 	{ MP_QSTR_style, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
 #define UGFX_KEYBOARD_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_keyboard_make_new_args)
@@ -750,8 +750,8 @@ STATIC mp_obj_t ugfx_keyboard_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
 
     gwinAttachToggle(kbd->ghKeyboard, 0, vals[5].u_int);
     gwinAttachToggle(kbd->ghKeyboard, 1, vals[6].u_int);
-    gwinAttachToggle(kbd->ghKeyboard, 2, vals[7].u_int);
-    gwinAttachToggle(kbd->ghKeyboard, 3, vals[8].u_int);
+    gwinAttachToggle(kbd->ghKeyboard, 3, vals[7].u_int);
+    gwinAttachToggle(kbd->ghKeyboard, 2, vals[8].u_int);
     gwinAttachToggle(kbd->ghKeyboard, 4, vals[9].u_int);
 
 	return kbd;
