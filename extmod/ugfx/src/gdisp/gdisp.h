@@ -960,6 +960,8 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	 */
 	void gdispGFillStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgColor, justify_t justify);
 	#define	gdispFillStringBox(x,y,cx,cy,s,f,c,b,j)			gdispGFillStringBox(GDISP,x,y,cx,cy,s,f,c,b,j)
+	void gdispGFillStringBoxNoWrap(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgColor, justify_t justify);
+	#define	gdispFillStringBoxNoWrap(x,y,cx,cy,s,f,c,b,j)	gdispGFillStringBoxNoWrap(GDISP,x,y,cx,cy,s,f,c,b,j)
 
 	/**
 	 * @brief   Get a metric of a font.

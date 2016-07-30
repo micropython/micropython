@@ -351,7 +351,7 @@ void gwinListSetScroll(GHandle gh, scroll_t flag) {
 
 
 int gwinListAddItem(GHandle gh, const char* item_name, bool_t useAlloc) {
-	gwinListAddItemFlags(gh, item_name, useAlloc, 0)
+	return gwinListAddItemFlags(gh, item_name, useAlloc, 0);
 }
 
 

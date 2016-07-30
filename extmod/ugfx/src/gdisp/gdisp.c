@@ -3395,7 +3395,7 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 				wrapParameters.x = x;
 				wrapParameters.y = y;
 				wrapParameters.font = font;
-				wrapParameters.justify = justify;
+				wrapParameters.justify = justify & 0x3;
 				wrapParameters.g = g;
 
 
@@ -3404,11 +3404,10 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 				mf_wordwrap(font, cx, str, mf_countline_callback, &nbrLines);
 				if (!(justify & 4))
 					wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
-
 				mf_wordwrap(font, cx, str, mf_fillline_callback, &wrapParameters);
 			#else
 				y += (cy+1 - font->height)/2;
-				mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
+				mf_render_aligned(font, x, y, justify & 0x3, str, 0, fillcharglyph, g);
 			#endif
 		}
 
