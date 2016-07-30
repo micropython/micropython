@@ -234,15 +234,15 @@ static const uint8_t dma_irqn[NSTREAM] = {
 #define DMA2_ENABLE_MASK (0x3f80) // Bits in dma_enable_mask corresponding to DMA2
 
 // These descriptors are ordered by DMAx_Channel number, and within a channel by request
-// number. The duplicate streams are ok as long as they aren't used at the same time.
+// number. The duplicate channel are ok as long as they aren't used at the same time.
 
 // DMA1 streams
 //const dma_descr_t dma_ADC_1_RX = { DMA1_Channel1, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_0,   NULL }; // unused
 //const dma_descr_t dma_ADC_2_RX = { DMA1_Channel2, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_1,   NULL }; // unused
-const dma_descr_t dma_SPI_1_RX = { DMA1_Channel2, DMA_REQUEST_1, DMA_PERIPH_TO_MEMORY, dma_id_1,   &dma_init_struct_spi_i2c };
+//const dma_descr_t dma_SPI_1_RX = { DMA1_Channel2, DMA_REQUEST_1, DMA_PERIPH_TO_MEMORY, dma_id_1,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_3_TX = { DMA1_Channel2, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_1,   &dma_init_struct_spi_i2c };
 //const dma_descr_t dma_ADC_3_RX = { DMA1_Channel3, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_2,   NULL }; // unused
-const dma_descr_t dma_SPI_1_TX = { DMA1_Channel3, DMA_REQUEST_1, DMA_MEMORY_TO_PERIPH, dma_id_2,   &dma_init_struct_spi_i2c };
+//const dma_descr_t dma_SPI_1_TX = { DMA1_Channel3, DMA_REQUEST_1, DMA_MEMORY_TO_PERIPH, dma_id_2,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_3_RX = { DMA1_Channel3, DMA_REQUEST_3, DMA_PERIPH_TO_MEMORY, dma_id_2,   &dma_init_struct_spi_i2c };
 #if MICROPY_HW_ENABLE_DAC
 const dma_descr_t dma_DAC_1_TX = { DMA1_Channel3, DMA_REQUEST_6, DMA_MEMORY_TO_PERIPH, dma_id_2,   &dma_init_struct_dac };
@@ -254,31 +254,34 @@ const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, DMA_REQUEST_5, DMA_MEMORY_TO_P
 #endif
 const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, DMA_REQUEST_1, DMA_MEMORY_TO_PERIPH, dma_id_4,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_2_RX = { DMA1_Channel5, DMA_REQUEST_3, DMA_PERIPH_TO_MEMORY, dma_id_4,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_5,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_1_RX = { DMA1_Channel7, DMA_REQUEST_3, DMA_PERIPH_TO_MEMORY, dma_id_6,   &dma_init_struct_spi_i2c };
+// const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_5,   &dma_init_struct_spi_i2c };
+// const dma_descr_t dma_I2C_1_RX = { DMA1_Channel7, DMA_REQUEST_3, DMA_PERIPH_TO_MEMORY, dma_id_6,   &dma_init_struct_spi_i2c };
 
 // DMA2 streams
 const dma_descr_t dma_SPI_3_RX = { DMA2_Channel1, DMA_REQUEST_3, DMA_PERIPH_TO_MEMORY, dma_id_7,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_3_TX = { DMA2_Channel2, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_8,   &dma_init_struct_spi_i2c };
 /* not preferred streams
 const dma_descr_t dma_ADC_1_RX = { DMA2_Channel3, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_9,   NULL };
+*/
 const dma_descr_t dma_SPI_1_RX = { DMA2_Channel3, DMA_REQUEST_4, DMA_PERIPH_TO_MEMORY, dma_id_9,   &dma_init_struct_spi_i2c };
+/* not preferred streams
 const dma_descr_t dma_ADC_2_RX = { DMA2_Channel4, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_10,  NULL };
 const dma_descr_t dma_DAC_1_TX = { DMA2_Channel4, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_dac };
+*/
 const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, DMA_REQUEST_4, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_spi_i2c };
+/* not preferred streams
+const dma_descr_t dma_SDIO_0_TX= { DMA2_Channel4, DMA_REQUEST_7, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_sdio };
+const dma_descr_t dma_SDIO_0_RX= { DMA2_Channel4, DMA_REQUEST_7, DMA_PERIPH_TO_MEMORY, dma_id_10,  &dma_init_struct_sdio };
+const dma_descr_t dma_ADC_3_RX = { DMA2_Channel5, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_11,  NULL };
+const dma_descr_t dma_DAC_2_TX = { DMA2_Channel5, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_11,  &dma_init_struct_dac };
 */
 #if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
 // defined twice as L4 HAL only needs one channel and can correctly switch direction but sdcard.c needs two channels
-const dma_descr_t dma_SDIO_0_TX= { DMA2_Channel4, DMA_REQUEST_7, DMA_MEMORY_TO_PERIPH, dma_id_10,  &dma_init_struct_sdio };
-const dma_descr_t dma_SDIO_0_RX= { DMA2_Channel4, DMA_REQUEST_7, DMA_PERIPH_TO_MEMORY, dma_id_10,  &dma_init_struct_sdio };
-#endif
-/* not preferred streams
-const dma_descr_t dma_ADC_3_RX = { DMA2_Channel5, DMA_REQUEST_0, DMA_PERIPH_TO_MEMORY, dma_id_11,  NULL };
-const dma_descr_t dma_DAC_2_TX = { DMA2_Channel5, DMA_REQUEST_3, DMA_MEMORY_TO_PERIPH, dma_id_11,  &dma_init_struct_dac };
 const dma_descr_t dma_SDIO_0_TX= { DMA2_Channel5, DMA_REQUEST_7, DMA_MEMORY_TO_PERIPH, dma_id_11,  &dma_init_struct_sdio };
+const dma_descr_t dma_SDIO_0_RX= { DMA2_Channel5, DMA_REQUEST_7, DMA_PERIPH_TO_MEMORY, dma_id_11,  &dma_init_struct_sdio };
+#endif
 const dma_descr_t dma_I2C_1_RX = { DMA2_Channel6, DMA_REQUEST_5, DMA_PERIPH_TO_MEMORY, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_1_TX = { DMA2_Channel7, DMA_REQUEST_5, DMA_MEMORY_TO_PERIPH, dma_id_13,  &dma_init_struct_spi_i2c };
-*/
 
 static const uint8_t dma_irqn[NSTREAM] = {
     DMA1_Channel1_IRQn,
