@@ -253,6 +253,21 @@ STATIC mp_obj_t ugfx_style_set_background(mp_obj_t self_in, mp_obj_t colour) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ugfx_style_set_background_obj, ugfx_style_set_background);
 
+/// \method get_background(background_colour)
+///
+/// set the background colour
+STATIC mp_obj_t ugfx_style_background(mp_uint_t n_args, const mp_obj_t *args) {
+    ugfx_style_obj_t *self = args[0];
+	
+	if (n_args == 1)
+		return mp_obj_new_int(self->style.background);
+	else
+	{
+		self->style.background = mp_obj_get_int(args[1]);
+		return mp_const_none;
+	}
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_style_background_obj, 1, 2, ugfx_style_background);
 
 
 STATIC const mp_map_elem_t ugfx_style_locals_dict_table[] = {
@@ -262,6 +277,7 @@ STATIC const mp_map_elem_t ugfx_style_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_pressed), (mp_obj_t)&ugfx_style_set_pressed_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_focus), (mp_obj_t)&ugfx_style_set_focus_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_background), (mp_obj_t)&ugfx_style_set_background_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_background), (mp_obj_t)&ugfx_style_background_obj},
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
 
