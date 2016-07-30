@@ -696,6 +696,10 @@ void gwinKeyboardDraw_Normal(GWidgetObject *gw, void *param) {
 			else
 			{
 				gk->lastkeyrow = gk->lastkeycol = GKEY_BAD_ROWCOL;
+				#if GINPUT_NEED_TOGGLE
+				if (gk->t_lastcol == col && gk->t_lastrow == row)
+					focus = 1;	
+				#endif
 			}
 
 			x = NONFIXED(fx * col + FIXED0_5);
