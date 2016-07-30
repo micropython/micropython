@@ -712,12 +712,10 @@ STATIC int cc3100_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
         default: *_errno = EINVAL; return -1;
     }
 
-    if (socket->u_param.proto == MOD_NETWORK_IPPROTO_IPV4SSL)
+    if (socket->u_param.proto == MOD_NETWORK_SEC_SOCKET)
     {
         // SSL Socket
-        printf("Going for an SSL Soocket\n");
         if (socket->u_param.type != MOD_NETWORK_SOCK_STREAM ){
-          printf("Ooops, not TCP\n");
           *_errno = EINVAL; return -1; // Only support TCP SSL
         }
         // To start we will setup ssl sockets ignoring certificates

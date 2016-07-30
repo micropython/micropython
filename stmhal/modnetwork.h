@@ -33,8 +33,13 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
-#define MOD_NETWORK_IPPROTO_DEFAULT (1)
-#define MOD_NETWORK_IPPROTO_IPV4SSL (2)
+#define MOD_NETWORK_IPPROTO_DEFAULT (0)
+#define MOD_NETWORK_IPPROTO_TCP     (6)      /* TCP Raw Socket */
+#define MOD_NETWORK_IPPROTO_UDP     (17)     /* UDP Raw Socket */
+#define MOD_NETWORK_IPPROTO_RAW     (255)    /* Raw Socket     */
+#if MICROPY_PY_CC3100
+#define MOD_NETWORK_SEC_SOCKET      (100)    /* Secured Socket Layer (SSL,TLS) */
+#endif
 
 struct _mod_network_socket_obj_t;
 
