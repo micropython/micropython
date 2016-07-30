@@ -66,20 +66,6 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
     // create object
     pyb_neopix_obj_t *neo = m_new_obj(pyb_neopix_obj_t);
     neo->base.type = &pyb_neopix_type;
-	
-	GPIO_InitTypeDef GPIO_InitStruct;
-/*
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF14_TIM15;
-	GPIO_InitStruct.Pin = GPIO_PIN_1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = GPIO_PIN_2;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = GPIO_PIN_13;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-*/
 
 	mp_obj_t pin_obj = args[0];
 	if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
@@ -134,9 +120,9 @@ STATIC mp_obj_t pyb_neopix_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 /// Takes an array of RGB values, or a single one.
 /// Uses the 0xRRGGBB format
 STATIC mp_obj_t pyb_neopix_display(mp_obj_t self_in, mp_obj_t rgb) {
-	pyb_neopix_obj_t *self = self_in;
+	//pyb_neopix_obj_t *self = self_in;
 	
-	int len;
+	mp_uint_t len;
 	int tx;
 	int mask;
 	int val;
@@ -197,6 +183,7 @@ STATIC mp_obj_t pyb_neopix_destroy(mp_obj_t self_in) {
 	tim.State = HAL_TIM_STATE_RESET;
 	tim.Instance->CCER = 0x0000; // disable all capture/compare outputs
 	tim.Instance->CR1 = 0x0000; // disable the timer and reset its state
+	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_neopix_destroy_obj, pyb_neopix_destroy);	
 

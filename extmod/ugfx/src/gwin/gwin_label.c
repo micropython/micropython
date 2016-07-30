@@ -188,6 +188,11 @@ void gwinLabelDrawJustifiedCenter(GWidgetObject *gw, void *param) {
 	gwinLabelDraw(gw, justifyCenter);
 }
 
+void gwinLabelDrawJustifiedCustom(GWidgetObject *gw, void *param) {
+	justify_t *j = (justify_t *)param;	
+	gwinLabelDraw(gw, *j);
+}
+
 #undef gh2obj
 #undef gw2obj
 #endif // GFX_USE_GWIN && GFX_NEED_LABEL

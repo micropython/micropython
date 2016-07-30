@@ -348,7 +348,14 @@ void gwinListSetScroll(GHandle gh, scroll_t flag) {
 	}
 }
 
+
+
 int gwinListAddItem(GHandle gh, const char* item_name, bool_t useAlloc) {
+	return gwinListAddItemFlags(gh, item_name, useAlloc, 0);
+}
+
+
+int gwinListAddItemFlags(GHandle gh, const char* item_name, bool_t useAlloc, int flags) {
 	ListItem	*newItem;
 
 	// is it a valid handle?
@@ -368,7 +375,7 @@ int gwinListAddItem(GHandle gh, const char* item_name, bool_t useAlloc) {
 	}
 
 	// the item is not selected when added
-	newItem->flags = 0;
+	newItem->flags = flags;
 	newItem->param = 0;
 	newItem->text = item_name;
 	#if GWIN_NEED_LIST_IMAGES
@@ -769,7 +776,10 @@ void gwinListDefaultDraw(GWidgetObject* gw, void* param) {
 				}
 			}
 		#endif
-		gdispGFillStringBox(gw->g.display, gw->g.x+x+LST_HORIZ_PAD, gw->g.y+y, iwidth-LST_HORIZ_PAD, iheight, qi2li->text, gw->g.font, ps->text, fill, justifyLeft);
+		if (qi2li->flags & GLIST_FLG_NOWRAP)
+			gdispGFillStringBoxNoWrap(gw->g.display, gw->g.x+x+LST_HORIZ_PAD, gw->g.y+y, iwidth-LST_HORIZ_PAD, iheight, qi2li->text, gw->g.font, ps->text, fill, justifyLeft);
+		else
+			gdispGFillStringBox(gw->g.display, gw->g.x+x+LST_HORIZ_PAD, gw->g.y+y, iwidth-LST_HORIZ_PAD, iheight, qi2li->text, gw->g.font, ps->text, fill, justifyLeft);
 	}
 
 	// Fill any remaining item space

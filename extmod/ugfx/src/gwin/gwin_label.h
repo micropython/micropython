@@ -157,6 +157,18 @@ void gwinLabelDrawJustifiedRight(GWidgetObject *gw, void *param);
  */
 void gwinLabelDrawJustifiedCenter(GWidgetObject *gw, void *param);
 
+
+/**
+ * @brief				Renders a label with the text jestified according to the parameter.
+ *
+ * @param[in] gw		The widget object (must be a label object)
+ * @param[in] param		A parameter passed in from the user. Sets justification.
+ *
+ * @api
+ */
+ void gwinLabelDrawJustifiedCustom(GWidgetObject *gw, void *param);
+
+
 /** @} */
 
 #ifdef __cplusplus

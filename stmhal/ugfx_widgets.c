@@ -558,7 +558,7 @@ STATIC mp_obj_t ugfx_list_add_item(mp_obj_t self_in, mp_obj_t str) {
 
 	const char *s = mp_obj_str_get_str(str);
 
-	gwinListAddItem(self->ghList,s,TRUE);
+	gwinListAddItemFlags(self->ghList,s,TRUE,GLIST_FLG_NOWRAP);
 
     return mp_const_none;
 }
@@ -1080,11 +1080,12 @@ void print_image_error(gdispImageError err){
 
 
 typedef struct _ugfx_label_t {
-    mp_obj_base_t base;
-
+    mp_obj_base_t base;	
+	justify_t justification;
 	GHandle ghLabel;
-
 } ugfx_label_obj_t;
+
+
 
 /// \classmethod \constructor(x, y, a, b, text, parent=None)
 ///
@@ -1098,6 +1099,7 @@ STATIC const mp_arg_t ugfx_label_make_new_args[] = {
     { MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 	{ MP_QSTR_style, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+	{ MP_QSTR_justification, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 };
 #define UGFX_LABEL_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_label_make_new_args)
 
@@ -1137,6 +1139,11 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
         ugfx_style_obj_t *sty = vals[6].u_obj;
         wi.customStyle = &(sty->style);
     }
+	
+	
+	btn->justification = vals[7].u_int;
+	wi.customParam = &(btn->justification);
+	wi.customDraw = gwinLabelDrawJustifiedCustom;
 
 	// Create the actual label
 	btn->ghLabel = gwinLabelCreate(NULL, &wi);
@@ -1169,7 +1176,12 @@ STATIC const mp_map_elem_t ugfx_label_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 
 	//class constants
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LEFT),        MP_OBJ_NEW_SMALL_INT(0) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),        MP_OBJ_NEW_SMALL_INT(2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTER),        MP_OBJ_NEW_SMALL_INT(1) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_LEFTTOP),        MP_OBJ_NEW_SMALL_INT(0+4) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHTTOP),        MP_OBJ_NEW_SMALL_INT(1+4) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTERTOP),        MP_OBJ_NEW_SMALL_INT(2+4) },
 
 
 };
