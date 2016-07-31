@@ -231,7 +231,7 @@ Constants
     class PinAF -- Pin Alternate Functions
     ======================================
     
-    A Pin represents a physical pin on the microcprocessor. Each pin
+    A Pin represents a physical pin on the microprocessor. Each pin
     can have a variety of functions (GPIO, I2C SDA, etc). Each PinAF
     object represents a particular function for a pin.
     
@@ -240,7 +240,7 @@ Constants
         x3 = pyb.Pin.board.X3
         x3_af = x3.af_list()
     
-    x3_af will now contain an array of PinAF objects which are availble on
+    x3_af will now contain an array of PinAF objects which are available on
     pin X3.
     
     For the pyboard, x3_af would contain:

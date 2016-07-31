@@ -50,7 +50,7 @@ Finally type ``print(i)``, press RETURN, press BACKSPACE and press RETURN again:
     >>>
 
 Auto-indent won't be applied if the previous two lines were all spaces.  This
-means that you can finish entering a compound statment by pressing RETURN
+means that you can finish entering a compound statement by pressing RETURN
 twice, and then a third press will finish and execute.
 
 Auto-completion
@@ -80,7 +80,7 @@ expansions:
 Interrupting a running program
 ------------------------------
 
-You can interupt a running program by pressing Ctrl-C. This will raise a KeyboardInterrupt
+You can interrupt a running program by pressing Ctrl-C. This will raise a KeyboardInterrupt
 which will bring you back to the REPL, providing your program doesn't intercept the
 KeyboardInterrupt exception.
 
@@ -184,8 +184,8 @@ variables no longer exist:
 The special variable _ (underscore)
 -----------------------------------
 
-When you use the REPL, you may perfom computations and see the results.
-MicroPython stores the results of the previous statment in the variable _ (underscore).
+When you use the REPL, you may perform computations and see the results.
+MicroPython stores the results of the previous statement in the variable _ (underscore).
 So you can use the underscore to save the result in a variable. For example:
 
     >>> 1 + 2 + 3 + 4 + 5

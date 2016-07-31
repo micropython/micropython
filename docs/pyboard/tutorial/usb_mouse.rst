@@ -61,7 +61,7 @@ The first argument to the function ``osc`` is the number of mouse events to send
 and the second argument is the delay (in milliseconds) between events.  Try
 playing around with different numbers.
 
-**Excercise: make the mouse go around in a circle.**
+**Exercise: make the mouse go around in a circle.**
 
 Making a mouse with the accelerometer
 -------------------------------------
@@ -85,14 +85,14 @@ the [safe mode tutorial](tut-reset), but we repeat the instructions here:
 3. The LEDs will then cycle green to orange to green+orange and back again.
 4. Keep holding down USR until *only the orange LED is lit*, and then let
    go of the USR switch.
-5. The orange LED should flash quickly 4 times, and then turn off.  
+5. The orange LED should flash quickly 4 times, and then turn off.
 6. You are now in safe mode.
 
 In safe mode, the ``boot.py`` and ``main.py`` files are not executed, and so
 the pyboard boots up with default settings.  This means you now have access
 to the filesystem (the USB drive should appear), and you can edit ``main.py``.
 (Leave ``boot.py`` as-is, because we still want to go back to HID-mode after
-we finish editting ``main.py``.)
+we finish editing ``main.py``.)
 
 In ``main.py`` put the following code::
 

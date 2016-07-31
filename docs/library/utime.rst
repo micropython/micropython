@@ -117,7 +117,7 @@ Functions
 .. function:: time()
 
    Returns the number of seconds, as an integer, since the Epoch, assuming that underlying
-   RTC is set and maintained as decsribed above. If an RTC is not set, this function returns
+   RTC is set and maintained as described above. If an RTC is not set, this function returns
    number of seconds since a port-specific reference point in time (for embedded boards without
    a battery-backed RTC, usually since power up or reset). If you want to develop portable
    MicroPython application, you should not rely on this function to provide higher than second

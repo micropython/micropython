@@ -57,7 +57,7 @@ Power related functions
    Gates the clock to the CPU, useful to reduce power consumption at any time during
    short or long periods. Peripherals continue working and execution resumes as soon
    as any interrupt is triggered (on many ports this includes system timer
-   interrupt occuring at regular intervals on the order of millisecond).
+   interrupt occurring at regular intervals on the order of millisecond).
 
 .. function:: sleep()
 
@@ -96,7 +96,7 @@ Miscellaneous functions
 
 .. function:: unique_id()
 
-   Returns a byte string with a unique idenifier of a board/SoC. It will vary
+   Returns a byte string with a unique identifier of a board/SoC. It will vary
    from a board/SoC instance to another, if underlying hardware allows. Length
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.

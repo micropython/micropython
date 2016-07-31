@@ -36,7 +36,7 @@ WebREPL - a prompt over WiFi
 WebREPL allows you to use the Python prompt over WiFi, connecting through a
 browser. The latest versions of Firefox and Chrome are supported.
 
-For your convinience, WebREPL client is hosted at
+For your convenience, WebREPL client is hosted at
 `<http://micropython.org/webrepl>`__ . Alternatively, you can install it
 locally from the the GitHub repository
 `<https://github.com/micropython/webrepl>`__ .

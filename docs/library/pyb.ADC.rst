@@ -13,7 +13,7 @@ class ADC -- analog to digital conversion
         adc = pyb.ADC(pin)              # create an analog object from a pin
         val = adc.read()                # read an analog value
     
-        adc = pyb.ADCAll(resolution)    # creale an ADCAll object
+        adc = pyb.ADCAll(resolution)    # create an ADCAll object
         val = adc.read_channel(channel) # read the given channel
         val = adc.read_core_temp()      # read MCU temperature
         val = adc.read_core_vbat()      # read MCU VBAT
