@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_ESP8266_APA102
+
 #include <stdio.h>
 #include "c_types.h"
 #include "eagle_soc.h"
@@ -108,3 +111,5 @@ void esp_apa102_write(uint8_t clockPin, uint8_t dataPin, uint8_t *pixels, uint32
     _esp_apa102_append_additionial_cycles(clockPinMask, dataPinMask, numBytes);
     _esp_apa102_end_frame(clockPinMask, dataPinMask);
 }
+
+#endif
