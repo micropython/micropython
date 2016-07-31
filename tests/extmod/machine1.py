@@ -1,7 +1,10 @@
 # test machine module
 
 try:
-    import machine
+    try:
+        import umachine as machine
+    except ImportError:
+        import machine
 except ImportError:
     print("SKIP")
     import sys
