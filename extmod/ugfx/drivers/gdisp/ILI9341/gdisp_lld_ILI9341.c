@@ -432,12 +432,12 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 			case powerSleep:
 			case powerDeepSleep:
 				acquire_bus(g);
-				write_reg(g, 0x0010, 0x0001);	/* enter sleep mode */
+				write_index(g, 0x0010);	/* enter sleep mode */
 				release_bus(g);
 				break;
 			case powerOn:
 				acquire_bus(g);
-				write_reg(g, 0x0010, 0x0000);	/* leave sleep mode */
+				write_index(g, 0x0011);	/* leave sleep mode */
 				release_bus(g);
 				break;
 			default:
