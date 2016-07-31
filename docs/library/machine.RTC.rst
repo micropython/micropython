@@ -39,7 +39,7 @@ Methods
 
 .. method:: RTC.alarm(id, time, /*, repeat=False)
 
-   Set the RTC alarm. Time might be either a milllisecond value to program the alarm to
+   Set the RTC alarm. Time might be either a millisecond value to program the alarm to
    current time + time_in_ms in the future, or a datetimetuple. If the time passed is in
    milliseconds, repeat can be set to ``True`` to make the alarm periodic.
 

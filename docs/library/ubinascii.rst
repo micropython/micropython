@@ -17,7 +17,7 @@ Functions
    .. admonition:: Difference to CPython
       :class: attention
 
-      If additional argument, `sep` is supplied, it is used as a seperator
+      If additional argument, `sep` is supplied, it is used as a separator
       between hexadecimal values.
 
 .. function:: unhexlify(data)

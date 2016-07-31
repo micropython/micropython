@@ -46,7 +46,7 @@ Time related functions
    Returns the number of milliseconds which have elapsed since ``start``.
    
    This function takes care of counter wrap, and always returns a positive
-   number. This means it can be used to measure periods upto about 12.4 days.
+   number. This means it can be used to measure periods up to about 12.4 days.
    
    Example::
 
@@ -59,7 +59,7 @@ Time related functions
    Returns the number of microseconds which have elapsed since ``start``.
    
    This function takes care of counter wrap, and always returns a positive
-   number. This means it can be used to measure periods upto about 17.8 minutes.
+   number. This means it can be used to measure periods up to about 17.8 minutes.
    
    Example::
 

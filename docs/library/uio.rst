@@ -12,7 +12,7 @@ Functions
 
 .. function:: open(name, mode='r', **kwargs)
 
-    Open a file. Builtin ``open()`` function is alised to this function.
+    Open a file. Builtin ``open()`` function is aliased to this function.
     All ports (which provide access to file system) are required to support
     `mode` parameter, but support for other arguments vary by port.
 

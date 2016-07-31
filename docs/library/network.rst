@@ -237,7 +237,7 @@ For example::
         Get or set the PHY mode.
 
         If the ``mode`` parameter is provided, sets the mode to its value. If
-        the function is called wihout parameters, returns the current mode.
+        the function is called without parameters, returns the current mode.
 
         The possible modes are defined as constants:
             * ``MODE_11B`` -- IEEE 802.11b,
@@ -319,7 +319,7 @@ For example::
             * ``STAT_WRONG_PASSWORD`` -- failed due to incorrect password,
             * ``STAT_NO_AP_FOUND`` -- failed because no access point replied,
             * ``STAT_CONNECT_FAIL`` -- failed due to other problems,
-            * ``STAT_GOT_IP`` -- connection susccessful.
+            * ``STAT_GOT_IP`` -- connection successful.
 
     .. method:: wlan.isconnected()
 
@@ -329,7 +329,7 @@ For example::
 
     .. method:: wlan.ifconfig([(ip, subnet, gateway, dns)])
 
-       Get/set IP-level network interface paremeters: IP address, subnet mask,
+       Get/set IP-level network interface parameters: IP address, subnet mask,
        gateway and DNS server. When called with no arguments, this method returns
        a 4-tuple with the above information. To set the above values, pass a
        4-tuple with the required information.  For example::
@@ -343,8 +343,8 @@ For example::
        with additional parameters beyond standard IP configuration (as dealt with by
        ``wlan.ifconfig()``). These include network-specific and hardware-specific
        parameters. For setting parameters, keyword argument syntax should be used,
-       multiple parameters can be set at once. For querying, paremeters name should
-       be quoted as a string, and only one paramter can be queries at time::
+       multiple parameters can be set at once. For querying, parameters name should
+       be quoted as a string, and only one parameter can be queries at time::
 
         # Set WiFi access point name (formally known as ESSID) and WiFi channel
         ap.config(essid='My AP', channel=11)
@@ -397,7 +397,7 @@ For example::
     .. note::
 
        The ``WLAN`` constructor is special in the sense that if no arguments besides the id are given,
-       it will return the already exisiting ``WLAN`` instance without re-configuring it. This is
+       it will return the already existing ``WLAN`` instance without re-configuring it. This is
        because ``WLAN`` is a system feature of the WiPy. If the already existing instance is not
        initialized it will do the same as the other constructors an will initialize it with default
        values.

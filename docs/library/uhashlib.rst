@@ -9,7 +9,7 @@
     This module implements binary data hashing algorithms. Currently, it
     implements SHA256 algorithm. Choosing SHA256 was a deliberate choice,
     as a modern, cryptographically secure algorithm. This means that a
-    single algorithm can cover both usecases of "any hash algorithm" and
+    single algorithm can cover both use cases of "any hash algorithm" and
     security-related usage, and thus save space omitting legacy algorithms
     like MD5 or SHA1.
 
@@ -53,7 +53,7 @@ Constructors
       
        Example::
       
-           hash = uhashlib.sha1('abcd1234', 1001)    # lenght of the initial piece is multiple of 4 bytes
+           hash = uhashlib.sha1('abcd1234', 1001)    # length of the initial piece is multiple of 4 bytes
            hash.update('1234')                       # also multiple of 4 bytes
            ...
            hash.update('12345')                      # last chunk may be of any length
@@ -68,7 +68,7 @@ Methods
 
 .. method:: hash.digest()
 
-   Return hash for all data passed thru hash, as a bytes object. After this
+   Return hash for all data passed through hash, as a bytes object. After this
    method is called, more data cannot be fed into hash any longer.
 
    .. only:: port_wipy

@@ -167,7 +167,7 @@ Methods
     .. data:: UART.EVEN
     .. data:: UART.ODD
 
-        parity types (anlong with ``None``)
+        parity types (along with ``None``)
 
     .. data:: UART.RX_ANY
 

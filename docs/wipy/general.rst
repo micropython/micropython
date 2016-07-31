@@ -16,7 +16,7 @@ Before applying power
 
 .. warning:: 
 
-   The GPIO pins of the WiPy are NOT 5V tolerant, connecting them to voltages higer
+   The GPIO pins of the WiPy are NOT 5V tolerant, connecting them to voltages higher
    than 3.6V will cause irreparable damage to the board. ADC pins, when configured 
    in analog mode cannot withstand voltages above 1.8V. Keep these considerations in
    mind when wiring your electronics.

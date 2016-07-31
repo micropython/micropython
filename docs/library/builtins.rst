@@ -1,7 +1,7 @@
 Builtin Functions
 =================
 
-All builtin functions are described here. They are alse available via
+All builtin functions are described here. They are also available via
 ``builtins`` module.
 
 .. function:: abs()

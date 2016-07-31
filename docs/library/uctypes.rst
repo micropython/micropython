@@ -11,7 +11,7 @@ module is to define data structure layout with about the same power as the
 C language allows, and the access it using familiar dot-syntax to reference
 sub-fields.
 
-.. seealso::
+.. see also::
 
     Module :mod:`ustruct`
         Standard Python way to access binary data structures (doesn't scale
@@ -118,7 +118,7 @@ Module contents
 
 .. data:: BIG_ENDIAN
 
-   Layour type for a big-endian packed structure.
+   Layout type for a big-endian packed structure.
 
 .. data:: NATIVE
 
@@ -184,7 +184,7 @@ Subscripting a pointer with other integer values but 0 are supported too,
 with the same semantics as in C.
 
 Summing up, accessing structure fields generally follows C syntax,
-except for pointer derefence, when you need to use ``[0]`` operator
+except for pointer dereference, when you need to use ``[0]`` operator
 instead of ``*``.
 
 Limitations
