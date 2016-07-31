@@ -20,6 +20,7 @@ PROVIDE ( SPI_read_status = 0x400043c8 );
 PROVIDE ( SPI_write_status = 0x40004400 );
 PROVIDE ( SPI_write_enable = 0x4000443c );
 PROVIDE ( Wait_SPI_Idle = 0x4000448c );
+PROVIDE ( Enable_QMode = 0x400044c0 );
 PROVIDE ( SPIEraseArea = 0x40004b44 );
 PROVIDE ( SPIEraseBlock = 0x400049b4 );
 PROVIDE ( SPIEraseChip = 0x40004984 );
