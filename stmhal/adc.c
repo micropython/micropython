@@ -196,7 +196,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(MCU_SERIES_L4)
-    sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_92CYCLES_5;
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
 #else
