@@ -30,3 +30,5 @@ KeyError
 b'bar1'
 b'foo1'
 b'foo3'
+foo1 True
+foo2 False

@@ -62,5 +62,8 @@ print(list(db.values()))
 for k in db:
     print(k)
 
+print("foo1", "foo1" in db)
+print("foo2", "foo2" in db)
+
 db.close()
 f.close()

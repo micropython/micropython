@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/runtime0.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_BTREE
@@ -292,6 +293,24 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
+STATIC mp_obj_t btree_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    mp_obj_btree_t *self = MP_OBJ_TO_PTR(lhs_in);
+    switch (op) {
+        case MP_BINARY_OP_IN: {
+            mp_uint_t v;
+            DBT key, val;
+            key.data = (void*)mp_obj_str_get_data(rhs_in, &v);
+            key.size = v;
+            int res = __bt_get(self->db, &key, &val, 0);
+            CHECK_ERROR(res);
+            return mp_obj_new_bool(res != RET_SPECIAL);
+        }
+        default:
+            // op not supported
+            return MP_OBJ_NULL;
+    }
+}
+
 STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj) },
@@ -311,6 +330,7 @@ STATIC const mp_obj_type_t btree_type = {
     .print = btree_print,
     .getiter = btree_getiter,
     .iternext = btree_iternext,
+    .binary_op = btree_binary_op,
     .subscr = btree_subscr,
     .locals_dict = (void*)&btree_locals_dict,
 };
