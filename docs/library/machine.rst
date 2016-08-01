@@ -148,6 +148,7 @@ Classes
    machine.ADC.rst
    machine.I2C.rst
    machine.Pin.rst
+   machine.PWM.rst
    machine.RTC.rst
    machine.SD.rst
    machine.SPI.rst
