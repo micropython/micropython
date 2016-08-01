@@ -198,14 +198,6 @@ typedef long            mp_off_t;
 // disabling/enabling and sleep mode enter/exit
 #include "cc3200_asm.h"
 
-// There is no classical C heap in bare-metal ports, only Python
-// garbage-collected heap. For completeness, emulate C heap via
-// GC heap. Note that MicroPython core never uses malloc() and friends,
-// so these defines are mostly to help extension module writers.
-#define malloc                                      gc_alloc
-#define free                                        gc_free
-#define realloc                                     gc_realloc
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
