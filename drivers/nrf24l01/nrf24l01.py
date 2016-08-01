@@ -2,7 +2,8 @@
 """
 
 from micropython import const
-import pyb
+import utime
+
 
 # nRF24L01+ registers
 CONFIG      = const(0x00)
@@ -49,26 +50,29 @@ FLUSH_TX     = const(0xe1) # flush TX FIFO
 FLUSH_RX     = const(0xe2) # flush RX FIFO
 NOP          = const(0xff) # use to read STATUS register
 
+
 class NRF24L01:
     def __init__(self, spi, cs, ce, channel=46, payload_size=16):
         assert payload_size <= 32
 
-        # init the SPI bus and pins
-        spi.init(spi.MASTER, baudrate=4000000, polarity=0, phase=0, firstbit=spi.MSB)
-        cs.init(cs.OUT_PP, cs.PULL_NONE)
-        ce.init(ce.OUT_PP, ce.PULL_NONE)
+        self.buffer = bytearray(1)
 
         # store the pins
         self.spi = spi
         self.cs = cs
         self.ce = ce
 
+        # init the SPI bus and pins
+        self.init_spi(4000000)
+        cs.init(cs.OUT, value=1)
+        ce.init(ce.OUT, value=0)
+
         # reset everything
         self.ce.low()
         self.cs.high()
         self.payload_size = payload_size
         self.pipe0_read_addr = None
-        pyb.delay(5)
+        utime.sleep_ms(5)
 
         # set address width to 5 bytes and check for device present
         self.reg_write(SETUP_AW, 0b11)
@@ -83,7 +87,8 @@ class NRF24L01:
         self.reg_write(SETUP_RETR, (6 << 4) | 8)
 
         # set rf power and speed
-        self.set_power_speed(POWER_3, SPEED_250K) # Best for point to point links
+        # Best for point to point links
+        self.set_power_speed(POWER_3, SPEED_250K)
 
         # init CRC
         self.set_crc(2)
@@ -98,28 +103,39 @@ class NRF24L01:
         self.flush_rx()
         self.flush_tx()
 
+    def init_spi(self, baudrate):
+        try:
+            master = self.spi.MASTER
+        except AttributeError:
+            self.spi.init(baudrate=baudrate, polarity=0, phase=0)
+        else:
+            self.spi.init(master, baudrate=baudrate, polarity=0, phase=0)
+
     def reg_read(self, reg):
         self.cs.low()
-        self.spi.send_recv(reg)
-        buf = self.spi.recv(1)
+        self.spi.read(1, reg)
+        self.spi.readinto(self.buffer)
         self.cs.high()
-        return buf[0]
+        return self.buffer[0]
 
-    def reg_write(self, reg, buf):
+    def reg_write(self, reg, value=None, buffer=None):
         self.cs.low()
-        status = self.spi.send_recv(0x20 | reg)[0]
-        self.spi.send(buf)
+        self.spi.readinto(self.buffer, 0x20 | reg)
+        if value is not None:
+            self.spi.read(1, value)
+        else:
+            self.spi.write(buffer)
         self.cs.high()
-        return status
+        return self.buffer[0]
 
     def flush_rx(self):
         self.cs.low()
-        self.spi.send(FLUSH_RX)
+        self.spi.read(1, FLUSH_RX)
         self.cs.high()
 
     def flush_tx(self):
         self.cs.low()
-        self.spi.send(FLUSH_TX)
+        self.spi.read(1, FLUSH_TX)
         self.cs.high()
 
     # power is one of POWER_x defines; speed is one of SPEED_x defines
@@ -144,8 +160,8 @@ class NRF24L01:
     # address should be a bytes object 5 bytes long
     def open_tx_pipe(self, address):
         assert len(address) == 5
-        self.reg_write(RX_ADDR_P0, address)
-        self.reg_write(TX_ADDR, address)
+        self.reg_write(RX_ADDR_P0, buffer=address)
+        self.reg_write(TX_ADDR, buffer=address)
         self.reg_write(RX_PW_P0, self.payload_size)
 
     # address should be a bytes object 5 bytes long
@@ -157,7 +173,7 @@ class NRF24L01:
         if pipe_id == 0:
             self.pipe0_read_addr = address
         if pipe_id < 2:
-            self.reg_write(RX_ADDR_P0 + pipe_id, address)
+            self.reg_write(RX_ADDR_P0 + pipe_id, buffer=address)
         else:
             self.reg_write(RX_ADDR_P0 + pipe_id, address[0])
         self.reg_write(RX_PW_P0 + pipe_id, self.payload_size)
@@ -168,12 +184,12 @@ class NRF24L01:
         self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
 
         if self.pipe0_read_addr is not None:
-            self.reg_write(RX_ADDR_P0, self.pipe0_read_addr)
+            self.reg_write(RX_ADDR_P0, buffer=self.pipe0_read_addr)
 
         self.flush_rx()
         self.flush_tx()
         self.ce.high()
-        pyb.udelay(130)
+        utime.sleep_us(130)
 
     def stop_listening(self):
         self.ce.low()
@@ -187,8 +203,8 @@ class NRF24L01:
     def recv(self):
         # get the data
         self.cs.low()
-        self.spi.send(R_RX_PAYLOAD)
-        buf = self.spi.recv(self.payload_size)
+        self.spi.read(1, R_RX_PAYLOAD)
+        buf = self.spi.read(self.payload_size)
         self.cs.high()
         # clear RX ready flag
         self.reg_write(STATUS, RX_DR)
@@ -198,9 +214,10 @@ class NRF24L01:
     # blocking wait for tx complete
     def send(self, buf, timeout=500):
         send_nonblock = self.send_start(buf)
-        start = pyb.millis()
+        start = utime.ticks_ms()
         result = None
-        while result is None and pyb.elapsed_millis(start) < timeout:
+        while (result is None and
+               utime.ticks_diff(start, utime.ticks_ms()) < timeout):
             result = self.send_done() # 1 == success, 2 == fail
         if result == 2:
             raise OSError("send failed")
@@ -209,18 +226,19 @@ class NRF24L01:
     def send_start(self, buf):
         # power up
         self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
-        pyb.udelay(150)
+        utime.sleep_us(150)
         # send the data
         self.cs.low()
-        self.spi.send(W_TX_PAYLOAD)
-        self.spi.send(buf)
+        self.spi.read(1, W_TX_PAYLOAD)
+        self.spi.write(buf)
         if len(buf) < self.payload_size:
-            self.spi.send(b'\x00' * (self.payload_size - len(buf))) # pad out data
+            pad = bytearray(self.payload_size - len(buf))
+            self.spi.write(pad) # pad out data
         self.cs.high()
 
         # enable the chip so it can send the data
         self.ce.high()
-        pyb.udelay(15) # needs to be >10us
+        utime.sleep_us(15) # needs to be >10us
         self.ce.low()
 
     # returns None if send still in progress, 1 for success, 2 for fail
