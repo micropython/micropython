@@ -17,14 +17,14 @@ Tab-completion is useful to find out what methods an object has.
 Paste mode (ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
 
-The ``machine`` module::
+The :mod:`machine` module::
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
     machine.freq(160000000) # set the CPU frequency to 160 MHz
 
-The ``esp`` module::
+The :mod:`esp` module::
 
     import esp
 
@@ -34,7 +34,7 @@ The ``esp`` module::
 Networking
 ----------
 
-The ``network`` module::
+See :mod:`network` and :ref:`network.WLAN <network.WLAN>`. ::
 
     import network
 
@@ -63,13 +63,13 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the ``socket`` module can be used
+Once the network is established the :mod:`socket` module can be used
 to create and use TCP/UDP sockets as usual.
 
 Delay and timing
 ----------------
 
-Use the ``time`` module::
+Use the :mod:`time` module::
 
     import time
 
@@ -82,7 +82,7 @@ Use the ``time`` module::
 Timers
 ------
 
-Virtual (RTOS-based) timers are supported. Use the ``machine.Timer`` class
+Virtual (RTOS-based) timers are supported. Use the :ref:`machine.Timer <machine.Timer>` class
 with timer ID of -1::
 
     from machine import Timer
@@ -96,7 +96,7 @@ The period is in milliseconds.
 Pins and GPIO
 -------------
 
-Use the ``machine.Pin`` class::
+See :ref:`machine.Pin <machine.Pin>`. ::
 
     from machine import Pin
 
@@ -130,7 +130,7 @@ PWM can be enabled on all pins except Pin(16).  There is a single frequency
 for all channels, with range between 1 and 1000 (measured in Hz).  The duty
 cycle is between 0 and 1023 inclusive.
 
-Use the ``machine.PWM`` class::
+Use the :ref:`machine.PWM <machine.PWM>` class::
 
     from machine import Pin, PWM
 
@@ -149,7 +149,7 @@ ADC (analog to digital conversion)
 ADC is available on a dedicated pin.
 Note that input voltages on the ADC pin must be between 0v and 1.0v.
 
-Use the ``machine.ADC`` class::
+Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
@@ -158,6 +158,8 @@ Use the ``machine.ADC`` class::
 
 SPI bus
 -------
+
+See the :ref:`machine.SPI <machine.SPI>` class::
 
 The SPI driver is implemented in software and works on all pins::
 
@@ -186,6 +188,8 @@ The SPI driver is implemented in software and works on all pins::
 I2C bus
 -------
 
+See the :ref:`machine.I2C <machine.I2C>` class::
+
 The I2C driver is implemented in software and works on all pins::
 
     from machine import Pin, I2C
@@ -201,6 +205,8 @@ The I2C driver is implemented in software and works on all pins::
 
 Deep-sleep mode
 ---------------
+
+See the :ref:`machine.RTC <machine.RTC>` class::
 
 Connect GPIO16 to the reset pin (RST on HUZZAH).  Then the following code
 can be used to sleep, wake and check the reset cause::

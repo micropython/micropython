@@ -53,7 +53,7 @@ See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. :
     tim_a = tim.channel(Timer.A, freq=1000)
     tim_a.time() # get the value in microseconds
     tim_a.freq(5) # 5 Hz
-    
+
     p_out = Pin('GP2', mode=Pin.OUT)
     tim_a.irq(handler=lambda t: p_out.toggle())
 
@@ -66,7 +66,7 @@ See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. :
 
     # timer 1 in PWM mode and width must be 16 buts
     tim = Timer(1, mode=Timer.PWM, width=16)
-    
+
     # enable channel A @1KHz with a 50.55% duty cycle
     tim_a = tim.channel(Timer.A, freq=1000, duty_cycle=5055)
 
@@ -146,7 +146,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
         pass
         # do some non blocking operations
         # warning printing on an irq via telnet is not
-        # possible, only via UART 
+        # possible, only via UART
 
     # create a RTC alarm that expires after 5 seconds
     rtc.alarm(time=5000, repeat=False)
@@ -171,7 +171,7 @@ See :ref:`machine.SD <machine.SD>`. ::
     sd = SD()
     os.mount(sd, '/sd')
 
-WLAN (WiFi) 
+WLAN (WiFi)
 -----------
 
 See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
@@ -197,7 +197,7 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
 Telnet and FTP server
 ---------------------
 
-See :ref:`network.Server <network.Server>` ::
+See :ref:`network.Server <network.Server>`. ::
 
     from network import Server
 
