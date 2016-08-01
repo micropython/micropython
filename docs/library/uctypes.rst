@@ -11,7 +11,7 @@ module is to define data structure layout with about the same power as the
 C language allows, and the access it using familiar dot-syntax to reference
 sub-fields.
 
-.. see also::
+.. seealso::
 
     Module :mod:`ustruct`
         Standard Python way to access binary data structures (doesn't scale
