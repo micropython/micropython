@@ -130,7 +130,8 @@ void STM32L475_EMFBADGE_board_early_init(void);
 
 #define MICROPY_HW_LED1             (pin_E15) //LED A
 #define MICROPY_HW_LED2             (pin_E12) //LED B
-#define MICROPY_HW_LED3             (pin_C7) //torch
+#define MICROPY_HW_LED3             (pin_E1) //screen backlight
+#define MICROPY_HW_LED4             (pin_C7) //torch
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (GPIO_set_pin(pin->gpio,pin->pin_mask))
 #define MICROPY_HW_LED_OFF(pin)     (GPIO_clear_pin(pin->gpio,pin->pin_mask))

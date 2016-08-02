@@ -77,6 +77,19 @@ STATIC mp_obj_t ugfx_widget_text(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ugfx_widget_text_obj, 1, 2, ugfx_widget_text);
 
+/// \method set_focus()
+///
+/// Gets the focus of the widget
+STATIC mp_obj_t ugfx_widget_set_focus(mp_obj_t self) {
+
+	GHandle gh = get_ugfx_handle(self);
+	gwinSetFocus(gh);
+	return mp_const_none;
+	
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_widget_set_focus_obj, ugfx_widget_set_focus);
+
+
 /// \method enabled({0,1})
 ///
 /// Gets or sets widget enabled
@@ -299,6 +312,7 @@ STATIC const mp_map_elem_t ugfx_button_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_set_focus), (mp_obj_t)&ugfx_widget_set_focus_obj },
 
 	//class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_RECT),          MP_OBJ_NEW_SMALL_INT(BUTTON_RECT) },
@@ -420,6 +434,7 @@ STATIC const mp_map_elem_t ugfx_textbox_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&ugfx_widget_text_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_style), (mp_obj_t)&ugfx_widget_style_obj },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ugfx_widget_enabled_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_set_focus), (mp_obj_t)&ugfx_widget_set_focus_obj },
 
 	//class constants
     //{ MP_OBJ_NEW_QSTR(MP_QSTR_RED),        MP_OBJ_NEW_SMALL_INT(Red) },
