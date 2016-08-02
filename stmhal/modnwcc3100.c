@@ -88,10 +88,10 @@ Fd_t spi_Open(char* pIfName, unsigned long flags)
     SPI_HANDLE->Init.TIMode = SPI_TIMODE_DISABLED;
     SPI_HANDLE->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
     SPI_HANDLE->Init.CRCPolynomial = 0;
-    
+
     // init the SPI bus
     spi_init(SPI_HANDLE, false);
-    
+
     // CS Pin
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
@@ -100,7 +100,7 @@ Fd_t spi_Open(char* pIfName, unsigned long flags)
     GPIO_InitStructure.Pin = PIN_CS->pin_mask;;
     HAL_GPIO_Init(PIN_CS->gpio, &GPIO_InitStructure);
     GPIO_set_pin(PIN_CS->gpio, PIN_CS->pin_mask);
-    
+
     HAL_Delay(50);
     return 1;
 }
@@ -486,6 +486,35 @@ STATIC mp_obj_t cc3100_get_rssi(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_get_rssi_obj, cc3100_get_rssi);
 
+STATIC mp_obj_t cc3100_settime(mp_obj_t self_in, mp_obj_t tuple) {
+  mp_uint_t len;
+  mp_obj_t *elem;
+  _i32 retVal = -1;
+  SlDateTime_t dateTime= {0};
+
+  mp_obj_get_array(tuple, &len, &elem);
+
+  // localtime generates a tuple of len 8. CPython uses 9, so we accept both, also we only need 6, so thats fine too.
+  if (len < 6 || len > 9) {
+      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "CC3100.settime needs a tuple of length 6-9 (%d given)", len));
+  }
+
+  dateTime.sl_tm_day = mp_obj_get_int(elem[2]);
+  dateTime.sl_tm_mon = mp_obj_get_int(elem[1]);
+  dateTime.sl_tm_year = mp_obj_get_int(elem[0]);
+  dateTime.sl_tm_hour = mp_obj_get_int(elem[3]);
+  dateTime.sl_tm_min = mp_obj_get_int(elem[4]);
+  dateTime.sl_tm_sec = mp_obj_get_int(elem[5]);
+
+  retVal = sl_DevSet(SL_DEVICE_GENERAL_CONFIGURATION,SL_DEVICE_GENERAL_CONFIGURATION_DATE_TIME,
+        sizeof(SlDateTime_t),(_u8 *)(&dateTime));
+  if (retVal != 0)
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Error setting time"));
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_settime_obj, cc3100_settime);
+
 /******************************************************************************/
 // Micro Python bindings; CC3100 class
 
@@ -506,9 +535,9 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     int32_t retVal = -1;
     int32_t mode = -1;
 
-    // Either defaults, or SPI Obj, IRQ Pin, nHIB Pin 
-    mp_arg_check_num(n_args, n_kw, 0, 4, false); 
-    
+    // Either defaults, or SPI Obj, IRQ Pin, nHIB Pin
+    mp_arg_check_num(n_args, n_kw, 0, 4, false);
+
     //If no args given, we setup from coded defaults
     if (n_args == 0) {
 #ifdef MICROPY_HW_CC3100_SPI
@@ -625,11 +654,45 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),           (mp_obj_t)&cc3100_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_list_aps),        (mp_obj_t)&cc3100_list_aps_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_rssi),        (mp_obj_t)&cc3100_get_rssi_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_settime),         (mp_obj_t)&cc3100_settime_obj},
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_ENT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SL_SOL_SOCKET)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_RCVBUF), MP_OBJ_NEW_SMALL_INT(SL_SO_RCVBUF)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_KEEPALIVE) , MP_OBJ_NEW_SMALL_INT(SL_SO_KEEPALIVE )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_RCVTIME0), MP_OBJ_NEW_SMALL_INT(SL_SO_RCVTIMEO)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_NONBLOCKING), MP_OBJ_NEW_SMALL_INT(SL_SO_NONBLOCKING)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECMETHOD), MP_OBJ_NEW_SMALL_INT(SL_SO_SECMETHOD )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SEC_METHOD_SSLV3), MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_SSLV3 )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SEC_METHOD_TLSV1), MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_TLSV1 )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SEC_METHOD_TLSV1_1), MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_TLSV1_1 )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SEC_METHOD_TLSV1_2), MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_TLSV1_2 )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SEC_METHOD_SSLv3_TLSV1_2), MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_SSLv3_TLSV1_2 )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SEC_METHOD_DLSV1), MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_DLSV1 )},
+
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_MASK), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_MASK)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_SSL_RSA_WITH_RC4_128_SHA), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_SSL_RSA_WITH_RC4_128_SHA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_SSL_RSA_WITH_RC4_128_MD5), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_SSL_RSA_WITH_RC4_128_MD5)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_RSA_WITH_AES_256_CBC_SHA), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_RSA_WITH_AES_256_CBC_SHA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_DHE_RSA_WITH_AES_256_CBC_SHA), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_DHE_RSA_WITH_AES_256_CBC_SHA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_ECDHE_RSA_WITH_RC4_128_SHA), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_ECDHE_RSA_WITH_RC4_128_SHA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_RSA_WITH_AES_128_CBC_SHA256), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_RSA_WITH_AES_128_CBC_SHA256)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_RSA_WITH_AES_256_CBC_SHA256), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_RSA_WITH_AES_256_CBC_SHA256)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SEC_MASK_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256), MP_OBJ_NEW_SMALL_INT(SL_SEC_MASK_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_CHANGE_CHANNEL), MP_OBJ_NEW_SMALL_INT(SL_SO_CHANGE_CHANNEL)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_PRIVATE_KEY_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_PRIVATE_KEY_FILE_NAME)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_CERTIFICATE_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_CERTIFICATE_FILE_NAME )},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_CA_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_CA_FILE_NAME)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_DH_KEY_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_DH_KEY_FILE_NAME)},
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(cc3100_locals_dict, cc3100_locals_dict_table);
@@ -641,6 +704,7 @@ STATIC int cc3100_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     }
 
     mp_uint_t type;
+    mp_uint_t proto = 0;
     switch (socket->u_param.type) {
         case MOD_NETWORK_SOCK_STREAM: type = SL_SOCK_STREAM; break;
         case MOD_NETWORK_SOCK_DGRAM: type = SL_SOCK_DGRAM; break;
@@ -648,8 +712,18 @@ STATIC int cc3100_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
         default: *_errno = EINVAL; return -1;
     }
 
+    if (socket->u_param.proto == MOD_NETWORK_SEC_SOCKET)
+    {
+        // SSL Socket
+        if (socket->u_param.type != MOD_NETWORK_SOCK_STREAM ){
+          *_errno = EINVAL; return -1; // Only support TCP SSL
+        }
+        // To start we will setup ssl sockets ignoring certificates
+        proto = SL_SEC_SOCKET;
+    }
+
     // open socket
-    int fd = sl_Socket(SL_AF_INET, type, 0);
+    int fd = sl_Socket(SL_AF_INET, type, proto);
     if (fd < 0) {
         *_errno = fd;
         return -1;
@@ -731,8 +805,8 @@ STATIC int cc3100_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_
 
     MAKE_SOCKADDR(addr, ip, port)
     int ret = sl_Connect(socket->u_state, &addr, sizeof(addr));
-    if (ret != 0) {
-        *_errno = -1; // TODO find correct errno
+    if (ret != 0 && ret != SL_ESECSNOVERIFY) {
+        *_errno = ret;
         return -1;
     }
     return 0;
@@ -817,7 +891,7 @@ STATIC mp_uint_t cc3100_socket_recvfrom(mod_network_socket_obj_t *socket, byte *
 STATIC int cc3100_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
     int ret = sl_SetSockOpt(socket->u_state, level, opt, optval, optlen);
     if (ret < 0) {
-        *_errno = -1; //TODO find correct error
+        *_errno = ret;
         return -1;
     }
     return 0;
@@ -1034,7 +1108,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
          ip3 = (pEventData->ip & 0xf0ff) >> 16;
          ip4 = (pEventData->ip & 0x0fff) >> 24;
          printf("IP: %d.%d.%d.%d\n",ip1,ip2,ip3,ip4);
-         
+
         break;
     case SL_NETAPP_IP_LEASED_EVENT:
         LOG_INFO("[NETAPP EVENT] SL_NETAPP_IP_LEASED");
@@ -1133,4 +1207,3 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
             break;
     }
 }
-

@@ -33,6 +33,14 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
+#define MOD_NETWORK_IPPROTO_DEFAULT (0)
+#define MOD_NETWORK_IPPROTO_TCP     (6)      /* TCP Raw Socket */
+#define MOD_NETWORK_IPPROTO_UDP     (17)     /* UDP Raw Socket */
+#define MOD_NETWORK_IPPROTO_RAW     (255)    /* Raw Socket     */
+#if MICROPY_PY_CC3100
+#define MOD_NETWORK_SEC_SOCKET      (100)    /* Secured Socket Layer (SSL,TLS) */
+#endif
+
 struct _mod_network_socket_obj_t;
 
 typedef struct _mod_network_nic_type_t {
@@ -65,6 +73,7 @@ typedef struct _mod_network_socket_obj_t {
         struct {
             uint8_t domain;
             uint8_t type;
+            uint8_t proto;
             int8_t fileno;
         } u_param;
         mp_uint_t u_state;
