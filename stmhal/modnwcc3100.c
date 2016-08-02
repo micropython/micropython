@@ -50,7 +50,10 @@
 #include "simplelink.h"
 #include "socket.h"
 
-
+#define LOG_ERR(str) printf("Error: %s\n",str)
+#define LOG_INFO(str) printf("Info: %s\n",str)
+#define LOG_COND_CONT(condition)       ((void)0)
+#define LOG_COND_RET(condition, rc)    ((void)0)
 
 // *** Begin simplelink interface functions
 STATIC volatile irq_handler_t cc3100_IrqHandler = 0;
@@ -357,6 +360,7 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
           "timed out connecting to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
       }
+      sl_WlanRxStatStart();
     }
 
     return mp_const_none;
@@ -364,7 +368,11 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_connect_obj, 1, cc3100_connect);
 
 STATIC mp_obj_t cc3100_disconnect(mp_obj_t self_in) {
+    sl_WlanRxStatStop(); 
     sl_WlanDisconnect();
+    while ((wlan_connected)){
+      _SlNonOsMainLoopTask();
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_disconnect_obj, cc3100_disconnect);
@@ -394,6 +402,90 @@ STATIC mp_obj_t cc3100_sleep(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_sleep_obj, cc3100_sleep);
 
+STATIC mp_obj_t cc3100_list_aps(mp_obj_t self_in) {
+  /* Enable scan */ //TODO: check if already enabled
+  #define SL_SCAN_ENABLE 1 
+  int retVal;
+  uint8_t configOpt = SL_SCAN_POLICY(1);
+  uint8_t configVal = 60;
+  LOG_INFO("Enable Scan");
+  retVal = sl_WlanPolicySet(SL_POLICY_SCAN, configOpt, &configVal, sizeof(configVal));
+  LOG_COND_RET(retVal >= 0, -1);
+  mp_hal_delay_ms(1000); // Wait 1 second to ensure scan starts
+  
+  int runningIdx, numOfEntries, idx;
+  Sl_WlanNetworkEntry_t netentry = {0};
+  Sl_WlanNetworkEntry_t netEntries[20];
+  memset(netEntries, 0, sizeof(netEntries));
+  
+  numOfEntries = 20;
+  runningIdx = 0;
+  idx = 0;
+  retVal = sl_WlanGetNetworkList(runningIdx,numOfEntries,&netEntries[runningIdx]);
+  
+  /*
+   * Because of a bug user should either read the maximum entries or read
+   * entries one by one from the end and check for duplicates. Once a duplicate
+   * is found process should be stopped.
+   */
+  /* get scan results - one by one */
+  runningIdx = 20;
+  numOfEntries = 1;
+  memset(netEntries, 0, sizeof(netEntries));
+  
+  do
+  { 
+    runningIdx--;
+    retVal = sl_WlanGetNetworkList(runningIdx, numOfEntries, &netentry);
+    if(retVal < numOfEntries)
+      nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Error getting AP list"));
+
+    if(idx > 0)
+    {
+        if(0 == memcmp(netentry.bssid,
+                  netEntries[idx - 1].bssid, SL_BSSID_LENGTH))
+        {
+            /* Duplicate entry */
+            break;
+        }
+    }
+
+    memcpy(&netEntries[idx], &netentry, sizeof(Sl_WlanNetworkEntry_t));
+    idx++;
+
+} while (runningIdx > 0);
+  mp_obj_t returnVal = mp_obj_new_list(0, NULL);
+  for(int i = 0; i < idx; i++) {
+    mp_obj_t entry = mp_obj_new_dict(3);
+    mp_obj_dict_store(entry,
+                      mp_obj_new_str("ssid", strlen("ssid"), false),
+                      mp_obj_new_str(netEntries[i].ssid, strlen(netEntries[i].ssid), false));
+    mp_obj_dict_store(entry,
+                      mp_obj_new_str("bssid", strlen("bssid"), false),
+                      mp_obj_new_bytearray(SL_BSSID_LENGTH,netEntries[i].bssid));
+    mp_obj_dict_store(entry,
+                      mp_obj_new_str("rssi", strlen("rssi"), false),
+                      MP_OBJ_NEW_SMALL_INT(netEntries[i].rssi));
+    mp_obj_list_append(returnVal, entry);
+  }
+  // Figure out how to return as tuples
+  return returnVal;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_list_aps_obj, cc3100_list_aps);
+
+STATIC mp_obj_t cc3100_get_rssi(mp_obj_t self_in) {
+  SlGetRxStatResponse_t rxStatResp;
+  _i16 avgRssi, retVal;
+  retVal = sl_WlanRxStatGet(&rxStatResp, 0);
+  if (retVal == 0) {
+    avgRssi = rxStatResp.AvarageMgMntRssi;
+    return MP_OBJ_NEW_SMALL_INT(avgRssi);
+  }
+  nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Error getting RSSI"));
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_get_rssi_obj, cc3100_get_rssi);
+
 /******************************************************************************/
 // Micro Python bindings; CC3100 class
 
@@ -402,10 +494,6 @@ typedef struct _cc3100_obj_t {
 } cc3100_obj_t;
 
 STATIC const cc3100_obj_t cc3100_obj = {{(mp_obj_type_t*)&mod_network_nic_type_cc3100}};
-#define LOG_ERR(str) printf("Error: %s\n",str)
-#define LOG_INFO(str) printf("Info: %s\n",str)
-#define LOG_COND_CONT(condition)       ((void)0)
-#define LOG_COND_RET(condition, rc)    ((void)0)
 
 
 STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -414,7 +502,6 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     ip_obtained    = false;
 
     uint8_t val = 1;
-    uint8_t configOpt = 0;
     uint8_t power = 0;
     int32_t retVal = -1;
     int32_t mode = -1;
@@ -470,9 +557,9 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
         }
     }
 
-    /* Set connection policy to Auto + SmartConfig (Device's default connection policy) */
+    /* Set connection policy to nothing magic  */
     LOG_INFO("Set connection policy");
-    retVal = sl_WlanPolicySet(SL_POLICY_CONNECTION, SL_CONNECTION_POLICY(1, 0, 0, 0, 1), NULL, 0);
+    retVal = sl_WlanPolicySet(SL_POLICY_CONNECTION, SL_CONNECTION_POLICY(0, 0, 0, 0, 0), NULL, 0);
     LOG_COND_RET(retVal>=0, -1);
 
     /* Remove all profiles */
@@ -498,12 +585,6 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     /* Enable DHCP client*/
     LOG_INFO("Enable DHCP");
     retVal = sl_NetCfgSet(SL_IPV4_STA_P2P_CL_DHCP_ENABLE,1,1,(uint8_t *)&val);
-    LOG_COND_RET(retVal>=0, -1);
-
-    /* Disable scan */
-    LOG_INFO("Disable Scan");
-    configOpt = SL_SCAN_POLICY(0);
-    retVal = sl_WlanPolicySet(SL_POLICY_SCAN, configOpt, NULL, 0);
     LOG_COND_RET(retVal>=0, -1);
 
     /* Set Tx power level for station mode
@@ -542,7 +623,8 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_connected),    (mp_obj_t)&cc3100_is_connected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_update),          (mp_obj_t)&cc3100_update_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),           (mp_obj_t)&cc3100_sleep_obj },
-
+    { MP_OBJ_NEW_QSTR(MP_QSTR_list_aps),        (mp_obj_t)&cc3100_list_aps_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_rssi),        (mp_obj_t)&cc3100_get_rssi_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
