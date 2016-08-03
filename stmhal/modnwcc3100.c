@@ -1100,14 +1100,25 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
          * pEventData = &pNetAppEvent->EventData.ipAcquiredV4;
          *
          */
+
          SlIpV4AcquiredAsync_t *pEventData = NULL;
          pEventData = &pNetAppEvent->EventData.ipAcquiredV4;
          uint8_t ip1,ip2,ip3,ip4;
-         ip1 = pEventData->ip & 0xfff0;
-         ip2 = (pEventData->ip & 0xff0f) >> 8;
-         ip3 = (pEventData->ip & 0xf0ff) >> 16;
-         ip4 = (pEventData->ip & 0x0fff) >> 24;
-         printf("IP: %d.%d.%d.%d\n",ip1,ip2,ip3,ip4);
+         ip1 = pEventData->ip & 0xff;
+         ip2 = (pEventData->ip >> 8) & 0xff;
+         ip3 = (pEventData->ip >> 16) & 0xff;
+         ip4 = (pEventData->ip >> 24) & 0xff;
+         printf("IP:  %d.%d.%d.%d\n",ip4,ip3,ip2,ip1);
+         ip1 = pEventData->gateway & 0xff;
+         ip2 = (pEventData->gateway >> 8) & 0xff;
+         ip3 = (pEventData->gateway >> 16) & 0xff;
+         ip4 = (pEventData->gateway >> 24) & 0xff;
+         printf("GW:  %d.%d.%d.%d\n",ip4,ip3,ip2,ip1);
+         ip1 = pEventData->dns & 0xff;
+         ip2 = (pEventData->dns >> 8) & 0xff;
+         ip3 = (pEventData->dns >> 16) & 0xff;
+         ip4 = (pEventData->dns >> 24) & 0xff;
+         printf("DNS: %d.%d.%d.%d\n",ip4,ip3,ip2,ip1);
 
         break;
     case SL_NETAPP_IP_LEASED_EVENT:
