@@ -17,6 +17,8 @@ def main():
     FREQ_MAP = {0: "40MHZ", 1: "26MHZ", 2: "20MHz", 0xf: "80MHz"}
     print("Byte @2: %02x" % ROM[2])
     print("Byte @3: %02x (Flash size: %s Flash freq: %s)" % (ROM[3], SZ_MAP.get(ROM[3] >> 4, "?"), FREQ_MAP.get(ROM[3] & 0xf)))
+    print("Firmware checksum:")
+    print(esp.check_fw())
 
     print("\nNetworking:")
     print("STA ifconfig:", network.WLAN(network.STA_IF).ifconfig())
