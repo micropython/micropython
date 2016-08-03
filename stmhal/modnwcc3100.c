@@ -889,12 +889,25 @@ STATIC mp_uint_t cc3100_socket_recvfrom(mod_network_socket_obj_t *socket, byte *
 }
 
 STATIC int cc3100_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
-    int ret = sl_SetSockOpt(socket->u_state, level, opt, optval, optlen);
-    if (ret < 0) {
-        *_errno = ret;
-        return -1;
-    }
-    return 0;
+
+  int ret;
+
+  //printf("level = %d, opt = %d, optval = %d, optlen = %d\n", level, opt, (unsigned int) *(unsigned int *)optval, optlen);
+
+  // Todo : Review and Clean this up
+  if (opt == SL_SO_SECMETHOD) {
+    SlSockSecureMethod method;
+    method.secureMethod = (unsigned int) *(unsigned int *)optval;
+    ret = sl_SetSockOpt(socket->u_state, level, opt, (_u8 *) &method, sizeof(method));
+  } else {
+    ret = sl_SetSockOpt(socket->u_state, level, opt, optval, optlen);
+  }
+
+  if (ret < 0) {
+    *_errno = ret;
+      return -1;
+  }
+  return 0;
 }
 
 STATIC int cc3100_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
