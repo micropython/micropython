@@ -3,13 +3,6 @@
 import network, pyb, usocket, machine, os, json, ugfx, ujson, hashlib, binascii, uio, sys
 
 ### START lib/http_client.py ###
-try:
-	import ussl
-	SUPPORT_SSL = True
-except ImportError:
-	ussl = None
-	SUPPORT_SSL = False
-
 SUPPORT_TIMEOUT = hasattr(usocket.socket, 'settimeout')
 CONTENT_TYPE_JSON = 'application/json'
 DELAY_BETWEEN_READS = 50
@@ -131,17 +124,15 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, urlenco
 	ai = usocket.getaddrinfo(host, port)
 	addr = ai[0][4]
 
-	sock = usocket.socket()
-
-	if timeout is not None:
-		assert SUPPORT_TIMEOUT, 'Socket does not support timeout'
-		sock.settimeout(timeout)
+	sock = None
+	if proto == 'https:':
+		sock = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM, usocket.SEC_SOCKET)
+	else:
+		sock = usocket.socket()
 
 	sock.connect(addr)
-
 	if proto == 'https:':
-		assert SUPPORT_SSL, 'HTTPS not supported: could not find ussl'
-		sock = ussl.wrap_socket(sock)
+		sock.settimeout(0) # Actually make timeouts working properly with ssl
 
 	sock.send('%s /%s HTTP/1.0\r\nHost: %s\r\n' % (method, urlpath, host))
 
@@ -165,8 +156,8 @@ def request(method, url, json=None, timeout=None, headers=None, urlencoded=None)
 	try:
 		response = Response()
 		state = 1
-		hbuf = b"";
-		remaining = None;
+		hbuf = b""
+		remaining = None
 		while True:
 			pyb.delay(DELAY_BETWEEN_READS)
 			buf = sock.recv(BUFFER_SIZE)
@@ -202,9 +193,11 @@ def request(method, url, json=None, timeout=None, headers=None, urlencoded=None)
 				return response
 	finally:
 		if sock: sock.close()
+	#	gc.collect()
 
 def get(url, **kwargs):
 	return request('GET', url, **kwargs)
+
 
 ### END lib/http_client.py ###
 
