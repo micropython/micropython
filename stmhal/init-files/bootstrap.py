@@ -222,7 +222,8 @@ def download(url, target, expected_hash):
 ugfx.init()
 ugfx.clear(ugfx.WHITE)
 ugfx.text(5, 5, "Downloading TiLDA software", ugfx.BLACK)
-label = ugfx.Label(5, 30, ugfx.width() - 10, ugfx.height() - 30, "Please wait")
+label = ugfx.Label(5, 30, ugfx.width() - 10, ugfx.height() - 60, "Please wait")
+ugfx.Label(5, ugfx.height() - 30, ugfx.width() - 10, 30, "If nothing happens for 2 minutes please press the reset button on the back")
 
 w = {}
 try:
