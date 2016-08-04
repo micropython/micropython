@@ -138,7 +138,7 @@ static const char fresh_bootstrap_py[] =
 #include "genhdr/bootstrap.py.h"
 ;
 
-static const char fresh_wifi_json[] = "{\"ssid\":\"emfcamp-insecure\", \"pw\":\"emfcamp\"}\r\n";
+static const char fresh_wifi_json[] = "{\"ssid\":\"emfcamp-insecure\"}\r\n";
 
 static const char fresh_pybcdc_inf[] =
 #include "genhdr/pybcdc_inf.h"

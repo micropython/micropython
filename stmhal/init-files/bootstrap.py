@@ -240,7 +240,7 @@ except ValueError as e:
 	print(e)
 
 wifi_info = "\nMore information:\nbadge.emfcamp.org/TiLDA_MK3/wifi"
-if not ("ssid" in w and "pw" in w):
+if "ssid" not in w:
 	label.text("Couldn't find a valid wifi.json :(" + wifi_info)
 	while True: pyb.wfi()
 
