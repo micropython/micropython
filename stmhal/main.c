@@ -131,28 +131,23 @@ STATIC mp_obj_t pyb_main(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 static const char fresh_boot_py[] =
-"# boot.py -- run on boot-up\r\n"
-"# can run arbitrary Python, but best to keep it minimal\r\n"
-"\r\n"
-"import machine\r\n"
-"import pyb\r\n"
-"#pyb.main('main.py') # main script to run after this one\r\n"
-"#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
-"#pyb.usb_mode('CDC+HID') # act as a serial device and a mouse\r\n"
+#include "genhdr/boot.py.h"
 ;
 
-static const char fresh_main_py[] =
-"# main.py -- put your code here!\r\n"
+static const char fresh_bootstrap_py[] =
+#include "genhdr/bootstrap.py.h"
 ;
+
+static const char fresh_wifi_json[] = "{\"ssid\":\"emfcamp-insecure\", \"pw\":\"emfcamp\"}\r\n";
 
 static const char fresh_pybcdc_inf[] =
 #include "genhdr/pybcdc_inf.h"
 ;
 
 static const char fresh_readme_txt[] =
-"This is a MicroPython board\r\n"
+"This is your TiLDA Mk3 badge\r\n"
 "\r\n"
-"You can get started right away by writing your Python code in 'main.py'.\r\n"
+"For information on how to write your own apps please go to https://badge.emfcamp.org/wiki/TiLDA_MK3/apps\r\n"
 "\r\n"
 "For a serial prompt:\r\n"
 " - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
@@ -199,12 +194,17 @@ void init_flash_fs(uint reset_mode) {
         // set label
         f_setlabel("/flash/pybflash");
 
-        // create empty main.py
+        // create bootstrap.py
         FIL fp;
-        f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&fp, "/flash/bootstrap.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
-        f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
+        f_write(&fp, fresh_bootstrap_py, sizeof(fresh_bootstrap_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
+        f_close(&fp);
+
+        // create wifi.json
+        f_open(&fp, "/flash/wifi.json", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_wifi_json, sizeof(fresh_wifi_json) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
         // create .inf driver file
