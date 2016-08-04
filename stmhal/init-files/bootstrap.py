@@ -1,6 +1,6 @@
 # TiLDA Badge Bootstrap script
 # Automatically downloads the app library to the badge via wifi
-import network, pyb, usocket, machine, os, json, ugfx, ujson, hashlib, binascii
+import network, pyb, usocket, machine, os, json, ugfx, ujson, hashlib, binascii, uio, sys
 
 ### START lib/http_client.py ###
 try:
@@ -251,25 +251,49 @@ if ("pw" in w) and w["pw"]:
 else:
 	n.connect(w["ssid"], timeout=10)
 
-for d in ["apps", "apps/app_library", "lib"]:
+success = False
+failure_counter = 0
+URL = "http://api.badge.emfcamp.org/firmware"
+
+while not success:
+	for d in ["apps", "apps/app_library", "lib"]:
+		try:
+			os.remove(d) # Sometimes FS corruption leads to files instead of folders
+		except OSError as e:
+			pass
+		try:
+			os.mkdir(d)
+		except OSError as e:
+			print(e)
+
 	try:
-		os.mkdir(d)
-	except OSError as e:
-		print(e)
+		label.text("Downloading list of libraries")
+		master = get(URL + "/master.json").raise_for_status().json()
+		libs_to_update = []
+		for i, (lib, expected_hash) in enumerate(master["lib"].items()):
+			label.text("Downloading library: %s (%d/%d)" % (lib, i + 1, len(master["lib"])))
+			download(URL + "/master/lib/%s" % lib, "lib/%s" % lib, expected_hash)
 
-try:
-	URL = "http://api.badge.emfcamp.org/firmware"
-	label.text("Downloading list of libraries")
-	master = get(URL + "/master.json").raise_for_status().json()
-	libs_to_update = []
-	for i, (lib, expected_hash) in enumerate(master["lib"].items()):
-		label.text("Downloading library: %s (%d/%d)" % (lib, i + 1, len(master["lib"])))
-		download(URL + "/master/lib/%s" % lib, "lib/%s" % lib, expected_hash)
+		label.text("Downloading app library")
+		download(URL + "/master/apps/app_library/main.py", "apps/app_library/main.py", master["apps"]["app_library"]["main.py"])
+		success = True
+	except Exception as e:
+		error_string = uio.StringIO()
+		sys.print_exception(e, error_string)
+		error_string = error_string.getvalue()
 
-	label.text("Downloading app library")
-	download(URL + "/master/apps/app_library/main.py", "apps/app_library/main.py", master["apps"]["app_library"]["main.py"])
+		failure_counter += 1
+		print("Error:")
+		print(error_string)
 
-finally:
-	os.sync()
-	label.destroy()
+		if failure_counter > 5:
+			label.text("Something went wrong for the 5th time, giving up :(\nError:\n%s" % error_string)
+			while True:
+				pyb.wfi()
+
+		label.text("Something went wrong, trying again...")
+		pyb.delay(1000)
+
+os.sync()
+label.destroy()
 machine.reset()
