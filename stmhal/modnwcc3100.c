@@ -202,6 +202,11 @@ void NwpPowerOff(void){
     GPIO_clear_pin(PIN_EN->gpio, PIN_EN->pin_mask);
 }
 
+_u32 NwpSystemTicks(void)
+{
+	return HAL_GetTick();
+}
+
 STATIC mp_obj_t cc3100_callback(mp_obj_t line) {
     if (cc3100_IrqHandler != 0) {
         (cc3100_IrqHandler)(line);
@@ -515,6 +520,152 @@ STATIC mp_obj_t cc3100_settime(mp_obj_t self_in, mp_obj_t tuple) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_settime_obj, cc3100_settime);
 
+STATIC mp_obj_t cc3100_file_open(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  static const mp_arg_t allowed_args[] = {
+      { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+      { MP_QSTR_mode,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = FS_MODE_OPEN_READ} },
+      { MP_QSTR_size,  MP_ARG_INT, {0} },
+  };
+
+  // parse args
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+  
+  _i32 retVal;
+  _i32 pFileHandle = 0;
+  _i32 mode = args[1].u_int;
+  _i32 size = args[2].u_int;
+  
+  if (mode == MP_SL_FS_CREATE && size <= 0) {
+      // Create with no size
+      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Create mode needs a valid size"));
+  }
+  // TODO: check max size
+  
+  _u32 cc_fs_mode;
+  switch(mode){
+    case MP_SL_FS_READ:
+      cc_fs_mode = FS_MODE_OPEN_READ;
+      break;
+    case MP_SL_FS_WRITE:
+      cc_fs_mode = FS_MODE_OPEN_WRITE;
+      break;
+    case MP_SL_FS_CREATE:
+      cc_fs_mode = FS_MODE_OPEN_CREATE(size, 0); // No special flags
+      break;
+    default: 
+      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Invalid Mode"));
+      break;
+  }
+  
+  retVal = sl_FsOpen(mp_obj_str_get_str(args[0].u_obj),cc_fs_mode,NULL,&pFileHandle);
+  if (!retVal == 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error opening file: %d", retVal));
+  }
+  return mp_obj_new_int_from_uint(pFileHandle);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_file_open_obj, 1, cc3100_file_open);
+
+
+STATIC mp_obj_t cc3100_file_close(mp_obj_t self_in, mp_obj_t fh) {
+  _i32 retVal;
+  _i32 pFileHandle = mp_obj_get_int(fh);
+  retVal = sl_FsClose(pFileHandle,0,0,0);
+  if (!retVal == 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error closing file: %d", retVal));
+  }
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_file_close_obj, cc3100_file_close);
+
+
+STATIC mp_obj_t cc3100_file_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  static const mp_arg_t allowed_args[] = {
+      { MP_QSTR_fh, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+      { MP_QSTR_offset,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+      { MP_QSTR_data,  MP_ARG_REQUIRED | MP_ARG_OBJ, {0} },
+  };
+
+  // parse args
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+
+  mp_buffer_info_t bufinfo;
+  mp_get_buffer_raise(args[2].u_obj, &bufinfo, MP_BUFFER_READ);
+  _i32 retVal;
+  _i32 fileHandle = args[0].u_int;
+  _i32 offset = args[1].u_int;
+  retVal = sl_FsWrite(fileHandle, offset, (_u8 *)bufinfo.buf, bufinfo.len);
+  if (retVal <= 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error writing to file: %d", retVal));
+  }  
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_file_write_obj, 1,cc3100_file_write);
+
+
+STATIC mp_obj_t cc3100_fw_open(mp_obj_t self_in) {
+  _i32 retVal;
+  _i32 pFileHandle = 0;
+  _u32 token;
+  
+  retVal = sl_FsOpen("/sys/servicepack.ucf", FS_MODE_OPEN_CREATE(131072,_FS_FILE_OPEN_FLAG_SECURE|_FS_FILE_OPEN_FLAG_COMMIT|_FS_FILE_PUBLIC_WRITE), &token, &pFileHandle);
+  
+  if (!retVal == 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error opening file: %d", retVal));
+  }
+  return mp_obj_new_int_from_uint(pFileHandle);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_fw_open_obj, cc3100_fw_open);
+
+STATIC mp_obj_t cc3100_fw_close(mp_obj_t self_in, mp_obj_t fh, mp_obj_t sig) {
+  _i32 retVal;
+  _i32 pFileHandle = mp_obj_get_int(fh);
+  
+  mp_buffer_info_t sigbufinfo;
+  mp_get_buffer_raise(sig, &sigbufinfo, MP_BUFFER_READ);
+  
+  retVal = sl_FsClose(pFileHandle,0,(_u8 *)sigbufinfo.buf, sigbufinfo.len);
+  if (!retVal == 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error closing file: %d", retVal));
+  }
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(cc3100_fw_close_obj, cc3100_fw_close);
+
+STATIC mp_obj_t cc3100_version(mp_obj_t self_in) {
+  _i16 retVal;
+  _u8 pConfigOpt;
+  _u8 pConfigLen;
+  SlVersionFull ver;
+
+  pConfigLen = sizeof(ver);
+  pConfigOpt = SL_DEVICE_GENERAL_VERSION;
+
+  retVal = sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &pConfigOpt, &pConfigLen, (_u8 *)(&ver));
+
+  if (retVal >= 0) {
+  printf("CHIP %d\nMAC 31.%d.%d.%d.%d\nPHY %d.%d.%d.%d\nNWP %d.%d.%d.%d\nROM %d\nHOST %d.%d.%d.%d\n",
+                                                                  ver.ChipFwAndPhyVersion.ChipId,
+                                                                  ver.ChipFwAndPhyVersion.FwVersion[0],ver.ChipFwAndPhyVersion.FwVersion[1],
+                                                                  ver.ChipFwAndPhyVersion.FwVersion[2],ver.ChipFwAndPhyVersion.FwVersion[3],
+                                                                  ver.ChipFwAndPhyVersion.PhyVersion[0],ver.ChipFwAndPhyVersion.PhyVersion[1],
+                                                                  ver.ChipFwAndPhyVersion.PhyVersion[2],ver.ChipFwAndPhyVersion.PhyVersion[3],
+                                                                  ver.NwpVersion[0],ver.NwpVersion[1],ver.NwpVersion[2],ver.NwpVersion[3],
+                                                                  ver.RomVersion,
+                                                                  SL_MAJOR_VERSION_NUM,SL_MINOR_VERSION_NUM,SL_VERSION_NUM,SL_SUB_VERSION_NUM);
+                                  }
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_version_obj, cc3100_version);
+
 /******************************************************************************/
 // Micro Python bindings; CC3100 class
 
@@ -655,6 +806,12 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_list_aps),        (mp_obj_t)&cc3100_list_aps_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_rssi),        (mp_obj_t)&cc3100_get_rssi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settime),         (mp_obj_t)&cc3100_settime_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_open),       (mp_obj_t)&cc3100_file_open_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_close),      (mp_obj_t)&cc3100_file_close_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_write),      (mp_obj_t)&cc3100_file_write_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fw_open),         (mp_obj_t)&cc3100_fw_open_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fw_close),        (mp_obj_t)&cc3100_fw_close_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_version),         (mp_obj_t)&cc3100_version_obj}, 
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
@@ -692,6 +849,10 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_CERTIFICATE_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_CERTIFICATE_FILE_NAME )},
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_CA_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_CA_FILE_NAME)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_SECURE_FILES_DH_KEY_FILE_NAME), MP_OBJ_NEW_SMALL_INT(SL_SO_SECURE_FILES_DH_KEY_FILE_NAME)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FILE_MODE_READ), MP_OBJ_NEW_SMALL_INT(MP_SL_FS_READ)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FILE_MODE_WRITE), MP_OBJ_NEW_SMALL_INT(MP_SL_FS_WRITE)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FILE_MODE_CREATE), MP_OBJ_NEW_SMALL_INT(MP_SL_FS_CREATE)},
 
 };
 
@@ -891,9 +1052,6 @@ STATIC mp_uint_t cc3100_socket_recvfrom(mod_network_socket_obj_t *socket, byte *
 STATIC int cc3100_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
 
   int ret;
-
-  //printf("level = %d, opt = %d, optval = %d, optlen = %d\n", level, opt, (unsigned int) *(unsigned int *)optval, optlen);
-
   // Todo : Review and Clean this up
   if (opt == SL_SO_SECMETHOD) {
     SlSockSecureMethod method;

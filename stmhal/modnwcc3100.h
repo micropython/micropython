@@ -67,6 +67,11 @@ int NwpRegisterInterruptHandler(SL_P_EVENT_HANDLER InterruptHdl , void* pValue);
 void NwpMaskInterrupt();
 void NwpUnMaskInterrupt();
 
+#define MP_SL_FS_READ   (1)
+#define MP_SL_FS_WRITE  (2)
+#define MP_SL_FS_CREATE (3)
+
+
 
 #ifdef  __cplusplus
 }

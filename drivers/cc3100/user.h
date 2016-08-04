@@ -384,6 +384,11 @@ extern "C" {
 */
 #define sl_DeviceDisable()    NwpPowerOff()
 
+
+#define sl_GetTimestamp       NwpSystemTicks
+#define SL_TIMESTAMP_TICKS_IN_10_MILLISECONDS 10
+#define SL_TIMESTAMP_MAX_VALUE UINT_MAX
+#define SL_DRIVER_TIMEOUT_LONG (10000)
 /*!
 
  Close the Doxygen group.
