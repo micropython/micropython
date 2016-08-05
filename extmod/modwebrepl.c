@@ -111,6 +111,22 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return o;
 }
 
+STATIC int write_file_chunk(mp_obj_webrepl_t *self) {
+    const mp_stream_p_t *file_stream =
+        mp_get_stream_raise(self->cur_file, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    byte readbuf[2 + 256];
+    int err;
+    mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf + 2, sizeof(readbuf) - 2, &err);
+    if (out_sz == MP_STREAM_ERROR) {
+        return out_sz;
+    }
+    readbuf[0] = out_sz;
+    readbuf[1] = out_sz >> 8;
+    DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
+    write_webrepl(self->sock, readbuf, 2 + out_sz);
+    return out_sz;
+}
+
 STATIC void handle_op(mp_obj_webrepl_t *self) {
     mp_obj_t open_args[2] = {
         mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname), false),
@@ -122,8 +138,6 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     }
 
     self->cur_file = mp_builtin_open(2, open_args, (mp_map_t*)&mp_const_empty_map);
-    const mp_stream_p_t *file_stream =
-        mp_get_stream_raise(self->cur_file, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
     #if 0
     struct mp_stream_seek_t seek = { .offset = self->hdr.offset, .whence = 0 };
@@ -137,17 +151,11 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     if (self->hdr.type == PUT_FILE) {
         self->data_to_recv = self->hdr.size;
     } else if (self->hdr.type == GET_FILE) {
-        byte readbuf[2 + 256];
-        int err;
         // TODO: It's not ideal that we block connection while sending file
         // and don't process any input.
         while (1) {
-            mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf + 2, sizeof(readbuf) - 2, &err);
+            mp_uint_t out_sz = write_file_chunk(self);
             assert(out_sz != MP_STREAM_ERROR);
-            readbuf[0] = out_sz;
-            readbuf[1] = out_sz >> 8;
-            DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
-            write_webrepl(self->sock, readbuf, 2 + out_sz);
             if (out_sz == 0) {
                 break;
             }
