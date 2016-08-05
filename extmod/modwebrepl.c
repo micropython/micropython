@@ -151,18 +151,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     if (self->hdr.type == PUT_FILE) {
         self->data_to_recv = self->hdr.size;
     } else if (self->hdr.type == GET_FILE) {
-        // TODO: It's not ideal that we block connection while sending file
-        // and don't process any input.
-        while (1) {
-            mp_uint_t out_sz = write_file_chunk(self);
-            assert(out_sz != MP_STREAM_ERROR);
-            if (out_sz == 0) {
-                break;
-            }
-        }
-
-        write_webrepl_resp(self->sock, 0);
-        self->hdr_to_recv = sizeof(struct webrepl_file);
+        self->data_to_recv = 1;
     }
 }
 
@@ -250,17 +239,27 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             buf_sz += sz;
         }
 
-        DEBUG_printf("webrepl: Writing %lu bytes to file\n", buf_sz);
-        int err;
-        mp_uint_t res = mp_stream_write_exactly(self->cur_file, filebuf, buf_sz, &err);
-        if (err != 0 || res != buf_sz) {
-            assert(0);
+        if (self->hdr.type == PUT_FILE) {
+            DEBUG_printf("webrepl: Writing %lu bytes to file\n", buf_sz);
+            int err;
+            mp_uint_t res = mp_stream_write_exactly(self->cur_file, filebuf, buf_sz, &err);
+            if (err != 0 || res != buf_sz) {
+                assert(0);
+            }
+        } else if (self->hdr.type == GET_FILE) {
+            assert(buf_sz == 1);
+            assert(self->data_to_recv == 0);
+            assert(filebuf[0] == 0);
+            mp_uint_t out_sz = write_file_chunk(self);
+            if (out_sz != 0) {
+                self->data_to_recv = 1;
+            }
         }
 
         if (self->data_to_recv == 0) {
             mp_stream_close(self->cur_file);
             self->hdr_to_recv = sizeof(struct webrepl_file);
-            DEBUG_printf("webrepl: Finished writing file\n");
+            DEBUG_printf("webrepl: Finished file operation %d\n", self->hdr.type);
             write_webrepl_resp(self->sock, 0);
         }
 
