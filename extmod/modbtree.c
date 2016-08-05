@@ -344,19 +344,30 @@ STATIC FILEVTABLE btree_stream_fvtable = {
 
 STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_flags, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_cachesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pagesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_minkeypage, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // Make sure we got a stream object
     mp_get_stream_raise(pos_args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
     struct {
-        mp_arg_val_t server_side;
+        mp_arg_val_t flags;
+        mp_arg_val_t cachesize;
+        mp_arg_val_t pagesize;
+        mp_arg_val_t minkeypage;
     } args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+    BTREEINFO openinfo = {0};
+    openinfo.flags = args.flags.u_int;
+    openinfo.cachesize = args.cachesize.u_int;
+    openinfo.psize = args.pagesize.u_int;
+    openinfo.minkeypage = args.minkeypage.u_int;
 
-    DB *db = __bt_open(pos_args[0], &btree_stream_fvtable, /*openinfo*/NULL, /*dflags*/0);
+    DB *db = __bt_open(pos_args[0], &btree_stream_fvtable, &openinfo, /*dflags*/0);
     if (db == NULL) {
         nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
     }
