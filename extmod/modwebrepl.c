@@ -38,6 +38,7 @@
 #include "py/mphal.h"
 #endif
 #include "extmod/modwebsocket.h"
+#include "genhdr/mpversion.h"
 
 #if MICROPY_PY_WEBREPL
 
@@ -57,7 +58,7 @@ struct webrepl_file {
     char fname[64];
 } __attribute__((packed));
 
-enum { PUT_FILE = 1, GET_FILE, LIST_DIR };
+enum { PUT_FILE = 1, GET_FILE, GET_VER };
 enum { STATE_PASSWD, STATE_NORMAL };
 
 typedef struct _mp_obj_webrepl_t {
@@ -128,6 +129,20 @@ STATIC int write_file_chunk(mp_obj_webrepl_t *self) {
 }
 
 STATIC void handle_op(mp_obj_webrepl_t *self) {
+
+    // Handle operations not requiring opened file
+
+    switch (self->hdr.type) {
+        case GET_VER: {
+            static char ver[] = {MICROPY_VERSION_MAJOR, MICROPY_VERSION_MINOR, MICROPY_VERSION_MICRO};
+            write_webrepl(self->sock, ver, sizeof(ver));
+            self->hdr_to_recv = sizeof(struct webrepl_file);
+            return;
+        }
+    }
+
+    // Handle operations requiring opened file
+
     mp_obj_t open_args[2] = {
         mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname), false),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb)
