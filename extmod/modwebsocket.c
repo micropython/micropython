@@ -73,11 +73,11 @@ STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (n_args > 1 && args[1] == mp_const_true) {
         o->opts |= BLOCKING_WRITE;
     }
-    return o;
+    return  MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_websocket_t *self = self_in;
+    mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock, MP_STREAM_OP_READ);
     while (1) {
         if (self->to_recv != 0) {
@@ -219,7 +219,7 @@ no_payload:
 }
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_websocket_t *self = self_in;
+    mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
     assert(size < 0x10000);
     byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
     int hdr_sz;
