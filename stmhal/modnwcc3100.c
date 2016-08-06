@@ -310,9 +310,12 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SL_SEC_TYPE_WPA_WPA2} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2)} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(90) } },
+        { MP_QSTR_eapmethod, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_MSCHAPv2)} },
+        { MP_QSTR_username,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_anonname,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -329,7 +332,10 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_uint_t sec = SL_SEC_TYPE_OPEN;
     if (args[1].u_obj != mp_const_none) {
         key = mp_obj_str_get_data(args[1].u_obj, &key_len);
-        sec = args[2].u_int;
+
+        if (!MP_OBJ_IS_INT(args[2].u_obj))
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "invalid 'security' parameter\n"));
+        sec = mp_obj_get_int(args[2].u_obj);
     }
 
     // get bssid
@@ -348,9 +354,28 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     sec_params.Key = (int8_t*)key;
     sec_params.KeyLen = key_len;
 
+    SlSecParamsExt_t sec_ext_params, *use_ext = NULL;
+    if (sec == SL_SEC_TYPE_WPA_ENT) {
+        mp_uint_t len;
+
+        memset(&sec_ext_params, 0, sizeof(sec_ext_params));
+        if (!MP_OBJ_IS_INT(args[5].u_obj))
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "invalid 'eapmethod' parameter\n"));
+        sec_ext_params.EapMethod = mp_obj_get_int(args[5].u_obj);
+        if (args[6].u_obj != mp_const_none) {
+            sec_ext_params.User = mp_obj_str_get_data(args[6].u_obj, &len);
+            sec_ext_params.UserLen = len;
+        }
+        if (args[7].u_obj != mp_const_none) {
+            sec_ext_params.AnonUser = mp_obj_str_get_data(args[7].u_obj, &len);
+            sec_ext_params.AnonUserLen = len;
+        }
+        use_ext = &sec_ext_params;
+    }
+
     // connect to AP
     printf("Connect to AP\n");
-    if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, NULL)!= 0) {
+    if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, use_ext)!= 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
           "could not connect to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
     }
@@ -900,7 +925,23 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_ENT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA_ENT), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_ENT) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TLS),                      MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TTLS_TLS),                 MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TTLS_MSCHAPv2),            MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TTLS_PSK),                 MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP0_TLS),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP0_MSCHAPv2),           MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP0_PSK),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP1_TLS),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP1_MSCHAPv2),           MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP1_PSK),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_FAST_AUTH_PROVISIONING),   MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_AUTH_PROVISIONING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_FAST_UNAUTH_PROVISIONING), MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_UNAUTH_PROVISIONING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_FAST_NO_PROVISIONING),     MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_NO_PROVISIONING) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SL_SOL_SOCKET)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_RCVBUF), MP_OBJ_NEW_SMALL_INT(SL_SO_RCVBUF)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_KEEPALIVE) , MP_OBJ_NEW_SMALL_INT(SL_SO_KEEPALIVE )},
