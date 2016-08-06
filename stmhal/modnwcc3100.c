@@ -685,6 +685,7 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     uint8_t power = 0;
     int32_t retVal = -1;
     int32_t mode = -1;
+    static const unsigned char defaultcountry[2] = "EU";
 
     // Either defaults, or SPI Obj, IRQ Pin, nHIB Pin
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
@@ -710,6 +711,10 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
 
 
     mode = sl_Start(NULL,NULL,NULL);
+
+    if (sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_COUNTRY_CODE, 2, defaultcountry)) {
+        LOG_ERR("failed to set country code!");
+    }
 
     if(ROLE_STA != mode)
     {   // Configure the device into station mode
