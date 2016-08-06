@@ -520,6 +520,22 @@ STATIC mp_obj_t cc3100_settime(mp_obj_t self_in, mp_obj_t tuple) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_settime_obj, cc3100_settime);
 
+STATIC mp_obj_t cc3100_setcountry(mp_obj_t self_in, mp_obj_t cc) {
+  _i32 retVal = -1;
+  mp_uint_t country_len;
+  const unsigned char *country = (const unsigned char *)mp_obj_str_get_data(cc, &country_len);
+
+  if (!country || country_len != 2)
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Invalid country code given"));
+
+  retVal = sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_COUNTRY_CODE, 2, country);
+  if (retVal != 0)
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Error %d setting country code", retVal));
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_setcountry_obj, cc3100_setcountry);
+
 STATIC mp_obj_t cc3100_file_open(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   static const mp_arg_t allowed_args[] = {
       { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -811,6 +827,7 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_list_aps),        (mp_obj_t)&cc3100_list_aps_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_rssi),        (mp_obj_t)&cc3100_get_rssi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settime),         (mp_obj_t)&cc3100_settime_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setcountry),      (mp_obj_t)&cc3100_setcountry_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_open),       (mp_obj_t)&cc3100_file_open_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_close),      (mp_obj_t)&cc3100_file_close_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_write),      (mp_obj_t)&cc3100_file_write_obj},
