@@ -624,6 +624,50 @@ STATIC mp_obj_t cc3100_file_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_file_write_obj, 1,cc3100_file_write);
 
 
+STATIC mp_obj_t cc3100_file_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  static const mp_arg_t allowed_args[] = {
+      { MP_QSTR_fh,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+      { MP_QSTR_offset, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+      { MP_QSTR_len,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 1024} },
+  };
+  unsigned char buf[1024];
+
+  // parse args
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  _i32 fileHandle = args[0].u_int;
+  _u32 offset = args[1].u_int;
+  _u32 len = args[2].u_int;
+  _i32 retVal;
+
+  if (len > sizeof(buf))
+    len = sizeof(buf);
+
+  retVal = sl_FsRead(fileHandle, offset, buf, len);
+  if (retVal <= 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error reading from file: %d", retVal));
+  }
+  return mp_obj_new_bytearray(retVal, buf);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_file_read_obj, 1,cc3100_file_read);
+
+
+STATIC mp_obj_t cc3100_file_del(mp_obj_t *self, mp_obj_t *nameobj) {
+  _i32 retVal;
+  unsigned char *name = (unsigned char *)mp_obj_str_get_str(nameobj);
+
+  retVal = sl_FsDel(name, 0);
+  if (!retVal == 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error deleting file: %d", retVal));
+  }
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_file_del_obj, cc3100_file_del);
+
+
 STATIC mp_obj_t cc3100_fw_open(mp_obj_t self_in) {
   _i32 retVal;
   _i32 pFileHandle = 0;
@@ -846,6 +890,8 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_open),       (mp_obj_t)&cc3100_file_open_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_close),      (mp_obj_t)&cc3100_file_close_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_write),      (mp_obj_t)&cc3100_file_write_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_read),       (mp_obj_t)&cc3100_file_read_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_del),        (mp_obj_t)&cc3100_file_del_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_fw_open),         (mp_obj_t)&cc3100_fw_open_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_fw_close),        (mp_obj_t)&cc3100_fw_close_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_mac),         (mp_obj_t)&cc3100_get_mac_obj}, 
