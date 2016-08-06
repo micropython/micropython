@@ -62,12 +62,14 @@
 
 #define MICROPY_SOCKET_EXTRA (0)
 
+// This type must "inherit" from mp_obj_fdfile_t, i.e. matching subset of
+// fields should have the same layout.
 typedef struct _mp_obj_socket_t {
     mp_obj_base_t base;
     int fd;
 } mp_obj_socket_t;
 
-STATIC const mp_obj_type_t usocket_type;
+const mp_obj_type_t mp_type_socket;
 
 // Helper functions
 #define RAISE_ERRNO(err_flag, error_val) \
@@ -80,7 +82,7 @@ static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
     mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &usocket_type;
+    o->base.type = &mp_type_socket;
     o->fd = fd;
     return o;
 }
@@ -374,7 +376,7 @@ STATIC const mp_stream_p_t usocket_stream_p = {
     .write = socket_write,
 };
 
-STATIC const mp_obj_type_t usocket_type = {
+const mp_obj_type_t mp_type_socket = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
     .print = socket_print,
@@ -550,7 +552,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_sockaddr_obj, mod_socket_sockaddr);
 
 STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
-    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&usocket_type) },
+    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_type_socket) },
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&mod_socket_getaddrinfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_inet_pton), MP_ROM_PTR(&mod_socket_inet_pton_obj) },
     { MP_ROM_QSTR(MP_QSTR_inet_ntop), MP_ROM_PTR(&mod_socket_inet_ntop_obj) },
