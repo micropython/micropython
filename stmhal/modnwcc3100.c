@@ -655,6 +655,21 @@ STATIC mp_obj_t cc3100_fw_close(mp_obj_t self_in, mp_obj_t fh, mp_obj_t sig) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(cc3100_fw_close_obj, cc3100_fw_close);
 
+STATIC mp_obj_t cc3100_get_mac(mp_obj_t self_in) {
+  _i32 retVal;
+  unsigned char dummy;
+  unsigned char mac[6];
+  unsigned char len = sizeof(mac);
+
+  retVal = sl_NetCfgGet(SL_MAC_ADDRESS_GET, &dummy, &len, mac);
+  if (retVal == 0) {
+    return mp_obj_new_bytearray(sizeof(mac), mac);
+  }
+  nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error %d getting MAC address", retVal));
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_get_mac_obj, cc3100_get_mac);
+
 STATIC mp_obj_t cc3100_version(mp_obj_t self_in) {
   _i16 retVal;
   _u8 pConfigOpt;
@@ -833,6 +848,7 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_write),      (mp_obj_t)&cc3100_file_write_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_fw_open),         (mp_obj_t)&cc3100_fw_open_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_fw_close),        (mp_obj_t)&cc3100_fw_close_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_mac),         (mp_obj_t)&cc3100_get_mac_obj}, 
     { MP_OBJ_NEW_QSTR(MP_QSTR_version),         (mp_obj_t)&cc3100_version_obj}, 
 
     // class constants
