@@ -1,5 +1,5 @@
-Introduction to MicroPython on the ESP8266
-==========================================
+Getting started with MicroPython on the ESP8266
+===============================================
 
 Using MicroPython is a great way to get the most of your ESP8266 board.  And
 vice versa, the ESP8266 chip is a great platform for using MicroPython.  This
