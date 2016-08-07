@@ -47,6 +47,12 @@ void mp_hal_init(void);
 void mp_hal_rtc_init(void);
 
 uint32_t mp_hal_ticks_us(void);
+__attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
+  uint32_t ccount;
+  __asm__ __volatile__("rsr %0,ccount":"=a" (ccount));
+  return ccount;
+}
+
 void mp_hal_delay_us(uint32_t);
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
