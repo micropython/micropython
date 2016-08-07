@@ -1073,6 +1073,11 @@ typedef double mp_float_t;
 #define MP_NOINLINE __attribute__((noinline))
 #endif
 
+// Modifier for functions which should be always inlined
+#ifndef MP_ALWAYSINLINE
+#define MP_ALWAYSINLINE __attribute__((always_inline))
+#endif
+
 // Condition is likely to be true, to help branch prediction
 #ifndef MP_LIKELY
 #define MP_LIKELY(x) __builtin_expect((x), 1)
