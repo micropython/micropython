@@ -101,3 +101,61 @@ be the same everytime, and most likely different for all ESP8266 chips).  The
 password for the WiFi is micropythoN (note the upper-case N).  Its IP address
 will be 192.168.4.1 once you connect to its network.  WiFi configuration will
 be discussed in more detail later in the tutorial.
+
+Troubleshooting installation problems
+-------------------------------------
+
+If you experience problems during flashing or with running firmware immediately
+after it, here are troubleshooting recommendations:
+
+* Be aware of and try to exclude hardware problems. There are 2 common problems:
+  bad power source quality and worn-out/defective FlashROM. Speaking of power
+  source, not just raw amperage is important, but also low ripple and noise/EMI
+  in general. If you experience issues with self-made or wall-wart style power
+  supply, try USB power from a computer. Unearthed power supplies are also known
+  to cause problems as they source of increased EMI (electromagnetic interference)
+  - at the very least, as by the common safety standards they are considered
+  a hazard which may lead to electrical device breakdown and eletric shock to
+  humans. Please avoid using unearthed power connections at any time. In regard
+  to FlashROM hardware problems, there are independent (not related to MicroPython
+  in any way) reports
+  `(e.g.) <https://github.com/peterhinch/micropython-samples.git>`_
+  that on some ESP8266 modules, FlashROM can be programmed as little as 20 times
+  before programming errors occur. This is *much* less than 100,000 programming
+  cycles cited for FlashROM chips of a type used with ESP8266 by reputable
+  vendors, which points to either production rejects, or second-hand worn-out
+  flash chips to be used on some (apparently cheap) modules/boards. You may want
+  to use your best judgement about source, price, documentation, warranty,
+  post-sales support for the modules/boards you purchase.
+
+* The flashing instructions above use flashing speed of 460800 baud, which is
+  good compromise between speed and stability. However, depending on your
+  module/board, USB-UART convertor, cables, host OS, etc., the above baud
+  rate may be too high and lead to errors. Try a more common 115200 baud
+  rate instead in such cases.
+
+* The ``--flash_size`` option in the commands above is mandatory. Omitting
+  it will lead to a corrupted firmware.
+
+* To catch incorrect flash content (e.g. from a defective sector on a chip),
+  add ``--verify`` switch to the commands above.
+
+* Additionally, you can check the firmware integrity from a MicroPython REPL
+  prompt (assuming you were able to flash it and ``--verify`` option doesn't
+  report errors)::
+    import esp
+    esp.check_fw()
+  If the last output value is True, the firmware is OK. Otherwise, it's
+  corrupted and need to be reflashed correctly.
+
+* If you experience any issues with another flashing application (not
+  esptool.py), try esptool.py, it is a generally accepted flashing
+  application in the ESP8266 community.
+
+* If you still experience problems with even flashing the firmware, please
+  refer to esptool.py project page, https://github.com/themadinventor/esptool
+  for additional documentation and bug tracker where you can report problems.
+
+* If you are able to flash firmware, but ``--verify`` option or
+  ``esp.check_fw()`` return errors even after multiple retries, you
+  may have a defective FlashROM chip, as explained above.
