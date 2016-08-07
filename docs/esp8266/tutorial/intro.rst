@@ -1,3 +1,5 @@
+.. _intro:
+
 Getting started with MicroPython on the ESP8266
 ===============================================
 
