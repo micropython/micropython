@@ -74,8 +74,9 @@ PC.  You may also need to reduce the baudrate if you get errors when flashing
 (eg down to 115200).  The filename of the firmware should also match the file
 that you have.
 
-If you have a NodeMCU board, you may need to use the following command to deploy
-the firmware (note the "-fm dio" option)::
+For some boards with a particular FlashROM configuration (e.g. some variants of
+a NodeMCU board) you may need to use the following command to deploy
+the firmware (note the ``-fm dio`` option)::
 
     esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m -fm dio 0 esp8266-2016-05-03-v1.8.bin
 
