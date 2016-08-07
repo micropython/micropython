@@ -9,6 +9,12 @@ Quick reference for the ESP8266
 
 The Adafruit Feather HUZZAH board (image attribution: Adafruit).
 
+Installing MicroPython
+----------------------
+
+See the corresponding section of tutorial: :ref:`intro`. It also includes
+a troubleshooting subsection.
+
 General board control
 ---------------------
 
