@@ -116,12 +116,11 @@ after it, here are troubleshooting recommendations:
   in general. If you experience issues with self-made or wall-wart style power
   supply, try USB power from a computer. Unearthed power supplies are also known
   to cause problems as they source of increased EMI (electromagnetic interference)
-  - at the very least, as by the common safety standards they are considered
-  a hazard which may lead to electrical device breakdown and eletric shock to
-  humans. Please avoid using unearthed power connections at any time. In regard
-  to FlashROM hardware problems, there are independent (not related to MicroPython
-  in any way) reports
-  `(e.g.) <https://github.com/peterhinch/micropython-samples.git>`_
+  - at the very least, and may lead to electrical devices breakdown. So, you are
+  advised to avoid using unearthed power connections when working with ESP8266
+  and other boards. In regard to FlashROM hardware problems, there are independent
+  (not related to MicroPython in any way) reports
+  `(e.g.) <http://internetofhomethings.com/homethings/?p=538>`_
   that on some ESP8266 modules, FlashROM can be programmed as little as 20 times
   before programming errors occur. This is *much* less than 100,000 programming
   cycles cited for FlashROM chips of a type used with ESP8266 by reputable
