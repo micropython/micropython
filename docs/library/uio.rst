@@ -38,8 +38,9 @@ Classes
     opened with "b" modifier). Initial contents of file-like objects
     can be specified with `string` parameter (should be normal string
     for `StringIO` or bytes object for `BytesIO`). All the usual file
-    methods like ``read()``, ``write()``, ``close()`` are available on
-    these objects, and additionally, following method:
+    methods like ``read()``, ``write()``, ``seek()``, ``flush()``,
+    ``close()`` are available on these objects, and additionally, a
+    following method:
 
     .. method:: getvalue()
 
