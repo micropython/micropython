@@ -135,6 +135,10 @@ after it, here are troubleshooting recommendations:
   rate may be too high and lead to errors. Try a more common 115200 baud
   rate instead in such cases.
 
+* If lower baud rate didn't help, you may want to try older version of
+  esptool.py, which had a different programming algorithm::
+    pip install esptool==1.0.1
+
 * The ``--flash_size`` option in the commands above is mandatory. Omitting
   it will lead to a corrupted firmware.
 
