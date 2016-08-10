@@ -301,7 +301,7 @@ STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw,
     pyb_pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(GPIO_INPUT_GET(self->phys_port));
+        return MP_OBJ_NEW_SMALL_INT(pin_get(self->phys_port));
     } else {
         // set pin
         pin_set(self->phys_port, mp_obj_is_true(args[0]));
