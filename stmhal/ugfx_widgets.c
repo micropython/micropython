@@ -85,7 +85,7 @@ STATIC mp_obj_t ugfx_widget_set_focus(mp_obj_t self) {
 	GHandle gh = get_ugfx_handle(self);
 	gwinSetFocus(gh);
 	return mp_const_none;
-	
+
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ugfx_widget_set_focus_obj, ugfx_widget_set_focus);
 
@@ -268,7 +268,7 @@ STATIC mp_obj_t ugfx_button_make_new(const mp_obj_type_t *type, mp_uint_t n_args
         wi.g.parent = container->ghContainer;
         wi.customStyle = container->style;
     }
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[8].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[8].u_obj;
@@ -397,7 +397,7 @@ STATIC mp_obj_t ugfx_textbox_make_new(const mp_obj_type_t *type, mp_uint_t n_arg
         wi.g.parent = container->ghContainer;
         wi.customStyle = container->style;
     }
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
@@ -512,7 +512,7 @@ STATIC mp_obj_t ugfx_list_make_new(const mp_obj_type_t *type, mp_uint_t n_args, 
 		wi.g.parent = container->ghContainer;
 		wi.customStyle = container->style;
 	}
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
@@ -751,7 +751,7 @@ STATIC mp_obj_t ugfx_keyboard_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
         wi.g.parent = container->ghContainer;
         wi.customStyle = container->style;
     }
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[10].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[10].u_obj;
@@ -957,7 +957,7 @@ STATIC const mp_arg_t ugfx_imagebox_make_new_args[] = {
     { MP_QSTR_b, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
 	{ MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_parent, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-    { MP_QSTR_cache, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },	
+    { MP_QSTR_cache, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
 	{ MP_QSTR_style, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
 #define UGFX_IMAGEBOX_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(ugfx_imagebox_make_new_args)
@@ -994,7 +994,7 @@ STATIC mp_obj_t ugfx_imagebox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
         wi.g.parent = container->ghContainer;
         wi.customStyle = container->style;
     }
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
@@ -1095,7 +1095,7 @@ void print_image_error(gdispImageError err){
 
 
 typedef struct _ugfx_label_t {
-    mp_obj_base_t base;	
+    mp_obj_base_t base;
 	justify_t justification;
 	GHandle ghLabel;
 } ugfx_label_obj_t;
@@ -1148,14 +1148,14 @@ STATIC mp_obj_t ugfx_label_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
         wi.g.parent = container->ghContainer;
         wi.customStyle = container->style;
     }
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[6].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[6].u_obj;
         wi.customStyle = &(sty->style);
     }
-	
-	
+
+
 	btn->justification = vals[7].u_int;
 	wi.customParam = &(btn->justification);
 	wi.customDraw = gwinLabelDrawJustifiedCustom;
@@ -1195,8 +1195,8 @@ STATIC const mp_map_elem_t ugfx_label_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT),        MP_OBJ_NEW_SMALL_INT(2) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_CENTER),        MP_OBJ_NEW_SMALL_INT(1) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_LEFTTOP),        MP_OBJ_NEW_SMALL_INT(0+4) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHTTOP),        MP_OBJ_NEW_SMALL_INT(1+4) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTERTOP),        MP_OBJ_NEW_SMALL_INT(2+4) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHTTOP),        MP_OBJ_NEW_SMALL_INT(2+4) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTERTOP),        MP_OBJ_NEW_SMALL_INT(1+4) },
 
 
 };
@@ -1366,7 +1366,7 @@ STATIC mp_obj_t ugfx_checkbox_make_new(const mp_obj_type_t *type, mp_uint_t n_ar
         wi.g.parent = container->ghContainer;
         wi.customStyle = container->style;
     }
-	
+
 	// Apply style
     if (MP_OBJ_IS_TYPE(vals[7].u_obj, &ugfx_style_type)) {
         ugfx_style_obj_t *sty = vals[7].u_obj;
