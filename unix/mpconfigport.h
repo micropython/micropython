@@ -305,5 +305,7 @@ void mp_unix_mark_exec(void);
 #define _DIRENT_HAVE_D_INO (1)
 #endif
 
+#ifndef __APPLE__
 // For debugging purposes, make printf() available to any source file.
 #include <stdio.h>
+#endif
