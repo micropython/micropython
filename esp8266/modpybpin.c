@@ -244,7 +244,11 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
 
     // configure the GPIO as requested
     if (self->phys_port == 16) {
-        // TODO: Set pull up/pull down
+        // only pull-down seems to be supported by the hardware, and
+        // we only expose pull-up behaviour in software
+        if (pull != GPIO_PULL_NONE) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin(16) doesn't support pull"));
+        }
     } else {
         PIN_FUNC_SELECT(self->periph, self->func);
         #if 0
