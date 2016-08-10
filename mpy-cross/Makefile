@@ -49,10 +49,10 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 
-ifeq ($(OS),Windows_NT)
-    ifeq (,$(findstring MSYS,$(UNAME_S)))
-        SRC_C += windows/fmode.c
-    endif
+# Add fmode when compiling with mingw gcc
+COMPILER_TARGET := $(shell $(CC) -dumpmachine)
+ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
+	SRC_C += windows/fmode.c
 endif
 
 OBJ = $(PY_O)
