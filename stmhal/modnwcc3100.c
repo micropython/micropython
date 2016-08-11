@@ -311,9 +311,12 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SL_SEC_TYPE_WPA_WPA2} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2)} },
         { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(90) } },
+        { MP_QSTR_eapmethod, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_MSCHAPv2)} },
+        { MP_QSTR_username,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_anonname,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -330,7 +333,10 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_uint_t sec = SL_SEC_TYPE_OPEN;
     if (args[1].u_obj != mp_const_none) {
         key = mp_obj_str_get_data(args[1].u_obj, &key_len);
-        sec = args[2].u_int;
+
+        if (!MP_OBJ_IS_INT(args[2].u_obj))
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "invalid 'security' parameter\n"));
+        sec = mp_obj_get_int(args[2].u_obj);
     }
 
     // get bssid
@@ -349,9 +355,28 @@ STATIC mp_obj_t cc3100_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     sec_params.Key = (int8_t*)key;
     sec_params.KeyLen = key_len;
 
+    SlSecParamsExt_t sec_ext_params, *use_ext = NULL;
+    if (sec == SL_SEC_TYPE_WPA_ENT) {
+        mp_uint_t len;
+
+        memset(&sec_ext_params, 0, sizeof(sec_ext_params));
+        if (!MP_OBJ_IS_INT(args[5].u_obj))
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "invalid 'eapmethod' parameter\n"));
+        sec_ext_params.EapMethod = mp_obj_get_int(args[5].u_obj);
+        if (args[6].u_obj != mp_const_none) {
+            sec_ext_params.User = mp_obj_str_get_data(args[6].u_obj, &len);
+            sec_ext_params.UserLen = len;
+        }
+        if (args[7].u_obj != mp_const_none) {
+            sec_ext_params.AnonUser = mp_obj_str_get_data(args[7].u_obj, &len);
+            sec_ext_params.AnonUserLen = len;
+        }
+        use_ext = &sec_ext_params;
+    }
+
     // connect to AP
     printf("Connect to AP\n");
-    if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, NULL)!= 0) {
+    if (sl_WlanConnect((int8_t*)ssid, ssid_len, (uint8_t*)bssid, &sec_params, use_ext)!= 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
           "could not connect to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
     }
@@ -564,6 +589,22 @@ STATIC mp_obj_t cc3100_settime(mp_obj_t self_in, mp_obj_t tuple) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_settime_obj, cc3100_settime);
 
+STATIC mp_obj_t cc3100_setcountry(mp_obj_t self_in, mp_obj_t cc) {
+  _i32 retVal = -1;
+  mp_uint_t country_len;
+  const unsigned char *country = (const unsigned char *)mp_obj_str_get_data(cc, &country_len);
+
+  if (!country || country_len != 2)
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Invalid country code given"));
+
+  retVal = sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_COUNTRY_CODE, 2, country);
+  if (retVal != 0)
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Error %d setting country code", retVal));
+
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_setcountry_obj, cc3100_setcountry);
+
 STATIC mp_obj_t cc3100_file_open(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
   static const mp_arg_t allowed_args[] = {
       { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -652,6 +693,50 @@ STATIC mp_obj_t cc3100_file_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_file_write_obj, 1,cc3100_file_write);
 
 
+STATIC mp_obj_t cc3100_file_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+  static const mp_arg_t allowed_args[] = {
+      { MP_QSTR_fh,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+      { MP_QSTR_offset, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+      { MP_QSTR_len,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 1024} },
+  };
+  unsigned char buf[1024];
+
+  // parse args
+  mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+  mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+  _i32 fileHandle = args[0].u_int;
+  _u32 offset = args[1].u_int;
+  _u32 len = args[2].u_int;
+  _i32 retVal;
+
+  if (len > sizeof(buf))
+    len = sizeof(buf);
+
+  retVal = sl_FsRead(fileHandle, offset, buf, len);
+  if (retVal <= 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error reading from file: %d", retVal));
+  }
+  return mp_obj_new_bytearray(retVal, buf);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(cc3100_file_read_obj, 1,cc3100_file_read);
+
+
+STATIC mp_obj_t cc3100_file_del(mp_obj_t *self, mp_obj_t *nameobj) {
+  _i32 retVal;
+  unsigned char *name = (unsigned char *)mp_obj_str_get_str(nameobj);
+
+  retVal = sl_FsDel(name, 0);
+  if (!retVal == 0)
+  {
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error deleting file: %d", retVal));
+  }
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3100_file_del_obj, cc3100_file_del);
+
+
 STATIC mp_obj_t cc3100_fw_open(mp_obj_t self_in) {
   _i32 retVal;
   _i32 pFileHandle = 0;
@@ -682,6 +767,21 @@ STATIC mp_obj_t cc3100_fw_close(mp_obj_t self_in, mp_obj_t fh, mp_obj_t sig) {
   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(cc3100_fw_close_obj, cc3100_fw_close);
+
+STATIC mp_obj_t cc3100_get_mac(mp_obj_t self_in) {
+  _i32 retVal;
+  unsigned char dummy;
+  unsigned char mac[6];
+  unsigned char len = sizeof(mac);
+
+  retVal = sl_NetCfgGet(SL_MAC_ADDRESS_GET, &dummy, &len, mac);
+  if (retVal == 0) {
+    return mp_obj_new_bytearray(sizeof(mac), mac);
+  }
+  nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error %d getting MAC address", retVal));
+  return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_get_mac_obj, cc3100_get_mac);
 
 STATIC mp_obj_t cc3100_version(mp_obj_t self_in) {
   _i16 retVal;
@@ -729,6 +829,7 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     uint8_t power = 0;
     int32_t retVal = -1;
     int32_t mode = -1;
+    static const unsigned char defaultcountry[2] = "EU";
 
     // Either defaults, or SPI Obj, IRQ Pin, nHIB Pin
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
@@ -754,6 +855,10 @@ STATIC mp_obj_t cc3100_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
 
 
     mode = sl_Start(NULL,NULL,NULL);
+
+    if (sl_WlanSet(SL_WLAN_CFG_GENERAL_PARAM_ID, WLAN_GENERAL_PARAM_OPT_COUNTRY_CODE, 2, defaultcountry)) {
+        LOG_ERR("failed to set country code!");
+    }
 
     if(ROLE_STA != mode)
     {   // Configure the device into station mode
@@ -851,17 +956,37 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_list_aps),        (mp_obj_t)&cc3100_list_aps_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_rssi),        (mp_obj_t)&cc3100_get_rssi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_settime),         (mp_obj_t)&cc3100_settime_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setcountry),      (mp_obj_t)&cc3100_setcountry_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_open),       (mp_obj_t)&cc3100_file_open_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_close),      (mp_obj_t)&cc3100_file_close_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_file_write),      (mp_obj_t)&cc3100_file_write_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_read),       (mp_obj_t)&cc3100_file_read_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_file_del),        (mp_obj_t)&cc3100_file_del_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_fw_open),         (mp_obj_t)&cc3100_fw_open_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_fw_close),        (mp_obj_t)&cc3100_fw_close_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_get_mac),         (mp_obj_t)&cc3100_get_mac_obj}, 
     { MP_OBJ_NEW_QSTR(MP_QSTR_version),         (mp_obj_t)&cc3100_version_obj}, 
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_ENT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA_ENT), MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_ENT) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TLS),                      MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TTLS_TLS),                 MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TTLS_MSCHAPv2),            MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_TTLS_PSK),                 MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_TTLS_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP0_TLS),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP0_MSCHAPv2),           MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP0_PSK),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP0_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP1_TLS),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_TLS) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP1_MSCHAPv2),           MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_MSCHAPv2) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_PEAP1_PSK),                MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_PEAP1_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_FAST_AUTH_PROVISIONING),   MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_AUTH_PROVISIONING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_FAST_UNAUTH_PROVISIONING), MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_UNAUTH_PROVISIONING) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_EAP_METHOD_FAST_NO_PROVISIONING),     MP_OBJ_NEW_SMALL_INT(SL_ENT_EAP_METHOD_FAST_NO_PROVISIONING) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SL_SOL_SOCKET)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_RCVBUF), MP_OBJ_NEW_SMALL_INT(SL_SO_RCVBUF)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_KEEPALIVE) , MP_OBJ_NEW_SMALL_INT(SL_SO_KEEPALIVE )},
