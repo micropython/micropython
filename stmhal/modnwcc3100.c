@@ -43,6 +43,7 @@
 #include "irq.h"
 #include "spi.h"
 #include "pybioctl.h"
+#include "netcfg.h"
 
 #include "extint.h"
 
@@ -390,6 +391,49 @@ STATIC mp_obj_t cc3100_is_connected(mp_obj_t self_in) {
     return mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_is_connected_obj, cc3100_is_connected);
+
+STATIC mp_obj_t cc3100_ifconfig(mp_obj_t self_in) {
+    // These are separate calls on the cc3100
+    // mac
+    _i32 retVal;
+    unsigned char dummy;
+    unsigned char mac[6];
+    unsigned char len = sizeof(mac);
+
+    mp_obj_t tuple[7];
+    VSTR_FIXED(mac_vstr, 18);
+    retVal = sl_NetCfgGet(SL_MAC_ADDRESS_GET, &dummy, &len, mac);
+    if (retVal == 0) {
+      vstr_printf(&mac_vstr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+      tuple[5] = mp_obj_new_str(mac_vstr.buf, mac_vstr.len, false);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error %d getting MAC address", retVal));
+    }
+    //return mp_const_none;
+
+    unsigned char iplen = sizeof(SlNetCfgIpV4Args_t);
+    unsigned char dhcpIsOn = 0;
+    SlNetCfgIpV4Args_t ipV4 = {0};
+    VSTR_FIXED(ip_vstr, 15);
+    VSTR_FIXED(mask_vstr, 15);
+    VSTR_FIXED(gw_vstr, 15);
+    VSTR_FIXED(dns_vstr, 15);
+    retVal = sl_NetCfgGet(SL_IPV4_STA_P2P_CL_GET_INFO,&dhcpIsOn,&iplen,(unsigned char *)&ipV4);
+    if(retVal == 0) {
+      vstr_printf(&ip_vstr, "%03d.%03d.%03d.%03d", SL_IPV4_BYTE(ipV4.ipV4,3), SL_IPV4_BYTE(ipV4.ipV4,2), SL_IPV4_BYTE(ipV4.ipV4,1), SL_IPV4_BYTE(ipV4.ipV4,0));
+      vstr_printf(&mask_vstr, "%03d.%03d.%03d.%03d", SL_IPV4_BYTE(ipV4.ipV4Mask,3), SL_IPV4_BYTE(ipV4.ipV4Mask,2), SL_IPV4_BYTE(ipV4.ipV4Mask,1), SL_IPV4_BYTE(ipV4.ipV4Mask,0));
+      vstr_printf(&gw_vstr, "%03d.%03d.%03d.%03d", SL_IPV4_BYTE(ipV4.ipV4Gateway,3), SL_IPV4_BYTE(ipV4.ipV4Gateway,2), SL_IPV4_BYTE(ipV4.ipV4Gateway,1), SL_IPV4_BYTE(ipV4.ipV4Gateway,0));
+      vstr_printf(&dns_vstr, "%03d.%03d.%03d.%03d", SL_IPV4_BYTE(ipV4.ipV4DnsServer,3), SL_IPV4_BYTE(ipV4.ipV4DnsServer,2), SL_IPV4_BYTE(ipV4.ipV4DnsServer,1), SL_IPV4_BYTE(ipV4.ipV4DnsServer,0));
+      tuple[0] = mp_obj_new_str(ip_vstr.buf, ip_vstr.len, false);
+      tuple[1] = mp_obj_new_str(mask_vstr.buf, mask_vstr.len, false);
+      tuple[2] = mp_obj_new_str(gw_vstr.buf, gw_vstr.len, false);
+      tuple[3] = mp_obj_new_str(dns_vstr.buf, dns_vstr.len, false);
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "Error %d getting IP address", retVal));
+    }
+    return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_ifconfig_obj, cc3100_ifconfig);
 
 STATIC mp_obj_t cc3100_update(mp_obj_t self_in) {
 
@@ -801,6 +845,7 @@ STATIC const mp_map_elem_t cc3100_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),         (mp_obj_t)&cc3100_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),      (mp_obj_t)&cc3100_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_is_connected),    (mp_obj_t)&cc3100_is_connected_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),        (mp_obj_t)&cc3100_ifconfig_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_update),          (mp_obj_t)&cc3100_update_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),           (mp_obj_t)&cc3100_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_list_aps),        (mp_obj_t)&cc3100_list_aps_obj },
