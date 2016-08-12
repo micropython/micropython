@@ -141,6 +141,16 @@ NORETURN void mp_raise_TypeError(const char *msg);
 NORETURN void mp_not_implemented(const char *msg);
 NORETURN void mp_exc_recursion_depth(void);
 
+#if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
+#undef mp_check_self
+#define mp_check_self(pred)
+#else
+// A port may define to raise TypeError for example
+#ifndef mp_check_self
+#define mp_check_self(pred) assert(pred)
+#endif
+#endif
+
 // helper functions for native/viper code
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
