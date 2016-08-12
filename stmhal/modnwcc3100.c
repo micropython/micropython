@@ -69,7 +69,7 @@ Fd_t spi_Open(char* pIfName, unsigned long flags)
 {
     mp_uint_t spi_clock, br_prescale;
     spi_clock = HAL_RCC_GetPCLK1Freq();
-    br_prescale = spi_clock / 40000000; //40MHz
+    br_prescale = spi_clock / 20000000; //20MHz
     if (br_prescale <= 2) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
     else if (br_prescale <= 4) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
     else if (br_prescale <= 8) { SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
