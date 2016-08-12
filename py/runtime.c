@@ -1390,6 +1390,18 @@ void *m_malloc_fail(size_t num_bytes) {
     }
 }
 
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
+    nlr_raise(mp_obj_new_exception_msg(exc_type, msg));
+}
+
+NORETURN void mp_raise_ValueError(const char *msg) {
+    mp_raise_msg(&mp_type_ValueError, msg);
+}
+
+NORETURN void mp_raise_TypeError(const char *msg) {
+    mp_raise_msg(&mp_type_TypeError, msg);
+}
+
 NORETURN void mp_not_implemented(const char *msg) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, msg));
+    mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
