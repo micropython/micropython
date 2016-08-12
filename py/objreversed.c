@@ -57,7 +57,7 @@ STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, size
 }
 
 STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_reversed));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_reversed));
     mp_obj_reversed_t *self = MP_OBJ_TO_PTR(self_in);
 
     // "raise" stop iteration if we are at the end (the start) of the sequence
