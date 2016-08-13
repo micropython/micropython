@@ -5,5 +5,4 @@
 *.exe
 *.pdb
 *.ilk
-*.filters
 /build/*
