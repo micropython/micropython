@@ -436,7 +436,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     mp_uint_t required_len = 0;
     for (mp_uint_t i = 0; i < seq_len; i++) {
         if (mp_obj_get_type(seq_items[i]) != self_type) {
-            mp_raise_msg(&mp_type_TypeError,
+            mp_raise_TypeError(
                 "join expects a list of str/bytes objects consistent with self object");
         }
         if (i > 0) {
@@ -894,8 +894,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 terse_str_format_value_error();
             } else {
-                mp_raise_msg(&mp_type_ValueError,
-                    "single '}' encountered in format string");
+                mp_raise_ValueError("single '}' encountered in format string");
             }
         }
         if (*str != '{') {
@@ -937,7 +936,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     mp_raise_ValueError("bad conversion specifier");
                 } else {
                     if (str >= top) {
-                        mp_raise_msg(&mp_type_ValueError,
+                        mp_raise_ValueError(
                             "end of format while looking for conversion specifier");
                     } else {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -992,7 +991,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         terse_str_format_value_error();
                     } else {
-                        mp_raise_msg(&mp_type_ValueError,
+                        mp_raise_ValueError(
                             "can't switch from automatic field numbering to manual field specification");
                     }
                 }
@@ -1021,7 +1020,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    mp_raise_msg(&mp_type_ValueError,
+                    mp_raise_ValueError(
                         "can't switch from manual field specification to automatic field numbering");
                 }
             }
@@ -1136,15 +1135,14 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    mp_raise_msg(&mp_type_ValueError,
-                        "sign not allowed in string format specifier");
+                    mp_raise_ValueError("sign not allowed in string format specifier");
                 }
             }
             if (type == 'c') {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    mp_raise_msg(&mp_type_ValueError,
+                    mp_raise_ValueError(
                         "sign not allowed with integer format specifier 'c'");
                 }
             }
@@ -1289,7 +1287,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
                 } else {
-                    mp_raise_msg(&mp_type_ValueError,
+                    mp_raise_ValueError(
                         "'=' alignment not allowed in string format specifier");
                 }
             }
