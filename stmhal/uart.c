@@ -521,6 +521,12 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     init->Mode = UART_MODE_TX_RX;
     init->OverSampling = UART_OVERSAMPLING_16;
 
+#ifdef UART_ADVFEATURE_OVERRUN_DISABLE
+    // Disable receive overrun since uart_irq_handler() cannot handle this condition
+    self->uart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
+    self->uart.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+#endif
+
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init2(self)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", self->uart_id));
