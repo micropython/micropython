@@ -138,9 +138,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
-
 #if MICROPY_PY_OS_DUPTERM
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 void mp_hal_dupterm_tx_strn(const char *str, size_t len);

@@ -115,8 +115,6 @@
 
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 typedef uint32_t sys_prot_t; // for modlwip
 // ssize_t, off_t as required by POSIX-signatured functions in stream.h

@@ -231,9 +231,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
-
 void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
 void mp_unix_free_exec(void *ptr, mp_uint_t size);
 void mp_unix_mark_exec(void);

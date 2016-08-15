@@ -107,9 +107,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
-
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
 #ifndef MP_NOINLINE
