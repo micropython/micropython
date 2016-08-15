@@ -10,3 +10,9 @@ for i in (-4, -2, 0, 2, 4):
 a = [1, 2, 3]
 c = a * 3
 print(a, c)
+
+# unsupported type on RHS
+try:
+    [] * None
+except TypeError:
+    print('TypeError')
