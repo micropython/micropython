@@ -70,3 +70,20 @@ try:
 except NotImplementedError:
     print('NotImplementedError')
 
+# tuple load with step!=1 not implemented
+try:
+    ()[2:3:4]
+except NotImplementedError:
+    print('NotImplementedError')
+
+# list store with step!=1 not implemented
+try:
+    [][2:3:4] = []
+except NotImplementedError:
+    print('NotImplementedError')
+
+# list delete with step!=1 not implemented
+try:
+    del [][2:3:4]
+except NotImplementedError:
+    print('NotImplementedError')
