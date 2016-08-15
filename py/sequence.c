@@ -56,12 +56,12 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
     if (ostart == mp_const_none) {
         start = 0;
     } else {
-        start = MP_OBJ_SMALL_INT_VALUE(ostart);
+        start = mp_obj_get_int(ostart);
     }
     if (ostop == mp_const_none) {
         stop = len;
     } else {
-        stop = MP_OBJ_SMALL_INT_VALUE(ostop);
+        stop = mp_obj_get_int(ostop);
     }
 
     // Unlike subscription, out-of-bounds slice indexes are never error
@@ -88,7 +88,7 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
     indexes->stop = stop;
 
     if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-        indexes->step = MP_OBJ_SMALL_INT_VALUE(ostep);
+        indexes->step = mp_obj_get_int(ostep);
         return false;
     }
     indexes->step = 1;
