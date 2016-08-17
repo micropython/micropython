@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -39,16 +40,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-STATIC int mod_uzlib_grow_buf(TINF_DATA *d, unsigned alloc_req) {
-    if (alloc_req < 256) {
-        alloc_req = 256;
-    }
-    DEBUG_printf("uzlib: Resizing buffer to " UINT_FMT " bytes\n", d->destSize + alloc_req);
-    d->destStart = m_renew(byte, d->destStart, d->destSize, d->destSize + alloc_req);
-    d->destSize += alloc_req;
-    return 0;
-}
-
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_t data = args[0];
@@ -56,30 +47,55 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     TINF_DATA *decomp = m_new_obj(TINF_DATA);
+    memset(decomp, 0, sizeof(*decomp));
     DEBUG_printf("sizeof(TINF_DATA)=" UINT_FMT "\n", sizeof(*decomp));
+    uzlib_uncompress_init(decomp, NULL, 0);
+    mp_uint_t dest_buf_size = (bufinfo.len + 15) & ~15;
+    byte *dest_buf = m_new(byte, dest_buf_size);
 
-    decomp->destSize = (bufinfo.len + 15) & ~15;
-    decomp->destStart = m_new(byte, decomp->destSize);
+    decomp->dest = dest_buf;
+    decomp->destSize = dest_buf_size;
     DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
-    decomp->destGrow = mod_uzlib_grow_buf;
     decomp->source = bufinfo.buf;
 
     int st;
+    bool is_zlib = true;
+
     if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {
-        st = tinf_uncompress_dyn(decomp);
-    } else {
-        st = tinf_zlib_uncompress_dyn(decomp, bufinfo.len);
-    }
-    if (st != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
+        is_zlib = false;
     }
 
-    mp_uint_t final_sz = decomp->dest - decomp->destStart;
-    DEBUG_printf("uzlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", decomp->destSize, final_sz);
-    decomp->destStart = (byte*)m_renew(byte, decomp->destStart, decomp->destSize, final_sz);
-    mp_obj_t res = mp_obj_new_bytearray_by_ref(final_sz, decomp->destStart);
+    if (is_zlib) {
+        st = uzlib_zlib_parse_header(decomp);
+        if (st < 0) {
+            goto error;
+        }
+    }
+
+    while (1) {
+        st = uzlib_uncompress_chksum(decomp);
+        if (st < 0) {
+            goto error;
+        }
+        if (st == TINF_DONE) {
+            break;
+        }
+        size_t offset = decomp->dest - dest_buf;
+        dest_buf = m_renew(byte, dest_buf, dest_buf_size, dest_buf_size + 256);
+        dest_buf_size += 256;
+        decomp->dest = dest_buf + offset;
+        decomp->destSize = 256;
+    }
+
+    mp_uint_t final_sz = decomp->dest - dest_buf;
+    DEBUG_printf("uzlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", dest_buf_size, final_sz);
+    dest_buf = (byte*)m_renew(byte, dest_buf, dest_buf_size, final_sz);
+    mp_obj_t res = mp_obj_new_bytearray_by_ref(final_sz, dest_buf);
     m_del_obj(TINF_DATA, decomp);
     return res;
+
+error:
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
@@ -102,5 +118,6 @@ const mp_obj_module_t mp_module_uzlib = {
 #include "uzlib/tinflate.c"
 #include "uzlib/tinfzlib.c"
 #include "uzlib/adler32.c"
+#include "uzlib/crc32.c"
 
 #endif // MICROPY_PY_UZLIB
