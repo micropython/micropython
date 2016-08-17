@@ -46,7 +46,7 @@ static const unsigned int tinf_crc32tab[16] = {
 };
 
 /* crc is previous value for incremental computation, 0xffffffff initially */
-unsigned int uzlib_crc32(const void *data, unsigned int length, unsigned int crc)
+uint32_t uzlib_crc32(const void *data, unsigned int length, uint32_t crc)
 {
    const unsigned char *buf = (const unsigned char *)data;
    unsigned int i;
