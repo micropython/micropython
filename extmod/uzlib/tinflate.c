@@ -35,6 +35,9 @@
 #include <assert.h>
 #include "tinf.h"
 
+uint32_t tinf_get_le_uint32(TINF_DATA *d);
+uint32_t tinf_get_be_uint32(TINF_DATA *d);
+
 /* --------------------------------------------------- *
  * -- uninitialized global data (static structures) -- *
  * --------------------------------------------------- */
@@ -370,7 +373,7 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
     /* copy next byte from dict substring */
     if (d->dict_ring) {
         TINF_PUT(d, d->dict_ring[d->lzOff]);
-        if (++d->lzOff == d->dict_size) {
+        if ((unsigned)++d->lzOff == d->dict_size) {
             d->lzOff = 0;
         }
     } else {
