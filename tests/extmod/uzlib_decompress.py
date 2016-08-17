@@ -18,11 +18,17 @@ for unpacked, packed in PATTERNS:
 
 
 # Raw DEFLATE bitstream
-v = b'\xcbH\xcd\xc9\xc9\x07\x00\x86\xa6\x106\x05\x00\x00\x00'
+v = b'\xcbH\xcd\xc9\xc9\x07\x00'
 exp = b"hello"
 out = zlib.decompress(v, -15)
 assert(out == exp)
 print(exp)
+# Even when you ask CPython zlib.compress to produce Raw DEFLATE stream,
+# it returns it with adler2 and oriignal size appended, as if it was a
+# zlib stream. Make sure there're no random issues decompressing such.
+v = b'\xcbH\xcd\xc9\xc9\x07\x00\x86\xa6\x106\x05\x00\x00\x00'
+out = zlib.decompress(v, -15)
+assert(out == exp)
 
 # this should error
 try:
