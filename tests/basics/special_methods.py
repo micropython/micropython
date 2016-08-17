@@ -85,8 +85,17 @@ class Cud():
     def __xor__(self, other):
         print("__xor__ called")
 
+    def __iadd__(self, other):
+        print("__iadd__ called")
+        return self
+
+    def __isub__(self, other):
+        print("__isub__ called")
+        return self
+
 cud1 = Cud()
 cud2 = Cud()
+
 str(cud1)
 cud1 < cud2
 cud1 <= cud2
@@ -94,6 +103,17 @@ cud1 == cud2
 cud1 >= cud2
 cud1 > cud2
 cud1 + cud2
+cud1 - cud2
+
+# the following require MICROPY_PY_ALL_SPECIAL_METHODS
++cud1
+-cud1
+~cud1
+cud1 * cud2
+cud1 / cud2
+cud2 // cud1
+cud1 += cud2
+cud1 -= cud2
 
 # TODO: the following operations are not supported on every ports
 #
@@ -103,47 +123,20 @@ cud1 + cud2
 # binary and is not supported
 # cud1 & cud2
 #
-# floor div is not supported on the qemu arm port 
-# cud2 // cud1
-#
-# inv is not supported on the qemu arm port
-# ~cud1
-#
 # binary lshift is not supported
 # cud1<<1
 #
 # modulus is not supported
 # cud1 % 2
 #
-# mult is not supported on the qemu arm port
-# cud1 * cud2
-#
-# mult is not supported on the qemu arm port
-# cud1 * 2
-#
-# inv is not supported on the qemu arm port
-# -cud1
-#
 # binary or is not supported
 # cud1 | cud2
-#
-# pos is not supported on the qemu arm port
-# +cud1
 #
 # pow is not supported
 # cud1**2
 #
 # rshift is not suported
 # cud1>>1
-#
-# sub is not supported on the qemu arm port
-# cud1 - cud2
-#
-# div is not supported on the qemu arm port
-# cud1 / cud2
-#
-# div is not supported on the qemu arm port
-# cud1 / 2
 #
 # xor is not supported
 # cud1^cud2
