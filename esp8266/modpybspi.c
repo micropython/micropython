@@ -131,7 +131,7 @@ STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj
     mp_hal_pin_input(self->miso);
 }
 
-STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
     pyb_spi_obj_t *self = m_new_obj(pyb_spi_obj_t);
     self->base.type = &pyb_spi_type;
@@ -215,7 +215,7 @@ STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 const mp_obj_type_t pyb_spi_type = {
     { &mp_type_type },
-    .name = MP_QSTR_SPI,
+    .name = MP_QSTR_SoftSPI,
     .print = pyb_spi_print,
     .make_new = pyb_spi_make_new,
     .locals_dict = (mp_obj_dict_t*)&pyb_spi_locals_dict,

@@ -106,7 +106,7 @@ STATIC void pyb_hspi_init_helper(pyb_hspi_obj_t *self, size_t n_args, const mp_o
     spi_mode(HSPI, self->phase, self->polarity);
 }
 
-STATIC mp_obj_t pyb_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t pyb_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
     pyb_hspi_obj_t *self = m_new_obj(pyb_hspi_obj_t);
     self->base.type = &pyb_hspi_type;
