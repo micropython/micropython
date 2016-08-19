@@ -225,6 +225,43 @@ STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
+
+STATIC mp_obj_t machine_spi(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_index, ARG_baudrate, ARG_polarity, ARG_phase, ARG_sck, ARG_mosi, ARG_miso };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_index, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_phase, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_sck, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mosi, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_miso, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
+                     allowed_args, args);
+    switch (args[ARG_index].u_int) {
+        case -1:
+            // create and return SoftSPI
+            break;
+        case 0:
+            if (args[ARG_sck].u_obj != MP_OBJ_NULL ||
+                args[ARG_miso].u_obj != MP_OBJ_NULL ||
+                args[ARG_mosi].u_obj != MP_OBJ_NULL) {
+                nlr_raise(mp_obj_new_exception_msg_varg(
+                    &mp_type_ValueError, "hardware SPI has fixed pins"));
+            }
+            // create and return HSPI
+            break;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(
+                &mp_type_ValueError, "no such SPI peripheral"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_obj, 1, machine_spi);
+
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
@@ -251,7 +288,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
-    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftSPI), MP_ROM_PTR(&pyb_softspi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_obj) },
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
