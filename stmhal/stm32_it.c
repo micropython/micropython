@@ -556,6 +556,12 @@ void TIM1_TRG_COM_TIM17_IRQHandler(void) {
 }
 #endif
 
+void TIM1_CC_IRQHandler(void) {
+    IRQ_ENTER(TIM1_CC_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_CC_IRQn);
+}
+
 void TIM2_IRQHandler(void) {
     IRQ_ENTER(TIM2_IRQn);
     timer_irq_handler(2);
@@ -581,18 +587,23 @@ void TIM5_IRQHandler(void) {
     IRQ_EXIT(TIM5_IRQn);
 }
 
+#if defined(TIM6) // STM32F401 doesn't have TIM6
 void TIM6_DAC_IRQHandler(void) {
     IRQ_ENTER(TIM6_DAC_IRQn);
     timer_irq_handler(6);
     IRQ_EXIT(TIM6_DAC_IRQn);
 }
+#endif
 
+#if defined(TIM7) // STM32F401 doesn't have TIM7
 void TIM7_IRQHandler(void) {
     IRQ_ENTER(TIM7_IRQn);
     timer_irq_handler(7);
     IRQ_EXIT(TIM7_IRQn);
 }
+#endif
 
+#if defined(TIM8) // STM32F401 doesn't have TIM8
 void TIM8_BRK_TIM12_IRQHandler(void) {
     IRQ_ENTER(TIM8_BRK_TIM12_IRQn);
     timer_irq_handler(12);
@@ -614,11 +625,18 @@ void TIM8_UP_IRQHandler(void) {
 }
 #endif
 
+void TIM8_CC_IRQHandler(void) {
+    IRQ_ENTER(TIM8_CC_IRQn);
+    timer_irq_handler(8);
+    IRQ_EXIT(TIM8_CC_IRQn);
+}
+
 void TIM8_TRG_COM_TIM14_IRQHandler(void) {
     IRQ_ENTER(TIM8_TRG_COM_TIM14_IRQn);
     timer_irq_handler(14);
     IRQ_EXIT(TIM8_TRG_COM_TIM14_IRQn);
 }
+#endif
 
 // UART/USART IRQ handlers
 void USART1_IRQHandler(void) {
