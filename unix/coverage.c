@@ -12,7 +12,6 @@ STATIC mp_obj_t extra_coverage(void) {
     // mp_printf (used by ports that don't have a native printf)
     {
         mp_printf(&mp_plat_print, "# mp_printf\n");
-        mp_printf(&mp_plat_print, "%"); // nothing after percent
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
         mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
@@ -21,7 +20,6 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
         mp_printf(&mp_plat_print, "%s\n", NULL); // null string
-        mp_printf(&mp_plat_print, "%t\n"); // non-format char
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
