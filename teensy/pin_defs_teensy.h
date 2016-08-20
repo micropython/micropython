@@ -11,6 +11,7 @@ enum {
     AF_FN_FTM,
     AF_FN_I2C,
     AF_FN_UART,
+    AF_FN_LPUART,
     AF_FN_SPI
 };
 

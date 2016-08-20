@@ -56,92 +56,11 @@
 #include "dac.h"
 #include "usb.h"
 #include "portmodules.h"
+#include "modmachine.h"
 
 /// \module pyb - functions related to the pyboard
 ///
 /// The `pyb` module contains specific functions related to the pyboard.
-
-/// \function bootloader()
-/// Activate the bootloader without BOOT* pins.
-STATIC mp_obj_t pyb_bootloader(void) {
-    printf("bootloader command not current supported\n");
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_bootloader_obj, pyb_bootloader);
-
-/// \function info([dump_alloc_table])
-/// Print out lots of information about the board.
-STATIC mp_obj_t pyb_info(uint n_args, const mp_obj_t *args) {
-    // get and print unique id; 96 bits
-    {
-        byte *id = (byte*)0x40048058;
-        printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
-    }
-
-    // get and print clock speeds
-    printf("CPU=%u\nBUS=%u\nMEM=%u\n", F_CPU, F_BUS, F_MEM);
-
-    // to print info about memory
-    {
-        printf("_etext=%p\n", &_etext);
-        printf("_sidata=%p\n", &_sidata);
-        printf("_sdata=%p\n", &_sdata);
-        printf("_edata=%p\n", &_edata);
-        printf("_sbss=%p\n", &_sbss);
-        printf("_ebss=%p\n", &_ebss);
-        printf("_estack=%p\n", &_estack);
-        printf("_ram_start=%p\n", &_ram_start);
-        printf("_heap_start=%p\n", &_heap_start);
-        printf("_heap_end=%p\n", &_heap_end);
-        printf("_ram_end=%p\n", &_ram_end);
-    }
-
-    // qstr info
-    {
-        uint n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
-        qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-        printf("qstr:\n  n_pool=%u\n  n_qstr=%u\n  n_str_data_bytes=%u\n  n_total_bytes=%u\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
-    }
-
-    // GC info
-    {
-        gc_info_t info;
-        gc_info(&info);
-        printf("GC:\n");
-        printf("  " UINT_FMT " total\n", info.total);
-        printf("  " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
-        printf("  1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
-    }
-
-    if (n_args == 1) {
-        // arg given means dump gc allocation table
-        gc_dump_alloc_table();
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj, 0, 1, pyb_info);
-
-/// \function unique_id()
-/// Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
-STATIC mp_obj_t pyb_unique_id(void) {
-    byte *id = (byte*)0x40048058;
-    return mp_obj_new_bytes(id, 12);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_unique_id_obj, pyb_unique_id);
-
-/// \function freq()
-/// Return a tuple of clock frequencies: (SYSCLK, HCLK, PCLK1, PCLK2).
-// TODO should also be able to set frequency via this function
-STATIC mp_obj_t pyb_freq(void) {
-    mp_obj_t tuple[3] = {
-       mp_obj_new_int(F_CPU),
-       mp_obj_new_int(F_BUS),
-       mp_obj_new_int(F_MEM),
-    };
-    return mp_obj_new_tuple(3, tuple);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_freq_obj, pyb_freq);
 
 /// \function sync()
 /// Sync all file systems.
@@ -233,18 +152,6 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
-STATIC mp_obj_t pyb_stop(void) {
-    printf("stop not currently implemented\n");
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_stop_obj, pyb_stop);
-
-STATIC mp_obj_t pyb_standby(void) {
-    printf("standby not currently implemented\n");
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_standby_obj, pyb_standby);
-
 /// \function have_cdc()
 /// Return True if USB is connected as a serial device, False otherwise.
 STATIC mp_obj_t pyb_have_cdc(void ) {
@@ -279,18 +186,18 @@ MP_DECLARE_CONST_FUN_OBJ(pyb_usb_mode_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader), (mp_obj_t)&pyb_bootloader_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&pyb_unique_id_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&pyb_freq_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader), (mp_obj_t)&machine_bootloader_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&machine_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id), (mp_obj_t)&machine_unique_id_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_freq), (mp_obj_t)&machine_freq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_repl_info), (mp_obj_t)&pyb_set_repl_info_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_wfi), (mp_obj_t)&pyb_wfi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq), (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq), (mp_obj_t)&pyb_enable_irq_obj },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&pyb_stop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&pyb_standby_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop), (mp_obj_t)&machine_sleep_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_standby), (mp_obj_t)&machine_deepsleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_source_dir), (mp_obj_t)&pyb_source_dir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_main), (mp_obj_t)&pyb_main_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_mode), (mp_obj_t)&pyb_usb_mode_obj },

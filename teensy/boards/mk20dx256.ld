@@ -168,7 +168,7 @@ SECTIONS
 
     _estack = ORIGIN(RAM) + LENGTH(RAM);
     _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-    _heap_end = ORIGIN(RAM) + 0xe000;
+    _heap_end = ORIGIN(RAM) + LENGTH(RAM) - 0x2000;
 }
 
 

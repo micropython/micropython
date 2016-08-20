@@ -1,5 +1,10 @@
+#include <stdbool.h>
 #include <mk20dx128.h>
 #include "hal_ftm.h"
+
+#define HAL_MAX_DELAY 0xffffffff
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x40048058)
 
 #ifdef  USE_FULL_ASSERT
   #define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
@@ -17,16 +22,22 @@
 #define GPIOE   ((GPIO_TypeDef *)&GPIOE_PDOR)
 #define GPIOZ   ((GPIO_TypeDef *)NULL)
 
-#define I2C0    ((I2C_TypeDef *)0x40066000)
-#define I2C1    ((I2C_TypeDef *)0x40067000)
+#define I2C0    ((I2C_TypeDef *)&KINETIS_I2C0)
+#define I2C1    ((I2C_TypeDef *)&KINETIS_I2C1)
+#define I2C2    ((I2C_TypeDef *)&KINETIS_I2C2)
+#define I2C3    ((I2C_TypeDef *)&KINETIS_I2C3)
 
 #undef  SPI0
-#define SPI0    ((SPI_TypeDef *)0x4002C000)
-#define SPI1    ((SPI_TypeDef *)0x4002D000)
+#define SPI0    ((SPI_TypeDef *)&KINETISK_SPI0)
+#define SPI1    ((SPI_TypeDef *)&KINETISK_SPI1)
+#define SPI2    ((SPI_TypeDef *)&KINETISK_SPI2)
 
 #define UART0   ((UART_TypeDef *)&UART0_BDH)
 #define UART1   ((UART_TypeDef *)&UART1_BDH)
 #define UART2   ((UART_TypeDef *)&UART2_BDH)
+#define UART3   ((UART_TypeDef *)&UART3_BDH)
+#define UART4   ((UART_TypeDef *)&UART4_BDH)
+#define UART5   ((UART_TypeDef *)&UART5_BDH)
 
 typedef struct {
     uint32_t dummy;
@@ -95,18 +106,33 @@ typedef struct {
 
 #define GPIO_AF2_I2C0   2
 #define GPIO_AF2_I2C1   2
+#define GPIO_AF2_I2C3   2
 #define GPIO_AF2_SPI0   2
+#define GPIO_AF2_SPI1   2
+#define GPIO_AF2_SPI2   2
 #define GPIO_AF3_FTM0   3
 #define GPIO_AF3_FTM1   3
 #define GPIO_AF3_FTM2   3
+#define GPIO_AF3_FTM3   3
 #define GPIO_AF3_UART0  3
 #define GPIO_AF3_UART1  3
 #define GPIO_AF3_UART2  3
+#define GPIO_AF3_UART3  3
+#define GPIO_AF3_UART4  3
+#define GPIO_AF3_UART5  3
 #define GPIO_AF4_FTM0   4
+#define GPIO_AF4_FTM3   4
+#define GPIO_AF5_I2C0   5
+#define GPIO_AF5_I2C2   5
 #define GPIO_AF6_FTM1   6
 #define GPIO_AF6_FTM2   6
+#define GPIO_AF6_FTM3   6
 #define GPIO_AF6_I2C1   6
+#define GPIO_AF7_FTM0   7
 #define GPIO_AF7_FTM1   7
+#define GPIO_AF7_I2C0   7
+#define GPIO_AF7_SPI1   7
+
 
 __attribute__(( always_inline )) static inline void __WFI(void) {
   __asm volatile ("wfi");
@@ -114,7 +140,14 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
 
 void mp_hal_set_interrupt_char(int c);
 
-void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
+#if 1
+// Currently, the ResetHandler function in mk20dx128.c enables all of the
+// clocks for all of the PORTs so we don't need to do anything here.
+#define mp_hal_gpio_clock_enable(gpio)
+#endif
+
+struct pin_obj_s;
+bool mp_hal_gpio_set_af(const struct pin_obj_s *pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit);
 
 void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *init);
 

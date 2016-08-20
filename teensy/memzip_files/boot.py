@@ -1,4 +1,5 @@
 import pyb
+import machine
 print("Executing boot.py")
 
 def pins():

@@ -48,7 +48,7 @@ typedef struct {
   };
 } pin_af_obj_t;
 
-typedef struct {
+typedef struct pin_obj_s {
   mp_obj_base_t base;
   qstr name;
   uint32_t port   : 4;
