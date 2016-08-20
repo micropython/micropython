@@ -133,6 +133,7 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     }
 
     int res = __bt_seq(self->db, &key, &val, flags);
+    CHECK_ERROR(res);
     if (res == RET_SPECIAL) {
         return mp_const_none;
     }
