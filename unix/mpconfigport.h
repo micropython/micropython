@@ -166,11 +166,17 @@ extern const struct _mp_obj_module_t mp_module_termios;
 extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 extern const struct _mp_obj_module_t mp_module_jni;
+extern const struct _mp_obj_module_t mp_module_ubus;
 
 #if MICROPY_PY_FFI
 #define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
 #else
 #define MICROPY_PY_FFI_DEF
+#endif
+#if MICROPY_PY_UBUS
+#define MICROPY_PY_UBUS_DEF { MP_ROM_QSTR(MP_QSTR__ubus), MP_ROM_PTR(&mp_module_ubus) },
+#else
+#define MICROPY_PY_UBUS_DEF
 #endif
 #if MICROPY_PY_JNI
 #define MICROPY_PY_JNI_DEF { MP_ROM_QSTR(MP_QSTR_jni), MP_ROM_PTR(&mp_module_jni) },
@@ -207,6 +213,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
+    MICROPY_PY_UBUS_DEF \
 
 // type definitions for the specific machine
 
