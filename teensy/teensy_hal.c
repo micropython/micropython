@@ -3,6 +3,7 @@
 
 #include "py/mpstate.h"
 #include "py/mphal.h"
+#include "pin.h"
 #include "usb.h"
 #include "uart.h"
 #include "Arduino.h"
@@ -56,5 +57,16 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
 }
 
-void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
+bool mp_hal_gpio_set_af(const pin_obj_t *pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit) {
+    mp_hal_gpio_clock_enable(pin->gpio);
+
+    const pin_af_obj_t *af = pin_find_af(pin, fn, unit);
+    if (af == NULL) {
+        return false;
+    }
+    init->Pin = pin->pin_mask;
+    init->Alternate = af->idx;
+    HAL_GPIO_Init(pin->gpio, init);
+
+    return true;
 }

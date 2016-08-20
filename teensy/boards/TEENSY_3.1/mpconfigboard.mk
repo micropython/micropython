@@ -1,0 +1,7 @@
+MCU_SERIES = mk20
+MCU = mk20dx256
+
+CFLAGS_BOARD = -DF_CPU=96000000
+
+AF_FILE = boards/$(MCU_SERIES)_af.csv
+LD_FILE = boards/$(MCU).ld

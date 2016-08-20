@@ -21,6 +21,7 @@
 #include "led.h"
 #include "uart.h"
 #include "pin.h"
+#include "modmachine.h"
 
 extern uint32_t _heap_start;
 
@@ -348,6 +349,7 @@ soft_reset:
     printf("PYB: soft reboot\n");
 
 //    first_soft_reset = false;
+    machine_soft_reset = true;
     goto soft_reset;
 }
 

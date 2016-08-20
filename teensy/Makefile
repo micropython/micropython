@@ -1,4 +1,16 @@
+# Select the board to build for: if not given on the command line,
+# then default to TEENSY_3.1.
+BOARD ?= TEENSY_3.1
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
 include ../py/mkenv.mk
+-include mpconfigport.mk
+include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
@@ -18,16 +30,29 @@ $(error USE_ARDUINO_TOOLCHAIN requires that ARDUINO be set)
 endif
 endif
 
+# If you use teensy_loader_cli
+# from https://github.com/PaulStoffregen/teensy_loader_cli.git
+# then you no longer need to install arduino and teensyduino.
+
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 $(info Using ARDUINO toolchain)
-CROSS_COMPILE = $(ARDUINO)/hardware/tools/arm-none-eabi/bin/arm-none-eabi-
+CROSS_COMPILE = $(ARDUINO)/hardware/tools/arm/bin/arm-none-eabi-
+USE_TEENSY_LOADER_CLI = 0
 else
 $(info Using toolchain from PATH)
 CROSS_COMPILE = arm-none-eabi-
+USE_TEENSY_LOADER_CLI = 1
 endif
 
-CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
+CFLAGS_TEENSY = -DUSB_SERIAL -DARDUINO=10611
+CFLAGS_CORTEX_M = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4  -fsingle-precision-constant -Wdouble-promotion
+CFLAGS_MCU_mk20 = $(CFLAGS_CORTEX_M) -D__MK20DX256__ -msoft-float -mfloat-abi=soft
+CFLAGS_MCU_mk64 = $(CFLAGS_CORTEX_M) -D__MK64FX512__ -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS_MCU_mk66 = $(CFLAGS_CORTEX_M) -D__MK66FX1M0__ -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# CFLAGS_BOARD comes from mpconfigboard.mk
+
+LDFLAGS_MCU_mk20 = -msoft-float -mfloat-abi=soft
+LDFLAGS_MCU_mk66 = -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 INC += -I.
 INC += -I..
@@ -35,9 +60,11 @@ INC += -I../stmhal
 INC += -I../lib/mp-readline
 INC += -I$(BUILD)
 INC += -Icore
+INC += -Iboards/$(BOARD)
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
-LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
+CFLAGS += $(CFLAGS_TEENSY) $(CFLAGS_MCU_$(MCU_SERIES)) $(CFLAGS_BOARD)
+LDFLAGS = -nostdlib -T $(LD_FILE) $(LDFLAGS_MCU_$(MCU_SERIES)) -Wl,--defsym=__rtc_localtime=$(shell $(PYTHON) ./rtc_localtime.py)
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 
@@ -84,6 +111,7 @@ SRC_C = \
 	main.c \
 	lcd.c \
 	led.c \
+	modmachine.c \
 	modpyb.c \
 	pin_defs_teensy.c \
 	reg.c \
@@ -125,7 +153,7 @@ SRC_TEENSY = $(addprefix core/,\
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(BUILD)/pins_$(BOARD).o
 
 all: hex
 hex: $(BUILD)/micropython.hex
@@ -166,6 +194,13 @@ SRC_C += \
 
 endif # USE_FROZEN
 
+ifeq ($(USE_TEENSY_LOADER_CLI),1)
+post_compile: $(BUILD)/micropython.hex
+	$(ECHO) "Preparing $@ for upload"
+	$(Q)teensy_loader_cli -v -mmcu=$(MCU) -w -s $<
+
+reboot:
+else
 ifeq ($(ARDUINO),)
 post_compile: $(BUILD)/micropython.hex
 	$(ECHO) "Please define ARDUINO (where TeensyDuino is installed)"
@@ -185,7 +220,9 @@ post_compile: $(BUILD)/micropython.hex
 reboot:
 	$(ECHO) "REBOOT"
 	-$(Q)$(TOOLS_PATH)/teensy_reboot
-endif
+
+endif	# ARDUINO
+endif	# USE_TEENSY_LOADER_CLI
 
 .PHONY: deploy
 deploy: post_compile reboot
@@ -199,11 +236,10 @@ $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
-MAKE_PINS = make-pins.py
-BOARD_PINS = teensy_pins.csv
-AF_FILE = mk20dx256_af.csv
-PREFIX_FILE = mk20dx256_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_gen.c
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = boards/$(BOARD)/pins.csv
+PREFIX_FILE = boards/mk20dx256_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
@@ -224,7 +260,7 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: teensy_%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 

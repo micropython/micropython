@@ -1,3 +1,7 @@
+#pragma once
+#ifndef __INCLUDED_MPCONFIGPORT_H
+#define __INCLUDED_MPCONFIGPORT_H
+
 #include <stdint.h>
 
 // options to control how Micro Python is built
@@ -14,12 +18,21 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 
+#define MICROPY_STREAMS_NON_BLOCK   (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_FROZENSET        (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_CMATH            (1)
+#define MICROPY_PY_MACHINE          (1)
 
+#define MICROPY_MATH_SQRT_ASM       (1)
+
+// The following should eventually be replaced by the machine.mem when we
+// get constants generated.
 #define MICROPY_TIMER_REG           (0)
 #define MICROPY_REG                 (MICROPY_TIMER_REG)
 
@@ -32,14 +45,20 @@
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
 
 // extra built in modules to add to the list of known ones
+extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t time_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -49,6 +68,8 @@ extern const struct _mp_obj_module_t time_module;
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
     struct _pyb_uart_obj_t *pyb_stdio_uart; \
+    /* pointers to all UART objects (if they have been created) */ \
+    struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_NUM_UARTS]; \
 
 // type definitions for the specific machine
 
@@ -72,7 +93,7 @@ typedef long mp_off_t;
 // to know the machine-specific values, see irq.h.
 
 #ifndef __disable_irq
-#define __disable_irq() __asm__ volatile("CPSID i");
+#define __disable_irq() __asm__ volatile("CPSID i":::"memory");
 #endif
 
 __attribute__(( always_inline )) static inline uint32_t __get_PRIMASK(void) {
@@ -98,42 +119,12 @@ __attribute__(( always_inline )) static inline mp_uint_t disable_irq(void) {
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
+#include "mpconfigboard.h"
+
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-// The following would be from a board specific file, if one existed
-
-#define MICROPY_HW_BOARD_NAME       "Teensy-3.1"
-#define MICROPY_HW_MCU_NAME         "MK20DX256"
-
-#define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (0)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_I2C1      (0)
-#define MICROPY_HW_ENABLE_SPI1      (0)
-#define MICROPY_HW_ENABLE_SPI3      (0)
-#define MICROPY_HW_ENABLE_CC3K      (0)
-
-#define MICROPY_HW_LED1             (pin_C5)
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->PSOR = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->PCOR = pin->pin_mask)
-
-#if 0
-// SD card detect switch
-#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_A8)
-#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
-#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
-#endif
-
-#define MICROPY_MATH_SQRT_ASM     (1)
-
 #define MICROPY_MPHALPORT_H     "teensy_hal.h"
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_teensy.h"
+
+#endif // __INCLUDED_MPCONFIGPORT_H

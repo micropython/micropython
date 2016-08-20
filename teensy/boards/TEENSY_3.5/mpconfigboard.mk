@@ -1,0 +1,8 @@
+MCU_SERIES = mk64
+MCU = mk64fx512
+
+CFLAGS_BOARD = -DF_CPU=120000000
+
+AF_FILE = boards/$(MCU_SERIES)_af.csv
+LD_FILE = boards/$(MCU).ld
+

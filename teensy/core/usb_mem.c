@@ -28,11 +28,11 @@
  * SOFTWARE.
  */
 
-#if F_CPU >= 20000000
-
-#include "mk20dx128.h"
-//#include "HardwareSerial.h"
 #include "usb_dev.h"
+#if F_CPU >= 20000000 && defined(NUM_ENDPOINTS)
+
+#include "kinetis.h"
+//#include "HardwareSerial.h"
 #include "usb_mem.h"
 
 __attribute__ ((section(".usbbuffers"), used))
@@ -106,4 +106,4 @@ void usb_free(usb_packet_t *p)
 	//serial_print("\n");
 }
 
-#endif // F_CPU >= 20 MHz
+#endif // F_CPU >= 20 MHz && defined(NUM_ENDPOINTS)

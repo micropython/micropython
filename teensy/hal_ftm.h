@@ -27,6 +27,7 @@
 #define FTM0    ((FTM_TypeDef *)&FTM0_SC)
 #define FTM1    ((FTM_TypeDef *)&FTM1_SC)
 #define FTM2    ((FTM_TypeDef *)&FTM2_SC)
+#define FTM3    ((FTM_TypeDef *)&FTM3_SC)
 
 typedef struct {
     volatile uint32_t CSC;	// Channel x Status And Control
