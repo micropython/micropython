@@ -67,7 +67,6 @@ BOOT_PY_SRC_C = $(addprefix py/,\
 
 BOOT_LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
-	utils/printf.c \
 	)
 
 OBJ  = $(addprefix $(BUILD)/, $(BOOT_HAL_SRC_C:.c=.o) $(BOOT_SL_SRC_C:.c=.o) $(BOOT_CC3100_SRC_C:.c=.o) $(BOOT_UTIL_SRC_C:.c=.o) $(BOOT_MISC_SRC_C:.c=.o))
