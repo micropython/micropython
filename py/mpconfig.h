@@ -581,6 +581,11 @@ typedef double mp_float_t;
 #define MICROPY_USE_INTERNAL_ERRNO (0)
 #endif
 
+// Whether to use internally defined *printf() functions (otherwise external ones)
+#ifndef MICROPY_USE_INTERNAL_PRINTF
+#define MICROPY_USE_INTERNAL_PRINTF (1)
+#endif
+
 // Support for user-space VFS mount (selected ports)
 #ifndef MICROPY_FSUSERMOUNT
 #define MICROPY_FSUSERMOUNT (0)

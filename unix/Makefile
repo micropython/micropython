@@ -157,7 +157,6 @@ endif
 
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
-	utils/printf.c \
 	timeutils/timeutils.c \
 	)
 

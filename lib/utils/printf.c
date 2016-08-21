@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+
+#if MICROPY_USE_INTERNAL_PRINTF
+
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
@@ -127,3 +131,5 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
     va_end(ap);
     return ret;
 }
+
+#endif //MICROPY_USE_INTERNAL_PRINTF
