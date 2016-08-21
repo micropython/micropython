@@ -784,29 +784,40 @@ STATIC mp_obj_t cc3100_get_mac(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_get_mac_obj, cc3100_get_mac);
 
 STATIC mp_obj_t cc3100_version(mp_obj_t self_in) {
-  _i16 retVal;
-  _u8 pConfigOpt;
-  _u8 pConfigLen;
-  SlVersionFull ver;
+    int32_t retVal = -1;
+    uint8_t pConfigOpt;
+    uint8_t pConfigLen;
+    SlVersionFull ver;
 
-  pConfigLen = sizeof(ver);
-  pConfigOpt = SL_DEVICE_GENERAL_VERSION;
+    pConfigLen = sizeof(ver);
+    pConfigOpt = SL_DEVICE_GENERAL_VERSION;
+    retVal = sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &pConfigOpt, &pConfigLen, (_u8 *)(&ver));
+ 
+    if (retVal >= 0) {
+        STATIC const qstr version_fields[] = {
+            MP_QSTR_chip, MP_QSTR_mac, MP_QSTR_phy, MP_QSTR_nwp, MP_QSTR_rom, MP_QSTR_host
+        };
+        mp_obj_t tuple[6];
+        tuple[0] = mp_obj_new_int_from_uint(ver.ChipFwAndPhyVersion.ChipId);
+        
+        vstr_t vstr;
+        vstr_init(&vstr, 50);
+        vstr_printf(&vstr, "31.%lu.%lu.%lu.%lu", ver.ChipFwAndPhyVersion.FwVersion[0],ver.ChipFwAndPhyVersion.FwVersion[1],ver.ChipFwAndPhyVersion.FwVersion[2],ver.ChipFwAndPhyVersion.FwVersion[3]);
+        tuple[1] = mp_obj_new_str(vstr.buf, vstr.len, false);
+        vstr_init(&vstr, 50);
+        vstr_printf(&vstr, "%d.%d.%d.%d", ver.ChipFwAndPhyVersion.PhyVersion[0],ver.ChipFwAndPhyVersion.PhyVersion[1],ver.ChipFwAndPhyVersion.PhyVersion[2],ver.ChipFwAndPhyVersion.PhyVersion[3]);
+        tuple[2] = mp_obj_new_str(vstr.buf, vstr.len, false);
+        vstr_init(&vstr, 50);
+        vstr_printf(&vstr, "%lu.%lu.%lu.%lu", ver.NwpVersion[0],ver.NwpVersion[1],ver.NwpVersion[2],ver.NwpVersion[3]);
+        tuple[3] = mp_obj_new_str(vstr.buf, vstr.len, false);
+        tuple[4] = mp_obj_new_int_from_uint(ver.RomVersion);
+        vstr_init(&vstr, 50);
+        vstr_printf(&vstr, "%lu.%lu.%lu.%lu", SL_MAJOR_VERSION_NUM,SL_MINOR_VERSION_NUM,SL_VERSION_NUM,SL_SUB_VERSION_NUM);
+        tuple[5] = mp_obj_new_str(vstr.buf, vstr.len, false);
 
-  retVal = sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &pConfigOpt, &pConfigLen, (_u8 *)(&ver));
-
-  if (retVal >= 0) {
-  printf("CHIP %d\nMAC 31.%d.%d.%d.%d\nPHY %d.%d.%d.%d\nNWP %d.%d.%d.%d\nROM %d\nHOST %d.%d.%d.%d\n",
-                                                                  ver.ChipFwAndPhyVersion.ChipId,
-                                                                  ver.ChipFwAndPhyVersion.FwVersion[0],ver.ChipFwAndPhyVersion.FwVersion[1],
-                                                                  ver.ChipFwAndPhyVersion.FwVersion[2],ver.ChipFwAndPhyVersion.FwVersion[3],
-                                                                  ver.ChipFwAndPhyVersion.PhyVersion[0],ver.ChipFwAndPhyVersion.PhyVersion[1],
-                                                                  ver.ChipFwAndPhyVersion.PhyVersion[2],ver.ChipFwAndPhyVersion.PhyVersion[3],
-                                                                  ver.NwpVersion[0],ver.NwpVersion[1],ver.NwpVersion[2],ver.NwpVersion[3],
-                                                                  ver.RomVersion,
-                                                                  SL_MAJOR_VERSION_NUM,SL_MINOR_VERSION_NUM,SL_VERSION_NUM,SL_SUB_VERSION_NUM);
-                                  }
-
-  return mp_const_none;
+        return mp_obj_new_attrtuple(version_fields, 6, tuple);
+    } 
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_version_obj, cc3100_version);
 
