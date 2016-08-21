@@ -530,19 +530,21 @@ STATIC mp_obj_t cc3100_list_aps(mp_obj_t self_in) {
 } while (runningIdx > 0);
   mp_obj_t returnVal = mp_obj_new_list(0, NULL);
   for(int i = 0; i < idx; i++) {
-    mp_obj_t entry = mp_obj_new_dict(3);
+    mp_obj_t entry = mp_obj_new_dict(4);
     mp_obj_dict_store(entry,
                       mp_obj_new_str("ssid", strlen("ssid"), false),
-                      mp_obj_new_str(netEntries[i].ssid, strlen(netEntries[i].ssid), false));
+                      mp_obj_new_str(netEntries[i].ssid, netEntries[i].ssid_len, false));
     mp_obj_dict_store(entry,
                       mp_obj_new_str("bssid", strlen("bssid"), false),
                       mp_obj_new_bytearray(SL_BSSID_LENGTH,netEntries[i].bssid));
     mp_obj_dict_store(entry,
                       mp_obj_new_str("rssi", strlen("rssi"), false),
                       MP_OBJ_NEW_SMALL_INT(netEntries[i].rssi));
+    mp_obj_dict_store(entry,
+                      mp_obj_new_str("security", strlen("security"), false),
+                      MP_OBJ_NEW_SMALL_INT(netEntries[i].sec_type));
     mp_obj_list_append(returnVal, entry);
   }
-  // Figure out how to return as tuples
   return returnVal;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cc3100_list_aps_obj, cc3100_list_aps);
