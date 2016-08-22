@@ -51,6 +51,16 @@ Once you are on the same network as the ESP8266 you click the "Connect" button
 by default the IP address is correct when connected to the ESP8266's access
 point).  If the connection succeeds then you should see a welcome message.
 
+If the connection doesn't work and you get a ``Disconnected`` message it may be
+that the WebREPL is not running on your ESP8266. Connect using the REPL over
+the serial port instructions and type the following at the prompt::
+
+    >>> import webrepl
+    >>> webrepl.start()
+    WebREPL daemon started on ws://192.168.4.1:8266
+    WebREPL daemon started on ws://0.0.0.0:8266
+    Started webrepl in normal mode
+
 On the first connection you need to set a password.  Make sure that the
 terminal widget is selected by clicking on it, and then follow prompts to
 type in your password twice (they should match each other).  Then ESP8266
@@ -139,9 +149,9 @@ function::
 
     >>> def toggle(p):
     ...    p.value(not p.value())
-    ...    
-    ...    
-    ...    
+    ...
+    ...
+    ...
     >>>
 
 In the above, you needed to press the Enter key three times in a row to finish
@@ -164,9 +174,9 @@ print some text instead of calling toggle, to see the effect)::
     >>> while True:
     ...     toggle(pin)
     ...     time.sleep_ms(500)
-    ...    
-    ...    
-    ...    
+    ...
+    ...
+    ...
     >>>
 
 This will toggle the LED at 1Hz (half a second on, half a second off).  To stop
@@ -184,7 +194,7 @@ paste a chunk of text into the REPL.  If you press ctrl-E you will see the
 paste-mode prompt::
 
     paste mode; Ctrl-C to cancel, Ctrl-D to finish
-    === 
+    ===
 
 You can then paste (or type) your text in.  Note that none of the special keys
 or commands work in paste mode (eg Tab or backspace), they are just accepted
