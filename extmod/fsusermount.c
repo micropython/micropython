@@ -162,7 +162,7 @@ STATIC mp_obj_t fatfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(fsuser_mount_obj, 2, fatfs_mount);
 
-STATIC mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
+mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
     size_t i = 0;
     if (MP_OBJ_IS_STR(bdev_or_path_in)) {
         mp_uint_t mnt_len;

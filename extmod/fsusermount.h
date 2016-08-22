@@ -55,6 +55,7 @@ typedef struct _fs_user_mount_t {
 } fs_user_mount_t;
 
 fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args, bool mkfs);
+mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in);
 
 MP_DECLARE_CONST_FUN_OBJ(fsuser_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ(fsuser_umount_obj);
