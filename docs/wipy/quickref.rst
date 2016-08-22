@@ -51,11 +51,10 @@ See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. :
 
     tim = Timer(0, mode=Timer.PERIODIC)
     tim_a = tim.channel(Timer.A, freq=1000)
-    tim_a.time() # get the value in microseconds
     tim_a.freq(5) # 5 Hz
     
     p_out = Pin('GP2', mode=Pin.OUT)
-    tim_a.irq(handler=lambda t: p_out.toggle())
+    tim_a.irq(trigger=Timer.TIMEOUT, handler=lambda t: p_out.toggle())
 
 PWM (pulse width modulation)
 ----------------------------
@@ -135,10 +134,9 @@ Real time clock (RTC)
 
 See :ref:`machine.RTC <machine.RTC>` ::
 
-    import machine
     from machine import RTC
 
-    rtc = machine.RTC() # init with default time and date
+    rtc = RTC() # init with default time and date
     rtc = RTC(datetime=(2015, 8, 29, 9, 0, 0, 0, None)) # init with a specific time and date
     print(rtc.now())
 
