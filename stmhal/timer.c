@@ -601,7 +601,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, c
     }
 
     // set IRQ priority (if not a special timer)
-    if (self->tim_id != 3 && self->tim_id != 5) {
+    if (self->tim_id != 5) {
         HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
         if (self->tim_id == 1) {
             HAL_NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
