@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief Syscalls for SAM0 (GCC).
+ * \brief SERCOM SPI master with vectored I/O driver configuration
  *
- * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2013-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -44,86 +44,25 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#ifndef CONF_SPI_MASTER_VEC_H
+#define CONF_SPI_MASTER_VEC_H
 
-#ifdef __cplusplus
-extern "C" {
+#if defined(__FREERTOS__) || defined(__DOXYGEN__)
+#  include <FreeRTOS.h>
+#  include <semphr.h>
+
+#  define CONF_SPI_MASTER_VEC_OS_SUPPORT
+#  define CONF_SPI_MASTER_VEC_SEMAPHORE_TYPE                   xSemaphoreHandle
+#  define CONF_SPI_MASTER_VEC_CREATE_SEMAPHORE(semaphore)  \
+		vSemaphoreCreateBinary(semaphore)
+#  define CONF_SPI_MASTER_VEC_DELETE_SEMAPHORE(semaphore)  \
+		vSemaphoreDelete(semaphore)
+#  define CONF_SPI_MASTER_VEC_TAKE_SEMAPHORE(semaphore)  \
+		xSemaphoreTake((semaphore), portMAX_DELAY)
+#  define CONF_SPI_MASTER_VEC_GIVE_SEMAPHORE(semaphore)  \
+		xSemaphoreGive((semaphore))
+#  define CONF_SPI_MASTER_VEC_GIVE_SEMAPHORE_FROM_ISR(semaphore)  \
+		xSemaphoreGiveFromISR((semaphore), NULL)
 #endif
 
-#undef errno
-extern int errno;
-extern int _end;
-
-extern caddr_t _sbrk(int incr);
-extern int link(char *old, char *new);
-extern int _close(int file);
-extern int _fstat(int file, struct stat *st);
-extern int _isatty(int file);
-extern int _lseek(int file, int ptr, int dir);
-extern void _exit(int status);
-extern void _kill(int pid, int sig);
-extern int _getpid(void);
-
-extern caddr_t _sbrk(int incr)
-{
-	static unsigned char *heap = NULL;
-	unsigned char *prev_heap;
-
-	if (heap == NULL) {
-		heap = (unsigned char *)&_end;
-	}
-	prev_heap = heap;
-
-	heap += incr;
-
-	return (caddr_t) prev_heap;
-}
-
-extern int link(char *old, char *new)
-{
-	return -1;
-}
-
-extern int _close(int file)
-{
-	return -1;
-}
-
-extern int _fstat(int file, struct stat *st)
-{
-	st->st_mode = S_IFCHR;
-
-	return 0;
-}
-
-extern int _isatty(int file)
-{
-	return 1;
-}
-
-extern int _lseek(int file, int ptr, int dir)
-{
-	return 0;
-}
-
-// extern void _exit(int status)
-// {
-// 	asm("BKPT #0");
-// }
-
-extern void _kill(int pid, int sig)
-{
-	return;
-}
-
-extern int _getpid(void)
-{
-	return -1;
-}
-
-#ifdef __cplusplus
-}
-#endif
+#endif // CONF_SPI_MASTER_VEC_H

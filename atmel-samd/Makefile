@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
-BOARD ?= feather_m0_ble
+BOARD ?= arduino_zero
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
@@ -54,6 +54,7 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	drivers/system/pinmux \
 	drivers/system/power/power_sam_d_r \
 	drivers/system/reset/reset_sam_d_r \
+	drivers/sercom/ \
 	drivers/usb/ \
 	utils \
 	utils/cmsis/samd21/include \
@@ -92,8 +93,13 @@ endif
 
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/port/port.c \
+	drivers/sercom/sercom.c \
+	drivers/sercom/sercom_interrupt.c \
+	drivers/sercom/usart/usart.c \
+	drivers/sercom/usart/usart_interrupt.c \
 	drivers/system/clock/clock_samd21_r21_da/clock.c \
 	drivers/system/clock/clock_samd21_r21_da/gclk.c \
+	drivers/system/interrupt/system_interrupt.c   \
 	drivers/system/pinmux/pinmux.c \
 	drivers/system/system.c \
 	drivers/usb/stack_interface/usb_device_udd.c \
@@ -104,12 +110,16 @@ SRC_ASF = $(addprefix asf/sam0/,\
 SRC_C = \
 	main.c \
 	mphalport.c \
+	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
 	asf/common/services/usb/class/cdc/device/udi_cdc_desc.c \
 	asf/common/services/usb/udc/udc.c \
 	asf/common/utils/interrupt/interrupt_sam_nvic.c \
 	asf/common2/services/delay/sam0/systick_counter.c \
+	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
+	asf/sam0/utils/cmsis/samd21/source/system_samd21.c     \
+	asf/sam0/utils/syscalls/gcc/syscalls.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
@@ -137,7 +147,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $@
+	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

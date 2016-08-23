@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief Syscalls for SAM0 (GCC).
+ * \brief SAM USART Quick Start
  *
- * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -40,90 +40,29 @@
  * \asf_license_stop
  *
  */
-/*
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
- */
+#include "asf/sam0/drivers/sercom/usart/usart.h"
+#include "asf/sam0/drivers/port/port.h"
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include "uart.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "conf_board.h"
 
-#undef errno
-extern int errno;
-extern int _end;
+extern struct usart_module usart_instance;
 
-extern caddr_t _sbrk(int incr);
-extern int link(char *old, char *new);
-extern int _close(int file);
-extern int _fstat(int file, struct stat *st);
-extern int _isatty(int file);
-extern int _lseek(int file, int ptr, int dir);
-extern void _exit(int status);
-extern void _kill(int pid, int sig);
-extern int _getpid(void);
-
-extern caddr_t _sbrk(int incr)
+void configure_usart(void)
 {
-	static unsigned char *heap = NULL;
-	unsigned char *prev_heap;
+  struct usart_config config_usart;
 
-	if (heap == NULL) {
-		heap = (unsigned char *)&_end;
-	}
-	prev_heap = heap;
+  usart_get_config_defaults(&config_usart);
 
-	heap += incr;
+  config_usart.baudrate    = 115200;
+  config_usart.mux_setting = EDBG_CDC_SERCOM_MUX_SETTING;
+  config_usart.pinmux_pad0 = EDBG_CDC_SERCOM_PINMUX_PAD0;
+  config_usart.pinmux_pad1 = EDBG_CDC_SERCOM_PINMUX_PAD1;
+  config_usart.pinmux_pad2 = EDBG_CDC_SERCOM_PINMUX_PAD2;
+  config_usart.pinmux_pad3 = EDBG_CDC_SERCOM_PINMUX_PAD3;
 
-	return (caddr_t) prev_heap;
+  while (usart_init(&usart_instance, EDBG_CDC_MODULE, &config_usart) != STATUS_OK) {
+  }
+  usart_enable(&usart_instance);
 }
-
-extern int link(char *old, char *new)
-{
-	return -1;
-}
-
-extern int _close(int file)
-{
-	return -1;
-}
-
-extern int _fstat(int file, struct stat *st)
-{
-	st->st_mode = S_IFCHR;
-
-	return 0;
-}
-
-extern int _isatty(int file)
-{
-	return 1;
-}
-
-extern int _lseek(int file, int ptr, int dir)
-{
-	return 0;
-}
-
-// extern void _exit(int status)
-// {
-// 	asm("BKPT #0");
-// }
-
-extern void _kill(int pid, int sig)
-{
-	return;
-}
-
-extern int _getpid(void)
-{
-	return -1;
-}
-
-#ifdef __cplusplus
-}
-#endif

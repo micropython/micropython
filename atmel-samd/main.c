@@ -4,6 +4,7 @@
 
 #include "py/nlr.h"
 #include "py/compile.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
@@ -13,10 +14,11 @@
 #include "asf/common/services/usb/udc/udc.h"
 #include "asf/common2/services/delay/delay.h"
 #include "asf/sam0/drivers/port/port.h"
+#include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "asf/sam0/drivers/system/system.h"
 
 #include "mpconfigboard.h"
-#include "sam_ba_usb.h"
+#include "uart.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -42,6 +44,12 @@ static char *stack_top;
 static char heap[2048];
 
 int main(int argc, char **argv) {
+    // initialise the cpu and peripherals
+    #if MICROPY_MIN_USE_SAMD21_MCU
+    void samd21_init(void);
+    samd21_init();
+    #endif
+
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
 
@@ -103,72 +111,9 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 }
 #endif
 
-#if MICROPY_MIN_USE_CORTEX_CPU
-
-// this is a minimal IRQ and reset framework for any Cortex-M CPU
-
-extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
-
-void Reset_Handler(void) __attribute__((naked));
-void Reset_Handler(void) {
-    // stack pointer set by bootloader
-    // copy .data section from flash to RAM
-    for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {
-        *dest++ = *src++;
-    }
-    // zero out .bss section
-    for (uint32_t *dest = &_sbss; dest < &_ebss;) {
-        *dest++ = 0;
-    }
-    // jump to board initialisation
-    void _start(void);
-    _start();
-}
-
-void Default_Handler(void) {
-    for (;;) {
-    }
-}
-
-uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
-    (uint32_t)&_estack,
-    (uint32_t)&Reset_Handler,
-    (uint32_t)&Default_Handler, // NMI_Handler
-    (uint32_t)&Default_Handler, // HardFault_Handler
-    (uint32_t)&Default_Handler, // MemManage_Handler
-    (uint32_t)&Default_Handler, // BusFault_Handler
-    (uint32_t)&Default_Handler, // UsageFault_Handler
-    0,
-    0,
-    0,
-    0,
-    (uint32_t)&Default_Handler, // SVC_Handler
-    (uint32_t)&Default_Handler, // DebugMon_Handler
-    0,
-    (uint32_t)&Default_Handler, // PendSV_Handler
-    (uint32_t)&Default_Handler, // SysTick_Handler
-};
-
-void _start(void) {
-    // when we get here: stack is initialised, bss is clear, data is copied
-
-    // initialise the cpu and peripherals
-    #if MICROPY_MIN_USE_SAMD21_MCU
-    void samd21_init(void);
-    samd21_init();
-    #endif
-
-    // now that we have a basic system up and running we can call main
-    main(0, NULL);
-
-    // we must not return
-    for (;;) {
-    }
-}
-
-#endif
-
 #if MICROPY_MIN_USE_SAMD21_MCU
+
+struct usart_module usart_instance;
 
 void samd21_init(void) {
 
@@ -190,8 +135,22 @@ void samd21_init(void) {
   port_pin_set_output_level(MICROPY_HW_LED1, false);
 
   // Start USB stack to authorize VBus monitoring
+  for (int i = 0; i < 10; i++) {
+    port_pin_toggle_output_level(MICROPY_HW_LED1);
+    delay_ms(100);
+  }
+  #ifdef USB_REPL
+    udc_start();
+  #endif
+  for (int i = 0; i < 10; i++) {
+    port_pin_toggle_output_level(MICROPY_HW_LED1);
+    delay_ms(200);
+  }
 
-  udc_start();
+  // TODO(tannewt): Switch to proper pyb based UARTs.
+  #ifdef UART_REPL
+    configure_usart();
+  #endif
   for (int i = 0; i < 10; i++) {
     port_pin_toggle_output_level(MICROPY_HW_LED1);
     delay_ms(500);

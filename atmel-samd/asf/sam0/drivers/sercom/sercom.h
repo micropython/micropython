@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief Syscalls for SAM0 (GCC).
+ * \brief SAM Serial Peripheral Interface Driver
  *
- * Copyright (C) 2012-2016 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -44,86 +44,75 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#ifndef SERCOM_H_INCLUDED
+#define SERCOM_H_INCLUDED
+
+#include <compiler.h>
+#include <system.h>
+#include <clock.h>
+#include <system_interrupt.h>
+#include "sercom_pinout.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#undef errno
-extern int errno;
-extern int _end;
+/* SERCOM modules should share  same slow GCLK channel ID */
+#define SERCOM_GCLK_ID SERCOM0_GCLK_ID_SLOW
 
-extern caddr_t _sbrk(int incr);
-extern int link(char *old, char *new);
-extern int _close(int file);
-extern int _fstat(int file, struct stat *st);
-extern int _isatty(int file);
-extern int _lseek(int file, int ptr, int dir);
-extern void _exit(int status);
-extern void _kill(int pid, int sig);
-extern int _getpid(void);
+#if (0x1ff >= REV_SERCOM)
+#  define FEATURE_SERCOM_SYNCBUSY_SCHEME_VERSION_1
+#elif (0x400 >= REV_SERCOM)
+#  define FEATURE_SERCOM_SYNCBUSY_SCHEME_VERSION_2
+#else
+#  error "Unknown SYNCBUSY scheme for this SERCOM revision"
+#endif
 
-extern caddr_t _sbrk(int incr)
-{
-	static unsigned char *heap = NULL;
-	unsigned char *prev_heap;
+/**
+ * \brief sercom asynchronous operation mode
+ *
+ * Select sercom asynchronous operation mode
+ */
+enum sercom_asynchronous_operation_mode {
+	SERCOM_ASYNC_OPERATION_MODE_ARITHMETIC = 0,
+	SERCOM_ASYNC_OPERATION_MODE_FRACTIONAL,
+};
 
-	if (heap == NULL) {
-		heap = (unsigned char *)&_end;
-	}
-	prev_heap = heap;
+/**
+ * \brief sercom asynchronous samples per bit
+ *
+ * Select number of samples per bit
+ */
+enum sercom_asynchronous_sample_num {
+	SERCOM_ASYNC_SAMPLE_NUM_3 = 3,
+	SERCOM_ASYNC_SAMPLE_NUM_8 = 8,
+	SERCOM_ASYNC_SAMPLE_NUM_16 = 16,
+};
 
-	heap += incr;
+enum status_code sercom_set_gclk_generator(
+		const enum gclk_generator generator_source,
+		const bool force_change);
 
-	return (caddr_t) prev_heap;
-}
+enum status_code _sercom_get_sync_baud_val(
+		const uint32_t baudrate,
+		const uint32_t external_clock,
+		uint16_t *const baudval);
 
-extern int link(char *old, char *new)
-{
-	return -1;
-}
+enum status_code _sercom_get_async_baud_val(
+		const uint32_t baudrate,
+		const uint32_t peripheral_clock,
+		uint16_t *const baudval,
+		enum sercom_asynchronous_operation_mode mode,
+		enum sercom_asynchronous_sample_num sample_num);
 
-extern int _close(int file)
-{
-	return -1;
-}
+uint32_t _sercom_get_default_pad(
+		Sercom *const sercom_module,
+		const uint8_t pad);
 
-extern int _fstat(int file, struct stat *st)
-{
-	st->st_mode = S_IFCHR;
-
-	return 0;
-}
-
-extern int _isatty(int file)
-{
-	return 1;
-}
-
-extern int _lseek(int file, int ptr, int dir)
-{
-	return 0;
-}
-
-// extern void _exit(int status)
-// {
-// 	asm("BKPT #0");
-// }
-
-extern void _kill(int pid, int sig)
-{
-	return;
-}
-
-extern int _getpid(void)
-{
-	return -1;
-}
-
+uint8_t _sercom_get_sercom_inst_index(
+		Sercom *const sercom_instance);
 #ifdef __cplusplus
 }
 #endif
+
+#endif //__SERCOM_H_INCLUDED

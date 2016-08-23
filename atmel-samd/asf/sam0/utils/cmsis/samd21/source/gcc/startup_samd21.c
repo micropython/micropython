@@ -263,7 +263,7 @@ void Reset_Handler(void)
         NVMCTRL->CTRLB.bit.MANW = 1;
 
         /* Initialize the C library */
-        __libc_init_array();
+        //__libc_init_array();
 
         /* Branch to main function */
         main();

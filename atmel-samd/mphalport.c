@@ -1,10 +1,17 @@
 #include <string.h>
 
-//#include "board_driver_usb.h"
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
+#include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "py/mphal.h"
+#include "py/mpstate.h"
 
+#include "mpconfigboard.h"
+
+#include "asf/common2/services/delay/delay.h"
+#include "asf/sam0/drivers/port/port.h"
 static volatile bool mp_cdc_enabled = false;
+extern struct usart_module usart_instance;
+
 bool mp_cdc_enable(uint8_t port)
 {
 	mp_cdc_enabled = true;
@@ -18,14 +25,20 @@ void mp_cdc_disable(uint8_t port)
 
 int mp_hal_stdin_rx_chr(void) {
   for (;;) {
-    // char c;
+    #ifdef USB_REPL
     if (mp_cdc_enabled && udi_cdc_is_rx_ready()) {
-      return udi_cdc_getc();
+     return udi_cdc_getc();
     }
-    // } else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-    //     return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
-    // }
-    __WFI();
+    #endif
+    #ifdef UART_REPL
+    uint16_t temp;
+    if (usart_read_wait(&usart_instance, &temp) == STATUS_OK) {
+      return temp;
+    }
+    #endif
+    // TODO(tannewt): Figure out how we can sleep while waiting for input and
+    // add it here. The current UART implementation doesn't cause a wake.
+    //__WFI();
   }
 }
 
@@ -34,12 +47,10 @@ int mp_hal_stdin_rx_chr(void) {
 //}
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    // if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-    //     uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
-    // }
-    if (mp_cdc_enabled && udi_cdc_is_tx_ready()) {
-      udi_cdc_write_buf(str, len);
-    }
+  usart_write_buffer_wait(&usart_instance, (uint8_t*) str, len);
+  // if (mp_cdc_enabled && udi_cdc_is_tx_ready()) {
+  //   udi_cdc_write_buf(str, len);
+  // }
 }
 
 //void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
