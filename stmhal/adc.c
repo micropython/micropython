@@ -189,7 +189,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 #endif
 }
 
-STATIC void adc_config_channel(ADC_HandleTypeDef *adchandle, uint32_t channel) {
+STATIC void adc_config_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
     sConfig.Channel = channel;
@@ -205,7 +205,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adchandle, uint32_t channel) {
 #endif
     sConfig.Offset = 0;
 
-    HAL_ADC_ConfigChannel(adchandle, &sConfig);
+    HAL_ADC_ConfigChannel(adcHandle, &sConfig);
 }
 
 STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
