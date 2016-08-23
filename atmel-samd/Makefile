@@ -1,9 +1,24 @@
-include ../py/mkenv.mk
+# Select the board to build for: if not given on the command line,
+# then default to PYBV10.
+BOARD ?= feather_m0_ble
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
 
-CROSS = 0
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
+include ../py/mkenv.mk
+-include mpconfigport.mk
+include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
+# TODO(tannewt): Support friendly pin names like the stmhal implementations do.
+# Add $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 QSTR_DEFS = qstrdefsport.h
+
+CROSS = 0
 
 # include py core make definitions
 include ../py/py.mk
@@ -14,13 +29,44 @@ endif
 
 BOSSAC := /Users/tannewt/ArduinoCore-samd/tools/bossac_osx
 
+
+HAL_DIR=hal/$(MCU_SERIES)
+
 INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
+INC += -Iasf/common/boards/
+INC += -Iasf/common/services/sleepmgr/
+INC += -Iasf/common/services/usb/
+INC += -Iasf/common/services/usb/class/cdc/
+INC += -Iasf/common/services/usb/class/cdc/device/
+INC += -Iasf/common/services/usb/udc/
+INC += -Iasf/common/utils
+INC += -Iasf/common2/services/delay/
+INC +=  $(addprefix -Iasf/sam0/,\
+	drivers/extint/ \
+	drivers/port \
+	drivers/system \
+	drivers/system/clock \
+	drivers/system/clock/clock_samd21_r21_da \
+	drivers/system/interrupt \
+	drivers/system/interrupt/system_interrupt_samd21 \
+	drivers/system/pinmux \
+	drivers/system/power/power_sam_d_r \
+	drivers/system/reset/reset_sam_d_r \
+	drivers/usb/ \
+	utils \
+	utils/cmsis/samd21/include \
+	utils/cmsis/samd21/source \
+	utils/header_files \
+	utils/preprocessor \
+	)
+INC += -Iasf/thirdparty/CMSIS/Include
+INC += -Iboards/$(BOARD)/
 INC += -I$(BUILD)
 
 ifeq ($(CROSS), 1)
-CFLAGS_CORTEX_M0 = -mthumb -mabi=aapcs-linux -mcpu=cortex-m0plus -fsingle-precision-constant -Wdouble-promotion -D__SAMD21G18A__
+CFLAGS_CORTEX_M0 = -mthumb -mabi=aapcs-linux -mcpu=cortex-m0plus -fsingle-precision-constant -Wdouble-promotion -D__SAMD21G18A__ -DUSB_DEVICE_PRODUCT_ID=0x024D -DUSB_DEVICE_VENDOR_ID=0x4123 -DBOARD=USER_BOARD -ffunction-sections -fdata-sections -fshort-enums -D ARM_MATH_CM0PLUS=true -DSYSTICK_MODE -DEXTINT_CALLBACK_MODE=true -DUDD_ENABLE -DUSART_CALLBACK_MODE=true -DUSB_DEVICE_LPM_SUPPORT
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 else
 CFLAGS = -m32 $(INC) -Wall -Werror -ansi -std=gnu99 $(COPT)
@@ -36,16 +82,34 @@ endif
 LIBS =
 ifeq ($(CROSS), 1)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -L $(dir $(LIBGCC_FILE_NAME)) -nostdlib -T samd21.ld -Map=$@.map --cref
+LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -L $(dir $(LIBGCC_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
 LIBS += -larm_cortexM0l_math -lgcc
 else
 LD = gcc
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref
 endif
 
+
+SRC_ASF = $(addprefix asf/sam0/,\
+	drivers/port/port.c \
+	drivers/system/clock/clock_samd21_r21_da/clock.c \
+	drivers/system/clock/clock_samd21_r21_da/gclk.c \
+	drivers/system/pinmux/pinmux.c \
+	drivers/system/system.c \
+	drivers/usb/stack_interface/usb_device_udd.c \
+	drivers/usb/stack_interface/usb_dual.c \
+	drivers/usb/usb_sam_d_r/usb.c \
+	)
+
 SRC_C = \
 	main.c \
-	uart_core.c \
+	mphalport.c \
+	asf/common/services/sleepmgr/samd/sleepmgr.c \
+	asf/common/services/usb/class/cdc/device/udi_cdc.c \
+	asf/common/services/usb/class/cdc/device/udi_cdc_desc.c \
+	asf/common/services/usb/udc/udc.c \
+	asf/common/utils/interrupt/interrupt_sam_nvic.c \
+	asf/common2/services/delay/sam0/systick_counter.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
@@ -54,6 +118,7 @@ SRC_C = \
 	$(BUILD)/_frozen_mpy.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 
 ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.bin

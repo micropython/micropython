@@ -30,6 +30,7 @@ SECTIONS
         _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
     } >FLASH
 
+
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
@@ -43,6 +44,18 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
+    } >RAM
+
+    /* Uninitialized data section */
+    .ramfunc :
+    {
+        . = ALIGN(4);
+        _sramfunc = .;         /* define a global symbol at ramfunc start; used by startup code */
+        *(.ramfunc)
+        *(.ramfunc*)
+
+        . = ALIGN(4);
+        _eramfunc = .;         /* define a global symbol at ramfunc end; used by startup code */
     } >RAM
 
     /* Uninitialized data section */

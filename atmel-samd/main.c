@@ -9,6 +9,15 @@
 #include "py/gc.h"
 #include "lib/utils/pyexec.h"
 
+#include "asf/common/services/sleepmgr/sleepmgr.h"
+#include "asf/common/services/usb/udc/udc.h"
+#include "asf/common2/services/delay/delay.h"
+#include "asf/sam0/drivers/port/port.h"
+#include "asf/sam0/drivers/system/system.h"
+
+#include "mpconfigboard.h"
+#include "sam_ba_usb.h"
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -162,6 +171,32 @@ void _start(void) {
 #if MICROPY_MIN_USE_SAMD21_MCU
 
 void samd21_init(void) {
+
+  irq_initialize_vectors();
+  cpu_irq_enable();
+
+  // Initialize the sleep manager
+  sleepmgr_init();
+
+  system_init();
+
+  delay_init();
+
+  struct port_config pin_conf;
+  port_get_config_defaults(&pin_conf);
+
+  pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+  port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
+  port_pin_set_output_level(MICROPY_HW_LED1, false);
+
+  // Start USB stack to authorize VBus monitoring
+
+  udc_start();
+  for (int i = 0; i < 10; i++) {
+    port_pin_toggle_output_level(MICROPY_HW_LED1);
+    delay_ms(500);
+  }
+
 }
 
 #endif
