@@ -124,7 +124,11 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
         return;
     }
 
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     if (adc_obj->channel < ADC_NUM_GPIO_CHANNELS) {
+#elif defined(MCU_SERIES_L4)
+    if ((adc_obj->channel <= ADC_NUM_GPIO_CHANNELS) && (adc_obj->channel > 0)) {
+#endif
       // Channels 0-16 correspond to real pins. Configure the GPIO pin in
       // ADC mode.
       const pin_obj_t *pin = pin_adc1[adc_obj->channel];
@@ -185,7 +189,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 #endif
 }
 
-STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
+STATIC void adc_config_channel(ADC_HandleTypeDef *adchandle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
     sConfig.Channel = channel;
@@ -201,7 +205,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 #endif
     sConfig.Offset = 0;
 
-    HAL_ADC_ConfigChannel(adc_handle, &sConfig);
+    HAL_ADC_ConfigChannel(adchandle, &sConfig);
 }
 
 STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
@@ -253,9 +257,17 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
     if (!is_adcx_channel(channel)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel));
     }
-    if (pin_adc1[channel] == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel));
-    }
+
+
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    if (channel < 16){
+#elif defined(MCU_SERIES_L4)
+    if ((channel > 0) && (channel < 17)){
+#endif
+		if (pin_adc1[channel] == NULL) {
+			nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel));
+		}
+	}
 
     pyb_obj_adc_t *o = m_new_obj(pyb_obj_adc_t);
     memset(o, 0, sizeof(*o));
@@ -423,7 +435,11 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
                 "resolution %d not supported", resolution));
     }
 
-    for (uint32_t channel = 0; channel < ADC_NUM_GPIO_CHANNELS; channel++) {
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+     for (uint32_t channel = 0; channel < ADC_NUM_GPIO_CHANNELS; channel++) {
+#elif defined(MCU_SERIES_L4)
+     for (uint32_t channel = 1; channel <= ADC_NUM_GPIO_CHANNELS; channel++) {
+#endif
         // Channels 0-16 correspond to real pins. Configure the GPIO pin in
         // ADC mode.
         const pin_obj_t *pin = pin_adc1[channel];
