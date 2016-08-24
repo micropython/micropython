@@ -53,6 +53,8 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 
+#define MICROPY_MODULE_WEAK_LINKS   (1)
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)
@@ -72,10 +74,16 @@ typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
-// extra built in names to add to the global namespace
-extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
-#define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+// extra built in modules to add to the list of known ones
+extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t utime_module;
+
+     //{ MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module },
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module } \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module } \
 
 
 // board specific definitions

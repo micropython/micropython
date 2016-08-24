@@ -109,6 +109,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 
 SRC_C = \
 	main.c \
+	modutime.c \
 	mphalport.c \
 	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
@@ -124,11 +125,16 @@ SRC_C = \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
-	$(BUILD)/_frozen_mpy.c \
+	lib/mp-readline/readline.c
+
+SRC_AUTOGEN = \
+ $(BUILD)/_frozen_mpy.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_AUTOGEN:.c=.o))
+
+SRC_QSTR += $(SRC_C)
 
 ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.bin
