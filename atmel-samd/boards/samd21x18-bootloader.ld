@@ -40,6 +40,8 @@ SECTIONS
     {
         . = ALIGN(4);
         _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
+        *(.ramfunc)
+        *(.ramfunc*)
         *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
@@ -48,28 +50,18 @@ SECTIONS
     } >RAM
 
     /* Uninitialized data section */
-    .ramfunc :
+    .bss :
     {
         . = ALIGN(4);
-        _sramfunc = .;         /* define a global symbol at ramfunc start; used by startup code */
-        *(.ramfunc)
-        *(.ramfunc*)
-
-        . = ALIGN(4);
-        _eramfunc = .;         /* define a global symbol at ramfunc end; used by startup code */
-    } >RAM
-
-    /* Uninitialized data section */
-    .zero :
-    {
-        . = ALIGN(4);
+        _sbss = .;
         _szero = .;         /* define a global symbol at bss start; used by startup code */
-        *(.zero)
-        *(.zero*)
+        *(.bss)
+        *(.bss*)
         *(COMMON)
 
         . = ALIGN(4);
         _ezero = .;         /* define a global symbol at bss end; used by startup code */
+        _ebss = .;
     } >RAM
 
     .ARM.attributes 0 : { *(.ARM.attributes) }

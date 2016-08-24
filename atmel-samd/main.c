@@ -127,35 +127,22 @@ void samd21_init(void) {
 
   delay_init();
 
-  struct port_config pin_conf;
-  port_get_config_defaults(&pin_conf);
+  // Uncomment to init PIN_PA17 for debugging.
+  // struct port_config pin_conf;
+  // port_get_config_defaults(&pin_conf);
+  //
+  // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+  // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
+  // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
-  pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-  port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
-  port_pin_set_output_level(MICROPY_HW_LED1, false);
-
-  // Start USB stack to authorize VBus monitoring
-  for (int i = 0; i < 10; i++) {
-    port_pin_toggle_output_level(MICROPY_HW_LED1);
-    delay_ms(100);
-  }
   #ifdef USB_REPL
     udc_start();
   #endif
-  for (int i = 0; i < 10; i++) {
-    port_pin_toggle_output_level(MICROPY_HW_LED1);
-    delay_ms(200);
-  }
 
   // TODO(tannewt): Switch to proper pyb based UARTs.
   #ifdef UART_REPL
     configure_usart();
   #endif
-  for (int i = 0; i < 10; i++) {
-    port_pin_toggle_output_level(MICROPY_HW_LED1);
-    delay_ms(500);
-  }
-
 }
 
 #endif
