@@ -1,5 +1,8 @@
 #include <stdint.h>
 
+#ifndef __INCLUDED_MPCONFIGPORT_H
+#define __INCLUDED_MPCONFIGPORT_H
+
 // options to control how Micro Python is built
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
@@ -74,11 +77,12 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
+
+// board specific definitions
+#include "mpconfigboard.h"
+
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
-
-#define MICROPY_HW_BOARD_NAME "atmel-samd"
-#define MICROPY_HW_MCU_NAME "samd21"
 
 #ifdef __linux__
 #define MICROPY_MIN_USE_STDOUT (1)
@@ -94,3 +98,5 @@ extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line;
+
+#endif  // __INCLUDED_MPCONFIGPORT_H
