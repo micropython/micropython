@@ -39,6 +39,7 @@
 #include "user_interface.h"
 
 extern const mp_obj_type_t mp_fat_vfs_type;
+MP_DECLARE_CONST_FUN_OBJ(fsuser_umount_obj);
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
@@ -166,6 +167,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&os_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fsuser_umount_obj) },
     #endif
 };
 
