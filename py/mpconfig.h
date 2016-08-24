@@ -887,6 +887,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_UBINASCII (0)
 #endif
 
+// Depends on MICROPY_PY_UZLIB
+#ifndef MICROPY_PY_UBINASCII_CRC32
+#define MICROPY_PY_UBINASCII_CRC32 (0)
+#endif
+
 #ifndef MICROPY_PY_URANDOM
 #define MICROPY_PY_URANDOM (0)
 #endif

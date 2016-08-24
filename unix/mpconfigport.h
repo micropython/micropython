@@ -117,6 +117,7 @@
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #endif
 #define MICROPY_PY_UBINASCII        (1)
+#define MICROPY_PY_UBINASCII_CRC32  (1)
 #define MICROPY_PY_URANDOM          (1)
 #ifndef MICROPY_PY_USELECT
 #define MICROPY_PY_USELECT          (1)
