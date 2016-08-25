@@ -30,7 +30,7 @@
 #define MAX_TEMPLATE_CONFIG_DESC_SIZE (100) // should be maximum of all template config desc's
 #define CDC_TEMPLATE_CONFIG_DESC_SIZE (67)
 #define CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE (98)
-#define CDC_HID_TEMPLATE_CONFIG_DESC_SIZE (100)
+#define CDC_HID_TEMPLATE_CONFIG_DESC_SIZE (107)
 #define CDC_HID_TEMPLATE_HID_DESC_OFFSET (9)
 #define HID_DESC_OFFSET_SUBCLASS (6)
 #define HID_DESC_OFFSET_PROTOCOL (7)
@@ -39,6 +39,9 @@
 #define HID_DESC_OFFSET_MAX_PACKET_LO (22)
 #define HID_DESC_OFFSET_MAX_PACKET_HI (23)
 #define HID_DESC_OFFSET_POLLING_INTERVAL (24)
+#define HID_DESC_OFFSET_MAX_PACKET_OUT_LO (29)
+#define HID_DESC_OFFSET_MAX_PACKET_OUT_HI (30)
+#define HID_DESC_OFFSET_POLLING_INTERVAL_OUT (31)
 #define HID_SUBDESC_LEN (9)
 
 #define CDC_IFACE_NUM_ALONE (0)
@@ -48,6 +51,7 @@
 #define HID_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_MSC (1)
 #define HID_IN_EP_WITH_CDC (0x81)
+#define HID_OUT_EP_WITH_CDC (0x01)
 #define HID_IN_EP_WITH_MSC (0x83)
 
 #define USB_DESC_TYPE_ASSOCIATION (0x0b)
@@ -274,7 +278,7 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
     HID_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
     0x00,   // bAlternateSetting: Alternate setting
-    0x01,   // bNumEndpoints
+    0x02,   // bNumEndpoints
     0x03,   // bInterfaceClass: HID Class
     0x01,   // bInterfaceSubClass: 0=no sub class, 1=boot
     0x02,   // nInterfaceProtocol: 0=none, 1=keyboard, 2=mouse
@@ -295,6 +299,15 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     0x07,                           // bLength: Endpoint descriptor length
     USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
     HID_IN_EP_WITH_CDC,             // bEndpointAddress: IN
+    0x03,                           // bmAttributes: Interrupt endpoint type
+    LOBYTE(USBD_HID_MOUSE_MAX_PACKET), // wMaxPacketSize
+    HIBYTE(USBD_HID_MOUSE_MAX_PACKET),
+    0x08,                           // bInterval: Polling interval
+
+    // Endpoint OUT descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
+    HID_OUT_EP_WITH_CDC,             // bEndpointAddress: OUT
     0x03,                           // bmAttributes: Interrupt endpoint type
     LOBYTE(USBD_HID_MOUSE_MAX_PACKET), // wMaxPacketSize
     HIBYTE(USBD_HID_MOUSE_MAX_PACKET),
@@ -612,6 +625,9 @@ int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
         hid_desc[HID_DESC_OFFSET_MAX_PACKET_LO] = hid_info->max_packet_len;
         hid_desc[HID_DESC_OFFSET_MAX_PACKET_HI] = 0;
         hid_desc[HID_DESC_OFFSET_POLLING_INTERVAL] = hid_info->polling_interval;
+        hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO] = hid_info->max_packet_len;
+        hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] = 0;
+        hid_desc[HID_DESC_OFFSET_POLLING_INTERVAL_OUT] = hid_info->polling_interval;
         hid_report_desc = hid_info->report_desc;
     }
 
