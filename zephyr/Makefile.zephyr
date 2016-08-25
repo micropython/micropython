@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
-KERNEL_TYPE = nano
+KERNEL_TYPE = micro
 # BOARD must be passed on command line from main Makefile
 #BOARD =
 CONF_FILE = prj.conf
+MDEF_FILE = prj.mdef
 
 #export SOURCE_DIR = $(ZEPHYR_BASE)/samples/static_lib/hello_world
 export LDFLAGS_zephyr += -L$(CURDIR)
