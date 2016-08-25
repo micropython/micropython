@@ -53,7 +53,9 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 
+#define MICROPY_PY_MACHINE          (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
+#define MICROPY_REPL_AUTO_INDENT    (1)
 
 // type definitions for the specific machine
 
@@ -78,16 +80,20 @@ typedef long mp_off_t;
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t utime_module;
 
-     //{ MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module },
 #define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module } \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module } \
-
 
 // board specific definitions
 #include "mpconfigboard.h"
+
+#ifndef MICROPY_PIN_DEFS_PORT_H
+#define MICROPY_PIN_DEFS_PORT_H "pins.h"
+#endif
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -105,6 +111,8 @@ extern const struct _mp_obj_module_t utime_module;
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
-    vstr_t *repl_line;
+    vstr_t *repl_line; \
+    mp_obj_t pin_class_mapper; \
+    mp_obj_t pin_class_map_dict; \
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

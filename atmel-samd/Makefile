@@ -109,8 +109,11 @@ SRC_ASF = $(addprefix asf/sam0/,\
 
 SRC_C = \
 	main.c \
+	modmachine.c \
 	modutime.c \
 	mphalport.c \
+	pin.c \
+	pin_named_pins.c \
 	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
@@ -121,6 +124,7 @@ SRC_C = \
 	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
 	asf/sam0/utils/cmsis/samd21/source/system_samd21.c     \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
+	boards/$(BOARD)/pins.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
