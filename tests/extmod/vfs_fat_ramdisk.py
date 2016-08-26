@@ -1,5 +1,6 @@
 import sys
 import uos
+import uerrno
 try:
     uos.VfsFat
 except AttributeError:
@@ -84,3 +85,15 @@ assert vfs.listdir() == ["sub_file.txt"]
 
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
+
+
+vfs.umount()
+try:
+    vfs.listdir()
+except OSError as e:
+    assert e.args[0] == uerrno.ENODEV
+else:
+    raise AssertionError("expected OSError not thrown")
+
+vfs = uos.VfsFat(bdev, "/ramdisk")
+assert  vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
