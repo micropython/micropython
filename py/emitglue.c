@@ -348,12 +348,10 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
     if (strncmp((char*)header, "M\x00", 2) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "invalid .mpy file"));
+        mp_raise_ValueError("invalid .mpy file");
     }
     if (header[2] != MPY_FEATURE_FLAGS || header[3] > mp_small_int_bits()) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "incompatible .mpy file"));
+        mp_raise_ValueError("incompatible .mpy file");
     }
     return load_raw_code(reader);
 }
@@ -559,8 +557,7 @@ STATIC void save_bytecode_qstrs(mp_print_t *print, const byte *ip, const byte *i
 
 STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
     if (rc->kind != MP_CODE_BYTECODE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "can only save bytecode"));
+        mp_raise_ValueError("can only save bytecode");
     }
 
     // save bytecode
