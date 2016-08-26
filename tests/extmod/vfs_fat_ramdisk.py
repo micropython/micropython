@@ -84,3 +84,16 @@ assert vfs.listdir() == ["sub_file.txt"]
 
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
+
+
+vfs.umount()
+try:
+    vfs.listdir()
+except OSError as e:
+    # TODO: somehow check that the errno is 19
+    pass
+else:
+    raise AssertionError("expected OSError not thrown")
+
+vfs = uos.VfsFat(bdev, "/ramdisk")
+assert  vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
