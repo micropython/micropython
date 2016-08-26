@@ -107,6 +107,15 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
 #endif
 
+// Be conservative and always clear to zero newly (re)allocated memory in the GC.
+// This helps eliminate stray pointers that hold on to memory that's no longer
+// used.  It decreases performance due to unnecessary memory clearing.
+// TODO Do analysis to understand why some memory is not properly cleared and
+// find a more efficient way to clear it.
+#ifndef MICROPY_GC_CONSERVATIVE_CLEAR
+#define MICROPY_GC_CONSERVATIVE_CLEAR (1)
+#endif
+
 // Support automatic GC when reaching allocation threshold,
 // configurable by gc.threshold().
 #ifndef MICROPY_GC_ALLOC_THRESHOLD

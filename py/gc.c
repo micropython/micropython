@@ -480,12 +480,17 @@ found:
 
     GC_EXIT();
 
+    #if MICROPY_GC_CONSERVATIVE_CLEAR
+    // be conservative and zero out all the newly allocated blocks
+    memset((byte*)ret_ptr, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK);
+    #else
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
     memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
+    #endif
 
     #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
@@ -713,8 +718,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
         GC_EXIT();
 
+        #if MICROPY_GC_CONSERVATIVE_CLEAR
+        // be conservative and zero out all the newly allocated blocks
+        memset((byte*)ptr_in + n_blocks * BYTES_PER_BLOCK, 0, (new_blocks - n_blocks) * BYTES_PER_BLOCK);
+        #else
         // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
         memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
+        #endif
 
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();
