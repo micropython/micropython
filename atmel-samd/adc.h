@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
- * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,29 +24,4 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-
-#include "py/obj.h"
-#include "py/runtime.h"
-
-#include "adc.h"
-#include "pin.h"
-
-#if MICROPY_PY_MACHINE
-
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
-    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&adc_type) },
-    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t machine_module = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_umachine,
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
-};
-
-#endif // MICROPY_PY_MACHINE
+extern const mp_obj_type_t adc_type;

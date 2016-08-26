@@ -1,32 +1,25 @@
 #include "pins.h"
 #include "asf/sam0/drivers/system/system.h"
 
-#define PIN(p_name) \
-const pin_obj_t pin_## p_name = { \
-    { &pin_type }, \
-    .name = MP_QSTR_ ## p_name, \
-    .pin = (PIN_## p_name), \
-}
-
-PIN(PA02);
-PIN(PB08);
-PIN(PB09);
-PIN(PA04);
-PIN(PA05);
-PIN(PB02);
-PIN(PA11);
-PIN(PA10);
-PIN(PA14);
-PIN(PA09);
-PIN(PA08);
-PIN(PA15);
-PIN(PA20);
-PIN(PA06);
-PIN(PA07);
-PIN(PA18);
-PIN(PA16);
-PIN(PA19);
-PIN(PA17);
+PIN(PA02, true, ADC_POSITIVE_INPUT_PIN0);
+PIN(PB08, true, ADC_POSITIVE_INPUT_PIN8);
+PIN(PB09, true, ADC_POSITIVE_INPUT_PIN9);
+PIN(PA04, true, ADC_POSITIVE_INPUT_PIN4);
+PIN(PA05, true, ADC_POSITIVE_INPUT_PIN5);
+PIN(PB02, true, ADC_POSITIVE_INPUT_PIN10);
+PIN(PA11, true, ADC_POSITIVE_INPUT_PIN19);
+PIN(PA10, true, ADC_POSITIVE_INPUT_PIN18);
+PIN(PA14, false, NO_ADC_INPUT);
+PIN(PA09, true, ADC_POSITIVE_INPUT_PIN17);
+PIN(PA08, true, ADC_POSITIVE_INPUT_PIN16);
+PIN(PA15, false, NO_ADC_INPUT);
+PIN(PA20, false, NO_ADC_INPUT);
+PIN(PA06, true, ADC_POSITIVE_INPUT_PIN6);
+PIN(PA07, true, ADC_POSITIVE_INPUT_PIN7);
+PIN(PA18, false, NO_ADC_INPUT);
+PIN(PA16, false, NO_ADC_INPUT);
+PIN(PA19, false, NO_ADC_INPUT);
+PIN(PA17, false, NO_ADC_INPUT);
 
 STATIC const mp_map_elem_t pin_cpu_pins_locals_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_PA02), (mp_obj_t)&pin_PA02 },

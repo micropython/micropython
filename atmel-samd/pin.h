@@ -27,8 +27,24 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_PIN_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_PIN_H__
 
-// This file requires pin_defs_xxx.h (which has port specific enums and
-// defines, so we include it here. It should never be included directly
+// Don't reorder these includes because they are dependencies of adc_feature.h.
+// They should really be included by adc_feature.h.
+#include "compiler.h"
+#include "asf/sam0/drivers/system/clock/gclk.h"
+#include "asf/sam0/utils/cmsis/samd21/include/component/adc.h"
+#include "asf/sam0/drivers/adc/adc_sam_d_r/adc_feature.h"
+
+// This macro is used to simplify pin definition in boards/<board>/pins.c
+#define PIN(p_name, p_has_adc, p_adc_input) \
+const pin_obj_t pin_## p_name = { \
+    { &pin_type }, \
+    .name = MP_QSTR_ ## p_name, \
+    .pin = (PIN_## p_name), \
+    .has_adc = p_has_adc, \
+    .adc_input = p_adc_input, \
+}
+
+#define NO_ADC_INPUT (0)
 
 #include "mpconfigport.h"
 
@@ -38,6 +54,8 @@ typedef struct {
   mp_obj_base_t base;
   qstr name;
   uint32_t pin;
+  bool has_adc;
+  enum adc_positive_input adc_input;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
