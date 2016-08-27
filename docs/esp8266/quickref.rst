@@ -165,14 +165,14 @@ Use the ``machine.ADC`` class::
 SPI bus
 -------
 
-The SPI driver is implemented in software and works on all pins::
+There are two SPI drivers. One is implemented in software and works on all pins::
 
     from machine import Pin, SPI
 
     # construct an SPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SPI(-1, baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -194,13 +194,13 @@ Hardware SPI
 ------------
 
 The hardware SPI is faster (up to 80Mhz), but only works on following pins:
-``MISO`` is gpio2, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
+``MISO`` is gpio12, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
 methods as SPI, except for the pin parameters for the constructor and init
 (as those are fixed).
 
-    from machine import Pin, HSPI
+    from machine import Pin, SPI
 
-    hspi = HSPI(baudrate=800000000, polarity=0, phase=0)
+    hspi = SPI(0, baudrate=80000000, polarity=0, phase=0)
 
 
 I2C bus
