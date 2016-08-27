@@ -86,6 +86,7 @@ typedef struct {
 static uint8_t usbd_mode;
 static uint8_t cdc_iface_num;
 static uint8_t hid_in_ep;
+static uint8_t hid_out_ep;
 static uint8_t hid_iface_num;
 static uint8_t usbd_config_desc_size;
 static uint8_t *hid_desc;
@@ -594,6 +595,7 @@ int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
             memcpy(usbd_config_desc, cdc_hid_template_config_desc, sizeof(cdc_hid_template_config_desc));
             cdc_iface_num = CDC_IFACE_NUM_WITH_HID;
             hid_in_ep = HID_IN_EP_WITH_CDC;
+            hid_out_ep = HID_OUT_EP_WITH_CDC;
             hid_iface_num = HID_IFACE_NUM_WITH_CDC;
             hid_desc = usbd_config_desc + CDC_HID_TEMPLATE_HID_DESC_OFFSET;
             break;
@@ -697,16 +699,28 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
     if (usbd_mode & USBD_MODE_HID) {
         // HID component
 
-        // get max packet length from descriptor
-        uint16_t mps =
+        // get max packet lengths from descriptor
+        uint16_t mps_in =
             hid_desc[HID_DESC_OFFSET_MAX_PACKET_LO]
             | (hid_desc[HID_DESC_OFFSET_MAX_PACKET_HI] << 8);
+        uint16_t mps_out =
+            hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
+            | (hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
 
         // Open EP IN
         USBD_LL_OpenEP(pdev,
                        hid_in_ep,
                        USBD_EP_TYPE_INTR,
-                       mps);
+                       mps_in);
+
+        // Open EP OUT
+        USBD_LL_OpenEP(pdev,
+                       hid_out_ep,
+                       USBD_EP_TYPE_INTR,
+                       mps_out);
+
+        // Prepare Out endpoint to receive next packet
+        USBD_LL_PrepareReceive(pdev, hid_out_ep, CDC_ClassData.RxBuffer, mps_out);
 
         HID_ClassData.state = HID_IDLE;
     }
@@ -746,6 +760,7 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
         // close endpoints
         USBD_LL_CloseEP(pdev, hid_in_ep);
+        USBD_LL_CloseEP(pdev, hid_out_ep);
     }
 
     return 0;
