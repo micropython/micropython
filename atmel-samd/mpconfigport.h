@@ -56,6 +56,8 @@
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
+#define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_ENABLE_FINALISER    (1)
 
 // type definitions for the specific machine
 

@@ -48,6 +48,8 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	drivers/port \
 	drivers/system \
 	drivers/adc/adc_sam_d_r \
+	drivers/dac \
+	drivers/dac/dac_sam_d_c \
 	drivers/system/clock \
 	drivers/system/clock/clock_samd21_r21_da \
 	drivers/system/interrupt \
@@ -93,12 +95,13 @@ endif
 
 
 SRC_ASF = $(addprefix asf/sam0/,\
+	drivers/adc/adc_sam_d_r/adc.c \
+	drivers/dac/dac_sam_d_c/dac.c \
 	drivers/port/port.c \
 	drivers/sercom/sercom.c \
 	drivers/sercom/sercom_interrupt.c \
 	drivers/sercom/usart/usart.c \
 	drivers/sercom/usart/usart_interrupt.c \
-	drivers/adc/adc_sam_d_r/adc.c \
 	drivers/system/clock/clock_samd21_r21_da/clock.c \
 	drivers/system/clock/clock_samd21_r21_da/gclk.c \
 	drivers/system/interrupt/system_interrupt.c   \
@@ -114,6 +117,7 @@ SRC_C = \
 	main.c \
 	modmachine.c \
 	modutime.c \
+	mpdac.c \
 	mphalport.c \
 	pin.c \
 	pin_named_pins.c \
