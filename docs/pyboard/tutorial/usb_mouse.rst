@@ -41,7 +41,8 @@ To get the py-mouse to do anything we need to send mouse events to the PC.
 We will first do this manually using the REPL prompt.  Connect to your
 pyboard using your serial program and type the following::
 
-    >>> pyb.hid((0, 10, 0, 0))
+    >>> hid = pyb.USB_HID()
+    >>> hid.send((0, 10, 0, 0))
 
 Your mouse should move 10 pixels to the right!  In the command above you
 are sending 4 pieces of information: button status, x, y and scroll.  The
@@ -52,7 +53,7 @@ Let's make the mouse oscillate left and right::
     >>> import math
     >>> def osc(n, d):
     ...   for i in range(n):
-    ...     pyb.hid((0, int(20 * math.sin(i / 10)), 0, 0))
+    ...     hid.send((0, int(20 * math.sin(i / 10)), 0, 0))
     ...     pyb.delay(d)
     ...
     >>> osc(100, 50)
@@ -100,9 +101,10 @@ In ``main.py`` put the following code::
 
     switch = pyb.Switch()
     accel = pyb.Accel()
+    hid = pyb.USB_HID()
 
     while not switch():
-        pyb.hid((0, accel.x(), accel.y(), 0))
+        hid.send((0, accel.x(), accel.y(), 0))
         pyb.delay(20)
 
 Save your file, eject/unmount your pyboard drive, and reset it using the RST
@@ -112,7 +114,7 @@ the mouse around.  Try it out, and see if you can make the mouse stand still!
 Press the USR switch to stop the mouse motion.
 
 You'll note that the y-axis is inverted.  That's easy to fix: just put a
-minus sign in front of the y-coordinate in the ``pyb.hid()`` line above.
+minus sign in front of the y-coordinate in the ``hid.send()`` line above.
 
 Restoring your pyboard to normal
 --------------------------------
