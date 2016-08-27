@@ -46,7 +46,7 @@ typedef struct _mp_obj_gen_wrap_t {
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
-    mp_code_state code_state;
+    mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
