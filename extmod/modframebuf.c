@@ -270,6 +270,38 @@ STATIC mp_obj_t framebuf1_blit(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf1_blit_obj, 4, 5, framebuf1_blit);
 
+// Create a new FrameBuffer object, sharing the buffer, but of smaller size.
+STATIC mp_obj_t framebuf1_window(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 5, 5, false);
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t w = mp_obj_get_int(args[3]);
+    mp_int_t h = mp_obj_get_int(args[4]);
+
+    // We can only begin every 8th line.
+    if (y & 0x07) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "y must be divisible by 8"));
+    }
+
+    // Crop to framebuffer.
+    x = MAX(0, MIN(self->width - 1, x));
+    y = MAX(0, MIN(self->height - 1, y));
+    w = MAX(1, MIN(self->width - x, w));
+    h = MAX(1, MIN(self->height - y, h));
+
+    mp_obj_framebuf_t *win = m_new_obj(mp_obj_framebuf_t);
+    win->base.type = self->base.type;
+    win->buf = self->buf + (y << 3) * self->stride + x;
+    win->width = w;
+    win->height = h;
+    win->stride = self->stride;
+
+    return MP_OBJ_FROM_PTR(win);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf1_window_obj, 5, 5, framebuf1_window);
+
 // Functions for FrameBuffer16
 STATIC void framebuf16_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
     // Due to ridiculous warnings, cast to void * first.
@@ -316,12 +348,39 @@ STATIC mp_obj_t framebuf16_blit(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf16_blit_obj, 4, 5, framebuf16_blit);
 
+// Create a new FrameBuffer object, sharing the buffer, but of smaller size.
+STATIC mp_obj_t framebuf16_window(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 5, 5, false);
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t w = mp_obj_get_int(args[3]);
+    mp_int_t h = mp_obj_get_int(args[4]);
+
+    // Crop to framebuffer.
+    x = MAX(0, MIN(self->width - 1, x));
+    y = MAX(0, MIN(self->height - 1, y));
+    w = MAX(1, MIN(self->width - x, w));
+    h = MAX(1, MIN(self->height - y, h));
+
+    mp_obj_framebuf_t *win = m_new_obj(mp_obj_framebuf_t);
+    win->base.type = self->base.type;
+    win->buf = self->buf + (y * self->stride + x) * 2;
+    win->width = w;
+    win->height = h;
+    win->stride = self->stride;
+
+    return MP_OBJ_FROM_PTR(win);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf16_window_obj, 5, 5, framebuf16_window);
+
 STATIC const mp_rom_map_elem_t framebuf1_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf1_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&framebuf1_pixel_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf1_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf1_text_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf1_blit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_window), MP_ROM_PTR(&framebuf1_window_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf1_locals_dict, framebuf1_locals_dict_table);
 
@@ -338,6 +397,7 @@ STATIC const mp_rom_map_elem_t framebuf16_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf16_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf16_text_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf16_blit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_window), MP_ROM_PTR(&framebuf16_window_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf16_locals_dict, framebuf16_locals_dict_table);
 
