@@ -13,23 +13,23 @@ will look something like this::
 
     import pyb
     #pyb.main('main.py') # main script to run after this one
-    #pyb.usb_mode('CDC+MSC') # act as a serial and a storage device
-    #pyb.usb_mode('CDC+HID') # act as a serial device and a mouse
+    #pyb.usb_mode('VCP+MSC') # act as a serial and a storage device
+    #pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
 
 To enable the mouse mode, uncomment the last line of the file, to
 make it look like::
 
-    pyb.usb_mode('CDC+HID') # act as a serial device and a mouse
+    pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
 
 If you already changed your ``boot.py`` file, then the minimum code it
 needs to work is::
 
     import pyb
-    pyb.usb_mode('CDC+HID')
+    pyb.usb_mode('VCP+HID')
 
-This tells the pyboard to configure itself as a CDC (serial) and HID
-(human interface device, in our case a mouse) USB device when it boots
-up.
+This tells the pyboard to configure itself as a VCP (Virtual COM Port,
+ie serial port) and HID (human interface device, in our case a mouse)
+USB device when it boots up.
 
 Eject/unmount the pyboard drive and reset it using the RST switch.
 Your PC should now detect the pyboard as a mouse!
@@ -121,9 +121,9 @@ If you leave your pyboard as-is, it'll behave as a mouse everytime you plug
 it in.  You probably want to change it back to normal.  To do this you need
 to first enter safe mode (see above), and then edit the ``boot.py`` file.
 In the ``boot.py`` file, comment out (put a # in front of) the line with the
-``CDC+HID`` setting, so it looks like::
+``VCP+HID`` setting, so it looks like::
 
-    #pyb.usb_mode('CDC+HID') # act as a serial device and a mouse
+    #pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
 
 Save your file, eject/unmount the drive, and reset the pyboard.  It is now
 back to normal operating mode.
