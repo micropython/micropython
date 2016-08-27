@@ -83,7 +83,7 @@ STATIC mp_obj_t framebuf1_pixel(size_t n_args, const mp_obj_t *args) {
         int index = (y / 8) * self->stride + x;
         if (n_args == 3) {
             // get
-            return MP_OBJ_NEW_SMALL_INT(self->buf[index] >> (y & 7));
+            return MP_OBJ_NEW_SMALL_INT((self->buf[index] >> (y & 7)) & 1);
         } else {
             // set
             if (mp_obj_get_int(args[3])) {
