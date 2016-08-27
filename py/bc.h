@@ -78,7 +78,7 @@ typedef struct _mp_code_state_t {
     mp_exc_stack_t *exc_sp;
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS
-    struct _mp_code_state *prev;
+    struct _mp_code_state_t *prev;
     #endif
     size_t n_state;
     // Variable-length
