@@ -31,8 +31,8 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mphal.h"
-#include "adc.h"
-#include "pin.h"
+#include "modmachine_adc.h"
+#include "modmachine_pin.h"
 
 #include "asf/sam0/drivers/adc/adc.h"
 

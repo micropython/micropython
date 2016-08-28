@@ -31,7 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "pin.h"
+#include "modmachine_pin.h"
 
 #include "asf/sam0/drivers/port/port.h"
 

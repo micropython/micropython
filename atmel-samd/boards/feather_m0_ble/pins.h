@@ -2,7 +2,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_FEATHER_M0_BLE_PINS_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_FEATHER_M0_BLE_PINS_H__
 
-#include "pin.h"
+#include "modmachine_pin.h"
 
 extern const pin_obj_t pin_PA02;
 extern const pin_obj_t pin_PB08;

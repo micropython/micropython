@@ -113,13 +113,13 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	)
 
 SRC_C = \
-	adc.c \
 	main.c \
 	modmachine.c \
+	modmachine_adc.c \
+	modmachine_dac.c \
+	modmachine_pin.c \
 	modutime.c \
-	mpdac.c \
 	mphalport.c \
-	pin.c \
 	pin_named_pins.c \
 	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \

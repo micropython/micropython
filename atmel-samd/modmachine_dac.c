@@ -28,14 +28,8 @@
 #include <stdint.h>
 #include <string.h>
 
-//
-// #include "py/nlr.h"
 #include "py/runtime.h"
-// #include "timer.h"
-#include "mpdac.h"
-// #include "dma.h"
-// #include "pin.h"
-// #include "genhdr/pins.h"
+#include "modmachine_dac.h"
 
 #include "asf/sam0/drivers/dac/dac.h"
 

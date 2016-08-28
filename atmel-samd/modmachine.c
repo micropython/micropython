@@ -31,9 +31,9 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "adc.h"
-#include "mpdac.h"
-#include "pin.h"
+#include "modmachine_adc.h"
+#include "modmachine_dac.h"
+#include "modmachine_pin.h"
 
 #if MICROPY_PY_MACHINE
 

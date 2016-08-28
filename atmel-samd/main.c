@@ -18,7 +18,7 @@
 #include "asf/sam0/drivers/system/system.h"
 
 #include "mpconfigboard.h"
-#include "pin.h"
+#include "modmachine_pin.h"
 #include "uart.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
