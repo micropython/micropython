@@ -42,6 +42,17 @@ typedef struct _mp_obj_framebuf1_t {
     uint16_t width, height, stride;
 } mp_obj_framebuf1_t;
 
+// Helper functions for getting/setting pixels.
+STATIC inline void framebuf1_setpixel(const mp_obj_framebuf1_t *fb, int x, int y, uint8_t color) {
+    size_t index = (y >> 3) * fb->stride + x;
+    uint8_t offset = y & 0x07;
+    fb->buf[index] = (fb->buf[index] & ~(0x01 << offset)) | (color != 0) << offset;
+}
+
+STATIC inline uint8_t framebuf1_getpixel(const mp_obj_framebuf1_t *fb, int x, int y) {
+    return (fb->buf[(y >> 3) * fb->stride + x] >> (y & 0x07)) & 0x01;
+}
+
 STATIC mp_obj_t framebuf1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 3, 4, false);
 
@@ -81,17 +92,12 @@ STATIC mp_obj_t framebuf1_pixel(size_t n_args, const mp_obj_t *args) {
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     if (0 <= x && x < self->width && 0 <= y && y < self->height) {
-        int index = (y / 8) * self->stride + x;
         if (n_args == 3) {
             // get
-            return MP_OBJ_NEW_SMALL_INT((self->buf[index] >> (y & 7)) & 1);
+            return MP_OBJ_NEW_SMALL_INT(framebuf1_getpixel(self, x, y));
         } else {
             // set
-            if (mp_obj_get_int(args[3])) {
-                self->buf[index] |= (1 << (y & 7));
-            } else {
-                self->buf[index] &= ~(1 << (y & 7));
-            }
+            framebuf1_setpixel(self, x, y, mp_obj_get_int(args[3]));
         }
     }
     return mp_const_none;
@@ -157,14 +163,7 @@ STATIC mp_obj_t framebuf1_text(size_t n_args, const mp_obj_t *args) {
                 for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
                     if (vline_data & 1) { // only draw if pixel set
                         if (0 <= y && y < self->height) { // clip y
-                            uint byte_pos = x0 + self->stride * ((uint)y >> 3);
-                            if (col == 0) {
-                                // clear pixel
-                                self->buf[byte_pos] &= ~(1 << (y & 7));
-                            } else {
-                                // set pixel
-                                self->buf[byte_pos] |= 1 << (y & 7);
-                            }
+                            framebuf1_setpixel(self, x0, y, col);
                         }
                     }
                 }
@@ -176,11 +175,59 @@ STATIC mp_obj_t framebuf1_text(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf1_text_obj, 4, 5, framebuf1_text);
 
+// Copy one framebuffer onto the other at the specified offset.
+// Offset can be negative.
+// If color key is specified, that color is not copied.
+STATIC mp_obj_t framebuf1_blit(size_t n_args, const mp_obj_t *args) {
+    mp_obj_framebuf1_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_framebuf1_t *source = MP_OBJ_TO_PTR(args[1]);
+    mp_int_t x = mp_obj_get_int(args[2]);
+    mp_int_t y = mp_obj_get_int(args[3]);
+    mp_int_t key = -1;
+    if (n_args > 4) {
+        key = mp_obj_get_int(args[4]);
+    }
+
+    if (
+        (x >= self->width) ||
+        (y >= self->height) ||
+        (-x >= source->width) ||
+        (-y >= source->height)
+    ) {
+        // Out of bounds, no-op.
+        return mp_const_none;
+    }
+
+    // Clip.
+    int x0 = MAX(0, x);
+    int y0 = MAX(0, y);
+    int x1 = MAX(0, -x);
+    int y1 = MAX(0, -y);
+    int x0end = MIN(self->width, x + source->width);
+    int y0end = MIN(self->height, y + source->height);
+    int8_t color;
+
+    for (; y0 < y0end; ++y0) {
+        int cx1 = x1;
+        for (int cx0 = x0; cx0 < x0end; ++cx0) {
+            color = framebuf1_getpixel(source, cx1, y1);
+            if (color != key) {
+                framebuf1_setpixel(self, cx0, y0, color);
+            }
+            ++cx1;
+        }
+        ++y1;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf1_blit_obj, 4, 5, framebuf1_blit);
+
 STATIC const mp_rom_map_elem_t framebuf1_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf1_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&framebuf1_pixel_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf1_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf1_text_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf1_blit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf1_locals_dict, framebuf1_locals_dict_table);
 
