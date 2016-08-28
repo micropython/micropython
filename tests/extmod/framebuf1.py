@@ -8,7 +8,7 @@ except ImportError:
 w = 5
 h = 16
 buf = bytearray(w * h // 8)
-fbuf = framebuf.FrameBuffer1(buf, w, h, w)
+fbuf = framebuf.FrameBuffer(buf, w, h, w, 1)
 
 # fill
 fbuf.fill(1)
