@@ -39,3 +39,9 @@ fbuf.scroll(-1, 0)
 print(buf)
 fbuf.scroll(2, 2)
 print(buf)
+
+# fill rect
+fbuf.fill(0)
+fbuf.fill_rect(1, 1, 4, 4, 1)
+fbuf.fill_rect(2, 2, 2, 2, 0)
+print(buf)
