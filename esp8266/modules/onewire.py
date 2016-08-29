@@ -27,11 +27,9 @@ class OneWire:
     def readbyte(self):
         return _ow.readbyte(self.pin)
 
-    def read(self, count):
-        buf = bytearray(count)
-        for i in range(count):
+    def readinto(self, buf):
+        for i in range(len(buf)):
             buf[i] = _ow.readbyte(self.pin)
-        return buf
 
     def writebit(self, value):
         return _ow.writebit(self.pin, value)
