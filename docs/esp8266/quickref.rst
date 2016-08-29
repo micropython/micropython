@@ -23,14 +23,14 @@ Tab-completion is useful to find out what methods an object has.
 Paste mode (ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
 
-The ``machine`` module::
+The :mod:`machine` module::
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
     machine.freq(160000000) # set the CPU frequency to 160 MHz
 
-The ``esp`` module::
+The :mod:`esp` module::
 
     import esp
 
@@ -40,7 +40,7 @@ The ``esp`` module::
 Networking
 ----------
 
-The ``network`` module::
+The :mod:`network` module::
 
     import network
 
@@ -69,13 +69,13 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the ``socket`` module can be used
+Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual.
 
 Delay and timing
 ----------------
 
-Use the ``time`` module::
+Use the :mod:`time <utime>` module::
 
     import time
 
