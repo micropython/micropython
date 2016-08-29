@@ -253,15 +253,14 @@ The OneWire driver is implemented in software and works on all pins::
     ow.scan()               # return a list of devices on the bus
     ow.reset()              # reset the bus
     ow.readbyte()           # read a byte
-    ow.read(5)              # read 5 bytes
     ow.writebyte(0x12)      # write a byte on the bus
     ow.write('123')         # write bytes on the bus
     ow.select_rom(b'12345678') # select a specific device by its ROM code
 
-There is a specific driver for DS18B20 devices::
+There is a specific driver for DS18S20 and DS18B20 devices::
 
-    import time
-    ds = onewire.DS18B20(ow)
+    import time, ds18x20
+    ds = ds18x20.DS18X20(ow)
     roms = ds.scan()
     ds.convert_temp()
     time.sleep_ms(750)
