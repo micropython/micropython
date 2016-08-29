@@ -32,6 +32,7 @@
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 #include "usbd_msc_storage.h"
+#include "usbd_hid_interface.h"
 
 #include "py/objstr.h"
 #include "py/runtime.h"
@@ -123,6 +124,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
                 USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
                 break;
         }
+        USBD_HID_RegisterInterface(&hUSBDDevice, (USBD_HID_ItfTypeDef*)&USBD_HID_fops);
         USBD_Start(&hUSBDDevice);
     }
     pyb_usb_flags |= PYB_USB_FLAG_DEV_ENABLED;
@@ -553,6 +555,43 @@ STATIC mp_obj_t pyb_usb_hid_make_new(const mp_obj_type_t *type, mp_uint_t n_args
     return (mp_obj_t)&pyb_usb_hid_obj;
 }
 
+/// \method recv(data, *, timeout=5000)
+///
+/// Receive data on the bus:
+///
+///   - `data` can be an integer, which is the number of bytes to receive,
+///     or a mutable buffer, which will be filled with received bytes.
+///   - `timeout` is the timeout in milliseconds to wait for the receive.
+///
+/// Return value: if `data` is an integer then a new buffer of the bytes received,
+/// otherwise the number of bytes read into `data` is returned.
+STATIC mp_obj_t pyb_usb_hid_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_data,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
+    };
+
+    // parse args
+    mp_arg_val_t vals[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, vals);
+
+    // get the buffer to receive into
+    vstr_t vstr;
+    mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
+
+    // receive the data
+    int ret = USBD_HID_Rx((uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
+
+    // return the received data
+    if (o_ret != MP_OBJ_NULL) {
+        return mp_obj_new_int(ret); // number of bytes read into given buffer
+    } else {
+        vstr.len = ret; // set actual number of bytes read
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr); // create a new buffer
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_hid_recv_obj, 1, pyb_usb_hid_recv);
+
 STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
 #ifdef USE_DEVICE_MODE
     mp_buffer_info_t bufinfo;
@@ -587,6 +626,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
 STATIC const mp_map_elem_t pyb_usb_hid_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_hid_send_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_hid_recv_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_hid_locals_dict, pyb_usb_hid_locals_dict_table);

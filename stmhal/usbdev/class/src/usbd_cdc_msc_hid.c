@@ -81,6 +81,8 @@ typedef struct {
     uint32_t             IdleState;
     uint32_t             AltSetting;
     HID_StateTypeDef     state;
+    uint8_t              *RxBuffer;
+    uint32_t             RxLength;
 } USBD_HID_HandleTypeDef;
 
 static uint8_t usbd_mode;
@@ -94,6 +96,7 @@ static const uint8_t *hid_report_desc;
 
 static USBD_CDC_ItfTypeDef *CDC_fops;
 static USBD_StorageTypeDef *MSC_fops;
+static USBD_HID_ItfTypeDef *HID_fops;
 
 static USBD_CDC_HandleTypeDef CDC_ClassData;
 static USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
@@ -962,6 +965,9 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
     } else if ((usbd_mode & USBD_MODE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
         MSC_BOT_DataOut(pdev, epnum);
         return USBD_OK;
+    } else if ((usbd_mode & USBD_MODE_HID) && epnum == (hid_out_ep & 0x7f)) {
+        HID_ClassData.RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
+        HID_fops->Receive(HID_ClassData.RxBuffer, HID_ClassData.RxLength);
     }
 
     return USBD_OK;
@@ -1037,6 +1043,33 @@ uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *
         pdev->pUserData = fops; // MSC uses pUserData because SCSI and BOT reference it
         return USBD_OK;
     }
+}
+
+uint8_t USBD_HID_RegisterInterface(USBD_HandleTypeDef *pdev, USBD_HID_ItfTypeDef *fops) {
+    if (fops == NULL) {
+        return USBD_FAIL;
+    } else {
+        HID_fops = fops;
+        return USBD_OK;
+    }
+}
+
+uint8_t USBD_HID_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff) {
+    HID_ClassData.RxBuffer = pbuff;
+    return USBD_OK;
+}
+
+// prepare OUT endpoint for reception
+uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev) {
+    // Suspend or Resume USB Out process
+    if (pdev->dev_speed == USBD_SPEED_HIGH) {
+        return USBD_FAIL;
+    }
+
+    // Prepare Out endpoint to receive next packet
+    USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, HID_DATA_FS_MAX_PACKET_SIZE);
+
+    return USBD_OK;
 }
 
 int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev) {
