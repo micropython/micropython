@@ -11,7 +11,7 @@ class DS18X20:
         self.buf = bytearray(9)
 
     def scan(self):
-        return [rom for rom in self.ow.scan() if rom[0] == 0x28]
+        return [rom for rom in self.ow.scan() if rom[0] == 0x10 or rom[0] == 0x28]
 
     def convert_temp(self):
         self.ow.reset(True)
@@ -35,4 +35,12 @@ class DS18X20:
 
     def read_temp(self, rom):
         buf = self.read_scratch(rom)
-        return (buf[1] << 8 | buf[0]) / 16
+        if rom[0] == 0x10:
+            if buf[1]:
+                t = buf[0] >> 1 | 0x80
+                t = -((~t + 1) & 0xff)
+            else:
+                t = buf[0] >> 1
+            return t - 0.25 + (buf[7] - buf[6]) / buf[7]
+        else:
+            return (buf[1] << 8 | buf[0]) / 16
