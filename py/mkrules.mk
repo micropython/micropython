@@ -123,8 +123,9 @@ clean-prog:
 .PHONY: clean-prog
 endif
 
-lib: $(OBJ)
-	$(AR) rcs libmicropython.a $^
+LIBMICROPYTHON = libmicropython.a
+lib $(LIBMICROPYTHON): $(OBJ)
+	$(AR) rcs $(LIBMICROPYTHON) $^
 
 clean:
 	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
