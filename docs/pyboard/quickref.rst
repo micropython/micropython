@@ -3,6 +3,12 @@
 Quick reference for the pyboard
 ===============================
 
+The below pinout is for PYBv1.0.  You can also view pinouts for
+other versions of the pyboard:
+`PYBv1.1 <http://micropython.org/resources/pybv11-pinout.jpg>`__
+or `PYBLITEv1.0-AC <http://micropython.org/resources/pyblitev10ac-pinout.jpg>`__
+or `PYBLITEv1.0 <http://micropython.org/resources/pyblitev10-pinout.jpg>`__.
+
 .. image:: http://micropython.org/resources/pybv10-pinout.jpg
     :alt: PYBv1.0 pinout
     :width: 700px
