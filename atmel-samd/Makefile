@@ -58,6 +58,7 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	drivers/system/power/power_sam_d_r \
 	drivers/system/reset/reset_sam_d_r \
 	drivers/sercom/ \
+	drivers/tc/ \
 	drivers/usb/ \
 	utils \
 	utils/cmsis/samd21/include \
@@ -107,6 +108,8 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/system/interrupt/system_interrupt.c   \
 	drivers/system/pinmux/pinmux.c \
 	drivers/system/system.c \
+	drivers/tc/tc_sam_d_r/tc.c \
+	drivers/tcc/tcc.c \
 	drivers/usb/stack_interface/usb_device_udd.c \
 	drivers/usb/stack_interface/usb_dual.c \
 	drivers/usb/usb_sam_d_r/usb.c \
@@ -118,6 +121,7 @@ SRC_C = \
 	modmachine_adc.c \
 	modmachine_dac.c \
 	modmachine_pin.c \
+	modmachine_pwm.c \
 	modutime.c \
 	mphalport.c \
 	pin_named_pins.c \
