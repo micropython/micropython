@@ -114,6 +114,7 @@ extern const struct _mp_obj_module_t utime_module;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
+    mp_obj_t mp_kbd_exception; \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
 

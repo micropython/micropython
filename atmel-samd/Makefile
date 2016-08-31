@@ -81,7 +81,43 @@ endif
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -ggdb
 else
-CFLAGS += -Os -DNDEBUG
+# was -Os
+CFLAGS += -O1 -ggdb -DNDEBUG
+# CFLAGS += -O0 \
+#   -ftree-ter \
+# 	-ftree-sra \
+# 	-ftree-slsr \
+# 	-ftree-sink \
+# 	-ftree-pta \
+# 	-ftree-fre \
+# 	-ftree-dse \
+# 	-ftree-dominator-opts \
+# 	-ftree-dce \
+# 	-ftree-copyrename \
+# 	-ftree-copy-prop \
+# 	-ftree-ch \
+# 	-ftree-ccp \
+# 	-ftree-bit-ccp \
+# 	-fsplit-wide-types \
+# 	-fshrink-wrap \
+# 	-fsection-anchors \
+# 	-fsched-pressure \
+# 	-fomit-frame-pointer \
+# 	-fmove-loop-invariants \
+# 	-fmerge-constants \
+# 	-fipa-reference \
+# 	-fipa-pure-const \
+# 	-fipa-profile \
+# 	-finline-functions-called-once \
+# 	-fif-conversion \
+# 	-fif-conversion2 \
+# 	-fguess-branch-probability \
+# 	-fforward-propagate \
+# 	-fdefer-pop \
+# 	-fcprop-registers \
+# 	-fcompare-elim \
+# 	-fcombine-stack-adjustments \
+# 	-fbranch-count-reg
 endif
 
 LIBS =
