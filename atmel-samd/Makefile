@@ -71,7 +71,27 @@ INC += -Iboards/$(BOARD)/
 INC += -I$(BUILD)
 
 ifeq ($(CROSS), 1)
-CFLAGS_CORTEX_M0 = -mthumb -mabi=aapcs-linux -mcpu=cortex-m0plus -fsingle-precision-constant -Wdouble-promotion -D__SAMD21G18A__ -DUSB_DEVICE_PRODUCT_ID=0x024D -DUSB_DEVICE_VENDOR_ID=0x4123 -DBOARD=USER_BOARD -ffunction-sections -fdata-sections -fshort-enums -D ARM_MATH_CM0PLUS=true -DSYSTICK_MODE -DEXTINT_CALLBACK_MODE=true -DUDD_ENABLE -DUSART_CALLBACK_MODE=true -DUSB_DEVICE_LPM_SUPPORT
+CFLAGS_CORTEX_M0 = \
+	-mthumb \
+	-mabi=aapcs-linux \
+	-mcpu=cortex-m0plus \
+	-msoft-float \
+	-mfloat-abi=soft \
+	-fsingle-precision-constant \
+	-Wdouble-promotion \
+	-D__SAMD21G18A__ \
+	-DUSB_DEVICE_PRODUCT_ID=0x024D \
+	-DUSB_DEVICE_VENDOR_ID=0x4123 \
+	-DBOARD=USER_BOARD \
+	-ffunction-sections \
+	-fdata-sections \
+	-fshort-enums \
+	-D ARM_MATH_CM0PLUS=true \
+	-DSYSTICK_MODE \
+	-DEXTINT_CALLBACK_MODE=true \
+	-DUDD_ENABLE \
+	-DUSART_CALLBACK_MODE=true \
+	-DUSB_DEVICE_LPM_SUPPORT
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 else
 CFLAGS = -m32 $(INC) -Wall -Werror -ansi -std=gnu99 $(COPT)
@@ -87,8 +107,9 @@ endif
 LIBS =
 ifeq ($(CROSS), 1)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -L $(dir $(LIBGCC_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
-LIBS += -larm_cortexM0l_math -lgcc
+LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
+LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -L $(dir $(LIBGCC_FILE_NAME)) -L $(dir $(LIBM_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
+LIBS += -larm_cortexM0l_math -lm -lgcc -lc
 else
 LD = gcc
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref
