@@ -30,6 +30,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/machine_spi.h"
 #include "irq.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -400,6 +401,17 @@ STATIC void spi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *
     }
 }
 
+STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
+    if (src_len == 1 && dest_len > 1) {
+        // this catches read and readinto
+        // copy the single output byte to the dest buffer and use that as source
+        memset(dest_buf, src_buf[0], dest_len);
+        src_len = dest_len;
+        src_buf = dest_buf;
+    }
+    spi_transfer(self_in, src_len, src_buf, dest_len, dest_buf, 100);
+}
+
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
@@ -748,6 +760,13 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_spi_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_spi_deinit_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_machine_spi_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_machine_spi_readinto_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_machine_spi_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write_readinto), (mp_obj_t)&mp_machine_spi_write_readinto_obj },
+
+    // legacy methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_spi_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_spi_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_spi_send_recv_obj },
@@ -773,10 +792,15 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
+STATIC const mp_machine_spi_p_t pyb_spi_p = {
+    .transfer = spi_transfer_machine,
+};
+
 const mp_obj_type_t pyb_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SPI,
     .print = pyb_spi_print,
     .make_new = pyb_spi_make_new,
+    .protocol = &pyb_spi_p,
     .locals_dict = (mp_obj_t)&pyb_spi_locals_dict,
 };
