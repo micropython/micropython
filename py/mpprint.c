@@ -456,6 +456,10 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
         }
 
         switch (*fmt) {
+            case '%':
+                print->print_strn(print->data, fmt, 1);
+                chrs += 1;
+                break;
             case 'b':
                 if (va_arg(args, int)) {
                     chrs += mp_print_strn(print, "true", 4, flags, fill, width);
@@ -537,13 +541,12 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                     chrs += mp_print_int(print, arg_value, *fmt == 'd', 10, 'a', flags, fill, width);
                     break;
                 }
-                // fall through to default case to print unknown format char
+                // fall through to default case
             }
             #endif
             default:
-                print->print_strn(print->data, fmt, 1);
-                chrs += 1;
-                break;
+                // unsupported or invalid cases
+                assert(!"unsupported fmt char");
         }
         ++fmt;
     }
