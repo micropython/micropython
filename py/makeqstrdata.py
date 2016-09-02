@@ -14,11 +14,13 @@ import sys
 #   - codepoint2name lives in a different module
 import platform
 if platform.python_version_tuple()[0] == '2':
-    ord_bytes = ord
+    bytes_cons = lambda val, enc=None: bytearray(val)
     from htmlentitydefs import codepoint2name
 elif platform.python_version_tuple()[0] == '3':
-    ord_bytes = lambda x:x
+    bytes_cons = bytes
     from html.entities import codepoint2name
+# end compatibility code
+
 codepoint2name[ord('-')] = 'hyphen';
 
 # add some custom names to map characters that aren't in HTML
@@ -52,8 +54,8 @@ codepoint2name[ord('~')] = 'tilde'
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
     hash = 5381
-    for char in qstr:
-        hash = (hash * 33) ^ ord(char)
+    for b in qstr:
+        hash = (hash * 33) ^ b
     # Make sure that valid hash is never zero, zero means "hash not computed"
     return (hash & ((1 << (8 * bytes_hash)) - 1)) or 1
 
@@ -115,16 +117,15 @@ def parse_input_headers(infiles):
     return qcfgs, qstrs
 
 def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
-    qhash = compute_hash(qstr, cfg_bytes_hash)
+    qbytes = bytes_cons(qstr, 'utf8')
+    qlen = len(qbytes)
+    qhash = compute_hash(qbytes, cfg_bytes_hash)
     if all(32 <= ord(c) <= 126 and c != '\\' and c != '"' for c in qstr):
         # qstr is all printable ASCII so render it as-is (for easier debugging)
-        qlen = len(qstr)
         qdata = qstr
     else:
         # qstr contains non-printable codes so render entire thing as hex pairs
-        qbytes = qstr.encode('utf8')
-        qlen = len(qbytes)
-        qdata = ''.join(('\\x%02x' % ord_bytes(b)) for b in qbytes)
+        qdata = ''.join(('\\x%02x' % b) for b in qbytes)
     if qlen >= (1 << (8 * cfg_bytes_len)):
         print('qstr is too long:', qstr)
         assert False
