@@ -99,6 +99,11 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     mp_int_t r = read(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+
+        if (*errcode == EAGAIN) {
+            *errcode = MP_ETIMEDOUT;
+        }
+
         return MP_STREAM_ERROR;
     }
     return r;
@@ -109,6 +114,11 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     mp_int_t r = write(o->fd, buf, size);
     if (r == -1) {
         *errcode = errno;
+
+        if (*errcode == EAGAIN) {
+            *errcode = MP_ETIMEDOUT;
+        }
+
         return MP_STREAM_ERROR;
     }
     return r;
