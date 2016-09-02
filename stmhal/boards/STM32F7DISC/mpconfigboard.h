@@ -20,12 +20,19 @@
 void STM32F7DISC_board_early_init(void);
 
 // HSE is 25MHz
+// VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
+// SYSCLK = VCOClock / PLLP = 432 MHz / 2 = 216 MHz
+// USB/SDMMC/RNG Clock = VCOClock / PLLQ = 432 MHz / 9 = 48 MHz
 #define MICROPY_HW_CLK_PLLM (25)
-#define MICROPY_HW_CLK_PLLN (336)
+#define MICROPY_HW_CLK_PLLN (432)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
-#define MICROPY_HW_CLK_PLLQ (7)
+#define MICROPY_HW_CLK_PLLQ (9)
 
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_6
+// From the reference manual, for 2.7V to 3.6V
+// 151-180 MHz => 5 wait states
+// 181-210 MHz => 6 wait states
+// 211-216 MHz => 7 wait states
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
 
 // UART config
 #define MICROPY_HW_UART1_TX_PORT    (GPIOA)
