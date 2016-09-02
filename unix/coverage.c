@@ -1,11 +1,16 @@
 #include <stdio.h>
 
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/mpz.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
+
+// str/bytes objects without a valid hash
+STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte*)"0123456789"};
+STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte*)"0123456789"};
 
 // function to run extra tests for things that can't be checked by scripts
 STATIC mp_obj_t extra_coverage(void) {
@@ -109,7 +114,9 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
     }
 
-    return mp_const_none;
+    // return a tuple of data for testing on the Python side
+    mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj};
+    return mp_obj_new_tuple(MP_ARRAY_SIZE(items), items);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
 
