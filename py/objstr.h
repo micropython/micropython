@@ -39,6 +39,7 @@ typedef struct _mp_obj_str_t {
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str}
 
 // use this macro to extract the string hash
+// warning: the hash can be 0, meaning invalid, and must then be explicitly computed from the data
 #define GET_STR_HASH(str_obj_in, str_hash) \
     mp_uint_t str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) \
     { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->hash; }
