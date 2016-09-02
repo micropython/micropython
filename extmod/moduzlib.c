@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 
 #if MICROPY_PY_UZLIB
 
@@ -39,6 +40,85 @@
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif
+
+typedef struct _mp_obj_decompio_t {
+    mp_obj_base_t base;
+    mp_obj_t src_stream;
+    TINF_DATA decomp;
+    bool eof;
+} mp_obj_decompio_t;
+
+STATIC unsigned char read_src_stream(TINF_DATA *data) {
+    byte *p = (void*)data;
+    p -= offsetof(mp_obj_decompio_t, decomp);
+    mp_obj_decompio_t *self = (mp_obj_decompio_t*)p;
+
+    const mp_stream_p_t *stream = mp_get_stream_raise(self->src_stream, MP_STREAM_OP_READ);
+    int err;
+    byte c;
+    mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
+    if (out_sz == MP_STREAM_ERROR) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+    }
+    if (out_sz == 0) {
+        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+    }
+    return c;
+}
+
+#define DICT_SIZE 32768
+
+STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
+    o->base.type = type;
+    memset(&o->decomp, 0, sizeof(o->decomp));
+    uzlib_uncompress_init(&o->decomp, m_new(byte, DICT_SIZE), DICT_SIZE);
+    o->decomp.readSource = read_src_stream;
+    o->src_stream = args[0];
+    o->eof = false;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+    mp_obj_decompio_t *o = MP_OBJ_TO_PTR(o_in);
+    if (o->eof) {
+        return 0;
+    }
+
+    o->decomp.dest = buf;
+    o->decomp.destSize = size;
+    int st = uzlib_uncompress_chksum(&o->decomp);
+    if (st == TINF_DONE) {
+        o->eof = true;
+    }
+    if (st < 0) {
+        *errcode = EINVAL;
+        return MP_STREAM_ERROR;
+    }
+    return o->decomp.dest - (byte*)buf;
+}
+
+STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readall), MP_ROM_PTR(&mp_stream_readall_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);
+
+STATIC const mp_stream_p_t decompio_stream_p = {
+    .read = decompio_read,
+};
+
+STATIC const mp_obj_type_t decompio_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_DecompIO,
+    .make_new = decompio_make_new,
+    .protocol = &decompio_stream_p,
+    .locals_dict = (void*)&decompio_locals_dict,
+};
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -102,6 +182,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_u
 STATIC const mp_rom_map_elem_t mp_module_uzlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uzlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&mod_uzlib_decompress_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DecompIO), MP_ROM_PTR(&decompio_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uzlib_globals, mp_module_uzlib_globals_table);
