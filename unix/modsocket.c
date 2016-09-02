@@ -310,6 +310,28 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
+STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+    struct timeval tv = {0,};
+    if (timeout_in == mp_const_none) {
+        setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, NULL, 0);
+        setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, NULL, 0);
+    } else {
+        tv.tv_sec = mp_obj_get_int(timeout_in);
+
+        #if MICROPY_PY_BUILTINS_FLOAT
+        tv.tv_usec = (mp_obj_get_float(timeout_in) - tv.tv_sec) * 1000000;
+        #endif
+
+        setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO,
+                   &tv, sizeof(struct timeval));
+        setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO,
+                   &tv, sizeof(struct timeval));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
+
 STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     // TODO: CPython explicitly says that closing returned object doesn't close
     // the original socket (Python2 at all says that fd is dup()ed). But we
@@ -367,6 +389,7 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socket_settimeout_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
