@@ -283,15 +283,15 @@ class RawCode:
         # generate constant objects
         for i, obj in enumerate(self.objs):
             obj_name = 'const_obj_%s_%u' % (self.escaped_name, i)
-            if is_str_type(obj):
-                obj = bytes_cons(obj, 'utf8')
-                print('STATIC const mp_obj_str_t %s = '
-                    '{{&mp_type_str}, 0, %u, (const byte*)"%s"};'
-                    % (obj_name, len(obj), ''.join(('\\x%02x' % b) for b in obj)))
-            elif is_bytes_type(obj):
-                print('STATIC const mp_obj_str_t %s = '
-                    '{{&mp_type_bytes}, 0, %u, (const byte*)"%s"};'
-                    % (obj_name, len(obj), ''.join(('\\x%02x' % b) for b in obj)))
+            if is_str_type(obj) or is_bytes_type(obj):
+                if is_str_type(obj):
+                    obj = bytes_cons(obj, 'utf8')
+                    obj_type = 'mp_type_str'
+                else:
+                    obj_type = 'mp_type_bytes'
+                print('STATIC const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
+                    % (obj_name, obj_type, qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
+                        len(obj), ''.join(('\\x%02x' % b) for b in obj)))
             elif is_int_type(obj):
                 if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
                     # TODO check if we can actually fit this long-int into a small-int
