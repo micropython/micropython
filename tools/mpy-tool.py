@@ -444,10 +444,7 @@ def dump_mpy(raw_codes):
     for rc in raw_codes:
         rc.dump()
 
-def freeze_mpy(qcfgs, base_qstrs, raw_codes):
-    cfg_bytes_len = int(qcfgs['BYTES_IN_LEN'])
-    cfg_bytes_hash = int(qcfgs['BYTES_IN_HASH'])
-
+def freeze_mpy(base_qstrs, raw_codes):
     # add to qstrs
     new = {}
     for q in global_qstrs:
@@ -505,7 +502,8 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print('    %u, // used entries' % len(new))
     print('    {')
     for _, _, qstr in new:
-        print('        %s,' % qstrutil.make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr))
+        print('        %s,'
+            % qstrutil.make_bytes(config.MICROPY_QSTR_BYTES_IN_LEN, config.MICROPY_QSTR_BYTES_IN_HASH, qstr))
     print('    },')
     print('};')
 
@@ -549,10 +547,15 @@ def main():
     }[args.mlongint_impl]
     config.MPZ_DIG_SIZE = args.mmpz_dig_size
 
+    # set config values for qstrs, and get the existing base set of qstrs
     if args.qstr_header:
         qcfgs, base_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        config.MICROPY_QSTR_BYTES_IN_LEN = int(qcfgs['BYTES_IN_LEN'])
+        config.MICROPY_QSTR_BYTES_IN_HASH = int(qcfgs['BYTES_IN_HASH'])
     else:
-        qcfgs, base_qstrs = {'BYTES_IN_LEN':1, 'BYTES_IN_HASH':1}, {}
+        config.MICROPY_QSTR_BYTES_IN_LEN = 1
+        config.MICROPY_QSTR_BYTES_IN_HASH = 1
+        base_qstrs = {}
 
     raw_codes = [read_mpy(file) for file in args.files]
 
@@ -560,7 +563,7 @@ def main():
         dump_mpy(raw_codes)
     elif args.freeze:
         try:
-            freeze_mpy(qcfgs, base_qstrs, raw_codes)
+            freeze_mpy(base_qstrs, raw_codes)
         except FreezeError as er:
             print(er, file=sys.stderr)
             sys.exit(1)
