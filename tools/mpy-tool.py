@@ -320,6 +320,9 @@ class RawCode:
                 print('STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};'
                     % (obj_name, obj))
                 print('#endif')
+            elif type(obj) is complex:
+                print('STATIC const mp_obj_complex_t %s = {{&mp_type_complex}, %.16g, %.16g};'
+                    % (obj_name, obj.real, obj.imag))
             else:
                 # TODO
                 raise FreezeError(self, 'freezing of object %r is not implemented' % (obj,))
@@ -482,6 +485,15 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('    mp_obj_base_t base;')
     print('    mp_float_t value;')
     print('} mp_obj_float_t;')
+    print('#endif')
+    print()
+
+    print('#if MICROPY_PY_BUILTINS_COMPLEX')
+    print('typedef struct _mp_obj_complex_t {')
+    print('    mp_obj_base_t base;')
+    print('    mp_float_t real;')
+    print('    mp_float_t imag;')
+    print('} mp_obj_complex_t;')
     print('#endif')
     print()
 
