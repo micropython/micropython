@@ -30,6 +30,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/mperrno.h"
 
 #if MICROPY_PY_UZLIB
 
@@ -93,7 +94,7 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
         o->eof = true;
     }
     if (st < 0) {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
     return o->decomp.dest - (byte*)buf;
