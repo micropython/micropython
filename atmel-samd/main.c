@@ -8,7 +8,10 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+
+#include "lib/fatfs/ff.h"
 #include "lib/utils/pyexec.h"
+#include "extmod/fsusermount.h"
 
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/udc/udc.h"
@@ -19,7 +22,10 @@
 
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
+#include "storage.h"
 #include "uart.h"
+
+fs_user_mount_t fs_user_mount_flash;
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -38,6 +44,114 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     } else {
         // uncaught exception
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+    }
+}
+
+static const char fresh_boot_py[] =
+"# boot.py -- run on boot-up\r\n"
+"# can run arbitrary Python, but best to keep it minimal\r\n"
+"\r\n"
+;
+
+static const char fresh_main_py[] =
+"# main.py -- put your code here!\r\n"
+;
+
+static const char fresh_readme_txt[] =
+"This is a MicroPython board\r\n"
+"\r\n"
+"You can get started right away by writing your Python code in 'main.py'.\r\n"
+"\r\n"
+"For a serial prompt:\r\n"
+" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
+"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
+"   Then use a terminal program like Hyperterminal or putty.\r\n"
+" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
+" - Linux: use the command: screen /dev/ttyACM0\r\n"
+"\r\n"
+"Please visit http://micropython.org/help/ for further help.\r\n"
+;
+
+// we don't make this function static because it needs a lot of stack and we
+// want it to be executed without using stack within main() function
+void init_flash_fs() {
+    // init the vfs object
+    fs_user_mount_t *vfs = &fs_user_mount_flash;
+    vfs->str = "/flash";
+    vfs->len = 6;
+    vfs->flags = 0;
+    flash_init_vfs(vfs);
+
+    // put the flash device in slot 0 (it will be unused at this point)
+    MP_STATE_PORT(fs_user_mount)[0] = vfs;
+
+    // try to mount the flash
+    FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+
+    if (res == FR_NO_FILESYSTEM) {
+        // no filesystem, or asked to reset it, so create a fresh one
+
+        res = f_mkfs("/flash", 0, 0);
+        if (res == FR_OK) {
+            // success creating fresh LFS
+        } else {
+            printf("PYB: can't create flash filesystem\n");
+            MP_STATE_PORT(fs_user_mount)[0] = NULL;
+            return;
+        }
+
+        // set label
+        f_setlabel("/flash/internalflash");
+
+        // create empty main.py
+        FIL fp;
+        f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+        UINT n;
+        f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+
+        // TODO(tannewt): Create an .inf driver file for Windows.
+
+        // create readme file
+        f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
+        f_close(&fp);
+    } else if (res == FR_OK) {
+        // mount successful
+    } else {
+        printf("PYB: can't mount flash\n");
+        MP_STATE_PORT(fs_user_mount)[0] = NULL;
+        return;
+    }
+
+    // The current directory is used as the boot up directory.
+    // It is set to the internal flash filesystem by default.
+    f_chdrive("/flash");
+
+    // Make sure we have a /flash/boot.py.  Create it if needed.
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+    res = f_stat("/flash/boot.py", &fno);
+    if (res == FR_OK) {
+        if (fno.fattrib & AM_DIR) {
+            // exists as a directory
+            // TODO handle this case
+            // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
+        } else {
+            // exists as a file, good!
+        }
+    } else {
+        // doesn't exist, create fresh file
+
+        FIL fp;
+        f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+        UINT n;
+        f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
+        // TODO check we could write n bytes
+        f_close(&fp);
     }
 }
 
@@ -62,6 +176,10 @@ int main(int argc, char **argv) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
     pin_init0();
+
+    // Initialise the local flash filesystem.
+    // Create it if needed, mount in on /flash, and set it as current dir.
+    init_flash_fs();
 
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
@@ -97,11 +215,6 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
-
-mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void mp_keyboard_interrupt(void) {
     MP_STATE_VM(mp_pending_exception) = MP_STATE_PORT(mp_kbd_exception);

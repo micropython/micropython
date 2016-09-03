@@ -35,6 +35,7 @@ HAL_DIR=hal/$(MCU_SERIES)
 INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
+INC += -I../lib/timeutils
 INC += -Iasf/common/boards/
 INC += -Iasf/common/services/sleepmgr/
 INC += -Iasf/common/services/usb/
@@ -99,7 +100,7 @@ endif
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -Os -ggdb
 else
 CFLAGS += -Os -DNDEBUG
 endif
@@ -119,6 +120,7 @@ endif
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/adc/adc_sam_d_r/adc.c \
 	drivers/dac/dac_sam_d_c/dac.c \
+	drivers/nvm/nvm.c \
 	drivers/port/port.c \
 	drivers/sercom/sercom.c \
 	drivers/sercom/sercom_interrupt.c \
@@ -137,15 +139,19 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	)
 
 SRC_C = \
+	builtin_open.c \
+	fatfs_port.c \
 	main.c \
 	modmachine.c \
 	modmachine_adc.c \
 	modmachine_dac.c \
 	modmachine_pin.c \
 	modmachine_pwm.c \
+	moduos.c \
 	modutime.c \
 	mphalport.c \
 	pin_named_pins.c \
+	storage.c \
 	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
@@ -157,6 +163,9 @@ SRC_C = \
 	asf/sam0/utils/cmsis/samd21/source/system_samd21.c     \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
 	boards/$(BOARD)/pins.c \
+	lib/fatfs/ff.c \
+	lib/fatfs/option/ccsbcs.c \
+	lib/timeutils/timeutils.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \

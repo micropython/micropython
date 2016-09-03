@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
- * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,35 +24,23 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-
-#include "py/obj.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
+#include "lib/fatfs/ff.h"        /* FatFs lower layer API */
+#include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
 
-#include "modmachine_adc.h"
-#include "modmachine_dac.h"
-#include "modmachine_pin.h"
-#include "modmachine_pwm.h"
-#include "storage.h"
-
-#if MICROPY_PY_MACHINE
-
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
-    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&adc_type) },
-    { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&dac_type) },
-    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
-    { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&pwm_type) },
-    { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&flash_type) },
+const PARTITION VolToPart[MICROPY_FATFS_VOLUMES] = {
+    {0, 1},     // Logical drive 0 ==> Physical drive 0, 1st partition
+    {1, 0},     // Logical drive 1 ==> Physical drive 1 (auto detection)
+    {2, 0},     // Logical drive 2 ==> Physical drive 2 (auto detection)
+    {3, 0},     // Logical drive 3 ==> Physical drive 3 (auto detection)
+    /*
+    {0, 2},     // Logical drive 2 ==> Physical drive 0, 2nd partition
+    {0, 3},     // Logical drive 3 ==> Physical drive 0, 3rd partition
+    */
 };
 
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t machine_module = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_umachine,
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
-};
-
-#endif // MICROPY_PY_MACHINE
+DWORD get_fattime(void) {
+    // TODO(tannewt): Support the RTC.
+    return ((2016) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
+}

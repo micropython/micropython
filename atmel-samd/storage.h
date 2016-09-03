@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
- * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,35 +24,24 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#define FLASH_BLOCK_SIZE (512)
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
+#define STORAGE_IDLE_TICK(tick) (((tick) & STORAGE_SYSTICK_MASK) == 2)
 
-#include "modmachine_adc.h"
-#include "modmachine_dac.h"
-#include "modmachine_pin.h"
-#include "modmachine_pwm.h"
-#include "storage.h"
+void storage_init(void);
+uint32_t storage_get_block_size(void);
+uint32_t storage_get_block_count(void);
+void storage_irq_handler(void);
+void storage_flush(void);
+bool storage_read_block(uint8_t *dest, uint32_t block);
+bool storage_write_block(const uint8_t *src, uint32_t block);
 
-#if MICROPY_PY_MACHINE
+// these return 0 on success, non-zero on error
+mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
+mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
-    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&adc_type) },
-    { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&dac_type) },
-    { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
-    { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&pwm_type) },
-    { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&flash_type) },
-};
+extern const struct _mp_obj_type_t flash_type;
 
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t machine_module = {
-    .base = { &mp_type_module },
-    .name = MP_QSTR_umachine,
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
-};
-
-#endif // MICROPY_PY_MACHINE
+struct _fs_user_mount_t;
+void flash_init_vfs(struct _fs_user_mount_t *vfs);
