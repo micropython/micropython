@@ -537,10 +537,12 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                     chrs += mp_print_int(print, arg_value, *fmt == 'd', 10, 'a', flags, fill, width);
                     break;
                 }
-                // fall through to default case to print unknown format char
+                assert(!"unsupported fmt char");
             }
             #endif
             default:
+                // if it's not %% then it's an unsupported format character
+                assert(*fmt == '%' || !"unsupported fmt char");
                 print->print_strn(print->data, fmt, 1);
                 chrs += 1;
                 break;

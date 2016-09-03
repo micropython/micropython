@@ -199,7 +199,11 @@ uint32_t spi_transaction(uint8_t spi_no, uint8_t cmd_bits, uint16_t cmd_data,
     // This is rather inefficient but allows for a very generic function.
     // CMD ADDR and MOSI are set below to save on an extra if statement.
     if (din_bits) {
-        SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_USR_MISO);
+        if (dout_bits) {
+            SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_DOUTDIN);
+        } else {
+            SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_USR_MISO);
+        }
     }
     if (dummy_bits) {
         SET_PERI_REG_MASK(SPI_USER(spi_no), SPI_USR_DUMMY);

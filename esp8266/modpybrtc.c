@@ -212,7 +212,7 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
     }
 
     // set expiry time (in microseconds)
-    pyb_rtc_alarm0_expiry = pyb_rtc_get_us_since_2000() + mp_obj_get_int(time_in) * 1000;
+    pyb_rtc_alarm0_expiry = pyb_rtc_get_us_since_2000() + (uint64_t)mp_obj_get_int(time_in) * 1000;
 
     return mp_const_none;
 

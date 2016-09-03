@@ -68,7 +68,8 @@ STATIC mp_obj_t framebuf1_fill(mp_obj_t self_in, mp_obj_t col_in) {
     if (col) {
         col = 0xff;
     }
-    for (int y = 0; y < self->height / 8; ++y) {
+    int end = (self->height + 7) >> 3;
+    for (int y = 0; y < end; ++y) {
         memset(self->buf + y * self->stride, col, self->width);
     }
     return mp_const_none;
@@ -83,7 +84,7 @@ STATIC mp_obj_t framebuf1_pixel(size_t n_args, const mp_obj_t *args) {
         int index = (y / 8) * self->stride + x;
         if (n_args == 3) {
             // get
-            return MP_OBJ_NEW_SMALL_INT(self->buf[index] >> (y & 7));
+            return MP_OBJ_NEW_SMALL_INT((self->buf[index] >> (y & 7)) & 1);
         } else {
             // set
             if (mp_obj_get_int(args[3])) {
@@ -101,8 +102,9 @@ STATIC mp_obj_t framebuf1_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t y
     mp_obj_framebuf1_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t xstep = mp_obj_get_int(xstep_in);
     mp_int_t ystep = mp_obj_get_int(ystep_in);
+    int end = (self->height + 7) >> 3;
     if (xstep == 0 && ystep > 0) {
-        for (int y = self->height / 8; y > 0;) {
+        for (int y = end; y > 0;) {
             --y;
             for (int x = 0; x < self->width; ++x) {
                 int prev = 0;
@@ -113,10 +115,10 @@ STATIC mp_obj_t framebuf1_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t y
             }
         }
     } else if (xstep == 0 && ystep < 0) {
-        for (int y = 0; y < self->height / 8; ++y) {
+        for (int y = 0; y < end; ++y) {
             for (int x = 0; x < self->width; ++x) {
                 int prev = 0;
-                if (y + 1 < self->height / 8) {
+                if (y + 1 < end) {
                     prev = self->buf[(y + 1) * self->stride + x] << (8 + ystep);
                 }
                 self->buf[y * self->stride + x] = (self->buf[y * self->stride + x] >> -ystep) | prev;

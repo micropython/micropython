@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_EXTMOD_MODUBINASCII
-#define MICROPY_EXTMOD_MODUBINASCII
+#ifndef MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
+#define MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
 
-extern mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args);
-extern mp_obj_t mod_binascii_unhexlify(mp_obj_t data);
-extern mp_obj_t mod_binascii_a2b_base64(mp_obj_t data);
-extern mp_obj_t mod_binascii_b2a_base64(mp_obj_t data);
-extern mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args);
+#include "py/obj.h"
 
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_hexlify_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_unhexlify_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_a2b_base64_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_b2a_base64_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_crc32_obj);
+// SPI protocol
+typedef struct _mp_machine_spi_p_t {
+    void (*transfer)(mp_obj_base_t *obj, size_t slen, const uint8_t *src, size_t dlen, uint8_t *dest);
+} mp_machine_spi_p_t;
 
-#endif /* MICROPY_EXTMOD_MODUBINASCII */
+MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_write_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_write_readinto_obj);
+
+#endif // MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H

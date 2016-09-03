@@ -217,6 +217,10 @@ mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
     } else if (op == MP_UNARY_OP_HASH && MP_OBJ_IS_STR_OR_BYTES(arg)) {
         // fast path for hashing str/bytes
         GET_STR_HASH(arg, h);
+        if (h == 0) {
+            GET_STR_DATA_LEN(arg, data, len);
+            h = qstr_compute_hash(data, len);
+        }
         return MP_OBJ_NEW_SMALL_INT(h);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(arg);

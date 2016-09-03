@@ -165,7 +165,7 @@ STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
 #define VM_DETECT_STACK_OVERFLOW (0)
 
 #if MICROPY_STACKLESS
-mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -178,8 +178,8 @@ mp_code_state *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, 
 
     // allocate state for locals and stack
     size_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
-    mp_code_state *code_state;
-    code_state = m_new_obj_var_maybe(mp_code_state, byte, state_size);
+    mp_code_state_t *code_state;
+    code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
     if (!code_state) {
         return NULL;
     }
@@ -220,12 +220,12 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 
     // allocate state for locals and stack
     mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
-    mp_code_state *code_state = NULL;
+    mp_code_state_t *code_state = NULL;
     if (state_size > VM_MAX_STATE_ON_STACK) {
-        code_state = m_new_obj_var_maybe(mp_code_state, byte, state_size);
+        code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
     }
     if (code_state == NULL) {
-        code_state = alloca(sizeof(mp_code_state) + state_size);
+        code_state = alloca(sizeof(mp_code_state_t) + state_size);
         state_size = 0; // indicate that we allocated using alloca
     }
 
@@ -287,7 +287,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 
     // free the state if it was allocated on the heap
     if (state_size != 0) {
-        m_del_var(mp_code_state, byte, state_size, code_state);
+        m_del_var(mp_code_state_t, byte, state_size, code_state);
     }
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {

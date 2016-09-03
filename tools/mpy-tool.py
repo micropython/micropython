@@ -283,15 +283,15 @@ class RawCode:
         # generate constant objects
         for i, obj in enumerate(self.objs):
             obj_name = 'const_obj_%s_%u' % (self.escaped_name, i)
-            if is_str_type(obj):
-                obj = bytes_cons(obj, 'utf8')
-                print('STATIC const mp_obj_str_t %s = '
-                    '{{&mp_type_str}, 0, %u, (const byte*)"%s"};'
-                    % (obj_name, len(obj), ''.join(('\\x%02x' % b) for b in obj)))
-            elif is_bytes_type(obj):
-                print('STATIC const mp_obj_str_t %s = '
-                    '{{&mp_type_bytes}, 0, %u, (const byte*)"%s"};'
-                    % (obj_name, len(obj), ''.join(('\\x%02x' % b) for b in obj)))
+            if is_str_type(obj) or is_bytes_type(obj):
+                if is_str_type(obj):
+                    obj = bytes_cons(obj, 'utf8')
+                    obj_type = 'mp_type_str'
+                else:
+                    obj_type = 'mp_type_bytes'
+                print('STATIC const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
+                    % (obj_name, obj_type, qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
+                        len(obj), ''.join(('\\x%02x' % b) for b in obj)))
             elif is_int_type(obj):
                 if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
                     # TODO check if we can actually fit this long-int into a small-int
@@ -320,6 +320,9 @@ class RawCode:
                 print('STATIC const mp_obj_float_t %s = {{&mp_type_float}, %.16g};'
                     % (obj_name, obj))
                 print('#endif')
+            elif type(obj) is complex:
+                print('STATIC const mp_obj_complex_t %s = {{&mp_type_complex}, %.16g, %.16g};'
+                    % (obj_name, obj.real, obj.imag))
             else:
                 # TODO
                 raise FreezeError(self, 'freezing of object %r is not implemented' % (obj,))
@@ -444,10 +447,7 @@ def dump_mpy(raw_codes):
     for rc in raw_codes:
         rc.dump()
 
-def freeze_mpy(qcfgs, base_qstrs, raw_codes):
-    cfg_bytes_len = int(qcfgs['BYTES_IN_LEN'])
-    cfg_bytes_hash = int(qcfgs['BYTES_IN_HASH'])
-
+def freeze_mpy(base_qstrs, raw_codes):
     # add to qstrs
     new = {}
     for q in global_qstrs:
@@ -488,6 +488,15 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print('#endif')
     print()
 
+    print('#if MICROPY_PY_BUILTINS_COMPLEX')
+    print('typedef struct _mp_obj_complex_t {')
+    print('    mp_obj_base_t base;')
+    print('    mp_float_t real;')
+    print('    mp_float_t imag;')
+    print('} mp_obj_complex_t;')
+    print('#endif')
+    print()
+
     print('enum {')
     for i in range(len(new)):
         if i == 0:
@@ -505,7 +514,8 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print('    %u, // used entries' % len(new))
     print('    {')
     for _, _, qstr in new:
-        print('        %s,' % qstrutil.make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr))
+        print('        %s,'
+            % qstrutil.make_bytes(config.MICROPY_QSTR_BYTES_IN_LEN, config.MICROPY_QSTR_BYTES_IN_HASH, qstr))
     print('    },')
     print('};')
 
@@ -549,10 +559,15 @@ def main():
     }[args.mlongint_impl]
     config.MPZ_DIG_SIZE = args.mmpz_dig_size
 
+    # set config values for qstrs, and get the existing base set of qstrs
     if args.qstr_header:
         qcfgs, base_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        config.MICROPY_QSTR_BYTES_IN_LEN = int(qcfgs['BYTES_IN_LEN'])
+        config.MICROPY_QSTR_BYTES_IN_HASH = int(qcfgs['BYTES_IN_HASH'])
     else:
-        qcfgs, base_qstrs = {'BYTES_IN_LEN':1, 'BYTES_IN_HASH':1}, {}
+        config.MICROPY_QSTR_BYTES_IN_LEN = 1
+        config.MICROPY_QSTR_BYTES_IN_HASH = 1
+        base_qstrs = {}
 
     raw_codes = [read_mpy(file) for file in args.files]
 
@@ -560,7 +575,7 @@ def main():
         dump_mpy(raw_codes)
     elif args.freeze:
         try:
-            freeze_mpy(qcfgs, base_qstrs, raw_codes)
+            freeze_mpy(base_qstrs, raw_codes)
         except FreezeError as er:
             print(er, file=sys.stderr)
             sys.exit(1)

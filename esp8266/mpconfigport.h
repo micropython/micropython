@@ -63,6 +63,7 @@
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)

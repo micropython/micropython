@@ -3,6 +3,12 @@
 Quick reference for the pyboard
 ===============================
 
+The below pinout is for PYBv1.0.  You can also view pinouts for
+other versions of the pyboard:
+`PYBv1.1 <http://micropython.org/resources/pybv11-pinout.jpg>`__
+or `PYBLITEv1.0-AC <http://micropython.org/resources/pyblitev10ac-pinout.jpg>`__
+or `PYBLITEv1.0 <http://micropython.org/resources/pyblitev10-pinout.jpg>`__.
+
 .. image:: http://micropython.org/resources/pybv10-pinout.jpg
     :alt: PYBv1.0 pinout
     :width: 700px
@@ -14,13 +20,24 @@ See :mod:`pyb`. ::
 
     import pyb
 
-    pyb.delay(50) # wait 50 milliseconds
-    pyb.millis() # number of milliseconds since bootup
     pyb.repl_uart(pyb.UART(1, 9600)) # duplicate REPL on UART(1)
     pyb.wfi() # pause CPU, waiting for interrupt
     pyb.freq() # get CPU and bus frequencies
     pyb.freq(60000000) # set CPU freq to 60MHz
     pyb.stop() # stop CPU, waiting for external interrupt
+
+Delay and timing
+----------------
+
+Use the :mod:`time <utime>` module::
+
+    import time
+
+    time.sleep(1)           # sleep for 1 second
+    time.sleep_ms(500)      # sleep for 500 milliseconds
+    time.sleep_us(10)       # sleep for 10 microseconds
+    start = time.ticks_ms() # get value of millisecond counter
+    delta = time.ticks_diff(start, time.ticks_ms()) # compute time difference
 
 LEDs
 ----

@@ -30,6 +30,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/machine_spi.h"
 #include "irq.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -327,6 +328,90 @@ STATIC HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t 
     return HAL_OK;
 }
 
+STATIC void spi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf, uint32_t timeout) {
+    // Note: there seems to be a problem sending 1 byte using DMA the first
+    // time directly after the SPI/DMA is initialised.  The cause of this is
+    // unknown but we sidestep the issue by using polling for 1 byte transfer.
+
+    pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
+    HAL_StatusTypeDef status;
+
+    if (dest_len == 0) {
+        // send only
+        if (src_len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_Transmit(self->spi, (uint8_t*)src_buf, src_len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma;
+            dma_init(&tx_dma, self->tx_dma_descr, self->spi);
+            self->spi->hdmatx = &tx_dma;
+            self->spi->hdmarx = NULL;
+            status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t*)src_buf, src_len);
+            if (status == HAL_OK) {
+                status = spi_wait_dma_finished(self->spi, timeout);
+            }
+            dma_deinit(self->tx_dma_descr);
+        }
+    } else if (src_len == 0) {
+        // receive only
+        if (dest_len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_Receive(self->spi, dest_buf, dest_len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma, rx_dma;
+            if (self->spi->Init.Mode == SPI_MODE_MASTER) {
+                // in master mode the HAL actually does a TransmitReceive call
+                dma_init(&tx_dma, self->tx_dma_descr, self->spi);
+                self->spi->hdmatx = &tx_dma;
+            } else {
+                self->spi->hdmatx = NULL;
+            }
+            dma_init(&rx_dma, self->rx_dma_descr, self->spi);
+            self->spi->hdmarx = &rx_dma;
+
+            status = HAL_SPI_Receive_DMA(self->spi, dest_buf, dest_len);
+            if (status == HAL_OK) {
+                status = spi_wait_dma_finished(self->spi, timeout);
+            }
+            if (self->spi->hdmatx != NULL) {
+                dma_deinit(self->tx_dma_descr);
+            }
+            dma_deinit(self->rx_dma_descr);
+        }
+    } else {
+        // send and receive
+        // requires src_len==dest_len
+        if (src_len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+            status = HAL_SPI_TransmitReceive(self->spi, (uint8_t*)src_buf, dest_buf, src_len, timeout);
+        } else {
+            DMA_HandleTypeDef tx_dma, rx_dma;
+            dma_init(&tx_dma, self->tx_dma_descr, self->spi);
+            self->spi->hdmatx = &tx_dma;
+            dma_init(&rx_dma, self->rx_dma_descr, self->spi);
+            self->spi->hdmarx = &rx_dma;
+            status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t*)src_buf, dest_buf, src_len);
+            if (status == HAL_OK) {
+                status = spi_wait_dma_finished(self->spi, timeout);
+            }
+            dma_deinit(self->tx_dma_descr);
+            dma_deinit(self->rx_dma_descr);
+        }
+    }
+
+    if (status != HAL_OK) {
+        mp_hal_raise(status);
+    }
+}
+
+STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
+    if (src_len == 1 && dest_len > 1) {
+        // this catches read and readinto
+        // copy the single output byte to the dest buffer and use that as source
+        memset(dest_buf, src_buf[0], dest_len);
+        src_len = dest_len;
+        src_buf = dest_buf;
+    }
+    spi_transfer(self_in, src_len, src_buf, dest_len, dest_buf, 100);
+}
+
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
@@ -556,27 +641,7 @@ STATIC mp_obj_t pyb_spi_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     // send the data
-    // Note: there seems to be a problem sending 1 byte using DMA the first
-    // time directly after the SPI/DMA is initialised.  The cause of this is
-    // unknown but we sidestep the issue by using polling for 1 byte transfer.
-    HAL_StatusTypeDef status;
-    if (bufinfo.len == 1 || query_irq() == IRQ_STATE_DISABLED) {
-        status = HAL_SPI_Transmit(self->spi, bufinfo.buf, bufinfo.len, args[1].u_int);
-    } else {
-        DMA_HandleTypeDef tx_dma;
-        dma_init(&tx_dma, self->tx_dma_descr, self->spi);
-        self->spi->hdmatx = &tx_dma;
-        self->spi->hdmarx = NULL;
-        status = HAL_SPI_Transmit_DMA(self->spi, bufinfo.buf, bufinfo.len);
-        if (status == HAL_OK) {
-            status = spi_wait_dma_finished(self->spi, args[1].u_int);
-        }
-        dma_deinit(self->tx_dma_descr);
-    }
-
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
-    }
+    spi_transfer((mp_obj_base_t*)self, bufinfo.len, bufinfo.buf, 0, NULL, args[1].u_int);
 
     return mp_const_none;
 }
@@ -610,34 +675,7 @@ STATIC mp_obj_t pyb_spi_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
 
     // receive the data
-    HAL_StatusTypeDef status;
-    if (vstr.len == 1 || query_irq() == IRQ_STATE_DISABLED) {
-        status = HAL_SPI_Receive(self->spi, (uint8_t*)vstr.buf, vstr.len, args[1].u_int);
-    } else {
-        DMA_HandleTypeDef tx_dma, rx_dma;
-        if (self->spi->Init.Mode == SPI_MODE_MASTER) {
-            // in master mode the HAL actually does a TransmitReceive call
-            dma_init(&tx_dma, self->tx_dma_descr, self->spi);
-            self->spi->hdmatx = &tx_dma;
-        } else {
-            self->spi->hdmatx = NULL;
-        }
-        dma_init(&rx_dma, self->rx_dma_descr, self->spi);
-        self->spi->hdmarx = &rx_dma;
-
-        status = HAL_SPI_Receive_DMA(self->spi, (uint8_t*)vstr.buf, vstr.len);
-        if (status == HAL_OK) {
-            status = spi_wait_dma_finished(self->spi, args[1].u_int);
-        }
-        if (self->spi->hdmatx != NULL) {
-            dma_deinit(self->tx_dma_descr);
-        }
-        dma_deinit(self->rx_dma_descr);
-    }
-
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
-    }
+    spi_transfer((mp_obj_base_t*)self, 0, NULL, vstr.len, (uint8_t*)vstr.buf, args[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -706,27 +744,8 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         }
     }
 
-    // send and receive the data
-    HAL_StatusTypeDef status;
-    if (bufinfo_send.len == 1 || query_irq() == IRQ_STATE_DISABLED) {
-        status = HAL_SPI_TransmitReceive(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len, args[2].u_int);
-    } else {
-        DMA_HandleTypeDef tx_dma, rx_dma;
-        dma_init(&tx_dma, self->tx_dma_descr, self->spi);
-        self->spi->hdmatx = &tx_dma;
-        dma_init(&rx_dma, self->rx_dma_descr, self->spi);
-        self->spi->hdmarx = &rx_dma;
-        status = HAL_SPI_TransmitReceive_DMA(self->spi, bufinfo_send.buf, bufinfo_recv.buf, bufinfo_send.len);
-        if (status == HAL_OK) {
-            status = spi_wait_dma_finished(self->spi, args[2].u_int);
-        }
-        dma_deinit(self->tx_dma_descr);
-        dma_deinit(self->rx_dma_descr);
-    }
-
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
-    }
+    // do the transfer
+    spi_transfer((mp_obj_base_t*)self, bufinfo_send.len, bufinfo_send.buf, bufinfo_recv.len, bufinfo_recv.buf, args[2].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -741,6 +760,13 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_spi_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_spi_deinit_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_machine_spi_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_machine_spi_readinto_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_machine_spi_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write_readinto), (mp_obj_t)&mp_machine_spi_write_readinto_obj },
+
+    // legacy methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_spi_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_spi_recv_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send_recv), (mp_obj_t)&pyb_spi_send_recv_obj },
@@ -766,10 +792,15 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
+STATIC const mp_machine_spi_p_t pyb_spi_p = {
+    .transfer = spi_transfer_machine,
+};
+
 const mp_obj_type_t pyb_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SPI,
     .print = pyb_spi_print,
     .make_new = pyb_spi_make_new,
+    .protocol = &pyb_spi_p,
     .locals_dict = (mp_obj_t)&pyb_spi_locals_dict,
 };

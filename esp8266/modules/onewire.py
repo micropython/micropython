@@ -15,8 +15,11 @@ class OneWire:
         self.pin = pin
         self.pin.init(pin.OPEN_DRAIN)
 
-    def reset(self):
-        return _ow.reset(self.pin)
+    def reset(self, required=False):
+        reset = _ow.reset(self.pin)
+        if required and not reset:
+            raise OneWireError
+        return reset
 
     def readbit(self):
         return _ow.readbit(self.pin)
@@ -24,11 +27,9 @@ class OneWire:
     def readbyte(self):
         return _ow.readbyte(self.pin)
 
-    def read(self, count):
-        buf = bytearray(count)
-        for i in range(count):
+    def readinto(self, buf):
+        for i in range(len(buf)):
             buf[i] = _ow.readbyte(self.pin)
-        return buf
 
     def writebit(self, value):
         return _ow.writebit(self.pin, value)
@@ -87,41 +88,3 @@ class OneWire:
 
     def crc8(self, data):
         return _ow.crc8(data)
-
-class DS18B20:
-    CONVERT = const(0x44)
-    RD_SCRATCH = const(0xbe)
-    WR_SCRATCH = const(0x4e)
-
-    def __init__(self, onewire):
-        self.ow = onewire
-
-    def scan(self):
-        return [rom for rom in self.ow.scan() if rom[0] == 0x28]
-
-    def convert_temp(self):
-        if not self.ow.reset():
-            raise OneWireError
-        self.ow.writebyte(SKIP_ROM)
-        self.ow.writebyte(CONVERT)
-
-    def read_scratch(self, rom):
-        if not self.ow.reset():
-            raise OneWireError
-        self.ow.select_rom(rom)
-        self.ow.writebyte(RD_SCRATCH)
-        buf = self.ow.read(9)
-        if self.ow.crc8(buf):
-            raise OneWireError
-        return buf
-
-    def write_scratch(self, rom, buf):
-        if not self.ow.reset():
-            raise OneWireError
-        self.ow.select_rom(rom)
-        self.ow.writebyte(WR_SCRATCH)
-        self.ow.write(buf)
-
-    def read_temp(self, rom):
-        buf = self.read_scratch(rom)
-        return (buf[1] << 8 | buf[0]) / 16

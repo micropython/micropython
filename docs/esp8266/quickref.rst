@@ -23,14 +23,14 @@ Tab-completion is useful to find out what methods an object has.
 Paste mode (ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
 
-The ``machine`` module::
+The :mod:`machine` module::
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
     machine.freq(160000000) # set the CPU frequency to 160 MHz
 
-The ``esp`` module::
+The :mod:`esp` module::
 
     import esp
 
@@ -40,7 +40,7 @@ The ``esp`` module::
 Networking
 ----------
 
-The ``network`` module::
+The :mod:`network` module::
 
     import network
 
@@ -69,13 +69,13 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the ``socket`` module can be used
+Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual.
 
 Delay and timing
 ----------------
 
-Use the ``time`` module::
+Use the :mod:`time <utime>` module::
 
     import time
 
@@ -165,14 +165,14 @@ Use the ``machine.ADC`` class::
 SPI bus
 -------
 
-The SPI driver is implemented in software and works on all pins::
+There are two SPI drivers. One is implemented in software and works on all pins::
 
     from machine import Pin, SPI
 
     # construct an SPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SPI(-1, baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -194,13 +194,13 @@ Hardware SPI
 ------------
 
 The hardware SPI is faster (up to 80Mhz), but only works on following pins:
-``MISO`` is gpio2, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
+``MISO`` is gpio12, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
 methods as SPI, except for the pin parameters for the constructor and init
 (as those are fixed).
 
-    from machine import Pin, HSPI
+    from machine import Pin, SPI
 
-    hspi = HSPI(baudrate=800000000, polarity=0, phase=0)
+    hspi = SPI(0, baudrate=80000000, polarity=0, phase=0)
 
 
 I2C bus
@@ -253,15 +253,14 @@ The OneWire driver is implemented in software and works on all pins::
     ow.scan()               # return a list of devices on the bus
     ow.reset()              # reset the bus
     ow.readbyte()           # read a byte
-    ow.read(5)              # read 5 bytes
     ow.writebyte(0x12)      # write a byte on the bus
     ow.write('123')         # write bytes on the bus
     ow.select_rom(b'12345678') # select a specific device by its ROM code
 
-There is a specific driver for DS18B20 devices::
+There is a specific driver for DS18S20 and DS18B20 devices::
 
-    import time
-    ds = onewire.DS18B20(ow)
+    import time, ds18x20
+    ds = ds18x20.DS18X20(ow)
     roms = ds.scan()
     ds.convert_temp()
     time.sleep_ms(750)

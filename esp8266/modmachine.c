@@ -49,6 +49,8 @@
 //#define MACHINE_WAKE_SLEEP (0x02)
 #define MACHINE_WAKE_DEEPSLEEP (0x04)
 
+extern const mp_obj_type_t esp_wdt_type;
+
 STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
@@ -246,6 +248,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },
+    { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&esp_wdt_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pyb_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&pyb_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
