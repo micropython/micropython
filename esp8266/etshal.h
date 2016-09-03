@@ -20,6 +20,9 @@ void ets_timer_arm_new(os_timer_t *tim, uint32_t millis, bool repeat, bool is_mi
 void ets_timer_setfn(os_timer_t *tim, ETSTimerFunc callback, void *cb_data);
 void ets_timer_disarm(os_timer_t *tim);
 
+extern void ets_wdt_disable(void);
+extern void wdt_feed(void);
+
 // Opaque structure
 typedef char MD5_CTX[64];
 

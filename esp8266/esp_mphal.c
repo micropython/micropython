@@ -36,10 +36,6 @@
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
 
-extern void ets_wdt_disable(void);
-extern void wdt_feed(void);
-extern void ets_delay_us();
-
 STATIC byte input_buf_array[256];
 ringbuf_t input_buf = {input_buf_array, sizeof(input_buf_array)};
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
