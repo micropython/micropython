@@ -165,7 +165,8 @@ Use the ``machine.ADC`` class::
 SPI bus
 -------
 
-There are two SPI drivers. One is implemented in software and works on all pins::
+There are two SPI drivers. One is implemented in software (bit-banging)
+and works on all pins::
 
     from machine import Pin, SPI
 
@@ -194,14 +195,15 @@ Hardware SPI
 ------------
 
 The hardware SPI is faster (up to 80Mhz), but only works on following pins:
-``MISO`` is gpio12, ``MOSI`` is gpio13, and ``SCK`` is gpio14. It has the same
+``MISO`` is GPIO12, ``MOSI`` is GPIO13, and ``SCK`` is GPIO14. It has the same
 methods as SPI, except for the pin parameters for the constructor and init
 (as those are fixed).
 
     from machine import Pin, SPI
 
-    hspi = SPI(0, baudrate=80000000, polarity=0, phase=0)
+    hspi = SPI(1, baudrate=80000000, polarity=0, phase=0)
 
+(SPI(0) is used for FlashROM and not available to users.)
 
 I2C bus
 -------
