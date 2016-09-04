@@ -39,6 +39,8 @@
 
 #include "hspi.h"
 
+mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args,
+                          size_t n_kw, const mp_obj_t *args);
 
 typedef struct _pyb_hspi_obj_t {
     mp_obj_base_t base;
@@ -105,13 +107,14 @@ STATIC void hspi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t 
 
 STATIC void pyb_hspi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_hspi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "HSPI(baudrate=%u, polarity=%u, phase=%u)",
+    mp_printf(print, "HSPI(id=1, baudrate=%u, polarity=%u, phase=%u)",
         self->baudrate, self->polarity, self->phase);
 }
 
 STATIC void pyb_hspi_init_helper(pyb_hspi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_polarity, ARG_phase };
+    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase, MP_ARG_INT, {.u_int = -1} },
@@ -160,7 +163,25 @@ STATIC void pyb_hspi_init_helper(pyb_hspi_obj_t *self, size_t n_args, const mp_o
 }
 
 mp_obj_t pyb_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, n_kw, 0, 1, true);
+    mp_int_t id = -1;
+    if (n_args > 0) {
+        id = mp_obj_get_int(args[0]);
+    }
+
+    if (id == -1) {
+        // Multiplex to bitbanging SPI
+        if (n_args > 0) {
+            args++;
+        }
+        return pyb_spi_make_new(type, 0, n_kw, args);
+    }
+
+    if (id != 1) {
+        // FlashROM is on SPI0, so far we don't support its usage
+        mp_raise_ValueError("");
+    }
+
     pyb_hspi_obj_t *self = m_new_obj(pyb_hspi_obj_t);
     self->base.type = &pyb_hspi_type;
     // set defaults
