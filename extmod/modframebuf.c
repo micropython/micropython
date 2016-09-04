@@ -33,7 +33,7 @@
 
 #if MICROPY_PY_FRAMEBUF
 
-#include "font_petme128_8x8.h"
+#include "stmhal/font_petme128_8x8.h"
 
 // 1-bit frame buffer, each byte is a column of 8 pixels
 typedef struct _mp_obj_framebuf1_t {
