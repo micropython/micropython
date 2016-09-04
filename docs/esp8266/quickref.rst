@@ -162,8 +162,8 @@ Use the ``machine.ADC`` class::
     adc = ADC(0)            # create ADC object on ADC pin
     adc.read()              # read value, 0-1024
 
-SPI bus
--------
+Software SPI bus
+----------------
 
 There are two SPI drivers. One is implemented in software (bit-banging)
 and works on all pins::
@@ -191,19 +191,19 @@ and works on all pins::
     spi.write_readinto(buf, buf) # write buf to MOSI and read MISO back into buf
 
 
-Hardware SPI
-------------
+Hardware SPI bus
+----------------
 
 The hardware SPI is faster (up to 80Mhz), but only works on following pins:
 ``MISO`` is GPIO12, ``MOSI`` is GPIO13, and ``SCK`` is GPIO14. It has the same
-methods as SPI, except for the pin parameters for the constructor and init
-(as those are fixed).
+methods as the bitbanging SPI class above, except for the pin parameters for the
+constructor and init (as those are fixed)::
 
     from machine import Pin, SPI
 
     hspi = SPI(1, baudrate=80000000, polarity=0, phase=0)
 
-(SPI(0) is used for FlashROM and not available to users.)
+(``SPI(0)`` is used for FlashROM and not available to users.)
 
 I2C bus
 -------
