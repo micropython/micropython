@@ -182,7 +182,7 @@ ifneq ($(FROZEN_MPY_DIR),)
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
-FROZEN_MPY_PY_FILES := $(shell find $(FROZEN_MPY_DIR) -type f -name '*.py')
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
