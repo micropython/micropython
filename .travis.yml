@@ -23,6 +23,7 @@ before_script:
   - python3 --version
 
 script:
+  - make -C mpy-cross
   - make -C minimal test
   - make -C unix deplibs
   - make -C unix
