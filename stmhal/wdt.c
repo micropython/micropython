@@ -37,17 +37,23 @@ typedef struct _pyb_wdt_obj_t {
 
 STATIC pyb_wdt_obj_t pyb_wdt = {{&pyb_wdt_type}};
 
-STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    // parse arguments
+    enum { ARG_id, ARG_timeout };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t id = mp_obj_get_int(args[0]);
+    mp_int_t id = args[ARG_id].u_int;
     if (id != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "WDT(%d) does not exist", id));
     }
 
     // timeout is in milliseconds
-    mp_int_t timeout = mp_obj_get_int(args[1]);
+    mp_int_t timeout = args[ARG_timeout].u_int;
 
     // compute prescaler
     uint32_t prescaler;
