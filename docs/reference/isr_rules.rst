@@ -113,6 +113,7 @@ example ``pyb.i2c.recv()`` can accept a mutable buffer as its first argument: th
 A means of creating an object without employing a class or globals is as follows:
 
 .. code:: python
+
     def set_volume(t, buf=bytearray(3)):
         buf[0] = 0xa5
         buf[1] = t >> 4
