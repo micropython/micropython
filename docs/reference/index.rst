@@ -15,6 +15,7 @@ MicroPython are described in the sections here.
    repl.rst
    isr_rules.rst
    speed_python.rst
+   constrained.rst
 
 .. only:: port_pyboard
 
