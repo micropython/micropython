@@ -34,6 +34,7 @@
 
 // This list could be defined per port in mpconfigport.h to tailor it to a
 // specific port's needs.  But for now we have a common list.
+#ifndef ERRNO_LIST
 #define ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
@@ -57,6 +58,8 @@
     X(EHOSTUNREACH) \
     X(EALREADY) \
     X(EINPROGRESS) \
+
+#endif // ifndef ERRNO_LIST
 
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
     #define X(e) { MP_ROM_INT(MP_ ## e), MP_ROM_QSTR(MP_QSTR_## e) },
