@@ -189,11 +189,79 @@ STATIC mp_obj_t framebuf1_text(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf1_text_obj, 4, 5, framebuf1_text);
 
+// Fill a rectangle.
+STATIC void framebuf1_fill_rext(mp_obj_t fb_in, mp_obj_t x_in, mp_obj_t y_in,
+                              mp_obj_t w_in, mp_obj_t h_in, mp_obj_t col_in) {
+
+    mp_obj_framebuf1_t *fb = MP_OBJ_TO_PTR(fb_in);
+    mp_int_t x = mp_obj_get_int(x_in);
+    mp_int_t y = mp_obj_get_int(y_in);
+    mp_int_t width = mp_obj_get_int(w_in);
+    mp_int_t height = mp_obj_get_int(h_in);
+    mp_int_t color = mp_obj_get_int(col_in);
+
+    if (x < 0 || y < 0 || y >= fb->height || x >= fb->width || height <= 0 || width <= 0) {
+        // No operation needed.
+        return;
+    }
+
+    // clip to the framebuffer
+    x = MAX(MIN(x, fb->width), 0);
+    y = MAX(MIN(y, fb->height), 0);
+    int xend = MIN(fb->width, x + width);
+    int yend = MIN(fb->height, y + height);
+    int start_row = y >> 3;
+    int end_row = yend >> 3;
+    uint8_t start_mask, end_mask;
+
+    if (end_row == start_row) {
+        start_mask = ((1 << (yend - y)) - 1) << (y & 0x07);
+        if (color) {
+            for (int j = x; j < xend; ++j) {
+                fb->buf[start_row * fb->stride + j] |= start_mask;
+            }
+        } else {
+            for (int j = x; j < xend; ++j) {
+                fb->buf[start_row * fb->stride + j] &= ~start_mask;
+            }
+        }
+    } else {
+        start_mask = 0xff << (y & 0x07);
+        end_mask = ~(0xff << (yend & 0x07));
+        if (color) {
+            for (int j = x; j < xend; ++j) {
+                fb->buf[start_row * fb->stride + j] |= start_mask;
+                for (int i = start_row + 1; i < end_row; ++i) {
+                    fb->buf[i * fb->stride + j] = 0xff;
+                }
+                fb->buf[end_row * fb->stride + j] |= end_mask;
+            }
+        } else {
+            for (int j = x; j < xend; ++j) {
+                fb->buf[start_row * fb->stride + j] &= ~start_mask;
+                for (int i = start_row + 1; i < end_row; ++i) {
+                    fb->buf[i * fb->stride + j] = 0x00;
+                }
+                fb->buf[end_row * fb->stride + j] &= ~end_mask;
+            }
+        }
+    }
+}
+
+// Draw a filled box.
+STATIC mp_obj_t framebuf1_fill_rect(size_t n_args, const mp_obj_t *args) {
+    n_args += 0; // Avoid warnings about unused variables.
+    framebuf1_fill_rext(args[0], args[1], args[2], args[3], args[4], args[5]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf1_fill_rect_obj, 6, 6, framebuf1_fill_rect);
+
 STATIC const mp_rom_map_elem_t framebuf1_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf1_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&framebuf1_pixel_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf1_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf1_text_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&framebuf1_fill_rect_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf1_locals_dict, framebuf1_locals_dict_table);
 
