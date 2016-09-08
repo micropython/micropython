@@ -337,11 +337,14 @@ __weak uint32_t HAL_GetTick(void)
   */
 __weak void HAL_Delay(__IO uint32_t Delay)
 {
-  uint32_t tickstart = 0U;
-  tickstart = HAL_GetTick();
-  while((HAL_GetTick() - tickstart) < Delay)
-  {
-  }
+    uint32_t start = HAL_GetTick();
+   
+    // Note that the following works (due to the magic of 2's complement numbers)
+    // even when Delay causes wraparound.
+   
+    while (HAL_GetTick() - start <= Delay) {
+      __WFI();  // enter sleep mode, waiting for interrupt
+    }
 }
 
 /**
