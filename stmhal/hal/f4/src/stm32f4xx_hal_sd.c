@@ -1668,7 +1668,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
     /* Byte 10 */
     tmp = (uint8_t)((hsd->CSD[2U] & 0x0000FF00U) >> 8U);
     
-    pCardInfo->CardCapacity = (uint64_t)((((uint64_t)pCardInfo->SD_csd.DeviceSize + 1U)) * 512U * 1024U);
+    pCardInfo->CardCapacity = (uint64_t)((((uint64_t)pCardInfo->SD_csd.DeviceSize + 1ULL)) * 512U * 1024U);
     pCardInfo->CardBlockSize = 512U;    
   }
   else
