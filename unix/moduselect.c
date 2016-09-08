@@ -40,7 +40,9 @@
 #include "py/mphal.h"
 #include "fdfile.h"
 
+#if MICROPY_PY_SOCKET
 extern const mp_obj_type_t mp_type_socket;
+#endif
 
 // Flags for poll()
 #define FLAG_ONESHOT (1)
@@ -57,7 +59,11 @@ typedef struct _mp_obj_poll_t {
 STATIC int get_fd(mp_obj_t fdlike) {
     int fd;
     // Shortcut for fdfile compatible types
-    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio) || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)) {
+    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio)
+        #if MICROPY_PY_SOCKET
+        || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)
+        #endif
+        ) {
         mp_obj_fdfile_t *fdfile = MP_OBJ_TO_PTR(fdlike);
         fd = fdfile->fd;
     } else {
