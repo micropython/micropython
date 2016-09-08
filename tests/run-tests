@@ -203,6 +203,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('thread/thread_gc1.py') # has reliability issues
         skip_tests.add('thread/thread_lock4.py') # has reliability issues
         skip_tests.add('thread/stress_heap.py') # has reliability issues
+        skip_tests.add('thread/stress_recurse.py') # has reliability issues
 
     if not has_complex:
         skip_tests.add('float/complex1.py')
