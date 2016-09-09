@@ -706,13 +706,13 @@ void CAN2_RX1_IRQHandler(void) {
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
     IRQ_ENTER(I2C1_EV_IRQn);
-    HAL_I2C_EV_IRQHandler(&I2CHandle1);
+    i2c_ev_irq_handler(1);
     IRQ_EXIT(I2C1_EV_IRQn);
 }
 
 void I2C1_ER_IRQHandler(void) {
     IRQ_ENTER(I2C1_ER_IRQn);
-    HAL_I2C_ER_IRQHandler(&I2CHandle1);
+    i2c_er_irq_handler(1);
     IRQ_EXIT(I2C1_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C1_SCL)
@@ -720,13 +720,13 @@ void I2C1_ER_IRQHandler(void) {
 #if defined(MICROPY_HW_I2C2_SCL)
 void I2C2_EV_IRQHandler(void) {
     IRQ_ENTER(I2C2_EV_IRQn);
-    HAL_I2C_EV_IRQHandler(&I2CHandle2);
+    i2c_ev_irq_handler(2);
     IRQ_EXIT(I2C2_EV_IRQn);
 }
 
 void I2C2_ER_IRQHandler(void) {
     IRQ_ENTER(I2C2_ER_IRQn);
-    HAL_I2C_ER_IRQHandler(&I2CHandle2);
+    i2c_er_irq_handler(2);
     IRQ_EXIT(I2C2_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C2_SCL)
@@ -734,13 +734,13 @@ void I2C2_ER_IRQHandler(void) {
 #if defined(MICROPY_HW_I2C3_SCL)
 void I2C3_EV_IRQHandler(void) {
     IRQ_ENTER(I2C3_EV_IRQn);
-    HAL_I2C_EV_IRQHandler(&I2CHandle3);
+    i2c_ev_irq_handler(3);
     IRQ_EXIT(I2C3_EV_IRQn);
 }
 
 void I2C3_ER_IRQHandler(void) {
     IRQ_ENTER(I2C3_ER_IRQn);
-    HAL_I2C_ER_IRQHandler(&I2CHandle3);
+    i2c_er_irq_handler(3);
     IRQ_EXIT(I2C3_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C3_SCL)

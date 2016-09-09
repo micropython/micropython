@@ -317,6 +317,95 @@ STATIC void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
     i2c_init(i2c);
 }
 
+void i2c_ev_irq_handler(mp_uint_t i2c_id) {
+    I2C_HandleTypeDef *hi2c;
+
+    switch (i2c_id) {
+        #if defined(MICROPY_HW_I2C1_SCL)
+        case 1:
+            hi2c = &I2CHandle1;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C2_SCL)
+        case 2:
+            hi2c = &I2CHandle2;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C3_SCL)
+        case 3:
+            hi2c = &I2CHandle3;
+            break;
+        #endif
+        default:
+            return;
+    }
+
+    if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
+        if (hi2c->XferCount != 0U) {
+            hi2c->Instance->DR = *hi2c->pBuffPtr++;
+            hi2c->XferCount--;
+        } else {
+            __HAL_I2C_DISABLE_IT(hi2c, I2C_IT_EVT | I2C_IT_BUF | I2C_IT_ERR);
+            if (hi2c->XferOptions != I2C_FIRST_FRAME) {
+                hi2c->Instance->CR1 |= I2C_CR1_STOP;
+            }
+            hi2c->Mode = HAL_I2C_MODE_NONE;
+            hi2c->State = HAL_I2C_STATE_READY;
+        }
+    }
+}
+
+void i2c_er_irq_handler(mp_uint_t i2c_id) {
+    I2C_HandleTypeDef *hi2c;
+
+    switch (i2c_id) {
+        #if defined(MICROPY_HW_I2C1_SCL)
+        case 1:
+            hi2c = &I2CHandle1;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C2_SCL)
+        case 2:
+            hi2c = &I2CHandle2;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C3_SCL)
+        case 3:
+            hi2c = &I2CHandle3;
+            break;
+        #endif
+        default:
+            return;
+    }
+
+    uint32_t sr1 = hi2c->Instance->SR1;
+
+    // I2C Bus error
+    if (sr1 & I2C_FLAG_BERR) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_BERR;
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_BERR);
+    }
+
+    // I2C Arbitration Loss error
+    if (sr1 & I2C_FLAG_ARLO) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_ARLO;
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_ARLO);
+    }
+
+    // I2C Acknowledge failure
+    if (sr1 & I2C_FLAG_AF) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
+        SET_BIT(hi2c->Instance->CR1,I2C_CR1_STOP);
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
+    }
+
+    // I2C Over-Run/Under-Run
+    if (sr1 & I2C_FLAG_OVR) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_OVR;
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_OVR);
+    }
+}
+
 STATIC HAL_StatusTypeDef i2c_wait_dma_finished(I2C_HandleTypeDef *i2c, uint32_t timeout) {
     // Note: we can't use WFI to idle in this loop because the DMA completion
     // interrupt may occur before the WFI.  Hence we miss it and have to wait
