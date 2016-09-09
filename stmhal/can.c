@@ -752,6 +752,8 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FF0 : CAN_IT_FF1);
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
+        __HAL_CAN_CLEAR_FLAG(&self->can, (fifo == CAN_FIFO0) ? CAN_FLAG_FF0 : CAN_FLAG_FF1);
+        __HAL_CAN_CLEAR_FLAG(&self->can, (fifo == CAN_FIFO0) ? CAN_FLAG_FOV0 : CAN_FLAG_FOV1);
         *callback = mp_const_none;
     } else if (*callback != mp_const_none) {
         // Rx call backs has already been initialized
@@ -847,11 +849,13 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
             break;
         case RX_STATE_MESSAGE_PENDING:
             __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FF0 : CAN_IT_FF1);
+            __HAL_CAN_CLEAR_FLAG(&self->can, (fifo_id == CAN_FIFO0) ? CAN_FLAG_FF0 : CAN_FLAG_FF1);
             irq_reason = MP_OBJ_NEW_SMALL_INT(1);
             *state = RX_STATE_FIFO_FULL;
             break;
         case RX_STATE_FIFO_FULL:
             __HAL_CAN_DISABLE_IT(&self->can, (fifo_id == CAN_FIFO0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
+            __HAL_CAN_CLEAR_FLAG(&self->can, (fifo_id == CAN_FIFO0) ? CAN_FLAG_FOV0 : CAN_FLAG_FOV1);
             irq_reason = MP_OBJ_NEW_SMALL_INT(2);
             *state = RX_STATE_FIFO_OVERFLOW;
             break;
