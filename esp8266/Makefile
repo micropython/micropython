@@ -83,6 +83,7 @@ SRC_C = \
 	modpybhspi.c \
 	modesp.c \
 	modnetwork.c \
+	moduselect.c \
 	modutime.c \
 	moduos.c \
 	modmachine.c \
