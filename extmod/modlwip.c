@@ -274,6 +274,10 @@ bool lwip_has_incoming(lwip_socket_obj_t *socket) {
     return socket->incoming.pbuf != NULL;
 }
 
+bool lwip_is_closed(lwip_socket_obj_t *socket) {
+    return socket->state == STATE_PEER_CLOSED;
+}
+
 
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
@@ -516,7 +520,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
         // Non-blocking socket
         if (socket->timeout == 0) {
-            if (socket->state == STATE_PEER_CLOSED) {
+            if (lwip_is_closed(socket)) {
                 return 0;
             }
             *_errno = MP_EAGAIN;
@@ -532,7 +536,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             poll_sockets();
         }
 
-        if (socket->state == STATE_PEER_CLOSED) {
+        if (lwip_is_closed(socket)) {
             if (!lwip_has_incoming(socket)) {
                 // socket closed and no data left in buffer
                 return 0;

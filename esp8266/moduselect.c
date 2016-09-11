@@ -35,6 +35,7 @@ extern const mp_obj_type_t lwip_socket_type;
 // FIXME: move to an LWIP header
 typedef struct _lwip_socket_obj_t lwip_socket_obj_t;
 bool lwip_has_incoming(lwip_socket_obj_t *);
+bool lwip_is_closed(lwip_socket_obj_t *);
 
 
 typedef enum
@@ -152,12 +153,11 @@ poll_poll(uint n_args, const mp_obj_t *args) {
                 lwip_socket_obj_t *socket = elem->obj;
 
                 if (elem->flags & POLL_IN && lwip_has_incoming(socket)) {
-                    printf("INPUT!\n");
                     flags |= POLL_IN;
                 }
 
-                if (elem->flags & POLL_OUT) {
-                    // FIXME
+                if (elem->flags & POLL_HUP && lwip_is_closed(socket)) {
+                    flags |= POLL_HUP;
                 }
 
             } else {
