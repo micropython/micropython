@@ -28,6 +28,13 @@
 
 #include "py/obj.h"
 #include "py/nlr.h"
+#include "py/mphal.h"
+#include "py/objlist.h"
+
+extern const mp_obj_type_t lwip_socket_type;
+// FIXME: move to an LWIP header
+typedef struct _lwip_socket_obj_t lwip_socket_obj_t;
+bool lwip_has_incoming(lwip_socket_obj_t *);
 
 
 typedef enum
@@ -73,13 +80,12 @@ poll_register(uint n_args, const mp_obj_t *args) {
                          MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 
     if (elem->value == NULL) {
-        /* Check the type of the object */
-        mp_obj_type_t *type = mp_obj_get_type(obj);
-        const mp_stream_p_t *stream_p = type->protocol;
-
-        if (stream_p == NULL || stream_p->ioctl == NULL) {
+        /* Check the type of the object.
+         * Currently we only support lwip sockets */
+        if (!mp_obj_is_subclass_fast(mp_obj_get_type(obj),
+                                     &lwip_socket_type)) {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                        "object with stream.ioctl required"));
+                        "Only socket supported"));
         }
 
         /* Create a new map entry */
@@ -109,13 +115,85 @@ poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 
 
+/* \method poll([timeout])
+ *
+ * Timeout is in milliseconds.
+ */
+STATIC mp_obj_t
+poll_poll(uint n_args, const mp_obj_t *args) {
+    uselect_poll_t *self = args[0];
+    mp_uint_t timeout = -1;
+
+    /* Get the timeout */
+    if (n_args >= 2 && args[1] != mp_const_none) {
+        mp_int_t timeout_i = mp_obj_get_int(args[1]);
+
+        if (timeout_i >= 0) {
+            timeout = timeout_i;
+        }
+    }
+
+    mp_obj_list_t *ret_list = mp_obj_new_list(0, NULL);
+    mp_uint_t start_tick = mp_hal_ticks_ms();
+
+    while (timeout == -1 || mp_hal_ticks_ms() <= start_tick + timeout) {
+        /* Check all the objects */
+        for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
+            if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
+                continue;
+            }
+
+            poll_obj_t *elem = (poll_obj_t *) self->poll_map.table[i].value;
+            mp_obj_t type = mp_obj_get_type(elem->obj);
+            uselect_poll_flags flags = 0; /* Output  flags */
+
+            if (mp_obj_is_subclass_fast(type, &lwip_socket_type)) {
+                /* Object is a socket */
+                lwip_socket_obj_t *socket = elem->obj;
+
+                if (elem->flags & POLL_IN && lwip_has_incoming(socket)) {
+                    printf("INPUT!\n");
+                    flags |= POLL_IN;
+                }
+
+                if (elem->flags & POLL_OUT) {
+                    // FIXME
+                }
+
+            } else {
+                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                            "Only socket supported"));
+            }
+
+            /* Append it to the list */
+            if (flags) {
+                mp_obj_t tuple[] = {elem->obj, MP_OBJ_NEW_SMALL_INT(flags)};
+                mp_obj_list_append(ret_list, mp_obj_new_tuple(2, tuple));
+            }
+        }
+
+        /* All sockets checked */
+        if (ret_list->len > 0) {
+            break;
+        } else {
+            /* Gate the clock until something happens */
+            MICROPY_EVENT_POLL_HOOK;
+        }
+    }
+
+    return ret_list;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
+
+
 STATIC const mp_map_elem_t
 poll_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_register), (mp_obj_t) &poll_register_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unregister), (mp_obj_t) &poll_unregister_obj },
     /* Modify is an alias for register, they're basically the same */
     { MP_OBJ_NEW_QSTR(MP_QSTR_modify), (mp_obj_t) &poll_register_obj },
-    /* { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t) &poll_poll_obj }, */
+    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t) &poll_poll_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
