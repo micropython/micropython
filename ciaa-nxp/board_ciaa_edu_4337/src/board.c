@@ -952,8 +952,11 @@ void UART0_IRQHandler (void)
                 }
                 uart0RxBufferData.index++;
         }
-        else
+        else {
                 uart0RxBufferData.flagNewPacket=1;
+                //Board_UARTPutSTR("entro paquete porque se lleno:");
+                //Board_UARTPutSTR((const char*)uart0RxBufferData.buffer);
+        }
    }
 }
 
@@ -968,7 +971,7 @@ void Board_UART_tick_ms(void)
                         {
                                 uart0RxBufferData.flagNewPacket=1;
                                 //Board_UARTPutSTR("entro paquete por timeout!:");
-                                //Board_UARTPutSTR(uart0RxBufferData.buffer);
+                                //Board_UARTPutSTR((const char*)uart0RxBufferData.buffer);
                         }
                 }
         }

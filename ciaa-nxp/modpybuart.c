@@ -173,7 +173,9 @@ STATIC bool uart_rx_any(pyb_uart_obj_t *self)
  	    if(self->bufferEnabled==0)
             any = mp_hal_rs485_charAvailable();
 	    else
+        {
 	        any= mp_hal_rs485_isNewPacketAvailable();
+        }
     }
     else
     {
@@ -210,7 +212,7 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
         if (mp_hal_get_milliseconds() - start >= timeout) {
             return false; // timeout
         }
-        __WFI();
+       // __WFI();
     }
 }
 STATIC int32_t uart_rx_char(pyb_uart_obj_t* self)
@@ -274,13 +276,12 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
         	// or return EAGAIN error to indicate non-blocking (then read() method returns None)
         	return 0;
     	}
-
     	// read the data
     	byte *orig_buf = buf;
     	for (;;) {
         	int data = uart_rx_char(self);
         	*buf++ = data;
-        	if (--size == 0 || !uart_rx_wait(self, self->timeoutBtwChars)) {
+        	if (--size == 0 || !uart_rx_wait(self, self->timeoutFirstChar)) {
             		// return number of bytes read
             		return buf - orig_buf;
         	}
