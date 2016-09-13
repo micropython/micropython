@@ -34,70 +34,49 @@
 #include "asf/sam0/utils/cmsis/samd21/include/component/adc.h"
 #include "asf/sam0/drivers/adc/adc_sam_d_r/adc_feature.h"
 
+#include "machine_types.h"
+
+#define SERCOM(p_sercom, p_pad, p_pinmux) \
+{ \
+  .sercom = p_sercom, \
+  .pad = p_pad, \
+  .pinmux = p_pinmux \
+}
+
+#define NO_SERCOM SERCOM(0, 0, 0)
+
+#define TIMER(p_tc, p_tcc, p_channel, p_wave_output, p_pin, p_mux) \
+{ \
+  .tc = p_tc, \
+  .tcc = p_tcc, \
+  .channel = p_channel, \
+  .wave_output = p_wave_output, \
+  .pin = p_pin, \
+  .mux = p_mux \
+}
+
+#define NO_TIMER TIMER(0, 0, 0, 0, 0, 0)
+
 // This macro is used to simplify pin definition in boards/<board>/pins.c
-#define PIN_TWO_TIMERS(p_name, p_has_adc, p_adc_input, p_primary_tc, p_primary_tcc, \
-  p_primary_channel, p_primary_wave_output, p_primary_pin, p_primary_mux, \
-  p_secondary_tc, p_secondary_tcc, p_secondary_channel, p_secondary_wave_output, \
-  p_secondary_pin, p_secondary_mux) \
+#define PIN(p_name, p_has_adc, p_adc_input, p_primary_timer, \
+            p_secondary_timer, p_primary_sercom, p_secondary_sercom) \
 const pin_obj_t pin_## p_name = { \
     { &pin_type }, \
     .name = MP_QSTR_ ## p_name, \
     .pin = (PIN_## p_name), \
     .has_adc = p_has_adc, \
     .adc_input = p_adc_input, \
-    .primary_timer = { \
-      .tc = p_primary_tc, \
-      .tcc = p_primary_tcc, \
-      .channel = p_primary_channel, \
-      .wave_output = p_primary_wave_output, \
-      .pin = p_primary_pin, \
-      .mux = p_primary_mux \
-    }, \
-    .secondary_timer = { \
-      .tc = p_secondary_tc, \
-      .tcc = p_secondary_tcc, \
-      .channel = p_secondary_channel, \
-      .wave_output = p_secondary_wave_output, \
-      .pin = p_secondary_pin, \
-      .mux = p_secondary_mux \
-    } \
+    .primary_timer = p_primary_timer, \
+    .secondary_timer =  p_secondary_timer, \
+    .primary_sercom = p_primary_sercom, \
+    .secondary_sercom = p_secondary_sercom \
 }
-
-#define PIN_NO_TIMERS_(p_name, p_has_adc, p_adc_input) \
- PIN_TWO_TIMERS(p_name, p_has_adc, p_adc_input, \
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-
-#define PIN_ONE_TIMER_(p_name, p_has_adc, p_adc_input, p_primary_tcc, \
-  p_primary_tc, p_primary_channel, p_primary_wave_output, \
-  p_primary_pin, p_primary_mux) \
-  PIN_TWO_TIMERS(p_name, p_has_adc, p_adc_input, p_primary_tcc, p_primary_tc, \
-    p_primary_channel, p_primary_wave_output, p_primary_pin, p_primary_mux, \
-    0, 0, 0, 0, 0, 0)
 
 #define NO_ADC_INPUT (0)
 
 #include "mpconfigport.h"
 
 #include "py/obj.h"
-
-typedef struct {
-  Tc *const tc;
-  Tcc *const tcc;
-  uint8_t channel;
-  uint8_t wave_output;
-  uint32_t pin;
-  uint32_t mux;
-} pin_timer_t;
-
-typedef struct {
-  mp_obj_base_t base;
-  qstr name;
-  uint32_t pin;
-  bool has_adc;
-  enum adc_positive_input adc_input;
-  pin_timer_t primary_timer;
-  pin_timer_t secondary_timer;
-} pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
 

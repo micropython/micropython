@@ -31,6 +31,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "shared-bindings/modules/machine.h"
+
 #include "modmachine_adc.h"
 #include "modmachine_dac.h"
 #include "modmachine_pin.h"
@@ -38,11 +40,13 @@
 #include "storage.h"
 
 #if MICROPY_PY_MACHINE
-
+// TODO(tannewt): Add the machine_ prefix to all types so that we don't risk
+// conflicting with any port specific implementations.
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&adc_type) },
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&dac_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pin_type) },
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&flash_type) },

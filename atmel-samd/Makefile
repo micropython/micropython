@@ -18,17 +18,12 @@ include boards/$(BOARD)/mpconfigboard.mk
 # Add $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 QSTR_DEFS = qstrdefsport.h
 
-CROSS = 0
-
 # include py core make definitions
 include ../py/py.mk
 
-ifeq ($(CROSS), 1)
 CROSS_COMPILE = arm-none-eabi-
-endif
 
 BOSSAC := /Users/tannewt/ArduinoCore-samd/tools/bossac_osx
-
 
 HAL_DIR=hal/$(MCU_SERIES)
 
@@ -36,6 +31,7 @@ INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../lib/timeutils
+INC += -Icommon-hal/modules/
 INC += -Iasf/common/boards/
 INC += -Iasf/common/services/sleepmgr/
 INC += -Iasf/common/services/usb/
@@ -51,6 +47,8 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	drivers/adc/adc_sam_d_r \
 	drivers/dac \
 	drivers/dac/dac_sam_d_c \
+	drivers/sercom \
+	drivers/sercom/i2c \
 	drivers/system/clock \
 	drivers/system/clock/clock_samd21_r21_da \
 	drivers/system/interrupt \
@@ -58,9 +56,8 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	drivers/system/pinmux \
 	drivers/system/power/power_sam_d_r \
 	drivers/system/reset/reset_sam_d_r \
-	drivers/sercom/ \
-	drivers/tc/ \
-	drivers/usb/ \
+	drivers/tc \
+	drivers/usb \
 	utils \
 	utils/cmsis/samd21/include \
 	utils/cmsis/samd21/source \
@@ -71,7 +68,6 @@ INC += -Iasf/thirdparty/CMSIS/Include
 INC += -Iboards/$(BOARD)/
 INC += -I$(BUILD)
 
-ifeq ($(CROSS), 1)
 CFLAGS_CORTEX_M0 = \
 	-mthumb \
 	-mabi=aapcs-linux \
@@ -94,9 +90,6 @@ CFLAGS_CORTEX_M0 = \
 	-DUSART_CALLBACK_MODE=true \
 	-DUSB_DEVICE_LPM_SUPPORT
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
-else
-CFLAGS = -m32 $(INC) -Wall -Werror -ansi -std=gnu99 $(COPT)
-endif
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -105,16 +98,10 @@ else
 CFLAGS += -Os -DNDEBUG
 endif
 
-LIBS =
-ifeq ($(CROSS), 1)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
 LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -L $(dir $(LIBGCC_FILE_NAME)) -L $(dir $(LIBM_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
-LIBS += -larm_cortexM0l_math -lm -lgcc -lc
-else
-LD = gcc
-LDFLAGS = -m32 -Wl,-Map=$@.map,--cref
-endif
+LIBS = -larm_cortexM0l_math -lm -lgcc -lc
 
 
 SRC_ASF = $(addprefix asf/sam0/,\
@@ -122,6 +109,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/dac/dac_sam_d_c/dac.c \
 	drivers/nvm/nvm.c \
 	drivers/port/port.c \
+	drivers/sercom/i2c/i2c_sam0/i2c_master.c \
 	drivers/sercom/sercom.c \
 	drivers/sercom/sercom_interrupt.c \
 	drivers/sercom/usart/usart.c \
@@ -160,7 +148,7 @@ SRC_C = \
 	asf/common/utils/interrupt/interrupt_sam_nvic.c \
 	asf/common2/services/delay/sam0/systick_counter.c \
 	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
-	asf/sam0/utils/cmsis/samd21/source/system_samd21.c     \
+	asf/sam0/utils/cmsis/samd21/source/system_samd21.c \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
 	boards/$(BOARD)/pins.c \
 	lib/fatfs/ff.c \
@@ -172,20 +160,27 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c
 
+# TODO(tannewt): Use this sed line to extract the RST docs from these sources:
+#   sed': sed -n 's+^//|++p' ../api/machine.c
+#
+# RST lines are prefixed with //|
+SRC_BINDINGS = \
+	modules/machine.c
+
+SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
+                        $(addprefix common-hal/, $(SRC_BINDINGS))
+
 SRC_AUTOGEN = \
  $(BUILD)/_frozen_mpy.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_AUTOGEN:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_BINDINGS_EXPANDED:.c=.o))
 
-SRC_QSTR += $(SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED)
 
-ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.bin
-else
-all: $(BUILD)/firmware.elf
-endif
 
 $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
