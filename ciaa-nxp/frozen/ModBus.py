@@ -86,8 +86,11 @@ class Instrument():
             payloadformat = PAYLOADFORMAT_REGISTER
         else:
             if payloadformat is not None:
-                raise ValueError('The payload format given is not allowed for this function code. ' + \
-                    'Given format: {0!r}, functioncode: {1!r}.'.format(payloadformat, functioncode))
+                if (payloadformat==PAYLOADFORMAT_REGISTER or payloadformat==PAYLOADFORMAT_REGISTERS) and functioncode in [3,4,16]:
+                    pass
+                else:  
+                    raise ValueError('The payload format given is not allowed for this function code. ' + \
+                        'Given format: {0!r}, functioncode: {1!r}.'.format(payloadformat, functioncode))
 
         # Signed and numberOfDecimals
         if signed:
@@ -476,6 +479,9 @@ def _bitResponseToValue(bytesdata):
 
 def _bytesResponseToInt(bytesdata, numberOfDecimals,signed=False):
     reg = bytesdata[0]<<8 | bytesdata[1]
+    if signed:
+        if reg > 32767:
+            reg = reg - 65536
     if numberOfDecimals>0:
         reg = reg / (10**numberOfDecimals)
     return reg
