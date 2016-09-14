@@ -34,6 +34,9 @@
 
 #if MICROPY_PY_MACHINE_I2C
 
+// Clock stretching limit, so that we don't get stuck.
+#define I2C_STRETCH_LIMIT 255
+
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
     uint32_t us_delay;
@@ -53,6 +56,13 @@ STATIC void mp_hal_i2c_scl_low(machine_i2c_obj_t *self) {
 
 STATIC void mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
     mp_hal_pin_od_high(self->scl);
+    mp_hal_i2c_delay(self);
+    // Wait for the SCL pin to be released, but not longer than limit us.
+    for (uint8_t count = 0;
+         (mp_hal_pin_read(self->scl) == 0) && (count < I2C_STRETCH_LIMIT);
+         ++count) {
+        mp_hal_delay_us_fast(1);
+    }
 }
 
 STATIC void mp_hal_i2c_sda_low(machine_i2c_obj_t *self) {
@@ -71,7 +81,6 @@ STATIC void mp_hal_i2c_start(machine_i2c_obj_t *self) {
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_release(self);
-    mp_hal_i2c_delay(self);
     mp_hal_i2c_sda_low(self);
     mp_hal_i2c_delay(self);
 }
@@ -81,7 +90,6 @@ STATIC void mp_hal_i2c_stop(machine_i2c_obj_t *self) {
     mp_hal_i2c_sda_low(self);
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_release(self);
-    mp_hal_i2c_delay(self);
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
 }
@@ -108,14 +116,12 @@ STATIC int mp_hal_i2c_write_byte(machine_i2c_obj_t *self, uint8_t val) {
         }
         mp_hal_i2c_delay(self);
         mp_hal_i2c_scl_release(self);
-        mp_hal_i2c_delay(self);
         mp_hal_i2c_scl_low(self);
     }
 
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_release(self);
-    mp_hal_i2c_delay(self);
 
     int ret = mp_hal_i2c_sda_read(self);
     mp_hal_i2c_delay(self);
@@ -150,7 +156,6 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
     uint8_t data = 0;
     for (int i = 7; i >= 0; i--) {
         mp_hal_i2c_scl_release(self);
-        mp_hal_i2c_delay(self);
         data = (data << 1) | mp_hal_i2c_sda_read(self);
         mp_hal_i2c_scl_low(self);
         mp_hal_i2c_delay(self);
@@ -163,7 +168,6 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
     }
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_release(self);
-    mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_low(self);
     mp_hal_i2c_sda_release(self);
 
