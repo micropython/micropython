@@ -65,6 +65,7 @@ STATIC const mp_obj_type_t jmethod_type;
 STATIC mp_obj_t new_jobject(jobject jo);
 STATIC mp_obj_t new_jclass(jclass jc);
 STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, mp_uint_t n_args, const mp_obj_t *args);
+STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out);
 
 typedef struct _mp_obj_jclass_t {
     mp_obj_base_t base;
@@ -244,11 +245,36 @@ STATIC void get_jclass_name(jobject obj, char *buf) {
 
 STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_jobject_t *self = self_in;
+    mp_uint_t idx = mp_obj_get_int(index);
+    char class_name[64];
+    get_jclass_name(self->obj, class_name);
+    //printf("class: %s\n", class_name);
+
+    if (class_name[0] == '[') {
+        if (class_name[1] == 'L' || class_name[1] == '[') {
+            if (value == MP_OBJ_NULL) {
+                // delete
+                assert(0);
+            } else if (value == MP_OBJ_SENTINEL) {
+                // load
+                jobject el = JJ(GetObjectArrayElement, self->obj, idx);
+                return new_jobject(el);
+            } else {
+                // store
+                jvalue jval;
+                const char *t = class_name + 1;
+                py2jvalue(&t, value, &jval);
+                JJ(SetObjectArrayElement, self->obj, idx, jval.l);
+                return mp_const_none;
+            }
+        }
+        mp_not_implemented("");
+    }
+
     if (!JJ(IsInstanceOf, self->obj, List_class)) {
         return MP_OBJ_NULL;
     }
 
-    mp_uint_t idx = mp_obj_get_int(index);
 
     if (value == MP_OBJ_NULL) {
         // delete
