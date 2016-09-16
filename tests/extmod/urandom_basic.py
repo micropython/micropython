@@ -17,3 +17,9 @@ random.seed(1)
 r = random.getrandbits(16)
 random.seed(1)
 print(random.getrandbits(16) == r)
+
+# check that it throws an error for zero bits
+try:
+    random.getrandbits(0)
+except ValueError:
+    print('ValueError')
