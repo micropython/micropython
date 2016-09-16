@@ -19,6 +19,7 @@
 #include "asf/sam0/drivers/port/port.h"
 #include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "asf/sam0/drivers/system/system.h"
+#include <board.h>
 
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
@@ -158,16 +159,7 @@ void init_flash_fs() {
 static char *stack_top;
 static char heap[8192];
 
-int main(int argc, char **argv) {
-    // initialise the cpu and peripherals
-    #if MICROPY_MIN_USE_SAMD21_MCU
-    void samd21_init(void);
-    samd21_init();
-    #endif
-
-    int stack_dummy;
-    stack_top = (char*)&stack_dummy;
-
+void reset_mp() {
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
@@ -176,10 +168,21 @@ int main(int argc, char **argv) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
     pin_init0();
+}
+
+int main(int argc, char **argv) {
+    // initialise the cpu and peripherals
+    #if MICROPY_MIN_USE_SAMD21_MCU
+    void samd21_init(void);
+    samd21_init();
+    #endif
 
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
     init_flash_fs();
+
+    int stack_dummy;
+    reset_mp();
 
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
@@ -190,10 +193,24 @@ int main(int argc, char **argv) {
         }
     }
     #else
-    pyexec_friendly_repl();
+    // Main script is finished, so now go into REPL mode.
+    // The REPL mode can change, or it can request a soft reset.
+    int exit_code = 0;
+    for (;;) {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            exit_code = pyexec_raw_repl();
+        } else {
+            exit_code = pyexec_friendly_repl();
+        }
+        if (exit_code == PYEXEC_FORCED_EXIT) {
+            mp_hal_stdout_tx_str("soft reboot\r\n");
+            stack_top = (char*)&stack_dummy;
+            reset_mp();
+        } else if (exit_code != 0) {
+            break;
+        }
+    }
     #endif
-    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    //do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;
 }
@@ -239,33 +256,34 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 struct usart_module usart_instance;
 
 void samd21_init(void) {
+    irq_initialize_vectors();
+    cpu_irq_enable();
 
-  irq_initialize_vectors();
-  cpu_irq_enable();
+    // Initialize the sleep manager
+    sleepmgr_init();
 
-  // Initialize the sleep manager
-  sleepmgr_init();
+    system_init();
 
-  system_init();
+    delay_init();
 
-  delay_init();
+    board_init();
 
-  // Uncomment to init PIN_PA17 for debugging.
-  // struct port_config pin_conf;
-  // port_get_config_defaults(&pin_conf);
-  //
-  // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-  // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
-  // port_pin_set_output_level(MICROPY_HW_LED1, false);
+    // Uncomment to init PIN_PA17 for debugging.
+    // struct port_config pin_conf;
+    // port_get_config_defaults(&pin_conf);
+    //
+    // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+    // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
+    // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
-  #ifdef USB_REPL
-    udc_start();
-  #endif
+    #ifdef USB_REPL
+        udc_start();
+    #endif
 
-  // TODO(tannewt): Switch to proper pyb based UARTs.
-  #ifdef UART_REPL
-    configure_usart();
-  #endif
+    // TODO(tannewt): Switch to proper pyb based UARTs.
+    #ifdef UART_REPL
+        configure_usart();
+    #endif
 }
 
 #endif

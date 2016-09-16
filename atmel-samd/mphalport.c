@@ -2,6 +2,7 @@
 
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
 #include "asf/common2/services/delay/delay.h"
+#include "asf/sam0/drivers/port/port.h"
 #include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
@@ -104,34 +105,44 @@ int receive_usb() {
 }
 
 int mp_hal_stdin_rx_chr(void) {
-  for (;;) {
-    #ifdef USB_REPL
-    if (mp_cdc_enabled && usb_rx_count > 0) {
-      return receive_usb();
+    for (;;) {
+        #ifdef USB_REPL
+        if (mp_cdc_enabled && usb_rx_count > 0) {
+            #ifdef MICROPY_HW_LED_RX
+            port_pin_toggle_output_level(MICROPY_HW_LED_RX);
+            #endif
+            return receive_usb();
+        }
+        #endif
+        #ifdef UART_REPL
+        uint16_t temp;
+        if (usart_read_wait(&usart_instance, &temp) == STATUS_OK) {
+            #ifdef MICROPY_HW_LED_RX
+            port_pin_toggle_output_level(MICROPY_HW_LED_RX);
+            #endif
+            return temp;
+        }
+        #endif
+        // TODO(tannewt): Figure out how we can sleep while waiting for input and
+        // add it here. The current UART implementation doesn't cause a wake.
+        //__WFI();
     }
-    #endif
-    #ifdef UART_REPL
-    uint16_t temp;
-    if (usart_read_wait(&usart_instance, &temp) == STATUS_OK) {
-      return temp;
-    }
-    #endif
-    // TODO(tannewt): Figure out how we can sleep while waiting for input and
-    // add it here. The current UART implementation doesn't cause a wake.
-    //__WFI();
-  }
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-  #ifdef UART_REPL
-  usart_write_buffer_wait(&usart_instance, (uint8_t*) str, len);
-  #endif
+    #ifdef MICROPY_HW_LED_TX
+    port_pin_toggle_output_level(MICROPY_HW_LED_TX);
+    #endif
 
-  #ifdef USB_REPL
-  if (mp_cdc_enabled && udi_cdc_is_tx_ready()) {
-    udi_cdc_write_buf(str, len);
-  }
-  #endif
+    #ifdef UART_REPL
+    usart_write_buffer_wait(&usart_instance, (uint8_t*) str, len);
+    #endif
+
+    #ifdef USB_REPL
+    if (mp_cdc_enabled && udi_cdc_is_tx_ready()) {
+        udi_cdc_write_buf(str, len);
+    }
+    #endif
 }
 
 void mp_hal_set_interrupt_char(int c) {
