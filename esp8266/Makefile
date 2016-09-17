@@ -14,7 +14,7 @@ MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
 MAKE_FROZEN = ../tools/make-frozen.py
 
-SCRIPTDIR = scripts
+FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
@@ -164,16 +164,16 @@ CONFVARS_FILE = $(BUILD)/confvars
 
 ifeq ($(wildcard $(CONFVARS_FILE)),)
 $(shell $(MKDIR) -p $(BUILD))
-$(shell echo $(SCRIPTDIR) $(UART_OS) > $(CONFVARS_FILE))
-else ifneq ($(shell cat $(CONFVARS_FILE)), $(SCRIPTDIR) $(UART_OS))
-$(shell echo $(SCRIPTDIR) $(UART_OS) > $(CONFVARS_FILE))
+$(shell echo $(FROZEN_DIR) $(UART_OS) > $(CONFVARS_FILE))
+else ifneq ($(shell cat $(CONFVARS_FILE)), $(FROZEN_DIR) $(UART_OS))
+$(shell echo $(FROZEN_DIR) $(UART_OS) > $(CONFVARS_FILE))
 endif
 
 $(BUILD)/uart.o: $(CONFVARS_FILE)
 
-$(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(CONFVARS_FILE)
+$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(CONFVARS_FILE)
 	$(ECHO) "Generating $@"
-	$(Q)$(MAKE_FROZEN) $(SCRIPTDIR) > $@
+	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
 
 # to build .mpy files from .py files
 $(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
