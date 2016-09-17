@@ -171,9 +171,7 @@ endif
 
 $(BUILD)/uart.o: $(CONFVARS_FILE)
 
-$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(CONFVARS_FILE)
-	$(ECHO) "Generating $@"
-	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
+FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 # to build .mpy files from .py files
 $(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
