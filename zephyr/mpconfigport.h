@@ -32,6 +32,7 @@
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_HW_BOARD_NAME "zephyr-generic"
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
+#define MICROPY_MODULE_FROZEN_STR   (1)
 
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size

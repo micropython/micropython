@@ -15,6 +15,8 @@ BOARD ?= qemu_x86
 # Zephyr 1.6.0
 OUTDIR_PREFIX = $(BOARD)
 
+FROZEN_DIR = scripts
+
 # Zephyr (generated) config files - must be defined before include below
 Z_SYSGEN_H = outdir/$(OUTDIR_PREFIX)/misc/generated/sysgen/sysgen.h
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
@@ -36,6 +38,7 @@ SRC_C = main.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/mp-readline/readline.c \
+	$(BUILD)/frozen.c \
 	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
