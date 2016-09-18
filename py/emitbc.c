@@ -862,21 +862,21 @@ void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args) {
 #endif
 
 void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t collection_stack_index) {
+    int t;
     int n;
-    byte opcode;
     if (kind == SCOPE_LIST_COMP) {
-        n = -1;
-        opcode = MP_BC_LIST_APPEND;
-    } else if (MICROPY_PY_BUILTINS_SET && kind == SCOPE_SET_COMP) {
-        n = -1;
-        opcode = MP_BC_SET_ADD;
-    } else {
-        // scope == SCOPE_DICT_COMP
-        n = -2;
-        opcode = MP_BC_MAP_ADD;
+        n = 0;
+        t = 0;
+    } else if (!MICROPY_PY_BUILTINS_SET || kind == SCOPE_DICT_COMP) {
+        n = 1;
+        t = 1;
+    } else if (MICROPY_PY_BUILTINS_SET) {
+        n = 0;
+        t = 2;
     }
-    emit_bc_pre(emit, n);
-    emit_write_bytecode_byte_uint(emit, opcode, collection_stack_index);
+    emit_bc_pre(emit, -1 - n);
+    // the lower 2 bits of the opcode argument indicate the collection type
+    emit_write_bytecode_byte_uint(emit, MP_BC_STORE_COMP, ((collection_stack_index + n) << 2) | t);
 }
 
 void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args) {

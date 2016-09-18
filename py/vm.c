@@ -777,15 +777,6 @@ unwind_jump:;
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_LIST_APPEND): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    // I think it's guaranteed by the compiler that sp[unum] is a list
-                    mp_obj_list_append(sp[-unum], sp[0]);
-                    sp--;
-                    DISPATCH();
-                }
-
                 ENTRY(MP_BC_BUILD_MAP): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
@@ -799,30 +790,12 @@ unwind_jump:;
                     mp_obj_dict_store(sp[0], sp[2], sp[1]);
                     DISPATCH();
 
-                ENTRY(MP_BC_MAP_ADD): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
-                    mp_obj_dict_store(sp[-unum - 1], sp[0], sp[-1]);
-                    sp -= 2;
-                    DISPATCH();
-                }
-
 #if MICROPY_PY_BUILTINS_SET
                 ENTRY(MP_BC_BUILD_SET): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_set(unum, sp));
-                    DISPATCH();
-                }
-
-                ENTRY(MP_BC_SET_ADD): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    // I think it's guaranteed by the compiler that sp[-unum] is a set
-                    mp_obj_set_store(sp[-unum], sp[0]);
-                    sp--;
                     DISPATCH();
                 }
 #endif
@@ -844,6 +817,25 @@ unwind_jump:;
                     DISPATCH();
                 }
 #endif
+
+                ENTRY(MP_BC_STORE_COMP): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_UINT;
+                    mp_obj_t obj = sp[-(unum >> 2)];
+                    if ((unum & 3) == 0) {
+                        mp_obj_list_append(obj, sp[0]);
+                        sp--;
+                    } else if (!MICROPY_PY_BUILTINS_SET || (unum & 3) == 1) {
+                        mp_obj_dict_store(obj, sp[0], sp[-1]);
+                        sp -= 2;
+                    #if MICROPY_PY_BUILTINS_SET
+                    } else {
+                        mp_obj_set_store(obj, sp[0]);
+                        sp--;
+                    #endif
+                    }
+                    DISPATCH();
+                }
 
                 ENTRY(MP_BC_UNPACK_SEQUENCE): {
                     MARK_EXC_IP_SELECTIVE();

@@ -409,11 +409,6 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_LIST " UINT_FMT, unum);
             break;
 
-        case MP_BC_LIST_APPEND:
-            DECODE_UINT;
-            printf("LIST_APPEND " UINT_FMT, unum);
-            break;
-
         case MP_BC_BUILD_MAP:
             DECODE_UINT;
             printf("BUILD_MAP " UINT_FMT, unum);
@@ -423,19 +418,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("STORE_MAP");
             break;
 
-        case MP_BC_MAP_ADD:
-            DECODE_UINT;
-            printf("MAP_ADD " UINT_FMT, unum);
-            break;
-
         case MP_BC_BUILD_SET:
             DECODE_UINT;
             printf("BUILD_SET " UINT_FMT, unum);
-            break;
-
-        case MP_BC_SET_ADD:
-            DECODE_UINT;
-            printf("SET_ADD " UINT_FMT, unum);
             break;
 
 #if MICROPY_PY_BUILTINS_SLICE
@@ -444,6 +429,11 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_SLICE " UINT_FMT, unum);
             break;
 #endif
+
+        case MP_BC_STORE_COMP:
+            DECODE_UINT;
+            printf("STORE_COMP " UINT_FMT, unum);
+            break;
 
         case MP_BC_UNPACK_SEQUENCE:
             DECODE_UINT;
