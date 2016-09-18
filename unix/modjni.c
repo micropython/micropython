@@ -655,38 +655,46 @@ STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mod_jni_cls_obj, mod_jni_cls);
 
 STATIC mp_obj_t mod_jni_array(mp_obj_t type_in, mp_obj_t size_in) {
-    const char *type = mp_obj_str_get_str(type_in);
-    mp_int_t size = mp_obj_get_int(size_in);
     if (!env) {
         create_jvm();
     }
-
+    mp_int_t size = mp_obj_get_int(size_in);
     jobject res = NULL;
-    switch (*type) {
-        case 'Z':
-            res = JJ(NewBooleanArray, size);
-            break;
-        case 'B':
-            res = JJ(NewByteArray, size);
-            break;
-        case 'C':
-            res = JJ(NewCharArray, size);
-            break;
-        case 'S':
-            res = JJ(NewShortArray, size);
-            break;
-        case 'I':
-            res = JJ(NewIntArray, size);
-            break;
-        case 'J':
-            res = JJ(NewLongArray, size);
-            break;
-        case 'F':
-            res = JJ(NewFloatArray, size);
-            break;
-        case 'D':
-            res = JJ(NewDoubleArray, size);
-            break;
+
+    if (MP_OBJ_IS_TYPE(type_in, &jclass_type)) {
+
+        mp_obj_jclass_t *jcls = type_in;
+        res = JJ(NewObjectArray, size, jcls->cls, NULL);
+
+    } else if (MP_OBJ_IS_STR(type_in)) {
+        const char *type = mp_obj_str_get_str(type_in);
+        switch (*type) {
+            case 'Z':
+                res = JJ(NewBooleanArray, size);
+                break;
+            case 'B':
+                res = JJ(NewByteArray, size);
+                break;
+            case 'C':
+                res = JJ(NewCharArray, size);
+                break;
+            case 'S':
+                res = JJ(NewShortArray, size);
+                break;
+            case 'I':
+                res = JJ(NewIntArray, size);
+                break;
+            case 'J':
+                res = JJ(NewLongArray, size);
+                break;
+            case 'F':
+                res = JJ(NewFloatArray, size);
+                break;
+            case 'D':
+                res = JJ(NewDoubleArray, size);
+                break;
+        }
+
     }
 
     return new_jobject(res);
