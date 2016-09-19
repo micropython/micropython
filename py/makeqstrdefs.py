@@ -23,7 +23,7 @@ elif platform.python_version_tuple()[0] == '3':
 
 # Blacklist of qstrings that are specially handled in further
 # processing and should be ignored
-QSTRING_BLACK_LIST = {'NULL', 'number_of', }
+QSTRING_BLACK_LIST = set(['NULL', 'number_of'])
 
 # add some custom names to map characters that aren't in HTML
 name2codepoint['hyphen'] = ord('-')

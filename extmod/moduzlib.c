@@ -67,17 +67,31 @@ STATIC unsigned char read_src_stream(TINF_DATA *data) {
     return c;
 }
 
-#define DICT_SIZE 32768
-
 STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
     o->base.type = type;
     memset(&o->decomp, 0, sizeof(o->decomp));
-    uzlib_uncompress_init(&o->decomp, m_new(byte, DICT_SIZE), DICT_SIZE);
     o->decomp.readSource = read_src_stream;
     o->src_stream = args[0];
     o->eof = false;
+
+    mp_int_t dict_opt = 0;
+    int dict_sz;
+    if (n_args > 1) {
+        dict_opt = mp_obj_get_int(args[1]);
+    }
+    if (dict_opt >= 0) {
+        dict_opt = uzlib_zlib_parse_header(&o->decomp);
+        if (dict_opt < 0) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "zlib header"));
+        }
+        dict_sz = 1 << dict_opt;
+    } else {
+        dict_sz = 1 << -dict_opt;
+    }
+
+    uzlib_uncompress_init(&o->decomp, m_new(byte, dict_sz), dict_sz);
     return MP_OBJ_FROM_PTR(o);
 }
 

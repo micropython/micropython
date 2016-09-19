@@ -254,17 +254,17 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
-    { MP_ROM_QSTR(MP_QSTR_SoftSPI), MP_ROM_PTR(&pyb_spi_type) },
-    { MP_ROM_QSTR(MP_QSTR_HSPI), MP_ROM_PTR(&pyb_hspi_type) },
-    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_hspi_type) },
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
 
     // reset causes
-    { MP_ROM_QSTR(MP_QSTR_PWR_ON_RESET), MP_ROM_INT(REASON_EXT_SYS_RST) },
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET), MP_ROM_INT(REASON_DEFAULT_RST) },
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET), MP_ROM_INT(REASON_EXT_SYS_RST) },
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET), MP_ROM_INT(REASON_DEEP_SLEEP_AWAKE) },
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET), MP_ROM_INT(REASON_WDT_RST) },
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET), MP_ROM_INT(REASON_SOFT_RESTART) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);

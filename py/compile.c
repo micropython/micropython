@@ -2869,17 +2869,11 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
     if (MP_PARSE_NODE_IS_NULL(pn_iter)) {
         // no more nested if/for; compile inner expression
         compile_node(comp, pn_inner_expr);
-        if (comp->scope_cur->kind == SCOPE_LIST_COMP) {
-            EMIT_ARG(list_append, for_depth + 2);
-        } else if (comp->scope_cur->kind == SCOPE_DICT_COMP) {
-            EMIT_ARG(map_add, for_depth + 2);
-        #if MICROPY_PY_BUILTINS_SET
-        } else if (comp->scope_cur->kind == SCOPE_SET_COMP) {
-            EMIT_ARG(set_add, for_depth + 2);
-        #endif
-        } else {
+        if (comp->scope_cur->kind == SCOPE_GEN_EXPR) {
             EMIT(yield_value);
             EMIT(pop_top);
+        } else {
+            EMIT_ARG(store_comp, comp->scope_cur->kind, for_depth + 2);
         }
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_if)) {
         // if condition

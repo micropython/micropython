@@ -26,8 +26,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include STM32_HAL_H
 
+#include "py/mphal.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 
@@ -113,14 +113,16 @@ STATIC void lcd_delay(void) {
 
 STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
     lcd_delay();
-    lcd->pin_cs1->gpio->BSRRH = lcd->pin_cs1->pin_mask; // CS=0; enable
+    GPIO_clear_pin(lcd->pin_cs1->gpio, lcd->pin_cs1->pin_mask); // CS=0; enable
     if (instr_data == LCD_INSTR) {
-        lcd->pin_a0->gpio->BSRRH = lcd->pin_a0->pin_mask; // A0=0; select instr reg
+        GPIO_clear_pin(lcd->pin_a0->gpio, lcd->pin_a0->pin_mask); // A0=0; select instr reg
     } else {
-        lcd->pin_a0->gpio->BSRRL = lcd->pin_a0->pin_mask; // A0=1; select data reg
+        GPIO_set_pin(lcd->pin_a0->gpio, lcd->pin_a0->pin_mask); // A0=1; select data reg
     }
     lcd_delay();
     HAL_SPI_Transmit(lcd->spi, &i, 1, 1000);
+    lcd_delay();
+    GPIO_set_pin(lcd->pin_cs1->gpio, lcd->pin_cs1->pin_mask); // CS=1; disable
 }
 
 // write a string to the LCD at the current cursor location
@@ -260,10 +262,10 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
     spi_init(lcd->spi, false);
 
     // set the pins to default values
-    lcd->pin_cs1->gpio->BSRRL = lcd->pin_cs1->pin_mask;
-    lcd->pin_rst->gpio->BSRRL = lcd->pin_rst->pin_mask;
-    lcd->pin_a0->gpio->BSRRL = lcd->pin_a0->pin_mask;
-    lcd->pin_bl->gpio->BSRRH = lcd->pin_bl->pin_mask;
+    GPIO_set_pin(lcd->pin_cs1->gpio, lcd->pin_cs1->pin_mask);
+    GPIO_set_pin(lcd->pin_rst->gpio, lcd->pin_rst->pin_mask);
+    GPIO_set_pin(lcd->pin_a0->gpio, lcd->pin_a0->pin_mask);
+    GPIO_clear_pin(lcd->pin_bl->gpio, lcd->pin_bl->pin_mask);
 
     // init the pins to be push/pull outputs
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -285,9 +287,9 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // init the LCD
     HAL_Delay(1); // wait a bit
-    lcd->pin_rst->gpio->BSRRH = lcd->pin_rst->pin_mask; // RST=0; reset
+    GPIO_clear_pin(lcd->pin_rst->gpio, lcd->pin_rst->pin_mask); // RST=0; reset
     HAL_Delay(1); // wait for reset; 2us min
-    lcd->pin_rst->gpio->BSRRL = lcd->pin_rst->pin_mask; // RST=1; enable
+    GPIO_set_pin(lcd->pin_rst->gpio, lcd->pin_rst->pin_mask); // RST=1; enable
     HAL_Delay(1); // wait for reset; 2us min
     lcd_out(lcd, LCD_INSTR, 0xa0); // ADC select, normal
     lcd_out(lcd, LCD_INSTR, 0xc0); // common output mode select, normal (this flips the display)
@@ -370,9 +372,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_contrast_obj, pyb_lcd_contrast);
 STATIC mp_obj_t pyb_lcd_light(mp_obj_t self_in, mp_obj_t value) {
     pyb_lcd_obj_t *self = self_in;
     if (mp_obj_is_true(value)) {
-        self->pin_bl->gpio->BSRRL = self->pin_bl->pin_mask; // set pin high to turn backlight on
+        GPIO_set_pin(self->pin_bl->gpio, self->pin_bl->pin_mask); // set pin high to turn backlight on
     } else {
-        self->pin_bl->gpio->BSRRH = self->pin_bl->pin_mask; // set pin low to turn backlight off
+        GPIO_clear_pin(self->pin_bl->gpio, self->pin_bl->pin_mask); // set pin low to turn backlight off
     }
     return mp_const_none;
 }

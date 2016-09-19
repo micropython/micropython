@@ -44,6 +44,50 @@
 #include "rtc.h"
 #include "i2c.h"
 #include "spi.h"
+#include "wdt.h"
+
+#if defined(MCU_SERIES_F4)
+// the HAL does not define these constants
+#define RCC_CSR_IWDGRSTF (0x20000000)
+#define RCC_CSR_PINRSTF (0x04000000)
+#elif defined(MCU_SERIES_L4)
+// L4 does not have a POR, so use BOR instead
+#define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
+#endif
+
+#define PYB_RESET_SOFT      (0)
+#define PYB_RESET_POWER_ON  (1)
+#define PYB_RESET_HARD      (2)
+#define PYB_RESET_WDT       (3)
+#define PYB_RESET_DEEPSLEEP (4)
+
+STATIC uint32_t reset_cause;
+
+void machine_init(void) {
+    #if defined(MCU_SERIES_F4)
+    if (PWR->CSR & PWR_CSR_SBF) {
+        // came out of standby
+        reset_cause = PYB_RESET_DEEPSLEEP;
+        PWR->CR = PWR_CR_CSBF;
+    } else
+    #endif
+    {
+        // get reset cause from RCC flags
+        uint32_t state = RCC->CSR;
+        if (state & RCC_CSR_IWDGRSTF || state & RCC_CSR_WWDGRSTF) {
+            reset_cause = PYB_RESET_WDT;
+        } else if (state & RCC_CSR_PORRSTF || state & RCC_CSR_BORRSTF) {
+            reset_cause = PYB_RESET_POWER_ON;
+        } else if (state & RCC_CSR_PINRSTF) {
+            reset_cause = PYB_RESET_HARD;
+        } else {
+            // default is soft reset
+            reset_cause = PYB_RESET_SOFT;
+        }
+    }
+    // clear RCC reset flags
+    RCC->CSR = RCC_CSR_RMVF;
+}
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
@@ -447,13 +491,10 @@ STATIC mp_obj_t machine_deepsleep(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
 
-#if 0
 STATIC mp_obj_t machine_reset_cause(void) {
-    return mp_obj_new_int(0);
-    //return mp_obj_new_int(pyb_sleep_get_reset_cause());
+    return MP_OBJ_NEW_SMALL_INT(reset_cause);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
-#endif
 
 STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_umachine) },
@@ -468,8 +509,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_idle),                (mp_obj_t)&pyb_wfi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),               (mp_obj_t)&machine_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep),           (mp_obj_t)&machine_deepsleep_obj },
-#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset_cause),         (mp_obj_t)&machine_reset_cause_obj },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_wake_reason),         (mp_obj_t)&machine_wake_reason_obj },
 #endif
 
@@ -490,10 +531,10 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     // initialize master mode on the peripheral.
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&machine_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&pyb_spi_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer),               (mp_obj_t)&pyb_timer_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HeartBeat),           (mp_obj_t)&pyb_heartbeat_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD),                  (mp_obj_t)&pyb_sd_type },
 
@@ -501,11 +542,13 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_IDLE),                MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP),           MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_SLP_HARD_RESET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),           MP_OBJ_NEW_SMALL_INT(PYB_SLP_WDT_RESET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_OBJ_NEW_SMALL_INT(PYB_SLP_HIB_RESET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_SLP_SOFT_RESET) },
+#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PWRON_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_RESET_POWER_ON) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_HARD) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),           MP_OBJ_NEW_SMALL_INT(PYB_RESET_WDT) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_OBJ_NEW_SMALL_INT(PYB_RESET_DEEPSLEEP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_SOFT) },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN_WAKE),           MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_WLAN) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PIN_WAKE),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_GPIO) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC_WAKE),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_RTC) },

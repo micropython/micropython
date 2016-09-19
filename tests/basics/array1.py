@@ -6,6 +6,12 @@ i = array.array('I', [1, 2, 3])
 print(i, len(i))
 print(a[0])
 print(i[-1])
+a = array.array('l', [-1])
+print(len(a), a[0])
+a1 = array.array('l', [1, 2, 3])
+a2 = array.array('L', [1, 2, 3])
+print(a2[1])
+print(a1 == a2)
 
 # Empty arrays
 print(len(array.array('h')))

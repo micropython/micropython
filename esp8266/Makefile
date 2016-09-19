@@ -14,7 +14,7 @@ MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
 MAKE_FROZEN = ../tools/make-frozen.py
 
-SCRIPTDIR = scripts
+FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
@@ -79,7 +79,6 @@ SRC_C = \
 	modpybadc.c \
 	modpybuart.c \
 	modmachinewdt.c \
-	modmachinespi.c \
 	modpybspi.c \
 	modpybhspi.c \
 	modesp.c \
@@ -129,7 +128,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/pyhelp.c \
-	utils/printf.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
 	)
@@ -141,7 +139,7 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-FROZEN_MPY_PY_FILES := $(shell find $(FROZEN_MPY_DIR) -type f -name '*.py')
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 OBJ =
@@ -166,16 +164,14 @@ CONFVARS_FILE = $(BUILD)/confvars
 
 ifeq ($(wildcard $(CONFVARS_FILE)),)
 $(shell $(MKDIR) -p $(BUILD))
-$(shell echo $(SCRIPTDIR) $(UART_OS) > $(CONFVARS_FILE))
-else ifneq ($(shell cat $(CONFVARS_FILE)), $(SCRIPTDIR) $(UART_OS))
-$(shell echo $(SCRIPTDIR) $(UART_OS) > $(CONFVARS_FILE))
+$(shell echo $(FROZEN_DIR) $(UART_OS) > $(CONFVARS_FILE))
+else ifneq ($(shell cat $(CONFVARS_FILE)), $(FROZEN_DIR) $(UART_OS))
+$(shell echo $(FROZEN_DIR) $(UART_OS) > $(CONFVARS_FILE))
 endif
 
 $(BUILD)/uart.o: $(CONFVARS_FILE)
 
-$(BUILD)/frozen.c: $(wildcard $(SCRIPTDIR)/*) $(CONFVARS_FILE)
-	$(ECHO) "Generating $@"
-	$(Q)$(MAKE_FROZEN) $(SCRIPTDIR) > $@
+FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 # to build .mpy files from .py files
 $(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py

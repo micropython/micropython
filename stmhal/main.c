@@ -44,6 +44,7 @@
 #include "pendsv.h"
 #include "gccollect.h"
 #include "readline.h"
+#include "modmachine.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
@@ -409,6 +410,8 @@ soft_reset:
     led_state(3, 0);
     led_state(4, 0);
     uint reset_mode = update_reset_mode(1);
+
+    machine_init();
 
 #if MICROPY_HW_ENABLE_RTC
     if (first_soft_reset) {

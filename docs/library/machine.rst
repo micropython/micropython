@@ -125,7 +125,7 @@ Constants
 
     irq wake values
 
-.. data:: machine.POWER_ON
+.. data:: machine.PWRON_RESET
 .. data:: machine.HARD_RESET
 .. data:: machine.WDT_RESET
 .. data:: machine.DEEPSLEEP_RESET

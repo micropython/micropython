@@ -171,6 +171,14 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, mp_uint_t n_args, const
     #endif
 
     // stop anything already going on
+    __DMA1_CLK_ENABLE();
+    DMA_HandleTypeDef DMA_Handle;
+    /* Get currently configured dma */
+    dma_init_handle(&DMA_Handle, self->tx_dma_descr, (void*)NULL);
+    // Need to deinit DMA first
+    DMA_Handle.State = HAL_DMA_STATE_READY;
+    HAL_DMA_DeInit(&DMA_Handle);
+
     HAL_DAC_Stop(&DAC_Handle, self->dac_channel);
     if ((self->dac_channel == DAC_CHANNEL_1 && DAC_Handle.DMA_Handle1 != NULL)
             || (self->dac_channel == DAC_CHANNEL_2 && DAC_Handle.DMA_Handle2 != NULL)) {

@@ -23,6 +23,7 @@
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
+#define MICROPY_USE_INTERNAL_PRINTF (0)
 
 // type definitions for the specific machine
 

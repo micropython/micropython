@@ -87,7 +87,7 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
     if (emu_tasks[id].i_put == -1) {
         // queue is full
         printf("ets_post: task %d queue full\n", prio);
-        return false;
+        return 1;
     }
     q = &q[emu_tasks[id].i_put++];
     q->sig = sig;
@@ -104,7 +104,7 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
 
     ets_intr_unlock();
 
-    return true;
+    return 0;
 #endif
 }
 

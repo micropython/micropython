@@ -837,11 +837,6 @@ void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args) {
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_LIST, n_args);
 }
 
-void mp_emit_bc_list_append(emit_t *emit, mp_uint_t list_stack_index) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_LIST_APPEND, list_stack_index);
-}
-
 void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_MAP, n_args);
@@ -852,20 +847,10 @@ void mp_emit_bc_store_map(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_STORE_MAP);
 }
 
-void mp_emit_bc_map_add(emit_t *emit, mp_uint_t map_stack_index) {
-    emit_bc_pre(emit, -2);
-    emit_write_bytecode_byte_uint(emit, MP_BC_MAP_ADD, map_stack_index);
-}
-
 #if MICROPY_PY_BUILTINS_SET
 void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, 1 - n_args);
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SET, n_args);
-}
-
-void mp_emit_bc_set_add(emit_t *emit, mp_uint_t set_stack_index) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_SET_ADD, set_stack_index);
 }
 #endif
 
@@ -875,6 +860,24 @@ void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args) {
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SLICE, n_args);
 }
 #endif
+
+void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t collection_stack_index) {
+    int t;
+    int n;
+    if (kind == SCOPE_LIST_COMP) {
+        n = 0;
+        t = 0;
+    } else if (!MICROPY_PY_BUILTINS_SET || kind == SCOPE_DICT_COMP) {
+        n = 1;
+        t = 1;
+    } else if (MICROPY_PY_BUILTINS_SET) {
+        n = 0;
+        t = 2;
+    }
+    emit_bc_pre(emit, -1 - n);
+    // the lower 2 bits of the opcode argument indicate the collection type
+    emit_write_bytecode_byte_uint(emit, MP_BC_STORE_COMP, ((collection_stack_index + n) << 2) | t);
+}
 
 void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, -1 + n_args);
@@ -1028,17 +1031,15 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_binary_op,
     mp_emit_bc_build_tuple,
     mp_emit_bc_build_list,
-    mp_emit_bc_list_append,
     mp_emit_bc_build_map,
     mp_emit_bc_store_map,
-    mp_emit_bc_map_add,
     #if MICROPY_PY_BUILTINS_SET
     mp_emit_bc_build_set,
-    mp_emit_bc_set_add,
     #endif
     #if MICROPY_PY_BUILTINS_SLICE
     mp_emit_bc_build_slice,
     #endif
+    mp_emit_bc_store_comp,
     mp_emit_bc_unpack_sequence,
     mp_emit_bc_unpack_ex,
     mp_emit_bc_make_function,

@@ -33,7 +33,7 @@
 
 #if MICROPY_PY_FRAMEBUF
 
-#include "font_petme128_8x8.h"
+#include "stmhal/font_petme128_8x8.h"
 
 // 1-bit frame buffer, each byte is a column of 8 pixels
 typedef struct _mp_obj_framebuf1_t {
@@ -103,7 +103,7 @@ STATIC mp_obj_t framebuf1_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t y
     mp_int_t xstep = mp_obj_get_int(xstep_in);
     mp_int_t ystep = mp_obj_get_int(ystep_in);
     int end = (self->height + 7) >> 3;
-    if (xstep == 0 && ystep > 0) {
+    if (ystep > 0) {
         for (int y = end; y > 0;) {
             --y;
             for (int x = 0; x < self->width; ++x) {
@@ -114,7 +114,7 @@ STATIC mp_obj_t framebuf1_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t y
                 self->buf[y * self->stride + x] = (self->buf[y * self->stride + x] << ystep) | prev;
             }
         }
-    } else if (xstep == 0 && ystep < 0) {
+    } else if (ystep < 0) {
         for (int y = 0; y < end; ++y) {
             for (int x = 0; x < self->width; ++x) {
                 int prev = 0;
@@ -125,7 +125,20 @@ STATIC mp_obj_t framebuf1_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t y
             }
         }
     }
-    // TODO xstep!=0
+    if (xstep < 0) {
+        for (int y = 0; y < end; ++y) {
+            for (int x = 0; x < self->width + xstep; ++x) {
+                self->buf[y * self->stride + x] = self->buf[y * self->stride + x - xstep];
+            }
+        }
+    } else if (xstep > 0) {
+        for (int y = 0; y < end; ++y) {
+            for (int x = self->width - 1; x >= xstep; --x) {
+                self->buf[y * self->stride + x] = self->buf[y * self->stride + x - xstep];
+            }
+        }
+    }
+    // TODO: Should we clear the margin created by scrolling?
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(framebuf1_scroll_obj, framebuf1_scroll);
