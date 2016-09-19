@@ -58,11 +58,11 @@ include ../py/mkrules.mk
 $(Z_DOTCONFIG):
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) initconfig
 
-all: $(LIBMICROPYTHON)
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD)
+GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
+KCONFIG_TARGETS = config nconfig menuconfig xconfig gconfig
 
-qemu: all
-	$(MAKE) -f Makefile.zephyr qemu BOARD=$(BOARD)
+$(GENERIC_TARGETS) $(KCONFIG_TARGETS): $(LIBMICROPYTHON)
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) $@
 
 Z_AUTOCONF_H = outdir/$(OUTDIR_PREFIX)/include/generated/autoconf.h
 
