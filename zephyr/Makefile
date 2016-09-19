@@ -16,17 +16,9 @@ BOARD ?= qemu_x86
 OUTDIR_PREFIX = $(BOARD)
 
 # Zephyr (generated) config files - must be defined before include below
-Z_DOTCONFIG = outdir/$(OUTDIR_PREFIX)/.config
-Z_AUTOCONF_H = outdir/$(OUTDIR_PREFIX)/include/generated/autoconf.h
-DQUOTE = "
-# "
-include z_config_proxy.mk
-
-# Zephyr toolchain config is 2-pass, so included twice
-include $(ZEPHYR_BASE)/scripts/Makefile.toolchain.$(ZEPHYR_GCC_VARIANT)
-include $(ZEPHYR_BASE)/scripts/Makefile.toolchain.$(ZEPHYR_GCC_VARIANT)
-
-CFLAGS_TARGET = $(cflags-y)
+Z_SYSGEN_H = outdir/$(OUTDIR_PREFIX)/misc/generated/sysgen/sysgen.h
+Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
+include $(Z_EXPORTS)
 
 include ../py/mkenv.mk
 include ../py/py.mk
@@ -34,9 +26,9 @@ include ../py/py.mk
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
-INC += -I$(ZEPHYR_BASE)/include -I$(ZEPHYR_BASE) \
-    -Ioutdir/$(OUTDIR_PREFIX)/misc/generated/sysgen \
-    -I$(dir $(Z_AUTOCONF_H))
+INC += -I$(ZEPHYR_BASE)/net/ip
+INC += -I$(ZEPHYR_BASE)/net/ip/contiki
+INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 
 SRC_C = main.c \
 	uart_core.c \
@@ -48,33 +40,38 @@ SRC_C = main.c \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-COPT = -Os -DNDEBUG -fdata-sections -ffunction-sections
-CFLAGS = -std=gnu99 $(TOOLCHAIN_CFLAGS) $(INC) $(CFLAGS_MOD) $(COPT) $(CFLAGS_TARGET)
+CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
+	 -std=gnu99 -DNDEBUG $(INC)
 
 include ../py/mkrules.mk
 
-$(Z_DOTCONFIG):
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) initconfig
+$(Z_EXPORTS):
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) initconfig outputexports
 
 GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
-KCONFIG_TARGETS = config nconfig menuconfig xconfig gconfig
+KCONFIG_TARGETS = \
+	initconfig config nconfig menuconfig xconfig gconfig \
+	oldconfig silentoldconfig defconfig savedefconfig \
+	allnoconfig allyesconfig alldefconfig randconfig \
+	listnewconfig olddefconfig
+CLEAN_TARGETS = pristine mrproper
 
-$(GENERIC_TARGETS) $(KCONFIG_TARGETS): $(LIBMICROPYTHON)
+$(GENERIC_TARGETS): $(LIBMICROPYTHON)
+$(CLEAN_TARGETS):  clean
+
+$(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
+	$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) $@
 
-$(LIBMICROPYTHON): $(Z_AUTOCONF_H)
-build/genhdr/qstr.i.last: $(Z_AUTOCONF_H)
+$(LIBMICROPYTHON): $(Z_SYSGEN_H)
+build/genhdr/qstr.i.last: $(Z_SYSGEN_H)
 
-$(Z_AUTOCONF_H):
+$(Z_SYSGEN_H):
 	rm -f $(LIBMICROPYTHON)
 	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD)
 
-zephyr_arch.mk: $(Z_DOTCONFIG)
-	echo "include $(ZEPHYR_BASE)/arch/$(ARCH)/Makefile" >$@
-
-z_config_proxy.mk:
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) initconfig
-	echo "include z_config.mk" >$@
-
 # Clean Zephyr things too
-CLEAN_EXTRA = outdir z_config_proxy.mk
+clean: z_clean
+
+z_clean:
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
