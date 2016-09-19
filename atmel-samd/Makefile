@@ -156,7 +156,6 @@ SRC_C = \
 	lib/fatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
 	lib/utils/stdout_helpers.c \
-	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c

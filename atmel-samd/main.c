@@ -157,13 +157,18 @@ void init_flash_fs() {
 }
 
 static char *stack_top;
-static char heap[8192];
+static char heap[16384];
 
 void reset_mp() {
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
+    mp_obj_list_init(mp_sys_argv, 0);
 
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
@@ -225,12 +230,24 @@ void gc_collect(void) {
     gc_dump_info();
 }
 
+mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    #if MICROPY_VFS_FAT
+    return fat_vfs_lexer_new_from_file(filename);
+    #else
+    (void)filename;
     return NULL;
+    #endif
 }
 
+mp_import_stat_t fat_vfs_import_stat(const char *path);
 mp_import_stat_t mp_import_stat(const char *path) {
+    #if MICROPY_VFS_FAT
+    return fat_vfs_import_stat(path);
+    #else
+    (void)path;
     return MP_IMPORT_STAT_NO_EXIST;
+    #endif
 }
 
 void mp_keyboard_interrupt(void) {
