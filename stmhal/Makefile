@@ -39,8 +39,8 @@ CROSS_COMPILE = arm-none-eabi-
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
-INC += -I$(CMSIS_DIR)/inc
-INC += -I$(CMSIS_DIR)/devinc
+INC += -I../lib/cmsis/inc
+INC += -I$(CMSIS_DIR)/
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
@@ -388,7 +388,7 @@ GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
 GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
-CMSIS_MCU_HDR = cmsis/devinc/$(CMSIS_MCU_LOWER).h
+CMSIS_MCU_HDR = cmsis/$(CMSIS_MCU_LOWER).h
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to
