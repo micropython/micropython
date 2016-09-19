@@ -723,7 +723,8 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     vstr_init(&lex->vstr, 32);
 
     // check for memory allocation error
-    if (lex->indent_level == NULL || vstr_had_error(&lex->vstr)) {
+    // note: vstr_init above may fail on malloc, but so may mp_lexer_next_token_into below
+    if (lex->indent_level == NULL) {
         mp_lexer_free(lex);
         return NULL;
     }
