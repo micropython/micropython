@@ -9,12 +9,17 @@
 # Zephyr build system.
 #
 
-ARCH ?= x86
 BOARD ?= qemu_x86
 # Zephyr 1.5.0
 #OUTDIR_PREFIX =
 # Zephyr 1.6.0
 OUTDIR_PREFIX = $(BOARD)
+
+Z_DOTCONFIG = outdir/$(OUTDIR_PREFIX)/.config
+DQUOTE = "
+# "
+include $(Z_DOTCONFIG)
+override ARCH = $(subst $(DQUOTE),,$(CONFIG_ARCH))
 
 # Zephyr toolchain config is 2-pass, so included twice
 include $(ZEPHYR_BASE)/scripts/Makefile.toolchain.$(ZEPHYR_GCC_VARIANT)
@@ -49,6 +54,9 @@ COPT = -Os -DNDEBUG -fdata-sections -ffunction-sections
 CFLAGS = -std=gnu99 $(TOOLCHAIN_CFLAGS) $(INC) $(CFLAGS_MOD) $(COPT) $(CFLAGS_TARGET)
 
 include ../py/mkrules.mk
+
+$(Z_DOTCONFIG):
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) initconfig
 
 all: $(LIBMICROPYTHON)
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD)
