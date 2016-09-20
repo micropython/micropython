@@ -117,7 +117,7 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
 }
 
 uint32_t mp_hal_ticks_ms(void) {
-    return system_get_time() / 1000;
+    return ((uint64_t)system_time_high_word << 32 | (uint64_t)system_get_time()) / 1000;
 }
 
 uint32_t mp_hal_ticks_us(void) {

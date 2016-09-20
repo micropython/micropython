@@ -110,10 +110,22 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
 
 int ets_loop_iter_disable = 0;
 
+// to implement a 64-bit wide microsecond counter
+static uint32_t system_time_prev = 0;
+uint32_t system_time_high_word = 0;
+
 bool ets_loop_iter(void) {
     if (ets_loop_iter_disable) {
         return false;
     }
+
+    // handle overflow of system microsecond counter
+    uint32_t system_time_cur = system_get_time();
+    if (system_time_cur < system_time_prev) {
+        system_time_high_word += 1; // record overflow of low 32-bits
+    }
+    system_time_prev = system_time_cur;
+
     //static unsigned cnt;
     bool progress = false;
     for (volatile struct task_entry *t = emu_tasks; t < &emu_tasks[MP_ARRAY_SIZE(emu_tasks)]; t++) {
