@@ -31,7 +31,7 @@
 
 // If you wish to override the functions for mapping the machine_mem read/write
 // address, then add a #define for MICROPY_MACHINE_MEM_GET_READ_ADDR and/or
-// MICROPY_MACHINE_MEM_GET_WRITE_ADDR in yopur mpconfigport.h. Since the
+// MICROPY_MACHINE_MEM_GET_WRITE_ADDR in your mpconfigport.h. Since the
 // prototypes are identical, it is allowable for both of the macros to evaluate
 // the to same function.
 //
