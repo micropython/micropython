@@ -187,11 +187,6 @@ def run_tests(pyb, tests, args):
     if not 'True' in str(t, 'ascii'):
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
-    # These tests are now broken because showbc uses buffered printf
-    if True:
-        skip_tests.add('cmdline/cmd_verbose.py')
-        skip_tests.add('cmdline/cmd_showbc.py')
-
     upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
     has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
     cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])

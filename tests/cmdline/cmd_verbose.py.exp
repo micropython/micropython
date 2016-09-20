@@ -1,13 +1,12 @@
-1
 File cmdline/cmd_verbose.py, code block '<module>' (descriptor: \.\+, bytecode \.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
- 08 \.\+
+ 02 \.\+
 ########
 \.\+5b
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-  bc=-3 line=1
+  bc=-1 line=1
   bc=0 line=3
 00 LOAD_NAME print (cache=0)
 04 LOAD_CONST_SMALL_INT 1
@@ -15,7 +14,8 @@ arg names:
 07 POP_TOP
 08 LOAD_CONST_NONE
 09 RETURN_VALUE
+1
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+
- No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+

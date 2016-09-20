@@ -5,7 +5,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 3)
 (N_EXC_STACK 0)
-  bc=-3 line=1
+  bc=-1 line=1
 ########
   bc=\\d\+ line=134
 00 MAKE_FUNCTION \.\+
@@ -34,7 +34,7 @@ arg names:
 (INIT_CELL 14)
 (INIT_CELL 15)
 (INIT_CELL 16)
-  bc=-6 line=1
+  bc=-4 line=1
 ########
   bc=\\d\+ line=118
 00 LOAD_CONST_NONE
@@ -86,8 +86,7 @@ arg names:
 \\d\+ UNARY_OP 4
 \\d\+ STORE_FAST 9
 \\d\+ LOAD_FAST 0
-\\d\+ UNARY_OP 0
-\\d\+ NOT
+\\d\+ UNARY_OP 6
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_FAST 0
 \\d\+ LOAD_DEREF 14
@@ -108,8 +107,7 @@ arg names:
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_FAST 1
 \\d\+ BINARY_OP 27 __eq__
-\\d\+ UNARY_OP 0
-\\d\+ NOT
+\\d\+ UNARY_OP 6
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_ATTR c (cache=0)
@@ -318,7 +316,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-  bc=-3 line=1
+  bc=-1 line=1
   bc=0 line=129
   bc=3 line=130
   bc=6 line=131
@@ -342,14 +340,14 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
-  bc=-3 line=1
-  bc=10 line=135
+  bc=-1 line=1
+  bc=13 line=135
 00 LOAD_NAME __name__ (cache=0)
-03 STORE_NAME __module__
-05 LOAD_CONST_STRING 'Class'
-08 STORE_NAME __qualname__
-10 LOAD_CONST_NONE
-11 RETURN_VALUE
+04 STORE_NAME __module__
+07 LOAD_CONST_STRING 'Class'
+10 STORE_NAME __qualname__
+13 LOAD_CONST_NONE
+14 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
@@ -384,7 +382,7 @@ arg names: * * *
 07 LOAD_DEREF 1
 09 POP_JUMP_IF_FALSE 3
 12 LOAD_DEREF 0
-14 LIST_APPEND 2
+14 STORE_COMP 8
 16 JUMP 3
 19 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
@@ -404,7 +402,7 @@ arg names: * * *
 09 POP_JUMP_IF_FALSE 3
 12 LOAD_DEREF 0
 14 LOAD_DEREF 0
-16 MAP_ADD 2
+16 STORE_COMP 13
 18 JUMP 3
 21 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ bytes)
@@ -443,4 +441,4 @@ arg names: * b
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+
- No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+
