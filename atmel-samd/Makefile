@@ -23,7 +23,7 @@ include ../py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
-BOSSAC := /Users/tannewt/ArduinoCore-samd/tools/bossac_osx
+BOSSAC := tools/bossac_osx
 
 HAL_DIR=hal/$(MCU_SERIES)
 
