@@ -586,6 +586,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_t
 
 const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_usocket,
     .globals = (mp_obj_dict_t*)&mp_module_socket_globals,
 };

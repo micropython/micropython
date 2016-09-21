@@ -499,6 +499,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_ffi_globals, mp_module_ffi_globals_table);
 
 const mp_obj_module_t mp_module_ffi = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_ffi,
     .globals = (mp_obj_dict_t*)&mp_module_ffi_globals,
 };

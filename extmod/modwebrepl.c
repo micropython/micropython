@@ -340,7 +340,7 @@ STATIC const mp_obj_type_t webrepl_type = {
 };
 
 STATIC const mp_map_elem_t webrepl_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_websocket) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR__webrepl) },
     { MP_OBJ_NEW_QSTR(MP_QSTR__webrepl), (mp_obj_t)&webrepl_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_password), (mp_obj_t)&webrepl_set_password_obj },
 };
@@ -349,7 +349,6 @@ STATIC MP_DEFINE_CONST_DICT(webrepl_module_globals, webrepl_module_globals_table
 
 const mp_obj_module_t mp_module_webrepl = {
     .base = { &mp_type_module },
-    .name = MP_QSTR__webrepl,
     .globals = (mp_obj_dict_t*)&webrepl_module_globals,
 };
 

@@ -387,7 +387,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_tab
 
 const mp_obj_module_t mp_module_btree = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_btree,
     .globals = (mp_obj_dict_t*)&mp_module_btree_globals,
 };
 
