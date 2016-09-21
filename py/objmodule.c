@@ -39,7 +39,7 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 
     const char *module_name = "";
     mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
-    if (elem == NULL) {
+    if (elem != NULL) {
         module_name = mp_obj_str_get_str(elem->value);
     }
 
