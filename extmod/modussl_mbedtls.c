@@ -39,6 +39,8 @@
 #include "mbedtls/include/mbedtls/platform.h"
 #include "mbedtls/include/mbedtls/net.h"
 #include "mbedtls/include/mbedtls/ssl.h"
+#include "mbedtls/include/mbedtls/x509_crt.h"
+#include "mbedtls/include/mbedtls/pk.h"
 #include "mbedtls/include/mbedtls/entropy.h"
 #include "mbedtls/include/mbedtls/ctr_drbg.h"
 #include "mbedtls/include/mbedtls/debug.h"
@@ -51,7 +53,15 @@ typedef struct _mp_obj_ssl_socket_t {
     mbedtls_ssl_context ssl;
     mbedtls_ssl_config conf;
     mbedtls_x509_crt cacert;
+    mbedtls_x509_crt cert;
+    mbedtls_pk_context pkey;
 } mp_obj_ssl_socket_t;
+
+struct ssl_args {
+    mp_arg_val_t key;
+    mp_arg_val_t cert;
+    mp_arg_val_t server_side;
+};
 
 STATIC const mp_obj_type_t ussl_socket_type;
 
@@ -94,7 +104,7 @@ int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 }
 
 
-STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
+STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
     o->base.type = &ussl_socket_type;
 
@@ -102,6 +112,8 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
     mbedtls_x509_crt_init(&o->cacert);
+    mbedtls_x509_crt_init(&o->cert);
+    mbedtls_pk_init(&o->pkey);
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
     // Debug level (0-4)
     mbedtls_debug_set_threshold(0);
@@ -140,7 +152,24 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
     o->sock = sock;
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
-    if (server_side) {
+    if (args->key.u_obj != MP_OBJ_NULL) {
+        mp_uint_t key_len;
+        const byte *key = (const byte*)mp_obj_str_get_data(args->key.u_obj, &key_len);
+        // len should include terminating null
+        ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
+        assert(ret == 0);
+
+        mp_uint_t cert_len;
+        const byte *cert = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
+        // len should include terminating null
+        ret = mbedtls_x509_crt_parse(&o->cert, cert, cert_len + 1);
+        assert(ret == 0);
+
+        ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
+        assert(ret == 0);
+    }
+
+    if (args->server_side.u_bool) {
         assert(0);
     } else {
         while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
@@ -228,19 +257,19 @@ STATIC const mp_obj_type_t ussl_socket_type = {
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // TODO: Check that sock implements stream protocol
     mp_obj_t sock = pos_args[0];
 
-    struct {
-        mp_arg_val_t server_side;
-    } args;
+    struct ssl_args args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
-    return MP_OBJ_FROM_PTR(socket_new(sock, args.server_side.u_bool));
+    return MP_OBJ_FROM_PTR(socket_new(sock, &args));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 
