@@ -235,7 +235,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_t
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uselect,
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 

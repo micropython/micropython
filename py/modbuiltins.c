@@ -577,6 +577,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
 
 STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_builtins) },
+
     // built-in core functions
     { MP_ROM_QSTR(MP_QSTR___build_class__), MP_ROM_PTR(&mp_builtin___build_class___obj) },
     { MP_ROM_QSTR(MP_QSTR___import__), MP_ROM_PTR(&mp_builtin___import___obj) },
@@ -727,6 +729,5 @@ MP_DEFINE_CONST_DICT(mp_module_builtins_globals, mp_module_builtins_globals_tabl
 
 const mp_obj_module_t mp_module_builtins = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_builtins,
     .globals = (mp_obj_dict_t*)&mp_module_builtins_globals,
 };

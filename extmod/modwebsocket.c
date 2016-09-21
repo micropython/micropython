@@ -313,7 +313,6 @@ STATIC MP_DEFINE_CONST_DICT(websocket_module_globals, websocket_module_globals_t
 
 const mp_obj_module_t mp_module_websocket = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_websocket,
     .globals = (mp_obj_dict_t*)&websocket_module_globals,
 };
 

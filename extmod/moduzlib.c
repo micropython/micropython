@@ -204,7 +204,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_uzlib_globals, mp_module_uzlib_globals_tab
 
 const mp_obj_module_t mp_module_uzlib = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uzlib,
     .globals = (mp_obj_dict_t*)&mp_module_uzlib_globals,
 };
 
