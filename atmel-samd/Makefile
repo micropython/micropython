@@ -160,6 +160,11 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c
 
+STM_SRC_C = $(addprefix stmhal/,\
+	pybstdio.c \
+	input.c \
+	)
+
 # TODO(tannewt): Use this sed line to extract the RST docs from these sources:
 #   sed': sed -n 's+^//|++p' ../api/machine.c
 #
@@ -176,9 +181,10 @@ SRC_AUTOGEN = \
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_AUTOGEN:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_BINDINGS_EXPANDED:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED) $(STM_SRC_C)
 
 all: $(BUILD)/firmware.bin
 

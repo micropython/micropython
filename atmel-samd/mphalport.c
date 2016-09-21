@@ -18,10 +18,10 @@
 static uint8_t usb_rx_buf[USB_RX_BUF_SIZE];
 
 // Receive buffer head
-static uint8_t usb_rx_buf_head;
+static volatile uint8_t usb_rx_buf_head;
 
 // Receive buffer tail
-static uint8_t usb_rx_buf_tail;
+static volatile uint8_t usb_rx_buf_tail;
 
 // Number of bytes in receive buffer
 static volatile uint8_t usb_rx_count;
@@ -46,25 +46,26 @@ void mp_cdc_disable(uint8_t port)
 
 void usb_rx_notify(void)
 {
+    irqflags_t flags;
     if (mp_cdc_enabled) {
         while (udi_cdc_is_rx_ready()) {
             uint8_t c;
-            c = udi_cdc_getc();
 
-            if (c == interrupt_char) {
-                mp_keyboard_interrupt();
-                // Don't put the interrupt into the buffer, just continue.
-                continue;
+            // Introduce a critical section to avoid buffer corruption. We use
+            // cpu_irq_save instead of cpu_irq_disable because we don't know the
+            // current state of IRQs. They may have been turned off already and
+            // we don't want to accidentally turn them back on.
+            flags = cpu_irq_save();
+            // If our buffer is full, then don't get another character otherwise
+            // we'll lose a previous character.
+            if (usb_rx_count >= USB_RX_BUF_SIZE) {
+                cpu_irq_restore(flags);
+                break;
             }
 
-            // Introducing critical section to avoid buffer corruption.
-            cpu_irq_disable();
-
-            // The count of characters present in receive buffer is
-            // incremented.
-            usb_rx_count++;
-            usb_rx_buf[usb_rx_buf_tail] = c;
-
+            uint8_t current_tail = usb_rx_buf_tail;
+            // Pretend we've received a character so that any nested calls to
+            // this function have to consider the spot we've reserved.
             if ((USB_RX_BUF_SIZE - 1) == usb_rx_buf_tail) {
                 // Reached the end of buffer, revert back to beginning of
                 // buffer.
@@ -72,34 +73,52 @@ void usb_rx_notify(void)
             } else {
                 usb_rx_buf_tail++;
             }
+            // The count of characters present in receive buffer is
+            // incremented.
+            usb_rx_count++;
+            // WARNING(tannewt): This call can call us back with the next
+            // character!
+            c = udi_cdc_getc();
 
-            cpu_irq_enable();
+            if (c == interrupt_char) {
+                // We consumed a character rather than adding it to the rx
+                // buffer so undo the modifications we made to count and the
+                // tail.
+                usb_rx_count--;
+                usb_rx_buf_tail = current_tail;
+                cpu_irq_restore(flags);
+                mp_keyboard_interrupt();
+                // Don't put the interrupt into the buffer, just continue.
+                continue;
+            }
+
+            // We put the next character where we expected regardless of whether
+            // the next character was already loaded in the buffer.
+            usb_rx_buf[current_tail] = c;
+
+            cpu_irq_restore(flags);
         }
     }
 }
 
 int receive_usb() {
-    if (0 == usb_rx_count) {
+    if (usb_rx_count == 0) {
         return 0;
     }
 
-    if (USB_RX_BUF_SIZE <= usb_rx_count) {
-        // Bytes between head and tail are overwritten by new data. The
-        // oldest data in buffer is the one to which the tail is pointing. So
-        // reading operation should start from the tail.
-        usb_rx_buf_head = usb_rx_buf_tail;
-
-        // This is a buffer overflow case.But still only the number of bytes
-        // equivalent to full buffer size are useful.
-        usb_rx_count = USB_RX_BUF_SIZE;
-    }
-
     // Copy from head.
+    cpu_irq_disable();
     int data = usb_rx_buf[usb_rx_buf_head];
     usb_rx_buf_head++;
     usb_rx_count--;
     if ((USB_RX_BUF_SIZE) == usb_rx_buf_head) {
       usb_rx_buf_head = 0;
+    }
+    cpu_irq_enable();
+
+    // Call usb_rx_notify if we just emptied a spot in the buffer.
+    if (usb_rx_count == USB_RX_BUF_SIZE - 1) {
+         usb_rx_notify();
     }
     return data;
 }
