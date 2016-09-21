@@ -36,14 +36,14 @@
 #include "py/stream.h"
 
 // mbedtls_time_t
-#include "mbedtls/include/mbedtls/platform.h"
-#include "mbedtls/include/mbedtls/net.h"
-#include "mbedtls/include/mbedtls/ssl.h"
-#include "mbedtls/include/mbedtls/x509_crt.h"
-#include "mbedtls/include/mbedtls/pk.h"
-#include "mbedtls/include/mbedtls/entropy.h"
-#include "mbedtls/include/mbedtls/ctr_drbg.h"
-#include "mbedtls/include/mbedtls/debug.h"
+#include "mbedtls/platform.h"
+#include "mbedtls/net.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/x509_crt.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/debug.h"
 
 typedef struct _mp_obj_ssl_socket_t {
     mp_obj_base_t base;
