@@ -44,6 +44,7 @@ int real_main(void) {
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
+    pyexec_frozen_module("main.py");
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
     for (;;) {
