@@ -1069,7 +1069,10 @@ uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev) {
     }
 
     // Prepare Out endpoint to receive next packet
-    USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, HID_DATA_FS_MAX_PACKET_SIZE);
+    uint16_t mps_out =
+        hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
+        | (hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
+    USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
 
     return USBD_OK;
 }
