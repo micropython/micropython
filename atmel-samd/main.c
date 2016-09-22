@@ -173,6 +173,9 @@ void reset_mp() {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
     pin_init0();
+
+    pyexec_file("boot.py");
+    pyexec_file("main.py");
 }
 
 int main(int argc, char **argv) {
@@ -189,15 +192,6 @@ int main(int argc, char **argv) {
     int stack_dummy;
     reset_mp();
 
-    #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_event_repl_init();
-    for (;;) {
-        int c = mp_hal_stdin_rx_chr();
-        if (pyexec_event_repl_process_char(c)) {
-            break;
-        }
-    }
-    #else
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int exit_code = 0;
@@ -215,7 +209,6 @@ int main(int argc, char **argv) {
             break;
         }
     }
-    #endif
     mp_deinit();
     return 0;
 }
