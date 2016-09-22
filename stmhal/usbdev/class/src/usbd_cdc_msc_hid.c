@@ -53,6 +53,7 @@
 #define HID_IN_EP_WITH_CDC (0x81)
 #define HID_OUT_EP_WITH_CDC (0x01)
 #define HID_IN_EP_WITH_MSC (0x83)
+#define HID_OUT_EP_WITH_MSC (0x03)
 
 #define USB_DESC_TYPE_ASSOCIATION (0x0b)
 
@@ -613,6 +614,7 @@ int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
             // not implemented
         case USBD_MODE_MSC_HID:
             hid_in_ep = HID_IN_EP_WITH_MSC;
+            hid_out_ep = HID_OUT_EP_WITH_MSC;
             hid_iface_num = HID_IFACE_NUM_WITH_MSC;
             break;
             */
@@ -723,7 +725,7 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        mps_out);
 
         // Prepare Out endpoint to receive next packet
-        USBD_LL_PrepareReceive(pdev, hid_out_ep, CDC_ClassData.RxBuffer, mps_out);
+        USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
 
         HID_ClassData.state = HID_IDLE;
     }
