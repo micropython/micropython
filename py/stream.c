@@ -355,10 +355,6 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
         } else {
             p = vstr_extend(&vstr, DEFAULT_BUFFER_SIZE);
             current_read = DEFAULT_BUFFER_SIZE;
-            if (p == NULL) {
-                // TODO
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError/*&mp_type_RuntimeError*/, "Out of memory"));
-            }
         }
     }
 
