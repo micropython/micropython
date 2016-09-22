@@ -14,8 +14,7 @@ SECTIONS
            out. */
 
         . = ALIGN(4);
-        */ff.o(.text*)
-        */stm32f4xx_hal_sd.o(.text*)
+       INCLUDE isr.ld
 
         . = ALIGN(4);
     } >FLASH_ISR
