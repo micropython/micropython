@@ -89,6 +89,8 @@ btree/bt_utils.c \
 mpool/mpool.c \
 	)
 CFLAGS_MOD += -DMICROPY_PY_BTREE=1
+# we need to suppress certain warnings to get berkeley-db to compile cleanly
+$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter
 endif
 
 # py object files
