@@ -47,12 +47,11 @@
 
 static __IO uint8_t dev_is_connected = 0; // indicates if we are connected
 
-static uint8_t buffer[2][64]; // pair of buffers to read individual packets into
+static uint8_t buffer[2][HID_DATA_FS_MAX_PACKET_SIZE]; // pair of buffers to read individual packets into
 static int8_t current_read_buffer = 0; // which buffer to read from
 static uint32_t last_read_len; // length of last read
 static int8_t current_write_buffer = 0; // which buffer to write to
 
-static size_t rx_packet_size = 64; // expected size of packets to receive
 
 /* Private function prototypes -----------------------------------------------*/
 static int8_t HID_Itf_Receive  (uint8_t* pbuf, uint32_t Len);
