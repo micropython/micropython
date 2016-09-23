@@ -11,6 +11,9 @@
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 #define MICROPY_ALLOC_PATH_MAX      (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
+// TODO(tannewt): Reduce this number if we want the REPL to function under 512
+// free bytes.
+// #define MICROPY_ALLOC_PARSE_RULE_INIT   (64)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
