@@ -190,6 +190,10 @@ int main(int argc, char **argv) {
     init_flash_fs();
 
     int stack_dummy;
+    // Store the location of stack_dummy as an approximation for the top of the
+    // stack so the GC can account for objects that may be referenced by the
+    // stack between here and where gc_collect is called.
+    stack_top = (char*)&stack_dummy;
     reset_mp();
 
     // Main script is finished, so now go into REPL mode.
@@ -203,7 +207,6 @@ int main(int argc, char **argv) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             mp_hal_stdout_tx_str("soft reboot\r\n");
-            stack_top = (char*)&stack_dummy;
             reset_mp();
         } else if (exit_code != 0) {
             break;
@@ -218,6 +221,8 @@ void gc_collect(void) {
     // pointers from CPU registers, and thus may function incorrectly.
     void *dummy;
     gc_collect_start();
+    // This naively collects all object references from an approximate stack
+    // range.
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
     gc_dump_info();
