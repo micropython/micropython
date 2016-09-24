@@ -41,6 +41,9 @@
 #define FNAME    8
 #define FCOMMENT 16
 
+void tinf_skip_bytes(TINF_DATA *d, int num);
+uint16_t tinf_get_uint16(TINF_DATA *d);
+
 void tinf_skip_bytes(TINF_DATA *d, int num)
 {
     while (num--) uzlib_get_byte(d);
