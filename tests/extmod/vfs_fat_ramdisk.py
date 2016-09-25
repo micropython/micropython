@@ -45,6 +45,7 @@ assert b"FOO_FILETXT" not in bdev.data
 assert b"hello!" not in bdev.data
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
+assert vfs.statvfs("/ramdisk") == (512, 512, 14, 14, 14, 0, 0, 0, 0, 255)
 
 print("getcwd:", vfs.getcwd())
 
