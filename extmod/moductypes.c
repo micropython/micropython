@@ -125,7 +125,7 @@ STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
     o->base.type = type;
-    o->addr = (void*)(uintptr_t)mp_obj_get_int(args[0]);
+    o->addr = (void*)(uintptr_t)mp_obj_int_get_truncated(args[0]);
     o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
     if (n_args == 3) {
@@ -710,7 +710,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_uctypes_globals, mp_module_uctypes_globals
 
 const mp_obj_module_t mp_module_uctypes = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uctypes,
     .globals = (mp_obj_dict_t*)&mp_module_uctypes_globals,
 };
 

@@ -448,6 +448,8 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
                     #if MICROPY_CPYTHON_COMPAT
+                    // Store module as "__main__" in the dictionary of loaded modules (returned by sys.modules).
+                    mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)), MP_OBJ_NEW_QSTR(MP_QSTR___main__), module_obj);
                     // Store real name in "__main__" attribute. Choosen semi-randonly, to reuse existing qstr's.
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___main__), MP_OBJ_NEW_QSTR(mod_name));
                     #endif

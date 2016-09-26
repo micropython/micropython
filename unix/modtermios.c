@@ -151,6 +151,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals
 
 const mp_obj_module_t mp_module_termios = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_termios,
     .globals = (mp_obj_dict_t*)&mp_module_termios_globals,
 };

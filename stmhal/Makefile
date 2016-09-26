@@ -18,6 +18,7 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 # include py core make definitions
 include ../py/py.mk
 
+LD_DIR=boards
 CMSIS_DIR=cmsis
 HAL_DIR=hal/$(MCU_SERIES)
 USBDEV_DIR=usbdev
@@ -59,7 +60,7 @@ CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
-LDFLAGS = -nostdlib -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
 LIBS =
 
 # Remove uncalled code from the final image.

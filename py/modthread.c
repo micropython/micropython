@@ -294,7 +294,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_thread_globals, mp_module_thread_globals_t
 
 const mp_obj_module_t mp_module_thread = {
     .base = { &mp_type_module },
-    .name = MP_QSTR__thread,
     .globals = (mp_obj_dict_t*)&mp_module_thread_globals,
 };
 

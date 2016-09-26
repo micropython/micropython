@@ -47,6 +47,7 @@ script:
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests -d thread)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --via-mpy -d basics)
 
 after_success:
   - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)

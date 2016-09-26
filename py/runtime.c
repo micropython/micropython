@@ -55,7 +55,6 @@
 
 const mp_obj_module_t mp_module___main__ = {
     .base = { &mp_type_module },
-    .name = MP_QSTR___main__,
     .globals = (mp_obj_dict_t*)&MP_STATE_VM(dict_main),
 };
 

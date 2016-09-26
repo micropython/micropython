@@ -265,7 +265,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_t
 
 const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_ustruct,
     .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
 };
 

@@ -117,6 +117,5 @@ STATIC MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table
 
 const mp_obj_module_t onewire_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_onewire,
     .globals = (mp_obj_dict_t*)&onewire_module_globals,
 };

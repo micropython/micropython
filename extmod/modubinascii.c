@@ -208,9 +208,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj, mod_binascii_b2a_base64);
 mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-    uint32_t crc = (n_args > 1) ? mp_obj_get_int(args[1]) : 0;
+    uint32_t crc = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 0;
     crc = uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
-    return MP_OBJ_NEW_SMALL_INT(crc ^ 0xffffffff);
+    return mp_obj_new_int_from_uint(crc ^ 0xffffffff);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj, 1, 2, mod_binascii_crc32);
 #endif
@@ -232,7 +232,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_binascii_globals, mp_module_binascii_globa
 
 const mp_obj_module_t mp_module_ubinascii = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_ubinascii,
     .globals = (mp_obj_dict_t*)&mp_module_binascii_globals,
 };
 

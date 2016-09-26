@@ -52,8 +52,8 @@ typedef union _mp_arg_val_t {
 } mp_arg_val_t;
 
 typedef struct _mp_arg_t {
-    qstr qst;
-    mp_uint_t flags;
+    uint16_t qst;
+    uint16_t flags;
     mp_arg_val_t defval;
 } mp_arg_t;
 

@@ -765,7 +765,6 @@ MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
 // module
 typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
-    qstr name;
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
 mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
