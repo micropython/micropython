@@ -78,6 +78,8 @@
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
+#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
 // type definitions for the specific machine
 
