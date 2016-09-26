@@ -61,6 +61,7 @@ struct ssl_args {
     mp_arg_val_t key;
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
+    mp_arg_val_t server_hostname;
 };
 
 STATIC const mp_obj_type_t ussl_socket_type;
@@ -143,10 +144,12 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         assert(0);
     }
 
-    // delme
-    ret = mbedtls_ssl_set_hostname(&o->ssl, "mbed TLS Server 1");
-    if (ret != 0) {
-        assert(0);
+    if (args->server_hostname.u_obj != mp_const_none) {
+        const char *sni = mp_obj_str_get_str(args->server_hostname.u_obj);
+        ret = mbedtls_ssl_set_hostname(&o->ssl, sni);
+        if (ret != 0) {
+            assert(0);
+        }
     }
 
     o->sock = sock;
@@ -260,6 +263,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // TODO: Check that sock implements stream protocol
