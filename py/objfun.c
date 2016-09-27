@@ -266,23 +266,14 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 #endif
 
     mp_obj_t result;
-    switch (vm_return_kind) {
-        case MP_VM_RETURN_NORMAL:
-            // return value is in *sp
-            result = *code_state->sp;
-            break;
-
-        case MP_VM_RETURN_EXCEPTION:
-            // return value is in state[n_state - 1]
-            result = code_state->state[n_state - 1];
-            break;
-
-        case MP_VM_RETURN_YIELD: // byte-code shouldn't yield
-        default:
-            assert(0);
-            result = mp_const_none;
-            vm_return_kind = MP_VM_RETURN_NORMAL;
-            break;
+    if (vm_return_kind == MP_VM_RETURN_NORMAL) {
+        // return value is in *sp
+        result = *code_state->sp;
+    } else {
+        // must be an exception because normal functions can't yield
+        assert(vm_return_kind == MP_VM_RETURN_EXCEPTION);
+        // return value is in fastn[0]==state[n_state - 1]
+        result = code_state->state[n_state - 1];
     }
 
     // free the state if it was allocated on the heap
