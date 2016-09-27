@@ -626,7 +626,7 @@ dispatch_loop:
                         // stack: (..., __exit__, ctx_mgr, exc_instance)
                         // Need to pass (exc_type, exc_instance, None) as arguments to __exit__.
                         sp[1] = sp[0];
-                        sp[0] = mp_obj_get_type(sp[0]);
+                        sp[0] = MP_OBJ_FROM_PTR(mp_obj_get_type(sp[0]));
                         sp[2] = mp_const_none;
                         sp -= 2;
                         mp_obj_t ret_value = mp_call_method_n_kw(3, 0, sp);
