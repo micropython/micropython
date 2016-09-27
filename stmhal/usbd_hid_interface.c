@@ -1,5 +1,4 @@
 /*
- * TODO: this header is even more lies now
  * This file is part of the Micro Python project, http://micropython.org/
  *
  * Taken from ST Cube library and heavily modified.  See below for original
@@ -85,7 +84,7 @@ static int8_t HID_Itf_Receive(uint8_t* Buf, uint32_t Len) {
 // timout in milliseconds.
 // Returns number of bytes read from the device.
 int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
-    // Wait until we have at least 1 byte to read
+    // Wait until we have buffer to read
     uint32_t start = HAL_GetTick();
     while (current_read_buffer == current_write_buffer) {
         // Wraparound of tick is taken care of by 2's complement arithmetic.
@@ -98,6 +97,11 @@ int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
             return 0;
         }
         __WFI(); // enter sleep mode, waiting for interrupt
+    }
+
+    // There is not enough space in buffer
+    if (len < last_read_len) {
+        return 0;
     }
 
     // Copy bytes from device to user buffer

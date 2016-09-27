@@ -971,6 +971,7 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
       HID_ClassData.RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
       HID_fops->Receive(HID_ClassData.RxBuffer, HID_ClassData.RxLength);
     }
+
     return USBD_OK;
 }
 
