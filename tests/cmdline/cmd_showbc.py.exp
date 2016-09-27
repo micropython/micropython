@@ -242,8 +242,6 @@ arg names:
 \\d\+ POP_BLOCK
 \\d\+ JUMP \\d\+
 \\d\+ POP_TOP
-\\d\+ POP_TOP
-\\d\+ POP_TOP
 \\d\+ LOAD_DEREF 14
 \\d\+ POP_TOP
 \\d\+ POP_EXCEPT
