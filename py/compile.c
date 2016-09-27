@@ -1495,6 +1495,8 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
     EMIT_ARG(label_assign, l1); // start of exception handler
     EMIT(start_except_handler);
 
+    // at this point the top of the stack contains the exception instance that was raised
+
     uint l2 = comp_next_label(comp);
 
     for (int i = 0; i < n_except; i++) {
@@ -1528,15 +1530,12 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
             EMIT_ARG(pop_jump_if, false, end_finally_label);
         }
 
-        EMIT(pop_top);
-
+        // either discard or store the exception instance
         if (qstr_exception_local == 0) {
             EMIT(pop_top);
         } else {
             compile_store_id(comp, qstr_exception_local);
         }
-
-        EMIT(pop_top);
 
         uint l3 = 0;
         if (qstr_exception_local != 0) {
@@ -1561,7 +1560,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
-        EMIT_ARG(adjust_stack_size, 3); // stack adjust for the 3 exception items
+        EMIT_ARG(adjust_stack_size, 1); // stack adjust for the exception instance
     }
 
     compile_decrease_except_level(comp);
