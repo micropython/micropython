@@ -23,6 +23,10 @@ print(float("INFINITY"))
 print(float("nan"))
 print(float("NaN"))
 try:
+    float("")
+except ValueError:
+    print("ValueError")
+try:
     float("1e+")
 except ValueError:
     print("ValueError")
