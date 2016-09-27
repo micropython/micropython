@@ -61,6 +61,29 @@ Functions
 
    Get the status of a file or directory.
 
+.. only:: port_unix or port_pyboard or port_esp8266
+
+    .. function:: statvfs(path)
+
+       Get the status of a fileystem.
+
+       Returns a tuple with the filesystem information in the following order:
+
+            * ``f_bsize`` -- file system block size
+            * ``f_frsize`` -- fragment size
+            * ``f_blocks`` -- size of fs in f_frsize units
+            * ``f_bfree`` -- number of free blocks
+            * ``f_bavail`` -- number of free blocks for unpriviliged users
+            * ``f_files`` -- number of inodes
+            * ``f_ffree`` -- number of free inodes
+            * ``f_favail`` -- number of free inodes for unpriviliged users
+            * ``f_flag`` -- mount flags
+            * ``f_namemax`` -- maximum filename length
+
+       Parameters related to inodes: ``f_files``, ``f_ffree``, ``f_avail``
+       and the ``f_flags`` parameter may return ``0`` as they can be unavailable
+       in a port-specific implementation.
+
 .. function:: sync()
 
    Sync all filesystems.
