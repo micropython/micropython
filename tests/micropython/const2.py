@@ -1,5 +1,7 @@
 # check that consts are not replaced in anything except standalone identifiers
 
+from micropython import const
+
 X = const(1)
 Y = const(2)
 Z = const(3)

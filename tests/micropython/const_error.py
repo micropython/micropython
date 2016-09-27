@@ -1,5 +1,7 @@
 # make sure syntax error works correctly for bad const definition
 
+from micropython import const
+
 def test_syntax(code):
     try:
         exec(code)
