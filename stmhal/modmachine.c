@@ -68,7 +68,7 @@ void machine_init(void) {
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
-        PWR->CR = PWR_CR_CSBF;
+        PWR->CR |= PWR_CR_CSBF;
     } else
     #endif
     {
@@ -86,7 +86,7 @@ void machine_init(void) {
         }
     }
     // clear RCC reset flags
-    RCC->CSR = RCC_CSR_RMVF;
+    RCC->CSR |= RCC_CSR_RMVF;
 }
 
 // machine.info([dump_alloc_table])
