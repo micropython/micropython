@@ -1710,14 +1710,12 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     EMIT_LOAD_GLOBAL(MP_QSTR_StopAsyncIteration);
     EMIT_ARG(binary_op, MP_BINARY_OP_EXCEPTION_MATCH);
     EMIT_ARG(pop_jump_if, false, try_finally_label);
-    EMIT(pop_top);
-    EMIT(pop_top);
-    EMIT(pop_top);
+    EMIT(pop_top); // pop exception instance
     EMIT(pop_except);
     EMIT_ARG(jump, while_else_label);
 
     EMIT_ARG(label_assign, try_finally_label);
-    EMIT_ARG(adjust_stack_size, 3);
+    EMIT_ARG(adjust_stack_size, 1); // if we jump here, the exc is on the stack
     compile_decrease_except_level(comp);
     EMIT(end_finally);
     EMIT(end_except_handler);
@@ -1778,9 +1776,21 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
 
         EMIT_ARG(label_assign, try_exception_label); // start of exception handler
         EMIT(start_except_handler);
-        EMIT(rot_three);
+
+        // at this point the stack contains: ..., __aexit__, self, exc
+        EMIT(dup_top);
+        #if MICROPY_CPYTHON_COMPAT
+        EMIT_ARG(load_attr, MP_QSTR___class__); // get type(exc)
+        #else
+        compile_load_id(comp, MP_QSTR_type);
         EMIT(rot_two);
+        EMIT_ARG(call_function, 1, 0, 0); // get type(exc)
+        #endif
+        EMIT(rot_two);
+        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE); // dummy traceback value
+        // at this point the stack contains: ..., __aexit__, self, type(exc), exc, None
         EMIT_ARG(call_method, 3, 0, 0);
+
         compile_yield_from(comp);
         EMIT_ARG(pop_jump_if, true, no_reraise_label);
         EMIT_ARG(raise_varargs, 0);
@@ -1789,7 +1799,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         EMIT(pop_except);
         EMIT_ARG(jump, end_label);
 
-        EMIT_ARG(adjust_stack_size, 5);
+        EMIT_ARG(adjust_stack_size, 3); // adjust for __aexit__, self, exc
         compile_decrease_except_level(comp);
         EMIT(end_finally);
         EMIT(end_except_handler);

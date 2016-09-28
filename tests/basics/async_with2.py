@@ -20,7 +20,7 @@ class AContext:
         print('enter')
         print('f returned:', await f(10))
     async def __aexit__(self, exc_type, exc, tb):
-        print('exit')
+        print('exit', exc_type, exc)
         print('f returned:', await f(20))
 
 async def coro():
