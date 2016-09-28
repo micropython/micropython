@@ -435,6 +435,7 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
 }
 
 STATIC mp_obj_t set_update(size_t n_args, const mp_obj_t *args) {
+    check_set(args[0]);
     for (mp_uint_t i = 1; i < n_args; i++) {
         set_update_int(MP_OBJ_TO_PTR(args[0]), args[i]);
     }
