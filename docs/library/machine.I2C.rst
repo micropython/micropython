@@ -170,8 +170,7 @@ methods are convenience functions to communicate with such devices.
 
    Read `nbytes` from the slave specified by `addr` starting from the memory
    address specified by `memaddr`.
-   The argument `addrsize` specifies the address size in bits (on ESP8266
-   this argument is not recognised and the address size is always 8 bits).
+   The argument `addrsize` specifies the address size in bits.
    Returns a `bytes` object with the data read.
 
 .. method:: I2C.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
