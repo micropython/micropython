@@ -37,6 +37,7 @@ SRC_C = main.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
+	lib/utils/interrupt_char.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/frozen.c \
 	$(SRC_MOD)

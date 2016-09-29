@@ -9,6 +9,7 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "lib/utils/pyexec.h"
+#include "lib/mp-readline/readline.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -44,6 +45,7 @@ int real_main(void) {
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
+    MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     pyexec_frozen_module("main.py");
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
