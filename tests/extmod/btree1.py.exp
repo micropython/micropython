@@ -1,3 +1,4 @@
+<btree  >
 b'bar2'
 KeyError
 None
@@ -25,6 +26,9 @@ KeyError
 (b'foo3', b'bar3')
 (b'foo1', b'bar1')
 (b'bar1', b'foo1')
+(b'foo1', b'bar1')
+None
+True
 [b'bar1', b'foo1', b'foo3']
 [b'foo1', b'bar1', b'bar3']
 b'bar1'
@@ -32,3 +36,5 @@ b'foo1'
 b'foo3'
 foo1 True
 foo2 False
+baz1 True
+TypeError
