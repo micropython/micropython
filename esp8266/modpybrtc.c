@@ -219,6 +219,18 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_rtc_alarm_obj, pyb_rtc_alarm);
 
+STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
+    // check we want alarm0
+    if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid alarm"));
+    }
+
+    int64_t delta_us = pyb_rtc_alarm0_expiry - pyb_rtc_get_us_since_2000();
+
+    return mp_obj_new_int(delta_us/1000);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
+
 STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger, ARG_wake };
     static const mp_arg_t allowed_args[] = {
@@ -244,6 +256,7 @@ STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_memory), (mp_obj_t)&pyb_rtc_memory_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_alarm), (mp_obj_t)&pyb_rtc_alarm_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_left), (mp_obj_t)&pyb_rtc_alarm_left_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_irq), (mp_obj_t)&pyb_rtc_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ALARM0), MP_OBJ_NEW_SMALL_INT(0) },
 };
