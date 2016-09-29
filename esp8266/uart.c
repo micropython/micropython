@@ -39,8 +39,6 @@ static void uart0_rx_intr_handler(void *para);
 void soft_reset(void);
 void mp_keyboard_interrupt(void);
 
-int interrupt_char;
-
 /******************************************************************************
  * FunctionName : uart_config
  * Description  : Internal used function
@@ -172,7 +170,7 @@ static void uart0_rx_intr_handler(void *para) {
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == interrupt_char) {
+            if (RcvChar == mp_interrupt_char) {
                 mp_keyboard_interrupt();
             } else {
                 ringbuf_put(&input_buf, RcvChar);

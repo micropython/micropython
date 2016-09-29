@@ -128,14 +128,6 @@ void mp_hal_delay_ms(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
-    }
-    extern int interrupt_char;
-    interrupt_char = c;
-}
-
 void ets_event_poll(void) {
     ets_loop_iter();
     if (MP_STATE_VM(mp_pending_exception) != NULL) {
@@ -180,7 +172,7 @@ static int call_dupterm_read(void) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(MP_STATE_PORT(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
         nlr_pop();
-        if (*(byte*)bufinfo.buf == interrupt_char) {
+        if (*(byte*)bufinfo.buf == mp_interrupt_char) {
             mp_keyboard_interrupt();
             return -2;
         }
