@@ -71,8 +71,8 @@ typedef struct _scope_t {
     struct _scope_t *parent;
     struct _scope_t *next;
     mp_parse_node_t pn;
-    qstr source_file;
-    qstr simple_name;
+    uint16_t source_file; // a qstr
+    uint16_t simple_name; // a qstr
     mp_raw_code_t *raw_code;
     uint8_t scope_flags;  // see runtime0.h
     uint8_t emit_options; // see compile.h
