@@ -499,8 +499,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                 // sequence of many items
                 uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns2);
                 c_assign_tuple(comp, pns->nodes[0], n, pns2->nodes);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_comp_for) {
-                // TODO can we ever get here? can it be compiled?
+            } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for) {
                 goto cannot_assign;
             } else {
                 // sequence with 2 items
@@ -900,8 +899,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
                     for (int i = 0; i < n; i++) {
                         c_del_stmt(comp, pns1->nodes[i]);
                     }
-                } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_comp_for) {
-                    // TODO not implemented; can't del comprehension? can we get here?
+                } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_comp_for) {
                     goto cannot_delete;
                 } else {
                     // sequence with 2 items
