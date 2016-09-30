@@ -106,22 +106,10 @@ id_info_t *scope_find_global(scope_t *scope, qstr qst) {
     return scope_find(scope, qst);
 }
 
-id_info_t *scope_find_local_in_parent(scope_t *scope, qstr qst) {
-    if (scope->parent == NULL) {
-        return NULL;
-    }
-    for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
-        id_info_t *id = scope_find(s, qst);
-        if (id != NULL) {
-            return id;
-        }
-    }
-    return NULL;
-}
-
-void scope_close_over_in_parents(scope_t *scope, qstr qst) {
+STATIC void scope_close_over_in_parents(scope_t *scope, qstr qst) {
     assert(scope->parent != NULL); // we should have at least 1 parent
-    for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
+    for (scope_t *s = scope->parent;; s = s->parent) {
+        assert(s->parent != NULL); // we should not get to the outer scope
         bool added;
         id_info_t *id = scope_find_or_add_id(s, qst, &added);
         if (added) {
@@ -129,16 +117,34 @@ void scope_close_over_in_parents(scope_t *scope, qstr qst) {
             id->kind = ID_INFO_KIND_FREE;
         } else {
             // variable is declared in this scope, so finish
-            switch (id->kind) {
-                case ID_INFO_KIND_LOCAL: id->kind = ID_INFO_KIND_CELL; break; // variable local to this scope, close it over
-                case ID_INFO_KIND_FREE: break; // variable already closed over in a parent scope
-                case ID_INFO_KIND_CELL: break; // variable already closed over in this scope
-                default: assert(0); // TODO
+            if (id->kind == ID_INFO_KIND_LOCAL) {
+                // variable local to this scope, close it over
+                id->kind = ID_INFO_KIND_CELL;
+            } else {
+                // ID_INFO_KIND_FREE: variable already closed over in a parent scope
+                // ID_INFO_KIND_CELL: variable already closed over in this scope
+                assert(id->kind == ID_INFO_KIND_FREE || id->kind == ID_INFO_KIND_CELL);
             }
             return;
         }
     }
-    assert(0); // we should have found the variable in one of the parents
+}
+
+void scope_find_local_and_close_over(scope_t *scope, id_info_t *id, qstr qst) {
+    if (scope->parent != NULL) {
+        for (scope_t *s = scope->parent; s->parent != NULL; s = s->parent) {
+            id_info_t *id2 = scope_find(s, qst);
+            if (id2 != NULL) {
+                if (id2->kind == ID_INFO_KIND_LOCAL || id2->kind == ID_INFO_KIND_CELL || id2->kind == ID_INFO_KIND_FREE) {
+                    id->kind = ID_INFO_KIND_FREE;
+                    scope_close_over_in_parents(scope, qst);
+                    return;
+                }
+                break;
+            }
+        }
+    }
+    id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
 }
 
 #endif // MICROPY_ENABLE_COMPILER

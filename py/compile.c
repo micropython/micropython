@@ -1172,17 +1172,14 @@ STATIC void compile_global_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
-    if (!added && id_info->kind != ID_INFO_KIND_FREE) {
+    if (added) {
+        scope_find_local_and_close_over(comp->scope_cur, id_info, qst);
+        if (id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+            compile_syntax_error(comp, pn, "no binding for nonlocal found");
+        }
+    } else if (id_info->kind != ID_INFO_KIND_FREE) {
         compile_syntax_error(comp, pn, "identifier redefined as nonlocal");
-        return;
     }
-    id_info_t *id_info2 = scope_find_local_in_parent(comp->scope_cur, qst);
-    if (id_info2 == NULL || !(id_info2->kind == ID_INFO_KIND_LOCAL || id_info2->kind == ID_INFO_KIND_CELL || id_info2->kind == ID_INFO_KIND_FREE)) {
-        compile_syntax_error(comp, pn, "no binding for nonlocal found");
-        return;
-    }
-    id_info->kind = ID_INFO_KIND_FREE;
-    scope_close_over_in_parents(comp->scope_cur, qst);
 }
 
 STATIC void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
