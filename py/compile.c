@@ -3288,7 +3288,7 @@ STATIC void scope_compute_things(scope_t *scope) {
             // __class__ is not counted as a local; if it's used then it becomes a ID_INFO_KIND_CELL
             continue;
         }
-        if (scope->kind >= SCOPE_FUNCTION && scope->kind <= SCOPE_GEN_EXPR && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+        if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
         // params always count for 1 local, even if they are a cell

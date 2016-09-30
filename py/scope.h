@@ -52,8 +52,20 @@ typedef struct _id_info_t {
     qstr qst;
 } id_info_t;
 
+#define SCOPE_IS_FUNC_LIKE(s) ((s) >= SCOPE_LAMBDA)
+
 // scope is a "block" in Python parlance
-typedef enum { SCOPE_MODULE, SCOPE_FUNCTION, SCOPE_LAMBDA, SCOPE_LIST_COMP, SCOPE_DICT_COMP, SCOPE_SET_COMP, SCOPE_GEN_EXPR, SCOPE_CLASS } scope_kind_t;
+typedef enum {
+    SCOPE_MODULE,
+    SCOPE_CLASS,
+    SCOPE_LAMBDA,
+    SCOPE_LIST_COMP,
+    SCOPE_DICT_COMP,
+    SCOPE_SET_COMP,
+    SCOPE_GEN_EXPR,
+    SCOPE_FUNCTION,
+} scope_kind_t;
+
 typedef struct _scope_t {
     scope_kind_t kind;
     struct _scope_t *parent;

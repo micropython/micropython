@@ -30,37 +30,26 @@
 
 #if MICROPY_ENABLE_COMPILER
 
+// these low numbered qstrs should fit in 8 bits
+STATIC const uint8_t scope_simple_name_table[] = {
+    [SCOPE_MODULE] = MP_QSTR__lt_module_gt_,
+    [SCOPE_LAMBDA] = MP_QSTR__lt_lambda_gt_,
+    [SCOPE_LIST_COMP] = MP_QSTR__lt_listcomp_gt_,
+    [SCOPE_DICT_COMP] = MP_QSTR__lt_dictcomp_gt_,
+    [SCOPE_SET_COMP] = MP_QSTR__lt_setcomp_gt_,
+    [SCOPE_GEN_EXPR] = MP_QSTR__lt_genexpr_gt_,
+};
+
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options) {
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
     scope->pn = pn;
     scope->source_file = source_file;
-    switch (kind) {
-        case SCOPE_MODULE:
-            scope->simple_name = MP_QSTR__lt_module_gt_;
-            break;
-        case SCOPE_FUNCTION:
-        case SCOPE_CLASS:
-            assert(MP_PARSE_NODE_IS_STRUCT(pn));
-            scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
-            break;
-        case SCOPE_LAMBDA:
-            scope->simple_name = MP_QSTR__lt_lambda_gt_;
-            break;
-        case SCOPE_LIST_COMP:
-            scope->simple_name = MP_QSTR__lt_listcomp_gt_;
-            break;
-        case SCOPE_DICT_COMP:
-            scope->simple_name = MP_QSTR__lt_dictcomp_gt_;
-            break;
-        case SCOPE_SET_COMP:
-            scope->simple_name = MP_QSTR__lt_setcomp_gt_;
-            break;
-        case SCOPE_GEN_EXPR:
-            scope->simple_name = MP_QSTR__lt_genexpr_gt_;
-            break;
-        default:
-            assert(0);
+    if (kind == SCOPE_FUNCTION || kind == SCOPE_CLASS) {
+        assert(MP_PARSE_NODE_IS_STRUCT(pn));
+        scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
+    } else {
+        scope->simple_name = scope_simple_name_table[kind];
     }
     scope->raw_code = mp_emit_glue_new_raw_code();
     scope->emit_options = emit_options;
