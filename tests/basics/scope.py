@@ -19,3 +19,25 @@ def f():
     g()
     return a
 print(f())
+
+# nonlocal at inner-inner level (h)
+def f():
+    x = 1
+    def g():
+        def h():
+            nonlocal x
+            return x
+        return h
+    return g
+print(f()()())
+
+# nonlocal declared at outer level (g), and referenced by inner level (h)
+def f():
+    x = 1
+    def g():
+        nonlocal x
+        def h():
+            return x
+        return h
+    return g
+print(f()()())
