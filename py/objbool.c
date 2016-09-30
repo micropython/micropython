@@ -56,12 +56,10 @@ STATIC mp_obj_t bool_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    switch (n_args) {
-        case 0:
-            return mp_const_false;
-        case 1:
-        default: // must be 0 or 1
-            if (mp_obj_is_true(args[0])) { return mp_const_true; } else { return mp_const_false; }
+    if (n_args == 0) {
+        return mp_const_false;
+    } else {
+        return mp_obj_new_bool(mp_obj_is_true(args[0]));
     }
 }
 
