@@ -3,6 +3,7 @@
 #include "py/mpstate.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "usb.h"
 #include "uart.h"
 
@@ -41,6 +42,7 @@ int mp_hal_stdin_rx_chr(void) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
         __WFI();
+        mp_exec_softirq();
     }
 }
 

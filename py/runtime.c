@@ -1419,21 +1419,8 @@ typedef struct _stack_elem_t {
     mp_obj_t arg2;
 } stack_elem_t;
 
-volatile bool softirq_enabled = false;
 volatile short sp = -1;
 stack_elem_t stack[MAX_STACK_DEPTH];
-
-void mp_enable_softirq(void) {
-    softirq_enabled = true;
-}
-
-void mp_disable_softirq(void) {
-    mp_uint_t irqstate = disable_irq();
-    softirq_enabled = false;
-    sp = -1;
-    MP_STATE_VM(mp_pending_ex_flags) &= ~PENDING_EX_SOFT_INT;
-    enable_irq(irqstate);
-}
 
 void mp_exec_softirq(void) {
     stack_elem_t softirq;
@@ -1463,7 +1450,7 @@ void mp_exec_softirq(void) {
 
 mp_obj_t mp_add_softint(mp_obj_t function, mp_obj_t arg1, mp_obj_t arg2) {
 
-    if (sp < MAX_STACK_DEPTH - 1 && softirq_enabled) {
+    if (sp < MAX_STACK_DEPTH - 1) {
         mp_uint_t irqstate = disable_irq();
         sp++;
         stack[sp].irqfunc = function;
@@ -1471,8 +1458,7 @@ mp_obj_t mp_add_softint(mp_obj_t function, mp_obj_t arg1, mp_obj_t arg2) {
         stack[sp].arg2 = arg2;
         MP_STATE_VM(mp_pending_ex_flags) |= PENDING_EX_SOFT_INT;
         enable_irq(irqstate);
-    } else if (softirq_enabled) {
-        mp_disable_softirq();
+    } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_RuntimeError,
             "softint stack exhausted"));
         return mp_const_false;
