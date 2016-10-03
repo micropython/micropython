@@ -51,4 +51,4 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 #define mp_hal_pin_od_low(p) GPIO_clear_pin((p)->gpio, (p)->pin_mask)
 #define mp_hal_pin_od_high(p) GPIO_set_pin((p)->gpio, (p)->pin_mask)
 #define mp_hal_pin_read(p) GPIO_read_pin((p)->gpio, (p)->pin)
-#define mp_hal_pin_write(p, v) do { if (v) { GPIO_set_pin((p)->gpio, (p)->pin); } else { GPIO_clear_pin((p)->gpio, (p)->pin); } } while (0)
+#define mp_hal_pin_write(p, v) do { if (v) { GPIO_set_pin((p)->gpio, (p)->pin_mask); } else { GPIO_clear_pin((p)->gpio, (p)->pin_mask); } } while (0)
