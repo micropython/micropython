@@ -123,6 +123,16 @@ STATIC mp_obj_t os_rename(mp_obj_t path_old, mp_obj_t path_new) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 
+STATIC mp_obj_t os_stat(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_stat, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
+
+STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_statvfs, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
+
 STATIC mp_obj_t os_umount(void) {
     return vfs_proxy_call(MP_QSTR_umount, 0, NULL);
 }
@@ -146,16 +156,6 @@ STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_dupterm_notify_obj, os_dupterm_notify);
-
-STATIC mp_obj_t os_stat(mp_obj_t path_in) {
-    return vfs_proxy_call(MP_QSTR_stat, 1, &path_in);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
-
-STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
-    return vfs_proxy_call(MP_QSTR_statvfs, 1, &path_in);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
