@@ -47,17 +47,12 @@ typedef struct _pyb_spi_obj_t {
     mp_hal_pin_obj_t miso;
 } pyb_spi_obj_t;
 
-STATIC void mp_hal_spi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
+STATIC void mp_hal_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
     // only MSB transfer is implemented
     uint32_t delay_half = 500000 / self->baudrate + 1;
-    for (size_t i = 0; i < src_len || i < dest_len; ++i) {
-        uint8_t data_out;
-        if (src_len == 1) {
-            data_out = src_buf[0];
-        } else {
-            data_out = src_buf[i];
-        }
+    for (size_t i = 0; i < len; ++i) {
+        uint8_t data_out = src[i];
         uint8_t data_in = 0;
         for (int j = 0; j < 8; ++j, data_out <<= 1) {
             mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
@@ -77,8 +72,8 @@ STATIC void mp_hal_spi_transfer(mp_obj_base_t *self_in, size_t src_len, const ui
                 ets_delay_us(delay_half);
             }
         }
-        if (dest_len != 0) {
-            dest_buf[i] = data_in;
+        if (dest != NULL) {
+            dest[i] = data_in;
         }
         // make sure pending tasks have a chance to run
         ets_loop_iter();

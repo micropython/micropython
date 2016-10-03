@@ -31,7 +31,7 @@
 
 // SPI protocol
 typedef struct _mp_machine_spi_p_t {
-    void (*transfer)(mp_obj_base_t *obj, size_t slen, const uint8_t *src, size_t dlen, uint8_t *dest);
+    void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);
 } mp_machine_spi_p_t;
 
 MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_read_obj);

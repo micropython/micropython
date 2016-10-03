@@ -401,15 +401,8 @@ STATIC void spi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *
     }
 }
 
-STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
-    if (src_len == 1 && dest_len > 1) {
-        // this catches read and readinto
-        // copy the single output byte to the dest buffer and use that as source
-        memset(dest_buf, src_buf[0], dest_len);
-        src_len = dest_len;
-        src_buf = dest_buf;
-    }
-    spi_transfer(self_in, src_len, src_buf, dest_len, dest_buf, 100);
+STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+    spi_transfer(self_in, len, src, dest == NULL ? 0 : len, dest, 100);
 }
 
 /******************************************************************************/
