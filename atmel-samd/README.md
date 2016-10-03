@@ -23,9 +23,11 @@ Board names are the directory names in the `boards` folder.
 
 ### Arduino Bootloader
 If your board has an existing Arduino bootloader on it then you can use bossac
-to flash MicroPython. After building run:
+to flash MicroPython. First, activate the bootloader. On Adafruit Feathers you
+can double click the reset button and the #13 will fade in and out. Finally,
+run bossac:
 
-    tools/bossac_osx -e -w -v -b build-feather_m0_ble/firmware.bin
+    tools/bossac_osx -e -w -v -b -R build-feather_m0_ble/firmware.bin
 
 ### No Bootloader via GDB
 This method works for loading MicroPython onto the Arduino Zero via the
