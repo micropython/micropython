@@ -944,17 +944,28 @@ STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_tab
 
 /* code for soft implementation ***********************************************/
 
+// for the software SPI implementation, this is roughly the max baudrate
+#define MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
+
 STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
-    return 500000 / delay_half;
+    if (delay_half == MICROPY_PY_MACHINE_SPI_MIN_DELAY) {
+        return MAX_BAUDRATE;
+    } else {
+        return 500000 / delay_half;
+    }
 }
 
 STATIC uint32_t baudrate_to_delay_half(uint32_t baudrate) {
-    uint32_t delay_half = 500000 / baudrate;
-    // round delay_half up so that: actual_baudrate <= requested_baudrate
-    if (500000 % baudrate != 0) {
-        delay_half += 1;
+    if (baudrate >= MAX_BAUDRATE) {
+        return MICROPY_PY_MACHINE_SPI_MIN_DELAY;
+    } else {
+        uint32_t delay_half = 500000 / baudrate;
+        // round delay_half up so that: actual_baudrate <= requested_baudrate
+        if (500000 % baudrate != 0) {
+            delay_half += 1;
+        }
+        return delay_half;
     }
-    return delay_half;
 }
 
 STATIC void machine_soft_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
