@@ -14,8 +14,16 @@ SECTIONS
            out. */
 
         . = ALIGN(4);
+
+        /* NOTE: If you update the list of files contained in .isr_vector,
+                 then be sure to also update smhal/Makefile where it forcibly
+           builds each of these files with -Os */
+
         */ff.o(.text*)
-        */stm32f4xx_hal_sd.o(.text*)
+        */vfs_fat_*.o(.text*)
+        */py/formatfloat.o(.text*)
+        */py/parsenum.o(.text*)
+        */py/mpprint.o(.text*)
 
         . = ALIGN(4);
     } >FLASH_ISR

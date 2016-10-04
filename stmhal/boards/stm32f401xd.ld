@@ -1,15 +1,14 @@
 /*
-    GNU linker script for STM32F401
+    GNU linker script for STM32F401xD
 */
 
 /* Specify the memory areas */
-/* TODO verify these regions */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x080000 /* entire flash, 512 KiB */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x060000 /* entire flash, 384 KiB */
     FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 0x004000 /* sector 0, 16 KiB */
-                                                             /* sectors 1,2,3 are 16K, 4 is 64K (for filesystem) */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x080000 /* sectors 5,6,7 3*128KiB = 384 KiB */
+    FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 0x01C000 /* sectors 1,2,3 are 16K, 4 is 64K */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x040000 /* sectors 5,6 2*128KiB = 256 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x018000 /* 96 KiB */
 }
 
