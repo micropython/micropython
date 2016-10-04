@@ -34,6 +34,14 @@ STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 
+SECTOR_SIZE ?= 16384
+ifeq ($(MCU_SERIES), l4)
+SECTOR_SIZE = 2048
+endif
+ifeq ($(MCU_SERIES), f7)
+SECTOR_SIZE = 32768
+endif
+
 CROSS_COMPILE = arm-none-eabi-
 
 INC += -I.
@@ -60,7 +68,7 @@ CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
-LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -L$(BUILD)/genhdr -L$(LD_DIR) -T$(LD_FILE)
 LIBS =
 
 # Remove uncalled code from the final image.
@@ -260,13 +268,6 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
-# We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
-# If we compile these using -O0 then it won't fit. So if you really want these
-# to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
-# and comment out the following 2 lines.
-$(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
-$(BUILD)/$(HAL_DIR)/src/stm32$(MCU_SERIES)xx_hal_sd.o: COPT += -Os
-
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 ifneq ($(FROZEN_DIR),)
@@ -335,9 +336,17 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O ihex $< $@
 
+$(BUILD)/genhdr/isr.ld: $(OBJ)
+	$(ECHO) "Create $@"
+	$(Q)touch $(BUILD)/genhdr/isr.ld
+	$(Q)$(LD) $(LDFLAGS) --print-gc-sections -o /tmp/a.out $^ 2>&1 > /dev/null \
+		| awk '{print $$5}' | sed s/\'//g > $(BUILD)/discarded.txt
+	$(Q)$(PYTHON) objfit.py -s $(SECTOR_SIZE) -d $(BUILD)/discarded.txt $^ > $@
+
+$(BUILD)/firmware.elf: |$(BUILD)/genhdr/isr.ld
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -Map=$(@:.elf=.map) --cref -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
 MAKE_PINS = boards/make-pins.py
