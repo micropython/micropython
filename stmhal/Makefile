@@ -313,11 +313,13 @@ else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
 
+TEXT_ADDR ?= 0x08020000
+
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
+	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT_ADDR)
 
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
@@ -327,7 +329,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b 0x08020000:$(BUILD)/firmware1.bin $@
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
