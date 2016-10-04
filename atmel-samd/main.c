@@ -270,7 +270,19 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 
 struct usart_module usart_instance;
 
+#ifdef ENABLE_MICRO_TRACE_BUFFER
+#define TRACE_BUFFER_SIZE 256
+__attribute__((__aligned__(TRACE_BUFFER_SIZE * sizeof(uint32_t)))) uint32_t mtb[TRACE_BUFFER_SIZE];
+#endif
+
 void samd21_init(void) {
+#ifdef ENABLE_MICRO_TRACE_BUFFER
+    memset(mtb, 0, sizeof(mtb));
+    // AWIDTH is 15.
+    REG_MTB_POSITION = ((uint32_t) (mtb - REG_MTB_BASE)) & 0xFFFFFFF8;
+    REG_MTB_FLOW = ((uint32_t) mtb + TRACE_BUFFER_SIZE * sizeof(uint32_t)) & 0xFFFFFFF8;
+    REG_MTB_MASTER = 0x80000000 + 6;
+#endif
     irq_initialize_vectors();
     cpu_irq_enable();
 

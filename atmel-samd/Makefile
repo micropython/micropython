@@ -92,8 +92,10 @@ CFLAGS_CORTEX_M0 = \
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 
 #Debugging/Optimization
+# TODO(tannewt): Figure out what NDEBUG does. Adding it to the debug build
+# reduces code size pretty dramatically.
 ifeq ($(DEBUG), 1)
-CFLAGS += -Os -ggdb
+CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER
 else
 CFLAGS += -Os -DNDEBUG
 endif
