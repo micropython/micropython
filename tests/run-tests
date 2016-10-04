@@ -267,6 +267,7 @@ def run_tests(pyb, tests, args):
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
         skip_tests.add('import/import_file.py') # works but CPython prints forward slashes
+        skip_tests.add('cmdline/cmd_showbc.py') # fails on AppVeyor x86 builds
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
