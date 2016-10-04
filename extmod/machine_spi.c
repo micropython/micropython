@@ -38,6 +38,28 @@ void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint
 
     // only MSB transfer is implemented
 
+    // If a port defines MICROPY_PY_MACHINE_SPI_MIN_DELAY, and the configured
+    // delay_half is equal to this value, then the software SPI implementation
+    // will run as fast as possible, limited only by CPU speed and GPIO time.
+    #ifdef MICROPY_PY_MACHINE_SPI_MIN_DELAY
+    if (delay_half == MICROPY_PY_MACHINE_SPI_MIN_DELAY) {
+        for (size_t i = 0; i < len; ++i) {
+            uint8_t data_out = src[i];
+            uint8_t data_in = 0;
+            for (int j = 0; j < 8; ++j, data_out <<= 1) {
+                mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+                mp_hal_pin_write(self->sck, 1 - self->polarity);
+                data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
+                mp_hal_pin_write(self->sck, self->polarity);
+            }
+            if (dest != NULL) {
+                dest[i] = data_in;
+            }
+        }
+        return;
+    }
+    #endif
+
     for (size_t i = 0; i < len; ++i) {
         uint8_t data_out = src[i];
         uint8_t data_in = 0;
