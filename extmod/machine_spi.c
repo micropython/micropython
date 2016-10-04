@@ -34,8 +34,10 @@
 
 void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
+    uint32_t delay_half = self->delay_half;
+
     // only MSB transfer is implemented
-    uint32_t delay_half = 500000 / self->baudrate + 1;
+
     for (size_t i = 0; i < len; ++i) {
         uint8_t data_out = src[i];
         uint8_t data_in = 0;

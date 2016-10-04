@@ -36,10 +36,24 @@
 /******************************************************************************/
 // MicroPython bindings for SPI
 
+STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
+    return 500000 / delay_half;
+}
+
+STATIC uint32_t baudrate_to_delay_half(uint32_t baudrate) {
+    uint32_t delay_half = 500000 / baudrate;
+    // round delay_half up so that: actual_baudrate <= requested_baudrate
+    if (500000 % baudrate != 0) {
+        delay_half += 1;
+    }
+    return delay_half;
+}
+
 STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_machine_soft_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(baudrate=%u, polarity=%u, phase=%u, sck=%u, mosi=%u, miso=%u)",
-        self->baudrate, self->polarity, self->phase, self->sck, self->mosi, self->miso);
+        baudrate_from_delay_half(self->delay_half),
+        self->polarity, self->phase, self->sck, self->mosi, self->miso);
 }
 
 STATIC void pyb_spi_init_helper(mp_machine_soft_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -56,7 +70,7 @@ STATIC void pyb_spi_init_helper(mp_machine_soft_spi_obj_t *self, size_t n_args, 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_baudrate].u_int != -1) {
-        self->baudrate = args[ARG_baudrate].u_int;
+        self->delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
     }
     if (args[ARG_polarity].u_int != -1) {
         self->polarity = args[ARG_polarity].u_int;
@@ -86,7 +100,7 @@ mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     mp_machine_soft_spi_obj_t *self = m_new_obj(mp_machine_soft_spi_obj_t);
     self->base.type = &pyb_spi_type;
     // set defaults
-    self->baudrate = 500000;
+    self->delay_half = baudrate_to_delay_half(500000);
     self->polarity = 0;
     self->phase = 0;
     self->sck = 14;

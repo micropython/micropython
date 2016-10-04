@@ -37,7 +37,7 @@ typedef struct _mp_machine_spi_p_t {
 
 typedef struct _mp_machine_soft_spi_obj_t {
     mp_obj_base_t base;
-    uint32_t baudrate;
+    uint32_t delay_half; // microsecond delay for half SCK period
     uint8_t polarity;
     uint8_t phase;
     mp_hal_pin_obj_t sck;

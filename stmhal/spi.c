@@ -944,10 +944,23 @@ STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_tab
 
 /* code for soft implementation ***********************************************/
 
+STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
+    return 500000 / delay_half;
+}
+
+STATIC uint32_t baudrate_to_delay_half(uint32_t baudrate) {
+    uint32_t delay_half = 500000 / baudrate;
+    // round delay_half up so that: actual_baudrate <= requested_baudrate
+    if (500000 % baudrate != 0) {
+        delay_half += 1;
+    }
+    return delay_half;
+}
+
 STATIC void machine_soft_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_machine_soft_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(-1, baudrate=%u, polarity=%u, phase=%u, sck=%q, mosi=%q, miso=%q)",
-        self->baudrate, self->polarity, self->phase,
+        baudrate_from_delay_half(self->delay_half), self->polarity, self->phase,
         self->sck->name, self->mosi->name, self->miso->name);
 }
 
@@ -957,7 +970,7 @@ STATIC mp_obj_t machine_soft_spi_make_new(mp_arg_val_t *args) {
     self->base.type = &machine_soft_spi_type;
 
     // set parameters
-    self->baudrate = args[ARG_NEW_baudrate].u_int;
+    self->delay_half = baudrate_to_delay_half(args[ARG_NEW_baudrate].u_int);
     self->polarity = args[ARG_NEW_polarity].u_int;
     self->phase = args[ARG_NEW_phase].u_int;
     if (args[ARG_NEW_bits].u_int != 8) {
@@ -989,7 +1002,7 @@ STATIC void machine_soft_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
 
     // update parameters
     if (args[ARG_INIT_baudrate].u_int != -1) {
-        self->baudrate = args[ARG_INIT_baudrate].u_int;
+        self->delay_half = baudrate_to_delay_half(args[ARG_INIT_baudrate].u_int);
     }
     if (args[ARG_INIT_polarity].u_int != -1) {
         self->polarity = args[ARG_INIT_polarity].u_int;
