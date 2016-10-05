@@ -307,7 +307,7 @@ STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
 
     t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * 512); // f_bsize - block size
     t->items[1] = t->items[0];                  // f_frsize - fragment size
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);      // f_blocks - total number of blocks
+    t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2) * fatfs->csize); // f_blocks - total number of blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst);  // f_bfree  - number of free blocks
     t->items[4] = t->items[3];                  // f_bavail - free blocks avail to unpriviledged users
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0);      // f_files - # inodes
