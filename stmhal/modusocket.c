@@ -35,6 +35,8 @@
 #include "netutils.h"
 #include "modnetwork.h"
 
+#if MICROPY_PY_USOCKET
+
 /******************************************************************************/
 // socket class
 
@@ -446,3 +448,5 @@ const mp_obj_module_t mp_module_usocket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
 };
+
+#endif  // MICROPY_PY_USOCKET

@@ -586,7 +586,9 @@ soft_reset:
     dac_init();
 #endif
 
+#if MICROPY_PY_NETWORK
     mod_network_init();
+#endif
 
     // At this point everything is fully configured and initialised.
 
