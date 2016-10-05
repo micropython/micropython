@@ -337,9 +337,8 @@ may be interpreted as follows:
 Symbol Meaning
 ====== =================
    .   free block
-   =   ??? *TODO reviewer please advise. Also is this list complete?*
    h   head block
-   t   tail block
+   =   tail block
    m   marked head block
    T   tuple
    L   list
@@ -375,11 +374,11 @@ execution progresses:
 This will provoke a GC when more than 25% of the currently free heap becomes
 occupied.
 
-*TODO reviewer please advise if this is optimum*
+On Unix and Windows platforms the ``gc.collect()`` method returns an integer
+which signifies the number of distinct memory regions that were reclaimed in the
+collection (more precisely, the number of heads that were turned into frees). For
+efficiency reasons bare metal ports do not return this value.
 
-The ``gc.collect()`` method returns an integer.
-
-*TODO reviewer please advise what it signifies*
 
 In general modules should instantiate data objects at runtime using constructors
 or other initialisation functions. The reason is that if this occurs on
