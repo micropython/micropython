@@ -34,9 +34,12 @@ INC += -I../lib/timeutils
 INC += -Icommon-hal/modules/
 INC += -Iasf/common/boards/
 INC += -Iasf/common/services/sleepmgr/
+INC += -Iasf/common/services/storage/ctrl_access/
 INC += -Iasf/common/services/usb/
 INC += -Iasf/common/services/usb/class/cdc/
 INC += -Iasf/common/services/usb/class/cdc/device/
+INC += -Iasf/common/services/usb/class/msc/
+INC += -Iasf/common/services/usb/class/msc/device/
 INC += -Iasf/common/services/usb/udc/
 INC += -Iasf/common/utils
 INC += -Iasf/common2/services/delay/
@@ -77,8 +80,8 @@ CFLAGS_CORTEX_M0 = \
 	-fsingle-precision-constant \
 	-Wdouble-promotion \
 	-D__SAMD21G18A__ \
-	-DUSB_DEVICE_PRODUCT_ID=0x024D \
-	-DUSB_DEVICE_VENDOR_ID=0x4123 \
+	-DUSB_DEVICE_PRODUCT_ID=$(USB_PID) \
+	-DUSB_DEVICE_VENDOR_ID=$(USB_VID) \
 	-DBOARD=USER_BOARD \
 	-ffunction-sections \
 	-fdata-sections \
@@ -141,11 +144,14 @@ SRC_C = \
 	modutime.c \
 	mphalport.c \
 	pin_named_pins.c \
+	rom_fs.c \
 	storage.c \
 	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
+	asf/common/services/storage/ctrl_access/ctrl_access.c  \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
-	asf/common/services/usb/class/cdc/device/udi_cdc_desc.c \
+	asf/common/services/usb/class/composite/device/udi_composite_desc.c \
+	asf/common/services/usb/class/msc/device/udi_msc.c     \
 	asf/common/services/usb/udc/udc.c \
 	asf/common/utils/interrupt/interrupt_sam_nvic.c \
 	asf/common2/services/delay/sam0/systick_counter.c \

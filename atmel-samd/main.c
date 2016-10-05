@@ -275,6 +275,21 @@ struct usart_module usart_instance;
 __attribute__((__aligned__(TRACE_BUFFER_SIZE * sizeof(uint32_t)))) uint32_t mtb[TRACE_BUFFER_SIZE];
 #endif
 
+// Serial number as hex characters.
+char serial_number[USB_DEVICE_GET_SERIAL_NAME_LENGTH];
+void load_serial_number(void) {
+    char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
+        'B', 'C', 'D', 'E', 'F'};
+    uint32_t* addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
+                              (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 8; j++) {
+            uint8_t nibble = (*(addresses[i]) >> j * 4) & 0xf;
+            serial_number[i * 8 + j] = nibble_to_hex[nibble];
+        }
+    }
+}
+
 void samd21_init(void) {
 #ifdef ENABLE_MICRO_TRACE_BUFFER
     memset(mtb, 0, sizeof(mtb));
@@ -283,6 +298,9 @@ void samd21_init(void) {
     REG_MTB_FLOW = ((uint32_t) mtb + TRACE_BUFFER_SIZE * sizeof(uint32_t)) & 0xFFFFFFF8;
     REG_MTB_MASTER = 0x80000000 + 6;
 #endif
+
+    load_serial_number();
+
     irq_initialize_vectors();
     cpu_irq_enable();
 

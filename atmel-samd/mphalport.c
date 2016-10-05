@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include "compiler.h"
+#include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
 #include "asf/common2/services/delay/delay.h"
 #include "asf/sam0/drivers/port/port.h"
@@ -32,6 +34,19 @@ void mp_keyboard_interrupt(void);
 int interrupt_char;
 
 extern struct usart_module usart_instance;
+
+
+static volatile bool mp_msc_enabled = false;
+bool mp_msc_enable()
+{
+	mp_msc_enabled = true;
+	return true;
+}
+
+void mp_msc_disable()
+{
+	mp_msc_enabled = false;
+}
 
 bool mp_cdc_enable(uint8_t port)
 {
@@ -125,6 +140,10 @@ int receive_usb() {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
+        // Process any mass storage transfers.
+        if (mp_msc_enabled) {
+            udi_msc_process_trans();
+        }
         #ifdef USB_REPL
         if (mp_cdc_enabled && usb_rx_count > 0) {
             #ifdef MICROPY_HW_LED_RX
@@ -142,9 +161,9 @@ int mp_hal_stdin_rx_chr(void) {
             return temp;
         }
         #endif
-        // TODO(tannewt): Figure out how we can sleep while waiting for input and
-        // add it here. The current UART implementation doesn't cause a wake.
-        //__WFI();
+        // TODO(tannewt): Switch to callback/interrupt based UART so it can work
+        // with the sleepmgr.
+        sleepmgr_enter_sleep();
     }
 }
 
@@ -173,9 +192,21 @@ void mp_hal_set_interrupt_char(int c) {
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
-  delay_ms(delay);
+    // Process any mass storage transfers.
+    // TODO(tannewt): Actually account for how long the processing takes and
+    // subtract it from the delay.
+    if (mp_msc_enabled) {
+        udi_msc_process_trans();
+    }
+    delay_ms(delay);
 }
 
 void mp_hal_delay_us(mp_uint_t delay) {
-  delay_us(delay);
+    // Process any mass storage transfers.
+    // TODO(tannewt): Actually account for how long the processing takes and
+    // subtract it from the delay.
+    if (mp_msc_enabled) {
+        udi_msc_process_trans();
+    }
+    delay_us(delay);
 }
