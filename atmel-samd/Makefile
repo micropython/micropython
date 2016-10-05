@@ -140,11 +140,13 @@ SRC_C = \
 	modmachine_dac.c \
 	modmachine_pin.c \
 	modmachine_pwm.c \
+	modneopixel_write.c \
 	moduos.c \
 	modutime.c \
 	mphalport.c \
 	pin_named_pins.c \
 	rom_fs.c \
+	samdneopixel.c \
 	storage.c \
 	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
