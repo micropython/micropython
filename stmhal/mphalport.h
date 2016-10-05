@@ -43,8 +43,8 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // C-level pin HAL
 #include "stmhal/pin.h"
-#define mp_hal_pin_obj_t pin_obj_t*
-#define mp_hal_get_pin_obj(o) (pin_obj_t*)pin_find(o)
+#define mp_hal_pin_obj_t const pin_obj_t*
+#define mp_hal_get_pin_obj(o) pin_find(o)
 #define mp_hal_pin_input(p) mp_hal_gpio_config((p)->gpio, (p)->pin, 0, 0, 0)
 #define mp_hal_pin_output(p) mp_hal_gpio_config((p)->gpio, (p)->pin, 1, 0, 0)
 #define mp_hal_pin_open_drain(p) mp_hal_gpio_config((p)->gpio, (p)->pin, 5, 0, 0)
