@@ -52,7 +52,6 @@
 #include "usb.h"
 #include "usb_dual.h"
 #include "sleepmgr.h"
-#include "delay.h"
 
 /**
  * \ingroup usb_device_group
@@ -1219,7 +1218,6 @@ bool udd_include_vbus_monitoring(void)
 
 void udd_enable(void)
 {
-  // makes it here.
 	irqflags_t flags;
 
 	/* To avoid USB interrupt before end of initialization */
@@ -1233,12 +1231,12 @@ void udd_enable(void)
 	}
 #endif
 	struct usb_config config_usb;
-//flashes
+
 	/* USB Module configuration */
 	usb_get_config_defaults(&config_usb);
 	config_usb.source_generator = UDD_CLOCK_GEN;
 	usb_init(&usb_device, USB, &config_usb);
-  // flashes
+
 	/* USB Module Enable */
 	usb_enable(&usb_device);
 
@@ -1247,7 +1245,6 @@ void udd_enable(void)
 
 	udd_sleep_mode(UDD_STATE_SUSPEND);
 
-        // flashes
 #if USB_VBUS_EIC
 	_usb_vbus_config();
 	if (is_usb_vbus_high()) {
@@ -1260,16 +1257,8 @@ void udd_enable(void)
 	udd_attach();
 # endif
 #endif
-  // flashes
-
 
 	cpu_irq_restore(flags);
-  for (int i = 0; i < 10; i++) {
-    port_pin_toggle_output_level(PIN_PA17);
-    delay_ms(100);
-  }
-  delay_ms(100);
-  // no flash
 }
 
 void udd_disable(void)

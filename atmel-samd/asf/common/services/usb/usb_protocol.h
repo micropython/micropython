@@ -50,6 +50,7 @@
 #ifndef _USB_PROTOCOL_H_
 #define _USB_PROTOCOL_H_
 
+#include "compiler.h"
 #include "usb_atmel.h"
 
 /**

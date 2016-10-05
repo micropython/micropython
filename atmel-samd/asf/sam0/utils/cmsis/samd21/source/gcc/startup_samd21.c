@@ -41,6 +41,8 @@
  *
  */
 
+#include <stdbool.h>
+
 #include "samd21.h"
 
 /* Initialize segments */
@@ -65,7 +67,7 @@ void Dummy_Handler(void);
 
 /* Cortex-M0+ core handlers */
 void NMI_Handler             ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
-void HardFault_Handler       ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
+void HardFault_Handler( void ) __attribute__( ( naked ) );
 void SVC_Handler             ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 void PendSV_Handler          ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
 void SysTick_Handler         ( void ) __attribute__ ((weak, alias("Dummy_Handler")));
@@ -269,7 +271,17 @@ void Reset_Handler(void)
         main();
 
         /* Infinite loop */
-        while (1);
+        while (true);
+}
+
+void HardFault_Handler(void)
+{
+#ifdef ENABLE_MICRO_TRACE_BUFFER
+    // Turn off the micro trace buffer so we don't fill it up in the infinite
+    // loop below.
+    REG_MTB_MASTER = 0x00000000 + 6;
+#endif
+    while(true) {}
 }
 
 /**
@@ -277,6 +289,6 @@ void Reset_Handler(void)
  */
 void Dummy_Handler(void)
 {
-        while (1) {
+        while (true) {
         }
 }

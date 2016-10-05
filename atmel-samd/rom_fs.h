@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_STORAGE_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_STORAGE_H__
 
-#include "mpconfigport.h"
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H__
 
-#define FLASH_BLOCK_SIZE (512)
+#include "asf/common/services/storage/ctrl_access/ctrl_access.h"
 
-#define STORAGE_SYSTICK_MASK    (0x1ff) // 512ms
-#define STORAGE_IDLE_TICK(tick) (((tick) & STORAGE_SYSTICK_MASK) == 2)
 
-void storage_init(void);
-uint32_t storage_get_block_size(void);
-uint32_t storage_get_block_count(void);
-void storage_irq_handler(void);
-void storage_flush(void);
-bool storage_read_block(uint8_t *dest, uint32_t block);
-bool storage_write_block(const uint8_t *src, uint32_t block);
+Ctrl_status rom_fs_test_unit_ready(void);
+Ctrl_status rom_fs_read_capacity(uint32_t *u32_nb_sector);
+bool        rom_fs_wr_protect(void);
+bool        rom_fs_removal(void);
+Ctrl_status rom_fs_usb_read_10(uint32_t addr, uint16_t nb_sector);
+Ctrl_status rom_fs_usb_write_10(uint32_t addr, uint16_t nb_sector);
 
-// these return 0 on success, non-zero on error
-mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
-mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
-
-extern const struct _mp_obj_type_t flash_type;
-
-struct _fs_user_mount_t;
-void flash_init_vfs(struct _fs_user_mount_t *vfs);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_STORAGE_H__
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H__
