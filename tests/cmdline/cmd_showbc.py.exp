@@ -27,8 +27,7 @@ arg names:
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
-\.\+5b
-arg names:
+\.\+rg names:
 (N_STATE 22)
 (N_EXC_STACK 2)
 (INIT_CELL 14)
