@@ -9,10 +9,50 @@ import re
 import argparse
 import os
 
+# Python 2/3 compatibility:
+#   - iterating through bytes is different
+#   - codepoint2name lives in a different module
+import platform
+if platform.python_version_tuple()[0] == '2':
+    bytes_cons = lambda val, enc=None: bytearray(val)
+    from htmlentitydefs import name2codepoint
+elif platform.python_version_tuple()[0] == '3':
+    bytes_cons = bytes
+    from html.entities import name2codepoint
+# end compatibility code
+
 # Blacklist of qstrings that are specially handled in further
 # processing and should be ignored
 QSTRING_BLACK_LIST = set(['NULL', 'number_of'])
 
+# add some custom names to map characters that aren't in HTML
+name2codepoint['hyphen'] = ord('-')
+name2codepoint['space'] = ord(' ')
+name2codepoint['squot'] = ord('\'')
+name2codepoint['comma'] = ord(',')
+name2codepoint['dot'] = ord('.')
+name2codepoint['colon'] = ord(':')
+name2codepoint['semicolon'] = ord(';')
+name2codepoint['slash'] = ord('/')
+name2codepoint['percent'] = ord('%')
+name2codepoint['hash'] = ord('#')
+name2codepoint['paren_open'] = ord('(')
+name2codepoint['paren_close'] = ord(')')
+name2codepoint['bracket_open'] = ord('[')
+name2codepoint['bracket_close'] = ord(']')
+name2codepoint['brace_open'] = ord('{')
+name2codepoint['brace_close'] = ord('}')
+name2codepoint['star'] = ord('*')
+name2codepoint['bang'] = ord('!')
+name2codepoint['backslash'] = ord('\\')
+name2codepoint['plus'] = ord('+')
+name2codepoint['dollar'] = ord('$')
+name2codepoint['equals'] = ord('=')
+name2codepoint['question'] = ord('?')
+name2codepoint['at_sign'] = ord('@')
+name2codepoint['caret'] = ord('^')
+name2codepoint['pipe'] = ord('|')
+name2codepoint['tilde'] = ord('~')
 
 def write_out(fname, output):
     if output:
@@ -20,6 +60,14 @@ def write_out(fname, output):
             fname = fname.replace(m, r)
         with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
             f.write("\n".join(output) + "\n")
+
+def qstr_unescape(qstr):
+    for name in name2codepoint:
+        if "__" + name + "__" in qstr:
+            continue
+        if "_" + name + "_" in qstr:
+          qstr = qstr.replace("_" + name + "_", str(unichr(name2codepoint[name])))
+    return qstr
 
 def process_file(f):
     output = []
@@ -40,7 +88,7 @@ def process_file(f):
         for match in re.findall(r'MP_QSTR_[_a-zA-Z0-9]+', line):
             name = match.replace('MP_QSTR_', '')
             if name not in QSTRING_BLACK_LIST:
-                output.append('Q(' + name + ')')
+                output.append('Q(' + qstr_unescape(name) + ')')
 
     write_out(last_fname, output)
     return ""

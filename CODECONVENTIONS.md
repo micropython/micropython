@@ -24,7 +24,7 @@ a change in a detail, if needed. Any change beyond 5 lines would likely
 require such detailed description.
 
 To get good practical examples of good commits and their messages, browse
-thry the `git log` of the project.
+the `git log` of the project.
 
 Python code conventions
 =======================
@@ -33,7 +33,7 @@ Python code follows [PEP 8](http://legacy.python.org/dev/peps/pep-0008/).
 
 Naming conventions:
 - Module names are short and all lowercase; eg pyb, stm.
-- Class names are CamelCase, with abreviations all uppercase; eg I2C, not
+- Class names are CamelCase, with abbreviations all uppercase; eg I2C, not
   I2c.
 - Function and method names are all lowercase with words separated by
   a single underscore as necessary to improve readability; eg mem_read.
@@ -52,7 +52,7 @@ White space:
   keyword and the opening parenthesis.
 - Put 1 space after a comma, and 1 space around operators.
 
-Braces: 
+Braces:
 - Use braces for all blocks, even no-line and single-line pieces of
   code.
 - Put opening braces on the end of the line it belongs to, not on
