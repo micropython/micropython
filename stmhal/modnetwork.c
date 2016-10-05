@@ -28,6 +28,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_NETWORK
+
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
@@ -88,3 +92,5 @@ const mp_obj_module_t mp_module_network = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_network_globals,
 };
+
+#endif  // MICROPY_PY_NETWORK
