@@ -28,6 +28,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_NETWORK
+
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
