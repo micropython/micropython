@@ -51,8 +51,11 @@
 extern const mp_obj_type_t machine_i2c_type;
 
 // Initializes the hardware peripheral.
-extern void mp_hal_i2c_init(machine_i2c_obj_t *self, const pin_obj_t * scl,
-                            const pin_obj_t * sda, uint32_t freq);
+extern void mp_hal_i2c_construct(machine_i2c_obj_t *self, const pin_obj_t * scl,
+                                 const pin_obj_t * sda, uint32_t freq);
+
+extern void mp_hal_i2c_init(machine_i2c_obj_t *self);
+extern void mp_hal_i2c_deinit(machine_i2c_obj_t *self);
 
 // Probe the bus to see if a device acknowledges the given address.
 extern bool mp_hal_i2c_probe(machine_i2c_obj_t *self, uint8_t addr);

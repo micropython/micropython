@@ -58,7 +58,7 @@ STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, mp_uint_t n_arg
    // TODO(tannewt): Replace pin_find with a unified version.
    const pin_obj_t* scl = pin_find(args[ARG_scl].u_obj);
    const pin_obj_t* sda = pin_find(args[ARG_sda].u_obj);
-   mp_hal_i2c_init(self, scl, sda, args[ARG_freq].u_int);
+   mp_hal_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
 }
 
 //| Constructors
@@ -77,20 +77,28 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
    return (mp_obj_t)self;
 }
 
-//| General Methods
-//| ---------------
-//|   .. method:: I2C.init(scl, sda, \*, freq=400000)
-//|
-//|     Initialise the I2C bus with the given arguments:
-//|
-//|        - `scl` is a pin object for the SCL line
-//|        - `sda` is a pin object for the SDA line
-//|        - `freq` is the SCL clock rate
-STATIC mp_obj_t machine_i2c_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-   machine_i2c_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
+//|   .. method:: I2C.init()
+STATIC mp_obj_t machine_i2c_obj_init(mp_obj_t self_in) {
+   machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+   mp_hal_i2c_init(self);
+   return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_init_obj, machine_i2c_obj_init);
+
+//|   .. method:: I2C.deinit()
+STATIC mp_obj_t machine_i2c_obj_deinit(mp_obj_t self_in) {
+   machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+   mp_hal_i2c_deinit(self);
    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_init_obj, 1, machine_i2c_obj_init);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_deinit_obj, machine_i2c_obj_deinit);
+
+STATIC mp_obj_t machine_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    mp_hal_i2c_deinit(args[0]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_obj___exit___obj, 4, 4, machine_i2c_obj___exit__);
 
 //| .. method:: I2C.scan()
 //|
@@ -261,18 +269,21 @@ STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_writeto_mem_obj, 1, machine_i2c_writeto_mem);
 
 STATIC const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
-   { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_i2c_init_obj) },
-   { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&machine_i2c_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_i2c_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_i2c_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&machine_i2c_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&machine_i2c_obj___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&machine_i2c_scan_obj) },
 
-   // standard bus operations
-   { MP_ROM_QSTR(MP_QSTR_readfrom), MP_ROM_PTR(&machine_i2c_readfrom_obj) },
-   { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&machine_i2c_readfrom_into_obj) },
-   { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&machine_i2c_writeto_obj) },
+    // standard bus operations
+    { MP_ROM_QSTR(MP_QSTR_readfrom), MP_ROM_PTR(&machine_i2c_readfrom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&machine_i2c_readfrom_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&machine_i2c_writeto_obj) },
 
-   // memory operations
-   { MP_ROM_QSTR(MP_QSTR_readfrom_mem), MP_ROM_PTR(&machine_i2c_readfrom_mem_obj) },
-   { MP_ROM_QSTR(MP_QSTR_readfrom_mem_into), MP_ROM_PTR(&machine_i2c_readfrom_mem_into_obj) },
-   { MP_ROM_QSTR(MP_QSTR_writeto_mem), MP_ROM_PTR(&machine_i2c_writeto_mem_obj) },
+    // memory operations
+    { MP_ROM_QSTR(MP_QSTR_readfrom_mem), MP_ROM_PTR(&machine_i2c_readfrom_mem_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readfrom_mem_into), MP_ROM_PTR(&machine_i2c_readfrom_mem_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeto_mem), MP_ROM_PTR(&machine_i2c_writeto_mem_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_i2c_locals_dict, machine_i2c_locals_dict_table);

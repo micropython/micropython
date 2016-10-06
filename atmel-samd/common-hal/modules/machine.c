@@ -36,8 +36,8 @@
 // Number of times to try to send packet if failed.
 #define TIMEOUT 1
 
-void mp_hal_i2c_init(machine_i2c_obj_t *self, const pin_obj_t* scl,
-               const pin_obj_t* sda, uint32_t freq) {
+void mp_hal_i2c_construct(machine_i2c_obj_t *self, const pin_obj_t* scl,
+                          const pin_obj_t* sda, uint32_t freq) {
     struct i2c_master_config config_i2c_master;
     i2c_master_get_config_defaults(&config_i2c_master);
     // Struct takes the argument in Khz not Hz.
@@ -66,7 +66,14 @@ void mp_hal_i2c_init(machine_i2c_obj_t *self, const pin_obj_t* scl,
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus init error"));
     }
 
+}
+
+void mp_hal_i2c_init(machine_i2c_obj_t *self) {
     i2c_master_enable(&self->i2c_master_instance);
+}
+
+void mp_hal_i2c_deinit(machine_i2c_obj_t *self) {
+    i2c_master_disable(&self->i2c_master_instance);
 }
 
 void mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, uint8_t *data,
