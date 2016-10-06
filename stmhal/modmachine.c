@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
@@ -516,6 +517,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time_pulse_us),       (mp_obj_t)&machine_time_pulse_us_obj },
 
     { MP_ROM_QSTR(MP_QSTR_mem8),                    (mp_obj_t)&machine_mem8_obj },
     { MP_ROM_QSTR(MP_QSTR_mem16),                   (mp_obj_t)&machine_mem16_obj },
