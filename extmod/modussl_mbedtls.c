@@ -179,7 +179,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
                 //assert(0);
                 printf("mbedtls_ssl_handshake error: -%x\n", -ret);
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EIO)));
+                mp_raise_OSError(MP_EIO);
             }
         }
     }
