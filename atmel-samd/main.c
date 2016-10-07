@@ -24,7 +24,6 @@
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
 #include "storage.h"
-#include "uart.h"
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -327,11 +326,6 @@ void samd21_init(void) {
 
     #ifdef USB_REPL
         udc_start();
-    #endif
-
-    // TODO(tannewt): Switch to proper pyb based UARTs.
-    #ifdef UART_REPL
-        configure_usart();
     #endif
 }
 

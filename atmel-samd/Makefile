@@ -148,7 +148,6 @@ SRC_C = \
 	rom_fs.c \
 	samdneopixel.c \
 	storage.c \
-	uart.c \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
 	asf/common/services/storage/ctrl_access/ctrl_access.c  \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
