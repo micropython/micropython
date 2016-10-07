@@ -29,13 +29,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
-
-#define RAISE_ERRNO(err_flag, error_val) \
-    { if (err_flag == -1) \
-        { mp_raise_OSError(error_val); } }
+#include "py/mphal.h"
 
 STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     struct termios term;

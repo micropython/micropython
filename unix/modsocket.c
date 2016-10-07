@@ -44,6 +44,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/builtin.h"
+#include "py/mphal.h"
 
 /*
   The idea of this module is to implement reasonable minimum of
@@ -72,10 +73,6 @@ typedef struct _mp_obj_socket_t {
 const mp_obj_type_t mp_type_socket;
 
 // Helper functions
-#define RAISE_ERRNO(err_flag, error_val) \
-    { if (err_flag == -1) \
-        { mp_raise_OSError(error_val); } }
-
 static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen_t len) {
     return mp_obj_new_bytes((const byte *)addr, len);
 }

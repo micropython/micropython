@@ -37,6 +37,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
+#include "py/mphal.h"
 #include "extmod/misc.h"
 
 // Can't include this, as FATFS structure definition is required,
@@ -50,10 +51,6 @@ extern const mp_obj_type_t mp_fat_vfs_type;
 #ifdef __ANDROID__
 #define USE_STATFS 1
 #endif
-
-#define RAISE_ERRNO(err_flag, error_val) \
-    { if (err_flag == -1) \
-        { mp_raise_OSError(error_val); } }
 
 STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     struct stat sb;
