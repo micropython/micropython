@@ -62,11 +62,22 @@ assert b"hello!" in bdev.data
 
 assert vfs.listdir() == ['foo_file.txt']
 
+try:
+    vfs.rmdir("foo_file.txt")
+except OSError as e:
+    print(e.args[0] == 20) # uerrno.ENOTDIR
+
 vfs.remove('foo_file.txt')
 assert vfs.listdir() == []
 
 vfs.mkdir("foo_dir")
 assert vfs.listdir() == ['foo_dir']
+
+try:
+    vfs.remove("foo_dir")
+except OSError as e:
+    print(e.args[0] == uerrno.EISDIR)
+
 f = vfs.open("foo_dir/file-in-dir.txt", "w")
 f.write("data in file")
 f.close()
@@ -84,9 +95,22 @@ with vfs.open("sub_file.txt", "w") as f:
     f.write("test2")
 assert vfs.listdir() == ["sub_file.txt"]
 
+try:
+    vfs.chdir("sub_file.txt")
+except OSError as e:
+    print(e.args[0] == uerrno.ENOENT)
+
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
 
+try:
+    vfs.rmdir("foo_dir")
+except OSError as e:
+    print(e.args[0] == uerrno.EACCES)
+
+vfs.remove("foo_dir/sub_file.txt")
+vfs.rmdir("foo_dir")
+print(vfs.listdir())
 
 vfs.umount()
 try:
@@ -97,4 +121,4 @@ else:
     raise AssertionError("expected OSError not thrown")
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
-assert  vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
+assert  vfs.listdir() == ['moved-to-root.txt']
