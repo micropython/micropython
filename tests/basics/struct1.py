@@ -103,15 +103,3 @@ try:
     print(struct.unpack_from('<b', buf, -11))
 except:
     print('struct.error')
-
-# pack with too many args, not checked by uPy
-#try:
-#    print(struct.pack('ii', 1, 2, 3))
-#except:
-#    print('struct.error')
-
-# pack with too few args, not checked by uPy
-#try:
-#    print(struct.pack('ii', 1))
-#except:
-#    print('struct.error')
