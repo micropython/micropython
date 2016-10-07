@@ -74,7 +74,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 #if MICROPY_VFS_FAT
 mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args) {
     if (MP_STATE_PORT(fs_user_mount)[0] == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENODEV)));
+        mp_raise_OSError(MP_ENODEV);
     }
 
     mp_obj_t meth[n_args + 2];

@@ -583,7 +583,7 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     if (alloc_buf) {
         m_del(byte, buf, len);
     }
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
+    mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
 
@@ -598,9 +598,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     if (res == SPI_FLASH_RESULT_OK) {
         return mp_const_none;
     }
-    nlr_raise(mp_obj_new_exception_arg1(
-        &mp_type_OSError,
-        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
+    mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
 
@@ -610,9 +608,7 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     if (res == SPI_FLASH_RESULT_OK) {
         return mp_const_none;
     }
-    nlr_raise(mp_obj_new_exception_arg1(
-        &mp_type_OSError,
-        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
+    mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
