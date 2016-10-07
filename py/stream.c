@@ -159,7 +159,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
                     }
                     break;
                 }
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+                mp_raise_OSError(error);
             }
 
             if (out_sz < more_bytes) {
@@ -227,7 +227,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
             // this as EOF.
             return mp_const_none;
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        mp_raise_OSError(error);
     } else {
         vstr.len = out_sz;
         return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
@@ -256,7 +256,7 @@ mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte fla
             // no single byte could be readily written to it."
             return mp_const_none;
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        mp_raise_OSError(error);
     } else {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
@@ -315,7 +315,7 @@ STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
         if (mp_is_nonblocking_error(error)) {
             return mp_const_none;
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        mp_raise_OSError(error);
     } else {
         return MP_OBJ_NEW_SMALL_INT(out_sz);
     }
@@ -343,7 +343,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
                 }
                 break;
             }
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+            mp_raise_OSError(error);
         }
         if (out_sz == 0) {
             break;
@@ -402,7 +402,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
                     goto done;
                 }
             }
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+            mp_raise_OSError(error);
         }
         if (out_sz == 0) {
 done:
@@ -457,7 +457,7 @@ STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     int error;
     mp_uint_t res = stream_p->ioctl(args[0], MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &error);
     if (res == MP_STREAM_ERROR) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        mp_raise_OSError(error);
     }
 
     // TODO: Could be uint64
@@ -478,7 +478,7 @@ STATIC mp_obj_t stream_flush(mp_obj_t self) {
     int error;
     mp_uint_t res = stream_p->ioctl(self, MP_STREAM_FLUSH, 0, &error);
     if (res == MP_STREAM_ERROR) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        mp_raise_OSError(error);
     }
     return mp_const_none;
 }
@@ -500,7 +500,7 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     int error;
     mp_uint_t res = stream_p->ioctl(args[0], mp_obj_get_int(args[1]), val, &error);
     if (res == MP_STREAM_ERROR) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+        mp_raise_OSError(error);
     }
 
     return mp_obj_new_int(res);

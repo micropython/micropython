@@ -102,7 +102,7 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
         assert(out_sz == self->len);
         self->len = 0;
         if (err != 0) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+            mp_raise_OSError(err);
         }
     }
 
