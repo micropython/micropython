@@ -1,5 +1,10 @@
 statvfs: (512, 512, 14, 14, 14, 0, 0, 0, 0, 255)
 getcwd: /ramdisk
 hello!
+True
+True
 getcwd: /ramdisk/foo_dir
+True
 getcwd: /ramdisk
+True
+['moved-to-root.txt']
