@@ -208,7 +208,7 @@ STATIC mp_obj_t file_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     FRESULT res = f_open(&o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     // for 'a' mode, we must begin at the end of the file

@@ -84,8 +84,7 @@ STATIC mp_obj_t fat_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_remove_obj, fat_vfs_remove);
@@ -106,8 +105,7 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
 }
@@ -120,8 +118,7 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
@@ -139,8 +136,7 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
     }
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     return mp_const_none;
@@ -154,7 +150,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     FRESULT res = f_getcwd(buf, sizeof buf);
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     return mp_obj_new_str(buf, strlen(buf), false);
@@ -215,8 +211,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
             res = f_stat(path, &fno);
         }
         if (res != FR_OK) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-                MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+            mp_raise_OSError(fresult_to_errno_table[res]);
         }
     }
 
@@ -259,8 +254,7 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
     DWORD nclst;
     FRESULT res = f_getfree(path, &nclst, &fatfs);
     if (FR_OK != res) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-          MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
