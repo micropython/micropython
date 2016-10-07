@@ -15,7 +15,7 @@
 
 //! USB Device string definitions (Optional)
 #ifndef USB_DEVICE_MANUFACTURE_NAME
-#  define USB_DEVICE_MANUFACTURE_NAME "Adafruit"
+#  define USB_DEVICE_MANUFACTURE_NAME "Adafruit Industries"
 #endif
 
 #ifndef USB_DEVICE_PRODUCT_NAME
