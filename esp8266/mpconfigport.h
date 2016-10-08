@@ -91,6 +91,7 @@
 #define MICROPY_FSUSERMOUNT            (1)
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_ESP8266_APA102         (1)
+#define MICROPY_ESP8266_NEOPIXEL       (1)
 
 #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
 #define MICROPY_VM_HOOK_COUNT (10)
