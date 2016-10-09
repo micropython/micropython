@@ -18,10 +18,10 @@ def main(use_stream=False):
         # MicroPython socket objects support stream (aka file) interface
         # directly, but the line below is needed for CPython.
         s = s.makefile("rwb", 0)
-        s.write(b"GET / HTTP/1.0\n\n")
+        s.write(b"GET / HTTP/1.0\r\n\r\n")
         print(s.readall())
     else:
-        s.send(b"GET / HTTP/1.0\n\n")
+        s.send(b"GET / HTTP/1.0\r\n\r\n")
         print(s.recv(4096))
 
     s.close()
