@@ -17,3 +17,8 @@ print(a.getvalue())
 
 a.flush()
 print(a.getvalue())
+
+a.seek(0)
+arr = bytearray(10)
+print(a.readinto(arr))
+print(arr)
