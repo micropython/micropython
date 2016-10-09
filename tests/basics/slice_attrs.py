@@ -1,16 +1,23 @@
 # test builtin slice attributes access
 
-# print slice attributes
+# get a slice
 class A:
     def __getitem__(self, idx):
-        print(idx.start, idx.stop, idx.step)
+        return idx
 
 try:
-    t = A()[1:2]
+    s = A()[1:2]
+    print(s.start, s.stop, s.step)
 except:
     import sys
     print("SKIP")
     sys.exit()
 
 
-A()[1:2:3]
+s = A()[1:2:3]
+print(s.start, s.stop, s.step)
+s = A()[1:5]
+print(s.indices(9))
+print(s.indices(4))
+s = A()[-3:-1]
+print(s.indices(9))
