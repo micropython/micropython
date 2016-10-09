@@ -96,6 +96,7 @@ MicroPython provides a ``const`` keyword which may be used as follows:
 
 .. code::
 
+    from micropython import const
     ROWS = const(33)
     _COLS = const(0x10)
     a = ROWS
@@ -104,12 +105,15 @@ MicroPython provides a ``const`` keyword which may be used as follows:
 In both instances where the constant is assigned to a variable the compiler
 will avoid coding a lookup to the name of the constant by substituting its
 literal value. This saves bytecode and hence RAM. However the ``ROWS`` value
-will occupy a single machine word because another module might import it. This
-RAM can be saved by prepending the name with an underscore as in ``_COLS``: this
-symbol is not available for import so will not occupy RAM.
+will occupy at least two machine words, one each for the key and value in the
+globals dictionary. The presence in the dictionary is necessary because another
+module might import or use it. This RAM can be saved by prepending the name
+with an underscore as in ``_COLS``: this symbol is not visible outside the
+module so will not occupy RAM.
 
 The argument to ``const()`` may be anything which, at compile time, evaluates
-to an integer e.g. ``0x100`` or ``1 << 8``.
+to an integer e.g. ``0x100`` or ``1 << 8``. It can even include other const
+symbols that have already been defined, e.g. ``1 << BIT``.
 
 **Constant data structures**
 
@@ -121,8 +125,37 @@ that the objects remain in flash memory rather than being copied to RAM. The
 ``ustruct`` module can assist in converting between ``bytes`` types and other
 Python built-in types.
 
-In its current state of development the compiler will not do this for other
-immutable types, which are copied to RAM on importation.
+When considering the implications of frozen bytecode, note that in Python
+strings, floats, bytes, integers and complex numbers are immutable. Accordingly
+these will be frozen into flash. Thus, in the line
+
+.. code::
+
+    mystring = "The quick brown fox"
+
+the actual string "The quick brown fox" will reside in flash. At runtime a
+reference to the string is assigned to the *variable* ``mystring``. The reference
+occupies a single machine word. In principle a long integer could be used to
+store constant data:
+
+.. code::
+
+    bar = 0xDEADBEEF0000DEADBEEF
+
+As in the string example, at runtime a reference to the arbitrarily large
+integer is assigned to the variable ``bar``. That reference occupies a
+single machine word. 
+
+It might be expected that tuples of integers could be employed for the purpose
+of storing constant data with minimal RAM use. With the current compiler this
+is ineffective (the code works, but RAM is not saved).
+
+.. code::
+
+    foo = (1, 2, 3, 4, 5, 6, 100000)
+
+At runtime the tuple will be located in RAM. This may be subject to future
+improvement.
 
 **Needless object creation**
 
@@ -132,7 +165,7 @@ following sections discuss instances of this.
 
 **String concatenation**
 
-Consider the following code fragments aimed at producing constant strings:
+Consider the following code fragments which aim to produce constant strings:
 
 .. code::
 
@@ -161,18 +194,19 @@ method:
 
 **Buffers**
 
-When accessing devices such as UARTs and I2C instances, using pre-allocated
-buffers avoids the creation of needless objects. Consider these two loops:
+When accessing devices such as instances of UART, I2C and SPI interfaces, using
+pre-allocated buffers avoids the creation of needless objects. Consider these
+two loops:
 
 .. code::
 
     while True:
-        var = i2c.recv(100, 10)
+        var = spi.read(100)
         # process data
 
     buf = bytearray(100)
     while True:
-        i2c.recv(buf, 10)
+        spi.readinto(buf)
         # process data in buf
 
 The first creates a buffer on each pass whereas the second re-uses a pre-allocated
@@ -180,22 +214,29 @@ buffer; this is both faster and more efficient in terms of memory fragmentation.
 
 **Bytes are smaller than ints**
 
-On most platforms an integer consumes four bytes. Consider:
+On most platforms an integer consumes four bytes. Consider the two calls to the
+function ``foo()``:
 
 .. code::
 
-    spi.send((0x70, 0x03))
-    spi.send(b'\x70\x03')
+    def foo(bar):
+        for x in bar:
+            print(x)
+    foo((1, 2, 0xff))
+    foo(b'\1\2\xff')
 
-In the first instance a tuple of two integers is needlessly created. The second
-efficiently creates a ``bytes`` object consuming the minimum amount of RAM.
+In the first call a tuple of integers is created in RAM. The second efficiently
+creates a ``bytes`` object consuming the minimum amount of RAM. If the module
+were frozen as bytecode, the ``bytes`` object would reside in flash.
 
 **Strings Versus Bytes**
 
 Python3 introduced Unicode support. This introduced a distinction between a
-string and an array of bytes. Where an application does not require Unicode
-support it saves RAM to use ``bytes`` and ``bytearray`` objects where possible.
-Note that most string methods (e.g. ``strip()``) apply also to ``bytes``
+string and an array of bytes. MicroPython ensures that Unicode strings take no
+additional space so long as all characters in the string are ASCII (i.e. have
+a value < 126). If values in the full 8-bit range are required ``bytes`` and
+``bytearray`` objects can be used to ensure that no additional space will be
+required. Note that most string methods (e.g. ``strip()``) apply also to ``bytes``
 instances so the process of eliminating Unicode can be painless.
 
 .. code::
@@ -261,7 +302,7 @@ other words becomes inaccessible to code) the redundant object is known as
 returning it to the free heap. This process runs automatically, however it can
 be invoked directly by issuing ``gc.collect()``.
 
-The discourse on this is somehwat involved. For a 'quick fix' issue the
+The discourse on this is somewhat involved. For a 'quick fix' issue the
 following periodically:
 
 .. code::
@@ -310,17 +351,16 @@ The following example may be pasted at the REPL (``ctrl e`` to enter paste mode,
     func()
     print('Func run free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
     gc.collect()
-    print('Garbage collect free: {} allocated: {}, peak {}'.format(
-        gc.mem_free(), gc.mem_alloc(), micropython.mem_peak()))
+    print('Garbage collect free: {} allocated: {}'.format(gc.mem_free(), gc.mem_alloc()))
     print('-----------------------------')
     micropython.mem_info(1)
 
 Methods employed above:
 
-* ``gc.collect()`` Force a garbage collection.
+* ``gc.collect()`` Force a garbage collection. See footnote.
 * ``micropython.mem_info()`` Print a summary of RAM utilisation.
 * ``gc.mem_free()`` Return the free heap size in bytes.
-* ``gc.mem_alloc`` Return the number of bytes currently allocated.
+* ``gc.mem_alloc()`` Return the number of bytes currently allocated.
 * ``micropython.mem_info(1)`` Print a table of heap utilisation (detailed below).
 
 The numbers produced are dependent on the platform, but it can be seen that
@@ -357,8 +397,8 @@ Control of Garbage Collection
 A GC can be demanded at any time by issuing ``gc.collect()``. It is advantageous
 to do this at intervals, firstly to pre-empt fragmentation and secondly for
 performance. A GC can take several milliseconds but is quicker when there is
-less work to do (about 1ms on the Pyboard). An explicit call can minimise that
-delay ensuring it occurs at points in the program when it is acceptable.
+little work to do (about 1ms on the Pyboard). An explicit call can minimise that
+delay while ensuring it occurs at points in the program when it is acceptable.
 
 Automatic GC is provoked under the following circumstances. When an attempt at
 allocation fails, a GC is performed and the allocation re-tried. Only if this
@@ -374,41 +414,43 @@ execution progresses:
 This will provoke a GC when more than 25% of the currently free heap becomes
 occupied.
 
+In general modules should instantiate data objects at runtime using constructors
+or other initialisation functions. The reason is that if this occurs on
+initialisation the compiler may be starved of RAM when subsequent modules are
+imported. If modules do instantiate data on import then ``gc.collect()`` issued
+after the import will ameliorate the problem.
+
+String Operations
+-----------------
+
+MicroPython handles strings in an efficient manner and understanding this can
+help in designing applications to run on microcontrollers. When a module
+is compiled, strings which occur multiple times are stored once only, a process
+known as string interning. In MicroPython an interned string is known as a ``qstr``.
+In a module imported normally that single instance will be located in RAM, but
+as described above, in modules frozen as bytecode it will be located in flash.
+
+String comparisons are also performed efficiently using hashing rather than
+character by character. The penalty for using strings rather than integers may
+hence be small both in terms of performance and RAM usage - a fact which may
+come as a surprise to C programmers.
+
+Postscript
+----------
+
+MicroPython passes, returns and (by default) copies objects by reference. A
+reference occupies a single machine word so these processes are efficient in
+RAM usage and speed.
+
+Where variables are required whose size is neither a byte nor a machine word
+there are standard libraries which can assist in storing these efficiently and
+in performing conversions. See the ``array``, ``ustruct`` and ``uctypes``
+modules.
+
+Footnote: gc.collect() return value
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 On Unix and Windows platforms the ``gc.collect()`` method returns an integer
 which signifies the number of distinct memory regions that were reclaimed in the
 collection (more precisely, the number of heads that were turned into frees). For
 efficiency reasons bare metal ports do not return this value.
-
-
-In general modules should instantiate data objects at runtime using constructors
-or other initialisation functions. The reason is that if this occurs on
-initialisation the compiler may be starved of RAM when subsequent modules are
-imported. If modules do instantiate data on import then ``gc,collect()`` issued
-after the import will ameliorate the problem.
-
-Traditional Optimisations
--------------------------
-
-Programmers coming to Python from languages such as C may consider optimisations
-which will not deliver the anticipated returns. Consider these code fragments
-where the comparison occurs multiple times in the module:
-
-.. code::
-
-    _HALT_AND_CATCH_FIRE = const(42)
-    if command == _HALT_AND_CATCH_FIRE:
-        # do it
-
-    if command == 'halt and catch fire':
-        # do it
-
-In C the second would be inefficient because the string literal would occupy
-RAM in each comparison. Further the ``strcmp`` comparison operates in a
-character wise fashion which is slow when strings are long. Neither applies in
-MicroPython. Repeated strings are stored once only as a ``qstr``, and
-comparisons are performed using hashes. The gain from the first approach would
-be smaller than might be expected.
-
-It is also worth noting that Python passes, returns and (by default) copies
-objects by reference. In MicroPython a reference occupies a single machine word
-so these processes are efficient in RAM usage and speed.
