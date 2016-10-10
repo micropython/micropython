@@ -61,14 +61,32 @@
 #define PYB_RESET_HARD      (2)
 #define PYB_RESET_WDT       (3)
 #define PYB_RESET_DEEPSLEEP (4)
+#define PYB_RESET_TAMPER    (5)
+#define PYB_RESET_WAKEUP    (6)
+#define PYB_RESET_ALARM_A   (7)
+#define PYB_RESET_ALARM_B   (8)
+#define PYB_RESET_X1        (9)
 
 STATIC uint32_t reset_cause;
 
 void machine_init(void) {
     #if defined(MCU_SERIES_F4)
     if (PWR->CSR & PWR_CSR_SBF) {
-        // came out of standby
-        reset_cause = PYB_RESET_DEEPSLEEP;
+        uint32_t state = RTC->ISR; // ???
+        if (state & RTC_FLAG_TAMP1F) {
+            reset_cause = PYB_RESET_TAMPER;
+        } else if (state & RTC_FLAG_WUTF) {
+            reset_cause = PYB_RESET_WAKEUP;
+        } else if (state & RTC_FLAG_ALRBF) {
+            reset_cause = PYB_RESET_ALARM_B;
+        } else if (state & RTC_FLAG_ALRAF) {
+            reset_cause = PYB_RESET_ALARM_A;
+        } else if (state & RTC_FLAG_ALRAWF) {
+            reset_cause = PYB_RESET_X1;
+        } else {
+        // came out of standby but reason unknown
+            reset_cause = PYB_RESET_DEEPSLEEP;
+        }
         PWR->CR |= PWR_CR_CSBF;
     } else
     #endif
@@ -550,6 +568,11 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_HARD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),           MP_OBJ_NEW_SMALL_INT(PYB_RESET_WDT) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_OBJ_NEW_SMALL_INT(PYB_RESET_DEEPSLEEP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TAMPER),              MP_OBJ_NEW_SMALL_INT(PYB_RESET_TAMPER) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_WAKEUP),              MP_OBJ_NEW_SMALL_INT(PYB_RESET_WAKEUP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ALARM_A),             MP_OBJ_NEW_SMALL_INT(PYB_RESET_ALARM_A) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ALARM_B),             MP_OBJ_NEW_SMALL_INT(PYB_RESET_ALARM_B) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_X1),                  MP_OBJ_NEW_SMALL_INT(PYB_RESET_X1) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_SOFT) },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN_WAKE),           MP_OBJ_NEW_SMALL_INT(PYB_SLP_WAKED_BY_WLAN) },
