@@ -138,7 +138,7 @@ bool sdcard_power_on(void) {
     sd_handle.Instance = SDIO;
     sd_handle.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
     sd_handle.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
-    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_DISABLE;
+    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_ENABLE;
     sd_handle.Init.BusWide             = SDIO_BUS_WIDE_1B;
     sd_handle.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     sd_handle.Init.ClockDiv            = SDIO_TRANSFER_CLK_DIV;
