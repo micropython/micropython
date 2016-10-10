@@ -49,8 +49,8 @@ STATIC void mp_reset(void) {
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_init(mp_sys_argv, 0);
     #if MICROPY_VFS_FAT
     memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
@@ -140,10 +140,6 @@ mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-
-void mp_keyboard_interrupt(void) {
-    MP_STATE_VM(mp_pending_exception) = MP_STATE_PORT(mp_kbd_exception);
-}
 
 void nlr_jump_fail(void *val) {
     printf("NLR jump failed\n");

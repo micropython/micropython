@@ -14,3 +14,6 @@ print(s.difference_update({1}))
 print(sorted(s))
 print(s.difference_update({1}, [2]))
 print(sorted(s))
+
+s.difference_update(s)
+print(s)

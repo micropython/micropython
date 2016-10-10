@@ -881,9 +881,14 @@ STATIC mp_obj_t arg_as_int(mp_obj_t arg) {
     return arg;
 }
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
 STATIC NORETURN void terse_str_format_value_error(void) {
     mp_raise_ValueError("bad format string");
 }
+#else
+// define to nothing to improve coverage
+#define terse_str_format_value_error()
+#endif
 
 STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     vstr_t vstr;

@@ -84,8 +84,7 @@ STATIC mp_obj_t fat_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_remove_obj, fat_vfs_remove);
@@ -106,8 +105,7 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
 }
@@ -120,8 +118,7 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
@@ -139,8 +136,7 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
     }
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-            MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     return mp_const_none;
@@ -154,7 +150,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     FRESULT res = f_getcwd(buf, sizeof buf);
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     return mp_obj_new_str(buf, strlen(buf), false);
@@ -215,8 +211,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
             res = f_stat(path, &fno);
         }
         if (res != FR_OK) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-                MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+            mp_raise_OSError(fresult_to_errno_table[res]);
         }
     }
 
@@ -250,6 +245,35 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_stat_obj, fat_vfs_stat);
 
+// Get the status of a VFS.
+STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
+    (void)vfs_in;
+    const char *path = mp_obj_str_get_str(path_in);
+
+    FATFS *fatfs;
+    DWORD nclst;
+    FRESULT res = f_getfree(path, &nclst, &fatfs);
+    if (FR_OK != res) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
+
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * fatfs->ssize); // f_bsize
+    t->items[1] = t->items[0]; // f_frsize
+    t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2) * fatfs->csize); // f_blocks
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst); // f_bfree
+    t->items[4] = t->items[3]; // f_bavail
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // f_files
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(0); // f_ffree
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // f_favail
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // f_flags
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(_MAX_LFN); // f_namemax
+
+    return MP_OBJ_FROM_PTR(t);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_statvfs_obj, fat_vfs_statvfs);
+
 // Unmount the filesystem
 STATIC mp_obj_t fat_vfs_umount(mp_obj_t vfs_in) {
     fatfs_umount(((fs_user_mount_t *)vfs_in)->readblocks[1]);
@@ -268,6 +292,7 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&fat_vfs_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&fat_vfs_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&fat_vfs_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&fat_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fat_vfs_umount_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);

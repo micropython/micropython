@@ -58,7 +58,7 @@ STATIC const mp_obj_type_t btree_type;
 
 #define CHECK_ERROR(res) \
         if (res == RET_ERROR) { \
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno))); \
+            mp_raise_OSError(errno); \
         }
 
 void __dbpanic(DB *db) {
@@ -370,7 +370,7 @@ STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     DB *db = __bt_open(pos_args[0], &btree_stream_fvtable, &openinfo, /*dflags*/0);
     if (db == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+        mp_raise_OSError(errno);
     }
     return MP_OBJ_FROM_PTR(btree_new(db));
 }

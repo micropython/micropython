@@ -59,7 +59,7 @@ STATIC unsigned char read_src_stream(TINF_DATA *data) {
     byte c;
     mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
     if (out_sz == MP_STREAM_ERROR) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+        mp_raise_OSError(err);
     }
     if (out_sz == 0) {
         nlr_raise(mp_obj_new_exception(&mp_type_EOFError));

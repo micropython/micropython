@@ -93,7 +93,7 @@ STATIC mp_obj_t thread_lock_acquire(size_t n_args, const mp_obj_t *args) {
         self->locked = true;
         return mp_const_true;
     } else {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-ret)));
+        mp_raise_OSError(-ret);
     }
     #endif
 }

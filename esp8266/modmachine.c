@@ -86,8 +86,10 @@ STATIC mp_obj_t machine_unique_id(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_idle(void) {
+    uint32_t t = mp_hal_ticks_cpu();
     asm("waiti 0");
-    return mp_const_none;
+    t = mp_hal_ticks_cpu() - t;
+    return MP_OBJ_NEW_SMALL_INT(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 

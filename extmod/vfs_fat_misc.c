@@ -54,9 +54,7 @@ mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
 
     res = f_opendir(&dir, path);                       /* Open the directory */
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-          MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
-
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     mp_obj_t dir_list = mp_obj_new_list(0, NULL);

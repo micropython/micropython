@@ -58,7 +58,7 @@ STATIC mp_obj_t machine_time_pulse_us_(size_t n_args, const mp_obj_t *args) {
     }
     mp_uint_t us = machine_time_pulse_us(pin, level, timeout_us);
     if (us == (mp_uint_t)-1) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ETIMEDOUT)));
+        mp_raise_OSError(MP_ETIMEDOUT);
     }
     return mp_obj_new_int(us);
 }

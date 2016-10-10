@@ -84,6 +84,6 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
 
 timeout:
     mp_hal_quiet_timing_exit(irq_state);
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ETIMEDOUT)));
+    mp_raise_OSError(MP_ETIMEDOUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dht_readinto_obj, dht_readinto);

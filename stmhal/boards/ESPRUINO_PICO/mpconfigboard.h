@@ -2,6 +2,9 @@
 #define MICROPY_HW_MCU_NAME         "STM32F401CD"
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
+#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_NETWORK          (0)
+
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SDCARD       (0)

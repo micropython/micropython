@@ -203,7 +203,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     const char *fname = mp_obj_str_get_str(fid);
     int fd = open(fname, mode_x | mode_rw, 0644);
     if (fd == -1) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+        mp_raise_OSError(errno);
     }
     o->fd = fd;
     return MP_OBJ_FROM_PTR(o);

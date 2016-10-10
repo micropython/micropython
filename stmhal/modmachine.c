@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
@@ -68,7 +69,7 @@ void machine_init(void) {
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
-        PWR->CR = PWR_CR_CSBF;
+        PWR->CR |= PWR_CR_CSBF;
     } else
     #endif
     {
@@ -86,7 +87,7 @@ void machine_init(void) {
         }
     }
     // clear RCC reset flags
-    RCC->CSR = RCC_CSR_RMVF;
+    RCC->CSR |= RCC_CSR_RMVF;
 }
 
 // machine.info([dump_alloc_table])
@@ -517,6 +518,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time_pulse_us),       (mp_obj_t)&machine_time_pulse_us_obj },
+
     { MP_ROM_QSTR(MP_QSTR_mem8),                    (mp_obj_t)&machine_mem8_obj },
     { MP_ROM_QSTR(MP_QSTR_mem16),                   (mp_obj_t)&machine_mem16_obj },
     { MP_ROM_QSTR(MP_QSTR_mem32),                   (mp_obj_t)&machine_mem32_obj },
@@ -527,10 +530,10 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
 #endif
-    // TODO: Per new API, both types below, if called with 1 arg (ID), should still
+    // TODO: Per new API, I2C types below, if called with 1 arg (ID), should still
     // initialize master mode on the peripheral.
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&machine_i2c_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&pyb_spi_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&machine_hard_spi_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },

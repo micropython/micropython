@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "usb.h"
@@ -15,7 +16,7 @@ const byte mp_hal_status_to_errno_table[4] = {
 };
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(mp_hal_status_to_errno_table[status])));
+    mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
 void mp_hal_set_interrupt_char(int c) {

@@ -28,11 +28,24 @@
 #define MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H
 
 #include "py/obj.h"
+#include "py/mphal.h"
 
 // SPI protocol
 typedef struct _mp_machine_spi_p_t {
-    void (*transfer)(mp_obj_base_t *obj, size_t slen, const uint8_t *src, size_t dlen, uint8_t *dest);
+    void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest);
 } mp_machine_spi_p_t;
+
+typedef struct _mp_machine_soft_spi_obj_t {
+    mp_obj_base_t base;
+    uint32_t delay_half; // microsecond delay for half SCK period
+    uint8_t polarity;
+    uint8_t phase;
+    mp_hal_pin_obj_t sck;
+    mp_hal_pin_obj_t mosi;
+    mp_hal_pin_obj_t miso;
+} mp_machine_soft_spi_obj_t;
+
+void mp_machine_soft_spi_transfer(mp_obj_base_t *self, size_t len, const uint8_t *src, uint8_t *dest);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_read_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_readinto_obj);

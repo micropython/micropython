@@ -29,6 +29,10 @@
 #define MICROPY_HW_UART2_PORT (GPIOD)
 #define MICROPY_HW_UART2_PINS (GPIO_PIN_5 | GPIO_PIN_6)
 
+// USART 2 is connected to the virtual com port on the ST-LINK
+#define MICROPY_HW_UART_REPL        PYB_UART_2
+#define MICROPY_HW_UART_REPL_BAUD   115200
+
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B7)
