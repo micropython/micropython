@@ -101,7 +101,7 @@ void init_flash_fs() {
         }
 
         // set label
-        f_setlabel("/flash/internalflash");
+        f_setlabel("MICROPYTHON");
 
         // create empty main.py
         FIL fp;
