@@ -30,6 +30,7 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime0.h"
+#include "py/runtime.h"
 
 /******************************************************************************/
 /* slice object                                                               */
@@ -58,6 +59,24 @@ STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 }
 
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
+STATIC mp_obj_t slice_indices(mp_obj_t self_in, mp_obj_t len_in) {
+    mp_obj_slice_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_bound_slice_t slice;
+    mp_uint_t len = mp_obj_get_int(len_in);
+
+    if (!mp_seq_get_fast_slice_indexes(len, self, &slice)) {
+        mp_not_implemented("");
+    }
+    mp_obj_t tuple[3] = {
+        mp_obj_new_int(slice.start),
+        mp_obj_new_int(slice.stop),
+        mp_obj_new_int(slice.step)
+    };
+
+    return mp_obj_new_tuple(3, tuple);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(slice_indices_obj, slice_indices);
+
 STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
@@ -70,6 +89,8 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         dest[0] = self->stop;
     } else if (attr == MP_QSTR_step) {
         dest[0] = self->step;
+    } else if (attr == MP_QSTR_indices) {
+        dest[0] = mp_obj_new_bound_meth(MP_OBJ_FROM_PTR(&slice_indices_obj), self);
     }
 }
 #endif
