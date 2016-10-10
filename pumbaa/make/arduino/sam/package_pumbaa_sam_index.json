@@ -1,0 +1,73 @@
+{
+  "packages": [
+    {
+      "name": "Pumbaa",
+      "maintainer": "Erik Moqvist",
+      "websiteURL": "https://github.com/eerimoq/pumbaa",
+      "email": "erik.moqvist@gmail.com",
+      "help": {
+        "online": "https://pumbaa-os.readthedocs.org"
+      },
+      "platforms": [
+        {
+          "name": "Pumbaa",
+          "architecture": "sam",
+          "version": "0.1.0",
+          "category": "Pumbaa",
+          "help": {
+            "online": "https://pumbaa.readthedocs.org"
+          },
+          "url": "https://sourceforge.net/projects/pumbaa-arduino/files/sam/pumbaa-arduino-sam-0.1.0.zip",
+	  "archiveFileName": "pumbaa-arduino-sam-0.1.0.zip",
+	  "checksum": "SHA-256:14e385369190a319cbe8e88fd4dbdabb38226e25a657a4e934a9ae28c472b1cc",
+	  "size": "4518973",
+          "boards": [
+	      {"name" : "Arduino Due"}
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "arduino",
+              "name": "arm-none-eabi-gcc",
+              "version": "4.8.3-2014q1"
+            },
+            {
+              "packager": "arduino",
+              "name": "bossac",
+              "version": "1.6.1-arduino"
+            }
+          ]
+        },
+        {
+          "name": "Pumbaa",
+          "architecture": "sam",
+          "version": "1.0.0",
+          "category": "Pumbaa",
+          "help": {
+            "online": "https://pumbaa.readthedocs.org"
+          },
+          "url": "https://sourceforge.net/projects/pumbaa-arduino/files/sam/pumbaa-arduino-sam-1.0.0.zip",
+	  "archiveFileName": "pumbaa-arduino-sam-1.0.0.zip",
+	  "checksum": "SHA-256:4118a7d1ac052d3dc1898aa03c6cc55e217a35773a220494d5f9081bf60b7a6a",
+	  "size": "4536028",
+          "boards": [
+	      {"name" : "Arduino Due"}
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "arduino",
+              "name": "arm-none-eabi-gcc",
+              "version": "4.8.3-2014q1"
+            },
+            {
+              "packager": "arduino",
+              "name": "bossac",
+              "version": "1.6.1-arduino"
+            }
+          ]
+        }
+      ],
+      "tools": [
+      ]
+    }
+  ]
+}

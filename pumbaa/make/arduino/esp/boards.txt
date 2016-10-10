@@ -1,0 +1,72 @@
+# @file boards.txt
+#
+# @section License
+# Copyright (C) 2016, Erik Moqvist
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# This file is part of the Pumbaa project.
+
+##################################################################
+
+esp01.name=ESP01
+
+esp01.upload.tool=esptool
+esp01.upload.speed=115200
+esp01.upload.resetmethod=ck
+esp01.upload.maximum_size=434160
+esp01.upload.maximum_data_size=81920
+esp01.upload.wait_for_upload_port=true
+esp01.serial.disableDTR=true
+esp01.serial.disableRTS=true
+
+esp01.build.mcu=esp8266
+esp01.build.f_cpu=80000000L
+esp01.build.board=ESP01
+esp01.build.variant=esp01
+esp01.build.core=Pumbaa:pumbaa
+esp01.build.flash_size=512K
+esp01.build.flash_mode=dio
+esp01.build.flash_freq=40
+
+esp01.compiler.c.extra_flags={esp01_compiler_c_extra_flags}
+esp01.compiler.cpp.extra_flags={esp01_compiler_cxx_extra_flags}
+esp01.compiler.c.elf.extra_flags={esp01_compiler_c_elf_extra_flags}
+esp01.compiler.c.elf.extra_flags_after={esp01_compiler_c_elf_extra_flags_after}
+
+##################################################################
+
+esp12e.name=ESP12E
+
+esp12e.upload.tool=esptool
+esp12e.upload.speed=115200
+esp12e.upload.resetmethod=ck
+esp12e.upload.maximum_size=1044464
+esp12e.upload.maximum_data_size=81920
+esp12e.upload.wait_for_upload_port=true
+esp12e.serial.disableDTR=true
+esp12e.serial.disableRTS=true
+
+esp12e.build.mcu=esp8266
+esp12e.build.f_cpu=80000000L
+esp12e.build.board=ESP12E
+esp12e.build.variant=esp12e
+esp12e.build.core=Pumbaa:pumbaa
+esp12e.build.flash_size=4M
+esp12e.build.flash_mode=dio
+esp12e.build.flash_freq=40
+
+esp12e.compiler.c.extra_flags={esp12e_compiler_c_extra_flags}
+esp12e.compiler.cpp.extra_flags={esp12e_compiler_cxx_extra_flags}
+esp12e.compiler.c.elf.extra_flags={esp12e_compiler_c_elf_extra_flags}
+esp12e.compiler.c.elf.extra_flags_after={esp12e_compiler_c_elf_extra_flags_after}
+
+##################################################################

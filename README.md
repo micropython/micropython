@@ -49,6 +49,7 @@ Additional components:
 - esp8266/ -- an experimental port for ESP8266 WiFi modules.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
+- pumbaa/ -- a version of MicroPython on top of Simba
 
 The subdirectories above may include READMEs with additional info.
 
