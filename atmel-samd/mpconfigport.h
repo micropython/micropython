@@ -67,6 +67,7 @@
 #define MICROPY_FATFS_VOLUMES          (4)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
 #define MICROPY_FSUSERMOUNT            (1)
+#define MICROPY_FATFS_MAX_SS           (4096)
 
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
