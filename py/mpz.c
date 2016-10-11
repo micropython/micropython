@@ -1497,13 +1497,10 @@ mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2) {
        quo * rhs + rem = lhs
        0 <= rem < rhs
    can have lhs, rhs the same
+   assumes rhs != 0 (undefined behaviour if it is)
 */
 void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs) {
-    if (rhs->len == 0) {
-        mpz_set_from_int(dest_quo, 0);
-        mpz_set_from_int(dest_rem, 0);
-        return;
-    }
+    assert(!mpz_is_zero(rhs));
 
     mpz_need_dig(dest_quo, lhs->len + 1); // +1 necessary?
     memset(dest_quo->dig, 0, (lhs->len + 1) * sizeof(mpz_dig_t));
