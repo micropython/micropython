@@ -2836,12 +2836,10 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn)
             // no annotation
             return;
         }
-    } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_typedargslist_dbl_star) {
+    } else {
+        assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_typedargslist_dbl_star);
         // double star with possible annotation
         // fallthrough
-    } else {
-        // no annotation
-        return;
     }
 
     mp_parse_node_t pn_annotation = pns->nodes[1];
