@@ -3,6 +3,12 @@
 import array
 import ustruct
 
+# when super can't find self
+try:
+    exec('def f(): super()')
+except SyntaxError:
+    print('SyntaxError')
+
 # array deletion not implemented
 try:
     a = array.array('b', (1, 2, 3))
