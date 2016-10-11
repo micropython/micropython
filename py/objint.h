@@ -50,6 +50,8 @@ typedef enum {
 mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val);
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
+size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma);
+
 void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma);

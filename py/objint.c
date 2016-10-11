@@ -162,14 +162,14 @@ STATIC const uint8_t log_base2_floor[] = {
     4, 4, 4, 5
 };
 
-STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma) {
+size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma) {
     if (base < 2 || base > 32) {
         return 0;
     }
 
-    uint num_digits = sizeof(fmt_int_t) * 8 / log_base2_floor[base] + 1;
-    uint num_commas = comma ? num_digits / 3: 0;
-    uint prefix_len = prefix ? strlen(prefix) : 0;
+    size_t num_digits = num_bits / log_base2_floor[base] + 1;
+    size_t num_commas = comma ? num_digits / 3 : 0;
+    size_t prefix_len = prefix ? strlen(prefix) : 0;
     return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
 }
 
@@ -211,7 +211,7 @@ char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size,
         sign = '-';
     }
 
-    uint needed_size = int_as_str_size_formatted(base, prefix, comma);
+    uint needed_size = mp_int_format_size(sizeof(fmt_int_t) * 8, base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;

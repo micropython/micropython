@@ -645,18 +645,6 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, const mpz_dig_t *den
 
 #define MIN_ALLOC (2)
 
-STATIC const uint8_t log_base2_floor[] = {
-    0,
-    0, 1, 1, 2,
-    2, 2, 2, 3,
-    3, 3, 3, 3,
-    3, 3, 3, 4,
-    4, 4, 4, 4,
-    4, 4, 4, 4,
-    4, 4, 4, 4,
-    4, 4, 4, 5
-};
-
 void mpz_init_zero(mpz_t *z) {
     z->neg = 0;
     z->fixed_dig = 0;
@@ -1652,18 +1640,6 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 }
 #endif
 
-mp_uint_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma) {
-    if (base < 2 || base > 32) {
-        return 0;
-    }
-
-    mp_uint_t num_digits = i->len * DIG_SIZE / log_base2_floor[base] + 1;
-    mp_uint_t num_commas = comma ? num_digits / 3: 0;
-    mp_uint_t prefix_len = prefix ? strlen(prefix) : 0;
-
-    return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
-}
-
 #if 0
 this function is unused
 char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
@@ -1673,7 +1649,7 @@ char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
 }
 #endif
 
-// assumes enough space as calculated by mpz_as_str_size
+// assumes enough space as calculated by mp_int_format_size
 // returns length of string, not including null byte
 mp_uint_t mpz_as_str_inpl(const mpz_t *i, mp_uint_t base, const char *prefix, char base_char, char comma, char *str) {
     if (str == NULL || base < 2 || base > 32) {
