@@ -734,11 +734,9 @@ STATIC void mpz_need_dig(mpz_t *z, mp_uint_t need) {
     }
 
     if (z->dig == NULL || z->alloc < need) {
-        if (z->fixed_dig) {
-            // cannot reallocate fixed buffers
-            assert(0);
-            return;
-        }
+        // if z has fixed digit buffer there's not much we can do as the caller will
+        // be expecting a buffer with at least "need" bytes (but it shouldn't happen)
+        assert(!z->fixed_dig);
         z->dig = m_renew(mpz_dig_t, z->dig, z->alloc, need);
         z->alloc = need;
     }
