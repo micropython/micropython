@@ -133,8 +133,8 @@ void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     // enough, a dynamic one will be allocated.
     char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
-    mp_uint_t buf_size = sizeof(stack_buf);
-    mp_uint_t fmt_size;
+    size_t buf_size = sizeof(stack_buf);
+    size_t fmt_size;
 
     char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, self_in, 10, NULL, '\0', '\0');
     mp_print_str(print, str);
@@ -180,7 +180,7 @@ size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char co
 //
 // The resulting formatted string will be returned from this function and the
 // formatted size will be in *fmt_size.
-char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma) {
     fmt_int_t num;
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
@@ -211,7 +211,7 @@ char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size,
         sign = '-';
     }
 
-    uint needed_size = mp_int_format_size(sizeof(fmt_int_t) * 8, base, prefix, comma);
+    size_t needed_size = mp_int_format_size(sizeof(fmt_int_t) * 8, base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;

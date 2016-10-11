@@ -90,12 +90,12 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // formatted size will be in *fmt_size.
 //
 // This particular routine should only be called for the mpz representation of the int.
-char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_uint_t needed_size = mp_int_format_size(mpz_max_num_bits(&self->mpz), base, prefix, comma);
+    size_t needed_size = mp_int_format_size(mpz_max_num_bits(&self->mpz), base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;
@@ -107,7 +107,7 @@ char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_
     return str;
 }
 
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf) {
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
