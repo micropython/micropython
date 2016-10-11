@@ -49,6 +49,7 @@
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_spi_type;
 
 // Initializes the hardware peripheral.
 extern void mp_hal_i2c_construct(machine_i2c_obj_t *self, const pin_obj_t * scl,
@@ -76,5 +77,16 @@ extern void mp_hal_i2c_write_mem(machine_i2c_obj_t *self, uint8_t addr,
                                  uint16_t memaddr, const uint8_t *src,
                                  size_t len);
 
+// Construct an underlying SPI object.
+extern void mp_hal_spi_construct(machine_spi_obj_t *self, const pin_obj_t * clock,
+                                 const pin_obj_t * mosi, const pin_obj_t * miso,
+                                 uint32_t baudrate);
+
+extern void mp_hal_spi_init(machine_spi_obj_t *self);
+extern void mp_hal_spi_deinit(machine_spi_obj_t *self);
+
+// Concurrently write and read len bytes from the SPI port. Chip select is
+// handled externally.
+extern void mp_hal_spi_transfer(machine_spi_obj_t *self, size_t len, const uint8_t *src, uint8_t *dest);
 
 #endif // __MICROPY_INCLUDED_API_MACHINE_H__

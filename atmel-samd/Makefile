@@ -32,6 +32,7 @@ INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../lib/timeutils
 INC += -Icommon-hal/modules/
+INC += -Iasf_conf/
 INC += -Iasf/common/boards/
 INC += -Iasf/common/services/sleepmgr/
 INC += -Iasf/common/services/storage/ctrl_access/
@@ -117,6 +118,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/sercom/i2c/i2c_sam0/i2c_master.c \
 	drivers/sercom/sercom.c \
 	drivers/sercom/sercom_interrupt.c \
+	drivers/sercom/spi/spi.c \
 	drivers/sercom/usart/usart.c \
 	drivers/sercom/usart/usart_interrupt.c \
 	drivers/system/clock/clock_samd21_r21_da/clock.c \

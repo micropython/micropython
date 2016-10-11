@@ -42,6 +42,7 @@
 #include "asf/sam0/drivers/adc/adc_sam_d_r/adc_feature.h"
 
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
+#include "asf/sam0/drivers/sercom/spi/spi.h"
 
 #include "py/obj.h"
 
@@ -76,5 +77,10 @@ typedef struct _machine_i2c_obj_t {
   mp_obj_base_t base;
   struct i2c_master_module i2c_master_instance;
 } machine_i2c_obj_t;
+
+typedef struct _machine_spi_obj_t {
+  mp_obj_base_t base;
+  struct spi_module spi_master_instance;
+} machine_spi_obj_t;
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_API_MACHINE_TYPES_H__

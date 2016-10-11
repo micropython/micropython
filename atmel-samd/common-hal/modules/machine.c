@@ -205,3 +205,63 @@ void mp_hal_i2c_read_mem(machine_i2c_obj_t *self, uint8_t addr, uint16_t memaddr
     mp_hal_i2c_read(self, addr, dest, len);
     return;
 }
+
+void mp_hal_spi_construct(machine_spi_obj_t *self, const pin_obj_t * clock,
+                          const pin_obj_t * mosi, const pin_obj_t * miso,
+                          uint32_t baudrate) {
+    struct spi_config config_spi_master;
+    spi_get_config_defaults(&config_spi_master);
+
+    // Depends on where MOSI and CLK are.
+    uint8_t dopo = 8;
+    if (clock->primary_sercom.pad == 1) {
+        if (mosi->primary_sercom.pad == 0) {
+            dopo = 0;
+        } else if (mosi->primary_sercom.pad == 3) {
+            dopo = 2;
+        }
+    } else if (clock->primary_sercom.pad == 3) {
+        if (mosi->primary_sercom.pad == 0) {
+            dopo = 3;
+        } else if (mosi->primary_sercom.pad == 2) {
+            dopo = 1;
+        }
+    }
+    if (dopo == 8) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI MOSI and clock pins incompatible."));
+    }
+
+    config_spi_master.mux_setting = (dopo << SERCOM_SPI_CTRLA_DOPO_Pos) |
+        (miso->primary_sercom.pad << SERCOM_SPI_CTRLA_DIPO_Pos);
+
+    // Map pad to pinmux through a short array.
+    uint32_t *pinmuxes[4] = {&config_spi_master.pinmux_pad0,
+                             &config_spi_master.pinmux_pad1,
+                             &config_spi_master.pinmux_pad2,
+                             &config_spi_master.pinmux_pad3};
+    *pinmuxes[clock->primary_sercom.pad] = clock->primary_sercom.pinmux;
+    *pinmuxes[mosi->primary_sercom.pad] = mosi->primary_sercom.pinmux;
+    *pinmuxes[miso->primary_sercom.pad] = miso->primary_sercom.pinmux;
+
+    config_spi_master.mode_specific.master.baudrate = baudrate;
+
+    spi_init(&self->spi_master_instance, mosi->primary_sercom.sercom, &config_spi_master);
+}
+
+void mp_hal_spi_init(machine_spi_obj_t *self) {
+    spi_enable(&self->spi_master_instance);
+}
+
+void mp_hal_spi_deinit(machine_spi_obj_t *self) {
+    spi_disable(&self->spi_master_instance);
+}
+
+void mp_hal_spi_transfer(machine_spi_obj_t *self, size_t len, const uint8_t *src,
+                         uint8_t *dest) {
+    // TODO(tannewt): Don't cast away the const. Change ASF to respect it instead.
+    enum status_code status = spi_transceive_buffer_wait(
+        &self->spi_master_instance, (uint8_t *) src, dest, len);
+    if (status != STATUS_OK) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
+    }
+}
