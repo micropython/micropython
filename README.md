@@ -22,7 +22,8 @@ MicroPython implements the entire Python 3.4 syntax (including exceptions,
 The following core datatypes are provided: str (including basic Unicode
 support), bytes, bytearray, tuple, list, dict, set, frozenset, array.array,
 collections.namedtuple, classes and instances. Builtin modules include sys,
-time, and struct.  Note that only subset of Python 3.4 functionality
+time, and struct, etc. Select ports have support for _thread module
+(multithreading). Note that only subset of Python 3.4 functionality
 implemented for the data types and modules.
 
 See the repository www.github.com/micropython/pyboard for the Micro
