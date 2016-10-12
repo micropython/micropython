@@ -41,8 +41,8 @@ except MemoryError:
 
 uos.VfsFat.mkfs(bdev)
 
-assert b"FOO_FILETXT" not in bdev.data
-assert b"hello!" not in bdev.data
+print(b"FOO_FILETXT" not in bdev.data)
+print(b"hello!" not in bdev.data)
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
 print("statvfs:", vfs.statvfs("/ramdisk"))
@@ -57,10 +57,10 @@ f2 = vfs.open("foo_file.txt")
 print(f2.read())
 f2.close()
 
-assert b"FOO_FILETXT" in bdev.data
-assert b"hello!" in bdev.data
+print(b"FOO_FILETXT" in bdev.data)
+print(b"hello!" in bdev.data)
 
-assert vfs.listdir() == ['foo_file.txt']
+print(vfs.listdir())
 
 try:
     vfs.rmdir("foo_file.txt")
@@ -68,10 +68,10 @@ except OSError as e:
     print(e.args[0] == 20) # uerrno.ENOTDIR
 
 vfs.remove('foo_file.txt')
-assert vfs.listdir() == []
+print(vfs.listdir())
 
 vfs.mkdir("foo_dir")
-assert vfs.listdir() == ['foo_dir']
+print(vfs.listdir())
 
 try:
     vfs.remove("foo_dir")
@@ -82,18 +82,18 @@ f = vfs.open("foo_dir/file-in-dir.txt", "w")
 f.write("data in file")
 f.close()
 
-assert vfs.listdir("foo_dir") == ['file-in-dir.txt']
+print(vfs.listdir("foo_dir"))
 
 vfs.rename("foo_dir/file-in-dir.txt", "moved-to-root.txt")
-assert vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
+print(vfs.listdir())
 
 vfs.chdir("foo_dir")
 print("getcwd:", vfs.getcwd())
-assert vfs.listdir() == []
+print(vfs.listdir())
 
 with vfs.open("sub_file.txt", "w") as f:
     f.write("test2")
-assert vfs.listdir() == ["sub_file.txt"]
+print(vfs.listdir())
 
 try:
     vfs.chdir("sub_file.txt")
@@ -116,9 +116,7 @@ vfs.umount()
 try:
     vfs.listdir()
 except OSError as e:
-    assert e.args[0] == uerrno.ENODEV
-else:
-    raise AssertionError("expected OSError not thrown")
+    print(e.args[0] == uerrno.ENODEV)
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
-assert  vfs.listdir() == ['moved-to-root.txt']
+print(vfs.listdir())
