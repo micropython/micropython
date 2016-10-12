@@ -100,17 +100,23 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
     mp_uint_t len;
     const char *p;
 
-    p = mp_obj_str_get_data(args[1], &len);
-    memcpy(config.ssid, p, len);
-    p = mp_obj_str_get_data(args[2], &len);
-    memcpy(config.password, p, len);
+    if (n_args > 1) {
+        p = mp_obj_str_get_data(args[1], &len);
+        memcpy(config.ssid, p, len);
+        if (n_args > 2) {
+            p = mp_obj_str_get_data(args[2], &len);
+        } else {
+            p = "";
+        }
+        memcpy(config.password, p, len);
 
-    error_check(wifi_station_set_config(&config), "Cannot set STA config");
+        error_check(wifi_station_set_config(&config), "Cannot set STA config");
+    }
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 3, 7, esp_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 1, 7, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);
