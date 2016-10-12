@@ -1,5 +1,8 @@
 #include <alloca.h>
 
+// Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
+#include "autoconf.h"
+
 // Saving extra crumbs to make sure binary fits in 128K
 #define MICROPY_COMP_CONST_FOLDING  (0)
 #define MICROPY_COMP_CONST (0)
@@ -48,9 +51,6 @@ typedef long mp_off_t;
 #define MICROPY_PORT_ROOT_POINTERS \
     mp_obj_t mp_kbd_exception; \
     const char *readline_hist[8];
-
-// Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
-#include "autoconf.h"
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
