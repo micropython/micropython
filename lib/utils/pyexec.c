@@ -99,7 +99,7 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         // check for SystemExit
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
             // at the moment, the value of SystemExit is unused
-            ret = PYEXEC_FORCED_EXIT;
+            ret = 0;
         } else {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
             ret = 0;
