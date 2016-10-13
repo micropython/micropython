@@ -45,55 +45,38 @@ print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
-print("statvfs:", vfs.statvfs("/ramdisk"))
 
+try:
+    vfs.statvfs("/null")
+except OSError as e:
+    print(e.args[0] == uerrno.ENODEV)
+
+print("statvfs:", vfs.statvfs("/ramdisk"))
 print("getcwd:", vfs.getcwd())
 
-f = vfs.open("foo_file.txt", "w")
-f.write("hello!")
-f.close()
+try:
+    vfs.stat("no_file.txt")
+except OSError as e:
+    print(e.args[0] == uerrno.ENOENT)
 
-f2 = vfs.open("foo_file.txt")
-print(f2.read())
-f2.close()
+with vfs.open("foo_file.txt", "w") as f:
+    f.write("hello!")
+print(vfs.listdir())
+
+print("stat root:", vfs.stat("/"))
+print("stat disk:", vfs.stat("/ramdisk/"))
+print("stat file:", vfs.stat("foo_file.txt"))
 
 print(b"FOO_FILETXT" in bdev.data)
 print(b"hello!" in bdev.data)
 
-print(vfs.listdir())
-
-try:
-    vfs.rmdir("foo_file.txt")
-except OSError as e:
-    print(e.args[0] == 20) # uerrno.ENOTDIR
-
-vfs.remove('foo_file.txt')
-print(vfs.listdir())
-
 vfs.mkdir("foo_dir")
-print(vfs.listdir())
-
-try:
-    vfs.remove("foo_dir")
-except OSError as e:
-    print(e.args[0] == uerrno.EISDIR)
-
-f = vfs.open("foo_dir/file-in-dir.txt", "w")
-f.write("data in file")
-f.close()
-
-print(vfs.listdir("foo_dir"))
-
-vfs.rename("foo_dir/file-in-dir.txt", "moved-to-root.txt")
-print(vfs.listdir())
-
 vfs.chdir("foo_dir")
 print("getcwd:", vfs.getcwd())
 print(vfs.listdir())
 
 with vfs.open("sub_file.txt", "w") as f:
-    f.write("test2")
-print(vfs.listdir())
+    f.write("subdir file")
 
 try:
     vfs.chdir("sub_file.txt")
@@ -103,20 +86,16 @@ except OSError as e:
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
 
-try:
-    vfs.rmdir("foo_dir")
-except OSError as e:
-    print(e.args[0] == uerrno.EACCES)
-
-vfs.remove("foo_dir/sub_file.txt")
-vfs.rmdir("foo_dir")
-print(vfs.listdir())
-
 vfs.umount()
 try:
     vfs.listdir()
 except OSError as e:
     print(e.args[0] == uerrno.ENODEV)
 
+try:
+    vfs.getcwd()
+except OSError as e:
+    print(e.args[0] == uerrno.ENODEV)
+
 vfs = uos.VfsFat(bdev, "/ramdisk")
-print(vfs.listdir())
+print(vfs.listdir(b""))
