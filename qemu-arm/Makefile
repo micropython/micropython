@@ -60,7 +60,7 @@ OBJ_TEST += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ_TEST += $(BUILD)/tinytest.o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_TEST_C) $(STM_SRC_C)
+SRC_QSTR += $(SRC_C) $(STM_SRC_C)
 
 all: run
 
