@@ -64,12 +64,18 @@ STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_us_obj, time_sleep_us);
 
+STATIC mp_obj_t time_ticks_ms(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & MP_SMALL_INT_POSITIVE_MASK);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_ms_obj, time_ticks_ms);
+
 STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&time_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms), (mp_obj_t)&time_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us), (mp_obj_t)&time_sleep_us_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms), (mp_obj_t)&time_ticks_ms_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);

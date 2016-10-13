@@ -210,3 +210,35 @@ void mp_hal_delay_us(mp_uint_t delay) {
     }
     delay_us(delay);
 }
+
+// Global millisecond tick count (driven by SysTick interrupt handler).
+volatile uint32_t systick_ticks_ms = 0;
+
+void SysTick_Handler(void) {
+    // SysTick interrupt handler called when the SysTick timer reaches zero
+    // (every millisecond).
+    systick_ticks_ms += 1;
+    // Keep the counter within the range of 31 bit uint values since that's the
+    // max value for micropython 'small' ints.
+    systick_ticks_ms = systick_ticks_ms > 2147483647L ? 0 : systick_ticks_ms;
+}
+
+// Interrupt flags that will be saved and restored during disable/Enable
+// interrupt functions below.
+static irqflags_t irq_flags;
+
+void mp_hal_disable_all_interrupts(void) {
+  // Disable all interrupt sources for timing critical sections.
+  // Disable ASF-based interrupts.
+  irq_flags = cpu_irq_save();
+  // Disable SysTick interrupt.
+  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+}
+
+void mp_hal_enable_all_interrupts(void) {
+  // Enable all interrupt sources after timing critical sections.
+  // Restore ASF-based interrupts.
+  cpu_irq_restore(irq_flags);
+  // Restore SysTick interrupt.
+  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+}
