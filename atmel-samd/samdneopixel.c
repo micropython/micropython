@@ -1,6 +1,8 @@
 #include "asf/common2/services/delay/delay.h"
 #include "asf/sam0/drivers/port/port.h"
 
+#include "mphalport.h"
+
 #include "samdneopixel.h"
 
 void samd_neopixel_write(uint32_t pin, uint8_t *pixels, uint32_t numBytes, bool is800KHz) {
@@ -11,7 +13,7 @@ void samd_neopixel_write(uint32_t pin, uint8_t *pixels, uint32_t numBytes, bool 
   PortGroup* port;
 
   // Turn off interrupts of any kind during timing-sensitive code.
-  irqflags_t flags = cpu_irq_save();
+  mp_hal_disable_all_interrupts();
 
   port    =  port_get_group_from_gpio_pin(pin);
   pinMask =  (1UL << (pin % 32));  // From port_pin_set_output_level ASF code.
@@ -78,7 +80,7 @@ void samd_neopixel_write(uint32_t pin, uint8_t *pixels, uint32_t numBytes, bool 
   }
 
   // Turn on interrupts after timing-sensitive code.
-  cpu_irq_restore(flags);
+  mp_hal_enable_all_interrupts();
 
   // 50ms delay to let pixels latch to the data that was just sent.
   // This could be optimized to only occur before pixel writes when necessary,

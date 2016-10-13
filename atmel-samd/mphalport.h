@@ -27,9 +27,21 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
 
+#include "py/obj.h"
+
 #define USB_RX_BUF_SIZE 128
 
-static inline mp_uint_t mp_hal_ticks_ms(void) { return 0; }
+// Global millisecond tick count (driven by SysTick interrupt).
+extern volatile uint32_t systick_ticks_ms;
+
+static inline mp_uint_t mp_hal_ticks_ms(void) {
+  return systick_ticks_ms;
+}
+
 void mp_hal_set_interrupt_char(int c);
+
+void mp_hal_disable_all_interrupts(void);
+
+void mp_hal_enable_all_interrupts(void);
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__

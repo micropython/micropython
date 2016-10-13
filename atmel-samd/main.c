@@ -316,6 +316,9 @@ void samd21_init(void) {
 
     board_init();
 
+    // SysTick millisecond timer initialization.
+    SysTick_Config(system_cpu_clock_get_hz() / 1000);
+
     // Uncomment to init PIN_PA17 for debugging.
     // struct port_config pin_conf;
     // port_get_config_defaults(&pin_conf);
