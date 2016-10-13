@@ -24,10 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include "rom_fs.h"
+#include "access_vfs.h"
 
 #include "asf/common/services/usb/class/msc/device/udi_msc.h"
-#include "storage.h"
+#include "extmod/fsusermount.h"
+#include "lib/fatfs/diskio.h"
+#include "py/mpconfig.h"
+#include "py/mpstate.h"
+#include "py/misc.h"
+
+#define VFS_INDEX 0
 
 //! This function tests memory state, and starts memory initialization
 //! @return                            Ctrl_status
@@ -35,9 +41,17 @@
 //!   Memory unplug              ->    CTRL_NO_PRESENT
 //!   Not initialized or changed ->    CTRL_BUSY
 //!   An error occurred          ->    CTRL_FAIL
-Ctrl_status rom_fs_test_unit_ready(void)
+Ctrl_status vfs_test_unit_ready(void)
 {
-	return CTRL_GOOD;
+    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        return CTRL_FAIL;
+    }
+    DSTATUS status = disk_status(VFS_INDEX);
+    if (status == STA_NOINIT) {
+        return CTRL_NO_PRESENT;
+    }
+
+    return CTRL_GOOD;
 }
 
 //! This function returns the address of the last valid sector
@@ -47,9 +61,11 @@ Ctrl_status rom_fs_test_unit_ready(void)
 //!   Memory unplug              ->    CTRL_NO_PRESENT
 //!   Not initialized or changed ->    CTRL_BUSY
 //!   An error occurred          ->    CTRL_FAIL
-Ctrl_status rom_fs_read_capacity(uint32_t *uint32_t_nb_sector)
+Ctrl_status vfs_read_capacity(uint32_t *uint32_t_nb_sector)
 {
-	*uint32_t_nb_sector = storage_get_block_count();
+    if (disk_ioctl(VFS_INDEX, GET_SECTOR_COUNT, uint32_t_nb_sector) != RES_OK) {
+        return CTRL_FAIL;
+    }
 	return CTRL_GOOD;
 }
 
@@ -57,18 +73,24 @@ Ctrl_status rom_fs_read_capacity(uint32_t *uint32_t_nb_sector)
 //!
 //! @return true if the memory is protected
 //!
-bool rom_fs_wr_protect(void)
+bool vfs_wr_protect(void)
 {
-	return false;
+    DSTATUS status = disk_status(VFS_INDEX);
+    return status == STA_NOINIT || status == STA_PROTECT;
 }
 
 //! This function informs about the memory type
 //!
 //! @return true if the memory is removable
 //!
-bool rom_fs_removal(void)
+bool vfs_removal(void)
 {
 	return true;
+}
+
+bool vfs_unload(bool unload)
+{
+	return unload;
 }
 
 // TODO(tannewt): Transfer more than a single sector at a time if we need more
@@ -84,11 +106,17 @@ bool rom_fs_removal(void)
 //!   Not initialized or changed ->    CTRL_BUSY
 //!   An error occurred          ->    CTRL_FAIL
 //!
-Ctrl_status rom_fs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
+Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 {
     uint8_t sector_buffer[FLASH_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
-        storage_read_block(sector_buffer, addr + sector);
+        DRESULT result = disk_read(VFS_INDEX, sector_buffer, addr + sector, 1);
+        if (result == RES_PARERR) {
+            return CTRL_NO_PRESENT;
+        }
+        if (result == RES_ERROR) {
+            return CTRL_FAIL;
+        }
         if (!udi_msc_trans_block(true, sector_buffer, FLASH_BLOCK_SIZE, NULL)) {
             return CTRL_FAIL; // transfer aborted
         }
@@ -108,14 +136,18 @@ Ctrl_status rom_fs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 //!   Not initialized or changed ->    CTRL_BUSY
 //!   An error occurred          ->    CTRL_FAIL
 //!
-Ctrl_status rom_fs_usb_write_10(uint32_t addr, uint16_t nb_sector)
+Ctrl_status vfs_usb_write_10(uint32_t addr, uint16_t nb_sector)
 {
     uint8_t sector_buffer[FLASH_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
         if (!udi_msc_trans_block(false, sector_buffer, FLASH_BLOCK_SIZE, NULL)) {
             return CTRL_FAIL; // transfer aborted
         }
-        if (!storage_write_block(sector_buffer, addr + sector)) {
+        DRESULT result = disk_write(VFS_INDEX, sector_buffer, addr + sector, 1);
+        if (result == RES_PARERR) {
+            return CTRL_NO_PRESENT;
+        }
+        if (result == RES_ERROR) {
             return CTRL_FAIL;
         }
     }

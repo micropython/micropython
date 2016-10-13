@@ -72,6 +72,8 @@
 #define MICROPY_FSUSERMOUNT            (1)
 #define MICROPY_FATFS_MAX_SS           (4096)
 
+#define FLASH_BLOCK_SIZE            (512)
+
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)

@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "lib/fatfs/ff.h"
+#include "py/obj.h"
+
 // these are the values for fs_user_mount_t.flags
 #define FSUSER_NATIVE       (0x0001) // readblocks[2]/writeblocks[2] contain native func
 #define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount

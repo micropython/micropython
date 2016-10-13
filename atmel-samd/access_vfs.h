@@ -24,17 +24,20 @@
  * THE SOFTWARE.
  */
 
+// This adapts the ASF access API to MicroPython's VFS API so we can expose all
+// VFS block devices as Lun's over USB mass storage control.
+
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H__
 
 #include "asf/common/services/storage/ctrl_access/ctrl_access.h"
 
-
-Ctrl_status rom_fs_test_unit_ready(void);
-Ctrl_status rom_fs_read_capacity(uint32_t *u32_nb_sector);
-bool        rom_fs_wr_protect(void);
-bool        rom_fs_removal(void);
-Ctrl_status rom_fs_usb_read_10(uint32_t addr, uint16_t nb_sector);
-Ctrl_status rom_fs_usb_write_10(uint32_t addr, uint16_t nb_sector);
+Ctrl_status vfs_test_unit_ready(void);
+Ctrl_status vfs_read_capacity(uint32_t *u32_nb_sector);
+bool        vfs_wr_protect(void);
+bool        vfs_removal(void);
+bool        vfs_unload(bool);
+Ctrl_status vfs_usb_read_10(uint32_t addr, uint16_t nb_sector);
+Ctrl_status vfs_usb_write_10(uint32_t addr, uint16_t nb_sector);
 
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H__

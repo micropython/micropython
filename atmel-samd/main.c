@@ -23,7 +23,6 @@
 
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
-#include "storage.h"
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -71,6 +70,8 @@ static const char fresh_readme_txt[] =
 "\r\n"
 "Please visit http://micropython.org/help/ for further help.\r\n"
 ;
+
+extern void flash_init_vfs(fs_user_mount_t *vfs);
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
