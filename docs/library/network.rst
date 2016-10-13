@@ -275,9 +275,13 @@ For example::
         argument is passed. Otherwise, query current state if no argument is
         provided. Most other methods require active interface.
 
-    .. method:: wlan.connect(ssid, password)
+    .. method:: wlan.connect(ssid, password, [save_to_flash=True])
 
         Connect to the specified wireless network, using the specified password.
+        
+        Normally the network and password are stored in the flash memory 
+        to enable automatic connect upon reset.
+        If this is not what you want, set save_to_flash to false. 
 
     .. method:: wlan.disconnect()
 
