@@ -69,6 +69,14 @@ STATIC mp_obj_t time_ticks_ms(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_ms_obj, time_ticks_ms);
 
+STATIC mp_obj_t time_ticks_diff(mp_obj_t start_in, mp_obj_t end_in) {
+    // we assume that the arguments come from ticks_xx so are small ints
+    uint32_t start = MP_OBJ_SMALL_INT_VALUE(start_in);
+    uint32_t end = MP_OBJ_SMALL_INT_VALUE(end_in);
+    return MP_OBJ_NEW_SMALL_INT((end - start) & MP_SMALL_INT_POSITIVE_MASK);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(time_ticks_diff_obj, time_ticks_diff);
+
 STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
 
@@ -76,6 +84,7 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms), (mp_obj_t)&time_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us), (mp_obj_t)&time_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms), (mp_obj_t)&time_ticks_ms_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_diff), (mp_obj_t)&time_ticks_diff_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
