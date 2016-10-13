@@ -30,17 +30,11 @@
 
 #include "py/nlr.h"
 #include "py/objstr.h"
+#include "py/objstringio.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_IO
-
-typedef struct _mp_obj_stringio_t {
-    mp_obj_base_t base;
-    vstr_t *vstr;
-    // StringIO has single pointer used for both reading and writing
-    mp_uint_t pos;
-} mp_obj_stringio_t;
 
 #if MICROPY_CPYTHON_COMPAT
 STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
