@@ -18,6 +18,7 @@
 #define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_REPL         (1)
