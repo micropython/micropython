@@ -74,20 +74,8 @@ void vstr_clear(vstr_t *vstr) {
     vstr->buf = NULL;
 }
 
-vstr_t *vstr_new(void) {
+vstr_t *vstr_new(size_t alloc) {
     vstr_t *vstr = m_new_obj(vstr_t);
-    if (vstr == NULL) {
-        return NULL;
-    }
-    vstr_init(vstr, 16);
-    return vstr;
-}
-
-vstr_t *vstr_new_size(size_t alloc) {
-    vstr_t *vstr = m_new_obj(vstr_t);
-    if (vstr == NULL) {
-        return NULL;
-    }
     vstr_init(vstr, alloc);
     return vstr;
 }

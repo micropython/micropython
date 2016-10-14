@@ -150,7 +150,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio
 STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
     o->base.type = type;
-    o->vstr = vstr_new();
+    o->vstr = vstr_new(16);
     o->pos = 0;
     return o;
 }

@@ -148,7 +148,7 @@ STATIC int pyexec_raw_repl_process_char(int c);
 STATIC int pyexec_friendly_repl_process_char(int c);
 
 void pyexec_event_repl_init(void) {
-    MP_STATE_VM(repl_line) = vstr_new_size(32);
+    MP_STATE_VM(repl_line) = vstr_new(32);
     repl.cont_line = false;
     readline_init(MP_STATE_VM(repl_line), ">>> ");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {

@@ -317,7 +317,7 @@ soft_reset:
     pyexec_frozen_module("main.py");
 #else
     {
-        vstr_t *vstr = vstr_new();
+        vstr_t *vstr = vstr_new(16);
         vstr_add_str(vstr, "/");
         if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");
