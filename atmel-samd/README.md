@@ -1,21 +1,17 @@
 # SAMD21x18
 
-This port is intended to be a full featured MicroPython port for SAMD21x18 based
-development boards including the Arduino Zero, Adafruit Feather M0 and Adafruit
-M0 BLE.
+This port brings MicroPython to SAMD21x18 based development boards including the
+Arduino Zero, Adafruit Feather M0 and Adafruit M0 BLE.
 
 ## Building
 
-The Makefile has the ability to build for a SAMD21x18, and by default
-includes some start-up code and also enables a UART for communication.  To
-build:
+To build for the Arduino Zero:
 
-    make CROSS=1
+    make
 
-It will build for the Arduino Zero by default. You may change it by setting
-`BOARD`. For example:
+To build for other boards you must change it by setting `BOARD`. For example:
 
-    make CROSS=1 BOARD=feather_m0_ble
+    make BOARD=feather_m0_ble
 
 Board names are the directory names in the `boards` folder.
 
@@ -50,6 +46,9 @@ In another terminal from `micropython/atmel-samd`:
     (gdb) continue
 
 ## Connecting
+
+### Serial
+
 All boards are currently configured to work over USB rather than UART. To
 connect to it from OSX do something like this:
 
@@ -57,3 +56,8 @@ connect to it from OSX do something like this:
 
 You may not see a prompt immediately because it doesn't know you connected. To
 get one either hit enter to get `>>>` or do CTRL-B to get the full header.
+
+### Mass storage
+
+All boards will also show up as a mass storage device. Make sure to eject it
+before referring to any files.
