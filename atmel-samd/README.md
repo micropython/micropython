@@ -1,7 +1,7 @@
 # SAMD21x18
 
 This port brings MicroPython to SAMD21x18 based development boards including the
-Arduino Zero, Adafruit Feather M0 and Adafruit M0 BLE.
+Arduino Zero, Adafruit Feather M0 Basic and Adafruit M0 Bluefruit LE.
 
 ## Building
 
@@ -11,7 +11,7 @@ To build for the Arduino Zero:
 
 To build for other boards you must change it by setting `BOARD`. For example:
 
-    make BOARD=feather_m0_ble
+    make BOARD=feather_m0_basic
 
 Board names are the directory names in the `boards` folder.
 
@@ -23,7 +23,7 @@ to flash MicroPython. First, activate the bootloader. On Adafruit Feathers you
 can double click the reset button and the #13 will fade in and out. Finally,
 run bossac:
 
-    tools/bossac_osx -e -w -v -b -R build-feather_m0_ble/firmware.bin
+    tools/bossac_osx -e -w -v -b -R build-feather_m0_basic/firmware.bin
 
 ### No Bootloader via GDB
 This method works for loading MicroPython onto the Arduino Zero via the

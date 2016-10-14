@@ -19,7 +19,7 @@
 #endif
 
 #ifndef USB_DEVICE_PRODUCT_NAME
-#  define USB_DEVICE_PRODUCT_NAME "Feather M0 Bluefruit LE"
+#  define USB_DEVICE_PRODUCT_NAME "Feather M0 Basic"
 #endif
 
 #define  USB_DEVICE_GET_SERIAL_NAME_POINTER  serial_number
