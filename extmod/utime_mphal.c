@@ -46,13 +46,19 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_obj, time_sleep);
 
 STATIC mp_obj_t time_sleep_ms(mp_obj_t arg) {
-    mp_hal_delay_ms(mp_obj_get_int(arg));
+    mp_int_t ms = mp_obj_get_int(arg);
+    if (ms > 0) {
+        mp_hal_delay_ms(ms);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_ms_obj, time_sleep_ms);
 
 STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
-    mp_hal_delay_us(mp_obj_get_int(arg));
+    mp_int_t us = mp_obj_get_int(arg);
+    if (us > 0) {
+        mp_hal_delay_us(us);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_us_obj, time_sleep_us);
