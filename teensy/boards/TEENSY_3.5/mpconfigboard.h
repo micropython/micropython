@@ -1,8 +1,9 @@
 #define MICROPY_HW_BOARD_NAME       "Teensy-3.5"
 #define MICROPY_HW_MCU_NAME         "MK64FX512"
 
+// MICROPY_HW_HAS_SDCARD comes from mpconfigboard.mk
+
 #define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
 #define MICROPY_HW_HAS_MMA7660      (0)
 #define MICROPY_HW_HAS_LIS3DSH      (0)
 #define MICROPY_HW_HAS_LCD          (0)

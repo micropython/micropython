@@ -61,10 +61,13 @@ INC += -I../lib/mp-readline
 INC += -I$(BUILD)
 INC += -Icore
 INC += -Iboards/$(BOARD)
+INC += -I../lib/timeutils
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
 CFLAGS += $(CFLAGS_TEENSY) $(CFLAGS_MCU_$(MCU_SERIES)) $(CFLAGS_BOARD)
 LDFLAGS = -nostdlib -T $(LD_FILE) $(LDFLAGS_MCU_$(MCU_SERIES)) -Wl,--defsym=__rtc_localtime=$(shell $(PYTHON) ./rtc_localtime.py)
+
+CFLAGS += -DMICROPY_HW_HAS_SDCARD=$(MICROPY_HW_HAS_SDCARD)
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 
@@ -136,6 +139,7 @@ STM_SRC_S = $(addprefix stmhal/,\
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
+	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/pyhelp.c \
 	)
@@ -150,6 +154,23 @@ SRC_TEENSY = $(addprefix core/,\
 	usb_serial.c \
 	yield.c \
 	)
+
+ifeq ($(MICROPY_HW_HAS_SDCARD),1)
+SRC_C += \
+	sdcard.c \
+	fatfs_port.c \
+	sdhc.c \
+
+STM_SRC_C += $(addprefix stmhal/,\
+	builtin_open.c \
+	moduos.c \
+	)
+
+LIB_SRC_C += $(addprefix lib/,\
+	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
+	)
+endif
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(STM_SRC_S:.s=.o) $(SRC_TEENSY:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
@@ -168,7 +189,7 @@ OBJ += $(BUILD)/memzip-files.o
 
 MAKE_MEMZIP = ../lib/memzip/make-memzip.py
 ifeq ($(MEMZIP_DIR),)
-MEMZIP_DIR = memzip_files
+MEMZIP_DIR = scripts
 endif
 
 $(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
@@ -183,13 +204,17 @@ endif # USE_MEMZIP
 ifeq ($(USE_FROZEN),1)
 
 ifeq ($(FROZEN_DIR),)
-FROZEN_DIR = memzip_files
+FROZEN_DIR = scripts
 endif
 
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 
+ifeq ($(MICROPY_HW_HAS_SDCARD),1)
+SRC_C += stmhal/lexerfatfs.c stmhal/import.c
+else
+SRC_C += lexerfrozen.c
+endif
 SRC_C += \
-	lexerfrozen.c \
 	$(BUILD)/frozen.c
 
 endif # USE_FROZEN

@@ -4,6 +4,14 @@
 
 #include <stdint.h>
 
+#include "mpconfigboard.h"
+
+// We need to provide a declaration/definition of alloca()
+#include <alloca.h>
+
+#define MICROPY_MPHALPORT_H     "teensy_hal.h"
+#define MICROPY_PIN_DEFS_PORT_H "pin_defs_teensy.h"
+
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX      (128)
@@ -22,7 +30,6 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 
-#define MICROPY_PY_IO               (0)
 #define MICROPY_PY_FROZENSET        (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
@@ -30,6 +37,32 @@
 #define MICROPY_PY_MACHINE          (1)
 
 #define MICROPY_MATH_SQRT_ASM       (1)
+
+#if MICROPY_HW_HAS_SDCARD
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN        (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE     (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL         (1)
+#define MICROPY_FATFS_RPATH             (2)
+#define MICROPY_FATFS_VOLUMES           (4)
+#define MICROPY_FATFS_MULTI_PARTITION   (1)
+#define MICROPY_FSUSERMOUNT             (1)
+
+#define MICROPY_PY_UOS                  (1)
+#define MICROPY_PY_IO                   (1)
+#define MICROPY_PY_BUILTINS_EXECFILE    (1)
+
+#define BUILTIN_OPEN    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj }
+
+#else
+
+#define MICROPY_PY_UOS                  (0)
+#define MICROPY_PY_IO                   (0)
+#define MICROPY_PY_BUILTINS_EXECFILE    (0)
+#define BUILTIN_OPEN
+
+#endif // MICROPY_HW_HAS_SDCARD
 
 // The following should eventually be replaced by the machine.mem when we
 // get constants generated.
@@ -43,17 +76,29 @@
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
+    BUILTIN_OPEN
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t machine_module;
-extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t time_module;
+extern const struct _mp_obj_module_t mp_module_uos;
+
+#if MICROPY_PY_UOS
+#define UOS_BUILTIN_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos },
+#define UOS_BUILTIN_WEAK_LINKS  { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos },
+#else
+#define UOS_BUILTIN_MODULE
+#define UOS_BUILTIN_WEAK_LINKS
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    UOS_BUILTIN_MODULE \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    UOS_BUILTIN_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
 
 // extra constants
@@ -118,13 +163,5 @@ __attribute__(( always_inline )) static inline mp_uint_t disable_irq(void) {
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
-
-#include "mpconfigboard.h"
-
-// We need to provide a declaration/definition of alloca()
-#include <alloca.h>
-
-#define MICROPY_MPHALPORT_H     "teensy_hal.h"
-#define MICROPY_PIN_DEFS_PORT_H "pin_defs_teensy.h"
 
 #endif // __INCLUDED_MPCONFIGPORT_H

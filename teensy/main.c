@@ -21,6 +21,9 @@
 #include "led.h"
 #include "uart.h"
 #include "pin.h"
+#include "lib/fatfs/ff.h"
+#include "extmod/fsusermount.h"
+#include "sdcard.h"
 #include "modmachine.h"
 
 extern uint32_t _heap_start;
@@ -91,107 +94,6 @@ mp_obj_t pyb_analog_write_frequency(mp_obj_t pin_obj, mp_obj_t freq_obj) {
     return mp_const_none;
 }
 
-#if 0
-// get lots of info about the board
-static mp_obj_t pyb_info(void) {
-    // get and print unique id; 96 bits
-    {
-        byte *id = (byte*)0x40048058;
-        printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
-    }
-
-    // get and print clock speeds
-    printf("CPU=%u\nBUS=%u\nMEM=%u\n", F_CPU, F_BUS, F_MEM);
-
-    // to print info about memory
-    {
-        printf("_sdata=%p\n", &_sdata);
-        printf("_edata=%p\n", &_edata);
-        printf("_sbss=%p\n", &_sbss);
-        printf("_ebss=%p\n", &_ebss);
-        printf("_estack=%p\n", &_estack);
-        printf("_etext=%p\n", &_etext);
-        printf("_heap_start=%p\n", &_heap_start);
-    }
-
-    // GC info
-    {
-        gc_info_t info;
-        gc_info(&info);
-        printf("GC:\n");
-        printf("  %u total\n", info.total);
-        printf("  %u used %u free\n", info.used, info.free);
-        printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
-    }
-
-#if 0
-    // free space on flash
-    {
-        DWORD nclst;
-        FATFS *fatfs;
-        f_getfree("0:", &nclst, &fatfs);
-        printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
-    }
-#endif
-
-    return mp_const_none;
-}
-
-#endif
-
-#define RAM_START (0x1FFF8000) // fixed for chip
-#define HEAP_END  (0x20006000) // tunable
-#define RAM_END   (0x20008000) // fixed for chip
-
-#if 0
-
-void gc_helper_get_regs_and_clean_stack(mp_uint_t *regs, mp_uint_t heap_end);
-
-mp_obj_t pyb_gc(void) {
-    gc_collect();
-    return mp_const_none;
-}
-
-mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
-    //assert(1 <= n_args && n_args <= 2);
-
-    uint pin = mp_obj_get_int(args[0]);
-    if (pin > CORE_NUM_DIGITAL) {
-        goto pin_error;
-    }
-
-    if (n_args == 1) {
-        // get pin
-        pinMode(pin, INPUT);
-        return MP_OBJ_NEW_SMALL_INT(digitalRead(pin));
-    }
-    
-    // set pin
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, mp_obj_is_true(args[1]));
-    return mp_const_none;
-
-pin_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %d does not exist", pin));
-}
-
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
-
-#if 0
-mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
-    mp_obj_t *items = mp_obj_get_array_fixed_n(arg, 4);
-    uint8_t data[4];
-    data[0] = mp_obj_get_int(items[0]);
-    data[1] = mp_obj_get_int(items[1]);
-    data[2] = mp_obj_get_int(items[2]);
-    data[3] = mp_obj_get_int(items[3]);
-    usb_hid_send_report(data);
-    return mp_const_none;
-}
-#endif
-
-#endif // 0
-
 STATIC mp_obj_t pyb_config_source_dir = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
@@ -223,30 +125,6 @@ STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_mode_obj, pyb_usb_mode);
 
-#if 0
-
-mp_obj_t pyb_delay(mp_obj_t count) {
-    delay(mp_obj_get_int(count));
-    return mp_const_none;
-}
-
-mp_obj_t pyb_led(mp_obj_t state) {
-    led_state(PYB_LED_BUILTIN, mp_obj_is_true(state));
-    return state;
-}
-
-#endif  // 0
-
-#if 0
-char *strdup(const char *str) {
-    uint32_t len = strlen(str);
-    char *s2 = m_new(char, len + 1);
-    memcpy(s2, str, len);
-    s2[len] = 0;
-    return s2;
-}
-#endif
-
 int main(void) {
     // TODO: Put this in a more common initialization function.
     // Turn on STKALIGN which keeps the stack 8-byte aligned for interrupts
@@ -255,19 +133,21 @@ int main(void) {
     SCB_CCR |= SCB_CCR_STKALIGN;
 
     mp_stack_ctrl_init();
-    mp_stack_set_limit(10240);
+    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
 
     pinMode(LED_BUILTIN, OUTPUT);
     led_init();
-
-//    int first_soft_reset = true;
 
 soft_reset:
 
     led_state(PYB_LED_BUILTIN, 1);
 
+#if MICROPY_HW_HAS_SDCARD
+    sdcard_init();
+#endif
+
     // GC init
-    gc_init(&_heap_start, (void*)HEAP_END);
+    gc_init(&_heap_start, &_heap_end);
 
     // Micro Python init
     mp_init();
@@ -279,26 +159,34 @@ soft_reset:
 
     pin_init0();
 
-#if 0
-    // add some functions to the python namespace
-    {
-        mp_store_name(MP_QSTR_help, mp_make_function_n(0, pyb_help));
-        mp_obj_t m = mp_obj_new_module(MP_QSTR_pyb);
-        mp_store_attr(m, MP_QSTR_info, mp_make_function_n(0, pyb_info));
-        mp_store_attr(m, MP_QSTR_source_dir, mp_make_function_n(1, pyb_source_dir));
-        mp_store_attr(m, MP_QSTR_main, mp_make_function_n(1, pyb_main));
-        mp_store_attr(m, MP_QSTR_gc, mp_make_function_n(0, pyb_gc));
-        mp_store_attr(m, MP_QSTR_delay, mp_make_function_n(1, pyb_delay));
-        mp_store_attr(m, MP_QSTR_led, mp_make_function_n(1, pyb_led));
-        mp_store_attr(m, MP_QSTR_LED, (mp_obj_t)&pyb_led_type);
-        mp_store_attr(m, MP_QSTR_analogRead, mp_make_function_n(1, pyb_analog_read));
-        mp_store_attr(m, MP_QSTR_analogWrite, mp_make_function_n(2, pyb_analog_write));
-        mp_store_attr(m, MP_QSTR_analogWriteResolution, mp_make_function_n(1, pyb_analog_write_resolution));
-        mp_store_attr(m, MP_QSTR_analogWriteFrequency, mp_make_function_n(2, pyb_analog_write_frequency));
+#if MICROPY_HW_HAS_SDCARD
+    // if an SD card is present then mount it on /sd/
+    if (sdcard_is_present()) {
+        // create vfs object
+        fs_user_mount_t *vfs = m_new_obj_maybe(fs_user_mount_t);
+        if (vfs == NULL) {
+            goto no_mem_for_sd;
+        }
+        vfs->str = "/sd";
+        vfs->len = 3;
+        vfs->flags = FSUSER_FREE_OBJ;
+        sdcard_init_vfs(vfs);
 
-        mp_store_attr(m, MP_QSTR_gpio, (mp_obj_t)&pyb_gpio_obj);
-        mp_store_attr(m, MP_QSTR_Servo, mp_make_function_n(0, pyb_Servo));
-        mp_store_name(MP_QSTR_pyb, m);
+        // put the sd device in slot 1 (it will be unused at this point)
+        MP_STATE_PORT(fs_user_mount)[1] = vfs;
+
+        FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+        if (res != FR_OK) {
+            printf("PYB: can't mount SD card\n");
+            MP_STATE_PORT(fs_user_mount)[1] = NULL;
+            m_del_obj(fs_user_mount_t, vfs);
+        } else {
+            mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+            mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
+            // use SD card as current directory
+            f_chdrive("/sd");
+        }
+        no_mem_for_sd:;
     }
 #endif
 
@@ -348,7 +236,6 @@ soft_reset:
 
     printf("PYB: soft reboot\n");
 
-//    first_soft_reset = false;
     machine_soft_reset = true;
     goto soft_reset;
 }
