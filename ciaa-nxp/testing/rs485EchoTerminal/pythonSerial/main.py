@@ -18,7 +18,7 @@ from Rs485 import *
 import time
 
 #ttyUSB2 - 9600
-port = Rs485(0,9600)
+port = Rs485(2,9600)
 if port.openPort() == False :
     print("Error opening serial port")
     exit()
