@@ -3,6 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Ernesto Gigliotti <ernestogigliotti@gmail.com>
+ * Copyright (c) 2015 Martin Ribelotta
  * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -223,6 +225,11 @@ void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void
 	Board_Buttons_configureCallback(buttonNumber,function,arg);
 }
 
+int32_t mp_hal_getButtonState(int32_t btnNumber)
+{
+    return Board_Buttons_GetStatusByNumber(btnNumber);
+}
+
 // GPIOs
 int32_t mp_hal_configureGPIOs(int32_t gpioNumber,int32_t mode, int32_t pullup)
 {
@@ -275,6 +282,21 @@ void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value)
 uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber)
 {
 	return Board_LED_PWM_GetValue(pwmNumber);
+}
+
+void mp_hal_setLed(uint8_t ledNumber,uint8_t value)
+{
+    Board_LED_Set(ledNumber,value);
+}
+
+void mp_hal_toggleLed(uint8_t ledNumber)
+{
+    Board_LED_Toggle(ledNumber);
+}
+
+bool mp_hal_testLed(uint8_t ledNumber)
+{
+    return Board_LED_Test(ledNumber);
 }
 
 //TIMERs

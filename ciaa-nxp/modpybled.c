@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Ernesto Gigliotti <ernestogigliotti@gmail.com>
  * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +26,6 @@
  */
 
 #include "py/runtime.h"
-#include "board.h"
 #include "modpyb.h"
 #include "ciaanxp_mphal.h"
 
@@ -61,28 +61,28 @@ STATIC mp_obj_t pyb_led_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n
 
 mp_obj_t pyb_led_on(mp_obj_t self_in) {
     pyb_led_obj_t *self = self_in;
-    Board_LED_Set(LED_ID(self)-1, 0);
+    mp_hal_setLed(LED_ID(self)-1, 0);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_led_on_obj, pyb_led_on);
 
 mp_obj_t pyb_led_off(mp_obj_t self_in) {
     pyb_led_obj_t *self = self_in;
-    Board_LED_Set(LED_ID(self)-1, 1);
+    mp_hal_setLed(LED_ID(self)-1, 1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_led_off_obj, pyb_led_off);
 
 mp_obj_t pyb_led_toggle(mp_obj_t self_in) {
     pyb_led_obj_t *self = self_in;
-   Board_LED_Toggle(LED_ID(self)-1);
+    mp_hal_toggleLed(LED_ID(self)-1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_led_toggle_obj, pyb_led_toggle);
 
 mp_obj_t pyb_led_value(mp_obj_t self_in) {
     pyb_led_obj_t *self = self_in;
-    uint8_t val = Board_LED_Test(LED_ID(self)-1);
+    uint8_t val = mp_hal_testLed(LED_ID(self)-1);
     if(val==0)
         val=1;
     else

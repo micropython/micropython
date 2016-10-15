@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2016 Ernesto Gigliotti <ernestogigliotti@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,66 +66,6 @@ STATIC mp_obj_t pyb_gpio_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t 
     return (mp_obj_t)&pyb_gpio_obj[sw_id];
 }
 
-/*
-mp_obj_t pyb_switch_value(mp_obj_t self_in) {
-    pyb_switch_obj_t *self = self_in;
-    //return switch_get(SWITCH_ID(self)) ? mp_const_true : mp_const_false;
-    return Buttons_GetStatusByNumber(SWITCH_ID(self)-1) ? mp_const_true : mp_const_false;
-}
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
-*/
-
-/*
-void pyb_switch_exec_callback(pyb_switch_obj_t* self)
-{
-	    // execute callback if it's set
-            if (self->callback != mp_const_none) {
-                // When executing code within a handler we must lock the GC to prevent
-                // any memory allocations.  We must also catch any exceptions.
-                gc_lock();
-                nlr_buf_t nlr;
-                if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(self->callback, self);
-                    nlr_pop();
-                } else {
-                    // Uncaught exception; disable the callback so it doesn't run again.
-                    self->callback = mp_const_none;
-                    printf("uncaught exception in switch(%u) interrupt handler\n",SWITCH_ID(self));
-                    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-                }
-                gc_unlock();
-            }
-}
-
-/// \method callback(fun)
-/// Set the function to be called when the switch changes.
-/// `fun` is passed 1 argument, the switch object.
-/// If `fun` is `None` then the callback will be disabled.
-STATIC mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
-    pyb_switch_obj_t *self = self_in;
-    if (callback == mp_const_none) {
-        // stop interrupt
-        self->callback = mp_const_none;
-	mp_hal_configureButtonCallback(SWITCH_ID(self)-1,NULL,NULL);
-    } else if (mp_obj_is_callable(callback)) {
-        self->callback = callback;
-	mp_hal_configureButtonCallback(SWITCH_ID(self)-1,( void(*)(void*)  )pyb_switch_exec_callback,self);
-    } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
-
-*/
-
-/*
-mp_obj_t pyb_gpio_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    return pyb_switch_value(self_in);
-}
-*/
 
 /// \method init(mode, pull=Pin.PULL_NONE, af=-1)
 /// Initialise the pin:

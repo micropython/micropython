@@ -3,6 +3,8 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Ernesto Gigliotti <ernestogigliotti@gmail.com>
+ * Copyright (c) 2015 Martin Ribelotta
  * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -65,6 +67,7 @@ void mp_hal_rs485_resetRxPacket(void);
 
 // Buttons
 void mp_hal_configureButtonCallback(int buttonNumber,void(*function)(void*),void* arg);
+int32_t mp_hal_getButtonState(int32_t btnNumber);
 
 // GPIOs
 #define GPIO_MODE_INPUT BOARD_GPIO_MODE_INPUT
@@ -92,6 +95,9 @@ int32_t mp_hal_writeDMADAC(uint16_t* buffer, uint32_t size, bool flagCyclic);
 //LEDs
 void mp_hal_setPwmRGBValue(uint8_t pwmNumber,uint8_t value);
 uint8_t mp_hal_getPwmRGBValue(uint8_t pwmNumber);
+void mp_hal_setLed(uint8_t ledNumber,uint8_t value);
+void mp_hal_toggleLed(uint8_t ledNumber);
+bool mp_hal_testLed(uint8_t ledNumber);
 
 //TIMERs
 int32_t mp_hal_enableTimerAsTimer(uint8_t timerNum, uint32_t presc,uint32_t matchValue,bool flagOnce);
