@@ -35,6 +35,7 @@
 #include "gccollect.h"
 #include "irq.h"
 #include "pin.h"
+#include "rng.h"
 #include "sdcard.h"
 #include "timer.h"
 #include "uart.h"
@@ -203,6 +204,9 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&machine_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader),          (mp_obj_t)&machine_bootloader_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&machine_freq_obj },
+#if MICROPY_HW_ENABLE_RNG
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&pyb_rng_get_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_idle),                (mp_obj_t)&pyb_wfi_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),               (mp_obj_t)&machine_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep),           (mp_obj_t)&machine_deepsleep_obj },

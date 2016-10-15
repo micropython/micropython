@@ -118,6 +118,7 @@ SRC_C = \
 	modpyb.c \
 	pin_defs_teensy.c \
 	reg.c \
+	rng.c \
 	teensy_hal.c \
 	timer.c \
 	uart.c \

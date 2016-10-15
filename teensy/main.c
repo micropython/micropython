@@ -21,6 +21,7 @@
 #include "led.h"
 #include "uart.h"
 #include "pin.h"
+#include "rng.h"
 #include "lib/fatfs/ff.h"
 #include "extmod/fsusermount.h"
 #include "sdcard.h"
