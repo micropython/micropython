@@ -12,7 +12,6 @@ include ../py/py.mk
 
 MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
-MAKE_FROZEN = ../tools/make-frozen.py
 
 FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
