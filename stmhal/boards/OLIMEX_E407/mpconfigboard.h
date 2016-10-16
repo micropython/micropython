@@ -75,10 +75,10 @@
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRH = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRL = pin->pin_mask)
 
-// SD card detect switch
-#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C11)
-#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
-#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
+// SD card detect switch (no card detect pin available on E407 board)
+//#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_XXX)
+//#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
+//#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
