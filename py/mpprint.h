@@ -39,6 +39,12 @@
 #define PF_FLAG_ADD_PERCENT       (0x100)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
 
+#if MICROPY_PY_IO
+#    define MP_PYTHON_PRINTER &mp_sys_stdout_print
+#else
+#    define MP_PYTHON_PRINTER &mp_plat_print
+#endif
+
 typedef void (*mp_print_strn_t)(void *data, const char *str, size_t len);
 
 typedef struct _mp_print_t {
