@@ -33,6 +33,7 @@
 #include "extmod/machine_mem.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
+#include "lib/utils/pyexec.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "gccollect.h"
@@ -171,6 +172,12 @@ STATIC mp_obj_t machine_reset(void) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
+
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t machine_bootloader(void) {
@@ -502,6 +509,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&machine_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&machine_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_soft_reset),          (mp_obj_t)&machine_soft_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader),          (mp_obj_t)&machine_bootloader_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&machine_freq_obj },
 #if MICROPY_HW_ENABLE_RNG
