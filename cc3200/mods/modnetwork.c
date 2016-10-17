@@ -101,7 +101,7 @@ STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, mp_uint_t n_a
     // check the server id
     if (args[0].u_obj != MP_OBJ_NULL) {
         if (mp_obj_get_int(args[0].u_obj) != 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
         }
     }
 

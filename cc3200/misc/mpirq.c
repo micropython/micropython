@@ -112,7 +112,7 @@ void mp_irq_remove (const mp_obj_t parent) {
 
 uint mp_irq_translate_priority (uint priority) {
     if (priority < 1 || priority > MP_ARRAY_SIZE(mp_irq_priorities)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     return mp_irq_priorities[priority - 1];
 }

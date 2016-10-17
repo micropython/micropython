@@ -131,10 +131,10 @@ STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, 
     return ssl_sock;
 
 socket_error:
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(_errno)));
+    mp_raise_OSError(_errno);
 
 arg_error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 

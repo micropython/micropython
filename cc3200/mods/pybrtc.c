@@ -202,7 +202,7 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 
     // verify the tuple
     if (len < 3 || len > 8) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 
     tm.tm_year = mp_obj_get_int(items[0]);
@@ -294,7 +294,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     // setup the object
@@ -362,7 +362,7 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 
     // check the alarm id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     uint32_t f_seconds;
@@ -371,7 +371,7 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     if (MP_OBJ_IS_TYPE(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
         // repeat cannot be used with a datetime tuple
         if (repeat) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
         f_mseconds = pyb_rtc_datetime_s_us (args[1].u_obj, &f_seconds) / 1000;
     } else { // then it must be an integer
@@ -397,7 +397,7 @@ STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
 
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     // get the current time
@@ -415,7 +415,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc
 STATIC mp_obj_t pyb_rtc_alarm_cancel (mp_uint_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
     // disable the alarm
     pyb_rtc_disable_alarm();
@@ -453,7 +453,7 @@ STATIC mp_obj_t pyb_rtc_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     return _irq;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 

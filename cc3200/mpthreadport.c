@@ -28,6 +28,7 @@
 
 #include "py/mpconfig.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "mptask.h"
@@ -131,7 +132,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     TaskHandle_t id = xTaskCreateStatic(freertos_entry, "Thread", *stack_size / sizeof(void*), arg, 2, stack, tcb);
     if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't create thread"));
+        mp_raise_msg(&mp_type_OSError, "can't create thread");
     }
 
     // add thread to linked list of all threads
