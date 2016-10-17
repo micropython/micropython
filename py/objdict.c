@@ -250,15 +250,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     mp_obj_t iter = mp_getiter(args[1]);
-    mp_obj_t len = mp_obj_len_maybe(iter);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = MP_OBJ_NULL;
-    mp_obj_t self_out;
 
     if (n_args > 2) {
         value = args[2];
     }
 
+    // optimisation to allocate result based on len of argument
+    mp_obj_t self_out;
+    mp_obj_t len = mp_obj_len_maybe(args[1]);
     if (len == MP_OBJ_NULL) {
         /* object's type doesn't have a __len__ slot */
         self_out = mp_obj_new_dict(0);
