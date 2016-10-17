@@ -34,12 +34,14 @@ def f():
     # subscript
     p = b[0]
     b[0] = p
+    b[0] += p
 
     # slice
     a = b[::]
 
     # sequenc unpacking
     a, b = c
+    a, *a = a
 
     # tuple swapping
     a, b = b, a
@@ -79,6 +81,7 @@ def f():
         b
     while not a:
         b
+    a = a or a
 
     # for loop
     for a in b:
@@ -92,6 +95,11 @@ def f():
         b
     finally:
         c
+    while a:
+        try:
+            break
+        except:
+            pass
 
     # with
     with a:
@@ -117,6 +125,12 @@ def f():
     return
     return 1
 
+# function with lots of locals
+def f():
+    l1 = l2 = l3 = l4 = l5 = l6 = l7 = l8 = l9 = l10 = 1
+    m1 = m2 = m3 = m4 = m5 = m6 = m7 = m8 = m9 = m10 = 2
+    l10 + m10
+
 # functions with default args
 def f(a=1):
     pass
@@ -133,3 +147,6 @@ def f():
 # class
 class Class:
     pass
+
+# delete name
+del Class
