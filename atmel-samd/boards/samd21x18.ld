@@ -63,5 +63,13 @@ SECTIONS
         _ebss = .;
     } >RAM
 
+    /* this just checks there is enough RAM for a minimal stack */
+    .stack :
+    {
+        . = ALIGN(4);
+        . = . + 0x800; /* Reserve a minimum of 2K for the stack. */
+        . = ALIGN(4);
+    } >RAM
+
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
