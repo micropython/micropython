@@ -237,7 +237,6 @@ def run_tests(pyb, tests, args):
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
         skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
-        skip_tests.add('extmod/machine1.py') # raw memory access not supported
         skip_tests.add('extmod/machine_mem.py') # raw memory access not supported
 
         if args.target == 'wipy':
