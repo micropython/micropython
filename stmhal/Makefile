@@ -276,7 +276,6 @@ all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 ifneq ($(FROZEN_DIR),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 OBJ += $(BUILD)/frozen-files.o
-MAKE_FROZEN = ../tools/make-frozen.py
 
 $(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
 	$(call compile_c)

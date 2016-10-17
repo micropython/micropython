@@ -40,18 +40,27 @@ SRC_C = \
 SRC_TEST_C = \
 	test_main.c \
 
+STM_SRC_C = $(addprefix stmhal/,\
+	pybstdio.c \
+	)
+
 SRC_S = \
 
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 
 OBJ_TEST =
 OBJ_TEST += $(PY_O)
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ_TEST += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ_TEST += $(BUILD)/tinytest.o
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(STM_SRC_C)
 
 all: run
 

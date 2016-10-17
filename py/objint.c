@@ -294,19 +294,19 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
+    mp_raise_msg(&mp_type_OverflowError, "long int not supported in this build");
     return mp_const_none;
 }
 
 // This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 
 // This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 
@@ -316,7 +316,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 
@@ -342,7 +342,7 @@ mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 

@@ -239,7 +239,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     } else {
         // positional and keyword arguments
         if (mp_obj_get_type(args[2]) != &mp_type_dict) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "expecting a dict for keyword args"));
+            mp_raise_msg(&mp_type_TypeError, "expecting a dict for keyword args");
         }
         mp_map_t *map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[2]))->map;
         th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);

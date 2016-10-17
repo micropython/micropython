@@ -21,6 +21,10 @@ print(array.array('i'))
 print(bool(array.array('i')))
 print(bool(array.array('i', [1])))
 
+# containment, with incorrect type
+print('12' in array.array('B', b'12'))
+print([] in array.array('B', b'12'))
+
 # bad typecode
 try:
     array.array('X')

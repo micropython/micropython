@@ -860,6 +860,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_UERRNO (0)
 #endif
 
+// Whether to provide "utime" module functions implementation
+// in terms of mp_hal_* functions.
+#ifndef MICROPY_PY_UTIME_MP_HAL
+#define MICROPY_PY_UTIME_MP_HAL (0)
+#endif
+
 // Whether to provide "_thread" module
 #ifndef MICROPY_PY_THREAD
 #define MICROPY_PY_THREAD (0)
