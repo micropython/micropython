@@ -26,8 +26,8 @@ print({1:1} == {2:1})
 # value not found
 try:
     {}[0]
-except KeyError:
-    print('KeyError')
+except KeyError as er:
+    print('KeyError', er, repr(er), er.args)
 
 # unsupported unary op
 try:
