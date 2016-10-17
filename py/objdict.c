@@ -162,7 +162,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
     } else {
         return elem->value;
     }
@@ -178,7 +178,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
         mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
         } else {
             return elem->value;
         }
@@ -283,7 +283,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
         if (deflt == MP_OBJ_NULL) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, key));
             } else {
                 value = mp_const_none;
             }
