@@ -9,6 +9,12 @@ try:
 except SyntaxError:
     print('SyntaxError')
 
+# store to exception attribute is not allowed
+try:
+    ValueError().x = 0
+except AttributeError:
+    print('AttributeError')
+
 # array deletion not implemented
 try:
     a = array.array('b', (1, 2, 3))
@@ -20,6 +26,12 @@ except TypeError:
 try:
     a = array.array('b', (1, 2, 3))
     print(a[3:2:2])
+except NotImplementedError:
+    print('NotImplementedError')
+
+# containment, looking for integer not implemented
+try:
+    print(1 in array.array('B', b'12'))
 except NotImplementedError:
     print('NotImplementedError')
 
@@ -62,6 +74,12 @@ except NotImplementedError:
 # str.endswith(s, start) not implemented
 try:
     'abc'.endswith('c', 1)
+except NotImplementedError:
+    print('NotImplementedError')
+
+# str subscr with step!=1 not implemented
+try:
+    print('abc'[1:2:3])
 except NotImplementedError:
     print('NotImplementedError')
 
