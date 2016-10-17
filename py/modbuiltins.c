@@ -178,7 +178,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         str[3] = (c & 0x3F) | 0x80;
         len = 4;
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
+        mp_raise_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)");
     }
     return mp_obj_new_str(str, len, true);
     #else
@@ -187,7 +187,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         char str[1] = {ord};
         return mp_obj_new_str(str, 1, true);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(256)"));
+        mp_raise_msg(&mp_type_ValueError, "chr() arg not in range(256)");
     }
     #endif
 }
@@ -286,7 +286,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
             if (default_elem != NULL) {
                 best_obj = default_elem->value;
             } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "arg is an empty sequence"));
+                mp_raise_msg(&mp_type_ValueError, "arg is an empty sequence");
             }
         }
         return best_obj;
@@ -507,8 +507,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
 STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args > 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                                          "must use keyword argument for key function"));
+        mp_raise_msg(&mp_type_TypeError, "must use keyword argument for key function");
     }
     mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);

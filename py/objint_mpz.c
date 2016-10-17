@@ -234,8 +234,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                     zero_division_error:
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError,
-                        "division by zero"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
                 }
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
@@ -272,7 +271,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                    mp_raise_msg(&mp_type_ValueError, "negative shift count");
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -398,7 +397,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
             return value;
         } else {
             // overflow
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "overflow converting long int to machine word"));
+            mp_raise_msg(&mp_type_OverflowError, "overflow converting long int to machine word");
         }
     }
 }

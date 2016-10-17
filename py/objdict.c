@@ -343,7 +343,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_uint_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     if (next == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
+        mp_raise_msg(&mp_type_KeyError, "popitem(): dictionary is empty");
     }
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};
@@ -385,9 +385,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
                 if (key == MP_OBJ_STOP_ITERATION
                     || value == MP_OBJ_STOP_ITERATION
                     || stop != MP_OBJ_STOP_ITERATION) {
-                    nlr_raise(mp_obj_new_exception_msg(
-                                 &mp_type_ValueError,
-                                 "dictionary update sequence has the wrong length"));
+                    mp_raise_msg(&mp_type_ValueError, "dictionary update sequence has the wrong length");
                 } else {
                     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
                 }
