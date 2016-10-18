@@ -20,7 +20,7 @@ PHDRS
     irom0_0_phdr PT_LOAD;
 }
 
-ENTRY(call_user_start)
+ENTRY(firmware_start)
 EXTERN(_DebugExceptionVector)
 EXTERN(_DoubleExceptionVector)
 EXTERN(_KernelExceptionVector)

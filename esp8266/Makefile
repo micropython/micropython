@@ -65,6 +65,7 @@ SRC_C = \
 	main.c \
 	help.c \
 	esp_mphal.c \
+	esp_init_data.c \
 	gccollect.c \
 	lexerstr32.c \
 	uart.c \
