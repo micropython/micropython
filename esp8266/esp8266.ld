@@ -130,6 +130,7 @@ SECTIONS
 
         *stmhal/pybstdio.o(.literal*, .text*)
 
+        build/main.o(.literal* .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
         *help.o(.literal* .text*)
