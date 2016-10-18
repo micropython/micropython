@@ -55,18 +55,20 @@ Ctrl_status vfs_test_unit_ready(void)
 }
 
 //! This function returns the address of the last valid sector
-//! @param uint32_t_nb_sector  Pointer to number of sectors (sector=512 bytes)
+//! @param uint32_t_nb_sector  Pointer to the last valid sector (sector=512 bytes)
 //! @return                            Ctrl_status
 //!   It is ready                ->    CTRL_GOOD
 //!   Memory unplug              ->    CTRL_NO_PRESENT
 //!   Not initialized or changed ->    CTRL_BUSY
 //!   An error occurred          ->    CTRL_FAIL
-Ctrl_status vfs_read_capacity(uint32_t *uint32_t_nb_sector)
+Ctrl_status vfs_read_capacity(uint32_t *last_valid_sector)
 {
-    if (disk_ioctl(VFS_INDEX, GET_SECTOR_COUNT, uint32_t_nb_sector) != RES_OK) {
+    if (disk_ioctl(VFS_INDEX, GET_SECTOR_COUNT, last_valid_sector) != RES_OK) {
         return CTRL_FAIL;
     }
-	return CTRL_GOOD;
+    // Subtract one from the sector count to get the last valid sector.
+    (*last_valid_sector)--;
+    return CTRL_GOOD;
 }
 
 //! This function returns the write-protected mode

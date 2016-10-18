@@ -29,6 +29,7 @@
 
 #include "asf/sam0/drivers/sercom/spi/spi.h"
 
+#include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
@@ -38,7 +39,7 @@
 
 #include "spi_flash.h"
 
-#define SPI_FLASH_PART1_START_BLOCK (0x100)
+#define SPI_FLASH_PART1_START_BLOCK (0x1)
 
 #define NO_SECTOR_LOADED 0xFFFFFFFF
 
@@ -64,28 +65,36 @@ static uint32_t sector_size;
 // The page size. Its the maximum number of bytes that can be written at once.
 static uint32_t page_size;
 
-// The currently cached sector in the scratch flash space.
+// The currently cached sector in the cache, ram or flash based.
 static uint32_t current_sector;
 
-// A sector is made up of 8 blocks. This tracks which of those blocks in the
-// current sector current live in the scratch sector.
-static uint8_t dirty_mask;
+// Track which blocks (up to 32) in the current sector currently live in the
+// cache.
+static uint32_t dirty_mask;
 
+// We use this when we can allocate the whole cache in RAM.
+static uint8_t** ram_cache;
+
+// Address of the scratch flash sector.
 #define SCRATCH_SECTOR (flash_size - sector_size)
 
+// Enable the flash over SPI.
 static void flash_enable() {
     port_pin_set_output_level(SPI_FLASH_CS, false);
 }
 
+// Disable the flash over SPI.
 static void flash_disable() {
     port_pin_set_output_level(SPI_FLASH_CS, true);
 }
 
+// Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready() {
     uint8_t status_request[2] = {CMD_READ_STATUS, 0x00};
     uint8_t response[2] = {0x00, 0x01};
     enum status_code status = STATUS_OK;
-    while (status == STATUS_OK && (response[1] & 0x1) == 1) {
+    // Both the write enable and write in progress bits should be low.
+    while (status == STATUS_OK && ((response[1] & 0x1) == 1 || (response[1] & 0x2) == 2)) {
         flash_enable();
         status = spi_transceive_buffer_wait(&spi_flash_instance, status_request, response, 2);
         flash_disable();
@@ -93,6 +102,7 @@ static bool wait_for_flash_ready() {
     return status == STATUS_OK;
 }
 
+// Turn on the write enable bit so we can program and erase the flash.
 static bool write_enable() {
     flash_enable();
     uint8_t command = CMD_ENABLE_WRITE;
@@ -101,12 +111,14 @@ static bool write_enable() {
     return status == STATUS_OK;
 }
 
+// Pack the low 24 bits of the address into a uint8_t array.
 static void address_to_bytes(uint32_t address, uint8_t* bytes) {
     bytes[0] = (address >> 16) & 0xff;
     bytes[1] = (address >> 8) & 0xff;
     bytes[2] = address & 0xff;
 }
 
+// Read data_length's worth of bytes starting at address into data.
 static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
     wait_for_flash_ready();
     enum status_code status;
@@ -122,7 +134,9 @@ static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
     return status == STATUS_OK;
 }
 
-// Assumes that the sector that address resides in has already been erased.
+// Writes data_length's worth of bytes starting at address from data. Assumes
+// that the sector that address resides in has already been erased. So make sure
+// to run erase_sector.
 static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_length) {
     if (page_size == 0) {
         return false;
@@ -149,12 +163,12 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
     return true;
 }
 
-// Sector is really 24 bits.
+// Erases the given sector. Make sure you copied all of the data out of it you
+// need! Also note, sector_address is really 24 bits.
 static bool erase_sector(uint32_t sector_address) {
     // Before we erase the sector we need to wait for any writes to finish and
-    // and then enable the write again. For good measure we check that the flash
-    // is ready after enabling the write too.
-    if (!wait_for_flash_ready() || !write_enable() || !wait_for_flash_ready()) {
+    // and then enable the write again.
+    if (!wait_for_flash_ready() || !write_enable()) {
         return false;
     }
 
@@ -221,25 +235,27 @@ void spi_flash_init(void) {
 
         current_sector = NO_SECTOR_LOADED;
         dirty_mask = 0;
+        ram_cache = NULL;
 
         spi_flash_is_initialised = true;
     }
 }
 
+// The size of each individual block.
 uint32_t spi_flash_get_block_size(void) {
     return FLASH_BLOCK_SIZE;
 }
 
+// The total number of available blocks.
 uint32_t spi_flash_get_block_count(void) {
-    // We subtract on erase sector size because we're going to use it as a
-    // staging area for writes.
+    // We subtract one erase sector size because we may use it as a staging area
+    // for writes.
     return SPI_FLASH_PART1_START_BLOCK + (flash_size - sector_size) / FLASH_BLOCK_SIZE;
 }
 
-void spi_flash_flush(void) {
-    if (current_sector == NO_SECTOR_LOADED) {
-        return;
-    }
+// Flush the cache that was written to the scratch portion of flash. Only used
+// when ram is tight.
+static bool flush_scratch_flash() {
     // First, copy out any blocks that we haven't touched from the sector we've
     // cached.
     bool copy_to_scratch_ok = true;
@@ -253,7 +269,7 @@ void spi_flash_flush(void) {
     if (!copy_to_scratch_ok) {
         // TODO(tannewt): Do more here. We opted to not erase and copy bad data
         // in. We still risk losing the data written to the scratch sector.
-        return;
+        return false;
     }
     // Second, erase the current sector.
     erase_sector(current_sector);
@@ -262,10 +278,123 @@ void spi_flash_flush(void) {
         copy_block(SCRATCH_SECTOR + i * FLASH_BLOCK_SIZE,
                    current_sector + i * FLASH_BLOCK_SIZE);
     }
+    return true;
+}
+
+// Attempts to allocate a new set of page buffers for caching a full sector in
+// ram. Each page is allocated separately so that the GC doesn't need to provide
+// one huge block. We can free it as we write if we want to also.
+static bool allocate_ram_cache() {
+    uint8_t blocks_per_sector = sector_size / FLASH_BLOCK_SIZE;
+    uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+    ram_cache = gc_alloc(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
+    if (ram_cache == NULL) {
+        return false;
+    }
+    // Declare i and j outside the loops in case we fail to allocate everything
+    // we need. In that case we'll give it back.
+    int i = 0;
+    int j = 0;
+    bool success = true;
+    for (i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
+        for (int j = 0; j < pages_per_block; j++) {
+            uint8_t *page_cache = gc_alloc(page_size, false);
+            if (page_cache == NULL) {
+                success = false;
+                break;
+            }
+            ram_cache[i * pages_per_block + j] = page_cache;
+        }
+        if (!success) {
+            break;
+        }
+    }
+    // We couldn't allocate enough so give back what we got.
+    if (!success) {
+        for (; i >= 0; i--) {
+            for (; j >= 0; j--) {
+                gc_free(ram_cache[i * pages_per_block + j]);
+            }
+            j = pages_per_block - 1;
+        }
+        gc_free(ram_cache);
+        ram_cache = NULL;
+    }
+    return success;
+}
+
+// Flush the cached sector from ram onto the flash. We'll free the cache unless
+// keep_cache is true.
+static bool flush_ram_cache(bool keep_cache) {
+    // First, copy out any blocks that we haven't touched from the sector
+    // we've cached. If we don't do this we'll erase the data during the sector
+    // erase below.
+    bool copy_to_ram_ok = true;
+    uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+    for (int i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
+        if ((dirty_mask & (1 << i)) == 0) {
+            for (int j = 0; j < pages_per_block; j++) {
+                copy_to_ram_ok = read_flash(
+                    current_sector + (i * pages_per_block + j) * page_size,
+                    ram_cache[i * pages_per_block + j],
+                    page_size);
+                if (!copy_to_ram_ok) {
+                    break;
+                }
+            }
+        }
+        if (!copy_to_ram_ok) {
+            break;
+        }
+    }
+
+    if (!copy_to_ram_ok) {
+        return false;
+    }
+    // Second, erase the current sector.
+    erase_sector(current_sector);
+    // Lastly, write all the data in ram that we've cached.
+    for (int i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
+        for (int j = 0; j < pages_per_block; j++) {
+            write_flash(current_sector + (i * pages_per_block + j) * page_size,
+                        ram_cache[i * pages_per_block + j],
+                        page_size);
+            if (!keep_cache) {
+                gc_free(ram_cache[i * pages_per_block + j]);
+            }
+        }
+    }
+    // We're done with the cache for now so give it back.
+    if (!keep_cache) {
+        gc_free(ram_cache);
+        ram_cache = NULL;
+    }
+    return true;
+}
+
+// Delegates to the correct flash flush method depending on the existing cache.
+static void spi_flash_flush_keep_cache(bool keep_cache) {
+    if (current_sector == NO_SECTOR_LOADED) {
+        return;
+    }
+    // If we've cached to the flash itself flush from there.
+    if (ram_cache == NULL) {
+        flush_scratch_flash();
+    } else {
+        flush_ram_cache(keep_cache);
+    }
     current_sector = NO_SECTOR_LOADED;
 }
 
-static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_block, uint32_t num_blocks) {
+// External flash function used. If called externally we assume we won't need
+// the cache after.
+void spi_flash_flush(void) {
+    spi_flash_flush_keep_cache(false);
+}
+
+// Builds a partition entry for the MBR.
+static void build_partition(uint8_t *buf, int boot, int type,
+                            uint32_t start_block, uint32_t num_blocks) {
     buf[0] = boot;
 
     if (num_blocks == 0) {
@@ -312,15 +441,15 @@ static uint32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
-    //printf("RD %u\n", block);
     if (block == 0) {
-        // fake the MBR so we can decide on our own partition table
-
+        // Fake the MBR so we can decide on our own partition table
         for (int i = 0; i < 446; i++) {
             dest[i] = 0;
         }
 
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */, SPI_FLASH_PART1_START_BLOCK, spi_flash_get_block_count() - SPI_FLASH_PART1_START_BLOCK);
+        build_partition(dest + 446, 0, 0x01 /* FAT12 */,
+                        SPI_FLASH_PART1_START_BLOCK,
+                        spi_flash_get_block_count() - SPI_FLASH_PART1_START_BLOCK);
         build_partition(dest + 462, 0, 0, 0, 0);
         build_partition(dest + 478, 0, 0, 0, 0);
         build_partition(dest + 494, 0, 0, 0, 0);
@@ -329,9 +458,11 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
         dest[511] = 0xaa;
 
         return true;
-
+    } else if (block < SPI_FLASH_PART1_START_BLOCK) {
+        memset(dest, 0, FLASH_BLOCK_SIZE);
+        return true;
     } else {
-        // non-MBR block, get data from flash memory
+        // Non-MBR block, get data from flash memory.
         uint32_t src = convert_block_to_flash_addr(block);
         if (src == -1) {
             // bad block number
@@ -342,34 +473,49 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
 }
 
 bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
-    if (block == 0) {
-        // can't write MBR, but pretend we did
+    if (block < SPI_FLASH_PART1_START_BLOCK) {
+        // Fake writing below the flash partition.
         return true;
-
     } else {
-        // non-MBR block, copy to cache
-        volatile uint32_t address = convert_block_to_flash_addr(block);
+        // Non-MBR block, copy to cache
+        uint32_t address = convert_block_to_flash_addr(block);
         if (address == -1) {
             // bad block number
             return false;
         }
         // Wait for any previous writes to finish.
         wait_for_flash_ready();
+        // Mask out the lower bits that designate the address within the sector.
         uint32_t this_sector = address & (~(sector_size - 1));
-        uint8_t block_index = block % (sector_size / FLASH_BLOCK_SIZE);
+        uint8_t block_index = (address / FLASH_BLOCK_SIZE) % (sector_size / FLASH_BLOCK_SIZE);
         uint8_t mask = 1 << (block_index);
+        // Flush the cache if we're moving onto a sector our we're writing the
+        // same block again.
         if (current_sector != this_sector || (mask & dirty_mask) > 0) {
             if (current_sector != NO_SECTOR_LOADED) {
-                spi_flash_flush();
+                spi_flash_flush_keep_cache(true);
             }
-            erase_sector(SCRATCH_SECTOR);
+            if (ram_cache == NULL && !allocate_ram_cache()) {
+                erase_sector(SCRATCH_SECTOR);
+                wait_for_flash_ready();
+            }
             current_sector = this_sector;
             dirty_mask = 0;
-            wait_for_flash_ready();
         }
-        uint32_t scratch_address = SCRATCH_SECTOR + block_index * FLASH_BLOCK_SIZE;
         dirty_mask |= mask;
-        return write_flash(scratch_address, data, FLASH_BLOCK_SIZE);
+        // Copy the block to the appropriate cache.
+        if (ram_cache != NULL) {
+            uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+            for (int i = 0; i < pages_per_block; i++) {
+                memcpy(ram_cache[block_index * pages_per_block + i],
+                       data + i * page_size,
+                       page_size);
+            }
+            return true;
+        } else {
+            uint32_t scratch_address = SCRATCH_SECTOR + block_index * FLASH_BLOCK_SIZE;
+            return write_flash(scratch_address, data, FLASH_BLOCK_SIZE);
+        }
     }
 }
 

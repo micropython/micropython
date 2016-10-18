@@ -10,6 +10,7 @@
 #include "py/gc.h"
 
 #include "lib/fatfs/ff.h"
+#include "lib/fatfs/diskio.h"
 #include "lib/utils/pyexec.h"
 #include "extmod/fsusermount.h"
 
@@ -160,6 +161,12 @@ static char *stack_top;
 static char heap[16384];
 
 void reset_mp() {
+    // Sync the file systems in case any used RAM from the GC to cache. As soon
+    // as we re-init the GC all bets are off on the cache.
+    disk_ioctl(0, CTRL_SYNC, NULL);
+    disk_ioctl(1, CTRL_SYNC, NULL);
+    disk_ioctl(2, CTRL_SYNC, NULL);
+
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
@@ -185,9 +192,6 @@ int main(int argc, char **argv) {
     samd21_init();
     #endif
 
-    // Initialise the local flash filesystem.
-    // Create it if needed, mount in on /flash, and set it as current dir.
-    init_flash_fs();
 
     int stack_dummy;
     // Store the location of stack_dummy as an approximation for the top of the
@@ -195,6 +199,11 @@ int main(int argc, char **argv) {
     // stack between here and where gc_collect is called.
     stack_top = (char*)&stack_dummy;
     reset_mp();
+
+    // Initialise the local flash filesystem after the gc in case we need to
+    // grab memory from it. Create it if needed, mount in on /flash, and set it
+    // as current dir.
+    init_flash_fs();
 
     // Start USB after getting everything going.
     #ifdef USB_REPL
