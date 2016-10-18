@@ -13,7 +13,7 @@ extern const mp_obj_type_t pyb_spi_type;
 extern const mp_obj_type_t pyb_hspi_type;
 extern const mp_obj_type_t machine_spi_type;
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_info_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_info_obj);
 
 typedef struct _pyb_pin_obj_t {
     mp_obj_base_t base;

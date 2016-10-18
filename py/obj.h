@@ -270,7 +270,13 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
 // These macros are used to declare and define constant function objects
 // You can put "static" in front of the definitions to make them local
 
-#define MP_DECLARE_CONST_FUN_OBJ(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_0(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_1(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_2(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_3(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_VAR(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(obj_name) extern const mp_obj_fun_builtin_t obj_name
+#define MP_DECLARE_CONST_FUN_OBJ_KW(obj_name) extern const mp_obj_fun_builtin_t obj_name
 
 #define MP_DEFINE_CONST_FUN_OBJ_0(obj_name, fun_name) \
     const mp_obj_fun_builtin_t obj_name = \
@@ -760,7 +766,7 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun);
 qstr mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);
-MP_DECLARE_CONST_FUN_OBJ(mp_identity_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 
 // module
 typedef struct _mp_obj_module_t {
