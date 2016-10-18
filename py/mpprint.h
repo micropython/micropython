@@ -40,9 +40,9 @@
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
 
 #if MICROPY_PY_IO
-#    define MP_PRINT mp_sys_stdout_print
+#    define MP_PRINTER &mp_sys_stdout_print
 #else
-#    define MP_PRINT mp_plat_print
+#    define MP_PRINTER &mp_plat_print
 #endif
 
 typedef void (*mp_print_strn_t)(void *data, const char *str, size_t len);
