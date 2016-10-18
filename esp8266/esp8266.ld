@@ -132,6 +132,7 @@ SECTIONS
 
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
+        *help.o(.literal* .text*)
         *lexerstr32.o(.literal* .text*)
         *utils.o(.literal* .text*)
         *modpyb.o(.literal*, .text*)
