@@ -238,8 +238,8 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     }
 
     // init the GPIO lines
-    mp_hal_gpio_set_af(scl_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
-    mp_hal_gpio_set_af(sda_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
+    mp_hal_pin_set_af(scl_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
+    mp_hal_pin_set_af(sda_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
 
     // init the I2C device
     if (HAL_I2C_Init(i2c) != HAL_OK) {
