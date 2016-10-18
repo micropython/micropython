@@ -35,12 +35,23 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // timing functions
+
 #include "stmhal/systick.h"
+
 #define mp_hal_delay_ms HAL_Delay
 #define mp_hal_delay_us(us) sys_tick_udelay(us)
 #define mp_hal_delay_us_fast(us) sys_tick_udelay(us)
 #define mp_hal_ticks_ms HAL_GetTick
 #define mp_hal_ticks_us() sys_tick_get_microseconds()
+
+extern bool mp_hal_ticks_cpu_enabled;
+void mp_hal_ticks_cpu_enable(void);
+static inline mp_uint_t mp_hal_ticks_cpu(void) {
+    if (!mp_hal_ticks_cpu_enabled) {
+        mp_hal_ticks_cpu_enable();
+    }
+    return DWT->CYCCNT;
+}
 
 // C-level pin HAL
 #include "stmhal/pin.h"

@@ -7,6 +7,8 @@
 #include "usb.h"
 #include "uart.h"
 
+bool mp_hal_ticks_cpu_enabled = false;
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
@@ -68,6 +70,15 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);
+    }
+}
+
+void mp_hal_ticks_cpu_enable(void) {
+    if (!mp_hal_ticks_cpu_enabled) {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        DWT->CYCCNT = 0;
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        mp_hal_ticks_cpu_enabled = true;
     }
 }
 
