@@ -38,30 +38,29 @@
 //| =================================================
 //|
 //| .. module:: machine
-//|    :synopsis: functions related to the board
+//|   :synopsis: functions related to the board
+//|   :platform: SAMD21
 //|
 //| The ``machine`` module contains specific functions related to the board.
 //|
-//| This is soon to be renamed to distinguish it from upstream's machine!
+//| This is soon to be renamed to distinguish it from upstream's `machine`!
 //|
-//| .. currentmodule:: machine
+//| :class:`I2C` --- Two wire serial protocol
+//| ------------------------------------------
 //|
-//| class I2C -- a two-wire serial protocol
-//| =======================================
-//|
-//| I2C is a two-wire protocol for communicating between devices.  At the
-//| physical level it consists of 2 wires: SCL and SDA, the clock and data lines
-//| respectively.
-//|
-//| I2C objects are created attached to a specific bus.  They can be initialised
-//| when created, or initialised later on.
-//|
-//| Constructors
-//| ------------
 //| .. class:: I2C(scl, sda, \*, freq=400000)
 //|
-//|   Construct and return a new I2C object.
-//|   See the init method below for a description of the arguments.
+//|   I2C is a two-wire protocol for communicating between devices.  At the
+//|   physical level it consists of 2 wires: SCL and SDA, the clock and data lines
+//|   respectively.
+//|
+//|   I2C objects are created attached to a specific bus.  They can be initialised
+//|   when created, or initialised later on.
+//|
+//|   :param str scl: The clock pin
+//|   :param str sda: The data pin
+//|   :param int freq: The clock frequency
+//|
 STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
    machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
@@ -83,7 +82,11 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
    return (mp_obj_t)self;
 }
 
-//| .. method:: I2C.init()
+//|   .. method:: I2C.init()
+//|
+//|     Initializes control of the underlying hardware so other classes cannot
+//|     use it.
+//|
 STATIC mp_obj_t machine_i2c_obj_init(mp_obj_t self_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_hal_i2c_init(self);
@@ -91,7 +94,10 @@ STATIC mp_obj_t machine_i2c_obj_init(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_init_obj, machine_i2c_obj_init);
 
-//| .. method:: I2C.deinit()
+//|   .. method:: I2C.deinit()
+//|
+//|     Releases control of the underlying hardware so other classes can use it.
+//|
 STATIC mp_obj_t machine_i2c_obj_deinit(mp_obj_t self_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_hal_i2c_deinit(self);
@@ -106,11 +112,11 @@ STATIC mp_obj_t machine_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_obj___exit___obj, 4, 4, machine_i2c_obj___exit__);
 
-//| .. method:: I2C.scan()
+//|   .. method:: I2C.scan()
 //|
-//|    Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
-//|    those that respond.  A device responds if it pulls the SDA line low after
-//|    its address (including a read bit) is sent on the bus.
+//|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
+//|      those that respond.  A device responds if it pulls the SDA line low after
+//|      its address (including a read bit) is sent on the bus.
 //|
 STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -126,16 +132,14 @@ STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_scan_obj, machine_i2c_scan);
 
-//| Standard bus operations
-//| -----------------------
+//|   .. method:: I2C.readfrom(addr, nbytes)
 //|
-//| The following methods implement the standard I2C master read and write
-//| operations that target a given slave device.
+//|      Read `nbytes` from the slave specified by `addr`.
 //|
-//| .. method:: I2C.readfrom(addr, nbytes)
-//|
-//|    Read `nbytes` from the slave specified by `addr`.
-//|    Returns a `bytes` object with the data read.
+//|     :param int addr: The 7 bit address of the device
+//|     :param int nbytes: The number of bytes to read
+//|     :return: the data read
+//|     :rtype: bytes
 //|
 STATIC mp_obj_t machine_i2c_readfrom(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t nbytes_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -146,13 +150,10 @@ STATIC mp_obj_t machine_i2c_readfrom(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_readfrom_obj, machine_i2c_readfrom);
 
-//| .. method:: I2C.readfrom_into(addr, buf)
+//|   .. method:: I2C.readfrom_into(addr, buf)
 //|
-//|    Read into `buf` from the slave specified by `addr`.
-//|    The number of bytes read will be the length of `buf`.
-//|
-//|    On WiPy the return value is the number of bytes read.  Otherwise the
-//|    return value is `None`.
+//|      Read into `buf` from the slave specified by `addr`.
+//|      The number of bytes read will be the length of `buf`.
 //|
 STATIC mp_obj_t machine_i2c_readfrom_into(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t buf_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -163,9 +164,9 @@ STATIC mp_obj_t machine_i2c_readfrom_into(mp_obj_t self_in, mp_obj_t addr_in, mp
 }
 MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_readfrom_into_obj, machine_i2c_readfrom_into);
 
-//| .. method:: I2C.writeto(addr, buf)
+//|   .. method:: I2C.writeto(addr, buf)
 //|
-//|    Write the bytes from `buf` to the slave specified by `addr`.
+//|      Write the bytes from `buf` to the slave specified by `addr`.
 //|
 STATIC mp_obj_t machine_i2c_writeto(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t buf_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -176,22 +177,13 @@ STATIC mp_obj_t machine_i2c_writeto(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_writeto_obj, machine_i2c_writeto);
 
-//| Memory operations
-//| -----------------
+//|   .. method:: I2C.readfrom_mem(addr, memaddr, nbytes, \*, addrsize=8)
 //|
-//| Some I2C devices act as a memory device (or set of registers) that can be
-//| read from and written to.  In this case there are two addresses associated
-//| with an I2C transaction: the slave address and the memory address.  The following
-//| following methods are convenience functions to communicate with such
-//| devices.
-//|
-//| .. method:: I2C.readfrom_mem(addr, memaddr, nbytes, \*, addrsize=8)
-//|
-//|    Read `nbytes` from the slave specified by `addr` starting from the memory
-//|    address specified by `memaddr`.
-//|    The argument `addrsize` specifies the address size in bits (on ESP8266
-//|    this argument is not recognised and the address size is always 8 bits).
-//|    Returns a `bytes` object with the data read.
+//|      Read `nbytes` from the slave specified by `addr` starting from the memory
+//|      address specified by `memaddr`.
+//|      The argument `addrsize` specifies the address size in bits (on ESP8266
+//|      this argument is not recognised and the address size is always 8 bits).
+//|      Returns a `bytes` object with the data read.
 //|
 STATIC mp_obj_t machine_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_addr, ARG_memaddr, ARG_n, ARG_addrsize };
@@ -216,16 +208,13 @@ STATIC mp_obj_t machine_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_obj, 1, machine_i2c_readfrom_mem);
 
 
-//| .. method:: I2C.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
+//|   .. method:: I2C.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
 //|
-//|    Read into `buf` from the slave specified by `addr` starting from the
-//|    memory address specified by `memaddr`.  The number of bytes read is the
-//|    length of `buf`.
-//|    The argument `addrsize` specifies the address size in bits (on ESP8266
-//|    this argument is not recognised and the address size is always 8 bits).
-//|
-//|    On WiPy the return value is the number of bytes read.  Otherwise the
-//|    return value is `None`.
+//|      Read into `buf` from the slave specified by `addr` starting from the
+//|      memory address specified by `memaddr`.  The number of bytes read is the
+//|      length of `buf`.
+//|      The argument `addrsize` specifies the address size in bits (on ESP8266
+//|      this argument is not recognised and the address size is always 8 bits).
 //|
 STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize };
@@ -249,15 +238,12 @@ STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_into_obj, 1, machine_i2c_readfrom_mem_into);
 
-//| .. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
+//|   .. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
 //|
-//|    Write `buf` to the slave specified by `addr` starting from the
-//|    memory address specified by `memaddr`.
-//|    The argument `addrsize` specifies the address size in bits (on ESP8266
-//|    this argument is not recognised and the address size is always 8 bits).
-//|
-//|    On WiPy the return value is the number of bytes written.  Otherwise the
-//|    return value is `None`.
+//|      Write `buf` to the slave specified by `addr` starting from the
+//|      memory address specified by `memaddr`.
+//|      The argument `addrsize` specifies the address size in bits (on ESP8266
+//|      this argument is not recognised and the address size is always 8 bits).
 //|
 STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize };
@@ -309,31 +295,29 @@ const mp_obj_type_t machine_i2c_type = {
    .locals_dict = (mp_obj_dict_t*)&machine_i2c_locals_dict,
 };
 
-//| class SPI -- a master-driven serial protocol
-//| ============================================
+//| :class:`SPI` -- a 3-4 wire serial protocol
+//| -----------------------------------------------
 //|
-//| SPI is a serial protocol that is driven by a master.  This class only
-//| manages three of the four SPI lines: SCK, MOSI, MISO. Its up to the client
-//| to manage the appropriate slave select line.
+//| SPI is a serial protocol that has exlusive pins for data in and out of the
+//| master.  It is typically faster than `I2C` because a separate pin is used to
+//| control the active slave rather than a transitted address. This class only
+//| manages three of the four SPI lines: `clock`, `MOSI`, `MISO`. Its up to the
+//| client to manage the appropriate slave select line. (This is common because
+//| multiple slaves can share the `clock`, `MOSI` and `MISO` lines and therefore
+//| the hardware.)
 //|
-//| Constructors
-//| ------------
+//| .. class:: SPI(clock, MOSI, MISO, baudrate=1000000)
 //|
-//|   .. class:: SPI(clock, MOSI, MISO, baudrate=1000000)
+//|    Construct an SPI object on the given bus.  ``id`` can be only 0.
+//|    With no additional parameters, the SPI object is created but not
+//|    initialised (it has the settings from the last initialisation of
+//|    the bus, if any).  If extra arguments are given, the bus is initialised.
+//|    See ``init`` for parameters of initialisation.
 //|
-//|      Construct an SPI object on the given bus.  ``id`` can be only 0.
-//|      With no additional parameters, the SPI object is created but not
-//|      initialised (it has the settings from the last initialisation of
-//|      the bus, if any).  If extra arguments are given, the bus is initialised.
-//|      See ``init`` for parameters of initialisation.
-//|
-//|    - ``clock`` is the pin to use for the clock.
-//|    - ``MOSI`` is the  Master Out Slave In pin.
-//|    - ``MISO`` is the Master In Slave Out pin.
-//|    - ``baudrate`` is the SCK clock rate.
-//|
-//| Methods
-//| -------
+//|  - ``clock`` is the pin to use for the clock.
+//|  - ``MOSI`` is the  Master Out Slave In pin.
+//|  - ``MISO`` is the Master In Slave Out pin.
+//|  - ``baudrate`` is the SCK clock rate.
 //|
 
 // TODO(tannewt): Support LSB SPI.
@@ -364,9 +348,9 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
    return (mp_obj_t)self;
 }
 
-//| .. method:: SPI.init()
+//|   .. method:: SPI.init()
 //|
-//|    Initialises the bus.
+//|      Initialises the bus.
 //|
 STATIC mp_obj_t machine_spi_obj_init(mp_obj_t self_in) {
    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -375,9 +359,9 @@ STATIC mp_obj_t machine_spi_obj_init(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_init_obj, machine_spi_obj_init);
 
-//| .. method:: SPI.deinit()
+//|   .. method:: SPI.deinit()
 //|
-//|    Turn off the SPI bus.
+//|      Turn off the SPI bus.
 //|
 STATIC mp_obj_t machine_spi_obj_deinit(mp_obj_t self_in) {
    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -393,11 +377,11 @@ STATIC mp_obj_t machine_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_spi_obj___exit___obj, 4, 4, machine_spi_obj___exit__);
 
-//| .. method:: SPI.write_readinto(write_buf, read_buf)
+//|   .. method:: SPI.write_readinto(write_buf, read_buf)
 //|
-//|     Write from ``write_buf`` and read into ``read_buf``. Both buffers must have the
-//|     same length. This is the same as a SPI transfer function on other platforms.
-//|     Returns the number of bytes written
+//|       Write from ``write_buf`` and read into ``read_buf``. Both buffers must have the
+//|       same length. This is the same as a SPI transfer function on other platforms.
+//|       Returns the number of bytes written
 //|
 STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self_in, mp_obj_t wr_buf, mp_obj_t rd_buf) {
     mp_buffer_info_t src;
@@ -413,15 +397,10 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self_in, mp_obj_t wr_buf,
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj, mp_machine_spi_write_readinto);
 
-//| Helper operations
-//| -----------------
-//| The below operations are finer grained operations based upon ``SPI.write_readinto``.
-//| They may be moved out of the core module later.
+//|   .. method:: SPI.write(buf)
 //|
-//| .. method:: SPI.write(buf)
-//|
-//|     Write the data contained in ``buf``.
-//|     Returns the number of bytes written.
+//|       Write the data contained in ``buf``.
+//|       Returns the number of bytes written.
 //|
 STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     mp_buffer_info_t src;
@@ -432,10 +411,10 @@ STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
 
-//| .. method:: SPI.read(nbytes, *, write=0x00)
+//|   .. method:: SPI.read(nbytes, *, write=0x00)
 //|
-//|     Read the ``nbytes`` while writing the data specified by ``write``.
-//|     Return the number of bytes read.
+//|       Read the ``nbytes`` while writing the data specified by ``write``.
+//|       Return the number of bytes read.
 //|
 STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
@@ -446,11 +425,11 @@ STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_spi_read);
 
-//| .. method:: SPI.readinto(buf, *, write=0x00)
+//|   .. method:: SPI.readinto(buf, *, write=0x00)
 //|
-//|     Read into the buffer specified by ``buf`` while writing the data specified by
-//|     ``write``.
-//|     Return the number of bytes read.
+//|       Read into the buffer specified by ``buf`` while writing the data
+//|       specified by ``write``.
+//|       Return the number of bytes read.
 //|
 STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
