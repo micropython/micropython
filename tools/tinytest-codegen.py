@@ -53,7 +53,7 @@ exclude_tests = (
     'extmod/ujson_dumps_float.py', 'extmod/ujson_loads_float.py',
     'extmod/uctypes_native_float.py', 'extmod/uctypes_le_float.py',
     'extmod/machine_pinbase.py', 'extmod/machine_pulse.py',
-    'extmod/vfs_fat_ramdisk.py',
+    'extmod/vfs_fat_ramdisk.py', 'extmod/vfs_fat_fileio.py',
 )
 
 output = []
