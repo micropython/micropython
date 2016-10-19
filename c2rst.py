@@ -1,7 +1,7 @@
-import sphinx.parsers
+import docutils.parsers
 import docutils.parsers.rst as rst
 
-class CStrip(sphinx.parsers.Parser):
+class CStrip(docutils.parsers.Parser):
   def __init__(self):
     self.rst_parser = rst.Parser()
 
