@@ -76,6 +76,7 @@
 // TODO: I think that as an optimization, we can allocate these dynamically
 //       if an sd card is detected. This will save approx 260 bytes of RAM
 //       when no sdcard was being used.
+static bool sdcard_present = false;
 static SD_HandleTypeDef sd_handle;
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
 
@@ -84,6 +85,29 @@ void sdcard_init(void) {
 
     // invalidate the sd_handle
     sd_handle.Instance = NULL;
+
+    // configure the SD card detect pin
+    // we do this here so we can detect if the SD card is inserted before powering it on
+    GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
+    GPIO_Init_Structure.Speed = GPIO_SPEED_LOW;
+#if defined(MICROPY_HW_SDCARD_DETECT_PIN)
+    // assume a mechanical switch is used
+    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
+    GPIO_Init_Structure.Pin = MICROPY_HW_SDCARD_DETECT_PIN.pin_mask;
+    HAL_GPIO_Init(MICROPY_HW_SDCARD_DETECT_PIN.gpio, &GPIO_Init_Structure);
+#elif defined(MICROPY_HW_SDCARD_DETECT_PULL)
+    // assume no mechanical switch, so assume CD/DAT3 is used for card detect.
+    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
+    GPIO_Init_Structure.Pin = pin_C11.pin_mask;
+    HAL_GPIO_Init(pin_C11.gpio, &GPIO_Init_Structure);
+    // capture sdcard present state before the IO pin is remapped to SDIO functionality
+    sdcard_present = (HAL_GPIO_ReadPin(pin_C11.gpio, pin_C11.pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT);
+    // TODO: do we need to issue ACMD42 (SD_CMD_SD_APP_SET_CLR_CARD_DETECT) to disable the internal pullup resistor?
+#else
+    // SD Card Detect not defined.  Just assume it's there.
+    // TODO: Could probe/check card info to see if it is read ok.
+    sdcard_present = true;
+#endif
 
     // configure SD GPIO
     // we do this here an not in HAL_SD_MspInit because it apparently
@@ -96,16 +120,6 @@ void sdcard_init(void) {
     HAL_GPIO_Init(GPIOC, &GPIO_Init_Structure);
     GPIO_Init_Structure.Pin = GPIO_PIN_2;
     HAL_GPIO_Init(GPIOD, &GPIO_Init_Structure);
-
-    // configure the SD card detect pin
-    // we do this here so we can detect if the SD card is inserted before powering it on
-#ifdef MICROPY_HW_SDCARD_DETECT_PIN
-    GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
-    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Pin = MICROPY_HW_SDCARD_DETECT_PIN.pin_mask;
-    HAL_GPIO_Init(MICROPY_HW_SDCARD_DETECT_PIN.gpio, &GPIO_Init_Structure);
-#endif
 }
 
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
@@ -126,10 +140,10 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd) {
 
 bool sdcard_is_present(void) {
 #ifdef MICROPY_HW_SDCARD_DETECT_PIN
-    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN.gpio, MICROPY_HW_SDCARD_DETECT_PIN.pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
-#else
-    return true;  // assume card is always present if no present detect pin is defined.
+//    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN.gpio, MICROPY_HW_SDCARD_DETECT_PIN.pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
+    sdcard_present = HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN.gpio, MICROPY_HW_SDCARD_DETECT_PIN.pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
 #endif
+    return sdcard_present;
 }
 
 bool sdcard_power_on(void) {
