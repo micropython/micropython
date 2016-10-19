@@ -182,4 +182,6 @@ extern const struct _mp_obj_module_t onewire_module;
 #define MICROPY_HW_MCU_NAME "ESP8266"
 #define MICROPY_PY_SYS_PLATFORM "esp8266"
 
+#define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n
+
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))

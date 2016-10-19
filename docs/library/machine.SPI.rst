@@ -52,7 +52,7 @@ Methods
      - ``pins`` is an optional tuple with the pins to assign to the SPI bus (deprecated, only for WiPy).
      - ``sck``, ``mosi``, ``miso`` are pins (machine.Pin) objects to use for bus signals. For most
        hardware SPI blocks (as selected by ``id`` parameter to the constructore), pins are fixed
-       and cannot be changed. In some cases, hardware blocks allow 2-3 alterbative pin sets for
+       and cannot be changed. In some cases, hardware blocks allow 2-3 alternative pin sets for
        a hardware SPI block. Arbitrary pin assignments are possible only for a bitbanging SPI driver
        (``id``=-1).
 
@@ -60,34 +60,42 @@ Methods
 
    Turn off the SPI bus.
 
+.. method:: SPI.read(nbytes, write=0x00)
+
+    Read a number of bytes specified by ``nbytes`` while continuously writing
+    the single byte given by ``write``.
+    Returns a ``bytes`` object with the data that was read.
+
+.. method:: SPI.readinto(buf, write=0x00)
+
+    Read into the buffer specified by ``buf`` while continuously writing the
+    single byte given by ``write``.
+    Returns ``None``.
+
+    Note: on WiPy this function returns the number of bytes read.
+
 .. method:: SPI.write(buf)
 
-    Write the data contained in ``buf``. 
-    Returns the number of bytes written.
+    Write the bytes contained in ``buf``.
+    Returns ``None``.
 
-.. method:: SPI.read(nbytes, *, write=0x00)
-
-    Read the ``nbytes`` while writing the data specified by ``write``.
-    Return the number of bytes read.
-
-.. method:: SPI.readinto(buf, *, write=0x00)
-
-    Read into the buffer specified by ``buf`` while writing the data specified by
-    ``write``.
-    Return the number of bytes read.
+    Note: on WiPy this function returns the number of bytes written.
 
 .. method:: SPI.write_readinto(write_buf, read_buf)
 
-    Write from ``write_buf`` and read into ``read_buf``. Both buffers must have the
+    Write the bytes from ``write_buf`` while reading into ``read_buf``.  The
+    buffers can be the same or different, but both buffers must have the
     same length.
-    Returns the number of bytes written.
+    Returns ``None``.
+
+    Note: on WiPy this function returns the number of bytes written.
 
 Constants
 ---------
 
 .. data:: SPI.MASTER
 
-   for initialising the SPI bus to master
+   for initialising the SPI bus to master; this is only used for the WiPy
 
 .. data:: SPI.MSB
 

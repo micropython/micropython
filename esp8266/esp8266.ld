@@ -20,7 +20,7 @@ PHDRS
     irom0_0_phdr PT_LOAD;
 }
 
-ENTRY(call_user_start)
+ENTRY(firmware_start)
 EXTERN(_DebugExceptionVector)
 EXTERN(_DoubleExceptionVector)
 EXTERN(_KernelExceptionVector)
@@ -130,8 +130,10 @@ SECTIONS
 
         *stmhal/pybstdio.o(.literal*, .text*)
 
+        build/main.o(.literal* .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)
+        *help.o(.literal* .text*)
         *lexerstr32.o(.literal* .text*)
         *utils.o(.literal* .text*)
         *modpyb.o(.literal*, .text*)
@@ -141,6 +143,7 @@ SECTIONS
         *modpybadc.o(.literal*, .text*)
         *modpybuart.o(.literal*, .text*)
         *modpybi2c.o(.literal*, .text*)
+        *modmachine.o(.literal*, .text*)
         *modmachinewdt.o(.literal*, .text*)
         *modpybspi.o(.literal*, .text*)
         *modpybhspi.o(.literal*, .text*)
@@ -199,7 +202,8 @@ SECTIONS
         *(.entry.text)
         *(.init.literal)
         *(.init)
-        *(.literal .text .literal.* .text.* .stub .gnu.warning .gnu.linkonce.literal.* .gnu.linkonce.t.*.literal .gnu.linkonce.t.*)
+        *(.literal .text .literal.* .text.* .iram0.literal .iram0.text .iram0.text.*.literal .iram0.text.*)
+        *(.stub .gnu.warning .gnu.linkonce.literal.* .gnu.linkonce.t.*.literal .gnu.linkonce.t.*)
         *(.fini.literal)
         *(.fini)
         *(.gnu.version)

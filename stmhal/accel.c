@@ -57,15 +57,9 @@
 #define MMA_AXIS_SIGNED_VALUE(i) (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
 
 void accel_init(void) {
-    GPIO_InitTypeDef GPIO_InitStructure;
-
     // PB5 is connected to AVDD; pull high to enable MMA accel device
-    GPIO_clear_pin(MICROPY_HW_MMA_AVDD_PIN.gpio, MICROPY_HW_MMA_AVDD_PIN.pin_mask); // turn off AVDD
-    GPIO_InitStructure.Pin = MICROPY_HW_MMA_AVDD_PIN.pin_mask;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(MICROPY_HW_MMA_AVDD_PIN.gpio, &GPIO_InitStructure);
+    mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
+    mp_hal_pin_output(&MICROPY_HW_MMA_AVDD_PIN);
 }
 
 STATIC void accel_start(void) {
@@ -81,9 +75,9 @@ STATIC void accel_start(void) {
     i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
-    GPIO_clear_pin(MICROPY_HW_MMA_AVDD_PIN.gpio, MICROPY_HW_MMA_AVDD_PIN.pin_mask); // turn off
+    mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off
     HAL_Delay(30);
-    GPIO_set_pin(MICROPY_HW_MMA_AVDD_PIN.gpio, MICROPY_HW_MMA_AVDD_PIN.pin_mask); // turn on
+    mp_hal_pin_high(&MICROPY_HW_MMA_AVDD_PIN); // turn on
     HAL_Delay(30);
 
     HAL_StatusTypeDef status;

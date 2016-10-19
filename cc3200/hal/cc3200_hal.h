@@ -62,7 +62,6 @@
 extern void HAL_SystemInit (void);
 extern void HAL_SystemDeInit (void);
 extern void HAL_IncrementTick(void);
-extern NORETURN void mp_hal_raise(int errno);
 extern void mp_hal_set_interrupt_char (int c);
 
 #endif /* CC3200_LAUNCHXL_HAL_CC3200_HAL_H_ */

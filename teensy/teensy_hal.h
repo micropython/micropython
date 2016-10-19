@@ -118,7 +118,9 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 
 void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *init);
 
-#define GPIO_read_pin(gpio, pin)        (((gpio)->PDIR >> (pin)) & 1)
-#define GPIO_set_pin(gpio, pin_mask)    (((gpio)->PSOR) = (pin_mask))
-#define GPIO_clear_pin(gpio, pin_mask)  (((gpio)->PCOR) = (pin_mask))
-#define GPIO_read_output_pin(gpio, pin) (((gpio)->PDOR >> (pin)) & 1)
+struct _pin_obj_t;
+#define mp_hal_pin_obj_t const struct _pin_obj_t*
+#define mp_hal_pin_high(p) (((p)->gpio->PSOR) = (p)->pin_mask)
+#define mp_hal_pin_low(p)  (((p)->gpio->PCOR) = (p)->pin_mask)
+#define mp_hal_pin_read(p) (((p)->gpio->PDIR >> (p)->pin) & 1)
+#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)

@@ -131,7 +131,7 @@ STATIC void pybspi_rx (pyb_spi_obj_t *self, void *data) {
 
 STATIC void pybspi_transfer (pyb_spi_obj_t *self, const char *txdata, char *rxdata, uint32_t len, uint32_t *txchar) {
     if (!self->baudrate) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
     // send and receive the data
     MAP_SPICSEnable(GSPI_BASE);
@@ -218,7 +218,7 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *arg
     return mp_const_none;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 static const mp_arg_t pyb_spi_init_args[] = {
@@ -240,7 +240,7 @@ STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     // setup the object
@@ -295,7 +295,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_write_obj, pyb_spi_write);
 STATIC mp_obj_t pyb_spi_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_nbytes,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
-        { MP_QSTR_write,     MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0x00} },
+        { MP_QSTR_write,     MP_ARG_INT, {.u_int = 0x00} },
     };
 
     // parse args
@@ -319,7 +319,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_read_obj, 1, pyb_spi_read);
 STATIC mp_obj_t pyb_spi_readinto(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buf,       MP_ARG_REQUIRED | MP_ARG_OBJ, },
-        { MP_QSTR_write,     MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0x00} },
+        { MP_QSTR_write,     MP_ARG_INT, {.u_int = 0x00} },
     };
 
     // parse args
@@ -357,7 +357,7 @@ STATIC mp_obj_t pyb_spi_write_readinto (mp_obj_t self, mp_obj_t writebuf, mp_obj
         // get the read buffer
         mp_get_buffer_raise(readbuf, &bufinfo_read, MP_BUFFER_WRITE);
         if (bufinfo_read.len != bufinfo_write.len) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
     }
 
