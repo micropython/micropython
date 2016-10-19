@@ -7,4 +7,4 @@ the Atmel SAMD21 port
 .. toctree::
     :maxdepth: 2
 
-    atmel-samd/README.md
+    ../atmel-samd/README

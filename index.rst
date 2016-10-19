@@ -23,6 +23,9 @@ started guides.
     docs/supported_ports.rst
     docs/unsupported_ports.rst
     docs/library/index.rst
+    README
+    CONTRIBUTING
+    CODE_OF_CONDUCT
     license.rst
 
 Indices and tables

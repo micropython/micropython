@@ -16,6 +16,8 @@
 import sys
 import os
 
+from recommonmark.parser import CommonMarkParser
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -47,7 +49,8 @@ templates_path = ['templates']
 # The suffix of source filenames.
 source_suffix = ['.rst', '.md', '.c', '.h']
 
-source_parsers = {'.c': "c2rst.CStrip", '.h': "c2rst.CStrip"}
+source_parsers = {'.md': CommonMarkParser,
+                  '.c': "c2rst.CStrip", '.h': "c2rst.CStrip"}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
