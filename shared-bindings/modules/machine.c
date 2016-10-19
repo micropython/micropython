@@ -34,6 +34,16 @@
 
 #include "py/runtime.h"
 
+//| :mod:`machine` --- functions related to the board
+//| =================================================
+//|
+//| .. module:: machine
+//|    :synopsis: functions related to the board
+//|
+//| The ``machine`` module contains specific functions related to the board.
+//|
+//| This is soon to be renamed to distinguish it from upstream's machine!
+//|
 //| .. currentmodule:: machine
 //|
 //| class I2C -- a two-wire serial protocol
@@ -48,10 +58,10 @@
 //|
 //| Constructors
 //| ------------
-//|     .. class:: I2C(scl, sda, \*, freq=400000)
+//| .. class:: I2C(scl, sda, \*, freq=400000)
 //|
-//|        Construct and return a new I2C object.
-//|        See the init method below for a description of the arguments.
+//|   Construct and return a new I2C object.
+//|   See the init method below for a description of the arguments.
 STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
    machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
@@ -73,7 +83,7 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
    return (mp_obj_t)self;
 }
 
-//|   .. method:: I2C.init()
+//| .. method:: I2C.init()
 STATIC mp_obj_t machine_i2c_obj_init(mp_obj_t self_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_hal_i2c_init(self);
@@ -81,7 +91,7 @@ STATIC mp_obj_t machine_i2c_obj_init(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_init_obj, machine_i2c_obj_init);
 
-//|   .. method:: I2C.deinit()
+//| .. method:: I2C.deinit()
 STATIC mp_obj_t machine_i2c_obj_deinit(mp_obj_t self_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_hal_i2c_deinit(self);
@@ -101,6 +111,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_obj___exit___obj, 4, 4, m
 //|    Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
 //|    those that respond.  A device responds if it pulls the SDA line low after
 //|    its address (including a read bit) is sent on the bus.
+//|
 STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_obj_t list = mp_obj_new_list(0, NULL);
@@ -125,6 +136,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_scan_obj, machine_i2c_scan);
 //|
 //|    Read `nbytes` from the slave specified by `addr`.
 //|    Returns a `bytes` object with the data read.
+//|
 STATIC mp_obj_t machine_i2c_readfrom(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t nbytes_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    vstr_t vstr;
@@ -141,6 +153,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_readfrom_obj, machine_i2c_readfrom);
 //|
 //|    On WiPy the return value is the number of bytes read.  Otherwise the
 //|    return value is `None`.
+//|
 STATIC mp_obj_t machine_i2c_readfrom_into(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t buf_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_buffer_info_t bufinfo;
@@ -153,6 +166,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_readfrom_into_obj, machine_i2c_readfrom_in
 //| .. method:: I2C.writeto(addr, buf)
 //|
 //|    Write the bytes from `buf` to the slave specified by `addr`.
+//|
 STATIC mp_obj_t machine_i2c_writeto(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t buf_in) {
    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_buffer_info_t bufinfo;
@@ -178,6 +192,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_writeto_obj, machine_i2c_writeto);
 //|    The argument `addrsize` specifies the address size in bits (on ESP8266
 //|    this argument is not recognised and the address size is always 8 bits).
 //|    Returns a `bytes` object with the data read.
+//|
 STATIC mp_obj_t machine_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_addr, ARG_memaddr, ARG_n, ARG_addrsize };
    static const mp_arg_t allowed_args[] = {
@@ -211,6 +226,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_obj, 1, machine_i2c_readfrom
 //|
 //|    On WiPy the return value is the number of bytes read.  Otherwise the
 //|    return value is `None`.
+//|
 STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize };
    static const mp_arg_t allowed_args[] = {
@@ -242,6 +258,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_into_obj, 1, machine_i2c_rea
 //|
 //|    On WiPy the return value is the number of bytes written.  Otherwise the
 //|    return value is `None`.
+//|
 STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_addr, ARG_memaddr, ARG_buf, ARG_addrsize };
    static const mp_arg_t allowed_args[] = {
@@ -350,6 +367,7 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
 //| .. method:: SPI.init()
 //|
 //|    Initialises the bus.
+//|
 STATIC mp_obj_t machine_spi_obj_init(mp_obj_t self_in) {
    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_hal_spi_init(self);
@@ -360,6 +378,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_init_obj, machine_spi_obj_init);
 //| .. method:: SPI.deinit()
 //|
 //|    Turn off the SPI bus.
+//|
 STATIC mp_obj_t machine_spi_obj_deinit(mp_obj_t self_in) {
    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
    mp_hal_spi_deinit(self);
@@ -379,6 +398,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_spi_obj___exit___obj, 4, 4, m
 //|     Write from ``write_buf`` and read into ``read_buf``. Both buffers must have the
 //|     same length. This is the same as a SPI transfer function on other platforms.
 //|     Returns the number of bytes written
+//|
 STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self_in, mp_obj_t wr_buf, mp_obj_t rd_buf) {
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
@@ -402,6 +422,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj, mp_machine_spi_writ
 //|
 //|     Write the data contained in ``buf``.
 //|     Returns the number of bytes written.
+//|
 STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
@@ -415,6 +436,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
 //|
 //|     Read the ``nbytes`` while writing the data specified by ``write``.
 //|     Return the number of bytes read.
+//|
 STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(args[1]));
@@ -429,6 +451,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_sp
 //|     Read into the buffer specified by ``buf`` while writing the data specified by
 //|     ``write``.
 //|     Return the number of bytes read.
+//|
 STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);

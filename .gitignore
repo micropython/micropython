@@ -39,3 +39,7 @@ __pycache__/
 ######################
 GNUmakefile
 user.props
+
+# Sphinx output
+###############
+_build
