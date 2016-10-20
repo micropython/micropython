@@ -52,6 +52,8 @@
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO               (0)
+#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_MODULE_FROZEN_MPY   (1)
