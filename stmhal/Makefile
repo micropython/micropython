@@ -18,6 +18,13 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 # include py core make definitions
 include ../py/py.mk
 
+
+FROZEN_DIR ?= scripts
+$(info FROZEN_DIR = $(FROZEN_DIR))
+
+FROZEN_MPY_DIR ?= modules
+$(info FROZEN_MPY_DIR = $(FROZEN_MPY_DIR))
+
 LD_DIR=boards
 CMSIS_DIR=cmsis
 HAL_DIR=hal/$(MCU_SERIES)
@@ -273,7 +280,7 @@ $(PY_BUILD)/mpprint.o: COPT += -Os
 
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
-ifneq ($(FROZEN_DIR),)
+ifneq (,$(wildcard $(FROZEN_DIR)))
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 OBJ += $(BUILD)/frozen-files.o
 
@@ -285,7 +292,7 @@ $(BUILD)/frozen-files.c: $(shell find $(FROZEN_DIR) -type f)
 	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
 endif
 
-ifneq ($(FROZEN_MPY_DIR),)
+ifneq (,$(wildcard $(FROZEN_MPY_DIR)))
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
