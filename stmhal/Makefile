@@ -274,15 +274,9 @@ $(PY_BUILD)/mpprint.o: COPT += -Os
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 ifneq ($(FROZEN_DIR),)
+# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
+# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-OBJ += $(BUILD)/frozen-files.o
-
-$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
-	$(call compile_c)
-
-$(BUILD)/frozen-files.c: $(shell find $(FROZEN_DIR) -type f)
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
 endif
 
 ifneq ($(FROZEN_MPY_DIR),)
