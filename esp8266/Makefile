@@ -7,14 +7,15 @@ MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
 MICROPY_PY_BTREE = 1
 
+FROZEN_DIR = scripts
+FROZEN_MPY_DIR = modules
+
 # include py core make definitions
 include ../py/py.mk
 
 MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
 
-FROZEN_DIR = scripts
-FROZEN_MPY_DIR = modules
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
@@ -90,7 +91,6 @@ SRC_C = \
 	modmachine.c \
 	modonewire.c \
 	ets_alt_task.c \
-	$(BUILD)/frozen.c \
 	fatfs_port.c \
 	axtls_helpers.c \
 	hspi.c \

@@ -237,6 +237,10 @@ PY_O_BASENAME = \
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 
+ifneq ($(FROZEN_DIR),)
+PY_O += $(BUILD)/$(BUILD)/frozen.o
+endif
+
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = nlr% emitnx% emitnthumb% emitnarm%
 SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)

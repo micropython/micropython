@@ -41,7 +41,6 @@ SRC_C = main.c \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyhelp.c \
 	lib/mp-readline/readline.c \
-	$(BUILD)/frozen.c \
 	$(SRC_MOD)
 
 # List of sources for qstr extraction
