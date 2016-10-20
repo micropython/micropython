@@ -215,6 +215,16 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     return MP_STREAM_ERROR;
 }
 
+STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+    // Currently supports only blocking mode
+    (void)self_in;
+    if (!mp_obj_is_true(flag_in)) {
+        mp_not_implemented("");
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
+
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -236,6 +246,7 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
 };
 

@@ -67,21 +67,12 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
 #define NUM_LEDS MP_ARRAY_SIZE(pyb_led_obj)
 
 void led_init(void) {
-    /* GPIO structure */
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    /* Configure I/O speed, mode, output type and pull */
-    GPIO_InitStructure.Speed = GPIO_SPEED_LOW;
-    GPIO_InitStructure.Mode = MICROPY_HW_LED_OTYPE;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-
     /* Turn off LEDs and initialize */
     for (int led = 0; led < NUM_LEDS; led++) {
         const pin_obj_t *led_pin = pyb_led_obj[led].led_pin;
         mp_hal_gpio_clock_enable(led_pin->gpio);
         MICROPY_HW_LED_OFF(led_pin);
-        GPIO_InitStructure.Pin = led_pin->pin_mask;
-        HAL_GPIO_Init(led_pin->gpio, &GPIO_InitStructure);
+        mp_hal_pin_output(led_pin);
     }
 }
 

@@ -38,3 +38,8 @@ print(-123 // 7, -123 % 7)
 print(123 // -7, 123 % -7)
 print(-123 // -7, -123 % -7)
 
+# zero big-num on rhs
+print(1 + ((1 << 65) - (1 << 65)))
+
+# negative big-num on rhs
+print(1 + (-(1 << 65)))

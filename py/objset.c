@@ -68,7 +68,7 @@ STATIC void check_set(mp_obj_t o) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
         // Mutable method called on frozenset; emulate CPython behavior, eg:
         // AttributeError: 'frozenset' object has no attribute 'add'
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "'frozenset' has no such attribute"));
+        mp_raise_msg(&mp_type_AttributeError, "'frozenset' has no such attribute");
     }
     #endif
     mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set));
@@ -389,7 +389,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
+        mp_raise_msg(&mp_type_KeyError, "pop from an empty set");
     }
     return obj;
 }

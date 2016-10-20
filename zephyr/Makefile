@@ -15,6 +15,8 @@ BOARD ?= qemu_x86
 # Zephyr 1.6.0
 OUTDIR_PREFIX = $(BOARD)
 
+FROZEN_DIR = scripts
+
 # Zephyr (generated) config files - must be defined before include below
 Z_SYSGEN_H = outdir/$(OUTDIR_PREFIX)/misc/generated/sysgen/sysgen.h
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
@@ -31,12 +33,18 @@ INC += -I$(ZEPHYR_BASE)/net/ip/contiki
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 
 SRC_C = main.c \
+	help.c \
 	uart_core.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
+	lib/utils/interrupt_char.c \
+	lib/utils/pyhelp.c \
 	lib/mp-readline/readline.c \
 	$(SRC_MOD)
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 

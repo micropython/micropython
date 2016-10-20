@@ -34,7 +34,7 @@ STATIC mp_obj_t extra_coverage(void) {
     // vstr
     {
         mp_printf(&mp_plat_print, "# vstr\n");
-        vstr_t *vstr = vstr_new_size(16);
+        vstr_t *vstr = vstr_new(16);
         vstr_hint_size(vstr, 32);
         vstr_add_str(vstr, "ts");
         vstr_ins_byte(vstr, 1, 'e');

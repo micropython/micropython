@@ -104,7 +104,7 @@ STATIC void pyb_adc_init (pyb_adc_obj_t *self) {
 STATIC void pyb_adc_check_init(void) {
     // not initialized
     if (!pyb_adc_obj.enabled) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
 }
 
@@ -149,12 +149,12 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     // check the number of bits
     if (args[1].u_int != 12) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 
     // setup the object
@@ -173,7 +173,7 @@ STATIC mp_obj_t adc_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_adc_init_args[1], args);
     // check the number of bits
     if (args[0].u_int != 12) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     pyb_adc_init(pos_args[0]);
     return mp_const_none;
@@ -206,11 +206,11 @@ STATIC mp_obj_t adc_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     if (args[0].u_obj != MP_OBJ_NULL) {
         ch_id = mp_obj_get_int(args[0].u_obj);
         if (ch_id >= PYB_ADC_NUM_CHANNELS) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_os_resource_not_avaliable));
+            mp_raise_ValueError(mpexception_os_resource_not_avaliable);
         } else if (args[1].u_obj != mp_const_none) {
             uint pin_ch_id = pin_find_peripheral_type (args[1].u_obj, PIN_FN_ADC, 0);
             if (ch_id != pin_ch_id) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                mp_raise_ValueError(mpexception_value_invalid_arguments);
             }
         }
     } else {
@@ -277,7 +277,7 @@ STATIC mp_obj_t adc_channel_value(mp_obj_t self_in) {
 
     // the channel must be enabled
     if (!self->enabled) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
 
     // wait until a new value is available

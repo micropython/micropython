@@ -73,7 +73,7 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
         // provide more detailed error message than we'd get by just returning
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "can't set attribute"));
+        mp_raise_msg(&mp_type_AttributeError, "can't set attribute");
     }
 }
 

@@ -65,11 +65,11 @@ STATIC void wiz_cris_exit(void) {
 }
 
 STATIC void wiz_cs_select(void) {
-    GPIO_clear_pin(wiznet5k_obj.cs->gpio, wiznet5k_obj.cs->pin_mask);
+    mp_hal_pin_low(wiznet5k_obj.cs);
 }
 
 STATIC void wiz_cs_deselect(void) {
-    GPIO_set_pin(wiznet5k_obj.cs->gpio, wiznet5k_obj.cs->pin_mask);
+    mp_hal_pin_high(wiznet5k_obj.cs);
 }
 
 STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
@@ -344,22 +344,12 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     wiznet5k_obj.spi->Init.CRCPolynomial = 7; // unused
     spi_init(wiznet5k_obj.spi, false);
 
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Pin = wiznet5k_obj.cs->pin_mask;
-    HAL_GPIO_Init(wiznet5k_obj.cs->gpio, &GPIO_InitStructure);
+    mp_hal_pin_output(wiznet5k_obj.cs);
+    mp_hal_pin_output(wiznet5k_obj.rst);
 
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Pin = wiznet5k_obj.rst->pin_mask;
-    HAL_GPIO_Init(wiznet5k_obj.rst->gpio, &GPIO_InitStructure);
-
-    GPIO_clear_pin(wiznet5k_obj.rst->gpio, wiznet5k_obj.rst->pin_mask);
+    mp_hal_pin_low(wiznet5k_obj.rst);
     HAL_Delay(1); // datasheet says 2us
-    GPIO_set_pin(wiznet5k_obj.rst->gpio, wiznet5k_obj.rst->pin_mask);
+    mp_hal_pin_high(wiznet5k_obj.rst);
     HAL_Delay(160); // datasheet says 150ms
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);

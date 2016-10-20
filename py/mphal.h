@@ -66,6 +66,10 @@ mp_uint_t mp_hal_ticks_ms(void);
 mp_uint_t mp_hal_ticks_us(void);
 #endif
 
+#ifndef mp_hal_ticks_cpu
+mp_uint_t mp_hal_ticks_cpu(void);
+#endif
+
 // If port HAL didn't define its own pin API, use generic
 // "virtual pin" API from the core.
 #ifndef mp_hal_pin_obj_t

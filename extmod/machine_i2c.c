@@ -272,7 +272,7 @@ STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
     for (int addr = 0x08; addr < 0x78; ++addr) {
         mp_hal_i2c_start(self);
-        int ack = mp_hal_i2c_write_byte(self, (addr << 1) | 1);
+        int ack = mp_hal_i2c_write_byte(self, (addr << 1));
         if (ack) {
             mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
         }

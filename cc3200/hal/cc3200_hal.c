@@ -130,10 +130,6 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     }
 }
 
-NORETURN void mp_hal_raise(int errno) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, mp_obj_new_int(errno)));
-}
-
 void mp_hal_set_interrupt_char (int c) {
     mpexception_set_interrupt_char (c);
 }

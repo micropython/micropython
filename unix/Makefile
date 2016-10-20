@@ -273,7 +273,7 @@ coverage_test: coverage
 	gcov -o build-coverage/extmod ../extmod/*.c
 
 $(BUILD)/_frozen_upip.c: $(BUILD)/frozen_upip/upip.py
-	../tools/make-frozen.py $(dir $^) > $@
+	$(MAKE_FROZEN) $(dir $^) > $@
 
 # Select latest upip version available
 UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)

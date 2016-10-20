@@ -49,6 +49,9 @@ test_syntax("f[0]**2 = 1")
 # can't assign to empty tuple
 test_syntax("() = 1")
 
+# can't have *x on RHS
+test_syntax("x = *x")
+
 # can't have multiple *x on LHS
 test_syntax("*a, *b = c")
 
@@ -76,6 +79,7 @@ test_syntax("continue")
 test_syntax("return")
 test_syntax("yield")
 test_syntax("nonlocal a")
+test_syntax("await 1")
 
 # error on uPy, warning on CPy
 #test_syntax("def f():\n a = 1\n global a")

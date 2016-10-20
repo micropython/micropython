@@ -266,14 +266,10 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
     pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(GPIO_read_pin(self->gpio, self->pin));
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
     } else {
         // set pin
-        if (mp_obj_is_true(args[0])) {
-            GPIO_set_pin(self->gpio, self->pin_mask);
-        } else {
-            GPIO_clear_pin(self->gpio, self->pin_mask);
-        }
+        mp_hal_pin_write(self, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
 }
@@ -371,11 +367,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
 
     // if given, set the pin value before initialising to prevent glitches
     if (args[3].u_obj != MP_OBJ_NULL) {
-        if (mp_obj_is_true(args[3].u_obj)) {
-            GPIO_set_pin(self->gpio, self->pin_mask);
-        } else {
-            GPIO_clear_pin(self->gpio, self->pin_mask);
-        }
+        mp_hal_pin_write(self, mp_obj_is_true(args[3].u_obj));
     }
 
     // configure the GPIO as requested
@@ -411,7 +403,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 /// Set the pin to a low logic level.
 STATIC mp_obj_t pin_low(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    GPIO_clear_pin(self->gpio, self->pin_mask);;
+    mp_hal_pin_low(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
@@ -420,7 +412,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
 /// Set the pin to a high logic level.
 STATIC mp_obj_t pin_high(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    GPIO_set_pin(self->gpio, self->pin_mask);;
+    mp_hal_pin_high(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);

@@ -73,9 +73,8 @@
 #define MICROPY_HW_LED4             (pin_C5)  // G2 - green
 #define MICROPY_HW_LED1_PWM         { TIM1, 1, TIM_CHANNEL_1, GPIO_AF1_TIM1 }
 #define MICROPY_HW_LED2_PWM         { TIM1, 1, TIM_CHANNEL_3, GPIO_AF1_TIM1 }
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRH = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRL = pin->pin_mask)
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
 // SD card detect switch
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C13)

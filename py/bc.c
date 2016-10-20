@@ -185,7 +185,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, siz
             }
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
+                mp_raise_msg(&mp_type_TypeError, "function does not take keyword arguments");
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
 continue2:;
@@ -234,8 +234,7 @@ continue2:;
     } else {
         // no keyword arguments given
         if (n_kwonly_args != 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "function missing keyword-only argument"));
+            mp_raise_msg(&mp_type_TypeError, "function missing keyword-only argument");
         }
         if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
             *var_pos_kw_args = mp_obj_new_dict(0);

@@ -41,5 +41,5 @@ qemu_cortex_m3):
 
     make qemu
 
-For deploying/flashing teh application on a real board, follow Zephyr
+For deploying/flashing the application on a real board, follow Zephyr
 documentation for a given board.

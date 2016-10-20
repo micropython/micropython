@@ -603,7 +603,7 @@ STATIC void wlan_reset (void) {
 
 STATIC void wlan_validate_mode (uint mode) {
     if (mode != ROLE_STA && mode != ROLE_AP) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 
@@ -614,7 +614,7 @@ STATIC void wlan_set_mode (uint mode) {
 
 STATIC void wlan_validate_ssid_len (uint32_t len) {
     if (len > MODWLAN_SSID_LEN_MAX) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 
@@ -647,7 +647,7 @@ STATIC void wlan_validate_security (uint8_t auth, const char *key, uint8_t len) 
     return;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
@@ -670,7 +670,7 @@ STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
 
 STATIC void wlan_validate_channel (uint8_t channel) {
     if (channel < 1 || channel > 11) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 
@@ -682,7 +682,7 @@ STATIC void wlan_set_channel (uint8_t channel) {
 #if MICROPY_HW_ANTENNA_DIVERSITY
 STATIC void wlan_validate_antenna (uint8_t antenna) {
     if (antenna != ANTENNA_TYPE_INTERNAL && antenna != ANTENNA_TYPE_EXTERNAL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 
@@ -847,7 +847,7 @@ STATIC mp_obj_t wlan_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_ui
     if (n_args > 1 || n_kw > 0) {
         // check the peripheral id
         if (args[0].u_int != 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
         }
         // start the peripheral
         wlan_init_helper(self, &args[1]);
@@ -871,7 +871,7 @@ STATIC mp_obj_t wlan_scan(mp_obj_t self_in) {
 
     // check for correct wlan mode
     if (wlan_obj.mode == ROLE_AP) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
 
     Sl_WlanNetworkEntry_t wlanEntry;
@@ -925,7 +925,7 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // check for the correct wlan mode
     if (wlan_obj.mode == ROLE_AP) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
 
     // parse args
@@ -973,9 +973,9 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     modwlan_Status_t status;
     status = wlan_do_connect (ssid, ssid_len, bssid, auth, key, key_len, timeout);
     if (status == MODWLAN_ERROR_TIMEOUT) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     } else if (status == MODWLAN_ERROR_INVALID_PARAMS) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     return mp_const_none;
 }
@@ -1004,7 +1004,7 @@ STATIC mp_obj_t wlan_ifconfig (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 
     // check the interface id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     // get the configuration
@@ -1051,7 +1051,7 @@ STATIC mp_obj_t wlan_ifconfig (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
             // check for the correct string
             const char *mode = mp_obj_str_get_str(args[1].u_obj);
             if (strcmp("dhcp", mode)) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                mp_raise_ValueError(mpexception_value_invalid_arguments);
             }
 
             // only if we are not in AP mode
@@ -1165,7 +1165,7 @@ STATIC mp_obj_t wlan_mac (mp_uint_t n_args, const mp_obj_t *args) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
         if (bufinfo.len != 6) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
         memcpy(self->mac, bufinfo.buf, SL_MAC_ADDR_LEN);
         sl_NetCfgSet(SL_MAC_ADDRESS_SET, 1, SL_MAC_ADDR_LEN, (_u8 *)self->mac);
@@ -1201,7 +1201,7 @@ STATIC mp_obj_t wlan_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *
     return _irq;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 
@@ -1230,18 +1230,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 //
 //        // the call to sl_NetAppSet corrupts the input string URN=args[1], so we copy into a local buffer
 //        if (len > MAX_DEVICE_URN_LEN) {
-//            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+//            mp_raise_ValueError(mpexception_value_invalid_arguments);
 //        }
 //        strcpy(urn, p);
 //
 //        if (sl_NetAppSet(SL_NET_APP_DEVICE_CONFIG_ID, NETAPP_SET_GET_DEV_CONF_OPT_DEVICE_URN, len, (unsigned char *)urn) < 0) {
-//            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+//            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
 //        }
 //    }
 //    else {
 //        // get the URN
 //        if (sl_NetAppGet(SL_NET_APP_DEVICE_CONFIG_ID, NETAPP_SET_GET_DEV_CONF_OPT_DEVICE_URN, &len, (uint8_t *)urn) < 0) {
-//            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+//            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
 //        }
 //        return mp_obj_new_str(urn, (len - 1), false);
 //    }

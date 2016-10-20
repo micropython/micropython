@@ -50,3 +50,9 @@ try:
     range(1)[0] = 1
 except TypeError:
     print("TypeError")
+
+# bad attr (can't store)
+try:
+    range(4).start = 0
+except AttributeError:
+    print('AttributeError')

@@ -229,12 +229,17 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_file.o \
 	../extmod/vfs_fat_lexer.o \
 	../extmod/vfs_fat_misc.o \
+	../extmod/utime_mphal.o \
 	../extmod/moduos_dupterm.o \
 	../lib/embed/abort_.o \
 	../lib/utils/printf.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
+
+ifneq ($(FROZEN_DIR),)
+PY_O += $(BUILD)/$(BUILD)/frozen.o
+endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = nlr% emitnx% emitnthumb% emitnarm%

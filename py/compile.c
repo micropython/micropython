@@ -2723,15 +2723,8 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         EMIT_ARG(set_source_line, pns->source_line);
         compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
-        if (f == NULL) {
-#if MICROPY_DEBUG_PRINTERS
-            printf("node %u cannot be compiled\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns));
-            mp_parse_node_print(pn, 0);
-#endif
-            compile_syntax_error(comp, pn, "internal compiler error");
-        } else {
-            f(comp, pns);
-        }
+        assert(f != NULL);
+        f(comp, pns);
     }
 }
 
@@ -2836,12 +2829,10 @@ STATIC void compile_scope_func_annotations(compiler_t *comp, mp_parse_node_t pn)
             // no annotation
             return;
         }
-    } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_typedargslist_dbl_star) {
+    } else {
+        assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_typedargslist_dbl_star);
         // double star with possible annotation
         // fallthrough
-    } else {
-        // no annotation
-        return;
     }
 
     mp_parse_node_t pn_annotation = pns->nodes[1];

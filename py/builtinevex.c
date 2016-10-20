@@ -95,7 +95,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
         case MP_QSTR_exec: parse_input_kind = MP_PARSE_FILE_INPUT; break;
         case MP_QSTR_eval: parse_input_kind = MP_PARSE_EVAL_INPUT; break;
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad compile mode"));
+            mp_raise_msg(&mp_type_ValueError, "bad compile mode");
     }
 
     mp_obj_code_t *code = m_new_obj(mp_obj_code_t);

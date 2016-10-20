@@ -162,7 +162,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
     } else {
         return elem->value;
     }
@@ -178,7 +178,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
         mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
         } else {
             return elem->value;
         }
@@ -250,15 +250,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     mp_obj_t iter = mp_getiter(args[1]);
-    mp_obj_t len = mp_obj_len_maybe(iter);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = MP_OBJ_NULL;
-    mp_obj_t self_out;
 
     if (n_args > 2) {
         value = args[2];
     }
 
+    // optimisation to allocate result based on len of argument
+    mp_obj_t self_out;
+    mp_obj_t len = mp_obj_len_maybe(args[1]);
     if (len == MP_OBJ_NULL) {
         /* object's type doesn't have a __len__ slot */
         self_out = mp_obj_new_dict(0);
@@ -282,7 +283,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
         if (deflt == MP_OBJ_NULL) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "<value>"));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, key));
             } else {
                 value = mp_const_none;
             }
@@ -342,7 +343,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_uint_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     if (next == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "popitem(): dictionary is empty"));
+        mp_raise_msg(&mp_type_KeyError, "popitem(): dictionary is empty");
     }
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};
@@ -384,9 +385,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
                 if (key == MP_OBJ_STOP_ITERATION
                     || value == MP_OBJ_STOP_ITERATION
                     || stop != MP_OBJ_STOP_ITERATION) {
-                    nlr_raise(mp_obj_new_exception_msg(
-                                 &mp_type_ValueError,
-                                 "dictionary update sequence has the wrong length"));
+                    mp_raise_msg(&mp_type_ValueError, "dictionary update sequence has the wrong length");
                 } else {
                     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
                 }

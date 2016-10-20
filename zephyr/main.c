@@ -1,3 +1,29 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Linaro Limited
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,7 +33,9 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/stackctrl.h"
 #include "lib/utils/pyexec.h"
+#include "lib/mp-readline/readline.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -35,11 +63,16 @@ static char heap[16 * 1024];
 int real_main(void) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
+    mp_stack_set_top(stack_top);
+    // Should be set to stack size in prj.mdef minus fuzz factor
+    mp_stack_set_limit(3584);
 
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
+    MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    pyexec_frozen_module("main.py");
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
     for (;;) {

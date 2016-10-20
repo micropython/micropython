@@ -28,10 +28,13 @@
 
 #include "py/mpconfig.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
+#include "py/mphal.h"
 #include "mptask.h"
 #include "task.h"
+#include "irq.h"
 
 #if MICROPY_PY_THREAD
 
@@ -131,7 +134,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     TaskHandle_t id = xTaskCreateStatic(freertos_entry, "Thread", *stack_size / sizeof(void*), arg, 2, stack, tcb);
     if (id == NULL) {
         mp_thread_mutex_unlock(&thread_mutex);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't create thread"));
+        mp_raise_msg(&mp_type_OSError, "can't create thread");
     }
 
     // add thread to linked list of all threads
@@ -165,14 +168,23 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     mutex->handle = xSemaphoreCreateMutexStatic(&mutex->buffer);
 }
 
+// To allow hard interrupts to work with threading we only take/give the semaphore
+// if we are not within an interrupt context and interrupts are enabled.
+
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    int ret = xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0);
-    return ret == pdTRUE;
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
+        int ret = xSemaphoreTake(mutex->handle, wait ? portMAX_DELAY : 0);
+        return ret == pdTRUE;
+    } else {
+        return 1;
+    }
 }
 
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
-    xSemaphoreGive(mutex->handle);
-    // TODO check return value
+    if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
+        xSemaphoreGive(mutex->handle);
+        // TODO check return value
+    }
 }
 
 #endif // MICROPY_PY_THREAD
