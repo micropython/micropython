@@ -28,9 +28,11 @@
 #include "py/obj.h"
 
 // these are the values for fs_user_mount_t.flags
-#define FSUSER_NATIVE       (0x0001) // readblocks[2]/writeblocks[2] contain native func
-#define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount
-#define FSUSER_HAVE_IOCTL   (0x0004) // new protocol with ioctl
+#define FSUSER_NATIVE        (0x0001) // readblocks[2]/writeblocks[2] contain native func
+#define FSUSER_FREE_OBJ      (0x0002) // fs_user_mount_t obj should be freed on umount
+#define FSUSER_HAVE_IOCTL    (0x0004) // new protocol with ioctl
+// Device is write-able over USB and read-only to MicroPython.
+#define FSUSER_USB_WRITEABLE (0x0008)
 
 // constants for block protocol ioctl
 #define BP_IOCTL_INIT           (1)
