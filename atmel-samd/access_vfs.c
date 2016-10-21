@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "access_vfs.h"
 
 #include "asf/common/services/usb/class/msc/device/udi_msc.h"
@@ -77,8 +79,20 @@ Ctrl_status vfs_read_capacity(uint32_t *last_valid_sector)
 //!
 bool vfs_wr_protect(void)
 {
-    DSTATUS status = disk_status(VFS_INDEX);
-    return status == STA_NOINIT || status == STA_PROTECT;
+    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        return true;
+    }
+    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
+    if (vfs == NULL) {
+        return true;
+    }
+
+    // This is used to determine the writeability of the disk from USB.
+    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
+        (vfs->flags & FSUSER_USB_WRITEABLE) == 0) {
+        return true;
+    }
+    return false;
 }
 
 //! This function informs about the memory type
@@ -138,19 +152,35 @@ Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 //!   Not initialized or changed ->    CTRL_BUSY
 //!   An error occurred          ->    CTRL_FAIL
 //!
-Ctrl_status vfs_usb_write_10(uint32_t addr, uint16_t nb_sector)
+Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
 {
     uint8_t sector_buffer[FLASH_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
         if (!udi_msc_trans_block(false, sector_buffer, FLASH_BLOCK_SIZE, NULL)) {
             return CTRL_FAIL; // transfer aborted
         }
-        DRESULT result = disk_write(VFS_INDEX, sector_buffer, addr + sector, 1);
+        uint32_t sector_address = addr + sector;
+        DRESULT result = disk_write(VFS_INDEX, sector_buffer, sector_address, 1);
         if (result == RES_PARERR) {
             return CTRL_NO_PRESENT;
         }
         if (result == RES_ERROR) {
             return CTRL_FAIL;
+        }
+        // Since by getting here we assume the mount is read-only to MicroPython
+        // lets update the cached FatFs sector if its the one we just wrote.
+        fs_user_mount_t *vfs =  MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
+        volatile uint16_t x = addr;
+        (void) x;
+        #if _MAX_SS != _MIN_SS
+        if (vfs->ssize == FLASH_BLOCK_SIZE) {
+        #else
+        // The compiler can optimize this away.
+        if (_MAX_SS == FLASH_BLOCK_SIZE) {
+        #endif
+            if (sector_address == vfs->fatfs.winsect && sector_address > 0) {
+                memcpy(vfs->fatfs.win, sector_buffer, FLASH_BLOCK_SIZE);
+            }
         }
     }
     return CTRL_GOOD;
