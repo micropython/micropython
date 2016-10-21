@@ -4,6 +4,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Metro M0 with Flash (Experimental)"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+#define MICROPY_HW_LED_MSC  PIN_PA17
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PB03
 

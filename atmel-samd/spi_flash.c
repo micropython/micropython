@@ -198,7 +198,6 @@ static bool copy_block(uint32_t src_address, uint32_t dest_address) {
 
 void spi_flash_init(void) {
     if (!spi_flash_is_initialised) {
-
         struct spi_config config_spi_master;
         spi_get_config_defaults(&config_spi_master);
         config_spi_master.mux_setting = SPI_FLASH_MUX_SETTING;
@@ -217,6 +216,12 @@ void spi_flash_init(void) {
         pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
         port_pin_set_config(SPI_FLASH_CS, &pin_conf);
         flash_disable();
+
+        // Activity LED for flash writes.
+        #ifdef MICROPY_HW_LED_MSC
+            port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
+            port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+        #endif
 
         uint8_t jedec_id_request[4] = {CMD_READ_JEDEC_ID, 0x00, 0x00, 0x00};
         uint8_t response[4] = {0x00, 0x00, 0x00, 0x00};
@@ -377,6 +382,9 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     if (current_sector == NO_SECTOR_LOADED) {
         return;
     }
+    #ifdef MICROPY_HW_LED_MSC
+        port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
+    #endif
     // If we've cached to the flash itself flush from there.
     if (ram_cache == NULL) {
         flush_scratch_flash();
@@ -384,6 +392,9 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
         flush_ram_cache(keep_cache);
     }
     current_sector = NO_SECTOR_LOADED;
+    #ifdef MICROPY_HW_LED_MSC
+        port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+    #endif
 }
 
 // External flash function used. If called externally we assume we won't need
