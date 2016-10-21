@@ -474,12 +474,32 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
         return true;
     } else {
         // Non-MBR block, get data from flash memory.
-        uint32_t src = convert_block_to_flash_addr(block);
-        if (src == -1) {
+        uint32_t address = convert_block_to_flash_addr(block);
+        if (address == -1) {
             // bad block number
             return false;
         }
-        return read_flash(src, dest, FLASH_BLOCK_SIZE);
+
+        // Mask out the lower bits that designate the address within the sector.
+        uint32_t this_sector = address & (~(sector_size - 1));
+        uint8_t block_index = (address / FLASH_BLOCK_SIZE) % (sector_size / FLASH_BLOCK_SIZE);
+        uint8_t mask = 1 << (block_index);
+        // We're reading from the currently cached sector.
+        if (current_sector == this_sector && (mask & dirty_mask) > 0) {
+            if (ram_cache != NULL) {
+                uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+                for (int i = 0; i < pages_per_block; i++) {
+                    memcpy(dest + i * page_size,
+                           ram_cache[block_index * pages_per_block + i],
+                           page_size);
+                }
+                return true;
+            } else {
+                uint32_t scratch_address = SCRATCH_SECTOR + block_index * FLASH_BLOCK_SIZE;
+                return read_flash(scratch_address, dest, FLASH_BLOCK_SIZE);
+            }
+        }
+        return read_flash(address, dest, FLASH_BLOCK_SIZE);
     }
 }
 
