@@ -5,7 +5,7 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000 + 0x2000, LENGTH = 0x00040000 - 0x2000 /* Leave 8KiB for the bootloader. */
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 /* 256 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 
@@ -28,9 +28,8 @@ SECTIONS
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
-        _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
+        _sidata = _etext;  /* This is used by the startup in order to initialize the .data section */
     } >FLASH
-
 
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM

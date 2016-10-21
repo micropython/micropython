@@ -90,7 +90,7 @@ DSTATUS disk_initialize (
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_status (
-    BYTE pdrv        /* Physical drive nmuber (0..) */
+    BYTE pdrv        /* Physical drive number (0..) */
 )
 {
     fs_user_mount_t *vfs = disk_get_device(pdrv);
@@ -98,7 +98,10 @@ DSTATUS disk_status (
         return STA_NOINIT;
     }
 
-    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+    // This is used to determine the writeability of the disk from MicroPython.
+    // So, if its USB writeable we make it read-only from MicroPython.
+    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
+        (vfs->flags & FSUSER_USB_WRITEABLE) != 0) {
         return STA_PROTECT;
     } else {
         return 0;
@@ -110,7 +113,7 @@ DSTATUS disk_status (
 /*-----------------------------------------------------------------------*/
 
 DRESULT disk_read (
-    BYTE pdrv,        /* Physical drive nmuber (0..) */
+    BYTE pdrv,        /* Physical drive number (0..) */
     BYTE *buff,        /* Data buffer to store read data */
     DWORD sector,    /* Sector address (LBA) */
     UINT count        /* Number of sectors to read (1..128) */

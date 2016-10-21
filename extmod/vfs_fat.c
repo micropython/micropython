@@ -278,7 +278,11 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
 
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * fatfs->ssize); // f_bsize
+    #if _MIN_SS != _MAX_SS
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * fatfs->ssize); // f_bsize
+    #else
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * _MIN_SS); // f_bsize
+    #endif
     t->items[1] = t->items[0]; // f_frsize
     t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2) * fatfs->csize); // f_blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst); // f_bfree

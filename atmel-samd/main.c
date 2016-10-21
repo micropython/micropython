@@ -10,6 +10,7 @@
 #include "py/gc.h"
 
 #include "lib/fatfs/ff.h"
+#include "lib/fatfs/diskio.h"
 #include "lib/utils/pyexec.h"
 #include "extmod/fsusermount.h"
 
@@ -23,7 +24,6 @@
 
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
-#include "storage.h"
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -71,6 +71,8 @@ static const char fresh_readme_txt[] =
 "\r\n"
 "Please visit http://micropython.org/help/ for further help.\r\n"
 ;
+
+extern void flash_init_vfs(fs_user_mount_t *vfs);
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
@@ -159,6 +161,12 @@ static char *stack_top;
 static char heap[16384];
 
 void reset_mp() {
+    // Sync the file systems in case any used RAM from the GC to cache. As soon
+    // as we re-init the GC all bets are off on the cache.
+    disk_ioctl(0, CTRL_SYNC, NULL);
+    disk_ioctl(1, CTRL_SYNC, NULL);
+    disk_ioctl(2, CTRL_SYNC, NULL);
+
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
@@ -184,9 +192,6 @@ int main(int argc, char **argv) {
     samd21_init();
     #endif
 
-    // Initialise the local flash filesystem.
-    // Create it if needed, mount in on /flash, and set it as current dir.
-    init_flash_fs();
 
     int stack_dummy;
     // Store the location of stack_dummy as an approximation for the top of the
@@ -194,6 +199,16 @@ int main(int argc, char **argv) {
     // stack between here and where gc_collect is called.
     stack_top = (char*)&stack_dummy;
     reset_mp();
+
+    // Initialise the local flash filesystem after the gc in case we need to
+    // grab memory from it. Create it if needed, mount in on /flash, and set it
+    // as current dir.
+    init_flash_fs();
+
+    // Start USB after getting everything going.
+    #ifdef USB_REPL
+        udc_start();
+    #endif
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
@@ -326,10 +341,6 @@ void samd21_init(void) {
     // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
     // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
     // port_pin_set_output_level(MICROPY_HW_LED1, false);
-
-    #ifdef USB_REPL
-        udc_start();
-    #endif
 }
 
 #endif

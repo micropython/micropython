@@ -70,7 +70,11 @@
 #define MICROPY_FATFS_VOLUMES          (4)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
 #define MICROPY_FSUSERMOUNT            (1)
-#define MICROPY_FATFS_MAX_SS           (4096)
+// Only enable this if you really need it. It allocates a byte cache of this
+// size.
+// #define MICROPY_FATFS_MAX_SS           (4096)
+
+#define FLASH_BLOCK_SIZE            (512)
 
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)

@@ -143,6 +143,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	)
 
 SRC_C = \
+	access_vfs.c \
 	builtin_open.c \
 	fatfs_port.c \
 	main.c \
@@ -156,9 +157,8 @@ SRC_C = \
 	modutime.c \
 	mphalport.c \
 	pin_named_pins.c \
-	rom_fs.c \
 	samdneopixel.c \
-	storage.c \
+	$(FLASH_IMPL) \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
 	asf/common/services/storage/ctrl_access/ctrl_access.c  \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
