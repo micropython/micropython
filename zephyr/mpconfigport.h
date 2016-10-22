@@ -54,6 +54,8 @@
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_STRUCT           (0)
+#define MICROPY_PY_UTIME            (1)
+#define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_SYS_MODULES      (0)
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
@@ -76,6 +78,17 @@ typedef long mp_off_t;
 #define MICROPY_PORT_ROOT_POINTERS \
     mp_obj_t mp_kbd_exception; \
     const char *readline_hist[8];
+
+extern const struct _mp_obj_module_t mp_module_time;
+
+#if MICROPY_PY_UTIME
+#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
+#else
+#define MICROPY_PY_UTIME_DEF
+#endif
+
+#define MICROPY_PORT_BUILTIN_MODULES \
+    MICROPY_PY_UTIME_DEF \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
