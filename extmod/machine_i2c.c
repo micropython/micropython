@@ -52,13 +52,16 @@ STATIC void mp_hal_i2c_scl_low(machine_i2c_obj_t *self) {
     mp_hal_pin_od_low(self->scl);
 }
 
-STATIC void mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
+STATIC int mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
+    uint32_t count = self->us_timeout;
+
     mp_hal_pin_od_high(self->scl);
     mp_hal_i2c_delay(self);
     // For clock stretching, wait for the SCL pin to be released, with timeout.
-    for (uint32_t count = self->us_timeout; mp_hal_pin_read(self->scl) == 0 && count; --count) {
+    for (; mp_hal_pin_read(self->scl) == 0 && count; --count) {
         mp_hal_delay_us_fast(1);
     }
+    return count != 0;
 }
 
 STATIC void mp_hal_i2c_sda_low(machine_i2c_obj_t *self) {
@@ -73,21 +76,23 @@ STATIC int mp_hal_i2c_sda_read(machine_i2c_obj_t *self) {
     return mp_hal_pin_read(self->sda);
 }
 
-STATIC void mp_hal_i2c_start(machine_i2c_obj_t *self) {
+STATIC int mp_hal_i2c_start(machine_i2c_obj_t *self) {
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
-    mp_hal_i2c_scl_release(self);
+    int ret = mp_hal_i2c_scl_release(self);
     mp_hal_i2c_sda_low(self);
     mp_hal_i2c_delay(self);
+    return ret;
 }
 
-STATIC void mp_hal_i2c_stop(machine_i2c_obj_t *self) {
+STATIC int mp_hal_i2c_stop(machine_i2c_obj_t *self) {
     mp_hal_i2c_delay(self);
     mp_hal_i2c_sda_low(self);
     mp_hal_i2c_delay(self);
-    mp_hal_i2c_scl_release(self);
+    int ret = mp_hal_i2c_scl_release(self);
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
+    return ret;
 }
 
 STATIC void mp_hal_i2c_init(machine_i2c_obj_t *self, uint32_t freq) {
@@ -97,7 +102,7 @@ STATIC void mp_hal_i2c_init(machine_i2c_obj_t *self, uint32_t freq) {
     }
     mp_hal_pin_open_drain(self->scl);
     mp_hal_pin_open_drain(self->sda);
-    mp_hal_i2c_stop(self);
+    mp_hal_i2c_stop(self); // ignore error
 }
 
 STATIC int mp_hal_i2c_write_byte(machine_i2c_obj_t *self, uint8_t val) {
@@ -111,13 +116,17 @@ STATIC int mp_hal_i2c_write_byte(machine_i2c_obj_t *self, uint8_t val) {
             mp_hal_i2c_sda_low(self);
         }
         mp_hal_i2c_delay(self);
-        mp_hal_i2c_scl_release(self);
+        if (!mp_hal_i2c_scl_release(self)) {
+            return 0; // failure
+        }
         mp_hal_i2c_scl_low(self);
     }
 
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
-    mp_hal_i2c_scl_release(self);
+    if (!mp_hal_i2c_scl_release(self)) {
+        return 0; // failure
+    }
 
     int ret = mp_hal_i2c_sda_read(self);
     mp_hal_i2c_delay(self);
@@ -133,7 +142,9 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
 
     uint8_t data = 0;
     for (int i = 7; i >= 0; i--) {
-        mp_hal_i2c_scl_release(self);
+        if (!mp_hal_i2c_scl_release(self)) {
+            return 0;
+        }
         data = (data << 1) | mp_hal_i2c_sda_read(self);
         mp_hal_i2c_scl_low(self);
         mp_hal_i2c_delay(self);
@@ -145,7 +156,9 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
         mp_hal_i2c_sda_low(self);
     }
     mp_hal_i2c_delay(self);
-    mp_hal_i2c_scl_release(self);
+    if (!mp_hal_i2c_scl_release(self)) {
+        return 0; // failure
+    }
     mp_hal_i2c_scl_low(self);
     mp_hal_i2c_sda_release(self);
 
@@ -169,7 +182,9 @@ STATIC int mp_hal_i2c_write_addresses(machine_i2c_obj_t *self, uint8_t addr,
 STATIC void mp_hal_i2c_write_mem(machine_i2c_obj_t *self, uint8_t addr,
         uint32_t memaddr, uint8_t addrsize, const uint8_t *src, size_t len) {
     // start the I2C transaction
-    mp_hal_i2c_start(self);
+    if (!mp_hal_i2c_start(self)) {
+        goto er;
+    }
 
     // write the slave address and the memory address within the slave
     if (!mp_hal_i2c_write_addresses(self, addr, memaddr, addrsize)) {
@@ -184,18 +199,22 @@ STATIC void mp_hal_i2c_write_mem(machine_i2c_obj_t *self, uint8_t addr,
     }
 
     // finish the I2C transaction
-    mp_hal_i2c_stop(self);
+    if (!mp_hal_i2c_stop(self)) {
+        goto er;
+    }
     return;
 
 er:
-    mp_hal_i2c_stop(self);
+    mp_hal_i2c_stop(self); // ignore error
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
 }
 
 STATIC void mp_hal_i2c_read_mem(machine_i2c_obj_t *self, uint8_t addr,
         uint32_t memaddr, uint8_t addrsize, uint8_t *dest, size_t len) {
     // start the I2C transaction
-    mp_hal_i2c_start(self);
+    if (!mp_hal_i2c_start(self)) {
+        goto er;
+    }
 
     if (addrsize) {
         // write the slave address and the memory address within the slave
@@ -204,7 +223,9 @@ STATIC void mp_hal_i2c_read_mem(machine_i2c_obj_t *self, uint8_t addr,
         }
 
         // i2c_read will do a repeated start, and then read the I2C memory
-        mp_hal_i2c_start(self);
+        if (!mp_hal_i2c_start(self)) {
+            goto er;
+        }
     }
 
     if (!mp_hal_i2c_write_byte(self, (addr << 1) | 1)) {
@@ -215,11 +236,13 @@ STATIC void mp_hal_i2c_read_mem(machine_i2c_obj_t *self, uint8_t addr,
             goto er;
         }
     }
-    mp_hal_i2c_stop(self);
+    if (!mp_hal_i2c_stop(self)) {
+        goto er;
+    }
     return;
 
 er:
-    mp_hal_i2c_stop(self);
+    mp_hal_i2c_stop(self); // ignore error
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
 }
 
@@ -271,12 +294,13 @@ STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
     for (int addr = 0x08; addr < 0x78; ++addr) {
-        mp_hal_i2c_start(self);
-        int ack = mp_hal_i2c_write_byte(self, (addr << 1));
-        if (ack) {
-            mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
+        if (mp_hal_i2c_start(self)) {
+            int ack = mp_hal_i2c_write_byte(self, (addr << 1));
+            if (ack) {
+                mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
+            }
+            mp_hal_i2c_stop(self); // ignore error
         }
-        mp_hal_i2c_stop(self);
     }
     return list;
 }
@@ -284,14 +308,18 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_scan_obj, machine_i2c_scan);
 
 STATIC mp_obj_t machine_i2c_start(mp_obj_t self_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_hal_i2c_start(self);
+    if (!mp_hal_i2c_start(self)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_start_obj, machine_i2c_start);
 
 STATIC mp_obj_t machine_i2c_stop(mp_obj_t self_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_hal_i2c_stop(self);
+    if (!mp_hal_i2c_stop(self)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_stop_obj, machine_i2c_stop);
