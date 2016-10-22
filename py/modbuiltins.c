@@ -617,6 +617,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #if MICROPY_PY_BUILTINS_SET
     { MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&mp_type_set) },
     #endif
+    #if MICROPY_PY_BUILTINS_SLICE
+    { MP_ROM_QSTR(MP_QSTR_slice), MP_ROM_PTR(&mp_type_slice) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_str), MP_ROM_PTR(&mp_type_str) },
     { MP_ROM_QSTR(MP_QSTR_super), MP_ROM_PTR(&mp_type_super) },
     { MP_ROM_QSTR(MP_QSTR_tuple), MP_ROM_PTR(&mp_type_tuple) },
