@@ -14,7 +14,7 @@ def printbuf():
 w = 4
 h = 5
 buf = bytearray(w * h * 2)
-fbuf = framebuf.FrameBuffer(buf, w, h, w, 16)
+fbuf = framebuf.FrameBuffer(buf, w, h, framebuf.FrameBuffer.FORMAT_RGB565)
 
 # fill
 fbuf.fill(0xffff)
@@ -46,7 +46,7 @@ printbuf()
 w2 = 2
 h2 = 3
 buf2 = bytearray(w2 * h2 * 2)
-fbuf2 = framebuf.FrameBuffer(buf2, w2, h2, w2, 16)
+fbuf2 = framebuf.FrameBuffer(buf2, w2, h2, framebuf.FrameBuffer.FORMAT_RGB565)
 
 fbuf2.fill(0x0000)
 fbuf2.pixel(0, 0, 0x0ee0)

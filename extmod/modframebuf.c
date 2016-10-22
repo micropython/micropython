@@ -35,19 +35,19 @@
 
 #include "stmhal/font_petme128_8x8.h"
 
-struct _mp_obj_framebuf_t;
-
-typedef void setpixel_t(const struct _mp_obj_framebuf_t *, int, int, uint32_t);
-typedef uint32_t getpixel_t(const struct _mp_obj_framebuf_t *, int, int);
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;
     uint8_t *buf;
+    uint16_t width, height, stride;
+    uint8_t format;
+} mp_obj_framebuf_t;
+typedef void setpixel_t(const struct _mp_obj_framebuf_t *, int, int, uint32_t);
+typedef uint32_t getpixel_t(const struct _mp_obj_framebuf_t *, int, int);
+typedef struct _mp_framebuf_format_t {
     setpixel_t *setpixel;
     getpixel_t *getpixel;
-    uint16_t width, height, stride;
-    uint8_t depth;
-} mp_obj_framebuf_t;
+} mp_framebuf_format_t;
 
 
 // Functions for 1-bit FrameBuffer
@@ -72,6 +72,22 @@ STATIC uint32_t framebuf16_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return ((uint16_t *)((void *)(fb->buf)))[x + y * fb->stride];
 }
 
+STATIC mp_framebuf_format_t formats[] = {
+    {framebuf1_setpixel, framebuf1_getpixel},
+    {framebuf16_setpixel, framebuf16_getpixel},
+};
+
+// The constants for formats
+#define FRAMEBUF_FORMAT_1VLSB    0
+#define FRAMEBUF_FORMAT_RGB565    1
+
+STATIC void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
+    formats[fb->format].setpixel(fb, x, y, color);
+}
+
+STATIC uint32_t getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
+    return formats[fb->format].getpixel(fb, x, y);
+}
 
 // General drawing functions.
 STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -87,26 +103,21 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     o->width = mp_obj_get_int(args[1]);
     o->height = mp_obj_get_int(args[2]);
     o->stride = o->width;
-    o->depth = 1;
+    o->format = 0;
     if (n_args >= 4) {
-        o->stride = mp_obj_get_int(args[3]);
+        o->format = mp_obj_get_int(args[3]);
     }
     if (n_args >= 5) {
-        o->depth = mp_obj_get_int(args[4]);
+        o->stride = mp_obj_get_int(args[4]);
     }
 
-    switch (o->depth) {
-        case 1:
-            o->setpixel = framebuf1_setpixel;
-            o->getpixel = framebuf1_getpixel;
-            break;
-        case 16:
-            o->setpixel = framebuf16_setpixel;
-            o->getpixel = framebuf16_getpixel;
+    switch (o->format) {
+        case FRAMEBUF_FORMAT_1VLSB:
+        case FRAMEBUF_FORMAT_RGB565:
             break;
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "invalid depth"));
+                "invalid format"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -119,10 +130,10 @@ STATIC mp_obj_t framebuf_pixel(size_t n_args, const mp_obj_t *args) {
     if (0 <= x && x < self->width && 0 <= y && y < self->height) {
         if (n_args == 3) {
             // get
-            return MP_OBJ_NEW_SMALL_INT(self->getpixel(self, x, y));
+            return MP_OBJ_NEW_SMALL_INT(getpixel(self, x, y));
         } else {
             // set
-            self->setpixel(self, x, y, mp_obj_get_int(args[3]));
+            setpixel(self, x, y, mp_obj_get_int(args[3]));
         }
     }
     return mp_const_none;
@@ -156,7 +167,7 @@ STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args) {
                 for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
                     if (vline_data & 1) { // only draw if pixel set
                         if (0 <= y && y < self->height) { // clip y
-                            self->setpixel(self, x0, y, col);
+                            setpixel(self, x0, y, col);
                         }
                     }
                 }
@@ -199,9 +210,9 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     for (; y0 < y0end; ++y0) {
         int cx1 = x1;
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
-            color = self->getpixel(source, cx1, y1);
+            color = getpixel(source, cx1, y1);
             if (color != key) {
-                self->setpixel(self, cx0, y0, color);
+                setpixel(self, cx0, y0, color);
             }
             ++cx1;
         }
@@ -236,8 +247,8 @@ STATIC mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ys
     }
     for (; y != yend; y += dy) {
         for (int x = sx; x != xend; x += dx) {
-            self->setpixel(self, x, y,
-                self->getpixel(self, x - xstep, y - ystep));
+            setpixel(self, x, y,
+                getpixel(self, x - xstep, y - ystep));
         }
     }
     return mp_const_none;
@@ -249,7 +260,7 @@ STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
     mp_int_t col = mp_obj_get_int(col_in);
     for (int y = 0; y < self->height; ++y) {
         for (int x = 0; x < self->width; ++x) {
-            self->setpixel(self, x, y, col);
+            setpixel(self, x, y, col);
         }
     }
     return mp_const_none;
@@ -278,7 +289,7 @@ STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
 
     for (; y < yend; ++y) {
         for (int xc = x; xc < xend; ++x) {
-            self->setpixel(self, xc, y, color);
+            setpixel(self, xc, y, color);
         }
     }
     return mp_const_none;
@@ -292,6 +303,8 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_FORMAT_1VLSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_FORMAT_1VLSB) },
+    { MP_ROM_QSTR(MP_QSTR_FORMAT_RGB565), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_FORMAT_RGB565) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf_locals_dict, framebuf_locals_dict_table);
 
