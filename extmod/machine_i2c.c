@@ -34,12 +34,10 @@
 
 #if MICROPY_PY_MACHINE_I2C
 
-// Clock stretching limit, so that we don't get stuck.
-#define I2C_STRETCH_LIMIT 255
-
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
     uint32_t us_delay;
+    uint32_t us_timeout;
     mp_hal_pin_obj_t scl;
     mp_hal_pin_obj_t sda;
 } machine_i2c_obj_t;
@@ -58,7 +56,7 @@ STATIC void mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
     mp_hal_pin_od_high(self->scl);
     mp_hal_i2c_delay(self);
     // For clock stretching, wait for the SCL pin to be released, with timeout.
-    for (int count = I2C_STRETCH_LIMIT; mp_hal_pin_read(self->scl) == 0 && count; --count) {
+    for (uint32_t count = self->us_timeout; mp_hal_pin_read(self->scl) == 0 && count; --count) {
         mp_hal_delay_us_fast(1);
     }
 }
@@ -237,16 +235,18 @@ STATIC void mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dest
 // MicroPython bindings for I2C
 
 STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_scl, ARG_sda, ARG_freq };
+    enum { ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     self->scl = mp_hal_get_pin_obj(args[ARG_scl].u_obj);
     self->sda = mp_hal_get_pin_obj(args[ARG_sda].u_obj);
+    self->us_timeout = args[ARG_timeout].u_int;
     mp_hal_i2c_init(self, args[ARG_freq].u_int);
 }
 
