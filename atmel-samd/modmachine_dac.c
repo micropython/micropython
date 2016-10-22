@@ -118,10 +118,7 @@ STATIC mp_obj_t dac_write_mv(mp_obj_t self_in, mp_obj_t val_mv) {
     dac_obj_t *self = self_in;
     // TODO(tannewt): Sanity check that the mv value is less than the reference
     // voltage.
-    // Dividing by 3301 instead of 3300 ensures that val_mv of 3300 actually
-    // produces a value of 1023 instead of 1024 which is out of range of the
-    // DAC.
-    uint16_t val = ((uint32_t) mp_obj_get_int(val_mv)) * 1024 / 3301;
+    uint16_t val = ((uint32_t) mp_obj_get_int(val_mv)) * 1023 / 3300;
 
     dac_chan_write(&self->dac_instance, DAC_CHANNEL_0, val);
 
