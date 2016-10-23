@@ -32,6 +32,8 @@ void MD5Final(unsigned char digest[16], MD5_CTX *context);
 
 // These prototypes are for recent SDKs with "malloc tracking"
 void *pvPortMalloc(unsigned sz, const char *fname, int line);
+void *pvPortZalloc(unsigned sz, const char *fname, int line);
+void *pvPortRealloc(void *p, unsigned sz, const char *fname, int line);
 void vPortFree(void *p, const char *fname, int line);
 
 #endif // _INCLUDED_ETSHAL_H_
