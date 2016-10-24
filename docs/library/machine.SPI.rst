@@ -47,7 +47,7 @@ Methods
      - ``polarity`` can be 0 or 1, and is the level the idle clock line sits at.
      - ``phase`` can be 0 or 1 to sample data on the first or second clock edge
        respectively.
-     - ``bits`` is the width in bits of each transfer. Only 8 of is guaranteed to be supported by all hardware.
+     - ``bits`` is the width in bits of each transfer. Only 8 is guaranteed to be supported by all hardware.
      - ``firstbit`` can be ``SPI.MSB`` or ``SPI.LSB``.
      - ``pins`` is an optional tuple with the pins to assign to the SPI bus (deprecated, only for WiPy).
      - ``sck``, ``mosi``, ``miso`` are pins (machine.Pin) objects to use for bus signals. For most
