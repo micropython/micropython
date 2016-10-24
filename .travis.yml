@@ -23,11 +23,12 @@ before_script:
   - python3 --version
 
 script:
+  # Build mpy-cross first because other builds depend on it.
+  - make -C mpy-cross
   - make -C atmel-samd BOARD=arduino_zero
   - make -C atmel-samd BOARD=feather_m0_adalogger
   - make -C atmel-samd BOARD=feather_m0_basic
   - make -C atmel-samd BOARD=metro_m0_flash
-  - make -C mpy-cross
   - make -C minimal test
   - make -C unix deplibs
   - make -C unix
