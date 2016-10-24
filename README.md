@@ -1,5 +1,7 @@
 # Adafruit MicroPython
 
+[![Build Status](https://travis-ci.org/adafruit/micropython.svg?branch=master)](https://travis-ci.org/adafruit/micropython)
+
 This is an open source derivative of [MicroPython](http://www.micropython.org)
 for use on educational development boards designed and sold by Adafruit
 including the [Arduino Zero](https://www.arduino.cc/en/Main/ArduinoBoardZero), [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772), [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821) and
