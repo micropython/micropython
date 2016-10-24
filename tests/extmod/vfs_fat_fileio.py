@@ -48,6 +48,7 @@ print(str(f)[:17], str(f)[-1:])
 f.write("hello!")
 f.flush()
 f.close()
+f.close() # allowed
 try:
     f.write("world!")
 except OSError as e:
@@ -60,11 +61,6 @@ except OSError as e:
 
 try:
     f.flush()
-except OSError as e:
-    print(e.args[0] == uerrno.EINVAL)
-
-try:
-    f.close()
 except OSError as e:
     print(e.args[0] == uerrno.EINVAL)
 
