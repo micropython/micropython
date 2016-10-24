@@ -68,15 +68,15 @@
 /*! \name LUN 0 Definitions
  */
 //! @{
-#define LUN_0_INCLUDE                           "rom_fs.h"
-#define Lun_0_test_unit_ready                   rom_fs_test_unit_ready
-#define Lun_0_read_capacity                     rom_fs_read_capacity
-#define Lun_0_unload                            NULL /* Can not be unloaded */
-#define Lun_0_wr_protect                        rom_fs_wr_protect
-#define Lun_0_removal                           rom_fs_removal
-#define Lun_0_usb_read_10                       rom_fs_usb_read_10
-#define Lun_0_usb_write_10                      rom_fs_usb_write_10
-#define LUN_0_NAME                              "\"On-Chip ROM\""
+#define LUN_0_INCLUDE                           "access_vfs.h"
+#define Lun_0_test_unit_ready                   vfs_test_unit_ready
+#define Lun_0_read_capacity                     vfs_read_capacity
+#define Lun_0_unload                            NULL
+#define Lun_0_wr_protect                        vfs_wr_protect
+#define Lun_0_removal                           vfs_removal
+#define Lun_0_usb_read_10                       vfs_usb_read_10
+#define Lun_0_usb_write_10                      vfs_usb_write_10
+#define LUN_0_NAME                              "\"MicroPython VFS[0]\""
 //! @}
 
 #define MEM_USB                                 LUN_USB
