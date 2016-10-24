@@ -23,6 +23,10 @@ before_script:
   - python3 --version
 
 script:
+  - make -C atmel-samd BOARD=arduino_zero
+  - make -C atmel-samd BOARD=feather_m0_adalogger
+  - make -C atmel-samd BOARD=feather_m0_basic
+  - make -C atmel-samd BOARD=metro_m0_flash
   - make -C mpy-cross
   - make -C minimal test
   - make -C unix deplibs
@@ -41,13 +45,6 @@ script:
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
-
-  # run tests with coverage info
-  - make -C unix coverage
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests -d thread)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --via-mpy -d basics)
 
 after_success:
   - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
