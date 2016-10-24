@@ -42,6 +42,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_bin_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_callable_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_compile_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_chr_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin_delattr_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin_divmod_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_eval_obj);
