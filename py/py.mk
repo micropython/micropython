@@ -230,7 +230,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_lexer.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
-	../extmod/moduos_dupterm.o \
+	../extmod/uos_dupterm.o \
 	../lib/embed/abort_.o \
 	../lib/utils/printf.o \
 
