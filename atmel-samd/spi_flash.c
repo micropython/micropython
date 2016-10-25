@@ -35,8 +35,6 @@
 #include "lib/fatfs/ff.h"
 #include "extmod/fsusermount.h"
 
-#include "asf/sam0/drivers/nvm/nvm.h"
-
 #include "spi_flash.h"
 
 #define SPI_FLASH_PART1_START_BLOCK (0x1)
