@@ -101,6 +101,7 @@ CFLAGS_CORTEX_M0 = \
 	-DEXTINT_CALLBACK_MODE=true \
 	-DUDD_ENABLE \
 	-DUSART_CALLBACK_MODE=true \
+	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT
 CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 
@@ -135,6 +136,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/system/interrupt/system_interrupt.c   \
 	drivers/system/pinmux/pinmux.c \
 	drivers/system/system.c \
+	drivers/tc/tc_interrupt.c \
 	drivers/tc/tc_sam_d_r/tc.c \
 	drivers/tcc/tcc.c \
 	drivers/usb/stack_interface/usb_device_udd.c \
@@ -144,6 +146,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 
 SRC_C = \
 	access_vfs.c \
+	autoreset.c \
 	builtin_open.c \
 	fatfs_port.c \
 	main.c \

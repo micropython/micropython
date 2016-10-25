@@ -34,6 +34,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "mpconfig.h"
+
 typedef unsigned char byte;
 typedef unsigned int uint;
 

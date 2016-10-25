@@ -27,11 +27,13 @@
 #include <string.h>
 
 #include "access_vfs.h"
+#include "autoreset.h"
 
 #include "asf/common/services/usb/class/msc/device/udi_msc.h"
 #include "extmod/fsusermount.h"
 #include "lib/fatfs/diskio.h"
 #include "py/mpconfig.h"
+#include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/misc.h"
 
@@ -140,7 +142,6 @@ Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
     return CTRL_GOOD;
 }
 
-
 //! This function transfers the USB MSC data to the memory
 //!
 //! @param addr         Sector address to start write
@@ -183,5 +184,6 @@ Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
             }
         }
     }
+    autoreset_start();
     return CTRL_GOOD;
 }

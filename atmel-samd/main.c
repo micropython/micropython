@@ -22,6 +22,7 @@
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
+#include "autoreset.h"
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
 
@@ -172,6 +173,9 @@ static char *stack_top;
 static char heap[16384];
 
 void reset_mp() {
+    autoreset_stop();
+    autoreset_enable();
+
     // Sync the file systems in case any used RAM from the GC to cache. As soon
     // as we re-init the GC all bets are off on the cache.
     disk_ioctl(0, CTRL_SYNC, NULL);
@@ -191,8 +195,18 @@ void reset_mp() {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
     pin_init0();
+}
 
+void start_mp() {
+    #ifdef AUTORESET_TIMER
+        mp_hal_stdout_tx_str("\r\n");
+        mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
+        mp_hal_stdout_tx_str("Type anything into the REPL to disable and manually reset (CTRL-D) to re-enable.\r\n");
+    #endif
+
+    mp_hal_stdout_tx_str("boot.py output:\r\n");
     pyexec_file("boot.py");
+    mp_hal_stdout_tx_str("\r\nmain.py output:\r\n");
     pyexec_file("main.py");
 }
 
@@ -216,10 +230,17 @@ int main(int argc, char **argv) {
     // as current dir.
     init_flash_fs();
 
+    // Initialize the autoreset timer. It will automatically reset the repl
+    // after a burst of writes to the FS.
+    autoreset_init();
+
     // Start USB after getting everything going.
     #ifdef USB_REPL
         udc_start();
     #endif
+
+    // Run boot and main.
+    start_mp();
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
@@ -233,6 +254,7 @@ int main(int argc, char **argv) {
         if (exit_code == PYEXEC_FORCED_EXIT) {
             mp_hal_stdout_tx_str("soft reboot\r\n");
             reset_mp();
+            start_mp();
         } else if (exit_code != 0) {
             break;
         }

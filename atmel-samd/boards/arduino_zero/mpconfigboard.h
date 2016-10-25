@@ -8,3 +8,5 @@
 
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PB03
+
+#define AUTORESET_TIMER     TC5
