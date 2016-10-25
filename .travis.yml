@@ -27,7 +27,7 @@ before_script:
 
 script:
   - make -C mpy-cross
-  - make -C minimal build/firmware.bin test
+  - make -C minimal CROSS=1 build/firmware.bin
   - ls -l minimal/build/firmware.bin
   - tools/check_code_size.sh
   - mkdir -p ${HOME}/persist
