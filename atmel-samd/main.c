@@ -47,6 +47,9 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
+// TODO(tannewt): Remove these default files in favor a very simple README with
+// a url to all of the files that ship on boards.
+
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
@@ -93,6 +96,11 @@ void init_flash_fs() {
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem, or asked to reset it, so create a fresh one
 
+        // We are before USB initializes so temporarily undo the USB_WRITEABLE
+        // requirement.
+        bool usb_writeable = (vfs->flags & FSUSER_USB_WRITEABLE) > 0;
+        vfs->flags &= ~FSUSER_USB_WRITEABLE;
+
         res = f_mkfs("/flash", 0, 0);
         if (res == FR_OK) {
             // success creating fresh LFS
@@ -118,6 +126,35 @@ void init_flash_fs() {
         f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
         f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
+
+        // Make sure we have a /flash/boot.py.  Create it if needed.
+        FILINFO fno;
+    #if _USE_LFN
+        fno.lfname = NULL;
+        fno.lfsize = 0;
+    #endif
+        res = f_stat("/flash/boot.py", &fno);
+        if (res == FR_OK) {
+            if (fno.fattrib & AM_DIR) {
+                // exists as a directory
+                // TODO handle this case
+                // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
+            } else {
+                // exists as a file, good!
+            }
+        } else {
+            // doesn't exist, create fresh file
+
+            FIL fp;
+            f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+            UINT n;
+            f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
+            // TODO check we could write n bytes
+            f_close(&fp);
+        }
+        if (usb_writeable) {
+            vfs->flags |= FSUSER_USB_WRITEABLE;
+        }
     } else if (res == FR_OK) {
         // mount successful
     } else {
@@ -129,32 +166,6 @@ void init_flash_fs() {
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
     f_chdrive("/flash");
-
-    // Make sure we have a /flash/boot.py.  Create it if needed.
-    FILINFO fno;
-#if _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
-    res = f_stat("/flash/boot.py", &fno);
-    if (res == FR_OK) {
-        if (fno.fattrib & AM_DIR) {
-            // exists as a directory
-            // TODO handle this case
-            // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
-        } else {
-            // exists as a file, good!
-        }
-    } else {
-        // doesn't exist, create fresh file
-
-        FIL fp;
-        f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
-        UINT n;
-        f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
-        // TODO check we could write n bytes
-        f_close(&fp);
-    }
 }
 
 static char *stack_top;
