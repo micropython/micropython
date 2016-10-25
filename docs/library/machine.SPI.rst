@@ -1,13 +1,14 @@
 .. currentmodule:: machine
 
-class SPI -- a Serial Peripheral Interface bus protocol
-=======================================================
+class SPI -- a Serial Peripheral Interface bus protocol (master side)
+=====================================================================
 
-SPI is a serial protocol that is driven by a master.  At the physical level,
-bus consistens of 3 lines: SCK, MOSI, MISO. Multiple devices can share the
-same bus. Each device should have a separate, 4th signal, SS (Slave Select),
-to select a particualr device on a bus with which communication takes place.
-Management of an SS signal should happen in user code (via machine.Pin class).
+SPI is a synchronous serial protocol that is driven by a master. At the
+physical level, a bus consists of 3 lines: SCK, MOSI, MISO. Multiple devices
+can share the same bus. Each device should have a separate, 4th signal,
+SS (Slave Select), to select a particualr device on a bus with which
+communication takes place. Management of an SS signal should happen in
+user code (via machine.Pin class).
 
 .. only:: port_wipy
 
@@ -39,7 +40,7 @@ Constructors
 Methods
 -------
 
-.. method:: SPI.init(baudrate=1000000, \*, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, pins=(CLK, MOSI, MISO), sck=None, mosi=None, miso=None)
+.. method:: SPI.init(baudrate=1000000, \*, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, sck=None, mosi=None, miso=None, pins=(SCK, MOSI, MISO))
 
    Initialise the SPI bus with the given parameters:
 
@@ -49,12 +50,13 @@ Methods
        respectively.
      - ``bits`` is the width in bits of each transfer. Only 8 is guaranteed to be supported by all hardware.
      - ``firstbit`` can be ``SPI.MSB`` or ``SPI.LSB``.
-     - ``pins`` is an optional tuple with the pins to assign to the SPI bus (deprecated, only for WiPy).
      - ``sck``, ``mosi``, ``miso`` are pins (machine.Pin) objects to use for bus signals. For most
        hardware SPI blocks (as selected by ``id`` parameter to the constructore), pins are fixed
        and cannot be changed. In some cases, hardware blocks allow 2-3 alternative pin sets for
        a hardware SPI block. Arbitrary pin assignments are possible only for a bitbanging SPI driver
-       (``id``=-1).
+       (``id`` = -1).
+     - ``pins`` - WiPy port doesn't ``sck``, ``mosi``, ``miso`` arguments, and instead allows to
+     specify them as a tuple of ``pins`` paramter.
 
 .. method:: SPI.deinit()
 
