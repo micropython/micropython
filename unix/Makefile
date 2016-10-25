@@ -215,18 +215,14 @@ test: $(PROG) ../tests/run-tests
 TARGET = micropython
 PREFIX = $(DESTDIR)/usr/local
 BINDIR = $(PREFIX)/bin
-PIPSRC = ../tools/pip-micropython
-PIPTARGET = pip-micropython
 
 install: micropython
 	install -d $(BINDIR)
 	install $(TARGET) $(BINDIR)/$(TARGET)
-	install $(PIPSRC) $(BINDIR)/$(PIPTARGET)
 
 # uninstall micropython
 uninstall:
 	-rm $(BINDIR)/$(TARGET)
-	-rm $(BINDIR)/$(PIPTARGET)
 
 # build synthetically fast interpreter for benchmarking
 fast:
