@@ -183,7 +183,6 @@ STATIC void emit_write_bytecode_byte(emit_t *emit, byte b1) {
 }
 
 STATIC void emit_write_bytecode_byte_byte(emit_t* emit, byte b1, byte b2) {
-    assert((b2 & (~0xff)) == 0);
     byte *c = emit_get_cur_to_write_bytecode(emit, 2);
     c[0] = b1;
     c[1] = b2;
@@ -550,7 +549,6 @@ void mp_emit_bc_load_null(emit_t *emit) {
 
 void mp_emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     (void)qst;
-    assert(local_num >= 0);
     emit_bc_pre(emit, 1);
     if (local_num <= 15) {
         emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_MULTI + local_num);
@@ -608,7 +606,6 @@ void mp_emit_bc_load_subscr(emit_t *emit) {
 
 void mp_emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     (void)qst;
-    assert(local_num >= 0);
     emit_bc_pre(emit, -1);
     if (local_num <= 15) {
         emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_MULTI + local_num);
@@ -927,7 +924,7 @@ void mp_emit_bc_return_value(emit_t *emit) {
 }
 
 void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
-    assert(0 <= n_args && n_args <= 2);
+    assert(n_args <= 2);
     emit_bc_pre(emit, -n_args);
     emit_write_bytecode_byte_byte(emit, MP_BC_RAISE_VARARGS, n_args);
 }
