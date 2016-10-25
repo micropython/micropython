@@ -33,6 +33,7 @@
 #include "extmod/fsusermount.h"
 
 #include "asf/sam0/drivers/nvm/nvm.h"
+#include "asf/sam0/drivers/port/port.h"
 
 #include "internal_flash.h"
 
@@ -51,6 +52,16 @@ void internal_flash_init(void) {
         config_nvm.manual_page_write = false;
         nvm_set_config(&config_nvm);
         internal_flash_is_initialised = true;
+
+        // Activity LED for flash writes.
+        #ifdef MICROPY_HW_LED_MSC
+            struct port_config pin_conf;
+            port_get_config_defaults(&pin_conf);
+
+            pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+            port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
+            port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+        #endif
     }
 }
 
@@ -158,6 +169,9 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
         return true;
 
     } else {
+        #ifdef MICROPY_HW_LED_MSC
+            port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
+        #endif
         // non-MBR block, copy to cache
         volatile uint32_t dest = convert_block_to_flash_addr(block);
         if (dest == -1) {
@@ -195,6 +209,9 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
               return false;
           }
         }
+        #ifdef MICROPY_HW_LED_MSC
+            port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+        #endif
         return true;
     }
 }
