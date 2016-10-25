@@ -1652,7 +1652,10 @@ char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
 // assumes enough space as calculated by mp_int_format_size
 // returns length of string, not including null byte
 mp_uint_t mpz_as_str_inpl(const mpz_t *i, mp_uint_t base, const char *prefix, char base_char, char comma, char *str) {
-    if (str == NULL || base < 2 || base > 32) {
+    if (str == NULL) {
+        return 0;
+    }
+    if (base < 2 || base > 32) {
         str[0] = 0;
         return 0;
     }
