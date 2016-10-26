@@ -53,6 +53,8 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_IS_REPL (4)
 #define EXEC_FLAG_SOURCE_IS_RAW_CODE (8)
 
+extern void mp_hal_set_interrupt_char (int c);
+
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
