@@ -50,13 +50,21 @@ void mp_msc_disable()
 
 bool mp_cdc_enable(uint8_t port)
 {
-	mp_cdc_enabled = true;
+	mp_cdc_enabled = false;
 	return true;
 }
 
 void mp_cdc_disable(uint8_t port)
 {
 	mp_cdc_enabled = false;
+}
+
+void usb_dtr_notify(uint8_t port, bool set) {
+	mp_cdc_enabled = set;
+}
+
+void usb_rts_notify(uint8_t port, bool set) {
+    return;
 }
 
 void usb_rx_notify(void)
@@ -177,7 +185,10 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     #endif
 
     #ifdef USB_REPL
-    if (mp_cdc_enabled && udi_cdc_is_tx_ready()) {
+    // Always make sure there is enough room in the usb buffer for the outgoing
+    // string. If there isn't we risk getting caught in a loop within the usb
+    // code as it tries to send all the characters it can't buffer.
+    if (mp_cdc_enabled && udi_cdc_get_free_tx_buffer() >= len) {
         udi_cdc_write_buf(str, len);
     }
     #endif
