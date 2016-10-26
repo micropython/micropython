@@ -105,7 +105,7 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
     p = mp_obj_str_get_data(args[2], &len);
     memcpy(config.password, p, len);
 
-    error_check(wifi_station_set_config(&config), "Cannot set STA config");
+    error_check(wifi_station_set_config_current(&config), "Cannot set STA config");
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
     return mp_const_none;
