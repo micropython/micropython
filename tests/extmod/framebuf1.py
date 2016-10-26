@@ -23,6 +23,10 @@ fbuf.pixel(0, 15, 1)
 fbuf.pixel(4, 15, 1)
 print(buf)
 
+# clear pixel
+fbuf.pixel(4, 15, 0)
+print(buf)
+
 # get pixel
 print(fbuf.pixel(0, 0), fbuf.pixel(1, 1))
 
