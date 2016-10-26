@@ -39,3 +39,14 @@ fbuf.scroll(-1, 0)
 print(buf)
 fbuf.scroll(2, 2)
 print(buf)
+
+# print text
+fbuf.fill(0)
+fbuf.text("hello", 0, 0, 1)
+print(buf)
+fbuf.text("hello", 0, 0, 0) # clear
+print(buf)
+
+# char out of font range set to chr(127)
+fbuf.text(str(chr(31)), 0, 0)
+print(buf)
