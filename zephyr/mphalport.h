@@ -1,4 +1,5 @@
 #include <zephyr.h>
+#include "lib/utils/interrupt_char.h"
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
     return sys_tick_get() * sys_clock_us_per_tick;
