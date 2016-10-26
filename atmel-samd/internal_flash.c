@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
@@ -40,7 +41,7 @@
 #define TOTAL_INTERNAL_FLASH_SIZE 0x010000
 
 #define INTERNAL_FLASH_MEM_SEG1_START_ADDR (0x00040000 - TOTAL_INTERNAL_FLASH_SIZE)
-#define INTERNAL_FLASH_PART1_START_BLOCK (0x100)
+#define INTERNAL_FLASH_PART1_START_BLOCK (0x1)
 #define INTERNAL_FLASH_PART1_NUM_BLOCKS (TOTAL_INTERNAL_FLASH_SIZE / INTERNAL_FLASH_BLOCK_SIZE)
 
 static bool internal_flash_is_initialised = false;

@@ -5,3 +5,5 @@
 
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Adalogger"
 #define MICROPY_HW_MCU_NAME "samd21g18"
+
+#define AUTORESET_TIMER     TC5

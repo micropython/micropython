@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "autoreset.h"
 #include "compiler.h"
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
@@ -67,6 +68,40 @@ void usb_rts_notify(uint8_t port, bool set) {
     return;
 }
 
+void inject_character(char c) {
+    // Introduce a critical section to avoid buffer corruption. We use
+    // cpu_irq_save instead of cpu_irq_disable because we don't know the
+    // current state of IRQs. They may have been turned off already and
+    // we don't want to accidentally turn them back on.
+    irqflags_t flags = cpu_irq_save();
+    // If our buffer is full, then don't get another character otherwise
+    // we'll lose a previous character.
+    if (usb_rx_count >= USB_RX_BUF_SIZE) {
+        cpu_irq_restore(flags);
+        return;
+    }
+
+    uint8_t current_tail = usb_rx_buf_tail;
+    // Pretend we've received a character so that any nested calls to
+    // this function have to consider the spot we've reserved.
+    if ((USB_RX_BUF_SIZE - 1) == usb_rx_buf_tail) {
+        // Reached the end of buffer, revert back to beginning of
+        // buffer.
+        usb_rx_buf_tail = 0x00;
+    } else {
+        usb_rx_buf_tail++;
+    }
+    // The count of characters present in receive buffer is
+    // incremented.
+    usb_rx_count++;
+
+    // We put the next character where we expected regardless of whether
+    // the next character was already loaded in the buffer.
+    usb_rx_buf[current_tail] = c;
+
+    cpu_irq_restore(flags);
+}
+
 void usb_rx_notify(void)
 {
     irqflags_t flags;
@@ -128,6 +163,9 @@ int receive_usb() {
     if (usb_rx_count == 0) {
         return 0;
     }
+
+    // Disable autoreset if someone is using the repl.
+    autoreset_disable();
 
     // Copy from head.
     cpu_irq_disable();
