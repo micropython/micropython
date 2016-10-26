@@ -9,6 +9,7 @@
 #include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
+#include "py/smallint.h"
 
 #include "mpconfigboard.h"
 #include "mphalport.h"
@@ -226,8 +227,25 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Always make sure there is enough room in the usb buffer for the outgoing
     // string. If there isn't we risk getting caught in a loop within the usb
     // code as it tries to send all the characters it can't buffer.
-    if (mp_cdc_enabled && udi_cdc_get_free_tx_buffer() >= len) {
-        udi_cdc_write_buf(str, len);
+    uint32_t start = 0;
+    uint32_t start_tick = mp_hal_ticks_ms();
+    uint32_t duration = 0;
+    if (mp_cdc_enabled) {
+        while (start < len && duration < 10) {
+            uint8_t buffer_space = udi_cdc_get_free_tx_buffer();
+            uint8_t transmit = min(len - start, buffer_space);
+            if (transmit > 0) {
+                if (udi_cdc_write_buf(str + start, transmit) > 0) {
+                    // It didn't transmit successfully so give up.
+                    break;
+                }
+            }
+            start += transmit;
+            if (mp_msc_enabled) {
+                udi_msc_process_trans();
+            }
+            duration = (mp_hal_ticks_ms() - start_tick) & MP_SMALL_INT_POSITIVE_MASK;
+        }
     }
     #endif
 }

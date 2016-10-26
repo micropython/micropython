@@ -54,8 +54,10 @@ extern void mp_cdc_disable(uint8_t port);
 #define  UDI_CDC_RX_NOTIFY(port)           usb_rx_notify()
 void usb_rx_notify(void);
 #define  UDI_CDC_SET_CODING_EXT(port,cfg)
-#define  UDI_CDC_SET_DTR_EXT(port,set)
-#define  UDI_CDC_SET_RTS_EXT(port,set)
+#define  UDI_CDC_SET_DTR_EXT(port,set) usb_dtr_notify(port, set)
+void usb_dtr_notify(uint8_t port, bool set);
+#define  UDI_CDC_SET_RTS_EXT(port,set) usb_rts_notify(port, set)
+void usb_rts_notify(uint8_t port, bool set);
 
 /**
  * USB CDC low level configuration
