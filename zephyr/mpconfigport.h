@@ -60,8 +60,19 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+
+#ifdef CONFIG_BOARD
+#define MICROPY_HW_BOARD_NAME "zephyr-" CONFIG_BOARD
+#else
 #define MICROPY_HW_BOARD_NAME "zephyr-generic"
+#endif
+
+#ifdef CONFIG_SOC
+#define MICROPY_HW_MCU_NAME CONFIG_SOC
+#else
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
+#endif
+
 #define MICROPY_MODULE_FROZEN_STR   (1)
 
 typedef int mp_int_t; // must be pointer size
