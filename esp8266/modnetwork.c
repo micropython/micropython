@@ -81,7 +81,7 @@ STATIC mp_obj_t esp_active(mp_uint_t n_args, const mp_obj_t *args) {
         } else {
             mode &= ~mask;
         }
-        error_check(wifi_set_opmode(mode), "Cannot update i/f status");
+        error_check(wifi_set_opmode_current(mode), "Cannot update i/f status");
         return mp_const_none;
     }
 
