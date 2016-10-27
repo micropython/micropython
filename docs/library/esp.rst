@@ -45,3 +45,12 @@ Functions
 .. function:: flash_write(byte_offset, bytes)
 
 .. function:: flash_erase(sector_no)
+
+.. function:: save_config()
+
+    Save network configuration to flash.
+
+    The ESP8266 will bring up the network interface during startup based on the
+    configuration stored in a special segment of the flash memory.
+    This method can be used to store the current configuration for future module
+    initialization.
