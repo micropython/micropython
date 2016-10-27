@@ -25,6 +25,6 @@ STATIC const mp_map_elem_t pin_board_pins_locals_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_PA23 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_SCK), (mp_obj_t)&pin_PB11 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PB10 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_PB12 },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_PA12 },
 };
 MP_DEFINE_CONST_DICT(pin_board_pins_locals_dict, pin_board_pins_locals_dict_table);
