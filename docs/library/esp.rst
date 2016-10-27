@@ -54,3 +54,9 @@ Functions
     configuration stored in a special segment of the flash memory.
     This method can be used to store the current configuration for future module
     initialization.
+    
+    .. warning::
+ 
+        Writing the configuration to flash may wear out your flash  if used too 
+        often and might destroy it!
+  
