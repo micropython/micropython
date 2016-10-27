@@ -173,6 +173,7 @@ SRC_C = \
 	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
 	asf/sam0/utils/cmsis/samd21/source/system_samd21.c \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
+	boards/samd21_pins.c \
 	boards/$(BOARD)/init.c \
 	boards/$(BOARD)/pins.c \
 	lib/fatfs/ff.c \
