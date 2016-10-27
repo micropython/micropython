@@ -54,6 +54,7 @@ exclude_tests = (
     'extmod/uctypes_native_float.py', 'extmod/uctypes_le_float.py',
     'extmod/machine_pinbase.py', 'extmod/machine_pulse.py',
     'extmod/vfs_fat_ramdisk.py', 'extmod/vfs_fat_fileio.py',
+    'extmod/vfs_fat_fsusermount.py', 'extmod/vfs_fat_oldproto.py'
 )
 
 output = []
