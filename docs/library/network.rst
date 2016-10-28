@@ -5,11 +5,12 @@
 .. module:: network
    :synopsis: network configuration
 
-This module provides network drivers and routing configuration.  Network
-drivers for specific hardware are available within this module and are
-used to configure a hardware network interface.  Configured interfaces
-are then available for use via the :mod:`socket` module. To use this module
-the network build of firmware must be installed.
+This module provides network drivers and routing configuration. To use this
+module, a MicroPython variant/build with network capabilities must be installed.
+Network drivers for specific hardware are available within this module and are
+used to configure hardware network interface(s). Network services provided
+by configured interfaces are then available for use via the :mod:`socket`
+module.
 
 For example::
 
