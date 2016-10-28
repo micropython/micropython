@@ -37,7 +37,6 @@ int interrupt_char;
 
 extern struct usart_module usart_instance;
 
-
 static volatile bool mp_msc_enabled = false;
 bool mp_msc_enable()
 {
@@ -192,7 +191,7 @@ int mp_hal_stdin_rx_chr(void) {
             udi_msc_process_trans();
         }
         #ifdef USB_REPL
-        if (mp_cdc_enabled && usb_rx_count > 0) {
+        if (usb_rx_count > 0) {
             #ifdef MICROPY_HW_LED_RX
             port_pin_toggle_output_level(MICROPY_HW_LED_RX);
             #endif
@@ -259,22 +258,22 @@ void mp_hal_set_interrupt_char(int c) {
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
-    // Process any mass storage transfers.
-    // TODO(tannewt): Actually account for how long the processing takes and
-    // subtract it from the delay.
+    // If mass storage is enabled measure the time ourselves and run any mass
+    // storage transactions in the meantime.
+    // TODO(tannewt): Break out of this delay on KeyboardInterrupt too.
     if (mp_msc_enabled) {
-        udi_msc_process_trans();
+        uint32_t start_tick = mp_hal_ticks_ms();
+        uint32_t duration = 0;
+        while (duration < delay) {
+            udi_msc_process_trans();
+            duration = (mp_hal_ticks_ms() - start_tick) & MP_SMALL_INT_POSITIVE_MASK;
+        }
+    } else {
+        delay_ms(delay);
     }
-    delay_ms(delay);
 }
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    // Process any mass storage transfers.
-    // TODO(tannewt): Actually account for how long the processing takes and
-    // subtract it from the delay.
-    if (mp_msc_enabled) {
-        udi_msc_process_trans();
-    }
     delay_us(delay);
 }
 
