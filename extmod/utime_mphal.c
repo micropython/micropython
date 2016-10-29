@@ -93,4 +93,12 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_diff_obj, time_ticks_diff);
 
+STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
+    // we assume that first argument come from ticks_xx so is small int
+    uint32_t ticks = MP_OBJ_SMALL_INT_VALUE(ticks_in);
+    uint32_t delta = (uint32_t)mp_obj_get_int(delta_in);
+    return MP_OBJ_NEW_SMALL_INT((ticks + delta) & MP_SMALL_INT_POSITIVE_MASK);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
+
 #endif // MICROPY_PY_UTIME_MP_HAL

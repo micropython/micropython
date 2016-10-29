@@ -119,6 +119,7 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms), (mp_obj_t)&mp_utime_ticks_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_us), (mp_obj_t)&mp_utime_ticks_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_cpu), (mp_obj_t)&mp_utime_ticks_cpu_obj },
+    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_diff), (mp_obj_t)&mp_utime_ticks_diff_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_time_obj },
 };
