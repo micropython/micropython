@@ -7,6 +7,7 @@
 #include "asf/common2/services/delay/delay.h"
 #include "asf/sam0/drivers/port/port.h"
 #include "asf/sam0/drivers/sercom/usart/usart.h"
+#include "lib/mp-readline/readline.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/smallint.h"
@@ -66,40 +67,6 @@ void usb_dtr_notify(uint8_t port, bool set) {
 
 void usb_rts_notify(uint8_t port, bool set) {
     return;
-}
-
-void inject_character(char c) {
-    // Introduce a critical section to avoid buffer corruption. We use
-    // cpu_irq_save instead of cpu_irq_disable because we don't know the
-    // current state of IRQs. They may have been turned off already and
-    // we don't want to accidentally turn them back on.
-    irqflags_t flags = cpu_irq_save();
-    // If our buffer is full, then don't get another character otherwise
-    // we'll lose a previous character.
-    if (usb_rx_count >= USB_RX_BUF_SIZE) {
-        cpu_irq_restore(flags);
-        return;
-    }
-
-    uint8_t current_tail = usb_rx_buf_tail;
-    // Pretend we've received a character so that any nested calls to
-    // this function have to consider the spot we've reserved.
-    if ((USB_RX_BUF_SIZE - 1) == usb_rx_buf_tail) {
-        // Reached the end of buffer, revert back to beginning of
-        // buffer.
-        usb_rx_buf_tail = 0x00;
-    } else {
-        usb_rx_buf_tail++;
-    }
-    // The count of characters present in receive buffer is
-    // incremented.
-    usb_rx_count++;
-
-    // We put the next character where we expected regardless of whether
-    // the next character was already loaded in the buffer.
-    usb_rx_buf[current_tail] = c;
-
-    cpu_irq_restore(flags);
 }
 
 void usb_rx_notify(void)
@@ -191,6 +158,9 @@ int mp_hal_stdin_rx_chr(void) {
             udi_msc_process_trans();
         }
         #ifdef USB_REPL
+        if (reset_next_character) {
+            return CHAR_CTRL_D;
+        }
         if (usb_rx_count > 0) {
             #ifdef MICROPY_HW_LED_RX
             port_pin_toggle_output_level(MICROPY_HW_LED_RX);
@@ -277,18 +247,6 @@ void mp_hal_delay_us(mp_uint_t delay) {
     delay_us(delay);
 }
 
-// Global millisecond tick count (driven by SysTick interrupt handler).
-volatile uint32_t systick_ticks_ms = 0;
-
-void SysTick_Handler(void) {
-    // SysTick interrupt handler called when the SysTick timer reaches zero
-    // (every millisecond).
-    systick_ticks_ms += 1;
-    // Keep the counter within the range of 31 bit uint values since that's the
-    // max value for micropython 'small' ints.
-    systick_ticks_ms = systick_ticks_ms > (0xFFFFFFFF >> 1) ? 0 : systick_ticks_ms;
-}
-
 // Interrupt flags that will be saved and restored during disable/Enable
 // interrupt functions below.
 static irqflags_t irq_flags;
@@ -297,14 +255,10 @@ void mp_hal_disable_all_interrupts(void) {
   // Disable all interrupt sources for timing critical sections.
   // Disable ASF-based interrupts.
   irq_flags = cpu_irq_save();
-  // Disable SysTick interrupt.
-  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
 }
 
 void mp_hal_enable_all_interrupts(void) {
   // Enable all interrupt sources after timing critical sections.
-  // Restore SysTick interrupt.
-  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
   // Restore ASF-based interrupts.
   cpu_irq_restore(irq_flags);
 }

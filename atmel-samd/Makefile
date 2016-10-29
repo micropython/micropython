@@ -161,6 +161,7 @@ SRC_C = \
 	mphalport.c \
 	pin_named_pins.c \
 	samdneopixel.c \
+	tick.c \
 	$(FLASH_IMPL) \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
 	asf/common/services/storage/ctrl_access/ctrl_access.c  \

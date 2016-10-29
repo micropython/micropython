@@ -26,6 +26,8 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H__
 
+#include <stdbool.h>
+
 #include "mpconfigport.h"
 
 // Erase sector size.

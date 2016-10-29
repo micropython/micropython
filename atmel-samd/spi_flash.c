@@ -23,6 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "spi_flash.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -35,7 +36,7 @@
 #include "lib/fatfs/ff.h"
 #include "extmod/fsusermount.h"
 
-#include "spi_flash.h"
+#include "samdneopixel.h"
 
 #define SPI_FLASH_PART1_START_BLOCK (0x1)
 
@@ -383,6 +384,9 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     #ifdef MICROPY_HW_LED_MSC
         port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
     #endif
+    #ifdef MICROPY_HW_NEOPIXEL
+        temp_status_color(0x8f, 0x00, 0x00);
+    #endif
     // If we've cached to the flash itself flush from there.
     if (ram_cache == NULL) {
         flush_scratch_flash();
@@ -390,6 +394,9 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
         flush_ram_cache(keep_cache);
     }
     current_sector = NO_SECTOR_LOADED;
+    #ifdef MICROPY_HW_NEOPIXEL
+        clear_temp_status();
+    #endif
     #ifdef MICROPY_HW_LED_MSC
         port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
     #endif

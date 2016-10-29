@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
 
-#include "autoreset.h"
+#include "mpconfigport.h"
 
-#include "asf/sam0/drivers/tc/tc_interrupt.h"
-#include "py/mphal.h"
+extern volatile uint32_t ticks_ms;
 
-void mp_keyboard_interrupt(void);
+void tick_init();
 
-volatile uint32_t autoreset_delay_ms = 0;
-bool autoreset_enabled = false;
-volatile bool reset_next_character = false;
-
-inline void autoreset_tick() {
-  if (autoreset_delay_ms == 0) {
-      return;
-  }
-  if (autoreset_delay_ms == 1 && autoreset_enabled && !reset_next_character) {
-      mp_keyboard_interrupt();
-      reset_next_character = true;
-  }
-  autoreset_delay_ms--;
-}
-
-void autoreset_enable() {
-    autoreset_enabled = true;
-    reset_next_character = false;
-}
-
-void autoreset_disable() {
-    autoreset_enabled = false;
-}
-
-void autoreset_start() {
-    autoreset_delay_ms = AUTORESET_DELAY_MS;
-}
-
-void autoreset_stop() {
-    autoreset_delay_ms = 0;
-}
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__

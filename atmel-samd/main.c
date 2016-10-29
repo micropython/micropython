@@ -25,6 +25,8 @@
 #include "autoreset.h"
 #include "mpconfigboard.h"
 #include "modmachine_pin.h"
+#include "samdneopixel.h"
+#include "tick.h"
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -173,6 +175,7 @@ static char *stack_top;
 static char heap[16384];
 
 void reset_mp() {
+    new_status_color(0x8f, 0x00, 0x8f);
     autoreset_stop();
     autoreset_enable();
 
@@ -198,14 +201,20 @@ void reset_mp() {
 }
 
 void start_mp() {
-    #ifdef AUTORESET_TIMER
+    #ifdef AUTORESET_DELAY_MS
         mp_hal_stdout_tx_str("\r\n");
         mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
         mp_hal_stdout_tx_str("Type anything into the REPL to disable and manually reset (CTRL-D) to re-enable.\r\n");
     #endif
 
+    new_status_color(0x00, 0x00, 0x8f);
     mp_hal_stdout_tx_str("boot.py output:\r\n");
-    pyexec_file("boot.py");
+    int ret = pyexec_file("boot.py");
+    if (ret & PYEXEC_FORCED_EXIT) {
+        return;
+    }
+
+    new_status_color(0x00, 0x8f, 0x00);
     mp_hal_stdout_tx_str("\r\nmain.py output:\r\n");
     pyexec_file("main.py");
 }
@@ -230,10 +239,6 @@ int main(int argc, char **argv) {
     // as current dir.
     init_flash_fs();
 
-    // Initialize the autoreset timer. It will automatically reset the repl
-    // after a burst of writes to the FS.
-    autoreset_init();
-
     // Start USB after getting everything going.
     #ifdef USB_REPL
         udc_start();
@@ -246,6 +251,7 @@ int main(int argc, char **argv) {
     // The REPL mode can change, or it can request a soft reset.
     int exit_code = 0;
     for (;;) {
+        new_status_color(0x3f, 0x3f, 0x3f);
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             exit_code = pyexec_raw_repl();
         } else {
@@ -315,7 +321,9 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
 
 #if MICROPY_MIN_USE_SAMD21_MCU
 
+#ifdef UART_REPL
 struct usart_module usart_instance;
+#endif
 
 #ifdef ENABLE_MICRO_TRACE_BUFFER
 // Stores 2 ^ TRACE_BUFFER_MAGNITUDE_PACKETS packets.
@@ -364,8 +372,8 @@ void samd21_init(void) {
 
     board_init();
 
-    // SysTick millisecond timer initialization.
-    SysTick_Config(system_cpu_clock_get_hz() / 1000);
+    // Configure millisecond timer initialization.
+    tick_init();
 
     // Uncomment to init PIN_PA17 for debugging.
     // struct port_config pin_conf;
@@ -374,6 +382,16 @@ void samd21_init(void) {
     // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
     // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
     // port_pin_set_output_level(MICROPY_HW_LED1, false);
+
+
+    #ifdef MICROPY_HW_NEOPIXEL
+        struct port_config pin_conf;
+        port_get_config_defaults(&pin_conf);
+
+        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+        port_pin_set_config(MICROPY_HW_NEOPIXEL, &pin_conf);
+        port_pin_set_output_level(MICROPY_HW_NEOPIXEL, false);
+    #endif
 }
 
 #endif

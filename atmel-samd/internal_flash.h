@@ -26,6 +26,8 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H__
 
+#include <stdbool.h>
+
 #include "mpconfigport.h"
 
 #define INTERNAL_FLASH_BLOCK_SIZE (512)

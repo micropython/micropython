@@ -27,10 +27,12 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__
 
-#include "asf/sam0/drivers/tc/tc.h"
+#include <stdbool.h>
 
-void autoreset_callback(struct tc_module *const module_inst);
-void autoreset_init();
+extern volatile bool reset_next_character;
+
+void autoreset_tick();
+
 void autoreset_start();
 void autoreset_stop();
 void autoreset_enable();

@@ -5,6 +5,30 @@
 
 #include "samdneopixel.h"
 
+#ifdef MICROPY_HW_NEOPIXEL
+static uint8_t status_neopixel_color[3];
+#endif
+
+extern void new_status_color(uint8_t r, uint8_t g, uint8_t b) {
+    #ifdef MICROPY_HW_NEOPIXEL
+        status_neopixel_color[0] = g;
+        status_neopixel_color[1] = r;
+        status_neopixel_color[2] = b;
+        samd_neopixel_write(MICROPY_HW_NEOPIXEL, status_neopixel_color, 3, true);
+    #endif
+}
+extern void temp_status_color(uint8_t r, uint8_t g, uint8_t b) {
+    #ifdef MICROPY_HW_NEOPIXEL
+        uint8_t colors[3] = {g, r, b};
+        samd_neopixel_write(MICROPY_HW_NEOPIXEL, colors, 3, true);
+    #endif
+}
+extern void clear_temp_status() {
+    #ifdef MICROPY_HW_NEOPIXEL
+        samd_neopixel_write(MICROPY_HW_NEOPIXEL, status_neopixel_color, 3, true);
+    #endif
+}
+
 void samd_neopixel_write(uint32_t pin, uint8_t *pixels, uint32_t numBytes, bool is800KHz) {
   // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
   // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
@@ -82,8 +106,8 @@ void samd_neopixel_write(uint32_t pin, uint8_t *pixels, uint32_t numBytes, bool 
   // Turn on interrupts after timing-sensitive code.
   mp_hal_enable_all_interrupts();
 
-  // 50ms delay to let pixels latch to the data that was just sent.
+  // 50us delay to let pixels latch to the data that was just sent.
   // This could be optimized to only occur before pixel writes when necessary,
   // like in the Arduino library.
-  delay_ms(50);
+  delay_us(50);
 }

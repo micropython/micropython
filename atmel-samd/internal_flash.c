@@ -23,6 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "internal_flash.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -36,7 +37,7 @@
 #include "asf/sam0/drivers/nvm/nvm.h"
 #include "asf/sam0/drivers/port/port.h"
 
-#include "internal_flash.h"
+#include "samdneopixel.h"
 
 #define TOTAL_INTERNAL_FLASH_SIZE 0x010000
 
@@ -173,6 +174,9 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
         #ifdef MICROPY_HW_LED_MSC
             port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
         #endif
+        #ifdef MICROPY_HW_NEOPIXEL
+            temp_status_color(0x8f, 0x00, 0x00);
+        #endif
         // non-MBR block, copy to cache
         volatile uint32_t dest = convert_block_to_flash_addr(block);
         if (dest == -1) {
@@ -210,6 +214,9 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
               return false;
           }
         }
+        #ifdef MICROPY_HW_NEOPIXEL
+            clear_temp_status();
+        #endif
         #ifdef MICROPY_HW_LED_MSC
             port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
         #endif
