@@ -336,6 +336,15 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case QS(MP_QSTR_hostname): {
+                        req_if = STATION_IF;
+                        if (self->if_id == STATION_IF) {
+                            mp_uint_t len;
+                            const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                            wifi_station_set_hostname((char*)s);
+                        }
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -388,6 +397,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case QS(MP_QSTR_channel):
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
+            break;
+        case QS(MP_QSTR_hostname):
+            req_if = STATION_IF;
+            char* s = wifi_station_get_hostname();
+            val = mp_obj_new_str(s, strlen(s), false);
             break;
         default:
             goto unknown;
