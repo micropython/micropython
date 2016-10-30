@@ -71,17 +71,17 @@ STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_us_obj, time_sleep_us);
 
 STATIC mp_obj_t time_ticks_ms(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & MP_SMALL_INT_POSITIVE_MASK);
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_ticks_ms_obj, time_ticks_ms);
 
 STATIC mp_obj_t time_ticks_us(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_us() & MP_SMALL_INT_POSITIVE_MASK);
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_us() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_ticks_us_obj, time_ticks_us);
 
 STATIC mp_obj_t time_ticks_cpu(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_cpu() & MP_SMALL_INT_POSITIVE_MASK);
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_cpu() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_ticks_cpu_obj, time_ticks_cpu);
 
@@ -97,7 +97,7 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
     // we assume that first argument come from ticks_xx so is small int
     uint32_t ticks = MP_OBJ_SMALL_INT_VALUE(ticks_in);
     uint32_t delta = (uint32_t)mp_obj_get_int(delta_in);
-    return MP_OBJ_NEW_SMALL_INT((ticks + delta) & MP_SMALL_INT_POSITIVE_MASK);
+    return MP_OBJ_NEW_SMALL_INT((ticks + delta) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
 
