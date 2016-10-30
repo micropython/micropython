@@ -82,9 +82,22 @@ Functions
 
     .. function::  ticks_ms()
 
-        Returns an increasing millisecond counter with arbitrary reference point, 
-        that wraps after some (unspecified) value. The value should be treated as 
-        opaque, suitable for use only with ticks_diff().
+        Returns an increasing millisecond counter with an arbitrary reference point,
+        that wraps around after some value. This value is not explicitly exposed,
+        but we will refer to it as `TICKS_MAX` to simplify discussion. Period of
+        the values is `TICKS_PERIOD = TICKS_MAX + 1`. `TICKS_PERIOD` is guaranteed
+        to be a power of two, but otherwise may differ from port to port. The same
+        period value is used for all of ticks_ms(), ticks_us(), ticks_cpu() functions
+        (for simplicity). Thus, these functions will return a value in range
+        [0 .. `TICKS_MAX`], inclusive, total `TICKS_PERIOD` values. Not that only
+        non-negative values are used. For the most part, you should treat values
+        return by these functions as opaque. The only operations available for them
+        are ``ticks_diff()`` and ``ticks_add()`` functions described below.
+
+        Note: Performing standard mathematical operations (+, -) on these value
+        will lead to invalid result. Performing such operations and then passing
+        results as arguments to ``ticks_diff()`` or ``ticks_add()`` will also lead to
+        invalid result.
 
     .. function::  ticks_us()
 
@@ -105,21 +118,58 @@ Functions
 
 .. only:: port_unix or port_pyboard or port_wipy or port_esp8266
 
-    .. function::  ticks_diff(old, new)
+    .. function::  ticks_diff(ticks1, ticks2)
 
-       Measure period between consecutive calls to ticks_ms(), ticks_us(), or ticks_cpu(). 
-       The value returned by these functions may wrap around at any time, so directly 
-       subtracting them is not supported. ticks_diff() should be used instead. "old" value should 
-       actually precede "new" value in time, or result is undefined. This function should not be
-       used to measure arbitrarily long periods of time (because ticks_*() functions wrap around 
-       and usually would have short period). The expected usage pattern is implementing event 
-       polling with timeout::
+       Measure ticks difference between values returned from ticks_ms(), ticks_us(), or ticks_cpu()
+       functions. The argument order is the same as for subtraction operator,
+       ``tick_diff(ticks1, ticks2)`` has the same meaning as ``ticks1 - ticks2``. However, values returned by
+       ticks_ms(), etc. functions may wrap around, so directly using subtraction on them will
+       produce incorrect result. That is why ticks_diff() is needed, it implements modular
+       (or more specifically, ring) arithmetics to produce correct result even for wrap-around
+       values (as long as they not too distant inbetween, see below). The function returns
+       **signed** value in the range [`-TICKS_PERIOD/2` .. `TICKS_PERIOD/2-1`] (that's a typical
+       range definition for two's-complement signed binary integers). If the result is negative,
+       it means that `ticks1` occured earlier in time than `ticks2`. Otherwise, it means that
+       `ticks1` was after `ticks2`. This holds `only` if `ticks1` and `ticks2` are apart from
+       each other for no more than `TICKS_PERIOD/2-1` ticks. If that does not hold, incorrect
+       result will be returned. Specifically, if 2 tick values are apart for `TICKS_PERIOD/2-1`
+       ticks, that value will be returned by the function. However, if `TICKS_PERIOD/2` of
+       real-time ticks has passed between them, the function will return `-TICKS_PERIOD/2`
+       instead, i.e. result value will wrap around to the negative range of possible values.
+
+
+       ``ticks_diff()`` is designed to accommodate various usage patterns, among them:
+
+       Polling with timeout. In this case, the order of events is known, and you will deal
+       only with positive results of ``ticks_diff()``::
 
             # Wait for GPIO pin to be asserted, but at most 500us
             start = time.ticks_us()
             while pin.value() == 0:
-                if time.ticks_diff(start, time.ticks_us()) > 500:
+                if time.ticks_diff(time.ticks_us(), start) > 500:
                     raise TimeoutError
+
+       Scheduling events. In this case, ``ticks_diff()`` result may be negative
+       if an event is overdue::
+
+            # This code snippet is not optimized
+            now = time.ticks_ms()
+            scheduled_time = task.scheduled_time()
+            if ticks_diff(now, scheduled_time) > 0:
+                print("Too early, let's nap")
+                sleep_ms(ticks_diff(now, scheduled_time))
+                task.run()
+            elif ticks_diff(now, scheduled_time) == 0:
+                print("Right at time!")
+                task.run()
+            elif ticks_diff(now, scheduled_time) < 0:
+                print("Oops, running late, tell task to run faster!")
+                task.run(run_faster=true)
+
+       Note: Do not pass ``time()`` values to ``ticks_diff()``, and should use
+       normal mathematical operations on them. But note that ``time()`` may (and will)
+       also overflow. This is known as https://en.wikipedia.org/wiki/Year_2038_problem .
+
 
 .. function:: time()
 
