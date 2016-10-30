@@ -295,7 +295,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                 switch ((uintptr_t)kwargs->table[i].key) {
                     case QS(MP_QSTR_mac): {
                         mp_buffer_info_t bufinfo;
-                        mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+                        mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
                             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
                                 "invalid buffer length"));
