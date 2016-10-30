@@ -90,11 +90,18 @@ Functions
 
        Just like ``ticks_ms`` above, but in microseconds.
 
-.. only:: port_wipy or port_pyboard
+.. function::  ticks_cpu()
 
-    .. function::  ticks_cpu()
+   Similar to ``ticks_ms`` and ``ticks_us``, but with the highest possible resolution
+   in the system. This is usually CPU clocks, and that's why the function is named that
+   way. But it doesn't have to a CPU clock, some other timing source available in a
+   system (e.g. high-resolution timer) can be used instead. The exact timing unit
+   (resolution) of this function is not specified on ``utime`` module level, but
+   documentation for a specific port may provide more specific information. This
+   function is intended for very fine benchmarking or very tight real-time loops.
+   Avoid using it in portable code.
 
-       Similar to ``ticks_ms`` and ``ticks_us``, but with higher resolution (usually CPU clocks).
+   Availability: Not every port implement this function.
 
 .. only:: port_unix or port_pyboard or port_wipy or port_esp8266
 
