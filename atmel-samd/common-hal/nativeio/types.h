@@ -42,6 +42,7 @@
 #include "asf/sam0/drivers/dac/dac.h"
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
 #include "asf/sam0/drivers/sercom/spi/spi.h"
+#include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "asf/sam0/drivers/tc/tc.h"
 #include "asf/sam0/drivers/tcc/tcc.h"
 // Only support TouchIn when external SPI flash is used.
@@ -102,5 +103,20 @@ typedef struct {
     sensor_id_t sensor_id;
     #endif
 } nativeio_touchin_obj_t;
+
+typedef struct {
+  mp_obj_base_t base;
+  struct usart_module uart_instance;
+  uint8_t rx_pin;
+  uint8_t tx_pin;
+  uint32_t timeout_ms;
+  bool rx_error;
+  // Index of the oldest received character.
+  uint32_t buffer_start;
+  // Index of the next available spot to store a character.
+  uint32_t buffer_size;
+  uint32_t buffer_length;
+  uint8_t* buffer;
+} nativeio_uart_obj_t;
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__

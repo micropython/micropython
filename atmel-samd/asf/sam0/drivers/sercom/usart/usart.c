@@ -187,7 +187,7 @@ static enum status_code _usart_set_config(
 	}
 
 	/* Set stopbits and enable transceivers */
-	ctrlb =  
+	ctrlb =
 		#ifdef FEATURE_USART_IRDA
 			(config->encoding_format_enable << SERCOM_USART_CTRLB_ENC_Pos) |
 		#endif
@@ -207,18 +207,18 @@ static enum status_code _usart_set_config(
 			ctrla |= SERCOM_USART_CTRLA_TXINV | SERCOM_USART_CTRLA_RXINV;
 		}
 		ctrlb |=  USART_CHARACTER_SIZE_8BIT;
-		
+
 		switch(config->iso7816_config.protocol_t) {
 			case ISO7816_PROTOCOL_T_0:
-				ctrlb |= (uint32_t)config->stopbits;	
+				ctrlb |= (uint32_t)config->stopbits;
 				ctrlc |= SERCOM_USART_CTRLC_GTIME(config->iso7816_config.guard_time) | \
 						(config->iso7816_config.inhibit_nack) | \
 						(config->iso7816_config.successive_recv_nack) | \
 						SERCOM_USART_CTRLC_MAXITER(config->iso7816_config.max_iterations);
-				break;	
+				break;
 			case ISO7816_PROTOCOL_T_1:
 				ctrlb |= USART_STOPBITS_1;
-				break;		
+				break;
 		}
 	} else {
 #endif
@@ -334,8 +334,8 @@ enum status_code usart_init(
 	SercomUsart *const usart_hw = &(module->hw->USART);
 
 	uint32_t sercom_index = _sercom_get_sercom_inst_index(module->hw);
-	uint32_t pm_index, gclk_index; 
-#if (SAML22) || (SAMC20) 
+	uint32_t pm_index, gclk_index;
+#if (SAML22) || (SAMC20)
 	pm_index	= sercom_index + MCLK_APBCMASK_SERCOM0_Pos;
 	gclk_index	= sercom_index + SERCOM0_GCLK_ID_CORE;
 #elif (SAML21) || (SAMR30)
@@ -348,7 +348,7 @@ enum status_code usart_init(
 	}
 #elif (SAMC21)
 	pm_index	= sercom_index + MCLK_APBCMASK_SERCOM0_Pos;
-	
+
 	if (sercom_index == 5){
 		gclk_index	= SERCOM5_GCLK_ID_CORE;
     } else {
@@ -374,7 +374,7 @@ enum status_code usart_init(
 	if (sercom_index == 5) {
 		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBD, 1 << pm_index);
 	} else {
-		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, 1 << pm_index);	
+		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, 1 << pm_index);
 	}
 #else
 	system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, 1 << pm_index);
@@ -639,8 +639,8 @@ enum status_code usart_read_wait(
  * \param[in]  tx_data  Pointer to data to transmit
  * \param[in]  length   Number of characters to transmit
  *
- * \note If using 9-bit data, the array that *tx_data point to should be defined 
- *       as uint16_t array and should be casted to uint8_t* pointer. Because it 
+ * \note If using 9-bit data, the array that *tx_data point to should be defined
+ *       as uint16_t array and should be casted to uint8_t* pointer. Because it
  *       is an address pointer, the highest byte is not discarded. For example:
  *   \code
           #define TX_LEN 3
@@ -733,8 +733,8 @@ enum status_code usart_write_buffer_wait(
  * \param[out] rx_data  Pointer to receive buffer
  * \param[in]  length   Number of characters to receive
  *
- * \note If using 9-bit data, the array that *rx_data point to should be defined 
- *       as uint16_t array and should be casted to uint8_t* pointer. Because it 
+ * \note If using 9-bit data, the array that *rx_data point to should be defined
+ *       as uint16_t array and should be casted to uint8_t* pointer. Because it
  *       is an address pointer, the highest byte is not discarded. For example:
  *   \code
           #define RX_LEN 3

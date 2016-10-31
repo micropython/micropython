@@ -46,7 +46,7 @@
 #include "uart.h"
 #include "pybuart.h"
 #include "mpirq.h"
-#include "pybioctl.h"
+#include "py/ioctl.h"
 #include "pybsleep.h"
 #include "mpexception.h"
 #include "py/mpstate.h"

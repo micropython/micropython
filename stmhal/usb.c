@@ -34,13 +34,13 @@
 #include "usbd_msc_storage.h"
 #include "usbd_hid_interface.h"
 
+#include "py/ioctl.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "bufhelper.h"
 #include "usb.h"
-#include "pybioctl.h"
 
 #if defined(USE_USB_FS)
 #define USB_PHY_ID  USB_PHY_FS_ID

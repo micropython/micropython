@@ -30,6 +30,7 @@
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
 
+#include "py/ioctl.h"
 #include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
@@ -41,7 +42,6 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
-#include "pybioctl.h"
 
 #include "hci.h"
 #include "socket.h"

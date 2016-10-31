@@ -42,6 +42,7 @@
 #include "shared-bindings/nativeio/PWMOut.h"
 #include "shared-bindings/nativeio/SPI.h"
 #include "shared-bindings/nativeio/TouchIn.h"
+#include "shared-bindings/nativeio/UART.h"
 #include "common-hal/nativeio/types.h"
 #include "shared-bindings/nativeio/__init__.h"
 
@@ -116,6 +117,7 @@ STATIC const mp_rom_map_elem_t nativeio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PWMOut), MP_ROM_PTR(&nativeio_pwmout_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&nativeio_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_TouchIn),   MP_ROM_PTR(&nativeio_touchin_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART),   MP_ROM_PTR(&nativeio_uart_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(nativeio_module_globals, nativeio_module_globals_table);
