@@ -1,4 +1,6 @@
 /*
+ * Copyright(C) Ernesto Gigliotti <ernestogigliotti@gmail.com>, 2016
+ * Copyright(C) Martin Ribelotta, 2015
  * Copyright(C) NXP Semiconductors, 2012
  * All rights reserved.
  *
@@ -23,67 +25,12 @@
  * copyright, permission, and disclaimer notice must appear in all copies of
  * this code.
  */
-
 #include "board.h"
-#include "string.h"
 
-/** @ingroup BOARD_NGX_XPLORER_18304330
- * @{
- */
-
-/* SDIO Data pin configuration bits */
-#define SDIO_DAT_PINCFG (SCU_MODE_HIGHSPEEDSLEW_EN | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_PULLUP | SCU_MODE_FUNC7)
-
-/*****************************************************************************
- * Public types/enumerations/variables
- ****************************************************************************/
 
 /* System configuration variables used by chip driver */
 const uint32_t ExtRateIn = 0;
 const uint32_t OscRateIn = 12000000;
-
-typedef struct {
-	uint8_t port;
-	uint8_t pin;
-} io_port_t;
-
-static const io_port_t gpioLEDBits[] = {{0, 14}, {1, 11}, {1, 12}, {5, 0}, {5, 1}, {5, 2}};
-typedef struct {
-	uint8_t redPwmValue;
-	uint8_t redPwmCounter;
-        uint8_t greenPwmValue;
-        uint8_t greenPwmCounter;
-        uint8_t bluePwmValue;
-        uint8_t bluePwmCounter;
-
-}RGBPWMInfo;
-static RGBPWMInfo rgbPwmInfo;
-
-typedef struct {
-	uint8_t* buffer;
-	uint32_t size;
-	uint32_t index;
-	uint32_t finalByte;
-	uint32_t timeout;
-	uint32_t timeoutCounter;
-	uint8_t flagNewPacket;
-} UartRxBufferData;
-static UartRxBufferData uart0RxBufferData;
-static UartRxBufferData uart3RxBufferData;
-
-
-typedef struct {
-	void(*callbackSw)(void*);
-	void* callbackSwArg;
-} ButtonData;
-static ButtonData buttonsData[4];
-
-typedef struct {
-	void(*callback)(void*);
-        void* callbackArg;
-	uint8_t gpioNumber;
-} ExtIntData;
-static ExtIntData extIntData[4];
 
 
 //================================================[I2C Management]========================================================
@@ -112,17 +59,6 @@ static void i2c_set_mode(I2C_ID_T id, int polling)
 		Chip_I2C_SetMasterEventHandler(id, Chip_I2C_EventHandlerPolling);
 	}
 }
-/*
-void i2C0_IRQHandler (void)
-{
-	if (Chip_I2C_IsMasterActive(I2C0)) {
-		Chip_I2C_MasterStateHandler(I2C0);
-	}
-	else {
-		Chip_I2C_SlaveStateHandler(I2C0);
-    }	
-}
-*/
 void Board_I2C_Master_Init(void)
 {
 	Board_I2C_Init(I2C0);
@@ -425,10 +361,10 @@ void Board_ADC_Init(void)
 	Chip_ADC_SetBurstCmd(LPC_ADC0, DISABLE);
 	NVIC_EnableIRQ(ADC0_IRQn);
 
-        // ADC1
-        //Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
-        //adcsData[1].adc = LPC_ADC1;
-        //Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
+    // ADC1
+    //Chip_ADC_Init(LPC_ADC1, &(adcsData[1].setup));
+    //adcsData[1].adc = LPC_ADC1;
+    //Chip_ADC_SetBurstCmd(LPC_ADC1, DISABLE);
 	//NVIC_EnableIRQ(ADC1_IRQn);
 
 	flagWaitingADCConv=0;
@@ -712,11 +648,24 @@ uint32_t Board_TIMER_GetTimerMatch(uint8_t timerNum)
 
 
 //================================================[UART Management]==========================================================
+typedef struct {
+    uint8_t* buffer;
+    uint32_t size;
+    uint32_t index;
+    uint32_t finalByte;
+    uint32_t timeout;
+    uint32_t timeoutCounter;
+    uint8_t flagNewPacket;
+} UartRxBufferData;
+
+static UartRxBufferData uart0RxBufferData;
+static UartRxBufferData uart3RxBufferData;
+
+
 void Board_UART_Init(LPC_USART_T *pUART)
 {
 	if(pUART==LPC_USART0)
 	{
-		/* UART0 (RS485/Profibus) */
    		Chip_UART_Init(LPC_USART0);
    		Chip_UART_SetBaud(LPC_USART0, 115200);
 
@@ -735,13 +684,11 @@ void Board_UART_Init(LPC_USART_T *pUART)
 		uart0RxBufferData.index=0;
 		uart0RxBufferData.flagNewPacket=0;
 		uart0RxBufferData.timeoutCounter=0;
-        	//NVIC_SetPriority(USART0_IRQn, 1);
-        	//NVIC_EnableIRQ(USART0_IRQn);
-
+        //NVIC_SetPriority(USART0_IRQn, 1);
+        //NVIC_EnableIRQ(USART0_IRQn);
 	}
 	else if(pUART==LPC_USART3)
 	{
-		/* UART3 (RS232) */
    		Chip_UART_Init(LPC_USART3);
    		Chip_UART_SetBaud(LPC_USART3, 115200);
 
@@ -752,13 +699,12 @@ void Board_UART_Init(LPC_USART_T *pUART)
    		Chip_SCU_PinMux(2, 3, MD_PDN, FUNC2);              /* P2_3: UART3_TXD */
    		Chip_SCU_PinMux(2, 4, MD_PLN|MD_EZI|MD_ZI, FUNC2); /* P2_4: UART3_RXD */
 		uart3RxBufferData.buffer = NULL;
-                uart3RxBufferData.size=0;
-                uart3RxBufferData.index=0;
+        uart3RxBufferData.size=0;
+        uart3RxBufferData.index=0;
 		uart3RxBufferData.flagNewPacket=0;
-                uart3RxBufferData.timeoutCounter=0;
-
-                //NVIC_SetPriority(USART3_IRQn, 1);
-                //NVIC_EnableIRQ(USART3_IRQn);
+        uart3RxBufferData.timeoutCounter=0;
+        //NVIC_SetPriority(USART3_IRQn, 1);
+        //NVIC_EnableIRQ(USART3_IRQn);
 	}
 	/* Restart FIFOS: set Enable, Reset content, set trigger level */
    	Chip_UART_SetupFIFOS(pUART, UART_FCR_FIFO_EN | UART_FCR_TX_RS | UART_FCR_RX_RS | UART_FCR_TRG_LEV0);
@@ -914,7 +860,6 @@ void UART3_IRQHandler (void)
 			if(uart3RxBufferData.buffer[uart3RxBufferData.index]==uart3RxBufferData.finalByte)
 			{
 				uart3RxBufferData.flagNewPacket=1;
-			    //Board_UARTPutSTR(uart3RxBufferData.buffer);
 			}
 		}
 		else
@@ -942,8 +887,6 @@ void UART0_IRQHandler (void)
                         if(uart0RxBufferData.buffer[uart0RxBufferData.index]==uart0RxBufferData.finalByte)
                         {
                                 uart0RxBufferData.flagNewPacket=1;
-                                //Board_UARTPutSTR("entro paquete por byte final!:");
-                                //Board_UARTPutSTR(uart0RxBufferData.buffer);
                         }
                 }
                 else
@@ -954,8 +897,6 @@ void UART0_IRQHandler (void)
         }
         else {
                 uart0RxBufferData.flagNewPacket=1;
-                //Board_UARTPutSTR("entro paquete porque se lleno:");
-                //Board_UARTPutSTR((const char*)uart0RxBufferData.buffer);
         }
    }
 }
@@ -970,8 +911,6 @@ void Board_UART_tick_ms(void)
                         if(uart0RxBufferData.timeoutCounter==0)
                         {
                                 uart0RxBufferData.flagNewPacket=1;
-                                //Board_UARTPutSTR("entro paquete por timeout!:");
-                                //Board_UARTPutSTR((const char*)uart0RxBufferData.buffer);
                         }
                 }
         }
@@ -984,8 +923,6 @@ void Board_UART_tick_ms(void)
 			if(uart3RxBufferData.timeoutCounter==0)
 			{
 				uart3RxBufferData.flagNewPacket=1;
-				//Board_UARTPutSTR("entro paquete por timeout!:");
-                                //Board_UARTPutSTR(uart3RxBufferData.buffer);
 			}
 		}
 	}
@@ -994,7 +931,8 @@ void Board_UART_tick_ms(void)
 
 
 
-/* Initialize debug output via UART for board */
+//=============================[DEBUG management]===============================================================================
+
 void Board_Debug_Init(void)
 {
 #if defined(DEBUG_UART)
@@ -1039,10 +977,30 @@ void Board_UARTPutSTR(const char *str)
 	}
 #endif
 }
+//================================================================================================================================
 
 
 //=============================[Leds management]===============================================================================
-static void Board_LED_Init()
+typedef struct {
+    uint8_t port;
+    uint8_t pin;
+} io_port_t;
+
+static const io_port_t gpioLEDBits[] = {{0, 14}, {1, 11}, {1, 12}, {5, 0}, {5, 1}, {5, 2}};
+
+typedef struct {
+    uint8_t redPwmValue;
+    uint8_t redPwmCounter;
+    uint8_t greenPwmValue;
+    uint8_t greenPwmCounter;
+    uint8_t bluePwmValue;
+    uint8_t bluePwmCounter;
+}RGBPWMInfo;
+
+static RGBPWMInfo rgbPwmInfo;
+
+
+static void Board_LED_Init(void)
 {
 	uint32_t idx;
 
@@ -1054,10 +1012,10 @@ static void Board_LED_Init()
 
 	rgbPwmInfo.redPwmValue=0;
 	rgbPwmInfo.redPwmCounter=0;
-        rgbPwmInfo.greenPwmValue=0;
-        rgbPwmInfo.greenPwmCounter=0;
-        rgbPwmInfo.bluePwmValue=0;
-        rgbPwmInfo.bluePwmCounter=0;
+    rgbPwmInfo.greenPwmValue=0;
+    rgbPwmInfo.greenPwmCounter=0;
+    rgbPwmInfo.bluePwmValue=0;
+    rgbPwmInfo.bluePwmCounter=0;
 }
 
 void Board_LED_Set(uint8_t LEDNumber, bool On)
@@ -1143,6 +1101,14 @@ uint8_t Board_LED_PWM_GetValue(uint8_t pwmNumber)
 
 
 
+//=============================[Buttons management]===============================================================================
+typedef struct {
+    void(*callbackSw)(void*);
+    void* callbackSwArg;
+} ButtonData;
+
+static ButtonData buttonsData[4];
+
 
 void GPIO0_IRQHandler(void)
 {
@@ -1225,7 +1191,7 @@ void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),voi
 	buttonsData[buttonNumber].callbackSwArg = arg;
 }
 
-int Buttons_GetStatusByNumber(int BUTTONNumber)
+int Board_Buttons_GetStatusByNumber(int BUTTONNumber)
 {
 	switch(BUTTONNumber)
 	{
@@ -1255,8 +1221,10 @@ int Buttons_GetStatusByNumber(int BUTTONNumber)
  	}
 	return -1;
 }
+//================================================================================================================================
 
-// GPIOs
+
+//=============================[GPIOs management]===============================================================================
 typedef struct
 {
     int8_t port;
@@ -1270,6 +1238,16 @@ typedef struct
 static GpioInfo gpiosInfo[]={
 	{6,1,3,0,SCU_MODE_FUNC0},{6,4,3,3,SCU_MODE_FUNC0},{6,5,3,4,SCU_MODE_FUNC0},{6,7,5,15,SCU_MODE_FUNC4},{6,8,5,16,SCU_MODE_FUNC4},{6,9,3,5,SCU_MODE_FUNC0},{6,10,3,6,SCU_MODE_FUNC0},{6,11,3,7,SCU_MODE_FUNC0},{6,12,2,8,SCU_MODE_FUNC0}
 };
+
+typedef struct {
+    void(*callback)(void*);
+        void* callbackArg;
+    uint8_t gpioNumber;
+} ExtIntData;
+
+static ExtIntData extIntData[4];
+
+
 
 void Board_GPIOs_Init(void)
 {
@@ -1429,11 +1407,11 @@ void Board_GPIOs_disableIntCallback(int gpioNumber)
 		}
         }
 }
+//================================================================================================================================
 
-//_____________________________________________________________________________________________________________________________________________
 
+//=============================[DAC management]===============================================================================
 
-// DAC
 #define DMA_FIFO_SIZE	256
 typedef struct
 {
@@ -1556,29 +1534,10 @@ int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic)
    }
    return ret;
 }
-//_____________________________________________________________________________________________________________________________________________
+//================================================================================================================================
 
 
 
-
-void Board_Joystick_Init(void)
-{}
-
-uint8_t Joystick_GetStatus(void)
-{
-	return NO_BUTTON_PRESSED;
-}
-
-/* Returns the MAC address assigned to this board */
-void Board_ENET_GetMacADDR(uint8_t *mcaddr)
-{
-	uint8_t boardmac[] = {0x00, 0x60, 0x37, 0x12, 0x34, 0x56};
-
-	memcpy(mcaddr, boardmac, 6);
-}
-
-/* Set up and initialize all required blocks and functions related to the
-   board hardware */
 void Board_Init(void)
 {
 	/* Sets up DEBUG UART */
@@ -1627,17 +1586,9 @@ void Board_Init(void)
 
 
 
-void Board_SDMMC_Init(void)
-{
-	Chip_SCU_PinMuxSet(0x1, 9, SDIO_DAT_PINCFG);	/* P1.9 connected to SDIO_D0 */
-	Chip_SCU_PinMuxSet(0x1, 10, SDIO_DAT_PINCFG);	/* P1.10 connected to SDIO_D1 */
-	Chip_SCU_PinMuxSet(0x1, 11, SDIO_DAT_PINCFG);	/* P1.11 connected to SDIO_D2 */
-	Chip_SCU_PinMuxSet(0x1, 12, SDIO_DAT_PINCFG);	/* P1.12 connected to SDIO_D3 */
 
-	Chip_SCU_ClockPinMuxSet(2, (SCU_MODE_INACT | SCU_MODE_INBUFF_EN | SCU_MODE_FUNC4));	/* CLK2 connected to SDIO_CLK */
-	Chip_SCU_PinMuxSet(0x1, 6, SDIO_DAT_PINCFG);	/* P1.6 connected to SDIO_CMD */
-	Chip_SCU_PinMuxSet(0x1, 13, (SCU_MODE_INBUFF_EN | SCU_MODE_FUNC7));	/* P1.13 connected to SDIO_CD */
-}
+
+
 
 
 #if 0

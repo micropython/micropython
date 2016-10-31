@@ -19,16 +19,16 @@
 void testLeds1(void)
 {
 	// Led 0
-	Board_LED_Set(0, 1); // On
-	utest_assertEqualsInt(1,Board_LED_Test(0));
+	mp_hal_setLed(0, 1); // On
+	utest_assertEqualsInt(1,mp_hal_testLed(0));
 
 	// Led 1
-	Board_LED_Set(1, 0); // Off
-	utest_assertEqualsInt(0,Board_LED_Test(1));
+	mp_hal_setLed(1, 0); // Off
+	utest_assertEqualsInt(0,mp_hal_testLed(1));
 
 	// Led 2
-	Board_LED_Set(2, 1); // On
-	utest_assertEqualsInt(1,Board_LED_Test(2));
+	mp_hal_setLed(2, 1); // On
+	utest_assertEqualsInt(1,mp_hal_testLed(2));
 }
 
 void testLeds2(void)
@@ -48,24 +48,24 @@ void testLeds2(void)
 
 void testLeds3(void)
 {
-    Board_LED_Set(0, 1); // On
-    Board_LED_Set(1, 0); // Off
-    Board_LED_Set(2, 0); // Off
+    mp_hal_setLed(0, 1); // On
+    mp_hal_setLed(1, 0); // Off
+    mp_hal_setLed(2, 0); // Off
 
-	Board_LED_Toggle(0);
-	utest_assertEqualsInt(0,Board_LED_Test(0));
-	utest_assertEqualsInt(0,Board_LED_Test(1));
-	utest_assertEqualsInt(0,Board_LED_Test(2));
+	mp_hal_toggleLed(0);
+	utest_assertEqualsInt(0,mp_hal_testLed(0));
+	utest_assertEqualsInt(0,mp_hal_testLed(1));
+	utest_assertEqualsInt(0,mp_hal_testLed(2));
 
-    Board_LED_Toggle(1);
-    utest_assertEqualsInt(0,Board_LED_Test(0));
-    utest_assertEqualsInt(1,Board_LED_Test(1));
-    utest_assertEqualsInt(0,Board_LED_Test(2));
+    mp_hal_toggleLed(1);
+    utest_assertEqualsInt(0,mp_hal_testLed(0));
+    utest_assertEqualsInt(1,mp_hal_testLed(1));
+    utest_assertEqualsInt(0,mp_hal_testLed(2));
 
-    Board_LED_Toggle(2);
-    utest_assertEqualsInt(0,Board_LED_Test(0));
-    utest_assertEqualsInt(1,Board_LED_Test(1));
-    utest_assertEqualsInt(1,Board_LED_Test(2));
+    mp_hal_toggleLed(2);
+    utest_assertEqualsInt(0,mp_hal_testLed(0));
+    utest_assertEqualsInt(1,mp_hal_testLed(1));
+    utest_assertEqualsInt(1,mp_hal_testLed(2));
 }
 
 

@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Ernesto Gigliotti <ernestogigliotti@gmail.com>
  * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,8 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PIC16BIT_MODPYB_H__
-#define __MICROPY_INCLUDED_PIC16BIT_MODPYB_H__
+#ifndef __MICROPY_INCLUDED_EDUCIAANXP_MODPYB_H__
+#define __MICROPY_INCLUDED_EDUCIAANXP_MODPYB_H__
 
 extern const mp_obj_type_t pyb_led_type;
 extern const mp_obj_type_t pyb_switch_type;
@@ -44,4 +45,4 @@ extern const mp_obj_type_t pyb_i2c_type;
 
 extern const mp_obj_module_t pyb_module;
 
-#endif // __MICROPY_INCLUDED_PIC16BIT_MODPYB_H__
+#endif

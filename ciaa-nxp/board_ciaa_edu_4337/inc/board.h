@@ -1,7 +1,9 @@
 /*
- * @brief NGX Xplorer 4330 board file
+ * @brief EDU-CIAA-NXP board file
  *
  * @note
+ * Copyright(C) Ernesto Gigliotti <ernestogiglotti@gmail.com>, 2016
+ * Copyright(C) Marin Ribelotta, 2015
  * Copyright(C) NXP Semiconductors, 2013
  * All rights reserved.
  *
@@ -55,19 +57,6 @@
 extern "C" {
 #endif
 
-/** @defgroup BOARD_NGX_XPLORER_4330 LPC4330 NGX Xplorer board support software API functions
- * @ingroup LPCOPEN_43XX_BOARD_NGX4330
- * The board support software API functions provide some simple abstracted
- * functions used across multiple LPCOpen board examples. See @ref BOARD_COMMON_API
- * for the functions defined by this board support layer.<br>
- * @{
- */
-
-/** @defgroup BOARD_NGX_XPLORER_4330_OPTIONS BOARD: LPC4330 NGX Xplorer board options
- * This board has options that configure its operation at build-time.<br>
- * @{
- */
-
 /** Define DEBUG_ENABLE to enable IO via the DEBUGSTR, DEBUGOUT, and
     DEBUGIN macros. If not defined, DEBUG* functions will be optimized
 	out of the code at build time.
@@ -107,43 +96,10 @@ extern "C" {
 #define GPIO_MAX_NUMBER		8
 
 
-
-
 /* Build for RMII interface */
 #define USE_RMII
 #define BOARD_ENET_PHY_ADDR	0x00
 
-/* LCD interface defines */
-#define LCD_SSP              LPC_SSP1
-#define LCD_CDM_PORT         6
-#define LCD_CMD_PIN          5
-#define LCD_CMD_CFG          (SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | SCU_MODE_FUNC0)
-#define LCD_CMD_GPIO_PORT    3
-#define LCD_CMD_GPIO_PIN     4
-#define LCD_BIT_RATE         1000000 /* 1 MHz */
-
-/* Audio Codec defines */
-#define I2CDEV_WM8904_ADDR     (0x34 >> 1)
-#define WM8904_I2C_BUS         I2C1
-#define CODEC_LINE_IN          0 /* Mic */
-#define AUDCFG_SAMPLE_RATE     16000
-
-/* For USBLIB examples */
-#define LEDS_LED1           0x01
-#define LEDS_LED2           0x02
-#define LEDS_LED3           0x04
-#define LEDS_LED4           0x08
-#define LEDS_NO_LEDS        0x00
-#define BUTTONS_BUTTON1     0x01
-#define JOY_UP              0x01
-#define JOY_DOWN            0x02
-#define JOY_LEFT            0x04
-#define JOY_RIGHT           0x08
-#define JOY_PRESS           0x10
-#define NO_BUTTON_PRESSED   0x00
-
-/*Define if use SDCARD for Mass Storage Example*/
-// #define CFG_SDCARD
 
 #define BUTTONS_BUTTON1_GPIO_PORT_NUM   0
 #define BUTTONS_BUTTON1_GPIO_BIT_NUM    4
@@ -168,6 +124,19 @@ extern "C" {
 #define USB1_VBUS_PIN_CFG           (SCU_MODE_PULLUP | SCU_MODE_INBUFF_EN | SCU_MODE_ZIF_DIS | SCU_MODE_FUNC4)
 #define USB1_VBUS_GPIO_PORT_NUM     5
 #define USB1_VBUS_GPIO_BIT_NUM      5
+
+
+
+
+/**
+ * @brief   Initializes all board periferals
+ * @return  Nothing
+ */
+void Board_Init(void);
+
+
+
+
 
 /**
  * @brief	Sets up board specific I2C interface
@@ -256,24 +225,6 @@ void Board_SDMMC_Init(void);
 void Board_Buttons_Init(void);
 
 /**
- * @brief	Initialize joystick interface on board
- * @return	Nothing
- */
-void Board_Joystick_Init(void);
-
-/**
- * @brief	Returns joystick states on board
- * @return	Returns a JOY_* value, ir JOY_PRESS or JOY_UP
- */
-uint8_t Joystick_GetStatus(void);
-
-/**
- * @brief	Returns button(s) state on board
- * @return	Returns BUTTONS_BUTTON1 if button1 is pressed
- */
-uint32_t Buttons_GetStatus (void);
-
-/**
  * @brief       Configure button's callback
  * @param       buttonNumber : 0 to 3
  * @param       function : calback to be called. prototype: void function(void* arg);
@@ -281,6 +232,13 @@ uint32_t Buttons_GetStatus (void);
  * @return      Nothing
  */
 void Board_Buttons_configureCallback(int buttonNumber,void(*function)(void*),void* arg);
+
+/**
+ * @brief       Returns Switch status
+ * @param       BUTTONNumber    : number of switch from 1 to 4
+ * @return      switch state - 1: pressed 0: no-pressed
+ */
+int Board_Buttons_GetStatusByNumber(int BUTTONNumber);
 
 
 /**
@@ -305,14 +263,6 @@ void Board_Audio_Init(LPC_I2S_T *pI2S, int micIn);
  * @return	Nothing
  */
 void Board_LCD_WriteData(const uint8_t *data, uint16_t size);
-
-
-/**
- * @brief       Returns Switch status
- * @param       BUTTONNumber    : number of switch from 1 to 4
- * @return      switch state - 1: pressed 0: no-pressed
- */
-int Buttons_GetStatusByNumber(int BUTTONNumber);
 
 
 /**
@@ -474,6 +424,29 @@ void Board_DAC_setSampleRate(uint32_t freq);
  */
 int32_t Board_DAC_writeDMA(uint16_t* buffer, uint32_t size, bool flagCyclic);
 
+
+/**
+ * @brief       Sets the led state
+ * @param       LEDNumber : number of led : 0 to 2
+ * @param       on : 0: led on. 1: led off
+ * @return      void
+ */
+void Board_LED_Set(uint8_t LEDNumber, bool On);
+
+/**
+ * @brief       Returns the led state
+ * @param       LEDNumber : number of led : 0 to 2
+ * @return      led state. 0:on. 1:off
+ */
+bool Board_LED_Test(uint8_t LEDNumber);
+
+
+/**
+ * @brief       Inverts the led state
+ * @param       LEDNumber : number of led : 0 to 2
+ * @return      void
+ */
+void Board_LED_Toggle(uint8_t LEDNumber);
 
 
 /**
@@ -802,8 +775,6 @@ void Board_RTC_disableAlarm(void);
  * @return      void
  */
 void Board_RTC_setAlarmCallback(void(*function)(void*),void* arg);
-
-
 
 
 

@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2016 Ernesto Gigliotti <ernestogigliotti@gmail.com>
  * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -63,8 +64,7 @@ STATIC mp_obj_t pyb_switch_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_
 
 mp_obj_t pyb_switch_value(mp_obj_t self_in) {
     pyb_switch_obj_t *self = self_in;
-    //return switch_get(SWITCH_ID(self)) ? mp_const_true : mp_const_false;
-    return Buttons_GetStatusByNumber(SWITCH_ID(self)-1) ? mp_const_true : mp_const_false;
+    return mp_hal_getButtonState(SWITCH_ID(self)-1) ? mp_const_true : mp_const_false;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
