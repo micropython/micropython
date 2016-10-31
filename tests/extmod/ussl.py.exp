@@ -1,0 +1,3 @@
+<_SSLSocket  >
+setblocking: NotImplementedError
+b'HTTP/1.0'
