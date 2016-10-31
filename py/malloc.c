@@ -118,7 +118,7 @@ void *m_malloc0(size_t num_bytes) {
         return m_malloc_fail(num_bytes);
     }
     // If this config is set then the GC clears all memory, so we don't need to.
-    #if !MICROPY_GC_CONSERVATIVE_CLEAR
+    #if !(MICROPY_ENABLE_GC && MICROPY_GC_CONSERVATIVE_CLEAR)
     memset(ptr, 0, num_bytes);
     #endif
     return ptr;
