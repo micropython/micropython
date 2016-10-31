@@ -236,6 +236,10 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         uint32_t duration = 0;
         while (duration < delay) {
             udi_msc_process_trans();
+            // Check to see if we've been CTRL-Ced by autoreset or the user.
+            if(MP_STATE_VM(mp_pending_exception) == MP_STATE_PORT(mp_kbd_exception)) {
+                break;
+            }
             duration = (mp_hal_ticks_ms() - start_tick) & MP_SMALL_INT_POSITIVE_MASK;
         }
     } else {
