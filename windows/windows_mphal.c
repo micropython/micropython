@@ -28,9 +28,9 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 
+#include <sys/time.h>
 #include <windows.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;
