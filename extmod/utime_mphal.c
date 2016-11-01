@@ -89,12 +89,10 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
     // we assume that the arguments come from ticks_xx so are small ints
     uint32_t start = MP_OBJ_SMALL_INT_VALUE(start_in);
     uint32_t end = MP_OBJ_SMALL_INT_VALUE(end_in);
-    int32_t diff = end - start;
-    if (diff < (signed)-(MICROPY_PY_UTIME_TICKS_PERIOD / 2)) {
-        diff += MICROPY_PY_UTIME_TICKS_PERIOD;
-    } else if (diff >= (signed)(MICROPY_PY_UTIME_TICKS_PERIOD / 2)) {
-        diff -= MICROPY_PY_UTIME_TICKS_PERIOD;
-    }
+    // Optimized formula avoiding if conditions. We adjust difference "forward",
+    // wrap it around and adjust back.
+    int32_t diff = ((end - start + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
+                   - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
     return MP_OBJ_NEW_SMALL_INT(diff);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_diff_obj, time_ticks_diff);
