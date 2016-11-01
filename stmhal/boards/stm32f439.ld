@@ -5,25 +5,14 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x200000 /* entire flash, 2048 KiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 0x004000 /* sector 0, 16 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x080000 /* sectors 5,6,7,8, 4*128KiB = 512 KiB (could increase it more) */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x030000 /* 192 KiB */
-    CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K
+    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K     /* sector 0: 16K */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K    /* sectors 5-11: 7*128K = 896K */
+    FLASH_FS (rx)   : ORIGIN = 0x08100000, LENGTH = 192K    /* sectors 12-17: 4*16K+64K+64K(of 128K) = 192K */
+    FLASH_FS2 (rx)  : ORIGIN = 0x08140000, LENGTH = 64K     /* sector 18: 64K(of 128K) */
+    CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 64K
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 192K
 }
-
-/* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 2K;
-_minimum_heap_size = 16K;
-
-/* top end of the stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* define common sections and symbols */
 INCLUDE common.ld
-
-/* RAM extents for the garbage collector */
-_ram_start = ORIGIN(RAM);
-_ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = 0x2002c000; /* tunable */
