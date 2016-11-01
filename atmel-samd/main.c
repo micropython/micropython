@@ -200,6 +200,21 @@ void reset_mp() {
     pin_init0();
 }
 
+void reset_samd21() {
+    // Reset all SERCOMs except the one being used by the SPI flash.
+    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        #ifdef SPI_FLASH_SERCOM
+            if (sercom_instances[i] == SPI_FLASH_SERCOM) {
+                continue;
+            }
+        #endif
+        sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
+    }
+
+    // TODO(tannewt): Reset all of the pins too.
+}
+
 void start_mp() {
     #ifdef AUTORESET_DELAY_MS
         mp_hal_stdout_tx_str("\r\n");
@@ -259,6 +274,7 @@ int main(int argc, char **argv) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             mp_hal_stdout_tx_str("soft reboot\r\n");
+            reset_samd21();
             reset_mp();
             start_mp();
         } else if (exit_code != 0) {
