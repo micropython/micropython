@@ -24,8 +24,8 @@ def main():
     print("STA ifconfig:", network.WLAN(network.STA_IF).ifconfig())
     print("AP ifconfig:", network.WLAN(network.AP_IF).ifconfig())
     print("Free WiFi driver buffers of type:")
-    for i in range(5):
-        print("%d: %d" % (i, esp.esf_free_bufs(i)))
+    for i, comm in enumerate(("1,2 TX", "4 Mngmt TX(len: 0x41-0x100)", "5 Mngmt TX (len: 0-0x40)", "7", "8 RX")):
+        print("%d: %d (%s)" % (i, esp.esf_free_bufs(i), comm))
     print("lwIP PCBs:")
     lwip.print_pcbs()
 
