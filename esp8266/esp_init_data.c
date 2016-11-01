@@ -31,9 +31,6 @@
 #include "user_interface.h"
 #include "extmod/misc.h"
 
-uint32_t SPIRead(uint32_t offset, void *buf, uint32_t len);
-uint32_t SPIWrite(uint32_t offset, const void *buf, uint32_t len);
-uint32_t SPIEraseSector(int sector);
 NORETURN void call_user_start(void);
 void ets_printf(const char *fmt, ...);
 extern char flashchip;

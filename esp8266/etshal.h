@@ -36,4 +36,8 @@ void *pvPortZalloc(unsigned sz, const char *fname, int line);
 void *pvPortRealloc(void *p, unsigned sz, const char *fname, int line);
 void vPortFree(void *p, const char *fname, int line);
 
+uint32_t SPIRead(uint32_t offset, void *buf, uint32_t len);
+uint32_t SPIWrite(uint32_t offset, const void *buf, uint32_t len);
+uint32_t SPIEraseSector(int sector);
+
 #endif // _INCLUDED_ETSHAL_H_
