@@ -68,8 +68,7 @@ const pin_obj_t pin_## p_name = { \
     .adc_input = p_adc_input, \
     .primary_timer = p_primary_timer, \
     .secondary_timer =  p_secondary_timer, \
-    .primary_sercom = p_primary_sercom, \
-    .secondary_sercom = p_secondary_sercom \
+    .sercom = {p_primary_sercom, p_secondary_sercom}, \
 }
 
 #define NO_ADC_INPUT (0)

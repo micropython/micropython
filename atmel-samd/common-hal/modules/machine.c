@@ -32,6 +32,8 @@
 
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
 
+// We use ENABLE registers below we don't want to treat as a macro.
+#undef ENABLE
 
 // Number of times to try to send packet if failed.
 #define TIMEOUT 1
@@ -42,33 +44,44 @@ void mp_hal_i2c_construct(machine_i2c_obj_t *self, const pin_obj_t* scl,
     i2c_master_get_config_defaults(&config_i2c_master);
     // Struct takes the argument in Khz not Hz.
     config_i2c_master.baud_rate = freq / 1000;
-    // TODO(tannewt): Utilize the secondary sercom if the first is already being
-    // used.
-    if (sda->primary_sercom.sercom == 0 || sda->primary_sercom.pad != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "SDA pin must be on SERCOM pad 0"));
+    Sercom* sercom = NULL;
+    uint32_t sda_pinmux = 0;
+    uint32_t scl_pinmux = 0;
+    for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
+        Sercom* potential_sercom = sda->sercom[i].sercom;
+        if (potential_sercom == NULL ||
+            potential_sercom->I2CM.CTRLA.bit.ENABLE != 0 ||
+            sda->sercom[i].pad != 0) {
+            continue;
+        }
+        sda_pinmux = sda->sercom[i].pinmux;
+        for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
+            if (potential_sercom == scl->sercom[j].sercom &&
+                scl->sercom[j].pad == 1) {
+                scl_pinmux = scl->sercom[j].pinmux;
+                sercom = potential_sercom;
+                break;
+            }
+        }
+        if (sercom != NULL) {
+            break;
+        }
     }
-    if (scl->primary_sercom.sercom == 0 || scl->primary_sercom.pad != 1) {
+    if (sercom == NULL) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "SCL pin must be on SERCOM pad 1"));
+            "No hardware support available with those pins."));
     }
-    if (sda->primary_sercom.sercom != scl->primary_sercom.sercom) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "SDA and SCL pins must share a SERCOM"));
-    }
-    config_i2c_master.pinmux_pad0 = sda->primary_sercom.pinmux; // SDA
-    config_i2c_master.pinmux_pad1 = scl->primary_sercom.pinmux; // SCL
+
+    config_i2c_master.pinmux_pad0 = sda_pinmux; // SDA
+    config_i2c_master.pinmux_pad1 = scl_pinmux; // SCL
     config_i2c_master.buffer_timeout = 10000;
 
     enum status_code status = i2c_master_init(&self->i2c_master_instance,
-      sda->primary_sercom.sercom, &config_i2c_master);
+        sercom, &config_i2c_master);
     if (status != STATUS_OK) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus init error"));
     }
 
-}
-
-void mp_hal_i2c_init(machine_i2c_obj_t *self) {
     i2c_master_enable(&self->i2c_master_instance);
 }
 
@@ -212,18 +225,57 @@ void mp_hal_spi_construct(machine_spi_obj_t *self, const pin_obj_t * clock,
     struct spi_config config_spi_master;
     spi_get_config_defaults(&config_spi_master);
 
+    Sercom* sercom = NULL;
+    uint32_t clock_pinmux = 0;
+    uint32_t mosi_pinmux = 0;
+    uint32_t miso_pinmux = 0;
+    uint8_t clock_pad = 0;
+    uint8_t mosi_pad = 0;
+    uint8_t miso_pad = 0;
+    for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
+        Sercom* potential_sercom = clock->sercom[i].sercom;
+        if (potential_sercom == NULL ||
+            potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {
+            continue;
+        }
+        clock_pinmux = clock->sercom[i].pinmux;
+        clock_pad = clock->sercom[i].pad;
+        for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
+            mosi_pinmux = mosi->sercom[j].pinmux;
+            mosi_pad = mosi->sercom[j].pad;
+            for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
+                if (potential_sercom == miso->sercom[k].sercom) {
+                    miso_pinmux = miso->sercom[k].pinmux;
+                    miso_pad = miso->sercom[k].pad;
+                    sercom = potential_sercom;
+                    break;
+                }
+            }
+            if (sercom != NULL) {
+                break;
+            }
+        }
+        if (sercom != NULL) {
+            break;
+        }
+    }
+    if (sercom == NULL) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "No hardware support available with those pins."));
+    }
+
     // Depends on where MOSI and CLK are.
     uint8_t dopo = 8;
-    if (clock->primary_sercom.pad == 1) {
-        if (mosi->primary_sercom.pad == 0) {
+    if (clock_pad == 1) {
+        if (mosi_pad == 0) {
             dopo = 0;
-        } else if (mosi->primary_sercom.pad == 3) {
+        } else if (mosi_pad == 3) {
             dopo = 2;
         }
-    } else if (clock->primary_sercom.pad == 3) {
-        if (mosi->primary_sercom.pad == 0) {
+    } else if (clock_pad == 3) {
+        if (mosi_pad == 0) {
             dopo = 3;
-        } else if (mosi->primary_sercom.pad == 2) {
+        } else if (mosi_pad == 2) {
             dopo = 1;
         }
     }
@@ -232,23 +284,21 @@ void mp_hal_spi_construct(machine_spi_obj_t *self, const pin_obj_t * clock,
     }
 
     config_spi_master.mux_setting = (dopo << SERCOM_SPI_CTRLA_DOPO_Pos) |
-        (miso->primary_sercom.pad << SERCOM_SPI_CTRLA_DIPO_Pos);
+        (miso_pad << SERCOM_SPI_CTRLA_DIPO_Pos);
 
     // Map pad to pinmux through a short array.
     uint32_t *pinmuxes[4] = {&config_spi_master.pinmux_pad0,
                              &config_spi_master.pinmux_pad1,
                              &config_spi_master.pinmux_pad2,
                              &config_spi_master.pinmux_pad3};
-    *pinmuxes[clock->primary_sercom.pad] = clock->primary_sercom.pinmux;
-    *pinmuxes[mosi->primary_sercom.pad] = mosi->primary_sercom.pinmux;
-    *pinmuxes[miso->primary_sercom.pad] = miso->primary_sercom.pinmux;
+    *pinmuxes[clock_pad] = clock_pinmux;
+    *pinmuxes[mosi_pad] = mosi_pinmux;
+    *pinmuxes[miso_pad] = miso_pinmux;
 
     config_spi_master.mode_specific.master.baudrate = baudrate;
 
-    spi_init(&self->spi_master_instance, mosi->primary_sercom.sercom, &config_spi_master);
-}
+    spi_init(&self->spi_master_instance, sercom, &config_spi_master);
 
-void mp_hal_spi_init(machine_spi_obj_t *self) {
     spi_enable(&self->spi_master_instance);
 }
 

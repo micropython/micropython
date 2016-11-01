@@ -61,6 +61,7 @@ typedef struct {
   uint32_t mux;
 } pin_timer_t;
 
+#define NUM_SERCOMS_PER_PIN 2
 typedef struct {
   mp_obj_base_t base;
   qstr name;
@@ -69,8 +70,7 @@ typedef struct {
   enum adc_positive_input adc_input;
   pin_timer_t primary_timer;
   pin_timer_t secondary_timer;
-  pin_sercom_t primary_sercom;
-  pin_sercom_t secondary_sercom;
+  pin_sercom_t sercom[NUM_SERCOMS_PER_PIN];
 } pin_obj_t;
 
 typedef struct _machine_i2c_obj_t {

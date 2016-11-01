@@ -31,7 +31,6 @@
 
 #include "machine.h"
 
-
 #include "py/runtime.h"
 
 //| :mod:`machine` --- functions related to the board
@@ -82,17 +81,6 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
    return (mp_obj_t)self;
 }
 
-//|   .. method:: I2C.init()
-//|
-//|     Initializes control of the underlying hardware so other classes cannot
-//|     use it.
-//|
-STATIC mp_obj_t machine_i2c_obj_init(mp_obj_t self_in) {
-   machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   mp_hal_i2c_init(self);
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_init_obj, machine_i2c_obj_init);
 
 //|   .. method:: I2C.deinit()
 //|
@@ -105,6 +93,19 @@ STATIC mp_obj_t machine_i2c_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_deinit_obj, machine_i2c_obj_deinit);
 
+//|   .. method:: I2C.__enter__()
+//|
+//|     No-op used in Context Managers.
+//|
+STATIC mp_obj_t machine_i2c_obj___enter__(mp_obj_t self_in) {
+   return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c___enter___obj, machine_i2c_obj___enter__);
+
+//|   .. method:: I2C.__exit__()
+//|
+//|     Automatically deinitializes the hardware on context exit.
+//|
 STATIC mp_obj_t machine_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_hal_i2c_deinit(args[0]);
@@ -268,9 +269,8 @@ STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_writeto_mem_obj, 1, machine_i2c_writeto_mem);
 
 STATIC const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_i2c_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_i2c_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&machine_i2c_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&machine_i2c___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&machine_i2c_obj___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&machine_i2c_scan_obj) },
 
@@ -348,17 +348,6 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
    return (mp_obj_t)self;
 }
 
-//|   .. method:: SPI.init()
-//|
-//|      Initialises the bus.
-//|
-STATIC mp_obj_t machine_spi_obj_init(mp_obj_t self_in) {
-   machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   mp_hal_spi_init(self);
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_init_obj, machine_spi_obj_init);
-
 //|   .. method:: SPI.deinit()
 //|
 //|      Turn off the SPI bus.
@@ -370,6 +359,19 @@ STATIC mp_obj_t machine_spi_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_obj_deinit);
 
+//|   .. method:: SPI.__enter__()
+//|
+//|      No-op used by Context Managers.
+//|
+STATIC mp_obj_t machine_spi_obj___enter__(mp_obj_t self_in) {
+   return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_spi___enter___obj, machine_spi_obj___enter__);
+
+//|   .. method:: SPI.__enter__()
+//|
+//|      Automatically deinitializes the hardware when exiting a context.
+//|
 STATIC mp_obj_t machine_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_hal_spi_deinit(args[0]);
@@ -441,9 +443,8 @@ STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machine_spi_readinto);
 
 STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_spi_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_spi_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&machine_spi_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&machine_spi___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&machine_spi_obj___exit___obj) },
 
     // Standard simultaneous read/write transfer.
