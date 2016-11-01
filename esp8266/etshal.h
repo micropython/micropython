@@ -24,7 +24,9 @@ extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
 
 // Opaque structure
-typedef char MD5_CTX[64];
+#ifndef MD5_CTX
+typedef char MD5_CTX[88];
+#endif
 
 void MD5Init(MD5_CTX *context);
 void MD5Update(MD5_CTX *context, const void *data, unsigned int len);
