@@ -110,10 +110,11 @@
 // Be conservative and always clear to zero newly (re)allocated memory in the GC.
 // This helps eliminate stray pointers that hold on to memory that's no longer
 // used.  It decreases performance due to unnecessary memory clearing.
+// A memory manager which always clears memory can set this to 0.
 // TODO Do analysis to understand why some memory is not properly cleared and
 // find a more efficient way to clear it.
 #ifndef MICROPY_GC_CONSERVATIVE_CLEAR
-#define MICROPY_GC_CONSERVATIVE_CLEAR (1)
+#define MICROPY_GC_CONSERVATIVE_CLEAR (MICROPY_ENABLE_GC)
 #endif
 
 // Support automatic GC when reaching allocation threshold,
