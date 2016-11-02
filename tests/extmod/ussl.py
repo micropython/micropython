@@ -29,6 +29,7 @@ ss.setblocking(True)
 # uPy SSLSocket objects implement only stream interface
 ss.write(b"GET / HTTP/1.0\r\n\r\n")
 print(ss.read(8))
+ss.read(4096)
 
 ss.close()
 
