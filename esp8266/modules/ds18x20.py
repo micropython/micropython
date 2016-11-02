@@ -43,4 +43,8 @@ class DS18X20:
                 t = buf[0] >> 1
             return t - 0.25 + (buf[7] - buf[6]) / buf[7]
         else:
-            return (buf[1] << 8 | buf[0]) / 16
+            t = buf[1] << 8 | buf[0]
+            if t & 0x8000:  # bit sign set
+                t = (t ^ 0xffff) + 1 # 2's complement
+                return -(t / 16.0)
+            return t / 16.0
