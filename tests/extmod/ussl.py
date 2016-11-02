@@ -34,4 +34,7 @@ ss.read(4096)
 ss.close()
 
 # write on closed or unwrapped SSL socket
-# ss.write(b"GET / HTTP/1.0\r\n\r\n")
+try:
+    ss.write(b"GET / HTTP/1.0\r\n\r\n")
+except OSError as e:
+    print("SSL_ERROR_CONN_LOST:", e.args[0] == -256)
