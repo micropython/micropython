@@ -1,1 +1,3 @@
 <websocket>
+b'ping'
+b'\x81\x04pong'
