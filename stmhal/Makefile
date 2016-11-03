@@ -81,6 +81,7 @@ endif
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	libm/math.c \
+	libm/thumb_vfp_sqrtf.c \
 	libm/asinfacosf.c \
 	libm/atanf.c \
 	libm/atan2f.c \
