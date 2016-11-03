@@ -14,6 +14,7 @@ See:
     STM32Cube_FW_F4_V1.1.0/Projects/STM32F4-Discovery/Demonstrations/Src/main.c
 """
 
+from micropython import const
 from pyb import Pin
 from pyb import SPI
 
