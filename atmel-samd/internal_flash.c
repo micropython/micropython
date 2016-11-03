@@ -37,7 +37,7 @@
 #include "asf/sam0/drivers/nvm/nvm.h"
 #include "asf/sam0/drivers/port/port.h"
 
-#include "samdneopixel.h"
+#include "neopixel_status.h"
 
 #define TOTAL_INTERNAL_FLASH_SIZE 0x010000
 
@@ -114,7 +114,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
     buf[15] = num_blocks >> 24;
 }
 
-static uint32_t convert_block_to_flash_addr(uint32_t block) {
+static int32_t convert_block_to_flash_addr(uint32_t block) {
     if (INTERNAL_FLASH_PART1_START_BLOCK <= block && block < INTERNAL_FLASH_PART1_START_BLOCK + INTERNAL_FLASH_PART1_NUM_BLOCKS) {
         // a block in partition 1
         block -= INTERNAL_FLASH_PART1_START_BLOCK;
@@ -145,7 +145,7 @@ bool internal_flash_read_block(uint8_t *dest, uint32_t block) {
 
     } else {
         // non-MBR block, get data from flash memory
-        uint32_t src = convert_block_to_flash_addr(block);
+        int32_t src = convert_block_to_flash_addr(block);
         if (src == -1) {
             // bad block number
             return false;
@@ -178,7 +178,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
             temp_status_color(0x8f, 0x00, 0x00);
         #endif
         // non-MBR block, copy to cache
-        volatile uint32_t dest = convert_block_to_flash_addr(block);
+        int32_t dest = convert_block_to_flash_addr(block);
         if (dest == -1) {
             // bad block number
             return false;
@@ -241,6 +241,8 @@ mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, ui
     }
     return 0; // success
 }
+
+void mark_flash_cache_for_gc(void) {}
 
 /******************************************************************************/
 // MicroPython bindings

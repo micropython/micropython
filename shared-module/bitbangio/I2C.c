@@ -1,0 +1,210 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2016 Damien P. George, Scott Shawcroft
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "shared-bindings/bitbangio/I2C.h"
+
+#include "py/obj.h"
+
+#include "common-hal/microcontroller/types.h"
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/nativeio/DigitalInOut.h"
+#include "shared-module/bitbangio/types.h"
+
+#define I2C_STRETCH_LIMIT 255
+
+STATIC void delay(bitbangio_i2c_obj_t *self) {
+    // We need to use an accurate delay to get acceptable I2C
+    // speeds (eg 1us should be not much more than 1us).
+    common_hal_mcu_delay_us(self->us_delay);
+}
+
+STATIC void scl_low(bitbangio_i2c_obj_t *self) {
+    common_hal_nativeio_digitalinout_set_value(&self->scl, false);
+}
+
+STATIC void scl_release(bitbangio_i2c_obj_t *self) {
+    common_hal_nativeio_digitalinout_set_value(&self->scl, true);
+    delay(self);
+    // For clock stretching, wait for the SCL pin to be released, with timeout.
+    for (int count = I2C_STRETCH_LIMIT; !common_hal_nativeio_digitalinout_get_value(&self->scl) && count; --count) {
+        common_hal_mcu_delay_us(1);
+    }
+}
+
+STATIC void sda_low(bitbangio_i2c_obj_t *self) {
+    common_hal_nativeio_digitalinout_set_value(&self->sda, false);
+}
+
+STATIC void sda_release(bitbangio_i2c_obj_t *self) {
+    common_hal_nativeio_digitalinout_set_value(&self->sda, true);
+}
+
+STATIC bool sda_read(bitbangio_i2c_obj_t *self) {
+    common_hal_nativeio_digitalinout_switch_to_input(&self->sda, PULL_UP);
+    bool value = common_hal_nativeio_digitalinout_get_value(&self->sda);
+    common_hal_nativeio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
+    return value;
+}
+
+STATIC void start(bitbangio_i2c_obj_t *self) {
+    sda_release(self);
+    delay(self);
+    scl_release(self);
+    sda_low(self);
+    delay(self);
+}
+
+STATIC void stop(bitbangio_i2c_obj_t *self) {
+    delay(self);
+    sda_low(self);
+    delay(self);
+    scl_release(self);
+    sda_release(self);
+    delay(self);
+}
+
+STATIC int write_byte(bitbangio_i2c_obj_t *self, uint8_t val) {
+    delay(self);
+    scl_low(self);
+
+    for (int i = 7; i >= 0; i--) {
+        if ((val >> i) & 1) {
+            sda_release(self);
+        } else {
+            sda_low(self);
+        }
+        delay(self);
+        scl_release(self);
+        scl_low(self);
+    }
+
+    sda_release(self);
+    delay(self);
+    scl_release(self);
+
+    int ret = sda_read(self);
+    delay(self);
+    scl_low(self);
+
+    return !ret;
+}
+
+STATIC bool read_byte(bitbangio_i2c_obj_t *self, uint8_t *val, bool ack) {
+    delay(self);
+    scl_low(self);
+    delay(self);
+
+    uint8_t data = 0;
+    for (int i = 7; i >= 0; i--) {
+        scl_release(self);
+        data = (data << 1) | sda_read(self);
+        scl_low(self);
+        delay(self);
+    }
+    *val = data;
+
+    // send ack/nack bit
+    if (ack) {
+        sda_low(self);
+    }
+    delay(self);
+    scl_release(self);
+    scl_low(self);
+    sda_release(self);
+
+    return true;
+}
+
+void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
+                                           const mcu_pin_obj_t * scl,
+                                           const mcu_pin_obj_t * sda,
+                                           uint32_t freq) {
+    self->us_delay = 500000 / freq;
+    if (self->us_delay == 0) {
+        self->us_delay = 1;
+    }
+    digitalinout_result_t result = common_hal_nativeio_digitalinout_construct(&self->scl, scl);
+    if (result != DIGITALINOUT_OK) {
+        return;
+    }
+    result = common_hal_nativeio_digitalinout_construct(&self->sda, sda);
+    if (result != DIGITALINOUT_OK) {
+        common_hal_nativeio_digitalinout_deinit(&self->scl);
+        return;
+    }
+    common_hal_nativeio_digitalinout_switch_to_output(&self->scl, true, DRIVE_MODE_OPEN_DRAIN);
+    common_hal_nativeio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
+
+    stop(self);
+}
+
+void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self) {
+    common_hal_nativeio_digitalinout_deinit(&self->scl);
+    common_hal_nativeio_digitalinout_deinit(&self->sda);
+}
+
+bool shared_module_bitbangio_i2c_probe(bitbangio_i2c_obj_t *self, uint8_t addr) {
+    start(self);
+    bool ok = write_byte(self, addr << 1);
+    stop(self);
+    return ok;
+}
+
+bool shared_module_bitbangio_i2c_write(bitbangio_i2c_obj_t *self, uint16_t addr,
+                                       const uint8_t *data, size_t len, bool transmit_stop_bit) {
+    // start the I2C transaction
+    start(self);
+    bool ok = write_byte(self, addr << 1);
+
+    for (uint32_t i = 0; i < len; i++) {
+        ok = ok && write_byte(self, data[i]);
+        if (!ok) {
+            break;
+        }
+    }
+
+    if (transmit_stop_bit) {
+        stop(self);
+    }
+    return ok;
+}
+
+bool shared_module_bitbangio_i2c_read(bitbangio_i2c_obj_t *self, uint16_t addr,
+                                      uint8_t * data, size_t len) {
+    // start the I2C transaction
+    start(self);
+    bool ok = write_byte(self, (addr << 1) | 1);
+
+    for (uint32_t i = 0; i < len; i++) {
+        ok = ok && read_byte(self, data + i, i < len - 1);
+        if (!ok) {
+            break;
+        }
+    }
+
+    stop(self);
+    return ok;
+}

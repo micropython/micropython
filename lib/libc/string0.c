@@ -29,6 +29,8 @@
 
 #define likely(x) __builtin_expect((x), 1)
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
 void *memcpy(void *dst, const void *src, size_t n) {
     if (likely(!(((uintptr_t)dst) & 3) && !(((uintptr_t)src) & 3))) {
         // pointers aligned
@@ -101,6 +103,8 @@ void *memset(void *s, int c, size_t n) {
     }
     return s;
 }
+
+#pragma GCC diagnostic pop
 
 int memcmp(const void *s1, const void *s2, size_t n) {
     const uint8_t *s1_8 = s1;

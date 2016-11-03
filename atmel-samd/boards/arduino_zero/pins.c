@@ -1,6 +1,8 @@
-#include "boards/samd21_pins.h"
+#include "shared-bindings/board/__init__.h"
 
-STATIC const mp_map_elem_t pin_board_pins_locals_dict_table[] = {
+#include "samd21_pins.h"
+
+STATIC const mp_map_elem_t board_global_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_A0), (mp_obj_t)&pin_PA02 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_A1), (mp_obj_t)&pin_PB08 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_A2), (mp_obj_t)&pin_PB09 },
@@ -27,4 +29,4 @@ STATIC const mp_map_elem_t pin_board_pins_locals_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PB10 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_PA12 },
 };
-MP_DEFINE_CONST_DICT(pin_board_pins_locals_dict, pin_board_pins_locals_dict_table);
+MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);

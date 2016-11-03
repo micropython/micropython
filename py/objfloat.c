@@ -39,6 +39,9 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
 // M_E and M_PI are not part of the math.h standard and may not be defined
@@ -251,5 +254,7 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
     }
     return mp_obj_new_float(lhs_val);
 }
+
+#pragma GCC diagnostic pop
 
 #endif // MICROPY_PY_BUILTINS_FLOAT

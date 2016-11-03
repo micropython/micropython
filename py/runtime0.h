@@ -26,6 +26,8 @@
 #ifndef __MICROPY_INCLUDED_PY_RUNTIME0_H__
 #define __MICROPY_INCLUDED_PY_RUNTIME0_H__
 
+#include "mpconfig.h"
+
 // These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_VARARGS      (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)

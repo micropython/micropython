@@ -40,7 +40,7 @@
 #include "extmod/modwebsocket.h"
 #include "genhdr/mpversion.h"
 
-#if MICROPY_PY_WEBREPL
+#ifdef MICROPY_PY_WEBREPL
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf

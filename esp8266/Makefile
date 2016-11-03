@@ -1,5 +1,15 @@
 include ../py/mkenv.mk
 
+# Select the board to build for: if not given on the command line,
+# then default to PYBV10.
+BOARD ?= feather_huzzah
+ifeq ($(wildcard boards/$(BOARD)/.),)
+$(error Invalid BOARD specified)
+endif
+
+# If the build directory is not given, make it reflect the board name.
+BUILD ?= build-$(BOARD)
+
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
@@ -93,7 +103,33 @@ SRC_C = \
 	fatfs_port.c \
 	axtls_helpers.c \
 	hspi.c \
+	boards/$(BOARD)/pins.c \
 	$(SRC_MOD)
+
+SRC_COMMON_HAL = \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
+	nativeio/__init__.c \
+	nativeio/AnalogIn.c \
+	nativeio/AnalogOut.c \
+	nativeio/DigitalInOut.c \
+	nativeio/I2C.c \
+	nativeio/PWMOut.c \
+	nativeio/SPI.c \
+	neopixel_write/__init__.c \
+	time/__init__.c \
+	board/__init__.c
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+
+SRC_SHARED_MODULE = \
+	bitbangio/__init__.c \
+	bitbangio/I2C.c \
+	bitbangio/SPI.c \
+
+SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
@@ -149,6 +185,8 @@ OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
@@ -156,7 +194,7 @@ OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 

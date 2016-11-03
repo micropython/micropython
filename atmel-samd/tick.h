@@ -28,8 +28,8 @@
 
 #include "mpconfigport.h"
 
-extern volatile uint32_t ticks_ms;
+extern volatile uint64_t ticks_ms;
 
-void tick_init();
+void tick_init(void);
 
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__

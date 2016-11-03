@@ -11,7 +11,7 @@ educational development boards designed and sold by `Adafruit
 <https://www.adafruit.com/products/2995>`_.
 
 Adafruit's MicroPython port features a unified Python APIs available under
-`shared-bindings` and a growing list of drivers that work with it. Currently
+`!shared-bindings` and a growing list of drivers that work with it. Currently
 only the Atmel SAMD21 port is supported but ESP8266 support will be added in the
 near future.
 
@@ -23,6 +23,7 @@ docs are low-level API docs and may link out to separate getting started guides.
     :maxdepth: 2
 
     shared-bindings/index.rst
+    docs/common_hal
     docs/drivers.rst
     docs/supported_ports.rst
     docs/unsupported_ports.rst

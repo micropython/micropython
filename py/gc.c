@@ -843,7 +843,10 @@ void gc_dump_alloc_table(void) {
             */
             /* this prints the uPy object type of the head block */
             case AT_HEAD: {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
                 void **ptr = (void**)(MP_STATE_MEM(gc_pool_start) + bl * BYTES_PER_BLOCK);
+#pragma GCC diagnostic pop
                 if (*ptr == &mp_type_tuple) { c = 'T'; }
                 else if (*ptr == &mp_type_list) { c = 'L'; }
                 else if (*ptr == &mp_type_dict) { c = 'D'; }

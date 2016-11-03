@@ -80,6 +80,9 @@ SECTIONS
         *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
 
         /* we put some specific text in this section */
+        *common-hal/*.o*(.literal* .text*)
+        *shared-bindings/*.o*(.literal* .text*)
+        *shared-module/*.o*(.literal* .text*)
 
         *py/argcheck.o*(.literal* .text*)
         *py/asm*.o*(.literal* .text*)

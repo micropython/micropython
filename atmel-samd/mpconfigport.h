@@ -48,6 +48,7 @@
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
+#define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (1)
@@ -111,15 +112,19 @@ typedef long mp_off_t;
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t microcontroller_module;
+extern const struct _mp_obj_module_t nativeio_module;
+extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t uos_module;
-extern const struct _mp_obj_module_t utime_module;
+extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_nativeio), (mp_obj_t)&nativeio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module } \
 
 // board specific definitions
@@ -147,7 +152,5 @@ extern const struct _mp_obj_module_t neopixel_write_module;
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t mp_kbd_exception; \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

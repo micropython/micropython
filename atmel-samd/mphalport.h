@@ -32,7 +32,7 @@
 #define USB_RX_BUF_SIZE 128
 
 // Global millisecond tick count (driven by SysTick interrupt).
-extern volatile uint32_t ticks_ms;
+extern volatile uint64_t ticks_ms;
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {
   return ticks_ms;

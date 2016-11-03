@@ -9,4 +9,4 @@ follow.
     :glob:
     :maxdepth: 3
 
-    modules/*
+    */__init__

@@ -31,11 +31,11 @@
 
 extern volatile bool reset_next_character;
 
-void autoreset_tick();
+void autoreset_tick(void);
 
-void autoreset_start();
-void autoreset_stop();
-void autoreset_enable();
-void autoreset_disable();
+void autoreset_start(void);
+void autoreset_stop(void);
+void autoreset_enable(void);
+void autoreset_disable(void);
 
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__

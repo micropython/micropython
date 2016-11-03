@@ -10,6 +10,5 @@ We recommend using `upstream MicroPython <https://micropython.org>`_ for the bel
 .. toctree::
     :maxdepth: 2
 
-    esp8266/index.rst
     pyboard/index.rst
     wipy/index.rst

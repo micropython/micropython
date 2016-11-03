@@ -152,6 +152,8 @@ typedef struct _parser_t {
     #endif
 } parser_t;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
 STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     // use a custom memory allocator to store parse nodes sequentially in large chunks
 
@@ -192,6 +194,7 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     chunk->union_.used += num_bytes;
     return ret;
 }
+#pragma GCC diagnostic pop
 
 STATIC void push_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t arg_i) {
     if (parser->parse_error) {

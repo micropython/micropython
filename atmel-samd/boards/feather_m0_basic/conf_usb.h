@@ -87,9 +87,9 @@ void usb_rts_notify(uint8_t port, bool set);
 
 //! Interface callback definition
 #define  UDI_MSC_ENABLE_EXT()          mp_msc_enable()
-extern bool mp_msc_enable();
+extern bool mp_msc_enable(void);
 #define  UDI_MSC_DISABLE_EXT()         mp_msc_disable()
-extern void mp_msc_disable();
+extern void mp_msc_disable(void);
 
 //! Enable id string of interface to add an extra USB string
 #define  UDI_MSC_STRING_ID                5

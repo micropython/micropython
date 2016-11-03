@@ -5,7 +5,7 @@
 #include "asf/sam0/drivers/tc/tc_interrupt.h"
 
 // Global millisecond tick count
-volatile uint32_t ticks_ms = 0;
+volatile uint64_t ticks_ms = 0;
 
 static struct tc_module ms_timer;
 
@@ -13,9 +13,6 @@ static void ms_tick(struct tc_module *const module_inst) {
     // SysTick interrupt handler called when the SysTick timer reaches zero
     // (every millisecond).
     ticks_ms += 1;
-    // Keep the counter within the range of 31 bit uint values since that's the
-    // max value for micropython 'small' ints.
-    ticks_ms = ticks_ms > (0xFFFFFFFF >> 1) ? 0 : ticks_ms;
 
     #ifdef AUTORESET_DELAY_MS
         autoreset_tick();

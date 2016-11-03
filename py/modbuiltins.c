@@ -470,9 +470,9 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_float_t rounded = MICROPY_FLOAT_C_FUN(round)(val);
     mp_int_t r = rounded;
     // make rounded value even if it was halfway between ints
-    if (val - rounded == 0.5) {
+    if (val - rounded >= 0.5) {
         r = (r + 1) & (~1);
-    } else if (val - rounded == -0.5) {
+    } else if (val - rounded <= -0.5) {
         r &= ~1;
     }
     if (n_args > 1) {

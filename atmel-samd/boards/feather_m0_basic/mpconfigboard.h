@@ -7,3 +7,5 @@
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define AUTORESET_DELAY_MS 500
+
+#define FLASH_INCLUDE "internal_flash.h"
