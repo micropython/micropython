@@ -1,12 +1,9 @@
 #
-# This is main Makefile, which uses MicroPython build system, but
-# Zephyr arch-specific toolchain (setup by Zephyr's Makefile.toolchain.*).
-# Unfortunately, it's currently not possible to get target (as in: specific
-# board to run on) specific compile-time options from Zephyr, so these must
-# be set (duplicated) in this Makefile. Currently, these configured for
-# ARM Cortex-M3. This Makefile builds MicroPython as a library, and then
-# calls recursively Makefile.zephyr to build complete application using
-# Zephyr build system.
+# This is the main Makefile, which uses MicroPython build system,
+# but Zephyr arch-specific toolchain and target-specific flags.
+# This Makefile builds MicroPython as a library, and then calls
+# recursively Makefile.zephyr to build complete application binary
+# using Zephyr build system.
 #
 
 BOARD ?= qemu_x86
