@@ -15,6 +15,10 @@ BOARD ?= qemu_x86
 # Zephyr 1.6.0
 OUTDIR_PREFIX = $(BOARD)
 
+# Default heap size is 16KB, which is on conservative side, to let
+# it build for smaller boards, but it won't be enough for larger
+# applications, and will need to be increased.
+MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
 # Zephyr (generated) config files - must be defined before include below
@@ -52,7 +56,7 @@ SRC_QSTR += $(SRC_C)
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
-	 -std=gnu99 -DNDEBUG $(INC)
+	 -std=gnu99 -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(INC)
 
 include ../py/mkrules.mk
 
