@@ -28,11 +28,6 @@
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
 #include "autoconf.h"
 
-// Saving extra crumbs to make sure binary fits in 128K
-#define MICROPY_COMP_CONST_FOLDING  (0)
-#define MICROPY_COMP_CONST (0)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
-
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -62,6 +57,11 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+
+// Saving extra crumbs to make sure binary fits in 128K
+#define MICROPY_COMP_CONST_FOLDING  (0)
+#define MICROPY_COMP_CONST (0)
+#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
 #ifdef CONFIG_BOARD
 #define MICROPY_HW_BOARD_NAME "zephyr-" CONFIG_BOARD
