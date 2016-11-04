@@ -25,24 +25,35 @@ print(ws)
 
 
 # server receives from client
-def ping(msg):
-    sz = len(msg)
+def ping(msg, sz):
     c.write(msg)
-    return ws.read(sz-2 if sz < 126 else sz-4)
+    return ws.read(sz)
 
 # client receives from server
-def pong(msg):
-    sz = len(msg)
+def pong(msg, sz):
     ws.write(msg)
-    return c.read(sz+2 if sz < 126 else sz+4)
+    return c.read(sz)
 
 
-print(ping(b"\x81\x04ping"))
-print(pong(b"pong"))
+print(ping(b"\x81\x04ping", 4))
+print(pong(b"pong", 6))
 
-# double header size
-print(ping(b'\x81~\x00\x80' + b'ping' * 32))
-print(pong(b"pong" * 32))
+# split frames are not supported
+# print(ping(b"\x01\x04ping", 4))
+
+# extended payloads
+print(ping(b'\x81~\x00\x80' + b'ping' * 32, 128))
+print(pong(b"pong" * 32, 132))
+
+# frame continuation
+# print(ping(b"\x81\x04ping\x80\x04pong", 8))
+
+# control frames
+print(ping(b"\x81\x80ping\x81\x04ping", 4))
+print(ping(b"\x89\x00", 1)) # FRAME_PING
+print(pong(b"\x8a\x00", 4)) # FRAME_PONG
+print(ping(b"\x88\x00", 2)) # FRAME_CLOSE
+print(c.read(4))
 
 # ioctl
 print(ws.ioctl(8)) # GET_DATA_OPTS
