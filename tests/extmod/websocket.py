@@ -36,6 +36,7 @@ def pong(msg, sz):
 
 
 print(ping(b"\x81\x04ping", 4))
+print(ping(b"\x80\x04ping", 4)) # FRAME_CONT
 print(pong(b"pong", 6))
 
 # split frames are not supported
@@ -44,9 +45,6 @@ print(pong(b"pong", 6))
 # extended payloads
 print(ping(b'\x81~\x00\x80' + b'ping' * 32, 128))
 print(pong(b"pong" * 32, 132))
-
-# frame continuation
-# print(ping(b"\x81\x04ping\x80\x04pong", 8))
 
 # control frames
 print(ping(b"\x81\x80ping\x81\x04ping", 4))

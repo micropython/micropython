@@ -1,5 +1,6 @@
 <websocket>
 b'ping'
+b'ping'
 b'\x81\x04pong'
 b'pingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingping'
 b'\x81~\x00\x80pongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpong'
