@@ -72,7 +72,9 @@ int real_main(void) {
     #endif
     mp_init();
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
+    #endif
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();
     for (;;) {

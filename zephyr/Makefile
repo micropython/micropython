@@ -54,7 +54,7 @@ SRC_QSTR += $(SRC_C)
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
-	 -std=gnu99 -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(INC)
+	 -std=gnu99 -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
 
 include ../py/mkrules.mk
 
@@ -82,6 +82,9 @@ build/genhdr/qstr.i.last: $(Z_SYSGEN_H)
 $(Z_SYSGEN_H):
 	rm -f $(LIBMICROPYTHON)
 	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
+
+minimal:
+	$(MAKE) BOARD=$(BOARD) CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
 
 # Clean Zephyr things too
 clean: z_clean
