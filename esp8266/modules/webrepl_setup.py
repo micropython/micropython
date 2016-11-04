@@ -1,83 +1,111 @@
 import sys
-import socket
-import time
+#import uos as os
+import os
+import machine
 
-from websocket import *
-import websocket_helper
+RC = "./boot.py"
+CONFIG = "./webrepl_cfg.py"
 
-
-def setup_server():
-    s = socket.socket()
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-    ai = socket.getaddrinfo("0.0.0.0", 8266)
-    addr = ai[0][4]
-
-    s.bind(addr)
-    s.listen(1)
-    return s
-
-def getpass(stream, prompt):
-    stream.write(prompt)
-    passwd = b""
+def input_choice(prompt, choices):
     while 1:
-        c = stream.read(1)
-        if c in (b"\r", b"\n"):
-            stream.write("\r\n")
-            return passwd
-        passwd += c
-        stream.write("*")
+        resp = input(prompt)
+        if resp in choices:
+            return resp
 
-def handle_conn(listen_sock):
-    cl, remote_addr = listen_sock.accept()
+def getpass(prompt):
+    return input(prompt)
 
-    print("""
-
-First-time WebREPL connection has been received. WebREPL initial setup
-will now start over this connection. During setup, UART REPL will be
-non-responsive. After setup finishes, the board will be rebooted. In
-case of error during setup, current session will continue.
-
-If you receive this message unexpectedly, it may mean that your WebREPL
-connection is being hacked (power off board if unsure).
-""")
-
-    websocket_helper.server_handshake(cl)
-    ws = websocket(cl)
-
-    ws.write("""\
-Welcome to MicroPython WebREPL!\r
-\r
-This is the first time you connect to WebREPL, so please set a password\r
-to use for the following WebREPL sessions. Once you enter the password\r
-twice, your board will reboot with WebREPL running in active mode. On\r
-some boards, you may need to press reset button or reconnect power.\r
-\r
-""")
-
+def input_pass():
     while 1:
-        passwd1 = getpass(ws, "New password: ")
+        passwd1 = getpass("New password: ")
         if len(passwd1) < 4:
-            ws.write("Password too short\r\n")
+            print("Password too short")
             continue
         elif len(passwd1) > 9:
-            ws.write("Password too long\r\n")
+            print("Password too long")
             continue
-        passwd2 = getpass(ws, "Confirm password: ")
+        passwd2 = getpass("Confirm password: ")
         if passwd1 == passwd2:
-            break
-        ws.write("Passwords do not match\r\n")
-
-    with open("port_config.py", "w") as f:
-        f.write("WEBREPL_PASS = %r\n" % passwd1.decode("ascii"))
-
-    ws.write("Password successfully set, restarting...\r\n")
-    cl.close()
-    time.sleep(2)
-    import machine
-    machine.reset()
+            return passwd1
+        print("Passwords do not match")
 
 
-def test():
-    s = setup_server()
-    handle_conn(s)
+def exists(fname):
+    try:
+        with open(fname):
+            pass
+        return True
+    except OSError:
+        return False
+
+def copy_stream(s_in, s_out):
+    buf = bytearray(64)
+    while 1:
+        sz = s_in.readinto(buf)
+        s_out.write(buf, sz)
+
+
+def get_daemon_status():
+    with open(RC) as f:
+        for l in f:
+            if "webrepl" in l:
+                if l.startswith("#"):
+                    return False
+                return True
+        return None
+
+def add_daemon():
+    with open(RC) as old_f, open(RC + ".tmp", "w") as new_f:
+        new_f.write("import webrepl\nwebrepl.start()\n")
+        copy_stream(old_f, new_f)
+
+def change_daemon(action):
+    LINES = ("import webrepl", "webrepl.start()")
+    with open(RC) as old_f, open(RC + ".tmp", "w") as new_f:
+        for l in old_f:
+            for patt in LINES:
+                if patt in l:
+                    if action and l.startswith("#"):
+                        l = l[1:]
+                    elif not action and not l.startswith("#"):
+                        l = "#" + l
+            new_f.write(l)
+    # FatFs rename() is not POSIX compliant, will raise OSError if
+    # dest file exists.
+    os.remove(RC)
+    os.rename(RC + ".tmp", RC)
+
+
+def main():
+    status = get_daemon_status()
+
+    print("WebREPL daemon auto-start status:", "enabled" if status else "disabled")
+    print("\nWould you like to (E)nable or (D)isable it running on boot?")
+    print("(Empty line to quit)")
+    resp = input("> ").upper()
+
+    if resp == "E":
+        if exists(CONFIG):
+            resp2 = input_choice("Would you like to change WebREPL password? (y/n) ", ("y", "n", ""))
+        else:
+            print("To enable WebREPL, you must set password for it")
+            resp2 = "y"
+
+        if resp2 == "y":
+            passwd = input_pass()
+            with open(CONFIG, "w") as f:
+                f.write("PASS = %r\n" % passwd)
+
+
+    if resp not in ("D", "E") or (resp == "D" and not status) or (resp == "E" and status):
+        print("No further action required")
+        sys.exit()
+
+    change_daemon(resp == "E")
+
+    print("Changes will be activated after reboot")
+    resp = input_choice("Would you like to reboot now? (y/n) ", ("y", "n", ""))
+    if resp == "y":
+        machine.reset()
+
+main()
