@@ -7,6 +7,7 @@
 #
 
 BOARD ?= qemu_x86
+CONF_FILE = prj.conf
 # Zephyr 1.5.0
 #OUTDIR_PREFIX =
 # Zephyr 1.6.0
@@ -58,7 +59,7 @@ CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 include ../py/mkrules.mk
 
 $(Z_EXPORTS):
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) initconfig outputexports
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports
 
 GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
 KCONFIG_TARGETS = \
@@ -73,14 +74,14 @@ $(CLEAN_TARGETS):  clean
 
 $(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
 	$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) $@
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) $@
 
 $(LIBMICROPYTHON): $(Z_SYSGEN_H)
 build/genhdr/qstr.i.last: $(Z_SYSGEN_H)
 
 $(Z_SYSGEN_H):
 	rm -f $(LIBMICROPYTHON)
-	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD)
+	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
 
 # Clean Zephyr things too
 clean: z_clean
