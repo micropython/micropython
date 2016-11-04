@@ -4,7 +4,7 @@ b'ping'
 b'\x81\x04pong'
 b'pingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingping'
 b'\x81~\x00\x80pongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpong'
-b'ping'
+None
 None
 b'\x81\x02\x8a\x00'
 b''

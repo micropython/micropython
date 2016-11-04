@@ -46,8 +46,10 @@ print(pong(b"pong", 6))
 print(ping(b'\x81~\x00\x80' + b'ping' * 32, 128))
 print(pong(b"pong" * 32, 132))
 
+# mask
+print(ping(b"\x81\x80mask", 1))
+
 # control frames
-print(ping(b"\x81\x80ping\x81\x04ping", 4))
 print(ping(b"\x89\x00", 1)) # FRAME_PING
 print(pong(b"\x8a\x00", 4)) # FRAME_PONG
 print(ping(b"\x88\x00", 2)) # FRAME_CLOSE
