@@ -3,6 +3,8 @@ import uos
 import uerrno
 try:
     uos.VfsFat
+    uos.vfs_mkfs
+    uos.vfs_mount
 except AttributeError:
     print("SKIP")
     sys.exit()
