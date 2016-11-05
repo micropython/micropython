@@ -148,7 +148,7 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py') modules/upip.py modules/upip_utarfile.py
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 OBJ =
@@ -189,6 +189,9 @@ $(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
 	@$(ECHO) "MPY $<"
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $^
+
+#$(FROZEN_MPY_MPY_FILES): | modules/upip.py
+#$(BUILD)/$(FROZEN_MPY_DIR): | modules/upip.py
 
 # to build frozen_mpy.c from all .mpy files
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
@@ -253,3 +256,16 @@ $(BUILD)/libaxtls.a:
 	cd ../lib/axtls; make clean
 	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
 	cp ../lib/axtls/_stage/libaxtls.a $@
+
+# Select latest upip version available
+UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)
+
+#modules: modules/upip.py
+
+modules/upip.py modules/upip_utarfile.py: $(UPIP_TARBALL)
+	$(ECHO) "MISC Preparing upip as frozen module"
+	$(Q)mkdir -p $(BUILD)
+	$(Q)rm -rf $(BUILD)/micropython-upip-*
+	$(Q)tar -C $(BUILD) -xz -f $^
+	$(Q)mkdir -p $(dir $@)
+	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py $(dir $@)
