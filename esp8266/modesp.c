@@ -45,8 +45,7 @@
 #include "mem.h"
 #include "espneopixel.h"
 #include "espapa102.h"
-#include "modpyb.h"
-#include "modpybrtc.h"
+#include "modmachine.h"
 
 #define MODESP_ESPCONN (0)
 

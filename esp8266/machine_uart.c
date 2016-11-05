@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#include "modpyb.h"
+#include "modmachine.h"
 
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;

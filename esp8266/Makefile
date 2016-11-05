@@ -78,19 +78,19 @@ SRC_C = \
 	espapa102.c \
 	intr.c \
 	modpyb.c \
-	modpybpin.c \
-	modpybpwm.c \
-	modpybrtc.c \
-	modpybadc.c \
-	modpybuart.c \
-	modmachinewdt.c \
-	modpybspi.c \
-	modpybhspi.c \
+	modmachine.c \
+	machine_pin.c \
+	machine_pwm.c \
+	machine_rtc.c \
+	machine_adc.c \
+	machine_uart.c \
+	machine_wdt.c \
+	machine_spi.c \
+	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
-	modmachine.c \
 	modonewire.c \
 	ets_alt_task.c \
 	fatfs_port.c \
