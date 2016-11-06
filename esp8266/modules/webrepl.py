@@ -9,6 +9,7 @@ import _webrepl
 listen_s = None
 client_s = None
 
+
 def setup_conn(port, accept_handler):
     global listen_s
     listen_s = socket.socket()
@@ -58,13 +59,7 @@ def stop():
 def start(port=8266, password=None):
     stop()
     if password is None:
-        try:
-            import webrepl_cfg
-            _webrepl.password(webrepl_cfg.PASS)
-            setup_conn(port, accept_conn)
-            print("Started webrepl in normal mode")
-        except:
-            print("WebREPL is not configured, run 'import webrepl_setup'")
+        raise ValueError("Password is required")
     else:
         _webrepl.password(password)
         setup_conn(port, accept_conn)
@@ -75,3 +70,51 @@ def start_foreground(port=8266):
     stop()
     s = setup_conn(port, None)
     accept_conn(s)
+
+def _sanitize_password(password):
+    if not password:
+            raise ValueError("Password is required")
+    # Check length.
+    if not 4 <= len(password) <= 8:
+        raise ValueError("Password has to be between 4 and 8 characters long")
+    # Only allow printable ASCII characters.
+    for c in password:
+        if not 32 <= ord(c) <= 126:
+            raise ValueError("Invalid character in the password")
+    # Escape backslashes and quotes.
+    password = password.replace('\\', '\\\\').replace("'", "\\'")
+    return password
+
+def _change_daemon(enable, password=''):
+    LINE_START = "import webrepl; webrepl.start(password='"
+    LINE_END = "')\n"
+    RC = './boot.py'
+    TMP = RC + '.tmp'
+    command = LINE_START + password + LINE_END
+    with open(RC) as old_f, open(TMP, 'w') as new_f:
+        done = False
+        l = ""
+        for l in old_f:
+            if l.startswith(LINE_START) and l.endswith(LINE_END):
+                if enable and not done:
+                    new_f.write(command)
+                    done = True
+            else:
+                new_f.write(l)
+        if enable and not done:
+            if not l.endswith("\n"):
+                new_f.write("\n")
+            new_f.write(command)
+    # FatFs rename() is not POSIX compliant, will raise OSError if
+    # dest file exists.
+    uos.remove(RC)
+    uos.rename(TMP, RC)
+
+def enable(password):
+    password = _sanitize_password(password)
+    _change_daemon(True, password)
+    print("WebREPL daemon auto-start enabled.")
+
+def disable():
+    _change_daemon(False)
+    print("WebREPL daemon auto-start disabled.")
