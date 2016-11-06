@@ -86,29 +86,12 @@ def _sanitize_password(password):
     return password
 
 def _change_daemon(enable, password=''):
-    LINE_START = "import webrepl; webrepl.start(password='"
-    LINE_END = "')\n"
-    RC = './boot.py'
-    TMP = RC + '.tmp'
-    command = LINE_START + password + LINE_END
-    with open(RC) as old_f, open(TMP, 'w') as new_f:
-        done = False
-        l = ""
-        for l in old_f:
-            if l.startswith(LINE_START) and l.endswith(LINE_END):
-                if enable and not done:
-                    new_f.write(command)
-                    done = True
-            else:
-                new_f.write(l)
-        if enable and not done:
-            if not l.endswith("\n"):
-                new_f.write("\n")
-            new_f.write(command)
-    # FatFs rename() is not POSIX compliant, will raise OSError if
-    # dest file exists.
-    uos.remove(RC)
-    uos.rename(TMP, RC)
+    with open('./start_webrepl.py', 'w'):
+        if enable:
+            new_f.write("""\
+import webrepl
+webrepl.start(password='%s')
+""" % password)
 
 def enable(password):
     password = _sanitize_password(password)
