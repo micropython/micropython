@@ -1,6 +1,8 @@
 -include mpconfigport.mk
 include ../py/mkenv.mk
 
+FROZEN_DIR = scripts
+
 # define main target
 PROG = micropython
 
@@ -148,17 +150,6 @@ SRC_C = \
 	fatfs_port.c \
 	$(SRC_MOD)
 
-# Include builtin package manager in the standard build (and coverage)
-ifeq ($(PROG),micropython)
-SRC_C += $(BUILD)/_frozen_upip.c
-else ifeq ($(PROG),micropython_coverage)
-SRC_C += $(BUILD)/_frozen_upip.c
-else ifeq ($(PROG), micropython_nanbox)
-SRC_C += $(BUILD)/_frozen_upip.c
-else ifeq ($(PROG), micropython_freedos)
-SRC_C += $(BUILD)/_frozen_upip.c
-endif
-
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
@@ -235,7 +226,7 @@ fast:
 # build a minimal interpreter
 minimal:
 	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
-	    BUILD=build-minimal PROG=micropython_minimal \
+	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= \
 	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
 	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
 	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
@@ -271,22 +262,6 @@ coverage_test: coverage
 	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
 	gcov -o build-coverage/py ../py/*.c
 	gcov -o build-coverage/extmod ../extmod/*.c
-
-$(BUILD)/_frozen_upip.c: $(BUILD)/frozen_upip/upip.py
-	$(MAKE_FROZEN) $(dir $^) > $@
-
-# Select latest upip version available
-UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)
-
-$(BUILD)/frozen_upip/upip.py: $(UPIP_TARBALL)
-	$(ECHO) "MISC Preparing upip as frozen module"
-	$(Q)mkdir -p $(BUILD)
-	$(Q)rm -rf $(BUILD)/micropython-upip-*
-	$(Q)tar -C $(BUILD) -xz -f $^
-	$(Q)rm -rf $(dir $@)
-	$(Q)mkdir -p $(dir $@)
-	$(Q)cp $(BUILD)/micropython-upip-*/upip*.py $(dir $@)
-
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overriden.
