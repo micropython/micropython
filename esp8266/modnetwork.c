@@ -339,8 +339,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case QS(MP_QSTR_hostname): {
                         req_if = STATION_IF;
                         if (self->if_id == STATION_IF) {
-                            mp_uint_t len;
-                            const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
+                            const char *s = mp_obj_str_get_str(kwargs->table[i].value);
                             wifi_station_set_hostname((char*)s);
                         }
                         break;
