@@ -397,11 +397,12 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
-        case QS(MP_QSTR_hostname):
+        case QS(MP_QSTR_hostname): {
             req_if = STATION_IF;
             char* s = wifi_station_get_hostname();
             val = mp_obj_new_str(s, strlen(s), false);
             break;
+        }
         default:
             goto unknown;
     }
