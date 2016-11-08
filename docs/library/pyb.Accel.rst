@@ -46,3 +46,11 @@ Methods
 .. method:: Accel.z()
 
    Get the z-axis value.
+
+Hardware Note
+-------------
+
+The accelerometer uses I2C bus 1 to communicate with the processor. Consequently
+when readings are being taken pins X9 and X10 should be unused (other than for
+I2C). Other devices using those pins, and which therefore cannot be used
+concurrently, are UART 1 and Timer 4 channels 1 and 2.
