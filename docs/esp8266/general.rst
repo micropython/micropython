@@ -125,6 +125,16 @@ will overflow every 7:45h.  If a long-term working RTC time is required then
 ``time()`` or ``localtime()`` must be called at least once within 7 hours.
 MicroPython will then handle the overflow.
 
+Simultaneous operation of STA_IF and AP_IF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Simultaneous operation of STA_IF and AP_IF interfaces is supported.
+
+However, due to restrictions of the hardware, there may be performance
+issues in the AP_IF, if the STA_IF is not connected and searching.
+An application should manage these interfaces and for example
+deactivate the STA_IF in environments where only the AP_IF is used.
+
 Sockets and WiFi buffers overflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
