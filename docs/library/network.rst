@@ -267,6 +267,15 @@ For example::
     connect). Availability of the methods below depends on interface type.
     For example, only STA interface may ``connect()`` to an access point.
 
+    .. note::
+
+        Simultaneous operation of STA_IF and AP_IF interfaces is supported.
+
+        However, due to restrictions of the hardware, there may be performance
+        issues in the AP_IF, if the STA_IF is not connected and searching.
+        An application should manage these interfaces and for example
+        deactivate the STA_IF in environments where only the AP_IF is used.
+
     Methods
     -------
 
