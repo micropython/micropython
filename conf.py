@@ -60,7 +60,7 @@ source_parsers = {'.md': CommonMarkParser,
 
 # General information about the project.
 project = 'Adafruit\'s MicroPython'
-copyright = '2014-2016, Damien P. George, Scott Shawcroft, Tony DiCola and other contributors'
+copyright = '2014-2016, MicroPython contributors (https://github.com/adafruit/micropython/graphs/contributors)'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
