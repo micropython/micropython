@@ -2,7 +2,8 @@ include ../py/mkenv.mk
 
 CROSS = 0
 # clang has slightly different options to GCC
-CLANG = 0
+CLANG = 1
+EMSCRIPTEN = 1
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -52,7 +53,7 @@ LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref
 else
 ifeq ($(CLANG), 1)
 LD = $(CC)
-LDFLAGS = -m32 -Wl,-map,$@.map -Wl,-dead_strip -Wl,-no_pie
+LDFLAGS = -m32 -Wl,-map,$@.map -Wl,-dead_strip -Wl,-no_pie -s EXPORTED_FUNCTIONS="['_mp_js_init', '_mp_js_run']"
 else
 LD = gcc
 LDFLAGS = -m32 -Wl,-Map=$@.map,--cref

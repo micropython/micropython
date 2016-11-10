@@ -35,22 +35,13 @@ static char *stack_top;
 static char heap[2048];
 #endif
 
-int main(int argc, char **argv) {
-    int stack_dummy;
-    stack_top = (char*)&stack_dummy;
-    
-    #if MICROPY_ENABLE_GC
+void mp_js_init() {
     gc_init(heap, heap + sizeof(heap));
-    #endif
-
     mp_init();
+}
 
-    do_str("print(\"hello, emscripten\")", MP_PARSE_SINGLE_INPUT);
-    do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
-    do_str("raise Exception('abc')", MP_PARSE_SINGLE_INPUT);
-    
-    mp_deinit();
-    return 0;
+void mp_js_run(const char * code) {
+    do_str(code, MP_PARSE_FILE_INPUT);
 }
 
 void gc_collect(void) {
