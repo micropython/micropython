@@ -101,10 +101,6 @@ endif
 # py object files
 PY_O_BASENAME = \
 	mpstate.o \
-	nlrx86.o \
-	nlrx64.o \
-	nlrthumb.o \
-	nlrxtensa.o \
 	nlrsetjmp.o \
 	malloc.o \
 	gc.o \
