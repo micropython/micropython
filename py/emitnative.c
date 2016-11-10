@@ -1261,11 +1261,35 @@ STATIC void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
 
 STATIC void emit_native_import_name(emit_t *emit, qstr qst) {
     DEBUG_printf("import_name %s\n", qstr_str(qst));
-    vtype_kind_t vtype_fromlist;
-    vtype_kind_t vtype_level;
-    emit_pre_pop_reg_reg(emit, &vtype_fromlist, REG_ARG_2, &vtype_level, REG_ARG_3); // arg2 = fromlist, arg3 = level
-    assert(vtype_fromlist == VTYPE_PYOBJ);
-    assert(vtype_level == VTYPE_PYOBJ);
+
+    // get arguments from stack: arg2 = fromlist, arg3 = level
+    // if using viper types these arguments must be converted to proper objects
+    if (emit->do_viper_types) {
+        // fromlist should be None or a tuple
+        stack_info_t *top = peek_stack(emit, 0);
+        if (top->vtype == VTYPE_PTR_NONE) {
+            emit_pre_pop_discard(emit);
+            ASM_MOV_IMM_TO_REG(emit->as, (mp_uint_t)mp_const_none, REG_ARG_2);
+        } else {
+            vtype_kind_t vtype_fromlist;
+            emit_pre_pop_reg(emit, &vtype_fromlist, REG_ARG_2);
+            assert(vtype_fromlist == VTYPE_PYOBJ);
+        }
+
+        // level argument should be an immediate integer
+        top = peek_stack(emit, 0);
+        assert(top->vtype == VTYPE_INT && top->kind == STACK_IMM);
+        ASM_MOV_IMM_TO_REG(emit->as, (mp_uint_t)MP_OBJ_NEW_SMALL_INT(top->data.u_imm), REG_ARG_3);
+        emit_pre_pop_discard(emit);
+
+    } else {
+        vtype_kind_t vtype_fromlist;
+        vtype_kind_t vtype_level;
+        emit_pre_pop_reg_reg(emit, &vtype_fromlist, REG_ARG_2, &vtype_level, REG_ARG_3);
+        assert(vtype_fromlist == VTYPE_PYOBJ);
+        assert(vtype_level == VTYPE_PYOBJ);
+    }
+
     emit_call_with_imm_arg(emit, MP_F_IMPORT_NAME, qst, REG_ARG_1); // arg1 = import name
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
