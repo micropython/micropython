@@ -1,0 +1,25 @@
+{
+  "name": "micropython",
+  "version": "1.8.6",
+  "description": "micropython compiled to ASM.js with emscripten",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "make"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/micropython/micropython.git"
+  },
+  "keywords": [
+    "python",
+    "emscripten",
+    "repl"
+  ],
+  "author": "Matthew Else <matthewelse1997@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/micropython/micropython/issues"
+  },
+  "homepage": "https://github.com/micropython/micropython#readme"
+}
