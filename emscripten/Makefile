@@ -62,7 +62,7 @@ LIBS =
 
 SRC_C = \
 	main.c \
-	uart_core.c \
+	stdio_core.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
 	lib/mp-readline/readline.c \
