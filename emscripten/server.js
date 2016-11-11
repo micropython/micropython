@@ -9,7 +9,29 @@ function mpy_eval(cmd, context, filename, callback) {
       callback(null, mpy.run(cmd)); 
 }
 
-mpy.init();
+mpy.init({
+    import_stat: function(filename) {
+        try {
+            var stat = fs.statSync(filename);
+
+            if (stat.isDirectory()) {
+                return 1;
+            } else if (stat.isFile()) {
+                return 0;
+            }
+        } catch (e) {
+            return -1;
+        }
+
+        return -1;
+    },
+    read_file: function(filename) {
+        var content = fs.readFileSync(filename, 'utf-8');
+        var ptr = mpy.Module.allocate(mpy.Module.intArrayFromString(content), 'i8', mpy.Module.ALLOC_NORMAL);
+
+        return ptr;
+    }
+});
 
 if (argv._.length == 1) {
     var code = fs.readFileSync(argv._[0], "utf-8");

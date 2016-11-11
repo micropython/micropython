@@ -46,7 +46,17 @@ static char *stack_top;
 static char heap[2048];
 #endif
 
-void mp_js_init() {
+struct mp_js_context_t {
+    int(*import_stat) (const char *);
+    const char * (*read_file) (const char *);
+};
+
+static struct mp_js_context_t mp_js_context = {
+    .import_stat = NULL,
+    .read_file = NULL
+};
+
+void mp_js_init(int(*import_stat) (const char *), const char * (*read_file) (const char *)) {
     gc_init(heap, heap + sizeof(heap));
     mp_init();
 
@@ -70,27 +80,32 @@ void mp_js_init() {
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+
     {
-    char *p = path;
-    for (mp_uint_t i = 1; i < path_num; i++) {
-        char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-        if (p1 == NULL) {
-            p1 = p + strlen(p);
+        char *p = path;
+        for (mp_uint_t i = 1; i < path_num; i++) {
+            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
+            if (p1 == NULL) {
+                p1 = p + strlen(p);
+            }
+            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+                // Expand standalone ~ to $HOME
+                int home_l = strlen(home);
+                vstr_t vstr;
+                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_add_strn(&vstr, home, home_l);
+                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+                path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            } else {
+                path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+            }
+            p = p1 + 1;
         }
-        if (p[0] == '~' && p[1] == '/' && home != NULL) {
-            // Expand standalone ~ to $HOME
-            int home_l = strlen(home);
-            vstr_t vstr;
-            vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
-            vstr_add_strn(&vstr, home, home_l);
-            vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-            path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
-        } else {
-            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
-        }
-        p = p1 + 1;
     }
-    }
+
+    // register file stat and file load functions from JS-side
+    mp_js_context.import_stat = import_stat;
+    mp_js_context.read_file = read_file;
 }
 
 void mp_js_run(const char * code) {
@@ -108,45 +123,26 @@ void gc_collect(void) {
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    // to do this by calling out to node.js code, we'll have to do something like 
-    // fs.readFileSync(filename, 'utf-8')
-    // and then put that back into the emscripten heap, so that it's a pointer we can access from C
-    // and then use that to produce a micropython lexer as above.
-
-    // eurgh this is disgusting, let's just implement this in JS
-
-    const char *code_buf = (const char *)EM_ASM_INT({
-        try {
-            var file = UTF8ToString($0);
-            var fs = require('fs');
-
-            var code = fs.readFileSync(file, 'utf-8');
-            ret = Runtime.stackAlloc((code.length << 2) + 1);
-            writeStringToMemory(code, ret);
-            return ret;
-        } catch (e) {
-            return 0;
-        }
-    }, filename);
-
-    if (code_buf == 0) {
+    if (mp_js_context.read_file == NULL) {
         return NULL;
-    } else {
-        mp_lexer_t* lex = mp_lexer_new_from_str_len(qstr_from_str(filename), code_buf, strlen(code_buf), 0);
-        return lex;
     }
+
+    const char * code_buf = mp_js_context.read_file(filename);
+
+    if (code_buf == NULL) {
+        return NULL;
+    }
+
+    mp_lexer_t* lex = mp_lexer_new_from_str_len(qstr_from_str(filename), code_buf, strlen(code_buf), 0);
+    return lex;
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
-    int s = EM_ASM_INT({
-        try {
-            var fs = require('fs');
-            var stat = fs.statSync(UTF8ToString($0));
-            return stat.isDirectory() ? 1 : 0;
-        } catch(e) {
-            return -1;
-        }
-    }, path);
+    if (mp_js_context.import_stat == NULL) {
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+
+    int s = mp_js_context.import_stat(path);
 
     if (s == -1) {
         return MP_IMPORT_STAT_NO_EXIST;
@@ -158,7 +154,6 @@ mp_import_stat_t mp_import_stat(const char *path) {
 }
 
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    printf("open a file!\r\n");
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);

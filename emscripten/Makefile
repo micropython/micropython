@@ -10,11 +10,11 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include ../py/py.mk
 
-CC = emcc 
+CC = emcc -s RESERVED_FUNCTION_POINTERS=20
 CPP = gcc -E
 CLANG = 1
 SIZE = echo
-LD = emcc
+LD = emcc -s RESERVED_FUNCTION_POINTERS=20
 
 INC += -I.
 INC += -I..
