@@ -283,6 +283,20 @@ void i2c_deinit(I2C_HandleTypeDef *i2c) {
     }
 }
 
+STATIC void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
+    // wait for bus-busy flag to be cleared, with a timeout
+    for (int timeout = 50; timeout > 0; --timeout) {
+        if (!__HAL_I2C_GET_FLAG(i2c, I2C_FLAG_BUSY)) {
+            // stop bit was generated and bus is back to normal
+            return;
+        }
+        HAL_Delay(1);
+    }
+    // bus was/is busy, need to reset the peripheral to get it to work again
+    i2c_deinit(i2c);
+    i2c_init(i2c);
+}
+
 STATIC HAL_StatusTypeDef i2c_wait_dma_finished(I2C_HandleTypeDef *i2c, uint32_t timeout) {
     // Note: we can't use WFI to idle in this loop because the DMA completion
     // interrupt may occur before the WFI.  Hence we miss it and have to wait
@@ -369,6 +383,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, mp_uint_t n_args,
     *self->use_dma = args[4].u_bool;
 
     // init the I2C bus
+    i2c_deinit(self->i2c);
     i2c_init(self->i2c);
 
     return mp_const_none;
@@ -562,6 +577,7 @@ STATIC mp_obj_t pyb_i2c_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     }
 
     if (status != HAL_OK) {
+        i2c_reset_after_error(self->i2c);
         mp_hal_raise(status);
     }
 
@@ -635,6 +651,7 @@ STATIC mp_obj_t pyb_i2c_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     }
 
     if (status != HAL_OK) {
+        i2c_reset_after_error(self->i2c);
         mp_hal_raise(status);
     }
 
@@ -709,6 +726,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     }
 
     if (status != HAL_OK) {
+        i2c_reset_after_error(self->i2c);
         mp_hal_raise(status);
     }
 
@@ -776,6 +794,7 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     }
 
     if (status != HAL_OK) {
+        i2c_reset_after_error(self->i2c);
         mp_hal_raise(status);
     }
 
