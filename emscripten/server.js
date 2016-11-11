@@ -27,7 +27,7 @@ mpy.init({
     },
     read_file: function(filename) {
         var content = fs.readFileSync(filename, 'utf-8');
-        var ptr = mpy.Module.allocate(mpy.Module.intArrayFromString(content), 'i8', mpy.Module.ALLOC_NORMAL);
+        var ptr = mpy.Module.allocate(mpy.Module.intArrayFromString(content), 'i8', mpy.Module.ALLOC_STACK);
 
         return ptr;
     }
