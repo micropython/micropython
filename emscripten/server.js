@@ -18,7 +18,8 @@ if (argv._.length == 1) {
     var code = argv.c;
     mpy.run(code);
 } else if (argv.m) {
-    // TODO: make object loading work properly with Emscripten
+    var code = 'import ' + argv.m;
+    mpy.run(code);
 } else if (argv._.length == 0) {
     console.log("MicroPython on asmjs with emscripten");
     console.log("Type \"help()\" for more information.");
