@@ -73,9 +73,9 @@ $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
 	$(ECHO) "GEN $@"
 	$(Q)if [ "$?" = "" ]; then \
 	    echo "QSTR Looks like -B used, trying to emulate"; \
-	    $(CC) -E $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $^ >$(HEADER_BUILD)/qstr.i.last; \
+	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $^ >$(HEADER_BUILD)/qstr.i.last; \
 	else \
-	    $(CC) -E $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last; \
+	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last; \
 	fi
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last

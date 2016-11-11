@@ -17,7 +17,7 @@ endif
 
 ifeq ($(EMSCRIPTEN), 1)
 CC = emcc -g4
-CPP = clang -E
+CPP = gcc -E
 CLANG = 1
 SIZE = echo
 LD = emcc -g4
