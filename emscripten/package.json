@@ -15,13 +15,14 @@
     "emscripten",
     "repl"
   ],
-  "bin": {
-    "micropython-js": "./repl.js"
-  },
+  "bin": "./server.js",
   "author": "Matthew Else <matthewelse1997@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/micropython/micropython/issues"
   },
-  "homepage": "https://github.com/micropython/micropython#readme"
+  "homepage": "https://github.com/micropython/micropython#readme",
+  "dependencies": {
+    "minimist": "^1.2.0"
+  }
 }
