@@ -203,12 +203,6 @@ void i2c_init0(void) {
 }
 
 void i2c_init(I2C_HandleTypeDef *i2c) {
-    // init the GPIO lines
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = GPIO_NOPULL; // have external pull-up resistors on both lines
-
     int i2c_unit;
     const pin_obj_t *scl_pin;
     const pin_obj_t *sda_pin;
@@ -241,8 +235,10 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     }
 
     // init the GPIO lines
-    mp_hal_pin_set_af(scl_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
-    mp_hal_pin_set_af(sda_pin, &GPIO_InitStructure, AF_FN_I2C, i2c_unit);
+    uint32_t mode = MP_HAL_PIN_MODE_ALT_OPEN_DRAIN;
+    uint32_t pull = MP_HAL_PIN_PULL_NONE; // have external pull-up resistors on both lines
+    mp_hal_pin_config_alt(scl_pin, mode, pull, AF_FN_I2C, i2c_unit);
+    mp_hal_pin_config_alt(sda_pin, mode, pull, AF_FN_I2C, i2c_unit);
 
     // init the I2C device
     if (HAL_I2C_Init(i2c) != HAL_OK) {
