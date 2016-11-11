@@ -4,8 +4,7 @@
   "description": "micropython compiled to ASM.js with emscripten",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "make"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -16,6 +15,9 @@
     "emscripten",
     "repl"
   ],
+  "bin": {
+    "micropython-js": "./repl.js"
+  },
   "author": "Matthew Else <matthewelse1997@gmail.com>",
   "license": "MIT",
   "bugs": {

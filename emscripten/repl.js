@@ -1,6 +1,7 @@
+#!/usr/bin/env node
 
-const repl = require('repl');
-const mpy = require('./main.js');
+var repl = require('repl');
+var mpy = require('./main.js');
 
 function mpy_eval(cmd, context, filename, callback) {
       callback(null, mpy.run(cmd)); 
