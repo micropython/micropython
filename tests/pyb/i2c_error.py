@@ -7,7 +7,7 @@ from pyb import I2C
 pyb.Accel()
 
 # get I2C bus
-i2c = I2C(1, I2C.MASTER) 
+i2c = I2C(1, I2C.MASTER, dma=True)
 
 # test polling mem_read
 pyb.disable_irq()
