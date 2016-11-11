@@ -101,7 +101,18 @@ endif
 # py object files
 PY_O_BASENAME = \
 	mpstate.o \
-	nlrsetjmp.o \
+
+# these object files can only be built if we're not using emscripten, since
+# the input files necessary to build them are ASM files.
+ifneq ($(EMSCRIPTEN), 1)
+PY_O_BASENAME += nlrx86.o \
+	nlrx64.o \
+	nlrthumb.o \
+	nlrxtensa.o \
+
+endif
+
+PY_O_BASENAME += nlrsetjmp.o \
 	malloc.o \
 	gc.o \
 	qstr.o \
