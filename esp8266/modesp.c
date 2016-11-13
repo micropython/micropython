@@ -530,12 +530,14 @@ STATIC mp_obj_t esp_osdebug(mp_obj_t val) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_osdebug_obj, esp_osdebug);
 
 STATIC mp_obj_t esp_save_config() {
-    if ((wifi_get_opmode() & STATION_MODE) == 1) {
+    uint32_t opmode = wifi_get_opmode();
+    wifi_set_opmode(opmode);
+    if ((opmode & STATION_MODE) == 1) {
         struct station_config config = {{0}};
         wifi_station_get_config(&config);
         wifi_station_set_config(&config);
     }
-    if ((wifi_get_opmode() & SOFTAP_MODE) == 1) {
+    if ((opmode & SOFTAP_MODE) == 1) {
         struct softap_config config = {{0}};
         wifi_softap_get_config(&config);
         wifi_softap_set_config(&config);
