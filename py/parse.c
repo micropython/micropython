@@ -470,6 +470,63 @@ STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t num_args);
 
 #if MICROPY_COMP_CONST_FOLDING
+STATIC bool fold_logical_constants(parser_t *parser, const rule_t *rule, size_t *num_args) {
+    if (rule->rule_id == RULE_or_test
+        || rule->rule_id == RULE_and_test) {
+        // folding for binary logical ops: or and
+        size_t copy_to = *num_args;
+        for (size_t i = copy_to; i > 0;) {
+            mp_parse_node_t pn = peek_result(parser, --i);
+            parser->result_stack[parser->result_stack_top - copy_to] = pn;
+            if (i == 0) {
+                // always need to keep the last value
+                break;
+            }
+            if (rule->rule_id == RULE_or_test) {
+                if (mp_parse_node_is_const_true(pn)) {
+                    //
+                    break;
+                } else if (!mp_parse_node_is_const_false(pn)) {
+                    copy_to -= 1;
+                }
+            } else {
+                // RULE_and_test
+                if (mp_parse_node_is_const_false(pn)) {
+                    break;
+                } else if (!mp_parse_node_is_const_true(pn)) {
+                    copy_to -= 1;
+                }
+            }
+        }
+        copy_to -= 1; // copy_to now contains number of args to pop
+
+        // pop and discard all the short-circuited expressions
+        for (size_t i = 0; i < copy_to; ++i) {
+            pop_result(parser);
+        }
+        *num_args -= copy_to;
+
+        // we did a complete folding if there's only 1 arg left
+        return *num_args == 1;
+
+    } else if (rule->rule_id == RULE_not_test_2) {
+        // folding for unary logical op: not
+        mp_parse_node_t pn = peek_result(parser, 0);
+        if (mp_parse_node_is_const_false(pn)) {
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_TRUE);
+        } else if (mp_parse_node_is_const_true(pn)) {
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, MP_TOKEN_KW_FALSE);
+        } else {
+            return false;
+        }
+        pop_result(parser);
+        push_result_node(parser, pn);
+        return true;
+    }
+
+    return false;
+}
+
 STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args) {
     // this code does folding of arbitrary integer expressions, eg 1 + 2 * 3 + 4
     // it does not do partial folding, eg 1 + 2 + x -> 3 + x
@@ -677,6 +734,10 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *ru
     }
 
     #if MICROPY_COMP_CONST_FOLDING
+    if (fold_logical_constants(parser, rule, &num_args)) {
+        // we folded this rule so return straight away
+        return;
+    }
     if (fold_constants(parser, rule, num_args)) {
         // we folded this rule so return straight away
         return;
