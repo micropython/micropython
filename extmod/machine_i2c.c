@@ -117,6 +117,7 @@ STATIC int mp_hal_i2c_write_byte(machine_i2c_obj_t *self, uint8_t val) {
         }
         mp_hal_i2c_delay(self);
         if (!mp_hal_i2c_scl_release(self)) {
+            mp_hal_i2c_sda_release(self);
             return 0; // failure
         }
         mp_hal_i2c_scl_low(self);
@@ -157,6 +158,7 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
     }
     mp_hal_i2c_delay(self);
     if (!mp_hal_i2c_scl_release(self)) {
+        mp_hal_i2c_sda_release(self);
         return 0; // failure
     }
     mp_hal_i2c_scl_low(self);
