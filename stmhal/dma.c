@@ -430,9 +430,8 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
             dma_last_sub_instance[dma_id] = sub_inst;
 
             // reset and configure DMA peripheral
-            if (HAL_DMA_GetState(dma) != HAL_DMA_STATE_RESET) {
-                HAL_DMA_DeInit(dma);
-            }
+            // (dma->State is set to HAL_DMA_STATE_RESET by memset above)
+            HAL_DMA_DeInit(dma);
             HAL_DMA_Init(dma);
             HAL_NVIC_SetPriority(dma_irqn[dma_id], IRQ_PRI_DMA, IRQ_SUBPRI_DMA);
         }

@@ -37,7 +37,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "modpyb.h"
+#include "modmachine.h"
 
 #define GET_TRIGGER(phys_port) \
     GPIO_PIN_INT_TYPE_GET(GPIO_REG_READ(GPIO_PIN_ADDR(phys_port)))

@@ -28,10 +28,10 @@
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
 #include "autoconf.h"
 
-// Saving extra crumbs to make sure binary fits in 128K
-#define MICROPY_COMP_CONST_FOLDING  (0)
-#define MICROPY_COMP_CONST (0)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
+// Usually passed from Makefile
+#ifndef MICROPY_HEAP_SIZE
+#define MICROPY_HEAP_SIZE (16 * 1024)
+#endif
 
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_GC           (1)
@@ -53,6 +53,8 @@
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
+#define MICROPY_PY_MACHINE          (1)
+#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_PY_STRUCT           (0)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
@@ -60,6 +62,11 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
+
+// Saving extra crumbs to make sure binary fits in 128K
+#define MICROPY_COMP_CONST_FOLDING  (0)
+#define MICROPY_COMP_CONST (0)
+#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
 #ifdef CONFIG_BOARD
 #define MICROPY_HW_BOARD_NAME "zephyr-" CONFIG_BOARD
@@ -90,6 +97,7 @@ typedef long mp_off_t;
     mp_obj_t mp_kbd_exception; \
     const char *readline_hist[8];
 
+extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_time;
 
 #if MICROPY_PY_UTIME
@@ -99,7 +107,11 @@ extern const struct _mp_obj_module_t mp_module_time;
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     MICROPY_PY_UTIME_DEF \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_time) }, \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

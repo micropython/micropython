@@ -1,6 +1,7 @@
 # 1-Wire driver for MicroPython on ESP8266
 # MIT license; Copyright (c) 2016 Damien P. George
 
+from micropython import const
 import _onewire as _ow
 
 class OneWireError(Exception):

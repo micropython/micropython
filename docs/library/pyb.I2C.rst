@@ -92,7 +92,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: I2C.init(mode, \*, addr=0x12, baudrate=400000, gencall=False)
+    .. method:: I2C.init(mode, \*, addr=0x12, baudrate=400000, gencall=False, dma=False)
 
       Initialise the I2C bus with the given parameters:
 
@@ -100,6 +100,9 @@ Methods
          - ``addr`` is the 7-bit address (only sensible for a slave)
          - ``baudrate`` is the SCL clock rate (only sensible for a master)
          - ``gencall`` is whether to support general call mode
+         - ``dma`` is whether to allow the use of DMA for the I2C transfers (note
+           that DMA transfers have more precise timing but currently do not handle bus
+           errors properly)
 
     .. method:: I2C.is_ready(addr)
 

@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "timeutils.h"
 #include "user_interface.h"
-#include "modpyb.h"
+#include "modmachine.h"
 
 typedef struct _pyb_rtc_obj_t {
     mp_obj_base_t base;

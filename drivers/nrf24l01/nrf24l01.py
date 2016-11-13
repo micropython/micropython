@@ -1,6 +1,7 @@
 """NRF24L01 driver for Micro Python
 """
 
+from micropython import const
 import pyb
 
 # nRF24L01+ registers

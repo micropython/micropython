@@ -110,10 +110,11 @@
 // Be conservative and always clear to zero newly (re)allocated memory in the GC.
 // This helps eliminate stray pointers that hold on to memory that's no longer
 // used.  It decreases performance due to unnecessary memory clearing.
+// A memory manager which always clears memory can set this to 0.
 // TODO Do analysis to understand why some memory is not properly cleared and
 // find a more efficient way to clear it.
 #ifndef MICROPY_GC_CONSERVATIVE_CLEAR
-#define MICROPY_GC_CONSERVATIVE_CLEAR (1)
+#define MICROPY_GC_CONSERVATIVE_CLEAR (MICROPY_ENABLE_GC)
 #endif
 
 // Support automatic GC when reaching allocation threshold,
@@ -504,10 +505,12 @@ typedef long long mp_longint_impl_t;
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MICROPY_PY_BUILTINS_FLOAT (1)
+#define MICROPY_FLOAT_CONST(x) x##F
 #define MICROPY_FLOAT_C_FUN(fun) fun##f
 typedef float mp_float_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MICROPY_PY_BUILTINS_FLOAT (1)
+#define MICROPY_FLOAT_CONST(x) x
 #define MICROPY_FLOAT_C_FUN(fun) fun
 typedef double mp_float_t;
 #else
@@ -864,6 +867,16 @@ typedef double mp_float_t;
 // in terms of mp_hal_* functions.
 #ifndef MICROPY_PY_UTIME_MP_HAL
 #define MICROPY_PY_UTIME_MP_HAL (0)
+#endif
+
+// Period of values returned by utime.ticks_ms(), ticks_us(), ticks_cpu()
+// functions. Should be power of two. All functions above use the same
+// period, so if underlying hardware/API has different periods, the
+// minimum of them should be used. The value below is the maximum value
+// this parameter can take (corresponding to 30 bit tick values on 32-bit
+// system).
+#ifndef MICROPY_PY_UTIME_TICKS_PERIOD
+#define MICROPY_PY_UTIME_TICKS_PERIOD (MP_SMALL_INT_POSITIVE_MASK + 1)
 #endif
 
 // Whether to provide "_thread" module

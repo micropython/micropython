@@ -42,11 +42,21 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 
 #include "stmhal/pin.h"
 
+#define MP_HAL_PIN_MODE_INPUT           (0)
+#define MP_HAL_PIN_MODE_OUTPUT          (1)
+#define MP_HAL_PIN_MODE_ALT             (2)
+#define MP_HAL_PIN_MODE_ANALOG          (3)
+#define MP_HAL_PIN_MODE_OPEN_DRAIN      (5)
+#define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN  (6)
+#define MP_HAL_PIN_PULL_NONE            (0)
+#define MP_HAL_PIN_PULL_UP              (1)
+#define MP_HAL_PIN_PULL_DOWN            (2)
+
 #define mp_hal_pin_obj_t const pin_obj_t*
 #define mp_hal_get_pin_obj(o)   pin_find(o)
-#define mp_hal_pin_input(p)     mp_hal_pin_config((p), 0, 0, 0)
-#define mp_hal_pin_output(p)    mp_hal_pin_config((p), 1, 0, 0)
-#define mp_hal_pin_open_drain(p) mp_hal_pin_config((p), 5, 0, 0)
+#define mp_hal_pin_input(p)     mp_hal_pin_config((p), MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_output(p)    mp_hal_pin_config((p), MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0)
+#define mp_hal_pin_open_drain(p) mp_hal_pin_config((p), MP_HAL_PIN_MODE_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, 0)
 #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
 #define mp_hal_pin_high(p)      (((p)->gpio->BSRR) = (p)->pin_mask)
 #define mp_hal_pin_low(p)       (((p)->gpio->BSRR) = ((p)->pin_mask << 16))
@@ -61,4 +71,4 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt);
-bool mp_hal_pin_set_af(mp_hal_pin_obj_t pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit);
+bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);

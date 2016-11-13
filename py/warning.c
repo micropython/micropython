@@ -38,6 +38,7 @@ void mp_warning(const char *msg, ...) {
     mp_print_str(&mp_plat_print, "Warning: ");
     mp_vprintf(&mp_plat_print, msg, args);
     mp_print_str(&mp_plat_print, "\n");
+    va_end(args);
 }
 
 void mp_emitter_warning(pass_kind_t pass, const char *msg) {

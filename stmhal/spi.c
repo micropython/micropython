@@ -243,12 +243,6 @@ STATIC void spi_set_params(SPI_HandleTypeDef *spi, uint32_t prescale, int32_t ba
 
 // TODO allow to take a list of pins to use
 void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
-    // init the GPIO lines
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FAST;
-    GPIO_InitStructure.Pull = spi->Init.CLKPolarity == SPI_POLARITY_LOW ? GPIO_PULLDOWN : GPIO_PULLUP;
-
     const pyb_spi_obj_t *self;
     const pin_obj_t *pins[4];
     pins[0] = NULL;
@@ -331,8 +325,11 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         return;
     }
 
+    // init the GPIO lines
+    uint32_t mode = MP_HAL_PIN_MODE_ALT;
+    uint32_t pull = spi->Init.CLKPolarity == SPI_POLARITY_LOW ? MP_HAL_PIN_PULL_DOWN : MP_HAL_PIN_PULL_UP;
     for (uint i = (enable_nss_pin && pins[0] ? 0 : 1); i < 4; i++) {
-        mp_hal_pin_set_af(pins[i], &GPIO_InitStructure, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
+        mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
     }
 
     // init the SPI device

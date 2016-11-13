@@ -31,7 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "modpyb.h"
+#include "modmachine.h"
 
 typedef struct _pyb_pwm_obj_t {
     mp_obj_base_t base;

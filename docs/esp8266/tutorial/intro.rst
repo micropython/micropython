@@ -54,7 +54,7 @@ device before putting on new MicroPython firmware.
 
 Currently we only support esptool.py to copy across the firmware.  You can find
 this tool here: `<https://github.com/themadinventor/esptool/>`__, or install it
-using pip::
+using pip (at least version 1.2.1 is required)::
 
     pip install esptool
 
@@ -69,7 +69,7 @@ Using esptool.py you can erase the flash with the command::
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m 0 esp8266-2016-05-03-v1.8.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-2016-05-03-v1.8.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
@@ -80,7 +80,7 @@ For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to use the following command to deploy
 the firmware (note the ``-fm dio`` option)::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m -fm dio 0 esp8266-2016-05-03-v1.8.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-2016-05-03-v1.8.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -138,6 +138,8 @@ after it, here are troubleshooting recommendations:
 * If lower baud rate didn't help, you may want to try older version of
   esptool.py, which had a different programming algorithm::
     pip install esptool==1.0.1
+  This version doesn't support ``--flash_size=detect`` option, so you will
+  need to specify FlashROM size explicitly (in megabits).
 
 * The ``--flash_size`` option in the commands above is mandatory. Omitting
   it will lead to a corrupted firmware.

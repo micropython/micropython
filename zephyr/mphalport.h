@@ -19,9 +19,9 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 }
 
 static inline void mp_hal_delay_us(mp_uint_t delay) {
-    task_sleep(USEC(delay));
+    k_busy_wait(delay);
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t delay) {
-    task_sleep(MSEC(delay));
+    k_sleep(delay);
 }

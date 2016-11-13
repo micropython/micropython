@@ -34,8 +34,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/smallint.h"
-#include "modpyb.h"
-#include "modpybrtc.h"
+#include "modmachine.h"
 #include "timeutils.h"
 #include "user_interface.h"
 #include "extmod/utime_mphal.h"
@@ -108,19 +107,20 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
-STATIC const mp_map_elem_t time_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
+STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_localtime), (mp_obj_t)&time_localtime_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mktime), (mp_obj_t)&time_mktime_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&mp_utime_sleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms), (mp_obj_t)&mp_utime_sleep_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us), (mp_obj_t)&mp_utime_sleep_us_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms), (mp_obj_t)&mp_utime_ticks_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_us), (mp_obj_t)&mp_utime_ticks_us_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_cpu), (mp_obj_t)&mp_utime_ticks_cpu_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_diff), (mp_obj_t)&mp_utime_ticks_diff_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_time_obj },
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);

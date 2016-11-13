@@ -237,8 +237,14 @@ PY_O_BASENAME = \
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 
+# object file for frozen files
 ifneq ($(FROZEN_DIR),)
 PY_O += $(BUILD)/$(BUILD)/frozen.o
+endif
+
+# object file for frozen bytecode (frozen .mpy files)
+ifneq ($(FROZEN_MPY_DIR),)
+PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings

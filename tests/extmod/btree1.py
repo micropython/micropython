@@ -9,7 +9,7 @@ except ImportError:
 
 #f = open("_test.db", "w+b")
 f = uio.BytesIO()
-db = btree.open(f)
+db = btree.open(f, pagesize=512)
 
 db[b"foo3"] = b"bar3"
 db[b"foo1"] = b"bar1"
