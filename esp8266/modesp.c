@@ -529,7 +529,7 @@ STATIC mp_obj_t esp_osdebug(mp_obj_t val) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_osdebug_obj, esp_osdebug);
 
-STATIC mp_obj_t esp_save_config() {
+STATIC mp_obj_t esp_wifi_save_config() {
     uint32_t opmode = wifi_get_opmode();
     wifi_set_opmode(opmode);
     if ((opmode & STATION_MODE) == 1) {
@@ -544,7 +544,7 @@ STATIC mp_obj_t esp_save_config() {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_save_config_obj, esp_save_config);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_wifi_save_config_obj, esp_wifi_save_config);
 
 STATIC mp_obj_t esp_wifi_station_auto_connect(mp_uint_t n_args, const mp_obj_t *args) {
     if ((wifi_get_opmode() & STATION_MODE) == 1) {
@@ -733,7 +733,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_osdebug), (mp_obj_t)&esp_osdebug_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_save_config), (mp_obj_t)&esp_save_config_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wifi_save_config), (mp_obj_t)&esp_wifi_save_config_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_wifi_station_auto_connect), (mp_obj_t)&esp_wifi_station_auto_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_type), (mp_obj_t)&esp_sleep_type_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep), (mp_obj_t)&esp_deepsleep_obj },
