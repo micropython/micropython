@@ -1403,13 +1403,13 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             if (1 <= n_args && n_args <= 3) {
                 optimize = true;
                 if (n_args == 1) {
-                    pn_range_start = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 0);
+                    pn_range_start = mp_parse_node_new_small_int(0);
                     pn_range_end = args[0];
-                    pn_range_step = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 1);
+                    pn_range_step = mp_parse_node_new_small_int(1);
                 } else if (n_args == 2) {
                     pn_range_start = args[0];
                     pn_range_end = args[1];
-                    pn_range_step = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 1);
+                    pn_range_step = mp_parse_node_new_small_int(1);
                 } else {
                     pn_range_start = args[0];
                     pn_range_end = args[1];

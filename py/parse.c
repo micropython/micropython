@@ -227,13 +227,6 @@ STATIC void pop_rule(parser_t *parser, const rule_t **rule, size_t *arg_i, size_
     *src_line = parser->rule_stack[parser->rule_stack_top].src_line;
 }
 
-mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg) {
-    if (kind == MP_PARSE_NODE_SMALL_INT) {
-        return (mp_parse_node_t)(kind | (arg << 1));
-    }
-    return (mp_parse_node_t)(kind | (arg << 4));
-}
-
 bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
     return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE)
         || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
@@ -418,7 +411,7 @@ STATIC void push_result_token(parser_t *parser, const rule_t *rule) {
         mp_map_elem_t *elem;
         if (rule->rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, MP_OBJ_SMALL_INT_VALUE(elem->value));
+            pn = mp_parse_node_new_small_int(MP_OBJ_SMALL_INT_VALUE(elem->value));
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
         }
@@ -429,7 +422,7 @@ STATIC void push_result_token(parser_t *parser, const rule_t *rule) {
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
         if (MP_OBJ_IS_SMALL_INT(o)) {
-            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, MP_OBJ_SMALL_INT_VALUE(o));
+            pn = mp_parse_node_new_small_int(MP_OBJ_SMALL_INT_VALUE(o));
         } else {
             pn = make_node_const_object(parser, lex->tok_line, o);
         }
@@ -658,7 +651,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
         pop_result(parser);
     }
     if (MP_OBJ_IS_SMALL_INT(arg0)) {
-        push_result_node(parser, mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, MP_OBJ_SMALL_INT_VALUE(arg0)));
+        push_result_node(parser, mp_parse_node_new_small_int(MP_OBJ_SMALL_INT_VALUE(arg0)));
     } else {
         // TODO reuse memory for parse node struct?
         push_result_node(parser, make_node_const_object(parser, 0, arg0));
