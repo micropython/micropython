@@ -434,7 +434,6 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
 
     // stream methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readall),         (mp_obj_t)&mp_stream_readall_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),        (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline),        (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),           (mp_obj_t)&mp_stream_write_obj },
@@ -446,7 +445,7 @@ STATIC mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *e
     mod_network_socket_obj_t *self = self_in;
     mp_int_t ret = wlan_socket_recv(self, buf, size, errcode);
     if (ret < 0) {
-        // we need to ignore the socket closed error here because a readall() or read() without params
+        // we need to ignore the socket closed error here because a read() without params
         // only returns when the socket is closed by the other end
         if (*errcode != SL_ESECCLOSED) {
             ret = MP_STREAM_ERROR;

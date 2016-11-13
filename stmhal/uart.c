@@ -60,7 +60,7 @@
 /// using the standard stream methods:
 ///
 ///     uart.read(10)       # read 10 characters, returns a bytes object
-///     uart.readall()      # read all available characters
+///     uart.read()         # read all available characters
 ///     uart.readline()     # read a line
 ///     uart.readinto(buf)  # read and store into the given buffer
 ///     uart.write('abc')   # write the 3 characters
@@ -799,8 +799,6 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
-    /// \method readall()
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
     /// \method readline()
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     /// \method readinto(buf[, nbytes])

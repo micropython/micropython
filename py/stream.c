@@ -361,7 +361,6 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     vstr.len = total_size;
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_readall_obj, stream_readall);
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
