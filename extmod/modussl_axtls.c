@@ -39,6 +39,7 @@
 typedef struct _mp_obj_ssl_socket_t {
     mp_obj_base_t base;
     mp_obj_t sock;
+    mp_int_t timeout;
     SSL_CTX *ssl_ctx;
     SSL *ssl_sock;
     byte *buf;
@@ -53,6 +54,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
     o->buf = NULL;
     o->bytes_left = 0;
     o->sock = sock;
+    o->timeout = -1;
 
     uint32_t options = SSL_SERVER_VERIFY_LATER;
     if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
@@ -89,7 +91,14 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         mp_int_t r = ssl_read(o->ssl_sock, &o->buf);
         if (r == SSL_OK) {
             // SSL_OK from ssl_read() means "everything is ok, but there's
-            // not user data yet. So, we just keep reading.
+            // not user data yet. 
+            if (mp_is_nonblocking_error(mp_stream_errno)) {
+                // return if non-blocking socket
+                *errcode = mp_stream_errno;
+                return 0;
+            }
+
+            // So, we just keep reading for blocking socket.
             continue;
         }
         if (r < 0) {
@@ -123,10 +132,16 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 }
 
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
-    // Currently supports only blocking mode
-    (void)self_in;
-    if (!mp_obj_is_true(flag_in)) {
-        mp_not_implemented("");
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t dest[3];
+    mp_load_method(o->sock, MP_QSTR_setblocking, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        dest[2] = flag_in;
+        mp_call_method_n_kw(1, 0, dest);
+        o->timeout = mp_obj_is_true(flag_in)? -1 : 0;
+    } else {
+        if (!mp_obj_is_true(flag_in))
+            mp_not_implemented("");
     }
     return mp_const_none;
 }
