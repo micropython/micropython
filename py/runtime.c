@@ -1201,7 +1201,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
                 nlr_pop();
                 return MP_VM_RETURN_YIELD;
             } else {
-                *ret_val = nlr.ret_val;
+                *ret_val = MP_OBJ_FROM_PTR(nlr.ret_val);
                 return MP_VM_RETURN_EXCEPTION;
             }
         }
