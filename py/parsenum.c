@@ -227,7 +227,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
                 } else {
                     if (in == PARSE_DEC_IN_FRAC) {
                         dec_val += dig * frac_mult;
-                        frac_mult *= 0.1;
+                        frac_mult *= MICROPY_FLOAT_CONST(0.1);
                     } else {
                         dec_val = 10 * dec_val + dig;
                     }

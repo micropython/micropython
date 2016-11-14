@@ -48,18 +48,18 @@ struct mp_stream_seek_t {
     int whence;
 };
 
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_read1_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readlines_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_write1_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_flush_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_stream_ioctl_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_readall_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_write1_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 
 // these are for mp_get_stream_raise and can be or'd together
 #define MP_STREAM_OP_READ (1)

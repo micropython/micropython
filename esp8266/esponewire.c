@@ -28,7 +28,7 @@
 
 #include "etshal.h"
 #include "user_interface.h"
-#include "modpyb.h"
+#include "modmachine.h"
 #include "esponewire.h"
 
 #define TIMING_RESET1 (0)

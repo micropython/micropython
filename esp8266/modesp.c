@@ -45,8 +45,7 @@
 #include "mem.h"
 #include "espneopixel.h"
 #include "espapa102.h"
-#include "modpyb.h"
-#include "modpybrtc.h"
+#include "modmachine.h"
 
 #define MODESP_ESPCONN (0)
 
@@ -629,6 +628,11 @@ STATIC mp_obj_t esp_flash_size(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
+STATIC mp_obj_t esp_flash_user_start(void) {
+    return MP_OBJ_NEW_SMALL_INT(0x90000);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
+
 STATIC mp_obj_t esp_check_fw(void) {
     MD5_CTX ctx;
     uint32_t *sz_p = (uint32_t*)0x40208ffc;
@@ -706,6 +710,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_write), (mp_obj_t)&esp_flash_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_erase), (mp_obj_t)&esp_flash_erase_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_size), (mp_obj_t)&esp_flash_size_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_user_start), (mp_obj_t)&esp_flash_user_start_obj },
     #if MODESP_ESPCONN
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },

@@ -99,7 +99,7 @@ STATIC tSpiInformation sSpiInformation;
 STATIC char spi_buffer[CC3000_RX_BUFFER_SIZE];
 unsigned char wlan_tx_buffer[CC3000_TX_BUFFER_SIZE];
 
-STATIC const mp_obj_fun_builtin_t irq_callback_obj;
+STATIC const mp_obj_fun_builtin_fixed_t irq_callback_obj;
 
 // set the pins to use to communicate with the CC3000
 // the arguments must be of type pin_obj_t* and SPI_HandleTypeDef*

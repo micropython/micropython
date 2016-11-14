@@ -27,7 +27,7 @@
 #include "etshal.h"
 #include "ets_alt_task.h"
 
-#include "modpyb.h"
+#include "modmachine.h"
 
 // this is in a separate file so it can go in iRAM
 void pin_intr_handler_iram(void *arg) {

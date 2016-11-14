@@ -70,10 +70,10 @@ static inline void restore_irq_pri(uint32_t basepri) {
 
 #endif
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_wfi_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_disable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_enable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ(pyb_irq_stats_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(pyb_wfi_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(pyb_disable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_enable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 
 // IRQ priority definitions.
 //

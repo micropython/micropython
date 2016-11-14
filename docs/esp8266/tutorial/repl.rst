@@ -41,6 +41,18 @@ For your convenience, WebREPL client is hosted at
 locally from the the GitHub repository
 `<https://github.com/micropython/webrepl>`__ .
 
+Before connecting to WebREPL, you should set a password and enable it via
+a normal serial connection. Initial versions of MicroPython for ESP8266
+came with WebREPL automatically enabled on the boot and with the
+ability to set a password via WiFi on the first connection, but as WebREPL
+was becoming more widely known and popular, the initial setup has switched
+to a wired connection for improved security::
+
+    import webrepl_setup
+
+Follow the on-screen instructions and prompts. To make any changes active,
+you will need to reboot your device.
+
 To use WebREPL connect your computer to the ESP8266's access point
 (MicroPython-xxxxxx, see the previous section about this).  If you have
 already reconfigured your ESP8266 to connect to a router then you can
@@ -49,19 +61,11 @@ skip this part.
 Once you are on the same network as the ESP8266 you click the "Connect" button
 (if you are connecting via a router then you may need to change the IP address,
 by default the IP address is correct when connected to the ESP8266's access
-point).  If the connection succeeds then you should see a welcome message.
+point).  If the connection succeeds then you should see a password prompt.
 
-On the first connection you need to set a password.  Make sure that the
-terminal widget is selected by clicking on it, and then follow prompts to
-type in your password twice (they should match each other).  Then ESP8266
-will then reboot with the password applied (the WiFi will go down but come
-back up again). Note that some modules may have troubles rebooting
-automatically and need reset button press or power cycle (do this if
-you don't see ESP8266 access point appearing in a minute or so).
-
-You should then click the "Connect" button again, and enter your password
-to connect.  If you type in the correct password you should get a prompt
-looking like ``>>>``.  You can now start typing Python commands!
+Once you type the password configured at the setup step above, press Enter once
+more and you should get a prompt looking like ``>>>``.  You can now start
+typing Python commands!
 
 Using the REPL
 --------------

@@ -76,11 +76,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
 }
 
 void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
-#if MICROPY_PY_IO
-    mp_obj_print_helper(&mp_sys_stdout_print, o_in, kind);
-#else
-    mp_obj_print_helper(&mp_plat_print, o_in, kind);
-#endif
+    mp_obj_print_helper(MP_PYTHON_PRINTER, o_in, kind);
 }
 
 // helper function to print an exception with traceback
