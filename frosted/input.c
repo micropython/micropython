@@ -181,14 +181,10 @@ char *readline_tty(char *input, int size, char *prompt)
 
             /* tab */
             if ((got[0] == 0x09)) {
-                input[len] = 0;
-                printf("\r\n");
-                printf("Built-in commands: \r\n");
-                printf("\t cd getenv pwd setenv");
-                printf("\r\n");
-                fputs(prompt, stdout);
-                fflush(stdout);
-                printf("%s", input);
+                memset(input + len, ' ', 4);
+                printf("    ");
+                pos+=4;
+                len+=4;
                 fflush(stdout);
                 continue;
             }
