@@ -30,7 +30,7 @@ ifdef DEBUG
 CFLAGS += -g
 COPT = -O0
 else
-COPT = -Os -fdata-sections -ffunction-sections -D__frosted__ #-DNDEBUG
+COPT = -Os -fdata-sections -ffunction-sections -D__frosted__ -DNDEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
@@ -226,50 +226,6 @@ install: micropython
 # uninstall micropython
 uninstall:
 	-rm $(BINDIR)/$(TARGET)
-
-# build synthetically fast interpreter for benchmarking
-fast:
-	$(MAKE) COPT="-O2 -DNDEBUG -fno-crossjumping" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast PROG=micropython_fast
-
-# build a minimal interpreter
-minimal:
-	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
-	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= \
-	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
-	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
-	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
-
-# build interpreter with nan-boxing as object model
-nanbox:
-	$(MAKE) \
-	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_nanbox.h>"' \
-	BUILD=build-nanbox \
-	PROG=micropython_nanbox \
-	MICROPY_FORCE_32BIT=1 \
-	MICROPY_PY_USSL=0
-
-freedos:
-	$(MAKE) \
-	CC=i586-pc-msdosdjgpp-gcc \
-	STRIP=i586-pc-msdosdjgpp-strip \
-	SIZE=i586-pc-msdosdjgpp-size \
-	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_freedos.h>" -DMICROPY_NLR_SETJMP -Dtgamma=gamma -DMICROPY_EMIT_X86=0 -DMICROPY_NO_ALLOCA=1 -DMICROPY_PY_USELECT=0' \
-	BUILD=build-freedos \
-	PROG=micropython_freedos \
-	MICROPY_PY_SOCKET=0 \
-	MICROPY_PY_FFI=0 \
-	MICROPY_PY_JNI=0
-
-# build an interpreter for coverage testing and do the testing
-coverage:
-	$(MAKE) COPT="-O0" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_coverage.h>" -fprofile-arcs -ftest-coverage -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wshadow -Wsign-compare -Wuninitialized -Wunused-parameter -DMICROPY_UNIX_COVERAGE' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
-
-coverage_test: coverage
-	$(eval DIRNAME=$(notdir $(CURDIR)))
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
-	gcov -o build-coverage/py ../py/*.c
-	gcov -o build-coverage/extmod ../extmod/*.c
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overriden.

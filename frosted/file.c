@@ -40,9 +40,14 @@
 
 #if MICROPY_PY_IO
 
+#ifdef _WIN32
+#define fsync _commit
+#endif
+
 #ifdef __frosted__
 #define fsync(x) (0)
 #endif
+
 
 #ifdef MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_fdfile_t *o) {
@@ -218,7 +223,6 @@ STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fileno), MP_ROM_PTR(&fdfile_fileno_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readall), MP_ROM_PTR(&mp_stream_readall_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },

@@ -6,8 +6,6 @@
 #include "py/repl.h"
 #include "py/mpz.h"
 
-#if defined(MICROPY_UNIX_COVERAGE)
-
 // str/bytes objects without a valid hash
 STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte*)"0123456789"};
 STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte*)"0123456789"};
@@ -120,4 +118,3 @@ STATIC mp_obj_t extra_coverage(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
 
-#endif
