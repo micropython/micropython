@@ -27,7 +27,7 @@ A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
 
     uart.read(10)       # read 10 characters, returns a bytes object
-    uart.readall()      # read all available characters
+    uart.read()         # read all available characters
     uart.readline()     # read a line
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
@@ -122,6 +122,9 @@ Methods
    If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
    when sufficient characters arrive or the timeout elapses.
 
+   If ``nbytes`` is not given then the method reads as much data as possible.  It
+   returns after the timeout has elapsed.
+
    .. only:: port_pyboard
 
       *Note:* for 9 bit characters each character takes two bytes, ``nbytes`` must
@@ -129,12 +132,6 @@ Methods
 
       Return value: a bytes object containing the bytes read in.  Returns ``None``
       on timeout.
-
-.. method:: UART.readall()
-
-   Read as much data as possible. Returns after the timeout has elapsed.
-
-   Return value: a bytes object or ``None`` if timeout prevents any data being read.
 
 .. method:: UART.readchar()
 
