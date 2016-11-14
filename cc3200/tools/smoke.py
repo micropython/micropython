@@ -51,7 +51,7 @@ n_w = f.write(test_bytes)
 print(n_w == len(test_bytes))
 f.close()
 f = open('test.txt', 'r')
-r = bytes(f.readall(), 'ascii')
+r = bytes(f.read(), 'ascii')
 # check that we can write and read it correctly
 print(r == test_bytes)
 f.close()
