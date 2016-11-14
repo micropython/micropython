@@ -6,7 +6,7 @@ endif
 
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
-# and should not contain any ..'s but rather be relative to the top of the 
+# and should not contain any ..'s but rather be relative to the top of the
 # tree.
 #
 # So for example, py/map.c would have an object file name py/map.o
@@ -108,7 +108,7 @@ endif
 
 ifneq ($(FROZEN_MPY_DIR),)
 # make a list of all the .py files that need compiling and freezing
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' -printf '%P\n')
+FROZEN_MPY_PY_FILES := $(notdir $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py'))
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 # to build .mpy files from .py files
