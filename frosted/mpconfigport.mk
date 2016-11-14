@@ -6,7 +6,7 @@ MICROPY_FORCE_32BIT = 1
 # This variable can take the following values:
 #  0 - no readline, just simple input
 #  1 - use MicroPython version of readline
-MICROPY_USE_READLINE = 1
+MICROPY_USE_READLINE = 0
 
 # Whether to enable FatFs VFS
 MICROPY_FATFS = 0
@@ -34,4 +34,4 @@ MICROPY_PY_JNI = 0
 
 # Avoid using system libraries, use copies bundled with MicroPython
 # as submodules (currently affects only libffi).
-MICROPY_STANDALONE = 1
+MICROPY_STANDALONE = 0

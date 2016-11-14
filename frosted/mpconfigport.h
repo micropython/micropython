@@ -230,12 +230,12 @@ typedef long mp_off_t;
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
 
-void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
-void mp_unix_free_exec(void *ptr, mp_uint_t size);
-void mp_unix_mark_exec(void);
+void mp_frosted_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
+void mp_frosted_free_exec(void *ptr, mp_uint_t size);
+void mp_frosted_mark_exec(void);
 
-#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
-#define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_frosted_alloc_exec(min_size, ptr, size)
+#define MP_PLAT_FREE_EXEC(ptr, size) mp_frosted_free_exec(ptr, size)
 #ifndef MICROPY_FORCE_PLAT_ALLOC_EXEC
 // Use MP_PLAT_ALLOC_EXEC for any executable memory allocation, including for FFI
 // (overriding libffi own implementation)

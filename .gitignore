@@ -8,6 +8,7 @@
 *.hex
 *.dis
 *.exe
+*.gdb
 
 # Packages 
 ############

@@ -57,7 +57,7 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
-long heap_size = 1024*1024 * (sizeof(mp_uint_t) / 4);
+long heap_size = 1024*64 * (sizeof(mp_uint_t) / 4);
 #endif
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
@@ -293,7 +293,7 @@ STATIC int usage(char **argv) {
 "-v : verbose (trace various operations); can be multiple\n"
 "-O[N] : apply bytecode optimizations of level N\n"
 "\n"
-"Implementation specific options:\n", argv[0]
+"Implementation specific options (-X):\n", argv[0]
 );
     int impl_opts_cnt = 0;
     printf(
@@ -303,7 +303,7 @@ STATIC int usage(char **argv) {
     impl_opts_cnt++;
 #if MICROPY_ENABLE_GC
     printf(
-"  heapsize=<n> -- set the heap size for the GC (default %ld)\n"
+"  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
 , heap_size);
     impl_opts_cnt++;
 #endif
@@ -314,6 +314,7 @@ STATIC int usage(char **argv) {
 
     return 1;
 }
+
 // Process options which set interpreter init options
 STATIC void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
@@ -350,12 +351,20 @@ STATIC void pre_process_options(int argc, char **argv) {
                         heap_size *= 1024;
                     } else if ((*end | 0x20) == 'm') {
                         heap_size *= 1024 * 1024;
+                    } else {
+                        // Compensate for ++ below
+                        --end;
+                    }
+                    if (*++end != 0) {
+                        goto invalid_arg;
                     }
                     if (word_adjust) {
                         heap_size = heap_size * BYTES_PER_WORD / 4;
                     }
 #endif
                 } else {
+invalid_arg:
+                    printf("Invalid option\n");
                     exit(usage(argv));
                 }
                 a++;
@@ -406,6 +415,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // create keyboard interrupt object
     MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 
+    char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
         #ifdef MICROPY_PY_SYS_PATH_DEFAULT
@@ -432,7 +442,17 @@ MP_NOINLINE int main_(int argc, char **argv) {
         if (p1 == NULL) {
             p1 = p + strlen(p);
         }
-        path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+        if (p[0] == '~' && p[1] == '/' && home != NULL) {
+            // Expand standalone ~ to $HOME
+            int home_l = strlen(home);
+            vstr_t vstr;
+            vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+            vstr_add_strn(&vstr, home, home_l);
+            vstr_add_strn(&vstr, p + 1, p1 - p - 1);
+            path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+        } else {
+            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+        }
         p = p1 + 1;
     }
     }
@@ -441,7 +461,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     #if defined(MICROPY_UNIX_COVERAGE)
     {
-        MP_DECLARE_CONST_FUN_OBJ(extra_coverage_obj);
+        MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
         mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), MP_OBJ_FROM_PTR(&extra_coverage_obj));
     }
     #endif

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +24,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <unistd.h>
 
-#ifndef CHAR_CTRL_C
-#define CHAR_CTRL_C (3)
-#endif
+#include "py/obj.h"
 
-void mp_hal_set_interrupt_char(char c);
+#ifndef __MICROPY_INCLUDED_UNIX_FILE_H__
+#define __MICROPY_INCLUDED_UNIX_FILE_H__
 
-void mp_hal_stdio_mode_raw(void);
-void mp_hal_stdio_mode_orig(void);
+typedef struct _mp_obj_fdfile_t {
+    mp_obj_base_t base;
+    int fd;
+} mp_obj_fdfile_t;
 
-// TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
-// "The useconds argument shall be less than one million."
-static inline void mp_hal_delay_ms(mp_uint_t ms) { usleep((ms) * 1000); }
-static inline void mp_hal_delay_us(mp_uint_t us) { usleep(us); }
-#define mp_hal_ticks_cpu() 0
+extern const mp_obj_type_t mp_type_fileio;
+extern const mp_obj_type_t mp_type_textio;
 
-#define RAISE_ERRNO(err_flag, error_val) \
-    { if (err_flag == -1) \
-        { mp_raise_OSError(error_val); } }
+#endif // __MICROPY_INCLUDED_UNIX_FILE_H__

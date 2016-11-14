@@ -8,6 +8,5 @@ micropython_fast
 micropython_minimal
 micropython_coverage
 micropython_nanbox
-micropython.gdb
 *.py
 *.gcov

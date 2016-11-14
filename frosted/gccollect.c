@@ -80,6 +80,18 @@ STATIC void gc_helper_get_regs(regs_t arr) {
     register long esi asm ("esi");
     register long edi asm ("edi");
     register long ebp asm ("ebp");
+#ifdef __clang__
+    // TODO:
+    // This is dirty workaround for Clang. It tries to get around
+    // uncompliant (wrt to GCC) behavior of handling register variables.
+    // Application of this patch here is random, and done only to unbreak
+    // MacOS build. Better, cross-arch ways to deal with Clang issues should
+    // be found.
+    asm("" : "=r"(ebx));
+    asm("" : "=r"(esi));
+    asm("" : "=r"(edi));
+    asm("" : "=r"(ebp));
+#endif
     arr[0] = ebx;
     arr[1] = esi;
     arr[2] = edi;
@@ -156,7 +168,7 @@ void gc_collect(void) {
     mp_thread_gc_others();
     #endif
     #if MICROPY_EMIT_NATIVE
-    mp_unix_mark_exec();
+    mp_frosted_mark_exec();
     #endif
     gc_collect_end();
 

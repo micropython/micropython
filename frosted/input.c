@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "py/mpstate.h"
 #include "py/mphal.h"
@@ -40,55 +41,215 @@
 #include <readline/history.h>
 #include <readline/tilde.h>
 #endif
+static char lastcmd[128] = "";
+
+char *readline_tty(char *input, int size, char *prompt)
+{
+
+    while (2>1)
+    {
+        int len = 0, pos = 0;
+        char got[5];
+        int i, j;
+        int repeat = 0;
+
+        while(len < size)
+        {
+            const char del = 0x08;
+            const char space = 0x20;
+            int ret = read(STDIN_FILENO, got, 4);
+            if (ret < 0) {
+                printf("read: %s\r\n", strerror(errno));
+                fputs(prompt, stdout);
+                fflush(stdout);
+                continue;
+            }
+
+            /* arrows */
+            if ((ret == 3) && (got[0] == 0x1b)) {
+                char dir = got[2];
+                if (dir == 'A') {
+                    if ((strlen(lastcmd) == 0) || repeat) {
+                        continue;
+                    }
+                    repeat++;
+
+                    while (len > 0) {
+                        write(STDOUT_FILENO, &del, 1);
+                        write(STDOUT_FILENO, &space, 1);
+                        write(STDOUT_FILENO, &del, 1);
+                        len--;
+                    }
+                    len = strlen(lastcmd);
+                    lastcmd[len] = 0x00;
+                    len--;
+                    lastcmd[len] = 0x00;
+                    pos = len;
+                    printf( "%s", lastcmd);
+                    fflush(stdout);
+                    strcpy(input, lastcmd);
+                    continue;
+                } else if (dir == 'B') {
+                } else if (dir == 'C') {
+                    if (pos < len) {
+                        printf("%c", input[pos++]);
+                        fflush(stdout);
+                    }
+                } else if (dir == 'D') {
+                    write(STDOUT_FILENO, &del, 1);
+                    pos--;
+                    continue;
+                }
+            }
+
+            if (ret > 3) {
+            	if ((got[0] == 0x1B) && (got[2] == 0x33) && (got[3] == 0x7E)) {
+                	if (pos < len) {
+	                    //write(STDOUT_FILENO, &del, 1);
+        	            //printf( " ");
+                	    //write(STDOUT_FILENO, &del, 1);
+                	    pos--;
+        	            len--;
+                	    if (pos < len) {
+                    	for ( i = pos+1; i < len; i++) {
+	                	input[i] = input[i+1];
+                        write(STDOUT_FILENO, &input[i], 1);
+                	}
+                    write(STDOUT_FILENO, &space, 1);
+	                i = len - pos;
+        	        while (i > 0) {
+                		write(STDOUT_FILENO, &del, 1);
+                    		i--;
+                    	}
+
+	                    } else {
+	                    input[pos] = 0x00;
+	                    pos--;
+	                    len--;
+	            }
+
+                    continue;
+                }
+            	}
+                continue;
+            }
+            if ((ret > 0) && (got[0] >= 0x20) && (got[0] <= 0x7e)) {
+                for (i = 0; i < ret; i++) {
+                    /* Echo to terminal */
+                    if (got[i] >= 0x20 && got[i] <= 0x7e)
+                        write(STDOUT_FILENO, &got[i], 1);
+                	if (pos < len) {
+                		for (j = len + 1; j > pos; j--) {
+                			input[j] = input[j-1];
+                		}
+                		input[pos] = got[i];
+                    	for ( j = pos + 1; j < len +1; j++) {
+                            write(STDOUT_FILENO, &input[j], 1);
+                    	}
+                        write(STDOUT_FILENO, &input[i], 1);
+                    	j = len - pos + 1;
+                    	while (j > 0) {
+                    		write(STDOUT_FILENO, &del, 1);
+                    		j--;
+                    	}
+                	} else {
+                		input[pos] = got[i];
+                	}
+
+                    len++;
+                    pos++;
+                }
+            }
+
+            if ((got[0] == 0x0D)) {
+            	input[len] = 0x0D;
+                input[len + 1] = '\0';
+                printf( "\r\n");
+                fflush(stdout);
+                if (len > 0)
+                    strncpy(lastcmd, input, 128);
+                return input; /* CR (\r\n) */
+            }
+
+            if ((got[0] == 0x4)) {
+                printf( "\r\n");
+                fflush(stdout);
+                len = 0;
+                pos = 0;
+                break;
+            }
+
+            /* tab */
+            if ((got[0] == 0x09)) {
+                input[len] = 0;
+                printf("\r\n");
+                printf("Built-in commands: \r\n");
+                printf("\t cd getenv pwd setenv");
+                printf("\r\n");
+                fputs(prompt, stdout);
+                fflush(stdout);
+                printf("%s", input);
+                fflush(stdout);
+                continue;
+            }
+
+            /* backspace */
+            if ((got[0] == 0x7F) || (got[0] == 0x08)) {
+                if (pos > 0) {
+                    write(STDOUT_FILENO, &del, 1);
+                    write(STDOUT_FILENO, &space, 1);
+                    write(STDOUT_FILENO, &del, 1);
+                    pos--;
+                    len--;
+                    if (pos < len) {
+                    	for ( i = pos; i < len; i++) {
+                    		input[i] = input[i+1];
+                            write(STDOUT_FILENO, &input[i], 1);
+                    	}
+                        write(STDOUT_FILENO, &space, 1);
+                    	i = len - pos + 1;
+                    	while (i > 0) {
+                    		write(STDOUT_FILENO, &del, 1);
+                    		i--;
+                    	}
+
+                    } else {
+	                    input[pos] = 0x00;
+	            }
+
+                    continue;
+                }
+            }
+        }
+        printf("\r\n");
+        fflush(stdout);
+        if (len < 0)
+            return NULL;
+
+        input[len + 1] = '\0';
+    }
+    return input;
+}
 
 char *prompt(char *p) {
-#if MICROPY_USE_READLINE == 1
-    // MicroPython supplied readline
-    vstr_t vstr;
-    vstr_init(&vstr, 16);
-    mp_hal_stdio_mode_raw();
-    int ret = readline(&vstr, p);
-    mp_hal_stdio_mode_orig();
-    if (ret != 0) {
-        vstr_clear(&vstr);
-        if (ret == CHAR_CTRL_D) {
-            // EOF
-            printf("\n");
-            return NULL;
-        } else {
-            printf("\n");
-            char *line = malloc(1);
-            line[0] = '\0';
-            return line;
-        }
-    }
-    vstr_null_terminated_str(&vstr);
-    char *line = malloc(vstr.len + 1);
-    memcpy(line, vstr.buf, vstr.len + 1);
-    vstr_clear(&vstr);
-#elif MICROPY_USE_READLINE == 2
-    // GNU readline
-    char *line = readline(p);
-    if (line) {
-        add_history(line);
-    }
-#else
-    // simple read string
     static char buf[256];
+    char *s;
+    int l;
     fputs(p, stdout);
-    char *s = fgets(buf, sizeof(buf), stdin);
+    fflush(stdout);
+
+    s = readline_tty(buf, sizeof(buf), p);
     if (!s) {
         return NULL;
     }
-    int l = strlen(buf);
-    if (buf[l - 1] == '\n') {
+    l = strlen(buf);
+    if ((buf[l - 1] == '\n'|| buf[l - 1] == '\r')) {
         buf[l - 1] = 0;
     } else {
         l++;
     }
     char *line = malloc(l);
     memcpy(line, buf, l);
-#endif
     return line;
 }
 
@@ -145,7 +306,7 @@ void prompt_write_history(void) {
                 if (line != NULL) {
                     int res;
                     res = write(fd, line, strlen(line));
-                    res = write(fd, "\n", 1);
+                    res = write(fd, "\r\n", 1);
                     (void)res;
                 }
             }
