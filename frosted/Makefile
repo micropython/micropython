@@ -25,6 +25,9 @@ CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
 CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
+# Frosted size limits
+CFLAGS+=-DMICROPY_ALLOC_PATH_MAX=256 -DMP_SSIZE_MAX=4096
+
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g

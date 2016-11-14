@@ -185,7 +185,7 @@
 // Maximum length of a path in the filesystem
 // So we can allocate a buffer on the stack for path manipulation in import
 #ifndef MICROPY_ALLOC_PATH_MAX
-#define MICROPY_ALLOC_PATH_MAX (256)
+#define MICROPY_ALLOC_PATH_MAX (512)
 #endif
 
 // Initial size of module dict
@@ -1081,7 +1081,7 @@ typedef double mp_float_t;
 #endif
 
 #ifndef MP_SSIZE_MAX
-#define MP_SSIZE_MAX 4096
+#define MP_SSIZE_MAX SSIZE_MAX
 #endif
 
 // printf format spec to use for mp_int_t and friends

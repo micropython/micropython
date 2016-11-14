@@ -33,7 +33,7 @@
 #if MICROPY_DEBUG_PRINTERS
 
 // redirect all printfs in this file to the platform print stream
-//#define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+#define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 #define DECODE_UINT { \
     unum = 0; \
