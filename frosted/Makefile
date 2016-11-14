@@ -1,7 +1,7 @@
 -include mpconfigport.mk
 include ../py/mkenv.mk
 
-FROZEN_DIR = scripts
+FROZEN_MPY_DIR = scripts
 
 # define main target
 PROG = micropython
@@ -126,7 +126,6 @@ SRC_MOD += modsocket.c
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
-LDFLAGS_MOD += -lpthread
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
@@ -216,8 +215,8 @@ test: $(PROG) ../tests/run-tests
 
 # install micropython in /usr/local/bin
 TARGET = micropython
-PREFIX = $(DESTDIR)/usr/local
-BINDIR = $(PREFIX)/bin
+PREFIX = $(DESTDIR)/frosted-userland
+BINDIR = $(PREFIX)/out
 
 install: micropython
 	install -d $(BINDIR)
