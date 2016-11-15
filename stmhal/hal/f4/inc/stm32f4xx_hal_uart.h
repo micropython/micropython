@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_uart.h
   * @author  MCD Application Team
-  * @version V1.5.1
-  * @date    01-July-2016
+  * @version V1.5.2
+  * @date    22-September-2016
   * @brief   Header file of UART HAL module.
   ******************************************************************************
   * @attention
@@ -167,13 +167,13 @@ typedef struct
   
   uint16_t                      TxXferSize;       /*!< UART Tx Transfer size              */
   
-  uint16_t                      TxXferCount;      /*!< UART Tx Transfer Counter           */
+  __IO uint16_t                 TxXferCount;      /*!< UART Tx Transfer Counter           */
   
   uint8_t                       *pRxBuffPtr;      /*!< Pointer to UART Rx transfer Buffer */
   
   uint16_t                      RxXferSize;       /*!< UART Rx Transfer size              */
   
-  uint16_t                      RxXferCount;      /*!< UART Rx Transfer Counter           */  
+  __IO uint16_t                 RxXferCount;      /*!< UART Rx Transfer Counter           */  
   
   DMA_HandleTypeDef             *hdmatx;          /*!< UART Tx DMA Handle parameters      */
     

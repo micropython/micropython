@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_can.h
   * @author  MCD Application Team
-  * @version V1.5.1
-  * @date    01-July-2016
+  * @version V1.5.2
+  * @date    22-September-2016
   * @brief   Header file of CAN HAL module.
   ******************************************************************************
   * @attention
@@ -249,7 +249,7 @@ typedef struct
   * @{
   */
 
-/** @defgroup HAL_CAN_Error_Code HAL CAN Error Code
+/** @defgroup CAN_Error_Code CAN Error Code
   * @{
   */
 #define   HAL_CAN_ERROR_NONE      0x00U    /*!< No error             */
