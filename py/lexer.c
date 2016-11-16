@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "py/mpstate.h"
+#include "py/reader.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
 
@@ -748,6 +749,14 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     mp_lexer_next_token_into(lex, true);
 
     return lex;
+}
+
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
+    mp_reader_t reader;
+    if (!mp_reader_new_mem(&reader, (const byte*)str, len, free_len)) {
+        return NULL;
+    }
+    return mp_lexer_new(src_name, reader.data, (mp_lexer_stream_next_byte_t)reader.readbyte, (mp_lexer_stream_close_t)reader.close);
 }
 
 void mp_lexer_free(mp_lexer_t *lex) {
