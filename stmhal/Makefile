@@ -154,7 +154,6 @@ SRC_C = \
 	modusocket.c \
 	modnetwork.c \
 	import.c \
-	lexerfatfs.c \
 	extint.c \
 	usrsw.c \
 	rng.c \

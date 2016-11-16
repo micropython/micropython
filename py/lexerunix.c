@@ -85,12 +85,4 @@ mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd) {
     return mp_lexer_new(filename, fb, (mp_lexer_stream_next_byte_t)file_buf_next_byte, (mp_lexer_stream_close_t)file_buf_close);
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    int fd = open(filename, O_RDONLY);
-    if (fd < 0) {
-        return NULL;
-    }
-    return mp_lexer_new_from_fd(qstr_from_str(filename), fd, true);
-}
-
 #endif // MICROPY_HELPER_LEXER_UNIX

@@ -759,6 +759,19 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t 
     return mp_lexer_new(src_name, reader.data, (mp_lexer_stream_next_byte_t)reader.readbyte, (mp_lexer_stream_close_t)reader.close);
 }
 
+#if MICROPY_READER_POSIX || MICROPY_READER_FATFS
+
+mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    mp_reader_t reader;
+    int ret = mp_reader_new_file(&reader, filename);
+    if (ret != 0) {
+        return NULL;
+    }
+    return mp_lexer_new(qstr_from_str(filename), reader.data, (mp_lexer_stream_next_byte_t)reader.readbyte, (mp_lexer_stream_close_t)reader.close);
+}
+
+#endif
+
 void mp_lexer_free(mp_lexer_t *lex) {
     if (lex) {
         if (lex->stream_close) {
