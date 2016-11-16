@@ -1,7 +1,6 @@
 MCU_SERIES = m0
 MCU_VARIANT = NRF51
 LD_FILE = boards/nrf51822_aa_s110.ld
-NRF_SOFTDEVICE = NRF_S110_SOFTDEVICE
 
 SRC_C += \
 	hal/hal_uart.c \

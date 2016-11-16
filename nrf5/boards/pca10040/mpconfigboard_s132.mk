@@ -1,7 +1,6 @@
 MCU_SERIES = m4
 MCU_VARIANT = NRF52
 LD_FILE = boards/nrf52832_aa_s132.ld
-NRF_SOFTDEVICE = NRF_S132_SOFTDEVICE
 
 SRC_C += \
 	hal/hal_uarte.c \
