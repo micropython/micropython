@@ -81,7 +81,7 @@ SRC_LIB = $(addprefix lib/,\
         utils/pyhelp.c \
 	)
 
-SRC_C = \
+SRC_C += \
 	main.c \
 	device/$(MCU_VARIANT_LOWER)/system_$(MCU_VARIANT_LOWER).c \
 	modpyb.c \
@@ -91,60 +91,11 @@ SRC_C = \
 	help.c \
 	gccollect.c \
 
-ifeq ($(NRF_SOFTDEVICE),NRF_S1XX_SOFTDEVICE)
-	SRC_C += \
-		hal/hal_uarte.c \
-		softdevice/modble.c \
-		softdevice/softdevice.c
- 
-	CFLAGS += -I./softdevice
-	CFLAGS += -I./softdevice/s1xx/headers
-	CFLAGS += -I./softdevice/s1xx/headers/nrf52 
-	CFLAGS += -DBLUETOOTH_SD=100
-	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
-
-else ifeq ($(NRF_SOFTDEVICE),NRF_S132_SOFTDEVICE)
-	SRC_C += \
-		hal/hal_uarte.c \
-		softdevice/modble.c \
-		softdevice/softdevice.c
-
-	CFLAGS += -I./softdevice
-	CFLAGS += -I./softdevice/s132/headers
-	CFLAGS += -I./softdevice/s132/headers/nrf52
-	CFLAGS += -DBLUETOOTH_SD=132
-	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
-else ifeq ($(NRF_SOFTDEVICE),NRF_S110_SOFTDEVICE)
-	SRC_C += \
-		hal/hal_uart.c \
-		softdevice/modble.c \
-		softdevice/softdevice.c
-
-	CFLAGS += -I./softdevice
-	CFLAGS += -I./softdevice/s110/headers
-	CFLAGS += -DBLUETOOTH_SD=110
-	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
-else ifeq ($(NRF_SOFTDEVICE),NRF_S130_SOFTDEVICE)
-	SRC_C += \
-		hal/hal_uart.c \
-		softdevice/modble.c \
-		softdevice/softdevice.c
- 
-	CFLAGS += -I./softdevice
-	CFLAGS += -I./softdevice/s130/headers 
-	CFLAGS += -DBLUETOOTH_SD=130
-	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
-else
-	SRC_C += \
-		hal/hal_uart.c
-endif
-
 SRC_S = \
 	device/$(MCU_VARIANT_LOWER)/startup_$(MCU_VARIANT_LOWER).s \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
-
 
 
 .phony: all flash
