@@ -109,17 +109,13 @@ void user_init(void) {
     system_init_done_cb(init_done);
 }
 
-mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
 mp_import_stat_t fat_vfs_import_stat(const char *path);
 
+#if !MICROPY_VFS_FAT
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    #if MICROPY_VFS_FAT
-    return fat_vfs_lexer_new_from_file(filename);
-    #else
-    (void)filename;
     return NULL;
-    #endif
 }
+#endif
 
 mp_import_stat_t mp_import_stat(const char *path) {
     #if MICROPY_VFS_FAT

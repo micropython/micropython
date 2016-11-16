@@ -243,23 +243,13 @@ STATIC void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns)
     c_tuple(comp, MP_PARSE_NODE_NULL, pns);
 }
 
-STATIC bool node_is_const_false(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE)
-        || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
-}
-
-STATIC bool node_is_const_true(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE)
-        || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) != 0);
-}
-
 STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label) {
-    if (node_is_const_false(pn)) {
+    if (mp_parse_node_is_const_false(pn)) {
         if (jump_if == false) {
             EMIT_ARG(jump, label);
         }
         return;
-    } else if (node_is_const_true(pn)) {
+    } else if (mp_parse_node_is_const_true(pn)) {
         if (jump_if == true) {
             EMIT_ARG(jump, label);
         }
@@ -1218,14 +1208,14 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint l_end = comp_next_label(comp);
 
     // optimisation: don't emit anything when "if False"
-    if (!node_is_const_false(pns->nodes[0])) {
+    if (!mp_parse_node_is_const_false(pns->nodes[0])) {
         uint l_fail = comp_next_label(comp);
         c_if_cond(comp, pns->nodes[0], false, l_fail); // if condition
 
         compile_node(comp, pns->nodes[1]); // if block
 
         // optimisation: skip everything else when "if True"
-        if (node_is_const_true(pns->nodes[0])) {
+        if (mp_parse_node_is_const_true(pns->nodes[0])) {
             goto done;
         }
 
@@ -1250,14 +1240,14 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns_elif = (mp_parse_node_struct_t*)pn_elif[i];
 
         // optimisation: don't emit anything when "if False"
-        if (!node_is_const_false(pns_elif->nodes[0])) {
+        if (!mp_parse_node_is_const_false(pns_elif->nodes[0])) {
             uint l_fail = comp_next_label(comp);
             c_if_cond(comp, pns_elif->nodes[0], false, l_fail); // elif condition
 
             compile_node(comp, pns_elif->nodes[1]); // elif block
 
             // optimisation: skip everything else when "elif True"
-            if (node_is_const_true(pns_elif->nodes[0])) {
+            if (mp_parse_node_is_const_true(pns_elif->nodes[0])) {
                 goto done;
             }
 
@@ -1294,9 +1284,9 @@ done:
 STATIC void compile_while_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     START_BREAK_CONTINUE_BLOCK
 
-    if (!node_is_const_false(pns->nodes[0])) { // optimisation: don't emit anything for "while False"
+    if (!mp_parse_node_is_const_false(pns->nodes[0])) { // optimisation: don't emit anything for "while False"
         uint top_label = comp_next_label(comp);
-        if (!node_is_const_true(pns->nodes[0])) { // optimisation: don't jump to cond for "while True"
+        if (!mp_parse_node_is_const_true(pns->nodes[0])) { // optimisation: don't jump to cond for "while True"
             EMIT_ARG(jump, continue_label);
         }
         EMIT_ARG(label_assign, top_label);
@@ -1413,13 +1403,13 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             if (1 <= n_args && n_args <= 3) {
                 optimize = true;
                 if (n_args == 1) {
-                    pn_range_start = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 0);
+                    pn_range_start = mp_parse_node_new_small_int(0);
                     pn_range_end = args[0];
-                    pn_range_step = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 1);
+                    pn_range_step = mp_parse_node_new_small_int(1);
                 } else if (n_args == 2) {
                     pn_range_start = args[0];
                     pn_range_end = args[1];
-                    pn_range_step = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, 1);
+                    pn_range_step = mp_parse_node_new_small_int(1);
                 } else {
                     pn_range_start = args[0];
                     pn_range_end = args[1];

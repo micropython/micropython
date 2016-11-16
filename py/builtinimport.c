@@ -32,6 +32,7 @@
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/objmodule.h"
+#include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/frozenmod.h"

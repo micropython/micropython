@@ -162,7 +162,6 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	import.c \
 	input.c \
 	irq.c \
-	lexerfatfs.c \
 	moduselect.c \
 	pybstdio.c \
 	)

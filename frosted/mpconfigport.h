@@ -66,6 +66,7 @@
 #define MICROPY_PY_BUILTINS_MIN_MAX (0)
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
+#define MICROPY_READER_POSIX        (1)
 #define MICROPY_PY_GC               (0)
 #define MICROPY_PY_GC_COLLECT_RETVAL (0)
 #define MICROPY_PY_ARRAY            (0)

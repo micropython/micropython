@@ -4,7 +4,6 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013-2016 Damien P. George
- * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,49 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_PY_PERSISTENTCODE_H
+#define MICROPY_INCLUDED_PY_PERSISTENTCODE_H
 
-#include "py/lexer.h"
+#include "py/mpprint.h"
+#include "py/reader.h"
+#include "py/emitglue.h"
 
-#if MICROPY_ENABLE_COMPILER
+mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
+mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
+mp_raw_code_t *mp_raw_code_load_file(const char *filename);
 
-typedef struct _mp_lexer_str32_buf_t {
-    const uint32_t *src_cur;
-    uint32_t val;
-    uint8_t byte_off;
-} mp_lexer_str32_buf_t;
+void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
+void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
 
-STATIC mp_uint_t str32_buf_next_byte(void *sb_in) {
-    mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t*)sb_in;
-    byte c = sb->val & 0xff;
-    if (c == 0) {
-        return MP_READER_EOF;
-    }
-
-    if (++sb->byte_off > 3) {
-        sb->byte_off = 0;
-        sb->val = *sb->src_cur++;
-    } else {
-        sb->val >>= 8;
-    }
-
-    return c;
-}
-
-STATIC void str32_buf_free(void *sb_in) {
-    mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t*)sb_in;
-    m_del_obj(mp_lexer_str32_buf_t, sb);
-}
-
-mp_lexer_t *mp_lexer_new_from_str32(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
-    mp_lexer_str32_buf_t *sb = m_new_obj_maybe(mp_lexer_str32_buf_t);
-    if (sb == NULL) {
-        return NULL;
-    }
-    sb->byte_off = (uint32_t)str & 3;
-    sb->src_cur = (uint32_t*)(str - sb->byte_off);
-    sb->val = *sb->src_cur++ >> sb->byte_off * 8;
-    mp_reader_t reader = {sb, str32_buf_next_byte, str32_buf_free};
-    return mp_lexer_new(src_name, reader);
-}
-
-#endif // MICROPY_ENABLE_COMPILER
+#endif // MICROPY_INCLUDED_PY_PERSISTENTCODE_H

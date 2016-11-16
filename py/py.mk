@@ -113,9 +113,8 @@ PY_O_BASENAME = \
 	mpprint.o \
 	unicode.o \
 	mpz.o \
+	reader.o \
 	lexer.o \
-	lexerstr.o \
-	lexerunix.o \
 	parse.o \
 	scope.o \
 	compile.o \
@@ -134,6 +133,7 @@ PY_O_BASENAME = \
 	parsenumbase.o \
 	parsenum.o \
 	emitglue.o \
+	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
 	nativeglue.o \
@@ -227,7 +227,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_lexer.o \
+	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
 	../extmod/uos_dupterm.o \
@@ -269,7 +269,7 @@ MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 # the lines in "" and then unwrap after the preprocessor is finished.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | sed 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 # emitters
