@@ -42,12 +42,17 @@ class Lexer:
     )
 
     def __init__(self, filename):
-        self.file = open(filename, 'rt')
+        self.file = open(filename, 'rb')
         self.line_number = 0
 
     def next_match(self, strictly_next=False):
         while True:
             line = self.file.readline()
+            try:
+                line = str(line, 'utf8')
+            except ValueError:
+                # some files have invalid utf8 bytes, so filter them out
+                line = ''.join(chr(l) for l in line if l <= 126)
             self.line_number += 1
             if len(line) == 0:
                 return ('EOF', None)
