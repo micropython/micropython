@@ -770,6 +770,19 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return mp_lexer_new(qstr_from_str(filename), reader.data, (mp_lexer_stream_next_byte_t)reader.readbyte, (mp_lexer_stream_close_t)reader.close);
 }
 
+#if MICROPY_HELPER_LEXER_UNIX
+
+mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd) {
+    mp_reader_t reader;
+    int ret = mp_reader_new_file_from_fd(&reader, fd, close_fd);
+    if (ret != 0) {
+        return NULL;
+    }
+    return mp_lexer_new(filename, reader.data, (mp_lexer_stream_next_byte_t)reader.readbyte, (mp_lexer_stream_close_t)reader.close);
+}
+
+#endif
+
 #endif
 
 void mp_lexer_free(mp_lexer_t *lex) {

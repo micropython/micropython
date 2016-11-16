@@ -110,7 +110,7 @@ STATIC void mp_reader_posix_close(void *data) {
     m_del_obj(mp_reader_posix_t, reader);
 }
 
-STATIC int mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd) {
+int mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd) {
     mp_reader_posix_t *rp = m_new_obj_maybe(mp_reader_posix_t);
     if (rp == NULL) {
         if (close_fd) {

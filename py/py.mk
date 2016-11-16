@@ -115,7 +115,6 @@ PY_O_BASENAME = \
 	mpz.o \
 	reader.o \
 	lexer.o \
-	lexerunix.o \
 	parse.o \
 	scope.o \
 	compile.o \
