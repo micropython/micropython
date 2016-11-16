@@ -58,7 +58,7 @@ mp_obj_t ble_obj_enabled(void) {
     return MP_OBJ_NEW_SMALL_INT(enabled);
 }
 
-/// \method disable()
+/// \method address_print()
 /// Print device address.
 mp_obj_t ble_obj_address_print(void) {
     softdevice_address_get();
