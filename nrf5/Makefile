@@ -62,7 +62,6 @@ CFLAGS += -Iboards/$(BOARD)
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE)
-LDFLAGS += -mcpu=cortex-m0
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
