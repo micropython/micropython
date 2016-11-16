@@ -4,6 +4,12 @@ should be separate from any other changes and should be listed here, most
 recent commit at the top of the list.  This makes it easier to upgrade to
 a new HAL version.
 
+13400e13758f7e23fc17bae753030723046ba3aa
+stmhal/hal: do not include <stdio.h> in HAL headers
+
+63ca7a211ac832fb885753ad837a7b3de2aaa5da
+stmhal/dma: precalculate register base and bitshift on handle init
+
 6a8f6c119c249e52fbc4d4fd55b2bec65544c811
 stmhal/hal/sd: reapply HAL commit 09de030 for f4
 
