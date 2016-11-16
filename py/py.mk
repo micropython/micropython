@@ -113,6 +113,7 @@ PY_O_BASENAME = \
 	mpprint.o \
 	unicode.o \
 	mpz.o \
+	reader.o \
 	lexer.o \
 	lexerstr.o \
 	lexerunix.o \
@@ -228,6 +229,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
+	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_lexer.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \

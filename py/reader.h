@@ -23,18 +23,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_PERSISTENTCODE_H
-#define MICROPY_INCLUDED_PY_PERSISTENTCODE_H
+#ifndef MICROPY_INCLUDED_PY_READER_H
+#define MICROPY_INCLUDED_PY_READER_H
 
-#include "py/mpprint.h"
-#include "py/reader.h"
-#include "py/emitglue.h"
+#include "py/obj.h"
 
-mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
-mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
-mp_raw_code_t *mp_raw_code_load_file(const char *filename);
+// the readbyte function must return the next byte in the input stream
+// it must return MP_READER_EOF if end of stream
+// it can be called again after returning MP_READER_EOF, and in that case must return MP_READER_EOF
+#define MP_READER_EOF ((mp_uint_t)(-1))
 
-void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
-void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
+typedef struct _mp_reader_t {
+    void *data;
+    mp_uint_t (*readbyte)(void *data);
+    void (*close)(void *data);
+} mp_reader_t;
 
-#endif // MICROPY_INCLUDED_PY_PERSISTENTCODE_H
+bool mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);
+int mp_reader_new_file(mp_reader_t *reader, const char *filename);
+
+#endif // MICROPY_INCLUDED_PY_READER_H

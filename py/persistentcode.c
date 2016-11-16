@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/reader.h"
 #include "py/emitglue.h"
 #include "py/persistentcode.h"
 #include "py/bc.h"
@@ -98,19 +99,19 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 #include "py/bc0.h"
 
 STATIC int read_byte(mp_reader_t *reader) {
-    return reader->read_byte(reader->data);
+    return reader->readbyte(reader->data);
 }
 
 STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
-        *buf++ = reader->read_byte(reader->data);
+        *buf++ = reader->readbyte(reader->data);
     }
 }
 
 STATIC mp_uint_t read_uint(mp_reader_t *reader) {
     mp_uint_t unum = 0;
     for (;;) {
-        byte b = reader->read_byte(reader->data);
+        byte b = reader->readbyte(reader->data);
         unum = (unum << 7) | (b & 0x7f);
         if ((b & 0x80) == 0) {
             break;
@@ -214,127 +215,27 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     if (header[2] != MPY_FEATURE_FLAGS || header[3] > mp_small_int_bits()) {
         mp_raise_ValueError("incompatible .mpy file");
     }
-    return load_raw_code(reader);
-}
-
-typedef struct _mp_mem_reader_t {
-    const byte *cur;
-    const byte *end;
-} mp_mem_reader_t;
-
-STATIC mp_uint_t mp_mem_reader_next_byte(void *br_in) {
-    mp_mem_reader_t *br = br_in;
-    if (br->cur < br->end) {
-        return *br->cur++;
-    } else {
-        return (mp_uint_t)-1;
-    }
+    mp_raw_code_t *rc = load_raw_code(reader);
+    reader->close(reader->data);
+    return rc;
 }
 
 mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
-    mp_mem_reader_t mr = {buf, buf + len};
-    mp_reader_t reader = {&mr, mp_mem_reader_next_byte};
+    mp_reader_t reader;
+    if (!mp_reader_new_mem(&reader, buf, len, 0)) {
+        m_malloc_fail(BYTES_PER_WORD); // we need to raise a MemoryError
+    }
     return mp_raw_code_load(&reader);
 }
 
-// here we define mp_raw_code_load_file depending on the port
-// TODO abstract this away properly
-
-#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) || defined(__unix__)
-// unix file reader
-
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-typedef struct _mp_lexer_file_buf_t {
-    int fd;
-    byte buf[20];
-    mp_uint_t len;
-    mp_uint_t pos;
-} mp_lexer_file_buf_t;
-
-STATIC mp_uint_t file_buf_next_byte(void *fb_in) {
-    mp_lexer_file_buf_t *fb = fb_in;
-    if (fb->pos >= fb->len) {
-        if (fb->len == 0) {
-            return (mp_uint_t)-1;
-        } else {
-            int n = read(fb->fd, fb->buf, sizeof(fb->buf));
-            if (n <= 0) {
-                fb->len = 0;
-                return (mp_uint_t)-1;
-            }
-            fb->len = n;
-            fb->pos = 0;
-        }
-    }
-    return fb->buf[fb->pos++];
-}
-
 mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
-    mp_lexer_file_buf_t fb;
-    fb.fd = open(filename, O_RDONLY, 0644);
-    int n = read(fb.fd, fb.buf, sizeof(fb.buf));
-    fb.len = n;
-    fb.pos = 0;
     mp_reader_t reader;
-    reader.data = &fb;
-    reader.read_byte = file_buf_next_byte;
-    mp_raw_code_t *rc = mp_raw_code_load(&reader);
-    close(fb.fd);
-    return rc;
-}
-
-#elif defined(__thumb2__) || defined(__xtensa__)
-// fatfs file reader (assume thumb2 arch uses fatfs...)
-
-#include "lib/fatfs/ff.h"
-
-typedef struct _mp_lexer_file_buf_t {
-    FIL fp;
-    byte buf[20];
-    uint16_t len;
-    uint16_t pos;
-} mp_lexer_file_buf_t;
-
-STATIC mp_uint_t file_buf_next_byte(void *fb_in) {
-    mp_lexer_file_buf_t *fb = fb_in;
-    if (fb->pos >= fb->len) {
-        if (fb->len < sizeof(fb->buf)) {
-            return (mp_uint_t)-1;
-        } else {
-            UINT n;
-            f_read(&fb->fp, fb->buf, sizeof(fb->buf), &n);
-            if (n == 0) {
-                return (mp_uint_t)-1;
-            }
-            fb->len = n;
-            fb->pos = 0;
-        }
+    int ret = mp_reader_new_file(&reader, filename);
+    if (ret != 0) {
+        mp_raise_OSError(ret);
     }
-    return fb->buf[fb->pos++];
+    return mp_raw_code_load(&reader);
 }
-
-mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
-    mp_lexer_file_buf_t fb;
-    /*FRESULT res =*/ f_open(&fb.fp, filename, FA_READ);
-    UINT n;
-    f_read(&fb.fp, fb.buf, sizeof(fb.buf), &n);
-    fb.len = n;
-    fb.pos = 0;
-
-    mp_reader_t reader;
-    reader.data = &fb;
-    reader.read_byte = file_buf_next_byte;
-    mp_raw_code_t *rc = mp_raw_code_load(&reader);
-
-    f_close(&fb.fp);
-
-    return rc;
-}
-
-#endif
 
 #endif // MICROPY_PERSISTENT_CODE_LOAD
 
