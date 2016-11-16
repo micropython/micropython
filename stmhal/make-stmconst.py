@@ -12,6 +12,20 @@ from __future__ import print_function
 import argparse
 import re
 
+# Python 2/3 compatibility
+import platform
+if platform.python_version_tuple()[0] == '2':
+    def convert_bytes_to_str(b):
+        return b
+elif platform.python_version_tuple()[0] == '3':
+    def convert_bytes_to_str(b):
+        try:
+            return str(b, 'utf8')
+        except ValueError:
+            # some files have invalid utf8 bytes, so filter them out
+            return ''.join(chr(l) for l in b if l <= 126)
+# end compatibility code
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:
@@ -48,11 +62,7 @@ class Lexer:
     def next_match(self, strictly_next=False):
         while True:
             line = self.file.readline()
-            try:
-                line = str(line, 'utf8')
-            except ValueError:
-                # some files have invalid utf8 bytes, so filter them out
-                line = ''.join(chr(l) for l in line if l <= 126)
+            line = convert_bytes_to_str(line)
             self.line_number += 1
             if len(line) == 0:
                 return ('EOF', None)
