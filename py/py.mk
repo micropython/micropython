@@ -134,6 +134,7 @@ PY_O_BASENAME = \
 	parsenumbase.o \
 	parsenum.o \
 	emitglue.o \
+	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
 	nativeglue.o \
