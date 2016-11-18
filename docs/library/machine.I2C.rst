@@ -102,13 +102,13 @@ control over the bus, otherwise the standard methods (see below) can be used.
 
 .. method:: I2C.start()
 
-   Send a start bit on the bus (SDA transitions to low while SCL is high).
+   Generate a START condition on the bus (SDA transitions to low while SCL is high).
 
    Availability: ESP8266.
 
 .. method:: I2C.stop()
 
-   Send a stop bit on the bus (SDA transitions to high while SCL is high).
+   Generate a STOP condition on the bus (SDA transitions to high while SCL is high).
 
    Availability: ESP8266.
 
@@ -139,14 +139,14 @@ operations that target a given slave device.
 .. method:: I2C.readfrom(addr, nbytes, stop=True)
 
    Read `nbytes` from the slave specified by `addr`.
-   If `stop` is true then a stop bit is sent at the end of the transfer.
+   If `stop` is true then a STOP condition is generated at the end of the transfer.
    Returns a `bytes` object with the data read.
 
 .. method:: I2C.readfrom_into(addr, buf, stop=True)
 
    Read into `buf` from the slave specified by `addr`.
    The number of bytes read will be the length of `buf`.
-   If `stop` is true then a stop bit is sent at the end of the transfer.
+   If `stop` is true then a STOP condition is generated at the end of the transfer.
 
    The method returns `None`.
 
@@ -154,8 +154,8 @@ operations that target a given slave device.
 
    Write the bytes from `buf` to the slave specified by `addr`.  If a
    NACK is received following the write of a byte from `buf` then the
-   remaining bytes are not sent.  If `stop` is true then a stop bit is
-   sent at the end of the transfer, even if a NACK is received.
+   remaining bytes are not sent.  If `stop` is true then a STOP condition is
+   generated at the end of the transfer, even if a NACK is received.
    The function returns the number of ACKs that were received.
 
 Memory operations
