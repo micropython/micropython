@@ -27,7 +27,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_PY_USELECT
+#if MICROPY_PY_USELECT_POSIX
 
 #include <stdio.h>
 #include <errno.h>
@@ -238,4 +238,4 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 
-#endif // MICROPY_PY_USELECT
+#endif // MICROPY_PY_USELECT_POSIX

@@ -121,8 +121,8 @@
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UBINASCII_CRC32  (1)
 #define MICROPY_PY_URANDOM          (1)
-#ifndef MICROPY_PY_USELECT
-#define MICROPY_PY_USELECT          (1)
+#ifndef MICROPY_PY_USELECT_POSIX
+#define MICROPY_PY_USELECT_POSIX    (1)
 #endif
 #define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_MACHINE          (1)
@@ -194,7 +194,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
 #else
 #define MICROPY_PY_SOCKET_DEF
 #endif
-#if MICROPY_PY_USELECT
+#if MICROPY_PY_USELECT_POSIX
 #define MICROPY_PY_USELECT_DEF { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
 #else
 #define MICROPY_PY_USELECT_DEF
