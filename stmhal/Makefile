@@ -150,7 +150,6 @@ SRC_C = \
 	modstm.c \
 	moduos.c \
 	modutime.c \
-	moduselect.c \
 	modusocket.c \
 	modnetwork.c \
 	import.c \
