@@ -313,4 +313,4 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 
-#endif // MICROPY_PY_WEBSOCKET
+#endif // MICROPY_PY_USELECT
