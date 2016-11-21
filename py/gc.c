@@ -392,6 +392,16 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
+void gc_mark_block(void * ptr) {
+    if (VERIFY_PTR(ptr)) {
+        size_t _block = BLOCK_FROM_PTR(ptr);
+        if (ATB_GET_KIND(_block) == AT_HEAD) {
+            /* an unmarked head, mark it, and push it on gc stack */
+            ATB_HEAD_TO_MARK(_block);
+        }
+    }
+}
+
 void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
